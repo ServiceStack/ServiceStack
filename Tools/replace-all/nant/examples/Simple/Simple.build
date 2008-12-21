@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<project name="Simple" default="run">
+    <property name="debug" value="true"/>
+
+    <target name="clean" description="remove all generated files">
+        <delete file="bin/Simple.exe" if="${file::exists('bin/Simple.exe')}" />
+        <delete file="bin/Simple.pdb" if="${file::exists('bin/Simple.pdb')}" />
+    </target>
+
+    <target name="build" description="compiles the source code">
+        <mkdir dir="bin" />
+        <csc target="exe" output="bin/Simple.exe" debug="${debug}">
+            <sources>
+                <include name="Simple.cs" />
+            </sources>
+        </csc>
+    </target>
+    
+    <target name="run" depends="build">
+        <exec program="bin/Simple.exe" />
+    </target>
+</project>

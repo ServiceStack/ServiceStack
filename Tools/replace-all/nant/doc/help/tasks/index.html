@@ -1,0 +1,485 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Task Reference" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>Task Reference</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+                            Task Reference
+                        </td>
+        <td class="NavBar-Cell" align="right">
+                            v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>Task Reference</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Task</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="al.html">al</a>
+          </td>
+          <td> Wraps <code>al.exe</code>, the assembly linker for the .NET Framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="asminfo.html">asminfo</a>
+          </td>
+          <td> Generates an AssemblyInfo file using the attributes given. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="attrib.html">attrib</a>
+          </td>
+          <td> Changes the file attributes of a file or set of files and directories. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="available.html">
+              <i>available</i>
+            </a>
+          </td>
+          <td> Checks if a resource is available at runtime. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="aximp.html">aximp</a>
+          </td>
+          <td> Generates a Windows Forms Control that wraps ActiveX Controls defined in an OCX. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="call.html">call</a>
+          </td>
+          <td> Calls a NAnt target in the current project. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cl.html">cl</a>
+          </td>
+          <td> Compiles C/C++ programs using <code>cl.exe</code>, Microsoft's C/C++ compiler. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="copy.html">copy</a>
+          </td>
+          <td> Copies a file or set of files to a new file or directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="csc.html">csc</a>
+          </td>
+          <td> Compiles C# programs. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs.html">cvs</a>
+          </td>
+          <td> Executes the cvs command specified by the command attribute. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs-changelog.html">cvs-changelog</a>
+          </td>
+          <td> Produces an XML report that represents the cvs changes from the given start day, to a given end date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs-checkout.html">cvs-checkout</a>
+          </td>
+          <td> Checks out a CVS module to the required directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs-export.html">cvs-export</a>
+          </td>
+          <td> Exports a cvs module in preperation for a release (i.e. the CVS version folders are not exported). </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs-pass.html">cvs-pass</a>
+          </td>
+          <td> Executes the cvs login command which appends or updates an entry to the specified .cvspass file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs-rtag.html">cvs-rtag</a>
+          </td>
+          <td> Tags all sources in the remote repository with a given tag. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs-tag.html">cvs-tag</a>
+          </td>
+          <td> Tags all local sources with the specified tag. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cvs-update.html">cvs-update</a>
+          </td>
+          <td> Updates a CVS module in a local working directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="delay-sign.html">delay-sign</a>
+          </td>
+          <td> Signs delay-signed .NET Assemblies, or re-signs existing assemblies. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="delete.html">delete</a>
+          </td>
+          <td> Deletes a file, fileset or directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="description.html">description</a>
+          </td>
+          <td> An empty task that allows a build file to contain a description. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="echo.html">echo</a>
+          </td>
+          <td> Writes a message to the build log or a specified file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="exec.html">exec</a>
+          </td>
+          <td> Executes a system command. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="fail.html">fail</a>
+          </td>
+          <td> Exits the current build by throwing a <a href="../../sdk/NAnt.Core.BuildException.html">BuildException</a>, optionally printing additional information. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="foreach.html">foreach</a>
+          </td>
+          <td> Loops over a set of items. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="get.html">get</a>
+          </td>
+          <td> Gets a particular file from a URL source. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="gunzip.html">gunzip</a>
+          </td>
+          <td> Expands a file packed using GZip compression. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="if.html">if</a>
+          </td>
+          <td> Checks the conditional attributes and executes the children if <b>true</b>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="ifnot.html">
+              <i>ifnot</i>
+            </a>
+          </td>
+          <td> The opposite of the <code>if</code> task. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="ilasm.html">ilasm</a>
+          </td>
+          <td> Compiles ILASM programs. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="ildasm.html">ildasm</a>
+          </td>
+          <td> Disassembles any portable executable (PE) file that contains intermediate language (IL) code. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="include.html">include</a>
+          </td>
+          <td> Includes an external build file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="jsc.html">jsc</a>
+          </td>
+          <td> Compiles JScript.NET programs. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="lib.html">lib</a>
+          </td>
+          <td> Run <code>lib.exe</code>, Microsoft's Library Manager. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="license.html">license</a>
+          </td>
+          <td> Generates a <code>.licence</code> file from a <code>.licx</code> file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="link.html">link</a>
+          </td>
+          <td> Links files using <code>link.exe</code>, Microsoft's Incremental Linker. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="loadfile.html">loadfile</a>
+          </td>
+          <td> Load a text file into a single property. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="loadtasks.html">loadtasks</a>
+          </td>
+          <td> Loads tasks form a given assembly or all assemblies in a given directory or <a href="../types/fileset.html">&lt;fileset&gt;</a>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="mail.html">mail</a>
+          </td>
+          <td> Sends an SMTP message. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="mc.html">mc</a>
+          </td>
+          <td> Compiles messages using mc.exe, Microsoft's Win32 message compiler. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="midl.html">midl</a>
+          </td>
+          <td> This tasks allows you to run MIDL.exe. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="mkdir.html">mkdir</a>
+          </td>
+          <td> Creates a directory and any non-existent parent directory if necessary. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="move.html">move</a>
+          </td>
+          <td> Moves a file or set of files to a new file or directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="nant.html">nant</a>
+          </td>
+          <td> Runs NAnt on a supplied build file, or a set of build files. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="nantschema.html">nantschema</a>
+          </td>
+          <td> Creates an XSD File for all available tasks. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="ndoc.html">ndoc</a>
+          </td>
+          <td> Runs NDoc V1.3.1 to create documentation. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="nunit.html">
+              <i>nunit</i>
+            </a>
+          </td>
+          <td> Runs tests using the NUnit V1.0 framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="nunit2.html">nunit2</a>
+          </td>
+          <td> Runs tests using the NUnit V2.2 framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="property.html">property</a>
+          </td>
+          <td> Sets a property in the current project. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="rc.html">rc</a>
+          </td>
+          <td> Compiles resources using <code>rc.exe</code>, Microsoft's Win32 resource compiler. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="readregistry.html">readregistry</a>
+          </td>
+          <td> Reads a value or set of values from the Windows Registry into one or more NAnt properties. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="regasm.html">regasm</a>
+          </td>
+          <td> Registers an assembly, or set of assemblies for use from COM clients. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="regex.html">regex</a>
+          </td>
+          <td> Sets project properties based on the evaluatuion of a regular expression. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="regsvcs.html">regsvcs</a>
+          </td>
+          <td> Installs or removes .NET Services. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="resgen.html">resgen</a>
+          </td>
+          <td> Converts files from one resource format to another. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="script.html">script</a>
+          </td>
+          <td> Executes the code contained within the task. This code can include custom extension function definitions. Once the script task has executed those custom functions will be available for use in the buildfile. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="servicecontroller.html">servicecontroller</a>
+          </td>
+          <td> Allows a Windows service to be controlled. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="setenv.html">setenv</a>
+          </td>
+          <td> Sets an environment variable or a whole collection of them. Use an empty <code>value</code> attribute to clear a variable. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="sleep.html">sleep</a>
+          </td>
+          <td> A task for sleeping a specified period of time, useful when a build or deployment process requires an interval between tasks. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="solution.html">solution</a>
+          </td>
+          <td> Compiles VS.NET solutions (or sets of projects), automatically determining project dependencies from inter-project references. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="style.html">style</a>
+          </td>
+          <td> Processes a document via XSLT. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="sysinfo.html">sysinfo</a>
+          </td>
+          <td> Sets properties with system information. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="tar.html">tar</a>
+          </td>
+          <td> Creates a tar file from the specified filesets. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="tlbexp.html">tlbexp</a>
+          </td>
+          <td> Exports a .NET assembly to a type library that can be used from unmanaged code (wraps Microsoft's <code>tlbexp.exe</code>). </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="tlbimp.html">tlbimp</a>
+          </td>
+          <td> Imports a type library to a .NET assembly (wraps Microsoft's <code>tlbimp.exe</code>). </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="touch.html">touch</a>
+          </td>
+          <td> Touches a file or set of files -- corresponds to the Unix touch command. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="tstamp.html">tstamp</a>
+          </td>
+          <td> Sets properties with the current date and time. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="unzip.html">unzip</a>
+          </td>
+          <td> Extracts files from a zip file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="uptodate.html">uptodate</a>
+          </td>
+          <td> Check modification dates on groups of files. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="vbc.html">vbc</a>
+          </td>
+          <td> Compiles Visual Basic.NET programs. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="vjc.html">vjc</a>
+          </td>
+          <td> Compiles Visual J# programs using vjc, Microsoft's J# compiler. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="xmlpeek.html">xmlpeek</a>
+          </td>
+          <td> Extracts text from an XML file at the location specified by an XPath expression. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="xmlpoke.html">xmlpoke</a>
+          </td>
+          <td> Replaces text in an XML file at the location specified by an XPath expression. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="zip.html">zip</a>
+          </td>
+          <td> Creates a zip file from the specified filesets. </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

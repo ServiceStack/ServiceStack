@@ -1,0 +1,28 @@
+<project name="Solution Build Example" default="rebuild">
+    <property name="configuration" value="release"/>
+    
+    <target name="clean" description="Delete all previously compiled binaries.">
+        <delete>
+            <fileset>
+                <include name="**/bin/**" />
+                <include name="**/obj/**" />
+                <include name="**/*.suo" />
+                <include name="**/*.user" />
+            </fileset>
+        </delete>
+    </target>
+    
+    <target name="build" description="Build all targets.">
+        <call target="build.winforms"/>
+    </target>
+    
+    <target name="rebuild" depends="clean, build" />
+
+    <target name="build.winforms">
+        <solution configuration="${configuration}" solutionfile="WinForms.sln">
+        </solution>
+        <property name="expected.output" value="bin/${configuration}/WinForms.exe"/>
+        <fail unless="${file::exists(expected.output)}">Output file doesn't exist in ${expected.output}</fail>
+    </target>
+    
+</project>

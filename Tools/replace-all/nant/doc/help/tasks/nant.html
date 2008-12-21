@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Tasks.NAntTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;nant&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;nant&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;nant&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Runs NAnt on a supplied build file, or a set of build files. </p>
+    <p> By default, all the properties of the current project will be available in the new project. Alternatively, you can set <code>inheritall</code> to <b>false</b> to not copy any properties to the new project. </p>
+    <p> You can also set properties in the new project from the old project by using nested property tags. These properties are always passed to the new project regardless of the setting of <code>inheritall</code>. This allows you to parameterize your subprojects. </p>
+    <p> References to data types can also be passed to the new project, but by default they are not. If you set the <code>inheritrefs</code> to <b>true</b>, all references will be copied. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">buildfile</td>
+          <td style="text-align: center;">file</td>
+          <td> The build file to build. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">inheritall</td>
+          <td style="text-align: center;">bool</td>
+          <td> Specifies whether current property values should be inherited by the executed project. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">inheritrefs</td>
+          <td style="text-align: center;">bool</td>
+          <td> Specifies whether all references will be copied to the new project. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">target</td>
+          <td style="text-align: center;">string</td>
+          <td> The target to execute. To specify more than one target seperate targets with a space. Targets are executed in order if possible. The default is to use target specified in the project's default attribute. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="buildfiles">
+      </a>
+                    &lt;<a href="../types/fileset.html">buildfiles</a>&gt;
+                </h4>
+    <div class="nested-element"> Used to specify a set of build files to process. <p /></div>
+    <h4>
+      <a id="buildfiles">
+      </a>
+                    &lt;/<a href="../types/fileset.html">buildfiles</a>&gt;
+                </h4>
+    <!--Collection-->
+    <h4>
+      <a id="properties">
+      </a>
+            &lt;properties&gt;
+        </h4>
+    <div class="nested-element"> Specifies a collection of properties that should be created in the executed project. Note, existing properties with identical names that are not read-only will be overwritten. <h5>&lt;property&gt;</h5><div class="nested-element"><p> Sets a property in the current project. </p><p class="i2"><b>Note:</b> NAnt uses a number of predefined properties.</p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The name of the NAnt property to set. </td><td style="text-align: center;">True</td></tr><tr><td valign="top" class="required">value</td><td style="text-align: center;">string</td><td> The value to assign to the NAnt property. <p style="font-weight: bold;">
+                        This attribute's properties will not be automatically expanded!
+                    </p></td><td style="text-align: center;">True</td></tr><tr><td valign="top">dynamic</td><td style="text-align: center;">bool</td><td> Specifies whether references to other properties should not be expanded when the value of the property is set, but expanded when the property is actually used. By default, properties will be expanded when set. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">overwrite</td><td style="text-align: center;">bool</td><td> Specifies whether the value of a property should be overwritten if the property already exists (unless the property is read-only). The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">readonly</td><td style="text-align: center;">bool</td><td> Specifies whether the property is read-only or not. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">failonerror</td><td style="text-align: center;">bool</td><td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">verbose</td><td style="text-align: center;">bool</td><td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div><h3>Examples</h3><ul class="examples"><li><p> Define a <code>debug</code> property with value <b>true</b>. </p><pre class="code">
+&lt;property name="debug" value="true" /&gt;
+    </pre></li><li><p> Use the user-defined <code>debug</code> property. </p><pre class="code">
+&lt;property name="trace" value="${debug}" /&gt;
+    </pre></li><li><p> Define a read-only property. This is just like passing in the param on the command line. </p><pre class="code">
+&lt;property name="do_not_touch_ME" value="hammer" readonly="true" /&gt;
+    </pre></li><li><p> Define a property, but do not overwrite the value if the property already exists (eg. it was specified on the command line). </p><pre class="code">
+&lt;project name="property-example"&gt;
+  &lt;property name="debug" value="true" overwrite="false" /&gt;
+  &lt;echo message="debug: ${debug}" /&gt;
+&lt;/project&gt;
+    </pre><p> Executing this build file with the command line option <code>-D:debug=false</code>, would cause the value specified on the command line to remain unaltered. </p><pre class="code">
+[echo] debug: false
+    </pre></li></ul></div><h5>&lt;/property&gt;</h5></div>
+    <h4>&lt;/properties&gt;</h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Build a project located in a different directory if the <code>debug</code> property is not <b>true</b>. </p>
+        <pre class="code">
+&lt;nant buildfile="${src.dir}/Extras/BuildServer/BuildServer.build" unless="${debug}" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Build a project while adding a set of properties to that project. </p>
+        <pre class="code">
+&lt;nant buildfile="${src.dir}/Extras/BuildServer/BuildServer.build"&gt;
+    &lt;properties&gt;
+        &lt;property name="build.dir" value="c:/buildserver" /&gt;
+        &lt;property name="build.debug" value="false" /&gt;
+        &lt;property name="lib.dir" value="c:/shared/lib" readonly="true" /&gt;
+    &lt;/properties&gt;
+&lt;/nant&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Build all projects named <code>default.build</code> located anywhere under the project base directory. </p>
+        <pre class="code">
+&lt;nant&gt;
+    &lt;buildfiles&gt;
+        &lt;include name="**/default.build" /&gt;
+        &lt;!-- avoid recursive execution of current build file --&gt;
+        &lt;exclude name="${project::get-buildfile-path()}" /&gt;
+    &lt;/buildfiles&gt;
+&lt;/nant&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+  </body>
+</html>

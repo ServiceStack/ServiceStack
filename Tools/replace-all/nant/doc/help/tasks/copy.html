@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Tasks.CopyTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;copy&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;copy&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;copy&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Copies a file or set of files to a new file or directory. </p>
+    <p> Files are only copied if the source file is newer than the destination file, or if the destination file does not exist. However, you can explicitly overwrite files with the <code>overwrite</code> attribute. </p>
+    <p> When a <a href="../types/fileset.html">&lt;fileset&gt;</a> is used to select files to copy, the <code>todir</code> attribute must be set. Files that are located under the base directory of the <a href="../types/fileset.html">&lt;fileset&gt;</a> will be copied to a directory under the destination directory matching the path relative to the base directory of the <a href="../types/fileset.html">&lt;fileset&gt;</a>, unless the <code>flatten</code> attribute is set to <b>true</b>. </p>
+    <p> Files that are not located under the the base directory of the <a href="../types/fileset.html">&lt;fileset&gt;</a> will be copied directly under to the destination directory, regardless of the value of the <code>flatten</code> attribute. </p>
+    <h4 xmlns="">Encoding</h4>
+    <p> Unless an encoding is specified, the encoding associated with the system's current ANSI code page is used. </p>
+    <p> An UTF-8, little-endian Unicode, and big-endian Unicode encoded text file is automatically recognized, if the file starts with the appropriate byte order marks. </p>
+    <p class="i2">
+      <b>Note:</b>  If you employ filters in your copy operation, you should limit the copy to text files. Binary files will be corrupted by the copy operation. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">file</td>
+          <td style="text-align: center;">file</td>
+          <td> The file to copy. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">flatten</td>
+          <td style="text-align: center;">bool</td>
+          <td> Ignore directory structure of source directory, copy all files into a single directory, specified by the <code>todir</code> attribute. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">includeemptydirs</td>
+          <td style="text-align: center;">bool</td>
+          <td> Copy any empty directories included in the <a href="../types/fileset.html">&lt;fileset&gt;</a>. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">inputencoding</td>
+          <td style="text-align: center;">
+            <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTextEncodingClassTopic.asp">Encoding</a>
+          </td>
+          <td> The encoding to use when reading files. The default is the system's current ANSI code page. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">outputencoding</td>
+          <td style="text-align: center;">
+            <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTextEncodingClassTopic.asp">Encoding</a>
+          </td>
+          <td> The encoding to use when writing the files. The default is the encoding of the input file. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">overwrite</td>
+          <td style="text-align: center;">bool</td>
+          <td> Overwrite existing files even if the destination files are newer. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">todir</td>
+          <td style="text-align: center;">directory</td>
+          <td> The directory to copy to. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">tofile</td>
+          <td style="text-align: center;">file</td>
+          <td> The file to copy to. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="fileset">
+      </a>
+                    &lt;<a href="../types/fileset.html">fileset</a>&gt;
+                </h4>
+    <div class="nested-element"> Used to select the files to copy. To use a <a href="../types/fileset.html">&lt;fileset&gt;</a>, the <code>todir</code> attribute must be set. <p /></div>
+    <h4>
+      <a id="fileset">
+      </a>
+                    &lt;/<a href="../types/fileset.html">fileset</a>&gt;
+                </h4>
+    <!--Element-->
+    <h4>
+      <a id="filterchain">
+      </a>
+                    &lt;<a href="../types/filterchain.html">filterchain</a>&gt;
+                </h4>
+    <div class="nested-element"> Chain of filters used to alter the file's content as it is copied. <p /></div>
+    <h4>
+      <a id="filterchain">
+      </a>
+                    &lt;/<a href="../types/filterchain.html">filterchain</a>&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Copy a single file while changing its encoding from "latin1" to "utf-8". </p>
+        <pre class="code">
+&lt;copy 
+    file="myfile.txt"
+    tofile="mycopy.txt"
+    inputencoding="latin1"
+    outputencoding="utf-8" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p>Copy a set of files to a new directory.</p>
+        <pre class="code">
+&lt;copy todir="${build.dir}"&gt;
+    &lt;fileset basedir="bin"&gt;
+        &lt;include name="*.dll" /&gt;
+    &lt;/fileset&gt;
+&lt;/copy&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Copy a set of files to a directory, replacing <code>@TITLE@</code> with "Foo Bar" in all files. </p>
+        <pre class="code">
+&lt;copy todir="../backup/dir"&gt;
+    &lt;fileset basedir="src_dir"&gt;
+        &lt;include name="**/*" /&gt;
+    &lt;/fileset&gt;
+    &lt;filterchain&gt;
+        &lt;replacetokens&gt;
+            &lt;token key="TITLE" value="Foo Bar" /&gt;
+        &lt;/replacetokens&gt;
+    &lt;/filterchain&gt;
+&lt;/copy&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+  </body>
+</html>

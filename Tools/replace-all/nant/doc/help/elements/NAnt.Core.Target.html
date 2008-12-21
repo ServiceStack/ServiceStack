@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Target-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>Target Element</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <span>Element Reference</span>
+          <img alt="-&gt;" src="../images/arrow.gif" /> Target</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>Target</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p>
+    </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top" class="required">name</td>
+          <td style="text-align: center;">string</td>
+          <td> The name of the target. <p style="font-weight: bold;">
+                        This attribute's properties will not be automatically expanded!
+                    </p></td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top">depends</td>
+          <td style="text-align: center;">string</td>
+          <td> Space separated list of targets that this target depends on. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">description</td>
+          <td style="text-align: center;">string</td>
+          <td> The description of the target. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">string</td>
+          <td> If <b>true</b> then the target will be executed; otherwise, skipped. The default is <b>true</b>. <p style="font-weight: bold;">
+                        This attribute's properties will not be automatically expanded!
+                    </p></td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">string</td>
+          <td> Opposite of <code>IfDefined</code>. If <b>false</b> then the target will be executed; otherwise, skipped. The default is <b>false</b>. <p style="font-weight: bold;">
+                        This attribute's properties will not be automatically expanded!
+                    </p></td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+  </body>
+</html>

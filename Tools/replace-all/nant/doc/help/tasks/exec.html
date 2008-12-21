@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Tasks.ExecTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;exec&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;exec&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;exec&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Executes a system command. </p>
+    <p> Use of nested <code>arg</code> element(s) is advised over the <code>commandline</code> parameter, as it supports automatic quoting and can resolve relative to absolute paths. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top" class="required">program</td>
+          <td style="text-align: center;">string</td>
+          <td> The program to execute without command arguments. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top">append</td>
+          <td style="text-align: center;">bool</td>
+          <td> Gets or sets a value indicating whether output should be appended to the output file. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">basedir</td>
+          <td style="text-align: center;">directory</td>
+          <td> The directory the program is in. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">commandline</td>
+          <td style="text-align: center;">string</td>
+          <td> The command-line arguments for the program. These will be passed as is to the external program. When quoting is necessary, these must be explictly set as part of the value. Consider using nested <code>arg</code> elements instead. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">managed</td>
+          <td style="text-align: center;">
+            <a href="../enums/NAnt.Core.Types.ManagedExecution.html">ManagedExecution</a>
+          </td>
+          <td> Specifies whether the external program is a managed application which should be executed using a runtime engine, if configured. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">output</td>
+          <td style="text-align: center;">file</td>
+          <td> The file to which the standard output will be redirected. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">pidproperty</td>
+          <td style="text-align: center;">string</td>
+          <td> The name of a property in which the unique identifier of the spawned application should be stored. Only of interest if <code>spawn</code> is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">resultproperty</td>
+          <td style="text-align: center;">string</td>
+          <td>
+            <p> The name of a property in which the exit code of the program should be stored. Only of interest if <code>failonerror</code> is <b>false</b>. </p>
+            <p> If the exit code of the program is "-1000" then the program could not be started, or did not exit (in time). </p>
+          </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">spawn</td>
+          <td style="text-align: center;">bool</td>
+          <td> Gets or sets a value indicating whether the application should be spawned. If you spawn an application, its output will not be logged by NAnt. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">useruntimeengine</td>
+          <td style="text-align: center;">bool</td>
+          <td>
+            <i>Deprecated.</i>  Specifies whether the external program should be executed using a runtime engine, if configured. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">workingdir</td>
+          <td style="text-align: center;">directory</td>
+          <td> The directory in which the command will be executed. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">timeout</td>
+          <td style="text-align: center;">int</td>
+          <td> The maximum amount of time the application is allowed to execute, expressed in milliseconds. Defaults to no time-out. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Framework-configurable parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">exename</td>
+          <td style="text-align: center;">string</td>
+          <td> The name of the executable that should be used to launch the external program. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="environment">
+      </a>
+                    &lt;environment&gt;
+                </h4>
+    <div class="nested-element"> Environment variables to pass to the program. <p> A set of environment variables. </p><h3>Nested Elements:</h3><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.Option--><h4><a id="option"></a>
+                    &lt;option&gt;
+                </h4><div class="nested-element"><i>Deprecated.</i>  Environment variable to pass to a program. <p> Represents an option. </p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> Name of the option. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> Indicates if the option should be passed to the task. If <b>true</b> then the option will be passed; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Indicates if the option should not be passed to the task. If <b>false</b> then the option will be passed; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">value</td><td style="text-align: center;">string</td><td> Value of the option. The default is a null reference (<b>Nothing</b> in Visual Basic). </td><td style="text-align: center;">False</td></tr></table></div></div><h4><a id="option"></a>
+                    &lt;/option&gt;
+                </h4><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.EnvironmentVariable--><h4><a id="variable"></a>
+                    &lt;variable&gt;
+                </h4><div class="nested-element"> Environment variable to pass to a program. <p> Represents an environment variable. </p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The name of the environment variable. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">dir</td><td style="text-align: center;">directory</td><td> The value for a directory-based environment variable. NAnt will convert it to an absolute path. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">file</td><td style="text-align: center;">file</td><td> The value for a file-based environment variable. NAnt will convert it to an absolute filename. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> Indicates if the environment variable should be passed to the external program. If <b>true</b> then the environment variable will be passed; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">path</td><td style="text-align: center;">&lt;path&gt;</td><td> The value for a PATH like environment variable. You can use <code>:</code> or <code>;</code> as path separators and NAnt will convert it to the platform's local conventions. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Indicates if the environment variable should not be passed to the external program. If <b>false</b> then the environment variable will be passed; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">value</td><td style="text-align: center;">string</td><td> The literal value for the environment variable. </td><td style="text-align: center;">False</td></tr></table></div><h3>Nested Elements:</h3><!--Element--><h4><a id="path"></a>
+                    &lt;<a href="../types/path.html">path</a>&gt;
+                </h4><div class="nested-element"> Sets a single environment variable and treats it like a PATH - ensures the right separator for the local platform is used. <p /></div><h4><a id="path"></a>
+                    &lt;/<a href="../types/path.html">path</a>&gt;
+                </h4></div><h4><a id="variable"></a>
+                    &lt;/variable&gt;
+                </h4><p /></div>
+    <h4>
+      <a id="environment">
+      </a>
+                    &lt;/environment&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.Argument-->
+    <h4>
+      <a id="arg">
+      </a>
+                    &lt;arg&gt;
+                </h4>
+    <div class="nested-element"> The command-line arguments for the external program. <p> Represents a command-line argument. </p><p> When passed to an external application, the argument will be quoted when appropriate. This does not apply to the <code>line</code> parameter, which is always passed as is. </p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top">dir</td><td style="text-align: center;">directory</td><td> The value for a directory-based command-line argument; will be replaced with the absolute path of the directory. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">file</td><td style="text-align: center;">file</td><td> The name of a file as a single command-line argument; will be replaced with the absolute filename of the file. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> Indicates if the argument should be passed to the external program. If <b>true</b> then the argument will be passed; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">line</td><td style="text-align: center;">string</td><td> List of command-line arguments; will be passed to the executable as is. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">path</td><td style="text-align: center;">&lt;path&gt;</td><td> The value for a PATH-like command-line argument; you can use <code>:</code> or <code>;</code> as path separators and NAnt will convert it to the platform's local conventions, while resolving references to environment variables. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Indicates if the argument should not be passed to the external program. If <b>false</b> then the argument will be passed; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">value</td><td style="text-align: center;">string</td><td> A single command-line argument; can contain space characters. </td><td style="text-align: center;">False</td></tr></table></div><h3>Nested Elements:</h3><!--Element--><h4><a id="path"></a>
+                    &lt;<a href="../types/path.html">path</a>&gt;
+                </h4><div class="nested-element"> Sets a single command-line argument and treats it like a PATH - ensures the right separator for the local platform is used. <p /></div><h4><a id="path"></a>
+                    &lt;/<a href="../types/path.html">path</a>&gt;
+                </h4><h3>Examples</h3><ul class="examples"><li><p> A single command-line argument containing a space character. </p><pre class="code">
+&lt;arg value="-l -a" /&gt;
+    </pre></li><li><p> Two separate command-line arguments. </p><pre class="code">
+&lt;arg line="-l -a" /&gt;
+    </pre></li><li><p> A single command-line argument with the value <code>\dir;\dir2;\dir3</code> on DOS-based systems and <code>/dir:/dir2:/dir3</code> on Unix-like systems. </p><pre class="code">
+&lt;arg path="/dir;/dir2:\dir3" /&gt;
+    </pre></li></ul></div>
+    <h4>
+      <a id="arg">
+      </a>
+                    &lt;/arg&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p>Ping "nant.sourceforge.net".</p>
+        <pre class="code">
+&lt;exec program="ping"&gt;
+    &lt;arg value="nant.sourceforge.net" /&gt;
+&lt;/exec&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Execute a java application using <code>IKVM.NET</code> that requires the Apache FOP jars, and a set of custom jars. </p>
+        <pre class="code">
+      &lt;path id="fop-classpath"&gt;
+          &lt;pathelement file="${fop.dist.dir}/build/fop.jar" /&gt;
+          &lt;pathelement file="${fop.dist.dir}/lib/xercesImpl-2.2.1.jar" /&gt;
+          &lt;pathelement file="${fop.dist.dir}/lib/avalon-framework-cvs-20020806.jar" /&gt;
+          &lt;pathelement file="${fop.dist.dir}/lib/batik.jar" /&gt;
+      &lt;/path&gt;
+      &lt;exec program="ikvm.exe" useruntimeengine="true"&gt;
+          &lt;arg value="-cp" /&gt;
+          &lt;arg&gt;
+              &lt;path&gt;
+                  &lt;pathelement dir="conf" /&gt;
+                  &lt;path refid="fop-classpath" /&gt;
+                  &lt;pathelement file="lib/mylib.jar" /&gt;
+                  &lt;pathelement file="lib/otherlib.zip" /&gt;
+              &lt;/path&gt;
+          &lt;/arg&gt;
+          &lt;arg value="org.me.MyProg" /&gt;
+      &lt;/exec&gt;
+  </pre>
+        <p> Assuming the base directory of the build file is "c:\ikvm-test" and the value of the "fop.dist.dir" property is "c:\fop", then the value of the <code>-cp</code> argument that is passed to<code>ikvm.exe</code> is "c:\ikvm-test\conf;c:\fop\build\fop.jar;conf;c:\fop\lib\xercesImpl-2.2.1.jar;c:\fop\lib\avalon-framework-cvs-20020806.jar;c:\fop\lib\batik.jar;c:\ikvm-test\lib\mylib.jar;c:\ikvm-test\lib\otherlib.zip" on a DOS-based system. </p>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+  </body>
+</html>

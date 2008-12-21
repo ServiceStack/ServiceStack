@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<project name="Script Test" default="run">
+    <target name="run">
+        <property name="test.property" value="initial"/>
+        <script language="C#" mainclass="Test">
+            <code>
+                <![CDATA[
+                    class Test {
+                        public static void ScriptMain(Project project) {
+                            PropertyDictionary pd = project.Properties;
+                            
+                            foreach (DictionaryEntry property in pd) {
+                                Console.WriteLine("{0} = {1}", property.Key, property.Value);
+                            }
+
+                            Console.WriteLine("Setting test.property to 'new value'");
+                            pd["test.property"] = "new value";
+                        }
+                    }
+                ]]>
+            </code>
+        </script>
+        <echo message="test.property = ${test.property}"/>
+    </target>
+</project>

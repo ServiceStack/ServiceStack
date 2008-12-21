@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{E6FDF86B-F3D1-11D4-8576-0002A516ECE8}") = "WinForms", "WinForms.vjsproj", "{84A7C512-CE63-4884-B9FB-DF863EEC3800}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{84A7C512-CE63-4884-B9FB-DF863EEC3800}.Debug.ActiveCfg = Debug|.NET
+		{84A7C512-CE63-4884-B9FB-DF863EEC3800}.Debug.Build.0 = Debug|.NET
+		{84A7C512-CE63-4884-B9FB-DF863EEC3800}.Release.ActiveCfg = Release|.NET
+		{84A7C512-CE63-4884-B9FB-DF863EEC3800}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!--
+    This build file is intended to show off some of NAnt's capabilities in 
+    building Visual Basic.NET programs.  The .vbproj file is also located 
+    in the directory so you can compare Visual Studio's project file with 
+    this one.
+-->
+<project name="HelloWindowsForms" default="run">
+    <property name="basename" value="HelloWindowsForms"/>
+    <property name="debug" value="true"/>
+    <property name="build.dir" value="bin"/>
+
+    <target name="clean" description="cleans build directory">
+        <delete dir="${build.dir}" verbose="true" if="${directory::exists(build.dir)}" />
+    </target>
+
+    <target name="debug" depends="clean">
+        <property name="debug" value="true" />
+    </target>
+
+    <target name="release" depends="clean">
+        <property name="debug" value="false" />
+    </target>
+
+    <target name="build">
+        <mkdir dir="${build.dir}"/>
+        <vbc target="winexe" output="${build.dir}/${basename}.exe" debug="${debug}" 
+                main="HelloWindowsForms.MainForm"
+                optioncompare="text"
+                optionexplicit="true"
+                optionstrict="true"
+                rootnamespace="HelloWindowsForms"
+                removeintchecks="true">
+            <imports>
+                <import namespace="Microsoft.VisualBasic" />
+                <import namespace="System" />
+                <import namespace="System.Collections" />
+                <import namespace="System.Data" />
+                <import namespace="System.Diagnostics" />
+                <import namespace="System.Drawing" />
+                <import namespace="System.Windows.Forms" />
+            </imports>
+            <sources>
+                <include name="*.vb" />
+            </sources>
+            <references>
+                <include name="System.dll" />
+                <include name="System.Data.dll" />
+                <include name="System.Drawing.dll" />
+                <include name="System.Windows.Forms.dll" />
+                <include name="System.Xml.dll" />
+            </references>
+        </vbc>
+    </target>
+
+    <target name="run" depends="build">
+        <exec program="${basename}.exe" basedir="${build.dir}" />
+    </target>
+</project>

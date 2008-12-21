@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Language" content="en-ca" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="description" content="Why NAnt?" />
+        <link rel="stylesheet" type="text/css" href="../style.css" />
+        <title>Why NAnt?</title>
+    </head>
+    <body>
+        <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+            <tr>
+                <td class="NavBar-Cell">
+                    <a title="NAnt home page" href="http://nant.sourceforge.net"><b>NAnt</b></a> 
+                    <img alt="->" src="../images/arrow.gif" /> 
+                    <a href="../index.html">Help</a> 
+                    <img alt="->" src="../images/arrow.gif" /> 
+                    <a href="index.html">Introduction</a> <img height="9" alt="->" src="../images/arrow.gif" width="13" />
+                    Why NAnt?
+                </td>
+                <td class="NavBar-Cell" align="right">
+                    v0.86-beta1
+                </td>
+            </tr>
+        </table>
+        <h1>Why NAnt?</h1>
+        <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+        <p>NAnt is different.&nbsp; Instead of a model where it is extended with shell-based commands, NAnt is extended using task classes.&nbsp; Instead of writing shell commands, the configuration files are XML-based, calling out a target tree where various tasks get executed.&nbsp; Each task is run by an object that implements a particular Task interface.</p>
+        <p>Granted, this removes some of the expressive power that is inherent in being able to construct a shell command such as 'find . -name foo -exec rm {}', but it gives you the ability to be cross-platform - to work anywhere and everywhere. And hey, if you really need to execute a shell command, NAnt has an <code>&lt;exec&gt;</code> task that allows different commands to be executed based on the OS it is executing on.</p>
+        <p>For more information on why Ant and NAnt were developed read the <a href="http://jakarta.apache.org/ant/manual/">Ant Introduction</a>.</p>
+    </body>
+</html>

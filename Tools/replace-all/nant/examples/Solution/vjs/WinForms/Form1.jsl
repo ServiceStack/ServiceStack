@@ -1,0 +1,67 @@
+package WinForms;
+
+import System.Drawing.*;
+import System.Collections.*;
+import System.ComponentModel.*;
+import System.Windows.Forms.*;
+import System.Data.*;
+
+/**
+ * Summary description for Form1.
+ */
+public class Form1 extends System.Windows.Forms.Form
+{
+	/**
+	 * Required designer variable.
+	 */
+	private System.ComponentModel.Container components = null;
+
+	public Form1()
+	{
+		//
+		// Required for Windows Form Designer support
+		//
+		InitializeComponent();
+
+		//
+		// TODO: Add any constructor code after InitializeComponent call
+		//
+	}
+
+	/**
+	 * Clean up any resources being used.
+	 */
+	protected void Dispose(boolean disposing)
+	{
+		if (disposing)
+		{
+			if (components != null)
+			{
+				components.Dispose();
+			}
+		}
+		super.Dispose(disposing);
+	}
+
+	#region Windows Form Designer generated code
+	/**
+	 * Required method for Designer support - do not modify
+	 * the contents of this method with the code editor.
+	 */
+	private void InitializeComponent()
+	{
+		this.components = new System.ComponentModel.Container();
+		this.set_Size(new System.Drawing.Size(300,300));
+		this.set_Text("Form1");
+	}
+	#endregion
+
+	/**
+	 * The main entry point for the application.
+	 */
+	/** @attribute System.STAThread() */
+	public static void main(String[] args) 
+	{
+		Application.Run(new Form1());
+	}
+}

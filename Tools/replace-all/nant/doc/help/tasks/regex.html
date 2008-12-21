@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Tasks.RegexTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;regex&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;regex&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;regex&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Sets project properties based on the evaluatuion of a regular expression. </p>
+    <p> The <code>pattern</code> attribute must contain one or more <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpgenref/html/cpcongroupingconstructs.asp"> named grouping constructs</a>, which represents the names of the properties to be set. These named grouping constructs can be enclosed by angle brackets (?&lt;name&gt;) or single quotes (?'name'). </p>
+    <p class="i2">
+      <b>Note:</b>  In the build file, use the XML element &amp;lt; to specify &lt;, and &amp;gt; to specify &gt;. </p>
+    <p class="i2">
+      <b>Note:</b>  The named grouping construct must not contain any punctuation and it cannot begin with a number. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top" class="required">input</td>
+          <td style="text-align: center;">string</td>
+          <td> Represents the input for the regular expression. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top" class="required">pattern</td>
+          <td style="text-align: center;">string</td>
+          <td> Represents the regular expression to be evalued. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top">options</td>
+          <td style="text-align: center;">
+            <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTextRegularExpressionsRegexOptionsClassTopic.asp">RegexOptions</a>
+          </td>
+          <td> A comma separated list of options to pass to the regex engine. The default is <code>None</code>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Find the last word in the given string and stores it in the property <code>lastword</code>. </p>
+        <pre class="code">
+&lt;regex pattern="(?'lastword'\w+)$" input="This is a test sentence" /&gt;
+&lt;echo message="${lastword}" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Split the full filename and extension of a filename. </p>
+        <pre class="code">
+&lt;regex pattern="^(?'filename'.*)\.(?'extension'\w+)$" input="d:\Temp\SomeDir\SomeDir\bla.xml" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Split the path and the filename. (This checks for <code>/</code> or <code>\</code> as the path separator). </p>
+        <pre class="code">
+&lt;regex pattern="^(?'path'.*(\\|/)|(/|\\))(?'file'.*)$" input="d:\Temp\SomeDir\SomeDir\bla.xml" /&gt;
+    </pre>
+        <p> Results in path=<code>d:\Temp\SomeDir\SomeDir\</code> and file=<code>bla.xml</code>. </p>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+  </body>
+</html>

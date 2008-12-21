@@ -1,0 +1,10 @@
+<circles xmlns:myObj='urn:myObj'>
+<circle>
+<radius>12</radius>
+<circumference>75.398223686155</circumference>
+</circle>
+<circle>
+<radius>37.5</radius>
+<circumference>235.61944901923448</circumference>
+</circle>
+</circles>

@@ -1,0 +1,281 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.DotNet.Types.AssemblyFileSet-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;assemblyfileset&gt; Type</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../types/index.html">Type Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;assemblyfileset&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;assemblyfileset&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Specialized <a href="../types/fileset.html">&lt;fileset&gt;</a> class for managing assembly files. </p>
+    <p> If an include pattern does not contain any wildcard characters then the assembly will be searched for in following locations (in the order listed): </p>
+    <ul style="list-style-type: disc;">
+      <li> The base directory of the fileset. </li>
+      <li> The directories specified using the nested &lt;lib&gt; element. </li>
+      <li> The list of reference assemblies of the current target framework. </li>
+    </ul>
+    <p> The reference assemblies of a given target framework are defined using &lt;reference-assemblies&gt; filesets in the &lt;framework&gt; node of the NAnt configuration file. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">basedir</td>
+          <td style="text-align: center;">directory</td>
+          <td> The base of the directory of this fileset. The default is the project base directory. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">casesensitive</td>
+          <td style="text-align: center;">bool</td>
+          <td> Indicates whether include and exclude patterns must be treated in a case-sensitive way. The default is <b>true</b> on Unix; otherwise, <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">defaultexcludes</td>
+          <td style="text-align: center;">bool</td>
+          <td> Indicates whether default excludes should be used or not. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonempty</td>
+          <td style="text-align: center;">bool</td>
+          <td> When set to <b>true</b>, causes the fileset element to throw a <a href="../../sdk/NAnt.Core.ValidationException.html">ValidationException</a> when no files match the includes and excludes criteria. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">id</td>
+          <td style="text-align: center;">string</td>
+          <td> The ID used to be referenced later. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">refid</td>
+          <td style="text-align: center;">string</td>
+          <td> The ID to use as the reference. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="lib">
+      </a>
+                    &lt;lib&gt;
+                </h4>
+    <div class="nested-element"> Additional directories to search in for assembly references. <p> A specialized <a href="../types/fileset.html">&lt;fileset&gt;</a> used for setting the lib directories. </p> The primary reason for this class is to allow the <code>BaseDirectory</code> to always be the same value as the parent <a href="../types/assemblyfileset.html">&lt;assemblyfileset&gt;</a><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top">casesensitive</td><td style="text-align: center;">bool</td><td> Indicates whether include and exclude patterns must be treated in a case-sensitive way. The default is <b>true</b> on Unix; otherwise, <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">defaultexcludes</td><td style="text-align: center;">bool</td><td> Indicates whether default excludes should be used or not. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">failonempty</td><td style="text-align: center;">bool</td><td> When set to <b>true</b>, causes the fileset element to throw a <a href="../../sdk/NAnt.Core.ValidationException.html">ValidationException</a> when no files match the includes and excludes criteria. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">id</td><td style="text-align: center;">string</td><td> The ID used to be referenced later. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">refid</td><td style="text-align: center;">string</td><td> The ID to use as the reference. </td><td style="text-align: center;">False</td></tr></table></div><h3>Nested Elements:</h3><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.FileSet.Include--><h4><a id="includes"></a>
+                    &lt;includes&gt;
+                </h4><div class="nested-element"><i>Deprecated.</i>  The items to include in the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to include. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file name will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div><h4><a id="includes"></a>
+                    &lt;/includes&gt;
+                </h4><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.FileSet.Include--><h4><a id="include"></a>
+                    &lt;include&gt;
+                </h4><div class="nested-element"> The items to include in the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to include. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file name will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div><h4><a id="include"></a>
+                    &lt;/include&gt;
+                </h4><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.FileSet.Exclude--><h4><a id="excludes"></a>
+                    &lt;excludes&gt;
+                </h4><div class="nested-element"><i>Deprecated.</i>  The items to exclude from the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be excluded; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be excluded; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div><h4><a id="excludes"></a>
+                    &lt;/excludes&gt;
+                </h4><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.FileSet.Exclude--><h4><a id="exclude"></a>
+                    &lt;exclude&gt;
+                </h4><div class="nested-element"> The items to exclude from the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be excluded; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be excluded; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div><h4><a id="exclude"></a>
+                    &lt;/exclude&gt;
+                </h4><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.FileSet.IncludesFile--><h4><a id="includesList"></a>
+                    &lt;includesList&gt;
+                </h4><div class="nested-element"><i>Deprecated.</i>  The files from which a list of patterns or files to include should be obtained. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the patterns will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">file</td><td> The name of a file; each line of this file is taken to be a pattern. </td><td style="text-align: center;">True</td></tr></table></div></div><h4><a id="includesList"></a>
+                    &lt;/includesList&gt;
+                </h4><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.FileSet.IncludesFile--><h4><a id="includesfile"></a>
+                    &lt;includesfile&gt;
+                </h4><div class="nested-element"> The files from which a list of patterns or files to include should be obtained. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the patterns will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">file</td><td> The name of a file; each line of this file is taken to be a pattern. </td><td style="text-align: center;">True</td></tr></table></div></div><h4><a id="includesfile"></a>
+                    &lt;/includesfile&gt;
+                </h4><!--Array--><!--NestedElementArray=T:NAnt.Core.Types.FileSet.ExcludesFile--><h4><a id="excludesfile"></a>
+                    &lt;excludesfile&gt;
+                </h4><div class="nested-element"> The files from which a list of patterns or files to exclude should be obtained. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">file</td><td> The name of a file; each line of this file is taken to be a pattern. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns will be excluded; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the patterns will be excluded; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div><h4><a id="excludesfile"></a>
+                    &lt;/excludesfile&gt;
+                </h4><!--Element--><h4><a id="patternset"></a>
+                    &lt;<a href="../types/patternset.html">patternset</a>&gt;
+                </h4><div class="nested-element"> Adds a nested set of patterns, or references a standalone patternset. <p /></div><h4><a id="patternset"></a>
+                    &lt;/<a href="../types/patternset.html">patternset</a>&gt;
+                </h4><p /></div>
+    <h4>
+      <a id="lib">
+      </a>
+                    &lt;/lib&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.FileSet.Include-->
+    <h4>
+      <a id="includes">
+      </a>
+                    &lt;includes&gt;
+                </h4>
+    <div class="nested-element">
+      <i>Deprecated.</i>  The items to include in the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to include. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file name will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="includes">
+      </a>
+                    &lt;/includes&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.FileSet.Include-->
+    <h4>
+      <a id="include">
+      </a>
+                    &lt;include&gt;
+                </h4>
+    <div class="nested-element"> The items to include in the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to include. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file name will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="include">
+      </a>
+                    &lt;/include&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.FileSet.Exclude-->
+    <h4>
+      <a id="excludes">
+      </a>
+                    &lt;excludes&gt;
+                </h4>
+    <div class="nested-element">
+      <i>Deprecated.</i>  The items to exclude from the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be excluded; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be excluded; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="excludes">
+      </a>
+                    &lt;/excludes&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.FileSet.Exclude-->
+    <h4>
+      <a id="exclude">
+      </a>
+                    &lt;exclude&gt;
+                </h4>
+    <div class="nested-element"> The items to exclude from the fileset. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The pattern or file name to exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be excluded; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the pattern will be excluded; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="exclude">
+      </a>
+                    &lt;/exclude&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.FileSet.IncludesFile-->
+    <h4>
+      <a id="includesList">
+      </a>
+                    &lt;includesList&gt;
+                </h4>
+    <div class="nested-element">
+      <i>Deprecated.</i>  The files from which a list of patterns or files to include should be obtained. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the patterns will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">file</td><td> The name of a file; each line of this file is taken to be a pattern. </td><td style="text-align: center;">True</td></tr></table></div></div>
+    <h4>
+      <a id="includesList">
+      </a>
+                    &lt;/includesList&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.FileSet.IncludesFile-->
+    <h4>
+      <a id="includesfile">
+      </a>
+                    &lt;includesfile&gt;
+                </h4>
+    <div class="nested-element"> The files from which a list of patterns or files to include should be obtained. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be added to the <a href="../types/fileset.html">&lt;fileset&gt;</a> without pattern matching or checking if the file exists. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">frompath</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns in the include file will be searched for on the path. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns will be included; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the patterns will be included; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">file</td><td> The name of a file; each line of this file is taken to be a pattern. </td><td style="text-align: center;">True</td></tr></table></div></div>
+    <h4>
+      <a id="includesfile">
+      </a>
+                    &lt;/includesfile&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.FileSet.ExcludesFile-->
+    <h4>
+      <a id="excludesfile">
+      </a>
+                    &lt;excludesfile&gt;
+                </h4>
+    <div class="nested-element"> The files from which a list of patterns or files to exclude should be obtained. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">file</td><td> The name of a file; each line of this file is taken to be a pattern. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the patterns will be excluded; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Opposite of <code>if</code>. If <b>false</b> then the patterns will be excluded; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="excludesfile">
+      </a>
+                    &lt;/excludesfile&gt;
+                </h4>
+    <!--Element-->
+    <h4>
+      <a id="patternset">
+      </a>
+                    &lt;<a href="../types/patternset.html">patternset</a>&gt;
+                </h4>
+    <div class="nested-element"> Adds a nested set of patterns, or references a standalone patternset. <p /></div>
+    <h4>
+      <a id="patternset">
+      </a>
+                    &lt;/<a href="../types/patternset.html">patternset</a>&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Define a reference with name "sys.assemblies", holding a set of system assemblies. </p>
+        <pre class="code">
+&lt;assemblyfileset id="sys.assemblies"&gt;
+    &lt;include name="System.dll" /&gt;
+    &lt;include name="System.Data.dll" /&gt;
+    &lt;include name="System.Xml.dll" /&gt;
+&lt;/assemblyfileset&gt;
+    </pre>
+        <p> Use the predefined set of assemblies to compile a C# assembly. </p>
+        <pre class="code">
+&lt;csc target="exe" output="HelloWorld.exe"&gt;
+    &lt;sources&gt;
+        &lt;include name="**/*.cs" /&gt;
+    &lt;/sources&gt;
+    &lt;references refid="sys.assemblies" /&gt;
+&lt;/csc&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Compile a C# assembly using assembly references that are searched for in the "Third Party Assemblies" and "Company Assemblies" directories. </p>
+        <pre class="code">
+&lt;csc target="exe" output="HelloWorld.exe"&gt;
+    &lt;sources&gt;
+        &lt;include name="**/*.cs" /&gt;
+    &lt;/sources&gt;
+    &lt;references&gt;
+        &lt;lib&gt;
+            &lt;include name="Third Party Assemblies" /&gt;
+            &lt;include name="Company Assemblies" /&gt;
+        &lt;/lib&gt;
+        &lt;include name="log4net.dll" /&gt;
+        &lt;include name="Company.Business.dll" /&gt;
+    &lt;/references&gt;
+&lt;/csc&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.DotNetTasks (0.86.2898.0)
+            </div>
+    <h3>See Also</h3>
+    <a href="../types/fileset.html">&lt;fileset&gt;</a>
+  </body>
+</html>

@@ -1,0 +1,216 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Types.PatternSet-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;patternset&gt; Type</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../types/index.html">Type Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;patternset&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;patternset&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> A set of patterns, mostly used to include or exclude certain files. </p>
+    <p> The individual patterns support <code>if</code> and <code>unless</code> attributes to specify that the element should only be used if or unless a given condition is met. </p>
+    <p> The <code>includesfile</code> and <code>excludesfile</code> elements load patterns from a file. When the file is a relative path, it will be resolved relative to the project base directory in which the patternset is defined. Each line of this file is taken to be a pattern. </p>
+    <p> Patterns can be grouped to sets, and later be referenced by their <code>id</code>. </p>
+    <p> When used as a standalone element (global type), any properties that are referenced will be resolved when the definition is processed, not when it actually used. Passing a reference to a nested build file will not cause the properties to be re-evaluated. </p>
+    <p> To improve reuse of globally defined patternsets, avoid referencing any properties altogether. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">id</td>
+          <td style="text-align: center;">string</td>
+          <td> The ID used to be referenced later. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">refid</td>
+          <td style="text-align: center;">string</td>
+          <td> The ID to use as the reference. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.Pattern-->
+    <h4>
+      <a id="include">
+      </a>
+                    &lt;include&gt;
+                </h4>
+    <div class="nested-element"> Defines a single pattern for files to include. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The name pattern to include/exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be used; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> If <b>false</b> then the pattern will be used; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="include">
+      </a>
+                    &lt;/include&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.Pattern-->
+    <h4>
+      <a id="includesfile">
+      </a>
+                    &lt;includesfile&gt;
+                </h4>
+    <div class="nested-element"> Loads multiple patterns of files to include from a given file, set using the <code>name</code> parameter. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The name pattern to include/exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be used; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> If <b>false</b> then the pattern will be used; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="includesfile">
+      </a>
+                    &lt;/includesfile&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.Pattern-->
+    <h4>
+      <a id="exclude">
+      </a>
+                    &lt;exclude&gt;
+                </h4>
+    <div class="nested-element"> Defines a single pattern for files to exclude. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The name pattern to include/exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be used; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> If <b>false</b> then the pattern will be used; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="exclude">
+      </a>
+                    &lt;/exclude&gt;
+                </h4>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Core.Types.Pattern-->
+    <h4>
+      <a id="excludesfile">
+      </a>
+                    &lt;excludesfile&gt;
+                </h4>
+    <div class="nested-element"> Loads multiple patterns of files to exclude from a given file, set using the <code>name</code> parameter. <p></p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">name</td><td style="text-align: center;">string</td><td> The name pattern to include/exclude. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the pattern will be used; otherwise, skipped. The default is <b>true</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> If <b>false</b> then the pattern will be used; otherwise, skipped. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr></table></div></div>
+    <h4>
+      <a id="excludesfile">
+      </a>
+                    &lt;/excludesfile&gt;
+                </h4>
+    <!--Element-->
+    <h4>
+      <a id="patternset">
+      </a>
+                    &lt;<a href="../types/patternset.html">patternset</a>&gt;
+                </h4>
+    <div class="nested-element"> Adds a nested set of patterns, or references other standalone patternset. <p /></div>
+    <h4>
+      <a id="patternset">
+      </a>
+                    &lt;/<a href="../types/patternset.html">patternset</a>&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Define a set of patterns that matches all .cs files that do not contain the text <code>Test</code> in their name. </p>
+        <pre class="code">
+      &lt;patternset id="non.test.sources"&gt;
+          &lt;include name="**/*.cs" /&gt;
+          &lt;exclude name="**/*Test*" /&gt;
+      &lt;/patternset&gt;
+  </pre>
+      </li>
+      <li>
+        <p> Define two sets. One holding C# sources, and one holding VB sources. Both sets only include test sources when the <code>test</code> property is set. A third set combines both C# and VB sources. </p>
+        <pre class="code">
+      &lt;patternset id="cs.sources"&gt;
+          &lt;include name="src/**/*.cs" /&gt;
+          &lt;include name="test/**/*.cs" if=${property::exist('test')}" /&gt;
+      &lt;/patternset&gt;
+      
+      &lt;patternset id="vb.sources"&gt;
+          &lt;include name="src/**/*.vb" /&gt;
+          &lt;include name="test/**/*.vb" if=${property::exist('test')}" /&gt;
+      &lt;/patternset&gt;
+      
+      &lt;patternset id="all.sources"&gt;
+          &lt;patternset refid="cs.sources" /&gt;
+          &lt;patternset refid="vb.sources" /&gt;
+      &lt;/patternset&gt;
+  </pre>
+      </li>
+      <li>
+        <p> Define a set from patterns in a file. </p>
+        <pre class="code">
+      &lt;patternset id="sources"&gt;
+          &lt;includesfile name="test.sources" /&gt;
+          &lt;includesfile name="non.test.sources" /&gt;
+      &lt;/patternset&gt;
+  </pre>
+      </li>
+      <li>
+        <p> Defines a patternset with patterns that are loaded from an external file, and shows the behavior when that patternset is passed as a reference to a nested build script. </p>
+        <p> External file "c:\foo\build\service.lst" holding patterns of source files to include for the Foo.Service assembly: </p>
+        <pre class="code">
+    AssemblyInfo.cs
+    *Channel.cs
+    ServiceFactory.cs</pre>
+        <p> Main build script located in "c:\foo\default.build": </p>
+        <pre class="code">
+    &lt;project name="main" default="build"&gt;
+        &lt;property name="build.debug" value="true" /&gt;
+    
+        &lt;patternset id="service.sources"&gt;
+            &lt;include name="TraceListener.cs" if="${build.debug}" /&gt;
+            &lt;includesfile name="build/service.lst" /&gt;
+        &lt;/patternset&gt;
+        
+        &lt;property name="build.debug" value="false" /&gt;
+        
+        &lt;target name="build"&gt;
+            &lt;nant buildfile="service/default.build" inheritrefs="true" /&gt;
+        &lt;/target&gt;
+    &lt;/project&gt;</pre>
+        <p> Nested build script located in "c:\foo\services\default.build" which uses the patternset to feed sources files to the C# compiler: </p>
+        <pre class="code">
+    &lt;project name="service" default="build"&gt;
+        &lt;target name="build"&gt;
+            &lt;csc output="../bin/Foo.Service.dll" target="library"&gt;
+                &lt;fileset basedir="src"&gt;
+                    &lt;patternset refid="service.sources" /&gt;
+                &lt;/fileset&gt;
+            &lt;/csc&gt;
+        &lt;/target&gt;
+    &lt;/project&gt;</pre>
+        <p> At the time when the patternset is used in the "service" build script, the following source files in "c:\foo\services\src" match the defined patterns: </p>
+        <pre class="code">
+    AssemblyInfo.cs
+    MsmqChannel.cs
+    SmtpChannel.cs
+    ServiceFactory.cs
+    TraceListener.cs</pre>
+        <p> You should have observed that: </p>
+        <ul style="list-style-type: disc;">
+          <li> although the patternset is used from the "service" build script, the path to the external file is resolved relative to the base directory of the "main" build script in which the patternset is defined. </li>
+          <li> the "TraceListener.cs" file is included, even though the "build.debug" property was changed to <b xmlns="">false</b> after the patternset was defined (but before it was passed to the nested build, and used). </li>
+        </ul>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+    <h3>See Also</h3>
+    <a href="../types/fileset.html">&lt;fileset&gt;</a>
+  </body>
+</html>

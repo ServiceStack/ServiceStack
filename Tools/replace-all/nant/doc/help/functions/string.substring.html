@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting Substring-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>string::substring Function</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="index.html">Function Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> string::substring</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>string::substring</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Returns a substring of the specified string. </p>
+    <h3>Usage</h3>
+    <code>string string::substring(<span class="parameter">str</span>, <span class="parameter">startIndex</span>, <span class="parameter">length</span>)
+            </code>
+    <p />
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>str</td>
+          <td>string</td>
+          <td>input string</td>
+        </tr>
+        <tr>
+          <td>startIndex</td>
+          <td>int</td>
+          <td>position of the start of the substring</td>
+        </tr>
+        <tr>
+          <td>length</td>
+          <td>int</td>
+          <td>the length of the substring</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Return Value</h3>
+    <p> If the <i>length</i> is greater than zero, the function returns a substring starting at character position <i>startIndex</i> with a length of <i>length</i> characters. </p>
+    <p> If the <i>length</i> is equal to zero, the function returns an empty string. </p>
+    <h3>Exceptions</h3>
+            The function will fail in any of the following circumstances:
+            <div style="margin-left: 40px;"><ul><li><i>startIndex</i> or <i>length</i> is less than zero.</li><li><i>startIndex</i> is greater than the length of <i>str</i>.</li><li><i>startIndex</i> plus <i>length</i> indicates a position not within <i>str</i>.</li></ul></div><h3>Examples</h3><ul class="examples"><li><pre class="code">string::substring('testing string', 0, 4) ==&gt; 'test'</pre></li><li><pre class="code">string::substring('testing string', 8, 3) ==&gt; 'str'</pre></li><li><pre class="code">string::substring('testing string', 8, 0) ==&gt; ''</pre></li><li><pre class="code">string::substring('testing string', -1, 5) ==&gt; ERROR</pre></li><li><pre class="code">string::substring('testing string', 8, -1) ==&gt; ERROR</pre></li><li><pre class="code">string::substring('testing string', 5, 17) ==&gt; ERROR</pre></li></ul><h3>Requirements</h3><div style="margin-left: 20px;"><b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div></body>
+</html>

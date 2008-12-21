@@ -1,0 +1,2127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Language" content="en-ca" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="description" content="Expressions" />
+        <link rel="stylesheet" type="text/css" href="../style.css" />
+        <title>NAnt - Expressions</title>
+    </head>
+    <body>
+        <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+            <tr>
+                <td class="NavBar-Cell">
+                    <a title="NAnt home page" href="http://nant.sourceforge.net"><b>NAnt</b></a> <img src="../images/arrow.gif" alt="-&gt;" width="13" height="9" />
+                    <a href="../index.html">Help</a> <img alt="-&gt;" src="../images/arrow.gif" /> <a href="index.html">
+                        Fundamentals</a> <img height="9" alt="-&gt;" src="../images/arrow.gif" width="13" />
+                    Expressions
+                </td>
+                <td class="NavBar-Cell" align="right">
+                    v0.86-beta1
+                </td>
+            </tr>
+        </table>
+        <h1>Expressions</h1>
+        <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+        <h2><a id="contents" />Contents</h2>
+        <div>
+            1 <a href="#introduction">Introduction</a><br />
+            2 <a href="#expression-syntax">Expression syntax</a><br />
+            3 <a href="#datatypes">Data types</a><br />
+            4 <a href="#operators">Operators</a>
+            <div style="margin-left: 20px;">
+                4.1 <a href="#operator-precedence">Operator precedence</a><br/>
+                4.2 <a href="#numeric-operators">Operators on Numeric Values</a>
+                <div style="margin-left: 20px;">
+                    4.2.1 <a href="#op-num-add">Add</a><br />
+                    4.2.2 <a href="#op-num-subtract">Subtract</a><br />
+                    4.2.3 <a href="#op-num-multiply">Multiply</a><br />
+                    4.2.4 <a href="#op-num-divide">Divide</a><br />
+                    4.2.5 <a href="#op-num-mod">Mod</a><br />
+                    4.2.6 <a href="#op-num-equal">Equal</a><br />
+                    4.2.7 <a href="#op-num-inequal">Inequal</a><br />
+                    4.2.8 <a href="#op-num-greater-than">Greater than</a><br />
+                    4.2.9 <a href="#op-num-greater-than-or-equal">Greater than or equal</a><br />
+                    4.2.10 <a href="#op-num-less-than">Less than</a><br />
+                    4.2.11 <a href="#op-num-less-than-or-equal">Less than or equal</a><br />
+                    4.2.12 <a href="#op-num-unary-plus">Unary plus</a><br />
+                    4.2.13 <a href="#op-num-unary-minus">Unary minus</a>
+                </div>
+            </div>
+            <div style="margin-left: 20px;">
+                4.3 <a href="#boolean-operators">Operators on Boolean Values</a>
+                <div style="margin-left: 20px;">
+                    4.3.1 <a href="#op-boolean-equal">Equal</a><br />
+                    4.3.2 <a href="#op-boolean-inequal">Inequal</a><br />
+                    4.3.3 <a href="#op-boolean-greater-than">Greater than</a><br />
+                    4.3.4 <a href="#op-boolean-greater-than-or-equal">Greater than or equal</a><br />
+                    4.3.5 <a href="#op-boolean-less-than">Less than</a><br />
+                    4.3.6 <a href="#op-boolean-less-than-or-equal">Less than or equal</a><br />
+                    4.3.7 <a href="#op-boolean-logical-and">Logical and</a><br />
+                    4.3.8 <a href="#op-boolean-logical-or">Logical or</a><br />
+                </div>
+            </div>
+            <div style="margin-left: 20px;">
+                4.4 <a href="#string-operators">Operators on String Values</a>
+                <div style="margin-left: 20px;">
+                    4.4.1 <a href="#op-string-concat">Concat</a><br />
+                    4.4.2 <a href="#op-string-equal">Equal</a><br />
+                    4.4.3 <a href="#op-string-inequal">Inequal</a><br />
+                    4.4.4 <a href="#op-string-greater-than">Greater than</a><br />
+                    4.4.5 <a href="#op-string-greater-than-or-equal">Greater than or equal</a><br />
+                    4.4.6 <a href="#op-string-less-than">Less than</a><br />
+                    4.4.7 <a href="#op-string-less-than-or-equal">Less than or equal</a><br />
+                </div>
+            </div>
+            <div style="margin-left: 20px;">
+                4.5 <a href="#datetime-operators">Operators on TimeSpan and DateTime Values</a>
+                <div style="margin-left: 20px;">
+                    4.5.1 <a href="#op-datetime-add">Add</a><br />
+                    4.5.2 <a href="#op-datetime-subtract">Subtract</a><br />
+                    4.5.3 <a href="#op-datetime-equal">Equal</a><br />
+                    4.5.4 <a href="#op-datetime-inequal">Inequal</a><br />
+                    4.5.5 <a href="#op-datetime-greater-than">Greater than</a><br />
+                    4.5.6 <a href="#op-datetime-greater-than-or-equal">Greater than or equal</a><br />
+                    4.5.7 <a href="#op-datetime-less-than">Less than</a><br />
+                    4.5.8 <a href="#op-datetime-less-than-or-equal">Less than or equal</a><br />
+                </div>
+            </div>
+            <div style="margin-left: 20px;">
+                4.6 <a href="#version-operators">Operators on Version Values</a>
+                <div style="margin-left: 20px;">
+                    4.6.1 <a href="#op-version-equal">Equal</a><br />
+                    4.6.2 <a href="#op-version-inequal">Inequal</a><br />
+                    4.6.3 <a href="#op-version-greater-than">Greater than</a><br />
+                    4.6.4 <a href="#op-version-greater-than-or-equal">Greater than or equal</a><br />
+                    4.6.5 <a href="#op-version-less-than">Less than</a><br />
+                    4.6.6 <a href="#op-version-less-than-or-equal">Less than or equal</a><br />
+                </div>
+            </div>
+        </div>
+        <h2><a id="introduction" />1 Introduction</h2>
+        <p>Expressions are simple, yet powerful mechanism that allows you to write advanced 
+            formulas to be used in task arguments and conditions that direct the build 
+            process. Expressions can access project <a href="properties.html">properties</a>
+            and call builtin or user-defined <a href="../functions/index.html">functions</a>.</p>
+        <p>
+        NAnt provides a rich set of bulitin functions, that allow you to:</p>
+        <ul>
+            <li>
+                manipulate strings</li>
+            <li>
+                manipulate date/time values</li>
+            <li>
+                manipulate path names</li>
+            <li>
+                read the properties of files/directories</li>
+            <li>
+                access current build information and more</li>
+            <li>
+                and more</li>
+        </ul>
+        <p>For a full list of supported functions, click <a href="../functions/index.html">here</a>.</p>
+        <h2><a id="expression-syntax" />2 Expression Syntax</h2>
+        <p>Expressions can be used in all task arguments, by using <code>${...}</code> notation. 
+            You may use standard syntax for arithmetical (addition, subtraction, 
+            multiplication, division, modulus), logical (negation, conjunction, 
+            alternative) and relational operators (equality, inequality). To call 
+            functions, use <code>prefix::function-name(argument1, ..., argumentN)</code> syntax. 
+            To access properties, you simply use their names without any prefix or suffix. 
+            See the examples section below for more information.</p>
+        <p><b>NOTE</b>: Expressions are often used in XML attributes. The grammar specified in this 
+            section applies to the attribute value after XML 1.0 normalization. So, for 
+            example, if the grammar uses the character <code>&lt;</code>, this must not 
+            appear in the XML source as <code>&lt;</code> but must be quoted according to 
+            XML 1.0 rules by, for example, entering it as <code>&amp;lt;</code>.
+        </p>
+        <h3>Examples:</h3>
+        <ol>
+            <li>
+                Accessing a property:
+                <p>
+                    <code>&lt;property name="build.version" value="3" /&gt;</code><br />
+                    <code>&lt;echo message="The current date is:
+                        <span class="expression">${build.version}</span>" /&gt;</code>
+                </p>
+                <p>This will output the current value of <code>build.version</code> property.</p>
+            </li>
+            <li>
+                Calling a function
+                <p>
+                    <code>&lt;echo message="The current date is:
+                        <span class="expression">${<a href="../functions/datetime.now.html">datetime::now</a>()}</span>" 
+                        /&gt;</code>
+                </p>
+                <p>This will output the current date and time.</p>
+            </li>
+            <li>
+                Storing the result of an expression
+                <p>To store the result of an expression in a property, use the <code>&lt;property&gt;</code>
+                    task:</p>
+                <p>
+                    <code>&lt;property name="autoexec-present" value="<span class="expression">${<a href="../functions/file.exists.html">file::exists</a>('c:\autoexec.bat')}</span>" 
+                        /&gt;</code>
+                </p>
+                <p>This will set the property <code>autoexec-present</code> to either <b>true</b>
+                    or <b>false</b> depending on whether the specified file exists or not.</p>
+            </li>
+            <li>
+                Real-life expression use
+                <p>
+                    <code>&lt;property name="myprj.basedir" value="c:\" /&gt;<br />
+                        &lt;property name="filename" value="<span class="expression">${<a href="../functions/path.combine.html">path::combine</a>(myprj.basedir,'version.txt')}</span>" 
+                        /&gt;<br />
+                        <br />
+                        &lt;if test="<span class="expression">${not <a href="../functions/file.exists.html">file::exists</a>(filename) or <a href="../functions/file.get-length.html">file::get-length</a>(filename) = 0}</span>"&gt;<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;echo message="The version file
+                        <span class="expression">${filename}</span>
+                        doesn't exist or is empty!" /&gt;<br />
+                        &lt;/if&gt;<br/> </code>
+                </p>
+                <p>This will check for the existence of a file <i>version.txt</i>
+                in a directory specified by myprj.basedir. Note that this makes use of the 
+                short-circuit evaluation supported by NAnt, so you can test for the existence 
+                of the file and check its length in the same expression. ( ie like C, NAnt will 
+                not evaluate the second part of an 'or' expression if the first evaluates to 
+                <b>true</b> )
+                </p>
+            </li>
+            <li>
+                Using expressions to conditionally execute tasks
+                <p>All tasks support <code>if</code> and <code>unless</code> attributes. 
+                    Expressions can be used there to control which tasks get executed:</p>
+                <p>
+                    <code>&lt;property name="myprj.basedir" value="c:\" unless="<a href="../functions/property.exists.html">property::exists</a>('myprj.basedir')" 
+                        /&gt;<br />
+                        &lt;csc target="library" output="out.dll" ...
+                        <br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if="<span class="expression">${<a href="../functions/datetime.now.html">datetime::now</a>() - <a href="../functions/file.get-last-write-time.html">file::get-last-write-time</a>('out.dll')) &gt; <a href="../functions/timespan.from-hours.html">timespan::from-hours</a>(1)}</span>"&gt;<br />
+                        ...<br />
+                        &lt;/csc&gt;<br />
+                    </code>
+                </p>
+                <p>
+                    This will rebuild the C# library only if it was last rebuilt more than an hour 
+                    ago.
+                </p>
+            </li>
+        </ol>
+        <h2><a id="datatypes" />3 Data types</h2>
+        <p>Expressions can access, pass and return values of the following types:</p>
+        <div class="table">
+            <table>
+                <tr>
+                    <th>
+                        Type</th>
+                    <th>
+                        Allowed values</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>32-bit signed integer value</td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>64-bit signed integer value</td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>64-bit signed double precision floating point value</td>
+                </tr>
+                <tr>
+                    <td>boolean</td>
+                    <td><b>true</b> or <b>false</b></td>
+                </tr>
+                <tr>
+                    <td>string</td>
+                    <td>strings of characters of any length.</td>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>values represeting date &amp; time (range is from 00:00:00, January 1, 1 AD to 
+                        23:59:59, December 31, 9999 AD)</td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>represents a time interval.</td>
+                </tr>
+                <tr>
+                    <td>version</td>
+                    <td>represents a version number consisting of two to four components.</td>
+                </tr>
+            </table>
+        </div>
+        <p>In addition, the expression evaluation engine allows you to return and pass 
+            values of any CLI type through the use of <a href="functions.html#custom">custom 
+                functions</a>. Note that there's no support for implicit type conversions.</p>
+        <h2><a id="operators" />4 Operators</h2>
+        <h3><a id="operator-precedence" />4.1 Operator precedence</h3>
+        <p>NAnt expressions support standard ( c style ) operator precedence, that we're 
+            accustomed to:</p>
+        <ul>
+            <li>
+                <code>and</code> is evaluated before <code>or</code>, left to right. For 
+                example <code>false or true and true and false</code> evaluates as <code>false or 
+                    ((true and true) and false)</code></li>
+            <li>
+                multiplication,division and modulus are evaluated before addition and 
+                subtraction, left to right. For example <code>1 + 2 * 3 / 4</code> evaluates as <code>
+                    1 + ((2 * 3) / 4)</code></li>
+            <li>
+                parentheses can be used to override the default operator precedence. For 
+                example <code>(1 + 2) * 3</code> evaluates as written, even though the 
+                multiplication has precedence over addition</li>
+        </ul>
+        <p><b>NOTE</b>: Because NAnt supports properties whose names can contain dashes, 
+            there's a possible ambiguity between the subtraction of two properties and 
+            accessing a single property with a name containing a dash:</p>
+        <p>
+        <code>aaa-bbb</code> - this is ambiguous. It could either be <span style="text-decoration: underline;">property <code>aaa</code>
+            MINUS property <code>bbb</code></span> or <span style="text-decoration: underline;">property <code>aaa-bbb</code></span>.</p>
+        <p>To avoid confusion, it's recommended to surround the subtraction operator (or 
+            even better, all binary operators) with spaces. The expression <code>aaa - bbb</code>
+            always evaluates as a subtraction.</p>
+        <h3><a id="numeric-operators" />4.2 Operators on Numeric Values</h3>
+        <p>The following operators are supported on numeric values:</p>
+        <ul>
+            <li>
+                + operator
+            </li>
+            <li>
+                - operator
+            </li>
+            <li>
+                * operator
+            </li>
+            <li>
+                / operator
+            </li>
+            <li>
+                % operator
+            </li>
+            <li>
+                == operator
+            </li>
+            <li>
+                != operator
+            </li>
+            <li>
+                > operator
+            </li>
+            <li>
+                >= operator
+            </li>
+            <li>
+                &lt; operator
+            </li>
+            <li>
+                &lt;= operator
+            </li>
+            <li>
+                unary plus
+            </li>
+            <li>
+                unary minus (negation)
+            </li>
+        </ul>
+        <h4><a id="op-num-add" />4.2.1 Add</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the arithmetic sum of its operands.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>1 + 5</code> evaluates to <code>6</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>1 + 6666666667</code> evaluates to <code>6666666668</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>1 + 5.0</code> evaluates to <code>6.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 + 11111111111</code> evaluates to <code>17777777778</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 + 1</code> evaluates to <code>6666666668</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 + 1.5</code> evaluates to <code>6666666668.5</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>1.5 + 5.0</code> evaluates to <code>6.5</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>1.0 + 5</code> evaluates to <code>6.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>1.5 + 6666666667</code> evaluates to <code>6666666668.5</code>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-subtract" />4.2.2 Subtract</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the arithmetic difference of its operands.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 - 1</code> evaluates to <code>4</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>5 - 6666666667</code> evaluates to <code>-6666666662</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>5.0 - 1</code> evaluates to <code>4.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>11111111111 - 6666666667</code> evaluates to <code>4444444444</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 - 5</code> evaluates to <code>6666666662</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 - 1.5</code> evaluates to <code>6666666665.5</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>5.0 - 1.0</code> evaluates to <code>4.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>5.0 - 1</code> evaluates to <code>4.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>1.5 - 6666666667</code> evaluates to <code>-6666666665.5</code>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-multiply" />4.2.3 Multiply</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the arithmetic product of its operands.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 * 2</code> evaluates to <code>10</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>2 * 6666666667</code> evaluates to <code>13333333334</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>5 * 2.0</code> evaluates to <code>10.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 * long::parse('2')</code> evaluates to <code>13333333334</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 * 2</code> evaluates to <code>13333333334</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 * 1.7</code> evaluates to <code>11333333333.9</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>5.0 * 2.0</code> evaluates to <code>10.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>5.0 * 2</code> evaluates to <code>10.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>1.7 * 6666666667</code> evaluates to <code>11333333333.9</code>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-divide" />4.2.4 Divide</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the arithmetic quotient of its operands.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>10 / 2</code> evaluates to <code>5</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>10 / 10000000000</code> evaluates to <code>0.000000001</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>8 / 2.0</code> evaluates to <code>4.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>13333333334 / 6666666667</code> evaluates to <code>2</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>13333333334 / 2</code> evaluates to <code>6666666667</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>13333333334 / 2.0</code> evaluates to <code>6666666667.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.0 / 2.0</code> evaluates to <code>4.5</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>6.0 / 3</code> evaluates to <code>2.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>20000000000.0 / 10000000000</code> evaluates to <code>2.0</code>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h5>Remarks</h5>
+        <p>
+            If the divisor is zero, then an error is raised.
+        </p>
+        <h4><a id="op-num-mod" />4.2.5 Mod</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the remainder after dividing its first operand by its second.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 % 3</code> evaluates to <code>2</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>10 % 6666666667</code> evaluates to <code>10</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>5 % 3.5</code> evaluates to <code>1.5</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>13333333334 % 6666666667</code> evaluates to <code>0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 % 10</code> evaluates to <code>7</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 % 3.5</code> evaluates to <code>3.0</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.0 % 4.7</code> evaluates to <code>4.3</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>8.5 % 2</code> evaluates to <code>0.5</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>20000000000.0 % 6666666667</code> evaluates to <code>6666666666.0</code>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h5>Remarks</h5>
+        <p>
+            If the divisor is zero, then an error is raised.
+        </p>
+        <h4><a id="op-num-equal" />4.2.6 Equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if and only if the value of the first operand is equal to the 
+            value of the second operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 == 3</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>5 == 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>6 == 6.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 == 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 == 665</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 == 6666666667.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.5 == 6.7</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>8.5 == 8</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>8.5 == 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-inequal" />4.2.7 Inequal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if and only if the value of the first operand is not equal to the 
+            value of the second operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 != 3</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>5 != 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>6 != 6.0</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 != 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 != 665</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 != 6666666667.0</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.5 != 6.7</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>8.5 != 8</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>8.5 != 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-greater-than" />4.2.8 Greater than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if and only if the first operand is greater than the 
+            second operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 > 3</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>5 > 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>6 > 4.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 > 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 > 665</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 > 6666666667.0</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.5 > 9.5</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>8.3 > 9</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>8.5 > 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-greater-than-or-equal" />4.2.9 Greater than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if and only if the first operand is greater than or 
+            equal to second operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 >= 3</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>5 >= 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>6 >= 4.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 >= 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 >= 665</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 >= 6666666667.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.5 >= 9.5</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>8.3 >= 9</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>8.5 >= 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-less-than" />4.2.10 Less than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if and only if the first operand is less than the 
+            second operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 &lt; 3</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>5 &lt; 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>6 &lt; 7.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 &lt; 6666666667</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 &lt; 665</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 &lt; 6666666667.0</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.5 &lt; 9.5</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>8.3 &lt; 9</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>8.5 &lt; 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-less-than-or-equal" />4.2.11 Less than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if and only if the first operand is less than or 
+            equal to second operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>int</td>
+                    <td>
+                        <code>5 &lt;= 3</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>long</td>
+                    <td>
+                        <code>5 &lt;= 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>double</td>
+                    <td>
+                        <code>6 &lt;= 7.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>long</td>
+                    <td>
+                        <code>6666666667 &lt;= 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>int</td>
+                    <td>
+                        <code>6666666667 &lt;= 665</code> evaluates to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>double</td>
+                    <td>
+                        <code>6666666667 &lt;= 6666666667.0</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>double</td>
+                    <td>
+                        <code>9.5 &lt;= 9.5</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>int</td>
+                    <td>
+                        <code>8.3 &lt;= 9</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>long</td>
+                    <td>
+                        <code>8.5 &lt;= 6666666667</code> evaluates to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-unary-plus" />4.2.12 Unary plus</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns its operand with the sign unchanged. Semantically, this operation 
+            performs no operation.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>
+                        <code>(+1)</code> evaluates to <code>1</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>
+                        <code>(+6666666667)</code> evaluates to <code>6666666667</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>
+                        <code>(+1.5)</code> evaluates to <code>1.5</code>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-num-unary-minus" />4.2.13 Unary minus</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns its operand with the sign reversed.
+        </p>
+        <p>
+            If the operand is positive, its negative is returned; if it is negative, its 
+            positive is returned.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>int</td>
+                    <td>
+                        <code>(-1)</code> evaluates to <code>-1</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>long</td>
+                    <td>
+                        <code>(-6666666667)</code> evaluates to <code>-6666666667</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>double</td>
+                    <td>
+                        <code>(-9.6)</code> evaluates to <code>-9.6</code>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h3><a id="boolean-operators" />4.3 Operators on Boolean Values</h3>
+        <p>The following operators are supported on boolean values:</p>
+        <ul>
+            <li>
+                == operator
+            </li>
+            <li>
+                != operator
+            </li>
+            <li>
+                > operator
+            </li>
+            <li>
+                >= operator
+            </li>
+            <li>
+                &lt; operator
+            </li>
+            <li>
+                &lt;= operator
+            </li>          
+            <li>
+            	and operator
+            </li>
+            <li>
+            	or operator
+            </li>
+        </ul>
+        <h4><a id="op-boolean-equal" />4.3.1 Equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if both operands are <b>true</b> or if both 
+            operands are <b>false</b>.
+        </p>
+        <h5>Examples</h5>
+        <h4><a id="op-boolean-inequal" />4.3.2 Inequal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is <b>true</b> and the 
+            second operand is <b>false</b>, or the first operand is <b>false</b>
+            and the second operand is <b>true</b>.
+        </p>
+        <h5>Examples</h5>
+        <h4><a id="op-boolean-greater-than" />4.3.3 Greater than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is <b>true</b> and the 
+            second operand is <b>false</b>; otherwise, returns <b>false</b>.
+        </p>
+        <h5>Examples</h5>
+        <h4><a id="op-boolean-greater-than-or-equal" />4.3.4 Greater than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is <b>true</b> and the 
+            second operand is <b>false</b>, or both operands are either <b>true</b>
+            or <b>false</b>.
+        </p>
+        <h5>Examples</h5>
+        <h4><a id="op-boolean-less-than" />4.3.5 Less than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is <b>false</b> and the 
+            second operand is <b>true</b>; otherwise, returns <b>false</b>.
+        </p>
+        <h5>Examples</h5>
+        <h4><a id="op-boolean-less-than-or-equal" />4.3.6 Less than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is <b>false</b> and the 
+            second operand is <b>true</b>, or both operands are either <b>true</b>
+            or <b>false</b>.
+        </p>
+        <h5>Examples</h5>
+        <h4><a id="op-boolean-logical-and" />4.3.7 Logical and</h4>
+        <h5>Summary</h5>
+        <p>
+        	Returns <b>true</b> if both operands are <b>true</b>,
+        	otherwise returns <b>false</b>.
+        </p>                                                                       
+        <h5>Examples</h5>
+        <p>
+        	<code>&lt;if test=&quot;${A and B}&quot;&gt;</code> 
+        	
+        </p>                                     
+        <h4><a id="op-boolean-logical-or" />4.3.8 Logical or</h4>
+        <h5>Summary</h5>
+        <p>
+        	Returns <b>true</b> if either operand is <b>true</b>, 
+        	otherwise returns <b>false</b>.
+        </p>                                                                       
+        <h5>Examples</h5>
+        <p>
+        	<code>&lt;if test=&quot;${A or B}&quot;&gt;</code>        	
+        </p>
+        <h3><a id="string-operators" />4.4 Operators on String Values</h3>
+        <p>The following operators are supported on string values:</p>
+        <ul>
+            <li>
+                + operator
+            </li>
+            <li>
+                == operator
+            </li>
+            <li>
+                != operator
+            </li>
+            <li>
+                > operator
+            </li>
+            <li>
+                >= operator
+            </li>
+            <li>
+                &lt; operator
+            </li>
+            <li>
+                &lt;= operator
+            </li>
+        </ul>                
+        <h4><a id="op-string-concat" />4.4.1 Concat</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the concatenation of both string operands.
+        </p>
+        <h5>Examples</h5>
+        <h4><a id="op-string-equal" />4.4.2 Equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is the same as the 
+            value of the right operand.
+        </p>
+        <h5>Remarks</h5>
+        <p>
+            The comparison is case-sensitive and culture-insensitive.
+        </p>
+        <h4><a id="op-string-inequal" />4.4.3 Inequal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the first operand is not the same as 
+            the value of the second operand.
+        </p>
+        <h5>Remarks</h5>
+        <p>
+            The comparison is case-sensitive and culture-insensitive.
+        </p>
+        <h4><a id="op-string-greater-than" />4.4.4 Greater than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is greater than the seconds 
+            operand.
+        </p>
+        <h5>Remarks</h5>
+        <p>
+            The comparison is case-sensitive and culture-insensitive.
+        </p>
+        <h4><a id="op-string-greater-than-or-equal" />4.4.5 Greater than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is greater than or equal to the 
+            seconds operand.
+        </p>
+        <h5>Remarks</h5>
+        <p>
+            The comparison is case-sensitive and culture-insensitive.
+        </p>
+        <h4><a id="op-string-less-than" />4.4.6 Less than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is less than the seconds 
+            operand.
+        </p>
+        <h5>Remarks</h5>
+        <p>
+            The comparison is case-sensitive and culture-insensitive.
+        </p>
+        <h4><a id="op-string-less-than-or-equal" />4.4.7 Less than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the first operand is less than or equal to the 
+            seconds operand.
+        </p>
+        <h5>Remarks</h5>
+        <p>
+            The comparison is case-sensitive and culture-insensitive.
+        </p>
+        <h3><a id="datetime-operators" />4.5 Operators on TimeSpan and DateTime Values</h3>
+        <p>The following operators are supported on timespan and datetime values:</p>
+        <ul>
+            <li>
+                + operator
+            </li>
+            <li>
+                - operator
+            </li>
+            <li>
+                == operator
+            </li>
+            <li>
+                != operator
+            </li>
+            <li>
+                > operator
+            </li>
+            <li>
+                >= operator
+            </li>
+            <li>
+                &lt; operator
+            </li>
+            <li>
+                &lt;= operator
+            </li>
+        </ul>
+        <h4><a id="op-datetime-add" />4.5.1 Add</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the result of adding the value of the left operand to the value of the 
+            right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>datetime::now() + timespan::from-days(10)</code> 
+                        evaluates to a datetime 10 days in the future
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) + timespan::from-minutes(10)</code> 
+                        evaluates to a timespan representing a duratio of 10 minutes and 30 
+                        seconds
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-datetime-subtract" />4.5.2 Subtract</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns the result of subtracting the value of the right operand 
+            from the value of the left operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>datetime</td>
+                    <td>
+                        <code>(datetime::now() + timespan::from-days(10)) - datetime::now</code> 
+                        evaluates to a timespan representing a duration of 10 days
+                    </td>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) - timespan::from-seconds(10)</code> evaluates 
+                        to a timespan representing a duration of 20 seconds
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) + timespan::from-minutes(10)</code> evaluates 
+                        to a timespan representing 10 minutes and 30 seconds
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-datetime-equal" />4.5.3 Equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is the same as the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>datetime</td>
+                    <td>
+                        <code>datetime::now() == (datetime::now()+timespan::from-days(10))</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) == timespan::from-seconds(30)</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-datetime-inequal" />4.5.4 Inequal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is not the same as 
+            the value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>datetime</td>
+                    <td>
+                        <code>datetime::now() != (datetime::now()+timespan::from-days(10))</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) != timespan::from-seconds(30)</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-datetime-greater-than" />4.5.5 Greater than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is greater than the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>datetime</td>
+                    <td>
+                        <code>datetime::now() > (datetime::now()+timespan::from-days(10))</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) > timespan::from-seconds(30)</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-datetime-greater-than-or-equal" />4.5.6 Greater than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is greater than or 
+            equal to the value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>datetime</td>
+                    <td>
+                        <code>datetime::now() >= (datetime::now()+timespan::from-days(10))</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) >= timespan::from-seconds(30)</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-datetime-less-than" />4.5.7 Less than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is less than the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>datetime</td>
+                    <td>
+                        <code>datetime::now() &lt; (datetime::now()+timespan::from-days(10))</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) &lt; timespan::from-seconds(30)</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-datetime-less-than-or-equal" />4.5.8 Less than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is less than the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>datetime</td>
+                    <td>datetime</td>
+                    <td>
+                        <code>datetime::now() &lt;= (datetime::now()+timespan::from-days(10))</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td>timespan</td>
+                    <td>timespan</td>
+                    <td>
+                        <code>timespan::from-seconds(30) &lt;= timespan::from-seconds(30)</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h3><a id="version-operators" />4.6 Operators on Version Values</h3>
+        <p>The following operators are supported on version values:</p>
+        <ul>
+            <li>
+                == operator
+            </li>
+            <li>
+                != operator
+            </li>
+            <li>
+                > operator
+            </li>
+            <li>
+                >= operator
+            </li>
+            <li>
+                &lt; operator
+            </li>
+            <li>
+                &lt;= operator
+            </li>
+        </ul>
+        <h4><a id="op-version-equal" />4.6.1 Equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is the same as the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>version</td>
+                    <td>version</td>
+                    <td>
+                        <code>version::parse('1.2') == version::parse('1.2')</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-version-inequal" />4.6.2 Inequal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is not the same as 
+            the value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>version</td>
+                    <td>version</td>
+                    <td>
+                        <code>version::parse('1.2') != version::parse('1.3.1')</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-version-greather-than" />4.6.3 Greater than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is greater than the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>version</td>
+                    <td>version</td>
+                    <td>
+                        <code>version::parse('1.2') > version::parse('1.3.1')</code> evaluates 
+                        to <b>false</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-version-greater-than-or-equal" />4.6.4 Greater than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is greater than or 
+            equal to the value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>version</td>
+                    <td>version</td>
+                    <td>
+                        <code>version::parse('1.2') >= version::parse('1.2')</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-version-less-than" />4.6.5 Less than</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is less than the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>version</td>
+                    <td>version</td>
+                    <td>
+                        <code>version::parse('1.2') &lt; version::parse('1.3.1')</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <h4><a id="op-version-less-than-or-equal" />4.6.6 Less than or equal</h4>
+        <h5>Summary</h5>
+        <p>
+            Returns <b>true</b> if the value of the left operand is less than the 
+            value of the right operand.
+        </p>
+        <h5>Operands</h5>
+        <div class="table">
+            <table>
+                <colgroup>
+                    <col />
+                    <col />
+                    <col />
+                </colgroup>
+                <tr>
+                    <th>
+                        Left Operand</th>
+                    <th>
+                        Right Operand</th>
+                    <th>
+                        Example</th>
+                </tr>
+                <tr>
+                    <td>version</td>
+                    <td>version</td>
+                    <td>
+                        <code>version::parse('1.2') &lt;= version::parse('1.2')</code> evaluates 
+                        to <b>true</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

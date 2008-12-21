@@ -1,0 +1,1291 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="Function Reference" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>Function Reference</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+                            Function Reference
+                        </td>
+        <td class="NavBar-Cell" align="right">
+                            v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>Function Reference</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <a href="#Assembly">Assembly Functions</a>
+    <br />
+    <a href="#Conversion">Conversion Functions</a>
+    <br />
+    <a href="#Date%2fTime">Date/Time Functions</a>
+    <br />
+    <a href="#Directory">Directory Functions</a>
+    <br />
+    <a href="#DNS">DNS Functions</a>
+    <br />
+    <a href="#Environment">Environment Functions</a>
+    <br />
+    <a href="#File">File Functions</a>
+    <br />
+    <a href="#Math">Math Functions</a>
+    <br />
+    <a href="#NAnt">NAnt Functions</a>
+    <br />
+    <a href="#Operating+System">Operating System Functions</a>
+    <br />
+    <a href="#Path">Path Functions</a>
+    <br />
+    <a href="#String">String Functions</a>
+    <br />
+    <a href="#Unix%2fCygwin">Unix/Cygwin Functions</a>
+    <br />
+    <a href="#Version">Version Functions</a>
+    <br />
+    <a id="Assembly">
+    </a>
+    <h3>Assembly Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="assembly.get-full-name.html">assembly::get-full-name</a>
+          </td>
+          <td> Gets the full name of the assembly, also known as the display name. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assembly.get-location.html">assembly::get-location</a>
+          </td>
+          <td> Gets the physical location, in codebase format, of the loaded file that contains the manifest. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assembly.get-name.html">assembly::get-name</a>
+          </td>
+          <td> Gets an <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemReflectionAssemblyNameClassTopic.asp">AssemblyName</a> for the specified assembly. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assembly.load.html">assembly::load</a>
+          </td>
+          <td> Loads an assembly given the long form of its name. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assembly.load-from-file.html">assembly::load-from-file</a>
+          </td>
+          <td> Loads an assembly given its file name or path. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assemblyname.get-assembly-name.html">assemblyname::get-assembly-name</a>
+          </td>
+          <td> Gets the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemReflectionAssemblyNameClassTopic.asp">AssemblyName</a> for a given file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assemblyname.get-codebase.html">assemblyname::get-codebase</a>
+          </td>
+          <td> Gets the location of the assembly as a URL. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assemblyname.get-escaped-codebase.html">assemblyname::get-escaped-codebase</a>
+          </td>
+          <td> Gets the URI, including escape characters, that represents the codebase. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assemblyname.get-full-name.html">assemblyname::get-full-name</a>
+          </td>
+          <td> Gets the full name of the assembly, also known as the display name. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assemblyname.get-name.html">assemblyname::get-name</a>
+          </td>
+          <td> Gets the simple, unencrypted name of the assembly. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="assemblyname.get-version.html">assemblyname::get-version</a>
+          </td>
+          <td> Gets the version of the assembly. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Conversion">
+    </a>
+    <h3>Conversion Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="bool.parse.html">bool::parse</a>
+          </td>
+          <td> Converts the specified string representation of a logical value to its <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemBooleanClassTopic.asp">Boolean</a> equivalent. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="bool.to-string.html">bool::to-string</a>
+          </td>
+          <td> Converts the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemBooleanClassTopic.asp">Boolean</a> to its equivalent string representation. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="convert.to-boolean.html">
+              <i>convert::to-boolean</i>
+            </a>
+          </td>
+          <td> Converts the argument to a boolean </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="convert.to-datetime.html">
+              <i>convert::to-datetime</i>
+            </a>
+          </td>
+          <td> Converts the argument to a datetime. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="convert.to-double.html">
+              <i>convert::to-double</i>
+            </a>
+          </td>
+          <td> Converts the argument to double </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="convert.to-int.html">
+              <i>convert::to-int</i>
+            </a>
+          </td>
+          <td> Converts the argument to an integer. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="convert.to-string.html">
+              <i>convert::to-string</i>
+            </a>
+          </td>
+          <td> Converts the argument to a string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.parse.html">datetime::parse</a>
+          </td>
+          <td> Converts the specified string representation of a date and time to its <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemDateTimeClassTopic.asp">DateTime</a> equivalent. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.to-string.html">datetime::to-string</a>
+          </td>
+          <td> Converts the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemDateTimeClassTopic.asp">DateTime</a> to its equivalent string representation. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="double.parse.html">double::parse</a>
+          </td>
+          <td> Converts the specified string representation of a number to its double-precision floating point number equivalent. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="double.to-string.html">double::to-string</a>
+          </td>
+          <td> Converts the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemDoubleClassTopic.asp">Double</a> to its equivalent string representation. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="int.parse.html">int::parse</a>
+          </td>
+          <td> Converts the specified string representation of a number to its 32-bit signed integer equivalent. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="int.to-string.html">int::to-string</a>
+          </td>
+          <td> Converts the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemInt32ClassTopic.asp">Int32</a> to its equivalent string representation. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="long.parse.html">long::parse</a>
+          </td>
+          <td> Converts the specified string representation of a number to its 64-bit signed integer equivalent. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="long.to-string.html">long::to-string</a>
+          </td>
+          <td> Converts the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemInt64ClassTopic.asp">Int64</a> to its equivalent string representation. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.parse.html">timespan::parse</a>
+          </td>
+          <td> Constructs a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> from a time indicated by a specified string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.to-string.html">timespan::to-string</a>
+          </td>
+          <td> Converts the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> to its equivalent string representation. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="version.parse.html">version::parse</a>
+          </td>
+          <td> Converts the specified string representation of a version to its <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemVersionClassTopic.asp">Version</a> equivalent. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="version.to-string.html">version::to-string</a>
+          </td>
+          <td> Converts the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemVersionClassTopic.asp">Version</a> to its equivalent string representation. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Date%2fTime">
+    </a>
+    <h3>Date/Time Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-day.html">datetime::get-day</a>
+          </td>
+          <td> Gets the day of the month represented by the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-day-of-week.html">datetime::get-day-of-week</a>
+          </td>
+          <td> Gets the day of the week represented by the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-day-of-year.html">datetime::get-day-of-year</a>
+          </td>
+          <td> Gets the day of the year represented by the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-days-in-month.html">datetime::get-days-in-month</a>
+          </td>
+          <td> Returns the number of days in the specified month of the specified year. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-hour.html">datetime::get-hour</a>
+          </td>
+          <td> Gets the hour component of the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-millisecond.html">datetime::get-millisecond</a>
+          </td>
+          <td> Gets the milliseconds component of the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-minute.html">datetime::get-minute</a>
+          </td>
+          <td> Gets the minute component of the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-month.html">datetime::get-month</a>
+          </td>
+          <td> Gets the month component of the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-second.html">datetime::get-second</a>
+          </td>
+          <td> Gets the seconds component of the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-ticks.html">datetime::get-ticks</a>
+          </td>
+          <td> Gets the number of ticks that represent the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.get-year.html">datetime::get-year</a>
+          </td>
+          <td> Gets the year component of the specified date. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.is-leap-year.html">datetime::is-leap-year</a>
+          </td>
+          <td> Returns an indication whether the specified year is a leap year. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="datetime.now.html">datetime::now</a>
+          </td>
+          <td> Gets a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemDateTimeClassTopic.asp">DateTime</a> that is the current local date and time on this computer. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.from-days.html">timespan::from-days</a>
+          </td>
+          <td> Returns a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> that represents a specified number of days, where the specification is accurate to the nearest millisecond. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.from-hours.html">timespan::from-hours</a>
+          </td>
+          <td> Returns a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> that represents a specified number of hours, where the specification is accurate to the nearest millisecond. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.from-milliseconds.html">timespan::from-milliseconds</a>
+          </td>
+          <td> Returns a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> that represents a specified number of milliseconds. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.from-minutes.html">timespan::from-minutes</a>
+          </td>
+          <td> Returns a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> that represents a specified number of minutes, where the specification is accurate to the nearest millisecond. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.from-seconds.html">timespan::from-seconds</a>
+          </td>
+          <td> Returns a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> that represents a specified number of seconds, where the specification is accurate to the nearest millisecond. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.from-ticks.html">timespan::from-ticks</a>
+          </td>
+          <td> Returns a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a> that represents a specified time, where the specification is in units of ticks. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-days.html">timespan::get-days</a>
+          </td>
+          <td> Returns the number of whole days represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-hours.html">timespan::get-hours</a>
+          </td>
+          <td> Returns the number of whole hours represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-milliseconds.html">timespan::get-milliseconds</a>
+          </td>
+          <td> Returns the number of whole milliseconds represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-minutes.html">timespan::get-minutes</a>
+          </td>
+          <td> Returns the number of whole minutes represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-seconds.html">timespan::get-seconds</a>
+          </td>
+          <td> Returns the number of whole seconds represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-ticks.html">timespan::get-ticks</a>
+          </td>
+          <td> Returns the number of ticks contained in the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-total-days.html">timespan::get-total-days</a>
+          </td>
+          <td> Returns the total number of days represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>, expressed in whole and fractional days. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-total-hours.html">timespan::get-total-hours</a>
+          </td>
+          <td> Returns the total number of hours represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>, expressed in whole and fractional hours. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-total-milliseconds.html">timespan::get-total-milliseconds</a>
+          </td>
+          <td> Returns the total number of milliseconds represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>, expressed in whole and fractional milliseconds. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-total-minutes.html">timespan::get-total-minutes</a>
+          </td>
+          <td> Returns the total number of minutes represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>, expressed in whole and fractional minutes. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="timespan.get-total-seconds.html">timespan::get-total-seconds</a>
+          </td>
+          <td> Returns the total number of seconds represented by the specified <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTimeSpanClassTopic.asp">TimeSpan</a>, expressed in whole and fractional seconds. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Directory">
+    </a>
+    <h3>Directory Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="directory.exists.html">directory::exists</a>
+          </td>
+          <td> Determines whether the given path refers to an existing directory on disk. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="directory.get-creation-time.html">directory::get-creation-time</a>
+          </td>
+          <td> Returns the creation date and time of the specified directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="directory.get-current-directory.html">directory::get-current-directory</a>
+          </td>
+          <td> Gets the current working directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="directory.get-directory-root.html">directory::get-directory-root</a>
+          </td>
+          <td> Returns the volume information, root information, or both for the specified path. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="directory.get-last-access-time.html">directory::get-last-access-time</a>
+          </td>
+          <td> Returns the date and time the specified directory was last accessed. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="directory.get-last-write-time.html">directory::get-last-write-time</a>
+          </td>
+          <td> Returns the date and time the specified directory was last written to. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="directory.get-parent-directory.html">directory::get-parent-directory</a>
+          </td>
+          <td> Retrieves the parent directory of the specified path. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="DNS">
+    </a>
+    <h3>DNS Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="dns.get-host-name.html">dns::get-host-name</a>
+          </td>
+          <td> Gets the host name of the local computer. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Environment">
+    </a>
+    <h3>Environment Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="environment.get-folder-path.html">environment::get-folder-path</a>
+          </td>
+          <td> Gets the path to the system special folder identified by the specified enumeration. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="environment.get-machine-name.html">environment::get-machine-name</a>
+          </td>
+          <td> Gets the NetBIOS name of this local computer. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="environment.get-operating-system.html">environment::get-operating-system</a>
+          </td>
+          <td> Gets an <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemOperatingSystemClassTopic.asp">OperatingSystem</a> object that represents the current operating system. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="environment.get-user-name.html">environment::get-user-name</a>
+          </td>
+          <td> Gets the user name of the person who started the current thread. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="environment.get-variable.html">environment::get-variable</a>
+          </td>
+          <td> Returns the value of the specified environment variable. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="environment.get-version.html">environment::get-version</a>
+          </td>
+          <td> Gets a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemVersionClassTopic.asp">Version</a> object that describes the major, minor, build, and revision numbers of the Common Language Runtime. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="environment.variable-exists.html">environment::variable-exists</a>
+          </td>
+          <td> Gets a value indicating whether the specified environment variable exists. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="File">
+    </a>
+    <h3>File Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="file.exists.html">file::exists</a>
+          </td>
+          <td> Determines whether the specified file exists. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="file.get-creation-time.html">file::get-creation-time</a>
+          </td>
+          <td> Returns the creation date and time of the specified file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="file.get-last-access-time.html">file::get-last-access-time</a>
+          </td>
+          <td> Returns the date and time the specified file was last accessed. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="file.get-last-write-time.html">file::get-last-write-time</a>
+          </td>
+          <td> Returns the date and time the specified file was last written to. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="file.get-length.html">file::get-length</a>
+          </td>
+          <td> Gets the length of the file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="file.is-assembly.html">file::is-assembly</a>
+          </td>
+          <td> Checks if a given file is an assembly. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="file.up-to-date.html">file::up-to-date</a>
+          </td>
+          <td> Determines whether <i>targetFile</i> is more or equal up-to-date than <i>srcFile</i>. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Math">
+    </a>
+    <h3>Math Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="math.abs.html">math::abs</a>
+          </td>
+          <td> Returns the absolute value of the specified number </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="math.ceiling.html">math::ceiling</a>
+          </td>
+          <td> Returns the smallest whole number greater than or equal to the specified number </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="math.floor.html">math::floor</a>
+          </td>
+          <td> Returns the largest whole number less than or equal to the specified number. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="math.round.html">math::round</a>
+          </td>
+          <td> Rounds the value to the nearest whole number </td>
+        </tr>
+      </table>
+    </div>
+    <a id="NAnt">
+    </a>
+    <h3>NAnt Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.exists.html">framework::exists</a>
+          </td>
+          <td> Checks whether the specified framework exists, and is valid. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-assembly-directory.html">framework::get-assembly-directory</a>
+          </td>
+          <td> Gets the assembly directory of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-clr-version.html">framework::get-clr-version</a>
+          </td>
+          <td> Gets the Common Language Runtime version of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-description.html">framework::get-description</a>
+          </td>
+          <td> Gets the description of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-family.html">framework::get-family</a>
+          </td>
+          <td> Gets the family of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-framework-directory.html">framework::get-framework-directory</a>
+          </td>
+          <td> Gets the framework directory of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-runtime-engine.html">framework::get-runtime-engine</a>
+          </td>
+          <td> Gets the runtime engine of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-runtime-framework.html">framework::get-runtime-framework</a>
+          </td>
+          <td> Gets the identifier of the runtime framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-sdk-directory.html">framework::get-sdk-directory</a>
+          </td>
+          <td> Gets the SDK directory of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-target-framework.html">framework::get-target-framework</a>
+          </td>
+          <td> Gets the identifier of the current target framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-tool-path.html">framework::get-tool-path</a>
+          </td>
+          <td> Gets the absolute path of the specified tool for the current target framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.get-version.html">framework::get-version</a>
+          </td>
+          <td> Gets the version of the specified framework. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="framework.sdk-exists.html">framework::sdk-exists</a>
+          </td>
+          <td> Checks whether the SDK for the specified framework is installed. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="nant.get-assembly.html">nant::get-assembly</a>
+          </td>
+          <td> Gets the NAnt assembly. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="nant.get-base-directory.html">nant::get-base-directory</a>
+          </td>
+          <td> Gets the base directory of the appdomain in which NAnt is running. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="platform.get-name.html">platform::get-name</a>
+          </td>
+          <td> Gets the name of the platform on which NAnt is running. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="platform.is-unix.html">platform::is-unix</a>
+          </td>
+          <td> Checks whether NAnt is running on unix. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="platform.is-win32.html">platform::is-win32</a>
+          </td>
+          <td> Checks whether NAnt is running on the win32 platform. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="project.get-base-directory.html">project::get-base-directory</a>
+          </td>
+          <td> Gets the base directory of the current project. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="project.get-buildfile-path.html">project::get-buildfile-path</a>
+          </td>
+          <td> Gets the local path to the build file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="project.get-buildfile-uri.html">project::get-buildfile-uri</a>
+          </td>
+          <td> Gets the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemUriClassTopic.asp">Uri</a> form of the build file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="project.get-default-target.html">project::get-default-target</a>
+          </td>
+          <td> Gets the name of the target that will be executed when no other build targets are specified. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="project.get-name.html">project::get-name</a>
+          </td>
+          <td> Gets the name of the current project. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="property.exists.html">property::exists</a>
+          </td>
+          <td> Checks whether the specified property exists. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="property.get-value.html">property::get-value</a>
+          </td>
+          <td> Gets the value of the specified property. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="property.is-dynamic.html">property::is-dynamic</a>
+          </td>
+          <td> Checks whether the specified property is a dynamic property. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="property.is-readonly.html">property::is-readonly</a>
+          </td>
+          <td> Checks whether the specified property is read-only. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="target.exists.html">target::exists</a>
+          </td>
+          <td> Checks whether the specified target exists. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="target.get-current-target.html">target::get-current-target</a>
+          </td>
+          <td> Gets the name of the target being executed. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="target.has-executed.html">target::has-executed</a>
+          </td>
+          <td> Checks whether the specified target has already been executed. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="task.exists.html">task::exists</a>
+          </td>
+          <td> Checks whether the specified task exists. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="task.get-assembly.html">task::get-assembly</a>
+          </td>
+          <td> Returns the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemReflectionAssemblyClassTopic.asp">Assembly</a> from which the specified task was loaded. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Operating+System">
+    </a>
+    <h3>Operating System Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="operating-system.get-platform.html">operating-system::get-platform</a>
+          </td>
+          <td> Gets a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemPlatformIDClassTopic.asp">PlatformID</a> value that identifies the operating system platform. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="operating-system.get-version.html">operating-system::get-version</a>
+          </td>
+          <td> Gets a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemVersionClassTopic.asp">Version</a> object that identifies this operating system. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="operating-system.to-string.html">operating-system::to-string</a>
+          </td>
+          <td> Converts the value of the specified operating system to its equivalent <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemStringClassTopic.asp">String</a> representation. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Path">
+    </a>
+    <h3>Path Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.change-extension.html">path::change-extension</a>
+          </td>
+          <td> Changes the extension of the path string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.combine.html">path::combine</a>
+          </td>
+          <td> Combines two paths. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-directory-name.html">path::get-directory-name</a>
+          </td>
+          <td> Returns the directory information for the specified path string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-extension.html">path::get-extension</a>
+          </td>
+          <td> Returns the extension for the specified path string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-file-name.html">path::get-file-name</a>
+          </td>
+          <td> Returns the filename for the specified path string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-file-name-without-extension.html">path::get-file-name-without-extension</a>
+          </td>
+          <td> Returns the filename without extension for the specified path string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-full-path.html">path::get-full-path</a>
+          </td>
+          <td> Returns the fully qualified path. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-path-root.html">path::get-path-root</a>
+          </td>
+          <td> Gets the root directory of the specified path. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-temp-file-name.html">path::get-temp-file-name</a>
+          </td>
+          <td> Returns a uniquely named zero-byte temporary file on disk and returns the full path to that file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.get-temp-path.html">path::get-temp-path</a>
+          </td>
+          <td> Gets the path to the temporary directory. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.has-extension.html">path::has-extension</a>
+          </td>
+          <td> Determines whether a path string includes an extension. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="path.is-path-rooted.html">path::is-path-rooted</a>
+          </td>
+          <td> Determines whether a path string is absolute. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="String">
+    </a>
+    <h3>String Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.contains.html">string::contains</a>
+          </td>
+          <td> Tests whether the specified string contains the given search string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.ends-with.html">string::ends-with</a>
+          </td>
+          <td> Tests whether the specified string ends with the specified suffix string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.get-length.html">string::get-length</a>
+          </td>
+          <td> Returns the length of the specified string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.index-of.html">string::index-of</a>
+          </td>
+          <td> Returns the position of the first occurrence in the specified string of the given search string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.last-index-of.html">string::last-index-of</a>
+          </td>
+          <td> Returns the position of the last occurrence in the specified string of the given search string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.pad-left.html">string::pad-left</a>
+          </td>
+          <td> Returns the given string left-padded to the given length. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.pad-right.html">string::pad-right</a>
+          </td>
+          <td> Returns the given string right-padded to the given length. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.replace.html">string::replace</a>
+          </td>
+          <td> Returns a string corresponding to the replacement of a given string with another in the specified string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.starts-with.html">string::starts-with</a>
+          </td>
+          <td> Tests whether the specified string starts with the specified prefix string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.substring.html">string::substring</a>
+          </td>
+          <td> Returns a substring of the specified string. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.to-lower.html">string::to-lower</a>
+          </td>
+          <td> Returns the specified string converted to lowercase. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.to-upper.html">string::to-upper</a>
+          </td>
+          <td> Returns the specified string converted to uppercase. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.trim.html">string::trim</a>
+          </td>
+          <td> Returns the given string trimmed of whitespace. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.trim-end.html">string::trim-end</a>
+          </td>
+          <td> Returns the given string trimmed of trailing whitespace. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="string.trim-start.html">string::trim-start</a>
+          </td>
+          <td> Returns the given string trimmed of leading whitespace. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Unix%2fCygwin">
+    </a>
+    <h3>Unix/Cygwin Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="cygpath.get-dos-path.html">cygpath::get-dos-path</a>
+          </td>
+          <td> Gets the DOS (short) form of the specified path. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cygpath.get-unix-path.html">cygpath::get-unix-path</a>
+          </td>
+          <td> Gets the Unix form of the specified path. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="cygpath.get-windows-path.html">cygpath::get-windows-path</a>
+          </td>
+          <td> Gets the Windows form of the specified path. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.exists.html">pkg-config::exists</a>
+          </td>
+          <td> Determines whether the given package exists. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.get-compile-flags.html">pkg-config::get-compile-flags</a>
+          </td>
+          <td> Gets the compile flags required to compile the package, including all its dependencies. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.get-link-flags.html">pkg-config::get-link-flags</a>
+          </td>
+          <td> Gets the link flags required to compile the package, including all its dependencies. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.get-mod-version.html">pkg-config::get-mod-version</a>
+          </td>
+          <td> Determines the version of the given package. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.get-variable.html">pkg-config::get-variable</a>
+          </td>
+          <td> Gets the value of a variable for the specified package. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.is-atleast-version.html">pkg-config::is-atleast-version</a>
+          </td>
+          <td> Determines whether the given package is at least version <i>version</i>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.is-between-version.html">pkg-config::is-between-version</a>
+          </td>
+          <td> Determines whether the given package is between two versions. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.is-exact-version.html">pkg-config::is-exact-version</a>
+          </td>
+          <td> Determines whether the given package is exactly version <i>version</i>. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="pkg-config.is-max-version.html">pkg-config::is-max-version</a>
+          </td>
+          <td> Determines whether the given package is at no newer than version <i>version</i>. </td>
+        </tr>
+      </table>
+    </div>
+    <a id="Version">
+    </a>
+    <h3>Version Functions</h3>
+    <div class="table">
+      <table>
+        <colgroup>
+          <col style="white-space: nowrap;" />
+          <col />
+        </colgroup>
+        <tr>
+          <th>Name</th>
+          <th>Summary</th>
+        </tr>
+        <tr>
+          <td>
+            <a href="fileversioninfo.get-company-name.html">fileversioninfo::get-company-name</a>
+          </td>
+          <td> Gets the name of the company that produced the file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="fileversioninfo.get-file-version.html">fileversioninfo::get-file-version</a>
+          </td>
+          <td> Gets the file version of a file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="fileversioninfo.get-product-name.html">fileversioninfo::get-product-name</a>
+          </td>
+          <td> Gets the name of the product the file is distributed with. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="fileversioninfo.get-product-version.html">fileversioninfo::get-product-version</a>
+          </td>
+          <td> Gets the product version of a file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="fileversioninfo.get-version-info.html">fileversioninfo::get-version-info</a>
+          </td>
+          <td> Returns a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemDiagnosticsFileVersionInfoClassTopic.asp">FileVersionInfo</a> representing the version information associated with the specified file. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="version.get-build.html">version::get-build</a>
+          </td>
+          <td> Gets the value of the build component of a given version. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="version.get-major.html">version::get-major</a>
+          </td>
+          <td> Gets the value of the major component of a given version. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="version.get-minor.html">version::get-minor</a>
+          </td>
+          <td> Gets the value of the minor component of a given version. </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="version.get-revision.html">version::get-revision</a>
+          </td>
+          <td> Gets the value of the revision component of a given version. </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

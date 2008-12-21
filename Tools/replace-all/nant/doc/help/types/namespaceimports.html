@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.DotNet.Types.NamespaceImportCollection-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;namespaceimports&gt; Type</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../types/index.html">Type Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;namespaceimports&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;namespaceimports&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Contains a collection of <a href="../elements/NAnt.DotNet.Types.NamespaceImport.html">NamespaceImport</a> items. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">id</td>
+          <td style="text-align: center;">string</td>
+          <td> The ID used to be referenced later. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">refid</td>
+          <td style="text-align: center;">string</td>
+          <td> The ID to use as the reference. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="import">
+      </a>
+                    &lt;import&gt;
+                </h4>
+    <div class="nested-element"> Adds a <a href="../elements/NAnt.DotNet.Types.NamespaceImport.html">NamespaceImport</a> to the end of the collection. <p> Represents a namespace to import. </p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> Indicates if the import should be generated. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">name</td><td style="text-align: center;">string</td><td><i>Deprecated.</i>  The name of the namespace to import. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">namespace</td><td style="text-align: center;">string</td><td> The name of the namespace to import. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Indicates if the import should be not generated. </td><td style="text-align: center;">False</td></tr></table></div><p /></div>
+    <h4>
+      <a id="import">
+      </a>
+                    &lt;/import&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p>Define a reference with name "system.imports".</p>
+        <pre class="code">
+&lt;namespaceimports id="system.imports"&gt;
+    &lt;import namespace="System" /&gt;
+    &lt;import namespace="System.Data" /&gt;
+&lt;/namespaceimports&gt;
+    </pre>
+        <p>Use the predefined set of imports to compile a VB.NET assembly.</p>
+        <pre class="code">
+&lt;vbc target="exe" output="HelloWorld.exe" rootnamespace="HelloWorld"&gt;
+    &lt;imports refid="system.imports" /&gt;
+    &lt;sources&gt;
+        &lt;include name="**/*.vb" /&gt;
+    &lt;/sources&gt;
+    &lt;references&gt;
+        &lt;include name="System.dll" /&gt;
+        &lt;include name="System.Data.dll" /&gt;
+    &lt;/references&gt;
+&lt;/vbc&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.DotNetTasks (0.86.2898.0)
+            </div>
+  </body>
+</html>

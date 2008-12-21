@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting GetVersion-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>environment::get-version Function</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="index.html">Function Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> environment::get-version</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>environment::get-version</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Gets a <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemVersionClassTopic.asp">Version</a> object that describes the major, minor, build, and revision numbers of the Common Language Runtime. </p>
+    <h3>Usage</h3>
+    <code>
+      <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemVersionClassTopic.asp">Version</a> environment::get-version()
+            </code>
+    <p />
+    <h3>Return Value</h3> A Version object. <h3>Examples</h3><ul class="examples"><li><p>Output the major version of the CLR.</p><pre class="code">
+&lt;echo message="Major version=${version::get-major(environment::get-version())}" /&gt;
+    </pre></li></ul><h3>Requirements</h3><div style="margin-left: 20px;"><b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div></body>
+</html>

@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting IndexOf-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>string::index-of Function</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="index.html">Function Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> string::index-of</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>string::index-of</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Returns the position of the first occurrence in the specified string of the given search string. </p>
+    <h3>Usage</h3>
+    <code>int string::index-of(<span class="parameter">source</span>, <span class="parameter">value</span>)
+            </code>
+    <p />
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>source</td>
+          <td>string</td>
+          <td>The string to search.</td>
+        </tr>
+        <tr>
+          <td>value</td>
+          <td>string</td>
+          <td>The string to locate within <i>source</i>.</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Return Value</h3>
+    <p> The lowest-index position of <i>value</i> in <i>source</i> if it is found, or -1 if <i>source</i> does not contain <i>value</i>. </p>
+    <p> If <i>value</i> is an empty string, the return value will always be <code>0</code>. </p>
+    <h3>Remarks</h3> This function performs a case-sensitive word search using the invariant culture. <h3>Examples</h3><ul class="examples"><li><pre class="code">string::index-of('testing string', 'test') ==&gt; 0</pre></li><li><pre class="code">string::index-of('testing string', '') ==&gt; 0</pre></li><li><pre class="code">string::index-of('testing string', 'Test') ==&gt; -1</pre></li><li><pre class="code">string::index-of('testing string', 'ing') ==&gt; 4</pre></li></ul><h3>Requirements</h3><div style="margin-left: 20px;"><b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div></body>
+</html>

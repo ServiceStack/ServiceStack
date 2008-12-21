@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Compression.Tasks.ZipTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;zip&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;zip&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;zip&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Creates a zip file from the specified filesets. </p>
+    <p> Uses <a href="http://www.icsharpcode.net/OpenSource/SharpZipLib/">#ziplib</a> (SharpZipLib), an open source Tar/Zip/GZip library written entirely in C#. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top" class="required">zipfile</td>
+          <td style="text-align: center;">file</td>
+          <td> The zip file to create. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top">comment</td>
+          <td style="text-align: center;">string</td>
+          <td> The comment for the file. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">duplicate</td>
+          <td style="text-align: center;">
+            <a href="../enums/NAnt.Compression.Types.DuplicateHandling.html">DuplicateHandling</a>
+          </td>
+          <td> Specifies the behaviour when a duplicate file is found. The default is <code>Add</code>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">encoding</td>
+          <td style="text-align: center;">
+            <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTextEncodingClassTopic.asp">Encoding</a>
+          </td>
+          <td> The character encoding to use for filenames and comment inside the zip file. The default is the system's OEM code page. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">includeemptydirs</td>
+          <td style="text-align: center;">bool</td>
+          <td> Include empty directories in the generated zip file. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">stampdatetime</td>
+          <td style="text-align: center;">datetime</td>
+          <td> Date/time stamp for the files in the format MM/DD/YYYY HH:MM:SS. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">ziplevel</td>
+          <td style="text-align: center;">int</td>
+          <td> Desired level of compression. Possible values are 0 (STORE only) to 9 (highest). The default is <code>6</code>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Array-->
+    <!--NestedElementArray=T:NAnt.Compression.Types.ZipFileSet-->
+    <h4>
+      <a id="fileset">
+      </a>
+                    &lt;<a href="../types/zipfileset.html">fileset</a>&gt;
+                </h4>
+    <div class="nested-element"> The set of files to be included in the archive. </div>
+    <h4>
+      <a id="fileset">
+      </a>
+                    &lt;/<a href="../types/zipfileset.html">fileset</a>&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Zip all files in <code>${build.dir}</code> and <code>${doc.dir}</code> into a file called "backup.zip". </p>
+        <pre class="code">
+&lt;zip zipfile="backup.zip"&gt;
+    &lt;fileset basedir="${bin.dir}" prefix="bin"&gt;
+        &lt;include name="**/*" /&gt;
+    &lt;/fileset&gt;
+    &lt;fileset basedir="${doc.dir}" prefix="doc"&gt;
+        &lt;include name="**/*" /&gt;
+    &lt;/fileset&gt;
+&lt;/zip&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.CompressionTasks (0.86.2898.0)
+            </div>
+  </body>
+</html>

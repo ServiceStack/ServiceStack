@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="Hello World" default="run">
+    <property name="basename" value="HelloWorld"/>
+    <property name="debug" value="true"/>
+
+    <target name="clean">
+        <delete>
+            <fileset>
+                <include name="bin/${basename}-??.exe"/>
+                <include name="bin/${basename}-??.pdb"/>
+            </fileset>
+        </delete>
+    </target>
+
+    <target name="build">
+        <mkdir dir="bin" />
+        <csc target="exe" output="bin/${basename}-cs.exe" debug="${debug}">
+            <sources>
+                <include name="${basename}.cs"/>
+            </sources>
+        </csc>
+        <jsc target="exe" output="bin/${basename}-js.exe" debug="${debug}">
+            <sources>
+                <include name="${basename}.js"/>
+            </sources>
+        </jsc>
+        <vbc target="exe" output="bin/${basename}-vb.exe" debug="${debug}">
+            <sources>
+                <include name="${basename}.vb"/>
+            </sources>
+        </vbc>
+    </target>
+
+    <target name="run" depends="build">
+        <exec program="bin/${basename}-cs.exe" basedir="."/>
+        <exec program="bin/${basename}-js.exe" basedir="."/>
+        <exec program="bin/${basename}-vb.exe" basedir="."/>
+    </target>
+</project>

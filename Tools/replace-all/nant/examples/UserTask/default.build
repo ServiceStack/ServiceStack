@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<project name="NAnt" default="run">
+    <!-- Compile the test task and add it then use it. -->
+    <target name="build">
+        <mkdir dir="bin" />
+        <csc target="library" output="bin/UserTasks.dll">
+            <sources>
+                <include name="UserTask.cs"/>
+            </sources>
+            <references basedir="${nant::get-base-directory()}">
+                <include name="NAnt.Core.dll"/>
+            </references>
+        </csc>
+    </target>
+
+    <target name="run" depends="build">
+        <!-- Dynamically load the tasks in the Task assembly. -->
+        <loadtasks assembly="bin/UserTasks.dll" />
+
+        <!-- Call our new task, converts the message attribute to all caps and displays it. -->
+        <usertask message="This string should be all caps"/>
+    </target>
+
+    <target name="clean">
+        <!-- Delete the build output. -->
+        <delete file="bin/UserTasks.dll" if="${file::exists('bin/UserTasks.dll')}" />
+    </target>
+</project>

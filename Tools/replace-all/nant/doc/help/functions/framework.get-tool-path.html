@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting GetToolPath-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>framework::get-tool-path Function</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="index.html">Function Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> framework::get-tool-path</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>framework::get-tool-path</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Gets the absolute path of the specified tool for the current target framework. </p>
+    <h3>Usage</h3>
+    <code>string framework::get-tool-path(<span class="parameter">tool</span>)
+            </code>
+    <p />
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>tool</td>
+          <td>string</td>
+          <td>The file name of the tool to search for.</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Return Value</h3> The absolute path to <i>tool</i> if found in one of the configured tool paths; otherwise, an error is reported. <h3>Exceptions</h3>
+            The function will fail in any of the following circumstances:
+            <div style="margin-left: 40px;"><ul><li><i>tool</i> could not be found in the configured tool paths.</li></ul></div><h3>Remarks</h3><p> The configured tool paths are scanned in the order in which they are defined in the framework configuration. </p><p> The file name of the tool to search should include the extension. </p><h3>Examples</h3><ul class="examples"><li><p>Use <b xmlns="">gacutil</b> to install an assembly in the GAC.</p><pre class="code">
+&lt;exec program="${framework::get-tool-path('gacutil.exe')}" managed="strict"&gt;
+    &lt;arg value="/i" /&gt;
+    &lt;arg file="Cegeka.HealthFramework.dll" /&gt;
+&lt;/exec&gt;
+    </pre></li></ul><h3>Requirements</h3><div style="margin-left: 20px;"><b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div></body>
+</html>

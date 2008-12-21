@@ -1,0 +1,1 @@
+you will need MSBEE installed to build the .NET 1.1 version of this library

@@ -1,0 +1,271 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.DotNet.Tasks.ScriptTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;script&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;script&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;script&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Executes the code contained within the task. This code can include custom extension function definitions. Once the script task has executed those custom functions will be available for use in the buildfile. </p>
+    <p> The <a href="../tasks/script.html">&lt;script&gt;</a> task must contain a single <code>code</code> element, which in turn contains the script code. </p>
+    <p> A static entry point named <code>ScriptMain</code> is required if no custom functions have been defined. It must have a single <a href="../../sdk/NAnt.Core.Project.html">Project</a> parameter. </p>
+    <p> The following namespaces are loaded by default: </p>
+    <ul style="list-style-type: disc;">
+      <li>System</li>
+      <li>System.Collections</li>
+      <li>System.Collections.Specialized</li>
+      <li>System.IO</li>
+      <li>System.Text</li>
+      <li>System.Text.RegularExpressions</li>
+      <li>NAnt.Core</li>
+    </ul>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top" class="required">language</td>
+          <td style="text-align: center;">string</td>
+          <td> The language of the script block. Possible values are "VB", "vb", "VISUALBASIC", "C#", "c#", "CSHARP". "JS", "js", "JSCRIPT" "VJS", "vjs", "JSHARP" or a fully-qualified name for a class implementing <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemCodeDomCompilerCodeDomProviderClassTopic.asp">CodeDomProvider</a>. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top">mainclass</td>
+          <td style="text-align: center;">string</td>
+          <td> The name of the main class containing the static <code>ScriptMain</code> entry point. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">prefix</td>
+          <td style="text-align: center;">string</td>
+          <td> The namespace prefix for any custom functions defined in the script. If ommitted the prefix will default to 'script' </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="references">
+      </a>
+                    &lt;<a href="../types/assemblyfileset.html">references</a>&gt;
+                </h4>
+    <div class="nested-element"> Any required references. <p /></div>
+    <h4>
+      <a id="references">
+      </a>
+                    &lt;/<a href="../types/assemblyfileset.html">references</a>&gt;
+                </h4>
+    <!--Element-->
+    <h4>
+      <a id="imports">
+      </a>
+                    &lt;<a href="../types/namespaceimports.html">imports</a>&gt;
+                </h4>
+    <div class="nested-element"> The namespaces to import. <p /></div>
+    <h4>
+      <a id="imports">
+      </a>
+                    &lt;/<a href="../types/namespaceimports.html">imports</a>&gt;
+                </h4>
+    <!--Element-->
+    <h4>
+      <a id="code">
+      </a>
+                    &lt;code&gt;
+                </h4>
+    <div class="nested-element"> The code to execute. <p> Represents an element of which the XML is processed by its parent task or type. </p><p /></div>
+    <h4>
+      <a id="code">
+      </a>
+                    &lt;/code&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p>Run C# code that writes a message to the build log.</p>
+        <pre class="code">      &lt;script language="C#"&gt;
+          &lt;code&gt;
+            &lt;![CDATA[
+              public static void ScriptMain(Project project) {
+                  project.Log(Level.Info, "Hello World from a script task using C#");
+              }
+            ]]&gt;
+          &lt;/code&gt;
+      &lt;/script&gt;
+</pre>
+      </li>
+      <li>
+        <p>Define a custom function and call it using C#.</p>
+        <pre class="code">      &lt;script language="C#" prefix="test" &gt;
+          &lt;code&gt;
+            &lt;![CDATA[
+              [Function("test-func")]
+              public static string Testfunc(  ) {
+                  return "some result !!!!!!!!";
+              }
+            ]]&gt;
+          &lt;/code&gt;
+      &lt;/script&gt;
+      &lt;echo message='${test::test-func()}'/&gt;
+</pre>
+      </li>
+      <li>
+        <p>Use a custom namespace in C# to create a database</p>
+        <pre class="code">      &lt;script language="C#" &gt;
+          &lt;references&gt;
+              &lt;include name="System.Data.dll" /&gt;
+          &lt;/references&gt;
+          &lt;imports&gt;
+              &lt;import namespace="System.Data.SqlClient" /&gt;
+          &lt;/imports&gt;
+          &lt;code&gt;
+            &lt;![CDATA[
+              public static void ScriptMain(Project project) {
+                  string dbUserName = "nant";
+                  string dbPassword = "nant";
+                  string dbServer = "(local)";
+                  string dbDatabaseName = "NAntSample";
+                  string connectionString = String.Format("Server={0};uid={1};pwd={2};", dbServer, dbUserName, dbPassword);
+                  
+                  SqlConnection connection = new SqlConnection(connectionString);
+                  string createDbQuery = "CREATE DATABASE " + dbDatabaseName;
+                  SqlCommand createDatabaseCommand = new SqlCommand(createDbQuery);
+                  createDatabaseCommand.Connection = connection;
+                  
+                  connection.Open();
+                  
+                  try {
+                      createDatabaseCommand.ExecuteNonQuery();
+                      project.Log(Level.Info, "Database added successfully: " + dbDatabaseName);
+                  } catch (Exception e) {
+                      project.Log(Level.Error, e.ToString());
+                  } finally {
+                      connection.Close();
+                  }
+              }
+            ]]&gt;
+          &lt;/code&gt;
+      &lt;/script&gt;
+</pre>
+      </li>
+      <li>
+        <p> Run Visual Basic.NET code that writes a message to the build log. </p>
+        <pre class="code">      &lt;script language="VB"&gt;
+          &lt;code&gt;
+            &lt;![CDATA[
+              Public Shared Sub ScriptMain(project As Project)
+                  project.Log(Level.Info, "Hello World from a script task using Visual Basic.NET")
+              End Sub
+            ]]&gt;
+          &lt;/code&gt;
+      &lt;/script&gt;
+</pre>
+      </li>
+      <li>
+        <p>Define a custom task and call it using C#.</p>
+        <pre class="code">        &lt;script language="C#" prefix="test" &gt;
+            &lt;code&gt;
+              &lt;![CDATA[
+                [TaskName("usertask")]
+                public class TestTask : Task {
+                  #region Private Instance Fields
+
+                  private string _message;
+
+                  #endregion Private Instance Fields
+
+                  #region Public Instance Properties
+
+                  [TaskAttribute("message", Required=true)]
+                  public string FileName {
+                      get { return _message; }
+                      set { _message = value; }
+                  }
+
+                  #endregion Public Instance Properties
+
+                  #region Override implementation of Task
+
+                  protected override void ExecuteTask() {
+                      Log(Level.Info, _message.ToUpper());
+                  }
+                  #endregion Override implementation of Task
+                }
+              ]]&gt;
+            &lt;/code&gt;
+        &lt;/script&gt;
+        &lt;usertask message='Hello from UserTask'/&gt;
+  </pre>
+      </li>
+      <li>
+        <p> Define a custom function and call it using <a href="http://boo.codehaus.org/">Boo</a>. </p>
+        <pre class="code">      &lt;script language="Boo.CodeDom.BooCodeProvider, Boo.CodeDom, Version=1.0.0.0, Culture=neutral, PublicKeyToken=32c39770e9a21a67"
+          failonerror="true"&gt;
+          &lt;code&gt;
+            &lt;![CDATA[
+             
+              [Function("test-func")]
+              def MyFunc():
+                  return "Hello from Boo !!!!!!"
+            ]]&gt;
+          &lt;/code&gt;
+      &lt;/script&gt;
+      &lt;echo message='${script::test-func()}'/&gt;
+</pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.DotNetTasks (0.86.2898.0)
+            </div>
+  </body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Language" content="en-ca" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="description" content="Properties" />
+        <link rel="stylesheet" type="text/css" href="../style.css" />
+        <title>NAnt - Properties</title>
+    </head>
+    <body>
+        <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+            <tr>
+                <td class="NavBar-Cell">
+                    <a title="NAnt home page" href="http://nant.sourceforge.net"><b>NAnt</b></a> <img src="../images/arrow.gif" alt="-&gt;" width="13" height="9" />
+                    <a href="../index.html">Help</a> <img alt="-&gt;" src="../images/arrow.gif" /> <a href="index.html">
+                        Fundamentals</a> <img height="9" alt="-&gt;" src="../images/arrow.gif" width="13" />
+                    Properties
+                </td>
+                <td class="NavBar-Cell" align="right">
+                    v0.86-beta1
+                </td>
+            </tr>
+        </table>
+        <h1>Properties</h1>
+        <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+        <h2><a id="contents" />Contents</h2>
+        <div>
+            1 <a href="#introduction">Introduction</a><br />
+            2 <a href="#naming-rules">Naming rules</a><br />
+            3 <a href="#built-in-properties">Built-in Properties</a><br />
+            <div style="margin-left: 20px;">
+                3.1 <a href="#framework-related-properties">Framework related Properties</a><br />
+                3.2 <a href="#platform-related-properties">Platform related Properties</a>
+            </div>
+            4 <a href="#readonly-properties">Read-only Properties</a><br />
+            5 <a href="#global-properties">Global Properties</a><br />
+            6 <a href="#examples">Examples</a><br />            
+        </div>
+        <h2><a id="introduction" />1 Introduction</h2>
+        <p>A project can have a set of properties.&nbsp; These might be set in the 
+            buildfile by the <a href="../tasks/property.html">&lt;property&gt;</a> task, or 
+            might be set outside NAnt.&nbsp; A property has a name and a value. Properties 
+            may be used in the value of task attributes. This is done by placing the 
+            property name between "<code>${</code>" and "<code>}</code>" in the attribute 
+            value. Properties may also be used in <a href="expressions.html">expressions</a>.
+        </p>
+        <h2><a id="naming-rules" />2 Naming rules</h2>
+        <p>A property name is a string of the following characters:</p>
+        <ul>
+            <li>
+                letters (<code>A-Z</code>, <code>a-z</code>),</li>
+            <li>
+                digits (<code>0-9</code>),</li>
+            <li>
+                underscore characters (<code>_</code>),</li>
+            <li>
+                dash characters (<code>-</code>),</li>
+            <li>
+                dot characters (<code>.</code>),</li>
+        </ul>
+        <p>In addition, a valid property name must start with a letter or an underscore and 
+            must end with a letter, digit or an uderscore.</p>
+        <p>Examples of valid property names include:</p>
+        <ul>
+            <li>
+                <code>propertyname</code></li>
+            <li>
+                <code>property.name.with.dots</code></li>
+            <li>
+                <code>property-name-with-dashes</code></li>
+            <li>
+                <code>property.name-with.both-dots.and-dashes</code></li>
+            <li>
+                <code>__prop---3-erty__</code></li>
+            <li>
+                <code>__prop.1...erty__</code></li>
+            <li>
+                <code>property1</code></li>
+            <li>
+                <code>property1.0</code></li>
+            <li>
+                <code>property2.0.0</code></li>
+            <li>
+                <code>_property-2-1__</code></li>
+            <li>
+                <code>property-1-name_</code></li>
+            <li>
+                <code>property-1.0-name</code></li>
+        </ul>
+        <p>The following property names are not valid in NAnt:</p>
+        <ul>
+            <li>
+                <code>!@#!@$!@</code> (contains illegal characters)</li>
+            <li>
+                <code>.aaaaa</code> (starts with a dot)</li>
+            <li>
+                <code>-aaaaa</code> (starts with a dash)</li>
+            <li>
+                <code>1aaaaa</code> (starts with a digit)</li>
+            <li>
+                <code>aaaaa.aaa.a.a.a.a-</code> (ends with a dash)</li>
+            <li>
+                <code>aaaaa.aaa.a.a.a.a.</code> (ends with a dot)</li>
+        </ul>
+        <h2><a id="built-in-properties" />3 Built-in Properties</h2>
+        <p>NAnt has these built-in properties:</p>
+        <div class="table">
+            <table>
+                <tbody>
+                    <tr>
+                        <th>
+                            Property</th>
+                        <th>
+                            Description</th>
+                    </tr>
+                    <tr>
+                        <td>nant.version</td>
+                        <td><i>Deprecated.</i> The version of NAnt.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.filename</td>
+                        <td><i>Deprecated.</i> The full path to the NAnt assembly.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.location</td>
+                        <td><i>Deprecated.</i> The base directory of the NAnt assembly.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.project.basedir</td>
+                        <td><i>Deprecated.</i> The absolute path of the project's basedir.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.project.buildfile</td>
+                        <td><i>Deprecated.</i> The absolute path of the buildfile.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.project.name</td>
+                        <td><i>Deprecated.</i> The name of the project.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.project.default</td>
+                        <td><i>Deprecated.</i> The name of the project's default target.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.onsuccess</td>
+                        <td>The name of a target to be executed when the build succeeds.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.onfailure</td>
+                        <td>The name of a target to be executed when the build fails.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3><a id="framework-related-properties" />3.1 Framework related Properties:</h3>
+        <div class="table">
+            <table>
+                <tbody>
+                    <tr>
+                        <th>
+                            Property</th>
+                        <th>
+                            Description</th>
+                    </tr>
+                    <tr>
+                        <td>nant.settings.currentframework</td>
+                        <td>The current target framework, eg. 'net-1.0'.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.settings.currentframework.description</td>
+                        <td><i>Deprecated.</i> Description of the current target framework.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.settings.currentframework.frameworkdirectory</td>
+                        <td><i>Deprecated.</i> The framework directory of the current target framework.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.settings.currentframework.sdkdirectory</td>
+                        <td><i>Deprecated.</i> The framework SDK directory of the current target framework.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.settings.currentframework.frameworkassemblydirectory</td>
+                        <td><i>Deprecated.</i> The framework assembly directory of the current target 
+                            framework.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.settings.currentframework.runtimeengine</td>
+                        <td><i>Deprecated.</i> The runtime engine of the current target framework if used 
+                            eg. mono.exe.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h3><a id="platform-related-properties" />3.2 Platform related Properties:</h3>
+        <div class="table">
+            <table>
+                <tbody>
+                    <tr>
+                        <th>
+                            Property</th>
+                        <th>
+                            Description</th>
+                    </tr>
+                    <tr>
+                        <td>nant.platform.name</td>
+                        <td><i>Deprecated.</i> The name of the platform on which NAnt is currently running 
+                            - either <code>win32</code> or <code>unix</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.platform.win32</td>
+                        <td><i>Deprecated.</i> Holds the value <code>true</code> if NAnt is running on the <code>
+                                win32</code> platform; otherwise, <code>false</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>nant.platform.unix</td>
+                        <td><i>Deprecated.</i> Holds the value <code>true</code> if NAnt is running on the <code>
+                                unix</code> platform; otherwise, <code>false</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h2><a id="readonly-properties" />4 Read-only Properties</h2>
+        <p>
+            A property can be explicitly marked read-only by setting the 
+            &quot;readonly&quot; attribute on the <a href="../tasks/property.html">&lt;property&gt;</a>
+            task to <b>true</b>.
+        </p>
+        <p>
+            The value of a read-only property cannot be modified after it has been set.
+        </p>
+        <p>
+            When attempting to override a read-only property using the <a href="../tasks/property.html">
+                &lt;property&gt;</a> task, the new value will be ignored and a warning 
+            message will be output in the build log. Attempting to override read-only 
+            properties using any other means (eg. other tasks) will result in a build 
+            failure.
+        </p>
+        <p><b>Note:</b> properties set on the command-line are always read-only.</p>
+        <h2><a id="global-properties" />5 Global Properties</h2>
+        <p>Properties that should be accessible to all build files on a system can be 
+            defined in the <code>&lt;properties&gt;</code> node of the NAnt configuration 
+            file (<code>NAnt.exe.config</code>).</p>
+        <p>By changing the value of the property in the NAnt configuration file, the 
+            updated value will be accessible to all build files on the system:</p>
+        <pre class="code">
+    &lt;?xml version="1.0"?&gt;
+    &lt;configuration&gt;
+        ...
+        &lt;nant&gt;
+            ...
+            &lt;properties&gt;
+                &lt;!-- properties defined here are accessible to all build files --&gt;
+                &lt;property name="company.name" value="Foo Ltd." readonly="true" /&gt;
+            &lt;/properties&gt;
+        &lt;/nant&gt;
+    &lt;/configuration&gt;
+        </pre>
+                <p>Individual build files can then use this property:</p>
+                <pre class="code">
+    &lt;?xml version="1.0"?&gt;
+    &lt;project name="test"&gt;
+        &lt;echo message="Company: ${company.name}" /&gt;
+    &lt;/project&gt;
+        </pre>
+        <p>The output of this build is:</p>
+        <pre>
+    [echo] Company: Foo Ltd.
+        </pre>
+        <h2><a id="example" /> 6 Examples</h2>
+        <p>The following build file demonstrates the use of property expansion:</p>
+        <pre class="code">
+    &lt;?xml version="1.0"?&gt;
+    &lt;project name="Property Test" default="test" basedir="."&gt;
+        &lt;property name="project.name" value="PropertyTest"/&gt;
+        &lt;property name="project.version" value="1.0.0"/&gt;
+        &lt;target name="test"&gt;
+            &lt;echo message="Building ${project.name}-${project.version}"/&gt;
+        &lt;/target&gt;
+    &lt;/project&gt;
+        </pre>
+        <p>The output of this build is:</p>
+        <pre>
+    [echo] Building PropertyTest-1.0.0
+        </pre>
+        <p>The following build file demonstrates the use of properties in <a href="expressions.html">
+                expressions</a>. It evaluates the length of the property <code>project.name</code>
+            and displays it.</p>
+        <pre class="code">
+    &lt;?xml version="1.0"?&gt;
+    &lt;project name="Expression Test" default="test" basedir="."&gt;
+        &lt;property name="project.name" value="Expression Test"/&gt;
+        &lt;target name="test"&gt;
+            &lt;echo message="Project name consists of ${string::get-length(project.name)} characters."/&gt;
+        &lt;/target&gt;
+    &lt;/project&gt;
+        </pre>
+        <p>The output of this build is:</p>
+        <pre>
+   [echo] Project name consists of 15 characters.
+        </pre>
+        <h3>See Also</h3>
+        <ul>
+            <li>
+                <a href="../tasks/property.html">&lt;property&gt;</a>
+            </li>
+            <li>
+                <a href="../tasks/sysinfo.html">&lt;sysinfo&gt;</a>
+            </li>
+            <li>
+                <a href="../tasks/tstamp.html">&lt;tstamp&gt;</a>
+            </li>
+        </ul>
+    </body>
+</html>

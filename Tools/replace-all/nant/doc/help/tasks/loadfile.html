@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Tasks.LoadFileTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;loadfile&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;loadfile&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;loadfile&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Load a text file into a single property. </p>
+    <p> Unless an encoding is specified, the encoding associated with the system's current ANSI code page is used. </p>
+    <p> An UTF-8, little-endian Unicode, and big-endian Unicode encoded text file is automatically recognized, if the file starts with the appropriate byte order marks. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top" class="required">file</td>
+          <td style="text-align: center;">file</td>
+          <td> The file to load. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top" class="required">property</td>
+          <td style="text-align: center;">string</td>
+          <td> The name of the property to save the content to. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top">encoding</td>
+          <td style="text-align: center;">
+            <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemTextEncodingClassTopic.asp">Encoding</a>
+          </td>
+          <td> The encoding to use when loading the file. The default is the encoding associated with the system's current ANSI code page. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="filterchain">
+      </a>
+                    &lt;<a href="../types/filterchain.html">filterchain</a>&gt;
+                </h4>
+    <div class="nested-element"> The filterchain definition to use. <p /></div>
+    <h4>
+      <a id="filterchain">
+      </a>
+                    &lt;/<a href="../types/filterchain.html">filterchain</a>&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Load file <code>message.txt</code> into property "message". </p>
+        <pre class="code">
+&lt;loadfile
+    file="message.txt"
+    property="message" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Load a file using the "latin-1" encoding. </p>
+        <pre class="code">
+&lt;loadfile
+    file="loadfile.xml"
+    property="encoded-file"
+    encoding="iso-8859-1" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Load a file, replacing all <code>@NOW@</code> tokens with the current date/time. </p>
+        <pre class="code">
+&lt;loadfile file="token.txt" property="token-file"&gt;
+    &lt;filterchain&gt;
+        &lt;replacetokens&gt;
+            &lt;token key="NOW" value="${datetime::now()}" /&gt;
+        &lt;/replacetokens&gt;
+    &lt;/filterchain&gt;
+&lt;/loadfile&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+  </body>
+</html>

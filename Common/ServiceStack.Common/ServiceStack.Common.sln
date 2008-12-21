@@ -1,0 +1,118 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.DesignPatterns", "ServiceStack.Common.DesignPatterns\ServiceStack.Common.DesignPatterns.csproj", "{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Services", "ServiceStack.Common.Services\ServiceStack.Common.Services.csproj", "{19B65E90-CB9F-4EE1-AC22-BA697C40C323}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Wcf", "ServiceStack.Common.Wcf\ServiceStack.Common.Wcf.csproj", "{2F34E9C0-C888-4091-9EF9-D6031999A87C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Services.Tests", "ServiceStack.Common.Services.Tests\ServiceStack.Common.Services.Tests.csproj", "{79403E5B-7FF1-4AE9-8DF8-E700CD43D989}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{E74F7B37-D01A-4324-B163-03F91717DA2F}"
+	ProjectSection(SolutionItems) = preProject
+		Lib\_get-latest-libs.bat = Lib\_get-latest-libs.bat
+		Lib\ActiveMQ.dll = Lib\ActiveMQ.dll
+		Lib\log4net.dll = Lib\log4net.dll
+		Lib\Moq.dll = Lib\Moq.dll
+		Lib\Moq.pdb = Lib\Moq.pdb
+		Lib\Moq.xml = Lib\Moq.xml
+		Lib\NAnt.Core.dll = Lib\NAnt.Core.dll
+		Lib\NMS.dll = Lib\NMS.dll
+		Lib\nunit.framework.dll = Lib\nunit.framework.dll
+		Lib\nunit.framework.extensions.dll = Lib\nunit.framework.extensions.dll
+		Lib\nunit.framework.xml = Lib\nunit.framework.xml
+		Lib\ServiceStack.Logging.dll = Lib\ServiceStack.Logging.dll
+		Lib\ServiceStack.Logging.Log4Net.dll = Lib\ServiceStack.Logging.Log4Net.dll
+		Lib\ServiceStack.Logging.pdb = Lib\ServiceStack.Logging.pdb
+		Lib\ServiceStack.Messaging.ActiveMq.dll = Lib\ServiceStack.Messaging.ActiveMq.dll
+		Lib\ServiceStack.Messaging.ActiveMq.dll.config = Lib\ServiceStack.Messaging.ActiveMq.dll.config
+		Lib\ServiceStack.Messaging.ActiveMq.pdb = Lib\ServiceStack.Messaging.ActiveMq.pdb
+		Lib\ServiceStack.Messaging.dll = Lib\ServiceStack.Messaging.dll
+		Lib\ServiceStack.Messaging.pdb = Lib\ServiceStack.Messaging.pdb
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess", "ServiceStack.DataAccess\ServiceStack.DataAccess.csproj", "{D732C853-AB76-4277-B6CE-6C7DA57901B7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NHibernate", "NHibernate", "{87F3AC82-4217-4B42-9223-5DD6401E2492}"
+	ProjectSection(SolutionItems) = preProject
+		Lib\NHibernate\Castle.Core.dll = Lib\NHibernate\Castle.Core.dll
+		Lib\NHibernate\Castle.Core.xml = Lib\NHibernate\Castle.Core.xml
+		Lib\NHibernate\Castle.DynamicProxy.license.txt = Lib\NHibernate\Castle.DynamicProxy.license.txt
+		Lib\NHibernate\Castle.DynamicProxy2.dll = Lib\NHibernate\Castle.DynamicProxy2.dll
+		Lib\NHibernate\Castle.DynamicProxy2.xml = Lib\NHibernate\Castle.DynamicProxy2.xml
+		Lib\NHibernate\Iesi.Collections.dll = Lib\NHibernate\Iesi.Collections.dll
+		Lib\NHibernate\Iesi.Collections.xml = Lib\NHibernate\Iesi.Collections.xml
+		Lib\NHibernate\NHibernate.dll = Lib\NHibernate\NHibernate.dll
+		Lib\NHibernate\NHibernate.xml = Lib\NHibernate\NHibernate.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{0722888A-ECD1-44A8-B88E-5F286E0BAEFD}"
+	ProjectSection(SolutionItems) = preProject
+		Build\build-and-deploy.bat = Build\build-and-deploy.bat
+		Build\build.bat = Build\build.bat
+		Build\deploy.bat = Build\deploy.bat
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.NHibernateProvider", "ServiceStack.DataAccess.NHibernateProvider\ServiceStack.DataAccess.NHibernateProvider.csproj", "{480B3BA6-A20C-4626-8783-9865C109C83C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.NantTasks", "ServiceStack.NantTasks\ServiceStack.NantTasks.csproj", "{C1B3955F-56CA-451F-8F56-E78D1C1708F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DDA3940A-A934-4807-AAF4-006554CC146E}"
+	ProjectSection(SolutionItems) = preProject
+		BuildFile.xml = BuildFile.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Host", "ServiceStack.Common.Host\ServiceStack.Common.Host.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Host.Tests", "ServiceStack.Common.Host.Tests\ServiceStack.Common.Host.Tests.csproj", "{25C69526-F4B9-4B74-BB72-70F31FCE94A0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19B65E90-CB9F-4EE1-AC22-BA697C40C323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19B65E90-CB9F-4EE1-AC22-BA697C40C323}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19B65E90-CB9F-4EE1-AC22-BA697C40C323}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19B65E90-CB9F-4EE1-AC22-BA697C40C323}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F34E9C0-C888-4091-9EF9-D6031999A87C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F34E9C0-C888-4091-9EF9-D6031999A87C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F34E9C0-C888-4091-9EF9-D6031999A87C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F34E9C0-C888-4091-9EF9-D6031999A87C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79403E5B-7FF1-4AE9-8DF8-E700CD43D989}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79403E5B-7FF1-4AE9-8DF8-E700CD43D989}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79403E5B-7FF1-4AE9-8DF8-E700CD43D989}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79403E5B-7FF1-4AE9-8DF8-E700CD43D989}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{480B3BA6-A20C-4626-8783-9865C109C83C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{480B3BA6-A20C-4626-8783-9865C109C83C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{480B3BA6-A20C-4626-8783-9865C109C83C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{480B3BA6-A20C-4626-8783-9865C109C83C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25C69526-F4B9-4B74-BB72-70F31FCE94A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25C69526-F4B9-4B74-BB72-70F31FCE94A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25C69526-F4B9-4B74-BB72-70F31FCE94A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25C69526-F4B9-4B74-BB72-70F31FCE94A0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{87F3AC82-4217-4B42-9223-5DD6401E2492} = {E74F7B37-D01A-4324-B163-03F91717DA2F}
+	EndGlobalSection
+EndGlobal

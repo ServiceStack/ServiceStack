@@ -1,0 +1,88 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer>
+      <setting name="UsedSolutionBuilderID">0</setting>
+    </integer>
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:DataContractDeserializer.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:DataContractSerializer.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:JsonDataContractDeserializer.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:JsonDataContractSerializer.cs" caret="110" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:KeyValueDataContractDeserializer.cs" caret="124" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:XmlSerializableDeserializer.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:XmlSerializableSerializer.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Service/f:IService.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Service/f:IServiceResolver.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Service/f:IXElementService.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Service/f:IXmlService.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Service/f:IXmlServiceRequest.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Service/f:ServiceController.cs" caret="0" scrollPosition="0|75" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:LateBoundObjectTypeBuilder.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:ObjectConfigurationType.cs" caret="77" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:ObjectConfigurationTypeFactory.cs" caret="33" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:PropertyConfigurationType.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:StringConverter.cs" caret="0" scrollPosition="0|117" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Serialization/f:XmlSerializableWrapper.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Service/f:AssemblyTypeServiceResolver.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Service/f:XmlMessageInspector.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Utils/f:TypeDefinition.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/f:CommandExecsHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/f:CommandResultsHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Utils/f:AssemblyUtils.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Utils/f:CommandsUtils.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Utils/f:ConfigUtils.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Utils/f:FactoryUtils.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Utils/f:ObjectDumperUtils.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Utils/f:ReflectionUtils.cs" caret="152" scrollPosition="0|0" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernatePersistenceProvider.cs" caret="0" scrollPosition="0|0" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="0" scrollPosition="0|0" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManagerFactory.cs" caret="0" scrollPosition="0|0" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateTransaction.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManagerFactory.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManager.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="79" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:DataAccessException.cs" caret="0" scrollPosition="0|0" />
+      <File id="2F34E9C0-C888-4091-9EF9-D6031999A87C/f:ISyncReply.cs" caret="162" scrollPosition="0|0" />
+      <File id="2F34E9C0-C888-4091-9EF9-D6031999A87C/f:IOneWay.cs" caret="173" scrollPosition="0|0" />
+      <File id="2F34E9C0-C888-4091-9EF9-D6031999A87C/f:IDuplexCallback.cs" caret="173" scrollPosition="0|0" />
+      <File id="2F34E9C0-C888-4091-9EF9-D6031999A87C/f:IDuplex.cs" caret="162" scrollPosition="0|0" />
+      <File id="79403E5B-7FF1-4AE9-8DF8-E700CD43D989/d:Support/d:DataContracts/f:ArrayOfIntId.cs" caret="209" scrollPosition="0|0" />
+      <File id="79403E5B-7FF1-4AE9-8DF8-E700CD43D989/d:Support/d:DataContracts/f:GetUsers.cs" caret="161" scrollPosition="0|0" />
+      <File id="79403E5B-7FF1-4AE9-8DF8-E700CD43D989/d:Support/d:DataContracts/f:GetUsersResponse.cs" caret="196" scrollPosition="0|0" />
+      <File id="79403E5B-7FF1-4AE9-8DF8-E700CD43D989/d:Resources/f:StringResourceManagerTests.cs" caret="0" scrollPosition="0|0" />
+      <File id="79403E5B-7FF1-4AE9-8DF8-E700CD43D989/d:Crypto/f:RsaEncryptionTests.cs" caret="0" scrollPosition="0|0" />
+      <File id="79403E5B-7FF1-4AE9-8DF8-E700CD43D989/d:Crypto/f:RsaPublicKeyTests.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Crypto/f:HashUtils.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Crypto/f:RsaPrivateKey.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Crypto/f:RsaPublicKey.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Config/f:ObjectsConfigurationSectionHandler.cs" caret="1382" scrollPosition="0|9" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Extensions/f:IEnumerableExtensions.cs" caret="13" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Resources/f:StringResourceManager.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Resources/f:StringResources.cs" caret="0" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:KeyValueDataContractDeserializer.cs" caret="124" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Serialization/f:JsonDataContractSerializer.cs" caret="110" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:ObjectConfigurationType.cs" caret="77" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:ObjectConfigurationTypeFactory.cs" caret="33" scrollPosition="0|0" />
+      <File id="19B65E90-CB9F-4EE1-AC22-BA697C40C323/d:Support/d:Config/f:PropertyConfigurationType.cs" caret="0" scrollPosition="0|0" />
+    </RecentEdits>
+  </RecentFiles>
+  <UnitTestRunner>
+    <CustomStartDirectory>
+    </CustomStartDirectory>
+    <UseShadowCopy>True</UseShadowCopy>
+    <UseCustomFolder>False</UseCustomFolder>
+    <EnableUnitTesting>True</EnableUnitTesting>
+    <Providers />
+  </UnitTestRunner>
+</Configuration>

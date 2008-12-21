@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<project name="Simple" default="build">
+    <target name="build" description="compiles the source code">
+        <csc target="library" output="SimpleExtension.dll" debug="None">
+            <sources>
+                <include name="SimpleExtension.cs" />
+            </sources>
+        </csc>
+
+        <style style='circle.xsl' in='circles.xml' out='circle-out.xml' >
+            <extensionobjects>
+                <extensionobject namespaceuri="urn:Calculate" typename="Calculate" assembly="SimpleExtension.dll" />
+            </extensionobjects>
+        </style>
+    </target>
+
+    <target name="clean" description="remove build output">
+        <delete>
+            <fileset>
+                <!-- we do not remove the built extension assembly as it might be in use -->
+                <include name="circle-out.xml" />
+            </fileset>
+        </delete>
+    </target>
+</project>

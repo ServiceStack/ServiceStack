@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting GetDaysInMonth-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>datetime::get-days-in-month Function</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="index.html">Function Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> datetime::get-days-in-month</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>datetime::get-days-in-month</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Returns the number of days in the specified month of the specified year. </p>
+    <h3>Usage</h3>
+    <code>int datetime::get-days-in-month(<span class="parameter">year</span>, <span class="parameter">month</span>)
+            </code>
+    <p />
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>year</td>
+          <td>int</td>
+          <td>The year.</td>
+        </tr>
+        <tr>
+          <td>month</td>
+          <td>int</td>
+          <td>The month (a number ranging from 1 to 12).</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Return Value</h3> The number of days in <i>month</i> for the specified <i>year</i>. <h3>Exceptions</h3>
+            The function will fail in any of the following circumstances:
+            <div style="margin-left: 40px;"><ul><li><i>month</i> is less than 1 or greater than 12.</li></ul></div><h3>Requirements</h3><div style="margin-left: 20px;"><b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div></body>
+</html>

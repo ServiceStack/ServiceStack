@@ -1,0 +1,90 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{28FD6823-2872-4187-9F9D-068842F07513}"
+	ProjectSection(SolutionItems) = preProject
+		Lib\_get-latest-libs.bat = Lib\_get-latest-libs.bat
+		Lib\ActiveMQ.dll = Lib\ActiveMQ.dll
+		Lib\ServiceStack.Common.DesignPatterns.dll = Lib\ServiceStack.Common.DesignPatterns.dll
+		Lib\ServiceStack.Common.DesignPatterns.pdb = Lib\ServiceStack.Common.DesignPatterns.pdb
+		Lib\ServiceStack.Common.Services.dll = Lib\ServiceStack.Common.Services.dll
+		Lib\ServiceStack.Common.Services.pdb = Lib\ServiceStack.Common.Services.pdb
+		Lib\ServiceStack.Logging.dll = Lib\ServiceStack.Logging.dll
+		Lib\ServiceStack.Logging.pdb = Lib\ServiceStack.Logging.pdb
+		Lib\eastenders.xml = Lib\eastenders.xml
+		Lib\ICSharpCode.SharpZipLib-1.1.dll = Lib\ICSharpCode.SharpZipLib-1.1.dll
+		Lib\ICSharpCode.SharpZipLib.dll = Lib\ICSharpCode.SharpZipLib.dll
+		Lib\log4net.1.2.10.dll = Lib\log4net.1.2.10.dll
+		Lib\log4net.1.2.9.dll = Lib\log4net.1.2.9.dll
+		Lib\NMS.dll = Lib\NMS.dll
+		Lib\nunit.framework.dll = Lib\nunit.framework.dll
+		Lib\Rhino.Mocks.dll = Lib\Rhino.Mocks.dll
+		Lib\Rhino.Mocks.xml = Lib\Rhino.Mocks.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging.ActiveMq", "ServiceStack.Messaging.ActiveMq\ServiceStack.Messaging.ActiveMq.csproj", "{F486CEFE-2B2D-43FD-B53D-712C133007F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging", "ServiceStack.Messaging\ServiceStack.Messaging.csproj", "{2602EACD-52AD-4858-9A5F-1670558CDEB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging.Tests", "ServiceStack.Messaging.Tests\ServiceStack.Messaging.Tests.csproj", "{EEAFCD3F-0026-43B0-909C-DE27FEBEABC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging.UseCases", "ServiceStack.Messaging.UseCases\ServiceStack.Messaging.UseCases.csproj", "{1C6F03D4-3F4F-494B-9A75-665FFD7DAAA2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A142620D-93D4-4743-85F2-175DB5D974A0}"
+	ProjectSection(SolutionItems) = preProject
+		BuildFile.xml = BuildFile.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging.Tests.Integration", "ServiceStack.Messaging.Tests.Integration\ServiceStack.Messaging.Tests.Integration.csproj", "{F2DC0FC3-28B5-4EBF-AC3C-E98747F583F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F486CEFE-2B2D-43FD-B53D-712C133007F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F486CEFE-2B2D-43FD-B53D-712C133007F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F486CEFE-2B2D-43FD-B53D-712C133007F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F486CEFE-2B2D-43FD-B53D-712C133007F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2602EACD-52AD-4858-9A5F-1670558CDEB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2602EACD-52AD-4858-9A5F-1670558CDEB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2602EACD-52AD-4858-9A5F-1670558CDEB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2602EACD-52AD-4858-9A5F-1670558CDEB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEAFCD3F-0026-43B0-909C-DE27FEBEABC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEAFCD3F-0026-43B0-909C-DE27FEBEABC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEAFCD3F-0026-43B0-909C-DE27FEBEABC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEAFCD3F-0026-43B0-909C-DE27FEBEABC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C6F03D4-3F4F-494B-9A75-665FFD7DAAA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C6F03D4-3F4F-494B-9A75-665FFD7DAAA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C6F03D4-3F4F-494B-9A75-665FFD7DAAA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C6F03D4-3F4F-494B-9A75-665FFD7DAAA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2DC0FC3-28B5-4EBF-AC3C-E98747F583F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2DC0FC3-28B5-4EBF-AC3C-E98747F583F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2DC0FC3-28B5-4EBF-AC3C-E98747F583F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2DC0FC3-28B5-4EBF-AC3C-E98747F583F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 6
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://wwldbms1021:8080/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Bbc.Ww.Services.Messaging\\Bbc.Ww.Services.Messaging.csproj
+		SccProjectName1 = Bbc.Ww.Services.Messaging
+		SccLocalPath1 = Bbc.Ww.Services.Messaging
+		SccProjectUniqueName2 = Bbc.Ww.Services.Messaging.ActiveMq\\Bbc.Ww.Services.Messaging.ActiveMq.csproj
+		SccProjectName2 = Bbc.Ww.Services.Messaging.ActiveMq
+		SccLocalPath2 = Bbc.Ww.Services.Messaging.ActiveMq
+		SccProjectUniqueName3 = Bbc.Ww.Services.Messaging.ActiveMqv1\\Bbc.Ww.Services.Messaging.ActiveMqv1.csproj
+		SccProjectName3 = Bbc.Ww.Services.Messaging.ActiveMqv1
+		SccLocalPath3 = Bbc.Ww.Services.Messaging.ActiveMqv1
+		SccProjectUniqueName4 = Bbc.Ww.Services.Messaging.Tests\\Bbc.Ww.Services.Messaging.Tests.csproj
+		SccProjectName4 = Bbc.Ww.Services.Messaging.Tests
+		SccLocalPath4 = Bbc.Ww.Services.Messaging.Tests
+		SccProjectUniqueName5 = Bbc.Ww.Services.Messaging.UseCases\\Bbc.Ww.Services.Messaging.UseCases.csproj
+		SccProjectName5 = Bbc.Ww.Services.Messaging.UseCases
+		SccLocalPath5 = Bbc.Ww.Services.Messaging.UseCases
+	EndGlobalSection
+EndGlobal

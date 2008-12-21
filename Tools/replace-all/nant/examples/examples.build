@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<project name="NAnt Examples" default="build">
+    <target name="*">
+        <nant target="${target::get-current-target()}">
+            <buildfiles>
+                <include name="**/*.build" />
+
+                <!-- avoid recursive execution of current build file -->
+                <exclude name="${project::get-buildfile-path()}" />
+
+                <exclude name="ScriptTask/script-sample.build" />
+                <exclude name="Solution/**/*.build"/>
+            </buildfiles>
+        </nant>
+    </target>
+</project>

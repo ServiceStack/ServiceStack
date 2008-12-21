@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.NUnit2.Types.NUnit2Test-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;test&gt; Element</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <span>Element Reference</span>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;test&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;test&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Represents a <code>test</code> element of an <a href="../tasks/nunit2.html">&lt;nunit2&gt;</a> task. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">appconfig</td>
+          <td style="text-align: center;">file</td>
+          <td> The application configuration file to use for the NUnit test domain. If not specified, NAnt will try to use a configuration name matching the file name of the assembly with extension ".config". </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">assemblyname</td>
+          <td style="text-align: center;">file</td>
+          <td> Name of the assembly to search for tests. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">haltonfailure</td>
+          <td style="text-align: center;">bool</td>
+          <td> Build fails on failure. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">testname</td>
+          <td style="text-align: center;">string</td>
+          <td> Name of a specific testfixture to run. If not specified then all testfixtures are run. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">transformfile</td>
+          <td style="text-align: center;">file</td>
+          <td> XSLT transform file to use when using the <code>Plain</code> formatter. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="assemblies">
+      </a>
+                    &lt;<a href="../types/assemblyfileset.html">assemblies</a>&gt;
+                </h4>
+    <div class="nested-element"> Assemblies to include in test. <p /></div>
+    <h4>
+      <a id="assemblies">
+      </a>
+                    &lt;/<a href="../types/assemblyfileset.html">assemblies</a>&gt;
+                </h4>
+    <!--Element-->
+    <h4>
+      <a id="categories">
+      </a>
+                    &lt;<a href="../types/categories.html">categories</a>&gt;
+                </h4>
+    <div class="nested-element"> Categories of test cases to include or exclude. <p /></div>
+    <h4>
+      <a id="categories">
+      </a>
+                    &lt;/<a href="../types/categories.html">categories</a>&gt;
+                </h4>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.NUnit2Tasks (0.86.2898.0)
+            </div>
+  </body>
+</html>

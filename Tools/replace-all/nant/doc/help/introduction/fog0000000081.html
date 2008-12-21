@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Language" content="en-ca" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="description" content="Ant Users" />
+        <link rel="stylesheet" type="text/css" href="../style.css" />
+        <title>Ant Users</title>
+    </head>
+    <body>
+        <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+            <tr>
+                <td class="NavBar-Cell">
+                    <a title="NAnt home page" href="http://nant.sourceforge.net"><b>NAnt</b></a> 
+                    <img alt="->" src="../images/arrow.gif" /> 
+                    <a href="../index.html">Help</a> 
+                    <img alt="->" src="../images/arrow.gif" /> 
+                    <a href="index.html">Introduction</a> <img height="9" alt="->" src="../images/arrow.gif" width="13" />
+                    Ant Users
+                </td>
+                <td class="NavBar-Cell" align="right">
+                    v0.86-beta1
+                </td>
+            </tr>
+        </table>
+        <h1>Ant Users</h1>
+        <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+        <p>If you have used Ant before than NAnt should feel comfortable but NAnt is only compatible with Ant in spirit.&nbsp;&nbsp; Here is a partial list of differences:</p>
+        <ul>
+            <li>Tasks do not have to be in a target.&nbsp; Tasks that appear directly in the project are executed inorder before any tasks in targets are executed.</li>
+            <li><strong>nant.onsuccess</strong> and <strong>nant.onfailure</strong> properties can be defined target names that will be executed at the end of the build.</li>
+            <li>NAnt looks for the first file ending in <strong>.build</strong> instead of build.xml.</li>
+        </ul>
+    </body>
+</html>

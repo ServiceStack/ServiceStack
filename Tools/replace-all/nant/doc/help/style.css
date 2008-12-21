@@ -1,0 +1,213 @@
+body {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 90%;
+    background: white;
+    color: black;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif;
+}
+
+h1.LinkHeader, h2.LinkHeader, h3.LinkHeader {
+    margin-bottom: -18px;
+}
+
+h4 {
+    margin-bottom: 0.5em;
+}
+
+hr {
+    color: gray;
+    background-color: inherit;
+}
+
+input {
+    font-family: Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif;
+}
+
+a:link {
+    color: #0000cc;
+    background-color: inherit;
+}
+
+a:visited {
+    color: purple;
+    background-color: inherit;
+}
+
+a:active {
+    color: #cc0000;
+    background-color: inherit;
+}
+
+a:hover {
+    color: #cc0000;
+    background-color: inherit;
+}
+
+a.heading:link {
+    color: black;
+    background-color: inherit;
+    text-decoration: none;
+}
+
+a.heading:visited {
+    color: black;
+    background-color: inherit;
+    text-decoration: none;
+}
+
+a.heading:active {
+    color: black;
+    background-color: inherit;
+    text-decoration: none;
+}
+
+a.heading:hover {
+    color: #0000cc;
+    background-color: inherit;
+}
+
+.NavBar {
+    color: black;
+    background-color: #dfff80;
+    border-color: #999966;
+    border-style: none none solid none;
+    border-width: 2px;
+}
+
+.NavBar-Cell {
+    font-family: Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif;
+    font-size: 79%;
+}
+
+.SideBar {
+    font-size: 80%;
+    font-family: Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif;
+    padding: 8px;
+}
+
+div.table {
+    margin-left: 40px;
+    font-family: Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif;
+    font-size: 80%;
+}
+
+div.nested-element {
+    margin-left: 40px;
+    position: relative;
+}
+
+div.nested-element table {
+    font-size: 100%;
+    border-collapse: collapse;
+    width: 710px;
+}
+
+.table table {
+    font-size: 100%;
+    border-collapse: collapse;
+    width: 93%;
+}
+
+.table th {
+    background-color: #eeeeee;
+    color: #000000;
+    font-weight: bolder;
+    padding: 5px;
+    border: 1px solid #999999;
+    text-align: left;
+}
+
+.table td {
+    border: 1px solid #999999;
+    padding: 5px;
+}
+
+.table td.section {
+    border: 1px solid #999999;
+    background-color: #f0f0e0;
+    padding: 5px;
+    font-weight: bold;
+}
+
+.N {
+    color: #99cc00;
+    background-color: inherit;
+}
+
+.Ant {
+    color: #ff9900;
+    background-color: inherit;
+}
+
+pre {
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+
+code {
+    font-family: Monospace, Courier New, Courier;
+    background-color: inherit;
+    color: #0000AA;
+    font-size: 100%;
+}
+
+pre.code {
+    font-family: Monospace, Courier New, Courier;
+    background-color: inherit;
+    color: #0000AA;
+    font-size: 100%;
+}
+
+pre.syntax {
+    background-color: #cccccc;
+    padding: 4px 8px;
+    cursor: text;
+    margin-top: 1em;
+    margin-bottom: 1em; 
+    color: #000000;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #999999;
+}
+
+span.code {
+    font-family: Monospace, Courier New, Courier;
+    background-color: inherit;
+    color: #0000AA;
+    font-size: 100%;
+}
+
+span.expression {
+    font-family: Monospace, Courier New, Courier;
+    background-color: inherit;
+    color: #0000AA;
+    font-weight: bold;
+    font-size: 100%;
+}
+
+tr.required {
+}
+
+td.required {
+    font-weight: bolder;
+}
+
+.missing {
+    color: red;
+}
+
+span.parameter {
+    color: #606080;
+}
+
+p.topicstatus {
+    display: block;
+    color: red;
+}
+
+ul.examples {
+	list-style-type: lower-roman;
+}

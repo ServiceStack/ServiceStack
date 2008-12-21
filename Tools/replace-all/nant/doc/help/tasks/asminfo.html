@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.DotNet.Tasks.AssemblyInfoTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;asminfo&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;asminfo&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;asminfo&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Generates an AssemblyInfo file using the attributes given. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top" class="required">language</td>
+          <td style="text-align: center;">
+            <a href="../enums/NAnt.DotNet.Tasks.AssemblyInfoTask.CodeLanguage.html">CodeLanguage</a>
+          </td>
+          <td> The code language in which the AssemblyInfo file should be generated. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top" class="required">output</td>
+          <td style="text-align: center;">file</td>
+          <td> Name of the AssemblyInfo file to generate. </td>
+          <td style="text-align: center;">True</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Collection-->
+    <h4>
+      <a id="attributes">
+      </a>
+            &lt;attributes&gt;
+        </h4>
+    <div class="nested-element"> The assembly-level attributes to generate. <h5>&lt;attribute&gt;</h5><div class="nested-element"><p> Represents an assembly-level attribute. </p><h3>Parameters</h3><div class="table"><table><tr><th>Attribute</th><th style="text-align: center;">Type</th><th>Description</th><th style="text-align: center;">Required</th></tr><tr><td valign="top" class="required">type</td><td style="text-align: center;">string</td><td> Typename of the assembly-level attribute. </td><td style="text-align: center;">True</td></tr><tr><td valign="top">asis</td><td style="text-align: center;">bool</td><td> If <b>true</b> then the value of the attribute will be set as is, without actually looking for a matching constructor or named properties. The default is <b>false</b>. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">if</td><td style="text-align: center;">bool</td><td> Indicates if the attribute should be generated. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">unless</td><td style="text-align: center;">bool</td><td> Indicates if the attribute should be not generated. </td><td style="text-align: center;">False</td></tr><tr><td valign="top">value</td><td style="text-align: center;">string</td><td> Value of the attribute. </td><td style="text-align: center;">False</td></tr></table></div></div><h5>&lt;/attribute&gt;</h5></div>
+    <h4>&lt;/attributes&gt;</h4>
+    <!--Element-->
+    <h4>
+      <a id="imports">
+      </a>
+                    &lt;<a href="../types/namespaceimports.html">imports</a>&gt;
+                </h4>
+    <div class="nested-element"> The namespaces to import. <p /></div>
+    <h4>
+      <a id="imports">
+      </a>
+                    &lt;/<a href="../types/namespaceimports.html">imports</a>&gt;
+                </h4>
+    <!--Element-->
+    <h4>
+      <a id="references">
+      </a>
+                    &lt;<a href="../types/assemblyfileset.html">references</a>&gt;
+                </h4>
+    <div class="nested-element"> Assembly files used to locate the types of the specified attributes. <p /></div>
+    <h4>
+      <a id="references">
+      </a>
+                    &lt;/<a href="../types/assemblyfileset.html">references</a>&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Create a C# AssemblyInfo file containing the specified assembly-level attributes. </p>
+        <pre class="code">
+&lt;asminfo output="AssemblyInfo.cs" language="CSharp"&gt;
+    &lt;imports&gt;
+        &lt;import namespace="System" /&gt;
+        &lt;import namespace="System.Reflection" /&gt;
+        &lt;import namespace="System.EnterpriseServices" /&gt;
+        &lt;import namespace="System.Runtime.InteropServices" /&gt;
+    &lt;/imports&gt;
+    &lt;attributes&gt;
+        &lt;attribute type="ComVisibleAttribute" value="false" /&gt;
+        &lt;attribute type="CLSCompliantAttribute" value="true" /&gt;
+        &lt;attribute type="AssemblyVersionAttribute" value="1.0.0.0" /&gt;
+        &lt;attribute type="AssemblyTitleAttribute" value="My fun assembly" /&gt;
+        &lt;attribute type="AssemblyDescriptionAttribute" value="More fun than a barrel of monkeys" /&gt;
+        &lt;attribute type="AssemblyCopyrightAttribute" value="Copyright (c) 2002, Monkeyboy, Inc." /&gt;
+        &lt;attribute type="ApplicationNameAttribute" value="FunAssembly" /&gt;
+    &lt;/attributes&gt;
+    &lt;references&gt;
+        &lt;include name="System.EnterpriseServices.dll" /&gt;
+    &lt;/references&gt;
+&lt;/asminfo&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Create a C# AssemblyInfo file containing an attribute with multiple named properties by setting the <code>asis</code> attribute on the <a href="../elements/NAnt.DotNet.Types.AssemblyAttribute.html">AssemblyAttribute</a> element to <b>true</b>. </p>
+        <pre class="code">
+&lt;asminfo output="AssemblyInfo.cs" language="CSharp"&gt;
+    &lt;imports&gt;
+        &lt;import namespace="log4net.Config" /&gt;
+    &lt;/imports&gt;
+    &lt;attributes&gt;
+        &lt;attribute type="DOMConfiguratorAttribute" value="ConfigFile=&amp;quot;config.log4net&amp;quot;,Watch=true" asis="true" /&gt;
+    &lt;/attributes&gt;
+    &lt;references&gt;
+        &lt;include name="log4net.dll" /&gt;
+    &lt;/references&gt;
+&lt;/asminfo&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.DotNetTasks (0.86.2898.0)
+            </div>
+  </body>
+</html>

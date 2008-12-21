@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="NAnt" default="run">
+    <!-- Compile the test task and add it then use it. -->
+    <target name="build">
+        <mkdir dir="bin" />
+        <csc target="library" output="bin/ReplaceCharacter.dll">
+            <sources>
+                <include name="ReplaceCharacter.cs"/>
+            </sources>
+            <references basedir="${nant::get-base-directory()}">
+                <include name="NAnt.Core.dll" />
+            </references>
+        </csc>
+    </target>
+
+    <target name="run" depends="build">
+        <!-- dynamically load the filter in the assembly. -->
+        <loadtasks assembly="bin/ReplaceCharacter.dll" />
+        <!-- 
+            copy the 'ReplaceCharacter.cs' file to 'out.txt' and use our custom
+            filter to replace all 'a' characters with '-'.
+        -->
+        <copy file="ReplaceCharacter.cs" tofile="out.txt">
+            <filterchain>
+                <replacecharacter from="a" to="-" />
+            </filterchain>
+        </copy>
+    </target>
+
+    <target name="clean">
+        <!-- delete the build output. -->
+        <delete>
+            <fileset>
+                <include name="bin/ReplaceCharacter.dll" />
+                <include name="out.txt" />
+            </fileset>
+        </delete>
+    </target>
+</project>

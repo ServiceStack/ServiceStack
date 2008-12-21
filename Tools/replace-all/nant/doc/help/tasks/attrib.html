@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!-- Documenting T:NAnt.Core.Tasks.AttribTask-->
+  <head>
+    <meta http-equiv="Content-Language" content="en-ca" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+    <title>&lt;attrib&gt; Task</title>
+  </head>
+  <body>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2" class="NavBar">
+      <tr>
+        <td class="NavBar-Cell">
+          <a href="http://nant.sourceforge.net">
+            <b>NAnt</b>
+          </a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../index.html">Help</a>
+          <img alt="-&gt;" src="../images/arrow.gif" />
+          <a href="../tasks/index.html">Task Reference</a>
+          <img alt="-&gt;" src="../images/arrow.gif" /> &lt;attrib&gt;</td>
+        <td class="NavBar-Cell" align="right">
+                        v0.86-beta1</td>
+      </tr>
+    </table>
+    <h1>&lt;attrib&gt;</h1>
+    <p class="topicstatus">[This is preliminary documentation and subject to change.]</p>
+    <p> Changes the file attributes of a file or set of files and directories. </p>
+    <p>
+      <a href="../tasks/attrib.html">&lt;attrib&gt;</a> task does not have the concept of turning attributes off. Instead you specify all the attributes that you want turned on and the rest are turned off by default. </p>
+    <p> Refer to the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfSystemIOFileAttributesClassTopic.asp">FileAttributes</a> enumeration in the .NET SDK for more information about file attributes. </p>
+    <h3>Parameters</h3>
+    <div class="table">
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th style="text-align: center;">Type</th>
+          <th>Description</th>
+          <th style="text-align: center;">Required</th>
+        </tr>
+        <tr>
+          <td valign="top">archive</td>
+          <td style="text-align: center;">bool</td>
+          <td> Set the archive attribute. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">file</td>
+          <td style="text-align: center;">file</td>
+          <td> The name of the file which will have its attributes set. This is provided as an alternate to using the task's fileset. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">hidden</td>
+          <td style="text-align: center;">bool</td>
+          <td> Set the hidden attribute. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">normal</td>
+          <td style="text-align: center;">bool</td>
+          <td> Set the normal file attributes. This attribute is only valid if used alone. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">readonly</td>
+          <td style="text-align: center;">bool</td>
+          <td> Set the read-only attribute. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">system</td>
+          <td style="text-align: center;">bool</td>
+          <td> Set the system attribute. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">failonerror</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines if task failure stops the build, or is just reported. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">if</td>
+          <td style="text-align: center;">bool</td>
+          <td> If <b>true</b> then the task will be executed; otherwise, skipped. The default is <b>true</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">unless</td>
+          <td style="text-align: center;">bool</td>
+          <td> Opposite of <code>if</code>. If <b>false</b> then the task will be executed; otherwise, skipped. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+        <tr>
+          <td valign="top">verbose</td>
+          <td style="text-align: center;">bool</td>
+          <td> Determines whether the task should report detailed build log messages. The default is <b>false</b>. </td>
+          <td style="text-align: center;">False</td>
+        </tr>
+      </table>
+    </div>
+    <h3>Nested Elements:</h3>
+    <!--Element-->
+    <h4>
+      <a id="fileset">
+      </a>
+                    &lt;<a href="../types/fileset.html">fileset</a>&gt;
+                </h4>
+    <div class="nested-element"> All the matching files and directories in this fileset will have their attributes set. <p /></div>
+    <h4>
+      <a id="fileset">
+      </a>
+                    &lt;/<a href="../types/fileset.html">fileset</a>&gt;
+                </h4>
+    <h3>Examples</h3>
+    <ul class="examples">
+      <li>
+        <p> Set the <code>read-only</code> file attribute for the specified file in the project directory. </p>
+        <pre class="code">
+&lt;attrib file="myfile.txt" readonly="true" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Set the <code>normal</code> file attribute for the specified file. </p>
+        <pre class="code">
+&lt;attrib file="myfile.txt" normal="true" /&gt;
+    </pre>
+      </li>
+      <li>
+        <p> Set the <code>normal</code> file attribute for all executable files in the current project directory and sub-directories. </p>
+        <pre class="code">
+&lt;attrib normal="true"&gt;
+    &lt;fileset&gt;
+        &lt;include name="**/*.exe" /&gt;
+        &lt;include name="bin" /&gt;
+    &lt;/fileset&gt;
+&lt;/attrib&gt;
+    </pre>
+      </li>
+    </ul>
+    <h3>Requirements</h3>
+    <div style="margin-left: 20px;">
+      <b>Assembly:</b> NAnt.Core (0.86.2898.0)
+            </div>
+  </body>
+</html>
