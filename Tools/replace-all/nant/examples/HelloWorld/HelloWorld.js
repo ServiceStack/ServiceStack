@@ -1,1 +1,0 @@
-print("Hello World using JScript.NET");
