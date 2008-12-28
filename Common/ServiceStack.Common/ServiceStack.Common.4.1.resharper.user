@@ -1,0 +1,160 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer>
+      <setting name="UsedSolutionBuilderID">0</setting>
+    </integer>
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:CallContext.cs" caret="13" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:MessagingRestrictionAttribute.cs" caret="13" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:MessagingRestriction.cs" caret="0" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:IXmlServiceRequest.cs" caret="0" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:IXmlService.cs" caret="0" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:IXElementService.cs" caret="0" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:IServiceResolver.cs" caret="0" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:XmlRequestDto.cs" caret="307" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2633" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:XmlMessageInspector.cs" caret="839" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidEmailAttribute.cs" caret="795" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSessionManager.cs" caret="0" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSession.cs" caret="98" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSessionsTuple.cs" caret="48" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSession.cs" caret="17" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:AppContext.cs" caret="313" scrollPosition="0|0" />
+      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:ServiceStackMemcachedClient.cs" caret="379" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:BaseServiceResolver.cs" caret="1317" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:IService.cs" caret="0" scrollPosition="0|0" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractSerializer.cs" caret="229" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidCreditCardAttribute.cs" caret="973" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:CardType.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Endpoints/f:BaseSoap11MetadataHandler.cs" caret="596" scrollPosition="0|0" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/f:ServiceModelInfo.cs" caret="768" scrollPosition="0|3" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:ValidatableCreditCard.cs" caret="96" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-core.bat" caret="1205" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:IValidatableCreditCard.cs" caret="290" scrollPosition="0|0" />
+      <File id="d:Miscellaneous Files/f:Web.config" caret="4683" scrollPosition="0|36" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:XmlMessageInspector.cs" caret="1399" scrollPosition="0|23" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:XmlMessageInspector.cs" caret="0" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="1702" scrollPosition="0|30" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="3784" scrollPosition="0|74" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:XmlRequestDto.cs" caret="81" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:XmlRequestDto.cs" caret="307" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="358" scrollPosition="0|1" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:BaseServiceResolver.cs" caret="1247" scrollPosition="0|9" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidEmailAttribute.cs" caret="52" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidEmailAttribute.cs" caret="525" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSession.cs" caret="17" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSessionsTuple.cs" caret="48" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSession.cs" caret="98" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSessionManager.cs" caret="81" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSessionManager.cs" caret="2906" scrollPosition="0|71" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Endpoints/f:BaseSoap11MetadataHandler.cs" caret="877" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Endpoints/f:BaseSoap11MetadataHandler.cs" caret="380" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Endpoints/f:BaseSoap11MetadataHandler.cs" caret="15" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:IValidatableCreditCard.cs" caret="285" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:IValidatableCreditCard.cs" caret="92" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:IValidatableCreditCard.cs" caret="285" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:IValidatableCreditCard.cs" caret="95" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:IValidatableCreditCard.cs" caret="95" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-core.bat" caret="1205" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-core.bat" caret="77" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:IValidatableCreditCard.cs" caret="289" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Model/f:ValidatableCreditCard.cs" caret="75" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-core.bat" caret="855" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-core.bat" caret="669" scrollPosition="0|3" />
+    </RecentEdits>
+  </RecentFiles>
+  <UnitTestRunner>
+    <CustomStartDirectory>
+    </CustomStartDirectory>
+    <UseShadowCopy>True</UseShadowCopy>
+    <UseCustomFolder>False</UseCustomFolder>
+    <EnableUnitTesting>True</EnableUnitTesting>
+    <Providers />
+  </UnitTestRunner>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="var" priority="2" />
+      <Item value="typeof" priority="0" />
+      <Item value="private" priority="0" />
+      <Item value="class" priority="0" />
+      <Item value="log" priority="0" />
+      <Item value="Load" priority="0" />
+      <Item value="type" priority="3" />
+      <Item value="TypeDefinition" priority="3" />
+      <Item value="Dictionary" priority="0" />
+      <Item value="Type" priority="0" />
+      <Item value="new" priority="1" />
+      <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
+      <Item value="public" priority="3" />
+      <Item value="string" priority="5" />
+      <Item value="return" priority="2" />
+      <Item value="object" priority="1" />
+      <Item value="if" priority="0" />
+      <Item value="TypeDefinitionMap" priority="0" />
+      <Item value="static" priority="0" />
+      <Item value="T" priority="0" />
+      <Item value="GetTypeDefinition" priority="0" />
+      <Item value="VALUE_INDEX" priority="0" />
+      <Item value="value" priority="0" />
+      <Item value="StringConverterUtils" priority="0" />
+      <Item value="enum" priority="0" />
+      <Item value="bool" priority="0" />
+      <Item value="ConfigUtils" priority="0" />
+      <Item value="OBJECTS_SECTION_NAME" priority="2" />
+      <Item value="MemberwiseClone" priority="0" />
+      <Item value="IResourceManager" priority="0" />
+      <Item value="resourceManager" priority="1" />
+      <Item value="this" priority="2" />
+      <Item value="factoryProvider" priority="0" />
+      <Item value="configSectionName" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
+      <Item value="ContainsKey" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Common.Utils.StringConverterUtils+TypeDefinition">
+      <Item value="GenericCollectionArgumentTypes" priority="0" />
+      <Item value="GetValue" priority="3" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Common.Utils.StringConverterUtils">
+      <Item value="Convert" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.CacheAccess.StoreMode">
+      <Item value="Set" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Enyim.Caching.Memcached.StoreMode">
+      <Item value="Add" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Logging.LogManager">
+      <Item value="LogFactory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceClient.Web.JsonServiceClient">
+      <Item value="BaseUri" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.CacheAccess.ICacheClient">
+      <Item value="Replace" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Type">
+      <Item value="FullName" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.CallContext.AppContext">
+      <Item value="ResourceManager" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.ServiceModel.Serialization.DataContractSerializer">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.ServiceModel.Serialization.DataContractDeserializer">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
+</Configuration>
