@@ -1,0 +1,242 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack.Sakila.Host.WebService</RootNamespace>
+    <AssemblyName>ServiceStack.Sakila.Host.WebService</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Enyim.Caching, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\Enyim.Caching.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\ServiceStack.Common.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Logging.Log4Net, Version=1.0.3279.950, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\ServiceStack.Logging.Log4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Providers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Lib\ServiceStack.Providers.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel.Web">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Mobile" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.cs" />
+    <Compile Include="AppSupport\AppConfig.cs" />
+    <Compile Include="Endpoints\Default.ashx.cs">
+      <DependentUpon>Default.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Soap11\Metadata\Default.ashx.cs">
+      <DependentUpon>Default.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Soap12\Metadata\Default.ashx.cs">
+      <DependentUpon>Default.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Xml\AsyncOneWay.ashx.cs">
+      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Xml\Metadata\Default.ashx.cs">
+      <DependentUpon>Default.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Xml\SyncReply.ashx.cs">
+      <DependentUpon>SyncReply.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Json\Metadata\Default.ashx.cs">
+      <DependentUpon>Default.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Json\SyncReply.ashx.cs">
+      <DependentUpon>SyncReply.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Endpoints\Soap11\AsyncOneWay.svc.cs">
+      <DependentUpon>AsyncOneWay.svc</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Endpoints\Soap11\SyncReply.svc.cs">
+      <DependentUpon>SyncReply.svc</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Soap12\Metadata\Wsdl.aspx.cs">
+      <DependentUpon>Wsdl.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Endpoints\Soap12\Metadata\Wsdl.aspx.designer.cs">
+      <DependentUpon>Wsdl.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Soap11\Metadata\Wsdl.aspx.cs">
+      <DependentUpon>Wsdl.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Endpoints\Soap11\Metadata\Wsdl.aspx.designer.cs">
+      <DependentUpon>Wsdl.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Json\AsyncOneWay.ashx.cs">
+      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Soap12\AsyncOneWay.svc.cs">
+      <DependentUpon>AsyncOneWay.svc</DependentUpon>
+    </Compile>
+    <Compile Include="Endpoints\Soap12\SyncReply.svc.cs">
+      <DependentUpon>SyncReply.svc</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SecureEndpoints\Json\AsyncOneWay.ashx.cs">
+      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="SecureEndpoints\Json\SyncReply.ashx.cs">
+      <DependentUpon>SyncReply.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="SecureEndpoints\Xml\AsyncOneWay.ashx.cs">
+      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="SecureEndpoints\Xml\SyncReply.ashx.cs">
+      <DependentUpon>SyncReply.ashx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Sakila.DomainModel\Sakila.DomainModel.csproj">
+      <Project>{1630A8AD-D745-4470-8692-8F53E553E319}</Project>
+      <Name>Sakila.DomainModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sakila.ServiceModel\Sakila.ServiceModel.csproj">
+      <Project>{07F5006E-3F8E-4201-9A0D-1BD912FEC028}</Project>
+      <Name>Sakila.ServiceModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Sakila.DataAccess\ServiceStack.Sakila.DataAccess.csproj">
+      <Project>{D8429EA2-F05E-450B-9A96-B8305E3E4D78}</Project>
+      <Name>ServiceStack.Sakila.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Sakila.Logic\ServiceStack.Sakila.Logic.csproj">
+      <Project>{D790576E-D211-42B8-8D7C-A51FD4A76D4B}</Project>
+      <Name>ServiceStack.Sakila.Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Sakila.ServiceInterface\ServiceStack.Sakila.ServiceInterface.csproj">
+      <Project>{5C528394-32F9-49DE-9D3C-B91281BF2C11}</Project>
+      <Name>ServiceStack.Sakila.ServiceInterface</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Global.asax" />
+    <Content Include="Endpoints\Soap11\AsyncOneWay.svc" />
+    <Content Include="Endpoints\Soap11\SyncReply.svc" />
+    <Content Include="Endpoints\Soap12\Metadata\Wsdl.aspx" />
+    <Content Include="Endpoints\Soap11\Metadata\Wsdl.aspx" />
+    <Content Include="Endpoints\Soap12\AsyncOneWay.svc" />
+    <Content Include="Endpoints\Soap12\SyncReply.svc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Endpoints\Json\AsyncOneWay.ashx" />
+    <Content Include="Endpoints\Json\SyncReply.ashx" />
+    <Content Include="Endpoints\Json\Metadata\Default.ashx" />
+    <Content Include="StringResources.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Endpoints\Xml\AsyncOneWay.ashx" />
+    <Content Include="Endpoints\Xml\SyncReply.ashx" />
+    <Content Include="Endpoints\Xml\Metadata\Default.ashx" />
+    <Content Include="Endpoints\Soap12\Metadata\Default.ashx" />
+    <Content Include="Endpoints\Soap11\Metadata\Default.ashx" />
+    <Content Include="Endpoints\Default.ashx" />
+    <Content Include="SecureEndpoints\Json\SyncReply.ashx" />
+    <Content Include="SecureEndpoints\Json\AsyncOneWay.ashx" />
+    <Content Include="SecureEndpoints\Xml\AsyncOneWay.ashx" />
+    <Content Include="SecureEndpoints\Xml\SyncReply.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>51404</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost/ServiceStack.Sakila.Host.WebService</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

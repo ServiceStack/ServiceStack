@@ -1,0 +1,1 @@
+<%@ ServiceHost Language="C#" Debug="true" Service="ServiceStack.Sakila.Host.WebService.Endpoints.Soap11.SyncReply" CodeBehind="SyncReply.svc.cs" %>

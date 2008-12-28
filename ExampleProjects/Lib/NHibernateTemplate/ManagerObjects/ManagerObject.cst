@@ -1,0 +1,122 @@
+<%-- 
+Name: ManagerObject.cst
+Author: Tom DuPont
+Description: Generates a Manager Object for NHibernate.
+--%>
+<%@ CodeTemplate Language="C#" Src="..\Helpers\NHibernateHelper.cs" Inherits="NHibernateHelper" TargetLanguage="C#" Debug="False" Description="Generates a Manager Object for NHibernate." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Optional="False" Category="1a. Source Table" Description="The source table to generate from." %>
+<%@ Property Name="ExcludedTables" Type="SchemaExplorer.TableSchemaCollection" Optional="True" Category="1b. Database Options" Description="A collection of tables to be excluded during generation." %>
+<%@ Property Name="TablePrefix" Type="System.String" Default="" Optional="True" Category="1b. Database Options" Description="A prefix that will be stripped from table names when class names are generated." %>
+<%@ Property Name="NHibernateVersion" Type="NHibernateVersion" Default="v1_2" Optional="False" Category="2. NHibernate" Description="The version of NHibernate to generate for." %>
+<%@ Property Name="ManagerNamespace" Type="System.String" Default="NHibernate.Generated.ManagerObjects" Optional="False" Category="3. Namespaces" Description="The desired Namespace for the Manager Objects." %>
+<%@ Property Name="BusinessNamespace" Type="System.String" Default="NHibernate.Generated.BusinessObjects" Optional="False" Category="3. Namespaces" Description="The desired Namespace for the Business Objects." %>
+<%@ Property Name="BaseNamespace" Type="System.String" Default="NHibernate.Generated.Base" Optional="False" Category="3. Namespaces" Description="The Namespace where the Base classes (BusinessBase & ManagerBase) are located." %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+<%@ Map Name="SystemCSharp" Src="System-CSharpAlias" %>
+<% List<SearchCriteria> scList = SearchCriteria.GetAllSearchCriteria(SourceTable); %>
+<% this.tablePrefix = TablePrefix; %>
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+using NHibernate;
+using <%= BusinessNamespace %>;
+using <%= BaseNamespace %>;
+
+namespace <%= ManagerNamespace %>
+{
+    public partial interface I<%= GetClassName(SourceTable) %>Manager : IManagerBase<<%= GetClassName(SourceTable) %>, <%= SystemCSharp[GetBusinessBaseIdType(SourceTable).ToString()] %>>
+    {
+		// Get Methods
+		<% foreach(SearchCriteria sc in scList) { %>
+		<% if(sc.IsPrimaryKey) { %>
+		<% if(sc.Items.Count > 1) { // Override GetById%>
+		<%= GetClassName(SourceTable) %> GetById(<%= GetMethodParameters(sc.Items, true) %>);
+		<% } %>
+		<% } else if(!ContainsForeignKey(sc, ExcludedTables)) { %>
+		<% if(sc.IsAllUnique) { %>
+		<%= GetClassName(SourceTable) %> <%= GetMethodDeclaration(sc) %>;
+		<% } else { %>
+		IList<<%= GetClassName(SourceTable) %>> <%= GetMethodDeclaration(sc) %>;
+		<% } } } %>
+    }
+
+    partial class <%= GetClassName(SourceTable) %>Manager : ManagerBase<<%= GetClassName(SourceTable) %>, <%= SystemCSharp[GetBusinessBaseIdType(SourceTable).ToString()] %>>, I<%= GetClassName(SourceTable) %>Manager
+    {
+		#region Constructors
+		
+		public <%= GetClassName(SourceTable) %>Manager() : base()
+        {
+        }
+        public <%= GetClassName(SourceTable) %>Manager(INHibernateSession session) : base(session)
+        {
+        }
+		
+		#endregion
+		
+        #region Get Methods
+
+		<% foreach(SearchCriteria sc in scList) { %>
+		<% if(sc.IsPrimaryKey) { %>
+		<% if(sc.Items.Count > 1) { // Override GetById%>
+		public override <%= GetClassName(SourceTable) %> GetById(string id)
+		{
+			string[] keys = id.Split('^');
+			
+			if(keys.Length != <%= sc.Items.Count %>)
+				throw new Exception("Invalid Id for <%= GetClassName(SourceTable) %>Manager.GetById");
+			
+			return GetById(<%= GetPrimaryKeyCallParameters(sc.Items) %>);
+		}
+		public <%= GetClassName(SourceTable) %> GetById(<%= GetMethodParameters(sc.Items, true) %>)
+		{
+			ICriteria criteria = Session.GetISession().CreateCriteria(typeof(<%= GetClassName(SourceTable) %>));
+			
+			<% foreach(MemberColumnSchema mcs in sc.Items) { %>
+			criteria.Add(<%= GetCriterionNamespace(this.NHibernateVersion) %>.Expression.Eq("<%= mcs.Name %>", <%= KeyWords[GetVariableName(mcs)] %>));
+			<% } %>
+			
+			<%= GetClassName(SourceTable) %> result = (<%= GetClassName(SourceTable) %>)criteria.UniqueResult();
+
+            if (result == null)
+                throw new NHibernate.ObjectDeletedException("", null, null);
+
+            return result;
+		}
+		
+		<% } %>
+		<% } else if(!ContainsForeignKey(sc, ExcludedTables)) { %>
+		
+		<% if(sc.IsAllUnique) { %>
+		public <%= GetClassName(SourceTable) %> <%= GetMethodDeclaration(sc) %>
+		<% } else { %>
+		public IList<<%= GetClassName(SourceTable) %>> <%= GetMethodDeclaration(sc) %>
+		<% } %>
+        {
+            ICriteria criteria = Session.GetISession().CreateCriteria(typeof(<%= GetClassName(SourceTable) %>));
+			
+			<% foreach(MemberColumnSchema mcs in sc.Items) { %>
+			<% if(mcs.IsForeignKeyMember) { %>
+			ICriteria <%= GetVariableName(GetForeignTable(mcs, SourceTable), mcs) %>Criteria = criteria.CreateCriteria("<%= GetPropertyName(GetForeignTable(mcs, SourceTable), mcs) %>");
+            <%= GetVariableName(GetForeignTable(mcs, SourceTable), mcs) %>Criteria.Add(<%= GetCriterionNamespace(this.NHibernateVersion) %>.Expression.Eq("Id", <%= KeyWords[GetVariableName(mcs)] %>));
+			<% } else { %>
+			criteria.Add(<%= GetCriterionNamespace(this.NHibernateVersion) %>.Expression.Eq("<%= GetPropertyName(mcs) %>", <%= KeyWords[GetVariableName(mcs)] %>));
+			<% } %>
+			<% } %>
+			
+			<% if(sc.IsAllUnique) { %>
+			IList<<%= GetClassName(SourceTable) %>> result = criteria.List<<%= GetClassName(SourceTable) %>>();
+			return (result.Count > 0) ? result[0] : null;
+			<% } else { %>
+			return criteria.List<<%= GetClassName(SourceTable) %>>();
+			<% } %>
+        }
+		<% } } %>
+		
+		#endregion
+    }
+}

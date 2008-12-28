@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="ServiceStack.Sakila.DataAccess.DataModel" assembly="ServiceStack.Sakila.DataAccess">
+	<class name="ServiceStack.Sakila.DataAccess.DataModel.Film, ServiceStack.Sakila.DataAccess" table="film" lazy="true">
+		<id name="Id" column="film_id">
+			<generator class="native" />
+		</id>
+		<property name="Title" column="title" />
+		<property name="Description" column="description" />
+		<property name="ReleaseYear" column="release_year" />
+		<property name="RentalDuration" column="rental_duration" />
+		<property name="RentalRate" column="rental_rate" />
+		<property name="Length" column="length" />
+		<property name="ReplacementCost" column="replacement_cost" />
+		<property name="Rating" column="rating" />
+		<property name="SpecialFeature" column="special_features" />
+		<property name="LastUpdate" column="last_update" />
+		<many-to-one name="LanguageMember" column="language_id" class="Language" />
+		<many-to-one name="LanguageMember" column="original_language_id" class="Language" />
+		<bag name="Inventories" lazy="true" cascade="all-delete-orphan"  inverse="true" >
+			<key column="film_id"></key>
+			<one-to-many class="Inventory"></one-to-many>
+		</bag>
+	</class>
+</hibernate-mapping>

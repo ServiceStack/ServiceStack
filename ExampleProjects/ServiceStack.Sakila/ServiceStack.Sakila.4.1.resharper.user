@@ -1,0 +1,236 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer>
+      <setting name="UsedSolutionBuilderID">0</setting>
+    </integer>
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:nHibernate.csp" caret="176" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Actor.generated.cs" caret="0" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Customer.cs" caret="0" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicInterface/d:Requests/f:CustomersRequest.cs" caret="130" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersPort.cs" caret="815" scrollPosition="0|3" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicInterface/f:ISakilaServiceFacade.cs" caret="229" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaServiceFacade.cs" caret="491" scrollPosition="0|0" />
+      <File id="E6170756-E72D-4A0B-AF2F-9DFBE83F5C48/f:Address.cs" caret="193" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CityTranslator.cs" caret="424" scrollPosition="0|0" />
+      <File id="E6170756-E72D-4A0B-AF2F-9DFBE83F5C48/f:City.cs" caret="119" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:AddressTranslator.cs" caret="377" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CustomerTranslator.cs" caret="635" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Country.generated.cs" caret="941" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:City.generated.cs" caret="998" scrollPosition="0|1" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:address.generated.cs" caret="208" scrollPosition="0|6" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Language.generated.cs" caret="1697" scrollPosition="0|49" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="4750" scrollPosition="0|162" />
+      <File id="E6170756-E72D-4A0B-AF2F-9DFBE83F5C48/f:Entity.cs" caret="93" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:Base/f:BusinessBase.cs" caret="2001" scrollPosition="0|20" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DomainToData/f:CustomerTranslator.cs" caret="789" scrollPosition="0|5" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestData.cs" caret="1007" scrollPosition="0|0" />
+      <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:ServiceToDomain/f:AddressFromDtoTranslator.cs" caret="0" scrollPosition="0|0" />
+      <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:ServiceToDomain/f:CustomerFromDtoTranslator.cs" caret="733" scrollPosition="0|0" />
+      <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:DomainToService/f:AddressToDtoTranslator.cs" caret="493" scrollPosition="0|0" />
+      <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:DomainToService/f:CustomerToDtoTranslator.cs" caret="705" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Customer.generated.cs" caret="205" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:GetCustomersLogicCommand.cs" caret="248" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="3639" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:SakilaServiceDataAccessProvider.cs" caret="1345" scrollPosition="0|19" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:HbmMaps/f:Customer.hbm.xml" caret="0" scrollPosition="0|0" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Validation/f:CreditCardValidationTests.cs" caret="370" scrollPosition="0|6" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Validation/f:CreditCardValidationTests.cs" caret="932" scrollPosition="0|21" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:nHibernate.csp" caret="176" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:Base/f:BusinessBase.cs" caret="2126" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CustomerTranslator.cs" caret="668" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CustomerTranslator.cs" caret="27" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CustomerTranslator.cs" caret="27" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CityTranslator.cs" caret="424" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:AddressTranslator.cs" caret="657" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CustomerTranslator.cs" caret="635" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:AddressTranslator.cs" caret="410" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Language.generated.cs" caret="434" scrollPosition="0|1" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="780" scrollPosition="0|8" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Country.generated.cs" caret="971" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:City.generated.cs" caret="998" scrollPosition="0|1" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:address.generated.cs" caret="208" scrollPosition="0|6" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Language.generated.cs" caret="1697" scrollPosition="0|49" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Language.generated.cs" caret="1697" scrollPosition="0|49" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="4750" scrollPosition="0|162" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:SakilaServiceDataAccessProvider.cs" caret="738" scrollPosition="0|10" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:SakilaServiceDataAccessProvider.cs" caret="738" scrollPosition="0|10" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DomainToData/f:CustomerTranslator.cs" caret="773" scrollPosition="0|5" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestData.cs" caret="701" scrollPosition="0|1" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestData.cs" caret="996" scrollPosition="0|1" />
+      <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:ServiceToDomain/f:CustomerFromDtoTranslator.cs" caret="731" scrollPosition="0|0" />
+      <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:DomainToService/f:CustomerToDtoTranslator.cs" caret="675" scrollPosition="0|0" />
+      <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:DomainToService/f:AddressToDtoTranslator.cs" caret="493" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="3708" scrollPosition="0|30" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:SakilaServiceDataAccessProvider.cs" caret="782" scrollPosition="0|19" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:SakilaServiceDataAccessProvider.cs" caret="1341" scrollPosition="0|19" />
+    </RecentEdits>
+  </RecentFiles>
+  <UnitTestRunner>
+    <CustomStartDirectory>
+    </CustomStartDirectory>
+    <UseShadowCopy>True</UseShadowCopy>
+    <UseCustomFolder>False</UseCustomFolder>
+    <EnableUnitTesting>True</EnableUnitTesting>
+    <Providers />
+  </UnitTestRunner>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="Customer" priority="0" />
+      <Item value="Id" priority="1" />
+      <Item value="from" priority="21" />
+      <Item value="uint" priority="0" />
+      <Item value="List" priority="0" />
+      <Item value="Customers" priority="0" />
+      <Item value="customers" priority="1" />
+      <Item value="LogManager" priority="2" />
+      <Item value="typeof" priority="1" />
+      <Item value="SakilaServiceFacade" priority="0" />
+      <Item value="public" priority="3" />
+      <Item value="enum" priority="0" />
+      <Item value="var" priority="1" />
+      <Item value="base" priority="0" />
+      <Item value="CallContext" priority="0" />
+      <Item value="ResponseStatus" priority="0" />
+      <Item value="ServiceInterface" priority="1" />
+      <Item value="Sakila" priority="1" />
+      <Item value="Version100" priority="0" />
+      <Item value="Types" priority="0" />
+      <Item value="class" priority="0" />
+      <Item value="int" priority="0" />
+      <Item value="ModelBase" priority="0" />
+      <Item value="CustomerIds" priority="4" />
+      <Item value="TestParameters" priority="0" />
+      <Item value="new" priority="5" />
+      <Item value="Cache" priority="2" />
+      <Item value="this" priority="3" />
+      <Item value="LogFactory" priority="0" />
+      <Item value="ReturnMessage" priority="0" />
+      <Item value="return" priority="2" />
+      <Item value="null" priority="4" />
+      <Item value="ModelInfo" priority="0" />
+      <Item value="object" priority="0" />
+      <Item value="throw" priority="0" />
+      <Item value="Exception" priority="0" />
+      <Item value="FirstName" priority="1" />
+      <Item value="Email" priority="2" />
+      <Item value="LastName" priority="1" />
+      <Item value="Address" priority="2" />
+      <Item value="ServiceStack" priority="0" />
+      <Item value="DataAccess" priority="0" />
+      <Item value="address" priority="1" />
+      <Item value="City" priority="2" />
+      <Item value="Line1" priority="0" />
+      <Item value="Line2" priority="0" />
+      <Item value="Country" priority="2" />
+      <Item value="if" priority="1" />
+      <Item value="CityTranslator" priority="0" />
+      <Item value="PostCode" priority="0" />
+      <Item value="AddressTranslator" priority="0" />
+      <Item value="CreateDate" priority="0" />
+      <Item value="now" priority="1" />
+      <Item value="LastUpdate" priority="1" />
+      <Item value="ushort" priority="2" />
+      <Item value="AddressFromDtoTranslator" priority="0" />
+      <Item value="AddressToDtoTranslator" priority="0" />
+      <Item value="ids" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.DomainModel.Customer">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Logging.LogManager">
+      <Item value="GetLogger" priority="1" />
+      <Item value="LogFactory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.Logic.LogicCommands.LogicCommandBase`1">
+      <Item value="Validate" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Validation.ValidationResult">
+      <Item value="Errors" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.CallContext.AppContext">
+      <Item value="ResourceManager" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Configuration.IResourceManager">
+      <Item value="GetString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.ServiceModel.Version100.Operations.GetCustomers">
+      <Item value="CustomerIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.Tests.ServiceInterface.Version100.BaseAppTestFixture">
+      <Item value="ResourceManager" priority="0" />
+      <Item value="Parameters" priority="0" />
+      <Item value="LogFactory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.Tests.ServiceInterface.Version100.ITestParameters">
+      <Item value="Cache" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.Host.WebService.App">
+      <Item value="LogFactory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Common.Utils.ReflectionUtils">
+      <Item value="Add" priority="1" />
+      <Item value="PopulateObject" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.DataAccess.DataModel.Customer">
+      <Item value="FirstName" priority="0" />
+      <Item value="Email" priority="0" />
+      <Item value="LastName" priority="0" />
+      <Item value="Active" priority="0" />
+      <Item value="addressMember" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.DataAccess.DataModel.address">
+      <Item value="CityMember" priority="2" />
+      <Item value="address" priority="0" />
+      <Item value="Address2" priority="0" />
+      <Item value="PostalCode" priority="0" />
+      <Item value="District" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.DataAccess.DataModel.City">
+      <Item value="City" priority="1" />
+      <Item value="CountryMember" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.DataAccess.DataModel.Country">
+      <Item value="Country" priority="1" />
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Sakila.Logic.Translators.DataToDomain.CityTranslator">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.Logic.Translators.DataToDomain.CityTranslator">
+      <Item value="Parse" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Sakila.Logic.Translators.DataToDomain.AddressTranslator">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Sakila.Logic.Translators.DataToDomain.AddressTranslator">
+      <Item value="Parse" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.ServiceModel.Version100.Types.Customer">
+      <Item value="FirstName" priority="0" />
+      <Item value="LastName" priority="0" />
+      <Item value="Equals" priority="0" />
+      <Item value="Address" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Sakila.ServiceModelTranslators.Version100.ServiceToDomain.AddressFromDtoTranslator">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.ServiceModelTranslators.Version100.ServiceToDomain.AddressFromDtoTranslator">
+      <Item value="Parse" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
+      <Item value="ConvertAll" priority="1" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
+</Configuration>

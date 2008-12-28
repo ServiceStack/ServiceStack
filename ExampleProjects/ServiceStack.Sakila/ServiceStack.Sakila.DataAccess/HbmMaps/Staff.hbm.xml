@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="ServiceStack.Sakila.DataAccess.DataModel" assembly="ServiceStack.Sakila.DataAccess">
+	<class name="ServiceStack.Sakila.DataAccess.DataModel.Staff, ServiceStack.Sakila.DataAccess" table="staff" lazy="true">
+		<id name="Id" column="staff_id">
+			<generator class="native" />
+		</id>
+		<property name="FirstName" column="first_name" />
+		<property name="LastName" column="last_name" />
+		<property name="Picture" column="picture" />
+		<property name="Email" column="email" />
+		<property name="Active" column="active" />
+		<property name="Username" column="username" />
+		<property name="Password" column="password" />
+		<property name="LastUpdate" column="last_update" />
+		<many-to-one name="addressMember" column="address_id" class="address" />
+		<many-to-one name="StoreMember" column="store_id" class="Store" />
+		<bag name="Payments" lazy="true" cascade="all-delete-orphan"  inverse="true" >
+			<key column="staff_id"></key>
+			<one-to-many class="Payment"></one-to-many>
+		</bag>
+		<bag name="Rentals" lazy="true" cascade="all-delete-orphan"  inverse="true" >
+			<key column="staff_id"></key>
+			<one-to-many class="Rental"></one-to-many>
+		</bag>
+		<bag name="Stores" lazy="true" cascade="all-delete-orphan"  inverse="true" >
+			<key column="manager_staff_id"></key>
+			<one-to-many class="Store"></one-to-many>
+		</bag>
+	</class>
+</hibernate-mapping>

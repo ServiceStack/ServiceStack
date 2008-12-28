@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="ServiceStack.Sakila.DataAccess.DataModel" assembly="ServiceStack.Sakila.DataAccess">
+	<class name="ServiceStack.Sakila.DataAccess.DataModel.Inventory, ServiceStack.Sakila.DataAccess" table="inventory" lazy="true">
+		<id name="Id" column="inventory_id">
+			<generator class="native" />
+		</id>
+		<property name="LastUpdate" column="last_update" />
+		<many-to-one name="FilmMember" column="film_id" class="Film" />
+		<many-to-one name="StoreMember" column="store_id" class="Store" />
+		<bag name="Rentals" lazy="true" cascade="all-delete-orphan"  inverse="true" >
+			<key column="inventory_id"></key>
+			<one-to-many class="Rental"></one-to-many>
+		</bag>
+	</class>
+</hibernate-mapping>

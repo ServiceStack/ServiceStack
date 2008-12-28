@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="ServiceStack.Sakila.DataAccess.DataModel" assembly="ServiceStack.Sakila.DataAccess">
+	<class name="ServiceStack.Sakila.DataAccess.DataModel.Language, ServiceStack.Sakila.DataAccess" table="language" lazy="true">
+		<id name="Id" column="language_id">
+			<generator class="native" />
+		</id>
+		<property name="Name" column="name" />
+		<property name="LastUpdate" column="last_update" />
+		<bag name="Films" lazy="true" cascade="all-delete-orphan"  inverse="true" >
+			<key column="language_id"></key>
+			<one-to-many class="Film"></one-to-many>
+		</bag>
+		<bag name="Films" lazy="true" cascade="all"  inverse="true" >
+			<key column="original_language_id"></key>
+			<one-to-many class="Film"></one-to-many>
+		</bag>
+	</class>
+</hibernate-mapping>
