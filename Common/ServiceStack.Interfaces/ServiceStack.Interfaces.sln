@@ -1,0 +1,66 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DesignPatterns", "ServiceStack.DesignPatterns\ServiceStack.DesignPatterns.csproj", "{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Logging", "ServiceStack.Logging\ServiceStack.Logging.csproj", "{4A2CC4DB-3C30-4455-B442-10E598E77487}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess", "ServiceStack.DataAccess\ServiceStack.DataAccess.csproj", "{D732C853-AB76-4277-B6CE-6C7DA57901B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess", "ServiceStack.CacheAccess\ServiceStack.CacheAccess.csproj", "{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{59B70761-26FD-4768-B0E9-C83BA3414D0A}"
+	ProjectSection(SolutionItems) = preProject
+		Build\ilmerge-all.bat = Build\ilmerge-all.bat
+		Build\ServiceStack.Interfaces.dll = Build\ServiceStack.Interfaces.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{62EEF247-1090-4208-8922-84B2120C040F}"
+	ProjectSection(SolutionItems) = preProject
+		Lib\ILMerge.exe = Lib\ILMerge.exe
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceClient", "ServiceStack.ServiceClient\ServiceStack.ServiceClient.csproj", "{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.LogicFacade", "ServiceStack.LogicFacade\ServiceStack.LogicFacade.csproj", "{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Configuration", "ServiceStack.Configuration\ServiceStack.Configuration.csproj", "{390B44FA-8DA6-489D-9DB5-1689D3088DFE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{233A8EB3-9945-40CE-8C17-BA4FE46D6D16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A2CC4DB-3C30-4455-B442-10E598E77487}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A2CC4DB-3C30-4455-B442-10E598E77487}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A2CC4DB-3C30-4455-B442-10E598E77487}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A2CC4DB-3C30-4455-B442-10E598E77487}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D732C853-AB76-4277-B6CE-6C7DA57901B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{390B44FA-8DA6-489D-9DB5-1689D3088DFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{390B44FA-8DA6-489D-9DB5-1689D3088DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{390B44FA-8DA6-489D-9DB5-1689D3088DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{390B44FA-8DA6-489D-9DB5-1689D3088DFE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
