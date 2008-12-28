@@ -1,0 +1,6 @@
+[Errors]
+0	Success
+1	Invalid user name or password
+...
+
+247	Bad data
