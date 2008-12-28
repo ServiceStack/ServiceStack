@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="@ServiceNamespace@.DataAccess.DataModel" assembly="@ServiceNamespace@.DataAccess">
+	<class name="@ServiceNamespace@.DataAccess.DataModel.CreditCardInfo, @ServiceNamespace@.DataAccess" table="CreditCardInfo" lazy="true">
+		<id name="Id" column="Id">
+			<generator class="native" />
+		</id>
+		<property name="IsActive" column="IsActive" />
+		<property name="CardHolderName" column="CardHolderName" />
+		<property name="CardNumber" column="CardNumber" />
+		<property name="CardCvv" column="CardCvv" />
+		<property name="CardExpiryDate" column="CardExpiryDate" />
+		<property name="BillingAddressLine1" column="BillingAddressLine1" />
+		<property name="BillingAddressLine2" column="BillingAddressLine2" />
+		<property name="BillingAddressTown" column="BillingAddressTown" />
+		<property name="BillingAddressCounty" column="BillingAddressCounty" />
+		<property name="BillingAddressPostCode" column="BillingAddressPostCode" />
+		<property name="CardType" column="CardType" />
+		<many-to-one name="@ModelName@Member" column="@ModelName@Id" class="@ModelName@" />
+	</class>
+</hibernate-mapping>
