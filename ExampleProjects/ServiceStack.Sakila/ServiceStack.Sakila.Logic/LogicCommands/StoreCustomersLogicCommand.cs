@@ -7,7 +7,7 @@ namespace ServiceStack.Sakila.Logic.LogicCommands
 {
 	public class StoreCustomersLogicCommand : LogicCommandBase<bool>
 	{
-		public List<Customer> Customers { get; set; }
+		public Customer Customer { get; set; }
 
 		public override bool Execute()
 		{

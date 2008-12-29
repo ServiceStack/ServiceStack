@@ -40,10 +40,10 @@ namespace ServiceStack.Sakila.Logic
 			});
 		}
 
-		public void StoreCustomers(List<Customer> customers)
+		public void StoreCustomer(Customer customer)
 		{
 			Execute(new StoreCustomersLogicCommand {
-				Customers = customers,
+				Customer = customer,
 			});
 		}
 

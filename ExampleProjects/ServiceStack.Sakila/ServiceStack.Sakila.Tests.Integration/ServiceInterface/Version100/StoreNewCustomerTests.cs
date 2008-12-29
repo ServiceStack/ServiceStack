@@ -9,7 +9,7 @@ namespace ServiceStack.Sakila.Tests.Integration.ServiceInterface.Version100
 		[Test]
 		public void StoreNewCustomerTest()
 		{
-			//var requestDto = new StoreCustomers {
+			//var requestDto = new StoreCustomer {
 			//    CustomerDetails = new CustomerDetails {
 			//        CustomerName = "demis.bellot@gmail.com",
 			//        Email = "demis.bellot@gmail.com",

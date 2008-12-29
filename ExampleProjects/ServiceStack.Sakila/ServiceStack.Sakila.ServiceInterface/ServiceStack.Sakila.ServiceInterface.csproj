@@ -59,7 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceResolver.cs" />
     <Compile Include="Translators\ResponseStatusTranslator.cs" />
-    <Compile Include="Version100\StoreNewCustomerPort.cs" />
+    <Compile Include="Version100\StoreCustomerPort.cs" />
     <Compile Include="Version100\GetCustomersPort.cs">
       <SubType>Code</SubType>
     </Compile>

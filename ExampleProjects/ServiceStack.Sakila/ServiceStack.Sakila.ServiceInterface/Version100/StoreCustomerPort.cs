@@ -10,7 +10,7 @@ using ServiceStack.Sakila.ServiceInterface.Translators;
 namespace ServiceStack.Sakila.ServiceInterface.Version100
 {
 	[MessagingRestriction(MessagingRestriction.HttpPost)]
-	public class StoreNewCustomerPort : IService
+	public class StoreCustomerPort : IService
 	{
 		/// <summary>
 		/// Used by Json and Soap requests if this service *is not* a 'IXElementService'
@@ -18,16 +18,16 @@ namespace ServiceStack.Sakila.ServiceInterface.Version100
 		/// <returns></returns>
 		public object Execute(CallContext context)
 		{
-			var request = context.Request.GetDto<StoreCustomers>();
+			var request = context.Request.GetDto<StoreCustomer>();
 			var facade = context.Request.GetFacade<ISakilaServiceFacade>();
 
-			var customers = CustomerFromDtoTranslator.Instance.ParseAll(request.Customers);
+			var customers = CustomerFromDtoTranslator.Instance.Parse(request.Customer);
 
 			IValidatableCommand<bool> command;
 
 			using (var initOnlyContext = facade.AcquireInitContext(InitOptions.InitialiseOnly))
 			{
-				facade.StoreCustomers(customers);
+				facade.StoreCustomer(customers);
 				command = (IValidatableCommand<bool>)initOnlyContext.InitialisedObject;
 			}
 

@@ -8,6 +8,6 @@ namespace ServiceStack.Sakila.Logic.LogicInterface
 	public interface ISakilaServiceFacade : ILogicFacade
 	{
 		List<Customer> GetCustomers(CustomersRequest request);
-		void StoreCustomers(List<Customer> customers);
+		void StoreCustomer(Customer customer);
 	}
 }
