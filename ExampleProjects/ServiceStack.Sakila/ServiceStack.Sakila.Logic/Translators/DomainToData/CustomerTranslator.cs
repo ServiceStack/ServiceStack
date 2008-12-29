@@ -1,13 +1,3 @@
-/*
-// $Id: CustomerTranslator.cs 433 2008-12-10 10:39:46Z DDNGLOBAL\Pete $
-//
-// Revision      : $Revision: 433 $
-// Modified Date : $LastChangedDate: 2008-12-10 10:39:46 +0000 (Wed, 10 Dec 2008) $ 
-// Modified By   : $LastChangedBy: DDNGLOBAL\Pete $
-//
-// (c) Copyright 2008 Digital Distribution Networks Ltd
-*/
-
 using Sakila.DomainModel;
 using ServiceStack.DesignPatterns.Translator;
 

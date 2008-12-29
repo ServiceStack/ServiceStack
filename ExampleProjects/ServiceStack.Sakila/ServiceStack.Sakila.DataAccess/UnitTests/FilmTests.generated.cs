@@ -27,9 +27,9 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
 			entity.Description = "Test Test ";
 			entity.ReleaseYear = null;
 			entity.RentalDuration = default(Byte);
-			entity.RentalRate = 60;
+			entity.RentalRate = 84;
 			entity.Length = default(UInt16);
-			entity.ReplacementCost = 19;
+			entity.ReplacementCost = 97;
 			entity.Rating = null;
 			entity.SpecialFeature = null;
 			entity.LastUpdate = DateTime.Now;

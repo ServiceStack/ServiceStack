@@ -15,7 +15,7 @@
 		<property name="SpecialFeature" column="special_features" />
 		<property name="LastUpdate" column="last_update" />
 		<many-to-one name="LanguageMember" column="language_id" class="Language" />
-		<many-to-one name="LanguageMember" column="original_language_id" class="Language" />
+		<many-to-one name="OriginalLanguageMember" column="original_language_id" class="Language" />
 		<bag name="Inventories" lazy="true" cascade="all-delete-orphan"  inverse="true" >
 			<key column="film_id"></key>
 			<one-to-many class="Inventory"></one-to-many>

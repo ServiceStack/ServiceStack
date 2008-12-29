@@ -12,8 +12,8 @@ namespace ServiceStack.Sakila.Logic.Translators.DataToDomain
 			if (from == null) return null;
 			var to = new Address {
 				Id = from.Id,
-                Line1 = from.address,
-				Line2 = from.Address2,
+                Line1 = from.Line1,
+				Line2 = from.Line2,
 				Town = from.District,
 				City = CityTranslator.Instance.Parse(from.CityMember),
                 PostCode = from.PostalCode,

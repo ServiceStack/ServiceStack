@@ -23,7 +23,7 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
 			Category entity = new Category();
 			
 			
-			entity.Name = "Test Test Test Test Test Test Test Test Test Test Test Test Test ";
+			entity.Name = "Test Test Test Test Test Test Test Test Test Test Test T";
 			entity.LastUpdate = DateTime.Now;
 			
 			return entity;
@@ -75,7 +75,7 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
             try
             {
                 Category entityA = GetFirstCategory();
-				entityA.Name = "Test Test Test Test Test Test";
+				entityA.Name = "Test Test Test Test Test Test Test T";
 				
 				manager.Update(entityA);
 

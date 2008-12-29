@@ -87,7 +87,7 @@
     <Compile Include="DataModel\Actor.cs" />
     <Compile Include="DataModel\Actor.generated.cs" />
     <Compile Include="DataModel\Address.cs" />
-    <Compile Include="DataModel\address.generated.cs" />
+    <Compile Include="DataModel\Address.generated.cs" />
     <Compile Include="DataModel\Category.cs" />
     <Compile Include="DataModel\Category.generated.cs" />
     <Compile Include="DataModel\City.cs" />
@@ -131,20 +131,20 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Build\Database\Fix6555.exe" />
-    <Content Include="HbmMaps\Actor.hbm.xml" />
-    <Content Include="HbmMaps\address.hbm.xml" />
-    <Content Include="HbmMaps\Category.hbm.xml" />
-    <Content Include="HbmMaps\City.hbm.xml" />
-    <Content Include="HbmMaps\Country.hbm.xml" />
-    <Content Include="HbmMaps\Customer.hbm.xml" />
-    <Content Include="HbmMaps\Film.hbm.xml" />
-    <Content Include="HbmMaps\FilmText.hbm.xml" />
-    <Content Include="HbmMaps\Inventory.hbm.xml" />
-    <Content Include="HbmMaps\Language.hbm.xml" />
-    <Content Include="HbmMaps\Payment.hbm.xml" />
-    <Content Include="HbmMaps\Rental.hbm.xml" />
-    <Content Include="HbmMaps\Staff.hbm.xml" />
-    <Content Include="HbmMaps\Store.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Actor.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Address.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Category.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\City.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Country.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Customer.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Film.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\FilmText.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Inventory.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Language.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Payment.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Rental.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Staff.hbm.xml" />
+    <EmbeddedResource Include="HbmMaps\Store.hbm.xml" />
     <Content Include="xpathrun.exe" />
     <None Include="nHibernate.csp.post.bat" />
   </ItemGroup>

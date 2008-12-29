@@ -1,13 +1,3 @@
-/*
-// $Id: NHibernateTransaction.cs 514 2008-12-15 10:51:34Z DDNGLOBAL\Pete $
-//
-// Revision      : $Revision: 514 $
-// Modified Date : $LastChangedDate: 2008-12-15 10:51:34 +0000 (Mon, 15 Dec 2008) $
-// Modified By   : $LastChangedBy: DDNGLOBAL\Pete $
-//
-// (c) Copyright 2008 Digital Distribution Networks Ltd
-*/
-
 using System;
 using ServiceStack.Logging;
 using NHibernate;

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServiceStack.Common.Services.Tests.Support.DataContracts;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.ServiceModel.Tests.DataContracts;
 
-namespace ServiceStack.Serialization.Tests
+namespace ServiceStack.ServiceModel.Tests
 {
 	[TestFixture]
 	public class KeyValueDataContractDeserializerTests
@@ -14,12 +14,12 @@ namespace ServiceStack.Serialization.Tests
 		[Test]
 		public void create_dto_request_from_ids()
 		{
-			var dtoType = typeof(GetUsers);
+			var dtoType = typeof(GetCustomers);
 			var textValue = "1,2,3";
 			var convertedValue = textValue.Split(',').ToList().ConvertAll(x => Convert.ToInt32(x));
 			var valueMap = new Dictionary<string, string> { {"Ids", textValue} };
-			var result = (GetUsers)KeyValueDataContractDeserializer.Instance.Parse(valueMap, dtoType);
-			Assert.That(result.Ids, Is.EquivalentTo(convertedValue));
+			var result = (GetCustomers)KeyValueDataContractDeserializer.Instance.Parse(valueMap, dtoType);
+			Assert.That(result.CustomerIds, Is.EquivalentTo(convertedValue));
 		}
 	}
 }

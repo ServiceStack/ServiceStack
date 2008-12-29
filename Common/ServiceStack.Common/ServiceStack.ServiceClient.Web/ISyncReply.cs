@@ -3,7 +3,7 @@ using System.ServiceModel.Channels;
 
 namespace ServiceStack.ServiceClient.Web
 {
-    [ServiceContract(Namespace = "http://ddn.services/facades")]
+    [ServiceContract(Namespace = "http://services.servicestack.net/")]
     public interface ISyncReply
     {
         [OperationContract(Action = "*", ReplyAction = "*")]

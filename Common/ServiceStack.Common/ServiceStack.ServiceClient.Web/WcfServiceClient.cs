@@ -49,7 +49,7 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			get
 			{
-				var contract = new ContractDescription("ServiceStack.ServiceClient.Web.ISyncReply", "http://ddn.services/facades");
+				var contract = new ContractDescription("ServiceStack.ServiceClient.Web.ISyncReply", "http://services.servicestack.net/");
 				var addr = new EndpointAddress(Uri);
 				var endpoint = new ServiceEndpoint(contract, Binding, addr);
 				return endpoint;

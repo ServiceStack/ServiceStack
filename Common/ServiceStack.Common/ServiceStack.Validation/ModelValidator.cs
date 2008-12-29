@@ -1,17 +1,6 @@
-﻿/*
-// $Id$
-//
-// Revision      : $Revision: 599 $
-// Modified Date : $LastChangedDate: 2008-12-18 12:08:26 +0000 (Thu, 18 Dec 2008) $ 
-// Modified By   : $LastChangedBy$
-//
-// (c) Copyright 2008 Digital Distribution Networks Ltd
-*/
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using ServiceStack.Validation;
 
 namespace ServiceStack.Validation
 {

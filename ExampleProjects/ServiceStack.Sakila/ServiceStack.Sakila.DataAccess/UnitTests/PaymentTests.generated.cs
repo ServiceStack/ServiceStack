@@ -23,7 +23,7 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
 			Payment entity = new Payment();
 			
 			
-			entity.Amount = 11;
+			entity.Amount = 54;
 			entity.PaymentDate = DateTime.Now;
 			entity.LastUpdate = DateTime.Now;
 			
@@ -85,7 +85,7 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
             try
             {
                 Payment entityA = GetFirstPayment();
-				entityA.Amount = 23;
+				entityA.Amount = 12;
 				
 				manager.Update(entityA);
 

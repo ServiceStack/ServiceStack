@@ -1,13 +1,3 @@
-/*
-// $Id: NHibernateProviderManagerFactory.cs 298 2008-12-03 13:41:40Z DDNGLOBAL\Pete $
-//
-// Revision      : $Revision: 298 $
-// Modified Date : $LastChangedDate: 2008-12-03 13:41:40 +0000 (Wed, 03 Dec 2008) $
-// Modified By   : $LastChangedBy: DDNGLOBAL\Pete $
-//
-// (c) Copyright 2008 Digital Distribution Networks Ltd
-*/
-
 using System.Collections.Generic;
 using ServiceStack.Logging;
 
@@ -41,7 +31,7 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			IDictionary<string, string> configPropertyTable = new Dictionary<string, string>(this.StaticConfigPropertyTable);
 			configPropertyTable[NHibernateProviderManager.ConnectionStringKey] = connectionString;
 
-			NHibernate.Cfg.Configuration config = new NHibernate.Cfg.Configuration().SetProperties(configPropertyTable);
+			var config = new NHibernate.Cfg.Configuration().SetProperties(configPropertyTable);
 
 			foreach (var assemblyName in this.XmlMappingAssemblyNames)
 			{

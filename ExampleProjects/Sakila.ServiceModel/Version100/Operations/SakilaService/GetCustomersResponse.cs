@@ -10,6 +10,7 @@ namespace Sakila.ServiceModel.Version100.Operations.SakilaService
 		public GetCustomersResponse()
 		{
 			Version = 100;
+			ResponseStatus = new ResponseStatus();
 			Customers = new List<Customer>();
 		}
 

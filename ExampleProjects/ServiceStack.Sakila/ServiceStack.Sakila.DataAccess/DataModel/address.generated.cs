@@ -53,7 +53,7 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
 
         #region Properties
 
-		public virtual string address
+		public virtual string Line1
         {
             get { return _address; }
 			set
@@ -66,7 +66,7 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
 		partial void OnaddressChanging();
 		partial void OnaddressChanged();
 		
-		public virtual string Address2
+		public virtual string Line2
         {
             get { return _address2; }
 			set

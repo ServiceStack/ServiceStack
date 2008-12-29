@@ -25,8 +25,8 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
 			
 			entity.address = "Test Test ";
 			entity.Address2 = "Test Test ";
-			entity.District = "Test Test Test ";
-			entity.PostalCode = "Test Test Test Test Test Tes";
+			entity.District = "Test Test Test Test Test Test";
+			entity.PostalCode = "Test Test Test Test Te";
 			entity.Phone = "Test Test Test Test Te";
 			entity.LastUpdate = DateTime.Now;
 			

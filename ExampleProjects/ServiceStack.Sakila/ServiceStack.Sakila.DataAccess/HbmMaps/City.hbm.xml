@@ -4,12 +4,12 @@
 		<id name="Id" column="city_id">
 			<generator class="native" />
 		</id>
-		<property name="City" column="city" />
+		<property name="Name" column="city" />
 		<property name="LastUpdate" column="last_update" />
 		<many-to-one name="CountryMember" column="country_id" class="Country" />
 		<bag name="addressList" lazy="true" cascade="all-delete-orphan"  inverse="true" >
 			<key column="city_id"></key>
-			<one-to-many class="address"></one-to-many>
+			<one-to-many class="Address"></one-to-many>
 		</bag>
 	</class>
 </hibernate-mapping>

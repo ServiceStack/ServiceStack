@@ -1,9 +1,9 @@
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Wsdl.aspx.cs" ContentType="text/xml" Inherits="ServiceStack.Sakila.Host.WebService.Endpoints.Soap11.Metadata.Wsdl" 
 %><?xml version="1.0" encoding="utf-8"?>
 <wsdl:definitions name="Soap11" 
-    targetNamespace="http://services.ddnglobal.com/" 
-    xmlns:svc="http://services.ddnglobal.com/" 
-    xmlns:tns="http://schemas.ddnglobal.com/types/" 
+    targetNamespace="http://services.servicestack.net/" 
+    xmlns:svc="http://services.servicestack.net/" 
+    xmlns:tns="http://schemas.servicestack.net/types/" 
     
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
@@ -70,7 +70,7 @@
         <asp:Repeater id="repReplyOperations" runat="server">
             <ItemTemplate>
             <wsdl:operation name="<%# Container.DataItem %>">
-              <soap:operation soapAction="http://services.ddnglobal.com/<%# Container.DataItem %>" style="document" />
+              <soap:operation soapAction="http://services.servicestack.net/<%# Container.DataItem %>" style="document" />
               <wsdl:input>
                 <soap:body use="literal" />
               </wsdl:input>
@@ -88,7 +88,7 @@
         <asp:Repeater id="repOneWayOperations" runat="server">
             <ItemTemplate>
             <wsdl:operation name="<%# Container.DataItem %>">
-              <soap:operation soapAction="http://services.ddnglobal.com/<%# Container.DataItem %>" style="document" />
+              <soap:operation soapAction="http://services.servicestack.net/<%# Container.DataItem %>" style="document" />
               <wsdl:input>
                 <soap:body use="literal" />
               </wsdl:input>

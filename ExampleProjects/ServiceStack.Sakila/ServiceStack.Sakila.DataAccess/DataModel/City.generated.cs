@@ -43,7 +43,7 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
 
         #region Properties
 
-		public virtual string CityName
+		public virtual string Name
         {
             get { return _city; }
 			set

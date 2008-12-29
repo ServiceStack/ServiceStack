@@ -23,7 +23,7 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
 			Language entity = new Language();
 			
 			
-			entity.Name = "Test Test Test Test Test Test Test Test Test Test Test Test";
+			entity.Name = "Test ";
 			entity.LastUpdate = DateTime.Now;
 			
 			return entity;
@@ -75,7 +75,7 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
             try
             {
                 Language entityA = GetFirstLanguage();
-				entityA.Name = "Test Test Test Test Test Test Test Test";
+				entityA.Name = "Test Test Test Test Test Test Test Test Test Test ";
 				
 				manager.Update(entityA);
 

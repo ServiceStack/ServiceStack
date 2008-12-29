@@ -6,13 +6,5 @@
 		</id>
 		<property name="Name" column="name" />
 		<property name="LastUpdate" column="last_update" />
-		<bag name="Films" lazy="true" cascade="all-delete-orphan"  inverse="true" >
-			<key column="language_id"></key>
-			<one-to-many class="Film"></one-to-many>
-		</bag>
-		<bag name="Films" lazy="true" cascade="all"  inverse="true" >
-			<key column="original_language_id"></key>
-			<one-to-many class="Film"></one-to-many>
-		</bag>
 	</class>
 </hibernate-mapping>

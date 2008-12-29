@@ -28,7 +28,7 @@ namespace ServiceStack.Sakila.DataAccess.UnitTests
 			entity.Picture = null;
 			entity.Email = "Test Test ";
 			entity.Active = default(SByte);
-			entity.Username = "Test Test Tes";
+			entity.Username = "Test Test Test T";
 			entity.Password = "Test Test ";
 			entity.LastUpdate = DateTime.Now;
 			

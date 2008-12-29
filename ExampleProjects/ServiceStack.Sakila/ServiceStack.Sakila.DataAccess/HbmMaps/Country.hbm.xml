@@ -4,7 +4,7 @@
 		<id name="Id" column="country_id">
 			<generator class="native" />
 		</id>
-		<property name="Country" column="country" />
+		<property name="Name" column="country" />
 		<property name="LastUpdate" column="last_update" />
 		<bag name="Cities" lazy="true" cascade="all-delete-orphan"  inverse="true" >
 			<key column="country_id"></key>

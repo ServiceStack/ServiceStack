@@ -13,16 +13,17 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
 		
 		private string _title = String.Empty;
 		private string _description = String.Empty;
-		private object _releaseYear = null;
+		private byte _releaseYear = default(Byte);
 		private byte _rentalDuration = default(Byte);
 		private decimal _rentalRate = default(Decimal);
 		private ushort _length = default(UInt16);
 		private decimal _replacementCost = default(Decimal);
-		private object _rating = null;
-		private object _specialFeature = null;
+		private string _rating = null;
+		private string _specialFeature = null;
 		private System.DateTime _lastUpdate = new DateTime();
-		
+
 		private Language _language = null;
+		private Language _originalLanguage = null;
 		
 		private IList<Inventory> _inventories = new List<Inventory>();
 		
@@ -85,7 +86,7 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
 		partial void OnDescriptionChanging();
 		partial void OnDescriptionChanged();
 		
-		public virtual object ReleaseYear
+		public virtual byte ReleaseYear
         {
             get { return _releaseYear; }
 			set
@@ -149,8 +150,8 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
         }
 		partial void OnReplacementCostChanging();
 		partial void OnReplacementCostChanged();
-		
-		public virtual object Rating
+
+		public virtual string Rating
         {
             get { return _rating; }
 			set
@@ -162,8 +163,8 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
         }
 		partial void OnRatingChanging();
 		partial void OnRatingChanged();
-		
-		public virtual object SpecialFeature
+
+		public virtual string SpecialFeature
         {
             get { return _specialFeature; }
 			set
@@ -188,19 +189,32 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
         }
 		partial void OnLastUpdateChanging();
 		partial void OnLastUpdateChanged();
-		
+
 		public virtual Language LanguageMember
-        {
-            get { return _language; }
+		{
+			get { return _language; }
 			set
 			{
 				OnLanguageMemberChanging();
 				_language = value;
 				OnLanguageMemberChanged();
 			}
-        }
+		}
 		partial void OnLanguageMemberChanging();
 		partial void OnLanguageMemberChanged();
+
+		public virtual Language OriginalLanguageMember
+		{
+			get { return _originalLanguage; }
+			set
+			{
+				OnOriginalLanguageMemberChanging();
+				_originalLanguage = value;
+				OnOriginalLanguageMemberChanged();
+			}
+		}
+		partial void OnOriginalLanguageMemberChanging();
+		partial void OnOriginalLanguageMemberChanged();
 		
 		public virtual IList<Inventory> Inventories
         {

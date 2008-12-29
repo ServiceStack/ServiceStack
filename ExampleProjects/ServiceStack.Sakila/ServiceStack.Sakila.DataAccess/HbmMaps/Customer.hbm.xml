@@ -10,7 +10,7 @@
 		<property name="Active" column="active" />
 		<property name="CreateDate" column="create_date" />
 		<property name="LastUpdate" column="last_update" />
-		<many-to-one name="addressMember" column="address_id" class="address" />
+		<many-to-one name="addressMember" column="address_id" class="Address" />
 		<many-to-one name="StoreMember" column="store_id" class="Store" />
 		<bag name="Payments" lazy="true" cascade="all-delete-orphan"  inverse="true" >
 			<key column="customer_id"></key>

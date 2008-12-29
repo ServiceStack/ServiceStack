@@ -12,7 +12,7 @@
 		<property name="Username" column="username" />
 		<property name="Password" column="password" />
 		<property name="LastUpdate" column="last_update" />
-		<many-to-one name="addressMember" column="address_id" class="address" />
+		<many-to-one name="addressMember" column="address_id" class="Address" />
 		<many-to-one name="StoreMember" column="store_id" class="Store" />
 		<bag name="Payments" lazy="true" cascade="all-delete-orphan"  inverse="true" >
 			<key column="staff_id"></key>

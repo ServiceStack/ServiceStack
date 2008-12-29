@@ -52,12 +52,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataContracts\ArrayOfGuidId.cs" />
+    <Compile Include="DataContracts\ArrayOfIntId.cs" />
+    <Compile Include="DataContracts\ArrayOfStringId.cs" />
+    <Compile Include="DataContracts\Customer.cs" />
+    <Compile Include="DataContracts\GetCustomers.cs" />
+    <Compile Include="DataContracts\GetCustomersResponse.cs" />
+    <Compile Include="DataContracts\Properties.cs" />
+    <Compile Include="DataContracts\Property.cs" />
+    <Compile Include="DataContracts\ResponseError.cs" />
+    <Compile Include="DataContracts\ResponseStatus.cs" />
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringConverterUtilsTests.cs" />
     <Compile Include="XlinqExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
       <Name>ServiceStack.ServiceModel</Name>

@@ -12,8 +12,8 @@ namespace ServiceStack.Sakila.Logic.Translators.DataToDomain
 			if (from == null) return null;
 			var to = new City {
 				Id = from.Id,
-                Country = new Country{Id = from.CountryMember.Id, Name = from.CountryMember.CountryName },
-                Name = from.CityName,
+                Country = new Country{Id = from.CountryMember.Id, Name = from.CountryMember.Name },
+                Name = from.Name,
 			};
 
 			return to;

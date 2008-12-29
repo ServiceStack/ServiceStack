@@ -1,11 +1,11 @@
 using System;
 using System.Linq;
-using ServiceStack.Common.Services.Tests.Support.DataContracts;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Utils;
+using ServiceStack.ServiceModel.Tests.DataContracts;
 
-namespace ServiceStack.Serialization.Tests
+namespace ServiceStack.ServiceModel.Tests
 {
 	[TestFixture]
 	public class StringConverterUtilsTests

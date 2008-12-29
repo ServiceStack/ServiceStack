@@ -3,7 +3,7 @@ using System.ServiceModel.Channels;
 
 namespace ServiceStack.ServiceClient.Web
 {
-    [ServiceContract(Namespace = "http://ddn.services/facades", CallbackContract = typeof(IDuplexCallback))]
+    [ServiceContract(Namespace = "http://services.servicestack.net/", CallbackContract = typeof(IDuplexCallback))]
     public interface IDuplex
     {
         [OperationContract(Action = "*", ReplyAction = "*")]

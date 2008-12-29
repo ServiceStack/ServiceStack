@@ -5,7 +5,7 @@
 			<generator class="native" />
 		</id>
 		<property name="LastUpdate" column="last_update" />
-		<many-to-one name="addressMember" column="address_id" class="address" />
+		<many-to-one name="addressMember" column="address_id" class="Address" />
 		<many-to-one name="StaffMember" column="manager_staff_id" class="Staff" />
 		<bag name="Customers" lazy="true" cascade="all-delete-orphan"  inverse="true" >
 			<key column="store_id"></key>

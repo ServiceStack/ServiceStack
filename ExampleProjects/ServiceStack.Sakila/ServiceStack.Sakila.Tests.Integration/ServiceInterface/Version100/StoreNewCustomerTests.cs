@@ -4,7 +4,7 @@ using ServiceStack.Sakila.Tests.Integration.Support;
 namespace ServiceStack.Sakila.Tests.Integration.ServiceInterface.Version100
 {
 	[TestFixture]
-	public class StoreNewCustomerTests : BaseIntegrationTest
+	public class StoreNewCustomerTests : IntegrationTestBase
 	{
 		[Test]
 		public void StoreNewCustomerTest()
