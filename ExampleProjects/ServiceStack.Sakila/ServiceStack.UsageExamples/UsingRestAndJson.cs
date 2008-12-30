@@ -31,9 +31,8 @@ namespace ServiceStack.UsageExamples
 		[Test]
 		public void Get_customers_using_json_post()
 		{
-			var log = LogManager.GetLogger(GetType());
-			var jsonRequest = CreateJsonRequest(CustomerId);
-			log.DebugFormat("Json Request: {0}", jsonRequest);
+			var request = new DtoOperations.GetCustomers { CustomerIds = new ArrayOfIntId(new[] { base.CustomerId }), };
+			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
 
 			var requestUri = JsonSyncReplyBaseUri + "/" + typeof(DtoOperations.GetCustomers).Name;
 			var client = WebRequest.Create(requestUri);
@@ -45,22 +44,12 @@ namespace ServiceStack.UsageExamples
 			}
 
 			var json = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-			log.DebugFormat("Json Response: {0}", json);
 			var response = JsonDataContractDeserializer.Instance.Parse(json,
 				typeof(DtoOperations.GetCustomersResponse)) as DtoOperations.GetCustomersResponse;
 
 			Assert.IsNotNull(response);
 			Assert.AreEqual(1, response.Customers.Count);
 			Assert.AreEqual(CustomerId, response.Customers[0].Id);
-		}
-
-		public string CreateJsonRequest(int userId)
-		{
-			var request = new DtoOperations.GetCustomers {
-				CustomerIds = new ArrayOfIntId(new[] { userId }),
-			};
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
-			return jsonRequest;
 		}
 
 	}

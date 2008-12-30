@@ -31,9 +31,8 @@ namespace ServiceStack.UsageExamples
 		[Test]
 		public void Get_customers_using_xml_post()
 		{
-			var log = LogManager.GetLogger(GetType());
-			var xmlRequest = CreateXmlRequest(CustomerId);
-			log.DebugFormat("Xml Request: {0}", xmlRequest);
+			var request = new DtoOperations.GetCustomers { CustomerIds = new ArrayOfIntId(new[] { base.CustomerId }), };
+			var xmlRequest = DataContractSerializer.Instance.Parse(request);
 
 			var requestUri = XmlSyncReplyBaseUri + "/" + typeof(DtoOperations.GetCustomers).Name;
 			var client = WebRequest.Create(requestUri);
@@ -45,22 +44,12 @@ namespace ServiceStack.UsageExamples
 			}
 
 			var xml = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-			log.DebugFormat("Xml Response: {0}", xml);
 			var response = DataContractDeserializer.Instance.Parse(xml,
 				typeof(DtoOperations.GetCustomersResponse)) as DtoOperations.GetCustomersResponse;
 
 			Assert.IsNotNull(response);
 			Assert.AreEqual(1, response.Customers.Count);
 			Assert.AreEqual(CustomerId, response.Customers[0].Id);
-		}
-
-		public string CreateXmlRequest(int userId)
-		{
-			var request = new DtoOperations.GetCustomers {
-				CustomerIds = new ArrayOfIntId(new[] { userId }),
-			};
-			var xmlRequest = DataContractSerializer.Instance.Parse(request);
-			return xmlRequest;
 		}
 
 	}
