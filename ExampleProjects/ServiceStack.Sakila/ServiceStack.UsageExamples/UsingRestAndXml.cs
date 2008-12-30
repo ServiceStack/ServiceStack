@@ -2,7 +2,6 @@ using System.IO;
 using System.Net;
 using NUnit.Framework;
 using Sakila.ServiceModel.Version100.Types;
-using ServiceStack.Logging;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.UsageExamples.Support;
 using DtoOperations = Sakila.ServiceModel.Version100.Operations.SakilaService;

@@ -14,7 +14,7 @@ namespace ServiceStack.UsageExamples
 	public class UsingRawHttpClient : TestBase
 	{
 		[Test]
-		public void Get_customers_using_raw_http_client_and_soap12()
+		public void Get_customers_using_soap12_http_post()
 		{
 			var soapRequest =
                  @"<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing"">
@@ -33,7 +33,7 @@ namespace ServiceStack.UsageExamples
                 </s:Envelope>";
 
 			var request = string.Format(soapRequest, WsSyncReplyUri, CustomerId);
-			var client = (HttpWebRequest)WebRequest.Create(WsSyncReplyUri);
+			var client = (HttpWebRequest)WebRequest.Create(base.WsSyncReplyUri);
 			client.ContentType = "application/soap+xml; charset=utf-8";
 			client.Accept = "text/xml";
 			client.Method = "POST";
@@ -56,7 +56,7 @@ namespace ServiceStack.UsageExamples
 		}
 
 		[Test]
-		public void Get_customers_using_raw_http_client_and_soap11()
+		public void Get_customers_using_soap11_http_post()
 		{
 			var soapRequest =
                  @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -74,7 +74,7 @@ namespace ServiceStack.UsageExamples
                     </soap:Envelope>";
 
 			var request = string.Format(soapRequest, CustomerId);
-			var client = (HttpWebRequest)WebRequest.Create(BasicHttpSyncReplyUri);
+			var client = (HttpWebRequest)WebRequest.Create(base.BasicHttpSyncReplyUri);
 			client.ContentType = "text/xml; charset=utf-8";
 			client.Headers.Add("SOAPAction", "GetCustomers");
 			client.Accept = "text/xml";
@@ -98,7 +98,7 @@ namespace ServiceStack.UsageExamples
 		}
 
 		[Test]
-		public void Get_customers_using_xml_post()
+		public void Get_customers_using_xml_http_post()
 		{
 			var xmlRequest = string.Format(
 			  @"<GetCustomers xmlns=""http://schemas.servicestack.net/types/"">
@@ -108,7 +108,7 @@ namespace ServiceStack.UsageExamples
                     <Version>100</Version>
                 </GetCustomers>", CustomerId);
 
-			var requestUri = XmlSyncReplyBaseUri + "/GetCustomers";
+			var requestUri = base.XmlSyncReplyBaseUri + "/GetCustomers";
 			var client = WebRequest.Create(requestUri);
 			client.Method = "POST";
 			client.ContentType = "application/xml";
@@ -126,11 +126,11 @@ namespace ServiceStack.UsageExamples
 		}
 
 		[Test]
-		public void Get_customers_using_json_post()
+		public void Get_customers_using_json_http_post()
 		{
 			var jsonRequest = string.Format(@"{{""CustomerIds"":[{0}],""Version"":0}}", CustomerId);
 
-			var requestUri = JsonSyncReplyBaseUri + "/GetCustomers";
+			var requestUri = base.JsonSyncReplyBaseUri + "/GetCustomers";
 			var client = WebRequest.Create(requestUri);
 			client.Method = "POST";
 			client.ContentType = "application/json";
