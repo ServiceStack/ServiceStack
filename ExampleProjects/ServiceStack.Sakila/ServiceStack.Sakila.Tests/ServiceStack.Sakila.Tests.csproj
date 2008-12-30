@@ -31,14 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Enyim.Caching, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\Enyim.Caching.dll</HintPath>
-    </Reference>
-    <Reference Include="MemcachedProviders, Version=1.2.3102.35569, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\MemcachedProviders.dll</HintPath>
-    </Reference>
     <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Moq.dll</HintPath>
@@ -59,17 +51,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Platform.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Common.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\ServiceStack.Common.Core.dll</HintPath>
+      <HintPath>..\..\Lib\ServiceStack.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Providers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\ServiceStack.Providers.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -107,7 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sakila.DomainModel\Sakila.DomainModel.csproj">
-      <Project>{1630A8AD-D745-4470-8692-8F53E553E319}</Project>
+      <Project>{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}</Project>
       <Name>Sakila.DomainModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Sakila.ServiceModel\Sakila.ServiceModel.csproj">

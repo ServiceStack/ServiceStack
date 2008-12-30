@@ -31,9 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Common.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Lib\ServiceStack.Common.Core.dll</HintPath>
+      <HintPath>..\..\Lib\ServiceStack.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -69,7 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sakila.DomainModel\Sakila.DomainModel.csproj">
-      <Project>{1630A8AD-D745-4470-8692-8F53E553E319}</Project>
+      <Project>{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}</Project>
       <Name>Sakila.DomainModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Sakila.DataAccess\ServiceStack.Sakila.DataAccess.csproj">

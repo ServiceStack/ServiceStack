@@ -7,7 +7,7 @@ using ServiceStack.Validation;
 namespace ServiceStack.Sakila.ServiceInterface.Translators
 {
 	/// <summary>
-	/// TODO: this could/should be pulled out into Ddn.Common.*
+	/// TODO: this could/should be pulled out into Common.*
 	/// </summary>
 	public class ResponseStatusTranslator : ITranslator<ResponseStatus, ValidationResult>
 	{
