@@ -13,39 +13,38 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationError.cs" caret="513" scrollPosition="0|0" />
-      <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/d:Support/f:LateBoundObjectTypeBuilder.cs" caret="7291" scrollPosition="0|0" />
-      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:KeyValueDataContractDeserializer.cs" caret="0" scrollPosition="0|0" />
       <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:ISyncReply.cs" caret="0" scrollPosition="0|0" />
       <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:IDuplexCallback.cs" caret="0" scrollPosition="0|0" />
       <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:IDuplex.cs" caret="0" scrollPosition="0|0" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:IOneWay.cs" caret="179" scrollPosition="0|0" />
       <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ModelValidator.cs" caret="0" scrollPosition="0|0" />
       <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateTransaction.cs" caret="0" scrollPosition="0|0" />
       <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:ICriteriaExtensions.cs" caret="0" scrollPosition="0|0" />
       <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/f:ServiceModelInfo.cs" caret="744" scrollPosition="0|0" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManagerFactory.cs" caret="787" scrollPosition="0|0" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="567" scrollPosition="0|0" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernatePersistenceProvider.cs" caret="768" scrollPosition="0|4" />
-      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:deploy.bat" caret="0" scrollPosition="0|0" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Support/f:CommandExecsHandler.cs" caret="513" scrollPosition="0|0" />
-      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractDeserializer.cs" caret="964" scrollPosition="0|0" />
-      <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:ResourceManager.cs" caret="506" scrollPosition="0|0" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:XmlServiceClient.cs" caret="603" scrollPosition="0|0" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:IValidatableCommand.cs" caret="181" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="723" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:FactoryProvider.cs" caret="1083" scrollPosition="0|14" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:Soap12ServiceClient.cs" caret="141" scrollPosition="0|0" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:WcfServiceClient.cs" caret="248" scrollPosition="0|0" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:IWcfServiceClient.cs" caret="159" scrollPosition="0|0" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:JsonServiceClient.cs" caret="174" scrollPosition="0|0" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:Soap11ServiceClient.cs" caret="141" scrollPosition="0|0" />
-      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-providers.bat" caret="834" scrollPosition="0|0" />
-      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="1340" scrollPosition="0|0" />
+      <File id="A5646013-C243-453F-A2B6-3B6870A9637D/d:DataContracts/f:ResponseStatus.cs" caret="555" scrollPosition="0|0" />
+      <File id="A5646013-C243-453F-A2B6-3B6870A9637D/d:DataContracts/f:ResponseError.cs" caret="165" scrollPosition="0|0" />
+      <File id="87F3AC82-4217-4B42-9223-5DD6401E2492/f:NHibernate.xml" caret="1156316" scrollPosition="0|0" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:WcfServiceClient.cs" caret="870" scrollPosition="0|0" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:IOneWay.cs" caret="328" scrollPosition="0|0" />
+      <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:ResourceManager.cs" caret="691" scrollPosition="0|0" />
       <File id="E74F7B37-D01A-4324-B163-03F91717DA2F/f:_get-latest-libs.bat" caret="133" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="1340" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-providers.bat" caret="834" scrollPosition="0|0" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:Soap11ServiceClient.cs" caret="141" scrollPosition="0|0" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:JsonServiceClient.cs" caret="174" scrollPosition="0|0" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:IWcfServiceClient.cs" caret="159" scrollPosition="0|0" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:Soap12ServiceClient.cs" caret="141" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:FactoryProvider.cs" caret="1083" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="723" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:IValidatableCommand.cs" caret="181" scrollPosition="0|0" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:XmlServiceClient.cs" caret="603" scrollPosition="0|0" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractDeserializer.cs" caret="964" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Support/f:CommandExecsHandler.cs" caret="513" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:deploy.bat" caret="0" scrollPosition="0|0" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernatePersistenceProvider.cs" caret="771" scrollPosition="0|0" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="567" scrollPosition="0|0" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManagerFactory.cs" caret="787" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="A5646013-C243-453F-A2B6-3B6870A9637D/d:DataContracts/f:GetCustomersResponse.cs" caret="70" scrollPosition="0|0" />
       <File id="A5646013-C243-453F-A2B6-3B6870A9637D/f:KeyValueDataContractDeserializerTests.cs" caret="68" scrollPosition="0|0" />
       <File id="A5646013-C243-453F-A2B6-3B6870A9637D/f:KeyValueDataContractDeserializerTests.cs" caret="236" scrollPosition="0|0" />
       <File id="A5646013-C243-453F-A2B6-3B6870A9637D/f:StringConverterUtilsTests.cs" caret="33" scrollPosition="0|0" />
@@ -75,6 +74,7 @@
       <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="34" scrollPosition="0|0" />
       <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-providers.bat" caret="834" scrollPosition="0|0" />
       <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="1323" scrollPosition="0|0" />
+      <File id="A5646013-C243-453F-A2B6-3B6870A9637D/d:DataContracts/f:ResponseError.cs" caret="162" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
