@@ -13,68 +13,67 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="3912" scrollPosition="0|122" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Wsdl.aspx" caret="0" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Wsdl.aspx" caret="305" scrollPosition="0|0" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:DataAccess/f:BasicDataAccessTests.cs" caret="791" scrollPosition="0|9" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="984" scrollPosition="0|12" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/f:app.config" caret="1202" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:StoreCustomersLogicCommand.cs" caret="257" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CityTranslator.cs" caret="601" scrollPosition="0|0" />
-      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerPort.cs" caret="952" scrollPosition="0|0" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Validation/f:NotNullValidationTests.cs" caret="454" scrollPosition="0|12" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/d:Version100/f:GetCustomersTests.cs" caret="672" scrollPosition="0|0" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:ServiceInterface/d:Version100/f:GetCustomersPortTests.cs" caret="469" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:Endpoints/d:Soap11/d:Metadata/f:Default.ashx.cs" caret="487" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:Endpoints/d:Xml/d:Metadata/f:Default.ashx.cs" caret="752" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="538" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaServiceFacade.cs" caret="1789" scrollPosition="0|38" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicInterface/f:ISakilaServiceFacade.cs" caret="208" scrollPosition="0|0" />
       <File id="0A8965C3-5554-4BB1-B276-FA04A10C407F/d:Version100/d:DomainToService/f:CustomerToDtoTranslator.cs" caret="739" scrollPosition="0|0" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:_get-latest-libs.bat" caret="44" scrollPosition="0|0" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="617" scrollPosition="0|0" />
       <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestParameters.cs" caret="354" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:Endpoints/d:Soap11/d:Metadata/f:Wsdl.aspx.cs" caret="250" scrollPosition="0|0" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:IAction.cs" caret="331" scrollPosition="0|0" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:app.config" caret="1645" scrollPosition="0|48" />
       <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:README.txt" caret="0" scrollPosition="0|0" />
       <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:xsd/f:XsdDto.cs" caret="0" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="652" scrollPosition="0|0" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromXsd.cs" caret="814" scrollPosition="0|3" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="28" scrollPosition="0|0" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingServiceReferenceClient.cs" caret="993" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:svc/f:Service.wsdl" caret="0" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:xsd/f:GenerateDto.bat" caret="220" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:Service References/d:BasicHttpClientProxy/f:Reference.svcmap" caret="0" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:Support/f:TestBase.cs" caret="184" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:Service References/d:WsHttpClientProxy/f:Reference.cs" caret="4568" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:Service References/d:BasicHttpClientProxy/f:Reference.cs" caret="4543" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:svc/f:SvcSyncReplyClient.cs" caret="14140" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:Support/d:Translators/f:CustomerTranslator.cs" caret="230" scrollPosition="0|0" />
+      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:_get-latest-libs.bat" caret="94" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:Endpoints/d:Soap11/d:Metadata/f:Wsdl.aspx.cs" caret="1049" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:app.config" caret="5677" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Translators/f:ResponseStatusTranslator.cs" caret="335" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="4575" scrollPosition="0|50" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="848" scrollPosition="0|9" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromAssembly.cs" caret="2353" scrollPosition="0|24" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromXsd.cs" caret="855" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="1264" scrollPosition="0|4" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRestAndJson.cs" caret="1077" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRestAndXml.cs" caret="1163" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingServiceClients.cs" caret="1046" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingServiceReferenceClient.cs" caret="1113" scrollPosition="0|9" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingSvcutilGeneratedClient.cs" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="375" scrollPosition="0|6" />
-      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="2189" scrollPosition="0|54" />
-      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="662" scrollPosition="0|0" />
-      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="3657" scrollPosition="0|122" />
-      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Film.generated.cs" caret="3912" scrollPosition="0|122" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:DataAccess/f:BasicDataAccessTests.cs" caret="1295" scrollPosition="0|33" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:DataAccess/f:BasicDataAccessTests.cs" caret="2334" scrollPosition="0|40" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="1965" scrollPosition="0|31" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Wsdl.aspx" caret="272" scrollPosition="0|0" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="2550" scrollPosition="0|46" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:DataAccess/f:BasicDataAccessTests.cs" caret="433" scrollPosition="0|6" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:DataAccess/f:BasicDataAccessTests.cs" caret="2575" scrollPosition="0|62" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="984" scrollPosition="0|16" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:ServiceInterface/d:Version100/f:GetCustomersPortTests.cs" caret="821" scrollPosition="0|1" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/f:app.config" caret="1202" scrollPosition="0|6" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:ServiceInterface/d:Version100/f:GetCustomersPortTests.cs" caret="690" scrollPosition="0|5" />
-      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerPort.cs" caret="517" scrollPosition="0|0" />
-      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerPort.cs" caret="948" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicInterface/f:ISakilaServiceFacade.cs" caret="336" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:StoreCustomersLogicCommand.cs" caret="257" scrollPosition="0|0" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:_get-latest-libs.bat" caret="44" scrollPosition="0|0" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestParameters.cs" caret="1574" scrollPosition="0|32" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestParameters.cs" caret="51" scrollPosition="0|0" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="1243" scrollPosition="0|1" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="205" scrollPosition="0|1" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="677" scrollPosition="0|0" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromXsd.cs" caret="9" scrollPosition="0|0" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingServiceReferenceClient.cs" caret="0" scrollPosition="0|7" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="823" scrollPosition="0|0" />
-      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="28" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="1882" scrollPosition="0|26" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="2556" scrollPosition="0|38" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="2827" scrollPosition="0|38" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="3525" scrollPosition="0|68" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="3879" scrollPosition="0|83" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="4189" scrollPosition="0|83" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="4579" scrollPosition="0|98" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="4968" scrollPosition="0|114" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="5573" scrollPosition="0|115" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="138" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromAssembly.cs" caret="3025" scrollPosition="0|58" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromAssembly.cs" caret="398" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromAssembly.cs" caret="3999" scrollPosition="0|67" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="667" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingServiceReferenceClient.cs" caret="871" scrollPosition="0|9" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:app.config" caret="0" scrollPosition="0|57" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="6959" scrollPosition="0|93" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="7153" scrollPosition="0|101" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="10550" scrollPosition="0|158" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromAssembly.cs" caret="1557" scrollPosition="0|24" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="4804" scrollPosition="0|50" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Translators/f:ResponseStatusTranslator.cs" caret="335" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="4575" scrollPosition="0|50" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromXsd.cs" caret="847" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="769" scrollPosition="0|4" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="848" scrollPosition="0|9" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromAssembly.cs" caret="2353" scrollPosition="0|24" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRestAndJson.cs" caret="1077" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRestAndXml.cs" caret="1163" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingServiceReferenceClient.cs" caret="1113" scrollPosition="0|9" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -99,12 +98,12 @@
       <Item value="SakilaServiceFacade" priority="0" />
       <Item value="public" priority="8" />
       <Item value="enum" priority="0" />
-      <Item value="var" priority="4" />
+      <Item value="var" priority="5" />
       <Item value="base" priority="7" />
       <Item value="CallContext" priority="0" />
       <Item value="ResponseStatus" priority="2" />
       <Item value="ServiceInterface" priority="1" />
-      <Item value="Sakila" priority="1" />
+      <Item value="Sakila" priority="3" />
       <Item value="Version100" priority="0" />
       <Item value="Types" priority="0" />
       <Item value="class" priority="0" />
@@ -164,7 +163,7 @@
       <Item value="session" priority="0" />
       <Item value="DataModel" priority="2" />
       <Item value="Is" priority="2" />
-      <Item value="using" priority="2" />
+      <Item value="using" priority="3" />
       <Item value="true" priority="0" />
       <Item value="sbyte" priority="1" />
       <Item value="default" priority="0" />
@@ -174,6 +173,11 @@
       <Item value="provider" priority="0" />
       <Item value="customer" priority="1" />
       <Item value="existingCustomer" priority="0" />
+      <Item value="GetCustomers" priority="1" />
+      <Item value="responseStatus" priority="0" />
+      <Item value="out" priority="1" />
+      <Item value="proxy" priority="0" />
+      <Item value="GetCustomersResponse" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Sakila.DomainModel.Customer">
       <Item value="Id" priority="0" />
@@ -337,7 +341,13 @@
       <Item value="NaN" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Sakila.ServiceModel.Version100.Operations.SakilaService.GetCustomersResponse">
+      <Item value="Customers" priority="10" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.UsageExamples.xsd.GetCustomersResponse">
       <Item value="Customers" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.UsageExamples.Support.Translators.CustomerTranslator">
+      <Item value="Instance" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>
