@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.ServiceModel.Tests.DataContracts
 {
-	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	[DataContract(Namespace = "http://schemas.servicestack.net/types/")]
 	public class ResponseError
 	{
 		[DataMember]

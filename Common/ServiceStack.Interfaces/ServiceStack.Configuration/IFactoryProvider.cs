@@ -4,6 +4,8 @@ namespace ServiceStack.Configuration
 	{
 		T Resolve<T>(string name);
 
+		T ResolveOptional<T>(string name, T defaultValue);
+
 		T Create<T>(string name);
 	}
 }

@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			if (!ObjectInstanceCache.ContainsKey(name))
 			{
-				ObjectInstanceCache[name] = CreateObject<T>(name);
+				ObjectInstanceCache[name] = Create<T>(name);
 			}
 			return (T)ObjectInstanceCache[name];
 		}
@@ -42,7 +42,7 @@ namespace ServiceStack.ServiceInterface
 		/// <typeparam name="T"></typeparam>
 		/// <param name="name">The name.</param>
 		/// <returns></returns>
-		public T CreateObject<T>(string name)
+		public T Create<T>(string name)
 		{
 			lock (semaphore)
 			{
