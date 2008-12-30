@@ -55,10 +55,10 @@ namespace ServiceStack.UsageExamples
 			Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
 		}
 
-        [Test]
-        public void Get_customers_using_raw_http_client_and_soap11()
-        {
-            var soapRequest =
+		[Test]
+		public void Get_customers_using_raw_http_client_and_soap11()
+		{
+			var soapRequest =
                  @"<?xml version=""1.0"" encoding=""utf-8""?>
                     <soap:Envelope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:soap=""http://schemas.xmlsoap.org/soap/envelope/"">
                         <soap:Body>
@@ -73,34 +73,34 @@ namespace ServiceStack.UsageExamples
                        </soap:Body>
                     </soap:Envelope>";
 
-            var request = string.Format(soapRequest, CustomerId);
-            var client = (HttpWebRequest)WebRequest.Create(BasicHttpSyncReplyUri);
-            client.ContentType = "text/xml; charset=utf-8";
-            client.Headers.Add("SOAPAction", "GetCustomers");
-            client.Accept = "text/xml";
-            client.Method = "POST";
+			var request = string.Format(soapRequest, CustomerId);
+			var client = (HttpWebRequest)WebRequest.Create(BasicHttpSyncReplyUri);
+			client.ContentType = "text/xml; charset=utf-8";
+			client.Headers.Add("SOAPAction", "GetCustomers");
+			client.Accept = "text/xml";
+			client.Method = "POST";
 
-            using (var stream = client.GetRequestStream())
-            {
-                using (var writer = new StreamWriter(stream))
-                {
-                    writer.Write(request);
-                }
-            }
+			using (var stream = client.GetRequestStream())
+			{
+				using (var writer = new StreamWriter(stream))
+				{
+					writer.Write(request);
+				}
+			}
 
-            var soapResponse = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-            var el = XElement.Parse(soapResponse);
+			var soapResponse = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
+			var el = XElement.Parse(soapResponse);
 			var customers = el.AnyElement("Body").AnyElement("GetCustomersResponse")
 				 .AnyElement("Customers").AllElements("Customer").ToList();
 
-            Assert.AreEqual(1, customers.Count);
-            Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
-        }
+			Assert.AreEqual(1, customers.Count);
+			Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
+		}
 
-        [Test]
-        public void Get_customers_using_xml_post()
-        {
-            var xmlRequest = string.Format(
+		[Test]
+		public void Get_customers_using_xml_post()
+		{
+			var xmlRequest = string.Format(
 			  @"<GetCustomers xmlns=""http://schemas.servicestack.net/types/"">
                     <CustomerIds>
                         <Id>{0}</Id>
@@ -109,44 +109,44 @@ namespace ServiceStack.UsageExamples
                 </GetCustomers>", CustomerId);
 
 			var requestUri = XmlSyncReplyBaseUri + "/GetCustomers";
-            var client = WebRequest.Create(requestUri);
-            client.Method = "POST";
-            client.ContentType = "application/xml";
-            using (var writer = new StreamWriter(client.GetRequestStream()))
-            {
-                writer.Write(xmlRequest);
-            }
+			var client = WebRequest.Create(requestUri);
+			client.Method = "POST";
+			client.ContentType = "application/xml";
+			using (var writer = new StreamWriter(client.GetRequestStream()))
+			{
+				writer.Write(xmlRequest);
+			}
 
-            var xmlResponse = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-            var el = XElement.Parse(xmlResponse);
+			var xmlResponse = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
+			var el = XElement.Parse(xmlResponse);
 			var customers = el.AnyElement("Customers").AllElements("Customer").ToList();
 
-            Assert.AreEqual(1, customers.Count);
-            Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
-        }
+			Assert.AreEqual(1, customers.Count);
+			Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
+		}
 
-        [Test]
-        public void Get_customers_using_json_post()
-        {
-            var jsonRequest = string.Format(@"{{""CustomerIds"":[{0}],""Version"":0}}", CustomerId);
+		[Test]
+		public void Get_customers_using_json_post()
+		{
+			var jsonRequest = string.Format(@"{{""CustomerIds"":[{0}],""Version"":0}}", CustomerId);
 
-            var requestUri = JsonSyncReplyBaseUri + "/GetCustomers";
-            var client = WebRequest.Create(requestUri);
-            client.Method = "POST";
-            client.ContentType = "application/json";
-            using (var writer = new StreamWriter(client.GetRequestStream()))
-            {
-                writer.Write(jsonRequest);
-            }
+			var requestUri = JsonSyncReplyBaseUri + "/GetCustomers";
+			var client = WebRequest.Create(requestUri);
+			client.Method = "POST";
+			client.ContentType = "application/json";
+			using (var writer = new StreamWriter(client.GetRequestStream()))
+			{
+				writer.Write(jsonRequest);
+			}
 
-            var jsonResponse = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-            var response = JsonDataContractDeserializer.Instance.Parse(jsonResponse,
+			var jsonResponse = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
+			var response = JsonDataContractDeserializer.Instance.Parse(jsonResponse,
 				typeof(GetCustomersResponse)) as GetCustomersResponse;
 
-            Assert.IsNotNull(response);
-            Assert.AreEqual(1, response.Customers.Count);
+			Assert.IsNotNull(response);
+			Assert.AreEqual(1, response.Customers.Count);
 			Assert.AreEqual(CustomerId, response.Customers[0].Id);
-        }
+		}
 
-    }
+	}
 }

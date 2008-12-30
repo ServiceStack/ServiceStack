@@ -24,43 +24,43 @@ namespace ServiceStack.UsageExamples
 	[TestFixture]
 	public class UsingDtoFromAssembly : TestBase
 	{
-        /// <summary>
-        /// Simple request, using xlinq to extract one field.
-        /// </summary>
-        [Test]
-        public void Get_customers_using_dto_from_assembly_and_parse_with_xlinq()
-        {
+		/// <summary>
+		/// Simple request, using xlinq to extract one field.
+		/// </summary>
+		[Test]
+		public void Get_customers_using_dto_from_assembly_and_parse_with_xlinq()
+		{
 			using (var client = new Soap12ServiceClient(base.WsSyncReplyUri))
-            {
-                var request = new GetCustomers { CustomerIds = new ArrayOfIntId { CustomerId } };
-                var response = client.Send(request);
-                var el = XNode.ReadFrom(response.GetReaderAtBodyContents()) as XElement;
-				var customers = el.AnyElement("Customers").AllElements("Customer").ToList();
-
-                Assert.AreEqual(1, customers.Count);
-                Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
-            }
-        }
-
-        /// <summary>
-        /// Simple request, using xlinq to extract one field.
-        /// </summary>
-        [Test]
-        public void Get_customers_using_dto_from_assembly_and_parse_with_xlinq_BasicHttp()
-        {
-			using (var client = new Soap11ServiceClient(base.BasicHttpSyncReplyUri))
-            {
+			{
 				var request = new GetCustomers { CustomerIds = new ArrayOfIntId { CustomerId } };
 				var response = client.Send(request);
-                var el = XNode.ReadFrom(response.GetReaderAtBodyContents()) as XElement;
+				var el = XNode.ReadFrom(response.GetReaderAtBodyContents()) as XElement;
 				var customers = el.AnyElement("Customers").AllElements("Customer").ToList();
 
-                Assert.AreEqual(1, customers.Count);
-                Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
-            }
-        }
+				Assert.AreEqual(1, customers.Count);
+				Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
+			}
+		}
 
-        /// <summary>
+		/// <summary>
+		/// Simple request, using xlinq to extract one field.
+		/// </summary>
+		[Test]
+		public void Get_customers_using_dto_from_assembly_and_parse_with_xlinq_BasicHttp()
+		{
+			using (var client = new Soap11ServiceClient(base.BasicHttpSyncReplyUri))
+			{
+				var request = new GetCustomers { CustomerIds = new ArrayOfIntId { CustomerId } };
+				var response = client.Send(request);
+				var el = XNode.ReadFrom(response.GetReaderAtBodyContents()) as XElement;
+				var customers = el.AnyElement("Customers").AllElements("Customer").ToList();
+
+				Assert.AreEqual(1, customers.Count);
+				Assert.AreEqual(CustomerId, customers[0].GetInt("Id"));
+			}
+		}
+
+		/// <summary>
 		/// The DB Recommended way to parse a request. 
 		/// Use xlinq to extraxt only the data you need directly into your application model.
 		/// </summary>

@@ -56,8 +56,7 @@ namespace ServiceStack.UsageExamples
 
 		public string CreateXmlRequest(int userId)
 		{
-			var request = new DtoOperations.GetCustomers 
-			{
+			var request = new DtoOperations.GetCustomers {
 				CustomerIds = new ArrayOfIntId(new[] { userId }),
 			};
 			var xmlRequest = DataContractSerializer.Instance.Parse(request);
