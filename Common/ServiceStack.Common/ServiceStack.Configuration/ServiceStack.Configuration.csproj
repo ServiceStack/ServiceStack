@@ -55,11 +55,12 @@
     <Compile Include="IObjectFactory.cs" />
     <Compile Include="ObjectsConfigurationSectionHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResourceManager.cs" />
+    <Compile Include="ConfigurationResourceManager.cs" />
     <Compile Include="Support\LateBoundObjectTypeBuilder.cs" />
     <Compile Include="Support\ObjectConfigurationType.cs" />
     <Compile Include="Support\ObjectConfigurationTypeFactory.cs" />
     <Compile Include="Support\PropertyConfigurationType.cs" />
+    <Compile Include="Support\RefType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">

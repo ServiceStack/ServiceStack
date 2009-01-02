@@ -4,13 +4,13 @@ namespace ServiceStack.ServiceInterface
 {
 	public class CallContext : IDisposable
 	{
-		public CallContext(AppContext app, RequestContext request)
+		public CallContext(OperationContext operation, RequestContext request)
 		{
-			this.App = app;
+			this.Operation = operation;
 			this.Request = request;
 		}
 
-		public AppContext App { get; set; }
+		public OperationContext Operation { get; set; }
 
 		public RequestContext Request { get; set; }
 

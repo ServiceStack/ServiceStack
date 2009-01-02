@@ -1,5 +1,6 @@
 using System;
 using System.ServiceModel.Channels;
+using ServiceStack.Service;
 using System.Xml;
 
 namespace ServiceStack.ServiceClient.Web

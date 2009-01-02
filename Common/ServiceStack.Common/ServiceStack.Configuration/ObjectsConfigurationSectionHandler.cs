@@ -10,12 +10,12 @@ namespace ServiceStack.Configuration
 	/// <![CDATA[
 	///   <configuration>
 	///     <configSections>
-	///        <section name="objects" type="ServiceStack.Common.Services.Config.ObjectsConfigurationSectionHandler, ServiceStack.Common.Services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+	///        <section name="objects" type="ServiceStack.Configuration.ObjectsConfigurationSectionHandler, ServiceStack.Common.Services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
 	///     </configSections>
 	/// ...
 	///   <objects>
-	///     <object name="CustomerServiceClient" type="ServiceStack.Common.Services.Client.WebServiceClient, ServiceStack.Common.Services">
-	///        <property name="UseBasicHttp" value="true"/>
+	///     <object name="OrderServiceClient" type="ServiceStack.ServiceClient.Web.XmlServiceClient, ServiceStack.ServiceClient.Web">
+	///        <constructor-arg value="http://servicestack.net/Endpoints/Xml/SyncReply.ashx/"/>
 	///     </object>
 	///   </objects>
 	///   </configuration>

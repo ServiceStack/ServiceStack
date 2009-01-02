@@ -3,7 +3,7 @@ using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Configuration
 {
-	public class ResourceManager : IResourceManager
+	public class ConfigurationResourceManager : IResourceManager
 	{
 		public string GetString(string name)
 		{

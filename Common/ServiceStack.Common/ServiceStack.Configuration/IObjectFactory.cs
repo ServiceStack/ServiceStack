@@ -6,6 +6,13 @@ namespace ServiceStack.Configuration
 	public interface IObjectFactory
 	{
 		/// <summary>
+		/// Creates this instance.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		T Create<T>();
+		
+		/// <summary>
 		/// Creates an instance of type T
 		/// </summary>
 		/// <typeparam name="T"></typeparam>

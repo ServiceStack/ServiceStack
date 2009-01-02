@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ServiceStack.Logging;
 
@@ -179,5 +180,28 @@ namespace ServiceStack.Common.Utils
             PopulateObject(objElementType);
             return objArray;
         }
+
+		public static bool CanCast(Type toType, Type fromType)
+		{
+			if (toType.IsInterface)
+			{
+				var interfaceList = fromType.GetInterfaces().ToList();
+				if (interfaceList.Contains(toType)) return true;
+			}
+			else
+			{
+				Type baseType = fromType;
+				bool areSameTypes;
+				do
+				{
+					areSameTypes = baseType == toType;
+				}
+				while (!areSameTypes && (baseType = fromType.BaseType) != null);
+
+				if (areSameTypes) return true;
+			}
+			
+			return false;
+		}
     }
 }

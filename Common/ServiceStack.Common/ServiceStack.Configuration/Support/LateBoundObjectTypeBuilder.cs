@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ServiceStack.Common.Utils;
 
@@ -14,23 +15,28 @@ namespace ServiceStack.Configuration.Support
 	/// </summary>
 	internal class LateBoundObjectTypeBuilder
 	{
-		//to convert to a type from a string value use the static parse method on the type you are trying to convert to.
-		private const string ERROR_NO_MATCHING_CONSTRUCTOR = "No matching constructor found for type {0}";
-		private const string ERROR_NO_PROPERTY_EXISTS = "No property named {0} was found on type {1}";
-		private const string ERROR_PROPERTY_TYPE_NOT_SUPPORTED = "setting property {0} on type {1} not supported";
-		private const string ERROR_SETTING_PROPERTY = "Cannot set property {0} on type {1}";
-		private const string ERROR_CREATING_TYPE = "Error creating type {0}";
-		private const string ERROR_TYPE_NOT_FOUND = "Could not find type: {0}";
+		private const string ERROR_NO_MATCHING_CONSTRUCTOR = "No matching constructor found for type '{0}'";
+		private const string ERROR_NO_PROPERTY_EXISTS = "No property named '{0}' was found on type '{1}'";
+		private const string ERROR_PROPERTY_TYPE_NOT_SUPPORTED = "setting property '{0}' on type '{1}' not supported";
+		private const string ERROR_SETTING_PROPERTY = "Cannot set property '{0}' on type '{1}'";
+		private const string ERROR_SETTING_REF_PROPERTY = "Cannot set ref property '{0}' on type '{1}'";
+		private const string ERROR_CREATING_TYPE = "Error creating type '{0}'";
+		private const string ERROR_TYPE_NOT_FOUND = "Could not find type '{0}'";
+		private const string ERROR_REF_NOT_FOUND = "Could not find type definition identified by ref '{0}'";
 
+		private readonly ObjectConfigurationTypeFactory factory;
 		private readonly Type objectType;
 		private ConstructorInfo constructorInfo;
 		private readonly List<Type> constructorValueTypes;
+		private readonly List<RefType> constructorRefTypes;
 
 		private readonly List<PropertyInfo> properties;
 		private readonly List<Type> propertyValueTypes;
+		private readonly List<RefType> propertyRefTypes;
 
-		internal LateBoundObjectTypeBuilder(ObjectConfigurationType objectTypeDefinition)
+		internal LateBoundObjectTypeBuilder(ObjectConfigurationTypeFactory factory, ObjectConfigurationType objectTypeDefinition)
 		{
+			this.factory = factory;
 			constructorInfo = null;
 			objectType = AssemblyUtils.FindType(objectTypeDefinition.Type);
 			if (objectType == null)
@@ -38,7 +44,9 @@ namespace ServiceStack.Configuration.Support
 				throw new TypeLoadException(string.Format(ERROR_TYPE_NOT_FOUND, objectTypeDefinition.Type));
 			}
 			constructorValueTypes = new List<Type>();
+			constructorRefTypes = new List<RefType>();
 			propertyValueTypes = new List<Type>();
+			propertyRefTypes = new List<RefType>();
 			properties = new List<PropertyInfo>();
 
 			if (objectTypeDefinition.ConstructorArgs.Count > 0)
@@ -49,16 +57,6 @@ namespace ServiceStack.Configuration.Support
 			{
 				AppendPropertyDefnition(objectTypeDefinition.Properties);
 			}
-		}
-
-		/// <summary>
-		/// Dummy method to use if property or arg type is a string
-		/// </summary>
-		/// <param name="value"></param>
-		/// <returns></returns>
-		public static string Parse(string value)
-		{
-			return value;
 		}
 
 		/// <summary>
@@ -80,26 +78,19 @@ namespace ServiceStack.Configuration.Support
 						ParameterInfo constructorParam = constructorParams[i];
 						PropertyConfigurationType constructorArgDefinition = constructorArgDefinitions[i];
 
-						//The type of each constructor argument will need to know how to create itself from a string value.
-						//We do this by calling the static 'Parse(string)' method on the type of each argument
-
 						if (!string.IsNullOrEmpty(constructorArgDefinition.Ref))
 						{
-							throw new NotImplementedException(
-								string.Format("{0} does not yet support creating objects by reference",
-								              objectType.GetType().FullName));
-							//TODO: implement if required
+							RefType refType = GetRefType(constructorArgDefinition.Ref, constructorParam.ParameterType);
+							constructorRefTypes.Add(refType);
+							constructorValueTypes.Add(refType.GetType());
+						}
+						else if (StringConverterUtils.CanCreateFromString(constructorParam.ParameterType))
+						{
+							constructorValueTypes.Add(constructorParam.ParameterType);
 						}
 						else
 						{
-							if (StringConverterUtils.CanCreateFromString(constructorParam.ParameterType))
-							{
-								constructorValueTypes.Add(constructorParam.ParameterType);
-							}
-							else
-							{
-								break;
-							}
+							break;
 						}
 					}
 
@@ -113,6 +104,23 @@ namespace ServiceStack.Configuration.Support
 			}
 			//if it got this far no matching constructor *that we can use* has been found
 			throw new TypeLoadException(string.Format(ERROR_NO_MATCHING_CONSTRUCTOR, objectType.Name));
+		}
+
+		private RefType GetRefType(string definitionRef, Type paramType)
+		{
+			var refTypeDefinition = factory.GetObjectDefinition(definitionRef);
+			if (refTypeDefinition == null)
+			{
+				throw new TypeLoadException(string.Format(ERROR_REF_NOT_FOUND, definitionRef));
+			}
+
+			var type = AssemblyUtils.FindType(refTypeDefinition.Type);
+			if (type == null)
+			{
+				throw new TypeLoadException(string.Format(ERROR_TYPE_NOT_FOUND, refTypeDefinition.Type));
+			}
+
+			return ReflectionUtils.CanCast(paramType, type) ? new RefType(definitionRef, paramType) : null;
 		}
 
 		/// <summary>
@@ -130,77 +138,123 @@ namespace ServiceStack.Configuration.Support
 					throw new TypeLoadException(
 						string.Format(ERROR_NO_PROPERTY_EXISTS, propertyDefinition.Name, objectType.Name));
 				}
-				if (!StringConverterUtils.CanCreateFromString(pi.PropertyType))
+				if (!string.IsNullOrEmpty(propertyDefinition.Ref))
+				{
+					var refType = GetRefType(propertyDefinition.Ref, pi.PropertyType);
+					if (refType == null)
+					{
+						throw new TypeLoadException(
+							string.Format(ERROR_SETTING_REF_PROPERTY, propertyDefinition.Name, objectType.Name));
+					}
+					propertyRefTypes.Add(refType);
+					properties.Add(pi);
+					propertyValueTypes.Add(refType.GetType());
+				} 
+				else if (StringConverterUtils.CanCreateFromString(pi.PropertyType))
+				{
+					properties.Add(pi);
+					propertyValueTypes.Add(pi.PropertyType);
+				}
+				else
 				{
 					throw new TypeLoadException(
 						string.Format(ERROR_PROPERTY_TYPE_NOT_SUPPORTED, propertyDefinition.Name, objectType.Name));
 				}
-				properties.Add(pi);
-				propertyValueTypes.Add(pi.PropertyType);
 			}
 		}
 
 		/// <summary>
 		/// Use the values in the ObjectConfigurationType to create a new instance of this type
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="objectTypeDefinition"></param>
+		/// <param name="objectTypeDefinition">The object type definition.</param>
+		/// <param name="returnType">Type of the return.</param>
 		/// <returns></returns>
-		public T Create<T>(ObjectConfigurationType objectTypeDefinition)
+		public object Create(ObjectConfigurationType objectTypeDefinition, Type returnType)
 		{
-			string[] constructorArgTextValues = new string[objectTypeDefinition.ConstructorArgs.Count];
+			object[] constructorArgValues = GetConstructorArgValues(objectTypeDefinition);
+			object[] propertyValues = GetPropertyValues(objectTypeDefinition);
+			return Create(constructorArgValues, propertyValues);
+		}
+
+		private object[] GetConstructorArgValues(ObjectConfigurationType objectTypeDefinition)
+		{
+			var constructorArgValues = new object[constructorValueTypes.Count];
+			int refTypesCount = 0;
 			for (int i = 0; i < objectTypeDefinition.ConstructorArgs.Count; i++)
 			{
-				constructorArgTextValues[i] = objectTypeDefinition.ConstructorArgs[i].Value;
+				var constructorValueType = constructorValueTypes[i];
+				object argValue;
+				if (constructorValueType == typeof(RefType))
+				{
+					var refType = this.constructorRefTypes[refTypesCount++];
+					argValue = factory.Create(refType.Name, refType.Type);
+				}
+				else
+				{
+					var constructorArgTextValue = objectTypeDefinition.ConstructorArgs[i].Value;
+					argValue = StringConverterUtils.Parse(constructorArgTextValue, constructorValueType);
+				}
+				constructorArgValues[i] = argValue;
 			}
-			string[] propertyTextValues = new string[objectTypeDefinition.Properties.Count];
+			return constructorArgValues;
+		}
+
+		private object[] GetPropertyValues(ObjectConfigurationType objectTypeDefinition)
+		{
+			var propertyValues = new object[this.propertyValueTypes.Count];
+			int refTypesCount = 0;
 			for (int i = 0; i < objectTypeDefinition.Properties.Count; i++)
 			{
-				propertyTextValues[i] = objectTypeDefinition.Properties[i].Value;
+				var propertyValueType = this.propertyValueTypes[i];
+				object argValue;
+				if (propertyValueType == typeof(RefType))
+				{
+					var refType = this.propertyRefTypes[refTypesCount++];
+					argValue = factory.Create(refType.Name, refType.Type);
+				}
+				else
+				{
+					var propertyTextValue = objectTypeDefinition.Properties[i].Value;
+					argValue = StringConverterUtils.Parse(propertyTextValue, propertyValueType);
+				}
+				propertyValues[i] = argValue;
 			}
-			return Create<T>(constructorArgTextValues, propertyTextValues);
+			return propertyValues;
 		}
 
 		/// <summary>
 		/// Use the values supplied to create a new instance of this type
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="constructorArgTextValues"></param>
-		/// <param name="propertyTextValues"></param>
+		/// <param name="constructorArgValues">The constructor arg values.</param>
+		/// <param name="propertyValues">The property text values.</param>
 		/// <returns></returns>
-		public T Create<T>(string[] constructorArgTextValues, string[] propertyTextValues)
+		public object Create(object[] constructorArgValues, object[] propertyValues)
 		{
 			try
 			{
-				var constructorArgValues = new object[constructorArgTextValues.Length];
-				for (int i = 0; i < constructorArgTextValues.Length; i++)
-				{
-					constructorArgValues[i] = StringConverterUtils.Parse(constructorArgTextValues[i], constructorValueTypes[i]);
-				}
-				T objectInstance;
+				object objectInstance;
 				if (constructorInfo == null)
 				{
-					objectInstance = (T)Activator.CreateInstance(objectType, new object[0]);
+					objectInstance = Activator.CreateInstance(objectType, new object[0]);
 				}
 				else
 				{
-					objectInstance = (T)constructorInfo.Invoke(constructorArgValues);
+					objectInstance = constructorInfo.Invoke(constructorArgValues);
 				}
 
-				for (int i = 0; i < propertyTextValues.Length; i++)
+				for (int i = 0; i < propertyValues.Length; i++)
 				{
 					PropertyInfo pi = properties[i];
 					try
 					{
-						object value = StringConverterUtils.Parse(propertyTextValues[i], propertyValueTypes[i]);
-						pi.SetValue(objectInstance, value, null);
+						pi.SetValue(objectInstance, propertyValues[i], null);
 					}
 					catch (Exception ex)
 					{
 						throw new TypeLoadException(string.Format(ERROR_SETTING_PROPERTY, pi.Name, objectType.Name), ex);
 					}
 				}
-				return objectInstance; 
+				return objectInstance;
 			}
 			catch (Exception ex)
 			{

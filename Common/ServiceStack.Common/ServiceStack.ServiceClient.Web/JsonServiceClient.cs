@@ -1,5 +1,6 @@
 using System.IO;
 using System.Net;
+using ServiceStack.Service;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.ServiceClient.Web

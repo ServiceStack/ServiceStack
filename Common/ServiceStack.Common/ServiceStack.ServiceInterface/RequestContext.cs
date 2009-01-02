@@ -1,33 +1,44 @@
 using System;
+using ServiceStack.Configuration;
 
 namespace ServiceStack.ServiceInterface
 {
 	public class RequestContext : IDisposable
 	{
-		public RequestContext(object requestDto, IDisposable facade)
+		public RequestContext(object requestDto, IFactoryProvider factory)
 		{
 			this.Dto = requestDto;
-			this.Facade = facade;
+			this.Factory = factory;
 		}
 
 		public object Dto { get; set; }
-		public IDisposable Facade { get; set; }
 
-		public TFacade GetFacade<TFacade>()
+		public T Get<T>() where T : class
 		{
-			return (TFacade)this.Facade;
+			var isDto = this.Dto as T;
+			return isDto ?? this.Factory.Resolve<T>();
 		}
 
-		public TRequest GetDto<TRequest>()
+		public IFactoryProvider Factory { get; set; }
+
+		~RequestContext()
 		{
-			return (TRequest)this.Dto;
+			Dispose(false);
 		}
 
 		public void Dispose()
 		{
-			if (this.Facade != null)
+			Dispose(true);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+				GC.SuppressFinalize(this);
+
+			if (this.Factory != null)
 			{
-				this.Facade.Dispose();
+				this.Factory.Dispose();
 			}
 		}
 	}

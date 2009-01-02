@@ -47,8 +47,8 @@ namespace ServiceStack.Configuration.Tests
 			+ "<object name=\"PropertyDoesNotExist\" type=\"ServiceStack.ServiceClient.Web.WcfServiceClient, ServiceStack.ServiceClient.Web\">"
 			+ "  <property name=\"PropertyDoesNotExist\" value=\"false\"/>"
 			+ "</object>"
-			+ "<object name=\"PropertyNotCreatableFromString\" type=\"ServiceStack.ServiceClient.Web.Soap11ServiceClient, ServiceStack.ServiceClient.Web\">"
-			+ "  <property name=\"Binding\" value=\"stringValue\"/>"
+			+ "<object name=\"PropertyNotCreatableFromString\" type=\"ServiceStack.Configuration.Tests.Support.TestType, ServiceStack.Configuration.Tests\">"
+			+ "  <property name=\"CantBeCreatedFromString\" value=\"stringValue\"/>"
 			+ "</object>"
 			+ "<object name=\"ConstructorIndex\" type=\"ServiceStack.Messaging.Destination, ServiceStack.Messaging\">"
 			+ "  <constructor-arg value=\"tcp://wwvis7020:61616/test.topic\" index=\"1\"/>"
@@ -111,61 +111,6 @@ namespace ServiceStack.Configuration.Tests
 			Assert.AreEqual("http://mock.org/service.svc", client.BaseUri);
 		}
 
-		//[Test]
-		//public void Create_IGatewayClientTest()
-		//{
-		//    var messagingFactory = factory.Create<IMessagingFactory>("BasicActiveMqMessagingFactory");
-		//    using (IConnection connection = messagingFactory.CreateConnection(BROKER_URI))
-		//    {
-		//        var destination = factory.Create<IDestination>("DestinationTopic");
-		//        using (IGatewayClient client = connection.CreateClient(destination))
-		//        {
-		//            Assert.IsNotNull(client);
-		//        }
-		//    }
-		//}
-
-		//[Test]
-		//public void Create_IGatewayClientFromConfiguredFactoryTest()
-		//{
-		//    var messagingFactory = factory.Create<IMessagingFactory>("ConfiguredActiveMqMessagingFactory");
-		//    using (var connection = messagingFactory.CreateConnection())
-		//    {
-		//        var destination = factory.Create<IDestination>("DestinationTopic");
-		//        using (var client = connection.CreateClient(destination))
-		//        {
-		//            Assert.IsNotNull(client);
-		//        }
-		//    }
-		//}
-
-		//[Test]
-		//public void Create_IGatewayClientFromFactoryWithFailoverSettingsTest()
-		//{
-		//    var messagingFactory = factory.Create<IMessagingFactory>("ActiveMqMessagingFactoryWithFailoverSettings");
-		//    using (var connection = messagingFactory.CreateConnection())
-		//    {
-		//        var destination = factory.Create<IDestination>("DestinationTopic");
-		//        using (var client = connection.CreateClient(destination))
-		//        {
-		//            Assert.IsNotNull(client);
-		//            Assert.AreEqual(2, client.FailoverSettings.BrokerUris.Count);
-		//            Assert.AreEqual(client.FailoverSettings.BrokerUris[0], "tcp://wwvis7020:61616");
-		//            Assert.AreEqual(client.FailoverSettings.BrokerUris[1], "tcp://remotehost:61616");
-		//            Assert.AreEqual(client.FailoverSettings.InitialReconnectDelay, TimeSpan.FromMilliseconds(100));
-		//        }
-		//    }
-		//}
-
-		//[Test]
-		//public void Create_IDestinationConstructorIndexTest()
-		//{
-		//    var destination = factory.Create<IDestination>("ConstructorIndex");
-		//    Assert.IsNotNull(destination);
-		//    Assert.AreEqual(DestinationType.Topic, destination.DestinationType);
-		//    Assert.AreEqual("tcp://wwvis7020:61616/test.topic", destination.Uri);
-		//}
-
 		[Test]
 		public void Contains_DefinedObjectTest()
 		{
@@ -214,7 +159,6 @@ namespace ServiceStack.Configuration.Tests
 			Assert.Fail();
 		}
 
-		[Ignore("Need to replace definition with an object that has a property that cant be created from a string")]
 		[Test]
 		[ExpectedException(typeof(NotSupportedException))]
 		public void PropertyNotCreatableFromStringTest()

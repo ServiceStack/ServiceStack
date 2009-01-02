@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Configuration.Support
 {
@@ -7,35 +11,79 @@ namespace ServiceStack.Configuration.Support
 	/// </summary>
 	internal class ObjectConfigurationTypeFactory : IObjectFactory
 	{
-
-		private readonly Dictionary<string, ObjectConfigurationType> objectTypes;
+		private Dictionary<string, Type> objectTypes;
+		private readonly Dictionary<string, ObjectConfigurationType> objectTypeConfigs;
 		private readonly Dictionary<string, LateBoundObjectTypeBuilder> cachedTypeBuilders;
 
 		public ObjectConfigurationTypeFactory(Dictionary<string, ObjectConfigurationType> objectTypes)
 		{
-			this.objectTypes = objectTypes;
+			this.objectTypeConfigs = objectTypes;
 			cachedTypeBuilders = new Dictionary<string, LateBoundObjectTypeBuilder>();
+		}
+
+		public Dictionary<string, Type> ObjectTypes
+		{
+			get
+			{
+				if (objectTypes == null)
+				{
+					objectTypes = new Dictionary<string, Type>();
+					foreach (var type in objectTypeConfigs)
+					{
+						var resolvedType = AssemblyUtils.FindType(type.Value.Type);
+						objectTypes.Add(type.Key, resolvedType);
+					}
+				}
+				return objectTypes;
+			}
 		}
 
 		private LateBoundObjectTypeBuilder GetTypeBuilder(ObjectConfigurationType objectTypeDefinition)
 		{
 			if (!cachedTypeBuilders.ContainsKey(objectTypeDefinition.Name))
 			{
-				cachedTypeBuilders[objectTypeDefinition.Name] = new LateBoundObjectTypeBuilder(objectTypeDefinition);
+				cachedTypeBuilders[objectTypeDefinition.Name] = new LateBoundObjectTypeBuilder(this, objectTypeDefinition);
 			}
 			return cachedTypeBuilders[objectTypeDefinition.Name];
 		}
 
+		public T Create<T>()
+		{
+			var toType = typeof(T);
+			var matchingTypes = objectTypes.Where(objectType => ReflectionUtils.CanCast(toType, objectType.Value)).ToList();
+			if (matchingTypes.Count == 0)
+			{
+				return default(T);
+			}
+			if (matchingTypes.Count > 1)
+			{
+				throw new AmbiguousMatchException(
+					string.Format("There are '{0}' possible matches available for type '{1}'. You must reference ambiguous matches by name.",
+						matchingTypes.Count, toType.FullName));
+			}
+			return Create<T>(matchingTypes[0].Key);
+		}
+
 		public T Create<T>(string objectName)
 		{
-			ObjectConfigurationType objectTypeDefinition = objectTypes[objectName];
-			LateBoundObjectTypeBuilder typeBuilder = GetTypeBuilder(objectTypeDefinition);
-			return typeBuilder.Create<T>(objectTypeDefinition);
+			return (T)Create(objectName, typeof(T));
+		}
+
+		public object Create(string objectName, Type returnType)
+		{
+			var objectTypeDefinition = objectTypeConfigs[objectName];
+			var typeBuilder = GetTypeBuilder(objectTypeDefinition);
+			return typeBuilder.Create(objectTypeDefinition, returnType);
 		}
 
 		public bool Contains(string objectName)
 		{
-			return objectTypes.ContainsKey(objectName);
+			return objectTypeConfigs.ContainsKey(objectName);
+		}
+
+		internal ObjectConfigurationType GetObjectDefinition(string objectName)
+		{
+			return objectTypeConfigs.ContainsKey(objectName) ? objectTypeConfigs[objectName] : null;
 		}
 	}
 }

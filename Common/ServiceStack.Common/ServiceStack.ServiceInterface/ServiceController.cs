@@ -44,7 +44,7 @@ namespace ServiceStack.ServiceInterface
 
 		public string ExecuteXml(CallContext context)
 		{
-			XmlRequestDto xmlRequest = context.Request.GetDto<XmlRequestDto>();
+			var xmlRequest = (XmlRequestDto)context.Request.Dto;
 
 			var requestContext = this.MessageInspector(xmlRequest.Xml);
 			var service = this.ServiceResolver.FindService(requestContext.OperationName, requestContext.Version.GetValueOrDefault());

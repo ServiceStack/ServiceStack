@@ -11,10 +11,13 @@ namespace ServiceStack.Configuration
 	/// </summary>
 	public class FactoryUtils 
 	{
+		private const string OBJECTS_SECTION_NAME = "objects";
 		private const string ERROR_APP_SETTING_NOT_FOUND = "AppSetting {0} not specified";
 		private const string ERROR_TYPE_NOT_FOUND = "Could not find type {0}";
 		private const string ERROR_CREATING_TYPE = "Error creating {0} type: '{1}'";
 		private const string ERROR_CONFIG_SECTION_NOT_FOUND = "The config section {0} is not defined";
+
+		private static IObjectFactory objectFactory;
 
 		/// <summary>
 		/// Creates a type from an AppSetting in App.Config file
@@ -64,6 +67,23 @@ namespace ServiceStack.Configuration
 					string.Format(ERROR_CONFIG_SECTION_NOT_FOUND, sectionName));
 			}
 			return CreateObjectFactoryFromConfig(objectTypes);
+		}
+
+
+		/// <summary>
+		/// Gets the object factory.
+		/// </summary>
+		/// <value>The object factory.</value>
+		public static IObjectFactory ObjectFactory
+		{
+			get
+			{
+				if (objectFactory == null)
+				{
+					objectFactory = CreateObjectFactoryFromConfig(OBJECTS_SECTION_NAME);
+				}
+				return objectFactory;
+			}
 		}
 
 		/// <summary>

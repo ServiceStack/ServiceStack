@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MemoryCacheClient.cs" />
     <Compile Include="ServiceStackMemcachedClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
