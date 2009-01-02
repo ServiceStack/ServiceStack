@@ -20,7 +20,7 @@ namespace ServiceStack.UsageExamples.Support
         {
             get
             {
-                return "http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/SyncReply.svc";
+                return "http://localhost/ServiceStack.Sakila.Host.WebService/Public/Soap12/SyncReply.svc";
             }
         }
 
@@ -28,7 +28,7 @@ namespace ServiceStack.UsageExamples.Support
         {
             get
             {
-                return "http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/SyncReply.svc";
+				return "http://localhost/ServiceStack.Sakila.Host.WebService/Public/Soap11/SyncReply.svc";
             }
         }
 
@@ -36,7 +36,7 @@ namespace ServiceStack.UsageExamples.Support
         {
             get
             {
-                return "http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Json/SyncReply.ashx";
+                return "http://localhost/ServiceStack.Sakila.Host.WebService/Public/Json/SyncReply";
             }
         }
 
@@ -44,23 +44,7 @@ namespace ServiceStack.UsageExamples.Support
         {
             get
             {
-                return "http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Xml/SyncReply.ashx";
-            }
-        }
-
-        protected static string RestBaseUri
-        {
-            get
-            {
-                return "http://localhost/ServiceStack.Sakila.Host.WebService/Rest/";
-            }
-        }
-
-        protected Uri ProxyAddress
-        {
-            get
-            {
-                return new Uri("http://127.0.0.1:8888");
+				return "http://localhost/ServiceStack.Sakila.Host.WebService/Public/Xml/SyncReply";
             }
         }
     }

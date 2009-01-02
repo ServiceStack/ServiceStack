@@ -5,6 +5,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 {
@@ -56,7 +57,6 @@ namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 				// Create the app context
 				this.AppContext = new OperationContext {
 					Cache = this.Parameters.Cache,
-					LogFactory = this.LogFactory
 				};
 			}
 			catch (Exception ex)
@@ -94,7 +94,7 @@ namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 		/// <returns>A call context</returns>
 		protected virtual CallContext CreateCallContext(IDisposable facade, string xml, ServiceModelInfo modelInfo)
 		{
-			XmlRequestDto requestDto = new XmlRequestDto(xml, modelInfo);
+			var requestDto = new XmlRequestDto(xml, modelInfo);
 			return new CallContext(this.AppContext, new RequestContext(requestDto, new FactoryProvider(null, facade)));
 		}
 

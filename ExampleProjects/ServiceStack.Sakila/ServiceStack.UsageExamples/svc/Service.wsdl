@@ -230,13 +230,13 @@
 
 	<wsdl:service name="SakilaServiceSyncReply">
 		<wsdl:port name="WSHttpBinding_ISyncReply" binding="svc:WSHttpBinding_ISyncReply">
-			<soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/SyncReply.svc" />
+			<soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Public/Soap12/SyncReply.svc" />
 		</wsdl:port>
 	</wsdl:service>
 
 	<wsdl:service name="SakilaServiceAsyncOneWay">
 		<wsdl:port name="WSHttpBinding_IOneWay" binding="svc:WSHttpBinding_IOneWay">
-			<soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/AsyncOneWay.svc" />
+			<soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Public/Soap12/AsyncOneWay.svc" />
 		</wsdl:port>
 	</wsdl:service>
 	

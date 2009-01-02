@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.Logging;
+using ServiceStack.LogicFacade;
 
 namespace ServiceStack.ServiceModel
 {
-	public abstract class ServiceModelInfo
+	public abstract class ServiceModelInfo : IServiceModelFinder
 	{
 		private static readonly ILog log = LogManager.GetLogger(typeof(ServiceModelInfo));
 
@@ -50,9 +52,10 @@ namespace ServiceStack.ServiceModel
 			}
 		}
 
-		public virtual Type GetDtoTypeFromOperation(string operationName, int version)
+		public Type FindTypeByOperation(string operationName, int? version)
 		{
 			Type retval;
+			version = version ?? this.MaxVersion;
 
 			if (this.typesByName.TryGetValue(version + ":" + operationName, out retval))
 			{
@@ -62,9 +65,9 @@ namespace ServiceStack.ServiceModel
 			return null;
 		}
 
-		public virtual Type GetDtoTypeFromOperation(string operationName)
+		public Assembly ServiceModelAssembly
 		{
-			return GetDtoTypeFromOperation(operationName, this.MaxVersion);
+			get { return this.GetType().Assembly; }
 		}
 	}
 }

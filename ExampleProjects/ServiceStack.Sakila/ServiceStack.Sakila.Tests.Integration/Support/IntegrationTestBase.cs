@@ -3,7 +3,6 @@ using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
 using ServiceStack.DataAccess.NHibernateProvider;
-using ServiceStack.Logging.Log4Net;
 using ServiceStack.Sakila.Logic;
 using ServiceStack.Sakila.ServiceInterface;
 using ServiceStack.ServiceInterface;
@@ -19,7 +18,6 @@ namespace ServiceStack.Sakila.Tests.Integration.Support
 			this.Config = new AppConfig();
 			this.ProviderManager = CreateProviderManager(this.Config.LocalConnectionString, this.Config.MappingAssemblyName);
 			this.AppContext = new OperationContext {
-				LogFactory = new Log4NetFactory(true),
 				Resources = new ConfigurationResourceManager(),
 				Factory = new FactoryProvider(null, this.ProviderManager)
 			};

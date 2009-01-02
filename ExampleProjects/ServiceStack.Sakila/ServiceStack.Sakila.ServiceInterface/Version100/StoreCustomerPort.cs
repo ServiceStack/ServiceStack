@@ -16,10 +16,10 @@ namespace ServiceStack.Sakila.ServiceInterface.Version100
 		/// Used by Json and Soap requests if this service *is not* a 'IXElementService'
 		/// </summary>
 		/// <returns></returns>
-		public object Execute(CallContext context)
+		public object Execute(ICallContext context)
 		{
-			var request = (StoreCustomer) context.Request.Dto;
-			var facade = context.Request.Factory.Resolve<ISakilaServiceFacade>();
+			var request = context.Request.Get<StoreCustomer>();
+			var facade = context.Request.Get<ISakilaServiceFacade>();
 
 			var customers = CustomerFromDtoTranslator.Instance.Parse(request.Customer);
 

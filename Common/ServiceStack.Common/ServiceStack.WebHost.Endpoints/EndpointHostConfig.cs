@@ -1,4 +1,5 @@
 using ServiceStack.Service;
+using ServiceStack.LogicFacade;
 using ServiceStack.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -15,7 +16,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public string UsageExamplesBaseUri { get; set; }
 		public IServiceHost ServiceHost { get; set; }
-		public ServiceModelInfo ModelInfo { get; set; }
+		public IServiceController ServiceController { get; set; }
+		public IServiceModelFinder ServiceModelFinder { get; set; }
 		public string OperationsNamespace { get; set; }
 		public string ServiceName { get; set; }
 	}

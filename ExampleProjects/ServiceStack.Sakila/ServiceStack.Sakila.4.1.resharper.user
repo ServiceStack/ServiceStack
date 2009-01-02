@@ -14,12 +14,7 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:SecureEndpoints/d:Xml/f:SyncReply.ashx" caret="0" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Default.ashx" caret="0" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:SyncReply.ashx" caret="91" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:AsyncOneWay.ashx" caret="67" scrollPosition="0|0" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Default.ashx" caret="99" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:Endpoints/d:Soap12/d:Metadata/f:Default.ashx" caret="82" scrollPosition="0|0" />
       <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingBasicHttpServiceReferenceClient.cs" caret="445" scrollPosition="0|0" />
       <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRestAndJson.cs" caret="968" scrollPosition="0|0" />
       <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingDtoFromAssembly.cs" caret="1731" scrollPosition="0|12" />
@@ -29,42 +24,58 @@
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:AsyncOneWay.svc" caret="39" scrollPosition="0|0" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:SyncReply.ashx" caret="0" scrollPosition="0|0" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:AsyncOneWay.ashx" caret="95" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="0" scrollPosition="0|0" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Default.ashx" caret="0" scrollPosition="0|0" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Wsdl.ashx" caret="97" scrollPosition="0|0" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Wsdl.ashx" caret="107" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:SecureEndpoints/d:Xml/f:AsyncOneWay.ashx" caret="0" scrollPosition="0|0" />
       <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:Support/f:TestBase.cs" caret="1489" scrollPosition="0|0" />
       <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/f:UsingRawHttpClient.cs" caret="5216" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="4414" scrollPosition="0|48" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppConfig.cs" caret="165" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:IAction.cs" caret="305" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="390" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaServiceFacade.cs" caret="876" scrollPosition="0|1" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="1133" scrollPosition="0|12" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/d:Version100/f:BaseAppTestFixture.cs" caret="1442" scrollPosition="0|39" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="0" scrollPosition="0|0" />
+      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:AppConfig.cs" caret="357" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:IAction.cs" caret="371" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="748" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerPort.cs" caret="870" scrollPosition="0|3" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersPort.cs" caret="812" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/f:app.config" caret="1169" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/d:Version100/f:BaseAppTestFixture.cs" caret="2774" scrollPosition="0|75" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="193" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:svc/f:GenerateSvcProxy.bat" caret="470" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:xsd/f:GenerateDto.bat" caret="0" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaServiceFacade.cs" caret="865" scrollPosition="0|10" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="2948" scrollPosition="0|65" />
+      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="845" scrollPosition="0|4" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Wsdl.ashx" caret="36" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="7069" scrollPosition="0|96" />
     </RecentFiles>
     <RecentEdits>
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/d:__RESHARPER__DummyWebPages_/f:Wsdl.ashx" caret="105" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppConfig.cs" caret="31" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="4414" scrollPosition="0|48" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppConfig.cs" caret="31" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:IAction.cs" caret="298" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="396" scrollPosition="0|0" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaServiceFacade.cs" caret="666" scrollPosition="0|1" />
-      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaServiceFacade.cs" caret="876" scrollPosition="0|1" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="1191" scrollPosition="0|15" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="1556" scrollPosition="0|21" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="4131" scrollPosition="0|102" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="1879" scrollPosition="0|39" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="565" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="35" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="4468" scrollPosition="0|96" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/d:Version100/f:BaseAppTestFixture.cs" caret="651" scrollPosition="0|8" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/d:Version100/f:BaseAppTestFixture.cs" caret="1442" scrollPosition="0|39" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="2386" scrollPosition="0|51" />
-      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="799" scrollPosition="0|3" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="328" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="353" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="708" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerPort.cs" caret="870" scrollPosition="0|3" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersPort.cs" caret="806" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="2882" scrollPosition="0|59" />
+      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="3035" scrollPosition="0|67" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/d:Version100/f:BaseAppTestFixture.cs" caret="2229" scrollPosition="0|69" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/d:Version100/f:BaseAppTestFixture.cs" caret="2872" scrollPosition="0|69" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="643" scrollPosition="0|1" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="2761" scrollPosition="0|1" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="2882" scrollPosition="0|1" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="4268" scrollPosition="0|91" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="4812" scrollPosition="0|39" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="3603" scrollPosition="0|30" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="2083" scrollPosition="0|29" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="1139" scrollPosition="0|29" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="193" scrollPosition="0|0" />
+      <File id="0F402FCE-1527-418A-96E2-57CD0BEE4780/d:svc/f:GenerateSvcProxy.bat" caret="442" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="771" scrollPosition="0|21" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="3186" scrollPosition="0|74" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="3932" scrollPosition="0|74" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="1565" scrollPosition="0|32" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaServiceFacade.cs" caret="922" scrollPosition="0|10" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:App.cs" caret="2906" scrollPosition="0|65" />
+      <File id="D0C2806A-E56A-4FAF-BAC6-49519FF97703/d:Support/f:IntegrationTestBase.cs" caret="1026" scrollPosition="0|4" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="6662" scrollPosition="0|99" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="6607" scrollPosition="0|99" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="7498" scrollPosition="0|99" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="9642" scrollPosition="0|120" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -84,12 +95,12 @@
       <Item value="List" priority="0" />
       <Item value="Customers" priority="0" />
       <Item value="customers" priority="3" />
-      <Item value="LogManager" priority="3" />
-      <Item value="typeof" priority="3" />
+      <Item value="LogManager" priority="5" />
+      <Item value="typeof" priority="4" />
       <Item value="SakilaServiceFacade" priority="0" />
-      <Item value="public" priority="17" />
+      <Item value="public" priority="18" />
       <Item value="enum" priority="0" />
-      <Item value="var" priority="15" />
+      <Item value="var" priority="20" />
       <Item value="base" priority="7" />
       <Item value="CallContext" priority="0" />
       <Item value="ResponseStatus" priority="2" />
@@ -102,13 +113,13 @@
       <Item value="ModelBase" priority="0" />
       <Item value="CustomerIds" priority="4" />
       <Item value="TestParameters" priority="0" />
-      <Item value="new" priority="18" />
+      <Item value="new" priority="24" />
       <Item value="Cache" priority="2" />
-      <Item value="this" priority="32" />
+      <Item value="this" priority="35" />
       <Item value="LogFactory" priority="1" />
       <Item value="ReturnMessage" priority="0" />
       <Item value="return" priority="13" />
-      <Item value="null" priority="4" />
+      <Item value="null" priority="7" />
       <Item value="ModelInfo" priority="2" />
       <Item value="object" priority="1" />
       <Item value="throw" priority="0" />
@@ -137,11 +148,11 @@
       <Item value="ids" priority="0" />
       <Item value="void" priority="2" />
       <Item value="AppContext" priority="0" />
-      <Item value="ResourceManager" priority="1" />
+      <Item value="ResourceManager" priority="2" />
       <Item value="private" priority="0" />
       <Item value="CreateProviderManager" priority="0" />
       <Item value="AppConfig" priority="0" />
-      <Item value="string" priority="13" />
+      <Item value="string" priority="14" />
       <Item value="ServiceController" priority="0" />
       <Item value="MySqlCommand" priority="0" />
       <Item value="connection" priority="1" />
@@ -208,16 +219,29 @@
       <Item value="ReplyBindingTemplate" priority="0" />
       <Item value="const" priority="0" />
       <Item value="abstract" priority="1" />
-      <Item value="OperationContext" priority="0" />
+      <Item value="OperationContext" priority="3" />
       <Item value="System" priority="0" />
       <Item value="ServiceModel" priority="0" />
+      <Item value="Factory" priority="1" />
+      <Item value="FactoryProvider" priority="4" />
+      <Item value="IObjectFactory" priority="0" />
+      <Item value="FactoryUtils" priority="2" />
+      <Item value="Resources" priority="0" />
+      <Item value="App" priority="0" />
+      <Item value="LogicFacade" priority="0" />
+      <Item value="IPersistenceProviderManager" priority="2" />
+      <Item value="facade" priority="1" />
+      <Item value="ILog" priority="0" />
+      <Item value="log" priority="0" />
+      <Item value="DateTime" priority="0" />
+      <Item value="before" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Sakila.DomainModel.Customer">
       <Item value="Id" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Logging.LogManager">
-      <Item value="GetLogger" priority="2" />
-      <Item value="LogFactory" priority="1" />
+      <Item value="GetLogger" priority="3" />
+      <Item value="LogFactory" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Sakila.Logic.LogicCommands.LogicCommandBase`1">
       <Item value="Validate" priority="0" />
@@ -244,6 +268,8 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Sakila.Host.WebService.App">
       <Item value="LogFactory" priority="0" />
+      <Item value="FactoryConfig" priority="0" />
+      <Item value="GetType" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Common.Utils.ReflectionUtils">
       <Item value="Add" priority="1" />
@@ -307,12 +333,12 @@
       <Item value="Not" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Configuration.ConfigUtils">
-      <Item value="GetAppSetting" priority="0" />
+      <Item value="GetAppSetting" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Sakila.Tests.Integration.Support.IntegrationTestBase">
       <Item value="AppContext" priority="0" />
       <Item value="ResourceManager" priority="0" />
-      <Item value="ProviderManager" priority="1" />
+      <Item value="ProviderManager" priority="2" />
       <Item value="Config" priority="2" />
       <Item value="Facade" priority="0" />
       <Item value="ServiceController" priority="0" />
@@ -337,6 +363,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Logging.ILog">
       <Item value="DebugFormat" priority="0" />
+      <Item value="InfoFormat" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:MySql.Data.MySqlClient.MySqlDataReader">
       <Item value="GetString" priority="1" />
@@ -362,7 +389,7 @@
       <Item value="Count" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.DataAccess.IPersistenceProviderManager">
-      <Item value="CreateProvider" priority="1" />
+      <Item value="CreateProvider" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Sakila.Tests.Integration.DataAccess.BasicDataAccessTests">
       <Item value="ProviderManager" priority="0" />
@@ -432,6 +459,47 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.String">
       <Item value="Replace" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.ServiceInterface.OperationContext">
+      <Item value="SetInstanceContext" priority="0" />
+      <Item value="Instance" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Sakila.Host.WebService.App">
+      <Item value="AppConfig" priority="0" />
+      <Item value="Config" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Sakila.Host.WebService.App+AppConfig">
+      <Item value="StringResourcesFile" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.LogicFacade.IOperationContext">
+      <Item value="Factory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Configuration.IFactoryProvider">
+      <Item value="Resolve" priority="4" />
+      <Item value="Register" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.RequestContext">
+      <Item value="Factory" priority="1" />
+      <Item value="Get" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Configuration.FactoryUtils">
+      <Item value="ObjectFactory" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.FactoryProvider">
+      <Item value="Register" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.OperationContext">
+      <Item value="Factory" priority="2" />
+      <Item value="LogFactory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.DateTime">
+      <Item value="Now" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.TimeSpan">
+      <Item value="TotalMilliseconds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.DataAccess.NHibernateProvider.NHibernateProviderManagerFactory">
+      <Item value="CreateProviderManager" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

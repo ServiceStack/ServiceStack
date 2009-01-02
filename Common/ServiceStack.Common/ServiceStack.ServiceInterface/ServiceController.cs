@@ -2,11 +2,12 @@ using System;
 using System.Xml.Linq;
 using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Logging;
+using ServiceStack.LogicFacade;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.ServiceInterface
 {
-	public class ServiceController
+	public class ServiceController : IServiceController
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(ServiceController));
 
@@ -18,33 +19,34 @@ namespace ServiceStack.ServiceInterface
 			this.MessageInspector = new XmlMessageInspector().Parse;
 		}
 
-		public ServiceStack.ServiceInterface.IServiceResolver ServiceResolver { get; private set; }
+		public IServiceResolver ServiceResolver { get; private set; }
 		public IStringSerializer XmlSerializer { get; private set; }
 		public IStringDeserializer XmlDeserializer { get; private set; }
 		public Func<string, IXmlServiceRequest> MessageInspector { get; private set; }
 
-		private T Execute<T>(Func<T> service)
+		public T Execute<T>(Func<T> service, string serviceName)
 		{
 			var before = DateTime.Now;
-			this.log.DebugFormat("Executing service '{0}'", service.GetType().Name);
+			this.log.InfoFormat("Executing service '{0}' ...", serviceName);
 			var result = service();
 			var timeTaken = DateTime.Now - before;
-			this.log.DebugFormat("service '{0}' executed. Took {1} ms.", service.GetType().Name, timeTaken.TotalMilliseconds);
+			this.log.InfoFormat("Service '{0}' completed in {1}ms.", serviceName, timeTaken.TotalMilliseconds);
 			return result;
 		}
 
-		public object Execute(CallContext context)
+		public object Execute(ICallContext context)
 		{
 			var serviceName = context.Request.Dto.GetType().Name;
 			var service = this.ServiceResolver.FindService(serviceName);
 			AssertServiceExists(service, serviceName);
+
 			var dtoService = (IService)service;
-			return Execute(() => dtoService.Execute(context));
+			return Execute(() => dtoService.Execute(context), serviceName);
 		}
 
-		public string ExecuteXml(CallContext context)
+		public string ExecuteXml(ICallContext context)
 		{
-			var xmlRequest = (XmlRequestDto)context.Request.Dto;
+			var xmlRequest = (IXmlRequest)context.Request.Dto;
 
 			var requestContext = this.MessageInspector(xmlRequest.Xml);
 			var service = this.ServiceResolver.FindService(requestContext.OperationName, requestContext.Version.GetValueOrDefault());
@@ -54,40 +56,32 @@ namespace ServiceStack.ServiceInterface
 			if (xelementService != null)
 			{
 				context.Request.Dto = XElement.Parse(xmlRequest.Xml);
-				var response = Execute(() => xelementService.Execute(context));
+				var response = Execute(() => xelementService.Execute(context), requestContext.OperationName);
 				var responseXml = this.XmlSerializer.Parse(response);
 				return responseXml;
 			}
 
-			IXmlService xmlService = service as IXmlService;
+			var xmlService = service as IXmlService;
 			if (xmlService != null)
 			{
 				context.Request.Dto = xmlRequest.Xml;
-				return Execute(() => xmlService.Execute(context));
+				return Execute(() => xmlService.Execute(context), requestContext.OperationName);
 			}
 
 			var dtoService = service as IService;
 			if (dtoService != null)
 			{
-				if (xmlRequest.ServiceModelInfo == null)
+				if (xmlRequest.ServiceModelFinder == null)
 				{
 					throw new ArgumentException("ServiceModelAssembly is required for executing an IService");
 				}
 
-				Type requestType;
-				if (requestContext.Version == null)
-				{
-					requestType = xmlRequest.ServiceModelInfo.GetDtoTypeFromOperation(requestContext.OperationName);
-				}
-				else
-				{
-					requestType = xmlRequest.ServiceModelInfo.GetDtoTypeFromOperation(requestContext.OperationName, (int)requestContext.Version);
-				}
+				var requestType = xmlRequest.ServiceModelFinder.FindTypeByOperation(requestContext.OperationName, requestContext.Version);
 
 				// Deserialize xml into request DTO
 				context.Request.Dto = this.XmlDeserializer.Parse(xmlRequest.Xml, requestType);
 
-				var response = Execute(() => dtoService.Execute(context));
+				var response = Execute(() => dtoService.Execute(context), requestContext.OperationName);
 				if (response == null) return null;
 				var responseXml = this.XmlSerializer.Parse(response);
 				return responseXml;

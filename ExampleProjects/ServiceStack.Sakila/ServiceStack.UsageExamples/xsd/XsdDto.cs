@@ -158,16 +158,13 @@ namespace ServiceStack.UsageExamples.xsd
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="GetCustomersResponse", Namespace="http://schemas.servicestack.net/types/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="StoreCustomersResponse", Namespace="http://schemas.servicestack.net/types/")]
     [System.SerializableAttribute()]
-    public partial class GetCustomersResponse : object, System.Runtime.Serialization.IExtensibleDataObject
+    public partial class StoreCustomersResponse : object, System.Runtime.Serialization.IExtensibleDataObject
     {
         
         [System.NonSerializedAttribute()]
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private ServiceStack.UsageExamples.xsd.Customer[] CustomersField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private ServiceStack.UsageExamples.xsd.Properties PropertiesField;
@@ -187,19 +184,6 @@ namespace ServiceStack.UsageExamples.xsd
             set
             {
                 this.extensionDataField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public ServiceStack.UsageExamples.xsd.Customer[] Customers
-        {
-            get
-            {
-                return this.CustomersField;
-            }
-            set
-            {
-                this.CustomersField = value;
             }
         }
         
@@ -310,6 +294,164 @@ namespace ServiceStack.UsageExamples.xsd
             set
             {
                 this.MessageField = value;
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="ResponseError", Namespace="http://schemas.servicestack.net/types/")]
+    [System.SerializableAttribute()]
+    public partial class ResponseError : object, System.Runtime.Serialization.IExtensibleDataObject
+    {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ErrorCodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string FieldNameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string MessageField;
+        
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData
+        {
+            get
+            {
+                return this.extensionDataField;
+            }
+            set
+            {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ErrorCode
+        {
+            get
+            {
+                return this.ErrorCodeField;
+            }
+            set
+            {
+                this.ErrorCodeField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string FieldName
+        {
+            get
+            {
+                return this.FieldNameField;
+            }
+            set
+            {
+                this.FieldNameField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message
+        {
+            get
+            {
+                return this.MessageField;
+            }
+            set
+            {
+                this.MessageField = value;
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="GetCustomersResponse", Namespace="http://schemas.servicestack.net/types/")]
+    [System.SerializableAttribute()]
+    public partial class GetCustomersResponse : object, System.Runtime.Serialization.IExtensibleDataObject
+    {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private ServiceStack.UsageExamples.xsd.Customer[] CustomersField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private ServiceStack.UsageExamples.xsd.Properties PropertiesField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private ServiceStack.UsageExamples.xsd.ResponseStatus ResponseStatusField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int VersionField;
+        
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData
+        {
+            get
+            {
+                return this.extensionDataField;
+            }
+            set
+            {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public ServiceStack.UsageExamples.xsd.Customer[] Customers
+        {
+            get
+            {
+                return this.CustomersField;
+            }
+            set
+            {
+                this.CustomersField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public ServiceStack.UsageExamples.xsd.Properties Properties
+        {
+            get
+            {
+                return this.PropertiesField;
+            }
+            set
+            {
+                this.PropertiesField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public ServiceStack.UsageExamples.xsd.ResponseStatus ResponseStatus
+        {
+            get
+            {
+                return this.ResponseStatusField;
+            }
+            set
+            {
+                this.ResponseStatusField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int Version
+        {
+            get
+            {
+                return this.VersionField;
+            }
+            set
+            {
+                this.VersionField = value;
             }
         }
     }
@@ -674,148 +816,6 @@ namespace ServiceStack.UsageExamples.xsd
             set
             {
                 this.NameField = value;
-            }
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="ResponseError", Namespace="http://schemas.servicestack.net/types/")]
-    [System.SerializableAttribute()]
-    public partial class ResponseError : object, System.Runtime.Serialization.IExtensibleDataObject
-    {
-        
-        [System.NonSerializedAttribute()]
-        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string ErrorCodeField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string FieldNameField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string MessageField;
-        
-        public System.Runtime.Serialization.ExtensionDataObject ExtensionData
-        {
-            get
-            {
-                return this.extensionDataField;
-            }
-            set
-            {
-                this.extensionDataField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string ErrorCode
-        {
-            get
-            {
-                return this.ErrorCodeField;
-            }
-            set
-            {
-                this.ErrorCodeField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string FieldName
-        {
-            get
-            {
-                return this.FieldNameField;
-            }
-            set
-            {
-                this.FieldNameField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Message
-        {
-            get
-            {
-                return this.MessageField;
-            }
-            set
-            {
-                this.MessageField = value;
-            }
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="StoreCustomersResponse", Namespace="http://schemas.servicestack.net/types/")]
-    [System.SerializableAttribute()]
-    public partial class StoreCustomersResponse : object, System.Runtime.Serialization.IExtensibleDataObject
-    {
-        
-        [System.NonSerializedAttribute()]
-        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private ServiceStack.UsageExamples.xsd.Properties PropertiesField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private ServiceStack.UsageExamples.xsd.ResponseStatus ResponseStatusField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private int VersionField;
-        
-        public System.Runtime.Serialization.ExtensionDataObject ExtensionData
-        {
-            get
-            {
-                return this.extensionDataField;
-            }
-            set
-            {
-                this.extensionDataField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public ServiceStack.UsageExamples.xsd.Properties Properties
-        {
-            get
-            {
-                return this.PropertiesField;
-            }
-            set
-            {
-                this.PropertiesField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public ServiceStack.UsageExamples.xsd.ResponseStatus ResponseStatus
-        {
-            get
-            {
-                return this.ResponseStatusField;
-            }
-            set
-            {
-                this.ResponseStatusField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public int Version
-        {
-            get
-            {
-                return this.VersionField;
-            }
-            set
-            {
-                this.VersionField = value;
             }
         }
     }

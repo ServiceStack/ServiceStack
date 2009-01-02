@@ -1,4 +1,6 @@
 using System;
+using ServiceStack.Logging;
+using ServiceStack.Logging.Log4Net;
 
 namespace ServiceStack.Sakila.Host.WebService
 {
@@ -8,7 +10,7 @@ namespace ServiceStack.Sakila.Host.WebService
 		protected void Application_Start(object sender, EventArgs e)
 		{
 			// Touch singletons to force static initializations
-			var touchApp = App.Instance;
+			var touchApp = AppHost.Instance;
 		}
 
 		protected void Session_Start(object sender, EventArgs e)

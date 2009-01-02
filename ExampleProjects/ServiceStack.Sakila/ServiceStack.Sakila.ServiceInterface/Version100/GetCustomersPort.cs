@@ -1,6 +1,7 @@
 using Sakila.ServiceModel.Version100.Operations.SakilaService;
 using Sakila.ServiceModelTranslators.Version100.DomainToService;
 using ServiceStack.Common.Extensions;
+using ServiceStack.LogicFacade;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Sakila.Logic.LogicInterface;
 using ServiceStack.Sakila.Logic.LogicInterface.Requests;
@@ -17,7 +18,7 @@ namespace ServiceStack.Sakila.ServiceInterface.Version100
 	[MessagingRestriction(MessagingRestriction.HttpPost)]
 	public class GetCustomersPort : IService
 	{
-		public object Execute(CallContext context)
+		public object Execute(ICallContext context)
 		{
 			// Extract request DTO
 			var request = context.Request.Get<GetCustomers>();

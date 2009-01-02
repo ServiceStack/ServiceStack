@@ -29,37 +29,10 @@ namespace ServiceStack.ServiceInterface
 			set { current = value; }
 		}
 
-		public ILogFactory LogFactory { get; set; }
-
 		public ICacheClient Cache { get; set; }
 
 		public IResourceManager Resources { get; set; }
 
 		public IFactoryProvider Factory { get; set; }
-
-		public string IpAddress
-		{
-			get
-			{
-				if (HttpContext.Current != null)
-				{
-					return HttpContext.Current.Request.UserHostAddress;
-				}
-
-				var context = System.ServiceModel.OperationContext.Current;
-				if (context == null) return null;
-				var prop = context.IncomingMessageProperties;
-				if (context.IncomingMessageProperties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
-				{
-					var endpoint = prop[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name]
-						as System.ServiceModel.Channels.RemoteEndpointMessageProperty;
-					if (endpoint != null)
-					{
-						return endpoint.Address;
-					}
-				}
-				return null;
-			}
-		}
 	}
 }

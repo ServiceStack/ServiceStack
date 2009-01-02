@@ -72,7 +72,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestContext.cs" />
     <Compile Include="ServiceController.cs" />
-    <Compile Include="XmlRequestDto.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">

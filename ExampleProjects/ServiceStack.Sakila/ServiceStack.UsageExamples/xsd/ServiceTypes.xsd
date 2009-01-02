@@ -27,6 +27,36 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="Property" nillable="true" type="tns:Property" />
+  <xs:complexType name="StoreCustomersResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="Properties" nillable="true" type="tns:Properties" />
+      <xs:element minOccurs="0" name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
+      <xs:element minOccurs="0" name="Version" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="StoreCustomersResponse" nillable="true" type="tns:StoreCustomersResponse" />
+  <xs:complexType name="ResponseStatus">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Errors" nillable="true" type="tns:ArrayOfResponseError" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
+  <xs:complexType name="ArrayOfResponseError">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="ResponseError" nillable="true" type="tns:ResponseError" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfResponseError" nillable="true" type="tns:ArrayOfResponseError" />
+  <xs:complexType name="ResponseError">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FieldName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResponseError" nillable="true" type="tns:ResponseError" />
   <xs:complexType name="GetCustomersResponse">
     <xs:sequence>
       <xs:element minOccurs="0" name="Customers" nillable="true" type="tns:ArrayOfCustomer" />
@@ -79,36 +109,6 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="Country" nillable="true" type="tns:Country" />
-  <xs:complexType name="ResponseStatus">
-    <xs:sequence>
-      <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Errors" nillable="true" type="tns:ArrayOfResponseError" />
-      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
-  <xs:complexType name="ArrayOfResponseError">
-    <xs:sequence>
-      <xs:element minOccurs="0" maxOccurs="unbounded" name="ResponseError" nillable="true" type="tns:ResponseError" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="ArrayOfResponseError" nillable="true" type="tns:ArrayOfResponseError" />
-  <xs:complexType name="ResponseError">
-    <xs:sequence>
-      <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="FieldName" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="ResponseError" nillable="true" type="tns:ResponseError" />
-  <xs:complexType name="StoreCustomersResponse">
-    <xs:sequence>
-      <xs:element minOccurs="0" name="Properties" nillable="true" type="tns:Properties" />
-      <xs:element minOccurs="0" name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
-      <xs:element minOccurs="0" name="Version" type="xs:int" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="StoreCustomersResponse" nillable="true" type="tns:StoreCustomersResponse" />
   <xs:complexType name="StoreCustomer">
     <xs:sequence>
       <xs:element minOccurs="0" name="Customer" nillable="true" type="tns:Customer" />

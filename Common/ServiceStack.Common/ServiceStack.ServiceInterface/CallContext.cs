@@ -1,8 +1,9 @@
 using System;
+using ServiceStack.LogicFacade;
 
 namespace ServiceStack.ServiceInterface
 {
-	public class CallContext : IDisposable
+	public class CallContext : ICallContext
 	{
 		public CallContext(OperationContext operation, RequestContext request)
 		{
@@ -10,9 +11,9 @@ namespace ServiceStack.ServiceInterface
 			this.Request = request;
 		}
 
-		public OperationContext Operation { get; set; }
+		public IOperationContext Operation { get; set; }
 
-		public RequestContext Request { get; set; }
+		public IRequestContext Request { get; set; }
 
 		public void Dispose()
 		{

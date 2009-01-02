@@ -1,7 +1,9 @@
+using ServiceStack.LogicFacade;
+
 namespace ServiceStack.ServiceInterface
 {
 	public interface IXElementService 
 	{
-		object Execute(CallContext context);
+		object Execute(ICallContext context);
 	}
 }

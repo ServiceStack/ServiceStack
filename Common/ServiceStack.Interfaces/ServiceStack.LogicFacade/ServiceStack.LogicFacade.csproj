@@ -45,10 +45,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ICallContext.cs" />
     <Compile Include="IInitContext.cs" />
     <Compile Include="ILogicFacade.cs" />
     <Compile Include="InitOptions.cs" />
     <Compile Include="IOperationContext.cs" />
+    <Compile Include="IRequestContext.cs" />
+    <Compile Include="IServiceController.cs" />
+    <Compile Include="IServiceModelFinder.cs" />
+    <Compile Include="IXmlRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

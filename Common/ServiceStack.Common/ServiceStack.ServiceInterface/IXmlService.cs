@@ -1,7 +1,9 @@
+using ServiceStack.LogicFacade;
+
 namespace ServiceStack.ServiceInterface
 {
 	public interface IXmlService
 	{
-		string Execute(CallContext context);
+		string Execute(ICallContext context);
 	}
 }

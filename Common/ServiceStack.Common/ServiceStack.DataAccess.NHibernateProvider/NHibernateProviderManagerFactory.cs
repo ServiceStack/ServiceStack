@@ -5,16 +5,15 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 {
 	public class NHibernateProviderManagerFactory : IPersistenceProviderManagerFactory
 	{
-		private readonly ILog log;
+		private readonly ILog log = LogManager.GetLogger(typeof(NHibernateProviderManagerFactory));
 
 		public IDictionary<string, string> StaticConfigPropertyTable { get; set; }
 		public IList<string> XmlMappingAssemblyNames { get; set; }
 
-		public NHibernateProviderManagerFactory(ILogFactory logFactory)
+		public NHibernateProviderManagerFactory()
 		{
 			this.StaticConfigPropertyTable = new Dictionary<string, string>();
 			this.XmlMappingAssemblyNames = new List<string>();
-			this.log = logFactory.GetLogger(GetType());
 		}
 
 		public IPersistenceProviderManager CreateProviderManager(string connectionString)

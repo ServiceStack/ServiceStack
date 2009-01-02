@@ -56,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EndpointHostBase.cs" />
     <Compile Include="Metadata\Soap12WsdlMetadataHandler.cs" />
     <Compile Include="Support\HttpHandlerBase.cs" />
     <Compile Include="Support\Metadata\WsdlMetadataHandlerBase.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="Support\SoapSyncReplyHandler.cs" />
     <Compile Include="XmlAsyncOneWayHandler.cs" />
     <Compile Include="Support\XmlHandlerBase.cs" />
+    <Compile Include="XmlRequestDto.cs" />
     <Compile Include="XmlSyncReplyHandler.cs" />
     <Compile Include="Metadata\IndexMetadataHandler.cs" />
     <Compile Include="Metadata\Soap11MetadataHandler.cs" />

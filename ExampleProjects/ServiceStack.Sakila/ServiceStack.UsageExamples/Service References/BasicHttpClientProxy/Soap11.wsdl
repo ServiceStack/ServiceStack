@@ -205,12 +205,12 @@
   </wsdl:binding>
   <wsdl:service name="SakilaServiceSyncReply">
     <wsdl:port name="BasicHttpBinding_ISyncReply" binding="svc:BasicHttpBinding_ISyncReply">
-      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/SyncReply.svc" />
+      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Public/Soap11/SyncReply.svc" />
     </wsdl:port>
   </wsdl:service>
   <wsdl:service name="SakilaServiceAsyncOneWay">
     <wsdl:port name="BasicHttpBinding_IOneWay" binding="svc:BasicHttpBinding_IOneWay">
-      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/AsyncOneWay.svc" />
+      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Public/Soap11/AsyncOneWay.svc" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

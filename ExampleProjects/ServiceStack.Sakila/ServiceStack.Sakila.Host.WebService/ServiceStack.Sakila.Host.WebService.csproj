@@ -90,7 +90,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App.cs" />
+    <Compile Include="AppHost.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -116,41 +116,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
-    <Content Include="Endpoints\Soap11\AsyncOneWay.svc" />
-    <Content Include="Endpoints\Soap11\SyncReply.svc" />
+    <Content Include="Public\Soap11\AsyncOneWay.svc" />
+    <Content Include="Public\Soap11\SyncReply.svc" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Endpoints\Json\AsyncOneWay.ashx" />
-    <Content Include="Endpoints\Json\SyncReply.ashx" />
-    <Content Include="Endpoints\Json\Metadata\Default.ashx" />
-    <Content Include="Endpoints\Soap12\AsyncOneWay.svc" />
-    <Content Include="Endpoints\Soap12\SyncReply.svc" />
-    <Content Include="SecureEndpoints\Xml\AsyncOneWay.ashx" />
-    <Content Include="SecureEndpoints\Xml\SyncReply.ashx" />
-    <Content Include="Endpoints\Xml\Metadata\Default.ashx" />
-    <Content Include="Endpoints\Soap12\Metadata\Default.ashx" />
-    <Content Include="Endpoints\Default.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Endpoints\Soap11\Metadata\Default.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="SecureEndpoints\Json\AsyncOneWay.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="SecureEndpoints\Json\SyncReply.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Endpoints\Soap11\Metadata\Wsdl.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Endpoints\Soap12\Metadata\Wsdl.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Endpoints\Xml\AsyncOneWay.ashx" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Endpoints\Xml\SyncReply.ashx" />
+    <Content Include="Public\Soap12\AsyncOneWay.svc" />
+    <Content Include="Public\Soap12\SyncReply.svc" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
