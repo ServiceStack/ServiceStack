@@ -19,11 +19,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{62EEF247-109
 		Lib\ILMerge.exe = Lib\ILMerge.exe
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceClient", "ServiceStack.ServiceClient\ServiceStack.ServiceClient.csproj", "{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.LogicFacade", "ServiceStack.LogicFacade\ServiceStack.LogicFacade.csproj", "{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Configuration", "ServiceStack.Configuration\ServiceStack.Configuration.csproj", "{390B44FA-8DA6-489D-9DB5-1689D3088DFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Service", "ServiceStack.Service\ServiceStack.Service.csproj", "{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,10 +47,6 @@ Global
 		{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -59,6 +55,10 @@ Global
 		{390B44FA-8DA6-489D-9DB5-1689D3088DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{390B44FA-8DA6-489D-9DB5-1689D3088DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{390B44FA-8DA6-489D-9DB5-1689D3088DFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

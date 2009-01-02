@@ -17,21 +17,28 @@ namespace ServiceStack.CacheAccess
 		/// Removes the specified item from the cache.
 		/// </summary>
 		/// <param name="key">The identifier for the item to delete.</param>
-		/// <returns>true if the item was successfully removed from the cache; false otherwise.</returns>
+		/// <returns>
+		/// true if the item was successfully removed from the cache; false otherwise.
+		/// </returns>
 		bool Remove(string key);
 
 		/// <summary>
 		/// Retrieves the specified item from the cache.
 		/// </summary>
 		/// <param name="key">The identifier for the item to retrieve.</param>
-		/// <returns>The retrieved item, or <value>null</value> if the key was not found.</returns>
+		/// <returns>
+		/// The retrieved item, or <value>null</value> if the key was not found.
+		/// </returns>
 		object Get(string key);
 
 		/// <summary>
 		/// Retrieves the specified item from the cache.
 		/// </summary>
+		/// <typeparam name="T"></typeparam>
 		/// <param name="key">The identifier for the item to retrieve.</param>
-		/// <returns>The retrieved item, or <value>null</value> if the key was not found.</returns>
+		/// <returns>
+		/// The retrieved item, or <value>null</value> if the key was not found.
+		/// </returns>
 		T Get<T>(string key);
 
 		/// <summary>
@@ -39,7 +46,9 @@ namespace ServiceStack.CacheAccess
 		/// </summary>
 		/// <param name="key">The identifier for the item to increment.</param>
 		/// <param name="amount">The amount by which the client wants to increase the item.</param>
-		/// <returns>The new value of the item or -1 if not found.</returns>
+		/// <returns>
+		/// The new value of the item or -1 if not found.
+		/// </returns>
 		/// <remarks>The item must be inserted into the cache before it can be changed. The item must be inserted as a <see cref="T:System.String"/>. The operation only works with <see cref="System.UInt32"/> values, so -1 always indicates that the item was not found.</remarks>
 		long Increment(string key, uint amount);
 
@@ -48,7 +57,9 @@ namespace ServiceStack.CacheAccess
 		/// </summary>
 		/// <param name="key">The identifier for the item to increment.</param>
 		/// <param name="amount">The amount by which the client wants to decrease the item.</param>
-		/// <returns>The new value of the item or -1 if not found.</returns>
+		/// <returns>
+		/// The new value of the item or -1 if not found.
+		/// </returns>
 		/// <remarks>The item must be inserted into the cache before it can be changed. The item must be inserted as a <see cref="T:System.String"/>. The operation only works with <see cref="System.UInt32"/> values, so -1 always indicates that the item was not found.</remarks>
 		long Decrement(string key, uint amount);
 
@@ -82,6 +93,7 @@ namespace ServiceStack.CacheAccess
 		/// <param name="key">The key used to reference the item.</param>
 		/// <param name="value">The object to be inserted into the cache.</param>
 		/// <param name="cas">The unique value returned by <see cref="M:MultiGet"/>.</param>
+		/// <returns></returns>
 		/// <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
 		bool CheckAndSet(string key, object value, ulong cas);
 
@@ -92,6 +104,7 @@ namespace ServiceStack.CacheAccess
 		/// <param name="value">The object to be inserted into the cache.</param>
 		/// <param name="cas">The unique value returned by <see cref="M:MultiGet"/>.</param>
 		/// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
+		/// <returns></returns>
 		bool CheckAndSet(string key, object value, ulong cas, DateTime expiresAt);
 
 		/// <summary>
@@ -103,7 +116,9 @@ namespace ServiceStack.CacheAccess
 		/// Retrieves multiple items from the cache.
 		/// </summary>
 		/// <param name="keys">The list of identifiers for the items to retrieve.</param>
-		/// <returns>a Dictionary holding all items indexed by their key.</returns>
+		/// <returns>
+		/// a Dictionary holding all items indexed by their key.
+		/// </returns>
 		IDictionary<string, object> Get(IEnumerable<string> keys);
 
 		/// <summary>
@@ -111,7 +126,9 @@ namespace ServiceStack.CacheAccess
 		/// </summary>
 		/// <param name="keys">The list of identifiers for the items to retrieve.</param>
 		/// <param name="casValues">The CAS values for the keys.</param>
-		/// <returns>a Dictionary holding all items indexed by their key.</returns>
+		/// <returns>
+		/// a Dictionary holding all items indexed by their key.
+		/// </returns>
 		IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> casValues);
 	}
 }

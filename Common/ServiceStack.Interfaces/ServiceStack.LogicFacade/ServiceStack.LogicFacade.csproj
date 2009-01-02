@@ -48,12 +48,17 @@
     <Compile Include="IInitContext.cs" />
     <Compile Include="ILogicFacade.cs" />
     <Compile Include="InitOptions.cs" />
+    <Compile Include="IOperationContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.CacheAccess\ServiceStack.CacheAccess.csproj">
       <Project>{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}</Project>
       <Name>ServiceStack.CacheAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
+      <Project>{390B44FA-8DA6-489D-9DB5-1689D3088DFE}</Project>
+      <Name>ServiceStack.Configuration</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.DataAccess\ServiceStack.DataAccess.csproj">
       <Project>{D732C853-AB76-4277-B6CE-6C7DA57901B7}</Project>
