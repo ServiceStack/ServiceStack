@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<wsdl:definitions xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:tns="http://schemas.servicestack.net/types/" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:svc="http://services.servicestack.net/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" name="Soap12" targetNamespace="http://services.servicestack.net/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+<wsdl:definitions xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:tns="http://schemas.servicestack.net/types/" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:svc="http://services.servicestack.net/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" name="Soap11" targetNamespace="http://services.servicestack.net/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:types>
     <xs:schema xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
       <xs:element name="anyType" nillable="true" type="xs:anyType" />
@@ -70,6 +70,36 @@
         </xs:sequence>
       </xs:complexType>
       <xs:element name="Property" nillable="true" type="tns:Property" />
+      <xs:complexType name="StoreCustomersResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Properties" nillable="true" type="tns:Properties" />
+          <xs:element minOccurs="0" name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
+          <xs:element minOccurs="0" name="Version" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="StoreCustomersResponse" nillable="true" type="tns:StoreCustomersResponse" />
+      <xs:complexType name="ResponseStatus">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Errors" nillable="true" type="tns:ArrayOfResponseError" />
+          <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
+      <xs:complexType name="ArrayOfResponseError">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="ResponseError" nillable="true" type="tns:ResponseError" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfResponseError" nillable="true" type="tns:ArrayOfResponseError" />
+      <xs:complexType name="ResponseError">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="FieldName" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ResponseError" nillable="true" type="tns:ResponseError" />
       <xs:complexType name="GetCustomersResponse">
         <xs:sequence>
           <xs:element minOccurs="0" name="Customers" nillable="true" type="tns:ArrayOfCustomer" />
@@ -122,36 +152,6 @@
         </xs:sequence>
       </xs:complexType>
       <xs:element name="Country" nillable="true" type="tns:Country" />
-      <xs:complexType name="ResponseStatus">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
-          <xs:element minOccurs="0" name="Errors" nillable="true" type="tns:ArrayOfResponseError" />
-          <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
-        </xs:sequence>
-      </xs:complexType>
-      <xs:element name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
-      <xs:complexType name="ArrayOfResponseError">
-        <xs:sequence>
-          <xs:element minOccurs="0" maxOccurs="unbounded" name="ResponseError" nillable="true" type="tns:ResponseError" />
-        </xs:sequence>
-      </xs:complexType>
-      <xs:element name="ArrayOfResponseError" nillable="true" type="tns:ArrayOfResponseError" />
-      <xs:complexType name="ResponseError">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
-          <xs:element minOccurs="0" name="FieldName" nillable="true" type="xs:string" />
-          <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
-        </xs:sequence>
-      </xs:complexType>
-      <xs:element name="ResponseError" nillable="true" type="tns:ResponseError" />
-      <xs:complexType name="StoreCustomersResponse">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="Properties" nillable="true" type="tns:Properties" />
-          <xs:element minOccurs="0" name="ResponseStatus" nillable="true" type="tns:ResponseStatus" />
-          <xs:element minOccurs="0" name="Version" type="xs:int" />
-        </xs:sequence>
-      </xs:complexType>
-      <xs:element name="StoreCustomersResponse" nillable="true" type="tns:StoreCustomersResponse" />
       <xs:complexType name="StoreCustomer">
         <xs:sequence>
           <xs:element minOccurs="0" name="Customer" nillable="true" type="tns:Customer" />
@@ -182,33 +182,35 @@
       <wsdl:input message="svc:StoreCustomerIn" />
     </wsdl:operation>
   </wsdl:portType>
-  <wsdl:binding name="WSHttpBinding_ISyncReply" type="svc:ISyncReply">
-    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+  <wsdl:binding name="BasicHttpBinding_ISyncReply" type="svc:ISyncReply">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="GetCustomers">
-      <soap12:operation soapAction="http://services.servicestack.net/GetCustomers" style="document" />
+      <soap:operation soapAction="http://services.servicestack.net/GetCustomers" style="document" />
       <wsdl:input>
-        <soap12:body use="literal" />
+        <soap:body use="literal" />
       </wsdl:input>
       <wsdl:output>
-        <soap12:body use="literal" />
+        <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
-  <wsdl:binding name="WSHttpBinding_IOneWay" type="svc:IOneWay">
+  <wsdl:binding name="BasicHttpBinding_IOneWay" type="svc:IOneWay">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="StoreCustomer">
-      <soap12:operation soapAction="http://services.servicestack.net/StoreCustomer" style="document" />
+      <soap:operation soapAction="http://services.servicestack.net/StoreCustomer" style="document" />
       <wsdl:input>
-        <soap12:body use="literal" />
+        <soap:body use="literal" />
       </wsdl:input>
     </wsdl:operation>
   </wsdl:binding>
-  <wsdl:service name="SyncReply">
-    <wsdl:port name="WSHttpBinding_ISyncReply" binding="svc:WSHttpBinding_ISyncReply">
-      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/AsyncOneWay.svc" />
+  <wsdl:service name="SakilaServiceSyncReply">
+    <wsdl:port name="BasicHttpBinding_ISyncReply" binding="svc:BasicHttpBinding_ISyncReply">
+      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/SyncReply.svc" />
     </wsdl:port>
-    <wsdl:port name="WSHttpBinding_IOneWay" binding="svc:WSHttpBinding_IOneWay">
-      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/SyncReply.svc" />
+  </wsdl:service>
+  <wsdl:service name="SakilaServiceAsyncOneWay">
+    <wsdl:port name="BasicHttpBinding_IOneWay" binding="svc:BasicHttpBinding_IOneWay">
+      <soap:address location="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/AsyncOneWay.svc" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
