@@ -1,1 +1,1 @@
-<%@ ServiceHost Language="C#" Debug="true" Service="ServiceStack.Sakila.Host.WebService.Endpoints.Soap12.AsyncOneWay" CodeBehind="AsyncOneWay.svc.cs" %>
+<%@ ServiceHost Language="C#" Service="ServiceStack.WebHost.Endpoints.Soap12AsyncOneWayHandler" %>

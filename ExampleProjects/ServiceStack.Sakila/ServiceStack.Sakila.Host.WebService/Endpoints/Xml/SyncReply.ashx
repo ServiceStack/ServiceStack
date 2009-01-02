@@ -1,1 +1,1 @@
-<%@ WebHandler Language="C#" CodeBehind="SyncReply.ashx.cs" Class="ServiceStack.Sakila.Host.WebService.Endpoints.Xml.XmlSyncReplyHandler" %>
+<%@ WebHandler Language="C#" Class="ServiceStack.WebHost.Endpoints.XmlSyncReplyHandler" %>

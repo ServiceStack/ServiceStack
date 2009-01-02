@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="HXsnkrVZTHzc0gvcfB02U17b64I=">
+<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="yZFYUq395ovR5b7msF947VFB4UM=">
   <bindingConfigurations>
     <bindingConfiguration bindingType="basicHttpBinding" name="BasicHttpBinding_ISyncReply">
       <properties>
@@ -197,10 +197,10 @@
     </bindingConfiguration>
   </bindingConfigurations>
   <endpoints>
-    <endpoint name="BasicHttpBinding_ISyncReply" contract="BasicHttpClientProxy.ISyncReply" bindingType="basicHttpBinding" address="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/AsyncOneWay.svc" bindingConfiguration="BasicHttpBinding_ISyncReply">
+    <endpoint name="BasicHttpBinding_ISyncReply" contract="BasicHttpClientProxy.ISyncReply" bindingType="basicHttpBinding" address="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/SyncReply.svc" bindingConfiguration="BasicHttpBinding_ISyncReply">
       <properties>
         <property path="/address" isComplexType="false" isExplicitlyDefined="true" clrType="System.Uri, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <serializedValue>http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/AsyncOneWay.svc</serializedValue>
+          <serializedValue>http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/SyncReply.svc</serializedValue>
         </property>
         <property path="/behaviorConfiguration" isComplexType="false" isExplicitlyDefined="false" clrType="System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue />
@@ -276,10 +276,10 @@
         </property>
       </properties>
     </endpoint>
-    <endpoint name="BasicHttpBinding_IOneWay" contract="BasicHttpClientProxy.IOneWay" bindingType="basicHttpBinding" address="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/SyncReply.svc" bindingConfiguration="BasicHttpBinding_IOneWay">
+    <endpoint name="BasicHttpBinding_IOneWay" contract="BasicHttpClientProxy.IOneWay" bindingType="basicHttpBinding" address="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/AsyncOneWay.svc" bindingConfiguration="BasicHttpBinding_IOneWay">
       <properties>
         <property path="/address" isComplexType="false" isExplicitlyDefined="true" clrType="System.Uri, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <serializedValue>http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/SyncReply.svc</serializedValue>
+          <serializedValue>http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap11/AsyncOneWay.svc</serializedValue>
         </property>
         <property path="/behaviorConfiguration" isComplexType="false" isExplicitlyDefined="false" clrType="System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue />

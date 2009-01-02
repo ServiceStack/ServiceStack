@@ -1,24 +1,15 @@
 using ServiceStack.Logging;
+using ServiceStack.LogicFacade;
 using ServiceStack.Sakila.DataAccess;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Validation;
 
 namespace ServiceStack.Sakila.Logic.LogicCommands
 {
 	public abstract class LogicCommandBase<ReturnType> : IAction<ReturnType>, IValidatableCommand<ReturnType>
 	{
-		private AppContext appContext;
 		protected ILog log;
 
-		public AppContext AppContext
-		{
-			get { return this.appContext; }
-			set
-			{
-				this.appContext = value;
-				this.log = this.appContext.LogFactory.GetLogger(GetType());
-			}
-		}
+		public IOperationContext AppContext { get; set; }
 
 		public SakilaServiceDataAccessProvider Provider { get; set; }
 
@@ -28,7 +19,7 @@ namespace ServiceStack.Sakila.Logic.LogicCommands
 			foreach (var validationError in validationResult.Errors)
 			{
 				hasErrors = true;
-				validationError.ErrorMessage = this.appContext.ResourceManager.GetString(validationError.ErrorCode);
+				validationError.ErrorMessage = this.AppContext.Resources.GetString(validationError.ErrorCode);
 			}
 			if (hasErrors)
 			{

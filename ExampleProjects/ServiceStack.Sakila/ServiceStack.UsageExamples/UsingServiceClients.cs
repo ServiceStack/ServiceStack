@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Sakila.ServiceModel.Version100.Operations.SakilaService;
 using Sakila.ServiceModel.Version100.Types;
-using ServiceStack.ServiceClient;
+using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.UsageExamples.Support;
 

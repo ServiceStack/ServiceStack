@@ -1,1 +1,1 @@
-<%@ WebHandler Language="C#" CodeBehind="AsyncOneWay.ashx.cs" Class="ServiceStack.Sakila.Host.WebService.SecureEndpoints.Xml.XmlAsyncOneWayHandler" %>
+<%@ WebHandler Language="C#" Class="ServiceStack.WebHost.Endpoints.XmlAsyncOneWayHandler" %>

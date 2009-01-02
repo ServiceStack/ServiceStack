@@ -20,10 +20,10 @@ namespace ServiceStack.Sakila.ServiceInterface.Version100
 		public object Execute(CallContext context)
 		{
 			// Extract request DTO
-			var request = context.Request.GetDto<GetCustomers>();
+			var request = context.Request.Get<GetCustomers>();
 
 			// Retrieve the users
-			var facade = context.Request.GetFacade<ISakilaServiceFacade>();
+			var facade = context.Request.Get<ISakilaServiceFacade>();
 			try
 			{
 				var results = facade.GetCustomers(new CustomersRequest {

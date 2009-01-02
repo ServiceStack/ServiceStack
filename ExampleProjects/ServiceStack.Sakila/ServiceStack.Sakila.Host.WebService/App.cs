@@ -1,52 +1,62 @@
+using System;
 using System.Collections.Generic;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
+using System.Configuration;
 using System.Web;
 using Enyim.Caching;
+using Sakila.ServiceModel;
 using ServiceStack.CacheAccess.Memcached;
-using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
 using ServiceStack.DataAccess.NHibernateProvider;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Log4Net;
-using ServiceStack.Sakila.Host.WebService.AppSupport;
 using ServiceStack.Sakila.Logic;
 using ServiceStack.Sakila.Logic.LogicInterface;
 using ServiceStack.Sakila.ServiceInterface;
+using ServiceStack.Service;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceModel;
-using RequestContext = ServiceStack.ServiceInterface.RequestContext;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Sakila.Host.WebService
 {
-	public class App
+	public class App : IServiceHost
 	{
 		public static App Instance = new App();
 
-		public AppConfig Config { get; private set; }
-		public IResourceManager StringManager { get; private set; }
-		public ILogFactory LogFactory { get; private set; }
-		public IPersistenceProviderManagerFactory ProviderManagerFactory { get; private set; }
+		private readonly ILog log;
 		public IPersistenceProviderManager DefaultProviderManager { get; private set; }
 		public ServiceController ServiceController { get; private set; }
-		public AppContext AppContext { get; private set; }
 
 		public App()
 		{
-			Config = new AppConfig();
-			LogFactory = new Log4NetFactory(true);
-			ProviderManagerFactory = CreateNHibernateProviderManagerFactory();
-			DefaultProviderManager = ProviderManagerFactory.CreateProviderManager(Config.ConnectionString);
+			LogManager.LogFactory = new Log4NetFactory(true);
+			log = LogManager.GetLogger(this.GetType());
+
+			var before = DateTime.Now;
+			log.Info("Begin Initializing OperationContext...");
 
 			// Create the AppContext injected with the static service implementations
-			this.AppContext = new AppContext {
-				LogFactory = this.LogFactory,
-				Cache = new ServiceStackMemcachedClient(new MemcachedClient()),
-			};
+			OperationContext.SetInstanceContext(new OperationContext {
+				LogFactory = LogManager.LogFactory,
+				Cache = new MemoryCacheClient(),
+				Factory = new FactoryProvider(FactoryUtils.ObjectFactory),
+				Resources = new ConfigurationResourceManager(),
+			});
+
+			OperationContext.Instance.Factory.Register(CreateNHibernateProviderManager(Config.ConnectionString));
 
 			// Create the service controller
 			this.ServiceController = new ServiceController(new ServiceResolver());
+
+			EndpointHost.Config = new EndpointHostConfig {
+				ServiceHost = this,
+				ModelInfo = ModelInfo.Instance,
+				OperationsNamespace = "Sakila.ServiceModel.Version100.Operations.SakilaService",
+				ServiceName = "Sakila Service",
+			};
+
+			var elapsed = DateTime.Now - before;
+			log.InfoFormat("Initializing OperationContext took {0}ms", elapsed.TotalMilliseconds);
 		}
 
 		public object ExecuteService(object requestDto)
@@ -57,11 +67,11 @@ namespace ServiceStack.Sakila.Host.WebService
 			}
 		}
 
-		public string ExecuteXmlService(string xml, ServiceModelInfo serviceModelInfo)
+		public string ExecuteXmlService(string xml)
 		{
 			// Create a xml request DTO which the service controller will parse and reassign the call
 			// context request DTO to a object expected by the relevant port
-			XmlRequestDto requestDto = new XmlRequestDto(xml, serviceModelInfo);
+			var requestDto = new XmlRequestDto(xml, ModelInfo.Instance);
 
 			using (CallContext context = CreateCallContext(requestDto))
 			{
@@ -71,19 +81,16 @@ namespace ServiceStack.Sakila.Host.WebService
 
 		private CallContext CreateCallContext(object requestDto)
 		{
-			// Retrieve the client IP Address
-			string clientIPAddress = App.GetIpAddress();
-
 			// Create a facade around a provider connection
-			ISakilaServiceFacade facade = new SakilaServiceFacade(this.AppContext, this.DefaultProviderManager);
+			ISakilaServiceFacade facade = new SakilaServiceFacade(OperationContext.Instance);
 
 			// Populate the request context
-			var requestContext = new RequestContext(requestDto, facade);
+			var requestContext = new RequestContext(requestDto, new FactoryProvider(FactoryUtils.ObjectFactory, facade));
 
-			return new CallContext(this.AppContext, requestContext);
+			return new CallContext(OperationContext.Instance, requestContext);
 		}
 
-		private NHibernateProviderManagerFactory CreateNHibernateProviderManagerFactory()
+		private static IPersistenceProviderManager CreateNHibernateProviderManager(string connectionString)
 		{
 			var propertyTable = new Dictionary<string, string>
 			                    {
@@ -92,35 +99,26 @@ namespace ServiceStack.Sakila.Host.WebService
 			                    	{"connection.driver_class", "NHibernate.Driver.MySqlDataDriver"},
 			                    };
 
-			var xmlMappingAssemblyNames = new List<string> {
-			                              	"ServiceStack.Sakila.DataAccess",
-			                              };
+			var xmlMappingAssemblyNames = new List<string> { "ServiceStack.Sakila.DataAccess", };
 
-			return new NHibernateProviderManagerFactory(LogFactory) {
+			var factory = new NHibernateProviderManagerFactory(OperationContext.Instance.LogFactory) {
 				StaticConfigPropertyTable = propertyTable,
 				XmlMappingAssemblyNames = xmlMappingAssemblyNames,
 			};
+			return factory.CreateProviderManager(connectionString);
 		}
 
-		private static string GetIpAddress()
+		public static class Config
 		{
-			if (HttpContext.Current != null)
+			public static string ConnectionString
 			{
-				return HttpContext.Current.Request.UserHostAddress;
+				get { return ConfigUtils.GetAppSetting("ConnectionString"); }
 			}
 
-			var context = OperationContext.Current;
-			if (context == null) return null;
-			var prop = context.IncomingMessageProperties;
-			if (context.IncomingMessageProperties.ContainsKey(RemoteEndpointMessageProperty.Name))
+			public static string ServerPrivateKey
 			{
-				var endpoint = prop[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
-				if (endpoint != null)
-				{
-					return endpoint.Address;
-				}
+				get { return ConfigUtils.GetAppSetting("ServerPrivateKey"); }
 			}
-			return null;
 		}
 	}
 }

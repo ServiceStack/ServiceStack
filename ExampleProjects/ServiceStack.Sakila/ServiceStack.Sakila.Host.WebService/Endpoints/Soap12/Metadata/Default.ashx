@@ -1,1 +1,1 @@
-<%@ WebHandler Language="C#" CodeBehind="Default.ashx.cs" Class="ServiceStack.Sakila.Host.WebService.Endpoints.Soap12.Metadata.Soap12MetadataHandler" %>
+<%@ WebHandler Language="C#" Class="ServiceStack.WebHost.Endpoints.Metadata.Soap12MetadataHandler" %>

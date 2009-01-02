@@ -17,10 +17,10 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/MetaData/Wsdl.aspx" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/MetaData/Wsdl.ashx" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="Soap12.wsdl" MetadataType="Wsdl" ID="967379c4-1fad-4da9-8c25-2b2b1df7ee95" SourceId="1" SourceUrl="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/MetaData/Wsdl.aspx" />
+    <MetadataFile FileName="Soap11.wsdl" MetadataType="Wsdl" ID="156c0e9a-e66d-44ee-9a97-3fac966a2f6f" SourceId="1" SourceUrl="http://localhost/ServiceStack.Sakila.Host.WebService/Endpoints/Soap12/MetaData/Wsdl.ashx" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

@@ -1,7 +1,6 @@
 using System.ServiceModel;
 using NUnit.Framework;
 using ServiceStack.UsageExamples.Support;
-using Sakila.ServiceModel.Version100.Types;
 using proxy = ServiceStack.UsageExamples.BasicHttpClientProxy;
 
 namespace ServiceStack.UsageExamples

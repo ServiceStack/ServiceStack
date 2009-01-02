@@ -18,8 +18,8 @@ namespace ServiceStack.Sakila.ServiceInterface.Version100
 		/// <returns></returns>
 		public object Execute(CallContext context)
 		{
-			var request = context.Request.GetDto<StoreCustomer>();
-			var facade = context.Request.GetFacade<ISakilaServiceFacade>();
+			var request = (StoreCustomer) context.Request.Dto;
+			var facade = context.Request.Factory.Resolve<ISakilaServiceFacade>();
 
 			var customers = CustomerFromDtoTranslator.Instance.Parse(request.Customer);
 

@@ -23,7 +23,7 @@ namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 		/// <summary>
 		/// Application context
 		/// </summary>
-		protected AppContext AppContext { get; private set; }
+		protected OperationContext AppContext { get; private set; }
 
 		/// <summary>
 		/// String resource manager
@@ -54,7 +54,7 @@ namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 				//this.ResourceManager = new StringResourceManager(this.LogFactory);
 
 				// Create the app context
-				this.AppContext = new AppContext {
+				this.AppContext = new OperationContext {
 					Cache = this.Parameters.Cache,
 					LogFactory = this.LogFactory
 				};
@@ -82,7 +82,7 @@ namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 		/// <returns>A call context</returns>
 		protected virtual CallContext CreateCallContext(IDisposable facade, object requestDto)
 		{
-			return new CallContext(this.AppContext, new RequestContext(requestDto, facade));
+			return new CallContext(this.AppContext, new RequestContext(requestDto, new FactoryProvider(null, facade)));
 		}
 
 		/// <summary>
@@ -95,7 +95,7 @@ namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 		protected virtual CallContext CreateCallContext(IDisposable facade, string xml, ServiceModelInfo modelInfo)
 		{
 			XmlRequestDto requestDto = new XmlRequestDto(xml, modelInfo);
-			return new CallContext(this.AppContext, new RequestContext(requestDto, facade));
+			return new CallContext(this.AppContext, new RequestContext(requestDto, new FactoryProvider(null, facade)));
 		}
 
 		protected virtual void LogException(Exception ex)

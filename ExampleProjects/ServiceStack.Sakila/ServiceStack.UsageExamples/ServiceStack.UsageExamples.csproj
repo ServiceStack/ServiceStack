@@ -117,7 +117,7 @@
     <None Include="Service References\BasicHttpClientProxy\ServiceStack.UsageExamples.BasicHttpClientProxy.ResponseStatus.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Service References\BasicHttpClientProxy\Soap11.wsdl" />
+    <None Include="Service References\BasicHttpClientProxy\Soap111.wsdl" />
     <None Include="Service References\WsHttpClientProxy\ServiceStack.UsageExamples.WsHttpClientProxy.Customer.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -127,7 +127,7 @@
     <None Include="Service References\WsHttpClientProxy\ServiceStack.UsageExamples.WsHttpClientProxy.ResponseStatus.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
-    <None Include="Service References\WsHttpClientProxy\Soap12.wsdl" />
+    <None Include="Service References\WsHttpClientProxy\Soap11.wsdl" />
     <None Include="svc\GenerateSvcProxy.bat" />
     <None Include="svc\output.config" />
     <None Include="svc\Service.wsdl" />

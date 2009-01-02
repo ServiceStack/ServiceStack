@@ -5,6 +5,7 @@ using ServiceStack.DataAccess;
 using ServiceStack.ServiceInterface;
 using ServiceStack.DesignPatterns.Command;
 using ServiceStack.Logging;
+using ServiceStack.LogicFacade;
 using ServiceStack.Sakila.DataAccess;
 using ServiceStack.Sakila.Logic.LogicCommands;
 using ServiceStack.Sakila.Logic.LogicInterface;
@@ -16,18 +17,18 @@ namespace ServiceStack.Sakila.Logic
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(SakilaServiceFacade));
 
-		private AppContext AppContext { get; set; }
+		private IOperationContext AppContext { get; set; }
 
 		private IPersistenceProvider PersistenceProvider { get; set; }
 
 		private SakilaServiceDataAccessProvider Provider { get; set; }
 
-		public SakilaServiceFacade(AppContext appContext, IPersistenceProviderManager providerManager)
+		public SakilaServiceFacade(IOperationContext appContext)
 		{
 			this.AppContext = appContext;
 
 			// Create new connection
-			this.PersistenceProvider = providerManager.CreateProvider();
+			this.PersistenceProvider = appContext.Factory.Resolve<IPersistenceProviderManager>().CreateProvider();
 
 			// Wrap connection in Data Access Provider
 			this.Provider = new SakilaServiceDataAccessProvider(PersistenceProvider);

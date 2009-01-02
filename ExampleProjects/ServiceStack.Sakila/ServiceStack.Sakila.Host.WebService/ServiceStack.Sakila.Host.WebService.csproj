@@ -91,78 +91,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
-    <Compile Include="AppSupport\AppConfig.cs" />
-    <Compile Include="Endpoints\Default.ashx.cs">
-      <DependentUpon>Default.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Soap11\Metadata\Default.ashx.cs">
-      <DependentUpon>Default.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Soap12\Metadata\Default.ashx.cs">
-      <DependentUpon>Default.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Xml\AsyncOneWay.ashx.cs">
-      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Xml\Metadata\Default.ashx.cs">
-      <DependentUpon>Default.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Xml\SyncReply.ashx.cs">
-      <DependentUpon>SyncReply.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Json\Metadata\Default.ashx.cs">
-      <DependentUpon>Default.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Json\SyncReply.ashx.cs">
-      <DependentUpon>SyncReply.ashx</DependentUpon>
-    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Endpoints\Soap11\AsyncOneWay.svc.cs">
-      <DependentUpon>AsyncOneWay.svc</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Endpoints\Soap11\SyncReply.svc.cs">
-      <DependentUpon>SyncReply.svc</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Soap12\Metadata\Wsdl.aspx.cs">
-      <DependentUpon>Wsdl.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Endpoints\Soap12\Metadata\Wsdl.aspx.designer.cs">
-      <DependentUpon>Wsdl.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Soap11\Metadata\Wsdl.aspx.cs">
-      <DependentUpon>Wsdl.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Endpoints\Soap11\Metadata\Wsdl.aspx.designer.cs">
-      <DependentUpon>Wsdl.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Json\AsyncOneWay.ashx.cs">
-      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Soap12\AsyncOneWay.svc.cs">
-      <DependentUpon>AsyncOneWay.svc</DependentUpon>
-    </Compile>
-    <Compile Include="Endpoints\Soap12\SyncReply.svc.cs">
-      <DependentUpon>SyncReply.svc</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="SecureEndpoints\Json\AsyncOneWay.ashx.cs">
-      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="SecureEndpoints\Json\SyncReply.ashx.cs">
-      <DependentUpon>SyncReply.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="SecureEndpoints\Xml\AsyncOneWay.ashx.cs">
-      <DependentUpon>AsyncOneWay.ashx</DependentUpon>
-    </Compile>
-    <Compile Include="SecureEndpoints\Xml\SyncReply.ashx.cs">
-      <DependentUpon>SyncReply.ashx</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sakila.ServiceModel\Sakila.ServiceModel.csproj">
@@ -186,28 +118,39 @@
     <Content Include="Global.asax" />
     <Content Include="Endpoints\Soap11\AsyncOneWay.svc" />
     <Content Include="Endpoints\Soap11\SyncReply.svc" />
-    <Content Include="Endpoints\Soap12\Metadata\Wsdl.aspx" />
-    <Content Include="Endpoints\Soap11\Metadata\Wsdl.aspx" />
-    <Content Include="Endpoints\Soap12\AsyncOneWay.svc" />
-    <Content Include="Endpoints\Soap12\SyncReply.svc" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Endpoints\Json\AsyncOneWay.ashx" />
     <Content Include="Endpoints\Json\SyncReply.ashx" />
     <Content Include="Endpoints\Json\Metadata\Default.ashx" />
-    <Content Include="StringResources.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Endpoints\Xml\AsyncOneWay.ashx" />
-    <Content Include="Endpoints\Xml\SyncReply.ashx" />
-    <Content Include="Endpoints\Xml\Metadata\Default.ashx" />
-    <Content Include="Endpoints\Soap12\Metadata\Default.ashx" />
-    <Content Include="Endpoints\Soap11\Metadata\Default.ashx" />
-    <Content Include="Endpoints\Default.ashx" />
-    <Content Include="SecureEndpoints\Json\SyncReply.ashx" />
-    <Content Include="SecureEndpoints\Json\AsyncOneWay.ashx" />
+    <Content Include="Endpoints\Soap12\AsyncOneWay.svc" />
+    <Content Include="Endpoints\Soap12\SyncReply.svc" />
     <Content Include="SecureEndpoints\Xml\AsyncOneWay.ashx" />
     <Content Include="SecureEndpoints\Xml\SyncReply.ashx" />
+    <Content Include="Endpoints\Xml\Metadata\Default.ashx" />
+    <Content Include="Endpoints\Soap12\Metadata\Default.ashx" />
+    <Content Include="Endpoints\Default.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Endpoints\Soap11\Metadata\Default.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SecureEndpoints\Json\AsyncOneWay.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SecureEndpoints\Json\SyncReply.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Endpoints\Soap11\Metadata\Wsdl.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Endpoints\Soap12\Metadata\Wsdl.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Endpoints\Xml\AsyncOneWay.ashx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Endpoints\Xml\SyncReply.ashx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

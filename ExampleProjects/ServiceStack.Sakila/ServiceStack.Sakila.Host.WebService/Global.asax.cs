@@ -8,7 +8,7 @@ namespace ServiceStack.Sakila.Host.WebService
 		protected void Application_Start(object sender, EventArgs e)
 		{
 			// Touch singletons to force static initializations
-			var singletons = new object[] { App.Instance };
+			var touchApp = App.Instance;
 		}
 
 		protected void Session_Start(object sender, EventArgs e)
