@@ -39,5 +39,21 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 
 			return config;
 		}
+
+		public static NHibernateProviderManagerFactory CreateMySqlFactory(IList<string> xmlMappingAssemblyNames)
+		{
+			var propertyTable = new Dictionary<string, string> {
+            	{"connection.provider", "NHibernate.Connection.DriverConnectionProvider"},
+            	{"dialect", "NHibernate.Dialect.MySQLDialect"},
+            	{"connection.driver_class", "NHibernate.Driver.MySqlDataDriver"},
+            };
+
+			var factory = new NHibernateProviderManagerFactory {
+				StaticConfigPropertyTable = propertyTable,
+				XmlMappingAssemblyNames = xmlMappingAssemblyNames,
+			};
+
+			return factory;
+		}
 	}
 }

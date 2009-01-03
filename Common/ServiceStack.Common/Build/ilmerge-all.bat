@@ -1,5 +1,9 @@
 SET ILMERGE=..\Lib\ilmerge.exe
 
+PUSHD ..\..\ServiceStack.Interfaces\Build
+CALL ilmerge-all.bat 
+POPD
+
 COPY ..\..\ServiceStack.Interfaces\Build\ServiceStack.Interfaces.dll .
 
 SET PROJ_LIBS=
@@ -11,8 +15,9 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Validation\bin\Debug\ServiceStack.Vali
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.WebHost.Endpoints\bin\Debug\ServiceStack.WebHost.Endpoints.dll
 
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceClient.Web\bin\Debug\ServiceStack.ServiceClient.Web.dll
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Memcached\bin\Debug\ServiceStack.CacheAccess.Memcached.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\Debug\ServiceStack.CacheAccess.Providers.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\Debug\ServiceStack.DataAccess.NHibernateProvider.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.Db4oProvider\bin\Debug\ServiceStack.DataAccess.Db4oProvider.dll
 
 REM    Include Adapters and 3rd party dll's
 SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\ServiceStack.Logging.Log4Net.dll

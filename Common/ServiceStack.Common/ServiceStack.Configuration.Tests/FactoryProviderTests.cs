@@ -4,8 +4,10 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Configuration.Support;
 using ServiceStack.Configuration.Tests.Support;
+using ServiceStack.DataAccess.Db4oProvider;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
+using ServiceStack.DataAccess;
 using ServiceStack.Service;
 
 namespace ServiceStack.Configuration.Tests
@@ -44,6 +46,15 @@ namespace ServiceStack.Configuration.Tests
 			Assert.That(resolvedGateway, Is.Not.Null);
 			var xmlServiceClient = (XmlServiceClient) resolvedGateway.ServiceClient;
 			Assert.That(xmlServiceClient.BaseUri, Is.EqualTo("http://mock.org/service.svc"));
+		}
+
+		[Test]
+		public void A_registered_db4o_provider_manager_can_be_resolved()
+		{
+			var db4oProvider = new Db4oFileProviderManager("test.db4o");
+			var factoryProvider = new FactoryProvider(factory);
+			factoryProvider.Register(db4oProvider);
+			var provider = factoryProvider.Resolve<IPersistenceProviderManager>();
 		}
 	}
 }

@@ -88,24 +88,24 @@ namespace ServiceStack.CacheAccess
 		bool Replace(string key, object value, DateTime expiresAt);
 
 		/// <summary>
-		/// Updates an item in the cache with a cache key to reference its location, but only if it has not been changed since the last retrieval. The invoker must pass in the value returned by <see cref="M:MultiGet"/> called "cas" value. If this value matches the server's value, the item will be updated; otherwise the update fails.
+		/// Updates an item in the cache with a cache key to reference its location, but only if it has not been changed since the last retrieval. The invoker must pass in the value returned by <see cref="M:MultiGet"/> called "lastModifiedValue" value. If this value matches the server's value, the item will be updated; otherwise the update fails.
 		/// </summary>
 		/// <param name="key">The key used to reference the item.</param>
 		/// <param name="value">The object to be inserted into the cache.</param>
-		/// <param name="cas">The unique value returned by <see cref="M:MultiGet"/>.</param>
+		/// <param name="lastModifiedValue">The unique value returned by <see cref="M:MultiGet"/>.</param>
 		/// <returns></returns>
 		/// <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
-		bool CheckAndSet(string key, object value, ulong cas);
+		bool CheckAndSet(string key, object value, ulong lastModifiedValue);
 
 		/// <summary>
-		/// Updates an item in the cache with a cache key to reference its location, but only if it has not been changed since the last retrieval. The invoker must pass in the value returned by <see cref="M:MultiGet"/> called "cas" value. If this value matches the server's value, the item will be updated; otherwise the update fails.
+		/// Updates an item in the cache with a cache key to reference its location, but only if it has not been changed since the last retrieval. The invoker must pass in the value returned by <see cref="M:MultiGet"/> called "lastModifiedValue" value. If this value matches the server's value, the item will be updated; otherwise the update fails.
 		/// </summary>
 		/// <param name="key">The key used to reference the item.</param>
 		/// <param name="value">The object to be inserted into the cache.</param>
-		/// <param name="cas">The unique value returned by <see cref="M:MultiGet"/>.</param>
+		/// <param name="lastModifiedValue">The unique value returned by <see cref="M:MultiGet"/>.</param>
 		/// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
 		/// <returns></returns>
-		bool CheckAndSet(string key, object value, ulong cas, DateTime expiresAt);
+		bool CheckAndSet(string key, object value, ulong lastModifiedValue, DateTime expiresAt);
 
 		/// <summary>
 		/// Removes all data from the cache.
@@ -125,10 +125,10 @@ namespace ServiceStack.CacheAccess
 		/// Retrieves multiple items from the cache.
 		/// </summary>
 		/// <param name="keys">The list of identifiers for the items to retrieve.</param>
-		/// <param name="casValues">The CAS values for the keys.</param>
+		/// <param name="lastModifiedValues">The CAS values for the keys.</param>
 		/// <returns>
 		/// a Dictionary holding all items indexed by their key.
 		/// </returns>
-		IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> casValues);
+		IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues);
 	}
 }

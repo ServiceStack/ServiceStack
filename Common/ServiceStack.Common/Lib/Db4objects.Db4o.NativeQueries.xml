@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Db4objects.Db4o.NativeQueries</name>
+    </assembly>
+    <members>
+        <member name="M:Db4objects.Db4o.NativeQueries.Expr.IExpression.Accept(Db4objects.Db4o.NativeQueries.Expr.IExpressionVisitor)">
+            <param name="visitor">
+            must implement the visitor interface required
+            by the concrete Expression implementation.
+            </param>
+        </member>
+        <member name="M:Db4objects.Db4o.NativeQueries.Expr.Build.ExpressionBuilder.Not(Db4objects.Db4o.NativeQueries.Expr.IExpression)">
+            <summary>Optimizations: !(Bool)-&gt;(!Bool), !!X-&gt;X, !(X==Bool)-&gt;(X==!Bool)
+            	</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:Db4objects.Db4o.NativeQueries.Expr.Build.ExpressionBuilder.And(Db4objects.Db4o.NativeQueries.Expr.IExpression,Db4objects.Db4o.NativeQueries.Expr.IExpression)" -->
+        <member name="M:Db4objects.Db4o.NativeQueries.Expr.Build.ExpressionBuilder.Or(Db4objects.Db4o.NativeQueries.Expr.IExpression,Db4objects.Db4o.NativeQueries.Expr.IExpression)">
+            <summary>Optimizations: X||t-&gt;t, f||X-&gt;X, X||X-&gt;X, X||!X-&gt;t</summary>
+        </member>
+        <member name="M:Db4objects.Db4o.NativeQueries.Expr.Build.ExpressionBuilder.Constant(System.Boolean)">
+            <summary>Optimizations: static bool roots</summary>
+        </member>
+        <member name="T:Db4objects.Db4o.NativeQueries.QueryExpressionBuilder">
+            <summary>
+            Build a Db4objects.Db4o.Nativequery.Expr tree out of
+            a predicate method definition.
+            </summary>
+        </member>
+        <member name="M:Db4objects.Db4o.NativeQueries.QueryExpressionBuilder.Visitor.RegisterAssembly(Mono.Cecil.AssemblyDefinition)">
+            <summary>
+            Registers an assembly so it can be looked up by its assembly name
+            string later.
+            </summary>
+            <param name="assembly"></param>
+        </member>
+        <member name="T:Db4objects.Db4o.Internal.Query.SingleItemCachingStrategy">
+            <summary>
+            A very simple caching strategy that caches only the last added item.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -70,6 +70,10 @@
       <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
       <Name>ServiceStack.Configuration</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.DataAccess.Db4oProvider\ServiceStack.DataAccess.Db4oProvider.csproj">
+      <Project>{01796492-6DFF-49EF-AE78-C49AE56AD9A8}</Project>
+      <Name>ServiceStack.DataAccess.Db4oProvider</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
       <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
       <Name>ServiceStack.ServiceClient.Web</Name>

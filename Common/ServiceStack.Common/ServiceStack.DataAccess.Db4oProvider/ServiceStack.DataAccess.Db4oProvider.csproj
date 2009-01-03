@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}</ProjectGuid>
+    <ProjectGuid>{01796492-6DFF-49EF-AE78-C49AE56AD9A8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.CacheAccess.Memcached</RootNamespace>
-    <AssemblyName>ServiceStack.CacheAccess.Memcached</AssemblyName>
+    <RootNamespace>ServiceStack.DataAccess.Db4oProvider</RootNamespace>
+    <AssemblyName>ServiceStack.DataAccess.Db4oProvider</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,13 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Enyim.Caching, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Db4objects.Db4o, Version=7.4.71.12224, Culture=neutral, PublicKeyToken=6199cd4f203aa8eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\Enyim.Caching.dll</HintPath>
-    </Reference>
-    <Reference Include="MemcachedProviders, Version=1.2.3102.35569, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\MemcachedProviders.dll</HintPath>
+      <HintPath>..\Lib\Db4objects.Db4o.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -57,15 +53,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MemoryCacheClient.cs" />
-    <Compile Include="ServiceStackMemcachedClient.cs" />
+    <Compile Include="Db4oPersistenceProvider.cs" />
+    <Compile Include="Db4oFileProviderManager.cs" />
+    <Compile Include="Db4oTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

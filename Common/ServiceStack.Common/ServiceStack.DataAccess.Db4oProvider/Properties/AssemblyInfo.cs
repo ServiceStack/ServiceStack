@@ -1,16 +1,16 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ServiceStack.CacheAccess.Memcached")]
+[assembly: AssemblyTitle("ServiceStack.DataAccess.Db4oProvider")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("ServiceStack.CacheAccess.Memcached")]
-[assembly: AssemblyCopyright("Copyright � Microsoft 2008")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("ServiceStack.DataAccess.Db4oProvider")]
+[assembly: AssemblyCopyright("Copyright ©  2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("3f9b73d5-5c27-4b06-b42f-8443ac151dde")]
+[assembly: Guid("1b664da3-18ec-4830-a712-1f1aeaf6f686")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -8,7 +8,7 @@ namespace ServiceStack.Common.Support
 	/// </summary>
 	public abstract class AdapterBase
 	{
-		protected  abstract ILog Log { get; }
+		protected abstract ILog Log { get; }
 
 		/// <summary>
 		/// Executes the specified expression. 
