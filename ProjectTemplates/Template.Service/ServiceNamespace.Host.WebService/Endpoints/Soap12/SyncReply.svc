@@ -1,1 +1,0 @@
-<%@ ServiceHost Language="C#" Debug="true" Service="@ServiceNamespace@.Host.WebService.Endpoints.Soap12.SyncReply" CodeBehind="SyncReply.svc.cs" %>

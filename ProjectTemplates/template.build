@@ -10,8 +10,7 @@
 	<property name="template.databaseName" value="DatabaseName"/>
 	<property name="template.modelName" value="ModelName"/>
 
-	<property name="template.dir" value=".\Template.Service"/>
-	<include buildfile="template.properties" />
+	<include buildfile="${template.properties}" />
 	
 	<target name="all">
 		<echo message="Generate"/>

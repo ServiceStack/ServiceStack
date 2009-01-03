@@ -1,1 +1,0 @@
-<%@ ServiceHost Language="C#" Debug="true" Service="@ServiceNamespace@.Host.WebService.Endpoints.Soap12.AsyncOneWay" CodeBehind="AsyncOneWay.svc.cs" %>
