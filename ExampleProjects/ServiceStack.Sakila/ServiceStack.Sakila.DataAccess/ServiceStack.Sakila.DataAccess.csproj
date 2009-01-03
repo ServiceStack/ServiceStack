@@ -117,14 +117,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Build\Database\database.sql">
-    </None>
-    <None Include="Build\Database\dump_usercatalogue_data.bat" />
-    <None Include="Build\Database\dump_usercatalogue_schema.bat" />
     <None Include="nHibernate.csp" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Build\Database\Fix6555.exe" />
     <EmbeddedResource Include="HbmMaps\Actor.hbm.xml" />
     <EmbeddedResource Include="HbmMaps\Address.hbm.xml" />
     <EmbeddedResource Include="HbmMaps\Category.hbm.xml" />
@@ -140,6 +135,9 @@
     <EmbeddedResource Include="HbmMaps\Staff.hbm.xml" />
     <EmbeddedResource Include="HbmMaps\Store.hbm.xml" />
     <Content Include="xpathrun.exe" />
+    <None Include="Build\Database\sakila-data.sql" />
+    <None Include="Build\Database\sakila-schema.sql" />
+    <None Include="Build\Database\sakila.mwb" />
     <None Include="nHibernate.csp.post.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

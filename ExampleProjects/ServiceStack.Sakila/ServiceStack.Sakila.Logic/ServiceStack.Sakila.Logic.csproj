@@ -53,6 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LogicCommands\GetAllCustomersLogicCommand.cs" />
+    <Compile Include="LogicCommands\GetFilmsLogicCommand.cs" />
     <Compile Include="LogicCommands\LogicCommandBase.cs" />
     <Compile Include="LogicCommands\StoreCustomersLogicCommand.cs" />
     <Compile Include="LogicCommands\GetCustomersLogicCommand.cs" />
@@ -60,10 +62,11 @@
     <Compile Include="LogicInterface\ISakilaServiceFacade.cs" />
     <Compile Include="LogicInterface\Requests\CustomersRequest.cs" />
     <Compile Include="LogicInterface\CustomerAlreadyExistsException.cs" />
-    <Compile Include="Translators\DataToDomain\AddressTranslator.cs" />
-    <Compile Include="Translators\DataToDomain\CityTranslator.cs" />
-    <Compile Include="Translators\DataToDomain\CustomerTranslator.cs" />
-    <Compile Include="Translators\DomainToData\CustomerTranslator.cs" />
+    <Compile Include="Translators\DataToDomain\AddressFromDataTranslator.cs" />
+    <Compile Include="Translators\DataToDomain\CityFromDataTranslator.cs" />
+    <Compile Include="Translators\DataToDomain\CustomerFromDataTranslator.cs" />
+    <Compile Include="Translators\DataToDomain\FilmFromDataTranslator.cs" />
+    <Compile Include="Translators\DomainToData\CustomerToDataTranslator.cs" />
     <Compile Include="SakilaServiceFacade.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

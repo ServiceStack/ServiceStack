@@ -13,7 +13,7 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
 		
 		private string _title = String.Empty;
 		private string _description = String.Empty;
-		private byte _releaseYear = default(Byte);
+		private ushort _releaseYear = default(ushort); //had to change from byte because of overflow exception
 		private byte _rentalDuration = default(Byte);
 		private decimal _rentalRate = default(Decimal);
 		private ushort _length = default(UInt16);
@@ -85,8 +85,8 @@ namespace ServiceStack.Sakila.DataAccess.DataModel
         }
 		partial void OnDescriptionChanging();
 		partial void OnDescriptionChanged();
-		
-		public virtual byte ReleaseYear
+
+		public virtual ushort ReleaseYear
         {
             get { return _releaseYear; }
 			set

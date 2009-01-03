@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Sakila.ServiceModel;
-using ServiceStack.CacheAccess.Memcached;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
 using ServiceStack.DataAccess.NHibernateProvider;
@@ -24,7 +24,8 @@ namespace ServiceStack.Sakila.Host.WebService
 			LogManager.LogFactory = new Log4NetFactory(true);
 
 			var factory = new FactoryProvider(FactoryUtils.ObjectFactory, LogManager.LogFactory);
-			factory.Register(CreatePersistenceProviderManager());
+			var nhFactory = NHibernateProviderManagerFactory.CreateMySqlFactory(Config.XmlMappingAssemblyNames);
+			factory.Register(nhFactory.CreateProviderManager(Config.ConnectionString));
 
 			// Create the AppContext injected with the static service implementations
 			OperationContext.SetInstanceContext(new OperationContext {
@@ -39,21 +40,6 @@ namespace ServiceStack.Sakila.Host.WebService
 				ServiceModelFinder = ModelInfo.Instance,
 				ServiceController = new ServiceController(new ServiceResolver()),
 			});
-		}
-
-		private static IPersistenceProviderManager CreatePersistenceProviderManager()
-		{
-			var propertyTable = new Dictionary<string, string> {
-            	{"connection.provider", "NHibernate.Connection.DriverConnectionProvider"},
-            	{"dialect", "NHibernate.Dialect.MySQLDialect"},
-            	{"connection.driver_class", "NHibernate.Driver.MySqlDataDriver"},
-            };
-
-			var factory = new NHibernateProviderManagerFactory {
-				StaticConfigPropertyTable = propertyTable,
-				XmlMappingAssemblyNames = Config.XmlMappingAssemblyNames,
-			};
-			return factory.CreateProviderManager(Config.ConnectionString);
 		}
 
 		protected override ICallContext CreateCallContext(object requestDto)

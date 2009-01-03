@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Sakila.DomainModel;
 using ServiceStack.Common.Support;
 using ServiceStack.DataAccess;
-using ServiceStack.ServiceInterface;
 using ServiceStack.DesignPatterns.Command;
 using ServiceStack.Logging;
 using ServiceStack.LogicFacade;
@@ -19,7 +18,18 @@ namespace ServiceStack.Sakila.Logic
 
 		private IOperationContext AppContext { get; set; }
 
-		private IPersistenceProvider PersistenceProvider { get; set; }
+		private IPersistenceProvider persistenceProvider;
+		private IPersistenceProvider PersistenceProvider
+		{
+			get
+			{
+				if (this.persistenceProvider == null)
+				{
+					this.persistenceProvider = this.AppContext.Factory.Resolve<IPersistenceProviderManager>().CreateProvider();
+				}
+				return this.persistenceProvider;
+			}
+		}
 
 		private SakilaServiceDataAccessProvider Provider { get; set; }
 
@@ -27,25 +37,28 @@ namespace ServiceStack.Sakila.Logic
 		{
 			this.AppContext = appContext;
 
-			// Create new connection
-			this.PersistenceProvider = appContext.Factory.Resolve<IPersistenceProviderManager>().CreateProvider();
-
 			// Wrap connection in Data Access Provider
 			this.Provider = new SakilaServiceDataAccessProvider(PersistenceProvider);
 		}
 
+		public List<Customer> GetAllCustomers()
+		{
+			return Execute(new GetAllCustomersLogicCommand());
+		}
+
 		public List<Customer> GetCustomers(CustomersRequest request)
 		{
-			return Execute(new GetCustomersLogicCommand {
-				Request = request
-			});
+			return Execute(new GetCustomersLogicCommand { Request = request });
+		}
+
+		public List<Film> GetFilms(List<int> filmIds)
+		{
+			return Execute(new GetFilmsLogicCommand { FilmIds = filmIds });
 		}
 
 		public void StoreCustomer(Customer customer)
 		{
-			Execute(new StoreCustomersLogicCommand {
-				Customer = customer,
-			});
+			Execute(new StoreCustomersLogicCommand { Customer = customer, });
 		}
 
 		public override void Dispose()

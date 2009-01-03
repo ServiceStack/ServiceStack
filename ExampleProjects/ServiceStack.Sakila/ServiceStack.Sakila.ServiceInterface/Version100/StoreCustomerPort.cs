@@ -31,7 +31,7 @@ namespace ServiceStack.Sakila.ServiceInterface.Version100
 				command = (IValidatableCommand<bool>)initOnlyContext.InitialisedObject;
 			}
 
-			var response = new StoreCustomersResponse {
+			var response = new StoreCustomerResponse {
 				ResponseStatus = ResponseStatusTranslator.Instance.Parse(command.Validate())
 			};
 			if (response.ResponseStatus.ErrorCode == null)

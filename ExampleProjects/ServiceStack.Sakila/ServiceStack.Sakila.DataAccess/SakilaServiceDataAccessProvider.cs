@@ -9,19 +9,19 @@ namespace ServiceStack.Sakila.DataAccess
 	{
 		public SakilaServiceDataAccessProvider(IPersistenceProvider provider)
 		{
-			Provider = provider;
+			Data = provider;
 		}
 
-		private IPersistenceProvider Provider { get; set; }
+		public IPersistenceProvider Data { get; set; }
 
 		/// <summary>
 		/// Creates the user.
 		/// 
 		/// Also sets the audit properties here, which can be overriden later.
 		/// </summary>
-		/// <param name="userName">Name of the user.</param>
+		/// <param name="name">Name of the user.</param>
 		/// <returns></returns>
-		public Customer CreateNewCustomer(string userName)
+		public Customer CreateNewCustomer(string name)
 		{
 			var now = DateTime.Now;
 			var user = new Customer {
@@ -29,11 +29,6 @@ namespace ServiceStack.Sakila.DataAccess
 				LastUpdate = now,
 			};
 			return user;
-		}
-
-		public Customer GetCustomer(int userId)
-		{
-			return Provider.GetById<Customer>((uint)userId);
 		}
 
 		/// <summary>
@@ -47,24 +42,34 @@ namespace ServiceStack.Sakila.DataAccess
 			var results = new List<Customer>();
 			if (ids != null && ids.Count > 0)
 			{
-				results.AddRange(Provider.GetByIds<Customer>(ids.ConvertAll(x => (ushort)x)));
+				results.AddRange(Data.GetByIds<Customer>(ids.ConvertAll(x => (ushort)x)));
 			}
 			return results;
 		}
 
-		public Customer GetCustomerByCustomerName(string userName)
+		public List<Film> GetFilms(List<int> ids)
 		{
-			return Provider.FindByValue<Customer>("CustomerName", userName);
+			var results = new List<Film>();
+			if (ids != null && ids.Count > 0)
+			{
+				results.AddRange(Data.GetByIds<Film>(ids.ConvertAll(x => (ushort)x)));
+			}
+			return results;
+		}
+
+		public Customer GetCustomerByName(string name)
+		{
+			return Data.FindByValue<Customer>("CustomerName", name);
 		}
 
 		public void Store(object entity)
 		{
-			Provider.Save(entity);
+			Data.Save(entity);
 		}
 
 		public ITransactionContext BeginTransaction()
 		{
-			return Provider.BeginTransaction();
+			return Data.BeginTransaction();
 		}
 	}
 }

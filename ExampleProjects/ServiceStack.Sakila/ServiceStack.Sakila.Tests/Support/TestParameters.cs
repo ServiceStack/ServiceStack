@@ -1,7 +1,7 @@
 using System.Configuration;
 using Enyim.Caching;
 using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Memcached;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Logging;
 using ServiceStack.Sakila.Tests.ServiceInterface.Version100;
 
@@ -60,7 +60,7 @@ namespace ServiceStack.Sakila.Tests.Support
 		/// <value>The cache.</value>
 		public ICacheClient Cache
 		{
-			get { return new ServiceStackMemcachedClient(new MemcachedClient()); }
+			get { return new MemcachedClientCache(new MemcachedClient()); }
 		}
 	}
 }

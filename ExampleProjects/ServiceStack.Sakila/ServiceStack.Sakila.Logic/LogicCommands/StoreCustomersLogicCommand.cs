@@ -15,7 +15,7 @@ namespace ServiceStack.Sakila.Logic.LogicCommands
 
 			using (var transaction = Provider.BeginTransaction())
 			{
-				//var dbCustomer = Provider.CreateNewCustomer(this.CustomerDetails.CustomerName);
+				//var dbCustomer = Data.CreateNewCustomer(this.CustomerDetails.CustomerName);
 				//dbCustomer.Balance = 0;
 				//dbCustomer.GlobalId = Guid.NewGuid().ToByteArray();
 				//dbCustomer.CustomerName = this.CustomerDetails.CustomerName;
@@ -29,7 +29,7 @@ namespace ServiceStack.Sakila.Logic.LogicCommands
 				//dbCustomer.CanNotifyEmailBool = this.CustomerDetails.CanNotifyEmail;
 				//dbCustomer.StoreCreditCardBool = this.CustomerDetails.StoreCreditCard;
 
-				//Provider.Store(dbCustomer);
+				//Data.Store(dbCustomer);
 
 				transaction.Commit();
 			}
@@ -41,7 +41,7 @@ namespace ServiceStack.Sakila.Logic.LogicCommands
 		public override ValidationResult Validate()
 		{
 			var errors = base.Validate().Errors;
-			//var existingCustomer = Provider.GetCustomerByCustomerName(this.CustomerDetails.CustomerName);
+			//var existingCustomer = Data.GetCustomerByName(this.CustomerDetails.CustomerName);
 			//if (existingCustomer != null)
 			//{
 			//    errors.Add(new ValidationError(ErrorCodes.CustomerAlreadyExists.ToString(), "CustomerName"));

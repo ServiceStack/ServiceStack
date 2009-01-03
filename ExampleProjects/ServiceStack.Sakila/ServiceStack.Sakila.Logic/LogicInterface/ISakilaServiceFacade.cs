@@ -7,7 +7,12 @@ namespace ServiceStack.Sakila.Logic.LogicInterface
 {
 	public interface ISakilaServiceFacade : ILogicFacade
 	{
+		List<Customer> GetAllCustomers();
+
 		List<Customer> GetCustomers(CustomersRequest request);
+
+		List<Film> GetFilms(List<int> filmIds);
+
 		void StoreCustomer(Customer customer);
 	}
 }

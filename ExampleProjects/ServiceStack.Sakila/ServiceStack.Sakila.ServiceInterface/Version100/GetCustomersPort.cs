@@ -11,9 +11,7 @@ using ServiceStack.Validation;
 namespace ServiceStack.Sakila.ServiceInterface.Version100
 {
 	/// <summary>
-	/// Get's users private information
-	/// 
-	/// Requires authentication.
+	/// Get's customers information
 	/// </summary>
 	[MessagingRestriction(MessagingRestriction.HttpPost)]
 	public class GetCustomersPort : IService

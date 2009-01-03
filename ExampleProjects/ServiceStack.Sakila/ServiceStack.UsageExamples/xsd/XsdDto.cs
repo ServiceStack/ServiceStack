@@ -158,7 +158,7 @@ namespace ServiceStack.UsageExamples.xsd
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="StoreCustomersResponse", Namespace="http://schemas.servicestack.net/types/")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="StoreCustomerResponse", Namespace="http://schemas.servicestack.net/types/")]
     [System.SerializableAttribute()]
     public partial class StoreCustomersResponse : object, System.Runtime.Serialization.IExtensibleDataObject
     {
