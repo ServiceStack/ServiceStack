@@ -1,0 +1,33 @@
+<%-- 
+Name: EditableUnitTests.cst
+Author: Tom DuPont
+Description: Generates Editable Unit Tests for NHibernate.
+--%>
+<%@ CodeTemplate Language="C#" Src="..\Helpers\NHibernateHelper.cs" Inherits="NHibernateHelper" TargetLanguage="C#" Debug="False" Description="Generates Editable Unit Tests for NHibernate." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Optional="False" Category="1a. Source Table" Description="The source table to generate from." %>
+<%@ Property Name="ExcludedTables" Type="SchemaExplorer.TableSchemaCollection" Optional="True" Category="1b. Database Options" Description="A collection of tables to be excluded during generation." %>
+<%@ Property Name="TablePrefix" Type="System.String" Default="" Optional="True" Category="1b. Database Options" Description="A prefix that will be stripped from table names when class names are generated." %>
+<%@ Property Name="ManagerNamespace" Type="System.String" Default="NHibernate.Generated.ManagerObjects" Optional="False" Category="2. Namespaces" Description="The desired Namespace for the Manager Objects." %>
+<%@ Property Name="BusinessNamespace" Type="System.String" Default="NHibernate.Generated.BusinessObjects" Optional="False" Category="2. Namespaces" Description="The desired Namespace for the Business Objects." %>
+<%@ Property Name="BaseNamespace" Type="System.String" Default="NHibernate.Generated.Base" Optional="False" Category="2. Namespaces" Description="The Namespace where the Base classes (BusinessBase & ManagerBase) are located." %>
+<%@ Property Name="UnitTestNamespace" Type="System.String" Default="NHibernate.Generated.UnitTests" Optional="False" Category="2. Namespaces" Description="The desired Namespace for the UnitTests." %>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Map Name="SystemCSharp" Src="System-CSharpAlias" %>
+<% this.tablePrefix = TablePrefix; %>
+using System;
+using System.Collections.Generic;
+using System.Text;
+using NUnit.Framework;
+using <%= ManagerNamespace %>;
+using <%= BusinessNamespace %>;
+using <%= BaseNamespace %>;
+
+namespace <%= UnitTestNamespace %>
+{
+    public partial class <%= GetClassName(SourceTable) %>Tests : UNuitTestBase
+    {
+	}
+}

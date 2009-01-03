@@ -1,0 +1,67 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{B3740A7C-77BF-4DAB-8A08-116B797C8373}"
+	ProjectSection(SolutionItems) = preProject
+		Lib\_get-latest-libs.bat = Lib\_get-latest-libs.bat
+		..\Lib\ServiceStack.dll = ..\Lib\ServiceStack.dll
+		..\Lib\ServiceStack.Interfaces.dll = ..\Lib\ServiceStack.Interfaces.dll
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.ServiceInterface", "ServiceStack.SakilaDb4o.ServiceInterface\ServiceStack.SakilaDb4o.ServiceInterface.csproj", "{5C528394-32F9-49DE-9D3C-B91281BF2C11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Tests", "ServiceStack.SakilaDb4o.Tests\ServiceStack.SakilaDb4o.Tests.csproj", "{F72A9857-7E81-4069-893E-8554C76A9273}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Tests.Integration", "ServiceStack.SakilaDb4o.Tests.Integration\ServiceStack.SakilaDb4o.Tests.Integration.csproj", "{D0C2806A-E56A-4FAF-BAC6-49519FF97703}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Host.WebService", "ServiceStack.SakilaDb4o.Host.WebService\ServiceStack.SakilaDb4o.Host.WebService.csproj", "{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8E2B906-6CC0-4C02-BC78-920D9988DC07}"
+	ProjectSection(SolutionItems) = preProject
+		BuildFile.xml = BuildFile.xml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.DomainModel", "..\Sakila.DomainModel\Sakila.DomainModel.csproj", "{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModel", "..\Sakila.ServiceModel\Sakila.ServiceModel.csproj", "{07F5006E-3F8E-4201-9A0D-1BD912FEC028}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModelTranslators", "..\Sakila.ServiceModelTranslators\Sakila.ServiceModelTranslators.csproj", "{0A8965C3-5554-4BB1-B276-FA04A10C407F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

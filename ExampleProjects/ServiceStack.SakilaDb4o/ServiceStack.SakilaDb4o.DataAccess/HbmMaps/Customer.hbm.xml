@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="ServiceStack.SakilaDb4o.DataAccess.DataModel" assembly="ServiceStack.SakilaDb4o.DataAccess">
+	<class name="ServiceStack.SakilaDb4o.DataAccess.DataModel.Customer, ServiceStack.SakilaDb4o.DataAccess" table="customer" lazy="true">
+		<id name="Id" column="id">
+			<generator class="native" />
+		</id>
+	</class>
+</hibernate-mapping>
