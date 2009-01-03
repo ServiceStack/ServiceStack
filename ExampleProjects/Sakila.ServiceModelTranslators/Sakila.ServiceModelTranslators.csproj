@@ -52,6 +52,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Version100\DomainToService\AddressToDtoTranslator.cs" />
     <Compile Include="Version100\DomainToService\CustomerToDtoTranslator.cs" />
+    <Compile Include="Version100\DomainToService\FilmToDtoTranslator.cs" />
     <Compile Include="Version100\ServiceToDomain\AddressFromDtoTranslator.cs" />
     <Compile Include="Version100\ServiceToDomain\CustomerFromDtoTranslator.cs" />
   </ItemGroup>

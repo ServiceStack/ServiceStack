@@ -11,7 +11,7 @@ namespace Sakila.ServiceModelTranslators.Version100.DomainToService
 		public DtoTypes.Customer Parse(Customer from)
 		{
 			if (from == null) return null;
-			var to = new ServiceModel.Version100.Types.Customer {
+			var to = new DtoTypes.Customer {
 				Id = from.Id,
 				FirstName = from.FirstName,
 				LastName = from.LastName,
