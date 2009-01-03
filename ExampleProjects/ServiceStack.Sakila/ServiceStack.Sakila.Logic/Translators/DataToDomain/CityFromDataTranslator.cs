@@ -3,9 +3,9 @@ using ServiceStack.DesignPatterns.Translator;
 
 namespace ServiceStack.Sakila.Logic.Translators.DataToDomain
 {
-	public class CityTranslator : ITranslator<City, DataAccess.DataModel.City>
+	public class CityFromDataTranslator : ITranslator<City, DataAccess.DataModel.City>
 	{
-		public static readonly CityTranslator Instance = new CityTranslator();
+		public static readonly CityFromDataTranslator Instance = new CityFromDataTranslator();
 
 		public City Parse(DataAccess.DataModel.City from)
 		{

@@ -1,16 +1,16 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ServiceStack.Sakila.ServiceTranslators")]
+[assembly: AssemblyTitle("ServiceStack.Utils")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ServiceStack.Sakila.ServiceTranslators")]
-[assembly: AssemblyCopyright("Copyright �  2008")]
+[assembly: AssemblyProduct("ServiceStack.Utils")]
+[assembly: AssemblyCopyright("Copyright ©  2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("21d5c0da-5bca-4169-beb2-50652a4970d8")]
+[assembly: Guid("610e60de-0077-4e86-aa3f-5c7db4ddb24f")]
 
 // Version information for an assembly consists of the following four values:
 //
