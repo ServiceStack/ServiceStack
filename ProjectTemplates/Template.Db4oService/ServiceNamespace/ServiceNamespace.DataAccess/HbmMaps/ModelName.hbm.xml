@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" namespace="@ServiceNamespace@.DataAccess.DataModel" assembly="@ServiceNamespace@.DataAccess">
+	<class name="@ServiceNamespace@.DataAccess.DataModel.@ModelName@, @ServiceNamespace@.DataAccess" table="customer" lazy="true">
+		<id name="Id" column="id">
+			<generator class="native" />
+		</id>
+	</class>
+</hibernate-mapping>

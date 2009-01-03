@@ -1,0 +1,1 @@
+<%@ ServiceHost Language="C#" Service="ServiceStack.WebHost.Endpoints.Soap11SyncReplyHandler" %>
