@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Tests", "ServiceStack.SakilaDb4o.Tests\ServiceStack.SakilaDb4o.Tests.csproj", "{F72A9857-7E81-4069-893E-8554C76A9273}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Tests.Integration", "ServiceStack.SakilaDb4o.Tests.Integration\ServiceStack.SakilaDb4o.Tests.Integration.csproj", "{D0C2806A-E56A-4FAF-BAC6-49519FF97703}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Host.WebService", "ServiceStack.SakilaDb4o.Host.WebService\ServiceStack.SakilaDb4o.Host.WebService.csproj", "{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8E2B906-6CC0-4C02-BC78-920D9988DC07}"
@@ -25,6 +23,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModel", "..\Sakila.ServiceModel\Sakila.ServiceModel.csproj", "{07F5006E-3F8E-4201-9A0D-1BD912FEC028}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModelTranslators", "..\Sakila.ServiceModelTranslators\Sakila.ServiceModelTranslators.csproj", "{0A8965C3-5554-4BB1-B276-FA04A10C407F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Iis6Host.WebService", "ServiceStack.SakilaDb4o.Iis6Host.WebService\ServiceStack.SakilaDb4o.Iis6Host.WebService.csproj", "{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{18B37EB5-A16D-43BE-8FC0-6CA632069E06}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,10 +42,6 @@ Global
 		{F72A9857-7E81-4069-893E-8554C76A9273}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F72A9857-7E81-4069-893E-8554C76A9273}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F72A9857-7E81-4069-893E-8554C76A9273}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0C2806A-E56A-4FAF-BAC6-49519FF97703}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -60,6 +58,10 @@ Global
 		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

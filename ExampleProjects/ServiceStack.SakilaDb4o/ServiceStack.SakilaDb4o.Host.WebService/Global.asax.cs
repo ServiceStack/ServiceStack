@@ -1,6 +1,4 @@
 using System;
-using ServiceStack.Logging;
-using ServiceStack.Logging.Log4Net;
 
 namespace ServiceStack.SakilaDb4o.Host.WebService
 {

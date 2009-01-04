@@ -78,6 +78,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceInterface\GetAllCustomersTests.cs" />
+    <Compile Include="Support\TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sakila.DomainModel\Sakila.DomainModel.csproj">
