@@ -68,9 +68,9 @@
       <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="590" scrollPosition="0|5" />
       <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="952" scrollPosition="0|21" />
       <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1427" scrollPosition="0|35" />
-      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="2059" scrollPosition="0|41" />
+      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="2060" scrollPosition="0|41" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="302" scrollPosition="0|0" />
-      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="2306" scrollPosition="0|59" />
+      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="2307" scrollPosition="0|59" />
       <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1902" scrollPosition="0|42" />
       <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1579" scrollPosition="0|42" />
     </RecentEdits>
@@ -431,6 +431,7 @@
       <Item value="GetById" priority="0" />
       <Item value="GetAll" priority="2" />
       <Item value="Save" priority="1" />
+      <Item value="Store" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:NUnit.Framework.Constraints.ConstraintBuilder">
       <Item value="NaN" priority="0" />
