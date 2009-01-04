@@ -49,9 +49,16 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 
 		public T FindByValue<T>(string name, object value) where T : class
 		{
-			var list = this.Session.CreateCriteria(typeof(T))
-				 .Add(Restrictions.Eq(name, value)).List();
-			return list.Count == 0 ? null : (T)list[0];
+			var list = FindAllByValue<T>(name, value);
+			return list.Count == 0 ? null : list[0];
+		}
+
+		public IList<T> FindAllByValue<T>(string name, object value) where T : class
+		{
+			var list = this.Session.CreateCriteria(typeof (T))
+				.Add(Restrictions.Eq(name, value)).ToList<T>();
+
+			return list;
 		}
 
 		public IList<T> FindByValues<T>(string name, object[] values) where T : class
@@ -72,7 +79,7 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> GetAll<T>(string orderBy)
+		public IList<T> GetAll<T>(string orderBy) where T : class
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .AddOrder(Order.Asc(orderBy))
@@ -94,7 +101,7 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return (T)list[0];
 		}
 
-		public IList<T> GetByIds<T>(object[] ids)
+		public IList<T> GetByIds<T>(object[] ids) where T : class
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .Add(Restrictions.In(ID_FIELD, ids))
@@ -103,7 +110,7 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> GetByIds<T>(ICollection ids)
+		public IList<T> GetByIds<T>(ICollection ids) where T : class
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .Add(Restrictions.In(ID_FIELD, ids))
@@ -112,33 +119,22 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> GetAll<T>()
+		public IList<T> GetAll<T>() where T : class
 		{
 			return this.Session.CreateCriteria(typeof(T)).ToList<T>();
 		}
 
-		public IList<T> GetAllOrderedBy<T>(string orderBy)
+		public IList<T> GetAllOrderedBy<T>(string fieldName, bool sortAsc) where T : class
 		{
+			var orderBy = sortAsc ? Order.Asc(fieldName) : Order.Desc(fieldName);
 			return this.Session.CreateCriteria(typeof(T))
-				 .AddOrder(Order.Asc(orderBy))
+				 .AddOrder(orderBy)
 				 .ToList<T>();
 		}
 
-		public T Insert<T>(T obj) where T : class
+		public T Store<T>(T obj) where T : class
 		{
 			this.Session.Save(obj);
-			return obj;
-		}
-
-		public T Save<T>(T obj) where T : class
-		{
-			this.Session.Save(obj);
-			return obj;
-		}
-
-		public T Update<T>(T obj) where T : class
-		{
-			this.Session.Update(obj);
 			return obj;
 		}
 

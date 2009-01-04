@@ -39,15 +39,15 @@
       <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:_get-latest-libs.bat" caret="144" scrollPosition="0|0" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:StoreCustomersLogicCommand.cs" caret="1833" scrollPosition="0|0" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="978" scrollPosition="0|0" />
-      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1952" scrollPosition="0|52" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="0" scrollPosition="0|0" />
+      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1952" scrollPosition="0|36" />
     </RecentFiles>
     <RecentEdits>
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CityFromDataTranslator.cs" caret="168" scrollPosition="0|0" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:AddressFromDataTranslator.cs" caret="162" scrollPosition="0|0" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DataToDomain/f:CustomerFromDataTranslator.cs" caret="163" scrollPosition="0|0" />
       <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:Translators/d:DomainToData/f:CustomerToDataTranslator.cs" caret="173" scrollPosition="0|0" />
-      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1562" scrollPosition="0|0" />
+      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1653" scrollPosition="0|0" />
       <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestParameters.cs" caret="124" scrollPosition="0|0" />
       <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestParameters.cs" caret="1553" scrollPosition="0|57" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppHost.cs" caret="61" scrollPosition="0|0" />
@@ -71,8 +71,8 @@
       <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="2059" scrollPosition="0|41" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="302" scrollPosition="0|0" />
       <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="2306" scrollPosition="0|59" />
-      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1488" scrollPosition="0|38" />
-      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1902" scrollPosition="0|40" />
+      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1902" scrollPosition="0|42" />
+      <File id="B201A005-9F85-4461-8549-DD95CCB69F35/f:CreateDb4oDatabase.cs" caret="1579" scrollPosition="0|42" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

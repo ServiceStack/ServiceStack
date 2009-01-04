@@ -5,12 +5,9 @@ using ServiceStack.Common.Extensions;
 using ServiceStack.DataAccess;
 using ServiceStack.LogicFacade;
 using ServiceStack.ServiceInterface;
-using ServiceStack.SakilaDb4o.ServiceInterface.Translators;
-using ServiceStack.Validation;
 
 namespace ServiceStack.SakilaDb4o.ServiceInterface.Version100
 {
-	[MessagingRestriction(MessagingRestriction.HttpPost)]
 	public class GetAllCustomersPort : IService
 	{
 		public object Execute(ICallContext context)

@@ -25,6 +25,7 @@
       <Item value="void" priority="0" />
       <Item value="public" priority="0" />
       <Item value="IServiceModelFinder" priority="0" />
+      <Item value="bool" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
   <RecentFiles>
@@ -55,14 +56,12 @@
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IOperationContext.cs" caret="66" scrollPosition="0|0" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="4938" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManagerFactory.cs" caret="0" scrollPosition="0|0" />
-      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="0" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManager.cs" caret="206" scrollPosition="0|0" />
       <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
       <File id="390B44FA-8DA6-489D-9DB5-1689D3088DFE/f:IFactoryProvider.cs" caret="290" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:ILogicFacade.cs" caret="13" scrollPosition="0|0" />
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:InitOptions.cs" caret="17" scrollPosition="0|0" />
       <File id="390B44FA-8DA6-489D-9DB5-1689D3088DFE/f:IResourceManager.cs" caret="296" scrollPosition="0|0" />
       <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="346" scrollPosition="0|0" />
       <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="1058" scrollPosition="0|0" />
@@ -91,6 +90,8 @@
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="5758" scrollPosition="0|93" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="4938" scrollPosition="0|93" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManager.cs" caret="206" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="216" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="812" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

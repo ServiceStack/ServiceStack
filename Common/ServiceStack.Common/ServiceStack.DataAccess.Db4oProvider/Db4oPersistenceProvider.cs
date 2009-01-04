@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Db4objects.Db4o;
+using Db4objects.Db4o.Query;
+using ServiceStack.Common.Utils;
+using ServiceStack.DataAccess.Db4oProvider.Criteria;
 using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
@@ -12,6 +15,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(Db4oPersistenceProvider));
 
+		private static Dictionary<string, string> fieldNameTypeMappings;
+
 		private const string ID_PROPERTY_NAME = "Id";
 
 		private readonly IObjectContainer provider;
@@ -19,6 +24,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 		public Db4oPersistenceProvider(IObjectContainer provider)
 		{
 			this.provider = provider;
+			fieldNameTypeMappings = new Dictionary<string, string>();
 		}
 
 		private static List<T> ConvertToList<T>(IObjectSet results)
@@ -46,193 +52,200 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			provider.Rollback();
 		}
 
-		public ReturnType GetById<ReturnType, IdType>(IdType id) where ReturnType : class
-		{
-			var idProperty = GetIdProperty<ReturnType>();
-			var results = provider.Query(delegate(ReturnType item) {
-				var idValue = (IdType)idProperty.GetValue(item, null);
-				return Equals(id, idValue);
-			});
-			return results.Count > 0 ? results[0] : null;
-		}
-
-		public IEnumerable<ReturnType> GetByIds<ReturnType, IdType>(IEnumerable<IdType> ids) where ReturnType : class
-		{
-			var idProperty = GetIdProperty<ReturnType>();
-			var idsSet = new List<IdType>(ids);
-			var results = provider.Query(delegate(ReturnType item) {
-				var idValue = idProperty.GetValue(item, null);
-				return idsSet.Contains((IdType)idValue);
-			});
-			return results;
-		}
-
-		public IList<ReturnType> GetAll<ReturnType>() 
+		public IList<T> GetAll<T>() where T : class
 		{
 			var query = provider.Query();
-			query.Constrain(typeof(ReturnType));
-			return ConvertToList<ReturnType>(query.Execute());
+			query.Constrain(typeof(T));
+			return ConvertToList<T>(query.Execute());
 		}
 
-		public IList<ReturnType> GetAllOrderedBy<ReturnType>(string orderBy)
+		public IList<T> GetAllOrderedBy<T>(string name, bool sortAsc) where T : class
 		{
+			var type = typeof(T);
 			var query = provider.Query();
-			query.Constrain(typeof(ReturnType));
-			if (orderBy.ToLower().StartsWith("desc"))
-				query.OrderDescending();
+			query.Constrain(type);
+			var fieldName = GetFieldName(name, type);
+			if (sortAsc)
+			{
+				query.Descend(fieldName).OrderAscending();
+			}
 			else
-				query.OrderAscending();
-
-			return ConvertToList<ReturnType>(query.Execute());
+			{
+				query.Descend(fieldName).OrderDescending();
+			}
+			return ConvertToList<T>(query.Execute());
 		}
 
 		public T GetById<T>(object id) where T : class
 		{
-			if (id == null)
-				throw new ArgumentNullException("id");
-
-			var idProperty = GetIdProperty(id.GetType());
-			var results = provider.Query(delegate(object item) {
-				var idValue = idProperty.GetValue(item, null);
-				return Equals(id, idValue);
-			});
-			return results.Count > 0 ? (T)results[0] : null;
+			return FindByValue<T>(ID_PROPERTY_NAME, id);
 		}
 
-		public IList<T> GetByIds<T>(object[] ids)
+		public IList<T> GetByIds<T>(object[] ids) where T : class
 		{
-			if (ids == null || ids.Length == 0)
-				throw new ArgumentNullException("ids");
-
-			var idProperty = GetIdProperty(ids[0].GetType());
-			var idsSet = ids.ToList();
-			var results = provider.Query(delegate(object item) {
-				var idValue = idProperty.GetValue(item, null);
-				return idsSet.Contains(idValue);
-			});
-			return results.ToList().ConvertAll(x => (T)x);
+			return GetByIds<T>((ICollection) ids);
 		}
 
-		public IList<T> GetByIds<T>(ICollection ids)
+		public IList<T> GetByIds<T>(ICollection ids) where T : class
 		{
-			var oIds = new object[ids.Count];
-			ids.CopyTo(oIds, 0);
-			return GetByIds<T>(oIds);
+			return FindByValues<T>(ID_PROPERTY_NAME, ids);
 		}
 
 		public T FindByValue<T>(string name, object value) where T : class
+		{
+			var results = FindAllByValue<T>(name, value);
+			return results.Count > 0 ? results[0] : null;
+		}
+
+		public IList<T> FindAllByValue<T>(string name, object value) where T : class
 		{
 			if (name == null)
 				throw new ArgumentNullException("name");
 			if (value == null)
 				throw new ArgumentNullException("value");
 
+			var type = typeof(T);
 			var query = provider.Query();
-			query.Constrain(typeof (T));
-			query.Descend(name).Constrain(value);
-			var results = query.Execute();
-			return results.Count > 0 ? (T)results[0] : null;
+			query.Constrain(type);
+
+			var fieldName = GetFieldName(name, type);
+			query.Descend(fieldName).Constrain(value);
+
+			return ConvertToList<T>(query.Execute());
+		}
+
+		/// <summary>
+		/// Gets the name of the underlying fieldname for a property. 
+		/// Supports most conventions, e.g. for property 'Id' it will find
+		/// Id, &gt;Id&lt;k__BackingField, id, _id, m_id
+		/// </summary>
+		/// <param name="name">The name.</param>
+		/// <param name="type">The type.</param>
+		/// <returns></returns>
+		private static string GetFieldName(string name, Type type)
+		{
+			var fieldNameKey = type.FullName + ":" + name;
+			string registeredFieldName;
+			if (fieldNameTypeMappings.TryGetValue(fieldNameKey, out registeredFieldName))
+			{
+				return registeredFieldName;
+			}
+
+			const string BACKING_FIELD = "<{0}>k__BackingField";
+			var backingField = string.Format(BACKING_FIELD, name);
+			var camelCaseName = name.Substring(0, 1).ToLower() + name.Substring(1);
+			var possibleMatches = new[] { name, backingField, camelCaseName, "_" + name, "m_" + name }.ToList();
+
+			//Walk the object heirachy
+			var baseType = type;
+			do
+			{
+				var typeFields = baseType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				foreach (var typeField in typeFields)
+				{
+					var fieldName = typeField.Name;
+					if (!possibleMatches.Contains(typeField.Name)) continue;
+
+					fieldNameTypeMappings[fieldNameKey] = fieldName;
+					return fieldName;
+				}
+			}
+			while ((baseType = baseType.BaseType) != null);
+
+			throw new NotSupportedException(
+				string.Format("Could not find underlying field name '{0}' in type '{1}'", name, type.FullName));
 		}
 
 		public IList<T> FindByValues<T>(string name, object[] values) where T : class
 		{
-			if (name == null)
-				throw new ArgumentNullException("name");
-			if (values == null || values.Length == 0)
-				throw new ArgumentNullException("values");
-
-			var query = provider.Query();
-			query.Constrain(typeof(T));
-			query.Descend(name).Constrain(values).Contains();
-			return ConvertToList<T>(query.Execute());
+			return FindByValues<T>(name, (ICollection)values);
 		}
 
 		public IList<T> FindByValues<T>(string name, ICollection values) where T : class
 		{
-			var oValues = new object[values.Count];
-			values.CopyTo(oValues, 0);
-			return FindByValues<T>(name, values);
+			if (name == null)
+				throw new ArgumentNullException("name");
+			if (values == null || values.Count == 0)
+				throw new ArgumentNullException("values");
+
+			var valuesList = new ArrayList(values);
+			var type = typeof(T);
+			var fieldName = GetFieldName(name, type);
+			var fieldInfo = ReflectionUtils.GetFieldInfo(type, fieldName);
+			var results = provider.Query(delegate(T item) {
+				var fieldValue = fieldInfo.GetValue(item);
+				return valuesList.Contains(fieldValue);
+			});
+
+			return results;
 		}
 
-		public void Flush()
-		{
-			//throw new System.NotImplementedException();
-		}
+		public void Flush() { }
 
-		public T Insert<T>(T entity) where T : class
-		{
-			return Save(entity);
-		}
-
-		public T Save<T>(T entity) where T : class
+		public T Store<T>(T entity) where T : class
 		{
 			provider.Store(entity);
 			return entity;
-		}
-
-		public T Update<T>(T entity) where T : class
-		{
-			return Save(entity);
 		}
 
 		public void StoreAll<T>(IEnumerable<T> entities) where T : class
 		{
 			foreach (var entity in entities)
 			{
-				Save(entity);
+				Store(entity);
 			}
 		}
 
-		//public IResultSet<ReturnType> GetAll<ReturnType>(ICriteria criteria) where ReturnType : class
-		//{
-		//    var query = provider.Query();
-		//    query.Constrain(typeof(ReturnType));
+		public IResultSet<T> GetAll<T>(ICriteria criteria) where T : class
+		{
+			var query = provider.Query();
+			query.Constrain(typeof(T));
 
-		//    SortResults(query, criteria);
-		//    var db4oResults = query.Execute();
-		//    var results = new List<ReturnType>();
+			SortResults(query, criteria);
+			var db4oResults = query.Execute();
+			var results = new List<T>();
 
-		//    long resultOffset = 1;
-		//    var paging = criteria as IPagingCriteria;
-		//    if (paging != null)
-		//    {
-		//        resultOffset = paging.ResultOffset;
-		//        var i = paging.ResultOffset;
-		//        while (db4oResults.Count > i++)
-		//        {
-		//            results.Add((ReturnType)db4oResults[i]);
-		//        }
-		//    }
-		//    else
-		//    {
-		//        foreach (ReturnType result in db4oResults)
-		//        {
-		//            results.Add(result);
-		//        }
-		//    }
+			long resultOffset = 1;
+			var paging = criteria as IPagingCriteria;
+			if (paging != null)
+			{
+				resultOffset = paging.ResultOffset;
+				var i = paging.ResultOffset;
+				while (db4oResults.Count > i++)
+				{
+					results.Add((T)db4oResults[i]);
+				}
+			}
+			else
+			{
+				foreach (T result in db4oResults)
+				{
+					results.Add(result);
+				}
+			}
 
-		//    return new Db4oResultSet<ReturnType>(results) {
-		//        Offset = resultOffset,
-		//        TotalCount = db4oResults.Count,
-		//    };
-		//}
+			return new Db4oResultSet<T>(results) {
+				Offset = resultOffset,
+				TotalCount = db4oResults.Count,
+			};
+		}
 
-		//private static void SortResults(IQuery query, ICriteria criteria)
-		//{
-		//    var orderByAsc = criteria as IOrderAscendingCriteria;
-		//    if (orderByAsc != null)
-		//    {
-		//        query.Descend(orderByAsc.OrderedAscendingBy).OrderAscending();
-		//    }
-		//    else
-		//    {
-		//        var orderByDesc = criteria as IOrderDescendingCriteria;
-		//        if (orderByDesc != null)
-		//        {
-		//            query.Descend(orderByDesc.OrderedDescendingBy).OrderDescending();
-		//        }
-		//    }
-		//}
+		private static void SortResults(IQuery query, ICriteria criteria)
+		{
+			var orderByAsc = criteria as IOrderAscendingCriteria;
+			if (orderByAsc != null)
+			{
+				query.Descend(orderByAsc.OrderedAscendingBy).OrderAscending();
+			}
+			else
+			{
+				var orderByDesc = criteria as IOrderDescendingCriteria;
+				if (orderByDesc != null)
+				{
+					query.Descend(orderByDesc.OrderedDescendingBy).OrderDescending();
+				}
+			}
+		}
 
 		public void Delete<T>(T entity) where T : class
 		{
@@ -245,17 +258,6 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			{
 				Delete(entity);
 			}
-		}
-
-		private static PropertyInfo GetIdProperty(Type returnType)
-		{
-			return returnType.GetProperty(ID_PROPERTY_NAME) ?? returnType.GetProperty(ID_PROPERTY_NAME.ToLower());
-		}
-
-		private static PropertyInfo GetIdProperty<ReturnType>()
-		{
-			var returnType = typeof(ReturnType);
-			return GetIdProperty(returnType);
 		}
 
 		~Db4oPersistenceProvider()
@@ -277,6 +279,6 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			provider.Close();
 			provider.Dispose();
 		}
-		
+
 	}
 }

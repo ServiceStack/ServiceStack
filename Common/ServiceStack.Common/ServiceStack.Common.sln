@@ -78,6 +78,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.Db4oProvider", "ServiceStack.DataAccess.Db4oProvider\ServiceStack.DataAccess.Db4oProvider.csproj", "{01796492-6DFF-49EF-AE78-C49AE56AD9A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.Db4oProvider.Tests", "ServiceStack.DataAccess.Db4oProvider.Tests\ServiceStack.DataAccess.Db4oProvider.Tests.csproj", "{B375DA6C-7E63-4F14-88A0-739CAD655550}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -136,6 +138,10 @@ Global
 		{01796492-6DFF-49EF-AE78-C49AE56AD9A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01796492-6DFF-49EF-AE78-C49AE56AD9A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01796492-6DFF-49EF-AE78-C49AE56AD9A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

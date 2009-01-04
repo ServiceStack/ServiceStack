@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{01796492-6DFF-49EF-AE78-C49AE56AD9A8}</ProjectGuid>
+    <ProjectGuid>{B375DA6C-7E63-4F14-88A0-739CAD655550}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.DataAccess.Db4oProvider</RootNamespace>
-    <AssemblyName>ServiceStack.DataAccess.Db4oProvider</AssemblyName>
+    <RootNamespace>ServiceStack.DataAccess.Db4oProvider.Tests</RootNamespace>
+    <AssemblyName>ServiceStack.DataAccess.Db4oProvider.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,9 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Db4objects.Db4o, Version=7.4.71.12224, Culture=neutral, PublicKeyToken=6199cd4f203aa8eb, processorArchitecture=MSIL">
+    <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\Db4objects.Db4o.dll</HintPath>
+      <HintPath>..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Sakila.DomainModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\Sakila.DomainModel.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -53,22 +57,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IResultSet.cs" />
-    <Compile Include="Db4oCriteria.cs" />
-    <Compile Include="Db4oPersistenceProvider.cs" />
-    <Compile Include="Db4oFileProviderManager.cs" />
-    <Compile Include="Db4oResultSet.cs" />
-    <Compile Include="Db4oTransaction.cs" />
-    <Compile Include="Criteria\ICriteria.cs" />
-    <Compile Include="Criteria\IOrderAscendingCriteria.cs" />
-    <Compile Include="Criteria\IOrderDescendingCriteria.cs" />
-    <Compile Include="Criteria\IPagingCriteria.cs" />
+    <Compile Include="Db4oAdvancedQueryTests.cs" />
+    <Compile Include="Db4oBasicWriteTests.cs" />
+    <Compile Include="Db4oSakilaDatabaseTests.cs" />
+    <Compile Include="Db4oTestBase.cs" />
+    <Compile Include="Db4oBasicQueryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
+    <ProjectReference Include="..\ServiceStack.DataAccess.Db4oProvider\ServiceStack.DataAccess.Db4oProvider.csproj">
+      <Project>{01796492-6DFF-49EF-AE78-C49AE56AD9A8}</Project>
+      <Name>ServiceStack.DataAccess.Db4oProvider</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -203,5 +203,50 @@ namespace ServiceStack.Common.Utils
 			
 			return false;
 		}
-    }
+
+		public static MemberInfo GetMemberInfo(Type fromType, string memberName)
+		{
+			var baseType = fromType;
+			do
+			{
+				var members = baseType.GetMembers(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				foreach (var memberInfo in members)
+				{
+					if (memberInfo.Name == memberName) return memberInfo;
+				}
+			}
+			while ((baseType = fromType.BaseType) != null);
+			return null;
+		}
+
+		public static FieldInfo GetFieldInfo(Type fromType, string fieldName)
+		{
+			var baseType = fromType;
+			do
+			{
+				var fieldInfos = baseType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				foreach (var fieldInfo in fieldInfos)
+				{
+					if (fieldInfo.Name == fieldName) return fieldInfo;
+				}
+			}
+			while ((baseType = fromType.BaseType) != null);
+			return null;
+		}
+
+		public static PropertyInfo GetPropertyInfo(Type fromType, string propertyName)
+		{
+			var baseType = fromType;
+			do
+			{
+				var propertyInfos = baseType.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				foreach (var propertyInfo in propertyInfos)
+				{
+					if (propertyInfo.Name == propertyName) return propertyInfo;
+				}
+			}
+			while ((baseType = fromType.BaseType) != null);
+			return null;
+		}
+	}
 }

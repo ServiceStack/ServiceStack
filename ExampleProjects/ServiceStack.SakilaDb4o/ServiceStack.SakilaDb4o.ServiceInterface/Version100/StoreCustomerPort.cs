@@ -1,4 +1,3 @@
-using Sakila.DomainModel;
 using Sakila.ServiceModel.Version100.Operations.SakilaDb4oService;
 using Sakila.ServiceModelTranslators.Version100.ServiceToDomain;
 using ServiceStack.DataAccess;
@@ -8,13 +7,9 @@ using ServiceStack.SakilaDb4o.ServiceInterface.Translators;
 
 namespace ServiceStack.SakilaDb4o.ServiceInterface.Version100
 {
-	[MessagingRestriction(MessagingRestriction.HttpPost)]
 	public class StoreCustomerPort : IService
 	{
-		/// <summary>
-		/// Used by Json and Soap requests if this service *is not* a 'IXElementService'
-		/// </summary>
-		/// <returns></returns>
+
 		public object Execute(ICallContext context)
 		{
 			var request = context.Request.Get<StoreCustomer>();
@@ -26,11 +21,14 @@ namespace ServiceStack.SakilaDb4o.ServiceInterface.Version100
 				ResponseStatus = ResponseStatusTranslator.Instance.Parse(customer.Validate())
 			};
 
+			//Only store valid Customers. 			
 			if (response.ResponseStatus.ErrorCode == null)
 			{
+				//If possible this 'Write' request should be stored 
+				//and executed Asynchronously after the response is returned to the client
 				using (var transaction = provider.BeginTransaction())
 				{
-					provider.Save(customer);					
+					provider.Store(customer);
 					transaction.Commit();
 				}
 			}

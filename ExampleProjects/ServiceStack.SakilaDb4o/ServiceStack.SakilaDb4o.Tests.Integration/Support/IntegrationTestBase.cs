@@ -28,18 +28,13 @@ namespace ServiceStack.SakilaDb4o.Tests.Integration.Support
 
 		protected List<int> CustomerIds
 		{
-			get { return this.Customers.ConvertAll(x => (int)x.Id); }
+			get { return this.Customers.ConvertAll(x => x.Id); }
 		}
 
 		protected AppConfig Config { get; private set; }
 		protected OperationContext AppContext { get; private set; }
 		protected IPersistenceProviderManager ProviderManager { get; private set; }
 		protected ServiceController ServiceController { get; private set; }
-
-		[TestFixtureTearDown]
-		public void FixtureTearDown()
-		{
-		}
 
 		protected object ExecuteService(object requestDto)
 		{

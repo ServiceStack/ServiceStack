@@ -42,6 +42,10 @@ namespace ServiceStack.Utils
 		{
 			try
 			{
+				if (File.Exists(db4oDatabasePath))
+				{
+					File.Delete(db4oDatabasePath);
+				}
 				db4oProviderManager = new Db4oFileProviderManager(db4oDatabasePath);
 				db4oProvider = db4oProviderManager.CreateProvider();
 				facade = new SakilaServiceFacade(CreateOperationContext());
@@ -58,14 +62,10 @@ namespace ServiceStack.Utils
 		{
 			try
 			{
-				if (File.Exists(db4oDatabasePath))
-				{
-					File.Delete(db4oDatabasePath);
-				}
 				var mysqlCustomers = facade.GetAllCustomers();
 				foreach (var mysqlCustomer in mysqlCustomers)
 				{
-					db4oProvider.Save(mysqlCustomer);
+					db4oProvider.Store(mysqlCustomer);
 				}
 			}
 			catch (Exception ex)
