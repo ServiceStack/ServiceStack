@@ -19,7 +19,7 @@ namespace ServiceStack.SakilaDb4o.Iis6Host.WebService
 		{
 			LogManager.LogFactory = new Log4NetFactory(true);
 
-			var factory = new FactoryProvider(FactoryUtils.ObjectFactory, LogManager.LogFactory);
+			var factory = new FactoryProvider(FactoryUtils.ObjectFactory, LogManager.LogFactory);			
 			factory.Register(new Db4oFileProviderManager(Config.ConnectionString));
 
 			// Create the ApplicationContext injected with the static service implementations

@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHost.cs" />
+    <None Include="Build\deploy.bat" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -130,7 +131,7 @@
     <Content Include="Public\Json\SyncReply.ashx" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
+    <None Include="App_Data\sakila.db4o" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />
