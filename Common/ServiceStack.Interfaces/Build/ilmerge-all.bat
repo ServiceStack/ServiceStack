@@ -1,4 +1,4 @@
-SET ILMERGE=..\Lib\ilmerge.exe
+CALL ..\..\..\env-vars.bat
 
 SET PROJ_LIBS=
 SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces\ServiceStack.CacheAccess\bin\Debug\ServiceStack.CacheAccess.dll
@@ -9,4 +9,4 @@ SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces
 SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces\ServiceStack.LogicFacade\bin\Debug\ServiceStack.LogicFacade.dll
 SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces\ServiceStack.Service\bin\Debug\ServiceStack.Service.dll
 
-%ILMERGE% /ndebug /t:library /out:ServiceStack.Interfaces.dll %PROJ_LIBS%
+%%ILMERGE_UTIL% % /ndebug /t:library /out:ServiceStack.Interfaces.dll %PROJ_LIBS%

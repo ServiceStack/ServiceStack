@@ -1,4 +1,5 @@
-SET ILMERGE=..\Lib\ilmerge.exe
+CALL ..\..\..\env-vars.bat
+
 
 PUSHD ..\..\ServiceStack.Interfaces\Build
 CALL ilmerge-all.bat 
@@ -25,4 +26,4 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\Enyim.Caching.dll
 
 REM SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\log4net.dll
 
-%ILMERGE% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
+%ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
