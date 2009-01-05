@@ -86,7 +86,6 @@
     <Compile Include="Base\BusinessBase.cs" />
     <Compile Include="DataModel\Customer.cs" />
     <Compile Include="DataModel\Customer.generated.cs" />
-    <Compile Include="SakilaNHibernateServiceDataAccessProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
