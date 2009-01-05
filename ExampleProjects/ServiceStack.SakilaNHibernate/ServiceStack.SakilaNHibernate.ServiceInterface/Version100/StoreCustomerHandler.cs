@@ -8,14 +8,9 @@ using ServiceStack.SakilaNHibernate.ServiceInterface.Translators;
 
 namespace ServiceStack.SakilaNHibernate.ServiceInterface.Version100
 {
-	[MessagingRestriction(MessagingRestriction.HttpPost)]
-	public class StoreCustomerPort : IService
+	public class StoreCustomerHandler : IService
 	{
-		/// <summary>
-		/// Used by Json and Soap requests if this service *is not* a 'IXElementService'
-		/// </summary>
-		/// <returns></returns>
-		public object Execute(ICallContext context)
+		public object Execute(IOperationContext context)
 		{
 			var request = context.Request.Get<StoreCustomer>();
 			var facade = context.Request.Get<ISakilaNHibernateServiceFacade>();
@@ -33,9 +28,12 @@ namespace ServiceStack.SakilaNHibernate.ServiceInterface.Version100
 			var response = new StoreCustomerResponse {
 				ResponseStatus = ResponseStatusTranslator.Instance.Parse(command.Validate())
 			};
+
+			//Only store valid Customers. 			
 			if (response.ResponseStatus.ErrorCode == null)
 			{
-				//This needs to be synchronous as the client will attempt to auto-login after creating a new user
+				//Ideally this 'Store' request should be persisted before execution
+				//and executed Asynchronously after the response is returned to the client
 				command.Execute();
 			}
 			return response;
