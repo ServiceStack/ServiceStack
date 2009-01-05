@@ -143,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Build\deploy.bat" />
+    <None Include="Build\SakilaNHibernate.zip" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
