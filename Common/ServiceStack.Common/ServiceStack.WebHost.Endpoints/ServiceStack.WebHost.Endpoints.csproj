@@ -57,7 +57,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EndpointHostBase.cs" />
+    <Compile Include="EndpointType.cs" />
+    <Compile Include="MetadataConfig.cs" />
+    <Compile Include="ServiceEndpointsMetadataConfig.cs" />
     <Compile Include="Metadata\Soap12WsdlMetadataHandler.cs" />
+    <Compile Include="SoapMetadataConfig.cs" />
     <Compile Include="Support\HttpHandlerBase.cs" />
     <Compile Include="Support\Metadata\WsdlMetadataHandlerBase.cs" />
     <Compile Include="Support\Templates\Soap12WsdlTemplate.cs" />

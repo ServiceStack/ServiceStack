@@ -14,68 +14,68 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:JsonDataContractSerializer.cs" caret="531" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap12MetadataHandler.cs" caret="167" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="267" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseSoapMetadataHandler.cs" caret="446" scrollPosition="0|0" />
-      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:MemoryCacheClient.cs" caret="52" scrollPosition="0|0" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Support/f:AdapterBase.cs" caret="311" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oTransaction.cs" caret="142" scrollPosition="0|0" />
-      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:MemcachedClientCache.cs" caret="873" scrollPosition="0|0" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateTransaction.cs" caret="0" scrollPosition="0|0" />
-      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="1412" scrollPosition="0|0" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManagerFactory.cs" caret="2124" scrollPosition="0|6" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="496" scrollPosition="0|18" />
-      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/f:TestGatewayPropertyInjection.cs" caret="204" scrollPosition="0|0" />
-      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1799" scrollPosition="0|24" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oResultSet.cs" caret="102" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/d:Criteria/f:IPagingCriteria.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/d:Criteria/f:IOrderDescendingCriteria.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/d:Criteria/f:IOrderAscendingCriteria.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oCriteria.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/d:Criteria/f:ICriteria.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:IResultSet.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oFileProviderManager.cs" caret="0" scrollPosition="0|12" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernatePersistenceProvider.cs" caret="3271" scrollPosition="0|108" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicWriteTests.cs" caret="134" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oAdvancedQueryTests.cs" caret="613" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="1520" scrollPosition="0|36" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicQueryTests.cs" caret="1418" scrollPosition="0|15" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="7878" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="4932" scrollPosition="0|150" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:MetadataConfig.cs" caret="59" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:SoapMetadataConfig.cs" caret="77" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1074" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Operations.cs" caret="221" scrollPosition="0|0" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/f:ServiceModelFinderBase.cs" caret="282" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="7107" scrollPosition="0|219" />
+      <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:ServiceOperationsTests.cs" caret="768" scrollPosition="0|7" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/f:WsdlMetadataHandlerBase.cs" caret="255" scrollPosition="0|6" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XsdGenerator.cs" caret="1494" scrollPosition="0|16" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:ServiceOperations.cs" caret="916" scrollPosition="0|33" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:IndexOperationsControl.cs" caret="223" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointType.cs" caret="58" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceEndpointsMetadataConfig.cs" caret="691" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:IndexMetadataHandler.cs" caret="286" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap12MetadataHandler.cs" caret="305" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XmlMetadataHandler.cs" caret="300" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap12OperationControl.cs" caret="179" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseSoapMetadataHandler.cs" caret="330" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap11OperationControl.cs" caret="225" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:JsonMetadataHandler.cs" caret="449" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="153" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:OperationControl.cs" caret="809" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="2247" scrollPosition="0|38" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:ErrorCodes.cs" caret="65" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:TestBase.cs" caret="86" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:BaseValidationTests.cs" caret="62" scrollPosition="0|33" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:CreditCardValidationTests.cs" caret="169" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:NotNullValidationTests.cs" caret="60" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:RequiredTextValidationTests.cs" caret="162" scrollPosition="0|19" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="4261" scrollPosition="0|127" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="3881" scrollPosition="0|121" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="2344" scrollPosition="0|76" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="2344" scrollPosition="0|67" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="264" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicQueryTests.cs" caret="2318" scrollPosition="0|36" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicQueryTests.cs" caret="80" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicQueryTests.cs" caret="181" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="2344" scrollPosition="0|68" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicWriteTests.cs" caret="827" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicWriteTests.cs" caret="134" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="1602" scrollPosition="0|30" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oAdvancedQueryTests.cs" caret="605" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="0" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="0" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="490" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="902" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="739" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="2165" scrollPosition="0|66" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="2216" scrollPosition="0|66" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="2087" scrollPosition="0|66" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="6721" scrollPosition="0|183" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="6721" scrollPosition="0|183" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="6721" scrollPosition="0|183" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="7151" scrollPosition="0|198" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="7151" scrollPosition="0|198" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="8038" scrollPosition="0|213" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="7659" scrollPosition="0|213" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="7858" scrollPosition="0|213" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="4979" scrollPosition="0|136" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap12OperationControl.cs" caret="296" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="397" scrollPosition="0|1" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:IndexMetadataHandler.cs" caret="215" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="250" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap12MetadataHandler.cs" caret="305" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XmlMetadataHandler.cs" caret="375" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:JsonMetadataHandler.cs" caret="383" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:OperationControl.cs" caret="4340" scrollPosition="0|153" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap11OperationControl.cs" caret="573" scrollPosition="0|3" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap12OperationControl.cs" caret="591" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="1995" scrollPosition="0|40" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="885" scrollPosition="0|7" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:OperationControl.cs" caret="145" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="885" scrollPosition="0|6" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="885" scrollPosition="0|8" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="885" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="885" scrollPosition="0|7" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="214" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="2275" scrollPosition="0|38" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:OperationControl.cs" caret="809" scrollPosition="0|12" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:TestBase.cs" caret="86" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:TestBase.cs" caret="88" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:ErrorCodes.cs" caret="65" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:BaseValidationTests.cs" caret="62" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:CreditCardValidationTests.cs" caret="169" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:NotNullValidationTests.cs" caret="829" scrollPosition="0|8" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:NotNullValidationTests.cs" caret="60" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:RequiredTextValidationTests.cs" caret="162" scrollPosition="0|19" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="80" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="1333" scrollPosition="0|15" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -88,23 +88,23 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="var" priority="78" />
-      <Item value="typeof" priority="21" />
+      <Item value="var" priority="93" />
+      <Item value="typeof" priority="23" />
       <Item value="private" priority="12" />
       <Item value="class" priority="5" />
-      <Item value="log" priority="3" />
+      <Item value="log" priority="4" />
       <Item value="Load" priority="0" />
-      <Item value="type" priority="22" />
+      <Item value="type" priority="28" />
       <Item value="TypeDefinition" priority="3" />
       <Item value="Dictionary" priority="4" />
-      <Item value="Type" priority="11" />
-      <Item value="new" priority="62" />
+      <Item value="Type" priority="16" />
+      <Item value="new" priority="73" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
-      <Item value="public" priority="55" />
-      <Item value="string" priority="42" />
-      <Item value="return" priority="74" />
+      <Item value="public" priority="67" />
+      <Item value="string" priority="50" />
+      <Item value="return" priority="77" />
       <Item value="object" priority="35" />
-      <Item value="if" priority="66" />
+      <Item value="if" priority="75" />
       <Item value="TypeDefinitionMap" priority="0" />
       <Item value="static" priority="10" />
       <Item value="T" priority="16" />
@@ -112,21 +112,21 @@
       <Item value="VALUE_INDEX" priority="0" />
       <Item value="value" priority="28" />
       <Item value="StringConverterUtils" priority="0" />
-      <Item value="enum" priority="0" />
+      <Item value="enum" priority="1" />
       <Item value="bool" priority="6" />
       <Item value="ConfigUtils" priority="1" />
       <Item value="OBJECTS_SECTION_NAME" priority="6" />
       <Item value="MemberwiseClone" priority="0" />
       <Item value="IResourceManager" priority="0" />
       <Item value="resourceManager" priority="1" />
-      <Item value="this" priority="95" />
+      <Item value="this" priority="100" />
       <Item value="factoryProvider" priority="3" />
       <Item value="configSectionName" priority="1" />
       <Item value="name" priority="9" />
       <Item value="key" priority="29" />
       <Item value="stringValue" priority="1" />
       <Item value="defaultValue" priority="0" />
-      <Item value="null" priority="37" />
+      <Item value="null" priority="42" />
       <Item value="throw" priority="9" />
       <Item value="ArgumentNullException" priority="2" />
       <Item value="request" priority="2" />
@@ -135,28 +135,28 @@
       <Item value="ModelInfo" priority="1" />
       <Item value="OperationNamespaceBase" priority="1" />
       <Item value="operationTypeName" priority="0" />
-      <Item value="EndpointHost" priority="14" />
+      <Item value="EndpointHost" priority="16" />
       <Item value="protected" priority="3" />
       <Item value="const" priority="3" />
       <Item value="USAGE_EXAMPLES_BASE_URI" priority="1" />
       <Item value="internal" priority="1" />
       <Item value="IHttpHandler" priority="0" />
       <Item value="WsdlTemplateBase" priority="0" />
-      <Item value="wsdlTemplate" priority="0" />
+      <Item value="wsdlTemplate" priority="3" />
       <Item value="xsd" priority="0" />
       <Item value="ServiceModelAssembly" priority="0" />
       <Item value="AllOperations" priority="2" />
       <Item value="Operations" priority="3" />
-      <Item value="dtoTypes" priority="0" />
-      <Item value="foreach" priority="14" />
+      <Item value="dtoTypes" priority="1" />
+      <Item value="foreach" priority="18" />
       <Item value="Names" priority="2" />
       <Item value="List&lt;string&gt;" priority="0" />
       <Item value="types" priority="0" />
-      <Item value="x" priority="0" />
+      <Item value="x" priority="3" />
       <Item value="ReplyOperations" priority="2" />
       <Item value="typeNames" priority="0" />
       <Item value="hasResponse" priority="0" />
-      <Item value="void" priority="19" />
+      <Item value="void" priority="21" />
       <Item value="else" priority="6" />
       <Item value="OneWayOperations" priority="1" />
       <Item value="RequestContext" priority="1" />
@@ -169,7 +169,7 @@
       <Item value="ServiceClient" priority="1" />
       <Item value="TestFixture" priority="2" />
       <Item value="factory" priority="11" />
-      <Item value="Assert" priority="10" />
+      <Item value="Assert" priority="13" />
       <Item value="gateway" priority="3" />
       <Item value="as" priority="4" />
       <Item value="xmlServiceClient" priority="0" />
@@ -196,16 +196,16 @@
       <Item value="objectTypeDefinition" priority="2" />
       <Item value="refTypesCount" priority="2" />
       <Item value="ref" priority="0" />
-      <Item value="List" priority="4" />
+      <Item value="List" priority="6" />
       <Item value="constructorArgValues" priority="0" />
       <Item value="argValue" priority="0" />
       <Item value="t" priority="0" />
       <Item value="while" priority="0" />
       <Item value="superType" priority="1" />
-      <Item value="baseType" priority="1" />
+      <Item value="baseType" priority="3" />
       <Item value="do" priority="0" />
-      <Item value="false" priority="11" />
-      <Item value="true" priority="12" />
+      <Item value="false" priority="12" />
+      <Item value="true" priority="13" />
       <Item value="areSameTypes" priority="0" />
       <Item value="propertyDefinition" priority="2" />
       <Item value="GetRefType" priority="0" />
@@ -241,7 +241,7 @@
       <Item value="virtual" priority="1" />
       <Item value="abstract" priority="2" />
       <Item value="WsdlName" priority="0" />
-      <Item value="LogManager" priority="4" />
+      <Item value="LogManager" priority="5" />
       <Item value="DateTime" priority="9" />
       <Item value="HttpContext" priority="0" />
       <Item value="context" priority="1" />
@@ -280,7 +280,7 @@
       <Item value="resolveType" priority="3" />
       <Item value="FindTypeLookup" priority="0" />
       <Item value="HttpResponseTemplate" priority="0" />
-      <Item value="EndpointHostConfig" priority="0" />
+      <Item value="EndpointHostConfig" priority="1" />
       <Item value="version" priority="1" />
       <Item value="requestType" priority="0" />
       <Item value="requestContext" priority="1" />
@@ -297,7 +297,7 @@
       <Item value="finally" priority="0" />
       <Item value="Db4oTransaction" priority="0" />
       <Item value="entity" priority="0" />
-      <Item value="TypeFilter" priority="0" />
+      <Item value="TypeFilter" priority="1" />
       <Item value="returnType" priority="0" />
       <Item value="id" priority="0" />
       <Item value="ids" priority="8" />
@@ -360,6 +360,36 @@
       <Item value="members" priority="0" />
       <Item value="member" priority="1" />
       <Item value="memberName" priority="0" />
+      <Item value="IApplicationContext" priority="0" />
+      <Item value="IOperationContext" priority="0" />
+      <Item value="EndpointServicesConfig" priority="0" />
+      <Item value="Json" priority="0" />
+      <Item value="ServiceConfig" priority="0" />
+      <Item value="Soap11" priority="0" />
+      <Item value="StringBuilder" priority="1" />
+      <Item value="endpoints" priority="1" />
+      <Item value="MetadataConfig" priority="8" />
+      <Item value="uniqueTypesOnly" priority="0" />
+      <Item value="ServiceOperationsTests" priority="0" />
+      <Item value="operations" priority="1" />
+      <Item value="try" priority="0" />
+      <Item value="LogicFacade" priority="0" />
+      <Item value="uniqueTypeNames" priority="1" />
+      <Item value="serviceModelAssembly" priority="0" />
+      <Item value="ContextBoundObject" priority="0" />
+      <Item value="continue" priority="0" />
+      <Item value="Stack" priority="0" />
+      <Item value="typesWithSameName" priority="2" />
+      <Item value="OperationTypes" priority="0" />
+      <Item value="assemblyType" priority="1" />
+      <Item value="uniqueTypes" priority="1" />
+      <Item value="ServiceOperations" priority="0" />
+      <Item value="baseTypeWithSameName" priority="2" />
+      <Item value="switch" priority="0" />
+      <Item value="case" priority="0" />
+      <Item value="endpointType" priority="0" />
+      <Item value="EndpointType" priority="4" />
+      <Item value="endpontPath" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="9" />
@@ -385,7 +415,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Logging.LogManager">
       <Item value="LogFactory" priority="0" />
-      <Item value="GetLogger" priority="5" />
+      <Item value="GetLogger" priority="6" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.ServiceClient.Web.JsonServiceClient">
       <Item value="BaseUri" priority="0" />
@@ -395,8 +425,8 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Type">
       <Item value="FullName" priority="2" />
-      <Item value="Assembly" priority="1" />
-      <Item value="Name" priority="6" />
+      <Item value="Assembly" priority="4" />
+      <Item value="Name" priority="15" />
       <Item value="IsInstanceOfType" priority="0" />
       <Item value="IsInterface" priority="0" />
       <Item value="FindInterfaces" priority="0" />
@@ -406,6 +436,7 @@
       <Item value="GetMembers" priority="0" />
       <Item value="GetFields" priority="0" />
       <Item value="GetProperties" priority="0" />
+      <Item value="Namespace" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.CallContext.AppContext">
       <Item value="ResourceManager" priority="0" />
@@ -430,7 +461,7 @@
       <Item value="ServiceModelAssembly" priority="2" />
       <Item value="GetOperationTypeFullName" priority="0" />
       <Item value="ExecuteService" priority="0" />
-      <Item value="Config" priority="13" />
+      <Item value="Config" priority="15" />
       <Item value="GetOperationType" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.ServiceModel.ServiceModelInfo">
@@ -449,6 +480,8 @@
       <Item value="ServiceController" priority="3" />
       <Item value="UsageExamplesBaseUri" priority="0" />
       <Item value="OperationsNamespace" priority="1" />
+      <Item value="EndpointServicesConfig" priority="0" />
+      <Item value="ServiceEndpointsMetadataConfig" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.Metadata.BaseMetadataHandler">
       <Item value="UsageExamplesBaseUri" priority="0" />
@@ -458,6 +491,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Reflection.Assembly">
       <Item value="GetType" priority="1" />
+      <Item value="GetTypes" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.Support.Metadata.OperationVerbs">
       <Item value="ReplyOperationVerbs" priority="0" />
@@ -468,7 +502,7 @@
       <Item value="ReplyOperationNames" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.Metadata.ServiceOperations">
-      <Item value="AllOperations" priority="0" />
+      <Item value="AllOperations" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.IEnumerable`1">
       <Item value="ToList" priority="8" />
@@ -478,33 +512,34 @@
       <Item value="Select" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
-      <Item value="Add" priority="11" />
+      <Item value="Add" priority="16" />
       <Item value="Sort" priority="0" />
       <Item value="Select" priority="0" />
       <Item value="Count" priority="5" />
-      <Item value="Contains" priority="0" />
+      <Item value="Contains" priority="3" />
       <Item value="Clear" priority="0" />
       <Item value="Where" priority="0" />
-      <Item value="ToArray" priority="0" />
+      <Item value="ToArray" priority="1" />
       <Item value="ConvertAll" priority="1" />
+      <Item value="ForEach" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.Metadata.Operations">
-      <Item value="Types" priority="0" />
-      <Item value="Names" priority="0" />
+      <Item value="Types" priority="2" />
+      <Item value="Names" priority="1" />
       <Item value="Add" priority="1" />
       <Item value="ReplyOperations" priority="0" />
       <Item value="OneWayOperations" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.String">
       <Item value="IsNullOrEmpty" priority="2" />
-      <Item value="Format" priority="4" />
+      <Item value="Format" priority="5" />
       <Item value="Join" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.ServiceInterface.OperationContext">
       <Item value="Instance" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
-      <Item value="That" priority="10" />
+      <Item value="That" priority="11" />
       <Item value="Fail" priority="0" />
       <Item value="IsNotNull" priority="0" />
     </ItemStatistics>
@@ -587,6 +622,7 @@
       <Item value="Error" priority="1" />
       <Item value="InfoFormat" priority="1" />
       <Item value="DebugFormat" priority="1" />
+      <Item value="Warn" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.KeyValuePair`2">
       <Item value="Key" priority="4" />
@@ -628,6 +664,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.LogicFacade.IServiceModelFinder">
       <Item value="FindTypeByOperation" priority="0" />
+      <Item value="GetType" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.IXmlServiceRequest">
       <Item value="Version" priority="0" />
@@ -747,6 +784,62 @@
     <ItemStatistics item="Qualified:System.Reflection.MemberInfo">
       <Item value="MemberType" priority="0" />
       <Item value="Name" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.OperationContext">
+      <Item value="Factory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Configuration.IFactoryProvider">
+      <Item value="Resolve" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.CallContext">
+      <Item value="Application" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.EndpointServicesConfig">
+      <Item value="SoapServiceConfig" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Text.StringBuilder">
+      <Item value="AppendFormat" priority="4" />
+      <Item value="Append" priority="1" />
+      <Item value="ToString" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.ServiceEndpointsMetadataConfig">
+      <Item value="Soap11" priority="5" />
+      <Item value="Json" priority="2" />
+      <Item value="Xml" priority="1" />
+      <Item value="DefaultMetadataUri" priority="1" />
+      <Item value="Soap12" priority="1" />
+      <Item value="GetEndpointConfig" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.MetadataConfig">
+      <Item value="DefaultMetadataUri" priority="0" />
+      <Item value="SyncReplyUri" priority="0" />
+      <Item value="AsyncOneWayUri" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.SoapMetadataConfig">
+      <Item value="WsdlMetadataUri" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.Stack`1">
+      <Item value="Push" priority="0" />
+      <Item value="Count" priority="0" />
+      <Item value="Pop" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.Metadata.ServiceOperations">
+      <Item value="GetBaseTypeWithTheSameName" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.Metadata.XsdGenerator">
+      <Item value="OperationTypes" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.EndpointType">
+      <Item value="Xml" priority="2" />
+      <Item value="Json" priority="0" />
+      <Item value="Soap11" priority="0" />
+      <Item value="Soap12" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.EndpointType">
+      <Item value="ToString" priority="1" />
+      <Item value="Soap12" priority="0" />
+      <Item value="Xml" priority="0" />
+      <Item value="Json" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

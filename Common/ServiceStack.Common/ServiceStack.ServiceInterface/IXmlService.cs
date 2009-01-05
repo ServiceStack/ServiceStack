@@ -4,6 +4,6 @@ namespace ServiceStack.ServiceInterface
 {
 	public interface IXmlService
 	{
-		string Execute(ICallContext context);
+		string Execute(IOperationContext context);
 	}
 }

@@ -4,7 +4,8 @@ namespace ServiceStack.LogicFacade
 {
 	public interface IServiceController
 	{
-		object Execute(ICallContext context);
-		string ExecuteXml(ICallContext context);
+		object Execute(IOperationContext context);
+		
+		string ExecuteXml(IOperationContext context);
 	}
 }

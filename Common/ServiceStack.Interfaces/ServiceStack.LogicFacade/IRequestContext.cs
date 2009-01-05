@@ -4,8 +4,10 @@ namespace ServiceStack.LogicFacade
 {
 	public interface IRequestContext : IDisposable
 	{
-		object Dto { get; set; }
 		T Get<T>() where T : class;
+
+		object Dto { get; set; }
+		
 		string IpAddress { get; }
 	}
 }

@@ -1,12 +1,11 @@
-using ServiceStack.CacheAccess;
-using ServiceStack.Configuration;
+using System;
 
 namespace ServiceStack.LogicFacade
 {
-	public interface IOperationContext
+	public interface IOperationContext : IDisposable
 	{
-		IFactoryProvider Factory { get; set; }
-		ICacheClient Cache { get; set; }
-		IResourceManager Resources { get; set; }
+		IApplicationContext Application { get; set; }
+		
+		IRequestContext Request { get; set; }
 	}
 }

@@ -10,12 +10,10 @@ namespace ServiceStack.DataAccess
 		IList<T> GetAllOrderedBy<T>(string fieldName, bool sortAsc) where T : class;
 		
 		T GetById<T>(object id) where T : class;
-		IList<T> GetByIds<T>(object[] ids) where T : class;
 		IList<T> GetByIds<T>(ICollection ids) where T : class;
 
 		T FindByValue<T>(string name, object value) where T : class;
 		IList<T> FindAllByValue<T>(string name, object value) where T : class;
-		IList<T> FindByValues<T>(string name, object[] values) where T : class;
 		IList<T> FindByValues<T>(string name, ICollection values) where T : class;
 
 		void Flush();

@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints
 			get
 			{
 				AssertConfig();
-				return Config.ServiceModelFinder.ServiceModelAssembly;
+				return Config.ServiceModelFinder.GetType().Assembly;
 			}
 		}
 

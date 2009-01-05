@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public void SetConfig(EndpointHostConfig config)
 		{
-			config.ServiceHost = this;
+			config.ServiceHost = config.ServiceHost ?? this;
 			EndpointHost.Config = config;
 
 			this.ServiceModelFinder = config.ServiceModelFinder;
@@ -30,11 +30,11 @@ namespace ServiceStack.WebHost.Endpoints
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
-		protected abstract ICallContext CreateCallContext(object requestDto);
+		protected abstract IOperationContext CreateOperationContext(object requestDto);
 
 		public virtual object ExecuteService(object requestDto)
 		{
-			using (var context = CreateCallContext(requestDto))
+			using (var context = CreateOperationContext(requestDto))
 			{
 				return this.ServiceController.Execute(context);
 			}
@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints
 			// context request DTO to a object expected by the relevant port
 			var requestDto = new XmlRequestDto(xml, this.ServiceModelFinder);
 
-			using (var context = CreateCallContext(requestDto))
+			using (var context = CreateOperationContext(requestDto))
 			{
 				return this.ServiceController.ExecuteXml(context);
 			}

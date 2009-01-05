@@ -9,9 +9,9 @@ using ServiceStack.LogicFacade;
 
 namespace ServiceStack.ServiceModel
 {
-	public abstract class ServiceModelInfo : IServiceModelFinder
+	public abstract class ServiceModelFinderBase : IServiceModelFinder
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(ServiceModelInfo));
+		private static readonly ILog log = LogManager.GetLogger(typeof(ServiceModelFinderBase));
 
 		protected int MinVersion { get; set; }
 		protected int MaxVersion { get; set; }
@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceModel
 		private static readonly Regex typeRegex =
 				new Regex(@".*Version([0-9]+)\..*", RegexOptions.Compiled);
 
-		protected ServiceModelInfo()
+		protected ServiceModelFinderBase()
 		{
 			this.typesByName = new Dictionary<string, Type>();
 
@@ -44,7 +44,7 @@ namespace ServiceStack.ServiceModel
 				}
 				catch (Exception ex)
 				{
-					log.ErrorFormat("Exception in ServiceModelInfo() parsing type: '{0}'",
+					log.ErrorFormat("Exception in ServiceModelFinderBase() parsing type: '{0}'",
 						type.FullName, ex);
 
 					throw;

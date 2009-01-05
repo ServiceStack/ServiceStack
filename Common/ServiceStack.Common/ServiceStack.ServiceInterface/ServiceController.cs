@@ -34,7 +34,7 @@ namespace ServiceStack.ServiceInterface
 			return result;
 		}
 
-		public object Execute(ICallContext context)
+		public object Execute(IOperationContext context)
 		{
 			var serviceName = context.Request.Dto.GetType().Name;
 			var service = this.ServiceResolver.FindService(serviceName);
@@ -44,7 +44,7 @@ namespace ServiceStack.ServiceInterface
 			return Execute(() => dtoService.Execute(context), serviceName);
 		}
 
-		public string ExecuteXml(ICallContext context)
+		public string ExecuteXml(IOperationContext context)
 		{
 			var xmlRequest = (IXmlRequest)context.Request.Dto;
 

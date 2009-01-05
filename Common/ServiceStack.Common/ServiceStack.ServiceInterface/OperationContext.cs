@@ -1,38 +1,26 @@
 using System;
-using System.Web;
-using ServiceStack.CacheAccess;
-using ServiceStack.Configuration;
 using ServiceStack.LogicFacade;
-using ServiceStack.Logging;
 
 namespace ServiceStack.ServiceInterface
 {
-
 	public class OperationContext : IOperationContext
 	{
-		public static OperationContext Instance { get; private set; }
-
-		public static void SetInstanceContext(OperationContext operationContext)
+		public OperationContext(IApplicationContext application, IRequestContext request)
 		{
-			if (OperationContext.Instance != null)
+			this.Application = application;
+			this.Request = request;
+		}
+
+		public IApplicationContext Application { get; set; }
+
+		public IRequestContext Request { get; set; }
+
+		public void Dispose()
+		{
+			if (this.Request != null)
 			{
-				throw new NotSupportedException("Cannot set the singleton instance once it has already been set");
+				this.Request.Dispose();
 			}
-			OperationContext.Instance = operationContext;
 		}
-
-		[ThreadStatic]
-		public static OperationContext current;
-		public static OperationContext Current
-		{
-			get { return current; }
-			set { current = value; }
-		}
-
-		public ICacheClient Cache { get; set; }
-
-		public IResourceManager Resources { get; set; }
-
-		public IFactoryProvider Factory { get; set; }
 	}
 }

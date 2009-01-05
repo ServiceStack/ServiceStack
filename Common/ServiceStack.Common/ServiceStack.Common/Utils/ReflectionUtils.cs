@@ -215,7 +215,7 @@ namespace ServiceStack.Common.Utils
 					if (memberInfo.Name == memberName) return memberInfo;
 				}
 			}
-			while ((baseType = fromType.BaseType) != null);
+			while ((baseType = baseType.BaseType) != null);
 			return null;
 		}
 
@@ -230,7 +230,7 @@ namespace ServiceStack.Common.Utils
 					if (fieldInfo.Name == fieldName) return fieldInfo;
 				}
 			}
-			while ((baseType = fromType.BaseType) != null);
+			while ((baseType = baseType.BaseType) != null);
 			return null;
 		}
 
@@ -245,7 +245,7 @@ namespace ServiceStack.Common.Utils
 					if (propertyInfo.Name == propertyName) return propertyInfo;
 				}
 			}
-			while ((baseType = fromType.BaseType) != null);
+			while ((baseType = baseType.BaseType) != null);
 			return null;
 		}
 	}

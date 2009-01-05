@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</ProjectGuid>
+    <ProjectGuid>{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.ServiceInterface</RootNamespace>
-    <AssemblyName>ServiceStack.ServiceInterface</AssemblyName>
+    <RootNamespace>ServiceStack.Validation.Tests</RootNamespace>
+    <AssemblyName>ServiceStack.Validation.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,18 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\Lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.ServiceModel">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -53,38 +49,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationContext.cs" />
-    <Compile Include="BaseServiceResolver.cs" />
-    <Compile Include="OperationContext.cs" />
-    <Compile Include="Session\UserClientSession.cs" />
-    <Compile Include="Session\UserClientSessionsTuple.cs" />
-    <Compile Include="Session\UserSession.cs" />
-    <Compile Include="Session\UserSessionManager.cs" />
-    <Compile Include="XmlMessageInspector.cs" />
-    <Compile Include="FactoryProvider.cs" />
-    <Compile Include="IService.cs" />
-    <Compile Include="IServiceResolver.cs" />
-    <Compile Include="IXElementService.cs" />
-    <Compile Include="IXmlService.cs" />
-    <Compile Include="IXmlServiceRequest.cs" />
-    <Compile Include="MessagingRestriction.cs" />
-    <Compile Include="MessagingRestrictionAttribute.cs" />
+    <Compile Include="BaseValidationTests.cs" />
+    <Compile Include="CreditCardValidationTests.cs" />
+    <Compile Include="NotNullValidationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestContext.cs" />
-    <Compile Include="ServiceController.cs" />
+    <Compile Include="RequiredTextValidationTests.cs" />
+    <Compile Include="Support\ErrorCodes.cs" />
+    <Compile Include="Support\TestBase.cs" />
+    <Compile Include="ValidEmailValidationTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
-      <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
-      <Name>ServiceStack.Configuration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
-      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
-      <Name>ServiceStack.ServiceModel</Name>
+    <ProjectReference Include="..\ServiceStack.Validation\ServiceStack.Validation.csproj">
+      <Project>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</Project>
+      <Name>ServiceStack.Validation</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
