@@ -22,18 +22,15 @@
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerHandler.cs" caret="622" scrollPosition="0|0" />
       <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppHost.cs" caret="991" scrollPosition="0|12" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/d:__RESHARPER__DummyWebPages_/f:AsyncOneWay.svc" caret="0" scrollPosition="0|0" />
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="12366" scrollPosition="0|156" />
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="1139" scrollPosition="0|23" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="11079" scrollPosition="0|180" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="13" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="12415" scrollPosition="0|180" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="2685" scrollPosition="0|3" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/d:Build/f:deploy.bat" caret="392" scrollPosition="0|0" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="705" scrollPosition="0|17" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Global.asax.cs" caret="428" scrollPosition="0|0" />
+      <File id="E6170756-E72D-4A0B-AF2F-9DFBE83F5C48/f:ErrorCodes.cs" caret="46" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppHost.cs" caret="1393" scrollPosition="0|21" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="229" scrollPosition="0|0" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="637" scrollPosition="0|0" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/f:GetAllCustomersTests.cs" caret="803" scrollPosition="0|0" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="654" scrollPosition="0|14" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/f:GetAllCustomersTests.cs" caret="602" scrollPosition="0|0" />
-      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="891" scrollPosition="0|12" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/f:ServiceModelFinder.cs" caret="96" scrollPosition="0|0" />
       <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="374" scrollPosition="0|6" />
       <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="630" scrollPosition="0|6" />
@@ -53,9 +50,17 @@
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="6774" scrollPosition="0|84" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="12366" scrollPosition="0|228" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="378" scrollPosition="0|0" />
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="2120" scrollPosition="0|15" />
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="1971" scrollPosition="0|23" />
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="1404" scrollPosition="0|23" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="2015" scrollPosition="0|15" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="1407" scrollPosition="0|23" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="13" scrollPosition="0|0" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Global.asax.cs" caret="428" scrollPosition="0|0" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="1681" scrollPosition="0|26" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/d:Build/f:deploy.bat" caret="0" scrollPosition="0|0" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/d:Build/f:deploy.bat" caret="136" scrollPosition="0|0" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/d:Build/f:deploy.bat" caret="4" scrollPosition="0|0" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="705" scrollPosition="0|17" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="2840" scrollPosition="0|3" />
+      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/d:Build/f:deploy.bat" caret="376" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

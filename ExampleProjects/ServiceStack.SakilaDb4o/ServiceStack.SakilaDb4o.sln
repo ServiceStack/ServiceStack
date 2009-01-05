@@ -26,7 +26,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModelTranslat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Iis6Host.WebService", "ServiceStack.SakilaDb4o.Iis6Host.WebService\ServiceStack.SakilaDb4o.Iis6Host.WebService.csproj", "{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{18B37EB5-A16D-43BE-8FC0-6CA632069E06}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{2DACC4AD-9405-49C4-BBFD-C364B07DCB63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,5 +65,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD} = {2DACC4AD-9405-49C4-BBFD-C364B07DCB63}
+		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19} = {2DACC4AD-9405-49C4-BBFD-C364B07DCB63}
 	EndGlobalSection
 EndGlobal
