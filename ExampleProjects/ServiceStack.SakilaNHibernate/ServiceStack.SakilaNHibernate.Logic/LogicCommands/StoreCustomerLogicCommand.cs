@@ -15,7 +15,7 @@ namespace ServiceStack.SakilaNHibernate.Logic.LogicCommands
 			using (var transaction = Provider.BeginTransaction())
 			{
 				var dbCustomer = new DataAccess.DataModel.Customer {
-					Id = this.Customer.Id
+					Id = (ushort)this.Customer.Id,
 				};
 				Provider.Store(dbCustomer);
 

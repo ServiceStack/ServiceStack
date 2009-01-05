@@ -16,7 +16,7 @@ namespace ServiceStack.SakilaNHibernate.Logic
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(SakilaNHibernateServiceFacade));
 
-		private IOperationContext AppContext { get; set; }
+		private IApplicationContext AppContext { get; set; }
 
 		private IPersistenceProvider persistenceProvider;
 		private IPersistenceProvider PersistenceProvider
@@ -31,12 +31,9 @@ namespace ServiceStack.SakilaNHibernate.Logic
 			}
 		}
 
-		private SakilaNHibernateServiceDataAccessProvider Provider { get; set; }
-
-		public SakilaNHibernateServiceFacade(IOperationContext appContext)
+		public SakilaNHibernateServiceFacade(IApplicationContext appContext)
 		{
 			this.AppContext = appContext;
-			this.Provider = new SakilaNHibernateServiceDataAccessProvider(PersistenceProvider);
 		}
 
 		public List<Customer> GetAllCustomers()
@@ -64,7 +61,7 @@ namespace ServiceStack.SakilaNHibernate.Logic
 		{
 			var action = (IAction<T>)command;
 			action.AppContext = this.AppContext;
-			action.Provider = this.Provider;
+			action.Provider = this.PersistenceProvider;
 		}
 	}
 }

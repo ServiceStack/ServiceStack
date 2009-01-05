@@ -2,8 +2,7 @@ using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.SakilaNHibernate.ServiceInterface
 {
-	public class ServiceResolver 
-		: BaseServiceResolver
+	public class ServiceResolver : BaseServiceResolver
 	{
 	}
 }

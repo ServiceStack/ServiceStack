@@ -11,6 +11,9 @@ namespace ServiceStack.SakilaNHibernate.Logic.Translators.DomainToData
 		{
 			var to = new DataAccess.DataModel.Customer {
 				Id = (ushort)from.Id,
+				FirstName = from.FirstName,
+				LastName = from.LastName,
+				Email = from.Email,
 			};
 
 			return to;

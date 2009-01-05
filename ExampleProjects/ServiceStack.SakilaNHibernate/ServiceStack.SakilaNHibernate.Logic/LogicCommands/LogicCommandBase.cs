@@ -1,6 +1,6 @@
+using ServiceStack.DataAccess;
 using ServiceStack.Logging;
 using ServiceStack.LogicFacade;
-using ServiceStack.SakilaNHibernate.DataAccess;
 using ServiceStack.Validation;
 
 namespace ServiceStack.SakilaNHibernate.Logic.LogicCommands
@@ -9,9 +9,9 @@ namespace ServiceStack.SakilaNHibernate.Logic.LogicCommands
 	{
 		protected ILog log;
 
-		public IOperationContext AppContext { get; set; }
+		public IApplicationContext AppContext { get; set; }
 
-		public SakilaNHibernateServiceDataAccessProvider Provider { get; set; }
+		public IPersistenceProvider Provider { get; set; }
 
 		protected void ThrowAnyValidationErrors(ValidationResult validationResult)
 		{

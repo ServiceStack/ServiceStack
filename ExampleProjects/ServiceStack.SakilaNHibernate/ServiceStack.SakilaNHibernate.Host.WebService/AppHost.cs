@@ -27,7 +27,7 @@ namespace ServiceStack.SakilaNHibernate.Host.WebService
 			factory.Register(nhFactory.CreateProviderManager(Config.ConnectionString));
 
 			// Create the AppContext injected with the static service implementations
-			OperationContext.SetInstanceContext(new OperationContext {
+			ApplicationContext.SetInstanceContext(new ApplicationContext {
 				Cache = new MemoryCacheClient(),
 				Factory = factory,
 				Resources = new ConfigurationResourceManager(),
@@ -36,17 +36,16 @@ namespace ServiceStack.SakilaNHibernate.Host.WebService
 			SetConfig(new EndpointHostConfig {
 				ServiceName = Config.ServiceName,
 				OperationsNamespace = Config.OperationNamespace,
-				ServiceModelFinder = ModelInfo.Instance,
+				ServiceModelFinder = ServiceModelFinder.Instance,
 				ServiceController = new ServiceController(new ServiceResolver()),
 			});
 		}
 
-		protected override ICallContext CreateCallContext(object requestDto)
+		protected override IOperationContext CreateOperationContext(object requestDto)
 		{
-			// Create a facade around a provider connection
-			ISakilaNHibernateServiceFacade facade = new SakilaNHibernateServiceFacade(OperationContext.Instance);
+			ISakilaNHibernateServiceFacade facade = new SakilaNHibernateServiceFacade(ApplicationContext.Instance);
 			var requestContext = new RequestContext(requestDto, new FactoryProvider(FactoryUtils.ObjectFactory, facade));
-			return new CallContext(OperationContext.Instance, requestContext);
+			return new OperationContext(ApplicationContext.Instance, requestContext);
 		}
 
 		//Access application configuration statically

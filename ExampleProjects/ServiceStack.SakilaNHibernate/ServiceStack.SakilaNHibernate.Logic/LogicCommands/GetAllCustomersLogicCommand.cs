@@ -9,7 +9,7 @@ namespace ServiceStack.SakilaNHibernate.Logic.LogicCommands
 	{
 		public override List<Customer> Execute()
 		{
-			var dbCustomers = Provider.Data.GetAll<DataAccess.DataModel.Customer>();
+			var dbCustomers = Provider.GetAll<DataAccess.DataModel.Customer>();
 			return CustomerFromDataTranslator.Instance.ParseAll(dbCustomers);
 		}
 	}

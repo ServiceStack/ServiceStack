@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -77,16 +77,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Logic\Validation\CustomerDetailsValidationTests.cs" />
-    <Compile Include="Logic\Validation\ValidationTestBase.cs" />
-    <Compile Include="ServiceInterface\Version100\BaseAppTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServiceInterface\Version100\GetCustomersTests.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ServiceInterface\Version100\ITestParameters.cs" />
-    <Compile Include="Support\TestParameters.cs" />
-    <Compile Include="Support\TestData.cs" />
+    <Compile Include="ServiceInterface\GetAllCustomersTests.cs" />
+    <Compile Include="Support\TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sakila.DomainModel\Sakila.DomainModel.csproj">

@@ -14,9 +14,56 @@
   <RecentFiles>
     <RecentFiles>
       <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:SakilaNHibernateServiceDataAccessProvider.cs" caret="0" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/f:SakilaNHibernateServiceFacade.cs" caret="769" scrollPosition="0|0" />
+      <File id="D790576E-D211-42B8-8D7C-A51FD4A76D4B/d:LogicCommands/f:LogicCommandBase.cs" caret="1005" scrollPosition="0|3" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="2978" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:HbmMaps/f:Customer.hbm.xml" caret="393" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Customer.generated.cs" caret="0" scrollPosition="0|0" />
+      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/d:DataModel/f:Customer.cs" caret="0" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/f:app.config" caret="58" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/f:ServiceResolver.cs" caret="156" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="576" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerHandler.cs" caret="1080" scrollPosition="0|9" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/d:__RESHARPER__DummyWebPages_/f:deploy.bat" caret="0" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:Global.asax.cs" caret="434" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppHost.cs" caret="2631" scrollPosition="0|39" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:Web.config" caret="2602" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:AppHost.cs" caret="1392" scrollPosition="0|24" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="1449" scrollPosition="0|5" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/f:GetAllCustomersTests.cs" caret="1351" scrollPosition="0|10" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="511" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="D8429EA2-F05E-450B-9A96-B8305E3E4D78/f:SakilaNHibernateServiceDataAccessProvider.cs" caret="485" scrollPosition="0|6" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/f:app.config" caret="58" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/f:app.config" caret="58" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="0" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="287" scrollPosition="0|16" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="287" scrollPosition="0|12" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="287" scrollPosition="0|14" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="287" scrollPosition="0|5" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="287" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/f:GetAllCustomersTests.cs" caret="473" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="921" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="307" scrollPosition="0|0" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/f:GetAllCustomersTests.cs" caret="1358" scrollPosition="0|12" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/f:GetAllCustomersTests.cs" caret="1351" scrollPosition="0|6" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:ServiceInterface/f:GetAllCustomersTests.cs" caret="1050" scrollPosition="0|6" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="763" scrollPosition="0|0" />
+      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:AppHost.cs" caret="1491" scrollPosition="0|20" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="632" scrollPosition="0|9" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="380" scrollPosition="0|9" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="1318" scrollPosition="0|7" />
+      <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="148" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="511" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="576" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerHandler.cs" caret="470" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:Web.config" caret="12384" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/d:__RESHARPER__DummyWebPages_/f:deploy.bat" caret="0" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:Global.asax.cs" caret="434" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:AppHost.cs" caret="0" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:AppHost.cs" caret="470" scrollPosition="0|0" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:AppHost.cs" caret="1260" scrollPosition="0|13" />
+      <File id="0FD199DC-4733-4EC6-B5EF-E13F0DAFA3F7/f:AppHost.cs" caret="3100" scrollPosition="0|42" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -27,4 +74,67 @@
     <EnableUnitTesting>True</EnableUnitTesting>
     <Providers />
   </UnitTestRunner>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Qualified:ServiceStack.DataAccess.IPersistenceProvider">
+      <Item value="Store" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Default">
+      <Item value="OperationContext" priority="2" />
+      <Item value="ApplicationContext" priority="1" />
+      <Item value="new" priority="2" />
+      <Item value="FactoryUtils" priority="0" />
+      <Item value="FactoryProvider" priority="0" />
+      <Item value="Nullable" priority="0" />
+      <Item value="null" priority="0" />
+      <Item value="public" priority="1" />
+      <Item value="params" priority="0" />
+      <Item value="object" priority="0" />
+      <Item value="this" priority="0" />
+      <Item value="void" priority="0" />
+      <Item value="var" priority="2" />
+      <Item value="Mock" priority="0" />
+      <Item value="facade" priority="1" />
+      <Item value="Customer" priority="0" />
+      <Item value="asrt" priority="3" />
+      <Item value="customers" priority="1" />
+      <Item value="ISakilaNHibernateServiceFacade" priority="0" />
+      <Item value="Assert" priority="0" />
+      <Item value="response" priority="0" />
+      <Item value="Is" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.SakilaNHibernate.Tests.Support.TestBase">
+      <Item value="ServiceModelFinder" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Moq.Mock`1">
+      <Item value="Expect" priority="0" />
+      <Item value="Object" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.SakilaNHibernate.Logic.LogicInterface.ISakilaNHibernateServiceFacade">
+      <Item value="GetAllCustomers" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Moq.Language.Flow.IExpect`1">
+      <Item value="Returns" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
+      <Item value="That" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.ServiceModel.Version100.Operations.SakilaNHibernateService.GetAllCustomersResponse">
+      <Item value="Customers" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
+      <Item value="Count" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Is">
+      <Item value="EqualTo" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.ServiceModel.Version100.Types.Customer">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.DomainModel.Customer">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Sakila.ServiceModel.ServiceModelFinder">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
 </Configuration>
