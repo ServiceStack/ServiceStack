@@ -3,26 +3,33 @@ using Sakila.ServiceModelTranslators.Version100.DomainToService;
 using ServiceStack.Common.Extensions;
 using ServiceStack.LogicFacade;
 using ServiceStack.ServiceInterface;
-using ServiceStack.Sakila.Logic.LogicInterface;	
+using ServiceStack.Sakila.Logic.LogicInterface;
+using ServiceStack.Sakila.Logic.LogicInterface.Requests;
 using ServiceStack.Sakila.ServiceInterface.Translators;
 using ServiceStack.Validation;
 
 namespace ServiceStack.Sakila.ServiceInterface.Version100
 {
+	/// <summary>
+	/// Get's customers information
+	/// </summary>
 	[MessagingRestriction(MessagingRestriction.HttpPost)]
-	public class GetFilmsPort : IService
+	public class GetCustomersHandler : IService
 	{
-		public object Execute(ICallContext context)
+		public object Execute(IOperationContext context)
 		{
-			var request = context.Request.Get<GetFilms>();
+			// Extract request DTO
+			var request = context.Request.Get<GetCustomers>();
 
+			// Retrieve the users
 			var facade = context.Request.Get<ISakilaServiceFacade>();
 			try
 			{
-				var results = facade.GetFilms(request.FilmIds);
-
-				return new GetFilmsResponse {
-					Films = FilmToDtoTranslator.Instance.ParseAll(results)
+				var results = facade.GetCustomers(new CustomersRequest {
+					CustomerIds = request.CustomerIds,
+				});
+				return new GetCustomersResponse {
+					Customers = CustomerToDtoTranslator.Instance.ParseAll(results)
 				};
 			}
 			catch (ValidationException ve)

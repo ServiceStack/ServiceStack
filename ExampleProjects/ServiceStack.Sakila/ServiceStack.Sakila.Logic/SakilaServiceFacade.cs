@@ -16,7 +16,7 @@ namespace ServiceStack.Sakila.Logic
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(SakilaServiceFacade));
 
-		private IOperationContext AppContext { get; set; }
+		private IApplicationContext AppContext { get; set; }
 
 		private IPersistenceProvider persistenceProvider;
 		private IPersistenceProvider PersistenceProvider
@@ -33,7 +33,7 @@ namespace ServiceStack.Sakila.Logic
 
 		private SakilaServiceDataAccessProvider Provider { get; set; }
 
-		public SakilaServiceFacade(IOperationContext appContext)
+		public SakilaServiceFacade(IApplicationContext appContext)
 		{
 			this.AppContext = appContext;
 

@@ -9,7 +9,7 @@ namespace ServiceStack.Sakila.Logic.LogicCommands
 	{
 		protected ILog log;
 
-		public IOperationContext AppContext { get; set; }
+		public IApplicationContext AppContext { get; set; }
 
 		public SakilaServiceDataAccessProvider Provider { get; set; }
 

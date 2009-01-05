@@ -8,6 +8,6 @@ namespace ServiceStack.Sakila.Logic
 	public interface IAction<ReturnType> : ICommand<ReturnType>
 	{
 		SakilaServiceDataAccessProvider Provider { get; set; }
-		IOperationContext AppContext { get; set; }
+		IApplicationContext AppContext { get; set; }
 	}
 }

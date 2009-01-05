@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Sakila.ServiceModel;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Configuration;
-using ServiceStack.DataAccess;
 using ServiceStack.DataAccess.NHibernateProvider;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Log4Net;
@@ -28,7 +27,7 @@ namespace ServiceStack.Sakila.Host.WebService
 			factory.Register(nhFactory.CreateProviderManager(Config.ConnectionString));
 
 			// Create the AppContext injected with the static service implementations
-			OperationContext.SetInstanceContext(new OperationContext {
+			ApplicationContext.SetInstanceContext(new ApplicationContext {
 				Cache = new MemoryCacheClient(),
 				Factory = factory,
 				Resources = new ConfigurationResourceManager(),
@@ -37,17 +36,17 @@ namespace ServiceStack.Sakila.Host.WebService
 			SetConfig(new EndpointHostConfig {
 				ServiceName = Config.ServiceName,
 				OperationsNamespace = Config.OperationNamespace,
-				ServiceModelFinder = ModelInfo.Instance,
+				ServiceModelFinder = ServiceModelFinder.Instance,
 				ServiceController = new ServiceController(new ServiceResolver()),
 			});
 		}
 
-		protected override ICallContext CreateCallContext(object requestDto)
+		protected override IOperationContext CreateOperationContext(object requestDto)
 		{
 			// Create a facade around a provider connection
-			ISakilaServiceFacade facade = new SakilaServiceFacade(OperationContext.Instance);
+			ISakilaServiceFacade facade = new SakilaServiceFacade(ApplicationContext.Instance);
 			var requestContext = new RequestContext(requestDto, new FactoryProvider(FactoryUtils.ObjectFactory, facade));
-			return new CallContext(OperationContext.Instance, requestContext);
+			return new OperationContext(ApplicationContext.Instance, requestContext);
 		}
 
 		//Access application configuration statically

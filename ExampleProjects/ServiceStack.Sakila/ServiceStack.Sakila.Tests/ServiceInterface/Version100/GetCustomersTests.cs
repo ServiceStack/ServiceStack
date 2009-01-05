@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
 using Sakila.DomainModel;
 using Sakila.ServiceModel.Version100.Operations.SakilaService;
+using ServiceStack.DataAccess;
 using ServiceStack.Sakila.Logic.LogicInterface;
 using ServiceStack.Sakila.Logic.LogicInterface.Requests;
 using ServiceStack.Sakila.ServiceInterface.Version100;
@@ -13,53 +16,29 @@ using DtoTypes = Sakila.ServiceModel.Version100.Types;
 namespace ServiceStack.Sakila.Tests.ServiceInterface.Version100
 {
 	[TestFixture]
-	public class GetCustomersTests : BaseAppTestFixture
+	public class GetCustomersTests : TestBase
 	{
-		public GetCustomersTests() 
-			: base(new TestParameters())
-		{
-		}
-
-		private Mock<ISakilaServiceFacade> MoqFacade { get; set; }
-
-		private CallContext CallContext { get; set; }
-
-		private List<Customer> FacadeResult { get; set; }
-
-		[SetUp]
-		public void SetUp()
-		{
-			this.MoqFacade = new Mock<ISakilaServiceFacade>();
-			this.CallContext = base.CreateCallContext(this.MoqFacade.Object, null);
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			this.CallContext = null;
-			this.MoqFacade = null;
-		}
 
 		[Test]
-		public void GetCustomersExecute()
+		public void GetAllCustomersTest()
 		{
-			// Create request DTO and insert into call context
-			this.CallContext.Request.Dto = new GetCustomers { CustomerIds = new DtoTypes.ArrayOfIntId { 1, 2, 3 } };
-			
-			// Set return value upon successful call to the moq
-			List<Customer> returnValue = new List<Customer> { new Customer { Id = 1 }, new Customer { Id = 2 }, new Customer { Id = 3 } };
+			var provider = new Mock<IPersistenceProvider>();
+			provider.Expect(x => x.GetAll<Customer>());
+			RegisterPersistenceProvider(provider.Object);
 
-			// Set facade to expect provided values
-			this.MoqFacade.Expect(facade => facade.GetCustomers(It.Is<CustomersRequest>(req => req.CustomerIds.Count == 3 && req.CustomerIds.Contains(1) && req.CustomerIds.Contains(2) && req.CustomerIds.Contains(3))))
-				 .Returns(returnValue)
-				 .AtMostOnce();
+			var facade = new Mock<ISakilaServiceFacade>();
+			var customers = new[] { new Customer { Id = 1 } }.ToList();
+			facade.Expect(x => x.GetAllCustomers()).Returns(customers);
 
-			// Execute port
-			var response = (GetCustomersResponse) new GetCustomersPort().Execute(this.CallContext);
+			var request = new GetAllCustomers();
+			var operationContext = CreateOperationContext(request, facade.Object);
 
-			this.MoqFacade.VerifyAll();
+			var port = new GetAllCustomersHandler();
+			var response = (GetAllCustomersResponse)port.Execute(operationContext);
 
-			Assert.That(response.Customers.Count == 3);
+			Assert.That(response.Customers.Count, Is.EqualTo(customers.Count));
+			Assert.That(response.Customers[0].Id, Is.EqualTo(customers[0].Id));
+			provider.Verify();
 		}
 	}
 }

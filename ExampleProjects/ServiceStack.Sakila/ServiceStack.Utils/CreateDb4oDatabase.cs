@@ -22,15 +22,14 @@ namespace ServiceStack.Utils
 		private const string connectionString = @"server=localhost;database=Sakila;uid=root;password=root";
 		private readonly string[] xmlAssemblyMapping = { "ServiceStack.Sakila.DataAccess" };
 
-
 		private IPersistenceProviderManager db4oProviderManager;
 		private IPersistenceProvider db4oProvider;
 		private ISakilaServiceFacade facade;
 
-		public OperationContext CreateOperationContext()
+		public ApplicationContext CreateApplicationContext()
 		{
 			var nhFactory = NHibernateProviderManagerFactory.CreateMySqlFactory(xmlAssemblyMapping);
-			return new OperationContext {
+			return new ApplicationContext {
 				Cache = new MemoryCacheClient(),
 				Factory = new FactoryProvider(null, nhFactory.CreateProviderManager(connectionString)),
 				Resources = new ConfigurationResourceManager(),
@@ -48,7 +47,7 @@ namespace ServiceStack.Utils
 				}
 				db4oProviderManager = new Db4oFileProviderManager(db4oDatabasePath);
 				db4oProvider = db4oProviderManager.CreateProvider();
-				facade = new SakilaServiceFacade(CreateOperationContext());
+				facade = new SakilaServiceFacade(CreateApplicationContext());
 
 			}
 			catch (Exception ex)

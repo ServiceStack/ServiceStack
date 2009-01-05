@@ -56,9 +56,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ModelInfo.cs" />
+    <Compile Include="ServiceModelFinder.cs" />
     <Compile Include="Version100\Operations\SakilaDb4oService\GetAllCustomers.cs" />
     <Compile Include="Version100\Operations\SakilaDb4oService\GetAllCustomersResponse.cs" />
+    <Compile Include="Version100\Operations\SakilaNHibernateService\GetAllCustomers.cs" />
+    <Compile Include="Version100\Operations\SakilaNHibernateService\GetAllCustomersResponse.cs" />
     <Compile Include="Version100\Operations\SakilaNHibernateService\GetCustomers.cs" />
     <Compile Include="Version100\Operations\SakilaNHibernateService\GetCustomersResponse.cs" />
     <Compile Include="Version100\Operations\SakilaNHibernateService\StoreCustomer.cs" />

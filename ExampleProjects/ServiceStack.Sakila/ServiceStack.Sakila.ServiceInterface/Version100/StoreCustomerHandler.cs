@@ -10,13 +10,13 @@ using ServiceStack.Sakila.ServiceInterface.Translators;
 namespace ServiceStack.Sakila.ServiceInterface.Version100
 {
 	[MessagingRestriction(MessagingRestriction.HttpPost)]
-	public class StoreCustomerPort : IService
+	public class StoreCustomerHandler : IService
 	{
 		/// <summary>
 		/// Used by Json and Soap requests if this service *is not* a 'IXElementService'
 		/// </summary>
 		/// <returns></returns>
-		public object Execute(ICallContext context)
+		public object Execute(IOperationContext context)
 		{
 			var request = context.Request.Get<StoreCustomer>();
 			var facade = context.Request.Get<ISakilaServiceFacade>();

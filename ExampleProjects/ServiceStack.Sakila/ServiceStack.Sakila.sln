@@ -19,11 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Sakila.Tests.I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Sakila.Host.WebService", "ServiceStack.Sakila.Host.WebService\ServiceStack.Sakila.Host.WebService.csproj", "{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8E2B906-6CC0-4C02-BC78-920D9988DC07}"
-	ProjectSection(SolutionItems) = preProject
-		BuildFile.xml = BuildFile.xml
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.DomainModel", "..\Sakila.DomainModel\Sakila.DomainModel.csproj", "{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModel", "..\Sakila.ServiceModel\Sakila.ServiceModel.csproj", "{07F5006E-3F8E-4201-9A0D-1BD912FEC028}"
@@ -36,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.UsageExamples"
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Utils", "ServiceStack.Utils\ServiceStack.Utils.csproj", "{B201A005-9F85-4461-8549-DD95CCB69F35}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{57FB68F5-0C77-4C12-8A5B-05970632247D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,5 +87,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD} = {57FB68F5-0C77-4C12-8A5B-05970632247D}
 	EndGlobalSection
 EndGlobal

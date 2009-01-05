@@ -79,19 +79,12 @@
   <ItemGroup>
     <Compile Include="Logic\Validation\CustomerDetailsValidationTests.cs" />
     <Compile Include="Logic\Validation\ValidationTestBase.cs" />
-    <Compile Include="ServiceInterface\Version100\BaseAppTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceInterface\Version100\GetCustomersTests.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceInterface\Version100\ITestParameters.cs" />
-    <Compile Include="Support\TestParameters.cs" />
+    <Compile Include="Support\TestBase.cs" />
     <Compile Include="Support\TestData.cs" />
-    <Compile Include="Validation\BaseValidationTests.cs" />
-    <Compile Include="Validation\CreditCardValidationTests.cs" />
-    <Compile Include="Validation\ValidEmailValidationTests.cs" />
-    <Compile Include="Validation\NotNullValidationTests.cs" />
-    <Compile Include="Validation\RequiredTextValidationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sakila.DomainModel\Sakila.DomainModel.csproj">

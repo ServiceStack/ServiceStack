@@ -59,9 +59,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceResolver.cs" />
     <Compile Include="Translators\ResponseStatusTranslator.cs" />
-    <Compile Include="Version100\GetFilmsPort.cs" />
-    <Compile Include="Version100\StoreCustomerPort.cs" />
-    <Compile Include="Version100\GetCustomersPort.cs">
+    <Compile Include="Version100\Class1.cs" />
+    <Compile Include="Version100\GetFilmsHandler.cs" />
+    <Compile Include="Version100\StoreCustomerHandler.cs" />
+    <Compile Include="Version100\GetCustomersHandler.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

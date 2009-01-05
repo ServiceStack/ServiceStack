@@ -7,9 +7,6 @@ namespace ServiceStack.Sakila.Tests.Support
 {
 	public static class TestData
 	{
-		public const string ClientModulusBase64 = "egFNQyG9xGWI9PIGOpVi8cACvsQKDqFY1Gd8UlHNBFkCm6drjfydql49ZV0sG9iTOlH9KVnWeI5uM8AmdL/mtQ==";
-		public const string CustomerPassword = "password";
-
 		public static DataModel.Customer NewCustomer
 		{
 			get

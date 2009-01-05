@@ -47,6 +47,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Lib\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=5.2.3.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\MySql.Data.dll</HintPath>
@@ -95,6 +99,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ServiceInterface\Version100\GetCustomersPortTests.cs" />
+    <Compile Include="Support\TestBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Sakila.ServiceModel\Sakila.ServiceModel.csproj">
@@ -120,9 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Endpoints\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
