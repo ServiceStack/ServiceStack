@@ -1,0 +1,255 @@
+<%-- 
+Name: NHibernateMaster.cst
+Author: Tom DuPont
+Description: Generates a complete set of Maps, Business Objects, Manager Objects, and a ManagerFactory for NHibernate, the adds them to the specified .csproj file.
+--%>
+<%@ CodeTemplate Language="C#" Src="Helpers\NHibernateHelper.cs" Inherits="NHibernateHelper" TargetLanguage="C#" OutputType="None" Debug="False" Description="Generates a complete set of Maps, Business Objects, Manager Objects, and a ManagerFactory for NHibernate, the adds them to the specified .csproj file." %>
+
+<%@ Property Name="SourceDatabase" Type="SchemaExplorer.DatabaseSchema" Optional="False" Category="1a. Source Database" Description="The source database to generate from." %>
+
+<%@ Property Name="ExcludedTables" Type="SchemaExplorer.TableSchemaCollection" Optional="True" Category="1b. Database Options" Description="A collection of tables to be excluded during generation." %>
+<%@ Property Name="TablePrefix" Type="System.String" Default="" Optional="True" Category="1b. Database Options" Description="A prefix that will be stripped from table names when class names are generated." %>
+
+<%@ Property Name="NHibernateVersion" Type="NHibernateVersion" Default="v2_0" Optional="False" Category="2. Versions" Description="The version of NHibernate to generate for." %>
+<%@ Property Name="VsVersion" Type="VisualStudioVersion" Default="VS_2008" Optional="False" Category="2. Versions" Description="The version of Visual Studio to generate for." %>
+
+<%@ Property Name="AssemblyName" Type="System.String" Default="NHibernate.Generated" Optional="False" Category="3a. Assembly" Description="The name of the Assembly that will contain the business objects." %>
+
+<%@ Property Name="ManagerNamespace" Type="System.String" Default="NHibernate.Generated.ManagerObjects" Optional="False" Category="3b. Namespaces" Description="The desired Namespace for the Manager Objects." %>
+<%@ Property Name="BusinessNamespace" Type="System.String" Default="NHibernate.Generated.BusinessObjects" Optional="False" Category="3b. Namespaces" Description="The desired Namespace for the Business Objects." %>
+<%@ Property Name="BaseNamespace" Type="System.String" Default="NHibernate.Generated.Base" Optional="False" Category="3b. Namespaces" Description="The Namespace where the Base classes (BusinessBase & ManagerBase) are located." %>
+<%@ Property Name="UnitTestNamespace" Type="System.String" Default="NHibernate.Generated.UnitTests" Optional="False" Category="3b. Namespaces" Description="The desired Namespace for the UnitTests." %>
+
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Assembly Name="Microsoft.Build.Engine" %>
+<%@ Assembly Name="Microsoft.Build.Utilities" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import NameSpace="System.IO" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+
+<%@ Register Name="BusinessBaseTemplate" Template="BaseClasses\BusinessBase.cst" %>
+<%@ Register Name="ManagerBaseTemplate" Template="BaseClasses\ManagerBase.cst" %>
+<%@ Register Name="SessionTemplate" Template="BaseClasses\Session.cst" %>
+<%@ Register Name="SessionManagerTemplate" Template="BaseClasses\SessionManager.cst" %>
+<%@ Register Name="UnitTestsBaseTemplate" Template="BaseClasses\UnitTestsBase.cst" %>
+<%@ Register Name="BusinessObjectTemplate" Template="BusinessObjects\BusinessObject.cst" %>
+<%@ Register Name="EditableBusinessObjectTemplate" Template="BusinessObjects\EditableBusinessObject.cst" %>
+<%@ Register Name="HbmMapTemplate" Template="HbmMaps\Hbm.cst" %>
+<%@ Register Name="EditableManagerObjectTemplate" Template="ManagerObjects\EditableManagerObject.cst" %>
+<%@ Register Name="ManagerFactoryTemplate" Template="ManagerObjects\ManagerFactory.cst" %>
+<%@ Register Name="ManagerObjectTemplate" Template="ManagerObjects\ManagerObject.cst" %>
+<%@ Register Name="UnitTestsTemplate" Template="UnitTests\UnitTests.cst" %>
+<%@ Register Name="EditableUnitTestsTemplate" Template="UnitTests\EditableUnitTests.cst" %>
+
+<script runat="template">
+public override void Render(TextWriter writer)
+{
+	this.tablePrefix = this.TablePrefix;
+	if(ExcludedTables == null)
+		ExcludedTables = new TableSchemaCollection();
+	
+	foreach(TableSchema table in SourceDatabase.Tables)
+		if(!ExcludedTables.Contains(table) && !IsManyToMany(table))
+		{
+			RenderHbmMaps(table);
+			RenderBusinessObjects(table);
+			RenderManagerObjects(table);
+			RenderUnitTests(table);
+		}
+	RenderBaseClasses();
+	RenderManagerFactory();
+	
+	RegisterReferences();
+}
+
+private void RenderBaseClasses()
+{
+	string fileName;
+	string folderName = GetFolder(BaseNamespace);
+	
+	fileName = String.Format("{0}{1}.cs", folderName, "BusinessBase");
+	BusinessBaseTemplate businessBase = this.Create<BusinessBaseTemplate>();
+	businessBase.BaseNamespace = this.BaseNamespace;
+	businessBase.RenderToFile(GetOutputFile(fileName, null), true);
+	
+	fileName = String.Format("{0}{1}.cs", folderName, "ManagerBase");
+	ManagerBaseTemplate managerBase = this.Create<ManagerBaseTemplate>();
+	managerBase.BaseNamespace = this.BaseNamespace;
+	managerBase.NHibVersion = this.NHibernateVersion;
+	managerBase.RenderToFile(GetOutputFile(fileName, null), true);
+	
+	fileName = String.Format("{0}{1}.cs", folderName, "NHibernateSession");
+	SessionTemplate session = this.Create<SessionTemplate>();
+	session.BaseNamespace = this.BaseNamespace;
+	session.RenderToFile(GetOutputFile(fileName, null), true);
+	
+	fileName = String.Format("{0}{1}.cs", folderName, "NHibernateSessionManager");
+	SessionManagerTemplate sessionManager = this.Create<SessionManagerTemplate>();
+	sessionManager.BaseNamespace = this.BaseNamespace;
+	sessionManager.RenderToFile(GetOutputFile(fileName, null), true);
+	
+	fileName = String.Format("{0}{1}.cs", folderName, "UnitTestsBase");
+	UnitTestsBaseTemplate unitTestsBase = this.Create<UnitTestsBaseTemplate>();
+	unitTestsBase.BaseNamespace = this.BaseNamespace;
+	unitTestsBase.ManagerNamespace = this.ManagerNamespace;
+	unitTestsBase.BusinessNamespace = this.BusinessNamespace;
+	unitTestsBase.RenderToFile(GetOutputFile(fileName, null), true);
+}
+private void RenderHbmMaps(TableSchema table)
+{
+	string fileName = String.Format("{0}{1}.hbm.xml", GetFolder("HbmMaps"), GetClassName(table));
+	
+	HbmMapTemplate hbmMap = this.Create<HbmMapTemplate>();
+	hbmMap.AssemblyName = this.AssemblyName;
+	hbmMap.BusinessNamespace = this.BusinessNamespace;
+	hbmMap.SourceTable = table;
+	hbmMap.TablePrefix = this.TablePrefix;
+	hbmMap.ExcludedTables = this.ExcludedTables;
+	
+	hbmMap.RenderToFile(GetOutputFile(fileName, null, "BuildAction", 3), true);
+}
+private void RenderBusinessObjects(TableSchema table)
+{
+	string fileName = String.Format("{0}{1}.generated.cs", GetFolder(BusinessNamespace), GetClassName(table));
+	string editableFileName = String.Format("{0}{1}.cs", GetFolder(BusinessNamespace), GetClassName(table));
+	
+	if(!File.Exists(editableFileName))
+	{
+		EditableBusinessObjectTemplate editableBusinessObject = this.Create<EditableBusinessObjectTemplate>();
+		editableBusinessObject.BusinessNamespace = this.BusinessNamespace;
+		editableBusinessObject.BaseNamespace = this.BaseNamespace;
+		editableBusinessObject.SourceTable = table;
+		editableBusinessObject.TablePrefix = this.TablePrefix;
+		
+		editableBusinessObject.RenderToFile(GetOutputFile(editableFileName, null), true);
+	}
+	
+	BusinessObjectTemplate businessObject = this.Create<BusinessObjectTemplate>();
+	businessObject.BusinessNamespace = this.BusinessNamespace;
+	businessObject.BaseNamespace = this.BaseNamespace;
+	businessObject.VsVersion = this.VsVersion;
+	businessObject.SourceTable = table;
+	businessObject.TablePrefix = this.TablePrefix;
+	businessObject.ExcludedTables = this.ExcludedTables;
+
+	businessObject.RenderToFile(GetOutputFile(fileName, editableFileName), true);
+}
+private void RenderManagerObjects(TableSchema table)
+{
+	string fileName = String.Format("{0}{1}Manager.Generated.cs", GetFolder(ManagerNamespace), GetClassName(table));
+	string editableFileName = String.Format("{0}{1}Manager.cs", GetFolder(ManagerNamespace), GetClassName(table));
+	
+	if(!File.Exists(editableFileName))
+	{
+		EditableManagerObjectTemplate editableManagerObject = this.Create<EditableManagerObjectTemplate>();
+		editableManagerObject.ManagerNamespace = this.ManagerNamespace;
+		editableManagerObject.BusinessNamespace = this.BusinessNamespace;
+		editableManagerObject.BaseNamespace = this.BaseNamespace;
+		editableManagerObject.SourceTable = table;
+		editableManagerObject.TablePrefix = this.TablePrefix;
+		
+		editableManagerObject.RenderToFile(GetOutputFile(editableFileName, null), true);
+	}
+
+	ManagerObjectTemplate managerObject = this.Create<ManagerObjectTemplate>();
+	managerObject.ManagerNamespace = this.ManagerNamespace;
+	managerObject.BusinessNamespace = this.BusinessNamespace;
+	managerObject.BaseNamespace = this.BaseNamespace;
+	managerObject.SourceTable = table;
+	managerObject.NHibernateVersion = this.NHibernateVersion;
+	managerObject.TablePrefix = this.TablePrefix;
+	managerObject.ExcludedTables = this.ExcludedTables;
+
+	managerObject.RenderToFile(GetOutputFile(fileName, editableFileName), true);
+}
+private void RenderManagerFactory()
+{
+	string fileName = String.Format("{0}ManagerFactory.cs", GetFolder(ManagerNamespace));
+
+	ManagerFactoryTemplate managerFactory = this.Create<ManagerFactoryTemplate>();
+	managerFactory.SourceDatabase = this.SourceDatabase;
+	managerFactory.ManagerNamespace = this.ManagerNamespace;
+	managerFactory.BaseNamespace = this.BaseNamespace;
+	managerFactory.ExcludedTables = this.ExcludedTables;
+	managerFactory.TablePrefix = this.TablePrefix;
+	
+	managerFactory.RenderToFile(GetOutputFile(fileName, null), true);
+}
+private void RenderUnitTests(TableSchema table)
+{
+	string fileName = String.Format("{0}{1}Tests.generated.cs", GetFolder(UnitTestNamespace), GetClassName(table));
+	string editableFileName = String.Format("{0}{1}Tests.cs", GetFolder(UnitTestNamespace), GetClassName(table));
+	
+	if(!File.Exists(editableFileName))
+	{
+		EditableUnitTestsTemplate editableUnitTests = this.Create<EditableUnitTestsTemplate>();
+		editableUnitTests.SourceTable = table;
+		editableUnitTests.ExcludedTables = this.ExcludedTables;
+		editableUnitTests.TablePrefix = this.TablePrefix;
+		editableUnitTests.ManagerNamespace = this.ManagerNamespace;
+		editableUnitTests.BaseNamespace = this.BaseNamespace;
+		editableUnitTests.BusinessNamespace = this.BusinessNamespace;
+		editableUnitTests.UnitTestNamespace = this.UnitTestNamespace;
+		
+		editableUnitTests.RenderToFile(GetOutputFile(editableFileName, null), true);
+	}
+	
+	UnitTestsTemplate unitTests = this.Create<UnitTestsTemplate>();
+	unitTests.SourceTable = table;
+	unitTests.ExcludedTables = this.ExcludedTables;
+	unitTests.TablePrefix = this.TablePrefix;
+	unitTests.NHibVersion = this.NHibernateVersion;
+	unitTests.ManagerNamespace = this.ManagerNamespace;
+	unitTests.BaseNamespace = this.BaseNamespace;
+	unitTests.BusinessNamespace = this.BusinessNamespace;
+	unitTests.UnitTestNamespace = this.UnitTestNamespace;
+
+	unitTests.RenderToFile(GetOutputFile(fileName, editableFileName), true);
+}
+private void RegisterReferences()
+{
+	this.RegisterReference(Path.Combine(this.CodeTemplateInfo.DirectoryName, @"Resources\NHibernate\NHibernate.dll"));
+	this.RegisterReference(Path.Combine(this.CodeTemplateInfo.DirectoryName, @"Resources\NHibernate\Castle.Core.dll"));
+	this.RegisterReference(Path.Combine(this.CodeTemplateInfo.DirectoryName, @"Resources\NHibernate\Castle.DynamicProxy2.dll"));
+	this.RegisterReference(Path.Combine(this.CodeTemplateInfo.DirectoryName, @"Resources\NHibernate\Iesi.Collections.dll"));
+	this.RegisterReference(Path.Combine(this.CodeTemplateInfo.DirectoryName, @"Resources\NHibernate\log4net.dll"));
+	this.RegisterReference(Path.Combine(this.CodeTemplateInfo.DirectoryName, @"Resources\NUnit\NUnit.Framework.dll"));
+	this.RegisterReference(@"System.Web");
+}
+
+private OutputFile GetOutputFile(string fileName, string dependentUpon, params object[] metaData)
+{
+	OutputFile outputFile = new OutputFile(fileName);
+	
+	if(!String.IsNullOrEmpty(dependentUpon))
+		outputFile.DependentUpon = Path.GetFullPath(dependentUpon);
+	
+	if(metaData.Length % 2 != 0)
+		throw new Exception("Invalid Metadata: Provide 2 objects per entry, a String (key) followed by an Object.");
+	for(int x=0; x<metaData.Length; x+=2)
+    	outputFile.Metadata.Add(metaData[x].ToString(), metaData[x+1]);
+		
+	return outputFile;
+}
+private string GetFolder(string folder)
+{
+	if (folder.Contains(".") && !folder.EndsWith("."))
+        folder = folder.Substring(folder.LastIndexOf('.')+1);
+		
+	if(String.IsNullOrEmpty(folder))
+		folder = String.Empty;
+	else
+	{
+		if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+			
+		if (!folder.EndsWith("\\"))
+			folder = String.Format("{0}\\", folder);
+	}
+	return folder;
+}
+</script>
