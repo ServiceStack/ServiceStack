@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack.WebHost.Endpoints</RootNamespace>
+    <AssemblyName>ServiceStack.WebHost.Endpoints</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EndpointHostBase.cs" />
+    <Compile Include="EndpointType.cs" />
+    <Compile Include="MetadataConfig.cs" />
+    <Compile Include="ServiceEndpointsMetadataConfig.cs" />
+    <Compile Include="Metadata\Soap12WsdlMetadataHandler.cs" />
+    <Compile Include="SoapMetadataConfig.cs" />
+    <Compile Include="Support\HttpHandlerBase.cs" />
+    <Compile Include="Support\Metadata\WsdlMetadataHandlerBase.cs" />
+    <Compile Include="Support\Templates\Soap12WsdlTemplate.cs" />
+    <Compile Include="Metadata\Soap11WsdlMetadataHandler.cs" />
+    <Compile Include="Support\Templates\Soap11WsdlTemplate.cs" />
+    <Compile Include="Support\Templates\WsdlTemplateBase.cs" />
+    <Compile Include="Soap12AsyncOneWayHandler.cs" />
+    <Compile Include="Soap12SyncReplyHandler.cs" />
+    <Compile Include="JsonAsyncOneWayHandler.cs" />
+    <Compile Include="JsonSyncReplyHandler.cs" />
+    <Compile Include="Soap11AsyncOneWayHandler.cs" />
+    <Compile Include="Support\JsonHandlerBase.cs" />
+    <Compile Include="Support\EndpointHandlerBase.cs" />
+    <Compile Include="Soap11SyncReplyHandler.cs" />
+    <Compile Include="EndpointHost.cs" />
+    <Compile Include="EndpointHostConfig.cs" />
+    <Compile Include="Support\SoapAsyncOneWayHandler.cs" />
+    <Compile Include="Support\SoapSyncReplyHandler.cs" />
+    <Compile Include="XmlAsyncOneWayHandler.cs" />
+    <Compile Include="Support\XmlHandlerBase.cs" />
+    <Compile Include="XmlRequestDto.cs" />
+    <Compile Include="XmlSyncReplyHandler.cs" />
+    <Compile Include="Metadata\IndexMetadataHandler.cs" />
+    <Compile Include="Metadata\Soap11MetadataHandler.cs" />
+    <Compile Include="Metadata\Soap12MetadataHandler.cs" />
+    <Compile Include="Metadata\BaseSoapMetadataHandler.cs" />
+    <Compile Include="Metadata\JsonMetadataHandler.cs" />
+    <Compile Include="Metadata\BaseMetadataHandler.cs" />
+    <Compile Include="Metadata\BaseWsdlPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Metadata\XmlMetadataHandler.cs" />
+    <Compile Include="Metadata\XsdGenerator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Metadata\Operations.cs" />
+    <Compile Include="Metadata\ServiceOperations.cs" />
+    <Compile Include="Support\Metadata\Controls\Soap12OperationControl.cs" />
+    <Compile Include="Support\Metadata\Controls\OperationControl.cs" />
+    <Compile Include="Support\Metadata\Controls\OperationsControl.cs" />
+    <Compile Include="Support\Metadata\Controls\Soap11OperationControl.cs" />
+    <Compile Include="Support\Metadata\Controls\IndexOperationsControl.cs" />
+    <Compile Include="Support\Metadata\XsdTypeNames.cs" />
+    <Compile Include="Support\Metadata\XsdTypes.cs" />
+    <Compile Include="Utils\XsdUtils.cs" />
+    <Compile Include="Support\Templates\ListTemplate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
+      <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
+      <Name>ServiceStack.ServiceClient.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
+      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
+      <Name>ServiceStack.ServiceModel</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
