@@ -25,7 +25,7 @@ namespace ServiceStack.Validation.Tests
 			[ValidEmail]
 			public string SimpleText { get { return "user"; } }
 
-			[ValidEmail] 
+			[ValidEmail]
 			public string EmailWithPlusChar { get { return "user+last@domain.com"; } }
 		}
 
@@ -33,8 +33,7 @@ namespace ServiceStack.Validation.Tests
 		[Test]
 		public void ValidEmailValidationTest()
 		{
-			var errorFieldNames = new[] {
-			                            	"EmailWithoutTld", "EmptyString", "SimpleText", "EmailWithPlusChar" }.ToList();
+			var errorFieldNames = new[] { "EmailWithoutTld", "EmptyString", "SimpleText", "EmailWithPlusChar" }.ToList();
 			var errors = ModelValidator.ValidateObject(new ExampleModel1()).Errors;
 			Assert.That(errors.Count, Is.EqualTo(errorFieldNames.Count));
 

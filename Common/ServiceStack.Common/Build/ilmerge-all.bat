@@ -1,5 +1,4 @@
 CALL ..\..\..\env-vars.bat
-
 
 PUSHD ..\..\ServiceStack.Interfaces\Build
 CALL ilmerge-all.bat 

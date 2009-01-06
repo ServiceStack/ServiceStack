@@ -14,11 +14,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:MetadataConfig.cs" caret="59" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:SoapMetadataConfig.cs" caret="77" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1074" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Operations.cs" caret="221" scrollPosition="0|0" />
-      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/f:ServiceModelFinderBase.cs" caret="282" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="7107" scrollPosition="0|219" />
       <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:ServiceOperationsTests.cs" caret="768" scrollPosition="0|7" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/f:WsdlMetadataHandlerBase.cs" caret="255" scrollPosition="0|6" />
@@ -44,13 +39,13 @@
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:NotNullValidationTests.cs" caret="60" scrollPosition="0|0" />
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:RequiredTextValidationTests.cs" caret="162" scrollPosition="0|19" />
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="0" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="774" scrollPosition="0|0" />
+      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oFileProviderManager.cs" caret="696" scrollPosition="0|9" />
+      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="661" scrollPosition="0|5" />
+      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="1481" scrollPosition="0|43" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap12OperationControl.cs" caret="296" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="397" scrollPosition="0|1" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:IndexMetadataHandler.cs" caret="215" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="250" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap12MetadataHandler.cs" caret="305" scrollPosition="0|0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XmlMetadataHandler.cs" caret="375" scrollPosition="0|0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:JsonMetadataHandler.cs" caret="383" scrollPosition="0|0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:OperationControl.cs" caret="4340" scrollPosition="0|153" />
@@ -75,7 +70,12 @@
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:NotNullValidationTests.cs" caret="60" scrollPosition="0|0" />
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:RequiredTextValidationTests.cs" caret="162" scrollPosition="0|19" />
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="80" scrollPosition="0|0" />
-      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="1333" scrollPosition="0|15" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="1299" scrollPosition="0|15" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="30" scrollPosition="0|0" />
+      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oFileProviderManager.cs" caret="688" scrollPosition="0|9" />
+      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="661" scrollPosition="0|5" />
+      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="1481" scrollPosition="0|43" />
+      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="897" scrollPosition="0|3" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

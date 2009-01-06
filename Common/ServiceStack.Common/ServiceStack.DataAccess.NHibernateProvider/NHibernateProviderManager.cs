@@ -21,7 +21,7 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			this.ConnectionString = configuration.Properties[ConnectionStringKey];
 		}
 
-		public IPersistenceProvider CreateProvider()
+		public IPersistenceProvider GetProvider()
 		{
 			return new NHibernatePersistenceProvider(this.SessionFactory);
 		}

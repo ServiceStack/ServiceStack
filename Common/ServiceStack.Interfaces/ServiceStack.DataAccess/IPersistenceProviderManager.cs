@@ -7,6 +7,6 @@ namespace ServiceStack.DataAccess
 	/// </summary>
 	public interface IPersistenceProviderManager : IDisposable
 	{
-		IPersistenceProvider CreateProvider();
+		IPersistenceProvider GetProvider();
 	}
 }

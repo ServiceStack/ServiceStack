@@ -17,7 +17,7 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		public void Init()
 		{
 			db4oProviderManager = new Db4oFileProviderManager(db4oDatabasePath);
-			provider = db4oProviderManager.CreateProvider();
+			provider = db4oProviderManager.GetProvider();
 		}
 
 

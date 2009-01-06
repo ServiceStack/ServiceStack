@@ -21,7 +21,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 		/// When accessing a db4o embedded database we should use the same instance.
 		/// </summary>
 		/// <returns></returns>
-		public IPersistenceProvider CreateProvider()
+		public IPersistenceProvider GetProvider()
 		{
 			if (this.provider == null)
 			{

@@ -42,9 +42,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{0722888A
 		Build\build.bat = Build\build.bat
 		Build\deploy.bat = Build\deploy.bat
 		Build\ilmerge-all.bat = Build\ilmerge-all.bat
-		ilmerge-providers.bat = ilmerge-providers.bat
-		Build\ServiceStack.dll = Build\ServiceStack.dll
-		Build\ServiceStack.Interfaces.dll = Build\ServiceStack.Interfaces.dll
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.NHibernateProvider", "ServiceStack.DataAccess.NHibernateProvider\ServiceStack.DataAccess.NHibernateProvider.csproj", "{480B3BA6-A20C-4626-8783-9865C109C83C}"
