@@ -40,8 +40,6 @@ namespace ServiceStack.Translators.Generator
 				var parser = new Parser(System.Environment.CommandLine, this);
 				parser.Parse();
 
-				//var modelAssemblyPath = parser["assembly"];
-				//var outDirPath = args[1];
 				var modelAssembly = Assembly.LoadFile(ModelAssemblyPath);
 
 				var modelAssemblyTypes = modelAssembly.GetTypes();

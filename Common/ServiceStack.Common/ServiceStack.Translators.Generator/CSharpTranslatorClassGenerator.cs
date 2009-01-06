@@ -32,8 +32,6 @@ namespace ServiceStack.Translators.Generator
 
 				var codeNamespace = new CodeNamespace(modelType.Namespace);
 
-				//generator.GenerateCodeFromCompileUnit(new CodeSnippetCompileUnit("using System;"), writer, options);
-
 				codeNamespace.Imports.Add(new CodeNamespaceImport("System"));
 				codeNamespace.Imports.Add(new CodeNamespaceImport("System.Collections.Generic"));
 
