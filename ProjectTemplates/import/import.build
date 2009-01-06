@@ -10,7 +10,7 @@
 	<property name="template.databaseName" value="DatabaseName"/>
 	<property name="template.modelName" value="ModelName"/>
 
-	<include buildfile="import.properties" />
+	<include buildfile="${import.properties}" />
 	
 	<target name="all">
 		<echo message="Importing from"/>
