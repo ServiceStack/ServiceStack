@@ -15,8 +15,8 @@ namespace ServiceStack.Translators.Generator.Tests
 		[Test]
 		public void Test()
 		{
-			TranslatorClassGenerator.Write(typeof(Customer), outPath + "Customer.generated.cs");
-			TranslatorClassGenerator.Write(typeof(Address), outPath + "Address.generated.cs");
+			CSharpTranslatorClassGenerator.Write(typeof(Customer), outPath + "Customer.generated.cs");
+			CSharpTranslatorClassGenerator.Write(typeof(Address), outPath + "Address.generated.cs");
 		}
 	}
 }

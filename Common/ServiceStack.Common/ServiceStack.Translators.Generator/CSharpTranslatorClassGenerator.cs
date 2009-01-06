@@ -1,7 +1,6 @@
 using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,9 +9,9 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.Translators.Generator
 {
-	public class TranslatorClassGenerator
+	public class CSharpTranslatorClassGenerator
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(TranslatorClassGenerator));
+		private static readonly ILog log = LogManager.GetLogger(typeof(CSharpTranslatorClassGenerator));
 
 		public static void Write(Type modelType, string pathName)
 		{

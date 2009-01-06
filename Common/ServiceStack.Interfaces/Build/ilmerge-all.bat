@@ -8,5 +8,6 @@ SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces
 SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces\ServiceStack.Logging\bin\Debug\ServiceStack.Logging.dll
 SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces\ServiceStack.LogicFacade\bin\Debug\ServiceStack.LogicFacade.dll
 SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces\ServiceStack.Service\bin\Debug\ServiceStack.Service.dll
+SET PROJ_LIBS=%PROJ_LIBS% C:\Projects\code.google\Common\ServiceStack.Interfaces\ServiceStack.Translators\bin\Debug\ServiceStack.Translators.dll
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.Interfaces.dll %PROJ_LIBS%

@@ -26,14 +26,14 @@
       <Item value="public" priority="0" />
       <Item value="IServiceModelFinder" priority="0" />
       <Item value="bool" priority="0" />
+      <Item value="Console" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Console">
+      <Item value="Write" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
   <RecentFiles>
     <RecentFiles>
-      <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Serialization/f:IStringSerializer.cs" caret="83" scrollPosition="0|0" />
-      <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Translator/f:ITranslator.cs" caret="142" scrollPosition="0|0" />
-      <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Command/f:ICommand.cs" caret="0" scrollPosition="0|0" />
-      <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Command/f:ICommandExec.cs" caret="0" scrollPosition="0|0" />
       <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Command/f:ICommandIEnumerable.cs" caret="0" scrollPosition="0|0" />
       <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Command/f:ICommandIList.cs" caret="0" scrollPosition="0|0" />
       <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Command/f:ICommandList.cs" caret="0" scrollPosition="0|0" />
@@ -43,7 +43,6 @@
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:InitOptions.cs" caret="0" scrollPosition="0|0" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="4938" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManagerFactory.cs" caret="0" scrollPosition="0|0" />
-      <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
       <File id="390B44FA-8DA6-489D-9DB5-1689D3088DFE/f:IFactoryProvider.cs" caret="290" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="0" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:ILogicFacade.cs" caret="0" scrollPosition="0|0" />
@@ -60,15 +59,13 @@
       <File id="3F0B9390-3A04-40BF-923F-4BF6D2DB81C9/f:IOneWayClient.cs" caret="0" scrollPosition="0|0" />
       <File id="3F0B9390-3A04-40BF-923F-4BF6D2DB81C9/f:IAsyncReplyClient.cs" caret="0" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManager.cs" caret="159" scrollPosition="0|0" />
+      <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:DebugLogFactory.cs" caret="0" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:DebugLogger.cs" caret="0" scrollPosition="0|108" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogger.cs" caret="1483" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogFactory.cs" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="346" scrollPosition="0|0" />
-      <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="1058" scrollPosition="0|0" />
-      <File id="390B44FA-8DA6-489D-9DB5-1689D3088DFE/f:IResourceManager.cs" caret="177" scrollPosition="0|0" />
-      <File id="3F0B9390-3A04-40BF-923F-4BF6D2DB81C9/f:IAsyncReplyClient.cs" caret="170" scrollPosition="0|0" />
-      <File id="390B44FA-8DA6-489D-9DB5-1689D3088DFE/f:IFactoryProvider.cs" caret="143" scrollPosition="0|0" />
-      <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="6217" scrollPosition="0|87" />
-      <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="799" scrollPosition="0|3" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="1100" scrollPosition="0|3" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="1439" scrollPosition="0|15" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="2172" scrollPosition="0|21" />
@@ -92,6 +89,13 @@
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IXmlRequest.cs" caret="97" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IServiceModelFinder.cs" caret="190" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManager.cs" caret="235" scrollPosition="0|0" />
+      <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="1200" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogger.cs" caret="232" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogger.cs" caret="656" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogger.cs" caret="894" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogger.cs" caret="1489" scrollPosition="0|36" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogFactory.cs" caret="376" scrollPosition="0|0" />
+      <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogFactory.cs" caret="490" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
