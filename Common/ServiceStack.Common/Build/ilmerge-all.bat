@@ -5,6 +5,7 @@ CALL ilmerge-all.bat
 POPD
 
 COPY ..\..\ServiceStack.Interfaces\Build\ServiceStack.Interfaces.dll .
+COPY ..\ServiceStack.Translators.Generator\bin\Debug\ServiceStack.Translators.Generator.exe .
 
 SET PROJ_LIBS=
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Common\bin\Debug\ServiceStack.Common.dll
@@ -19,10 +20,8 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\Debug\Servic
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\Debug\ServiceStack.DataAccess.NHibernateProvider.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.Db4oProvider\bin\Debug\ServiceStack.DataAccess.Db4oProvider.dll
 
-REM    Include Adapters and 3rd party dll's
+REM Include Adapters to popular 3rd party dll's
 SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\ServiceStack.Logging.Log4Net.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\Enyim.Caching.dll
-
-REM SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\log4net.dll
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%

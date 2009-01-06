@@ -1,39 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{E74F7B37-D01A-4324-B163-03F91717DA2F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E74F7B37-D01A-4324-B163-03F91717DA2F}"
 	ProjectSection(SolutionItems) = preProject
-		Lib\_get-latest-libs.bat = Lib\_get-latest-libs.bat
-		Lib\ActiveMQ.dll = Lib\ActiveMQ.dll
-		Lib\log4net.dll = Lib\log4net.dll
-		Lib\Moq.dll = Lib\Moq.dll
-		Lib\Moq.pdb = Lib\Moq.pdb
-		Lib\Moq.xml = Lib\Moq.xml
-		Lib\NAnt.Core.dll = Lib\NAnt.Core.dll
-		Lib\NMS.dll = Lib\NMS.dll
-		Lib\nunit.framework.dll = Lib\nunit.framework.dll
-		Lib\nunit.framework.extensions.dll = Lib\nunit.framework.extensions.dll
-		Lib\nunit.framework.xml = Lib\nunit.framework.xml
-		Lib\ServiceStack.Logging.dll = Lib\ServiceStack.Logging.dll
-		Lib\ServiceStack.Logging.Log4Net.dll = Lib\ServiceStack.Logging.Log4Net.dll
-		Lib\ServiceStack.Logging.pdb = Lib\ServiceStack.Logging.pdb
-		Lib\ServiceStack.Messaging.ActiveMq.dll = Lib\ServiceStack.Messaging.ActiveMq.dll
-		Lib\ServiceStack.Messaging.ActiveMq.dll.config = Lib\ServiceStack.Messaging.ActiveMq.dll.config
-		Lib\ServiceStack.Messaging.ActiveMq.pdb = Lib\ServiceStack.Messaging.ActiveMq.pdb
-		Lib\ServiceStack.Messaging.dll = Lib\ServiceStack.Messaging.dll
-		Lib\ServiceStack.Messaging.pdb = Lib\ServiceStack.Messaging.pdb
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NHibernate", "NHibernate", "{87F3AC82-4217-4B42-9223-5DD6401E2492}"
-	ProjectSection(SolutionItems) = preProject
-		Lib\NHibernate\Castle.Core.dll = Lib\NHibernate\Castle.Core.dll
-		Lib\NHibernate\Castle.Core.xml = Lib\NHibernate\Castle.Core.xml
-		Lib\NHibernate\Castle.DynamicProxy.license.txt = Lib\NHibernate\Castle.DynamicProxy.license.txt
-		Lib\NHibernate\Castle.DynamicProxy2.dll = Lib\NHibernate\Castle.DynamicProxy2.dll
-		Lib\NHibernate\Castle.DynamicProxy2.xml = Lib\NHibernate\Castle.DynamicProxy2.xml
-		Lib\NHibernate\Iesi.Collections.dll = Lib\NHibernate\Iesi.Collections.dll
-		Lib\NHibernate\Iesi.Collections.xml = Lib\NHibernate\Iesi.Collections.xml
-		Lib\NHibernate\NHibernate.dll = Lib\NHibernate\NHibernate.dll
-		Lib\NHibernate\NHibernate.xml = Lib\NHibernate\NHibernate.xml
+		Lib\get-latest-libs.bat = Lib\get-latest-libs.bat
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{0722888A-ECD1-44A8-B88E-5F286E0BAEFD}"
@@ -42,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{0722888A
 		Build\build.bat = Build\build.bat
 		Build\deploy.bat = Build\deploy.bat
 		Build\ilmerge-all.bat = Build\ilmerge-all.bat
+		Build\ServiceStack.dll = Build\ServiceStack.dll
+		Build\ServiceStack.Interfaces.dll = Build\ServiceStack.Interfaces.dll
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.NHibernateProvider", "ServiceStack.DataAccess.NHibernateProvider\ServiceStack.DataAccess.NHibernateProvider.csproj", "{480B3BA6-A20C-4626-8783-9865C109C83C}"
@@ -80,6 +51,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.Endpoints.Tests", "ServiceStack.WebHost.Endpoints.Tests\ServiceStack.WebHost.Endpoints.Tests.csproj", "{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Validation.Tests", "ServiceStack.Validation.Tests\ServiceStack.Validation.Tests.csproj", "{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Translators.Generator", "ServiceStack.Translators.Generator\ServiceStack.Translators.Generator.csproj", "{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Translators.Generator.Tests", "ServiceStack.Translators.Generator.Tests\ServiceStack.Translators.Generator.Tests.csproj", "{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -151,11 +126,16 @@ Global
 		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{87F3AC82-4217-4B42-9223-5DD6401E2492} = {E74F7B37-D01A-4324-B163-03F91717DA2F}
 	EndGlobalSection
 EndGlobal
