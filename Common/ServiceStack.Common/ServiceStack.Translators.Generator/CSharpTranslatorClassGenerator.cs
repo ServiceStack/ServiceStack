@@ -93,7 +93,7 @@ namespace ServiceStack.Translators.Generator
 			var method = new CodeMemberMethod {
 				Name = methodName,
 				ReturnType = new CodeTypeReference(modelType.Name),
-				Attributes = MemberAttributes.Public,
+				Attributes = MemberAttributes.Public | MemberAttributes.Static,
 			};
 			method.Parameters.Add(new CodeParameterDeclarationExpression(type, "from"));
 
@@ -108,7 +108,7 @@ namespace ServiceStack.Translators.Generator
 				var isModelAlso = property.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
 				if (isModelAlso)
 				{
-					method.Statements.Add(new CodeSnippetStatement(string.Format("\t{0}{1} = new {2}().Parse(from.{1}),", indent, property.Name, property.PropertyType.Name)));
+					method.Statements.Add(new CodeSnippetStatement(string.Format("\t{0}{1} = {2}.Parse(from.{1}),", indent, property.Name, property.PropertyType.Name)));
 				}
 				else
 				{
@@ -136,7 +136,7 @@ namespace ServiceStack.Translators.Generator
 			method.Statements.Add(new CodeSnippetStatement(indent + "var to = new List<" + modelType.Name + ">();"));
 			method.Statements.Add(new CodeSnippetStatement(indent + "foreach (var item in from)"));
 			method.Statements.Add(new CodeSnippetStatement(indent + "{"));
-			method.Statements.Add(new CodeSnippetStatement(string.Format("\t{0}to.Add(new {1}().Parse(item));", indent, modelType.Name)));
+			method.Statements.Add(new CodeSnippetStatement(string.Format("\t{0}to.Add(Parse(item));", indent, modelType.Name)));
 			method.Statements.Add(new CodeSnippetStatement(indent + "}"));
 
 			method.Statements.Add(new CodeSnippetStatement(indent + "return to;"));

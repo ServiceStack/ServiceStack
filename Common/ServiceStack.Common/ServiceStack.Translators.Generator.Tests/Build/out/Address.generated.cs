@@ -16,7 +16,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return model;
         }
         
-        public virtual Address Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
+        public static Address Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
         {
 			var to = new Address {
 				Line1 = from.Line1,
@@ -30,7 +30,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			var to = new List<Address>();
 			foreach (var item in from)
 			{
-				to.Add(new Address().Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
         }

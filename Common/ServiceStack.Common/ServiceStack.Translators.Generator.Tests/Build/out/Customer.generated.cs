@@ -17,12 +17,12 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return model;
         }
         
-        public virtual Customer Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Customer from)
+        public static Customer Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Customer from)
         {
 			var to = new Customer {
 				Id = from.Id,
 				Name = from.Name,
-				BillingAddress = new Address().Parse(from.BillingAddress),
+				BillingAddress = Address.Parse(from.BillingAddress),
 			};
 			return to;
         }
@@ -32,7 +32,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			var to = new List<Customer>();
 			foreach (var item in from)
 			{
-				to.Add(new Customer().Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
         }
