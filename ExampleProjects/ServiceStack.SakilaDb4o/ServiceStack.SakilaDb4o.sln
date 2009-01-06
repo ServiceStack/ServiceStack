@@ -2,7 +2,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{B3740A7C-77BF-4DAB-8A08-116B797C8373}"
 	ProjectSection(SolutionItems) = preProject
-		Lib\_get-latest-libs.bat = Lib\_get-latest-libs.bat
+		Lib\genetate-translators.bat = Lib\genetate-translators.bat
+		Lib\get-latest-libs.bat = Lib\get-latest-libs.bat
 		..\Lib\ServiceStack.dll = ..\Lib\ServiceStack.dll
 		..\Lib\ServiceStack.Interfaces.dll = ..\Lib\ServiceStack.Interfaces.dll
 	EndProjectSection
@@ -21,8 +22,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.DomainModel", "..\Sakila.DomainModel\Sakila.DomainModel.csproj", "{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModel", "..\Sakila.ServiceModel\Sakila.ServiceModel.csproj", "{07F5006E-3F8E-4201-9A0D-1BD912FEC028}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakila.ServiceModelTranslators", "..\Sakila.ServiceModelTranslators\Sakila.ServiceModelTranslators.csproj", "{0A8965C3-5554-4BB1-B276-FA04A10C407F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SakilaDb4o.Iis6Host.WebService", "ServiceStack.SakilaDb4o.Iis6Host.WebService\ServiceStack.SakilaDb4o.Iis6Host.WebService.csproj", "{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}"
 EndProject
@@ -54,10 +53,6 @@ Global
 		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0A8965C3-5554-4BB1-B276-FA04A10C407F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -67,7 +62,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD} = {2DACC4AD-9405-49C4-BBFD-C364B07DCB63}
 		{1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19} = {2DACC4AD-9405-49C4-BBFD-C364B07DCB63}
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD} = {2DACC4AD-9405-49C4-BBFD-C364B07DCB63}
 	EndGlobalSection
 EndGlobal

@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Sakila.ServiceModel.Version100.Types;
 
-namespace Sakila.ServiceModel.Version100.Operations.SakilaService
+namespace Sakila.ServiceModel.Version100.Operations
 {
 	[DataContract(Namespace = "http://schemas.servicestack.net/types/")]
-	public class GetAllCustomersResponse : IExtensibleDataObject
+	public class GetCustomersResponse : IExtensibleDataObject
 	{
-		public GetAllCustomersResponse()
+		public GetCustomersResponse()
 		{
 			Version = 100;
 			ResponseStatus = new ResponseStatus();

@@ -25,7 +25,7 @@ namespace ServiceStack.SakilaDb4o.Tests.Support
 		protected void RegisterPersistenceProvider(IPersistenceProvider provider)
 		{
 			var manager = new Mock<IPersistenceProviderManager>();
-			manager.Expect(m => m.CreateProvider()).Returns(provider);
+			manager.Expect(m => m.GetProvider()).Returns(provider);
 			this.AppContext.Factory.Register(manager.Object);
 		}
 

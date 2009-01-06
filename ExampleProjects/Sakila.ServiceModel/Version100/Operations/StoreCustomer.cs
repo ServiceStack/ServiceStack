@@ -1,15 +1,20 @@
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Sakila.ServiceModel.Version100.Types;
 
-namespace Sakila.ServiceModel.Version100.Operations.SakilaService
+namespace Sakila.ServiceModel.Version100.Operations
 {
 	[DataContract(Namespace = "http://schemas.servicestack.net/types/")]
-	public class GetAllCustomers : IExtensibleDataObject
+	public class StoreCustomer : IExtensibleDataObject
 	{
-		public GetAllCustomers()
+		public StoreCustomer()
 		{
 			Version = 100;
 		}
+
+		[DataMember]
+		public Customer Customer { get; set; }
+
 
 		[DataMember]
 		public int Version { get; set; }

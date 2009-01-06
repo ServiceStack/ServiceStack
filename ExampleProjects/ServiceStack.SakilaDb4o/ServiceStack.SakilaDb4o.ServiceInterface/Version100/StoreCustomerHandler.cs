@@ -1,5 +1,4 @@
-using Sakila.ServiceModel.Version100.Operations.SakilaDb4oService;
-using Sakila.ServiceModelTranslators.Version100.ServiceToDomain;
+using Sakila.ServiceModel.Version100.Operations;
 using ServiceStack.DataAccess;
 using ServiceStack.LogicFacade;
 using ServiceStack.ServiceInterface;
@@ -13,9 +12,9 @@ namespace ServiceStack.SakilaDb4o.ServiceInterface.Version100
 		public object Execute(IOperationContext context)
 		{
 			var request = context.Request.Get<StoreCustomer>();
-			var provider = context.Application.Get<IPersistenceProviderManager>().CreateProvider();
+			var provider = context.Application.Get<IPersistenceProviderManager>().GetProvider();
 
-			var customer = CustomerFromDtoTranslator.Instance.Parse(request.Customer);
+			var customer = request.Customer.ToModel();
 
 			var response = new StoreCustomerResponse {
 				ResponseStatus = ResponseStatusTranslator.Instance.Parse(customer.Validate())

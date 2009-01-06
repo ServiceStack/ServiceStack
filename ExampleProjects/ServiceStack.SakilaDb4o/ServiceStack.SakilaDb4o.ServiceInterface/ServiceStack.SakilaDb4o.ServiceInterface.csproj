@@ -70,10 +70,6 @@
       <Project>{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}</Project>
       <Name>Sakila.DomainModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Sakila.ServiceModelTranslators\Sakila.ServiceModelTranslators.csproj">
-      <Project>{0A8965C3-5554-4BB1-B276-FA04A10C407F}</Project>
-      <Name>Sakila.ServiceModelTranslators</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Sakila.ServiceModel\Sakila.ServiceModel.csproj">
       <Project>{07F5006E-3F8E-4201-9A0D-1BD912FEC028}</Project>
       <Name>Sakila.ServiceModel</Name>

@@ -1,27 +1,23 @@
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Sakila.ServiceModel.Version100.Types;
 
-namespace Sakila.ServiceModel.Version100.Operations.SakilaService
+namespace Sakila.ServiceModel.Version100.Operations
 {
 	[DataContract(Namespace = "http://schemas.servicestack.net/types/")]
-	public class GetFilmsResponse : IExtensibleDataObject
+	public class GetCustomers : IExtensibleDataObject
 	{
-		public GetFilmsResponse()
+		public GetCustomers()
 		{
+			CustomerIds = new ArrayOfIntId();
 			Version = 100;
-			ResponseStatus = new ResponseStatus();
-			Films = new List<Film>();
 		}
 
 		[DataMember]
-		public List<Film> Films { get; set; }
+		public ArrayOfIntId CustomerIds { get; set; }
 
 
 		[DataMember]
 		public int Version { get; set; }
-		[DataMember]
-		public ResponseStatus ResponseStatus { get; set; }
 		[DataMember]
 		public Properties Properties { get; set; }
 		public ExtensionDataObject ExtensionData { get; set; }

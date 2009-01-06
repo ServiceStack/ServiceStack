@@ -1,7 +1,7 @@
 using Moq;
 using NUnit.Framework;
 using Sakila.DomainModel;
-using Sakila.ServiceModel.Version100.Operations.SakilaDb4oService;
+using Sakila.ServiceModel.Version100.Operations;
 using ServiceStack.DataAccess;
 using ServiceStack.SakilaDb4o.ServiceInterface.Version100;
 using ServiceStack.SakilaDb4o.Tests.Support;

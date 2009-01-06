@@ -1,9 +1,11 @@
 using System.Runtime.Serialization;
+using ServiceStack.Translators;
 
 namespace Sakila.ServiceModel.Version100.Types
 {
+	[TranslateModel(typeof(DomainModel.Address))]
 	[DataContract(Namespace = "http://schemas.servicestack.net/types/")]
-	public class Address 
+	public partial class Address 
 	{
 		[DataMember]
 		public int Id { get; set; }

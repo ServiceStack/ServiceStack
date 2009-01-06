@@ -1,6 +1,5 @@
-using Sakila.DomainModel;
-using Sakila.ServiceModel.Version100.Operations.SakilaDb4oService;
-using Sakila.ServiceModelTranslators.Version100.DomainToService;
+using Sakila.ServiceModel.Version100.Operations;
+using Sakila.ServiceModel.Version100.Types;
 using ServiceStack.Common.Extensions;
 using ServiceStack.DataAccess;
 using ServiceStack.LogicFacade;
@@ -12,12 +11,12 @@ namespace ServiceStack.SakilaDb4o.ServiceInterface.Version100
 	{
 		public object Execute(IOperationContext context)
 		{
-			var provider = context.Application.Get<IPersistenceProviderManager>().CreateProvider();
+			var provider = context.Application.Get<IPersistenceProviderManager>().GetProvider();
 
-			var results = provider.GetAll<Customer>();
+			var results = provider.GetAll<Sakila.DomainModel.Customer>();
 
 			return new GetAllCustomersResponse {
-				Customers = CustomerToDtoTranslator.Instance.ParseAll(results)
+				Customers = Customer.ParseAll(results)
 			};
 		}
 	}
