@@ -20,14 +20,14 @@ namespace Sakila.ServiceModel.Version100.Types
 			return model;
         }
         
-        public virtual Address Parse(Sakila.DomainModel.Address from)
+        public static Address Parse(Sakila.DomainModel.Address from)
         {
 			var to = new Address {
 				Id = from.Id,
 				Line1 = from.Line1,
 				Line2 = from.Line2,
 				Town = from.Town,
-				City = new City().Parse(from.City),
+				City = City.Parse(from.City),
 				PostCode = from.PostCode,
 			};
 			return to;
@@ -38,7 +38,7 @@ namespace Sakila.ServiceModel.Version100.Types
 			var to = new List<Address>();
 			foreach (var item in from)
 			{
-				to.Add(new Address().Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
         }

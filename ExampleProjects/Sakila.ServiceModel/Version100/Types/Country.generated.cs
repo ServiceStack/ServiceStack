@@ -16,7 +16,7 @@ namespace Sakila.ServiceModel.Version100.Types
 			return model;
         }
         
-        public virtual Country Parse(Sakila.DomainModel.Country from)
+        public static Country Parse(Sakila.DomainModel.Country from)
         {
 			var to = new Country {
 				Id = from.Id,
@@ -30,7 +30,7 @@ namespace Sakila.ServiceModel.Version100.Types
 			var to = new List<Country>();
 			foreach (var item in from)
 			{
-				to.Add(new Country().Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
         }

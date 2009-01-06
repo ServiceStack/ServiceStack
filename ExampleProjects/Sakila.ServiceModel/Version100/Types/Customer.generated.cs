@@ -20,7 +20,7 @@ namespace Sakila.ServiceModel.Version100.Types
 			return model;
         }
         
-        public virtual Customer Parse(Sakila.DomainModel.Customer from)
+        public static Customer Parse(Sakila.DomainModel.Customer from)
         {
 			var to = new Customer {
 				Id = from.Id,
@@ -28,7 +28,7 @@ namespace Sakila.ServiceModel.Version100.Types
 				FirstName = from.FirstName,
 				LastName = from.LastName,
 				Email = from.Email,
-				Address = new Address().Parse(from.Address),
+				Address = Address.Parse(from.Address),
 			};
 			return to;
         }
@@ -38,7 +38,7 @@ namespace Sakila.ServiceModel.Version100.Types
 			var to = new List<Customer>();
 			foreach (var item in from)
 			{
-				to.Add(new Customer().Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
         }

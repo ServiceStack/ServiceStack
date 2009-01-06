@@ -17,12 +17,12 @@ namespace Sakila.ServiceModel.Version100.Types
 			return model;
         }
         
-        public virtual City Parse(Sakila.DomainModel.City from)
+        public static City Parse(Sakila.DomainModel.City from)
         {
 			var to = new City {
 				Id = from.Id,
 				Name = from.Name,
-				Country = new Country().Parse(from.Country),
+				Country = Country.Parse(from.Country),
 			};
 			return to;
         }
@@ -32,7 +32,7 @@ namespace Sakila.ServiceModel.Version100.Types
 			var to = new List<City>();
 			foreach (var item in from)
 			{
-				to.Add(new City().Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
         }
