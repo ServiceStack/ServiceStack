@@ -1,38 +1,42 @@
 namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 {
-    using System;
-    using System.Collections.Generic;
-    
-    
-    public partial class Address
-    {
-        
-        public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Address ToModel()
-        {
-			var model = new ServiceStack.Translators.Generator.Tests.Support.Model.Address {
-				Line1 = this.Line1,
-				Line2 = this.Line2,
-			};
+	using System;
+	using System.Collections.Generic;
+	
+	
+	public partial class Address
+	{
+		
+		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Address ToModel()
+		{
+			return this.UpdateModel(new ServiceStack.Translators.Generator.Tests.Support.Model.Address());
+		}
+		
+		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Address UpdateModel(ServiceStack.Translators.Generator.Tests.Support.Model.Address model)
+		{
+			model.Line1 = Line1;
+			model.Line2 = Line2;
 			return model;
-        }
-        
-        public static Address Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
-        {
-			var to = new Address {
-				Line1 = from.Line1,
-				Line2 = from.Line2,
-			};
+		}
+		
+		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Address Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
+		{
+			ServiceStack.Translators.Generator.Tests.Support.DataContract.Address to = new ServiceStack.Translators.Generator.Tests.Support.DataContract.Address();
+			to.Line1 = from.Line1;
+			to.Line2 = from.Line2;
 			return to;
-        }
-        
-        public static List<Address> ParseAll(IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Address> from)
-        {
-			var to = new List<Address>();
-			foreach (var item in from)
+		}
+		
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> ParseAll(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Address> from)
+		{
+			System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> to = new System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address>();
+			for (System.Collections.Generic.IEnumerator<ServiceStack.Translators.Generator.Tests.Support.Model.Address> iter = from.GetEnumerator(); iter.MoveNext(); 
+			)
 			{
-				to.Add(Parse(item));
+				ServiceStack.Translators.Generator.Tests.Support.Model.Address item = iter.Current;
+				to.Add(ServiceStack.Translators.Generator.Tests.Support.DataContract.Address.Parse(item));
 			}
 			return to;
-        }
-    }
+		}
+	}
 }

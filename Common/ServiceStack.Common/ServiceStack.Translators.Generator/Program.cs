@@ -66,7 +66,8 @@ namespace ServiceStack.Translators.Generator
 					}
 
 					log.InfoFormat("Creating file '{0}'...", outPath);
-					CSharpTranslatorClassGenerator.Write(type, outPath, attr);
+					var generator = new TranslatorClassGenerator(CodeLang.CSharp);
+					generator.Write(type, outPath, attr);
 				}
 
 			}

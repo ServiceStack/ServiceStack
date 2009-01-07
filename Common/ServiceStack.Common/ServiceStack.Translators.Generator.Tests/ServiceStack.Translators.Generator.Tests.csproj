@@ -55,8 +55,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Build\out\Address.generated.cs" />
-    <Compile Include="Build\out\Customer.generated.cs" />
+    <Compile Include="Build\out\Address.generated.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Build\out\Customer.generated.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Support\DataContract\Address.cs" />
     <Compile Include="Support\Model\Address.cs" />
     <Compile Include="Support\DataContract\Customer.cs" />
@@ -69,6 +73,18 @@
       <Project>{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}</Project>
       <Name>ServiceStack.Translators.Generator</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Build\out\Address.generated.js" />
+    <Content Include="Build\out\Address.generated.vb" />
+    <Content Include="Build\out\Customer.generated.js" />
+    <Content Include="Build\out\Customer.generated.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Build\out\Address.generated.boo" />
+    <None Include="Build\out\Address.generated.fs" />
+    <None Include="Build\out\Customer.generated.boo" />
+    <None Include="Build\out\Customer.generated.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -31,6 +31,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Accessibility" />
+    <Reference Include="Boo.Lang, Version=2.0.0.0, Culture=neutral, PublicKeyToken=32c39770e9a21a67, processorArchitecture=MSIL" />
+    <Reference Include="Boo.Lang.CodeDom, Version=2.0.0.0, Culture=neutral, PublicKeyToken=32c39770e9a21a67, processorArchitecture=MSIL" />
+    <Reference Include="Boo.Lang.Compiler, Version=2.0.0.0, Culture=neutral, PublicKeyToken=32c39770e9a21a67, processorArchitecture=MSIL" />
+    <Reference Include="Boo.Lang.Parser, Version=2.0.0.0, Culture=neutral, PublicKeyToken=32c39770e9a21a67, processorArchitecture=MSIL" />
+    <Reference Include="FSharp.Compiler.CodeDom, Version=1.9.6.2, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.JScript" />
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Microsoft.VisualC" />
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
@@ -51,10 +60,21 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CodeDomUtils.cs" />
     <Compile Include="Support\CommandLineSwitchAttribute.cs" />
     <Compile Include="Support\CommandLineAliasAttribute.cs" />
     <Compile Include="Support\Parser.cs" />
-    <Compile Include="CSharpTranslatorClassGenerator.cs" />
+    <Compile Include="TranslatorClassGenerator.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Lib\Boo.Lang.CodeDom.dll" />
+    <Content Include="Lib\Boo.Lang.Compiler.dll" />
+    <Content Include="Lib\Boo.Lang.dll" />
+    <Content Include="Lib\Boo.Lang.Parser.dll" />
+    <Content Include="Lib\FSharp.Compiler.CodeDom.dll" />
+    <Content Include="Lib\FSharp.Core.dll" />
+    <Content Include="Lib\IronPython.dll" />
+    <Content Include="Lib\IronPython.Modules.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
