@@ -21,9 +21,6 @@
       <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="1481" scrollPosition="0|43" />
       <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="843" scrollPosition="0|0" />
       <File id="E74F7B37-D01A-4324-B163-03F91717DA2F/f:get-latest-libs.bat" caret="142" scrollPosition="0|0" />
-      <File id="d:Miscellaneous Files/f:Application.cs" caret="5991" scrollPosition="0|111" />
-      <File id="d:Miscellaneous Files/f:Parser.cs" caret="14980" scrollPosition="0|107" />
-      <File id="d:Miscellaneous Files/f:CommandLineSwitchAttribute.cs" caret="1907" scrollPosition="0|6" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/d:Support/f:Parser.cs" caret="364" scrollPosition="0|0" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/d:Support/f:CommandLineAliasAttribute.cs" caret="0" scrollPosition="0|0" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/d:Support/f:CommandLineSwitchAttribute.cs" caret="432" scrollPosition="0|0" />
@@ -37,13 +34,13 @@
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Address.generated.js" caret="0" scrollPosition="0|0" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Address.generated.vb" caret="0" scrollPosition="0|12" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Customer.generated.cs" caret="2057" scrollPosition="0|12" />
-      <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="642" scrollPosition="0|0" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Address.generated.fs" caret="2134" scrollPosition="0|9" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Address.generated.boo" caret="936" scrollPosition="0|0" />
-      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="1388" scrollPosition="0|0" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:Program.cs" caret="2054" scrollPosition="0|48" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="472" scrollPosition="0|8" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="508" scrollPosition="0|14" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
+      <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="993" scrollPosition="0|3" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="5423" scrollPosition="0|132" />
