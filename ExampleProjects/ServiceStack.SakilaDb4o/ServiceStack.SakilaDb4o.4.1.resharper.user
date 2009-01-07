@@ -27,7 +27,6 @@
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Customer.cs" caret="163" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Country.cs" caret="166" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Country.generated.cs" caret="322" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Customer.generated.cs" caret="103" scrollPosition="0|0" />
       <File id="E6170756-E72D-4A0B-AF2F-9DFBE83F5C48/f:Address.cs" caret="258" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.cs" caret="0" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:City.generated.cs" caret="890" scrollPosition="0|12" />
@@ -42,13 +41,10 @@
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Film.cs" caret="0" scrollPosition="0|21" />
       <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="144" scrollPosition="0|0" />
       <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="95" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="0" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/f:genetate-translators.bat" caret="98" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="1653" scrollPosition="0|12" />
     </RecentFiles>
     <RecentEdits>
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="705" scrollPosition="0|17" />
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="2822" scrollPosition="0|3" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="144" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetAllCustomers.cs" caret="84" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetAllCustomersResponse.cs" caret="119" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetCustomers.cs" caret="84" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetCustomersResponse.cs" caret="119" scrollPosition="0|0" />
@@ -69,12 +65,16 @@
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="130" scrollPosition="0|0" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="93" scrollPosition="0|0" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerHandler.cs" caret="48" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="1067" scrollPosition="0|3" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="754" scrollPosition="0|0" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="659" scrollPosition="0|0" />
       <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="144" scrollPosition="0|0" />
       <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="394" scrollPosition="0|0" />
       <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="95" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="1653" scrollPosition="0|7" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="1653" scrollPosition="0|12" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/f:genetate-translators.bat" caret="102" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/f:genetate-translators.bat" caret="401" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/f:genetate-translators.bat" caret="98" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -89,7 +89,7 @@
     <ItemStatistics item="Default">
       <Item value="Config" priority="0" />
       <Item value="Customer" priority="1" />
-      <Item value="new" priority="9" />
+      <Item value="new" priority="10" />
       <Item value="this" priority="1" />
       <Item value="ValidationResult" priority="0" />
       <Item value="var" priority="5" />
@@ -123,6 +123,12 @@
       <Item value="x" priority="0" />
       <Item value="CustomerToDtoTranslator" priority="0" />
       <Item value="results" priority="0" />
+      <Item value="from" priority="0" />
+      <Item value="while" priority="0" />
+      <Item value="iter" priority="1" />
+      <Item value="to" priority="0" />
+      <Item value="Address" priority="0" />
+      <Item value="item" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.SakilaDb4o.Host.WebService.AppHost+Config">
       <Item value="ConnectionString" priority="0" />
@@ -197,6 +203,17 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
       <Item value="ConvertAll" priority="0" />
+      <Item value="Add" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.IEnumerable`1">
+      <Item value="GetEnumerator" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.IEnumerator`1">
+      <Item value="MoveNext" priority="0" />
+      <Item value="Current" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Sakila.ServiceModel.Version100.Types.Address">
+      <Item value="Parse" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>
