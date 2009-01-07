@@ -47,13 +47,13 @@
     </RecentFiles>
     <RecentEdits>
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="5423" scrollPosition="0|132" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="11475" scrollPosition="0|272" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="11652" scrollPosition="0|272" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="5199" scrollPosition="0|129" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="4481" scrollPosition="0|105" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="5450" scrollPosition="0|138" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="6190" scrollPosition="0|155" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="6477" scrollPosition="0|152" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="8412" scrollPosition="0|209" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="5627" scrollPosition="0|138" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="6367" scrollPosition="0|155" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="6654" scrollPosition="0|152" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="8589" scrollPosition="0|209" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="4229" scrollPosition="0|99" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="445" scrollPosition="0|2" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="1273" scrollPosition="0|8" />
@@ -63,8 +63,8 @@
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="1545" scrollPosition="0|18" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="148" scrollPosition="0|0" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="1605" scrollPosition="0|0" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="750" scrollPosition="0|14" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="997" scrollPosition="0|14" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="667" scrollPosition="0|11" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="1226" scrollPosition="0|14" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -90,7 +90,7 @@
       <Item value="new" priority="121" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
       <Item value="public" priority="79" />
-      <Item value="string" priority="73" />
+      <Item value="string" priority="74" />
       <Item value="return" priority="88" />
       <Item value="object" priority="35" />
       <Item value="if" priority="85" />
@@ -624,7 +624,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.String">
       <Item value="IsNullOrEmpty" priority="2" />
-      <Item value="Format" priority="7" />
+      <Item value="Format" priority="8" />
       <Item value="Join" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.ServiceInterface.OperationContext">
