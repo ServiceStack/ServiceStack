@@ -26,6 +26,7 @@ namespace ServiceStack.Translators.Generator
 	{
 		public static ICodeGenerator CreateGenerator(CodeLang langType)
 		{
+			//Need to comment out the languages that require external dependencies otherwise the program can't run without them
 			switch (langType)
 			{
 				case CodeLang.CSharp:
@@ -39,7 +40,7 @@ namespace ServiceStack.Translators.Generator
 				//case CodeLang.Boo:
 				//    return new BooCodeProvider().CreateGenerator();
 				default:
-					throw new NotSupportedException();
+					throw new NotSupportedException(string.Format("{0} is not currently supported", langType));
 			}
 		}
 
