@@ -2,4 +2,8 @@
   <PropertyGroup>
     <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <StartArguments>/f /assembly:C:\Projects\PoToPe\trunk\desktop\prototypes\Utopia.UserCatalogue\UserCatalogue.ServiceModel\bin\Debug\Utopia.ServiceModel.dll /out:C:\Projects\PoToPe\trunk\desktop\prototypes\Utopia.UserCatalogue\UserCatalogue.ServiceModel\Version100\Types</StartArguments>
+    <StartWorkingDirectory>C:\Projects\PoToPe\trunk\desktop\prototypes\Utopia.UserCatalogue\UserCatalogue.ServiceModel\bin\Debug\</StartWorkingDirectory>
+  </PropertyGroup>
 </Project>

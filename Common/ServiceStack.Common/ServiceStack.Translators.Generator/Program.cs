@@ -74,6 +74,7 @@ namespace ServiceStack.Translators.Generator
 			catch (Exception ex)
 			{
 				Console.Error.Write(ex.GetType() + ": " + ex.Message + "\n" + ex.StackTrace);
+				throw;
 			}
 		}
 	}

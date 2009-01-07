@@ -3,9 +3,7 @@ using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
-using Boo.Lang.CodeDom;
 using Microsoft.CSharp;
-using Microsoft.FSharp.Compiler.CodeDom;
 using Microsoft.JScript;
 using Microsoft.VisualBasic;
 
@@ -153,6 +151,12 @@ namespace ServiceStack.Translators.Generator
 				new CodePropertyReferenceExpression(new CodeVariableReferenceExpression(property.Name), assignTo), assignFrom);
 		}
 
+		public static CodeAssignStatement Assign(this CodeParameterDeclarationExpression property, CodePropertyReferenceExpression assignTo, CodeExpression assignFrom)
+		{
+			return new CodeAssignStatement(
+				new CodePropertyReferenceExpression(new CodeVariableReferenceExpression(property.Name), assignTo.PropertyName), assignFrom);
+		}
+
 		//UpdateModelMethod: model.Assign(property.Name, property.Name.ThisProperty().Call("ToModel"))
 		public static CodeAssignStatement Assign(this CodeParameterDeclarationExpression property, string assignTo, CodeMethodInvokeExpression methodResult)
 		{
@@ -196,10 +200,10 @@ namespace ServiceStack.Translators.Generator
 			return new CodePropertyReferenceExpression(field, propertyName);
 		}
 
-		//public static CodeMethodReferenceExpression RefMethod(this string methodName)
-		//{
-		//    return new CodeMethodReferenceExpression(new CodeTypeReferenceExpression(type), methodName);
-		//}
+		public static CodeTypeOfExpression RefType(this CodeParameterDeclarationExpression property)
+		{
+			return new CodeTypeOfExpression(property.Type);
+		}
 
 		/// <summary>
 		/// Refs the argument.
@@ -292,6 +296,19 @@ namespace ServiceStack.Translators.Generator
 		public static CodeTypeReference RefGeneric(this Type type, Type genericTypeDefinition)
 		{
 			return new CodeTypeReference(genericTypeDefinition.FullName, new CodeTypeReference(type));
+		}
+
+		public static CodeMethodInvokeExpression CallGeneric(this Type type, string methodName, CodeTypeReference[] genericMethodDefinitions, params CodeExpression[] methodParams)
+		{
+			return new CodeMethodInvokeExpression(
+				new CodeMethodReferenceExpression(
+					new CodeTypeReferenceExpression(type), methodName, genericMethodDefinitions), 
+					methodParams);
+		}
+
+		public static CodeTypeReference GenericDefinition(this Type type)
+		{
+			return new CodeTypeReference(type);
 		}
 
 		//"to".DeclareGenericVar(type, typeof(List<>)):

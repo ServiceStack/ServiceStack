@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CSharp;
+using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Translators.Generator
@@ -14,7 +15,8 @@ namespace ServiceStack.Translators.Generator
 	{
 		private readonly ICodeGenerator generator;
 		private CodeLang lang;
-		public TranslatorClassGenerator() : this(CodeLang.CSharp)
+		public TranslatorClassGenerator()
+			: this(CodeLang.CSharp)
 		{
 		}
 
@@ -74,60 +76,96 @@ namespace ServiceStack.Translators.Generator
 			return method;
 		}
 
-		private static CodeMemberMethod UpdateModelMethod(Type modelType, Type type)
+		private static CodeMemberMethod UpdateModelMethod(Type fromDtoType, Type toModelType)
 		{
-			var methodName = type.Name == modelType.Name ? "UpdateModel" : "Update" + type.Name;
-			var model = type.Param("model");
-			var method = methodName.DeclareMethod(type, MemberAttributes.Public, model);
+			var methodName = toModelType.Name == fromDtoType.Name ? "UpdateModel" : "Update" + toModelType.Name;
+			var toModel = toModelType.Param("model");
+			var method = methodName.DeclareMethod(toModelType, MemberAttributes.Public, toModel);
 
-			var typeNames = type.GetProperties().ToList().Select(x => x.Name);
-			foreach (var property in modelType.GetProperties())
+			var typeNames = toModelType.GetProperties().ToList().Select(x => x.Name);
+			foreach (var fromDtoProperty in fromDtoType.GetProperties())
 			{
-				if (!typeNames.Contains(property.Name)) continue;
+				if (!typeNames.Contains(fromDtoProperty.Name)) continue;
 
-				var isModelAlso = property.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
+				var isModelAlso = fromDtoProperty.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
 				if (isModelAlso)
 				{
-					method.Statements.Add(model.Assign(property.Name, property.Name.ThisProperty().Call("ToModel")));
+					method.Statements.Add(toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name.ThisProperty().Call("ToModel")));
 				}
 				else
 				{
-					method.Statements.Add(model.Assign(property.Name, property.Name));
+					var toModelProperty = toModelType.GetProperty(fromDtoProperty.Name);
+					if (toModelProperty.PropertyType.IsAssignableFrom(fromDtoProperty.PropertyType))
+					{
+						method.Statements.Add(toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name));
+					}
+					else
+					{
+						if (fromDtoProperty.PropertyType == typeof(string)
+							&& StringConverterUtils.CanCreateFromString(toModelProperty.PropertyType))
+						{
+							//model.CardType = StringConverterUtils.Parse<CardType>(this.CardType);
+							var methodResult = typeof(StringConverterUtils).CallGeneric("Parse",
+								new[] { toModelProperty.PropertyType.GenericDefinition() },
+								fromDtoProperty.Name.ThisProperty());
+
+							method.Statements.Add(toModel.Assign(fromDtoProperty.Name.ThisProperty(), methodResult));
+						}
+					}
 				}
 			}
 
-			method.Statements.Add(model.Return());
+			method.Statements.Add(toModel.Return());
 			return method;
 		}
 
-		private static CodeMemberMethod ParseMethod(Type modelType, Type type)
+		private static CodeMemberMethod ParseMethod(Type toDtoType, Type fromModelType)
 		{
 			var methodName = "Parse";
-			var from = type.Param("from");
-			var method = methodName.DeclareMethod(modelType, MemberAttributes.Public | MemberAttributes.Static, from);
+			var from = fromModelType.Param("from");
+			var method = methodName.DeclareMethod(toDtoType, MemberAttributes.Public | MemberAttributes.Static, from);
 
 			// modelType to = new T();
-			var to = modelType.DeclareVar("to");
+			var to = toDtoType.DeclareVar("to");
 			method.Statements.Add(to);
 
-			var typeNames = type.GetProperties().ToList().Select(x => x.Name);
-			foreach (var property in modelType.GetProperties())
+			var fromModelTypePropertyNames = fromModelType.GetProperties().ToList().Select(x => x.Name);
+			foreach (var toDtoTypeProperty in toDtoType.GetProperties())
 			{
-				if (!typeNames.Contains(property.Name)) continue;
+				if (!fromModelTypePropertyNames.Contains(toDtoTypeProperty.Name)) continue;
 
-				var isModelAlso = property.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
+				var isModelAlso = toDtoTypeProperty.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
 				if (isModelAlso)
-				{					
+				{
 					//to[property.Name] = from[property.PropertyType.Name].ToModel() e.g:
 					//	to.Address = from.Address.ToModel();
-
-					method.Statements.Add(to.Assign(property.Name, property.PropertyType.Call("Parse", from.RefProperty(property.Name))));
+					method.Statements.Add(to.Assign(toDtoTypeProperty.Name, toDtoTypeProperty.PropertyType.Call("Parse", from.RefProperty(toDtoTypeProperty.Name))));
 				}
 				else
 				{
-					//to[property.Name] = this[property.Name] e.g:
-					//	to.Name = from.Name;
-					method.Statements.Add(to.Assign(to.RefProperty(property.Name), from.Name.RefArgument().RefProperty(property.Name)));
+					//to.CardType = from.CardType[.ToString()];
+
+					var fromModelTypeProperty = fromModelType.GetProperty(toDtoTypeProperty.Name);
+					if (fromModelTypeProperty.PropertyType.IsAssignableFrom(toDtoTypeProperty.PropertyType))
+					{
+						//to[property.Name] = this[property.Name] e.g:
+						//	to.Name = from.Name;
+						method.Statements.Add(to.Assign(
+							to.RefProperty(toDtoTypeProperty.Name), 
+							from.Name.RefArgument().RefProperty(toDtoTypeProperty.Name)));
+					}
+					else
+					{
+						if (toDtoTypeProperty.PropertyType == typeof(string)
+							&& StringConverterUtils.CanCreateFromString(fromModelTypeProperty.PropertyType))
+						{
+							//to[property.Name] = this[property.Name].ToString() e.g:
+							//	to.Name = from.Name;
+							method.Statements.Add(to.Assign(
+								to.RefProperty(toDtoTypeProperty.Name),
+								from.Name.RefArgument().RefProperty(toDtoTypeProperty.Name).Call("ToString")));
+						}
+					}
 				}
 			}
 
@@ -151,7 +189,7 @@ namespace ServiceStack.Translators.Generator
 			method.Statements.Add(to);
 
 			CodeVariableDeclarationStatement item;
-			var iter = from.ForEach(type, out item);			
+			var iter = from.ForEach(type, out item);
 			method.Statements.Add(iter);
 			iter.Statements.Add(to.Call("Add", modelType.Call("Parse", item)));
 
