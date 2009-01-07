@@ -81,6 +81,7 @@
     <Content Include="Build\out\Customer.generated.vb" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Build\genetate-translators.bat" />
     <None Include="Build\out\Address.generated.boo" />
     <None Include="Build\out\Address.generated.fs" />
     <None Include="Build\out\Customer.generated.boo" />
