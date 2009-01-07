@@ -1,4 +1,5 @@
 
+COPY ..\..\..\Common\ServiceStack.Common\Build\ServiceStack.Interfaces.dll bin\Debug\
 COPY ..\..\..\Common\ServiceStack.Common\Build\ServiceStack.Translators.Generator.exe bin\Debug\
 
 PUSHD bin\Debug\

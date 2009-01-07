@@ -66,11 +66,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Sakila.DomainModel\Sakila.DomainModel.csproj">
+    <ProjectReference Include="..\Sakila.DomainModel\Sakila.DomainModel.csproj">
       <Project>{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}</Project>
       <Name>Sakila.DomainModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Sakila.ServiceModel\Sakila.ServiceModel.csproj">
+    <ProjectReference Include="..\Sakila.ServiceModel\Sakila.ServiceModel.csproj">
       <Project>{07F5006E-3F8E-4201-9A0D-1BD912FEC028}</Project>
       <Name>Sakila.ServiceModel</Name>
     </ProjectReference>
