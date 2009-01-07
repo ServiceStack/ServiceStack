@@ -1,38 +1,42 @@
 namespace Sakila.ServiceModel.Version100.Types
 {
-    using System;
-    using System.Collections.Generic;
-    
-    
-    public partial class Country
-    {
-        
-        public virtual Sakila.DomainModel.Country ToModel()
-        {
-			var model = new Sakila.DomainModel.Country {
-				Id = this.Id,
-				Name = this.Name,
-			};
+	using System;
+	using System.Collections.Generic;
+	
+	
+	public partial class Country
+	{
+		
+		public virtual Sakila.DomainModel.Country ToModel()
+		{
+			return this.UpdateModel(new Sakila.DomainModel.Country());
+		}
+		
+		public virtual Sakila.DomainModel.Country UpdateModel(Sakila.DomainModel.Country model)
+		{
+			model.Id = Id;
+			model.Name = Name;
 			return model;
-        }
-        
-        public virtual Country Parse(Sakila.DomainModel.Country from)
-        {
-			var to = new Country {
-				Id = from.Id,
-				Name = from.Name,
-			};
+		}
+		
+		public static Sakila.ServiceModel.Version100.Types.Country Parse(Sakila.DomainModel.Country from)
+		{
+			Sakila.ServiceModel.Version100.Types.Country to = new Sakila.ServiceModel.Version100.Types.Country();
+			to.Id = from.Id;
+			to.Name = from.Name;
 			return to;
-        }
-        
-        public static List<Country> ParseAll(IEnumerable<Sakila.DomainModel.Country> from)
-        {
-			var to = new List<Country>();
-			foreach (var item in from)
+		}
+		
+		public static System.Collections.Generic.List<Sakila.ServiceModel.Version100.Types.Country> ParseAll(System.Collections.Generic.IEnumerable<Sakila.DomainModel.Country> from)
+		{
+			System.Collections.Generic.List<Sakila.ServiceModel.Version100.Types.Country> to = new System.Collections.Generic.List<Sakila.ServiceModel.Version100.Types.Country>();
+			for (System.Collections.Generic.IEnumerator<Sakila.DomainModel.Country> iter = from.GetEnumerator(); iter.MoveNext(); 
+			)
 			{
-				to.Add(new Country().Parse(item));
+				Sakila.DomainModel.Country item = iter.Current;
+				to.Add(Sakila.ServiceModel.Version100.Types.Country.Parse(item));
 			}
 			return to;
-        }
-    }
+		}
+	}
 }

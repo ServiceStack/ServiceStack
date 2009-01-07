@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{B3740A7C-77BF-4DAB-8A08-116B797C8373}"
 	ProjectSection(SolutionItems) = preProject
-		Lib\genetate-translators.bat = Lib\genetate-translators.bat
+		Sakila.ServiceModel\genetate-translators.bat = Sakila.ServiceModel\genetate-translators.bat
 		Lib\get-latest-libs.bat = Lib\get-latest-libs.bat
 		..\Lib\ServiceStack.dll = ..\Lib\ServiceStack.dll
 		..\Lib\ServiceStack.Interfaces.dll = ..\Lib\ServiceStack.Interfaces.dll

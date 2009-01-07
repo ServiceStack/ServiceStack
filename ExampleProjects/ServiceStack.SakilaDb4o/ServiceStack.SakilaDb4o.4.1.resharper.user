@@ -13,42 +13,41 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/d:__RESHARPER__DummyWebPages_/f:AsyncOneWay.svc" caret="0" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Global.asax.cs" caret="13" scrollPosition="0|0" />
-      <File id="FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD/f:Web.config" caret="12397" scrollPosition="0|180" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="705" scrollPosition="0|17" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Global.asax.cs" caret="428" scrollPosition="0|0" />
       <File id="E6170756-E72D-4A0B-AF2F-9DFBE83F5C48/f:ErrorCodes.cs" caret="161" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetAllCustomers.cs" caret="135" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetAllCustomersResponse.cs" caret="119" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetCustomers.cs" caret="84" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetCustomersResponse.cs" caret="119" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetFilms.cs" caret="84" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetFilmsResponse.cs" caret="119" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:StoreCustomer.cs" caret="119" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:StoreCustomerResponse.cs" caret="84" scrollPosition="0|0" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="0" scrollPosition="0|0" />
       <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="814" scrollPosition="0|13" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:ArrayOfGuidId.cs" caret="0" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.cs" caret="587" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:City.cs" caret="255" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Customer.cs" caret="163" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Country.cs" caret="166" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:City.generated.cs" caret="347" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Country.generated.cs" caret="322" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Customer.generated.cs" caret="103" scrollPosition="0|0" />
-      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerHandler.cs" caret="586" scrollPosition="0|12" />
-      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="764" scrollPosition="0|0" />
-      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="659" scrollPosition="0|0" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="235" scrollPosition="0|0" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="126" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="1067" scrollPosition="0|27" />
+      <File id="E6170756-E72D-4A0B-AF2F-9DFBE83F5C48/f:Address.cs" caret="258" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.cs" caret="0" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:City.generated.cs" caret="890" scrollPosition="0|12" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetAllCustomers.cs" caret="0" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetCustomers.cs" caret="0" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetCustomersResponse.cs" caret="0" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:StoreCustomer.cs" caret="0" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerHandler.cs" caret="1032" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Actor.cs" caret="0" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Film.cs" caret="0" scrollPosition="0|21" />
+      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="144" scrollPosition="0|0" />
+      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="95" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="1681" scrollPosition="0|26" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:AppHost.cs" caret="705" scrollPosition="0|17" />
       <File id="1B0AA0E1-B04A-4B4F-89ED-D0D8B7CBCE19/f:Web.config" caret="2822" scrollPosition="0|3" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="196" scrollPosition="0|0" />
+      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="144" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetAllCustomers.cs" caret="84" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetAllCustomersResponse.cs" caret="119" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Operations/f:GetCustomers.cs" caret="84" scrollPosition="0|0" />
@@ -62,10 +61,9 @@
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="499" scrollPosition="0|0" />
       <File id="F72A9857-7E81-4069-893E-8554C76A9273/d:Support/f:TestBase.cs" caret="814" scrollPosition="0|13" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.cs" caret="166" scrollPosition="0|0" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="233" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:City.cs" caret="255" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Country.cs" caret="166" scrollPosition="0|0" />
-      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:City.generated.cs" caret="352" scrollPosition="0|0" />
+      <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:City.generated.cs" caret="890" scrollPosition="0|0" />
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Country.generated.cs" caret="104" scrollPosition="0|0" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:StoreCustomerHandler.cs" caret="584" scrollPosition="0|1" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="130" scrollPosition="0|0" />
@@ -74,7 +72,9 @@
       <File id="07F5006E-3F8E-4201-9A0D-1BD912FEC028/d:Version100/d:Types/f:Address.generated.cs" caret="1067" scrollPosition="0|3" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetCustomersHandler.cs" caret="754" scrollPosition="0|0" />
       <File id="5C528394-32F9-49DE-9D3C-B91281BF2C11/d:Version100/f:GetAllCustomersHandler.cs" caret="659" scrollPosition="0|0" />
-      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="126" scrollPosition="0|0" />
+      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:get-latest-libs.bat" caret="144" scrollPosition="0|0" />
+      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="394" scrollPosition="0|0" />
+      <File id="B3740A7C-77BF-4DAB-8A08-116B797C8373/f:genetate-translators.bat" caret="95" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
