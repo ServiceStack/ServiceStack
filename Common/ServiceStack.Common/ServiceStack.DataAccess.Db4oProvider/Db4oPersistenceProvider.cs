@@ -78,12 +78,38 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public T GetById<T>(object id) where T : class
 		{
-			return FindByValue<T>(ID_PROPERTY_NAME, id);
+			if (id == null)
+				throw new ArgumentNullException("id");
+
+			var entity = GetByInternalId<T>(id);
+			return entity ?? FindByValue<T>(ID_PROPERTY_NAME, id);
+		}
+
+		private T GetByInternalId<T>(object id) where T : class
+		{
+			if (id.GetType().IsAssignableFrom(typeof(long)))
+			{
+				var type = id.GetType();
+				var fieldInfo = GetFieldInfo(ID_PROPERTY_NAME, type);
+				var isPotentialInternalId = fieldInfo != null
+											&& fieldInfo.FieldType.IsAssignableFrom(typeof(long));
+				if (isPotentialInternalId)
+				{
+					var entity = this.provider.Ext().GetByID((long)id);
+					this.provider.Ext().Activate(entity);
+					return (T)entity;
+				}
+			}
+			return null;
 		}
 
 		public IList<T> GetByIds<T>(object[] ids) where T : class
 		{
-			return GetByIds<T>((ICollection) ids);
+			if (ids.Count() == 0)
+			{
+				return new[] { GetByInternalId<T>(ids[0]) };
+			}
+			return GetByIds<T>((ICollection)ids);
 		}
 
 		public IList<T> GetByIds<T>(ICollection ids) where T : class
@@ -131,6 +157,21 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				return registeredFieldName;
 			}
 
+			FieldInfo fieldInfo;
+			return GetFieldName(name, type, out fieldInfo);
+		}
+
+		private static FieldInfo GetFieldInfo(string name, Type type)
+		{
+			FieldInfo fieldInfo;
+			GetFieldName(name, type, out fieldInfo);
+			return fieldInfo;
+		}
+
+		private static string GetFieldName(string name, Type type, out FieldInfo fieldInfo)
+		{
+			var fieldNameKey = type.FullName + ":" + name;
+
 			const string BACKING_FIELD = "<{0}>k__BackingField";
 			var backingField = string.Format(BACKING_FIELD, name);
 			var camelCaseName = name.Substring(0, 1).ToLower() + name.Substring(1);
@@ -147,6 +188,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 					if (!possibleMatches.Contains(typeField.Name)) continue;
 
 					fieldNameTypeMappings[fieldNameKey] = fieldName;
+					fieldInfo = typeField;
 					return fieldName;
 				}
 			}
@@ -170,8 +212,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 			var valuesList = new ArrayList(values);
 			var type = typeof(T);
-			var fieldName = GetFieldName(name, type);
-			var fieldInfo = ReflectionUtils.GetFieldInfo(type, fieldName);
+			var fieldInfo = GetFieldInfo(name, type);
 			var results = provider.Query(delegate(T item) {
 				var fieldValue = fieldInfo.GetValue(item);
 				return valuesList.Contains(fieldValue);
@@ -185,6 +226,24 @@ namespace ServiceStack.DataAccess.Db4oProvider
 		public T Store<T>(T entity) where T : class
 		{
 			provider.Store(entity);
+			try
+			{
+				var type = typeof(T);
+				var fieldInfo = GetFieldInfo(ID_PROPERTY_NAME, type);
+				if (fieldInfo.FieldType.IsAssignableFrom(typeof(long)))
+				{
+					var existingId = (long)fieldInfo.GetValue(entity);
+					if (existingId == default(long))
+					{
+						long uniqueInternalId = provider.Ext().GetID(entity);
+						fieldInfo.SetValue(entity, uniqueInternalId);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				throw new Exception("Unable to set unique id field on type '{0}'", ex);
+			}
 			return entity;
 		}
 

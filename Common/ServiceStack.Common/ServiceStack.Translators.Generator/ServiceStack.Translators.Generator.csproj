@@ -55,14 +55,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UserCatalogue.DomainModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\desktop\prototypes\Utopia.UserCatalogue\UserCatalogue.ServiceModel\bin\Debug\UserCatalogue.DomainModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Utopia.ServiceModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\desktop\prototypes\Utopia.UserCatalogue\UserCatalogue.ServiceModel\bin\Debug\Utopia.ServiceModel.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />

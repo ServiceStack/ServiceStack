@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceInterface.Session
 		/// </summary>
 		/// <param name="userId">The user global id.</param>
 		/// <param name="clientSessionIds">The client session ids.</param>
-		public void RemoveClientSession(int userId, ICollection<Guid> clientSessionIds)
+		public void RemoveClientSession(long userId, ICollection<Guid> clientSessionIds)
 		{
 			var userSession = GetUserSession(userId);
 			if (userSession == null) return;
@@ -42,10 +42,10 @@ namespace ServiceStack.ServiceInterface.Session
 		/// </summary>
 		/// <param name="userId">The user global id.</param>
 		/// <param name="userName">Name of the user.</param>
+		/// <param name="ipAddress">The ip address.</param>
 		/// <param name="base64ClientModulus">The base64 client modulus.</param>
 		/// <returns></returns>
-		public UserClientSessionsTuple AddClientSession(int userId, string userName, 
-		                                                string ipAddress, string base64ClientModulus)
+		public UserClientSessionsTuple AddClientSession(long userId, string userName, string ipAddress, string base64ClientModulus)
 		{
 			var userSession = GetOrCreateSession(userId, userName);
 			var clientSessions = userSession.CreateNewClientSessions(ipAddress, base64ClientModulus);
@@ -86,7 +86,7 @@ namespace ServiceStack.ServiceInterface.Session
 		/// </summary>
 		/// <param name="userId">The user global id.</param>
 		/// <returns></returns>
-		public UserSession GetUserSession(int userId)
+		public UserSession GetUserSession(long userId)
 		{
 			var cacheKey = UrnId.Create(typeof(UserSession), userId.ToString());
 			return this.cacheClient.Get<UserSession>(cacheKey);
@@ -98,7 +98,7 @@ namespace ServiceStack.ServiceInterface.Session
 		/// <param name="userId">The user global id.</param>
 		/// <param name="userName">Name of the user.</param>
 		/// <returns></returns>
-		public UserSession GetOrCreateSession(int userId, string userName)
+		public UserSession GetOrCreateSession(long userId, string userName)
 		{
 			var userSession = GetUserSession(userId);
 			if (userSession == null)

@@ -61,7 +61,7 @@ namespace ServiceStack.ServiceInterface
 			{
 				foreach (var cacheEntry in this.RuntimeInstanceCache)
 				{
-					if (!ReflectionUtils.CanCast(resolveType, cacheEntry.Value.GetType())) continue;
+					if (!resolveType.IsAssignableFrom(cacheEntry.Value.GetType())) continue;
 					this.TypeMapLookup[resolveType] = cacheEntry.Key;
 					return cacheEntry.Key;
 				}

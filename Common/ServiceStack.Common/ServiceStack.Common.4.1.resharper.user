@@ -14,17 +14,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:RequiredTextValidationTests.cs" caret="162" scrollPosition="0|19" />
-      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="0" scrollPosition="0|0" />
-      <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oFileProviderManager.cs" caret="696" scrollPosition="0|9" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oSakilaDatabaseTests.cs" caret="661" scrollPosition="0|5" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="1481" scrollPosition="0|43" />
-      <File id="480B3BA6-A20C-4626-8783-9865C109C83C/f:NHibernateProviderManager.cs" caret="843" scrollPosition="0|0" />
-      <File id="E74F7B37-D01A-4324-B163-03F91717DA2F/f:get-latest-libs.bat" caret="142" scrollPosition="0|0" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/d:Support/f:Parser.cs" caret="364" scrollPosition="0|0" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/d:Support/f:CommandLineAliasAttribute.cs" caret="0" scrollPosition="0|0" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/d:Support/f:CommandLineSwitchAttribute.cs" caret="432" scrollPosition="0|0" />
-      <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Support/d:Model/f:Address.cs" caret="69" scrollPosition="0|0" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Support/d:DataContract/f:Address.cs" caret="134" scrollPosition="0|0" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Support/d:DataContract/f:Customer.cs" caret="274" scrollPosition="0|0" />
       <File id="C1B3955F-56CA-451F-8F56-E78D1C1708F5/f:ReplaceInAllFiles.cs" caret="635" scrollPosition="0|0" />
@@ -37,21 +26,27 @@
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Address.generated.fs" caret="2134" scrollPosition="0|9" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Address.generated.boo" caret="936" scrollPosition="0|0" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:Program.cs" caret="2054" scrollPosition="0|48" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="472" scrollPosition="0|8" />
-      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="993" scrollPosition="0|3" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="0" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:AssemblyUtils.cs" caret="418" scrollPosition="0|0" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="724" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:WsdlTemplateBase.cs" caret="152" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap11WsdlTemplate.cs" caret="90" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11WsdlMetadataHandler.cs" caret="349" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/f:WsdlMetadataHandlerBase.cs" caret="1305" scrollPosition="0|6" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:HashUtils.cs" caret="4801" scrollPosition="0|34" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPrivateKey.cs" caret="7574" scrollPosition="0|209" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPublicKey.cs" caret="252" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryRefTests.cs" caret="0" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:App.config" caret="102" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="2570" scrollPosition="0|44" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="1580" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:FactoryProvider.cs" caret="2014" scrollPosition="0|49" />
     </RecentFiles>
     <RecentEdits>
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="5423" scrollPosition="0|132" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="11652" scrollPosition="0|272" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="5199" scrollPosition="0|129" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="4481" scrollPosition="0|105" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="5627" scrollPosition="0|138" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="6367" scrollPosition="0|155" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="6654" scrollPosition="0|152" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="8589" scrollPosition="0|209" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="4229" scrollPosition="0|99" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="4158" scrollPosition="0|99" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="445" scrollPosition="0|2" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="1273" scrollPosition="0|8" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="1046" scrollPosition="0|16" />
@@ -62,6 +57,24 @@
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="1605" scrollPosition="0|0" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="667" scrollPosition="0|11" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="1226" scrollPosition="0|14" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="167" scrollPosition="0|0" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="5234" scrollPosition="0|136" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="373" scrollPosition="0|0" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="507" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:WsdlTemplateBase.cs" caret="227" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:WsdlTemplateBase.cs" caret="4009" scrollPosition="0|132" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPrivateKey.cs" caret="122" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPrivateKey.cs" caret="122" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPrivateKey.cs" caret="122" scrollPosition="0|198" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPrivateKey.cs" caret="122" scrollPosition="0|318" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:HashUtils.cs" caret="136" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:HashUtils.cs" caret="4801" scrollPosition="0|34" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPrivateKey.cs" caret="122" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPrivateKey.cs" caret="7572" scrollPosition="0|197" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/d:Support/d:Crypto/f:RsaPublicKey.cs" caret="252" scrollPosition="0|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:App.config" caret="750" scrollPosition="583|0" />
+      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="2668" scrollPosition="0|36" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:FactoryProvider.cs" caret="2012" scrollPosition="0|49" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -74,7 +87,7 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="var" priority="129" />
+      <Item value="var" priority="130" />
       <Item value="typeof" priority="38" />
       <Item value="private" priority="13" />
       <Item value="class" priority="6" />
@@ -84,9 +97,9 @@
       <Item value="TypeDefinition" priority="3" />
       <Item value="Dictionary" priority="4" />
       <Item value="Type" priority="28" />
-      <Item value="new" priority="121" />
+      <Item value="new" priority="122" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
-      <Item value="public" priority="79" />
+      <Item value="public" priority="80" />
       <Item value="string" priority="74" />
       <Item value="return" priority="88" />
       <Item value="object" priority="35" />
@@ -100,13 +113,13 @@
       <Item value="StringConverterUtils" priority="0" />
       <Item value="enum" priority="2" />
       <Item value="bool" priority="6" />
-      <Item value="ConfigUtils" priority="1" />
+      <Item value="ConfigUtils" priority="2" />
       <Item value="OBJECTS_SECTION_NAME" priority="6" />
       <Item value="MemberwiseClone" priority="0" />
       <Item value="IResourceManager" priority="0" />
       <Item value="resourceManager" priority="1" />
       <Item value="this" priority="111" />
-      <Item value="factoryProvider" priority="3" />
+      <Item value="factoryProvider" priority="4" />
       <Item value="configSectionName" priority="1" />
       <Item value="name" priority="9" />
       <Item value="key" priority="29" />
@@ -142,7 +155,7 @@
       <Item value="ReplyOperations" priority="2" />
       <Item value="typeNames" priority="1" />
       <Item value="hasResponse" priority="0" />
-      <Item value="void" priority="24" />
+      <Item value="void" priority="25" />
       <Item value="else" priority="8" />
       <Item value="OneWayOperations" priority="1" />
       <Item value="RequestContext" priority="1" />
@@ -155,11 +168,11 @@
       <Item value="ServiceClient" priority="1" />
       <Item value="TestFixture" priority="2" />
       <Item value="factory" priority="11" />
-      <Item value="Assert" priority="13" />
+      <Item value="Assert" priority="14" />
       <Item value="gateway" priority="3" />
       <Item value="as" priority="4" />
       <Item value="xmlServiceClient" priority="0" />
-      <Item value="Is" priority="7" />
+      <Item value="Is" priority="8" />
       <Item value="constructorArgDefinition" priority="5" />
       <Item value="TypeLoadException" priority="0" />
       <Item value="constructorValueTypes" priority="0" />
@@ -168,7 +181,7 @@
       <Item value="objectType" priority="4" />
       <Item value="refType" priority="2" />
       <Item value="constructorParam" priority="4" />
-      <Item value="break" priority="6" />
+      <Item value="break" priority="7" />
       <Item value="List&lt;RefType&gt;" priority="1" />
       <Item value="AssertUtils" priority="0" />
       <Item value="AssemblyUtils" priority="0" />
@@ -472,6 +485,8 @@
       <Item value="CodeMethodReferenceExpression" priority="0" />
       <Item value="CodeTypeReferenceExpression" priority="0" />
       <Item value="CodeSnippetExpression" priority="0" />
+      <Item value="RsaPrivateKey" priority="0" />
+      <Item value="resolvedPrivateKey" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="9" />
@@ -525,6 +540,7 @@
       <Item value="DeclareVar" priority="2" />
       <Item value="RefGeneric" priority="2" />
       <Item value="Call" priority="1" />
+      <Item value="IsAssignableFrom" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.CallContext.AppContext">
       <Item value="ResourceManager" priority="0" />
@@ -536,7 +552,7 @@
       <Item value="Instance" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Configuration.ConfigUtils">
-      <Item value="GetAppSetting" priority="0" />
+      <Item value="GetAppSetting" priority="1" />
       <Item value="GetListFromAppSetting" priority="0" />
       <Item value="GetNullableAppSetting" priority="0" />
     </ItemStatistics>
@@ -628,7 +644,7 @@
       <Item value="Instance" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
-      <Item value="That" priority="11" />
+      <Item value="That" priority="12" />
       <Item value="Fail" priority="0" />
       <Item value="IsNotNull" priority="0" />
     </ItemStatistics>
@@ -636,14 +652,14 @@
       <Item value="ServiceClient" priority="3" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Is">
-      <Item value="Not" priority="1" />
+      <Item value="Not" priority="2" />
       <Item value="EqualTo" priority="6" />
       <Item value="Null" priority="1" />
       <Item value="EquivalentTo" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:NUnit.Framework.Constraints.ConstraintBuilder">
       <Item value="NaN" priority="1" />
-      <Item value="Null" priority="1" />
+      <Item value="Null" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.ServiceClient.Web.XmlServiceClient">
       <Item value="BaseUri" priority="1" />
@@ -695,7 +711,7 @@
       <Item value="Factory" priority="3" />
       <Item value="Disposables" priority="4" />
       <Item value="RuntimeInstanceCache" priority="4" />
-      <Item value="Resolve" priority="1" />
+      <Item value="Resolve" priority="2" />
       <Item value="TypeMapLookup" priority="3" />
       <Item value="Register" priority="0" />
     </ItemStatistics>
@@ -1072,6 +1088,9 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.IEnumerator`1">
       <Item value="Current" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Configuration.Tests.Support.Crypto.RsaPrivateKey">
+      <Item value="CreatePublicKey" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

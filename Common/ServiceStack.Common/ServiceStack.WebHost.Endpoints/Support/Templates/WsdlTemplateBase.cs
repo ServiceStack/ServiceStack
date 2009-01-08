@@ -6,6 +6,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 	public abstract class WsdlTemplateBase
 	{
 		public string Xsd { get; set; }
+		public string ServiceName { get; set; }
 		public IEnumerable<string> ReplyOperationNames { get; set; }
 		public IEnumerable<string> OneWayOperationNames { get; set; }
 		public string ReplyEndpointUri { get; set; }
@@ -144,11 +145,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 	{9}
 	
 </wsdl:definitions>";
-
-		public string ServiceName
-		{
-			get { return "Sakila Service".Replace(" ", ""); }
-		}
 
 		public string RepeaterTemplate(string template, IEnumerable<string> dataSource)
 		{

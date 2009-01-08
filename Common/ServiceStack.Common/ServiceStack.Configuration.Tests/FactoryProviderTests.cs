@@ -4,6 +4,7 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Configuration.Support;
 using ServiceStack.Configuration.Tests.Support;
+using ServiceStack.Configuration.Tests.Support.Crypto;
 using ServiceStack.DataAccess.Db4oProvider;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
@@ -56,5 +57,16 @@ namespace ServiceStack.Configuration.Tests
 			factoryProvider.Register(db4oProvider);
 			var provider = factoryProvider.Resolve<IPersistenceProviderManager>();
 		}
+
+		[Test]
+		public void A_RsaPrivateKey_can_be_created_and_configured_in_code()
+		{
+			var privateKey = new RsaPrivateKey(ConfigUtils.GetAppSetting("ServerPrivateKey"));
+			var factoryProvider = new FactoryProvider(factory);
+			factoryProvider.Register(privateKey);
+			var resolvedPrivateKey = factoryProvider.Resolve<RsaPrivateKey>();
+			Assert.That(resolvedPrivateKey, Is.Not.Null);
+		}
+
 	}
 }

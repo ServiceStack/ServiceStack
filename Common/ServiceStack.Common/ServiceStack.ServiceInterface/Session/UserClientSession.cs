@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceInterface.Session
 		}
 
 		public Guid Id { get; set; }
-		public int UserId { get { return userSession.UserId; } }
+		public long UserId { get { return userSession.UserId; } }
 		public string Base64ClientModulus { get; set; }
 	}
 }

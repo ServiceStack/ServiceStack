@@ -59,7 +59,10 @@
     <Compile Include="FactoryProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\CantBeCreatedFromString.cs" />
+    <Compile Include="Support\Crypto\HashUtils.cs" />
+    <Compile Include="Support\Crypto\RsaPublicKey.cs" />
     <Compile Include="Support\NestedTestGateway.cs" />
+    <Compile Include="Support\Crypto\RsaPrivateKey.cs" />
     <Compile Include="Support\TestGatewayPropertyInjection.cs" />
     <Compile Include="Support\ITestGateway.cs" />
     <Compile Include="Support\TestGateway.cs" />
@@ -82,6 +85,9 @@
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

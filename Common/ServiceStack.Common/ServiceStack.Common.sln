@@ -7,9 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E74F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{0722888A-ECD1-44A8-B88E-5F286E0BAEFD}"
 	ProjectSection(SolutionItems) = preProject
-		Build\build-and-deploy.bat = Build\build-and-deploy.bat
-		Build\build.bat = Build\build.bat
-		Build\deploy.bat = Build\deploy.bat
 		Build\ilmerge-all.bat = Build\ilmerge-all.bat
 		Build\ServiceStack.dll = Build\ServiceStack.dll
 		Build\ServiceStack.Interfaces.dll = Build\ServiceStack.Interfaces.dll

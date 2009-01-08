@@ -10,12 +10,12 @@ namespace ServiceStack.ServiceInterface.Session
 	[Serializable]
 	public class UserSession
 	{
-		public int UserId { get; private set; }
+		public long UserId { get; private set; }
 		public string UserName { get; private set; }
 		public Dictionary<Guid, UserClientSession> PublicClientSessions { get; private set; }
 		public Dictionary<Guid, UserClientSession> SecureClientSessions { get; private set; }
 
-		public UserSession(int userId, string userName)
+		public UserSession(long userId, string userName)
 		{
 			this.UserId = userId;
 			this.UserName = userName;
