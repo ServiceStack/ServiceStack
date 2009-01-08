@@ -38,8 +38,10 @@
     <Compile Include="IPersistenceProvider.cs" />
     <Compile Include="IPersistenceProviderManager.cs" />
     <Compile Include="IPersistenceProviderManagerFactory.cs" />
+    <Compile Include="IQueryablePersistenceProvider.cs" />
     <Compile Include="ITransactionContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryableByExample.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

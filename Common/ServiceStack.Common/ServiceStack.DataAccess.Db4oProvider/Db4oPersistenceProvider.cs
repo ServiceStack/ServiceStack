@@ -5,13 +5,12 @@ using System.Linq;
 using System.Reflection;
 using Db4objects.Db4o;
 using Db4objects.Db4o.Query;
-using ServiceStack.Common.Utils;
 using ServiceStack.DataAccess.Db4oProvider.Criteria;
 using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
 {
-	public class Db4oPersistenceProvider : IPersistenceProvider
+	public class Db4oPersistenceProvider : IQueryablePersistenceProvider 
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(Db4oPersistenceProvider));
 
@@ -19,11 +18,11 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		private const string ID_PROPERTY_NAME = "Id";
 
-		private readonly IObjectContainer provider;
+		public IObjectContainer ObjectContainer { get; private set; }
 
 		public Db4oPersistenceProvider(IObjectContainer provider)
 		{
-			this.provider = provider;
+			this.ObjectContainer = provider;
 			fieldNameTypeMappings = new Dictionary<string, string>();
 		}
 
@@ -39,22 +38,22 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public ITransactionContext BeginTransaction()
 		{
-			return new Db4oTransaction(this.provider);
+			return new Db4oTransaction(this.ObjectContainer);
 		}
 
 		public void CommitTransaction()
 		{
-			provider.Commit();
+			this.ObjectContainer.Commit();
 		}
 
 		public void RollbackTransaction()
 		{
-			provider.Rollback();
+			this.ObjectContainer.Rollback();
 		}
 
 		public IList<T> GetAll<T>() where T : class
 		{
-			var query = provider.Query();
+			var query = this.ObjectContainer.Query();
 			query.Constrain(typeof(T));
 			return ConvertToList<T>(query.Execute());
 		}
@@ -62,7 +61,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 		public IList<T> GetAllOrderedBy<T>(string name, bool sortAsc) where T : class
 		{
 			var type = typeof(T);
-			var query = provider.Query();
+			var query = this.ObjectContainer.Query();
 			query.Constrain(type);
 			var fieldName = GetFieldName(name, type);
 			if (sortAsc)
@@ -95,8 +94,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 											&& fieldInfo.FieldType.IsAssignableFrom(typeof(long));
 				if (isPotentialInternalId)
 				{
-					var entity = this.provider.Ext().GetByID((long)id);
-					this.provider.Ext().Activate(entity);
+					var entity = this.ObjectContainer.Ext().GetByID((long)id);
+					this.ObjectContainer.Ext().Activate(entity);
 					return (T)entity;
 				}
 			}
@@ -131,7 +130,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				throw new ArgumentNullException("value");
 
 			var type = typeof(T);
-			var query = provider.Query();
+			var query = this.ObjectContainer.Query();
 			query.Constrain(type);
 
 			var fieldName = GetFieldName(name, type);
@@ -213,7 +212,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			var valuesList = new ArrayList(values);
 			var type = typeof(T);
 			var fieldInfo = GetFieldInfo(name, type);
-			var results = provider.Query(delegate(T item) {
+			var results = this.ObjectContainer.Query(delegate(T item) {
 				var fieldValue = fieldInfo.GetValue(item);
 				return valuesList.Contains(fieldValue);
 			});
@@ -225,7 +224,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public T Store<T>(T entity) where T : class
 		{
-			provider.Store(entity);
+			this.ObjectContainer.Store(entity);
 			try
 			{
 				var type = typeof(T);
@@ -235,8 +234,9 @@ namespace ServiceStack.DataAccess.Db4oProvider
 					var existingId = (long)fieldInfo.GetValue(entity);
 					if (existingId == default(long))
 					{
-						long uniqueInternalId = provider.Ext().GetID(entity);
+						long uniqueInternalId = this.ObjectContainer.Ext().GetID(entity);
 						fieldInfo.SetValue(entity, uniqueInternalId);
+						this.ObjectContainer.Store(entity);
 					}
 				}
 			}
@@ -257,7 +257,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public IResultSet<T> GetAll<T>(ICriteria criteria) where T : class
 		{
-			var query = provider.Query();
+			var query = this.ObjectContainer.Query();
 			query.Constrain(typeof(T));
 
 			SortResults(query, criteria);
@@ -308,7 +308,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public void Delete<T>(T entity) where T : class
 		{
-			provider.Delete(entity);
+			this.ObjectContainer.Delete(entity);
 		}
 
 		public void DeleteAll<T>(IEnumerable<T> entities) where T : class
@@ -324,6 +324,21 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			Dispose(false);
 		}
 
+		public IList<Extent> Query<Extent>(IComparer<Extent> comparer)
+		{
+			return ObjectContainer.Query(comparer);
+		}
+
+		public IList<Extent> Query<Extent>(Predicate<Extent> match)
+		{
+			return ObjectContainer.Query(match);
+		}
+
+		public IList<Extent> QueryByExample<Extent>(object template)
+		{
+			return ConvertToList<Extent>(ObjectContainer.QueryByExample(template));
+		}
+
 		public void Dispose()
 		{
 			Dispose(true);
@@ -335,8 +350,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				GC.SuppressFinalize(this);
 
 			log.DebugFormat("Disposing Db4oPersistenceProvider...");
-			provider.Close();
-			provider.Dispose();
+			this.ObjectContainer.Close();
+			this.ObjectContainer.Dispose();
 		}
 
 	}

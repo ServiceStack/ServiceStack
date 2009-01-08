@@ -8,7 +8,7 @@ namespace ServiceStack.DataAccess
 	{
 		IList<T> GetAll<T>() where T : class;
 		IList<T> GetAllOrderedBy<T>(string fieldName, bool sortAsc) where T : class;
-		
+
 		T GetById<T>(object id) where T : class;
 		IList<T> GetByIds<T>(ICollection ids) where T : class;
 

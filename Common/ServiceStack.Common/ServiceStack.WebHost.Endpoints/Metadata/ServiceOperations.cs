@@ -17,7 +17,10 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 					if (type.Namespace != operationNamespace) continue;
 					
 					var baseTypeWithSameName = GetBaseTypeWithTheSameName(type);
-					dtoTypes.Add(baseTypeWithSameName);
+					if (!dtoTypes.Contains(baseTypeWithSameName))
+					{
+						dtoTypes.Add(baseTypeWithSameName);
+					}
 				}
 				AllOperations = new Operations(dtoTypes);
 			}
