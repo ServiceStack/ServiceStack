@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CSharp;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 
@@ -14,7 +13,7 @@ namespace ServiceStack.Translators.Generator
 	public class TranslatorClassGenerator
 	{
 		private readonly ICodeGenerator generator;
-		private CodeLang lang;
+
 		public TranslatorClassGenerator()
 			: this(CodeLang.CSharp)
 		{
@@ -22,7 +21,6 @@ namespace ServiceStack.Translators.Generator
 
 		public TranslatorClassGenerator(CodeLang lang)
 		{
-			this.lang = lang;
 			this.generator = CodeDomUtils.CreateGenerator(lang);
 		}
 
@@ -144,14 +142,13 @@ namespace ServiceStack.Translators.Generator
 				else
 				{
 					//to.CardType = from.CardType[.ToString()];
-
 					var fromModelTypeProperty = fromModelType.GetProperty(toDtoTypeProperty.Name);
 					if (fromModelTypeProperty.PropertyType.IsAssignableFrom(toDtoTypeProperty.PropertyType))
 					{
 						//to[property.Name] = this[property.Name] e.g:
 						//	to.Name = from.Name;
 						method.Statements.Add(to.Assign(
-							to.RefProperty(toDtoTypeProperty.Name), 
+							to.RefProperty(toDtoTypeProperty.Name),
 							from.Name.RefArgument().RefProperty(toDtoTypeProperty.Name)));
 					}
 					else

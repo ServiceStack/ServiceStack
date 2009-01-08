@@ -4,8 +4,8 @@ namespace ServiceStack.LogicFacade
 {
 	public interface IOperationContext : IDisposable
 	{
-		IApplicationContext Application { get; set; }
+		IApplicationContext Application { get;  }
 		
-		IRequestContext Request { get; set; }
+		IRequestContext Request { get; }
 	}
 }

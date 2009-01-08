@@ -5,12 +5,12 @@ namespace ServiceStack.LogicFacade
 {
 	public interface IApplicationContext
 	{
-		IFactoryProvider Factory { get; set; }
+		IFactoryProvider Factory { get; }
 
 		T Get<T>() where T : class;
-		
-		ICacheClient Cache { get; set; }
-		
-		IResourceManager Resources { get; set; }
+
+		ICacheClient Cache { get; }
+
+		IResourceManager Resources { get; }
 	}
 }

@@ -1,5 +1,0 @@
-SET BASE_PATH=C:\Projects\code.google
-SET DEPLOY_WWW_DEMO_PATH=%BASE_PATH%\Deploy\wwwroot
-SET TEMPLATE_DEMO_PATH=%BASE_PATH%\TemplateDemo
-SET ILMERGE_UTIL=%BASE_UTIL%\Tools\ilmerge.exe
-SET ZIP_UTIL=%BASE_PATH%\Tools\7za.exe a -r 
