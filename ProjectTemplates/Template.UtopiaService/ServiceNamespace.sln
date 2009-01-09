@@ -1,0 +1,61 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{B3740A7C-77BF-4DAB-8A08-116B797C8373}"
+	ProjectSection(SolutionItems) = preProject
+		Lib\_get-latest-libs.bat = Lib\_get-latest-libs.bat
+		Lib\ServiceStack.dll = Lib\ServiceStack.dll
+		Lib\ServiceStack.Interfaces.dll = Lib\ServiceStack.Interfaces.dll
+		Lib\ServiceStack.Translators.Generator.exe = Lib\ServiceStack.Translators.Generator.exe
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "@ServiceNamespace@.ServiceInterface", "@ServiceNamespace@.ServiceInterface\@ServiceNamespace@.ServiceInterface.csproj", "{5C528394-32F9-49DE-9D3C-B91281BF2C11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "@ServiceNamespace@.Tests", "@ServiceNamespace@.Tests\@ServiceNamespace@.Tests.csproj", "{F72A9857-7E81-4069-893E-8554C76A9273}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "@ServiceNamespace@.Host.WebService", "@ServiceNamespace@.Host.WebService\@ServiceNamespace@.Host.WebService.csproj", "{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8E2B906-6CC0-4C02-BC78-920D9988DC07}"
+	ProjectSection(SolutionItems) = preProject
+		BuildFile.xml = BuildFile.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{2DACC4AD-9405-49C4-BBFD-C364B07DCB63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "@DomainModelNamespace@", "@DomainModelNamespace@\@DomainModelNamespace@.csproj", "{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "@ServiceModelNamespace@", "@ServiceModelNamespace@\@ServiceModelNamespace@.csproj", "{07F5006E-3F8E-4201-9A0D-1BD912FEC028}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C528394-32F9-49DE-9D3C-B91281BF2C11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F72A9857-7E81-4069-893E-8554C76A9273}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6170756-E72D-4A0B-AF2F-9DFBE83F5C48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07F5006E-3F8E-4201-9A0D-1BD912FEC028}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FAD3B057-C2E7-4FC1-8E89-ABA9B0062DDD} = {2DACC4AD-9405-49C4-BBFD-C364B07DCB63}
+	EndGlobalSection
+EndGlobal

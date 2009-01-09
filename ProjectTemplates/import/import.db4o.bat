@@ -1,3 +1,4 @@
 @echo off
+CALL ..\..\env-vars.bat
 
-..\nant\bin\nant.exe -D:import.properties=import.db4o.properties
+%NANT_UTIL% -D:import.properties=import.db4o.properties

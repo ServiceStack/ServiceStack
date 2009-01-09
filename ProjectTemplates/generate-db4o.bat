@@ -1,3 +1,4 @@
 @echo off
+CALL ..\env-vars.bat
 
-nant\bin\nant.exe -D:template.properties=template.db4o.properties
+%NANT_UTIL% -D:template.properties=template.db4o.properties
