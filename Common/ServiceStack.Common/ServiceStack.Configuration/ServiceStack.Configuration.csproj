@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigUtils.cs" />
+    <Compile Include="EmptyObjectFactory.cs" />
     <Compile Include="FactoryUtils.cs" />
     <Compile Include="IObjectFactory.cs" />
     <Compile Include="ObjectsConfigurationSectionHandler.cs" />

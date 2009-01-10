@@ -123,6 +123,15 @@ namespace ServiceStack.Translators.Generator
 			return new CodeParameterDeclarationExpression(type, paramName);
 		}
 
+		public static CodeConditionStatement ReturnNullIfNull(this CodeParameterDeclarationExpression expression)
+		{
+			return new CodeConditionStatement(
+							new CodeBinaryOperatorExpression(
+								new CodeVariableReferenceExpression(expression.Name), CodeBinaryOperatorType.IdentityEquality,
+								new CodePrimitiveExpression(null)),
+							new[] { new CodeMethodReturnStatement(new CodePrimitiveExpression(null)) });
+		}
+
 		/// <summary>
 		/// type.Param("paramName", typeof(List&gt;T&lt;)):
 		///		[Method(..] List&gt;T&lt; paramName
@@ -302,7 +311,7 @@ namespace ServiceStack.Translators.Generator
 		{
 			return new CodeMethodInvokeExpression(
 				new CodeMethodReferenceExpression(
-					new CodeTypeReferenceExpression(type), methodName, genericMethodDefinitions), 
+					new CodeTypeReferenceExpression(type), methodName, genericMethodDefinitions),
 					methodParams);
 		}
 

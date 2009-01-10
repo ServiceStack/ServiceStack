@@ -21,6 +21,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 		
 		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Address Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
 		{
+			if ((from == null))
+			{
+				return null;
+			}
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.Address to = new ServiceStack.Translators.Generator.Tests.Support.DataContract.Address();
 			to.Line1 = from.Line1;
 			to.Line2 = from.Line2;

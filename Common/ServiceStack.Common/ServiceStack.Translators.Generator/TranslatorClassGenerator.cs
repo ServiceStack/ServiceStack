@@ -123,6 +123,8 @@ namespace ServiceStack.Translators.Generator
 			var from = fromModelType.Param("from");
 			var method = methodName.DeclareMethod(toDtoType, MemberAttributes.Public | MemberAttributes.Static, from);
 
+			method.Statements.Add(from.ReturnNullIfNull());
+
 			// modelType to = new T();
 			var to = toDtoType.DeclareVar("to");
 			method.Statements.Add(to);

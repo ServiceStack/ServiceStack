@@ -24,6 +24,10 @@ package ServiceStack.Translators.Generator.Tests.Support.DataContract
 		
 		public static function Parse(from : ServiceStack.Translators.Generator.Tests.Support.Model.Address) : ServiceStack.Translators.Generator.Tests.Support.DataContract.Address
 		{
+			if ((from == undefined))
+			{
+				return undefined;
+			}
 			var to : ServiceStack.Translators.Generator.Tests.Support.DataContract.Address = new ServiceStack.Translators.Generator.Tests.Support.DataContract.Address();
 			to.Line1 = from.Line1;
 			to.Line2 = from.Line2;

@@ -56,5 +56,28 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 			Assert.That(user, Is.Not.Null);
 			Assert.That(user.Id, Is.EqualTo(newUser.Id));
 		}
+
+		[Test]
+		public void Can_update_user_retrieved_with_internalId()
+		{
+			var newUser = new User { Name = "UserWithoutId" };
+			provider.Store(newUser);
+
+			var user = provider.FindByValue<User>("Name", newUser.Name);
+
+			Assert.That(user, Is.Not.Null);
+			Assert.That(user.Id, Is.Not.EqualTo(default(long)));
+
+			user = provider.GetById<User>(user.Id);
+			Assert.That(user, Is.Not.Null);
+			var updatedUserName = "UpdatedUser";
+			user.Name = updatedUserName;
+
+			provider.Store(user);
+			var users = provider.GetByIds<User>(new[] { user.Id });
+
+			Assert.That(users.Count, Is.EqualTo(1));
+			Assert.That(users[0].Name, Is.EqualTo(updatedUserName));
+		}
 	}
 }

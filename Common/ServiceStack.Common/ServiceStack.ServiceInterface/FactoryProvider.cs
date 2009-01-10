@@ -17,6 +17,11 @@ namespace ServiceStack.ServiceInterface
 		private Dictionary<Type, object> RuntimeInstanceCache { get; set; }
 		private Dictionary<Type, Type> TypeMapLookup { get; set; }
 
+		public FactoryProvider(params object[] providers)
+			: this(new EmptyObjectFactory(), providers)
+		{
+		}
+
 		public FactoryProvider(IObjectFactory factory, params object[] providers)
 			: this(factory)
 		{

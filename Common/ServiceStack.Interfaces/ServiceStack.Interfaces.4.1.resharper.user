@@ -62,15 +62,14 @@
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IApplicationContext.cs" caret="255" scrollPosition="0|0" />
       <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="872" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="133" scrollPosition="0|0" />
-      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="115" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="433" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="115" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IRequestContext.cs" caret="13" scrollPosition="0|0" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="6657" scrollPosition="0|105" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="5758" scrollPosition="0|93" />
       <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="4938" scrollPosition="0|93" />
-      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="680" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IApplicationContext.cs" caret="259" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IRequestContext.cs" caret="176" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IServiceController.cs" caret="150" scrollPosition="0|0" />
@@ -96,6 +95,7 @@
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="552" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="510" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="120" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="720" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

@@ -19,7 +19,10 @@ namespace ServiceStack.DataAccess
 		void Flush();
 
 		T Store<T>(T entity) where T : class;
+		IList<T> StoreAll<T>(IList<T> entities) where T : class;
+		
 		void Delete<T>(T entity) where T : class;
+		void DeleteAll<T>(IList<T> entities) where T : class;
 
 		ITransactionContext BeginTransaction();
 	}

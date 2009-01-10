@@ -10,7 +10,7 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
 {
-	public class Db4oPersistenceProvider : IQueryablePersistenceProvider 
+	public class Db4oPersistenceProvider : IQueryablePersistenceProvider
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(Db4oPersistenceProvider));
 
@@ -34,6 +34,14 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				list.Add(result);
 			}
 			return list;
+		}
+
+		public void DeleteAll<T>(IList<T> entities) where T : class
+		{
+			foreach (var entity in entities)
+			{
+				this.Delete(entity);
+			}
 		}
 
 		public ITransactionContext BeginTransaction()
@@ -89,7 +97,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			if (id.GetType().IsAssignableFrom(typeof(long)))
 			{
 				var type = id.GetType();
-				var fieldInfo = GetFieldInfo(ID_PROPERTY_NAME, type);
+				var fieldInfo = GetFieldInfo(ID_PROPERTY_NAME, typeof(T));
 				var isPotentialInternalId = fieldInfo != null
 											&& fieldInfo.FieldType.IsAssignableFrom(typeof(long));
 				if (isPotentialInternalId)
@@ -245,6 +253,15 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				throw new Exception("Unable to set unique id field on type '{0}'", ex);
 			}
 			return entity;
+		}
+
+		public IList<T> StoreAll<T>(IList<T> entities) where T : class
+		{
+			foreach (var entity in entities)
+			{
+				this.Store(entity);
+			}
+			return entities;
 		}
 
 		public void StoreAll<T>(IEnumerable<T> entities) where T : class

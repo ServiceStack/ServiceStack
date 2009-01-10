@@ -36,6 +36,14 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			this.Session.Evict(obj);
 		}
 
+		public void DeleteAll<T>(IList<T> entities) where T : class
+		{
+			foreach (var entity in entities)
+			{
+				this.Delete(entity);
+			}
+		}
+
 		public ITransactionContext BeginTransaction()
 		{
 			this.Session.Transaction.Begin();
@@ -136,6 +144,15 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 		{
 			this.Session.Save(obj);
 			return obj;
+		}
+
+		public IList<T> StoreAll<T>(IList<T> entities) where T : class
+		{
+			foreach (var entity in entities)
+			{
+				this.Store(entity);
+			}
+			return entities;
 		}
 
 		public void Delete<T>(T obj) where T : class

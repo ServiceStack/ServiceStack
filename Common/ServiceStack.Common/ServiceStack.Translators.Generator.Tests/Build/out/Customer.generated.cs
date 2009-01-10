@@ -22,6 +22,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 		
 		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Customer from)
 		{
+			if ((from == null))
+			{
+				return null;
+			}
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer to = new ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer();
 			to.Id = from.Id;
 			to.Name = from.Name;

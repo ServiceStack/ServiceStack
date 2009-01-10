@@ -17,6 +17,9 @@ Namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 		End Function
 		
 		Public Shared Function Parse(ByVal from As ServiceStack.Translators.Generator.Tests.Support.Model.Customer) As ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer
+			If (from Is Nothing) Then
+				Return Nothing
+			End If
 			Dim [to] As ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer = New ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer
 			[to].Id = from.Id
 			[to].Name = from.Name
