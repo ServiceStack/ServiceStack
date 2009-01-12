@@ -12,11 +12,24 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return this.UpdateModel(new ServiceStack.Translators.Generator.Tests.Support.Model.Customer());
 		}
 		
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Customer> ToModelList(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer> from)
+		{
+			System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Customer> to = new System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Customer>();
+			for (System.Collections.Generic.IEnumerator<ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer> iter = from.GetEnumerator(); iter.MoveNext(); 
+			)
+			{
+				ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer item = iter.Current;
+				to.Add(item.ToModel());
+			}
+			return to;
+		}
+		
 		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Customer UpdateModel(ServiceStack.Translators.Generator.Tests.Support.Model.Customer model)
 		{
 			model.Id = Id;
 			model.Name = Name;
 			model.BillingAddress = this.BillingAddress.ToModel();
+			model.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToModelList(this.PhoneNumbers);
 			return model;
 		}
 		
@@ -30,6 +43,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			to.Id = from.Id;
 			to.Name = from.Name;
 			to.BillingAddress = ServiceStack.Translators.Generator.Tests.Support.DataContract.Address.Parse(from.BillingAddress);
+			to.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ParseAll(from.PhoneNumbers);
 			return to;
 		}
 		

@@ -12,6 +12,18 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return this.UpdateModel(new ServiceStack.Translators.Generator.Tests.Support.Model.Address());
 		}
 		
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Address> ToModelList(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> from)
+		{
+			System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Address> to = new System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Address>();
+			for (System.Collections.Generic.IEnumerator<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> iter = from.GetEnumerator(); iter.MoveNext(); 
+			)
+			{
+				ServiceStack.Translators.Generator.Tests.Support.DataContract.Address item = iter.Current;
+				to.Add(item.ToModel());
+			}
+			return to;
+		}
+		
 		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Address UpdateModel(ServiceStack.Translators.Generator.Tests.Support.Model.Address model)
 		{
 			model.Line1 = Line1;

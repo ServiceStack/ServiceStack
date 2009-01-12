@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="Db4oAdvancedQueryTests.cs" />
     <Compile Include="Db4oBasicWriteTests.cs" />
+    <Compile Include="Db4oQueryableProviderTests.cs" />
     <Compile Include="Db4oSakilaDatabaseTests.cs" />
     <Compile Include="Db4oTestBase.cs" />
     <Compile Include="Db4oBasicQueryTests.cs" />
@@ -69,6 +70,14 @@
       <Project>{01796492-6DFF-49EF-AE78-C49AE56AD9A8}</Project>
       <Name>ServiceStack.DataAccess.Db4oProvider</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Lib\sakila.db4o" />
+    <None Include="Lib\test.db4o" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Lib\Sakila.DomainModel.dll" />
+    <Content Include="Lib\Sakila.DomainModel.pdb" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -194,6 +194,11 @@ namespace ServiceStack.Translators.Generator
 			return new CodeAssignStatement(assignTo, expression);
 		}
 
+		public static CodeAssignStatement Assign(this CodePropertyReferenceExpression property, CodeExpression expression)
+		{
+			return new CodeAssignStatement(property, expression);
+		}
+
 		public static CodePropertyReferenceExpression ThisProperty(this string propertyName)
 		{
 			return new CodePropertyReferenceExpression(new CodeThisReferenceExpression(), propertyName);

@@ -11,10 +11,10 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 	[TestFixture]
 	public class Db4oTestBase
 	{
-		private const string db4oDatabasePath = @"C:\Projects\code.google\Common\ServiceStack.Common\ServiceStack.DataAccess.Db4oProvider.Tests\Lib\test.db4o";
+		private const string db4oDatabasePath = @"C:\Projects\PoToPe\trunk\servicestack\Common\ServiceStack.Common\ServiceStack.DataAccess.Db4oProvider.Tests\Lib\test.db4o";
 
 		protected IPersistenceProviderManager db4oProviderManager;
-		protected IPersistenceProvider provider;
+		protected IQueryablePersistenceProvider provider;
 		protected Customer[] Customers { get; set; }
 
 		public class PreferredCustomer : Customer
@@ -55,7 +55,7 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 				File.Delete(db4oDatabasePath);
 			}
 			db4oProviderManager = new Db4oFileProviderManager(db4oDatabasePath);
-			provider = db4oProviderManager.GetProvider();
+			provider = (IQueryablePersistenceProvider)db4oProviderManager.GetProvider();
 			CreateTestDatabase();
 		}
 
