@@ -45,7 +45,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 				return null;
 			}
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber to = new ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber();
-			to.Type = from.Type.ToString();
+			if ((from.Type != null))
+			{
+				to.Type = from.Type.ToString();
+			}
 			to.Number = from.Number;
 			return to;
 		}

@@ -268,9 +268,11 @@ namespace ServiceStack.Translators.Generator
 			if (toDtoTypeProperty.PropertyType == typeof(string)
 				&& StringConverterUtils.CanCreateFromString(fromModelProperty.PropertyType))
 			{
-				return toDto.Assign(
-					toDto.RefProperty(toDtoTypeProperty.Name),
-					fromModelParam.Name.RefArgument().RefProperty(toDtoTypeProperty.Name).Call("ToString"));
+				var fromModelPropertyRef = fromModelParam.Name.RefArgument().RefProperty(toDtoTypeProperty.Name);
+				return fromModelPropertyRef.IfIsNotNull(
+							toDto.Assign(
+								toDto.RefProperty(toDtoTypeProperty.Name),
+								fromModelPropertyRef.Call("ToString")));
 			}
 
 			// Converting 'System.Collections.Generic.List`1 PhoneNumbers' to 'System.Collections.Generic.List`1 PhoneNumbers' is unsupported
