@@ -67,6 +67,21 @@ namespace ServiceStack.Translators.Generator
 			}
 		}
 
+		private static string GetToModelMethodName(Type fromDtoType, Type toModelType)
+		{
+			return toModelType.Name == fromDtoType.Name ? "ToModel" : "To" + toModelType.Name;
+		}
+
+		private static string GetToModelListMethodName(Type fromDtoType, Type toModelType)
+		{
+			return toModelType.Name == fromDtoType.Name ? "ToModelList" : "To" + toModelType.Name + "List";
+		}
+
+		private static string GetUpdateMethodName(Type fromDtoType, Type toModelType)
+		{
+			return toModelType.Name == fromDtoType.Name ? "UpdateModel" : "Update" + toModelType.Name;
+		}
+
 		/*
 			public static List<Model.PhoneNumber> ToModelList(List<DtoType.PhoneNumber> dtoCustomers)
 			{
@@ -80,9 +95,11 @@ namespace ServiceStack.Translators.Generator
 		*/
 		private static CodeMemberMethod ToModelListMethod(Type fromDtoType, Type toModelType)
 		{
-			var methodName = toModelType.Name == fromDtoType.Name ? "ToModelList" : "To" + toModelType.Name + "List";
+			var methodName = GetToModelListMethodName(fromDtoType, toModelType);
 			var from = fromDtoType.Param("from", typeof(IEnumerable<>));
 			var method = methodName.DeclareMethod(toModelType.RefGeneric(typeof(List<>)), MemberAttributes.Public | MemberAttributes.Static, from);
+
+			method.Statements.Add(from.ReturnNullIfNull());
 
 			var to = "to".DeclareGenericVar(toModelType, typeof(List<>));
 			method.Statements.Add(to);
@@ -90,7 +107,8 @@ namespace ServiceStack.Translators.Generator
 			CodeVariableDeclarationStatement item;
 			var iter = from.ForEach(fromDtoType, out item);
 			method.Statements.Add(iter);
-			iter.Statements.Add(to.Call("Add", item.Call("ToModel")));
+			var toModelMethodName = GetToModelMethodName(fromDtoType, toModelType);
+			iter.Statements.Add(to.Call("Add", item.Call(toModelMethodName)));
 
 			method.Statements.Add(to.Return());
 
@@ -99,15 +117,16 @@ namespace ServiceStack.Translators.Generator
 
 		private static CodeMemberMethod ToModelMethod(Type fromDtoType, Type toModelType)
 		{
-			var methodName = toModelType.Name == fromDtoType.Name ? "ToModel" : "To" + toModelType.Name;
+			var methodName = GetToModelMethodName(fromDtoType, toModelType);
+			var updateMethodName = GetUpdateMethodName(fromDtoType, toModelType);
 			var method = methodName.DeclareMethod(toModelType, MemberAttributes.Public);
-			method.Statements.Add("UpdateModel".Call(toModelType.New()).Return());
+			method.Statements.Add(updateMethodName.Call(toModelType.New()).Return());
 			return method;
 		}
 
 		private static CodeMemberMethod UpdateModelMethod(Type fromDtoType, Type toModelType)
 		{
-			var methodName = toModelType.Name == fromDtoType.Name ? "UpdateModel" : "Update" + toModelType.Name;
+			var methodName = GetUpdateMethodName(fromDtoType, toModelType);
 			var toModel = toModelType.Param("model");
 			var method = methodName.DeclareMethod(toModelType, MemberAttributes.Public, toModel);
 
@@ -136,14 +155,15 @@ namespace ServiceStack.Translators.Generator
 			}
 
 			//model.BillingAddress = this.BillingAddress.ToModel();
+			var fromDtoPropertyType = fromDtoProperty.PropertyType;
+			var toModelPropertyType = toModelProperty.PropertyType;
 			var isModelAlso = fromDtoProperty.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
 			if (isModelAlso)
 			{
-				return toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name.ThisProperty().Call("ToModel"));
+				var toModelMethodName = GetToModelMethodName(fromDtoPropertyType, toModelPropertyType);
+				return toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name.ThisProperty().Call(toModelMethodName));
 			}
 
-			var fromDtoPropertyType = fromDtoProperty.PropertyType;
-			var toModelPropertyType = toModelProperty.PropertyType;
 			var fromDtoIsGenericList = fromDtoPropertyType.IsGenericType && fromDtoPropertyType.GetGenericTypeDefinition() == typeof(List<>);
 			var toModelIsGenericList = toModelPropertyType.IsGenericType && toModelPropertyType.GetGenericTypeDefinition() == typeof(List<>);
 			var bothAreGenericLists = fromDtoIsGenericList && toModelIsGenericList;
@@ -154,7 +174,8 @@ namespace ServiceStack.Translators.Generator
 				var fromDtoIsModel = fromDtoPropertyType.GetGenericArguments()[0].GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
 				if (fromDtoIsModel)
 				{
-					return toModel.Assign(fromDtoProperty.Name, fromDtoPropertyType.GetGenericArguments()[0].Call("ToModelList", fromDtoProperty.Name.ThisProperty()));
+					var toModelListMethodName = GetToModelListMethodName(fromDtoPropertyType, toModelPropertyType);
+					return toModel.Assign(fromDtoProperty.Name, fromDtoPropertyType.GetGenericArguments()[0].Call(toModelListMethodName, fromDtoProperty.Name.ThisProperty()));
 				}
 			}
 
@@ -266,6 +287,7 @@ namespace ServiceStack.Translators.Generator
 			var method = methodName.DeclareMethod(
 				modelType.RefGeneric(typeof(List<>)), MemberAttributes.Public | MemberAttributes.Static, from);
 
+			method.Statements.Add(from.ReturnNullIfNull());
 
 			var to = "to".DeclareGenericVar(modelType, typeof(List<>));
 			method.Statements.Add(to);
