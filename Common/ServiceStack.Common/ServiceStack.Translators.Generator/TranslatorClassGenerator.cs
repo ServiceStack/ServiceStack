@@ -108,7 +108,8 @@ namespace ServiceStack.Translators.Generator
 			var iter = from.ForEach(fromDtoType, out item);
 			method.Statements.Add(iter);
 			var toModelMethodName = GetToModelMethodName(fromDtoType, toModelType);
-			iter.Statements.Add(to.Call("Add", item.Call(toModelMethodName)));
+			iter.Statements.Add(item.IfIsNotNull(to.Call("Add", item.Call(toModelMethodName))));
+			//iter.Statements.Add(to.Call("Add", item.Call(toModelMethodName)));
 
 			method.Statements.Add(to.Return());
 
@@ -161,7 +162,9 @@ namespace ServiceStack.Translators.Generator
 			if (isModelAlso)
 			{
 				var toModelMethodName = GetToModelMethodName(fromDtoPropertyType, toModelPropertyType);
-				return toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name.ThisProperty().Call(toModelMethodName));
+				return fromDtoProperty.Name.ThisProperty().IfIsNotNull(
+					toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name.ThisProperty().Call(toModelMethodName))
+				);				
 			}
 
 			var fromDtoIsGenericList = fromDtoPropertyType.IsGenericType && fromDtoPropertyType.GetGenericTypeDefinition() == typeof(List<>);

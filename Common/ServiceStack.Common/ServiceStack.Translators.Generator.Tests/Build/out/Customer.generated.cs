@@ -23,7 +23,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer item = iter.Current;
-				to.Add(item.ToModel());
+				if ((item != null))
+				{
+					to.Add(item.ToModel());
+				}
 			}
 			return to;
 		}
@@ -32,7 +35,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 		{
 			model.Id = Id;
 			model.Name = Name;
-			model.BillingAddress = this.BillingAddress.ToModel();
+			if ((this.BillingAddress != null))
+			{
+				model.BillingAddress = this.BillingAddress.ToModel();
+			}
 			model.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToModelList(this.PhoneNumbers);
 			return model;
 		}

@@ -23,7 +23,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber item = iter.Current;
-				to.Add(item.ToModel());
+				if ((item != null))
+				{
+					to.Add(item.ToModel());
+				}
 			}
 			return to;
 		}

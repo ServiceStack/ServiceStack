@@ -132,6 +132,28 @@ namespace ServiceStack.Translators.Generator
 							new[] { new CodeMethodReturnStatement(new CodePrimitiveExpression(null)) });
 		}
 
+		public static CodeConditionStatement IfIsNotNull(this CodeVariableDeclarationStatement expression,
+			params CodeExpression[] trueExpressions)
+		{
+			var trueStatements = trueExpressions.ToList().ConvertAll(x => new CodeExpressionStatement(x)).ToArray();
+			return new CodeConditionStatement(
+							new CodeBinaryOperatorExpression(
+								new CodeVariableReferenceExpression(expression.Name), CodeBinaryOperatorType.IdentityInequality,
+								new CodePrimitiveExpression(null)),
+							trueStatements);
+		}
+
+		public static CodeConditionStatement IfIsNotNull(this CodePropertyReferenceExpression expression,
+			params CodeStatement[] trueStatements)
+		{
+			return new CodeConditionStatement(
+							new CodeBinaryOperatorExpression(
+								expression, CodeBinaryOperatorType.IdentityInequality,
+								new CodePrimitiveExpression(null)),
+							trueStatements);
+		}
+
+
 		/// <summary>
 		/// type.Param("paramName", typeof(List&gt;T&lt;)):
 		///		[Method(..] List&gt;T&lt; paramName
