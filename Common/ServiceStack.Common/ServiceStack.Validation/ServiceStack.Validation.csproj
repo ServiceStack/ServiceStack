@@ -49,19 +49,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CreditCardErrorCodes.cs" />
+    <Compile Include="Validators\CreditCardErrorCodes.cs" />
     <Compile Include="IValidatable.cs" />
     <Compile Include="IValidatableCommand.cs" />
     <Compile Include="Model\ValidatableCreditCard.cs" />
-    <Compile Include="ValidationErrorCodes.cs" />
+    <Compile Include="Validators\ValidationErrorCodes.cs" />
     <Compile Include="Model\CardType.cs" />
     <Compile Include="Model\IValidatableCreditCard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="NotNullAttribute.cs" />
-    <Compile Include="RequiredTextAttribute.cs" />
-    <Compile Include="ValidationAttributeBase.cs" />
-    <Compile Include="ValidCreditCardAttribute.cs" />
-    <Compile Include="ValidEmailAttribute.cs" />
+    <Compile Include="Validators\NotNullAttribute.cs" />
+    <Compile Include="Validators\RequiredTextAttribute.cs" />
+    <Compile Include="Validators\ValidationAttributeBase.cs" />
+    <Compile Include="Validators\ValidCreditCardAttribute.cs" />
+    <Compile Include="Validators\ValidEmailAttribute.cs" />
     <Compile Include="ModelValidator.cs" />
     <Compile Include="ValidationError.cs" />
     <Compile Include="ValidationException.cs" />

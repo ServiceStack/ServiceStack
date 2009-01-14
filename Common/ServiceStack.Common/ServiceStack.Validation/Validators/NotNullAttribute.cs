@@ -1,7 +1,6 @@
 using System;
-using ServiceStack.Validation;
 
-namespace ServiceStack.Validation
+namespace ServiceStack.Validation.Validators
 {
 	/// <summary>
 	/// Tests if the field is not null or not default(T) for value types

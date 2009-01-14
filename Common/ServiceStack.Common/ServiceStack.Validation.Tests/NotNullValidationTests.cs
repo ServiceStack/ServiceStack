@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Validation.Tests.Support;
+using ServiceStack.Validation.Validators;
 
 namespace ServiceStack.Validation.Tests
 {

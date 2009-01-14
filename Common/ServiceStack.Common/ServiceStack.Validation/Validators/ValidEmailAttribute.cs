@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace ServiceStack.Validation
+namespace ServiceStack.Validation.Validators
 {
 	/// <summary>
 	/// Validates string is a valid email address.
@@ -10,7 +10,7 @@ namespace ServiceStack.Validation
 	public class ValidEmailAttribute : ValidationAttributeBase
 	{
 		const string validEmailPattern = 
-			@"^([a-zA-Z0-9_\-\.]+)@
+				@"^([a-zA-Z0-9_\-\.]+)@
 			((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))
 			([a-zA-Z0-9]{1,63})(\]?)$";
 

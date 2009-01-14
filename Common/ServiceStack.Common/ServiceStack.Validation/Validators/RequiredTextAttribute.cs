@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.Validation
+namespace ServiceStack.Validation.Validators
 {
 	[AttributeUsage(AttributeTargets.Property)]
 	public class RequiredTextAttribute : ValidationAttributeBase

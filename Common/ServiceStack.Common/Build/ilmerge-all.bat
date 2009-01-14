@@ -25,3 +25,7 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\ServiceStack.Logging.Log4Net.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\Enyim.Caching.dll
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
+
+COPY *.dll %SERVICESTACK_DEPLOY_PATH%
+COPY *.exe %SERVICESTACK_DEPLOY_PATH%
+

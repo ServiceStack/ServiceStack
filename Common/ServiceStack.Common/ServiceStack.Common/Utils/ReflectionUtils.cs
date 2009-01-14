@@ -181,6 +181,7 @@ namespace ServiceStack.Common.Utils
             return objArray;
         }
 
+		//TODO: replace with InAssignableFrom
 		public static bool CanCast(Type toType, Type fromType)
 		{
 			if (toType.IsInterface)
@@ -247,6 +248,25 @@ namespace ServiceStack.Common.Utils
 			}
 			while ((baseType = baseType.BaseType) != null);
 			return null;
+		}
+
+		public static IEnumerable<KeyValuePair<PropertyInfo, T>> GetPropertyAttributes<T>(Type fromType) where T : Attribute
+		{
+			var attributeType = typeof(T);
+			var baseType = fromType;
+			do
+			{
+				var propertyInfos = baseType.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+				foreach (var propertyInfo in propertyInfos)
+				{
+					var attributes = propertyInfo.GetCustomAttributes(attributeType, true);
+					foreach (T attribute in attributes)
+					{
+						yield return new KeyValuePair<PropertyInfo, T>(propertyInfo, attribute);
+					}
+				}
+			}
+			while ((baseType = baseType.BaseType) != null);
 		}
 	}
 }

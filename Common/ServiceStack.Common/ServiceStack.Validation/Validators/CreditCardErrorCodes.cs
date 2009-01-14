@@ -1,4 +1,4 @@
-namespace ServiceStack.Validation
+namespace ServiceStack.Validation.Validators
 {
 	public enum CreditCardErrorCodes
 	{

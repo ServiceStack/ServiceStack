@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.Validation
+namespace ServiceStack.Validation.Validators
 {
 	public abstract class ValidationAttributeBase : Attribute
 	{
@@ -10,7 +10,7 @@ namespace ServiceStack.Validation
 
 		public virtual ValidationError ValidationError
 		{
-			get { return new ValidationError(ErrorCode, ErrorMessage, null); }
+			get { return new ValidationError(this.ErrorCode, this.ErrorMessage, null); }
 		}
 
 		/// <summary>

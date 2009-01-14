@@ -4,6 +4,7 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Validation;
 using ServiceStack.Validation.Model;
+using ServiceStack.Validation.Validators;
 
 namespace ServiceStack.Validation.Tests
 {

@@ -1,7 +1,7 @@
 using System;
 using ServiceStack.Validation.Model;
 
-namespace ServiceStack.Validation
+namespace ServiceStack.Validation.Validators
 {
 	/// <summary>
 	/// Validates IValidatableCreditCard properties.
