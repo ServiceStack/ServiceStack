@@ -53,16 +53,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IResultSet.cs" />
-    <Compile Include="Db4oCriteria.cs" />
     <Compile Include="Db4oPersistenceProvider.cs" />
     <Compile Include="Db4oFileProviderManager.cs" />
     <Compile Include="Db4oResultSet.cs" />
     <Compile Include="Db4oTransaction.cs" />
-    <Compile Include="Criteria\ICriteria.cs" />
-    <Compile Include="Criteria\IOrderAscendingCriteria.cs" />
-    <Compile Include="Criteria\IOrderDescendingCriteria.cs" />
-    <Compile Include="Criteria\IPagingCriteria.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

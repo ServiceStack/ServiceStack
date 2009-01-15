@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Db4objects.Db4o;
 using Db4objects.Db4o.Query;
-using ServiceStack.DataAccess.Db4oProvider.Criteria;
+using ServiceStack.DataAccess.Criteria;
 using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
@@ -102,9 +102,21 @@ namespace ServiceStack.DataAccess.Db4oProvider
 											&& fieldInfo.FieldType.IsAssignableFrom(typeof(long));
 				if (isPotentialInternalId)
 				{
-					var entity = this.ObjectContainer.Ext().GetByID((long)id);
-					this.ObjectContainer.Ext().Activate(entity);
-					return (T)entity;
+					var idValue = (long)id;
+					var entity = this.ObjectContainer.Ext().GetByID(idValue);
+					//As internal Id's can differ from the entity id after defragmentation of the database,
+					//It is only valid if the entity with the internal id is of the same type as T and
+					//that entity.Id == entity.InternalId
+					if (entity != null && entity.GetType() == type)
+					{
+						this.ObjectContainer.Ext().Activate(entity);
+						var entityIdValue = fieldInfo.GetValue(entity);
+						if (idValue.Equals(entityIdValue))
+						{
+							log.DebugFormat("GetByInternalId match {0}.Id == {1}", type.Name, idValue);
+							return (T)entity;
+						}
+					}
 				}
 			}
 			return null;
@@ -210,6 +222,51 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return FindByValues<T>(name, (ICollection)values);
 		}
 
+		private class CustomEqualityComparer : IEqualityComparer
+		{
+			private readonly Type fieldType;
+
+			public CustomEqualityComparer(Type fieldType)
+			{
+				this.fieldType = fieldType;
+			}
+
+			bool IEqualityComparer.Equals(object x, object y)
+			{
+				if (x == null && y == null)
+				{
+					return true;
+				}
+
+				if (x == null || y == null)
+				{
+					return false;
+				}
+
+				if (x is ValueType && y is ValueType)
+				{
+					var xx = Convert.ChangeType(x, this.fieldType);
+					var yy = Convert.ChangeType(y, this.fieldType);
+
+					return xx.Equals(yy);
+				}
+
+				return x.Equals(y);
+			}
+            
+			int IEqualityComparer.GetHashCode(object obj)
+			{
+				if (obj is ValueType)
+				{
+					var value = Convert.ChangeType(obj, this.fieldType);
+
+					return value.GetHashCode();
+				}
+
+				return obj.GetHashCode();
+			}
+		}
+
 		public IList<T> FindByValues<T>(string name, ICollection values) where T : class
 		{
 			if (name == null)
@@ -217,12 +274,20 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			if (values == null || values.Count == 0)
 				throw new ArgumentNullException("values");
 
-			var valuesList = new ArrayList(values);
 			var type = typeof(T);
 			var fieldInfo = GetFieldInfo(name, type);
+			if (fieldInfo == null)
+				throw new ArgumentException(string.Format("cannot find field '{0}' in type '{1}'", name, type.FullName));
+			var valuesList = new Hashtable(new CustomEqualityComparer(fieldInfo.FieldType));
+
+			foreach (var obj in values)
+			{
+				valuesList[obj] = obj;
+			}
+
 			var results = this.ObjectContainer.Query(delegate(T item) {
 				var fieldValue = fieldInfo.GetValue(item);
-				return valuesList.Contains(fieldValue);
+				return valuesList.ContainsKey(fieldValue);
 			});
 
 			return results;
@@ -272,7 +337,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			}
 		}
 
-		public IResultSet<T> GetAll<T>(ICriteria criteria) where T : class
+		public IList<T> GetAll<T>(ICriteria criteria) where T : class
 		{
 			var query = this.ObjectContainer.Query();
 			query.Constrain(typeof(T));
@@ -281,15 +346,15 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			var db4oResults = query.Execute();
 			var results = new List<T>();
 
-			long resultOffset = 1;
 			var paging = criteria as IPagingCriteria;
 			if (paging != null)
 			{
-				resultOffset = paging.ResultOffset;
-				var i = paging.ResultOffset;
-				while (db4oResults.Count > i++)
+				var index = paging.ResultOffset;
+				var limit = paging.ResultLimit;
+				var resultCount = db4oResults.Count;
+				while (index < resultCount && results.Count < limit)
 				{
-					results.Add((T)db4oResults[i]);
+					results.Add((T)db4oResults[(int)index++]);
 				}
 			}
 			else
@@ -300,10 +365,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				}
 			}
 
-			return new Db4oResultSet<T>(results) {
-				Offset = resultOffset,
-				TotalCount = db4oResults.Count,
-			};
+			return results;
 		}
 
 		private static void SortResults(IQuery query, ICriteria criteria)

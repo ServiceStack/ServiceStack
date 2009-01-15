@@ -11,7 +11,7 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 	[TestFixture]
 	public class Db4oTestBase
 	{
-		private const string db4oDatabasePath = @"C:\Projects\PoToPe\trunk\servicestack\Common\ServiceStack.Common\ServiceStack.DataAccess.Db4oProvider.Tests\Lib\test.db4o";
+		private const string db4oDatabasePath = @"C:\Projects\code.google\Common\ServiceStack.Common\ServiceStack.DataAccess.Db4oProvider.Tests\Lib\test.db4o";
 
 		protected IPersistenceProviderManager db4oProviderManager;
 		protected IQueryablePersistenceProvider provider;
@@ -19,7 +19,8 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 
 		public class PreferredCustomer : Customer
 		{
-			public PreferredCustomer(int id, string firstName, string lastName) : base(id, firstName, lastName)
+			public PreferredCustomer(long id, string firstName, string lastName)
+				: base(id, firstName, lastName)
 			{}
 
 			public float Discount { get; set; }
@@ -27,14 +28,14 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 
 		public class Customer
 		{
-			public Customer(int id, string firstName, string lastName)
+			public Customer(long id, string firstName, string lastName)
 			{
 				Id = id;
 				FirstName = firstName;
 				LastName = lastName;
 			}
 
-			public int Id { get; set; }
+			public long Id { get; set; }
 			public string FirstName { get; set; }
 			public string LastName { get; set; }
 

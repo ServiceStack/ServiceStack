@@ -12,6 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var typeName = EndpointHost.GetOperationTypeFullName(operationName);
 			var operationType = EndpointHost.ServiceModelAssembly.GetType(typeName);
+			AssertOperationExists(operationName, operationType);
 			if (request.HttpMethod == "GET")
 			{
 				return KeyValueDataContractDeserializer.Instance.Parse(request.QueryString, operationType);

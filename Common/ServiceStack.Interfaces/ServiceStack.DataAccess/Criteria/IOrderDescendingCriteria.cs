@@ -1,4 +1,4 @@
-namespace ServiceStack.DataAccess.Db4oProvider.Criteria
+namespace ServiceStack.DataAccess.Criteria
 {
 	public interface IOrderDescendingCriteria : ICriteria
 	{

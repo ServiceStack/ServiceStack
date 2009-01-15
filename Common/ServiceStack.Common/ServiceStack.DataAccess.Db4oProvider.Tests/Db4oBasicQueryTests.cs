@@ -34,6 +34,13 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		}
 
 		[Test]
+		public void GetByLongId()
+		{
+			var customer = provider.GetById<Customer>((long)5);
+			Assert.That(customer.Name, Is.EqualTo("Bill Gates"));
+		}
+
+		[Test]
 		public void GetByIntId_from_super_type_without_id_field()
 		{
 			var preferredCustomer = provider.GetById<PreferredCustomer>(13);
@@ -41,9 +48,46 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		}
 
 		[Test]
+		public void Longs_and_ints_with_the_same_value_are_equal()
+		{
+			int intVal = 5;
+			long longVal = intVal;
+			Assert.That(longVal == intVal, Is.True);
+			Assert.That(longVal.Equals(intVal), Is.True);
+			Assert.That(intVal == longVal, Is.True);
+			Assert.That(intVal.Equals(longVal), Is.False);
+
+			object oIntVal = intVal;
+			object oLongVal = longVal;
+			Assert.That(oLongVal == oIntVal, Is.False);
+			Assert.That(oLongVal.Equals(oIntVal), Is.False);
+			Assert.That(oIntVal.Equals(oLongVal), Is.False);
+		}
+
+		[Test]
+		public void Testing_int_and_long_values_in_a_collection()
+		{
+			int intVal = 5;
+			long longVal = 5;
+			long[] longValues = new long[] { 3, 4, 5 };
+			int[] intValues = new int[] { 3, 4, 5 };
+
+			Assert.That(longValues.Contains(intVal), Is.True);
+			Assert.That(intValues.Contains((int)longVal), Is.True);
+		}
+
+		[Test]
 		public void GetByIntIds()
 		{
 			var googleFounderIds = new[] { 2, 3 };
+			var customers = provider.GetByIds<Customer>(googleFounderIds);
+			Assert.That(customers.ToList().ConvertAll(x => x.Id), Is.EquivalentTo(googleFounderIds.ToList().ConvertAll(x => (long)x)));
+		}
+
+		[Test]
+		public void GetByLongIds()
+		{
+			var googleFounderIds = new long[] { 2, 3 };
 			var customers = provider.GetByIds<Customer>(googleFounderIds);
 			Assert.That(customers.ToList().ConvertAll(x => x.Id), Is.EquivalentTo(googleFounderIds));
 		}
@@ -66,7 +110,7 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		[Test]
 		public void FindByValues()
 		{
-			var googleFounderIds = new[] { 2, 3 };
+			var googleFounderIds = new long[] { 2, 3 };
 			var googleFoundersFirstNames = Customers.Where(x => googleFounderIds.Contains(x.Id)).Select(x => x.FirstName).ToList();
 			var customers = provider.FindByValues<Customer>("FirstName", googleFoundersFirstNames);
 			Assert.That(customers.Select(x => x.Id).ToList(), Is.EquivalentTo(googleFounderIds));

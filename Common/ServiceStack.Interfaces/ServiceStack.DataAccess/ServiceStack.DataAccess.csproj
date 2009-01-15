@@ -34,11 +34,17 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Criteria\ICriteria.cs" />
+    <Compile Include="Criteria\IOrderAscendingCriteria.cs" />
+    <Compile Include="Criteria\IOrderDescendingCriteria.cs" />
+    <Compile Include="Criteria\IPagingCriteria.cs" />
+    <Compile Include="Criteria\PagingCriteria.cs" />
     <Compile Include="DataAccessException.cs" />
     <Compile Include="IPersistenceProvider.cs" />
     <Compile Include="IPersistenceProviderManager.cs" />
     <Compile Include="IPersistenceProviderManagerFactory.cs" />
     <Compile Include="IQueryablePersistenceProvider.cs" />
+    <Compile Include="IResultSet.cs" />
     <Compile Include="ITransactionContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryableByExample.cs" />

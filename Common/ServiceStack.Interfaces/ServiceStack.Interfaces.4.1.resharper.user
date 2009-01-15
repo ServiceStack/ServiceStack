@@ -34,12 +34,6 @@
   </CompletionStatisticsManager>
   <RecentFiles>
     <RecentFiles>
-      <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Command/f:ICommandList.cs" caret="0" scrollPosition="0|0" />
-      <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Command/f:ICommandVoid.cs" caret="0" scrollPosition="0|0" />
-      <File id="233A8EB3-9945-40CE-8C17-BA4FE46D6D16/d:Serialization/f:IStringDeserializer.cs" caret="0" scrollPosition="0|0" />
-      <File id="390B44FA-8DA6-489D-9DB5-1689D3088DFE/f:IResourceManager.cs" caret="294" scrollPosition="0|0" />
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:InitOptions.cs" caret="0" scrollPosition="0|0" />
-      <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="4938" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManagerFactory.cs" caret="0" scrollPosition="0|0" />
       <File id="390B44FA-8DA6-489D-9DB5-1689D3088DFE/f:IFactoryProvider.cs" caret="290" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:ILogicFacade.cs" caret="0" scrollPosition="0|0" />
@@ -61,19 +55,17 @@
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IRequestContext.cs" caret="172" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IApplicationContext.cs" caret="255" scrollPosition="0|0" />
       <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="872" scrollPosition="0|0" />
-      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="133" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="433" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="115" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:ICriteria.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IOrderAscendingCriteria.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IOrderDescendingCriteria.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IPagingCriteria.cs" caret="65" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:PagingCriteria.cs" caret="112" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IResultSet.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="263" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IRequestContext.cs" caret="13" scrollPosition="0|0" />
-      <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="6657" scrollPosition="0|105" />
-      <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="5758" scrollPosition="0|93" />
-      <File id="7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5/f:ICacheClient.cs" caret="4938" scrollPosition="0|93" />
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IApplicationContext.cs" caret="259" scrollPosition="0|0" />
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IRequestContext.cs" caret="176" scrollPosition="0|0" />
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IServiceController.cs" caret="150" scrollPosition="0|0" />
-      <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IXmlRequest.cs" caret="97" scrollPosition="0|0" />
       <File id="550BD2B0-AF20-4A3E-9A6F-51707BB9F8D5/f:IServiceModelFinder.cs" caret="190" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProviderManager.cs" caret="235" scrollPosition="0|0" />
       <File id="4A2CC4DB-3C30-4455-B442-10E598E77487/d:Support/d:Logging/f:ConsoleLogger.cs" caret="232" scrollPosition="0|0" />
@@ -87,15 +79,23 @@
       <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="72" scrollPosition="0|0" />
       <File id="59B70761-26FD-4768-B0E9-C83BA3414D0A/f:ilmerge-all.bat" caret="872" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="115" scrollPosition="0|0" />
-      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="85" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="163" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="90" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="13" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="195" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="303" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="552" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:QueryableByExample.cs" caret="510" scrollPosition="0|0" />
-      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="120" scrollPosition="0|0" />
       <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IPersistenceProvider.cs" caret="720" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:ICriteria.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IOrderAscendingCriteria.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IOrderDescendingCriteria.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IPagingCriteria.cs" caret="0" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IResultSet.cs" caret="37" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IPagingCriteria.cs" caret="161" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:IPagingCriteria.cs" caret="161" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/d:Criteria/f:PagingCriteria.cs" caret="244" scrollPosition="0|0" />
+      <File id="D732C853-AB76-4277-B6CE-6C7DA57901B7/f:IQueryablePersistenceProvider.cs" caret="211" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

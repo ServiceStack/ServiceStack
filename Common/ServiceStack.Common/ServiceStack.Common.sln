@@ -54,6 +54,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Translators.Ge
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Translators.Generator.Tests", "ServiceStack.Translators.Generator.Tests\ServiceStack.Translators.Generator.Tests.csproj", "{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Tests", "ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj", "{3FA9197A-462D-44CC-9AB3-61AF414D0B45}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -132,6 +134,10 @@ Global
 		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

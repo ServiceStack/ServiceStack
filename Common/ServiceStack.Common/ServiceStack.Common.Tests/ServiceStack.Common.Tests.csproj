@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B375DA6C-7E63-4F14-88A0-739CAD655550}</ProjectGuid>
+    <ProjectGuid>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.DataAccess.Db4oProvider.Tests</RootNamespace>
-    <AssemblyName>ServiceStack.DataAccess.Db4oProvider.Tests</AssemblyName>
+    <RootNamespace>ServiceStack.Common.Tests</RootNamespace>
+    <AssemblyName>ServiceStack.Common.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -35,10 +35,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Sakila.DomainModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Lib\Sakila.DomainModel.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
@@ -57,27 +53,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Db4oPagingTests.cs" />
-    <Compile Include="Db4oAdvancedQueryTests.cs" />
-    <Compile Include="Db4oBasicWriteTests.cs" />
-    <Compile Include="Db4oQueryableProviderTests.cs" />
-    <Compile Include="Db4oSakilaDatabaseTests.cs" />
-    <Compile Include="Db4oTestBase.cs" />
-    <Compile Include="Db4oBasicQueryTests.cs" />
+    <Compile Include="ReflectionUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.DataAccess.Db4oProvider\ServiceStack.DataAccess.Db4oProvider.csproj">
-      <Project>{01796492-6DFF-49EF-AE78-C49AE56AD9A8}</Project>
-      <Name>ServiceStack.DataAccess.Db4oProvider</Name>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Lib\sakila.db4o" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Lib\Sakila.DomainModel.dll" />
-    <Content Include="Lib\Sakila.DomainModel.pdb" />
+    <ProjectReference Include="..\ServiceStack.Validation\ServiceStack.Validation.csproj">
+      <Project>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</Project>
+      <Name>ServiceStack.Validation</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

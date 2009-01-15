@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ServiceStack.DataAccess.Db4oProvider
+namespace ServiceStack.DataAccess
 {
 	public interface IResultSet<T>
 	{
