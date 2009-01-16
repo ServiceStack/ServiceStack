@@ -147,8 +147,21 @@ namespace ServiceStack.Translators.Generator
 			PropertyInfo fromDtoProperty, Type toModelType)
 		{
 
-			//model.Name = Name;
+			//model.Name = this.Name;
 			var toModelProperty = toModelType.GetProperty(fromDtoProperty.Name);
+			var modelCantWrite = toModelProperty.GetSetMethod() == null;
+			if (modelCantWrite)
+			{
+				return new CodeCommentStatement(string.Format("Skipping property 'model.{0}' because 'model.{1}' is read-only",
+					toModelProperty.Name, fromDtoProperty.Name));
+			}
+			var dtoCantRead = fromDtoProperty.GetGetMethod() == null;
+			if (dtoCantRead)
+			{
+				return new CodeCommentStatement(string.Format("Skipping property 'model.{0}' because 'this.{1}' is write-only",
+					toModelProperty.Name, fromDtoProperty.Name));
+			}
+
 			var areBothTheSameTypes = toModelProperty.PropertyType.IsAssignableFrom(fromDtoProperty.PropertyType);
 			if (areBothTheSameTypes)
 			{
@@ -228,9 +241,22 @@ namespace ServiceStack.Translators.Generator
 			PropertyInfo toDtoTypeProperty, Type fromModelType, CodeParameterDeclarationExpression fromModelParam)
 		{
 
+			var fromModelProperty = fromModelType.GetProperty(toDtoTypeProperty.Name);
+			var modelCantRead = fromModelProperty.GetGetMethod() == null;
+			if (modelCantRead)
+			{
+				return new CodeCommentStatement(string.Format("Skipping property 'to.{0}' because 'model.{1}' is write-only",
+					toDtoTypeProperty.Name, fromModelProperty.Name));
+			}
+			var dtoCantWrite = toDtoTypeProperty.GetSetMethod() == null;
+			if (dtoCantWrite)
+			{
+				return new CodeCommentStatement(string.Format("Skipping property 'to.{0}' because 'to.{1}' is read-only",
+					toDtoTypeProperty.Name, toDtoTypeProperty.Name));
+			}
+
 			//to[property.Name] = this[property.Name] e.g:
 			//	to.Name = from.Name;
-			var fromModelProperty = fromModelType.GetProperty(toDtoTypeProperty.Name);
 			if (fromModelProperty.PropertyType.IsAssignableFrom(toDtoTypeProperty.PropertyType))
 			{
 				return toDto.Assign(

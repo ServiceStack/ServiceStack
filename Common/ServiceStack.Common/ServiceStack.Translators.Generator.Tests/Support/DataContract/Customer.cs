@@ -18,5 +18,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 
 		[DataMember]
 		public List<PhoneNumber> PhoneNumbers { get; set; }
+
+		public string ModelReadOnly { get; set; }
+		public string ModelWriteOnly { get; set; }
+		public string DtoReadOnly { get; protected set; }
+		public string DtoWriteOnly { protected get; set; }
 	}
 }

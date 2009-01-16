@@ -10,7 +10,7 @@ namespace ServiceStack.Translators.Generator.Tests
 	[TestFixture]
 	public class TranslateGeneratorTests
 	{
-		private const string outPath = @"C:\Projects\PoToPe\trunk\servicestack\Common\ServiceStack.Common\ServiceStack.Translators.Generator.Tests\Build\out\";
+		private const string outPath = @"C:\Projects\code.google\Common\ServiceStack.Common\ServiceStack.Translators.Generator.Tests\Build\out\";
 
 		[Test]
 		public void Gen_translators_with_CSharp()

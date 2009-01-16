@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Common.Utils
@@ -120,8 +123,9 @@ namespace ServiceStack.Common.Utils
 
 			public object CreateListFromTextValue(string text)
 			{
-				var textValues = text.Split(ITEM_SEPERATOR);
 				var list = this.TypeConstructor.Invoke(new object[] { });
+				if (string.IsNullOrEmpty(text)) return list;
+				var textValues = text.Split(ITEM_SEPERATOR);
 				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[0]);
 				foreach (var textValue in textValues)
 				{
@@ -136,8 +140,8 @@ namespace ServiceStack.Common.Utils
 				const int KEY_INDEX = 0;
 				const int VALUE_INDEX = 1;
 				var map = this.TypeConstructor.Invoke(new object[] { });
-				var keyTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[KEY_INDEX]); 
-				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[VALUE_INDEX]); 
+				var keyTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[KEY_INDEX]);
+				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[VALUE_INDEX]);
 				foreach (var item in textValue.Split(ITEM_SEPERATOR))
 				{
 					var keyValuePair = item.Split(KEY_VALUE_SEPERATOR);
@@ -181,7 +185,7 @@ namespace ServiceStack.Common.Utils
 
 			// Get the static Parse(string) method on the type supplied
 			var parseMethodInfo = type.GetMethod(PARSE_METHOD, BindingFlags.Public | BindingFlags.Static, null,
-			                                     new [] { typeof(string) }, null);
+												 new[] { typeof(string) }, null);
 			if (parseMethodInfo != null)
 			{
 				return true;
@@ -218,7 +222,7 @@ namespace ServiceStack.Common.Utils
 		/// <returns></returns>
 		public static T Parse<T>(string value)
 		{
-			var type = typeof (T);
+			var type = typeof(T);
 			return (T)Parse(value, type);
 		}
 
@@ -232,6 +236,100 @@ namespace ServiceStack.Common.Utils
 		{
 			var typeDefinition = TypeDefinition.GetTypeDefinition(type);
 			return typeDefinition.GetValue(value);
+		}
+
+		public static string ToString<T>(T value)
+		{
+			const string FIELD_SEPERATOR = ",";
+			const string KEY_SEPERATOR = ":";
+			var ILLEGAL_CHARS = new[] {FIELD_SEPERATOR, KEY_SEPERATOR};
+
+			if (Equals(value, default(T))) return default(T).ToString();
+
+			var type = value.GetType();
+			if (type == typeof(string) || type.IsValueType)
+			{
+				return value.ToString();
+			}
+
+			var isCollection = type.IsAssignableFrom(typeof(ICollection)) 
+				|| type.FindInterfaces((x,y) => x == typeof(ICollection), null).Length > 0;
+			if (isCollection)
+			{
+				//Get a collection of all the types interfaces, if the interface is generic store the generic definition instead
+				var typeInterfaces = type.GetInterfaces().Select(x => x.IsGenericType ? x.GetGenericTypeDefinition() : x)
+					.ToDictionary(x => x);
+
+				var isGenericCollection = typeInterfaces.ContainsKey(typeof(ICollection<>));
+
+				if (isGenericCollection)
+				{
+					var genericArguments = type.FindInterfaces((x, criteria) =>
+						x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>), null)
+						.SelectMany(x => x.GetGenericArguments()).ToList();
+
+					genericArguments.AddRange(
+						type.FindInterfaces((x, criteria) =>
+						x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>), null)
+						.SelectMany(x => x.GetGenericArguments())
+					);
+					bool isSupported = genericArguments.All(x => x == typeof(string) || x.IsValueType);
+					if (!isSupported)
+					{
+						throw new NotSupportedException(
+							"Generic collections that contain generic arguments that are not strings or valuetypes are not supported");
+					}
+				}
+
+				var isDictionary = type.IsAssignableFrom(typeof(IDictionary))
+					|| type.FindInterfaces((x, y) => x == typeof(IDictionary), null).Length > 0;
+				if (isDictionary)
+				{
+					var valueDictionary = (System.Collections.IDictionary)value;
+					var sb = new StringBuilder();
+					foreach (var key in valueDictionary.Keys)
+					{
+						var keyString = key.ToString();
+						var dictionaryValue = valueDictionary[key];
+						var valueString = dictionaryValue != null ? dictionaryValue.ToString() : string.Empty;
+
+						var keyValueString = keyString + valueString;
+						if (keyValueString.Contains(FIELD_SEPERATOR) || keyValueString.Contains(KEY_SEPERATOR))
+						{
+							throw new ArgumentException(
+								string.Format("collection contains an illegal character: '{0}'", ILLEGAL_CHARS));
+						}
+						if (sb.Length > 0)
+						{
+							sb.Append(FIELD_SEPERATOR);
+						}
+						sb.AppendFormat("{0}{1}{2}", keyString, KEY_SEPERATOR, valueString);
+					}
+					return sb.ToString();
+				}
+				else
+				{
+					var valueCollection = (System.Collections.IEnumerable)value;
+					var sb = new StringBuilder();
+					foreach (var valueItem in valueCollection)
+					{
+						var stringValueItem = valueItem.ToString();
+						if (stringValueItem.Contains(FIELD_SEPERATOR))
+						{
+							throw new ArgumentException(
+								string.Format("collection contains an illegal character: '{0}'", ILLEGAL_CHARS));
+						}
+						if (sb.Length > 0)
+						{
+							sb.Append(FIELD_SEPERATOR);
+						}
+						sb.Append(stringValueItem);
+					}
+					return sb.ToString();
+				}
+			}
+
+			return value.ToString();
 		}
 	}
 }

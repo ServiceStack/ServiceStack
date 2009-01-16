@@ -40,6 +40,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 				model.BillingAddress = this.BillingAddress.ToModel();
 			}
 			model.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToModelList(this.PhoneNumbers);
+			// Skipping property 'model.ModelReadOnly' because 'model.ModelReadOnly' is read-only
+			model.ModelWriteOnly = ModelWriteOnly;
+			model.DtoReadOnly = DtoReadOnly;
+			// Skipping property 'model.DtoWriteOnly' because 'this.DtoWriteOnly' is write-only
 			return model;
 		}
 		
@@ -54,6 +58,10 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			to.Name = from.Name;
 			to.BillingAddress = ServiceStack.Translators.Generator.Tests.Support.DataContract.Address.Parse(from.BillingAddress);
 			to.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ParseAll(from.PhoneNumbers);
+			to.ModelReadOnly = from.ModelReadOnly;
+			// Skipping property 'to.ModelWriteOnly' because 'model.ModelWriteOnly' is write-only
+			// Skipping property 'to.DtoReadOnly' because 'to.DtoReadOnly' is read-only
+			to.DtoWriteOnly = from.DtoWriteOnly;
 			return to;
 		}
 		
