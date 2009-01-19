@@ -14,9 +14,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Validators/f:ValidationErrorCodes.cs" caret="0" scrollPosition="0|0" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Validators/f:ValidCreditCardAttribute.cs" caret="51" scrollPosition="0|0" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/d:Validators/f:ValidEmailAttribute.cs" caret="0" scrollPosition="0|0" />
       <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="681" scrollPosition="0|0" />
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="0" scrollPosition="0|0" />
       <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oAdvancedQueryTests.cs" caret="414" scrollPosition="0|0" />
@@ -27,7 +24,6 @@
       <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="9472" scrollPosition="0|333" />
       <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oPagingTests.cs" caret="450" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:EnumExtensions.cs" caret="113" scrollPosition="0|0" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="0" scrollPosition="0|0" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:ReflectionUtilTests.cs" caret="495" scrollPosition="0|0" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out/f:Address.generated.cs" caret="0" scrollPosition="0|33" />
       <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/f:TranslateGeneratorTests.cs" caret="764" scrollPosition="0|0" />
@@ -42,27 +38,14 @@
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="0" scrollPosition="0|0" />
       <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:JsonDataContractSerializer.cs" caret="182" scrollPosition="0|0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonAsyncOneWayHandler.cs" caret="0" scrollPosition="0|0" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1572" scrollPosition="0|34" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="7697" scrollPosition="0|235" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Extensions/f:XLinqExtensions.cs" caret="167" scrollPosition="0|6" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2521" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="840" scrollPosition="0|0" />
+      <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:ConfigurationResourceManager.cs" caret="164" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="13" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2006" scrollPosition="0|42" />
     </RecentFiles>
     <RecentEdits>
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10630" scrollPosition="0|265" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="419" scrollPosition="0|0" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2815" scrollPosition="0|42" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1546" scrollPosition="0|42" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2815" scrollPosition="0|42" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10630" scrollPosition="0|258" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10630" scrollPosition="0|258" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10630" scrollPosition="0|256" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10630" scrollPosition="0|259" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="9030" scrollPosition="0|236" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10037" scrollPosition="0|262" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="8900" scrollPosition="0|253" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10630" scrollPosition="0|286" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="10630" scrollPosition="0|279" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="9520" scrollPosition="0|266" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1807" scrollPosition="0|30" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1807" scrollPosition="0|32" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1807" scrollPosition="0|32" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1807" scrollPosition="0|42" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2815" scrollPosition="0|42" />
@@ -76,6 +59,23 @@
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="7638" scrollPosition="0|222" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="7882" scrollPosition="0|222" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="9176" scrollPosition="0|243" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="502" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="504" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="504" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="196" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="504" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="504" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="214" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="214" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="609" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="771" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="819" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="653" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="448" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="609" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="775" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="889" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="13" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -100,17 +100,17 @@
       <Item value="Type" priority="33" />
       <Item value="new" priority="150" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
-      <Item value="public" priority="93" />
-      <Item value="string" priority="104" />
-      <Item value="return" priority="111" />
+      <Item value="public" priority="94" />
+      <Item value="string" priority="106" />
+      <Item value="return" priority="113" />
       <Item value="object" priority="42" />
-      <Item value="if" priority="121" />
+      <Item value="if" priority="122" />
       <Item value="TypeDefinitionMap" priority="0" />
       <Item value="static" priority="19" />
-      <Item value="T" priority="21" />
+      <Item value="T" priority="23" />
       <Item value="GetTypeDefinition" priority="0" />
       <Item value="VALUE_INDEX" priority="0" />
-      <Item value="value" priority="37" />
+      <Item value="value" priority="39" />
       <Item value="StringConverterUtils" priority="2" />
       <Item value="enum" priority="2" />
       <Item value="bool" priority="9" />
@@ -125,8 +125,8 @@
       <Item value="name" priority="13" />
       <Item value="key" priority="32" />
       <Item value="stringValue" priority="3" />
-      <Item value="defaultValue" priority="0" />
-      <Item value="null" priority="61" />
+      <Item value="defaultValue" priority="1" />
+      <Item value="null" priority="62" />
       <Item value="throw" priority="14" />
       <Item value="ArgumentNullException" priority="3" />
       <Item value="request" priority="2" />
@@ -156,7 +156,7 @@
       <Item value="ReplyOperations" priority="2" />
       <Item value="typeNames" priority="1" />
       <Item value="hasResponse" priority="0" />
-      <Item value="void" priority="30" />
+      <Item value="void" priority="31" />
       <Item value="else" priority="9" />
       <Item value="OneWayOperations" priority="1" />
       <Item value="RequestContext" priority="1" />
@@ -169,7 +169,7 @@
       <Item value="ServiceClient" priority="1" />
       <Item value="TestFixture" priority="2" />
       <Item value="factory" priority="11" />
-      <Item value="Assert" priority="20" />
+      <Item value="Assert" priority="21" />
       <Item value="gateway" priority="3" />
       <Item value="as" priority="7" />
       <Item value="xmlServiceClient" priority="0" />
@@ -189,7 +189,7 @@
       <Item value="objectTypes" priority="5" />
       <Item value="objectName" priority="2" />
       <Item value="Length" priority="8" />
-      <Item value="int" priority="15" />
+      <Item value="int" priority="16" />
       <Item value="constructorValueType" priority="1" />
       <Item value="argValuesCount" priority="1" />
       <Item value="Create" priority="2" />
@@ -232,7 +232,7 @@
       <Item value="toType" priority="1" />
       <Item value="AmbiguousMatchException" priority="0" />
       <Item value="matchingTypes" priority="3" />
-      <Item value="default" priority="8" />
+      <Item value="default" priority="12" />
       <Item value="provider" priority="30" />
       <Item value="Dictionary&lt;Type,object&gt;" priority="0" />
       <Item value="isDto" priority="1" />
@@ -263,7 +263,7 @@
       <Item value="long" priority="13" />
       <Item value="checkModified" priority="1" />
       <Item value="ulong" priority="0" />
-      <Item value="ValueType" priority="2" />
+      <Item value="ValueType" priority="3" />
       <Item value="Get" priority="1" />
       <Item value="valueMap" priority="0" />
       <Item value="casValues" priority="1" />
@@ -324,7 +324,7 @@
       <Item value="customers" priority="2" />
       <Item value="Id" priority="1" />
       <Item value="customer" priority="2" />
-      <Item value="IServiceProvider" priority="1" />
+      <Item value="IServiceProvider" priority="2" />
       <Item value="override" priority="0" />
       <Item value="googleFounderIds" priority="2" />
       <Item value="ConvertToList" priority="3" />
@@ -495,7 +495,7 @@
       <Item value="typeField" priority="0" />
       <Item value="GetFieldInfo" priority="0" />
       <Item value="Db4oFactory" priority="0" />
-      <Item value="where" priority="2" />
+      <Item value="where" priority="3" />
       <Item value="User" priority="0" />
       <Item value="Name" priority="0" />
       <Item value="user" priority="5" />
@@ -602,7 +602,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Common.Utils.StringConverterUtils">
       <Item value="Convert" priority="1" />
-      <Item value="Parse" priority="1" />
+      <Item value="Parse" priority="2" />
       <Item value="ToString" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.CacheAccess.StoreMode">
@@ -749,7 +749,7 @@
       <Item value="OneWayOperations" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.String">
-      <Item value="IsNullOrEmpty" priority="4" />
+      <Item value="IsNullOrEmpty" priority="5" />
       <Item value="Format" priority="12" />
       <Item value="Join" priority="3" />
       <Item value="Empty" priority="1" />
@@ -758,8 +758,8 @@
       <Item value="Instance" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
-      <Item value="That" priority="19" />
-      <Item value="Fail" priority="0" />
+      <Item value="That" priority="20" />
+      <Item value="Fail" priority="1" />
       <Item value="IsNotNull" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.Tests.Support.ITestGateway">
@@ -767,7 +767,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Is">
       <Item value="Not" priority="4" />
-      <Item value="EqualTo" priority="12" />
+      <Item value="EqualTo" priority="13" />
       <Item value="Null" priority="1" />
       <Item value="EquivalentTo" priority="3" />
       <Item value="True" priority="1" />
@@ -957,7 +957,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.String">
       <Item value="Contains" priority="4" />
-      <Item value="ToLower" priority="0" />
+      <Item value="ToLower" priority="1" />
       <Item value="StartsWith" priority="0" />
       <Item value="RefProperty" priority="2" />
       <Item value="ThisProperty" priority="3" />
@@ -1288,6 +1288,10 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.IDictionary">
       <Item value="Keys" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Int32">
+      <Item value="CompareTo" priority="0" />
+      <Item value="ToString" priority="1" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>
