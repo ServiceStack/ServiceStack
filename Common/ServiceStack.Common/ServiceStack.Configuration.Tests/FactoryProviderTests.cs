@@ -26,7 +26,7 @@ namespace ServiceStack.Configuration.Tests
 			</object>
 		</objects>";
 
-		private IObjectFactory factory;
+		private IObjectFactory factoryConfig;
 
 		[SetUp]
 		public void SetUp()
@@ -35,7 +35,7 @@ namespace ServiceStack.Configuration.Tests
 			doc.LoadXml(objectsConfigXml);
 			var configHandler = new ObjectsConfigurationSectionHandler();
 			var objectConfigTypes = (Dictionary<string, ObjectConfigurationType>)configHandler.Create(null, null, doc.DocumentElement);
-			factory = FactoryUtils.CreateObjectFactoryFromConfig(objectConfigTypes);
+			this.factoryConfig = FactoryUtils.CreateObjectFactoryFromConfig(objectConfigTypes);
 		}
 
 		[Test]
@@ -53,20 +53,27 @@ namespace ServiceStack.Configuration.Tests
 		public void A_registered_db4o_provider_manager_can_be_resolved()
 		{
 			var db4oProvider = new Db4oFileProviderManager("test.db4o");
-			var factoryProvider = new FactoryProvider(factory);
-			factoryProvider.Register(db4oProvider);
-			var provider = factoryProvider.Resolve<IPersistenceProviderManager>();
+			var factory = new FactoryProvider(this.factoryConfig);
+			factory.Register(db4oProvider);
+			var provider = factory.Resolve<IPersistenceProviderManager>();
 		}
 
 		[Test]
 		public void A_RsaPrivateKey_can_be_created_and_configured_in_code()
 		{
 			var privateKey = new RsaPrivateKey(ConfigUtils.GetAppSetting("ServerPrivateKey"));
-			var factoryProvider = new FactoryProvider(factory);
-			factoryProvider.Register(privateKey);
-			var resolvedPrivateKey = factoryProvider.Resolve<RsaPrivateKey>();
+			var factory = new FactoryProvider(this.factoryConfig);
+			factory.Register(privateKey);
+			var resolvedPrivateKey = factory.Resolve<RsaPrivateKey>();
 			Assert.That(resolvedPrivateKey, Is.Not.Null);
 		}
 
+		[Test]
+		public void A_non_existant_provider_returns_null()
+		{
+			var factory = new FactoryProvider(this.factoryConfig);
+			var config = factory.Resolve<IResourceManager>();
+			Assert.That(config, Is.Null);
+		}
 	}
 }

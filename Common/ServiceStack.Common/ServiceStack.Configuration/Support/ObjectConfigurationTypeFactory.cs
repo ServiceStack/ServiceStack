@@ -50,6 +50,7 @@ namespace ServiceStack.Configuration.Support
 		public T Create<T>()
 		{
 			var toType = typeof(T);
+			if (objectTypes == null) return default(T);
 			var matchingTypes = objectTypes.Where(objectType => ReflectionUtils.CanCast(toType, objectType.Value)).ToList();
 			if (matchingTypes.Count == 0)
 			{
