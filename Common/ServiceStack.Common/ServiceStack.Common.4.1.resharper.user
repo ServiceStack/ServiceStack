@@ -14,11 +14,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oTestBase.cs" caret="681" scrollPosition="0|0" />
-      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidEmailValidationTests.cs" caret="0" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oAdvancedQueryTests.cs" caret="414" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicQueryTests.cs" caret="2326" scrollPosition="10|63" />
-      <File id="E74F7B37-D01A-4324-B163-03F91717DA2F/f:get-latest-libs.bat" caret="142" scrollPosition="0|0" />
       <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="1662" scrollPosition="0|0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="512" scrollPosition="0|0" />
       <File id="01796492-6DFF-49EF-AE78-C49AE56AD9A8/f:Db4oPersistenceProvider.cs" caret="9472" scrollPosition="0|333" />
@@ -44,17 +39,13 @@
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:ConfigurationResourceManager.cs" caret="164" scrollPosition="0|0" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="13" scrollPosition="0|0" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2006" scrollPosition="0|42" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:ValidSessionAttribute.cs" caret="1885" scrollPosition="0|6" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:NotNullValidationTests.cs" caret="0" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:RequiredTextValidationTests.cs" caret="0" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateSessionTests.cs" caret="365" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ModelValidator.cs" caret="3889" scrollPosition="0|92" />
     </RecentFiles>
     <RecentEdits>
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1807" scrollPosition="0|32" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="1807" scrollPosition="0|42" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2815" scrollPosition="0|42" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2700" scrollPosition="0|42" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2353" scrollPosition="0|48" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2197" scrollPosition="0|48" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="3259" scrollPosition="0|66" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="3507" scrollPosition="0|66" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="7391" scrollPosition="0|232" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="8255" scrollPosition="0|260" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="7638" scrollPosition="0|222" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="7882" scrollPosition="0|222" />
@@ -76,6 +67,15 @@
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="775" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="889" scrollPosition="0|0" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="13" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:ValidSessionAttribute.cs" caret="0" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:ValidSessionAttribute.cs" caret="144" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:ValidSessionAttribute.cs" caret="97" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/d:Support/f:ValidSessionAttribute.cs" caret="1802" scrollPosition="0|15" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateSessionTests.cs" caret="557" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateSessionTests.cs" caret="723" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateSessionTests.cs" caret="270" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateSessionTests.cs" caret="464" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateSessionTests.cs" caret="1123" scrollPosition="0|4" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -88,21 +88,21 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="var" priority="182" />
+      <Item value="var" priority="183" />
       <Item value="typeof" priority="52" />
-      <Item value="private" priority="18" />
-      <Item value="class" priority="10" />
+      <Item value="private" priority="19" />
+      <Item value="class" priority="11" />
       <Item value="log" priority="8" />
       <Item value="Load" priority="0" />
       <Item value="type" priority="78" />
       <Item value="TypeDefinition" priority="3" />
       <Item value="Dictionary" priority="7" />
       <Item value="Type" priority="33" />
-      <Item value="new" priority="150" />
+      <Item value="new" priority="154" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
-      <Item value="public" priority="94" />
+      <Item value="public" priority="96" />
       <Item value="string" priority="106" />
-      <Item value="return" priority="113" />
+      <Item value="return" priority="116" />
       <Item value="object" priority="42" />
       <Item value="if" priority="122" />
       <Item value="TypeDefinitionMap" priority="0" />
@@ -119,7 +119,7 @@
       <Item value="MemberwiseClone" priority="0" />
       <Item value="IResourceManager" priority="0" />
       <Item value="resourceManager" priority="1" />
-      <Item value="this" priority="117" />
+      <Item value="this" priority="122" />
       <Item value="factoryProvider" priority="4" />
       <Item value="configSectionName" priority="1" />
       <Item value="name" priority="13" />
@@ -169,7 +169,7 @@
       <Item value="ServiceClient" priority="1" />
       <Item value="TestFixture" priority="2" />
       <Item value="factory" priority="11" />
-      <Item value="Assert" priority="21" />
+      <Item value="Assert" priority="23" />
       <Item value="gateway" priority="3" />
       <Item value="as" priority="7" />
       <Item value="xmlServiceClient" priority="0" />
@@ -189,7 +189,7 @@
       <Item value="objectTypes" priority="5" />
       <Item value="objectName" priority="2" />
       <Item value="Length" priority="8" />
-      <Item value="int" priority="16" />
+      <Item value="int" priority="17" />
       <Item value="constructorValueType" priority="1" />
       <Item value="argValuesCount" priority="1" />
       <Item value="Create" priority="2" />
@@ -205,7 +205,7 @@
       <Item value="baseType" priority="3" />
       <Item value="do" priority="0" />
       <Item value="false" priority="18" />
-      <Item value="true" priority="15" />
+      <Item value="true" priority="16" />
       <Item value="areSameTypes" priority="0" />
       <Item value="propertyDefinition" priority="2" />
       <Item value="GetRefType" priority="0" />
@@ -449,7 +449,7 @@
       <Item value="assignTo" priority="1" />
       <Item value="assignFrom" priority="0" />
       <Item value="CodeVariableReferenceExpression" priority="3" />
-      <Item value="model" priority="3" />
+      <Item value="model" priority="4" />
       <Item value="ToModel" priority="0" />
       <Item value="CodeGenerator" priority="1" />
       <Item value="CodeDomUtils" priority="0" />
@@ -587,6 +587,12 @@
       <Item value="isSupported" priority="1" />
       <Item value="SelectMany" priority="0" />
       <Item value="isDictionary" priority="0" />
+      <Item value="Guid" priority="2" />
+      <Item value="UserSessionId" priority="1" />
+      <Item value="ExampleModel1" priority="0" />
+      <Item value="Model" priority="0" />
+      <Item value="ValidationResult" priority="0" />
+      <Item value="ModelBase" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="10" />
@@ -759,7 +765,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
       <Item value="That" priority="20" />
-      <Item value="Fail" priority="1" />
+      <Item value="Fail" priority="2" />
       <Item value="IsNotNull" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.Tests.Support.ITestGateway">
@@ -1292,6 +1298,14 @@
     <ItemStatistics item="Qualified:System.Int32">
       <Item value="CompareTo" priority="0" />
       <Item value="ToString" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Validation.Tests.ValidateSessionTests+ExampleModel1">
+      <Item value="UserId" priority="1" />
+      <Item value="SessionId" priority="1" />
+      <Item value="Validate" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Validation.ModelValidator">
+      <Item value="Validate" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

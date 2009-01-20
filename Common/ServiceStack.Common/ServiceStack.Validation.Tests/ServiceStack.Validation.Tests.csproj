@@ -35,6 +35,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Sakila.DomainModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ServiceStack.DataAccess.Db4oProvider.Tests\Lib\Sakila.DomainModel.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -50,15 +58,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseValidationTests.cs" />
+    <Compile Include="ValidateSessionTests.cs" />
     <Compile Include="CreditCardValidationTests.cs" />
     <Compile Include="NotNullValidationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequiredTextValidationTests.cs" />
     <Compile Include="Support\ErrorCodes.cs" />
     <Compile Include="Support\TestBase.cs" />
+    <Compile Include="Support\ValidSessionAttribute.cs" />
     <Compile Include="ValidEmailValidationTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
+      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
+      <Name>ServiceStack.ServiceInterface</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Validation\ServiceStack.Validation.csproj">
       <Project>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</Project>
       <Name>ServiceStack.Validation</Name>
