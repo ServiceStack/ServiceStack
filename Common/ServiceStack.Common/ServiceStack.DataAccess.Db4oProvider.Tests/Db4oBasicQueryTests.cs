@@ -77,6 +77,21 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		}
 
 		[Test]
+		public void GetById_that_does_not_exist_returns_null()
+		{
+			const long NON_EXISTANT_USER_ID = 100;
+			var customer = provider.GetById<Customer>(NON_EXISTANT_USER_ID);
+			Assert.That(customer, Is.Null);
+		}
+
+		[Test]
+		public void GetById_for_type_that_does_not_exist_returns_null()
+		{
+			var customerOrder = provider.GetById<CustomerOrder>(1);
+			Assert.That(customerOrder, Is.Null);
+		}
+
+		[Test]
 		public void GetByIntIds()
 		{
 			var googleFounderIds = new[] { 2, 3 };

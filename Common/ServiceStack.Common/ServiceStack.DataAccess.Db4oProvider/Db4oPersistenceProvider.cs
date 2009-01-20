@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Db4objects.Db4o;
+using Db4objects.Db4o.Ext;
 using Db4objects.Db4o.Query;
 using ServiceStack.DataAccess.Criteria;
 using ServiceStack.Logging;
@@ -103,12 +104,22 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				if (isPotentialInternalId)
 				{
 					var idValue = (long)id;
-					var entity = this.ObjectContainer.Ext().GetByID(idValue);
+					object entity;
+					try
+					{
+						entity = this.ObjectContainer.Ext().GetByID(idValue);
+					}
+					catch (Exception ex)
+					{
+						log.Error(string.Format("Error calling 'this.ObjectContainer.Ext().GetByID({0})'", idValue), ex);
+						return default(T);
+					}
 					//As internal Id's can differ from the entity id after defragmentation of the database,
 					//It is only valid if the entity with the internal id is of the same type as T and
 					//that entity.Id == entity.InternalId
 					if (entity != null && entity.GetType() == type)
 					{
+						log.DebugFormat("this.ObjectContainer.Ext().Activate(entity)");
 						this.ObjectContainer.Ext().Activate(entity);
 						var entityIdValue = fieldInfo.GetValue(entity);
 						if (idValue.Equals(entityIdValue))

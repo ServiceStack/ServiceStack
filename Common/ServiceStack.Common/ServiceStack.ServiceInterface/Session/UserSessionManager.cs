@@ -115,7 +115,7 @@ namespace ServiceStack.ServiceInterface.Session
 		/// <param name="userId">The user global id.</param>
 		/// <param name="clientSessionId">The client session id.</param>
 		/// <returns></returns>
-		public UserClientSession GetUserClientSession(int userId, Guid clientSessionId)
+		public UserClientSession GetUserClientSession(long userId, Guid clientSessionId)
 		{
 			var userSession = GetUserSession(userId);
 			return userSession != null ? userSession.GetClientSession(clientSessionId) : null;
@@ -127,7 +127,7 @@ namespace ServiceStack.ServiceInterface.Session
 		/// <param name="userId">The user global id.</param>
 		/// <param name="clientSessionId">The client session id.</param>
 		/// <returns></returns>
-		public UserClientSession GetUserSecureClientSession(int userId, Guid clientSessionId)
+		public UserClientSession GetUserSecureClientSession(long userId, Guid clientSessionId)
 		{
 			var userSession = GetUserSession(userId);
 			if (userSession != null)

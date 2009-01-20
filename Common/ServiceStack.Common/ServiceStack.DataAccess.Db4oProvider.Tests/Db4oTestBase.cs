@@ -48,6 +48,11 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 			}
 		}
 
+		public class CustomerOrder
+		{
+			public long Id { get; set; }
+		}
+
 		[TestFixtureSetUp]
 		public void Init()
 		{
