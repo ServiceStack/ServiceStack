@@ -443,6 +443,5 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			this.ObjectContainer.Close();
 			this.ObjectContainer.Dispose();
 		}
-
 	}
 }

@@ -47,9 +47,10 @@ namespace ServiceStack.Translators.Generator
 				foreach (var type in modelAssemblyTypes)
 				{
 					var attrs = type.GetCustomAttributes(typeof(TranslateModelAttribute), false).ToList();
-					if (attrs.Count <= 0) continue;
+					var extensionAttrs = type.GetCustomAttributes(typeof(TranslateModelExtentionAttribute), false).ToList();
 
-					var attr = (TranslateModelAttribute)attrs[0];
+					if (attrs.Count == 0 && extensionAttrs.Count == 0) continue;
+
 					var outPath = Path.Combine(this.OutputDir, type.Name + ".generated.cs");
 
 					if (File.Exists(outPath))
@@ -66,8 +67,21 @@ namespace ServiceStack.Translators.Generator
 					}
 
 					log.InfoFormat("Creating file '{0}'...", outPath);
-					var generator = new TranslatorClassGenerator(CodeLang.CSharp);
-					generator.Write(type, outPath, attr);
+
+
+					if (attrs.Count > 0)
+					{
+						var attr = (TranslateModelAttribute)attrs[0];
+						var generator = new TranslatorClassGenerator(CodeLang.CSharp);
+						generator.Write(type, outPath, attr);
+					}
+					if (extensionAttrs.Count > 0)
+					{
+						var extAttr = (TranslateModelExtentionAttribute)attrs[0];
+						var generator = new ExtensionTranslatorClassGenerator(CodeLang.CSharp);
+						var attr = new TranslateModelAttribute(extAttr.FromType, extAttr.ToType);
+						generator.Write(type, outPath, attr);
+					}
 				}
 
 			}

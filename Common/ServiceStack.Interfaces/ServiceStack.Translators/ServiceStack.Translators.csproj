@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TranslateModelExtentionAttribute.cs" />
     <Compile Include="TranslateMemberAttribute.cs" />
     <Compile Include="TranslateModelAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
