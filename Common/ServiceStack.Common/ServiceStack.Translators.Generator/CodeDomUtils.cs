@@ -3,6 +3,7 @@ using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CSharp;
 using Microsoft.JScript;
 using Microsoft.VisualBasic;
@@ -168,12 +169,18 @@ namespace ServiceStack.Translators.Generator
 				new CodeTypeReference(genericTypeDefinitionName.FullName, new CodeTypeReference(type)), paramName);
 		}
 
-
 		public static CodeAssignStatement Assign(this CodeParameterDeclarationExpression property, string assignTo, string assignFrom)
 		{
 			return new CodeAssignStatement(
 				new CodePropertyReferenceExpression(new CodeVariableReferenceExpression(property.Name), assignTo),
 				new CodeArgumentReferenceExpression(assignFrom));
+		}
+
+		public static CodeAssignStatement Assign(this CodeParameterDeclarationExpression property, string assignTo, CodeVariableReferenceExpression assignFrom)
+		{
+			return new CodeAssignStatement(
+				new CodePropertyReferenceExpression(new CodeVariableReferenceExpression(property.Name), assignTo),
+				assignFrom);
 		}
 
 		public static CodeAssignStatement Assign(this CodeParameterDeclarationExpression property, string assignTo, CodePropertyReferenceExpression assignFrom)
@@ -239,6 +246,24 @@ namespace ServiceStack.Translators.Generator
 		public static CodeTypeOfExpression RefType(this CodeParameterDeclarationExpression property)
 		{
 			return new CodeTypeOfExpression(property.Type);
+		}
+
+		public static CodeVariableReferenceExpression RefArg(this CodeParameterDeclarationExpression property)
+		{
+			return new CodeVariableReferenceExpression(property.Name);
+		}
+
+		/// <summary>
+		/// Adds the 'Extension' Attribute to the parameter.
+		/// 
+		/// Warning: this modfies and returns the param provided.
+		/// </summary>
+		/// <param name="property">The property.</param>
+		/// <returns></returns>
+		public static CodeParameterDeclarationExpression ExtensionVar(this CodeParameterDeclarationExpression property)
+		{
+			property.CustomAttributes.Add(new CodeAttributeDeclaration("Extension"));
+			return property;
 		}
 
 		/// <summary>
@@ -323,6 +348,11 @@ namespace ServiceStack.Translators.Generator
 			return new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(type), methodName, methodParams);
 		}
 
+		public static CodeMethodInvokeExpression CallStatic(this string typeName, string methodName, params CodeExpression[] methodParams)
+		{
+			return new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeName), methodName, methodParams);
+		}
+
 		public static CodeMethodInvokeExpression Call(this Type type, string methodName, params CodeVariableDeclarationStatement[] varMethodParams)
 		{
 			var methodParams = varMethodParams.ToList().ConvertAll(x => x.Name.RefArgument()).ToArray();
@@ -381,6 +411,11 @@ namespace ServiceStack.Translators.Generator
 		public static CodePropertyReferenceExpression RefProperty(this CodeVariableDeclarationStatement varDeclaration, string propertyName)
 		{
 			return new CodePropertyReferenceExpression(new CodeArgumentReferenceExpression(varDeclaration.Name), propertyName);
+		}
+
+		public static CodeVariableReferenceExpression RefVar(this CodeVariableDeclarationStatement varDeclaration)
+		{
+			return new CodeVariableReferenceExpression(varDeclaration.Name);
 		}
 
 		public static CodeIterationStatement ForEach(this CodeParameterDeclarationExpression enumerableVar, Type itemType, out CodeVariableDeclarationStatement item)

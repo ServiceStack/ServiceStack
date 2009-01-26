@@ -13,6 +13,8 @@ namespace ServiceStack.Translators.Generator
 {
 	class Program
 	{
+		static readonly ILog log = LogManager.GetLogger(typeof(Program));
+
 		[CommandLineSwitch("f", "Overwrite existing files")]
 		public bool ForceOverwrite { get; set; }
 
@@ -35,7 +37,6 @@ namespace ServiceStack.Translators.Generator
 			{
 				Console.WriteLine("Generating translators...");
 				LogManager.LogFactory = new ConsoleLogFactory();
-				ILog log = LogManager.GetLogger(typeof(Program));
 
 				var parser = new Parser(System.Environment.CommandLine, this);
 				parser.Parse();
@@ -53,21 +54,7 @@ namespace ServiceStack.Translators.Generator
 
 					var outPath = Path.Combine(this.OutputDir, type.Name + ".generated.cs");
 
-					if (File.Exists(outPath))
-					{
-						if (!this.ForceOverwrite)
-						{
-							log.DebugFormat("Skipping existing file '{0}'", outPath);
-							continue;
-						}
-						else
-						{
-							log.InfoFormat("Overwriting existing file '{0}'", outPath);
-						}
-					}
-
-					log.InfoFormat("Creating file '{0}'...", outPath);
-
+					if (!DoGenerateTranslator(outPath)) continue;
 
 					if (attrs.Count > 0)
 					{
@@ -77,10 +64,8 @@ namespace ServiceStack.Translators.Generator
 					}
 					if (extensionAttrs.Count > 0)
 					{
-						var extAttr = (TranslateModelExtentionAttribute)attrs[0];
 						var generator = new ExtensionTranslatorClassGenerator(CodeLang.CSharp);
-						var attr = new TranslateModelAttribute(extAttr.FromType, extAttr.ToType);
-						generator.Write(type, outPath, attr);
+						generator.Write(type, this.OutputDir);
 					}
 				}
 
@@ -90,6 +75,25 @@ namespace ServiceStack.Translators.Generator
 				Console.Error.Write(ex.GetType() + ": " + ex.Message + "\n" + ex.StackTrace);
 				throw;
 			}
+		}
+
+		private bool DoGenerateTranslator(string outPath)
+		{
+			if (File.Exists(outPath))
+			{
+				if (!this.ForceOverwrite)
+				{
+					log.DebugFormat("Skipping existing file '{0}'", outPath);
+					return false;
+				}
+				else
+				{
+					log.InfoFormat("Overwriting existing file '{0}'", outPath);
+				}
+			}
+
+			log.InfoFormat("Creating file '{0}'...", outPath);
+			return true;
 		}
 	}
 }

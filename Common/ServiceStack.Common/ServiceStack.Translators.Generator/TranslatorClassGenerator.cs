@@ -63,7 +63,7 @@ namespace ServiceStack.Translators.Generator
 		}
 
 		#region Overridable Implementations
-		protected virtual CodeTypeDeclaration DeclareType(Type modelType)
+		public static CodeTypeDeclaration DeclareType(Type modelType)
 		{
 			return new CodeTypeDeclaration {
 				IsClass = true,
@@ -73,40 +73,40 @@ namespace ServiceStack.Translators.Generator
 			};
 		}
 
-		protected virtual CodeMemberMethod DeclareToListMethod(Type toModelType, string methodName, CodeParameterDeclarationExpression from)
+		public static CodeMemberMethod DeclareToListMethod(Type toModelType, string methodName, CodeParameterDeclarationExpression from)
 		{
 			return methodName.DeclareMethod(toModelType.RefGeneric(typeof(List<>)),
 				MemberAttributes.Public | MemberAttributes.Static, from);
 		}
 
-		protected virtual CodeMemberMethod DeclareToModelMethod(Type toModelType, string methodName)
+		public static CodeMemberMethod DeclareToModelMethod(Type toModelType, string methodName)
 		{
 			return methodName.DeclareMethod(toModelType, MemberAttributes.Public);
 		}
 
-		protected virtual CodeMemberMethod DeclareParseMethod(string methodName, Type toDtoType, CodeParameterDeclarationExpression from)
+		public static CodeMemberMethod DeclareParseMethod(string methodName, Type toDtoType, CodeParameterDeclarationExpression from)
 		{
 			return methodName.DeclareMethod(toDtoType, MemberAttributes.Public | MemberAttributes.Static, from);
 		}
 
-		protected virtual CodeMemberMethod DeclareParseEnumerableMethod(string methodName, Type modelType, CodeParameterDeclarationExpression from)
+		public static CodeMemberMethod DeclareParseEnumerableMethod(string methodName, Type modelType, CodeParameterDeclarationExpression from)
 		{
 			return methodName.DeclareMethod(
 					modelType.RefGeneric(typeof(List<>)), MemberAttributes.Public | MemberAttributes.Static, from);
 		}
 		#endregion
 
-		private static string GetToModelMethodName(Type fromDtoType, Type toModelType)
+		public static string GetToModelMethodName(Type fromDtoType, Type toModelType)
 		{
 			return toModelType.Name == fromDtoType.Name ? "ToModel" : "To" + toModelType.Name;
 		}
 
-		private static string GetToModelListMethodName(Type fromDtoType, Type toModelType)
+		public static string GetToModelListMethodName(Type fromDtoType, Type toModelType)
 		{
 			return toModelType.Name == fromDtoType.Name ? "ToModelList" : "To" + toModelType.Name + "List";
 		}
 
-		private static string GetUpdateMethodName(Type fromDtoType, Type toModelType)
+		public static string GetUpdateMethodName(Type fromDtoType, Type toModelType)
 		{
 			return toModelType.Name == fromDtoType.Name ? "UpdateModel" : "Update" + toModelType.Name;
 		}
@@ -122,10 +122,15 @@ namespace ServiceStack.Translators.Generator
 				return to;
 			}
 		*/
-		private CodeMemberMethod ToModelListMethod(Type fromDtoType, Type toModelType)
+		public static CodeMemberMethod ToModelListMethod(Type fromDtoType, Type toModelType)
+		{
+			var from = fromDtoType.Param("from", typeof(IEnumerable<>));
+			return ToModelListMethod(fromDtoType, toModelType, from);
+		}
+
+		public static CodeMemberMethod ToModelListMethod(Type fromDtoType, Type toModelType, CodeParameterDeclarationExpression from)
 		{
 			var methodName = GetToModelListMethodName(fromDtoType, toModelType);
-			var from = fromDtoType.Param("from", typeof(IEnumerable<>));
 			var method = DeclareToListMethod(toModelType, methodName, from);
 
 			method.Statements.Add(from.ReturnNullIfNull());
@@ -145,7 +150,7 @@ namespace ServiceStack.Translators.Generator
 			return method;
 		}
 
-		private CodeMemberMethod ToModelMethod(Type fromDtoType, Type toModelType)
+		public static CodeTypeMember ToModelMethod(Type fromDtoType, Type toModelType)
 		{
 			var methodName = GetToModelMethodName(fromDtoType, toModelType);
 			var updateMethodName = GetUpdateMethodName(fromDtoType, toModelType);
@@ -154,26 +159,28 @@ namespace ServiceStack.Translators.Generator
 			return method;
 		}
 
-		private static CodeMemberMethod UpdateModelMethod(Type fromDtoType, Type toModelType)
+		public static CodeTypeMember UpdateModelMethod(Type fromDtoType, Type toModelType)
 		{
 			var methodName = GetUpdateMethodName(fromDtoType, toModelType);
 			var toModel = toModelType.Param("model");
 			var method = methodName.DeclareMethod(toModelType, MemberAttributes.Public, toModel);
 
 			var typeNames = toModelType.GetProperties().ToList().Select(x => x.Name);
+			var fromDtoVar = fromDtoType.DeclareVar("from", new CodeThisReferenceExpression());
+			method.Statements.Add(fromDtoVar);
 			foreach (var fromDtoProperty in fromDtoType.GetProperties())
 			{
 				if (!typeNames.Contains(fromDtoProperty.Name)) continue;
 
-				method.Statements.Add(CreateToModelAssignmentMethod(toModel, fromDtoProperty, toModelType));
+				method.Statements.Add(CreateToModelAssignmentMethod(toModel, fromDtoProperty, toModelType, fromDtoVar.RefVar()));
 			}
 
 			method.Statements.Add(toModel.Return());
 			return method;
 		}
 
-		private static CodeStatement CreateToModelAssignmentMethod(CodeParameterDeclarationExpression toModel,
-			PropertyInfo fromDtoProperty, Type toModelType)
+		public static CodeStatement CreateToModelAssignmentMethod(CodeParameterDeclarationExpression toModel,
+			PropertyInfo fromDtoProperty, Type toModelType, CodeVariableReferenceExpression fromDtoVar)
 		{
 
 			//model.Name = this.Name;
@@ -194,7 +201,7 @@ namespace ServiceStack.Translators.Generator
 			var areBothTheSameTypes = toModelProperty.PropertyType.IsAssignableFrom(fromDtoProperty.PropertyType);
 			if (areBothTheSameTypes)
 			{
-				return toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name);
+				return toModel.Assign(fromDtoProperty.Name, fromDtoVar.RefProperty(fromDtoProperty.Name));
 			}
 
 			//model.BillingAddress = this.BillingAddress.ToModel();
@@ -204,8 +211,8 @@ namespace ServiceStack.Translators.Generator
 			if (isModelAlso)
 			{
 				var toModelMethodName = GetToModelMethodName(fromDtoPropertyType, toModelPropertyType);
-				return fromDtoProperty.Name.ThisProperty().IfIsNotNull(
-					toModel.Assign(fromDtoProperty.Name, fromDtoProperty.Name.ThisProperty().Call(toModelMethodName))
+				return fromDtoVar.RefProperty(fromDtoProperty.Name).IfIsNotNull(
+					toModel.Assign(fromDtoProperty.Name, fromDtoVar.RefProperty(fromDtoProperty.Name).Call(toModelMethodName))
 				);
 			}
 
@@ -220,7 +227,7 @@ namespace ServiceStack.Translators.Generator
 				if (fromDtoIsModel)
 				{
 					var toModelListMethodName = GetToModelListMethodName(fromDtoPropertyType, toModelPropertyType);
-					return toModel.Assign(fromDtoProperty.Name, fromDtoPropertyType.GetGenericArguments()[0].Call(toModelListMethodName, fromDtoProperty.Name.ThisProperty()));
+					return toModel.Assign(fromDtoProperty.Name, fromDtoPropertyType.GetGenericArguments()[0].Call(toModelListMethodName, fromDtoVar.RefProperty(fromDtoProperty.Name)));
 				}
 			}
 
@@ -232,7 +239,7 @@ namespace ServiceStack.Translators.Generator
 				//model.CardType = StringConverterUtils.Parse<CardType>(this.CardType);
 				var methodResult = typeof(StringConverterUtils).CallGeneric("Parse",
 					new[] { toModelProperty.PropertyType.GenericDefinition() },
-					fromDtoProperty.Name.ThisProperty());
+					fromDtoVar.RefProperty(fromDtoProperty.Name));
 
 				return toModel.Assign(fromDtoProperty.Name.ThisProperty(), methodResult);
 			}
@@ -243,12 +250,17 @@ namespace ServiceStack.Translators.Generator
 				, toModelProperty.PropertyType.Namespace, toModelProperty.PropertyType.Name, toModelProperty.Name));
 		}
 
-		private CodeMemberMethod ParseMethod(Type toDtoType, Type fromModelType)
+		public static CodeTypeMember ParseMethod(Type toDtoType, Type fromModelType)
 		{
 			var methodName = "Parse";
 			var from = fromModelType.Param("from");
 			var method = DeclareParseMethod(methodName, toDtoType, from);
 
+			return ParseMethod(toDtoType, fromModelType, method, from);
+		}
+
+		public static CodeTypeMember ParseMethod(Type toDtoType, Type fromModelType, CodeMemberMethod method, CodeParameterDeclarationExpression from)
+		{
 			method.Statements.Add(from.ReturnNullIfNull());
 
 			// modelType to = new T();
@@ -266,7 +278,7 @@ namespace ServiceStack.Translators.Generator
 			return method;
 		}
 
-		private static CodeStatement CreateToDtoAssignmentMethod(CodeVariableDeclarationStatement toDto,
+		public static CodeStatement CreateToDtoAssignmentMethod(CodeVariableDeclarationStatement toDto,
 			PropertyInfo toDtoTypeProperty, Type fromModelType, CodeParameterDeclarationExpression fromModelParam)
 		{
 
@@ -336,25 +348,26 @@ namespace ServiceStack.Translators.Generator
 				, fromModelProperty.PropertyType.Namespace, fromModelProperty.PropertyType.Name, fromModelProperty.Name));
 		}
 
-		private CodeMemberMethod ParseEnumerableMethod(Type modelType, Type type)
+		public static CodeTypeMember ParseEnumerableMethod(Type dtoType, Type modelType)
 		{
 			var methodName = "ParseAll";
-			//var from = new CodeParameterDeclarationExpression(new CodeTypeReference("IEnumerable", new CodeTypeReference(type)), "from");
-			var from = type.Param("from", typeof(IEnumerable<>));
+			var from = modelType.Param("from", typeof(IEnumerable<>));
+			var method = DeclareParseEnumerableMethod(methodName, dtoType, from);
 
-			// public static List<modelType> methodName(IEnumerable<modelType> from) e.g:
-			// public static List<T> ParseAll(IEnumerable<T> from)
-			var method = DeclareParseEnumerableMethod(methodName, modelType, from);
+			return ParseEnumerableMethod(dtoType, modelType, method, from);
+		}
 
+		public static CodeTypeMember ParseEnumerableMethod(Type dtoType, Type modelType, CodeMemberMethod method, CodeParameterDeclarationExpression from)
+		{
 			method.Statements.Add(from.ReturnNullIfNull());
 
-			var to = "to".DeclareGenericVar(modelType, typeof(List<>));
+			var to = "to".DeclareGenericVar(dtoType, typeof(List<>));
 			method.Statements.Add(to);
 
 			CodeVariableDeclarationStatement item;
-			var iter = from.ForEach(type, out item);
+			var iter = from.ForEach(modelType, out item);
 			method.Statements.Add(iter);
-			iter.Statements.Add(to.Call("Add", modelType.Call("Parse", item)));
+			iter.Statements.Add(to.Call("Add", dtoType.Call("Parse", item)));
 
 			method.Statements.Add(to.Return());
 

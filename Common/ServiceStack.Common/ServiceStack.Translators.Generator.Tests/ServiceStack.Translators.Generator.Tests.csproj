@@ -58,13 +58,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Build\out-ext\AddressServiceModelTranslator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Build\out-ext\CustomerServiceModelTranslator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Build\out-ext\PhoneNumberServiceModelTranslator.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Build\out\Address.generated.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Build\out\Customer.generated.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Build\out\PhoneNumber.generated.cs" />
+    <Compile Include="Build\out\PhoneNumber.generated.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ExtensionTranslateGeneratorTests.cs" />
     <Compile Include="Support\DataContract\Address.cs" />
     <Compile Include="Support\DataContract\PhoneNumber.cs" />
     <Compile Include="Support\Model\Address.cs" />
@@ -72,6 +84,7 @@
     <Compile Include="Support\Model\Customer.cs" />
     <Compile Include="Support\Model\PhoneNumber.cs" />
     <Compile Include="Support\Model\PhoneNumberType.cs" />
+    <Compile Include="Support\ServiceModelTranslator.cs" />
     <Compile Include="TranslateGeneratorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

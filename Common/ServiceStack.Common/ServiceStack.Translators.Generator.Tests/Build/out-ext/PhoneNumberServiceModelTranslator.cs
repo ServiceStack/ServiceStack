@@ -1,18 +1,18 @@
-namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
+namespace ServiceStack.Translators.Generator.Tests.Support
 {
 	using System;
 	using System.Collections.Generic;
 	
 	
-	public partial class PhoneNumber
+	public static partial class PhoneNumberServiceModelTranslator
 	{
 		
-		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber ToModel()
+		public static ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber ToModel(this ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber from)
 		{
-			return this.UpdateModel(new ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber());
+			return PhoneNumberServiceModelTranslator.UpdateModel(from, new ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber());
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber> ToModelList(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber> ToModelList(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber> from)
 		{
 			if ((from == null))
 			{
@@ -31,15 +31,15 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return to;
 		}
 		
-		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber UpdateModel(ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber model)
+		public static ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber UpdateModel(this ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber fromModel, ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber model)
 		{
-			ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber from = this;
-			model.Type = ServiceStack.Common.Utils.StringConverterUtils.Parse<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumberType>(this.Type);
+			ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber from = fromModel;
+			model.Type = ServiceStack.Common.Utils.StringConverterUtils.Parse<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumberType>(from.Type);
 			model.Number = from.Number;
 			return model;
 		}
 		
-		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber Parse(ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber from)
+		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber Parse(this ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber from)
 		{
 			if ((from == null))
 			{
@@ -54,7 +54,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return to;
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber> ParseAll(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber> ParseAll(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber> from)
 		{
 			if ((from == null))
 			{

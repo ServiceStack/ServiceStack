@@ -1,18 +1,18 @@
-namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
+namespace ServiceStack.Translators.Generator.Tests.Support
 {
 	using System;
 	using System.Collections.Generic;
 	
 	
-	public partial class Address
+	public static partial class AddressServiceModelTranslator
 	{
 		
-		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Address ToModel()
+		public static ServiceStack.Translators.Generator.Tests.Support.Model.Address ToModel(this ServiceStack.Translators.Generator.Tests.Support.DataContract.Address from)
 		{
-			return this.UpdateModel(new ServiceStack.Translators.Generator.Tests.Support.Model.Address());
+			return AddressServiceModelTranslator.UpdateModel(from, new ServiceStack.Translators.Generator.Tests.Support.Model.Address());
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Address> ToModelList(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Address> ToModelList(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> from)
 		{
 			if ((from == null))
 			{
@@ -31,15 +31,15 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return to;
 		}
 		
-		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Address UpdateModel(ServiceStack.Translators.Generator.Tests.Support.Model.Address model)
+		public static ServiceStack.Translators.Generator.Tests.Support.Model.Address UpdateModel(this ServiceStack.Translators.Generator.Tests.Support.DataContract.Address fromModel, ServiceStack.Translators.Generator.Tests.Support.Model.Address model)
 		{
-			ServiceStack.Translators.Generator.Tests.Support.DataContract.Address from = this;
+			ServiceStack.Translators.Generator.Tests.Support.DataContract.Address from = fromModel;
 			model.Line1 = from.Line1;
 			model.Line2 = from.Line2;
 			return model;
 		}
 		
-		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Address Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
+		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Address Parse(this ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
 		{
 			if ((from == null))
 			{
@@ -51,7 +51,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return to;
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> ParseAll(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Address> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> ParseAll(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Address> from)
 		{
 			if ((from == null))
 			{
