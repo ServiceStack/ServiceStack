@@ -75,5 +75,24 @@ namespace ServiceStack.Validation
 			sb.Append("</ValidationException>");
 			return sb.ToString();
 		}
+
+		public static void ThrowValidationError(string errorCode, string fieldName, string errorMessage)
+		{
+			var error = new ValidationError(errorCode, fieldName, errorMessage);
+			throw new ValidationException(new ValidationResult(new List<ValidationError> { error }));
+		}
+
+		public static void ThrowValidationError(ValidationError error)
+		{
+			throw new ValidationException(new ValidationResult(new List<ValidationError> { error }));
+		}
+
+		public static void ThrowIfNotValid(ValidationResult validationResult)
+		{
+			if (!validationResult.IsValid)
+			{
+				throw new ValidationException(validationResult);
+			}
+		}
 	}
 }

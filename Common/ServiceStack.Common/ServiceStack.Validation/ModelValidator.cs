@@ -126,5 +126,14 @@ namespace ServiceStack.Validation
 		{
 			return GetObjectValidator(entity.GetType()).Validate(entity);
 		}
+
+		public static void ThrowIfNotValid(object entity)
+		{
+			var validationResult = ValidateObject(entity);
+			if (!validationResult.IsValid)
+			{
+				throw new ValidationException(validationResult);
+			}
+		}
 	}
 }
