@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A5646013-C243-453F-A2B6-3B6870A9637D}</ProjectGuid>
+    <ProjectGuid>{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.ServiceModel.Tests</RootNamespace>
-    <AssemblyName>ServiceStack.ServiceModel.Tests</AssemblyName>
+    <RootNamespace>ServiceStack.ServiceInterface.Tests</RootNamespace>
+    <AssemblyName>ServiceStack.ServiceInterface.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -35,6 +35,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -52,29 +56,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataContracts\ArrayOfGuidId.cs" />
-    <Compile Include="DataContracts\ArrayOfIntId.cs" />
-    <Compile Include="DataContracts\ArrayOfStringId.cs" />
-    <Compile Include="DataContracts\Customer.cs" />
-    <Compile Include="DataContracts\Operations\GetCustomers.cs" />
-    <Compile Include="DataContracts\Operations\GetCustomersResponse.cs" />
-    <Compile Include="DataContracts\Properties.cs" />
-    <Compile Include="DataContracts\Property.cs" />
-    <Compile Include="DataContracts\ResponseError.cs" />
-    <Compile Include="DataContracts\ResponseStatus.cs" />
-    <Compile Include="KeyValueDataContractDeserializerTests.cs" />
+    <Compile Include="PortResolverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StringConverterUtilsTests.cs" />
-    <Compile Include="XlinqExtensionsTests.cs" />
+    <Compile Include="Support\Version100\GetCustomersHandler.cs" />
+    <Compile Include="ZeroConfigServiceResolverTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
+    <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
+      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
+      <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
-      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
-      <Name>ServiceStack.ServiceModel</Name>
+    <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj">
+      <Project>{A5646013-C243-453F-A2B6-3B6870A9637D}</Project>
+      <Name>ServiceStack.ServiceModel.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

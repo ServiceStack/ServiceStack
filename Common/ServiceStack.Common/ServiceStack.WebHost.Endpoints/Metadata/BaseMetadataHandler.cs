@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		protected virtual void ProcessOperations(HtmlTextWriter writer)
 		{
-			var operations = new ServiceOperations(EndpointHost.ServiceModelAssembly, EndpointHost.Config.OperationsNamespace);
+			var operations = EndpointHost.ServiceOperations;
 			var operationName = Request.QueryString["op"];
 			if (operationName != null)
 			{

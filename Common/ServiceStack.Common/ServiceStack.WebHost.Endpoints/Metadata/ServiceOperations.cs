@@ -7,29 +7,14 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 {
 	public class ServiceOperations
 	{
-		public ServiceOperations(Assembly serviceModelAssembly, string operationNamespace)
+		IDictionary<string, Type> OperationTypesMap { get; set; }
+
+		public ServiceOperations(IList<Type> dtoTypes)
 		{
-			try
-			{
-				var dtoTypes = new List<Type>();
-				foreach (var type in serviceModelAssembly.GetTypes())
-				{
-					if (type.Namespace != operationNamespace) continue;
-					
-					var baseTypeWithSameName = GetBaseTypeWithTheSameName(type);
-					if (!dtoTypes.Contains(baseTypeWithSameName))
-					{
-						dtoTypes.Add(baseTypeWithSameName);
-					}
-				}
-				AllOperations = new Operations(dtoTypes);
-			}
-			catch (ReflectionTypeLoadException ex)
-			{
-				throw;
-			}
+			AllOperations = new Operations(dtoTypes);
 			ReplyOperations = AllOperations.ReplyOperations;
 			OneWayOperations = AllOperations.OneWayOperations;
+			LoadOperationTypes(dtoTypes);
 		}
 
 		/// <summary>
@@ -46,12 +31,32 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			var baseType = type;
 			do
 			{
-				if (baseType.Name == type.Name) 
+				if (baseType.Name == type.Name)
 					typesWithSameName.Push(baseType);
 			}
 			while ((baseType = baseType.BaseType) != null);
-						
+
 			return typesWithSameName.Pop();
+		}
+
+		/// <summary>
+		/// Loads the operation types into a dictionary.
+		/// If there are multiple operation types with the same name,
+		/// the operation type that is last will be the one 'discoverable' via the service.
+		/// </summary>
+		/// <param name="operationTypes">The operation types.</param>
+		private void LoadOperationTypes(IEnumerable<Type> operationTypes)
+		{
+			OperationTypesMap = new Dictionary<string, Type>();
+			foreach (var operationType in operationTypes)
+			{
+				OperationTypesMap[operationType.Name] = operationType;
+			}
+		}
+
+		public Type GetOperationType(string operationTypeName)
+		{
+			return OperationTypesMap.ContainsKey(operationTypeName) ? OperationTypesMap[operationTypeName] : null;
 		}
 
 		public Operations ReplyOperations { get; private set; }

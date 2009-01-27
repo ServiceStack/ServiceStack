@@ -1,8 +1,33 @@
+using System;
+using System.Collections.Generic;
+
 namespace ServiceStack.ServiceInterface
 {
+	/// <summary>
+	/// Provides service resolution functionality to retrieve a service based on a operationName and a version.
+	/// The service resolver also lists all operation types available for this service.
+	/// </summary>
 	public interface IServiceResolver
 	{
-		object FindService(string serviceName);
-		object FindService(string serviceName, int version);
+		/// <summary>
+		/// Returns a list of operation types available in this service
+		/// </summary>
+		/// <value>The operation types.</value>
+		IList<Type> OperationTypes { get; }
+
+		/// <summary>
+		/// Finds the handler when no version is provided.
+		/// </summary>
+		/// <param name="operationName">Name of the service.</param>
+		/// <returns></returns>
+		object FindService(string operationName);
+
+		/// <summary>
+		/// Finds the handler for the specified version.
+		/// </summary>
+		/// <param name="operationName">Name of the service.</param>
+		/// <param name="version">The version.</param>
+		/// <returns></returns>
+		object FindService(string operationName, int version);
 	}
 }

@@ -36,11 +36,11 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer from = this;
 			model.Id = from.Id;
 			model.Name = from.Name;
-			if ((this.BillingAddress != null))
+			if ((from.BillingAddress != null))
 			{
-				model.BillingAddress = this.BillingAddress.ToModel();
+				model.BillingAddress = from.BillingAddress.ToModel();
 			}
-			model.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToModelList(this.PhoneNumbers);
+			model.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToModelList(from.PhoneNumbers);
 			// Skipping property 'model.ModelReadOnly' because 'model.ModelReadOnly' is read-only
 			model.ModelWriteOnly = from.ModelWriteOnly;
 			model.DtoReadOnly = from.DtoReadOnly;

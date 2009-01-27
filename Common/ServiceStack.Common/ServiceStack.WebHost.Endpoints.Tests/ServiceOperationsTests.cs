@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using Sakila.ServiceModel.Version100.Operations.SakilaDb4oService;
 using ServiceStack.WebHost.Endpoints.Metadata;
@@ -10,10 +11,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class ServiceOperationsTests
 	{
+		private static ServiceOperations CreateServiceOperations(Assembly assembly, string operationNamespace)
+		{
+			var operationTypes = new List<Type>();
+			foreach (var type in assembly.GetTypes())
+			{
+				if (type.Namespace.StartsWith(operationNamespace))
+				{
+					operationTypes.Add(type);
+				}
+			}
+			return new ServiceOperations(operationTypes);
+		}
+
 		[Test]
 		public void ServiceOperations_only_provides_uniquely_named_types()
 		{
-			var operations = new ServiceOperations(typeof(GetCustomers).Assembly, typeof(GetCustomers).Namespace);
+			var operations = CreateServiceOperations(typeof(GetCustomers).Assembly, typeof(GetCustomers).Namespace);
 			var uniqueTypeNames = new List<string>();
 			foreach (var type in operations.AllOperations.Types)
 			{
@@ -25,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_load_ServiceModel_schemas()
 		{
-			var operations = new ServiceOperations(typeof(GetCustomers).Assembly, typeof(GetCustomers).Namespace);
+			var operations = CreateServiceOperations(typeof(GetCustomers).Assembly, typeof(GetCustomers).Namespace);
 			var schemaSet = XsdUtils.GetXmlSchemaSet(operations.AllOperations.Types);
 			var schemas = schemaSet.Schemas();
 		}

@@ -1,14 +1,14 @@
 using System.Runtime.Serialization;
 
-namespace ServiceStack.ServiceModel.Tests.DataContracts
+namespace ServiceStack.ServiceModel.Tests.DataContracts.Operations
 {
 	[DataContract(Namespace = "http://schemas.servicestack.net/types/")]
 	public class GetCustomers : IExtensibleDataObject
 	{
 		public GetCustomers()
 		{
-			CustomerIds = new ArrayOfIntId();
-			Version = 100;
+			this.CustomerIds = new ArrayOfIntId();
+			this.Version = 100;
 		}
 
 		[DataMember]

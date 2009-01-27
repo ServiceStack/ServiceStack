@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
     	public override void Execute(HttpContext context)
     	{
 			Request = context.Request;
-			var operations = new ServiceOperations(EndpointHost.ServiceModelAssembly, EndpointHost.Config.OperationsNamespace);
+			var operations = EndpointHost.ServiceOperations;
 
     		if (context.Request.QueryString["xsd"] != null)
     		{

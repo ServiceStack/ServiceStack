@@ -8,7 +8,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
     {
 		const string RESPONSE_SUFFIX = "Response";
 		
-		public Operations(List<Type> types)
+		public Operations(IList<Type> types)
     	{
     		Types = types;
 			var typeNames = types.Select(x => x.Name);
@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
         }
 
         public List<string> Names { get; private set; }
-        public List<Type> Types { get; private set; }
+        public IList<Type> Types { get; private set; }
 
 		public Operations ReplyOperations { get; private set; }
 		public Operations OneWayOperations { get; private set; }	

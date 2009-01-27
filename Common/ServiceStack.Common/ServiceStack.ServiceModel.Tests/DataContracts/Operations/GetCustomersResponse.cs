@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace ServiceStack.ServiceModel.Tests.DataContracts
+namespace ServiceStack.ServiceModel.Tests.DataContracts.Operations
 {
 	[DataContract(Namespace = "http://schemas.servicestack.net/types/")]
 	public class GetCustomersResponse : IExtensibleDataObject
 	{
 		public GetCustomersResponse()
 		{
-			Version = 100;
-			Customers = new List<Customer>();
+			this.Version = 100;
+			this.Customers = new List<Customer>();
 		}
 
 		[DataMember]

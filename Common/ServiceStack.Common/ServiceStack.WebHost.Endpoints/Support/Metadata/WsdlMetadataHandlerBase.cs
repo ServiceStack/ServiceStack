@@ -1,6 +1,5 @@
 using System;
 using System.Web;
-using ServiceStack.Logging;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
 
@@ -13,7 +12,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 		public override void Execute(HttpContext context)
 		{
 			context.Response.ContentType = "text/xml";
-			var operations = new ServiceOperations(EndpointHost.ServiceModelAssembly, EndpointHost.Config.OperationsNamespace);
+			var operations = EndpointHost.ServiceOperations;
+
 			var baseUri = GetBaseUri(context.Request);
 			var xsd = new XsdGenerator {
 				OperationTypes = operations.AllOperations.Types,
@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			var wsdlTemplate = GetWsdlTemplate();
 			wsdlTemplate.Xsd = xsd;
-			wsdlTemplate.ReplyOperationNames = operations.ReplyOperations.Names;
+			wsdlTemplate.ReplyOperationNames = EndpointHost.ServiceOperations.ReplyOperations.Names;
 			wsdlTemplate.OneWayOperationNames = operations.OneWayOperations.Names;
 			wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
 			wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";

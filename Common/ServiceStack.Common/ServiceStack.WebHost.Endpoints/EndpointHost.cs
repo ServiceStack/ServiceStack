@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.WebHost.Endpoints
 {
 	public class EndpointHost
 	{
+		public static ServiceOperations ServiceOperations { get; private set; }
+
 		private static EndpointHostConfig config;
 
 		public static EndpointHostConfig Config
@@ -21,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints
              		{"ServiceHost", value.ServiceHost},
              		{"ServiceController", value.ServiceController},
              		{"ServiceModelFinder", value.ServiceModelFinder},
-             		{"OperationsNamespace", value.OperationsNamespace},
+					//{"OperationsNamespace", value.OperationsNamespace},
              	};
 
 				var fieldsNotProvided = new List<string>();
@@ -38,19 +41,10 @@ namespace ServiceStack.WebHost.Endpoints
 					throw new ArgumentException("'{0}' are required fields", string.Join(", ", fieldsNotProvided.ToArray()));
 				}
 
+				ServiceOperations = new ServiceOperations(value.ServiceController.OperationTypes);
+
 				config = value;
 			}
-		}
-
-		public static string GetOperationTypeFullName(string operationTypeName)
-		{
-			AssertConfig();
-			return Config.OperationsNamespace + "." + operationTypeName;
-		}
-
-		public static Type GetOperationType(string operationTypeName)
-		{
-			return ServiceModelAssembly.GetType(Config.OperationsNamespace + "." + operationTypeName);
 		}
 
 		internal static object ExecuteService(object request)
@@ -63,15 +57,6 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			AssertConfig();
 			return Config.ServiceHost.ExecuteXmlService(xmlRequest);
-		}
-
-		internal static Assembly ServiceModelAssembly
-		{
-			get
-			{
-				AssertConfig();
-				return Config.ServiceModelFinder.GetType().Assembly;
-			}
 		}
 
 		private static void AssertConfig()

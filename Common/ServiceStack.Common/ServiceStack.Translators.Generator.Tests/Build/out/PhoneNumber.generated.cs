@@ -34,7 +34,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber UpdateModel(ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber model)
 		{
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber from = this;
-			model.Type = ServiceStack.Common.Utils.StringConverterUtils.Parse<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumberType>(this.Type);
+			model.Type = ServiceStack.Common.Utils.StringConverterUtils.Parse<ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumberType>(from.Type);
 			model.Number = from.Number;
 			return model;
 		}

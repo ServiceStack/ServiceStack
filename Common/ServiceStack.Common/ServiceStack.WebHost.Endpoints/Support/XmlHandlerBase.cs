@@ -10,8 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected static object CreateRequest(HttpRequest request, string operationName)
 		{
-			var typeName = EndpointHost.GetOperationTypeFullName(operationName);
-			var operationType = EndpointHost.ServiceModelAssembly.GetType(typeName);
+			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
 			if (request.HttpMethod == "GET")
 			{

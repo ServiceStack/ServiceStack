@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace ServiceStack.ServiceInterface
@@ -14,21 +15,22 @@ namespace ServiceStack.ServiceInterface
 	/// be named "VersionXXX" where XXX is the version numer.  The ports should be named
 	/// "[operation]Handler" where operation is the name of the service operation.
 	/// </remarks>
-	public abstract class BaseServiceResolver
+	public class ZeroConfigServiceResolver
 		: IServiceResolver
 	{
 		private readonly int minVersion;
 		private readonly int maxVersion;
 		private readonly IDictionary<int, IDictionary<string, Type>> handlerCacheByVersion;
+		private readonly IDictionary<string, List<int>> operationVersions;
 		private static readonly Regex handlerTypeNameRegex = new Regex(@".*\.Version([0-9]+)\.(.*)Handler$", RegexOptions.Compiled);
 
-		protected BaseServiceResolver()
+		public ZeroConfigServiceResolver(Assembly serviceInterfaceAssembly, Assembly serviceModelAssembly, string operationNamespace)
 		{
 			this.handlerCacheByVersion = new Dictionary<int, IDictionary<string, Type>>();
+			this.OperationTypes = GetOperationTypes(serviceModelAssembly, operationNamespace);
+			operationVersions = new Dictionary<string, List<int>>();
 
-			Type type = this.GetType();
-
-			foreach (Type typeInAssembly in type.Assembly.GetTypes())
+			foreach (Type typeInAssembly in serviceInterfaceAssembly.GetTypes())
 			{
 				const int VERSION_INDEX = 1;
 				const int PORT_NAME_INDEX = 2;
@@ -42,7 +44,13 @@ namespace ServiceStack.ServiceInterface
 				}
 
 				int versionNumber = Convert.ToInt32(match.Groups[VERSION_INDEX].Value);
-				string portName = match.Groups[PORT_NAME_INDEX].Value;
+				string operationName = match.Groups[PORT_NAME_INDEX].Value;
+
+				if (!operationVersions.ContainsKey(operationName))
+				{
+					operationVersions[operationName] = new List<int>();
+				}
+				operationVersions[operationName].Add(versionNumber);
 
 				if (versionNumber < this.minVersion)
 				{
@@ -64,19 +72,65 @@ namespace ServiceStack.ServiceInterface
 					this.handlerCacheByVersion.Add(versionNumber, handlerTypeCache);
 				}
 
-				handlerTypeCache.Add(portName, typeInAssembly);
+				handlerTypeCache.Add(operationName, typeInAssembly);
+			}
+
+			SortOperationVersions();
+		}
+
+		private void SortOperationVersions()
+		{
+			foreach (var list in this.operationVersions.Values)
+			{
+				list.Sort();
 			}
 		}
 
+		/// <summary>
+		/// Loads the operation types for all the types in the serviceModelAssembly that are in the 
+		/// operationNamespace provided. 
+		/// </summary>
+		/// <param name="serviceModelAssembly">The service model assembly.</param>
+		/// <param name="operationNamespace">The operation namespace.</param>
+		public List<Type> GetOperationTypes(Assembly serviceModelAssembly, string operationNamespace)
+		{
+			var operationTypes = new List<Type>();
+			if (serviceModelAssembly != null)
+			{
+				foreach (var serviceModelType in serviceModelAssembly.GetTypes())
+				{
+					if (serviceModelType.Namespace.StartsWith(operationNamespace))
+					{
+						operationTypes.Add(serviceModelType);
+					}
+				}
+			}
+			return operationTypes;
+		}
+
+		/// <summary>
+		/// Returns a list of operation types available in this service
+		/// </summary>
+		/// <value>The operation types.</value>
+		public IList<Type> OperationTypes
+		{
+			get; protected set;
+		}
 
 		/// <summary>
 		/// Finds a service by the service name (i.e. port name).
 		/// Always returns the port from the maximum version. 
 		/// </summary>
 		/// <returns>A new instance of the port</returns>
-		public virtual object FindService(string serviceName)
+		public virtual object FindService(string operationName)
 		{
-			return FindService(serviceName, this.maxVersion);
+			List<int> versions;
+			if (!operationVersions.TryGetValue(operationName, out versions))
+			{
+				throw new NotImplementedException(string.Format("Cannot find operation '{0}'", operationName));
+			}
+			var latestVersion = versions[versions.Count - 1];
+			return FindService(operationName, latestVersion);
 		}
 
 		/// <summary>

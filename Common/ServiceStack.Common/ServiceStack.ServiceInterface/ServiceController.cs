@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Logging;
@@ -88,6 +89,11 @@ namespace ServiceStack.ServiceInterface
 			}
 
 			throw new NotSupportedException("Cannot execute unknown service type: " + requestContext.OperationName);
+		}
+
+		public IList<Type> OperationTypes
+		{
+			get { return this.ServiceResolver.OperationTypes; }
 		}
 
 		private static void AssertServiceExists(object service, string operationName)
