@@ -39,6 +39,8 @@
     <Compile Include="IOneWayClient.cs" />
     <Compile Include="IReplyClient.cs" />
     <Compile Include="IServiceHost.cs" />
+    <Compile Include="PortRestriction.cs" />
+    <Compile Include="PortAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
