@@ -35,18 +35,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Sakila.ServiceModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Lib\Sakila.ServiceModel.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Build\ServiceStack.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -54,6 +42,7 @@
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -64,13 +53,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Support\Operations\GetCustomerResponse.cs" />
+    <Compile Include="Support\Operations\GetCustomers.cs" />
+    <Compile Include="Support\Operations\GetCustomersResponse.cs" />
+    <Compile Include="Support\Operations\StoreCustomer.cs" />
+    <Compile Include="TestBase.cs" />
+    <Compile Include="WsdlMetadataTests.cs" />
+    <Compile Include="OperationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceOperationsTests.cs" />
+    <Compile Include="Support\Operations\GetCustomer.cs" />
+    <Compile Include="Support\Types\Customer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
-      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
-      <Name>ServiceStack.ServiceModel</Name>
+    <ProjectReference Include="..\ServiceStack.WebHost.Endpoints\ServiceStack.WebHost.Endpoints.csproj">
+      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Name>ServiceStack.WebHost.Endpoints</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

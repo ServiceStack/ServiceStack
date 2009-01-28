@@ -9,7 +9,6 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
 		private IServiceController ServiceController { get; set; }
-		private IServiceModelFinder ServiceModelFinder { get; set; }
 		private readonly DateTime StartTime;
 
 		protected EndpointHostBase()
@@ -23,7 +22,6 @@ namespace ServiceStack.WebHost.Endpoints
 			config.ServiceHost = config.ServiceHost ?? this;
 			EndpointHost.Config = config;
 
-			this.ServiceModelFinder = config.ServiceModelFinder;
 			this.ServiceController = config.ServiceController;
 
 			var elapsed = DateTime.Now - this.StartTime;
@@ -44,7 +42,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			// Create a xml request DTO which the service controller will parse and reassign the call
 			// context request DTO to a object expected by the relevant port
-			var requestDto = new XmlRequestDto(xml, this.ServiceModelFinder);
+			var requestDto = new XmlRequestDto(xml);
 
 			using (var context = CreateOperationContext(requestDto))
 			{

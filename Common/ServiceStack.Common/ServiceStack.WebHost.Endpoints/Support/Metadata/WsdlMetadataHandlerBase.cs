@@ -14,28 +14,37 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			context.Response.ContentType = "text/xml";
 			var operations = EndpointHost.ServiceOperations;
 
-			var baseUri = GetBaseUri(context.Request);
-			var xsd = new XsdGenerator {
-				OperationTypes = operations.AllOperations.Types,
-				OptimizeForFlash = context.Request.QueryString["flash"] != null,
-				IncludeAllTypesInAssembly = context.Request.QueryString["includeAllTypes"] != null,
-			}.ToString();
+			var baseUri = GetBaseUri(context.Request.Url);
+			var optimizeForFlash = context.Request.QueryString["flash"] != null;
+			var includeAllTypesInAssembly = context.Request.QueryString["includeAllTypes"] != null;
 
-			var wsdlTemplate = GetWsdlTemplate();
-			wsdlTemplate.Xsd = xsd;
-			wsdlTemplate.ReplyOperationNames = EndpointHost.ServiceOperations.ReplyOperations.Names;
-			wsdlTemplate.OneWayOperationNames = operations.OneWayOperations.Names;
-			wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
-			wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";
+			var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, includeAllTypesInAssembly);
 
 			context.Response.Write(wsdlTemplate.ToString());
 		}
 
-		public string GetBaseUri(HttpRequest request)
+		public WsdlTemplateBase GetWsdlTemplate(ServiceOperations operations, string baseUri, bool optimizeForFlash, bool includeAllTypesInAssembly)
 		{
-			var appPath = request.Url.AbsolutePath;
+			var xsd = new XsdGenerator {
+				OperationTypes = operations.AllOperations.Types,
+				OptimizeForFlash = optimizeForFlash,
+				IncludeAllTypesInAssembly = includeAllTypesInAssembly,
+			}.ToString();
+
+			var wsdlTemplate = GetWsdlTemplate();
+			wsdlTemplate.Xsd = xsd;
+			wsdlTemplate.ReplyOperationNames = operations.ReplyOperations.Names;
+			wsdlTemplate.OneWayOperationNames = operations.OneWayOperations.Names;
+			wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
+			wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";
+			return wsdlTemplate;
+		}
+
+		public static string GetBaseUri(Uri requestUrl)
+		{
+			var appPath = requestUrl.AbsolutePath;
 			var endpointsPath = appPath.Substring(0, appPath.LastIndexOf('/') + 1);
-			return request.Url.GetLeftPart(UriPartial.Authority) + endpointsPath;
+			return requestUrl.GetLeftPart(UriPartial.Authority) + endpointsPath;
 		}
 	}
 }

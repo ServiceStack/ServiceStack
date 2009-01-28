@@ -28,6 +28,21 @@ namespace ServiceStack.ServiceInterface
 		/// <param name="operationName">Name of the service.</param>
 		/// <param name="version">The version.</param>
 		/// <returns></returns>
-		object FindService(string operationName, int version);
+		object FindService(string operationName, int? version);
+
+		/// <summary>
+		/// Finds the service model.
+		/// </summary>
+		/// <param name="operationName">Name of the operation.</param>
+		/// <returns></returns>
+		Type FindOperationType(string operationName);
+
+		/// <summary>
+		/// Finds the specified version service model.
+		/// </summary>
+		/// <param name="operationName">Name of the operation.</param>
+		/// <param name="version">The version.</param>
+		/// <returns></returns>
+		Type FindOperationType(string operationName, int? version);
 	}
 }

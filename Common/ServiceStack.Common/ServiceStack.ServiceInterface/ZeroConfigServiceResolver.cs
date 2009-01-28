@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using ServiceStack.Logging;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -18,25 +19,35 @@ namespace ServiceStack.ServiceInterface
 	public class ZeroConfigServiceResolver
 		: IServiceResolver
 	{
-		private readonly int minVersion;
-		private readonly int maxVersion;
-		private readonly IDictionary<int, IDictionary<string, Type>> handlerCacheByVersion;
-		private readonly IDictionary<string, List<int>> operationVersions;
+		private static readonly ILog log = LogManager.GetLogger(typeof(ZeroConfigServiceResolver));
+
+		private int minVersion;
+		private int maxVersion;
+		private IDictionary<int, IDictionary<string, Type>> handlerCacheByVersion;
+		private IDictionary<string, List<int>> handlerVersions;
 		private static readonly Regex handlerTypeNameRegex = new Regex(@".*\.Version([0-9]+)\.(.*)Handler$", RegexOptions.Compiled);
+		private static readonly Regex operationTypeRegex = new Regex(@".*Version([0-9]+)\..*", RegexOptions.Compiled);
 
 		public ZeroConfigServiceResolver(Assembly serviceInterfaceAssembly, Assembly serviceModelAssembly, string operationNamespace)
 		{
-			this.handlerCacheByVersion = new Dictionary<int, IDictionary<string, Type>>();
-			this.OperationTypes = GetOperationTypes(serviceModelAssembly, operationNamespace);
-			operationVersions = new Dictionary<string, List<int>>();
+			LoadOperations(serviceModelAssembly, operationNamespace);
 
-			foreach (Type typeInAssembly in serviceInterfaceAssembly.GetTypes())
+			LoadHandlers(serviceInterfaceAssembly);
+
+			SortOperationVersions();
+		}
+
+		private void LoadHandlers(Assembly serviceInterfaceAssembly)
+		{
+			this.handlerCacheByVersion = new Dictionary<int, IDictionary<string, Type>>();
+			this.handlerVersions = new Dictionary<string, List<int>>();
+			foreach (Type portType in serviceInterfaceAssembly.GetTypes())
 			{
 				const int VERSION_INDEX = 1;
 				const int PORT_NAME_INDEX = 2;
 				IDictionary<string, Type> handlerTypeCache;
 
-				Match match = handlerTypeNameRegex.Match(typeInAssembly.Namespace + "." + typeInAssembly.Name);
+				Match match = handlerTypeNameRegex.Match(portType.Namespace + "." + portType.Name);
 
 				if (!match.Success)
 				{
@@ -46,11 +57,11 @@ namespace ServiceStack.ServiceInterface
 				int versionNumber = Convert.ToInt32(match.Groups[VERSION_INDEX].Value);
 				string operationName = match.Groups[PORT_NAME_INDEX].Value;
 
-				if (!operationVersions.ContainsKey(operationName))
+				if (!this.handlerVersions.ContainsKey(operationName))
 				{
-					operationVersions[operationName] = new List<int>();
+					this.handlerVersions[operationName] = new List<int>();
 				}
-				operationVersions[operationName].Add(versionNumber);
+				this.handlerVersions[operationName].Add(versionNumber);
 
 				if (versionNumber < this.minVersion)
 				{
@@ -72,40 +83,62 @@ namespace ServiceStack.ServiceInterface
 					this.handlerCacheByVersion.Add(versionNumber, handlerTypeCache);
 				}
 
-				handlerTypeCache.Add(operationName, typeInAssembly);
+				handlerTypeCache.Add(operationName, portType);
 			}
-
-			SortOperationVersions();
 		}
+
+
 
 		private void SortOperationVersions()
 		{
-			foreach (var list in this.operationVersions.Values)
+			foreach (var list in this.handlerVersions.Values)
 			{
 				list.Sort();
 			}
 		}
 
+		private IDictionary<string, Type> typesByName;
 		/// <summary>
 		/// Loads the operation types for all the types in the serviceModelAssembly that are in the 
 		/// operationNamespace provided. 
 		/// </summary>
 		/// <param name="serviceModelAssembly">The service model assembly.</param>
 		/// <param name="operationNamespace">The operation namespace.</param>
-		public List<Type> GetOperationTypes(Assembly serviceModelAssembly, string operationNamespace)
+		protected void LoadOperations(Assembly serviceModelAssembly, string operationNamespace)
 		{
-			var operationTypes = new List<Type>();
-			if (serviceModelAssembly != null)
+			this.OperationTypes = new List<Type>();
+			this.typesByName = new Dictionary<string, Type>();
+			foreach (var serviceModelType in serviceModelAssembly.GetTypes())
 			{
-				foreach (var serviceModelType in serviceModelAssembly.GetTypes())
+				if (serviceModelType.Namespace.StartsWith(operationNamespace))
 				{
-					if (serviceModelType.Namespace.StartsWith(operationNamespace))
+					try
 					{
-						operationTypes.Add(serviceModelType);
+						if (!serviceModelType.Namespace.Contains("Version"))
+						{
+							log.WarnFormat("Ignoring DTO candidate: '{0}'", serviceModelType.FullName);
+							continue;
+						}
+						Match match = operationTypeRegex.Match(serviceModelType.FullName);
+						string versionText = match.Groups[1].Value;
+						int version = Convert.ToInt32(versionText);
+
+						if (match.Success)
+						{
+							this.typesByName[version + ":" + serviceModelType.Name] = serviceModelType;
+						}
 					}
+					catch (Exception ex)
+					{
+						log.ErrorFormat("Exception in ServiceModelFinderBase() parsing type: '{0}'",
+							serviceModelType.FullName, ex);
+
+						throw;
+					}
+
+					this.OperationTypes.Add(serviceModelType);
 				}
 			}
-			return operationTypes;
 		}
 
 		/// <summary>
@@ -124,24 +157,20 @@ namespace ServiceStack.ServiceInterface
 		/// <returns>A new instance of the port</returns>
 		public virtual object FindService(string operationName)
 		{
-			List<int> versions;
-			if (!operationVersions.TryGetValue(operationName, out versions))
-			{
-				throw new NotImplementedException(string.Format("Cannot find operation '{0}'", operationName));
-			}
-			var latestVersion = versions[versions.Count - 1];
-			return FindService(operationName, latestVersion);
+			return FindService(operationName, null);
 		}
 
 		/// <summary>
 		/// Finds a service by the service name (i.e. handler name) and version number.
 		/// </summary>
 		/// <returns>A new instance of the handler</returns>
-		public virtual object FindService(string operationName, int version)
+		public virtual object FindService(string operationName, int? version)
 		{
 			IDictionary<string, Type> portCache;
 
-			if (this.handlerCacheByVersion.TryGetValue(version, out portCache))
+			version = version ?? GetLatestVersion(operationName);
+
+			if (this.handlerCacheByVersion.TryGetValue(version.Value, out portCache))
 			{
 				Type type;
 
@@ -156,6 +185,36 @@ namespace ServiceStack.ServiceInterface
 
 			throw new NotSupportedException(string.Format("This service supports versions '{0}' to '{1}' version provided was '{2}'", 
 				this.minVersion, this.maxVersion, version));
+		}
+
+		private int? GetLatestVersion(string operationName)
+		{
+			List<int> versions;
+			if (!this.handlerVersions.TryGetValue(operationName, out versions))
+			{
+					throw new NotImplementedException(string.Format("Cannot find operation '{0}'", operationName));
+			}
+			var latestVersion = versions[versions.Count - 1];
+			int? version = latestVersion;
+			return version;
+		}
+
+		public Type FindOperationType(string operationName)
+		{
+			return FindOperationType(operationName, null);
+		}
+
+		public Type FindOperationType(string operationName, int? version)
+		{
+			Type retval;
+			version = version ?? GetLatestVersion(operationName);
+
+			if (this.typesByName.TryGetValue(version + ":" + operationName, out retval))
+			{
+				return retval;
+			}
+
+			return null;
 		}
 	}
 }

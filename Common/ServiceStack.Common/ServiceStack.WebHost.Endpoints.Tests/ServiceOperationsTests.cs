@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
-using Sakila.ServiceModel.Version100.Operations.SakilaDb4oService;
 using ServiceStack.WebHost.Endpoints.Metadata;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -43,5 +43,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var schemaSet = XsdUtils.GetXmlSchemaSet(operations.AllOperations.Types);
 			var schemas = schemaSet.Schemas();
 		}
+
 	}
 }

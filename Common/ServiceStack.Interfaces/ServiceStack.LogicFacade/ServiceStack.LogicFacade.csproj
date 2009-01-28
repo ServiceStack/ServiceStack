@@ -52,7 +52,9 @@
     <Compile Include="IApplicationContext.cs" />
     <Compile Include="IRequestContext.cs" />
     <Compile Include="IServiceController.cs" />
-    <Compile Include="IServiceModelFinder.cs" />
+    <Compile Include="IServiceModelFinder.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="IXmlRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

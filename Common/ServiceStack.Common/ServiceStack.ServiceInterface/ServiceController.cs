@@ -72,12 +72,8 @@ namespace ServiceStack.ServiceInterface
 			var dtoService = service as IService;
 			if (dtoService != null)
 			{
-				if (xmlRequest.ServiceModelFinder == null)
-				{
-					throw new ArgumentException("ServiceModelAssembly is required for executing an IService");
-				}
 
-				var requestType = xmlRequest.ServiceModelFinder.FindTypeByOperation(requestContext.OperationName, requestContext.Version);
+				var requestType = this.ServiceResolver.FindOperationType(requestContext.OperationName, requestContext.Version);
 
 				// Deserialize xml into request DTO
 				context.Request.Dto = this.XmlDeserializer.Parse(xmlRequest.Xml, requestType);

@@ -62,7 +62,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.Model.Address item = iter.Current;
-				to.Add(ServiceStack.Translators.Generator.Tests.Support.DataContract.Address.Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
 		}

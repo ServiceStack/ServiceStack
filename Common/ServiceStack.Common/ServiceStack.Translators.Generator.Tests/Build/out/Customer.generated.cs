@@ -77,7 +77,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.Model.Customer item = iter.Current;
-				to.Add(ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer.Parse(item));
+				to.Add(Parse(item));
 			}
 			return to;
 		}

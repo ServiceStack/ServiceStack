@@ -359,6 +359,12 @@ namespace ServiceStack.Translators.Generator
 			return new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(type), methodName, methodParams);
 		}
 
+		public static CodeMethodInvokeExpression CallStatic(this string methodName, params CodeVariableDeclarationStatement[] varMethodParams)
+		{
+			var methodParams = varMethodParams.ToList().ConvertAll(x => x.Name.RefArgument()).ToArray();
+			return new CodeMethodInvokeExpression(null, methodName, methodParams);
+		}
+
 		public static CodeTypeReference RefGeneric(this Type type, Type genericTypeDefinition)
 		{
 			return new CodeTypeReference(genericTypeDefinition.FullName, new CodeTypeReference(type));

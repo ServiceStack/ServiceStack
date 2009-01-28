@@ -13,21 +13,24 @@ namespace ServiceStack.ServiceInterface
 	/// </remarks>
 	public class PortResolver : IServiceResolver
 	{
+		private const string RESPONSE_SUFFIX = "Response";
 		private const int DEFAULT_VERSION = default(int);
 		private readonly IDictionary<int, IDictionary<string, Type>> handlerCacheByVersion;
+		private readonly IDictionary<Type, PortAttribute> handlerPortAttributeMap;
 
 		public PortResolver(params Assembly[] serviceInterfaceAssemblies)
 		{
 			this.OperationTypes = new List<Type>();
 			this.handlerCacheByVersion = new Dictionary<int, IDictionary<string, Type>>();
+			this.handlerPortAttributeMap = new Dictionary<Type, PortAttribute>();
 
 			foreach (var assembly in serviceInterfaceAssemblies)
 			{
-				foreach (Type typeInAssembly in assembly.GetTypes())
+				foreach (Type portType in assembly.GetTypes())
 				{
 					IDictionary<string, Type> handlerTypeCache;
 
-					var attrs = typeInAssembly.GetCustomAttributes(typeof(PortAttribute), false);
+					var attrs = portType.GetCustomAttributes(typeof(PortAttribute), false);
 
 					if (attrs.Length == 0)
 						continue;
@@ -35,6 +38,13 @@ namespace ServiceStack.ServiceInterface
 					var portAttr = (PortAttribute)attrs[0];
 
 					this.OperationTypes.Add(portAttr.OperationType);
+					var responseTypeName = portAttr.OperationType.FullName + RESPONSE_SUFFIX;
+					var responseType = portAttr.OperationType.Assembly.GetType(responseTypeName);
+					if (responseType != null)
+					{
+						this.OperationTypes.Add(responseType);
+					}
+
 					var operationName = portAttr.OperationType.Name;
 					var versionNumber = portAttr.Version.GetValueOrDefault(DEFAULT_VERSION);
 
@@ -50,7 +60,8 @@ namespace ServiceStack.ServiceInterface
 							"A port handler has already been registered for operation '{0}' version '{1}'",
 							operationName, versionNumber));
 					}
-					handlerTypeCache[operationName] = typeInAssembly;
+					handlerTypeCache[operationName] = portType;
+					handlerPortAttributeMap[portType] = portAttr;
 				}
 			}
 		}
@@ -71,18 +82,19 @@ namespace ServiceStack.ServiceInterface
 		/// <returns>A new instance of the port</returns>
 		public virtual object FindService(string operationName)
 		{
-			return FindService(operationName, DEFAULT_VERSION);
+			return FindService(operationName, null);
 		}
 
 		/// <summary>
 		/// Finds a service by the service name (i.e. handler name) and version number.
 		/// </summary>
 		/// <returns>A new instance of the handler</returns>
-		public virtual object FindService(string operationName, int version)
+		public virtual object FindService(string operationName, int? version)
 		{
 			IDictionary<string, Type> portCache;
+			version = version.GetValueOrDefault(DEFAULT_VERSION);
 
-			if (this.handlerCacheByVersion.TryGetValue(version, out portCache))
+			if (this.handlerCacheByVersion.TryGetValue(version.Value, out portCache))
 			{
 				Type type;
 
@@ -90,6 +102,31 @@ namespace ServiceStack.ServiceInterface
 			}
 
 			return null;
+		}
+
+		/// <summary>
+		/// Finds the service model.
+		/// </summary>
+		/// <param name="operationName">Name of the operation.</param>
+		/// <returns></returns>
+		public Type FindOperationType(string operationName)
+		{
+			return FindOperationType(operationName, null);
+		}
+
+		/// <summary>
+		/// Finds the specified version service model.
+		/// </summary>
+		/// <param name="operationName">Name of the operation.</param>
+		/// <param name="version">The version.</param>
+		/// <returns></returns>
+		public Type FindOperationType(string operationName, int? version)
+		{
+			var port = FindService(operationName, version);
+			if (port == null) return null;
+
+			var portAttr = handlerPortAttributeMap[port.GetType()];
+			return portAttr.OperationType;
 		}
 	}
 }

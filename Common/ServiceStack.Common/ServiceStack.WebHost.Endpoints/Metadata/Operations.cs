@@ -34,8 +34,6 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				}
 			}
 			Names.Sort();
-
-
     	}
 
 		public void Add(Type type)

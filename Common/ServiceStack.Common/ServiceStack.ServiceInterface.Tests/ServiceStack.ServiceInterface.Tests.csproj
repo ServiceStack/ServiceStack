@@ -58,17 +58,22 @@
   <ItemGroup>
     <Compile Include="PortResolverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Support\Version100\GetCustomersHandler.cs" />
+    <Compile Include="Support\Handlers\Version100\StoreCustomerHandler.cs" />
+    <Compile Include="Support\Handlers\Version100\GetCustomerHandler.cs" />
+    <Compile Include="Support\Handlers\Version100\GetCustomersHandler.cs" />
+    <Compile Include="Support\Version100\Operations\GetCustomer.cs" />
+    <Compile Include="Support\Version100\Operations\GetCustomerResponse.cs" />
+    <Compile Include="Support\Version100\Operations\GetCustomers.cs" />
+    <Compile Include="Support\Version100\Operations\GetCustomersResponse.cs" />
+    <Compile Include="Support\Version100\Operations\StoreCustomer.cs" />
+    <Compile Include="Support\Version100\Types\Customer.cs" />
+    <Compile Include="TestBase.cs" />
     <Compile Include="ZeroConfigServiceResolverTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj">
-      <Project>{A5646013-C243-453F-A2B6-3B6870A9637D}</Project>
-      <Name>ServiceStack.ServiceModel.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -367,7 +367,7 @@ namespace ServiceStack.Translators.Generator
 			CodeVariableDeclarationStatement item;
 			var iter = from.ForEach(modelType, out item);
 			method.Statements.Add(iter);
-			iter.Statements.Add(to.Call("Add", dtoType.Call("Parse", item)));
+			iter.Statements.Add(to.Call("Add", "Parse".CallStatic(item) ));
 
 			method.Statements.Add(to.Return());
 

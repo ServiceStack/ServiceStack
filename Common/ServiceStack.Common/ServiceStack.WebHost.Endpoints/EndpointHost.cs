@@ -23,8 +23,6 @@ namespace ServiceStack.WebHost.Endpoints
              		{"ServiceName", value.ServiceName},
              		{"ServiceHost", value.ServiceHost},
              		{"ServiceController", value.ServiceController},
-             		{"ServiceModelFinder", value.ServiceModelFinder},
-					//{"OperationsNamespace", value.OperationsNamespace},
              	};
 
 				var fieldsNotProvided = new List<string>();

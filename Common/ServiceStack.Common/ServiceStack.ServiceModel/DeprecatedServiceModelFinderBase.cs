@@ -9,9 +9,14 @@ using ServiceStack.LogicFacade;
 
 namespace ServiceStack.ServiceModel
 {
-	public abstract class ServiceModelFinderBase : IServiceModelFinder
+
+	/// <summary>
+	/// This should not be needed anymore as this functionality now resides on the ServiceResolver
+	/// </summary>
+	[Obsolete]
+	public abstract class DeprecatedServiceModelFinderBase : IServiceModelFinder
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(ServiceModelFinderBase));
+		private static readonly ILog log = LogManager.GetLogger(typeof(DeprecatedServiceModelFinderBase));
 
 		protected int MinVersion { get; set; }
 		protected int MaxVersion { get; set; }
@@ -20,7 +25,7 @@ namespace ServiceStack.ServiceModel
 		private static readonly Regex typeRegex =
 				new Regex(@".*Version([0-9]+)\..*", RegexOptions.Compiled);
 
-		protected ServiceModelFinderBase()
+		protected DeprecatedServiceModelFinderBase()
 		{
 			this.typesByName = new Dictionary<string, Type>();
 
