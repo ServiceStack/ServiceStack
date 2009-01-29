@@ -48,7 +48,7 @@ namespace ServiceStack.Translators.Generator
 				foreach (var type in modelAssemblyTypes)
 				{
 					var attrs = type.GetCustomAttributes(typeof(TranslateModelAttribute), false).ToList();
-					var extensionAttrs = type.GetCustomAttributes(typeof(TranslateModelExtentionAttribute), false).ToList();
+					var extensionAttrs = type.GetCustomAttributes(typeof(TranslateModelExtensionAttribute), false).ToList();
 
 					if (attrs.Count == 0 && extensionAttrs.Count == 0) continue;
 

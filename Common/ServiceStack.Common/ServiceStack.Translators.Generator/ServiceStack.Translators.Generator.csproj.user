@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectView>ShowAllFiles</ProjectView>
+    <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <StartArguments>/f /assembly:C:\Projects\PoToPe\trunk\desktop\prototypes\Utopia.UserCatalogue\UserCatalogue.ServiceModel\bin\Debug\Utopia.ServiceModel.dll /out:C:\Projects\PoToPe\trunk\desktop\prototypes\Utopia.UserCatalogue\UserCatalogue.ServiceModel\Version100\Types</StartArguments>

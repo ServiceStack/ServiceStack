@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{5C35EB8E-0314-4236-B142-B50FD154342B}</ProjectGuid>
+    <ProjectGuid>{2E6B479C-4B7E-4E64-ADE4-943698D34D56}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Translators</RootNamespace>
-    <AssemblyName>ServiceStack.Translators</AssemblyName>
+    <RootNamespace>ServiceStack.SearchIndex</RootNamespace>
+    <AssemblyName>ServiceStack.SearchIndex</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -45,9 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TranslateModelExtensionAttribute.cs" />
-    <Compile Include="TranslateMemberAttribute.cs" />
-    <Compile Include="TranslateModelAttribute.cs" />
+    <Compile Include="FullTextIndexAttribute.cs" />
+    <Compile Include="FullTextIndexDocumentAttribute.cs" />
+    <Compile Include="FullTextIndexFieldAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

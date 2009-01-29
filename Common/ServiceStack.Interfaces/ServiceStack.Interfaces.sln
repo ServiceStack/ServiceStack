@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Service", "Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Translators", "ServiceStack.Translators\ServiceStack.Translators.csproj", "{5C35EB8E-0314-4236-B142-B50FD154342B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SearchIndex", "ServiceStack.SearchIndex\ServiceStack.SearchIndex.csproj", "{2E6B479C-4B7E-4E64-ADE4-943698D34D56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,10 @@ Global
 		{5C35EB8E-0314-4236-B142-B50FD154342B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C35EB8E-0314-4236-B142-B50FD154342B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C35EB8E-0314-4236-B142-B50FD154342B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E6B479C-4B7E-4E64-ADE4-943698D34D56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E6B479C-4B7E-4E64-ADE4-943698D34D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E6B479C-4B7E-4E64-ADE4-943698D34D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E6B479C-4B7E-4E64-ADE4-943698D34D56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

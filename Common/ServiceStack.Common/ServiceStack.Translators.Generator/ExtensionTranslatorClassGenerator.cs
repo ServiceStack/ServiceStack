@@ -35,10 +35,10 @@ namespace ServiceStack.Translators.Generator
 
 		public void Write(Type extensionTranslatorType, string basePathName, Func<string, bool> doGenerate)
 		{
-			var attrs = extensionTranslatorType.GetCustomAttributes(typeof(TranslateModelExtentionAttribute), false);
+			var attrs = extensionTranslatorType.GetCustomAttributes(typeof(TranslateModelExtensionAttribute), false);
 			foreach (var attr in attrs)
 			{
-				var extAttr = (TranslateModelExtentionAttribute)attr;
+				var extAttr = (TranslateModelExtensionAttribute)attr;
 				var translateAttr = new TranslateModelAttribute(extAttr.ToType);
 				var translatorTypeName = extAttr.FromType.Name + extensionTranslatorType.Name;
 				var pathName = basePathName + translatorTypeName + ".cs";

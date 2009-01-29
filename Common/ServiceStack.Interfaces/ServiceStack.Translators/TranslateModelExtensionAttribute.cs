@@ -11,15 +11,25 @@ namespace ServiceStack.Translators
 	/// to generate to and from that type.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class TranslateModelExtentionAttribute : Attribute
+	public class TranslateModelExtensionAttribute : Attribute
 	{
+		public string FromExtensionPrefix { get; set; }
+		public string ToExtensionPrefix { get; set; }
 		public Type FromType { get; set; }
 		public Type ToType { get; set; }
 
-		public TranslateModelExtentionAttribute(Type fromType, Type toType)
+		public TranslateModelExtensionAttribute(Type fromType, Type toType)
 		{
 			this.FromType = fromType;
 			this.ToType = toType;
+		}
+
+		public TranslateModelExtensionAttribute(Type fromType, string fromExtensionPrefix, Type toType, string toExtensionPrefix)
+		{
+			this.FromType = fromType;
+			this.FromExtensionPrefix = fromExtensionPrefix;
+			this.ToType = toType;
+			this.ToExtensionPrefix = toExtensionPrefix;
 		}
 	}
 }
