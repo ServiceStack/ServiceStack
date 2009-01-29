@@ -67,18 +67,10 @@
     <Compile Include="Build\out-ext\PhoneNumberServiceModelTranslator.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Build\out\Address.generated.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Build\out\Customer.generated.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Build\out\PhoneNumber.generated.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ExtensionTranslateGeneratorTests.cs" />
     <Compile Include="Support\DataContract\Address.cs" />
     <Compile Include="Support\DataContract\PhoneNumber.cs" />
+    <Compile Include="Support\ExplicitTranslator.cs" />
     <Compile Include="Support\Model\Address.cs" />
     <Compile Include="Support\DataContract\Customer.cs" />
     <Compile Include="Support\Model\Customer.cs" />
@@ -100,6 +92,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Build\genetate-translators.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Build\out\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

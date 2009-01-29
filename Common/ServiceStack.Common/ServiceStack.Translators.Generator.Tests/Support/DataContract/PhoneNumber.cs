@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 {
-	[TranslateModel(typeof(Model.PhoneNumber))]
+	[Translate(typeof(Model.PhoneNumber))]
 	public partial class PhoneNumber
 	{
 		[DataMember]

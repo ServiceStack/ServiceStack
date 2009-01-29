@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using ServiceStack.Logging;
 using ServiceStack.Translators.Generator.Filters;
+using ServiceStack.Translators.Generator.Support;
 
 namespace ServiceStack.Translators.Generator
 {
@@ -16,6 +17,7 @@ namespace ServiceStack.Translators.Generator
 		private readonly CodeLang codeLang;
 		private readonly ICodeGenerator generator;
 		private static readonly ILog log = LogManager.GetLogger(typeof(TranslatorClassGenerator));
+		private Dictionary<Type, Dictionary<Type, TranslateAttribute>> sourceTypeTranslateAttributeMap;
 
 		public ExtensionTranslatorClassGenerator()
 			: this(CodeLang.CSharp)
@@ -35,21 +37,34 @@ namespace ServiceStack.Translators.Generator
 
 		public void Write(Type extensionTranslatorType, string basePathName, Func<string, bool> doGenerate)
 		{
-			var attrs = extensionTranslatorType.GetCustomAttributes(typeof(TranslateModelExtensionAttribute), false);
+			var attrs = extensionTranslatorType.GetCustomAttributes(typeof(TranslateExtensionAttribute), false);
+			sourceTypeTranslateAttributeMap = new Dictionary<Type, Dictionary<Type, TranslateAttribute>>();
+
+			//Build the dictionary prior to generating so we can know about the details of all the other model translators.
+			var extAttrs = new List<TranslateExtensionAttribute>();
 			foreach (var attr in attrs)
 			{
-				var extAttr = (TranslateModelExtensionAttribute)attr;
-				var translateAttr = new TranslateModelAttribute(extAttr.ToType);
-				var translatorTypeName = extAttr.FromType.Name + extensionTranslatorType.Name;
+				var extAttr = (TranslateExtensionAttribute)attr;
+				if (!this.sourceTypeTranslateAttributeMap.ContainsKey(extAttr.SourceType))
+				{
+					this.sourceTypeTranslateAttributeMap[extAttr.SourceType] = new Dictionary<Type, TranslateAttribute>();	
+				}
+				this.sourceTypeTranslateAttributeMap[extAttr.SourceType][extAttr.TargetType] = extAttr;
+				extAttrs.Add(extAttr);
+			}
+
+			foreach (var extAttr in extAttrs)
+			{
+				var translatorTypeName = extAttr.SourceType.Name + extensionTranslatorType.Name;
 				var pathName = basePathName + translatorTypeName + ".cs";
 
 				if (!doGenerate(translatorTypeName)) continue;
 
-				Write(extensionTranslatorType, translatorTypeName, extAttr.FromType, pathName, translateAttr);
+				Write(extensionTranslatorType, translatorTypeName, extAttr.SourceType, pathName, extAttr);
 			}
 		}
 
-		public void Write(Type extensionTranslatorType, string translatorTypeName, Type fromDtoType, string pathName, TranslateModelAttribute attr)
+		public void Write(Type extensionTranslatorType, string translatorTypeName, Type fromSourceType, string pathName, TranslateAttribute attr)
 		{
 			var sourceBuilder = new StringBuilder();
 			using (var writer = new StringWriter(sourceBuilder))
@@ -66,23 +81,17 @@ namespace ServiceStack.Translators.Generator
 
 				var declaration = DeclareType(translatorTypeName);
 
-				//var typeDeclaration = new CodeSnippetStatement("public {0}")
 				codeNamespace.Types.Add(declaration);
 
-				foreach (var modelType in attr.ForTypes)
-				{
-					declaration.Members.Add(ToModelMethod(translatorTypeName, fromDtoType, modelType));
-					var fromDto = fromDtoType.Param("from", typeof(IEnumerable<>));
-					declaration.Members.Add(TranslatorClassGenerator.ToModelListMethod(fromDtoType, modelType, fromDto.ExtensionVar()));
+				declaration.Members.Add(ToTargetMethod(attr, translatorTypeName));
 
-					declaration.Members.Add(UpdateModelMethod(translatorTypeName, fromDtoType, modelType));
+				declaration.Members.Add(ConvertToTargetsMethod(attr));
 
-					var fromModel = modelType.Param("from");
-					declaration.Members.Add(TranslatorClassGenerator.ParseMethod(fromDtoType, modelType, DeclareParseMethod(fromDtoType, fromModel), fromModel));
+				declaration.Members.Add(UpdateTargetMethod(attr, translatorTypeName));
 
-					var fromModelList = modelType.Param("from", typeof(IEnumerable<>));
-					declaration.Members.Add(TranslatorClassGenerator.ParseEnumerableMethod(fromDtoType, modelType, DeclareParseEnumerableMethod(fromDtoType, fromModelList), fromModelList));
-				}
+				declaration.Members.Add(ConvertToSourceMethod(attr));
+
+				declaration.Members.Add(ConvertToSourcesMethod(attr));
 
 				generator.GenerateCodeFromNamespace(codeNamespace, writer, options);
 			}
@@ -92,7 +101,7 @@ namespace ServiceStack.Translators.Generator
 			File.WriteAllText(pathName, sourceBuilder.ToString());
 		}
 
-		protected static CodeTypeDeclaration DeclareType(string translatorTypeName)
+		private static CodeTypeDeclaration DeclareType(string translatorTypeName)
 		{
 			var typeDeclaration = new CodeTypeDeclaration {
 				IsClass = true,
@@ -104,61 +113,87 @@ namespace ServiceStack.Translators.Generator
 			return typeDeclaration;
 		}
 
-		protected static CodeMemberMethod DeclareToModelMethod(Type toModelType, string methodName, CodeParameterDeclarationExpression from)
+		private static CodeMemberMethod DeclareConvertToTargetMethod(Type toTargetType, string methodName, CodeParameterDeclarationExpression from)
 		{
-			var method = methodName.DeclareMethod(toModelType, MemberAttributes.Public | MemberAttributes.Static, from);
+			var method = methodName.DeclareMethod(toTargetType, MemberAttributes.Public | MemberAttributes.Static, from);
 			return method;
 		}
 
-		protected static CodeMemberMethod DeclareToListMethod(Type toModelType, string methodName, CodeParameterDeclarationExpression from)
+		private static CodeTypeMember ToTargetMethod(TranslateAttribute attr, string translatorTypeName)
 		{
-			from.ExtensionVar();
-			return methodName.DeclareMethod(toModelType.RefGeneric(typeof(List<>)),
-				MemberAttributes.Public | MemberAttributes.Static, from);
-		}
-
-		protected static CodeMemberMethod DeclareParseMethod(Type toDtoType, CodeParameterDeclarationExpression from)
-		{
-			const string methodName = "Parse";
-			return methodName.DeclareMethod(toDtoType, MemberAttributes.Public | MemberAttributes.Static, from.ExtensionVar());
-		}
-
-		protected static CodeMemberMethod DeclareParseEnumerableMethod(Type modelType, CodeParameterDeclarationExpression from)
-		{
-			const string methodName = "ParseAll";
-			return methodName.DeclareMethod(
-					modelType.RefGeneric(typeof(List<>)), MemberAttributes.Public | MemberAttributes.Static, from.ExtensionVar());
-		}
-
-		public static CodeTypeMember ToModelMethod(string translatorTypeName, Type fromDtoType, Type toModelType)
-		{
-			var methodName = TranslatorClassGenerator.GetToModelMethodName(fromDtoType, toModelType);
-			var updateMethodName = TranslatorClassGenerator.GetUpdateMethodName(fromDtoType, toModelType);
-			var fromDto = fromDtoType.Param("from");
-			var method = DeclareToModelMethod(toModelType, methodName, fromDto.ExtensionVar());
-			method.Statements.Add(translatorTypeName.CallStatic(updateMethodName, fromDto.RefArg(), toModelType.New()).Return());
+			var methodName = attr.GetConvertToTargetMethodName();
+			var updateMethodName = attr.GetUpdateTargetMethodName();
+			var fromSource = attr.SourceType.Param("from");
+			var method = DeclareConvertToTargetMethod(attr.TargetType, methodName, fromSource.ExtensionVar());
+			method.Statements.Add(translatorTypeName.CallStatic(updateMethodName, fromSource.RefArg(), attr.TargetType.New()).Return());
 			return method;
 		}
 
-		public static CodeTypeMember UpdateModelMethod(string translatorTypeName, Type fromDtoType, Type toModelType)
+		private CodeTypeMember UpdateTargetMethod(TranslateAttribute attr, string translatorTypeName)
 		{
-			var methodName = TranslatorClassGenerator.GetUpdateMethodName(fromDtoType, toModelType);
-			var fromDto = fromDtoType.Param("fromModel");
-			var toModel = toModelType.Param("model");
-			var method = methodName.DeclareMethod(toModelType, MemberAttributes.Public | MemberAttributes.Static, fromDto.ExtensionVar(), toModel);
+			var methodName = attr.GetUpdateTargetMethodName();
+			var fromSource = attr.SourceType.Param("fromParam");
+			var toTarget = attr.TargetType.Param("to");
+			var method = methodName.DeclareMethod(attr.TargetType, MemberAttributes.Public | MemberAttributes.Static, fromSource.ExtensionVar(), toTarget);
 
-			var typeNames = toModelType.GetProperties().ToList().Select(x => x.Name);
-			var fromDtoVar = fromDtoType.DeclareVar("from", fromDto.RefArg());
-			method.Statements.Add(fromDtoVar);
-			foreach (var fromDtoProperty in fromDtoType.GetProperties())
+			var typeNames = attr.TargetType.GetProperties().ToList().Select(x => x.Name);
+			var fromSourceVar = attr.SourceType.DeclareVar("from", fromSource.RefArg());
+			method.Statements.Add(fromSourceVar);
+			foreach (var fromSourceProperty in attr.SourceType.GetProperties())
 			{
-				if (!typeNames.Contains(fromDtoProperty.Name)) continue;
+				if (!typeNames.Contains(fromSourceProperty.Name)) continue;
 
-				method.Statements.Add(TranslatorClassGenerator.CreateToModelAssignmentMethod(toModel, fromDtoProperty, toModelType, fromDtoVar.RefVar()));
+				method.Statements.Add(TranslatorClassGenerator.CreateToTargetAssignmentMethod(attr, toTarget, fromSourceProperty, fromSourceVar.RefVar(), GetTypesTranslateAttributeFn));
 			}
 
-			method.Statements.Add(toModel.Return());
+			method.Statements.Add(toTarget.Return());
 			return method;
 		}
+
+		/// <summary>
+		/// Provides the functionality to retrieve the [TranslateAttribute] for the matching source and target types
+		/// </summary>
+		/// <param name="sourceType">Type sourceType.</param>
+		/// <param name="targetType">The targetType.</param>
+		/// <returns></returns>
+		private TranslateAttribute GetTypesTranslateAttributeFn(Type sourceType, Type targetType)
+		{
+			log.DebugFormat("GetTypesTranslateAttributeFn: {0} => {1}", sourceType.Name, targetType.Name);
+			Dictionary<Type, TranslateAttribute> targetAttributeMap; 
+			if (this.sourceTypeTranslateAttributeMap.TryGetValue(sourceType, out targetAttributeMap))
+			{
+				TranslateAttribute attr;
+				if (targetAttributeMap.TryGetValue(targetType, out attr))
+				{
+					log.Debug("found matching attr");
+					return attr;
+				}
+			}
+			log.Debug("could not find matching attr");
+			return null;
+		}
+
+		private CodeTypeMember ConvertToSourceMethod(TranslateAttribute attr)
+		{
+			var from = attr.TargetType.Param("from");
+			var method = TranslatorClassGenerator.DeclareToSourceMethod(attr, from.ExtensionVar());
+			log.DebugFormat("ConvertToSourceMethod: {0}", attr.ToFormatString());
+			return TranslatorClassGenerator.ConvertToSourceMethod(attr, method, from, GetTypesTranslateAttributeFn);
+		}
+
+		private CodeTypeMember ConvertToSourcesMethod(TranslateAttribute attr)
+		{
+			var from = attr.TargetType.Param("from", typeof(IEnumerable<>));
+			var method = TranslatorClassGenerator.DeclareToSourcesMethod(attr, from.ExtensionVar());
+			log.DebugFormat("ConvertToSourcesMethod: {0}", attr.ToFormatString());
+			return TranslatorClassGenerator.ConvertToSourcesMethod(attr, method, from);
+		}
+
+		public static CodeMemberMethod ConvertToTargetsMethod(TranslateAttribute attr)
+		{
+			var from = attr.SourceType.Param("from", typeof(IEnumerable<>));
+			return TranslatorClassGenerator.ConvertToTargetsMethod(attr, from.ExtensionVar());
+		}
+
 	}
 }

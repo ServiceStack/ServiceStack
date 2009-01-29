@@ -4,15 +4,15 @@ namespace ServiceStack.Translators.Generator.Tests.Support
 	using System.Collections.Generic;
 	
 	
-	public static partial class AddressServiceModelTranslator
+	public static partial class AddressExplicitTranslator
 	{
 		
-		public static ServiceStack.Translators.Generator.Tests.Support.Model.Address ToAddress(this ServiceStack.Translators.Generator.Tests.Support.DataContract.Address from)
+		public static ServiceStack.Translators.Generator.Tests.Support.Model.Address ToDomainModelAddress(this ServiceStack.Translators.Generator.Tests.Support.DataContract.Address from)
 		{
-			return AddressServiceModelTranslator.UpdateAddress(from, new ServiceStack.Translators.Generator.Tests.Support.Model.Address());
+			return AddressExplicitTranslator.UpdateAddress(from, new ServiceStack.Translators.Generator.Tests.Support.Model.Address());
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Address> ToAddresss(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Address> ToDomainModelAddresss(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> from)
 		{
 			if ((from == null))
 			{
@@ -25,7 +25,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support
 				ServiceStack.Translators.Generator.Tests.Support.DataContract.Address item = iter.Current;
 				if ((item != null))
 				{
-					to.Add(item.ToAddress());
+					to.Add(item.ToDomainModelAddress());
 				}
 			}
 			return to;
@@ -39,7 +39,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support
 			return to;
 		}
 		
-		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Address ToAddress(this ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
+		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Address ToDtoAddress(this ServiceStack.Translators.Generator.Tests.Support.Model.Address from)
 		{
 			if ((from == null))
 			{
@@ -51,7 +51,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support
 			return to;
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> ToAddresss(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Address> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Address> ToDtoAddresss(this System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Address> from)
 		{
 			if ((from == null))
 			{
@@ -62,7 +62,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.Model.Address item = iter.Current;
-				to.Add(item.ToAddress());
+				to.Add(item.ToDtoAddress());
 			}
 			return to;
 		}

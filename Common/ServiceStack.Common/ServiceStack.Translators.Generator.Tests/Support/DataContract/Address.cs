@@ -1,6 +1,6 @@
 namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 {
-	[TranslateModel(typeof(Model.Address))]
+	[Translate(typeof(Model.Address))]
 	public partial class Address
 	{
 		public string Line1 { get; set; }

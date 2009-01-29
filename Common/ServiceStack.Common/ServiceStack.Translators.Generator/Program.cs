@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using Microsoft.CSharp;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Translators.Generator.Support;
@@ -47,8 +44,8 @@ namespace ServiceStack.Translators.Generator
 				log.DebugFormat("Found {0} types in Assembly", modelAssemblyTypes.Count());
 				foreach (var type in modelAssemblyTypes)
 				{
-					var attrs = type.GetCustomAttributes(typeof(TranslateModelAttribute), false).ToList();
-					var extensionAttrs = type.GetCustomAttributes(typeof(TranslateModelExtensionAttribute), false).ToList();
+					var attrs = type.GetCustomAttributes(typeof(TranslateAttribute), false).ToList();
+					var extensionAttrs = type.GetCustomAttributes(typeof(TranslateExtensionAttribute), false).ToList();
 
 					if (attrs.Count == 0 && extensionAttrs.Count == 0) continue;
 
@@ -58,9 +55,9 @@ namespace ServiceStack.Translators.Generator
 
 					if (attrs.Count > 0)
 					{
-						var attr = (TranslateModelAttribute)attrs[0];
+						var attr = (TranslateAttribute)attrs[0];
 						var generator = new TranslatorClassGenerator(CodeLang.CSharp);
-						generator.Write(type, outPath, attr);
+						generator.Write(attr, outPath);
 					}
 					if (extensionAttrs.Count > 0)
 					{

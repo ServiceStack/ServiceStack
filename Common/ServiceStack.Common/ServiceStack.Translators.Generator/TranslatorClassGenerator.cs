@@ -7,11 +7,14 @@ using System.Linq;
 using System.Reflection;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Translators.Generator.Support;
 
 namespace ServiceStack.Translators.Generator
 {
 	public class TranslatorClassGenerator
 	{
+		private const string LIST_ADD_METHOD = "Add";
+		private const string CONVERTER_PARSE_METHOD = "Parse";
 		private readonly ICodeGenerator generator;
 		private static readonly ILog log = LogManager.GetLogger(typeof(TranslatorClassGenerator));
 
@@ -25,14 +28,18 @@ namespace ServiceStack.Translators.Generator
 			this.generator = CodeDomUtils.CreateGenerator(lang);
 		}
 
-		//model.PhoneNumbers = this.PhoneNumbers.ConvertAll(delegate(PhoneNumber x) { return x.ToModel(); });
-		public void Write(Type modelType, string pathName)
+		//model.PhoneNumbers = this.PhoneNumbers.ConvertAll(delegate(PhoneNumber x) { return x.ToTarget(); });
+		public void Write(Type sourceType, string pathName)
 		{
-			var attr =(TranslateModelAttribute)modelType.GetCustomAttributes(typeof(TranslateModelAttribute), false).GetValue(0);
-			Write(modelType, pathName, attr);
+			var attr =(TranslateAttribute)sourceType.GetCustomAttributes(typeof(TranslateAttribute), false).GetValue(0);
+
+			//When using [TranslateAttribute] the sourceType is the type that the attribute is decorated on
+			//This needs to be set at runtime as its not set at declaration
+			attr.SourceType = sourceType;
+			Write(attr, pathName);
 		}
 
-		public void Write(Type modelType, string pathName, TranslateModelAttribute attr)
+		public void Write(TranslateAttribute attr, string pathName)
 		{
 			using (var writer = new StreamWriter(pathName, false))
 			{
@@ -41,333 +48,366 @@ namespace ServiceStack.Translators.Generator
 					IndentString = "\t",
 				};
 
-				var codeNamespace = new CodeNamespace(modelType.Namespace);
+				var codeNamespace = new CodeNamespace(attr.SourceType.Namespace);
 
 				codeNamespace.Imports.Add(new CodeNamespaceImport("System"));
 				codeNamespace.Imports.Add(new CodeNamespaceImport("System.Collections.Generic"));
 
-				var declaration = DeclareType(modelType);
+				var declaration = DeclareType(attr.SourceType);
 				codeNamespace.Types.Add(declaration);
 
-				foreach (var type in attr.ForTypes)
-				{
-					declaration.Members.Add(ToModelMethod(modelType, type));
-					declaration.Members.Add(ToModelListMethod(modelType, type));
-					declaration.Members.Add(UpdateModelMethod(modelType, type));
-					declaration.Members.Add(ParseMethod(modelType, type));
-					declaration.Members.Add(ParseEnumerableMethod(modelType, type));
-				}
+				declaration.Members.Add(ConvertToTargetMethod(attr));
+				declaration.Members.Add(ConvertToTargetsMethod(attr));
+				declaration.Members.Add(UpdateTargetMethod(attr));
+				declaration.Members.Add(ConvertToSourceMethod(attr));
+				declaration.Members.Add(ConvertToSourcesMethod(attr));
+
 				generator.GenerateCodeFromNamespace(codeNamespace, writer, options);
 
 			}
 		}
 
 		#region Overridable Implementations
-		public static CodeTypeDeclaration DeclareType(Type modelType)
+		public static CodeTypeDeclaration DeclareType(Type targetType)
 		{
 			return new CodeTypeDeclaration {
 				IsClass = true,
-				Name = modelType.Name,
+				Name = targetType.Name,
 				IsPartial = true,
 				TypeAttributes = TypeAttributes.Public,
 			};
 		}
 
-		public static CodeMemberMethod DeclareToListMethod(Type toModelType, string methodName, CodeParameterDeclarationExpression from)
+		public static CodeMemberMethod DeclareToTargetsMethod(TranslateAttribute attr, CodeParameterDeclarationExpression from)
 		{
-			return methodName.DeclareMethod(toModelType.RefGeneric(typeof(List<>)),
+			return attr.GetConvertToTargetsMethodName().DeclareMethod(attr.TargetType.RefGeneric(typeof(List<>)),
 				MemberAttributes.Public | MemberAttributes.Static, from);
 		}
 
-		public static CodeMemberMethod DeclareToModelMethod(Type toModelType, string methodName)
+		public static CodeMemberMethod DeclareToTargetMethod(TranslateAttribute attr)
 		{
-			return methodName.DeclareMethod(toModelType, MemberAttributes.Public);
+			return attr.GetConvertToTargetMethodName().DeclareMethod(attr.TargetType, MemberAttributes.Public);
 		}
 
-		public static CodeMemberMethod DeclareParseMethod(string methodName, Type toDtoType, CodeParameterDeclarationExpression from)
+		public static CodeMemberMethod DeclareToSourceMethod(TranslateAttribute attr, CodeParameterDeclarationExpression from)
 		{
-			return methodName.DeclareMethod(toDtoType, MemberAttributes.Public | MemberAttributes.Static, from);
+			return attr.GetConvertToSourceMethodName().DeclareMethod(
+				attr.SourceType, MemberAttributes.Public | MemberAttributes.Static, from);
 		}
 
-		public static CodeMemberMethod DeclareParseEnumerableMethod(string methodName, Type modelType, CodeParameterDeclarationExpression from)
+		public static CodeMemberMethod DeclareToSourcesMethod(TranslateAttribute attr, CodeParameterDeclarationExpression from)
 		{
-			return methodName.DeclareMethod(
-					modelType.RefGeneric(typeof(List<>)), MemberAttributes.Public | MemberAttributes.Static, from);
+			return attr.GetConvertToSourcesMethodName().DeclareMethod(
+					attr.SourceType.RefGeneric(typeof(List<>)), MemberAttributes.Public | MemberAttributes.Static, from);
 		}
 		#endregion
 
-		public static string GetToModelMethodName(Type fromDtoType, Type toModelType)
-		{
-			return toModelType.Name == fromDtoType.Name ? "ToModel" : "To" + toModelType.Name;
-		}
-
-		public static string GetToModelListMethodName(Type fromDtoType, Type toModelType)
-		{
-			return toModelType.Name == fromDtoType.Name ? "ToModelList" : "To" + toModelType.Name + "List";
-		}
-
-		public static string GetUpdateMethodName(Type fromDtoType, Type toModelType)
-		{
-			return toModelType.Name == fromDtoType.Name ? "UpdateModel" : "Update" + toModelType.Name;
-		}
-
 		/*
-			public static List<Model.PhoneNumber> ToModelList(List<DtoType.PhoneNumber> dtoCustomers)
+			public static List<Target.PhoneNumber> ToTargets(List<SourceType.PhoneNumber> sourceCustomers)
 			{
-				var to = new List<Model.PhoneNumber>();
-				foreach (var dtoCustomer in dtoCustomers)
+				var to = new List<Target.PhoneNumber>();
+				foreach (var sourceCustomer in sourceCustomers)
 				{
-					to.Add(dtoCustomer.ToModel());
+					to.Add(sourceCustomer.ToTarget());
 				}
 				return to;
 			}
 		*/
-		public static CodeMemberMethod ToModelListMethod(Type fromDtoType, Type toModelType)
+		public static CodeMemberMethod ConvertToTargetsMethod(TranslateAttribute attr)
 		{
-			var from = fromDtoType.Param("from", typeof(IEnumerable<>));
-			return ToModelListMethod(fromDtoType, toModelType, from);
+			var from = attr.SourceType.Param("from", typeof(IEnumerable<>));
+			return ConvertToTargetsMethod(attr, from);
 		}
 
-		public static CodeMemberMethod ToModelListMethod(Type fromDtoType, Type toModelType, CodeParameterDeclarationExpression from)
+		public static CodeMemberMethod ConvertToTargetsMethod(TranslateAttribute attr, CodeParameterDeclarationExpression from)
 		{
-			var methodName = GetToModelListMethodName(fromDtoType, toModelType);
-			var method = DeclareToListMethod(toModelType, methodName, from);
+			var method = DeclareToTargetsMethod(attr, from);
 
 			method.Statements.Add(from.ReturnNullIfNull());
 
-			var to = "to".DeclareGenericVar(toModelType, typeof(List<>));
+			var to = "to".DeclareGenericVar(attr.TargetType, typeof(List<>));
 			method.Statements.Add(to);
 
 			CodeVariableDeclarationStatement item;
-			var iter = from.ForEach(fromDtoType, out item);
+			var iter = from.ForEach(attr.SourceType, out item);
 			method.Statements.Add(iter);
-			var toModelMethodName = GetToModelMethodName(fromDtoType, toModelType);
-			iter.Statements.Add(item.IfIsNotNull(to.Call("Add", item.Call(toModelMethodName))));
-			//iter.Statements.Add(to.Call("Add", item.Call(toModelMethodName)));
+			var toTargetMethodName = attr.GetConvertToTargetMethodName();
+			iter.Statements.Add(item.IfIsNotNull(to.Call(LIST_ADD_METHOD, item.Call(toTargetMethodName))));
 
 			method.Statements.Add(to.Return());
 
 			return method;
 		}
 
-		public static CodeTypeMember ToModelMethod(Type fromDtoType, Type toModelType)
+		public static CodeTypeMember ConvertToTargetMethod(TranslateAttribute attr)
 		{
-			var methodName = GetToModelMethodName(fromDtoType, toModelType);
-			var updateMethodName = GetUpdateMethodName(fromDtoType, toModelType);
-			var method = DeclareToModelMethod(toModelType, methodName);
-			method.Statements.Add(updateMethodName.Call(toModelType.New()).Return());
+			var updateMethodName = attr.GetUpdateTargetMethodName();
+			var method = DeclareToTargetMethod(attr);
+			method.Statements.Add(updateMethodName.Call(attr.TargetType.New()).Return());
 			return method;
 		}
 
-		public static CodeTypeMember UpdateModelMethod(Type fromDtoType, Type toModelType)
+		public CodeTypeMember UpdateTargetMethod(TranslateAttribute attr)
 		{
-			var methodName = GetUpdateMethodName(fromDtoType, toModelType);
-			var toModel = toModelType.Param("model");
-			var method = methodName.DeclareMethod(toModelType, MemberAttributes.Public, toModel);
+			return UpdateTargetMethod(attr, GetTypesTranslateAttributeFn);
+		}
 
-			var typeNames = toModelType.GetProperties().ToList().Select(x => x.Name);
-			var fromDtoVar = fromDtoType.DeclareVar("from", new CodeThisReferenceExpression());
-			method.Statements.Add(fromDtoVar);
-			foreach (var fromDtoProperty in fromDtoType.GetProperties())
+
+		/// <summary>
+		/// Provides the functionality to retrieve the [TranslateAttribute] for the matching source and target types
+		/// </summary>
+		/// <param name="sourceType">Type sourceType.</param>
+		/// <param name="targetType">The targetType.</param>
+		/// <returns></returns>
+		private static TranslateAttribute GetTypesTranslateAttributeFn(Type sourceType, Type targetType)
+		{
+			var attrs = sourceType.GetCustomAttributes(typeof(TranslateAttribute), false).ToList();
+			foreach (var oAttr in attrs)
 			{
-				if (!typeNames.Contains(fromDtoProperty.Name)) continue;
+				var attr = (TranslateAttribute)oAttr;
+				if (attr.TargetType == targetType)
+				{
+					//We need to set this as it is not set at the compile time declaration
+					attr.SourceType = sourceType;
+					return attr;
+				}
+			}
+			return null;
+		}
 
-				method.Statements.Add(CreateToModelAssignmentMethod(toModel, fromDtoProperty, toModelType, fromDtoVar.RefVar()));
+		public static CodeTypeMember UpdateTargetMethod(TranslateAttribute attr, Func<Type, Type, TranslateAttribute> getTypesTranslateAttributeFn)
+		{
+			var methodName = attr.GetUpdateTargetMethodName();
+			var toTarget = attr.TargetType.Param("model");
+			var method = methodName.DeclareMethod(attr.TargetType, MemberAttributes.Public, toTarget);
+
+			var typeNames = attr.TargetType.GetProperties().ToList().Select(x => x.Name);
+			var fromSourceVar = attr.SourceType.DeclareVar("from", new CodeThisReferenceExpression());
+			method.Statements.Add(fromSourceVar);
+			foreach (var sourceProperty in attr.SourceType.GetProperties())
+			{
+				if (!typeNames.Contains(sourceProperty.Name)) continue;
+
+				method.Statements.Add(CreateToTargetAssignmentMethod(
+					attr, toTarget, sourceProperty, fromSourceVar.RefVar(), getTypesTranslateAttributeFn));
 			}
 
-			method.Statements.Add(toModel.Return());
+			method.Statements.Add(toTarget.Return());
 			return method;
 		}
 
-		public static CodeStatement CreateToModelAssignmentMethod(CodeParameterDeclarationExpression toModel,
-			PropertyInfo fromDtoProperty, Type toModelType, CodeVariableReferenceExpression fromDtoVar)
+		public static CodeStatement CreateToTargetAssignmentMethod(
+			TranslateAttribute attr,
+			CodeParameterDeclarationExpression toTarget,
+			PropertyInfo sourceProperty,
+			CodeVariableReferenceExpression fromSourceVar,
+			Func<Type, Type, TranslateAttribute> getTypesTranslateAttributeFn)
 		{
 
 			//model.Name = this.Name;
-			var toModelProperty = toModelType.GetProperty(fromDtoProperty.Name);
-			var modelCantWrite = toModelProperty.GetSetMethod() == null;
-			if (modelCantWrite)
+			var targetProperty = attr.TargetType.GetProperty(sourceProperty.Name);
+			var cantWriteToTarget = targetProperty.GetSetMethod() == null;
+			if (cantWriteToTarget)
 			{
 				return new CodeCommentStatement(string.Format("Skipping property 'model.{0}' because 'model.{1}' is read-only",
-					toModelProperty.Name, fromDtoProperty.Name));
+					targetProperty.Name, sourceProperty.Name));
 			}
-			var dtoCantRead = fromDtoProperty.GetGetMethod() == null;
-			if (dtoCantRead)
+			var cantReadFromSource = sourceProperty.GetGetMethod() == null;
+			if (cantReadFromSource)
 			{
 				return new CodeCommentStatement(string.Format("Skipping property 'model.{0}' because 'this.{1}' is write-only",
-					toModelProperty.Name, fromDtoProperty.Name));
+					targetProperty.Name, sourceProperty.Name));
 			}
 
-			var areBothTheSameTypes = toModelProperty.PropertyType.IsAssignableFrom(fromDtoProperty.PropertyType);
+			var areBothTheSameTypes = targetProperty.PropertyType.IsAssignableFrom(sourceProperty.PropertyType);
 			if (areBothTheSameTypes)
 			{
-				return toModel.Assign(fromDtoProperty.Name, fromDtoVar.RefProperty(fromDtoProperty.Name));
+				return toTarget.Assign(sourceProperty.Name, fromSourceVar.RefProperty(sourceProperty.Name));
 			}
 
-			//model.BillingAddress = this.BillingAddress.ToModel();
-			var fromDtoPropertyType = fromDtoProperty.PropertyType;
-			var toModelPropertyType = toModelProperty.PropertyType;
-			var isModelAlso = fromDtoProperty.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
-			if (isModelAlso)
+			//model.BillingAddress = this.BillingAddress.ToTarget();
+			var sourcePropertyType = sourceProperty.PropertyType;
+			var targetPropertyType = targetProperty.PropertyType;
+			var sourceAttr = getTypesTranslateAttributeFn(sourcePropertyType, targetPropertyType);
+			var isSourceTranslatableAlso = sourceAttr != null;
+
+			if (isSourceTranslatableAlso)
 			{
-				var toModelMethodName = GetToModelMethodName(fromDtoPropertyType, toModelPropertyType);
-				return fromDtoVar.RefProperty(fromDtoProperty.Name).IfIsNotNull(
-					toModel.Assign(fromDtoProperty.Name, fromDtoVar.RefProperty(fromDtoProperty.Name).Call(toModelMethodName))
+				return fromSourceVar.RefProperty(sourceProperty.Name).IfIsNotNull(
+					toTarget.Assign(sourceProperty.Name, fromSourceVar.RefProperty(sourceProperty.Name).Call(sourceAttr.GetConvertToTargetMethodName()))
 				);
 			}
 
-			var fromDtoIsGenericList = fromDtoPropertyType.IsGenericType && fromDtoPropertyType.GetGenericTypeDefinition() == typeof(List<>);
-			var toModelIsGenericList = toModelPropertyType.IsGenericType && toModelPropertyType.GetGenericTypeDefinition() == typeof(List<>);
-			var bothAreGenericLists = fromDtoIsGenericList && toModelIsGenericList;
+
+			var sourceIsGenericList = sourcePropertyType.IsGenericType && sourcePropertyType.GetGenericTypeDefinition() == typeof(List<>);
+			var targetIsGenericList = targetPropertyType.IsGenericType && targetPropertyType.GetGenericTypeDefinition() == typeof(List<>);
+			var bothAreGenericLists = sourceIsGenericList && targetIsGenericList;
 
 			if (bothAreGenericLists)
 			{
-				//PhoneNumber.ToModelList(this.PhoneNumbers);
-				var fromDtoIsModel = fromDtoPropertyType.GetGenericArguments()[0].GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
-				if (fromDtoIsModel)
+				//to.PhoneNumbers = from.PhoneNumbers.ToPhoneNumbers();
+				var propertyListItemTypeAttr = getTypesTranslateAttributeFn(sourcePropertyType.GetGenericArguments()[0], targetPropertyType.GetGenericArguments()[0]);
+				var sourceIsTranslatable = propertyListItemTypeAttr != null;
+				if (sourceIsTranslatable)
 				{
-					var toModelListMethodName = GetToModelListMethodName(fromDtoPropertyType, toModelPropertyType);
-					return toModel.Assign(fromDtoProperty.Name, fromDtoPropertyType.GetGenericArguments()[0].Call(toModelListMethodName, fromDtoVar.RefProperty(fromDtoProperty.Name)));
+					var toTargetsMethodName = propertyListItemTypeAttr.GetConvertToTargetsMethodName();
+					return toTarget.Assign(sourceProperty.Name, fromSourceVar.RefProperty(sourceProperty.Name).Call(toTargetsMethodName));
 				}
 			}
 
-			//model.Type = StringConverterUtils.Parse<Model.PhoneNumberType>(this.Type);
-			var dtoPropertyIsStringAndModelIsConvertible = fromDtoProperty.PropertyType == typeof(string)
-				&& StringConverterUtils.CanCreateFromString(toModelProperty.PropertyType);
-			if (dtoPropertyIsStringAndModelIsConvertible)
+			//model.Type = StringConverterUtils.Parse<Target.PhoneNumberType>(this.Type);
+			var sourcePropertyIsStringAndTargetIsConvertible = sourceProperty.PropertyType == typeof(string)
+				&& StringConverterUtils.CanCreateFromString(targetProperty.PropertyType);
+			if (sourcePropertyIsStringAndTargetIsConvertible)
 			{
 				//model.CardType = StringConverterUtils.Parse<CardType>(this.CardType);
-				var methodResult = typeof(StringConverterUtils).CallGeneric("Parse",
-					new[] { toModelProperty.PropertyType.GenericDefinition() },
-					fromDtoVar.RefProperty(fromDtoProperty.Name));
+				var methodResult = typeof(StringConverterUtils).CallGeneric(CONVERTER_PARSE_METHOD,
+					new[] { targetProperty.PropertyType.GenericDefinition() },
+					fromSourceVar.RefProperty(sourceProperty.Name));
 
-				return toModel.Assign(fromDtoProperty.Name.ThisProperty(), methodResult);
+				return toTarget.Assign(sourceProperty.Name.ThisProperty(), methodResult);
 			}
 
 			// Converting 'System.Collections.Generic.List`1 PhoneNumbers' to 'System.Collections.Generic.List`1 PhoneNumbers' is unsupported
 			return new CodeCommentStatement(string.Format("Converting '{0}.{1} {2}' to '{3}.{4} {5}' is unsupported"
-				, fromDtoProperty.PropertyType.Namespace, fromDtoProperty.PropertyType.Name, fromDtoProperty.Name
-				, toModelProperty.PropertyType.Namespace, toModelProperty.PropertyType.Name, toModelProperty.Name));
+				, sourceProperty.PropertyType.Namespace, sourceProperty.PropertyType.Name, sourceProperty.Name
+				, targetProperty.PropertyType.Namespace, targetProperty.PropertyType.Name, targetProperty.Name));
 		}
 
-		public static CodeTypeMember ParseMethod(Type toDtoType, Type fromModelType)
+		public static CodeTypeMember ConvertToSourceMethod(TranslateAttribute attr)
 		{
-			var methodName = "Parse";
-			var from = fromModelType.Param("from");
-			var method = DeclareParseMethod(methodName, toDtoType, from);
+			var from = attr.TargetType.Param("from");
+			var method = DeclareToSourceMethod(attr, from);
 
-			return ParseMethod(toDtoType, fromModelType, method, from);
+			return ConvertToSourceMethod(attr, method, from, GetTypesTranslateAttributeFn);
 		}
 
-		public static CodeTypeMember ParseMethod(Type toDtoType, Type fromModelType, CodeMemberMethod method, CodeParameterDeclarationExpression from)
+		public static CodeTypeMember ConvertToSourceMethod(TranslateAttribute attr, 
+			CodeMemberMethod method, CodeParameterDeclarationExpression from,
+			Func<Type, Type, TranslateAttribute> getTypesTranslateAttributeFn)
 		{
 			method.Statements.Add(from.ReturnNullIfNull());
 
-			// modelType to = new T();
-			var to = toDtoType.DeclareVar("to");
+			// targetType to = new T();
+			var to = attr.SourceType.DeclareVar("to");
 			method.Statements.Add(to);
 
-			var fromModelTypePropertyNames = fromModelType.GetProperties().ToList().Select(x => x.Name);
-			foreach (var toDtoTypeProperty in toDtoType.GetProperties())
+			var fromTargetTypePropertyNames = attr.TargetType.GetProperties().ToList().Select(x => x.Name);
+			foreach (var toSourceTypeProperty in attr.SourceType.GetProperties())
 			{
-				if (!fromModelTypePropertyNames.Contains(toDtoTypeProperty.Name)) continue;
-				method.Statements.Add(CreateToDtoAssignmentMethod(to, toDtoTypeProperty, fromModelType, from));
+				if (!fromTargetTypePropertyNames.Contains(toSourceTypeProperty.Name)) continue;
+				method.Statements.Add(CreateToSourceAssignmentMethod(to, toSourceTypeProperty, attr.TargetType, from, getTypesTranslateAttributeFn));
 			}
 
 			method.Statements.Add(to.Return());
 			return method;
 		}
 
-		public static CodeStatement CreateToDtoAssignmentMethod(CodeVariableDeclarationStatement toDto,
-			PropertyInfo toDtoTypeProperty, Type fromModelType, CodeParameterDeclarationExpression fromModelParam)
+		public static CodeStatement CreateToSourceAssignmentMethod(CodeVariableDeclarationStatement toSource,
+			PropertyInfo toSourceProperty, Type fromTargetType, CodeParameterDeclarationExpression fromTargetParam,
+			Func<Type, Type, TranslateAttribute> getTypesTranslateAttributeFn)
 		{
 
-			var fromModelProperty = fromModelType.GetProperty(toDtoTypeProperty.Name);
-			var modelCantRead = fromModelProperty.GetGetMethod() == null;
-			if (modelCantRead)
+			var fromTargetProperty = fromTargetType.GetProperty(toSourceProperty.Name);
+			var cantReadFromTarget = fromTargetProperty.GetGetMethod() == null;
+			if (cantReadFromTarget)
 			{
 				return new CodeCommentStatement(string.Format("Skipping property 'to.{0}' because 'model.{1}' is write-only",
-					toDtoTypeProperty.Name, fromModelProperty.Name));
+					toSourceProperty.Name, fromTargetProperty.Name));
 			}
-			var dtoCantWrite = toDtoTypeProperty.GetSetMethod() == null;
-			if (dtoCantWrite)
+			var cantWriteToSource = toSourceProperty.GetSetMethod() == null;
+			if (cantWriteToSource)
 			{
 				return new CodeCommentStatement(string.Format("Skipping property 'to.{0}' because 'to.{1}' is read-only",
-					toDtoTypeProperty.Name, toDtoTypeProperty.Name));
+					toSourceProperty.Name, toSourceProperty.Name));
 			}
 
 			//to[property.Name] = this[property.Name] e.g:
 			//	to.Name = from.Name;
-			if (fromModelProperty.PropertyType.IsAssignableFrom(toDtoTypeProperty.PropertyType))
+			if (fromTargetProperty.PropertyType.IsAssignableFrom(toSourceProperty.PropertyType))
 			{
-				return toDto.Assign(
-					toDto.RefProperty(toDtoTypeProperty.Name),
-					fromModelParam.Name.RefArgument().RefProperty(toDtoTypeProperty.Name));
+				return toSource.Assign(
+					toSource.RefProperty(toSourceProperty.Name),
+					fromTargetParam.Name.RefArgument().RefProperty(toSourceProperty.Name));
 			}
 
-			//to[property.Name] = from[property.PropertyType.Name].ToModel() e.g:
-			//to.Address = from.Address.ToModel();
-			var isModelAlso = toDtoTypeProperty.PropertyType.GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
-			if (isModelAlso)
+			//to[property.Name] = from[property.PropertyType.Name].ToTarget() e.g:
+			//to.Address = from.Address.ToTarget();
+
+			var toSourcePropertyType = toSourceProperty.PropertyType;
+			var fromTargetPropertyType = fromTargetProperty.PropertyType;
+			var targetAttr = getTypesTranslateAttributeFn(toSourcePropertyType, fromTargetPropertyType);
+			var isTargetTranslatableAlso = targetAttr != null;
+			if (isTargetTranslatableAlso)
 			{
-				return toDto.Assign(toDtoTypeProperty.Name, toDtoTypeProperty.PropertyType.Call("Parse", fromModelParam.RefProperty(toDtoTypeProperty.Name)));
+				return toSource.Assign(toSourceProperty.Name, fromTargetParam.RefProperty(toSourceProperty.Name).Call(targetAttr.GetConvertToSourceMethodName()) );
 			}
 
-			var toDtoTypePropertyType = toDtoTypeProperty.PropertyType;
-			var fromModelPropertyType = fromModelProperty.PropertyType;
-			var fromDtoIsGenericList = toDtoTypePropertyType.IsGenericType && toDtoTypePropertyType.GetGenericTypeDefinition() == typeof(List<>);
-			var toModelIsGenericList = fromModelPropertyType.IsGenericType && fromModelPropertyType.GetGenericTypeDefinition() == typeof(List<>);
-			var bothAreGenericLists = fromDtoIsGenericList && toModelIsGenericList;
+			var fromSourceIsGenericList = toSourcePropertyType.IsGenericType && toSourcePropertyType.GetGenericTypeDefinition()   == typeof(List<>);
+			var toTargetIsGenericList = fromTargetPropertyType.IsGenericType && fromTargetPropertyType.GetGenericTypeDefinition() == typeof(List<>);
+			var bothAreGenericLists = fromSourceIsGenericList && toTargetIsGenericList;
 
 			if (bothAreGenericLists)
 			{
-				//to.PhoneNumbers = PhoneNumber.ParseAll(this.PhoneNumbers);
-				var fromDtoIsModel = toDtoTypePropertyType.GetGenericArguments()[0].GetCustomAttributes(typeof(TranslateModelAttribute), false).Count() > 0;
-				if (fromDtoIsModel)
+				//to.PhoneNumbers = from.PhoneNumbers.ToPhoneNumbers();
+				var propertyListItemTypeAttr = getTypesTranslateAttributeFn(toSourcePropertyType.GetGenericArguments()[0], fromTargetPropertyType.GetGenericArguments()[0]);
+				var sourceIsTranslatable = propertyListItemTypeAttr != null;
+				if (sourceIsTranslatable)
 				{
-					return toDto.RefProperty(toDtoTypeProperty.Name).Assign(toDtoTypePropertyType.GetGenericArguments()[0].Call("ParseAll", fromModelParam.RefProperty(fromModelProperty.Name)));
-					//return toDto.Assign(fromModelPropertyType.Name, toDtoTypePropertyType.GetGenericArguments()[0].Call("ParseAll", fromModelProperty.Name.ThisProperty()));
+					var toSourcesMethodName = propertyListItemTypeAttr.GetConvertToSourcesMethodName();
+					return toSource.RefProperty(toSourceProperty.Name).Assign(fromTargetParam.RefProperty(fromTargetProperty.Name).Call(toSourcesMethodName));
+					//return toSource.Assign(toSourceProperty.Name, fromSourceVar.RefProperty(sourceProperty.Name).Call(toTargetsMethodName));
 				}
 			}
 
+			//if (bothAreGenericLists)
+			//{
+			//    //to.PhoneNumbers = PhoneNumber.ParseAll(this.PhoneNumbers);
+			//    var fromSourceIsTarget = toSourcePropertyType.GetGenericArguments()[0].GetCustomAttributes(typeof(TranslateAttribute), false).Count() > 0;
+			//    if (fromSourceIsTarget)
+			//    {
+			//        return toSource.RefProperty(toSourceProperty.Name).Assign(toSourcePropertyType.GetGenericArguments()[0].Call("ParseAll", fromTargetParam.RefProperty(fromTargetProperty.Name)));
+			//        //return toSource.Assign(fromTargetPropertyType.Name, toSourceTypePropertyType.GetGenericArguments()[0].Call("ParseAll", fromTargetProperty.Name.ThisProperty()));
+			//    }
+			//}
+
 			//to[property.Name] = this[property.Name].ToString() e.g:
 			//	to.Name = from.Name;
-			if (toDtoTypeProperty.PropertyType == typeof(string)
-				&& StringConverterUtils.CanCreateFromString(fromModelProperty.PropertyType))
+			if (toSourceProperty.PropertyType == typeof(string)
+				&& StringConverterUtils.CanCreateFromString(fromTargetProperty.PropertyType))
 			{
-				var fromModelPropertyRef = fromModelParam.Name.RefArgument().RefProperty(toDtoTypeProperty.Name);
-				return fromModelPropertyRef.IfIsNotNull(
-							toDto.Assign(
-								toDto.RefProperty(toDtoTypeProperty.Name),
-								fromModelPropertyRef.Call("ToString")));
+				var fromTargetPropertyRef = fromTargetParam.Name.RefArgument().RefProperty(toSourceProperty.Name);
+				return fromTargetPropertyRef.IfIsNotNull(
+							toSource.Assign(
+								toSource.RefProperty(toSourceProperty.Name),
+								fromTargetPropertyRef.Call("ToString")));
 			}
 
 			// Converting 'System.Collections.Generic.List`1 PhoneNumbers' to 'System.Collections.Generic.List`1 PhoneNumbers' is unsupported
 			return new CodeCommentStatement(string.Format("Converting '{0}.{1} {2}' to '{3}.{4} {5}' is unsupported"
-				, toDtoTypeProperty.PropertyType.Namespace, toDtoTypeProperty.PropertyType.Name, toDtoTypeProperty.Name
-				, fromModelProperty.PropertyType.Namespace, fromModelProperty.PropertyType.Name, fromModelProperty.Name));
+				, toSourceProperty.PropertyType.Namespace, toSourceProperty.PropertyType.Name, toSourceProperty.Name
+				, fromTargetProperty.PropertyType.Namespace, fromTargetProperty.PropertyType.Name, fromTargetProperty.Name));
 		}
 
-		public static CodeTypeMember ParseEnumerableMethod(Type dtoType, Type modelType)
+		public static CodeTypeMember ConvertToSourcesMethod(TranslateAttribute attr)
 		{
-			var methodName = "ParseAll";
-			var from = modelType.Param("from", typeof(IEnumerable<>));
-			var method = DeclareParseEnumerableMethod(methodName, dtoType, from);
+			var from = attr.TargetType.Param("from", typeof(IEnumerable<>));
+			var method = DeclareToSourcesMethod(attr, from);
 
-			return ParseEnumerableMethod(dtoType, modelType, method, from);
+			return ConvertToSourcesMethod(attr, method, from);
 		}
 
-		public static CodeTypeMember ParseEnumerableMethod(Type dtoType, Type modelType, CodeMemberMethod method, CodeParameterDeclarationExpression from)
+		public static CodeTypeMember ConvertToSourcesMethod(TranslateAttribute attr, CodeMemberMethod method, CodeParameterDeclarationExpression from)
 		{
 			method.Statements.Add(from.ReturnNullIfNull());
 
-			var to = "to".DeclareGenericVar(dtoType, typeof(List<>));
+			var to = "to".DeclareGenericVar(attr.SourceType, typeof(List<>));
 			method.Statements.Add(to);
 
 			CodeVariableDeclarationStatement item;
-			var iter = from.ForEach(modelType, out item);
+			var iter = from.ForEach(attr.TargetType, out item);
 			method.Statements.Add(iter);
-			iter.Statements.Add(to.Call("Add", "Parse".CallStatic(item) ));
+			iter.Statements.Add(to.Call(LIST_ADD_METHOD, item.Call(attr.GetConvertToSourceMethodName())));
 
 			method.Statements.Add(to.Return());
 

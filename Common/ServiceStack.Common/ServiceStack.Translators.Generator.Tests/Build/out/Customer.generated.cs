@@ -7,12 +7,12 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 	public partial class Customer
 	{
 		
-		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Customer ToModel()
+		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Customer ToCustomer()
 		{
-			return this.UpdateModel(new ServiceStack.Translators.Generator.Tests.Support.Model.Customer());
+			return this.UpdateCustomer(new ServiceStack.Translators.Generator.Tests.Support.Model.Customer());
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Customer> ToModelList(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.Model.Customer> ToCustomers(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer> from)
 		{
 			if ((from == null))
 			{
@@ -25,22 +25,22 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 				ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer item = iter.Current;
 				if ((item != null))
 				{
-					to.Add(item.ToModel());
+					to.Add(item.ToCustomer());
 				}
 			}
 			return to;
 		}
 		
-		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Customer UpdateModel(ServiceStack.Translators.Generator.Tests.Support.Model.Customer model)
+		public virtual ServiceStack.Translators.Generator.Tests.Support.Model.Customer UpdateCustomer(ServiceStack.Translators.Generator.Tests.Support.Model.Customer model)
 		{
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer from = this;
 			model.Id = from.Id;
 			model.Name = from.Name;
 			if ((from.BillingAddress != null))
 			{
-				model.BillingAddress = from.BillingAddress.ToModel();
+				model.BillingAddress = from.BillingAddress.ToAddress();
 			}
-			model.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToModelList(from.PhoneNumbers);
+			model.PhoneNumbers = from.PhoneNumbers.ToPhoneNumbers();
 			// Skipping property 'model.ModelReadOnly' because 'model.ModelReadOnly' is read-only
 			model.ModelWriteOnly = from.ModelWriteOnly;
 			model.DtoReadOnly = from.DtoReadOnly;
@@ -48,7 +48,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return model;
 		}
 		
-		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer Parse(ServiceStack.Translators.Generator.Tests.Support.Model.Customer from)
+		public static ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer ToCustomer(ServiceStack.Translators.Generator.Tests.Support.Model.Customer from)
 		{
 			if ((from == null))
 			{
@@ -57,8 +57,8 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer to = new ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer();
 			to.Id = from.Id;
 			to.Name = from.Name;
-			to.BillingAddress = ServiceStack.Translators.Generator.Tests.Support.DataContract.Address.Parse(from.BillingAddress);
-			to.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ParseAll(from.PhoneNumbers);
+			to.BillingAddress = from.BillingAddress.ToAddress();
+			to.PhoneNumbers = from.PhoneNumbers.ToPhoneNumbers();
 			to.ModelReadOnly = from.ModelReadOnly;
 			// Skipping property 'to.ModelWriteOnly' because 'model.ModelWriteOnly' is write-only
 			// Skipping property 'to.DtoReadOnly' because 'to.DtoReadOnly' is read-only
@@ -66,7 +66,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			return to;
 		}
 		
-		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer> ParseAll(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Customer> from)
+		public static System.Collections.Generic.List<ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer> ToCustomers(System.Collections.Generic.IEnumerable<ServiceStack.Translators.Generator.Tests.Support.Model.Customer> from)
 		{
 			if ((from == null))
 			{
@@ -77,7 +77,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.Model.Customer item = iter.Current;
-				to.Add(Parse(item));
+				to.Add(item.ToCustomer());
 			}
 			return to;
 		}

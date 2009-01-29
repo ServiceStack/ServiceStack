@@ -16,5 +16,12 @@ namespace ServiceStack.Translators.Generator.Tests
 			generator.Write(typeof(ServiceModelTranslator), outPath);
 		}
 
+		[Test]
+		public void Gen_explicit_extension_translators_with_CSharp()
+		{
+			var generator = new ExtensionTranslatorClassGenerator(CodeLang.CSharp);
+			generator.Write(typeof(ExplicitTranslator), outPath);
+		}
+
 	}
 }

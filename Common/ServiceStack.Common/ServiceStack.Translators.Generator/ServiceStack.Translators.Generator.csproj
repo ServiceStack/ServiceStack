@@ -67,6 +67,7 @@
     <Compile Include="Support\CommandLineSwitchAttribute.cs" />
     <Compile Include="Support\CommandLineAliasAttribute.cs" />
     <Compile Include="Support\Parser.cs" />
+    <Compile Include="Support\TranslateNameUtils.cs" />
     <Compile Include="TranslatorClassGenerator.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 {
-	[TranslateModel(typeof(Model.Customer))]
+	[Translate(typeof(Model.Customer))]
 	[DataContract]
 	public partial class Customer
 	{
