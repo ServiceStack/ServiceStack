@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Enyim.Caching, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Enyim.Caching.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
@@ -57,6 +61,7 @@
     <Compile Include="FactoryRefTests.cs" />
     <Compile Include="FactoryUtilsTests.cs" />
     <Compile Include="FactoryProviderTests.cs" />
+    <Compile Include="MemcachedTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\CantBeCreatedFromString.cs" />
     <Compile Include="Support\Crypto\HashUtils.cs" />
@@ -69,6 +74,14 @@
     <Compile Include="Support\TestType.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.CacheAccess.Providers\ServiceStack.CacheAccess.Providers.csproj">
+      <Project>{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}</Project>
+      <Name>ServiceStack.CacheAccess.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
       <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
       <Name>ServiceStack.Configuration</Name>

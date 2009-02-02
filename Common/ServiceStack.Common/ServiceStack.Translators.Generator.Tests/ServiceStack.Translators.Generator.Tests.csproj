@@ -58,13 +58,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Build\out-ext\AddressExplicitTranslator.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Build\out-ext\AddressServiceModelTranslator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Build\out-ext\CustomerExplicitTranslator.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Build\out-ext\CustomerServiceModelTranslator.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Build\out-ext\PhoneNumberExplicitTranslator.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Build\out-ext\PhoneNumberServiceModelTranslator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Build\out\Address.generated.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Build\out\Customer.generated.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Build\out\PhoneNumber.generated.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ExtensionTranslateGeneratorTests.cs" />
@@ -92,9 +110,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Build\genetate-translators.bat" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Build\out\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

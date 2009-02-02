@@ -230,14 +230,17 @@ namespace ServiceStack.Translators.Generator
 			var targetPropertyType = targetProperty.PropertyType;
 			var sourceAttr = getTypesTranslateAttributeFn(sourcePropertyType, targetPropertyType);
 			var isSourceTranslatableAlso = sourceAttr != null;
+			var useExtensionMethods = attr is TranslateExtensionAttribute;
 
 			if (isSourceTranslatableAlso)
 			{
+				var toTargetMethodName = sourceAttr.GetConvertToTargetMethodName();
+				var method = fromSourceVar.RefProperty(sourceProperty.Name).Call(toTargetMethodName);
+				
 				return fromSourceVar.RefProperty(sourceProperty.Name).IfIsNotNull(
-					toTarget.Assign(sourceProperty.Name, fromSourceVar.RefProperty(sourceProperty.Name).Call(sourceAttr.GetConvertToTargetMethodName()))
+					toTarget.Assign(sourceProperty.Name, method)
 				);
 			}
-
 
 			var sourceIsGenericList = sourcePropertyType.IsGenericType && sourcePropertyType.GetGenericTypeDefinition() == typeof(List<>);
 			var targetIsGenericList = targetPropertyType.IsGenericType && targetPropertyType.GetGenericTypeDefinition() == typeof(List<>);
@@ -251,7 +254,11 @@ namespace ServiceStack.Translators.Generator
 				if (sourceIsTranslatable)
 				{
 					var toTargetsMethodName = propertyListItemTypeAttr.GetConvertToTargetsMethodName();
-					return toTarget.Assign(sourceProperty.Name, fromSourceVar.RefProperty(sourceProperty.Name).Call(toTargetsMethodName));
+					var method = useExtensionMethods
+					             		? fromSourceVar.RefProperty(sourceProperty.Name).Call(toTargetsMethodName)
+					             		: propertyListItemTypeAttr.SourceType.Call(toTargetsMethodName, sourceProperty.Name.ThisProperty());
+					
+					return toTarget.Assign(sourceProperty.Name, method);
 				}
 			}
 
@@ -282,7 +289,8 @@ namespace ServiceStack.Translators.Generator
 			return ConvertToSourceMethod(attr, method, from, GetTypesTranslateAttributeFn);
 		}
 
-		public static CodeTypeMember ConvertToSourceMethod(TranslateAttribute attr, 
+		public static CodeTypeMember ConvertToSourceMethod(
+			TranslateAttribute attr,
 			CodeMemberMethod method, CodeParameterDeclarationExpression from,
 			Func<Type, Type, TranslateAttribute> getTypesTranslateAttributeFn)
 		{
@@ -296,19 +304,21 @@ namespace ServiceStack.Translators.Generator
 			foreach (var toSourceTypeProperty in attr.SourceType.GetProperties())
 			{
 				if (!fromTargetTypePropertyNames.Contains(toSourceTypeProperty.Name)) continue;
-				method.Statements.Add(CreateToSourceAssignmentMethod(to, toSourceTypeProperty, attr.TargetType, from, getTypesTranslateAttributeFn));
+				method.Statements.Add(CreateToSourceAssignmentMethod(attr, to, toSourceTypeProperty, from, getTypesTranslateAttributeFn));
 			}
 
 			method.Statements.Add(to.Return());
 			return method;
 		}
 
-		public static CodeStatement CreateToSourceAssignmentMethod(CodeVariableDeclarationStatement toSource,
-			PropertyInfo toSourceProperty, Type fromTargetType, CodeParameterDeclarationExpression fromTargetParam,
+		public static CodeStatement CreateToSourceAssignmentMethod(
+			TranslateAttribute attr,
+			CodeVariableDeclarationStatement toSource,
+			PropertyInfo toSourceProperty, CodeParameterDeclarationExpression fromTargetParam,
 			Func<Type, Type, TranslateAttribute> getTypesTranslateAttributeFn)
 		{
 
-			var fromTargetProperty = fromTargetType.GetProperty(toSourceProperty.Name);
+			var fromTargetProperty = attr.TargetType.GetProperty(toSourceProperty.Name);
 			var cantReadFromTarget = fromTargetProperty.GetGetMethod() == null;
 			if (cantReadFromTarget)
 			{
@@ -337,13 +347,19 @@ namespace ServiceStack.Translators.Generator
 			var toSourcePropertyType = toSourceProperty.PropertyType;
 			var fromTargetPropertyType = fromTargetProperty.PropertyType;
 			var targetAttr = getTypesTranslateAttributeFn(toSourcePropertyType, fromTargetPropertyType);
+			var useExtensionMethods = attr is TranslateExtensionAttribute;
 			var isTargetTranslatableAlso = targetAttr != null;
+
 			if (isTargetTranslatableAlso)
 			{
-				return toSource.Assign(toSourceProperty.Name, fromTargetParam.RefProperty(toSourceProperty.Name).Call(targetAttr.GetConvertToSourceMethodName()) );
+				var toSourceMethodName = targetAttr.GetConvertToSourceMethodName();
+				var method = useExtensionMethods
+									? fromTargetParam.RefProperty(toSourceProperty.Name).Call(toSourceMethodName)
+									: toSourcePropertyType.Call(toSourceMethodName, fromTargetParam.RefProperty(toSourceProperty.Name));
+				return toSource.Assign(toSourceProperty.Name, method);
 			}
 
-			var fromSourceIsGenericList = toSourcePropertyType.IsGenericType && toSourcePropertyType.GetGenericTypeDefinition()   == typeof(List<>);
+			var fromSourceIsGenericList = toSourcePropertyType.IsGenericType && toSourcePropertyType.GetGenericTypeDefinition() == typeof(List<>);
 			var toTargetIsGenericList = fromTargetPropertyType.IsGenericType && fromTargetPropertyType.GetGenericTypeDefinition() == typeof(List<>);
 			var bothAreGenericLists = fromSourceIsGenericList && toTargetIsGenericList;
 
@@ -355,21 +371,13 @@ namespace ServiceStack.Translators.Generator
 				if (sourceIsTranslatable)
 				{
 					var toSourcesMethodName = propertyListItemTypeAttr.GetConvertToSourcesMethodName();
-					return toSource.RefProperty(toSourceProperty.Name).Assign(fromTargetParam.RefProperty(fromTargetProperty.Name).Call(toSourcesMethodName));
-					//return toSource.Assign(toSourceProperty.Name, fromSourceVar.RefProperty(sourceProperty.Name).Call(toTargetsMethodName));
+					var method = useExtensionMethods
+					             		? fromTargetParam.RefProperty(fromTargetProperty.Name).Call(toSourcesMethodName)
+					             		: propertyListItemTypeAttr.SourceType.Call(toSourcesMethodName, fromTargetParam.RefProperty(fromTargetProperty.Name));
+
+					return toSource.RefProperty(toSourceProperty.Name).Assign(method);
 				}
 			}
-
-			//if (bothAreGenericLists)
-			//{
-			//    //to.PhoneNumbers = PhoneNumber.ParseAll(this.PhoneNumbers);
-			//    var fromSourceIsTarget = toSourcePropertyType.GetGenericArguments()[0].GetCustomAttributes(typeof(TranslateAttribute), false).Count() > 0;
-			//    if (fromSourceIsTarget)
-			//    {
-			//        return toSource.RefProperty(toSourceProperty.Name).Assign(toSourcePropertyType.GetGenericArguments()[0].Call("ParseAll", fromTargetParam.RefProperty(fromTargetProperty.Name)));
-			//        //return toSource.Assign(fromTargetPropertyType.Name, toSourceTypePropertyType.GetGenericArguments()[0].Call("ParseAll", fromTargetProperty.Name.ThisProperty()));
-			//    }
-			//}
 
 			//to[property.Name] = this[property.Name].ToString() e.g:
 			//	to.Name = from.Name;
@@ -407,7 +415,13 @@ namespace ServiceStack.Translators.Generator
 			CodeVariableDeclarationStatement item;
 			var iter = from.ForEach(attr.TargetType, out item);
 			method.Statements.Add(iter);
-			iter.Statements.Add(to.Call(LIST_ADD_METHOD, item.Call(attr.GetConvertToSourceMethodName())));
+			var useExtensionMethod = attr is TranslateExtensionAttribute;
+			
+			var itemMethod = useExtensionMethod
+			                 		? item.Call(attr.GetConvertToSourceMethodName()) 
+									: attr.SourceType.Call(attr.GetConvertToSourceMethodName(), item);
+			
+			iter.Statements.Add(to.Call(LIST_ADD_METHOD, itemMethod));
 
 			method.Statements.Add(to.Return());
 

@@ -50,7 +50,11 @@ namespace ServiceStack.Configuration.Support
 		public T Create<T>()
 		{
 			var toType = typeof(T);
-			if (objectTypes == null) return default(T);
+			if (objectTypes == null)
+			{
+				//TODO: implement properly so it navigates all config types for the bestmatch (like registered providers)
+				return (T)Create(toType.Name, toType);
+			}
 			var matchingTypes = objectTypes.Where(objectType => ReflectionUtils.CanCast(toType, objectType.Value)).ToList();
 			if (matchingTypes.Count == 0)
 			{

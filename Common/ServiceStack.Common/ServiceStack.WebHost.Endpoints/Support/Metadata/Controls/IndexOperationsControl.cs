@@ -18,13 +18,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		{
 			var opTemplate = new StringBuilder("<li><span>{0}</span>");
 			if (MetadataConfig.Soap11 != null)
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">SOAP 1.1</a>", MetadataConfig.Soap11.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">SOAP 1.1</a>", MetadataConfig.Soap11.DefaultMetadataUri);
 			if (MetadataConfig.Soap12 != null)
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">SOAP 1.2</a>", MetadataConfig.Soap12.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">SOAP 1.2</a>", MetadataConfig.Soap12.DefaultMetadataUri);
 			if (MetadataConfig.Soap11 != null)
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">XML</a>", MetadataConfig.Xml.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">XML</a>", MetadataConfig.Xml.DefaultMetadataUri);
 			if (MetadataConfig.Soap11 != null)
-				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">JSON</a>", MetadataConfig.Json.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSON</a>", MetadataConfig.Json.DefaultMetadataUri);
 			opTemplate.Append("</li>");
 
 			var operationsPart = new ListTemplate {

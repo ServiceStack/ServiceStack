@@ -39,13 +39,33 @@ namespace ServiceStack.Configuration.Tests
 		}
 
 		[Test]
+		public void A_config_provider_is_resolvable_by_type()
+		{
+			var provider = new FactoryProvider(factoryConfig);
+			var resolvedGateway = provider.Resolve<TestGateway>();
+			Assert.That(resolvedGateway, Is.Not.Null);
+			var xmlServiceClient = (XmlServiceClient)resolvedGateway.ServiceClient;
+			Assert.That(xmlServiceClient.BaseUri, Is.EqualTo("http://mock.org/service.svc"));
+		}
+
+		[Test]
+		public void A_config_provider_is_resolvable_by_an_interface_type()
+		{
+			var provider = new FactoryProvider(factoryConfig);
+			var resolvedGateway = provider.Resolve<ITestGateway>();
+			Assert.That(resolvedGateway, Is.Not.Null);
+			var xmlServiceClient = (XmlServiceClient)resolvedGateway.ServiceClient;
+			Assert.That(xmlServiceClient.BaseUri, Is.EqualTo("http://mock.org/service.svc"));
+		}
+
+		[Test]
 		public void A_registered_provider_is_resolvable_by_an_interface_type()
 		{
 			var gateway = new TestGateway(new XmlServiceClient("http://mock.org/service.svc"));
 			var provider = new FactoryProvider(null, gateway);
 			var resolvedGateway = provider.Resolve<ITestGateway>();
 			Assert.That(resolvedGateway, Is.Not.Null);
-			var xmlServiceClient = (XmlServiceClient) resolvedGateway.ServiceClient;
+			var xmlServiceClient = (XmlServiceClient)resolvedGateway.ServiceClient;
 			Assert.That(xmlServiceClient.BaseUri, Is.EqualTo("http://mock.org/service.svc"));
 		}
 

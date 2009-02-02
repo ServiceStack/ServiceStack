@@ -65,7 +65,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.Model.PhoneNumber item = iter.Current;
-				to.Add(item.ToPhoneNumber());
+				to.Add(ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToPhoneNumber(item));
 			}
 			return to;
 		}

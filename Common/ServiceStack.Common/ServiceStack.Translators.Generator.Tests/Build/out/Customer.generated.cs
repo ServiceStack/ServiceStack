@@ -40,7 +40,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			{
 				model.BillingAddress = from.BillingAddress.ToAddress();
 			}
-			model.PhoneNumbers = from.PhoneNumbers.ToPhoneNumbers();
+			model.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToPhoneNumbers(this.PhoneNumbers);
 			// Skipping property 'model.ModelReadOnly' because 'model.ModelReadOnly' is read-only
 			model.ModelWriteOnly = from.ModelWriteOnly;
 			model.DtoReadOnly = from.DtoReadOnly;
@@ -57,8 +57,8 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer to = new ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer();
 			to.Id = from.Id;
 			to.Name = from.Name;
-			to.BillingAddress = from.BillingAddress.ToAddress();
-			to.PhoneNumbers = from.PhoneNumbers.ToPhoneNumbers();
+			to.BillingAddress = ServiceStack.Translators.Generator.Tests.Support.DataContract.Address.ToAddress(from.BillingAddress);
+			to.PhoneNumbers = ServiceStack.Translators.Generator.Tests.Support.DataContract.PhoneNumber.ToPhoneNumbers(from.PhoneNumbers);
 			to.ModelReadOnly = from.ModelReadOnly;
 			// Skipping property 'to.ModelWriteOnly' because 'model.ModelWriteOnly' is write-only
 			// Skipping property 'to.DtoReadOnly' because 'to.DtoReadOnly' is read-only
@@ -77,7 +77,7 @@ namespace ServiceStack.Translators.Generator.Tests.Support.DataContract
 			)
 			{
 				ServiceStack.Translators.Generator.Tests.Support.Model.Customer item = iter.Current;
-				to.Add(item.ToCustomer());
+				to.Add(ServiceStack.Translators.Generator.Tests.Support.DataContract.Customer.ToCustomer(item));
 			}
 			return to;
 		}
