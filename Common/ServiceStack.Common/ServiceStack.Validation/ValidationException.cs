@@ -48,7 +48,7 @@ namespace ServiceStack.Validation
 					else
 					{
 						sb.AppendFormat("\n  - {0}: {1}", error.ErrorCode, error.FieldName);
-					}					
+					}
 				}
 				return sb.ToString();
 			}
@@ -76,15 +76,15 @@ namespace ServiceStack.Validation
 			return sb.ToString();
 		}
 
-		public static void ThrowValidationError(string errorCode, string fieldName, string errorMessage)
+		public static ValidationException CreateValidationException(string errorCode, string fieldName, string errorMessage)
 		{
 			var error = new ValidationError(errorCode, fieldName, errorMessage);
-			throw new ValidationException(new ValidationResult(new List<ValidationError> { error }));
+			return new ValidationException(new ValidationResult(new List<ValidationError> { error }));
 		}
 
-		public static void ThrowValidationError(ValidationError error)
+		public static ValidationException CreateValidationException(ValidationError error)
 		{
-			throw new ValidationException(new ValidationResult(new List<ValidationError> { error }));
+			return new ValidationException(new ValidationResult(new List<ValidationError> { error }));
 		}
 
 		public static void ThrowIfNotValid(ValidationResult validationResult)
