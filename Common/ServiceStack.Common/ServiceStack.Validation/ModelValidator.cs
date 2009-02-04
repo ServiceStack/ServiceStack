@@ -103,8 +103,17 @@ namespace ServiceStack.Validation
 				var propertyValue = validationAttributeProperty.PropertyInfo.GetValue(entity, null);
 				foreach (var validationAttribute in validationAttributeProperty.ValidationAttributes)
 				{
-					string errorCode = validationAttribute.Validate(propertyValue);
-
+					string errorCode;
+					try
+					{
+						errorCode = validationAttribute.Validate(propertyValue);
+					}
+					catch (Exception ex)
+					{						
+						throw new Exception(
+							string.Format("Error trying to validate property '{0}' with value '{1}' using validator '{2}'",
+							validationAttributeProperty.PropertyInfo.Name, propertyValue, validationAttribute.GetType().Name), ex);
+					}
 					//Test each validation attribute with the property value
 					var isValid = errorCode == null;
 					if (isValid) continue;

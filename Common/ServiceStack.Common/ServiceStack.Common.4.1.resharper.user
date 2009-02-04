@@ -14,7 +14,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Support/d:Model/f:PhoneNumber.cs" caret="83" scrollPosition="0|0" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:Program.cs" caret="1854" scrollPosition="0|29" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:ExtensionTranslatorClassGenerator.cs" caret="7147" scrollPosition="0|151" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/d:Support/f:TranslateNameUtils.cs" caret="992" scrollPosition="0|10" />
@@ -44,10 +43,9 @@
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1456" scrollPosition="0|19" />
       <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractSerializer.cs" caret="229" scrollPosition="0|0" />
       <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractDeserializer.cs" caret="211" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="124" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="8862" scrollPosition="0|215" />
-      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="10036" scrollPosition="66|221" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="10050" scrollPosition="0|221" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="8995" scrollPosition="0|221" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="8849" scrollPosition="0|221" />
@@ -76,6 +74,8 @@
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="2043" scrollPosition="0|19" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1858" scrollPosition="0|19" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1858" scrollPosition="0|16" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="2214" scrollPosition="0|64" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="2221" scrollPosition="0|64" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

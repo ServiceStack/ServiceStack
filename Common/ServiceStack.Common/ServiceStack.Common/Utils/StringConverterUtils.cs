@@ -23,6 +23,7 @@ namespace ServiceStack.Common.Utils
 		{
 			private static Dictionary<Type, TypeDefinition> TypeDefinitionMap { get; set; }
 
+			private Type NullableUnderlyingType { get; set; }
 			private Type Type { get; set; }
 			private ConstructorInfo TypeConstructor { get; set; }
 			private MethodInfo ParseMethod { get; set; }
@@ -54,6 +55,12 @@ namespace ServiceStack.Common.Utils
 			private void Load()
 			{
 				if (Type.IsEnum || Type == typeof(string))
+				{
+					return;
+				}
+
+				this.NullableUnderlyingType = Nullable.GetUnderlyingType(Type);
+				if (this.NullableUnderlyingType != null)
 				{
 					return;
 				}
@@ -91,9 +98,25 @@ namespace ServiceStack.Common.Utils
 				{
 					return value;
 				}
+				bool isNullValue = string.IsNullOrEmpty(value);
+				if (isNullValue && this.Type.IsValueType)
+				{
+					return Activator.CreateInstance(this.Type);
+				}
 				if (this.Type.IsEnum)
 				{
 					return Enum.Parse(Type, value);
+				}
+				if (this.NullableUnderlyingType != null)
+				{
+					if (isNullValue)
+					{
+						return null;
+					}
+					if (this.NullableUnderlyingType.IsEnum)
+					{
+						return Enum.Parse(NullableUnderlyingType, value);
+					}
 				}
 				if (this.ParseMethod != null)
 				{

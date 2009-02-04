@@ -24,17 +24,9 @@ namespace ServiceStack.Common.Tests
 		}
 
 		[Test]
-		public void To_on_null_or_empty_string_throws_exception()
+		public void To_ValueType_on_null_or_empty_string_returns_default_value()
 		{
-			try
-			{
-				Assert.That("".To<int>(), Is.EqualTo(default(int)));
-			}
-			catch (Exception ex)
-			{
-				return;
-			}
-			Assert.Fail("Should've thrown an exception");
+			Assert.That("".To<int>(), Is.EqualTo(default(int)));
 		}
 
 	}
