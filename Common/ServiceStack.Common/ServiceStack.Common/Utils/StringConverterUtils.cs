@@ -59,35 +59,41 @@ namespace ServiceStack.Common.Utils
 					return;
 				}
 
+				var useType = this.Type;
+
 				this.NullableUnderlyingType = Nullable.GetUnderlyingType(Type);
 				if (this.NullableUnderlyingType != null)
 				{
-					return;
+					useType = this.NullableUnderlyingType;
+					if (useType.IsEnum)
+					{
+						return;
+					}
 				}
 
 				// Get the static Parse(string) method on the type supplied
-				ParseMethod = Type.GetMethod(PARSE_METHOD, BindingFlags.Public | BindingFlags.Static, null,
+				ParseMethod = useType.GetMethod(PARSE_METHOD, BindingFlags.Public | BindingFlags.Static, null,
 											 new[] { typeof(string) }, null);
 
 				if (ParseMethod == null)
 				{
-					TypeConstructor = GetTypeStringConstructor(Type);
+					TypeConstructor = GetTypeStringConstructor(useType);
 					if (TypeConstructor == null)
 					{
-						Type[] interfaces = Type.FindInterfaces(
+						Type[] interfaces = useType.FindInterfaces(
 							(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>), null);
 
 						var isGenericCollection = interfaces.Length > 0;
 						if (isGenericCollection)
 						{
-							TypeConstructor = Type.GetConstructor(Type.EmptyTypes);
+							TypeConstructor = useType.GetConstructor(Type.EmptyTypes);
 							if (TypeConstructor != null)
 							{
 								GenericCollectionArgumentTypes = interfaces[0].GetGenericArguments();
 								return;
 							}
 						}
-						throw new NotSupportedException(string.Format("Cannot create type {0} from a string.", Type.Name));
+						throw new NotSupportedException(string.Format("Cannot create type {0} from a string.", useType.Name));
 					}
 				}
 			}

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
@@ -105,6 +106,23 @@ namespace ServiceStack.Common.Tests
 			var stringValue = StringConverterUtils.ToString(enumValue);
 			string expectedString = default(TestEnum?).ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_convert_nullable_datetime()
+		{
+			DateTime? dateValue = new DateTime(1979, 5, 9);
+			var stringValue = StringConverterUtils.ToString(dateValue);
+			var expectedString = dateValue.ToString();
+			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_convert_to_nullable_datetime()
+		{
+			DateTime? dateValue = new DateTime(1979, 5, 9);
+			var actualValue = StringConverterUtils.Parse<DateTime?>(dateValue.ToString());
+			Assert.That(actualValue, Is.EqualTo(dateValue));
 		}
 
 		[Test]
