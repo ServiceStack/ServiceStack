@@ -76,7 +76,9 @@ namespace ServiceStack.Configuration.Support
 
 		public object Create(string objectName, Type returnType)
 		{
-			var objectTypeDefinition = objectTypeConfigs[objectName];
+			ObjectConfigurationType objectTypeDefinition;
+			if (!objectTypeConfigs.TryGetValue(objectName, out objectTypeDefinition)) 
+				return null;
 			var typeBuilder = GetTypeBuilder(objectTypeDefinition);
 			return typeBuilder.Create(objectTypeDefinition, returnType);
 		}

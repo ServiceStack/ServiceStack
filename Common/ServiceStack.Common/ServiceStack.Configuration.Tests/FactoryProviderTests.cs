@@ -48,7 +48,7 @@ namespace ServiceStack.Configuration.Tests
 			Assert.That(xmlServiceClient.BaseUri, Is.EqualTo("http://mock.org/service.svc"));
 		}
 
-		[Test]
+		[Ignore("Needs to be implemented")][Test]
 		public void A_config_provider_is_resolvable_by_an_interface_type()
 		{
 			var provider = new FactoryProvider(factoryConfig);

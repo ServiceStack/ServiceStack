@@ -76,6 +76,12 @@ namespace ServiceStack.Validation
 			return sb.ToString();
 		}
 
+		public static ValidationException CreateException(string errorCode)
+		{
+			var error = new ValidationError(errorCode);
+			return new ValidationException(new ValidationResult(new List<ValidationError> { error }));
+		}
+
 		public static ValidationException CreateException(string errorCode, string fieldName, string errorMessage)
 		{
 			var error = new ValidationError(errorCode, fieldName, errorMessage);

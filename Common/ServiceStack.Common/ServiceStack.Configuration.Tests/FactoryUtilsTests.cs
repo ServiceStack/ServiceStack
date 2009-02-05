@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Xml;
 using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Configuration.Support;
 using ServiceStack.ServiceClient.Web;
 
@@ -136,11 +137,10 @@ namespace ServiceStack.Configuration.Tests
 		}
 
 		[Test]
-		[ExpectedException(typeof(KeyNotFoundException))]
 		public void ObjectKeyNotExistTest()
 		{
 			var factoryInstance = factory.Create<object>("ObjectKeyNotExist");
-			Assert.Fail();
+			Assert.That(factoryInstance, Is.Null);
 		}
 
 		[Test]
