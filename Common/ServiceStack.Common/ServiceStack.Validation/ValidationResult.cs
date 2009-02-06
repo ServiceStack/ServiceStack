@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Validation
@@ -99,7 +100,7 @@ namespace ServiceStack.Validation
 		/// <param name="errorCode">The error code.</param>
 		public ValidationResult(IList<ValidationError> errors, string successCode, string errorCode)
 		{
-			this.Errors = errors;
+			this.Errors = errors ?? new List<ValidationError>();
 			if (successCode != null)
 			{
 				this.SuccessCode = successCode;
@@ -108,7 +109,19 @@ namespace ServiceStack.Validation
 			if (errorCode != null)
 			{
 				this.ErrorCode = errorCode;
-				this.ErrorMessage = errorCode.SplitCamelCase();
+			}
+			else
+			{
+				if (this.Errors.Count > 0)
+				{
+					this.ErrorCode = this.Errors[0].ErrorCode;
+					this.ErrorMessage = this.Errors[0].ErrorMessage;
+				}
+			}
+			
+			if (this.ErrorMessage == null && this.ErrorCode != null)
+			{
+				this.ErrorMessage = this.ErrorCode.SplitCamelCase();
 			}
 		}
 	}

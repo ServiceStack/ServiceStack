@@ -14,8 +14,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out-ext/f:AddressExplicitTranslator.cs" caret="0" scrollPosition="0|0" />
-      <File id="C6D29484-75A4-45E4-A50A-4F942E6F5DD4/d:Build/d:out-ext/f:CustomerExplicitTranslator.cs" caret="0" scrollPosition="0|0" />
       <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="11826" scrollPosition="0|281" />
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:MemoryCacheClient.cs" caret="0" scrollPosition="0|159" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Support/f:AdapterBase.cs" caret="231" scrollPosition="0|0" />
@@ -34,20 +32,20 @@
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="647" scrollPosition="0|6" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2570" scrollPosition="0|67" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2660" scrollPosition="0|54" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSession.cs" caret="3855" scrollPosition="0|99" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSessionManager.cs" caret="887" scrollPosition="0|0" />
       <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationError.cs" caret="314" scrollPosition="0|0" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1451" scrollPosition="0|23" />
       <File id="E74F7B37-D01A-4324-B163-03F91717DA2F/f:get-latest-libs.bat" caret="0" scrollPosition="0|0" />
       <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:FactoryProvider.cs" caret="2643" scrollPosition="0|66" />
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/d:Support/f:ObjectConfigurationTypeFactory.cs" caret="2532" scrollPosition="0|50" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1523" scrollPosition="0|0" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryUtilsTests.cs" caret="6266" scrollPosition="0|120" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSession.cs" caret="3143" scrollPosition="0|69" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateExceptionTests.cs" caret="2382" scrollPosition="0|58" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="621" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationResult.cs" caret="216" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ModelValidator.cs" caret="3696" scrollPosition="26|78" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ModelValidator.cs" caret="3349" scrollPosition="0|78" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2708" scrollPosition="0|61" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2698" scrollPosition="0|61" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="718" scrollPosition="0|19" />
@@ -76,6 +74,8 @@
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/d:Support/f:ObjectConfigurationTypeFactory.cs" caret="2608" scrollPosition="0|50" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryUtilsTests.cs" caret="6305" scrollPosition="0|120" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1894" scrollPosition="0|31" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationResult.cs" caret="2355" scrollPosition="0|78" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationResult.cs" caret="2705" scrollPosition="0|78" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -735,6 +735,7 @@
       <Item value="errorCode" priority="0" />
       <Item value="objectTypeConfigs" priority="0" />
       <Item value="factoryInstance" priority="0" />
+      <Item value="List&lt;ValidationError&gt;" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="13" />

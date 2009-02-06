@@ -16,9 +16,17 @@ namespace ServiceStack.Validation
 		}
 
 		public ValidationException(ValidationResult validationResult)
-			: this(validationResult.Message)
+			: base(validationResult.ErrorMessage)
 		{
+			this.errorCode = validationResult.ErrorCode;
+			this.ErrorMessage = validationResult.ErrorMessage;
 			this.Violations = validationResult.Errors;
+		}
+
+		public ValidationException(ValidationError validationError)
+			: this(validationError.ErrorCode, validationError.ErrorMessage)
+		{
+			this.Violations.Add(validationError);
 		}
 
 		public ValidationException(string errorCode, string errorMessage)
@@ -49,8 +57,8 @@ namespace ServiceStack.Validation
 				if (this.Violations.Count == 0)
 					return this.ErrorMessage;
 
-				if (this.Violations.Count == 1 && this.ErrorMessage == null)
-					return this.Violations[0].ErrorMessage;
+				if (this.Violations.Count == 1)
+					return this.ErrorMessage ?? this.Violations[0].ErrorMessage;
 
 				var sb = new StringBuilder(this.ErrorMessage).AppendLine();
 				foreach (var error in this.Violations)
@@ -110,7 +118,7 @@ namespace ServiceStack.Validation
 
 		public static ValidationException CreateException(ValidationError error)
 		{
-			return new ValidationException(new ValidationResult(new List<ValidationError> { error }));
+			return new ValidationException(error);
 		}
 
 		public static void ThrowIfNotValid(ValidationResult validationResult)
