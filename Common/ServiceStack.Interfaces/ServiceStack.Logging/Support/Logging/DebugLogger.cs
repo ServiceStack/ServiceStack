@@ -74,7 +74,9 @@ namespace ServiceStack.Logging.Support.Logging
             Log(DEBUG + message, exception);
         }
 
-        public void Debug(object message)
+		public bool IsDebugEnabled { get { return true; } }
+
+    	public void Debug(object message)
         {
             Log(DEBUG + message);
         }

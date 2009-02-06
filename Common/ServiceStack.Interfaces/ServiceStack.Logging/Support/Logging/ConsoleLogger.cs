@@ -33,7 +33,9 @@ namespace ServiceStack.Logging.Support.Logging
 
         #region ILog Members
 
-        /// <summary>
+		public bool IsDebugEnabled { get { return true; } }
+		
+		/// <summary>
         /// Logs the specified message.
         /// </summary>
         /// <param name="message">The message.</param>

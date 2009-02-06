@@ -1,21 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Validation
 {
 	public class ValidationException : Exception
 	{
-		//required to re-create the Exception from a SOAP Fault
-		public ValidationException(string message)
-			: base(message)
+		private readonly string errorCode;
+		public string ErrorMessage { get; private set; }
+
+		public ValidationException(string errorCode)
+			: this(errorCode, errorCode.SplitCamelCase())
 		{
 		}
 
 		public ValidationException(ValidationResult validationResult)
-			: base(validationResult.Message)
+			: this(validationResult.Message)
 		{
 			this.Violations = validationResult.Errors;
+		}
+
+		public ValidationException(string errorCode, string errorMessage)
+			: base(errorMessage)
+		{
+			this.errorCode = errorCode;
+			this.ErrorMessage = errorMessage;
+			this.Violations = new List<ValidationError>();
 		}
 
 		/// <summary>
@@ -26,11 +37,7 @@ namespace ServiceStack.Validation
 		{
 			get
 			{
-				if (this.Violations.Count > 0)
-				{
-					return this.Violations[0].ErrorCode;
-				}
-				return null;
+				return this.errorCode;
 			}
 		}
 
@@ -38,16 +45,25 @@ namespace ServiceStack.Validation
 		{
 			get
 			{
-				var sb = new StringBuilder(base.Message).AppendLine();
+				//If there is only 1 validation error than we just show the error message
+				if (this.Violations.Count == 0)
+					return this.ErrorMessage;
+
+				if (this.Violations.Count == 1 && this.ErrorMessage == null)
+					return this.Violations[0].ErrorMessage;
+
+				var sb = new StringBuilder(this.ErrorMessage).AppendLine();
 				foreach (var error in this.Violations)
 				{
 					if (!string.IsNullOrEmpty(error.ErrorMessage))
 					{
-						sb.AppendFormat("\n  - {0} [{1}]", error.ErrorMessage, error.FieldName);
+						var fieldLabel = error.FieldName != null ? string.Format(" [{0}]", error.FieldName) : null;
+						sb.AppendFormat("\n  - {0}{1}", error.ErrorMessage, fieldLabel);
 					}
 					else
 					{
-						sb.AppendFormat("\n  - {0}: {1}", error.ErrorCode, error.FieldName);
+						var fieldLabel = error.FieldName != null ? ": " + error.FieldName : null;
+						sb.AppendFormat("\n  - {0}{1}", error.ErrorCode, fieldLabel);
 					}
 				}
 				return sb.ToString();
@@ -78,11 +94,15 @@ namespace ServiceStack.Validation
 
 		public static ValidationException CreateException(string errorCode)
 		{
-			var error = new ValidationError(errorCode);
-			return new ValidationException(new ValidationResult(new List<ValidationError> { error }));
+			return new ValidationException(errorCode);
 		}
 
-		public static ValidationException CreateException(string errorCode, string fieldName, string errorMessage)
+		public static ValidationException CreateException(string errorCode, string errorMessage)
+		{
+			return new ValidationException(errorCode, errorMessage);
+		}
+
+		public static ValidationException CreateException(string errorCode, string errorMessage, string fieldName)
 		{
 			var error = new ValidationError(errorCode, fieldName, errorMessage);
 			return new ValidationException(new ValidationResult(new List<ValidationError> { error }));

@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseValidationTests.cs" />
+    <Compile Include="ValidateExceptionTests.cs" />
     <Compile Include="ValidateSessionTests.cs" />
     <Compile Include="CreditCardValidationTests.cs" />
     <Compile Include="NotNullValidationTests.cs" />
@@ -69,6 +70,10 @@
     <Compile Include="ValidEmailValidationTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>

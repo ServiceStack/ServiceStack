@@ -17,9 +17,19 @@
       <File id="DDDA27EC-5855-4E89-9971-C117EC08BDE3/d:UnitTests/f:Log4NetFactoryTests.cs" caret="259" scrollPosition="0|0" />
       <File id="C44A6E80-326E-4036-8906-62E881F4727D/f:Log4NetFactory.cs" caret="348" scrollPosition="0|0" />
       <File id="DDDA27EC-5855-4E89-9971-C117EC08BDE3/d:UseCases/f:UsingLog4Net.cs" caret="0" scrollPosition="0|0" />
-      <File id="8FA1634D-F434-4737-90C4-7FAEF89ABD44/f:_get-latest-libs.bat" caret="0" scrollPosition="0|0" />
+      <File id="8FA1634D-F434-4737-90C4-7FAEF89ABD44/f:_get-latest-libs.bat" caret="50" scrollPosition="0|0" />
+      <File id="D920BA88-E394-4C75-94E3-78D7298A8457/f:EventLogger.cs" caret="1261" scrollPosition="0|0" />
+      <File id="C44A6E80-326E-4036-8906-62E881F4727D/f:Log4NetLogger.cs" caret="748" scrollPosition="0|0" />
+      <File id="0E1FF796-55CF-4F9B-BA72-484FC9D65065/f:Log4NetLogger.cs" caret="284" scrollPosition="0|0" />
     </RecentFiles>
-    <RecentEdits />
+    <RecentEdits>
+      <File id="C44A6E80-326E-4036-8906-62E881F4727D/f:Log4NetLogger.cs" caret="245" scrollPosition="0|0" />
+      <File id="C44A6E80-326E-4036-8906-62E881F4727D/f:Log4NetLogger.cs" caret="5316" scrollPosition="0|132" />
+      <File id="C44A6E80-326E-4036-8906-62E881F4727D/f:Log4NetLogger.cs" caret="677" scrollPosition="0|0" />
+      <File id="D920BA88-E394-4C75-94E3-78D7298A8457/f:EventLogger.cs" caret="1261" scrollPosition="0|0" />
+      <File id="0E1FF796-55CF-4F9B-BA72-484FC9D65065/f:Log4NetLogger.cs" caret="284" scrollPosition="0|0" />
+      <File id="0E1FF796-55CF-4F9B-BA72-484FC9D65065/f:Log4NetLogger.cs" caret="981" scrollPosition="0|0" />
+    </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
     <CustomStartDirectory>
@@ -29,4 +39,14 @@
     <EnableUnitTesting>True</EnableUnitTesting>
     <Providers />
   </UnitTestRunner>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="log" priority="0" />
+      <Item value="public" priority="0" />
+      <Item value="bool" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:log4net.ILog">
+      <Item value="IsDebugEnabled" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
 </Configuration>
