@@ -34,6 +34,8 @@ namespace ServiceStack.Logging.EventLog
             this.eventLogSource = eventLogSource;
         }
 
+		public bool IsDebugEnabled { get { return true; } }
+
         /// <summary>
         /// Writes the specified message.
         /// </summary>

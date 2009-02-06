@@ -2,6 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{8FA1634D-F434-4737-90C4-7FAEF89ABD44}"
 	ProjectSection(SolutionItems) = preProject
+		Lib\_get-latest-libs.bat = Lib\_get-latest-libs.bat
 		Lib\log4net.1.2.10.dll = Lib\log4net.1.2.10.dll
 		Lib\log4net.1.2.9.dll = Lib\log4net.1.2.9.dll
 		Lib\nunit.framework.dll = Lib\nunit.framework.dll

@@ -9,7 +9,7 @@ namespace ServiceStack.Logging.Log4Net
     /// </summary>
     public class Log4NetLogger : ILog
     {
-        private log4net.ILog log;
+        private readonly log4net.ILog log;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Log4NetLogger"/> class.
@@ -28,6 +28,8 @@ namespace ServiceStack.Logging.Log4Net
         {
             log = log4net.LogManager.GetLogger(type);
         }
+
+		public bool IsDebugEnabled { get { return log.IsDebugEnabled; } }
 
         /// <summary>
         /// Logs a Debug message.

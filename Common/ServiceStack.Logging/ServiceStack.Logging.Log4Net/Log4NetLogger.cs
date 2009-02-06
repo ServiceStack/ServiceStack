@@ -7,7 +7,7 @@ namespace ServiceStack.Logging.Log4Net
     /// </summary>
     public class Log4NetLogger : ILog
     {
-        private log4net.ILog log;
+        private readonly log4net.ILog log;
 
         public Log4NetLogger(string typeName)
         {
@@ -23,7 +23,9 @@ namespace ServiceStack.Logging.Log4Net
             log = log4net.LogManager.GetLogger(type);
         }
 
-        /// <summary>
+		public bool IsDebugEnabled { get { return log.IsDebugEnabled; } }
+	
+		/// <summary>
         /// Logs a Debug message.
         /// </summary>
         /// <param name="message">The message.</param>
