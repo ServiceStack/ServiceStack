@@ -51,13 +51,14 @@ namespace ServiceStack.ServiceInterface.Session
 		/// </summary>
 		/// <param name="ipAddress">The ip address.</param>
 		/// <param name="base64ClientModulus">The base64 client modulus.</param>
+		/// <param name="userClientGlobalId">The user client global id.</param>
 		/// <returns></returns>
-		public UserClientSessionsTuple CreateNewClientSessions(string ipAddress, string base64ClientModulus)
+		public UserClientSessionsTuple CreateNewClientSessions(string ipAddress, string base64ClientModulus, Guid userClientGlobalId)
 		{
-			var clientSession = new UserClientSession(this, Guid.NewGuid(), ipAddress, base64ClientModulus);
+			var clientSession = new UserClientSession(this, Guid.NewGuid(), ipAddress, base64ClientModulus, userClientGlobalId);
 			this.PublicClientSessions[clientSession.Id] = clientSession;
 
-			var secureClientSession = new UserClientSession(this, Guid.NewGuid(), ipAddress, base64ClientModulus);
+			var secureClientSession = new UserClientSession(this, Guid.NewGuid(), ipAddress, base64ClientModulus, userClientGlobalId);
 			this.SecureClientSessions[secureClientSession.Id] = secureClientSession;
 
 			return new UserClientSessionsTuple(clientSession, secureClientSession);

@@ -44,11 +44,12 @@ namespace ServiceStack.ServiceInterface.Session
 		/// <param name="userName">Name of the user.</param>
 		/// <param name="ipAddress">The ip address.</param>
 		/// <param name="base64ClientModulus">The base64 client modulus.</param>
+		/// <param name="userClientGlobalId">The user client global id.</param>
 		/// <returns></returns>
-		public UserClientSessionsTuple AddClientSession(long userId, string userName, string ipAddress, string base64ClientModulus)
+		public UserClientSessionsTuple AddClientSession(long userId, string userName, string ipAddress, string base64ClientModulus, Guid userClientGlobalId)
 		{
 			var userSession = GetOrCreateSession(userId, userName);
-			var clientSessions = userSession.CreateNewClientSessions(ipAddress, base64ClientModulus);
+			var clientSessions = userSession.CreateNewClientSessions(ipAddress, base64ClientModulus, userClientGlobalId);
 			UpdateUserSession(userSession);
 			return clientSessions;
 		}
