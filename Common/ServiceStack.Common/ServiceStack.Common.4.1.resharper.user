@@ -14,17 +14,11 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:MemcachedTests.cs" caret="408" scrollPosition="0|0" />
-      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:App.config" caret="352" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:IndexMetadataHandler.cs" caret="85" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseSoapMetadataHandler.cs" caret="330" scrollPosition="0|9" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:IndexOperationsControl.cs" caret="1259" scrollPosition="11|6" />
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:FactoryUtils.cs" caret="0" scrollPosition="0|87" />
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:IObjectFactory.cs" caret="308" scrollPosition="0|0" />
       <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicWriteTests.cs" caret="844" scrollPosition="0|0" />
       <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ModelValidator.cs" caret="3454" scrollPosition="0|0" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2570" scrollPosition="0|67" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2660" scrollPosition="0|54" />
       <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationError.cs" caret="314" scrollPosition="0|0" />
       <File id="E74F7B37-D01A-4324-B163-03F91717DA2F/f:get-latest-libs.bat" caret="0" scrollPosition="0|0" />
       <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
@@ -32,9 +26,7 @@
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/d:Support/f:ObjectConfigurationTypeFactory.cs" caret="2532" scrollPosition="0|50" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1523" scrollPosition="0|0" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryUtilsTests.cs" caret="6266" scrollPosition="0|120" />
-      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateExceptionTests.cs" caret="2382" scrollPosition="0|58" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:DisposableExtensions.cs" caret="0" scrollPosition="0|0" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="156" scrollPosition="0|0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="1557" scrollPosition="0|0" />
       <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationResult.cs" caret="702" scrollPosition="0|0" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSession.cs" caret="490" scrollPosition="0|0" />
@@ -43,12 +35,17 @@
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringExtensionTests.cs" caret="332" scrollPosition="0|0" />
       <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractDeserializer.cs" caret="506" scrollPosition="0|0" />
       <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractSerializer.cs" caret="229" scrollPosition="0|0" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="621" scrollPosition="0|0" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:CodeDomUtils.cs" caret="11161" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="1061" scrollPosition="0|0" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:TranslatorClassGenerator.cs" caret="9620" scrollPosition="0|0" />
+      <File id="5E11BF7F-BCD4-4111-883A-6C6B7F6752B4/f:ExtensionTranslatorClassGenerator.cs" caret="0" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:IEnumerableExtensions.cs" caret="608" scrollPosition="0|0" />
+      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1585" scrollPosition="0|0" />
+      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateExceptionTests.cs" caret="2382" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2660" scrollPosition="0|0" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2570" scrollPosition="0|67" />
     </RecentFiles>
     <RecentEdits>
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2174" scrollPosition="0|50" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2508" scrollPosition="0|50" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2805" scrollPosition="27|50" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="1616" scrollPosition="0|50" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="1852" scrollPosition="0|54" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSessionManager.cs" caret="4773" scrollPosition="0|111" />
@@ -76,6 +73,9 @@
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSession.cs" caret="2072" scrollPosition="7|34" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSession.cs" caret="875" scrollPosition="0|0" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSession.cs" caret="642" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:IEnumerableExtensions.cs" caret="420" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:IEnumerableExtensions.cs" caret="647" scrollPosition="0|0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="1049" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -97,29 +97,29 @@
       <Item value="type" priority="87" />
       <Item value="TypeDefinition" priority="3" />
       <Item value="Dictionary" priority="10" />
-      <Item value="Type" priority="50" />
-      <Item value="new" priority="219" />
+      <Item value="Type" priority="52" />
+      <Item value="new" priority="220" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
-      <Item value="public" priority="128" />
-      <Item value="string" priority="136" />
-      <Item value="return" priority="157" />
+      <Item value="public" priority="129" />
+      <Item value="string" priority="138" />
+      <Item value="return" priority="159" />
       <Item value="object" priority="44" />
       <Item value="if" priority="163" />
       <Item value="TypeDefinitionMap" priority="0" />
-      <Item value="static" priority="29" />
+      <Item value="static" priority="31" />
       <Item value="T" priority="23" />
       <Item value="GetTypeDefinition" priority="0" />
       <Item value="VALUE_INDEX" priority="0" />
-      <Item value="value" priority="42" />
+      <Item value="value" priority="43" />
       <Item value="StringConverterUtils" priority="2" />
       <Item value="enum" priority="3" />
-      <Item value="bool" priority="14" />
+      <Item value="bool" priority="15" />
       <Item value="ConfigUtils" priority="2" />
       <Item value="OBJECTS_SECTION_NAME" priority="6" />
       <Item value="MemberwiseClone" priority="0" />
       <Item value="IResourceManager" priority="1" />
       <Item value="resourceManager" priority="1" />
-      <Item value="this" priority="156" />
+      <Item value="this" priority="158" />
       <Item value="factoryProvider" priority="4" />
       <Item value="configSectionName" priority="1" />
       <Item value="name" priority="13" />
@@ -479,7 +479,7 @@
       <Item value="CodeStatement" priority="1" />
       <Item value="itemType" priority="2" />
       <Item value="iterStatement" priority="4" />
-      <Item value="IEnumerable" priority="5" />
+      <Item value="IEnumerable" priority="6" />
       <Item value="genericTypeDefinition" priority="0" />
       <Item value="IncrementStatement" priority="0" />
       <Item value="CodeExpressionStatement" priority="0" />
@@ -740,6 +740,9 @@
       <Item value="ILog" priority="0" />
       <Item value="resources" priority="0" />
       <Item value="userClientGlobalId" priority="0" />
+      <Item value="HashSet" priority="0" />
+      <Item value="HashSet&lt;T&gt;" priority="0" />
+      <Item value="items" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="13" />
@@ -914,7 +917,7 @@
       <Item value="OneWayOperations" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.String">
-      <Item value="IsNullOrEmpty" priority="8" />
+      <Item value="IsNullOrEmpty" priority="9" />
       <Item value="Format" priority="17" />
       <Item value="Join" priority="3" />
       <Item value="Empty" priority="1" />
