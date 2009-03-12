@@ -14,20 +14,11 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:IndexOperationsControl.cs" caret="1259" scrollPosition="11|6" />
-      <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:FactoryUtils.cs" caret="0" scrollPosition="0|87" />
-      <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:IObjectFactory.cs" caret="308" scrollPosition="0|0" />
-      <File id="B375DA6C-7E63-4F14-88A0-739CAD655550/f:Db4oBasicWriteTests.cs" caret="844" scrollPosition="0|0" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ModelValidator.cs" caret="3454" scrollPosition="0|0" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationError.cs" caret="314" scrollPosition="0|0" />
-      <File id="E74F7B37-D01A-4324-B163-03F91717DA2F/f:get-latest-libs.bat" caret="0" scrollPosition="0|0" />
-      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:FactoryProvider.cs" caret="2643" scrollPosition="0|66" />
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/d:Support/f:ObjectConfigurationTypeFactory.cs" caret="2532" scrollPosition="0|50" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1523" scrollPosition="0|0" />
       <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryUtilsTests.cs" caret="6266" scrollPosition="0|120" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:DisposableExtensions.cs" caret="0" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="1557" scrollPosition="0|0" />
       <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationResult.cs" caret="702" scrollPosition="0|0" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserClientSession.cs" caret="490" scrollPosition="0|0" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSession.cs" caret="2072" scrollPosition="0|0" />
@@ -44,28 +35,20 @@
       <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateExceptionTests.cs" caret="2382" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2660" scrollPosition="0|0" />
       <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2570" scrollPosition="0|67" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1140" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHost.cs" caret="422" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="439" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:MetadataConfig.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlSyncReplyHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="1322" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="678" scrollPosition="0|0" />
+      <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="0" scrollPosition="0|0" />
     </RecentFiles>
     <RecentEdits>
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="1616" scrollPosition="0|50" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="1852" scrollPosition="0|54" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:Session/f:UserSessionManager.cs" caret="4773" scrollPosition="0|111" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1887" scrollPosition="0|60" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1885" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1887" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1887" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1887" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1887" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="1887" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="2113" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="2403" scrollPosition="0|44" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationException.cs" caret="2009" scrollPosition="0|44" />
-      <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/d:Support/f:ObjectConfigurationTypeFactory.cs" caret="2608" scrollPosition="0|50" />
-      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryUtilsTests.cs" caret="6305" scrollPosition="0|120" />
-      <File id="E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53/f:FactoryProviderTests.cs" caret="1894" scrollPosition="0|31" />
-      <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationResult.cs" caret="2355" scrollPosition="0|78" />
       <File id="28EA1E67-C867-4D73-81A8-D849C811BE4F/f:ValidationResult.cs" caret="2705" scrollPosition="0|78" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="1557" scrollPosition="0|23" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="1557" scrollPosition="0|24" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="1602" scrollPosition="0|23" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="1602" scrollPosition="0|24" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:DisposableExtensions.cs" caret="518" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:DisposableExtensions.cs" caret="231" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:DisposableExtensions.cs" caret="605" scrollPosition="0|0" />
@@ -76,6 +59,23 @@
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:IEnumerableExtensions.cs" caret="420" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:IEnumerableExtensions.cs" caret="647" scrollPosition="0|0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="1049" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="513" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="439" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1609" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1165" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="451" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="645" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="645" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="1282" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="898" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="979" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="35" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="416" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="900" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="1539" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="915" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="1251" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="689" scrollPosition="0|0" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
