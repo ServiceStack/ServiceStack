@@ -50,6 +50,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\Logging\ConsoleLogFactory.cs" />
     <Compile Include="Support\Logging\ConsoleLogger.cs" />
+    <Compile Include="Support\Logging\NullLogFactory.cs" />
+    <Compile Include="Support\Logging\NullDebugLogger.cs" />
     <Compile Include="Support\Logging\DebugLogFactory.cs" />
     <Compile Include="Support\Logging\DebugLogger.cs" />
   </ItemGroup>

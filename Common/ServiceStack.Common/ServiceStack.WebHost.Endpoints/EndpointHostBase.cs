@@ -1,5 +1,6 @@
 using System;
 using ServiceStack.Logging;
+using ServiceStack.Logging.Support.Logging;
 using ServiceStack.LogicFacade;
 using ServiceStack.Service;
 

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Web;
 using ServiceStack.ServiceModel.Serialization;
@@ -8,15 +9,39 @@ namespace ServiceStack.WebHost.Endpoints.Support
     {
 		protected static object CreateRequest(HttpRequest request, string typeName)
         {
-            var operationType = EndpointHost.ServiceOperations.GetOperationType(typeName);
+			var log = EndpointHost.Config.LogFactory.GetLogger(typeof(XmlHandlerBase));
+			
+			var operationType = EndpointHost.ServiceOperations.GetOperationType(typeName);
             if (request.HttpMethod == "GET")
             {
-                return KeyValueDataContractDeserializer.Instance.Parse(request.QueryString, operationType);
+				try
+				{
+					return KeyValueDataContractDeserializer.Instance.Parse(request.QueryString, operationType);
+				}
+				catch (Exception ex)
+				{
+					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}' '{2}'",
+						operationType, request.QueryString, ex.Message);
+					throw;
+				}
             }
+
             var formData = new StreamReader(request.InputStream).ReadToEnd();
 			var isJson = formData.StartsWith("{");
-			return isJson ? JsonDataContractDeserializer.Instance.Parse(formData, operationType) 
-						  : KeyValueDataContractDeserializer.Instance.Parse(request.Form, operationType);
+
+			try
+			{
+				return isJson ? JsonDataContractDeserializer.Instance.Parse(formData, operationType)
+							  : KeyValueDataContractDeserializer.Instance.Parse(request.Form, operationType);
+			}
+			catch (Exception ex)
+			{
+				var deserializer = isJson ? "JsonDataContractDeserializer" : "KeyValueDataContractDeserializer";
+				log.ErrorFormat("Could not deserialize '{0}' request using {1}: '{2}'\nError: {3}",
+					operationType, deserializer, formData, ex.Message);
+				throw;
+			}
+
         }
 
 		public abstract void ProcessRequest(HttpContext context);

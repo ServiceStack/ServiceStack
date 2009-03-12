@@ -10,14 +10,36 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected static object CreateRequest(HttpRequest request, string operationName)
 		{
+			var log = EndpointHost.Config.LogFactory.GetLogger(typeof(XmlHandlerBase));
+
 			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
 			if (request.HttpMethod == "GET")
 			{
-				return KeyValueDataContractDeserializer.Instance.Parse(request.QueryString, operationType);
+				try
+				{
+					return KeyValueDataContractDeserializer.Instance.Parse(request.QueryString, operationType);
+				}
+				catch (System.Exception ex)
+				{
+					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'",
+						operationType, request.QueryString);
+					throw;
+				}
 			}
+
 			var xml = new StreamReader(request.InputStream).ReadToEnd();
-			return DataContractDeserializer.Instance.Parse(xml, operationType);
+
+			try
+			{
+				return DataContractDeserializer.Instance.Parse(xml, operationType);
+			}
+			catch (System.Exception ex)
+			{
+				log.ErrorFormat("Could not deserialize '{0}' request using DataContractDeserializer: '{1}'",
+					operationType, xml);
+				throw;
+			}
 		}
 
 		public bool IsReusable
