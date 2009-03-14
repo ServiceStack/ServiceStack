@@ -10,8 +10,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected static object CreateRequest(HttpRequest request, string operationName)
 		{
-			var log = EndpointHost.Config.LogFactory.GetLogger(typeof(XmlHandlerBase));
-
 			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
 			if (request.HttpMethod == "GET")
@@ -22,8 +20,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 				catch (System.Exception ex)
 				{
-					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'",
-						operationType, request.QueryString);
+					var log = EndpointHost.Config.LogFactory.GetLogger(typeof(XmlHandlerBase));
+					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'.\nError: '{2}'",
+						operationType, request.QueryString, ex);
 					throw;
 				}
 			}
@@ -36,8 +35,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 			catch (System.Exception ex)
 			{
-				log.ErrorFormat("Could not deserialize '{0}' request using DataContractDeserializer: '{1}'",
-					operationType, xml);
+				var log = EndpointHost.Config.LogFactory.GetLogger(typeof(XmlHandlerBase));
+				log.ErrorFormat("Could not deserialize '{0}' request using DataContractDeserializer: '{1}'.\nError: '{2}'",
+					operationType, xml, ex);
 				throw;
 			}
 		}
