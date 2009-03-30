@@ -28,6 +28,13 @@ namespace ServiceStack.ServiceInterface
 		private static readonly Regex handlerTypeNameRegex = new Regex(@".*\.Version([0-9]+)\.(.*)Handler$", RegexOptions.Compiled);
 		private static readonly Regex operationTypeRegex = new Regex(@".*Version([0-9]+)\..*", RegexOptions.Compiled);
 
+		/// <summary>
+		/// Returns a list of ALL operation types available in this service, required for WSDL generation.
+		/// </summary>
+		public Regex DefaultAllOperationsMatch = new Regex(@"\.Operations\.");
+		public Regex AllOperationsMatch { get; set; }
+		public IList<Type> AllOperationTypes { get; protected set; }
+
 		public ZeroConfigServiceResolver(Assembly serviceInterfaceAssembly, Assembly serviceModelAssembly, string operationNamespace)
 		{
 			LoadOperations(serviceModelAssembly, operationNamespace);
@@ -41,6 +48,8 @@ namespace ServiceStack.ServiceInterface
 		{
 			this.handlerCacheByVersion = new Dictionary<int, IDictionary<string, Type>>();
 			this.handlerVersions = new Dictionary<string, List<int>>();
+			AllOperationsMatch = AllOperationsMatch ?? DefaultAllOperationsMatch;
+
 			foreach (Type portType in serviceInterfaceAssembly.GetTypes())
 			{
 				const int VERSION_INDEX = 1;
@@ -137,6 +146,11 @@ namespace ServiceStack.ServiceInterface
 					}
 
 					this.OperationTypes.Add(serviceModelType);
+
+					if (AllOperationsMatch.IsMatch(serviceModelType.FullName))
+					{
+						this.AllOperationTypes.Add(serviceModelType);
+					}
 				}
 			}
 		}

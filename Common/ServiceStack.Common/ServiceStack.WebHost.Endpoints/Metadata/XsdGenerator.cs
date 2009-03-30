@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 {
 	public class XsdGenerator
 	{
-		private ILog log = LogManager.GetLogger(typeof(XsdGenerator));
+		private readonly ILog log = LogManager.GetLogger(typeof(XsdGenerator));
 		public bool OptimizeForFlash { get; set; }
 		public ICollection<Type> OperationTypes { get; set; }
 		public bool IncludeAllTypesInAssembly { get; set; }

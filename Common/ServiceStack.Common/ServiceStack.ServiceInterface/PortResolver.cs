@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using ServiceStack.Service;
 
 namespace ServiceStack.ServiceInterface
@@ -18,17 +20,35 @@ namespace ServiceStack.ServiceInterface
 		private readonly IDictionary<int, IDictionary<string, Type>> handlerCacheByVersion;
 		private readonly IDictionary<Type, PortAttribute> handlerPortAttributeMap;
 
+		/// <summary>
+		/// Returns a list of ALL operation types available in this service, required for WSDL generation.
+		/// </summary>
+		public static readonly Regex DefaultAllOperationsMatch = new Regex(@"\.Operations\.", RegexOptions.Compiled);
+		public Regex AllOperationsMatch { get; set; }
+		public IList<Type> AllOperationTypes { get; protected set; }
+
 		public PortResolver(params Assembly[] serviceInterfaceAssemblies)
 		{
 			this.OperationTypes = new List<Type>();
+			this.AllOperationTypes = new List<Type>();
 			this.handlerCacheByVersion = new Dictionary<int, IDictionary<string, Type>>();
 			this.handlerPortAttributeMap = new Dictionary<Type, PortAttribute>();
+			AllOperationsMatch = AllOperationsMatch ?? DefaultAllOperationsMatch;
 
 			foreach (var assembly in serviceInterfaceAssemblies)
 			{
 				foreach (Type portType in assembly.GetTypes())
 				{
 					IDictionary<string, Type> handlerTypeCache;
+
+					if (AllOperationsMatch.IsMatch(portType.FullName))
+					{
+						var dtoAttrs = portType.GetCustomAttributes(typeof(DataContractAttribute), false);
+						if (dtoAttrs.Length > 0)
+						{
+							this.AllOperationTypes.Add(portType);
+						}
+					}
 
 					var attrs = portType.GetCustomAttributes(typeof(PortAttribute), false);
 
@@ -72,7 +92,8 @@ namespace ServiceStack.ServiceInterface
 		/// <value>The operation types.</value>
 		public IList<Type> OperationTypes
 		{
-			get; protected set;
+			get;
+			protected set;
 		}
 
 		/// <summary>

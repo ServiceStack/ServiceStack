@@ -23,6 +23,15 @@ namespace ServiceStack.ServiceInterface.Tests
 			Assert.That(resolver.OperationTypes.Count, Is.EqualTo(base.AllOperations.Count));
 			Assert.That(resolver.OperationTypes, Is.EquivalentTo(base.AllOperations));
 		}
+
+		[Test]
+		public void PortResolver_returns_all_operation_types()
+		{
+			var resolver = new PortResolver(GetType().Assembly);
+
+			Assert.That(resolver.AllOperationTypes.Count, Is.EqualTo(base.AllOperations.Count));
+			Assert.That(resolver.AllOperationTypes, Is.EquivalentTo(base.AllOperations));
+		}
 	}
 
 }

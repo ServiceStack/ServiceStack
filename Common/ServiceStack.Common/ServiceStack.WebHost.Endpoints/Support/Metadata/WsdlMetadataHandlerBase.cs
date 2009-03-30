@@ -12,11 +12,11 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 		public override void Execute(HttpContext context)
 		{
 			context.Response.ContentType = "text/xml";
-			var operations = EndpointHost.ServiceOperations;
 
 			var baseUri = GetBaseUri(context.Request.Url);
 			var optimizeForFlash = context.Request.QueryString["flash"] != null;
 			var includeAllTypesInAssembly = context.Request.QueryString["includeAllTypes"] != null;
+			var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
 
 			var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, includeAllTypesInAssembly);
 

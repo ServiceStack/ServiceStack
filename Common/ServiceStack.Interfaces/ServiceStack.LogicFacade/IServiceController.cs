@@ -16,6 +16,12 @@ namespace ServiceStack.LogicFacade
 		IList<Type> OperationTypes { get; }
 
 		/// <summary>
+		/// Returns a list of ALL operation types available in this service
+		/// </summary>
+		/// <value>The operation types.</value>
+		IList<Type> AllOperationTypes { get; }
+
+		/// <summary>
 		/// Executes the specified context given a DTO request.
 		/// Will return a DTO response for SyncReply services.
 		/// </summary>

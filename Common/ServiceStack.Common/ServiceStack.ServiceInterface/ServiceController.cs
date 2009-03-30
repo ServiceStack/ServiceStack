@@ -92,6 +92,11 @@ namespace ServiceStack.ServiceInterface
 			get { return this.ServiceResolver.OperationTypes; }
 		}
 
+		public IList<Type> AllOperationTypes
+		{
+			get { return this.ServiceResolver.AllOperationTypes; }
+		}
+
 		private static void AssertServiceExists(object service, string operationName)
 		{
 			if (service == null)

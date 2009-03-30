@@ -16,6 +16,12 @@ namespace ServiceStack.ServiceInterface
 		IList<Type> OperationTypes { get; }
 
 		/// <summary>
+		/// Returns a list of All operation types available in this service. needed for WSDL generation
+		/// </summary>
+		/// <value>The operation types.</value>
+		IList<Type> AllOperationTypes { get; }
+
+		/// <summary>
 		/// Finds the handler when no version is provided.
 		/// </summary>
 		/// <param name="operationName">Name of the service.</param>

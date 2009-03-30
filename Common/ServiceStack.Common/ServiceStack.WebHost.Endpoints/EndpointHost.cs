@@ -8,6 +8,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class EndpointHost
 	{
 		public static ServiceOperations ServiceOperations { get; private set; }
+		public static ServiceOperations AllServiceOperations { get; private set; }
 
 		private static EndpointHostConfig config;
 
@@ -40,6 +41,7 @@ namespace ServiceStack.WebHost.Endpoints
 				}
 
 				ServiceOperations = new ServiceOperations(value.ServiceController.OperationTypes);
+				AllServiceOperations = new ServiceOperations(value.ServiceController.AllOperationTypes);
 
 				config = value;
 			}
