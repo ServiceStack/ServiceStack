@@ -1,4 +1,5 @@
 using System.Web;
+using ServiceStack.Service;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -11,7 +12,9 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var operationName = context.Request.PathInfo.Substring("/".Length);
 			var request = CreateRequest(context.Request, operationName);
-			var response = ExecuteService(request);
+			var endpointAttributes = EndpointAttributes.AsyncOneWay | EndpointAttributes.Xml 
+				| GetEndpointAttributes(context.Request);
+			var response = ExecuteService(request, endpointAttributes);
 		}
 	}
 }

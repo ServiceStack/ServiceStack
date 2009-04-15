@@ -14,68 +14,68 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="AA65AF9F-EE3A-4E2D-9F35-09A61A629679/f:ValidateExceptionTests.cs" caret="2382" scrollPosition="0|0" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:StringConverterUtils.cs" caret="2660" scrollPosition="0|0" />
-      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/f:StringConverterUtilsTests.cs" caret="2570" scrollPosition="0|67" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="439" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:MetadataConfig.cs" caret="0" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="0" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlSyncReplyHandler.cs" caret="0" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="678" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="1028" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XsdGenerator.cs" caret="1668" scrollPosition="0|9" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:IServiceResolver.cs" caret="568" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ZeroConfigServiceResolver.cs" caret="1102" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11WsdlMetadataHandler.cs" caret="183" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap11WsdlTemplate.cs" caret="77" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:WsdlTemplateBase.cs" caret="278" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceEndpointsMetadataConfig.cs" caret="59" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:ServiceOperations.cs" caret="2067" scrollPosition="0|0" />
-      <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:WsdlMetadataTests.cs" caret="379" scrollPosition="0|0" />
       <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:TestBase.cs" caret="356" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1320" scrollPosition="0|7" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHost.cs" caret="1240" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2965" scrollPosition="0|52" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/f:WsdlMetadataHandlerBase.cs" caret="1297" scrollPosition="0|0" />
       <File id="0722888A-ECD1-44A8-B88E-5F286E0BAEFD/f:ilmerge-all.bat" caret="915" scrollPosition="0|0" />
       <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:OperationTests.cs" caret="0" scrollPosition="0|0" />
       <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:ServiceOperationsTests.cs" caret="747" scrollPosition="0|0" />
-      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:TestBase.cs" caret="365" scrollPosition="0|0" />
       <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/d:Support/d:Version100/d:Operations/f:GetCustomerResponse.cs" caret="219" scrollPosition="0|0" />
-      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:PortResolverTests.cs" caret="803" scrollPosition="0|0" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="1727" scrollPosition="0|27" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="318" scrollPosition="0|3" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11SyncReplyHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap12AsyncOneWayHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="161" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap12SyncReplyHandler.cs" caret="0" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1563" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHost.cs" caret="469" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="613" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonAsyncOneWayHandler.cs" caret="668" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlSyncReplyHandler.cs" caret="645" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:SoapSyncReplyHandler.cs" caret="635" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlAsyncOneWayHandler.cs" caret="547" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:SoapAsyncOneWayHandler.cs" caret="494" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostBase.cs" caret="1494" scrollPosition="0|8" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:XmlMessageInspector.cs" caret="395" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:RequestContext.cs" caret="299" scrollPosition="0|0" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ZeroConfigServiceResolverTests.cs" caret="249" scrollPosition="0|0" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:TestBase.cs" caret="477" scrollPosition="0|0" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:PortResolverTests.cs" caret="662" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="1281" scrollPosition="0|0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XmlMetadataHandler.cs" caret="607" scrollPosition="0|0" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="1863" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="4859" scrollPosition="0|108" />
     </RecentFiles>
     <RecentEdits>
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="708" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="1342" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:JsonHandlerBase.cs" caret="328" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="371" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="802" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="1279" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XsdGenerator.cs" caret="294" scrollPosition="0|9" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="3221" scrollPosition="0|36" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="3443" scrollPosition="0|36" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="3443" scrollPosition="0|39" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:IServiceResolver.cs" caret="665" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="3443" scrollPosition="0|51" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="3443" scrollPosition="0|49" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="1148" scrollPosition="0|13" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ZeroConfigServiceResolver.cs" caret="1679" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ZeroConfigServiceResolver.cs" caret="2254" scrollPosition="0|24" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ZeroConfigServiceResolver.cs" caret="5105" scrollPosition="0|113" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ZeroConfigServiceResolver.cs" caret="5280" scrollPosition="0|113" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/f:WsdlMetadataHandlerBase.cs" caret="1146" scrollPosition="0|9" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHost.cs" caret="315" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHost.cs" caret="1329" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="3523" scrollPosition="0|51" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="3523" scrollPosition="0|52" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/f:WsdlMetadataHandlerBase.cs" caret="438" scrollPosition="0|0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/f:WsdlMetadataHandlerBase.cs" caret="737" scrollPosition="25|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="947" scrollPosition="0|21" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="1293" scrollPosition="0|3" />
-      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:PortResolverTests.cs" caret="1144" scrollPosition="0|0" />
-      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:PortResolverTests.cs" caret="1098" scrollPosition="0|0" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:PortResolver.cs" caret="1964" scrollPosition="0|10" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2295" scrollPosition="0|49" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2295" scrollPosition="0|52" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2295" scrollPosition="22|28" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2176" scrollPosition="22|28" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2770" scrollPosition="0|70" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="2295" scrollPosition="0|55" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="1144" scrollPosition="0|2" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="4004" scrollPosition="0|98" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="263" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="819" scrollPosition="0|3" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="5226" scrollPosition="0|99" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="263" scrollPosition="0|0" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="1085" scrollPosition="0|0" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="913" scrollPosition="0|0" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="4711" scrollPosition="0|108" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceController.cs" caret="4835" scrollPosition="0|108" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="371" scrollPosition="0|3" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="456" scrollPosition="31|9" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="1199" scrollPosition="0|9" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="1318" scrollPosition="0|9" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="1935" scrollPosition="0|18" />
+      <File id="03B7F8C3-50D3-41E8-A5AC-98C6514D5D14/f:ServiceControllerTests.cs" caret="1840" scrollPosition="0|18" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="1132" scrollPosition="0|12" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="2988" scrollPosition="0|70" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="3146" scrollPosition="0|71" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="3146" scrollPosition="0|65" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="3146" scrollPosition="0|65" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="3146" scrollPosition="0|68" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="893" scrollPosition="0|2" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:EndpointHandlerBase.cs" caret="1156" scrollPosition="23|5" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

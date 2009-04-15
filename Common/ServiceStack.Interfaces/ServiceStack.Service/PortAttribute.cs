@@ -5,7 +5,7 @@ namespace ServiceStack.Service
 	public class PortAttribute : Attribute
 	{
 		public Type OperationType { get; set; }
-		public PortRestriction Restrictions { get; set; }
+		public EndpointAttributes PortRestrictions { get; set; }
 		public int? Version { get; set; }
 
 		public PortAttribute()
@@ -22,15 +22,15 @@ namespace ServiceStack.Service
 			this.Version = version;
 		}
 
-		public PortAttribute(Type operationType, PortRestriction restrictions)
+		public PortAttribute(Type operationType, EndpointAttributes endpointAttributes)
 			: this(operationType)
 		{
 			this.OperationType = operationType;
-			this.Restrictions = restrictions;
+			this.PortRestrictions = endpointAttributes;
 		}
 
-		public PortAttribute(Type operationType, PortRestriction restrictions, int version)
-			: this(operationType, restrictions)
+		public PortAttribute(Type operationType, EndpointAttributes endpointAttributes, int version)
+			: this(operationType, endpointAttributes)
 		{
 			this.Version = version;
 		}

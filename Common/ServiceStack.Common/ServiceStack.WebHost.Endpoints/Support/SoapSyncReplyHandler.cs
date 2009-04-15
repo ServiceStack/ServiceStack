@@ -1,6 +1,7 @@
 using System.IO;
 using System.ServiceModel.Channels;
 using System.Xml;
+using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Support
@@ -12,7 +13,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			string action = msg.Headers.Action;
 			string xml = msg.GetReaderAtBodyContents().ReadOuterXml();
 
-			string responseXml = ExecuteXmlService(xml);
+			var endpointAttributes = EndpointAttributes.SyncReply;
+			endpointAttributes |= GetType() == typeof(Soap11SyncReplyHandler)
+				? EndpointAttributes.Soap11 : EndpointAttributes.Soap12;
+			string responseXml = ExecuteXmlService(xml, endpointAttributes);
 
 			return Message.CreateMessage(msg.Version, action + "Response", XmlReader.Create(new StringReader(responseXml)));
 		}

@@ -39,7 +39,7 @@
     <Compile Include="IOneWayClient.cs" />
     <Compile Include="IReplyClient.cs" />
     <Compile Include="IServiceHost.cs" />
-    <Compile Include="PortRestriction.cs" />
+    <Compile Include="EndpointAttributes.cs" />
     <Compile Include="PortAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

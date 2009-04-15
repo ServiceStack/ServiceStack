@@ -1,6 +1,5 @@
 using System;
 using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
 using ServiceStack.LogicFacade;
 using ServiceStack.Service;
 
@@ -29,11 +28,16 @@ namespace ServiceStack.WebHost.Endpoints
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
-		protected abstract IOperationContext CreateOperationContext(object requestDto);
+		protected abstract IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes);
 
 		public virtual object ExecuteService(object requestDto)
 		{
-			using (var context = CreateOperationContext(requestDto))
+			return ExecuteService(requestDto, EndpointAttributes.None);
+		}
+
+		public object ExecuteService(object requestDto, EndpointAttributes endpointAttributes)
+		{
+			using (var context = CreateOperationContext(requestDto, endpointAttributes))
 			{
 				return this.ServiceController.Execute(context);
 			}
@@ -41,11 +45,16 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public virtual string ExecuteXmlService(string xml)
 		{
+			return ExecuteXmlService(xml, EndpointAttributes.None);
+		}
+
+		public string ExecuteXmlService(string xml, EndpointAttributes endpointAttributes)
+		{
 			// Create a xml request DTO which the service controller will parse and reassign the call
 			// context request DTO to a object expected by the relevant port
 			var requestDto = new XmlRequestDto(xml);
 
-			using (var context = CreateOperationContext(requestDto))
+			using (var context = CreateOperationContext(requestDto, endpointAttributes))
 			{
 				return this.ServiceController.ExecuteXml(context);
 			}

@@ -1,4 +1,5 @@
 using System;
+using ServiceStack.Service;
 
 namespace ServiceStack.LogicFacade
 {
@@ -9,5 +10,7 @@ namespace ServiceStack.LogicFacade
 		object Dto { get; set; }
 		
 		string IpAddress { get; }
+
+		EndpointAttributes EndpointAttributes { get; }
 	}
 }

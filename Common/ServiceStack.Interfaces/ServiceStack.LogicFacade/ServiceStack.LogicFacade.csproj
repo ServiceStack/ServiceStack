@@ -75,6 +75,10 @@
       <Project>{4A2CC4DB-3C30-4455-B442-10E598E77487}</Project>
       <Name>ServiceStack.Logging</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Service\ServiceStack.Service.csproj">
+      <Project>{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}</Project>
+      <Name>ServiceStack.Service</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

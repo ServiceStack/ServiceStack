@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="PortResolverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceControllerTests.cs" />
     <Compile Include="Support\Handlers\Version100\StoreCustomerHandler.cs" />
     <Compile Include="Support\Handlers\Version100\GetCustomerHandler.cs" />
     <Compile Include="Support\Handlers\Version100\GetCustomersHandler.cs" />

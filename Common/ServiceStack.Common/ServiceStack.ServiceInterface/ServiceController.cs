@@ -1,9 +1,12 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 using System.Xml.Linq;
 using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Logging;
 using ServiceStack.LogicFacade;
+using ServiceStack.Service;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.ServiceInterface
@@ -18,20 +21,30 @@ namespace ServiceStack.ServiceInterface
 			this.XmlSerializer = DataContractSerializer.Instance;
 			this.XmlDeserializer = DataContractDeserializer.Instance;
 			this.MessageInspector = new XmlMessageInspector().Parse;
+			this.EnablePortRestrictions = true;
 		}
 
 		public IServiceResolver ServiceResolver { get; private set; }
 		public IStringSerializer XmlSerializer { get; private set; }
 		public IStringDeserializer XmlDeserializer { get; private set; }
 		public Func<string, IXmlServiceRequest> MessageInspector { get; private set; }
+		public bool EnablePortRestrictions { get; set; }
 
 		public T Execute<T>(Func<T> service, string serviceName)
 		{
+			var serviceLog = LogManager.GetLogger(serviceName);
+
 			var before = DateTime.Now;
-			this.log.InfoFormat("Executing service '{0}' ...", serviceName);
+			//Log to global and service specific loggers
+			this.log.InfoFormat("Executing service '{0}' at {1}", serviceName, before);
+			serviceLog.InfoFormat("ServiceBegin: {0}, {1}", serviceName, before);
+
 			var result = service();
-			var timeTaken = DateTime.Now - before;
-			this.log.InfoFormat("Service '{0}' completed in {1}ms.", serviceName, timeTaken.TotalMilliseconds);
+			var after = DateTime.Now;
+			var timeTaken = after - before;
+
+			this.log.InfoFormat("Service '{0}' completed in {1}ms at {2}", serviceName, timeTaken.TotalMilliseconds, after);
+			serviceLog.InfoFormat("ServiceEnd: {0}, {1}, {2}", serviceName, after, timeTaken.TotalMilliseconds);
 			return result;
 		}
 
@@ -40,6 +53,7 @@ namespace ServiceStack.ServiceInterface
 			var serviceName = context.Request.Dto.GetType().Name;
 			var service = this.ServiceResolver.FindService(serviceName);
 			AssertServiceExists(service, serviceName);
+			AssertServiceRestrictions(service, context.Request.EndpointAttributes, serviceName);
 
 			var dtoService = (IService)service;
 			return Execute(() => dtoService.Execute(context), serviceName);
@@ -52,6 +66,7 @@ namespace ServiceStack.ServiceInterface
 			var requestContext = this.MessageInspector(xmlRequest.Xml);
 			var service = this.ServiceResolver.FindService(requestContext.OperationName, requestContext.Version.GetValueOrDefault());
 			AssertServiceExists(service, requestContext.OperationName);
+			AssertServiceRestrictions(service, context.Request.EndpointAttributes, requestContext.OperationName);
 
 			var xelementService = service as IXElementService;
 			if (xelementService != null)
@@ -85,6 +100,46 @@ namespace ServiceStack.ServiceInterface
 			}
 
 			throw new NotSupportedException("Cannot execute unknown service type: " + requestContext.OperationName);
+		}
+
+		public static void AssertServiceRestrictions(object service, EndpointAttributes attributes, string serviceName)
+		{
+			var serviceType = service.GetType();
+			var attrs = serviceType.GetCustomAttributes(typeof(PortAttribute), false);
+			if (attrs.Length == 0)
+			{
+				return;
+			}
+
+			var portAttr = (PortAttribute)attrs[0];
+
+			var allPortRestrictionsMet = (portAttr.PortRestrictions & attributes) == portAttr.PortRestrictions;
+			if (allPortRestrictionsMet)
+			{
+				return;
+			}
+
+			var failedRestrictions = new StringBuilder();
+			foreach (EndpointAttributes value in Enum.GetValues(typeof(EndpointAttributes)))
+			{
+				var attributeInCurrentRequest = (attributes & value) == value;
+				if (attributeInCurrentRequest)
+				{
+					continue;
+				}
+
+				//Not InCurrentRequest and Is in PortRestrictions
+				var portRestrictionNotMet = (portAttr.PortRestrictions & value) == value;
+				if (portRestrictionNotMet)
+				{
+					if (failedRestrictions.Length != 0) failedRestrictions.Append(", ");
+					failedRestrictions.Append(value);
+				}
+			}
+
+			throw new UnauthorizedAccessException(
+				string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'",
+					serviceName, failedRestrictions));
 		}
 
 		public IList<Type> OperationTypes

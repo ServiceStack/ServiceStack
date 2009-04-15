@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.Service;
 using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -47,16 +48,16 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		internal static object ExecuteService(object request)
+		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
 			AssertConfig();
-			return Config.ServiceHost.ExecuteService(request);
+			return Config.ServiceHost.ExecuteService(request, endpointAttributes);
 		}
 
-		internal static string ExecuteXmlService(string xmlRequest)
+		internal static string ExecuteXmlService(string xmlRequest, EndpointAttributes endpointAttributes)
 		{
 			AssertConfig();
-			return Config.ServiceHost.ExecuteXmlService(xmlRequest);
+			return Config.ServiceHost.ExecuteXmlService(xmlRequest, endpointAttributes);
 		}
 
 		private static void AssertConfig()
