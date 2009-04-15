@@ -53,7 +53,10 @@ namespace ServiceStack.ServiceInterface
 			var serviceName = context.Request.Dto.GetType().Name;
 			var service = this.ServiceResolver.FindService(serviceName);
 			AssertServiceExists(service, serviceName);
-			AssertServiceRestrictions(service, context.Request.EndpointAttributes, serviceName);
+			if (EnablePortRestrictions)
+			{
+				AssertServiceRestrictions(service, context.Request.EndpointAttributes, serviceName);
+			}
 
 			var dtoService = (IService)service;
 			return Execute(() => dtoService.Execute(context), serviceName);
@@ -66,7 +69,10 @@ namespace ServiceStack.ServiceInterface
 			var requestContext = this.MessageInspector(xmlRequest.Xml);
 			var service = this.ServiceResolver.FindService(requestContext.OperationName, requestContext.Version.GetValueOrDefault());
 			AssertServiceExists(service, requestContext.OperationName);
-			AssertServiceRestrictions(service, context.Request.EndpointAttributes, requestContext.OperationName);
+			if (EnablePortRestrictions)
+			{
+				AssertServiceRestrictions(service, context.Request.EndpointAttributes, requestContext.OperationName);
+			}
 
 			var xelementService = service as IXElementService;
 			if (xelementService != null)
