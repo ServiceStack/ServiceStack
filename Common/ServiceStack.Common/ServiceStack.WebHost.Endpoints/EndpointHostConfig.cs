@@ -21,15 +21,15 @@ namespace ServiceStack.WebHost.Endpoints
 				Soap12 = new SoapMetadataConfig("Public/Soap12/SyncReply.svc", "Public/Soap12/AsyncOneWay.svc", "Public/Soap12/Metadata", "Public/Soap12/Wsdl"),
 			};
 			this.LogFactory = new NullLogFactory();
+			this.EnablePortRestrictions = false;
 		}
 
 		public string UsageExamplesBaseUri { get; set; }
 		public IServiceHost ServiceHost { get; set; }
 		public IServiceController ServiceController { get; set; }
-		//public IServiceModelFinder ServiceModelFinder { get; set; }
-		//public string OperationsNamespace { get; set; }
 		public string ServiceName { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
+		public bool EnablePortRestrictions { get; set; }
 	}
 }

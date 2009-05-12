@@ -64,6 +64,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public static EndpointAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)
 		{
+			if (!EndpointHost.Config.EnablePortRestrictions) return default(EndpointAttributes);
+
 			var portRestrictions = default(EndpointAttributes);
 			var ipAddress = GetIpAddress(operationContext);
 
@@ -91,6 +93,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public static EndpointAttributes GetEndpointAttributes(HttpRequest request)
 		{
+			if (!EndpointHost.Config.EnablePortRestrictions) return default(EndpointAttributes);
+
 			var portRestrictions = default(EndpointAttributes);
 
 			portRestrictions |= request.RequestType == "GET" ? EndpointAttributes.HttpGet : EndpointAttributes.HttpPost;
