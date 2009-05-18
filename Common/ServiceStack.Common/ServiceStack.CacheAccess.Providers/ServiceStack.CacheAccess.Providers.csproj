@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="MemoryCacheClient.cs" />
     <Compile Include="MemcachedClientCache.cs" />
+    <Compile Include="MultiCacheClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

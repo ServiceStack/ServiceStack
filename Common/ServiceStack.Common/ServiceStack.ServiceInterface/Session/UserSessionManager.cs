@@ -8,7 +8,7 @@ namespace ServiceStack.ServiceInterface.Session
 	/// <summary>
 	/// Manages all the User Sessions
 	/// </summary>
-	public class UserSessionManager
+	public class UserSessionManager : IUserSessionManager
 	{
 		/// <summary>
 		/// Google/Yahoo seems to make you to login every 2 weeks??
@@ -58,7 +58,7 @@ namespace ServiceStack.ServiceInterface.Session
 		/// Updates the UserSession in the cache, or removes expired ones.
 		/// </summary>
 		/// <param name="userSession">The user session.</param>
-		private void UpdateUserSession(UserSession userSession)
+		public void UpdateUserSession(UserSession userSession)
 		{
 			var hasSessionExpired = userSession.HasExpired();
 			var cacheKey = UrnId.Create(userSession.GetType(), userSession.UserId.ToString());
@@ -76,7 +76,7 @@ namespace ServiceStack.ServiceInterface.Session
 		/// Adds the user session to the cache.
 		/// </summary>
 		/// <param name="userSession">The user session.</param>
-		private void AddUserSession(UserSession userSession)
+		public void AddUserSession(UserSession userSession)
 		{
 			var cacheKey = UrnId.Create(userSession.GetType(), userSession.UserId.ToString());
 			this.cacheClient.Add(cacheKey, userSession, userSession.ExpiryDate);

@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="PortResolver.cs" />
+    <Compile Include="Session\IUserSessionManager.cs" />
     <Compile Include="ZeroConfigServiceResolver.cs" />
     <Compile Include="OperationContext.cs" />
     <Compile Include="Session\UserClientSession.cs" />

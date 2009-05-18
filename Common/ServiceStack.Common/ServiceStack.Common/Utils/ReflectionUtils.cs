@@ -8,7 +8,7 @@ namespace ServiceStack.Common.Utils
 {
     public class ReflectionUtils
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(ReflectionUtils));
+        public static readonly ILog log = LogManager.GetLogger(typeof(ReflectionUtils));
         
         /// <summary>
         /// Populate an object with Example data.
@@ -59,7 +59,7 @@ namespace ServiceStack.Common.Utils
             }
         }
 
-        private static void SetValue(FieldInfo fieldInfo, PropertyInfo propertyInfo, object obj, object value)
+        public static void SetValue(FieldInfo fieldInfo, PropertyInfo propertyInfo, object obj, object value)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace ServiceStack.Common.Utils
             }
         }
 
-        private static bool IsUnsettableValue(FieldInfo fieldInfo, PropertyInfo propertyInfo)
+        public static bool IsUnsettableValue(FieldInfo fieldInfo, PropertyInfo propertyInfo)
         {
             if (propertyInfo != null && propertyInfo.ReflectedType != null)
             {
@@ -98,7 +98,7 @@ namespace ServiceStack.Common.Utils
             return false;
         }
 
-        private static object[] CreateDefaultValues(IEnumerable<Type> types)
+        public static object[] CreateDefaultValues(IEnumerable<Type> types)
         {
             var values = new List<object>();
             foreach (var type in types)
@@ -108,7 +108,7 @@ namespace ServiceStack.Common.Utils
             return values.ToArray();
         }
 
-        private static object CreateDefaultValue(Type type)
+        public static object CreateDefaultValue(Type type)
         {
             if (type == typeof(string))
             {
@@ -148,7 +148,7 @@ namespace ServiceStack.Common.Utils
             return null;
         }
 
-        private static void SetGenericCollection(Type realisedListType, Type type, object genericObj)
+        public static void SetGenericCollection(Type realisedListType, Type type, object genericObj)
         {
             var args = realisedListType.GetGenericArguments();
 
@@ -171,7 +171,7 @@ namespace ServiceStack.Common.Utils
             }
         }
 
-        private static Array PopulateArray(Type type)
+        public static Array PopulateArray(Type type)
         {
             var objArray = Array.CreateInstance(type, 1);
             var elementType = objArray.GetType().GetElementType();
