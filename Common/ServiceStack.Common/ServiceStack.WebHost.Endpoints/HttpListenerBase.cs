@@ -18,8 +18,8 @@ namespace ServiceStack.WebHost.Endpoints
 	public abstract class HttpListenerBase 
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
-		private IServiceController ServiceController { get; set; }
-		private readonly DateTime StartTime;
+	
+		private const int RequestThreadAbortedException = 995;
 
 		protected HttpListener listener;
 		protected bool isStarted = false;
@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.isStarted = true;
 			this.listener.Start();
 
-			IAsyncResult result = this.listener.BeginGetContext(new AsyncCallback(WebRequestCallback), this.listener);
+			IAsyncResult result = this.listener.BeginGetContext(WebRequestCallback, this.listener);
 		}
 
 		/// <summary>
@@ -59,12 +59,22 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		public void Stop()
 		{
-			if (listener != null)
+			if (listener == null) return;
+			
+			try
 			{
 				this.listener.Close();
-				this.listener = null;
-				this.isStarted = false;
 			}
+			catch (HttpListenerException ex)
+			{
+				if (ex.ErrorCode != RequestThreadAbortedException)
+					throw;
+
+				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", 
+					RequestThreadAbortedException);
+			} 
+			this.listener = null;
+			this.isStarted = false;
 		}
 
 		protected void WebRequestCallback(IAsyncResult result)
