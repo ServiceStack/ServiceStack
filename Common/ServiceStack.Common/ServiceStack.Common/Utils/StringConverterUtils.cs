@@ -34,7 +34,7 @@ namespace ServiceStack.Common.Utils
 				TypeDefinitionMap = new Dictionary<Type, TypeDefinition>();
 			}
 
-			public TypeDefinition(Type type)
+			private TypeDefinition(Type type)
 			{
 				this.Type = type;
 				Load();
@@ -166,16 +166,16 @@ namespace ServiceStack.Common.Utils
 
 			public object CreateDictionaryFromTextValue(string textValue)
 			{
-				const int KEY_INDEX = 0;
-				const int VALUE_INDEX = 1;
+				const int keyIndex = 0;
+				const int valueIndex = 1;
 				var map = this.TypeConstructor.Invoke(new object[] { });
-				var keyTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[KEY_INDEX]);
-				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[VALUE_INDEX]);
+				var keyTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[keyIndex]);
+				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[valueIndex]);
 				foreach (var item in textValue.Split(ITEM_SEPERATOR))
 				{
 					var keyValuePair = item.Split(KEY_VALUE_SEPERATOR);
-					var keyValue = keyTypeConverter.GetValue(keyValuePair[KEY_INDEX]);
-					var value = valueTypeConverter.GetValue(keyValuePair[VALUE_INDEX]);
+					var keyValue = keyTypeConverter.GetValue(keyValuePair[keyIndex]);
+					var value = valueTypeConverter.GetValue(keyValuePair[valueIndex]);
 					SetGenericCollection(map, new[] { keyValue, value });
 				}
 				return map;
@@ -267,11 +267,12 @@ namespace ServiceStack.Common.Utils
 			return typeDefinition.GetValue(value);
 		}
 
+		const string FieldSeperator = ",";
+		const string KeySeperator = ":";
+		static readonly string[] IllegalChars = new[] { FieldSeperator, KeySeperator };
+
 		public static string ToString<T>(T value)
 		{
-			const string FIELD_SEPERATOR = ",";
-			const string KEY_SEPERATOR = ":";
-			var ILLEGAL_CHARS = new[] {FIELD_SEPERATOR, KEY_SEPERATOR};
 
 			if (Equals(value, default(T))) return default(T).ToString();
 
@@ -281,8 +282,9 @@ namespace ServiceStack.Common.Utils
 				return value.ToString();
 			}
 
-			var isCollection = type.IsAssignableFrom(typeof(ICollection)) 
-				|| type.FindInterfaces((x,y) => x == typeof(ICollection), null).Length > 0;
+			var isCollection = type.IsAssignableFrom(typeof(ICollection))
+				|| type.FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
+
 			if (isCollection)
 			{
 				//Get a collection of all the types interfaces, if the interface is generic store the generic definition instead
@@ -323,42 +325,56 @@ namespace ServiceStack.Common.Utils
 						var valueString = dictionaryValue != null ? dictionaryValue.ToString() : string.Empty;
 
 						var keyValueString = keyString + valueString;
-						if (keyValueString.Contains(FIELD_SEPERATOR) || keyValueString.Contains(KEY_SEPERATOR))
+						if (keyValueString.Contains(FieldSeperator) || keyValueString.Contains(KeySeperator))
 						{
 							throw new ArgumentException(
-								string.Format("collection contains an illegal character: '{0}'", ILLEGAL_CHARS));
+								string.Format("collection contains an illegal character: '{0}'", IllegalChars));
 						}
 						if (sb.Length > 0)
 						{
-							sb.Append(FIELD_SEPERATOR);
+							sb.Append(FieldSeperator);
 						}
-						sb.AppendFormat("{0}{1}{2}", keyString, KEY_SEPERATOR, valueString);
+						sb.AppendFormat("{0}{1}{2}", keyString, KeySeperator, valueString);
 					}
 					return sb.ToString();
 				}
 				else
 				{
 					var valueCollection = (System.Collections.IEnumerable)value;
-					var sb = new StringBuilder();
-					foreach (var valueItem in valueCollection)
-					{
-						var stringValueItem = valueItem.ToString();
-						if (stringValueItem.Contains(FIELD_SEPERATOR))
-						{
-							throw new ArgumentException(
-								string.Format("collection contains an illegal character: '{0}'", ILLEGAL_CHARS));
-						}
-						if (sb.Length > 0)
-						{
-							sb.Append(FIELD_SEPERATOR);
-						}
-						sb.Append(stringValueItem);
-					}
-					return sb.ToString();
+					return EnumerableToString(valueCollection);
 				}
 			}
 
+			var isEnumerable = type.IsAssignableFrom(typeof(IEnumerable))
+				|| type.FindInterfaces((x, y) => x == typeof(IEnumerable), null).Length > 0;
+
+			if (isEnumerable)
+			{
+				var valueCollection = (System.Collections.IEnumerable)value;
+				return EnumerableToString(valueCollection);
+			}
+
 			return value.ToString();
+		}
+
+		private static string EnumerableToString(IEnumerable valueCollection)
+		{
+			var sb = new StringBuilder();
+			foreach (var valueItem in valueCollection)
+			{
+				var stringValueItem = valueItem.ToString();
+				if (stringValueItem.Contains(FieldSeperator))
+				{
+					throw new ArgumentException(
+						string.Format("collection contains an illegal character: '{0}'", IllegalChars));
+				}
+				if (sb.Length > 0)
+				{
+					sb.Append(FieldSeperator);
+				}
+				sb.Append(stringValueItem);
+			}
+			return sb.ToString();
 		}
 	}
 }

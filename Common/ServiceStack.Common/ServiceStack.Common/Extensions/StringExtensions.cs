@@ -6,7 +6,7 @@ namespace ServiceStack.Common.Extensions
 {
 	public static class StringExtensions
 	{
-		static readonly Regex regexSplitCamelCase = new Regex("([A-Z])", RegexOptions.Compiled);
+		static readonly Regex RegexSplitCamelCase = new Regex("([A-Z])", RegexOptions.Compiled);
 
 		public static T ToEnum<T>(this string value)
 		{
@@ -15,7 +15,7 @@ namespace ServiceStack.Common.Extensions
 
 		public static string SplitCamelCase(this string value)
 		{
-			return regexSplitCamelCase.Replace(value, " $1").TrimStart();
+			return RegexSplitCamelCase.Replace(value, " $1").TrimStart();
 		}
 
 		public static T To<T>(this string value)

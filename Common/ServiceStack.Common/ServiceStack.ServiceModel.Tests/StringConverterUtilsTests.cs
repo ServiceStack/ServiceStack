@@ -1,7 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceModel.Tests.DataContracts;
 
@@ -10,6 +13,29 @@ namespace ServiceStack.ServiceModel.Tests
 	[TestFixture]
 	public class StringConverterUtilsTests
 	{
+		public class StringEnumerable : IEnumerable<string>
+		{
+			public List<string> Items = new[] { "a", "b", "c" }.ToList();
+
+			public IEnumerator<string> GetEnumerator()
+			{
+				return Items.GetEnumerator();
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return GetEnumerator();
+			}
+
+			public static StringEnumerable Parse(string value)
+			{
+				return new StringEnumerable {
+					Items = value.To<List<string>>()
+				};
+			}
+
+		}
+
 		[Test]
 		public void Create_super_list_type_of_int_from_string()
 		{
@@ -44,6 +70,15 @@ namespace ServiceStack.ServiceModel.Tests
 			var convertedValue = bool.Parse(textValue);
 			var result = StringConverterUtils.Parse<bool>(textValue);
 			Assert.That(result, Is.EqualTo(convertedValue));
+		}
+
+		[Test]
+		public void Create_from_StringEnumerable()
+		{
+			var value = StringEnumerable.Parse("d,e,f");
+			var convertedValue = StringConverterUtils.ToString(value);
+			var result = StringConverterUtils.Parse<StringEnumerable>(convertedValue);
+			Assert.That(result, Is.EquivalentTo(value.Items));
 		}
 
 	}
