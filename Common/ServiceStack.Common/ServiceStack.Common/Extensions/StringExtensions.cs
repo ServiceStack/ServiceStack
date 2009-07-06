@@ -37,5 +37,11 @@ namespace ServiceStack.Common.Extensions
 		{
 			return string.IsNullOrEmpty(value);
 		}
+
+		public static string EncodeXml(this string value)
+		{
+			return value.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
+		}
+
 	}
 }

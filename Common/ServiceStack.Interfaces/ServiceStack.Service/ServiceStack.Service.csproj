@@ -40,6 +40,7 @@
     <Compile Include="IReplyClient.cs" />
     <Compile Include="IServiceHost.cs" />
     <Compile Include="EndpointAttributes.cs" />
+    <Compile Include="IStreamWriter.cs" />
     <Compile Include="PortAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -91,7 +91,14 @@ namespace ServiceStack.WebHost.Endpoints
 			if (this.ReceiveWebRequest != null)
 				this.ReceiveWebRequest(context);
 
-			this.ProcessRequest(context);
+			try
+			{
+				this.ProcessRequest(context);
+			}
+			catch (Exception ex)
+			{
+				log.Error(string.Format("Error calling ProcessRequest()", ex));
+			}
 		}
 
 		/// <summary>
@@ -133,19 +140,32 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		protected void WriteToResponse(HttpListenerResponse response, string xml)
+		protected void WriteXmlToResponse(HttpListenerResponse response, string xml)
 		{
-			var bOutput = System.Text.Encoding.UTF8.GetBytes(xml);
+			try
+			{
+				var bOutput = System.Text.Encoding.UTF8.GetBytes(xml);
 
-			response.ContentType = "text/html";
-			response.ContentLength64 = bOutput.Length;
+				response.ContentType = "text/xml";
+				response.ContentLength64 = bOutput.Length;
 
-			var outputStream = response.OutputStream;
-			outputStream.Write(bOutput, 0, bOutput.Length);
-			outputStream.Close();
+				var outputStream = response.OutputStream;
+				outputStream.Write(bOutput, 0, bOutput.Length);
+				outputStream.Close();
+
+			}
+			catch (Exception ex)
+			{
+				log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
+				throw;
+			}
+			finally
+			{
+				response.Close();
+			}
 		}
-		
-		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes)
+
+		static protected object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
 			return EndpointHost.ExecuteService(request, endpointAttributes);
 		}

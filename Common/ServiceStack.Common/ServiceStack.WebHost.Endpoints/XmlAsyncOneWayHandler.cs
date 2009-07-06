@@ -12,9 +12,11 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var operationName = context.Request.PathInfo.Substring("/".Length);
 			var request = CreateRequest(context.Request, operationName);
+			
 			var endpointAttributes = EndpointAttributes.AsyncOneWay | EndpointAttributes.Xml 
 				| GetEndpointAttributes(context.Request);
-			var response = ExecuteService(request, endpointAttributes);
+			
+			var result = ExecuteService(request, endpointAttributes);
 		}
 	}
 }

@@ -4,6 +4,8 @@ using System.Text;
 using System.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -17,12 +19,10 @@ namespace ServiceStack.WebHost.Endpoints
 			var request = CreateRequest(context.Request, operationName);
 
 			const EndpointAttributes endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Xml;
-			var response = ExecuteService(request, endpointAttributes);
-			if (response == null) return;
+			
+			var result = ExecuteService(request, endpointAttributes);
 
-			var responseXml = DataContractSerializer.Instance.Parse(response);
-			context.Response.ContentType = "application/xml";
-			WriteToResponse(context.Response, responseXml);
+			context.Response.WriteToResponse(result, x => DataContractSerializer.Instance.Parse(result), ContentType.Xml);
 		}
 	}
 }

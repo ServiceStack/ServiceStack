@@ -58,7 +58,10 @@
   <ItemGroup>
     <Compile Include="EndpointHostBase.cs" />
     <Compile Include="EndpointType.cs" />
+    <Compile Include="Extensions\HttpListenerResponseExtensions.cs" />
+    <Compile Include="Extensions\HttpResponseExtensions.cs" />
     <Compile Include="MetadataConfig.cs" />
+    <Compile Include="Support\ContentType.cs" />
     <Compile Include="XmlSyncReplyHttpListener.cs" />
     <Compile Include="ServiceEndpointsMetadataConfig.cs" />
     <Compile Include="Metadata\Soap12WsdlMetadataHandler.cs" />

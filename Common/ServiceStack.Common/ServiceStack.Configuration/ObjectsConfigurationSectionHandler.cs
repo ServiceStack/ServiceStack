@@ -10,7 +10,7 @@ namespace ServiceStack.Configuration
 	/// <![CDATA[
 	///   <configuration>
 	///     <configSections>
-	///        <section name="objects" type="ServiceStack.Configuration.ObjectsConfigurationSectionHandler, ServiceStack.Common.Services, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+	///        <section name="objects" type="ServiceStack.Configuration.ObjectsConfigurationSectionHandler, ServiceStack, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
 	///     </configSections>
 	/// ...
 	///   <objects>
