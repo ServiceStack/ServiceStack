@@ -49,10 +49,13 @@
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\ITranslatorExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="PathInfo.cs" />
     <Compile Include="Support\AdapterBase.cs" />
     <Compile Include="Support\LogicFacadeBase.cs" />
+    <Compile Include="Support\CommandProcessor.cs" />
     <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\AssertUtils.cs" />
     <Compile Include="Utils\CommandsUtils.cs" />

@@ -134,6 +134,14 @@ namespace ServiceStack.Common.Tests
 		}
 
 		[Test]
+		public void Can_convert_string_array()
+		{
+			var stringValue = StringConverterUtils.ToString(stringValues.ToArray());
+			var expectedString = string.Join(",", stringValues.ToArray());
+			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
 		public void Can_convert_string_List_as_object()
 		{
 			var stringValue = StringConverterUtils.ToString((object)stringValues.ToList());

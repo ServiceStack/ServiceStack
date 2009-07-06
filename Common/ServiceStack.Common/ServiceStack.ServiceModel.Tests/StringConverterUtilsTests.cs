@@ -73,6 +73,15 @@ namespace ServiceStack.ServiceModel.Tests
 		}
 
 		[Test]
+		public void Create_string_array_from_string()
+		{
+			var convertedValue = new[] { "Hello", "World" };
+			var textValue = string.Join(",", convertedValue);
+			var result = StringConverterUtils.Parse<string[]>(textValue);
+			Assert.That(result, Is.EqualTo(convertedValue));
+		}
+
+		[Test]
 		public void Create_from_StringEnumerable()
 		{
 			var value = StringEnumerable.Parse("d,e,f");

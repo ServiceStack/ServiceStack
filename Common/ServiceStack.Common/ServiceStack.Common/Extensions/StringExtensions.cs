@@ -38,10 +38,74 @@ namespace ServiceStack.Common.Extensions
 			return string.IsNullOrEmpty(value);
 		}
 
+		public static string UrlDecode(this string value)
+		{
+			return value;
+		}
+
 		public static string EncodeXml(this string value)
 		{
 			return value.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
 		}
+
+		public static string UrlEncode(this string text)
+		{
+			if (string.IsNullOrEmpty(text)) return text;
+
+			string tmp;
+			string c;
+
+			for (var i=1; i<text.Length; i++)
+			{
+				c = text.Substring(i, 1);
+				int charCode = text[i];
+			}
+			return text;
+		}
+
+		/*
+			//If Len(s) = 0 Then Exit Function
+	
+			//Dim tmp As String
+			//Dim c As String
+			//Dim i As Integer
+	
+			//For i = 1 To Len(s)
+			//    c = Mid(s, i, 1)
+			//    If (Asc(c) &gt;= 65 And Asc(c) &lt;= 90) _
+			//    Or (Asc(c) &gt;= 97 And Asc(c) &lt;= 122) _
+			//    Or (Asc(c) &gt;= 48 And Asc(c) &lt;= 58) _
+			//    Or Asc(c) = 38 _
+			//    Or (Asc(c) &gt;= 45 And Asc(c) &lt;= 47) _
+			//    Or Asc(c) = 58 Or Asc(c) = 61 _
+			//    Or Asc(c) = 63 Or Asc(c) = 126 Then
+			//        tmp = tmp + c
+			//    Else
+			//        tmp = tmp + "%" + Hex(Asc(c))
+			//    End If
+			//Next i
+			//urlEncode = tmp		
+		 * 
+		 * Public Function urlDecode(s As String) As String
+			If Len(s) = 0 Then Exit Function
+			Dim i As Integer
+			Dim tmp As String
+			Dim c As String
+			For i = 1 To Len(s)
+				c = Mid$(s, i, 1)
+				If c = "+" Then c = " "
+				If c = "%" Then
+					c = Chr$("&H" + Mid$(s, i + 1, 2))
+					i = i + 2
+				End If
+				tmp = tmp + c
+			Next i
+			urlDecode = tmp
+		End Function
+ 
+		Public Function urlEncode(s As String) As String
+
+		End Function */
 
 	}
 }

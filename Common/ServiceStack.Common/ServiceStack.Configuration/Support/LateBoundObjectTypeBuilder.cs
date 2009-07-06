@@ -55,7 +55,7 @@ namespace ServiceStack.Configuration.Support
 			}
 			if (objectTypeDefinition.Properties.Count > 0)
 			{
-				AppendPropertyDefnition(objectTypeDefinition.Properties);
+				AppendPropertyDefinition(objectTypeDefinition.Properties);
 			}
 		}
 
@@ -127,7 +127,7 @@ namespace ServiceStack.Configuration.Support
 		/// Append the property definition
 		/// </summary>
 		/// <param name="propertyDefinitions"></param>
-		private void AppendPropertyDefnition(IList<PropertyConfigurationType> propertyDefinitions)
+		private void AppendPropertyDefinition(IList<PropertyConfigurationType> propertyDefinitions)
 		{
 			for (int i = 0; i < propertyDefinitions.Count; i++)
 			{

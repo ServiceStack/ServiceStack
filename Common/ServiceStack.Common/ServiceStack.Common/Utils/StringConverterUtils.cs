@@ -16,6 +16,7 @@ namespace ServiceStack.Common.Utils
 		private static readonly ILog log = LogManager.GetLogger(typeof(StringConverterUtils));
 
 		const string PARSE_METHOD = "Parse";
+		const string PARSE_STRING_ARRAY_METHOD = "ParseStringArray";
 		const char ITEM_SEPERATOR = ',';
 		const char KEY_VALUE_SEPERATOR = ':';
 
@@ -71,6 +72,15 @@ namespace ServiceStack.Common.Utils
 					}
 				}
 
+				if (Type == typeof(string[]))
+				{
+					ParseMethod = GetType().GetMethod(PARSE_STRING_ARRAY_METHOD, 
+						BindingFlags.Public | BindingFlags.Static, null,
+						new[] { typeof(string) }, null);
+					
+					return;
+				}
+
 				// Get the static Parse(string) method on the type supplied
 				ParseMethod = useType.GetMethod(PARSE_METHOD, BindingFlags.Public | BindingFlags.Static, null,
 											 new[] { typeof(string) }, null);
@@ -96,6 +106,13 @@ namespace ServiceStack.Common.Utils
 						throw new NotSupportedException(string.Format("Cannot create type {0} from a string.", useType.Name));
 					}
 				}
+			}
+
+			public static string[] ParseStringArray(string value)
+			{
+				return string.IsNullOrEmpty(value)
+						? new string[0]
+						: value.Split(',');
 			}
 
 			public object GetValue(string value)
@@ -273,7 +290,6 @@ namespace ServiceStack.Common.Utils
 
 		public static string ToString<T>(T value)
 		{
-
 			if (Equals(value, default(T))) return default(T).ToString();
 
 			var type = value.GetType();

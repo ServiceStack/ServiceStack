@@ -31,6 +31,16 @@ namespace ServiceStack.Common.Extensions
 			return new HashSet<T>(items);
 		}
 
+		public static List<object> ToObjects<T>(this IEnumerable<T> items)
+		{
+			var to = new List<object>();
+			foreach (var item in items)
+			{
+				to.Add(item);
+			}
+			return to;
+		}
+
 		public static string FirstNonDefaultOrEmpty(this IEnumerable<string> values)
 		{
 			foreach (var value in values)
