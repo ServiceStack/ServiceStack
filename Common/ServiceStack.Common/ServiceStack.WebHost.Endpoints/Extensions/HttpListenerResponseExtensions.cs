@@ -31,30 +31,37 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// <returns></returns>
 		public static bool WriteToResponse(this HttpListenerResponse response, object result, Func<object, string> defaultAction, string defaultContentType)
 		{
-			if (result == null)
+			try
 			{
+				if (result == null)
+				{
+					return true;
+				}
+
+				if (HttpResponseExtensions.WriteToOutputStream(response.OutputStream, result)) return true;
+
+				var responseText = result as string;
+				if (responseText != null)
+				{
+					WriteTextToResponse(response, responseText, defaultContentType);
+					return true;
+				}
+
+				if (defaultAction == null)
+				{
+					throw new ArgumentNullException("defaultAction", string.Format(
+						"As result '{0}' is not a supported responseType, a defaultAction must be supplied",
+						result.GetType().Name));
+				}
+
+				WriteTextToResponse(response, defaultAction(result), defaultContentType);
+				return false;
+			}
+			finally
+			{
+				//There is no response.End();
 				response.Close();
-				return true;
 			}
-
-			if (HttpResponseExtensions.WriteToOutputStream(response.OutputStream, result)) return true;
-
-			var responseText = result as string;
-			if (responseText != null)
-			{
-				WriteTextToResponse(response, responseText, defaultContentType);
-				return true;
-			}
-
-			if (defaultAction == null)
-			{
-				throw new ArgumentNullException("defaultAction", string.Format(
-					"As result '{0}' is not a supported responseType, a defaultAction must be supplied",
-					result.GetType().Name));
-			}
-
-			WriteTextToResponse(response, defaultAction(result), defaultContentType);
-			return false;
 		}
 
 		public static void WriteTextToResponse(HttpListenerResponse response, string stringResult, string defaultContentType)
@@ -72,16 +79,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				var outputStream = response.OutputStream;
 				outputStream.Write(bOutput, 0, bOutput.Length);
 				outputStream.Close();
-
 			}
 			catch (Exception ex)
 			{
 				Log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
 				throw;
-			}
-			finally
-			{
-				response.Close();
 			}
 		}
 

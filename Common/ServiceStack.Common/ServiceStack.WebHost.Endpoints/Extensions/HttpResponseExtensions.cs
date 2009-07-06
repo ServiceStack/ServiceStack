@@ -5,6 +5,7 @@ using System.Web;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Logging;
 using ServiceStack.Service;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -54,59 +55,61 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// <returns></returns>
 		public static bool WriteToResponse(this HttpResponse response, object result, Func<object, string> defaultAction, string defaultContentType)
 		{
-			if (result == null)
+			try
 			{
-				response.Close();
-				return true;
+				if (result == null)
+				{
+					return true;
+				}
+
+				if (WriteToOutputStream(response.OutputStream, result))
+				{
+					return true;
+				}
+
+				var responseText = result as string;
+				if (responseText != null)
+				{
+					WriteTextToResponse(response, responseText, defaultContentType);
+					return true;
+				}
+
+				if (defaultAction == null)
+				{
+					throw new ArgumentNullException("defaultAction", string.Format(
+						"As result '{0}' is not a supported responseType, a defaultAction must be supplied",
+						result.GetType().Name));
+				}
+
+				WriteTextToResponse(response, defaultAction(result), defaultContentType);
+				return false;
+
 			}
-
-			if (WriteToOutputStream(response.OutputStream, result)) return true;
-
-			var responseText = result as string;
-			if (responseText != null)
+			finally 
 			{
-				WriteTextToResponse(response, responseText, defaultContentType);
-				return true;
+				//Do not use response.Close(); does not have the same effect
+				response.End();
 			}
-
-			if (defaultAction == null)
-			{
-				throw new ArgumentNullException("defaultAction", string.Format(
-					"As result '{0}' is not a supported responseType, a defaultAction must be supplied",
-					result.GetType().Name));
-			}
-
-			WriteTextToResponse(response, defaultAction(result), defaultContentType);
-			return false;
 		}
 
 		public static void WriteTextToResponse(HttpResponse response, string text, string defaultContentType)
 		{
 			try
 			{
-				var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
-
-				if (response.ContentType == null)
+				//ContentType='text/html' is the default for a HttpResponse
+				//Do not override if another has been set
+				if (response.ContentType == null || response.ContentType == ContentType.Html)
 				{
 					response.ContentType = defaultContentType;
 				}
-
-				var outputStream = response.OutputStream;
-				outputStream.Write(bOutput, 0, bOutput.Length);
-				outputStream.Close();
-
+				response.Write(text);
 			}
 			catch (Exception ex)
 			{
 				Log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
 				throw;
 			}
-			finally
-			{
-				response.Close();
-			}
 		}
-
-
+        
 	}
 }

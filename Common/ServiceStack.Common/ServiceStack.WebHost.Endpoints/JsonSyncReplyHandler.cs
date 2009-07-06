@@ -24,9 +24,7 @@ namespace ServiceStack.WebHost.Endpoints
 			//If its needed re-enable it via configuration
 			//context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 
-			context.Response.WriteToResponse(result, x => JsonDataContractSerializer.Instance.Parse(result), ContentType.Json);
-	
-			context.Response.End();
+			context.Response.WriteToResponse(result, x => JsonDataContractSerializer.Instance.Parse(x), ContentType.Json);
 		}
 
 	}
