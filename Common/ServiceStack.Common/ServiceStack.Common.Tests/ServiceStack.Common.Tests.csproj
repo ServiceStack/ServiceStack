@@ -53,6 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Expressions\DelegateFactoryTests.cs" />
+    <Compile Include="Expressions\ExpressionTests.cs" />
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="StringConverterUtilsTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
