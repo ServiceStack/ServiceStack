@@ -6,10 +6,25 @@ using ServiceStack.DesignPatterns.Serialization;
 
 namespace ServiceStack.ServiceModel.Serialization
 {
+
 	public class DataContractDeserializer : IStringDeserializer
 	{
-		public static DataContractDeserializer Instance = new DataContractDeserializer();
 
+		/// <summary>
+		/// Default MaxStringContentLength is 8k, and throws an exception when reached
+		/// </summary>
+		private readonly XmlDictionaryReaderQuotas quotas;
+
+		public static DataContractDeserializer Instance 
+			= new DataContractDeserializer(new XmlDictionaryReaderQuotas {
+				MaxStringContentLength = 1024 * 1024,
+			});
+
+		public DataContractDeserializer(XmlDictionaryReaderQuotas quotas)
+		{
+			this.quotas = quotas;
+		}
+        
 		public To Parse<To>(string xml)
 		{
 			var type = typeof(To);
@@ -21,7 +36,8 @@ namespace ServiceStack.ServiceModel.Serialization
 			try
 			{
 				var bytes = Encoding.UTF8.GetBytes(xml);
-				using (var reader = XmlDictionaryReader.CreateTextReader(bytes, new XmlDictionaryReaderQuotas()))
+				
+				using (var reader = XmlDictionaryReader.CreateTextReader(bytes, this.quotas))
 				{
 					var serializer = new System.Runtime.Serialization.DataContractSerializer(type);
 					return serializer.ReadObject(reader);
@@ -32,5 +48,8 @@ namespace ServiceStack.ServiceModel.Serialization
 				throw new SerializationException("DeserializeDataContract: Error converting type: " + ex.Message, ex);
 			}
 		}
+
 	}
+
+
 }
