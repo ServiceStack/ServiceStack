@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Expressions\DelegateFactory.cs" />
+    <Compile Include="Extensions\ActionExecExtensions.cs" />
     <Compile Include="Extensions\ExecExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DisposableExtensions.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="PathInfo.cs" />
+    <Compile Include="Support\ActionExecHandler.cs" />
     <Compile Include="Support\AdapterBase.cs" />
     <Compile Include="Support\LogicFacadeBase.cs" />
     <Compile Include="Support\CommandProcessor.cs" />
