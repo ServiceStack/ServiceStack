@@ -22,38 +22,36 @@ namespace ServiceStack.Common.Extensions
 			return waitHandles;
 		}
 
-		public static void WaitAll(this List<WaitHandle> waitHandles, TimeSpan timeOut)
+		public static bool WaitAll(this List<WaitHandle> waitHandles, TimeSpan timeOut)
 		{
-			WaitAll(waitHandles.ToArray(), timeOut.Milliseconds);
+			return WaitAll(waitHandles.ToArray(), timeOut.Milliseconds);
 		}
 
-		public static void WaitAll(this List<WaitHandle> waitHandles, int timeOutMs)
+		public static bool WaitAll(this List<WaitHandle> waitHandles, int timeOutMs)
 		{
-			WaitAll(waitHandles.ToArray(), timeOutMs);
+			return WaitAll(waitHandles.ToArray(), timeOutMs);
 		}
 
-		public static void WaitAll(WaitHandle[] waitHandles, int timeOutMs)
+		public static bool WaitAll(WaitHandle[] waitHandles, int timeOutMs)
 		{
 			// throws an exception if there are no wait handles
-			if (waitHandles != null && waitHandles.Length > 0)
+			if (waitHandles == null) throw new ArgumentNullException("waitHandles");
+			if (waitHandles.Length == 0) return true;
+
+			if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
 			{
-				if (Thread.CurrentThread.ApartmentState == ApartmentState.STA)
+				// WaitAll for multiple handles on an STA thread is not supported.
+				// CurrentThread is ApartmentState.STA when run under unit tests
+				var successfullyComplete = true;
+				foreach (var waitHandle in waitHandles)
 				{
-					// WaitAll for multiple handles on an STA thread is not supported.
-					// CurrentThread is ApartmentState.STA when run under unit tests
-					foreach (WaitHandle waitHandle in waitHandles)
-					{
-						waitHandle.WaitOne(timeOutMs, false);
-					}
+					successfullyComplete = successfullyComplete 
+						&& waitHandle.WaitOne(timeOutMs, false);
 				}
-				else
-				{
-					if (!WaitHandle.WaitAll(waitHandles, timeOutMs, false))
-					{
-						throw new TimeoutException();
-					}
-				}
+				return successfullyComplete;
 			}
+
+			return WaitHandle.WaitAll(waitHandles, timeOutMs, false);
 		}
         
 	}

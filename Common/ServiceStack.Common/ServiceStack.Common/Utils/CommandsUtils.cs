@@ -35,7 +35,7 @@ namespace ServiceStack.Common.Utils
             // throws an exception if there are no wait handles
             if (waitHandles != null && waitHandles.Length > 0)
             {
-                if (Thread.CurrentThread.ApartmentState == ApartmentState.STA)
+				if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
                     // WaitAll for multiple handles on an STA thread is not supported.
                     // CurrentThread is ApartmentState.STA when run under unit tests

@@ -11,37 +11,37 @@ namespace ServiceStack.Common
 	/// </summary>
 	public class UrnId
 	{
-		private const char FIELD_SEPERATOR = ':';
+		private const char FieldSeperator = ':';
 		public string TypeName { get; private set; }
 		public string IdFieldValue { get; private set; }
 		public string IdFieldName { get; private set; }
+
+		const int HasNoIdFieldName = 3;
+		const int HasIdFieldName = 4;
 
 		private UrnId() { }
 
 		public static UrnId Parse(string urnId)
 		{
-			const int HAS_NO_ID_FIELD_NAME = 2;
-			const int HAS_ID_FIELD_NAME = 3;
-
-			var urnParts = urnId.Split(FIELD_SEPERATOR);
-			if (urnParts.Length == HAS_NO_ID_FIELD_NAME)
+			var urnParts = urnId.Split(FieldSeperator);
+			if (urnParts.Length == HasNoIdFieldName)
 			{
-				return new UrnId { TypeName = urnParts[0], IdFieldValue = urnParts[1] };
+				return new UrnId { TypeName = urnParts[1], IdFieldValue = urnParts[2] };
 			}
-			if (urnParts.Length == HAS_ID_FIELD_NAME)
+			if (urnParts.Length == HasIdFieldName)
 			{
-				return new UrnId { TypeName = urnParts[0], IdFieldName = urnParts[1], IdFieldValue = urnParts[2] };
+				return new UrnId { TypeName = urnParts[1], IdFieldName = urnParts[2], IdFieldValue = urnParts[3] };
 			}
 			throw new ArgumentException("Cannot parse invalid urn: '{0}'", urnId);
 		}
 
 		public static string Create(string objectTypeName, string idFieldValue)
 		{
-			if (objectTypeName.Contains(FIELD_SEPERATOR.ToString()))
+			if (objectTypeName.Contains(FieldSeperator.ToString()))
 			{
 				throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", "objectTypeName");
 			}
-			if (idFieldValue.Contains(FIELD_SEPERATOR.ToString()))
+			if (idFieldValue.Contains(FieldSeperator.ToString()))
 			{
 				throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
 			}
@@ -50,7 +50,7 @@ namespace ServiceStack.Common
 
 		public static string Create(Type objectType, string idFieldValue)
 		{
-			if (idFieldValue.Contains(FIELD_SEPERATOR.ToString()))
+			if (idFieldValue.Contains(FieldSeperator.ToString()))
 			{
 				throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
 			}
@@ -59,11 +59,11 @@ namespace ServiceStack.Common
 
 		public static string Create(Type objectType, string idFieldName, string idFieldValue)
 		{
-			if (idFieldValue.Contains(FIELD_SEPERATOR.ToString()))
+			if (idFieldValue.Contains(FieldSeperator.ToString()))
 			{
 				throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
 			}
-			if (idFieldName.Contains(FIELD_SEPERATOR.ToString()))
+			if (idFieldName.Contains(FieldSeperator.ToString()))
 			{
 				throw new ArgumentException("idFieldName cannot have the illegal characters: ':'", "idFieldName");
 			}
