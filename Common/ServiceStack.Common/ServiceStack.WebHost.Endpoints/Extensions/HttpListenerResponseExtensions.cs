@@ -5,6 +5,7 @@ using System.Web;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Logging;
 using ServiceStack.Service;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -57,6 +58,13 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				WriteTextToResponse(response, defaultAction(result), defaultContentType);
 				return false;
 			}
+			catch (Exception ex)
+			{
+				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+				Log.Error(errorMessage, ex);
+				response.WriteErrorToResponse(errorMessage, ex);
+				return true;
+			}
 			finally
 			{
 				//There is no response.End();
@@ -87,6 +95,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+		public static void WriteErrorToResponse(this HttpListenerResponse response, string errorMessage, Exception ex)
+		{
+			var responseXml = string.Format("<Error>\n\t<Message>{0}</Message>\n\t<StackTrace>\n\t\t{1}\n\t</StackTrace>\n</Error>",
+				errorMessage, ex.StackTrace);
 
+			WriteTextToResponse(response, responseXml, ContentType.XmlText);
+		}
 	}
 }

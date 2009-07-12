@@ -8,9 +8,9 @@ namespace ServiceStack.ServiceInterface
 
 	public class ApplicationContext : IApplicationContext
 	{
-		public static ApplicationContext Instance { get; private set; }
+		public static IApplicationContext Instance { get; private set; }
 
-		public static void SetInstanceContext(ApplicationContext applicationContext)
+		public static void SetInstanceContext(IApplicationContext applicationContext)
 		{
 			if (ApplicationContext.Instance != null)
 			{

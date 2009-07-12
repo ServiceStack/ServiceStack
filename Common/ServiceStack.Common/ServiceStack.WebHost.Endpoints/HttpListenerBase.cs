@@ -15,10 +15,10 @@ namespace ServiceStack.WebHost.Endpoints
 	/// server, for start and stop management and event routing of the actual
 	/// inbound requests.
 	/// </summary>
-	public abstract class HttpListenerBase 
+	public abstract class HttpListenerBase
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
-	
+
 		private const int RequestThreadAbortedException = 995;
 
 		protected HttpListener listener;
@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public void Stop()
 		{
 			if (listener == null) return;
-			
+
 			try
 			{
 				this.listener.Close();
@@ -70,9 +70,9 @@ namespace ServiceStack.WebHost.Endpoints
 				if (ex.ErrorCode != RequestThreadAbortedException)
 					throw;
 
-				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", 
+				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request",
 					RequestThreadAbortedException);
-			} 
+			}
 			this.listener = null;
 			this.isStarted = false;
 		}
@@ -97,7 +97,12 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 			catch (Exception ex)
 			{
-				log.Error(string.Format("Error calling ProcessRequest()", ex));
+				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+				log.Error(errorMessage, ex);
+
+				var responseXml = string.Format("<Error>\n\t<Message>{0}</Message>\n\t<StackTrace>\n\t\t{1}\n\t</StackTrace>\n</Error>", 
+					errorMessage, ex.StackTrace);
+				WriteXmlToResponse(context.Response, responseXml);
 			}
 		}
 
@@ -110,6 +115,11 @@ namespace ServiceStack.WebHost.Endpoints
 		protected static object CreateRequest(HttpListenerRequest request, string operationName)
 		{
 			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
+			if (operationType == null)
+			{
+				throw new NotImplementedException("Could not find handler for: " + operationName);
+			}
+
 			//AssertOperationExists(operationName, operationType);
 			if (request.HttpMethod == "GET")
 			{
@@ -121,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints
 				{
 					var log = EndpointHost.Config.LogFactory.GetLogger(typeof(HttpListenerBase));
 					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'.\nError: '{2}'",
-					        operationType, request.QueryString, ex);
+							operationType, request.QueryString, ex);
 					throw;
 				}
 			}
@@ -135,7 +145,7 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				var log = EndpointHost.Config.LogFactory.GetLogger(typeof(HttpListenerBase));
 				log.ErrorFormat("Could not deserialize '{0}' request using DataContractDeserializer: '{1}'.\nError: '{2}'",
-				        operationType, xml, ex);
+						operationType, xml, ex);
 				throw;
 			}
 		}

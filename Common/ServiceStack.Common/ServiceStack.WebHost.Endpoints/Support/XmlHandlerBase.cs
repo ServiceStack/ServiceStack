@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Web;
 using ServiceStack.ServiceModel.Serialization;
