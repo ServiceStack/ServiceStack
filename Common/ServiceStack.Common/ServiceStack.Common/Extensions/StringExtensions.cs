@@ -43,6 +43,55 @@ namespace ServiceStack.Common.Extensions
 			return value;
 		}
 
+		/// <summary>
+		/// Converts from base: 0 - 62
+		/// </summary>
+		/// <param name="source">The source.</param>
+		/// <param name="from">From.</param>
+		/// <param name="to">To.</param>
+		/// <returns></returns>
+        public static string BaseConvert(this string source, int from, int to)
+		{
+			const string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var result = "";
+			var length = source.Length;
+			var number = new int[length];
+
+			for (var i = 0; i < length; i++)
+			{
+				number[i] = chars.IndexOf(source[i]);
+			}
+
+			int newlen;
+
+			do
+			{
+				var divide = 0;
+				newlen = 0;
+
+				for (var i = 0; i < length; i++)
+				{
+					divide = divide * from + number[i];
+
+					if (divide >= to)
+					{
+						number[newlen++] = (int)(divide / to);
+						divide = divide % to;
+					}
+					else if (newlen > 0)
+					{
+						number[newlen++] = 0;
+					}
+				}
+
+				length = newlen;
+				result = chars[divide] + result;
+			}
+			while (newlen != 0);
+
+			return result;
+		}
+
 		public static string EncodeXml(this string value)
 		{
 			return value.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");

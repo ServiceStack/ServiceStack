@@ -49,7 +49,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Version100\ResponseStatus.cs" />
+    <Compile Include="Version100\CollectionTypes.cs" />
+    <Compile Include="Version100\IResponseStatus.cs" />
+    <Compile Include="Version100\IResponseBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
