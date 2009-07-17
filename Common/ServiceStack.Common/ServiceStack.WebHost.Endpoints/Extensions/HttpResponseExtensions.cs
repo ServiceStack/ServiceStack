@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -47,6 +48,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		/// <summary>
 		/// Writes to response.
+		/// 
+		/// Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
+		/// 
 		/// </summary>
 		/// <param name="response">The response.</param>
 		/// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
@@ -61,6 +65,21 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				{
 					return true;
 				}
+
+				var responseOptions = result as IHasOptions;
+				if (responseOptions != null)
+				{
+					//Reserving options with keys in the format 'xx.xxx' (No Http headers contain a '.' so its a safe restriction)
+					const string reservedOptions = ".";
+
+					foreach (var responseHeaders in responseOptions.Options)
+					{
+						if (responseHeaders.Key.Contains(reservedOptions)) continue;
+
+						response.Headers[responseHeaders.Key] = responseHeaders.Value;
+					}
+				}
+
 
 				if (WriteToOutputStream(response.OutputStream, result))
 				{
@@ -91,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				response.WriteErrorToResponse(errorMessage, ex);
 				return true;
 			}
-			finally 
+			finally
 			{
 				//Both seem to throw an exception??
 				//Do not use response.Close(); does not have the same effect
@@ -125,6 +144,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 			WriteTextToResponse(response, responseXml, ContentType.XmlText);
 		}
-       
+
 	}
 }

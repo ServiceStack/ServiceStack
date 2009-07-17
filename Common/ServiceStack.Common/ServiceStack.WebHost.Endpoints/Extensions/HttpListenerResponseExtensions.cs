@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -23,6 +24,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// - Handles, strings (returns as xml)
 		/// - Stream/MemoryStream
 		/// - IStreamWriter result
+		/// 
+		/// Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
+		/// 
 		/// If its not handled by any of the above it will call the defaultAction Func provided and write the xml output to the response
 		/// </summary>
 		/// <param name="response">The response.</param>
@@ -37,6 +41,20 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				if (result == null)
 				{
 					return true;
+				}
+
+				var responseOptions = result as IHasOptions;
+				if (responseOptions != null)
+				{
+					//Reserving options with keys in the format 'xx.xxx' (No Http headers contain a '.' so its a safe restriction)
+					const string reservedOptions = ".";
+
+					foreach (var responseHeaders in responseOptions.Options)
+					{
+						if (responseHeaders.Key.Contains(reservedOptions)) continue;
+
+						response.Headers[responseHeaders.Key] = responseHeaders.Value;
+					}
 				}
 
 				if (HttpResponseExtensions.WriteToOutputStream(response.OutputStream, result)) return true;
