@@ -29,3 +29,4 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\Enyim.Caching.dll
 COPY *.dll %SERVICESTACK_DEPLOY_PATH%
 COPY *.exe %SERVICESTACK_DEPLOY_PATH%
 
+COPY *.dll ..\..\..\ServiceStack.Examples\Lib

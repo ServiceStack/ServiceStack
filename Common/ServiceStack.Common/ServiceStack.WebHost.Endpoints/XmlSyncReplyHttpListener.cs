@@ -1,7 +1,4 @@
-using System.IO;
 using System.Net;
-using System.Text;
-using System.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -9,7 +6,7 @@ using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-	public class XmlSyncReplyHttpListener : HttpListenerBase
+	public abstract class XmlSyncReplyHttpListener : HttpListenerBase
 	{
 		protected override void ProcessRequest(HttpListenerContext context)
 		{
@@ -25,4 +22,5 @@ namespace ServiceStack.WebHost.Endpoints
 			context.Response.WriteToResponse(result, x => DataContractSerializer.Instance.Parse(result), ContentType.Xml);
 		}
 	}
+
 }

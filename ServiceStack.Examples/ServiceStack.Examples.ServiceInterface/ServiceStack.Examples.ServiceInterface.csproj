@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}</ProjectGuid>
+    <ProjectGuid>{519A7B72-D144-436D-AAC3-7BAAEAD3FF52}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Service</RootNamespace>
-    <AssemblyName>ServiceStack.Service</AssemblyName>
+    <RootNamespace>ServiceStack.Examples.ServiceInterface</RootNamespace>
+    <AssemblyName>ServiceStack.Examples.ServiceInterface</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,20 +31,41 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IAsyncReplyClient.cs" />
-    <Compile Include="IResponseBase.cs" />
-    <Compile Include="IResponseStatus.cs" />
-    <Compile Include="IServiceClient.cs" />
-    <Compile Include="IOneWayClient.cs" />
-    <Compile Include="IReplyClient.cs" />
-    <Compile Include="IServiceHost.cs" />
-    <Compile Include="EndpointAttributes.cs" />
-    <Compile Include="IStreamWriter.cs" />
-    <Compile Include="PortAttribute.cs" />
+    <Compile Include="GetFibonacciNumbers.cs" />
+    <Compile Include="GetFactorial.cs" />
+    <Compile Include="GetUsers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Types\ArrayOfString.cs" />
+    <Compile Include="Types\ArrayOfUser.cs" />
+    <Compile Include="Types\ResponseStatus.cs" />
+    <Compile Include="Types\ArrayOfLong.cs" />
+    <Compile Include="StoreNewUser.cs" />
+    <Compile Include="Types\User.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

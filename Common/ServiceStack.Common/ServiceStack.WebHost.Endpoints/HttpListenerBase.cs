@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// server, for start and stop management and event routing of the actual
 	/// inbound requests.
 	/// </summary>
-	public abstract class HttpListenerBase
+	public abstract class HttpListenerBase : IServiceHost, IDisposable
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
 
@@ -29,13 +29,13 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <summary>
 		/// Starts the Web Service
 		/// </summary>
-		/// <param name="UrlBase">
+		/// <param name="urlBase">
 		/// A Uri that acts as the base that the server is listening on.
 		/// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
 		/// Note: the trailing backslash is required! For more info see the
 		/// HttpListener.Prefixes property on MSDN.
 		/// </param>
-		public void Start(string UrlBase)
+		public void Start(string urlBase)
 		{
 			// *** Already running - just leave it in place
 			if (this.isStarted)
@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints
 				this.listener = new HttpListener();
 			}
 
-			this.listener.Prefixes.Add(UrlBase);
+			this.listener.Prefixes.Add(urlBase);
 
 			this.isStarted = true;
 			this.listener.Start();
@@ -127,7 +127,7 @@ namespace ServiceStack.WebHost.Endpoints
 				{
 					return KeyValueDataContractDeserializer.Instance.Parse(request.QueryString, operationType);
 				}
-				catch (System.Exception ex)
+				catch (Exception ex)
 				{
 					var log = EndpointHost.Config.LogFactory.GetLogger(typeof(HttpListenerBase));
 					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'.\nError: '{2}'",
@@ -175,10 +175,33 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		static protected object ExecuteService(object request, EndpointAttributes endpointAttributes)
+		protected void SetConfig(EndpointHostConfig config)
 		{
-			return EndpointHost.ExecuteService(request, endpointAttributes);
+			if (config.ServiceHost == null)
+			{
+				config.ServiceHost = this;
+			}
+			
+			EndpointHost.Config = config;
 		}
 
+		protected abstract IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes);
+		
+		public virtual object ExecuteService(object request, EndpointAttributes endpointAttributes)
+		{
+			var operationContext = CreateOperationContext(request, endpointAttributes);
+			return EndpointHost.Config.ServiceController.Execute(operationContext);
+		}
+
+		public virtual string ExecuteXmlService(string xmlRequest, EndpointAttributes endpointAttributes)
+		{
+			var operationContext = CreateOperationContext(new XmlRequestDto(xmlRequest), endpointAttributes);
+			return EndpointHost.Config.ServiceController.ExecuteXml(operationContext);
+		}
+
+		public virtual void Dispose()
+		{
+			this.Stop();
+		}
 	}
 }
