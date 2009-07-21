@@ -1,12 +1,16 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.Host.Iis7", "ServiceStack.Examples.Host.Web\ServiceStack.Examples.Host.Iis7.csproj", "{3A8D2349-6E97-47A2-AC49-EFE7D89C0344}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.Host.Web", "ServiceStack.Examples.Host.Web\ServiceStack.Examples.Host.Web.csproj", "{3A8D2349-6E97-47A2-AC49-EFE7D89C0344}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.ServiceInterface", "ServiceStack.Examples.ServiceInterface\ServiceStack.Examples.ServiceInterface.csproj", "{519A7B72-D144-436D-AAC3-7BAAEAD3FF52}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.Host.Console", "ServiceStack.Examples.Host.Console\ServiceStack.Examples.Host.Console.csproj", "{77363223-98F2-4724-8044-569C6485B3A9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.ServiceInterface.Tests", "ServiceStack.Examples.ServiceInterface.Tests\ServiceStack.Examples.ServiceInterface.Tests.csproj", "{969644BC-B209-4458-8DC1-041D7A9ADD3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.Clients", "ServiceStack.Examples.Clients\ServiceStack.Examples.Clients.csproj", "{53F87D5C-4540-4AFD-BD19-E081FD8E586B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.Clients.Silverlight", "ServiceStack.Examples.Clients.Silverlight\ServiceStack.Examples.Clients.Silverlight.csproj", "{66071B2F-A190-450D-8EA3-CF3A5477D738}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +34,14 @@ Global
 		{969644BC-B209-4458-8DC1-041D7A9ADD3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{969644BC-B209-4458-8DC1-041D7A9ADD3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{969644BC-B209-4458-8DC1-041D7A9ADD3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53F87D5C-4540-4AFD-BD19-E081FD8E586B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53F87D5C-4540-4AFD-BD19-E081FD8E586B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53F87D5C-4540-4AFD-BD19-E081FD8E586B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53F87D5C-4540-4AFD-BD19-E081FD8E586B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66071B2F-A190-450D-8EA3-CF3A5477D738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66071B2F-A190-450D-8EA3-CF3A5477D738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66071B2F-A190-450D-8EA3-CF3A5477D738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66071B2F-A190-450D-8EA3-CF3A5477D738}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

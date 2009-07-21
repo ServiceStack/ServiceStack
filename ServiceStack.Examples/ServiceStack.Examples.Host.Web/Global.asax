@@ -1,1 +1,1 @@
-﻿<%@ Application Codebehind="Global.asax.cs" Inherits="ServiceStack.Examples.Host.Iis7.Global" Language="C#" %>
+﻿<%@ Application Codebehind="Global.asax.cs" Inherits="ServiceStack.Examples.Host.Web.Global" Language="C#" %>

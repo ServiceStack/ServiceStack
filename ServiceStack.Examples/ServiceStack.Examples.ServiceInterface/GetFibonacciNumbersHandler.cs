@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.LogicFacade;
 using ServiceStack.Service;
@@ -7,31 +6,6 @@ using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
-	/* Below is a simple example on how to create a simple Web Service.
-	 * It lists all the classes required to implement the 'GetFibonacciNumbers' Service. 	
-	 */
-
-	/// <summary>
-	/// Use Plain old DataContract's Define your 'Service Interface'
-	/// </summary>
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
-	public class GetFibonacciNumbers
-	{
-		[DataMember]
-		public long? Skip { get; set; }
-
-		[DataMember]
-		public long? Take { get; set; }
-	}
-
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
-	public class GetFibonacciNumbersResponse
-	{
-		[DataMember]
-		public ArrayOfLong Results { get; set; }
-	}
-
-
 	/// <summary>
 	/// The service or 'Port' handler that will be used to execute the request.
 	/// 
@@ -80,5 +54,4 @@ namespace ServiceStack.Examples.ServiceInterface
 		}
 
 	}
-
 }

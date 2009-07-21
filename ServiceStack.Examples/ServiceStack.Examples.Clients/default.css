@@ -1,0 +1,87 @@
+﻿BODY {
+    font: 12px Arial;
+    padding: 0 2em;
+}
+#header-links
+{
+	float: right;
+}
+#header-links A, #footer-links A
+{
+	color: Blue;
+	margin-left: .5em;
+}
+#footer-links
+{
+	padding: 5em 0 1em 0;
+	text-align: center;
+	font-size: larger;
+}
+.r 
+{
+	clear: both;
+	display: block;
+}
+
+P
+{
+    width: 768px;        	
+}
+CODE
+{
+	display: block;
+	background: #f1f1f1;
+	white-space: pre;
+	color: #333;
+	width: 780px;
+}
+H1 
+{
+	padding-top: 1em;
+	color: #369;
+}
+H4
+{        	
+	clear: left;
+	color: #093;
+}
+INPUT.int
+{
+	width: 20px;
+}
+acronym 
+{
+	border-bottom: dashed 1px #a0a0a0;
+}
+.service 
+{
+	float: left;
+	margin-right: 1em;
+	padding: 1em;
+	border: solid 1px #a0a0a0;
+}
+.service H4 
+{
+	margin: 1em 0;
+	padding: 0;
+}
+.service .result
+{
+	padding: 0 1em;
+	font-size: 18px;
+}
+.form 
+{
+	margin-bottom: 1em;
+}
+.form LABEL
+{
+	display: block;
+	padding: .5em;
+}
+.user 
+{
+	border-top: dashed 1px #a0a0a0;
+	margin-top: .5em;
+	padding-top: .5em;
+}

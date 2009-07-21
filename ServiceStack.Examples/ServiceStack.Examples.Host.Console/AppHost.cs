@@ -63,7 +63,7 @@ namespace ServiceStack.Examples.Host.Console
 			});
 
 
-			//How to use loging in your services
+			//How to use loging in your services (essentially the same as Log4Net, but without the dependancy)
 			var log = LogManager.GetLogger(GetType());
 			log.InfoFormat("AppHost Created: " + DateTime.Now);
 		}

@@ -1,0 +1,144 @@
+﻿<UserControl x:Class="ServiceStack.Examples.Clients.Silverlight.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480">
+    <UserControl.Resources>
+        <Style x:Key="h3" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="#369" />
+            <Setter Property="Margin" Value="0,5" />
+        </Style>
+        <Style x:Key="resultText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="#396" />
+        </Style>
+        <Style x:Key="txtInt" TargetType="TextBox">
+            <Setter Property="Margin" Value="10,0" />
+            <Setter Property="Padding" Value="10,0" />
+        </Style>
+        <Style x:Key="txtField" TargetType="TextBox">
+            <Setter Property="Margin" Value="0,5" />
+            <Setter Property="Padding" Value="10,2" />
+            <Setter Property="Width" Value="200" />
+        </Style>
+        <Style x:Key="ButtonText" TargetType="TextBlock">
+            <Setter Property="Padding" Value="10,0" />
+        </Style>
+        <Style x:Key="ServicePanel" TargetType="StackPanel">
+            <Setter Property="Margin" Value="20,0" />
+        </Style>
+    </UserControl.Resources>
+  <Grid x:Name="LayoutRoot">
+
+        <StackPanel Margin="10" Orientation="Horizontal">
+
+            <StackPanel Style="{StaticResource  ServicePanel}">
+                <TextBlock Text="Get Factorial Service" Style="{StaticResource  h3}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="For Number: "  VerticalAlignment="Center"/>
+
+                    <TextBox Name="txtGetFactorial" Text="3" Style="{StaticResource txtInt}" />
+
+                    <Button Name="btnGetFactorial" Click="btnGetFactorial_Click">
+                        <TextBlock Text="Go" Style="{StaticResource ButtonText}" />
+                    </Button>
+
+                </StackPanel>
+
+                <TextBlock Text="Result: " />
+                <TextBlock Name="txtGetFactorialResult"  Style="{StaticResource  resultText}" />
+            </StackPanel>
+
+
+            <StackPanel Style="{StaticResource  ServicePanel}">
+                <TextBlock Text="Get Fibonacci Numbers Service" Style="{StaticResource  h3}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Skip: "  VerticalAlignment="Center"/>
+                    <TextBox Name="txtGetFibonacciNumbersSkip" Text="5" Style="{StaticResource txtInt}" />
+                    
+                    <TextBlock Text="Take: "  VerticalAlignment="Center"/>
+                    <TextBox Name="txtGetFibonacciNumbersTake" Text="10" Style="{StaticResource txtInt}" />
+
+                    <Button Name="btnGetFibonacciNumbers" Click="btnGetFibonacciNumbers_Click">
+                        <TextBlock Text="Go" Style="{StaticResource ButtonText}" />
+                    </Button>
+                </StackPanel>
+
+                <TextBlock Text="Result: " />
+                <ItemsControl Name="itemsGetFibonacciNumbersResult">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"  Style="{StaticResource  resultText}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                
+            </StackPanel>
+
+
+            <StackPanel Style="{StaticResource  ServicePanel}">
+                <TextBlock Text="Store New User Service" Style="{StaticResource  h3}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <TextBlock Text="UserName: "  VerticalAlignment="Center"/>
+                        <TextBox Name="txtUserName" Text="User 1" Style="{StaticResource txtField}" />
+
+                        <TextBlock Text="Password: "  VerticalAlignment="Center"/>
+                        <TextBox Name="txtPassword" Text="password" Style="{StaticResource txtField}" />
+
+                        <TextBlock Text="Email: "  VerticalAlignment="Center"/>
+                        <TextBox Name="txtEmail" Text="as@if.com" Style="{StaticResource txtField}" />
+
+                        <Button Name="btnStoreNewUser" Click="btnStoreNewUser_Click">
+                            <TextBlock Text="Create New User" Style="{StaticResource ButtonText}" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock Text="Result: " />
+                <TextBlock Name="txtStoreNewUserResult"  Style="{StaticResource  resultText}" />
+
+                <Button Name="btnDeleteAllUsers" Click="btnDeleteAllUsers_Click">
+                    <TextBlock Text="Delete All Users" Style="{StaticResource ButtonText}" />
+                </Button>
+
+            </StackPanel>
+
+
+            <StackPanel Style="{StaticResource  ServicePanel}">
+                <TextBlock Text="Get Users Service" Style="{StaticResource  h3}" />
+
+                <StackPanel>
+                    <TextBlock Text="User Ids: "  VerticalAlignment="Center"/>
+                    <TextBox Name="txtUserIds" Text="" Style="{StaticResource txtField}" />
+
+                    <Button Name="btnGetUsers" Click="btnGetUsers_Click">
+                        <TextBlock Text="Get Users" Style="{StaticResource ButtonText}" />
+                    </Button>
+                </StackPanel>
+
+                <TextBlock Text="Result: " />
+                <ItemsControl Name="itemsGetUsersResult">
+                    <ItemsControl.ItemTemplate>                        
+                        <DataTemplate>
+                            <StackPanel>
+                                <Border BorderBrush="Gray" BorderThickness="1" Margin="0,10,0,5" />
+                                <TextBlock Text="{Binding UserName}"  Style="{StaticResource  resultText}" />
+                                <TextBlock Text="{Binding Password}"  Style="{StaticResource  resultText}" />
+                                <TextBlock Text="{Binding Email}"  Style="{StaticResource  resultText}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

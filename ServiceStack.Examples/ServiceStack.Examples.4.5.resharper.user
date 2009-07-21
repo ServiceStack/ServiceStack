@@ -12,58 +12,37 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.designer.cs" caret="0" fromTop="0" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="0" fromTop="0" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax.cs" caret="288" fromTop="12" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="349" fromTop="13" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="225" fromTop="11" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3168" fromTop="29" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:User.cs" caret="424" fromTop="19" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ResponseStatus.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetFactorialsHandler.cs" caret="963" fromTop="32" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreUser.cs" caret="2349" fromTop="34" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:SharedTypes.cs" caret="391" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfUser.cs" caret="254" fromTop="6" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfString.cs" caret="403" fromTop="11" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1005" fromTop="12" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="1451" fromTop="15" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3409" fromTop="25" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="1275" fromTop="30" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Class1.cs" caret="1113" fromTop="30" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:Class1.cs" caret="367" fromTop="17" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="527" fromTop="21" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1252" fromTop="24" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1919" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ResponseStatus.cs" caret="506" fromTop="19" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:App.xaml.cs" caret="0" fromTop="0" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:AppContext.cs" caret="431" fromTop="16" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ContextBase.cs" caret="744" fromTop="19" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="520" fromTop="15" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1595" fromTop="34" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml.cs" caret="1886" fromTop="44" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4196" fromTop="19" />
     </RecentFiles>
     <RecentEdits>
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:SharedTypes.cs" caret="581" fromTop="16" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:SharedTypes.cs" caret="235" fromTop="5" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:SharedTypes.cs" caret="391" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="822" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="1367" fromTop="34" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="690" fromTop="5" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfString.cs" caret="133" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfString.cs" caret="403" fromTop="17" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfString.cs" caret="403" fromTop="16" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfString.cs" caret="403" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="1067" fromTop="8" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="1782" fromTop="28" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="2142" fromTop="40" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="1451" fromTop="15" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsers.cs" caret="1550" fromTop="15" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="2114" fromTop="42" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="456" fromTop="13" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="700" fromTop="23" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="766" fromTop="0" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="817" fromTop="17" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="2024" fromTop="20" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="1045" fromTop="21" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="748" fromTop="13" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="164" fromTop="1" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="1605" fromTop="32" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="1347" fromTop="27" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="586" fromTop="17" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="271" fromTop="9" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:Class1.cs" caret="521" fromTop="20" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="572" fromTop="21" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="441" fromTop="7" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="671" fromTop="12" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="767" fromTop="12" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml.cs" caret="549" fromTop="23" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:App.xaml.cs" caret="0" fromTop="0" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:AppContext.cs" caret="224" fromTop="8" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:AppContext.cs" caret="416" fromTop="13" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4108" fromTop="18" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="520" fromTop="15" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4744" fromTop="27" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4970" fromTop="31" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="5404" fromTop="41" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="5321" fromTop="38" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml.cs" caret="1886" fromTop="32" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1073" fromTop="43" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1776" fromTop="44" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1771" fromTop="40" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1196" fromTop="20" />
+      <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1610" fromTop="34" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -81,19 +60,19 @@
       <Item value="IApplicationContext" priority="0" />
       <Item value="IRequestContext" priority="1" />
       <Item value="Namespace" priority="1" />
-      <Item value="public" priority="5" />
+      <Item value="public" priority="10" />
       <Item value="GetFactorials" priority="2" />
       <Item value="DataMember" priority="1" />
       <Item value="type" priority="0" />
-      <Item value="var" priority="13" />
+      <Item value="var" priority="16" />
       <Item value="context" priority="2" />
-      <Item value="return" priority="2" />
-      <Item value="new" priority="18" />
+      <Item value="return" priority="4" />
+      <Item value="new" priority="30" />
       <Item value="GetFactorialsResponse" priority="0" />
       <Item value="Result" priority="0" />
-      <Item value="request" priority="13" />
-      <Item value="base" priority="0" />
-      <Item value="ApplicationContext" priority="2" />
+      <Item value="request" priority="18" />
+      <Item value="base" priority="1" />
+      <Item value="ApplicationContext" priority="3" />
       <Item value="BasicOperationContext" priority="0" />
       <Item value="factory" priority="1" />
       <Item value="cacheClient" priority="0" />
@@ -101,11 +80,11 @@
       <Item value="MemcachedClientCache" priority="2" />
       <Item value="LogManager" priority="0" />
       <Item value="AppHost" priority="1" />
-      <Item value="void" priority="3" />
+      <Item value="void" priority="5" />
       <Item value="if" priority="5" />
       <Item value="Instance" priority="0" />
-      <Item value="null" priority="2" />
-      <Item value="long" priority="2" />
+      <Item value="null" priority="5" />
+      <Item value="long" priority="5" />
       <Item value="defaultLimit" priority="0" />
       <Item value="List" priority="1" />
       <Item value="int" priority="0" />
@@ -119,30 +98,30 @@
       <Item value="break" priority="0" />
       <Item value="ILogFactory" priority="0" />
       <Item value="IResourceManager" priority="0" />
-      <Item value="Response" priority="0" />
+      <Item value="Response" priority="1" />
       <Item value="override" priority="0" />
-      <Item value="ArrayOfLong" priority="2" />
+      <Item value="ArrayOfLong" priority="3" />
       <Item value="IPersistenceProviderManagerFactory" priority="0" />
       <Item value="IResponseStatus" priority="0" />
       <Item value="ResponseStatus" priority="3" />
       <Item value="DataContract" priority="0" />
       <Item value="this" priority="0" />
-      <Item value="string" priority="1" />
-      <Item value="persistenceProvider" priority="5" />
-      <Item value="IQueryablePersistenceProvider" priority="0" />
-      <Item value="delegate" priority="0" />
-      <Item value="User" priority="2" />
-      <Item value="user" priority="1" />
+      <Item value="string" priority="6" />
+      <Item value="persistenceProvider" priority="7" />
+      <Item value="IQueryablePersistenceProvider" priority="1" />
+      <Item value="delegate" priority="2" />
+      <Item value="User" priority="9" />
+      <Item value="user" priority="2" />
       <Item value="existingUsers" priority="0" />
-      <Item value="ErrorCode" priority="0" />
-      <Item value="Email" priority="0" />
-      <Item value="UserName" priority="0" />
-      <Item value="Password" priority="0" />
+      <Item value="ErrorCode" priority="1" />
+      <Item value="Email" priority="1" />
+      <Item value="UserName" priority="4" />
+      <Item value="Password" priority="1" />
       <Item value="UserId" priority="0" />
       <Item value="newUser" priority="0" />
       <Item value="ItemName" priority="2" />
       <Item value="ArrayOfUser" priority="1" />
-      <Item value="List&lt;User&gt;" priority="0" />
+      <Item value="List&lt;User&gt;" priority="2" />
       <Item value="users" priority="1" />
       <Item value="Users" priority="0" />
       <Item value="false" priority="0" />
@@ -150,13 +129,13 @@
       <Item value="IPersistenceProviderManager" priority="1" />
       <Item value="x" priority="0" />
       <Item value="TestFixtureSetUp" priority="0" />
-      <Item value="TestAppHost" priority="0" />
+      <Item value="TestAppHost" priority="1" />
       <Item value="GetFactorial" priority="0" />
       <Item value="ForNumber" priority="0" />
       <Item value="GetFactorialHandler" priority="0" />
       <Item value="handler" priority="0" />
       <Item value="TestBase" priority="0" />
-      <Item value="protected" priority="0" />
+      <Item value="protected" priority="1" />
       <Item value="object" priority="0" />
       <Item value="OperationContext" priority="0" />
       <Item value="RequestContext" priority="0" />
@@ -165,6 +144,28 @@
       <Item value="response" priority="0" />
       <Item value="GetFactorialResponse" priority="0" />
       <Item value="IServiceProvider" priority="0" />
+      <Item value="Skip" priority="0" />
+      <Item value="Take" priority="0" />
+      <Item value="ToList" priority="0" />
+      <Item value="default" priority="0" />
+      <Item value="mockPersistence" priority="3" />
+      <Item value="It" priority="4" />
+      <Item value="bool" priority="0" />
+      <Item value="UserIds" priority="0" />
+      <Item value="params" priority="1" />
+      <Item value="UserNames" priority="0" />
+      <Item value="ArrayOfString" priority="0" />
+      <Item value="Predicate" priority="0" />
+      <Item value="IList" priority="0" />
+      <Item value="ICollection" priority="1" />
+      <Item value="Id" priority="1" />
+      <Item value="static" priority="1" />
+      <Item value="class" priority="0" />
+      <Item value="const" priority="0" />
+      <Item value="Config" priority="0" />
+      <Item value="AppContext" priority="2" />
+      <Item value="private" priority="0" />
+      <Item value="DeleteAllUsersResponse" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.ConfigurationResourceManager">
       <Item value="GetString" priority="0" />
@@ -181,7 +182,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.ServiceInterface.ApplicationContext">
       <Item value="SetInstanceContext" priority="0" />
-      <Item value="Instance" priority="1" />
+      <Item value="Instance" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Logging.LogManager">
       <Item value="LogFactory" priority="0" />
@@ -213,7 +214,7 @@
       <Item value="AddRange" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Web.HttpResponse">
-      <Item value="Redirect" priority="0" />
+      <Item value="Redirect" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.XmlSyncReplyHttpListener">
       <Item value="Dispose" priority="0" />
@@ -233,10 +234,10 @@
       <Item value="GetProvider" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.DataAccess.IQueryablePersistenceProvider">
-      <Item value="Query" priority="0" />
-      <Item value="Store" priority="0" />
-      <Item value="GetByIds" priority="0" />
-      <Item value="FindByValues" priority="0" />
+      <Item value="Query" priority="1" />
+      <Item value="Store" priority="1" />
+      <Item value="GetByIds" priority="1" />
+      <Item value="FindByValues" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.User">
       <Item value="UserName" priority="0" />
@@ -244,8 +245,8 @@
       <Item value="Id" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.StoreNewUser">
-      <Item value="UserName" priority="1" />
-      <Item value="Email" priority="1" />
+      <Item value="UserName" priority="3" />
+      <Item value="Email" priority="2" />
       <Item value="Password" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.IList`1">
@@ -256,14 +257,17 @@
       <Item value="UserNames" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Moq.Mock`1">
-      <Item value="Expect" priority="0" />
-      <Item value="Object" priority="0" />
+      <Item value="Expect" priority="3" />
+      <Item value="Object" priority="1" />
+      <Item value="VerifyAll" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Moq.Language.Flow.IExpect`1">
-      <Item value="Returns" priority="0" />
+      <Item value="Returns" priority="2" />
+      <Item value="Callback" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Examples.ServiceInterface.Tests.TestAppHost">
       <Item value="Init" priority="0" />
+      <Item value="Instance" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetFactorialHandler">
       <Item value="Execute" priority="0" />
@@ -275,7 +279,55 @@
       <Item value="Result" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Is">
+      <Item value="EqualTo" priority="1" />
+      <Item value="Not" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.ArrayOfLong">
+      <Item value="Count" priority="0" />
+      <Item value="ToArray" priority="0" />
+      <Item value="ToList" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetFibonacciNumbers">
+      <Item value="Take" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.StoreNewUserResponse">
+      <Item value="UserId" priority="0" />
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:NUnit.Framework.Constraints.ConstraintBuilder">
       <Item value="EqualTo" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Moq.It">
+      <Item value="IsAny" priority="6" />
+      <Item value="Is" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.User">
+      <Item value="Email" priority="0" />
+      <Item value="UserName" priority="0" />
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Tests.TestAppHost">
+      <Item value="GetType" priority="0" />
+      <Item value="RegisterMockPersistenceProvider" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.ResponseStatus">
+      <Item value="ErrorCode" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetUsersResponse">
+      <Item value="Users" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.ArrayOfUser">
+      <Item value="Count" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.String">
+      <Item value="IsNullOrEmpty" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.DataAccess.IPersistenceProvider">
+      <Item value="DeleteAll" priority="1" />
+      <Item value="GetAll" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Windows.Controls.TextBox">
+      <Item value="Text" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

@@ -56,15 +56,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GetFibonacciNumbers.cs" />
-    <Compile Include="GetFactorial.cs" />
-    <Compile Include="GetUsers.cs" />
+    <Compile Include="StoreNewUserHandler.cs" />
+    <Compile Include="Types\DeleteAllUsers.cs" />
+    <Compile Include="DeleteAllUsersHandler.cs" />
+    <Compile Include="GetFactorialHandler.cs" />
+    <Compile Include="GetUsersHandler.cs" />
+    <Compile Include="Types\GetFibonacciNumbers.cs" />
+    <Compile Include="GetFibonacciNumbersHandler.cs" />
+    <Compile Include="Types\GetFactorial.cs" />
+    <Compile Include="Types\GetUsers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Types\ArrayOfString.cs" />
     <Compile Include="Types\ArrayOfUser.cs" />
     <Compile Include="Types\ResponseStatus.cs" />
     <Compile Include="Types\ArrayOfLong.cs" />
-    <Compile Include="StoreNewUser.cs" />
+    <Compile Include="Types\StoreNewUser.cs" />
     <Compile Include="Types\User.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

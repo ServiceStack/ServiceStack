@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>ServiceStack Examples :: Ajax Client</title>
+    
+    <link rel="stylesheet" type="text/css" href="default.css" />
+    
+    <script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery-json.js"></script>
+    <script type="text/javascript" src="js/JsonServiceClient.js"></script>
+    
+    <script type="text/javascript">
+    <!--
+        //Get the hostName of this page
+        var url = location.href.substring(location.href.indexOf("://") + "://".length);
+        var hostName = url.substring(0, url.indexOf('/'));
+
+        //Create a JsonServiceClient passing in the baseUrl where your services are hosted.
+        //Note: services not on the same domain require a crossdomain.xml policy
+        var serviceClient = new JsonServiceClient("http://" + hostName + "/ServiceStack.Examples.Host.Web/");
+
+        $(function()
+        {
+
+            $("#btnGetFactorial").click(function()
+            {
+                var request = { ForNumber: $("#txtGetFactorial").val() };
+
+                serviceClient.getFromJsonService("GetFactorial", request, function(e)
+                {
+                    $("#serviceGetFactorial .result").html(e.result.Result);
+                });
+            });
+
+            $("#btnGetFibonacciNumbers").click(function()
+            {
+                var request = { Skip: $("#txtGetFibonacciNumbersSkip").val(), Take: $("#txtGetFibonacciNumbersTake").val() };
+
+                serviceClient.getFromJsonService("GetFibonacciNumbers", request, function(e)
+                {
+                    var resultHtml = "<ul>";
+                    $(e.result.Results).each(function(i, fibNo)
+                    {
+                        resultHtml += "<li>" + fibNo + "</li>";
+                    });
+                    resultHtml += "</ul>";
+
+                    $("#serviceGetFibonacciNumbers .result").html(resultHtml);
+                });
+            });
+
+            $("#btnStoreNewUser").click(function()
+            {
+                var request = { UserName: $("#txtUserName").val(), Password: $("#txtUserName").val(), Email: $("#txtEmail").val() };
+
+                serviceClient.postToJsonService("StoreNewUser", request, function(e)
+                {
+                    $("#serviceStoreNewUser .result").html(e.result.UserId);
+
+                    var userIds = $("#txtUserIds").val();
+                    if (userIds.length > 0) userIds += ",";
+                    $("#txtUserIds").val(userIds + e.result.UserId);
+                },
+                function(ex)
+                {
+                    alert("Error creating new User: " + ex);
+                });
+            });
+
+            $("#btnDeleteAllUsers").click(function()
+            {
+                serviceClient.postToJsonService("DeleteAllUsers", {},
+                    function(e)
+                    {
+                        alert('All Users were deleted');
+                        $("#txtUserIds").val("");
+                    },
+                    function(ex)
+                    {
+                        alert('Error deleting all users: ' + ex);
+                    });
+            });
+
+            $("#btnGetUsers").click(function()
+            {
+                var request = { UserIds: $("#txtUserIds").val() };
+
+                serviceClient.getFromJsonService("GetUsers", request, function(e)
+                {
+                    var resultHtml = "<div>";
+                    $(e.result.Users).each(function(i, user)
+                    {
+                        resultHtml += '<div class="user">'
+                            + user.UserName + "<br />"
+                            + user.Email
+                            + "</div>";
+                    });
+                    $("#serviceGetUsers .result").html(resultHtml);
+                });
+            });
+
+        });
+    -->
+    </script>
+    
+</head>
+<body>
+    
+    <div id="header-links">        
+        <a href="Default.htm">Ajax Client Examples</a>
+        <a href="Silverlight.htm">Silverlight Examples</a>
+        <a href="Flash.htm">Flash Examples</a>
+    </div>
+
+    <h1>Calling web services using Ajax</h1>
+    
+    <p>
+        For performance reasons, the preferred to call ServiceStack services for Ajax clients 
+        is using JSON via the JSON endpoint at: <br />
+        <em>~/Public/Json/SyncReply/{ServiceName}</em>
+    </p>
+    <p>
+        As this endpoint is just a standard JSON service we can use any ajax client to call them with.
+        In this example we're using a light-wrapper around jQuery's $.ajax client.
+    </p>
+    
+    <h4>1. First step is to initialize the ServiceClient</h4>
+    <code>
+        //Get the hostName of this page
+        var url = location.href.substring(location.href.indexOf("://"));
+        var hostName = url.substring(0, url.indexOf('/'));
+        
+        //Create a JsonServiceClient passing in the baseUrl where your services are hosted.
+        //Note: services not on the same domain require a crossdomain.xml policy
+        var serviceClient = new JsonServiceClient("http://" + hostName + "/ServiceStack.Examples.Host.Web/");
+    </code>
+    
+    <h4>2. Ater that calling a service becomes as easy as:</h4>
+    <code>
+        var request = { ForNumber: $("#txtGetFactorial").val() };
+
+        serviceClient.getFromJsonService("GetFactorial", request, function(e)
+        {
+            $("#serviceGetFactorial .result").html(e.result.Result);
+        });
+    </code>
+    
+    <h4>3. Try the live examples yourself:</h4>
+    <div id="services">
+        <div id="serviceGetFactorial" class="service">
+            <div class="input">
+                <h3>Get Factorial Service</h3>
+                <label>For Number:</label>
+                <input class="int" type="text" id="txtGetFactorial" value="3" />
+                <button id="btnGetFactorial">Go</button>
+            </div>
+            
+            <h4>Result</h4>
+            <div class="result"></div>
+        </div>
+
+        <div id="serviceGetFibonacciNumbers" class="service">
+            <div class="input">
+                <h3>Get Fibonacci Numbers Service</h3>
+
+                <label>Skip:</label>
+                <input class="int" type="text" id="txtGetFibonacciNumbersSkip" value="3" />
+
+                <label>Take:</label>
+                <input class="int" type="text" id="txtGetFibonacciNumbersTake" value="10" />
+
+                <button id="btnGetFibonacciNumbers">Go</button>
+            </div>
+            
+            <h4>Result</h4>
+            <div class="result"></div>
+        </div>
+
+        <div id="serviceStoreNewUser" class="service">
+            <div class="input">
+                <h3>Store New User Service</h3>
+
+                <div class="form">
+                    <label>User Name:</label>
+                    <input type="text" id="txtUserName" value="User 1" />
+
+                    <label>Password:</label>
+                    <input type="text" id="txtPassword" value="password" />
+
+                    <label>Email:</label>
+                    <input type="text" id="txtEmail" value="as@if.com" />
+                </div>
+
+                <button id="btnStoreNewUser">Create New User</button>
+            </div>
+            
+            <h4>Result</h4>
+            <div class="result"></div>
+
+            <button id="btnDeleteAllUsers">Delete All Users</button>
+        </div>
+
+        <div id="serviceGetUsers" class="service">
+            <div class="input">
+                <h3>Get Users Service</h3>
+
+                <div class="form">
+                    <label>User Ids:</label>
+                    <input type="text" id="txtUserIds" value="" />
+                </div>
+
+                <button id="btnGetUsers">Get Users</button>
+            </div>
+            
+            <h4>Result</h4>
+            <div class="result"></div>
+        </div>
+        
+        <span class="r"></span>
+    </div>
+    
+    <h4>4. Check out the other ways to call your services</h4>    
+    <p>
+        One of the nice things about ServiceStack is that by using <acronym title="Plain Old CSharp Objects">POCO</acronym> classes to define your Service Interface
+        we're able to seperate the 'message' (payload) from the communication 'channel' that delivers it. 
+    </p>
+    <p>
+        This means that calling your services using XML is as easy as sending your request to a different end point. 
+        So calling your service via XML is as easy as:
+        <ol>
+            <li><a href="/ServiceStack.Examples.Host.Web/Public/Xml/SyncReply/GetFactorial?ForNumber=3" target="_blank">
+                Public/Xml/SyncReply/GetFactorial?ForNumber=3</a>
+            </li>
+            <li><a href="/ServiceStack.Examples.Host.Web/Public/Xml/SyncReply/GetFibonacciNumbers?Skip=3&Take=20" target="_blank">
+                Public/Xml/SyncReply/GetFibonacciNumbers?Skip=3&Take=20</a>
+            </li>
+        </ol>
+        <br />
+        Out of the box ServiceStack provides REST+JSON, REST+XML and <acronym title="Plain Old XML">POX</acronym>, SOAP 1.1 and SOAP 1.2 end points.
+    </p>
+    <p>
+        The dynamic <a href="/ServiceStack.Examples.Host.Web/Public/Metadata/">metadata summary page</a> 
+        has a complete list of web services and end points that are available.<br />                
+    </p>
+    
+    <div id="footer-links">        
+        <a href="Default.htm">Ajax Client Examples</a>
+        <a href="Silverlight.htm">Silverlight Examples</a>
+        <a href="Flash.htm">Flash Examples</a>
+    </div>
+
+</body>
+</html>

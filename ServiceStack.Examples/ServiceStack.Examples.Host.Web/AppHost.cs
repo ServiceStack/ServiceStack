@@ -2,7 +2,10 @@
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
+using ServiceStack.DataAccess;
+using ServiceStack.DataAccess.Db4oProvider;
 using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -43,21 +46,24 @@ namespace ServiceStack.Examples.Host.Web
 			var config = factory.ResolveOptional<IResourceManager>("ResourceManager", new ConfigurationResourceManager());
 			var cacheClient = factory.ResolveOptional<ICacheClient>("CacheProvider", new MemoryCacheClient()); // for Memcacehed use: 'new MemcachedClientCache()'
 
+			//Example of dynamically registering an external service
+			factory.Register<IPersistenceProviderManager>(new Db4oFileProviderManager(config.GetString("Db4oConnectionString").MapHostAbsolutePath()));
+
 			//Set your Applications Singleton Context. Contains providers that are available to all your services via 'ApplicationContext.Instance'
 			ApplicationContext.SetInstanceContext(new BasicApplicationContext(factory, cacheClient, config));
 
 			//Customize ServiceStack's behaviour 
 			base.SetConfig(new EndpointHostConfig {
 
-			                                      	//The Name that will appear on the Metadata pages
-			                                      	ServiceName = config.GetString("ServiceName"),
+				//The Name that will appear on the Metadata pages
+				ServiceName = config.GetString("ServiceName"),
 
-			                                      	//Tell ServiceStack where to look for your services
-			                                      	ServiceController = new ServiceController(new PortResolver(typeof(GetFactorialHandler).Assembly)),
-			                                      });
+				//Tell ServiceStack where to look for your services
+				ServiceController = new ServiceController(new PortResolver(typeof(GetFactorialHandler).Assembly)),
+			});
 
 
-			//How to use loging in your services (essentially the same as Log4Net)
+			//How to use loging in your services (essentially the same as Log4Net, but without the dependancy)
 			var log = LogManager.GetLogger(GetType());
 			log.InfoFormat("AppHost Created: " + DateTime.Now);
 		}
@@ -84,11 +90,7 @@ namespace ServiceStack.Examples.Host.Web
 		/// </summary>
 		public void Dispose()
 		{
-			new IDisposable[]
-				{
-					ApplicationContext.Instance.Cache, 
-					ApplicationContext.Instance.Factory,
-				}.Dispose();
+			new IDisposable[] { ApplicationContext.Instance.Cache, ApplicationContext.Instance.Factory }.Dispose();
 		}
 	}
 }

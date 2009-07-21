@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Examples.ServiceInterface.Types;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {

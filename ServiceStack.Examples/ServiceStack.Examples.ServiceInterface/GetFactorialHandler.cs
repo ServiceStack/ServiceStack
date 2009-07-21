@@ -1,32 +1,10 @@
-﻿using System.Runtime.Serialization;
+using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.LogicFacade;
 using ServiceStack.Service;
 using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
-	/* Below is a simple example on how to create a simple Web Service.
-	 * It lists all the classes required to implement the 'GetFactorial' Service. 	
-	 */
-
-	/// <summary>
-	/// Use Plain old DataContract's Define your 'Service Interface'
-	/// </summary>
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
-	public class GetFactorial
-	{
-		[DataMember]
-		public long ForNumber { get; set; }
-	}
-
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
-	public class GetFactorialResponse
-	{
-		[DataMember]
-		public long Result { get; set; }
-	}
-
-
 	/// <summary>
 	/// The service or 'Port' handler that will be used to execute the request.
 	/// 
@@ -47,5 +25,4 @@ namespace ServiceStack.Examples.ServiceInterface
 			return n > 1 ? n * GetFactorial(n - 1) : 1;
 		}
 	}
-
 }
