@@ -12,16 +12,17 @@ namespace ServiceStack.Examples.Clients.Silverlight
 		{
 		}
 
-
+		//Note: As 'Web Service' requests is a synchronous request it should always be run in a backround thread.
 		public void GetFactorialAsync(long forNumber)
 		{
 			InvokeAsync(() => GetFactorial(forNumber));
 		}
 
-		public void GetFactorial(long forNumber)
+		protected void GetFactorial(long forNumber)
 		{
-			var response = base.Send<GetFactorialResponse>(
-				new GetFactorial { ForNumber = forNumber }, x => new ResponseStatus());
+			var request = new GetFactorial { ForNumber = forNumber };
+
+			var response = this.ServiceClient.Send<GetFactorialResponse>(request);
 
 			OnDataLoaded(new DataEventArgs(response));
 		}
@@ -32,7 +33,7 @@ namespace ServiceStack.Examples.Clients.Silverlight
 			InvokeAsync(() => GetFibonacciNumbers(skip, take));
 		}
 
-		public void GetFibonacciNumbers(int skip, int take)
+		protected void GetFibonacciNumbers(int skip, int take)
 		{
 			var response = base.Send<GetFibonacciNumbersResponse>(
 				new GetFibonacciNumbers { Skip = skip, Take = take },
@@ -48,7 +49,7 @@ namespace ServiceStack.Examples.Clients.Silverlight
 			InvokeAsync(() => StoreNewUser(userName, password, email));
 		}
 
-		public void StoreNewUser(string userName, string password, string email)
+		protected void StoreNewUser(string userName, string password, string email)
 		{
 			try
 			{
@@ -69,7 +70,7 @@ namespace ServiceStack.Examples.Clients.Silverlight
 			InvokeAsync(DeleteAllUsers);
 		}
 
-		public void DeleteAllUsers()
+		protected void DeleteAllUsers()
 		{
 			try
 			{
@@ -89,7 +90,7 @@ namespace ServiceStack.Examples.Clients.Silverlight
 			InvokeAsync(() => GetUsers(userIds));
 		}
 
-		public void GetUsers(List<long> userIds)
+		protected void GetUsers(List<long> userIds)
 		{
 			var response = base.Send<GetUsersResponse>(
 				new GetUsers { UserIds = new ArrayOfLong(userIds) },

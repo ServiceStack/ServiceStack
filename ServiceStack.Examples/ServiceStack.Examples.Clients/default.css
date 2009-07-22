@@ -1,5 +1,5 @@
 ﻿BODY {
-    font: 12px Arial;
+    font: 13px Arial;
     padding: 0 2em;
 }
 #header-links
@@ -33,7 +33,7 @@ CODE
 	background: #f1f1f1;
 	white-space: pre;
 	color: #333;
-	width: 780px;
+	width: 880px;
 }
 H1 
 {
@@ -44,6 +44,8 @@ H4
 {        	
 	clear: left;
 	color: #093;
+	font-size: 14px;
+	font-family: Verdana;
 }
 INPUT.int
 {
@@ -53,6 +55,17 @@ acronym
 {
 	border-bottom: dashed 1px #a0a0a0;
 }
+.note
+{
+	background-color: rgb(249, 246, 183);
+	border: 1px solid rgb(196, 194, 149);
+	margin: 1ex 0px;
+	min-height: 35px;
+    width: 670px;        	
+	padding: 5px 45px;
+	padding-left: 45px;
+}
+
 .service 
 {
 	float: left;

@@ -11,12 +11,12 @@ namespace ServiceStack.Examples.Clients.Silverlight
 	{
 		protected ILog log;
 
-		protected IServiceClient serviceClient;
+		protected IServiceClient ServiceClient;
 		protected TAppContext appContext;
 
 		public ContextBase(IServiceClient serviceClient, TAppContext appContext)
 		{
-			this.serviceClient = serviceClient;
+			this.ServiceClient = serviceClient;
 			this.appContext = appContext;
 			this.log = LogManager.GetLogger(GetType());
 		}
@@ -31,7 +31,7 @@ namespace ServiceStack.Examples.Clients.Silverlight
 
 		protected TResponse Send<TResponse>(object request, Func<TResponse, ResponseStatus> chechResponseStatus)
 		{
-			var response = serviceClient.Send<TResponse>(request);
+			var response = ServiceClient.Send<TResponse>(request);
 
 			AssertSuccessResponse(chechResponseStatus(response));
 

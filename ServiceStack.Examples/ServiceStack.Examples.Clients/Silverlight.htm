@@ -3,6 +3,9 @@
 
 <head>
     <title>ServiceStack Examples :: Silverlight Client</title>
+
+    <link rel="stylesheet" type="text/css" href="default.css" />
+
     <style type="text/css">
     #silverlightControlHost {
 	    height: 400px;
@@ -49,6 +52,41 @@
     </script>
 </head>
 <body>
+    <div id="header-links">        
+        <a href="Default.htm">Ajax Client Examples</a>
+        <a href="Silverlight.htm">Silverlight Examples</a>
+        <a href="Flash.htm">Flash Examples</a>
+    </div>
+
+    <h1>Calling web services using Silverlight</h1>
+    
+    <p>
+        For performance reasons, the preferred to call ServiceStack services for Silverlight clients 
+        is using standard DataContracts via the XML endpoint at: <br />
+        <em>~/Public/Xml/SyncReply/{ServiceName}</em>
+    </p>
+    <div class="note">
+       As Silverlight is a different target runtime you will not be able to reference the
+       *.dll's that contain your types. Insead you can just copy the DataContract's into your Silverlight
+       Project and use them 'as-is', as done in this example.
+    </div>
+    
+    <h4>1. First step is to initialize the ServiceClient</h4>
+    <code>        
+        //Create a XmlServiceClient passing in the baseUrl where your services are hosted.
+        this.ServiceClient = new XmlServiceClient(
+            "http://localhost/ServiceStack.Examples.Host.Web/Public/Xml/SyncReply");
+    </code>
+    
+    <h4>2. Ater that calling a service becomes as easy as:</h4>
+    <code>
+        var request = new GetFactorial { ForNumber = 3 };
+        
+        //Note: As this is a synchronous request it should always be run in a backround thread.
+        var response = this.ServiceClient.Send<GetFactorialResponse>(request);
+    </code>
+    
+    <h4>3. Try the live examples yourself:</h4>
     <form id="form1" runat="server">
     <div id="silverlightControlHost">
         <object data="data:application/x-silverlight-2," type="application/x-silverlight-2" width="100%" height="400px">
@@ -62,5 +100,11 @@
 		  </a>
 	    </object><iframe id="_sl_historyFrame" style="visibility:hidden;height:0px;width:0px;border:0px"></iframe></div>
     </form>
+    
+    <div id="footer-links">        
+        <a href="Default.htm">Ajax Client Examples</a>
+        <a href="Silverlight.htm">Silverlight Examples</a>
+        <a href="Flash.htm">Flash Examples</a>
+    </div>
 </body>
 </html>
