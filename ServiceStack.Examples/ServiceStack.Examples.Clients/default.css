@@ -13,7 +13,9 @@
 }
 #footer-links
 {
-	padding: 5em 0 1em 0;
+	border-top: solid 2px #ccc;
+	margin: 5em 0 1em 0;
+	padding-top: 1em;
 	text-align: center;
 	font-size: larger;
 }
@@ -61,9 +63,8 @@ acronym
 	border: 1px solid rgb(196, 194, 149);
 	margin: 1ex 0px;
 	min-height: 35px;
-    width: 670px;        	
-	padding: 5px 45px;
-	padding-left: 45px;
+    width: 700px;        	
+	padding: 5px 30px;
 }
 
 .service 

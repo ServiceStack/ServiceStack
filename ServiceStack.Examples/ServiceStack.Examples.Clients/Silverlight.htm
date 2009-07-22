@@ -67,8 +67,8 @@
     </p>
     <div class="note">
        As Silverlight is a different target runtime you will not be able to reference the
-       *.dll's that contain your types. Insead you can just copy the DataContract's into your Silverlight
-       Project and use them 'as-is', as done in this example.
+       dll's that contain your DTO types directly. 
+       Insead you can copy the DataContract's into your Silverlight Project and use them 'as-is', as done in this example.
     </div>
     
     <h4>1. First step is to initialize the ServiceClient</h4>
@@ -83,7 +83,7 @@
         var request = new GetFactorial { ForNumber = 3 };
         
         //Note: As this is a synchronous request it should always be run in a backround thread.
-        var response = this.ServiceClient.Send<GetFactorialResponse>(request);
+        var response = this.ServiceClient.Send&lt;GetFactorialResponse&gt;(request);
     </code>
     
     <h4>3. Try the live examples yourself:</h4>
@@ -100,6 +100,14 @@
 		  </a>
 	    </object><iframe id="_sl_historyFrame" style="visibility:hidden;height:0px;width:0px;border:0px"></iframe></div>
     </form>
+    
+    <h4>4. Get the source code:</h4>
+    <p>
+        You can view the source code for this example at 
+        <a href="http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples/ServiceStack.Examples.Clients.Silverlight">
+            http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples/ServiceStack.Examples.Clients.Silverlight
+        </a>
+    </p>
     
     <div id="footer-links">        
         <a href="Default.htm">Ajax Client Examples</a>
