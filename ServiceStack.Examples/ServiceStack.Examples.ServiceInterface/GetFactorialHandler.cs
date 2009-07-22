@@ -7,8 +7,10 @@ namespace ServiceStack.Examples.ServiceInterface
 {
 	/// <summary>
 	/// The service or 'Port' handler that will be used to execute the request.
-	/// 
 	/// The 'Port' attribute is used to link the 'service request' to the 'service implementation'
+	/// 
+	/// The purpose of this example is to show the minimum number and detail of classes 
+	/// required in order to implement a simple service.
 	/// </summary>
 	[Port(typeof(GetFactorial))]
 	public class GetFactorialHandler : IService

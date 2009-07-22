@@ -4,6 +4,10 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 {
 	/// <summary>
 	/// Use Plain old DataContract's Define your 'Service Interface'
+	/// 
+	/// This example introduces the concept of a generic 'ResponseStatus' that 
+	/// your service client can use to assert that the request was successful.
+	/// The ResponseStatus DTO also enables you to serialize an exception in your service.
 	/// </summary>
 	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
 	public class StoreNewUser

@@ -8,8 +8,10 @@ namespace ServiceStack.Examples.ServiceInterface
 {
 	/// <summary>
 	/// The service or 'Port' handler that will be used to execute the request.
-	/// 
 	/// The 'Port' attribute is used to link the 'service request' to the 'service implementation'
+	/// 
+	/// This purpose of this example is how you would implement a slightly more advanced
+	/// web service returning a slightly more 'complex object'.
 	/// </summary>
 	[Port(typeof(GetFibonacciNumbers))]
 	public class GetFibonacciNumbersHandler : IService

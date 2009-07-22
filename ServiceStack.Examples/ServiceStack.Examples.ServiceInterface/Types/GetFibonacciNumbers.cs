@@ -4,6 +4,9 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 {
 	/// <summary>
 	/// Use Plain old DataContract's Define your 'Service Interface'
+	/// 
+	/// This purpose of this example is how you would implement a slightly more advanced
+	/// web service returning a slightly more 'complex object'.
 	/// </summary>
 	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
 	public class GetFibonacciNumbers

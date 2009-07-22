@@ -9,8 +9,10 @@ namespace ServiceStack.Examples.ServiceInterface
 {
 	/// <summary>
 	/// The service or 'Port' handler that will be used to execute the request.
-	/// 
 	/// The 'Port' attribute is used to link the 'service request' to the 'service implementation'
+	/// 
+	/// This example shows a simple introduction into SOA-like webservices. 
+	/// i.e. group similar operations into a single 'document-centric like' service request.
 	/// </summary>
 	[Port(typeof(GetUsers))]
 	public class GetUsersHandler : IService

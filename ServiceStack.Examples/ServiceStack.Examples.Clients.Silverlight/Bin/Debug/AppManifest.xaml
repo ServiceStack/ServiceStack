@@ -1,0 +1,8 @@
+﻿<Deployment xmlns="http://schemas.microsoft.com/client/2007/deployment" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" EntryPointAssembly="ServiceStack.Examples.Clients.Silverlight" EntryPointType="ServiceStack.Examples.Clients.Silverlight.App" RuntimeVersion="3.0.40307.0">
+  <Deployment.Parts>
+    <AssemblyPart x:Name="ServiceStack.Examples.Clients.Silverlight" Source="ServiceStack.Examples.Clients.Silverlight.dll" />
+    <AssemblyPart x:Name="SilverlightStack.Client" Source="SilverlightStack.Client.dll" />
+    <AssemblyPart x:Name="SilverlightStack" Source="SilverlightStack.dll" />
+    <AssemblyPart x:Name="SilverlightStack.Interfaces" Source="SilverlightStack.Interfaces.dll" />
+  </Deployment.Parts>
+</Deployment>
