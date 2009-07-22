@@ -18,10 +18,17 @@
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:App.xaml.cs" caret="0" fromTop="0" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:AppContext.cs" caret="431" fromTop="16" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ContextBase.cs" caret="744" fromTop="19" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="520" fromTop="15" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1595" fromTop="34" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml.cs" caret="1886" fromTop="44" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4196" fromTop="19" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="374" fromTop="10" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="432" fromTop="10" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="707" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="369" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="337" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="526" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="331" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="840" fromTop="21" />
     </RecentFiles>
     <RecentEdits>
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="441" fromTop="7" />
@@ -32,7 +39,7 @@
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:AppContext.cs" caret="224" fromTop="8" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:AppContext.cs" caret="416" fromTop="13" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4108" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="520" fromTop="15" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1011" fromTop="15" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4744" fromTop="27" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="4970" fromTop="31" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:MainPage.xaml" caret="5404" fromTop="41" />
@@ -43,6 +50,17 @@
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1771" fromTop="40" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1196" fromTop="20" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:ExampleContext.cs" caret="1610" fromTop="34" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="946" fromTop="15" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="335" fromTop="8" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="430" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="356" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="702" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="354" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="369" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="590" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="526" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="331" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="548" fromTop="13" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
