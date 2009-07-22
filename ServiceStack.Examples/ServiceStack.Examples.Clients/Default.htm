@@ -131,7 +131,6 @@
         var hostName = url.substring(0, url.indexOf('/'));
         
         //Create a JsonServiceClient passing in the baseUrl where your services are hosted.
-        //Note: services not on the same domain require a crossdomain.xml policy
         var serviceClient = new JsonServiceClient("http://" + hostName + "/ServiceStack.Examples.Host.Web/");
     </code>
     
@@ -139,8 +138,7 @@
     <code>
         var request = { ForNumber: $("#txtGetFactorial").val() };
 
-        serviceClient.getFromJsonService("GetFactorial", request, function(e)
-        {
+        serviceClient.getFromJsonService("GetFactorial", request, function(e) {
             $("#serviceGetFactorial .result").html(e.result.Result);
         });
     </code>
