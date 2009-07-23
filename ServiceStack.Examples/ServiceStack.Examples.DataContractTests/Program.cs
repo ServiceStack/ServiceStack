@@ -30,6 +30,8 @@ namespace ServiceStack.Examples.DataContractTests
 			TestDataContract(new OneArrayOfStringField { ArrayOfStrings = new ArrayOfString { "String1", "String2", "String3" } });
 			TestDataContract(new Property { Name = "PropertyName", Value = "PropertyValue" });
 			TestDataContract(new OnePropertiesField { Properties = { new Property { Name = "PropertyName", Value = "PropertyValue" }, new Property { Name = "PropertyName2", Value = "PropertyValue2" } } });
+			TestDataContract(new UnorderedComplexAndValueTypes());
+			TestDataContract(new ExtensibleUnorderedComplexAndValueTypes());
 
 			Console.ReadKey();
 		}
@@ -200,6 +202,84 @@ namespace ServiceStack.Examples.DataContractTests
 
 		[DataMember(Order = 1)]
 		public Properties Properties { get; set; }
+	}
+
+	[DataContract(Namespace = Program.Namespace)]
+	public class UnorderedComplexAndValueTypes
+	{
+		public UnorderedComplexAndValueTypes()
+		{
+			StringField = "StringField";
+			Guid = Guid.NewGuid();
+			DateTime = DateTime.Now;
+			ArrayOfStrings = new ArrayOfString { "String1", "String2", "String3" };
+			ArrayOfStrings2 = new ArrayOfString { "String1", "String2", "String3" };
+			Properties = new Properties { new Property { Name = "Name", Value = "Value" } };
+			Properties2 = new Properties { new Property { Name = "Name", Value = "Value" } };
+		}
+
+		[DataMember]
+		public string StringField { get; set; }
+
+		[DataMember]
+		public ArrayOfString ArrayOfStrings { get; set; }
+
+		[DataMember]
+		public Properties Properties2 { get; set; }
+
+		[DataMember]
+		public Guid Guid { get; set; }
+
+		[DataMember]
+		public ArrayOfString ArrayOfStrings2 { get; set; }
+
+		[DataMember]
+		public Properties Properties { get; set; }
+
+		[DataMember]
+		public DateTime DateTime { get; set; }
+	}
+
+	[DataContract(Namespace = Program.Namespace)]
+	public class ExtensibleUnorderedComplexAndValueTypes : IExtensibleDataObject
+	{
+		public ExtensibleUnorderedComplexAndValueTypes()
+		{
+			StringField = "StringField";
+			Guid = Guid.NewGuid();
+			DateTime = DateTime.Now;
+			ArrayOfStrings = new ArrayOfString { "String1", "String2", "String3" };
+			ArrayOfStrings2 = new ArrayOfString { "String1", "String2", "String3" };
+			Properties = new Properties { new Property { Name = "Name", Value = "Value" } };
+			Properties2 = new Properties { new Property { Name = "Name", Value = "Value" } };
+		}
+
+		[DataMember]
+		public string StringField { get; set; }
+
+		[DataMember]
+		public ArrayOfString ArrayOfStrings { get; set; }
+
+		[DataMember]
+		public Properties Properties2 { get; set; }
+
+		[DataMember]
+		public Guid Guid { get; set; }
+
+		[DataMember]
+		public ArrayOfString ArrayOfStrings2 { get; set; }
+
+		[DataMember]
+		public Properties Properties { get; set; }
+
+		[DataMember]
+		public DateTime DateTime { get; set; }
+
+		public ExtensionDataObject ExtensionData
+		{
+			get;
+			set;
+		}
 	}
 
 	#endregion
