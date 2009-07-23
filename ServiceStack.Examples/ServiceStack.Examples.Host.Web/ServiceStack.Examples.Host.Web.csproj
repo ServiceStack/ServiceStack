@@ -94,6 +94,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Mono.Web.config" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
