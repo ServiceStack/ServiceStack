@@ -108,6 +108,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         LI A:hover {{
             color: #C30;
         }}
+		.operations UL {{
+			list-style: none;
+		}}
 		.operations SPAN {{
 			float: left;
 			display: block;
