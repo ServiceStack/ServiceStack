@@ -7,7 +7,6 @@ using System.Xml;
 
 namespace ServiceStack.Examples.DataContractTests
 {
-
 	class Program
 	{
 		public const string Namespace =  "http://schemas.servicestack.net/examples/test";
