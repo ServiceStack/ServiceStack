@@ -60,6 +60,7 @@
     <Compile Include="EndpointType.cs" />
     <Compile Include="Extensions\HttpListenerResponseExtensions.cs" />
     <Compile Include="Extensions\HttpResponseExtensions.cs" />
+    <Compile Include="Extensions\HttpRequestExtensions.cs" />
     <Compile Include="MetadataConfig.cs" />
     <Compile Include="Support\ContentType.cs" />
     <Compile Include="XmlSyncReplyHttpListener.cs" />

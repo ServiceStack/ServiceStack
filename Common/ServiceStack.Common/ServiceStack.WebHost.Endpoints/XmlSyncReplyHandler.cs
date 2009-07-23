@@ -16,18 +16,15 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(context.Request.PathInfo)) return;
+				var operationName = context.Request.GetOperationName();
+				if (string.IsNullOrEmpty(operationName)) return;
 
-				var operationName = context.Request.PathInfo.Substring("/".Length);
 				var request = CreateRequest(context.Request, operationName);
 
 				var endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Xml
 					 | GetEndpointAttributes(context.Request);
 
 				var result = ExecuteService(request, endpointAttributes);
-
-				//If its needed re-enable it via configuration
-				//context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 
 				context.Response.WriteToResponse(result, x => DataContractSerializer.Instance.Parse(x), ContentType.Xml);
 			}
@@ -39,6 +36,5 @@ namespace ServiceStack.WebHost.Endpoints
 				context.Response.WriteErrorToResponse(errorMessage, ex);
 			}
 		}
-
 	}
 }

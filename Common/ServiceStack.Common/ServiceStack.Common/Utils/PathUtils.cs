@@ -26,13 +26,14 @@ namespace ServiceStack.Common.Utils
 
 		public static string MapTestAbsolutePath(this string relativePath)
 		{
-			var mapPath = MapAbsolutePath(relativePath, @"\..\..");
+
+			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..{0}..", Path.DirectorySeparatorChar));
 			return mapPath;
 		}
 
 		public static string MapHostAbsolutePath(this string relativePath)
 		{
-			var mapPath = MapAbsolutePath(relativePath, @"\..");
+			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..", Path.DirectorySeparatorChar));
 			return mapPath;
 		}
 	}
