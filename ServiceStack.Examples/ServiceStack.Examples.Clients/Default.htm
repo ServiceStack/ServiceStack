@@ -1,14 +1,14 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head>
     <title>ServiceStack Examples :: Ajax Client</title>
-    
+
     <link rel="stylesheet" type="text/css" href="default.css" />
-    
+
     <script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>
     <script type="text/javascript" src="js/jquery-json.js"></script>
     <script type="text/javascript" src="js/JsonServiceClient.js"></script>
-    
+
     <script type="text/javascript">
     <!--
         //Get the hostName of this page
@@ -124,20 +124,20 @@
         });
     -->
     </script>
-    
+
 </head>
 <body>
-    
-    <div id="header-links">        
+
+    <div id="header-links">
         <a href="Default.htm">Ajax Client Examples</a>
         <a href="Silverlight.htm">Silverlight Examples</a>
         <a href="Flash.htm">Flash Examples</a>
     </div>
 
     <h1>Calling web services using Ajax</h1>
-    
+
     <p>
-        For performance reasons, the preferred to call ServiceStack services for Ajax clients 
+        For performance reasons, the preferred to call ServiceStack services for Ajax clients
         is using JSON via the JSON endpoint at: <br />
         <em>~/Public/Json/SyncReply/{ServiceName}</em>
     </p>
@@ -145,17 +145,13 @@
         As this endpoint is just a standard JSON service we can use any ajax client to call them with.
         In this example we're using a light-wrapper around jQuery's $.ajax client.
     </p>
-    
+
     <h4>1. First step is to initialize the ServiceClient</h4>
     <code>
-        //Get the hostName of this page
-        var url = location.href.substring(location.href.indexOf("://"));
-        var hostName = url.substring(0, url.indexOf('/'));
-        
         //Create a JsonServiceClient passing in the baseUrl where your services are hosted.
         var serviceClient = new JsonServiceClient("http://" + hostName + "/ServiceStack.Examples.Host.Web/");
     </code>
-    
+
     <h4>2. Ater that calling a service becomes as easy as:</h4>
     <code>
         var request = { ForNumber: $("#txtGetFactorial").val() };
@@ -164,11 +160,11 @@
             $("#serviceGetFactorial .result").html(e.result.Result);
         });
     </code>
-    
+
     <h4>3. Try the live examples yourself:</h4>
     <div id="services">
         <div id="serviceGetFactorial" class="service">
-            
+
                 <div class="code-link">
                     <span>show</span>
                     <div class="code-preview">
@@ -218,20 +214,20 @@
                         </code>
                     </div>
                 </div>
-                        
+
             <div class="input">
                 <h3>Get Factorial Service</h3>
                 <label>For Number:</label>
                 <input class="int" type="text" id="txtGetFactorial" value="3" />
                 <button id="btnGetFactorial">Go</button>
             </div>
-            
+
             <h4>Result</h4>
             <div class="result"></div>
         </div>
 
         <div id="serviceGetFibonacciNumbers" class="service">
-            
+
                 <div class="code-link">
                     <span>show</span>
                     <div class="code-preview">
@@ -332,19 +328,19 @@
 
                 <button id="btnGetFibonacciNumbers">Go</button>
             </div>
-            
+
             <h4>Result</h4>
             <div class="result"></div>
         </div>
 
         <div id="serviceStoreNewUser" class="service">
-            
+
                 <div class="code-link">
                     <span>show</span>
                     <div class="code-preview">
                         <h5>Client code</h5>
                         <code class="client-code">
-    var request = { UserName: $("#txtUserName").val(), Password: $("#txtUserName").val(), 
+    var request = { UserName: $("#txtUserName").val(), Password: $("#txtUserName").val(),
                     Email: $("#txtEmail").val() };
 
     serviceClient.postToJsonService("StoreNewUser", request, function(e)
@@ -415,7 +411,7 @@
                 };
             }
 
-            var newUser = new User { UserName = request.UserName, Email = request.Email, 
+            var newUser = new User { UserName = request.UserName, Email = request.Email,
                                      Password = request.Password };
 
             persistenceProvider.Store(newUser);
@@ -426,7 +422,7 @@
                         </code>
                     </div>
                 </div>
-                        
+
             <div class="input">
                 <h3>Store New User Service</h3>
 
@@ -443,7 +439,7 @@
 
                 <button id="btnStoreNewUser">Create New User</button>
             </div>
-            
+
             <h4>Result</h4>
             <div class="result"></div>
 
@@ -451,7 +447,7 @@
         </div>
 
         <div id="serviceGetUsers" class="service">
-        
+
                 <div class="code-link">
                     <span>show</span>
                     <div class="code-preview">
@@ -532,7 +528,7 @@
                         </code>
                     </div>
                 </div>
-                        
+
             <div class="input">
                 <h3>Get Users Service</h3>
 
@@ -543,21 +539,21 @@
 
                 <button id="btnGetUsers">Get Users</button>
             </div>
-            
+
             <h4>Result</h4>
             <div class="result"></div>
         </div>
-        
+
         <span class="r"></span>
     </div>
-    
-    <h4>4. Check out the other ways to call your services</h4>    
+
+    <h4>4. Check out the other ways to call your services</h4>
     <p>
         One of the nice things about ServiceStack is that by using <acronym title="Plain Old CSharp Objects">POCO</acronym> classes to define your Service Interface
-        we're able to seperate the 'message' (payload) from the communication 'channel' that delivers it. 
+        we're able to seperate the 'message' (payload) from the communication 'channel' that delivers it.
     </p>
     <p>
-        This means that calling your services using XML is as easy as sending your request to a different end point. 
+        This means that calling your services using XML is as easy as sending your request to a different end point.
         So calling your service via XML is as easy as:
         <ol>
             <li><a href="/ServiceStack.Examples.Host.Web/Public/Xml/SyncReply/GetFactorial?ForNumber=3" target="_blank">
@@ -571,19 +567,19 @@
         Out of the box ServiceStack provides REST+JSON, REST+XML and <acronym title="Plain Old XML">POX</acronym>, SOAP 1.1 and SOAP 1.2 end points.
     </p>
     <p>
-        The dynamic <a href="/ServiceStack.Examples.Host.Web/Public/Metadata/">metadata summary page</a> 
-        has a complete list of web services and end points that are available.<br />                
+        The dynamic <a href="/ServiceStack.Examples.Host.Web/Public/Metadata/">metadata summary page</a>
+        has a complete list of web services and end points that are available.<br />
     </p>
-    
+
     <h4>5. Get the source code:</h4>
     <p>
-        You can grab the source code for this example at 
+        You can grab the source code for this example at
         <a href="http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples/ServiceStack.Examples.Clients">
             http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples/ServiceStack.Examples.Clients
         </a>
     </p>
-    
-    <div id="footer-links">        
+
+    <div id="footer-links">
         <a href="Default.htm">Ajax Client Examples</a>
         <a href="Silverlight.htm">Silverlight Examples</a>
         <a href="Flash.htm">Flash Examples</a>
