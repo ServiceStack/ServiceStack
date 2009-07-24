@@ -12,8 +12,8 @@ namespace ServiceStack.Configuration.Support
 	/// that this definition represent can be created by just supply the values.
 	/// 
 	/// TODO: Create factory delegates for each type. As creating delegates is an expensive operation it should
-	/// be done in a background thread. This is a low priority s the factory is mainly used to create few singleton 
-	/// instances the performance gains via a delegate will not be visible.
+	/// be done in a background thread. This is a low priority as the factory is mainly used to create few singleton 
+	/// instances so the performance gains of instantiating via a delegate will not be visible.
 	/// </summary>
 	internal class LateBoundObjectTypeBuilder
 	{
