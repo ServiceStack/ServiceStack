@@ -137,3 +137,15 @@ acronym
 	margin: 0;
 	padding: .5em 1em; 
 }
+.code-preview .client-code
+{
+	background-color: #fff;
+}
+.code-preview .dto
+{
+	background-color: #f1f9f1;
+}
+.code-preview .server-code
+{
+	background-color: #f1f1f9;
+}
