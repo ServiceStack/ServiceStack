@@ -99,6 +99,27 @@
                 });
             });
 
+            $(".code-link SPAN").click(function()
+            {
+                var link = $(this);
+                var codePreview = link.next();
+                if (codePreview.is(":visible"))
+                {
+                    codePreview.slideUp(function()
+                    {
+                        link.html("show");
+                    });
+                }
+                else
+                {
+                    $(".code-preview").hide();
+                    codePreview.fadeIn(function()
+                    {
+                        link.html("hide");
+                    });
+                }
+            });
+
         });
     -->
     </script>
@@ -146,6 +167,57 @@
     <h4>3. Try the live examples yourself:</h4>
     <div id="services">
         <div id="serviceGetFactorial" class="service">
+            
+                <div class="code-link">
+                    <span>show</span>
+                    <div class="code-preview">
+                        <h5>Client code</h5>
+                        <code class="client-code">
+    var request = { ForNumber: $("#txtGetFactorial").val() };
+
+    serviceClient.getFromJsonService("GetFactorial", request, function(e) {
+        $("#serviceGetFactorial .result").html(e.result.Result);
+    });
+                        </code>
+                        <div class="dtos">
+                            <h5>Request and Response DataContracts (DTOs)</h5>
+                            <code class="dto">
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class GetFactorial
+    {
+        [DataMember]
+        public long ForNumber { get; set; }
+    }
+
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class GetFactorialResponse
+    {
+        [DataMember]
+        public long Result { get; set; }
+    }
+                            </code>
+                        </div>
+                        <h5>Server code</h5>
+                        <code class="server-code">
+    [Port(typeof(GetFactorial))]
+    public class GetFactorialHandler : IService
+    {
+        public object Execute(IOperationContext context)
+        {
+            var request = context.Request.Get<GetFactorial>();
+
+            return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
+        }
+
+        static long GetFactorial(long n)
+        {
+            return n > 1 ? n * GetFactorial(n - 1) : 1;
+        }
+    }
+                        </code>
+                    </div>
+                </div>
+                        
             <div class="input">
                 <h3>Get Factorial Service</h3>
                 <label>For Number:</label>
@@ -158,7 +230,97 @@
         </div>
 
         <div id="serviceGetFibonacciNumbers" class="service">
+            
+                <div class="code-link">
+                    <span>show</span>
+                    <div class="code-preview">
+                        <h5>Client code</h5>
+                        <code class="client-code">
+    var request = {Skip: $("#txtGetFibonacciNumbersSkip").val(), Take:$("#txtGetFibonacciNumbersTake").val()};
+
+    serviceClient.getFromJsonService("GetFibonacciNumbers", request, function(e)
+    {
+        var resultHtml = "&lt;ul&gt;";
+        $(e.result.Results).each(function(i, fibNo)
+        {
+            resultHtml += "&lt;li&gt;" + fibNo + "&lt;/li&gt;";
+        });
+        resultHtml += "&lt;/ul&gt;";
+
+        $("#serviceGetFibonacciNumbers .result").html(resultHtml);
+    });
+                        </code>
+                        <div class="dtos">
+                            <h5>Request and Response DataContracts (DTOs)</h5>
+                            <code class="dto">
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class GetFibonacciNumbers
+    {
+        [DataMember]
+        public long? Skip { get; set; }
+
+        [DataMember]
+        public long? Take { get; set; }
+    }
+
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class GetFibonacciNumbersResponse
+    {
+        [DataMember]
+        public ArrayOfLong Results { get; set; }
+    }
+                            </code>
+                        </div>
+                        <h5>Server code</h5>
+                        <code class="server-code">
+    [Port(typeof(GetFibonacciNumbers))]
+    public class GetFibonacciNumbersHandler : IService
+    {
+        public object Execute(IOperationContext context)
+        {
+            var request = context.Request.Get&lt;GetFibonacciNumbers&gt;();
+
+            //An example of a service utilizing a 'provider' from the ApplicationContext.
+            var defaultLimit = context.Application.Resources.Get&lt;long&gt;("DefaultFibonacciLimit", 10);
+
+            var skip = request.Skip.GetValueOrDefault(0);
+            var take = request.Take.GetValueOrDefault(defaultLimit);
+
+            var results = new List&lt;long&gt;();
+
+            var i = 0;
+            foreach (var fibonacciNumber in GetFibonacciNumbersNumbers())
+            {
+                if (i++ &lt; skip) continue;
+
+                results.Add(fibonacciNumber);
+
+                if (results.Count == take) break;
+            }
+
+            return new GetFibonacciNumbersResponse { Results = new ArrayOfLong(results) };
+        }
+
+        static IEnumerable&lt;long&gt; GetFibonacciNumbersNumbers()
+        {
+            long n1 = 0;
+            long n2 = 1;
+
+            while (true)
+            {
+                var n3 = n1 + n2;
+                yield return n3;
+                n1 = n2;
+                n2 = n3;
+            }
+        }
+    }
+                        </code>
+                    </div>
+                </div>
+
             <div class="input">
+
                 <h3>Get Fibonacci Numbers Service</h3>
 
                 <label>Skip:</label>
@@ -175,6 +337,95 @@
         </div>
 
         <div id="serviceStoreNewUser" class="service">
+            
+                <div class="code-link">
+                    <span>show</span>
+                    <div class="code-preview">
+                        <h5>Client code</h5>
+                        <code class="client-code">
+    var request = { UserName: $("#txtUserName").val(), Password: $("#txtUserName").val(), 
+                    Email: $("#txtEmail").val() };
+
+    serviceClient.postToJsonService("StoreNewUser", request, function(e)
+    {
+        $("#serviceStoreNewUser .result").html(e.result.UserId);
+
+        var userIds = $("#txtUserIds").val();
+        if (userIds.length > 0) userIds += ",";
+        $("#txtUserIds").val(userIds + e.result.UserId);
+    },
+    function(ex)
+    {
+        alert("Error creating new User: " + ex);
+    });
+                        </code>
+                        <div class="dtos">
+                            <h5>Request and Response DataContracts (DTOs)</h5>
+                            <code class="dto">
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class StoreNewUser
+    {
+        [DataMember]
+        public string UserName { get; set; }
+
+        [DataMember]
+        public string Email { get; set; }
+
+        [DataMember]
+        public string Password { get; set; }
+    }
+
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class StoreNewUserResponse
+    {
+        public StoreNewUserResponse()
+        {
+            this.ResponseStatus = new ResponseStatus();
+        }
+
+        [DataMember]
+        public long UserId { get; set; }
+
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+                            </code>
+                        </div>
+                        <h5>Server code</h5>
+                        <code class="server-code">
+    [Port(typeof(StoreNewUser))]
+    public class StoreNewUserHandler : IService
+    {
+        public object Execute(IOperationContext context)
+        {
+            var request = context.Request.Get&lt;StoreNewUser&gt;();
+
+            //Get the persistence provider registered in the AppHost
+            var manager = context.Application.Factory.Resolve&lt;IPersistenceProviderManager&gt;();
+            var persistenceProvider = (IQueryablePersistenceProvider)manager.GetProvider();
+
+            var existingUsers = persistenceProvider.Query&lt;User&gt;(
+                user =&gt; user.UserName == request.UserName).ToList();
+
+            if (existingUsers.Count &gt; 0)
+            {
+                return new StoreNewUserResponse {
+                    ResponseStatus = new ResponseStatus { ErrorCode = "UserAlreadyExists" }
+                };
+            }
+
+            var newUser = new User { UserName = request.UserName, Email = request.Email, 
+                                     Password = request.Password };
+
+            persistenceProvider.Store(newUser);
+
+            return new StoreNewUserResponse { UserId = newUser.Id };
+        }
+    }
+                        </code>
+                    </div>
+                </div>
+                        
             <div class="input">
                 <h3>Store New User Service</h3>
 
@@ -199,6 +450,88 @@
         </div>
 
         <div id="serviceGetUsers" class="service">
+        
+                <div class="code-link">
+                    <span>show</span>
+                    <div class="code-preview">
+                        <h5>Client code</h5>
+                        <code class="client-code">
+    var request = { UserIds: $("#txtUserIds").val() };
+
+    serviceClient.getFromJsonService("GetUsers", request, function(e)
+    {
+        var resultHtml = "&lt;div&gt;";
+        $(e.result.Users).each(function(i, user)
+        {
+            resultHtml += '&lt;div class="user"&gt;'
+            + user.UserName + "&lt;br /&gt;"
+            + user.Email
+            + "&lt;/div&gt;";
+        });
+        $("#serviceGetUsers .result").html(resultHtml);
+    });
+                        </code>
+                        <div class="dtos">
+                            <h5>Request and Response DataContracts (DTOs)</h5>
+                            <code class="dto">
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class GetUsers
+    {
+        [DataMember]
+        public ArrayOfLong UserIds { get; set; }
+
+        [DataMember]
+        public ArrayOfString UserNames { get; set; }
+    }
+
+    [DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+    public class GetUsersResponse
+    {
+        public GetUsersResponse()
+        {
+            this.ResponseStatus = new ResponseStatus();
+        }
+
+        [DataMember]
+        public ArrayOfUser Users { get; set; }
+
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+                            </code>
+                        </div>
+                        <h5>Server code</h5>
+                        <code class="server-code">
+    [Port(typeof(GetUsers))]
+    public class GetUsersHandler : IService
+    {
+        public object Execute(IOperationContext context)
+        {
+            var request = context.Request.Get&lt;GetUsers&gt;();
+
+            //Get the persistence provider registered in the AppHost
+            var persistenceProvider = (IQueryablePersistenceProvider)context.Application.
+                Factory.Resolve&lt;IPersistenceProviderManager&gt;().GetProvider();
+
+            var users = new List&lt;User&gt;();
+
+            if (request.UserIds != null)
+            {
+                users.AddRange(persistenceProvider.GetByIds&lt;User&gt;(request.UserIds));
+            }
+
+            if (request.UserNames != null)
+            {
+                users.AddRange(persistenceProvider.FindByValues&lt;User&gt;("UserName", request.UserNames));
+            }
+
+            return new GetUsersResponse { Users = new ArrayOfUser(users) };
+        }
+    }
+                        </code>
+                    </div>
+                </div>
+                        
             <div class="input">
                 <h3>Get Users Service</h3>
 

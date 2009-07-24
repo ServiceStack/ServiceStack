@@ -14,7 +14,7 @@
 #footer-links
 {
 	border-top: solid 2px #ccc;
-	margin: 5em 0 1em 0;
+	margin: 9em 0 1em 0;
 	padding-top: 1em;
 	text-align: center;
 	font-size: larger;
@@ -74,6 +74,10 @@ acronym
 	padding: 1em;
 	border: solid 1px #a0a0a0;
 }
+.service H3 
+{
+	clear: right;
+}
 .service H4 
 {
 	margin: 1em 0;
@@ -83,6 +87,11 @@ acronym
 {
 	padding: 0 1em;
 	font-size: 18px;
+	color: #369;
+}
+.service UL
+{
+	list-style-type: square;
 }
 .form 
 {
@@ -98,4 +107,33 @@ acronym
 	border-top: dashed 1px #a0a0a0;
 	margin-top: .5em;
 	padding-top: .5em;
+}
+
+.code-link SPAN
+{
+	float: right;
+	margin: -10px -5px 10px 0;
+	color: Blue;
+	cursor: pointer;
+}
+.code-preview
+{
+	display: none;
+	position: absolute;
+	margin: 10px 0;
+	left: 2em;
+	border: solid 5px #555;
+	border-top: none;
+}
+.code-link SPAN:hover 
+{
+	text-decoration: underline;
+}
+.code-preview H5
+{
+	font-size: 13px;
+	background: #555;
+	color: #DEDEDE;
+	margin: 0;
+	padding: .5em 1em; 
 }
