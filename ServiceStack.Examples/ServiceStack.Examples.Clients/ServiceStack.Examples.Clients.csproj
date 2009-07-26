@@ -58,6 +58,8 @@
     <Content Include="ClientBin\ServiceStack.Examples.Clients.Silverlight.xap" />
     <Content Include="default.css" />
     <Content Include="Flash.htm" />
+    <Content Include="img\Mono-powered-big.png" />
+    <Content Include="img\tango-arrows.png" />
     <Content Include="img\Tango-feet.png" />
     <Content Include="Silverlight.htm" />
     <Content Include="Default.aspx" />
