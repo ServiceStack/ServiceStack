@@ -1,5 +1,4 @@
 using System;
-using NUnit.Framework;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.WebHost.Endpoints.Metadata;
 
