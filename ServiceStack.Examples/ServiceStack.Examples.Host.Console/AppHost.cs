@@ -7,6 +7,7 @@ using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
 using ServiceStack.DataAccess.Db4oProvider;
 using ServiceStack.Examples.ServiceInterface;
+using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.LogicFacade;
@@ -46,7 +47,9 @@ namespace ServiceStack.Examples.Host.Console
 			var cacheClient = factory.ResolveOptional<ICacheClient>("CacheProvider", new MemoryCacheClient()); // for Memcacehed use: 'new MemcachedClientCache()'
 
 			//Example of dynamically registering an external service
-			factory.Register<IPersistenceProviderManager>(new Db4oFileProviderManager(config.GetString("Db4oConnectionString").MapHostAbsolutePath()));
+			var dbPath = config.GetString("Db4oConnectionString").MapAbsolutePath();
+			factory.Register<IPersistenceProviderManager>(new Db4oFileProviderManager(dbPath));
+
 
 			//Set your Applications Singleton Context. Contains providers that are available to all your services via 'ApplicationContext.Instance'
 			ApplicationContext.SetInstanceContext(new BasicApplicationContext(factory, cacheClient, config));
@@ -62,11 +65,41 @@ namespace ServiceStack.Examples.Host.Console
 			});
 
 
+			var listeningOn = config.GetString("ListenBaseUrl");
+			this.Start(listeningOn);
+
 			//How to use loging in your services (essentially the same as Log4Net, but without the dependancy)
 			var log = LogManager.GetLogger(GetType());
-			log.InfoFormat("AppHost Created: " + DateTime.Now);
 
-			this.Start(config.GetString("ListenBaseUrl"));
+			log.InfoFormat("AppHost Created at {0}, listening on {1}, saving to db at {2}",
+				DateTime.Now, listeningOn, dbPath);
+
+			if (config.Get("PerformTestsOnInit", false))
+			{
+				log.Debug("Performing database tests...");
+				DatabaseTest();
+			}
+		}
+
+		private void DatabaseTest()
+		{
+			var storeHandler = new StoreNewUserHandler();
+			var operationContext = CreateOperationContext(new StoreNewUser {
+				Email = "new@email",
+				Password = "password",
+				UserName = "new UserName"
+			}, EndpointAttributes.None);
+			
+			storeHandler.Execute(operationContext);
+
+			var getAllHandler = new GetAllUsersHandler();
+			var response = (GetAllUsersResponse) getAllHandler.Execute(
+				CreateOperationContext(new GetAllUsers(), EndpointAttributes.None));
+
+			var user = response.Users[0];
+
+			System.Console.WriteLine("Stored and retrieved user: {0}, {1}, {2}",
+				user.Id, user.UserName, user.Email);
 		}
 
 
@@ -93,7 +126,7 @@ namespace ServiceStack.Examples.Host.Console
 			this.Stop();
 
 			new IDisposable[] { ApplicationContext.Instance.Cache, ApplicationContext.Instance.Factory }.Dispose();
-			
+
 			base.Dispose();
 		}
 

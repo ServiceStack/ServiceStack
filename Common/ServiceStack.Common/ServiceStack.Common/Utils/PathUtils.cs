@@ -24,9 +24,8 @@ namespace ServiceStack.Common.Utils
 			return relativePath;
 		}
 
-		public static string MapTestAbsolutePath(this string relativePath)
+		public static string MapAbsolutePath(this string relativePath)
 		{
-
 			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..{0}..", Path.DirectorySeparatorChar));
 			return mapPath;
 		}

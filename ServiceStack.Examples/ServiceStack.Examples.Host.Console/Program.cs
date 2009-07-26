@@ -13,6 +13,8 @@ namespace ServiceStack.Examples.Host.Console
 			AppHost.Init();
 
 			Thread.Sleep(Timeout.Infinite);
+			System.Console.WriteLine("ReadLine()");
+			System.Console.ReadLine();
 		}
 	}
 }
