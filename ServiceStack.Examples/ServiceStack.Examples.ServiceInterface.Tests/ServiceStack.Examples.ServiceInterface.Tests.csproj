@@ -62,6 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetUsersTests.cs" />
+    <Compile Include="MonoTests\GetUsersProgram.cs" />
+    <Compile Include="MonoTests\StoreNewUserProgram.cs" />
+    <Compile Include="MonoTests\TestProgramBase.cs" />
     <Compile Include="StoreNewUserTests.cs" />
     <Compile Include="GetFibonacciNumbersTests.cs" />
     <Compile Include="GetFactorialTests.cs" />
