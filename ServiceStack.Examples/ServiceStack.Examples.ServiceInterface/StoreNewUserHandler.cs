@@ -35,7 +35,7 @@ namespace ServiceStack.Examples.ServiceInterface
 			if (existingUsers.Count > 0)
 			{
 				return new StoreNewUserResponse {
-					ResponseStatus = new ResponseStatus { ErrorCode = "UserAlreadyExists" }
+					ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
 				};
 			}
 
