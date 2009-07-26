@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace ServiceStack.Examples.Host.Console
 {
@@ -10,6 +11,8 @@ namespace ServiceStack.Examples.Host.Console
 		static void Main(string[] args)
 		{
 			AppHost.Init();
+
+			Thread.Sleep(Timeout.Infinite);
 		}
 	}
 }

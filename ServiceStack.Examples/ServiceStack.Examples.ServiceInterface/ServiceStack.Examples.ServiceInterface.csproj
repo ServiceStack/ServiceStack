@@ -56,7 +56,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetAllUsersHandler.cs" />
     <Compile Include="StoreNewUserHandler.cs" />
+    <Compile Include="Types\GetAllUsers.cs" />
     <Compile Include="Types\DeleteAllUsers.cs" />
     <Compile Include="DeleteAllUsersHandler.cs" />
     <Compile Include="GetFactorialHandler.cs" />
