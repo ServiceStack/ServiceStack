@@ -136,7 +136,7 @@ function OperationResult()
 OperationResult.Parse = function(responseStatus)
 {
 	var result = new OperationResult();
-	result.isSuccess = responseStatus.ErrorCode == null;
+	result.isSuccess = !responseStatus.ErrorCode;
 	result.errorCode = responseStatus.ErrorCode;
 	result.message = responseStatus.Message;
 
