@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Schema;
 
 namespace ServiceStack.WebHost.Endpoints.Utils
@@ -17,6 +18,12 @@ namespace ServiceStack.WebHost.Endpoints.Utils
 			return exporter.Schemas;
 		}
 
+		//static readonly Regex StripXmlDeclarationRegex = new Regex(@"/\<?xml.+?\>/g", RegexOptions.Compiled);
+		//public static string StripXmlDeclaration(string xsd)
+		//{
+		//    return StripXmlDeclarationRegex.Replace(xsd, "");
+		//}
+
 		public static string GetXsd(XmlSchemaSet schemaSet)
 		{
 			var sb = new StringBuilder();
@@ -28,8 +35,8 @@ namespace ServiceStack.WebHost.Endpoints.Utils
 					schema.Write(sw);
 				}
 			}
-			sb = sb.Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n", ""); //remove xml declaration
-			return sb.ToString();
+			sb = sb.Replace("<?xml version=\"1.0\" encoding=\"utf-16\"?>", ""); //remove xml declaration
+			return sb.ToString().Trim();
 		}
 
 		public static string GetXsd(Type operationType)

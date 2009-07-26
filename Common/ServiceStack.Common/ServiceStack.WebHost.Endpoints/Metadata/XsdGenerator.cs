@@ -14,14 +14,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		public ICollection<Type> OperationTypes { get; set; }
 		public bool IncludeAllTypesInAssembly { get; set; }
 
-		private static string StripXmlDeclaration(string xsd)
-		{
-			return xsd.StartsWith("<?") ? xsd.Substring(xsd.IndexOf("?>") + 2) : xsd;
-		}
-
 		private string Filter(string xsd)
 		{
-			xsd = StripXmlDeclaration(xsd);
 			return !this.OptimizeForFlash ? xsd : xsd.Replace("ser:guid", "xs:string");
 		}
 
