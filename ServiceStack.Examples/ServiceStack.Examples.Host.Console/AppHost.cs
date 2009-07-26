@@ -48,7 +48,6 @@ namespace ServiceStack.Examples.Host.Console
 			//Example of dynamically registering an external service
 			factory.Register<IPersistenceProviderManager>(new Db4oFileProviderManager(config.GetString("Db4oConnectionString").MapHostAbsolutePath()));
 
-
 			//Set your Applications Singleton Context. Contains providers that are available to all your services via 'ApplicationContext.Instance'
 			ApplicationContext.SetInstanceContext(new BasicApplicationContext(factory, cacheClient, config));
 
@@ -66,6 +65,8 @@ namespace ServiceStack.Examples.Host.Console
 			//How to use loging in your services (essentially the same as Log4Net, but without the dependancy)
 			var log = LogManager.GetLogger(GetType());
 			log.InfoFormat("AppHost Created: " + DateTime.Now);
+
+			this.Start(config.GetString("ListenBaseUrl"));
 		}
 
 
@@ -89,6 +90,8 @@ namespace ServiceStack.Examples.Host.Console
 		/// </summary>
 		public override void Dispose()
 		{
+			this.Stop();
+
 			new IDisposable[] { ApplicationContext.Instance.Cache, ApplicationContext.Instance.Factory }.Dispose();
 			
 			base.Dispose();

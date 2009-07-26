@@ -13,13 +13,5 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
                 repeater.DataBind();
             }
         }
-
-        public string GetBaseUri(HttpRequest request)
-        {
-            var appPath = request.Url.AbsolutePath;
-            var endpointsPath = appPath.Substring(0, appPath.LastIndexOf('/'));
-            endpointsPath = endpointsPath.Substring(0, endpointsPath.LastIndexOf('/') + 1);
-            return request.Url.GetLeftPart(UriPartial.Authority) + endpointsPath;
-        }
     }
 }

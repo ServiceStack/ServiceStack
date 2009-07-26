@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			if (string.IsNullOrEmpty(context.Request.RawUrl)) return;
 
-			var operationName = context.Request.Url.Segments[context.Request.Url.Segments.Length - 1];
+			var operationName = context.Request.GetOperationName();
 			var request = CreateRequest(context.Request, operationName);
 
 			const EndpointAttributes endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Xml;

@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
 
@@ -13,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 		{
 			context.Response.ContentType = "text/xml";
 
-			var baseUri = GetBaseUri(context.Request.Url);
+			var baseUri = context.Request.GetParentBaseUrl();
 			var optimizeForFlash = context.Request.QueryString["flash"] != null;
 			var includeAllTypesInAssembly = context.Request.QueryString["includeAllTypes"] != null;
 			var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
@@ -38,13 +39,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
 			wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";
 			return wsdlTemplate;
-		}
-
-		public static string GetBaseUri(Uri requestUrl)
-		{
-			var appPath = requestUrl.AbsolutePath;
-			var endpointsPath = appPath.Substring(0, appPath.LastIndexOf('/') + 1);
-			return requestUrl.GetLeftPart(UriPartial.Authority) + endpointsPath;
 		}
 	}
 }

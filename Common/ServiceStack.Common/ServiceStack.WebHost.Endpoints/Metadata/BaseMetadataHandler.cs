@@ -3,6 +3,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Logging;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 
@@ -10,9 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 {
 	public abstract class BaseMetadataHandler : HttpHandlerBase
     {
-		private static ILog log = LogManager.GetLogger(typeof(BaseMetadataHandler));
-
-        const string RESPONSE_SUFFIX = "Response";
+        const string ResponseSuffix = "Response";
 
 		public abstract EndpointType EndpointType { get; }
 		protected HttpRequest Request { get; set; }
@@ -36,9 +35,9 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				var operationType = allTypes.Single(x => x.Name == operationName);
 				var requestMessage = CreateMessage(operationType);
 				string responseMessage = null;
-				if (allTypes.Any(x => x.Name == operationName + RESPONSE_SUFFIX))
+				if (allTypes.Any(x => x.Name == operationName + ResponseSuffix))
 				{
-					var operationResponseType = allTypes.Single(x => x.Name == operationName + RESPONSE_SUFFIX);
+					var operationResponseType = allTypes.Single(x => x.Name == operationName + ResponseSuffix);
 					responseMessage = CreateMessage(operationResponseType);
 				}
 				RenderOperation(writer, operationName, requestMessage, responseMessage);
@@ -53,29 +52,18 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		protected virtual void RenderOperation(HtmlTextWriter writer, string operationName, 
 			string requestMessage, string responseMessage)
 		{
-			//TODO: Fix bug in mono fastcgi, when trying to get 'Request.Url.Host'
-			var urlHostName = "bug-in-mono-fastcgi";
-			try
-			{
-				urlHostName = Request.Url.Host;
-			}
-			catch (Exception ex)
-			{				
-				EndpointHost.Config.LogFactory.GetLogger(GetType()).ErrorFormat("Error trying to get 'Request.Url.Host'", ex);
-				log.ErrorFormat("Error trying to get 'Request.Url.Host'", ex);
-			}
 			var operationControl = new OperationControl {
 				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
 				Title = EndpointHost.Config.ServiceName,
                 EndpointType = this.EndpointType,
 				OperationName = operationName,
-				HostName = urlHostName,
+				HostName = this.Request.GetUrlHostName(),
 				RequestMessage = requestMessage,
 				ResponseMessage = responseMessage,
 			};
 			operationControl.Render(writer);
 		}
 
-        protected abstract void RenderOperations(HtmlTextWriter writer, Operations allOperations);
+		protected abstract void RenderOperations(HtmlTextWriter writer, Operations allOperations);
     }
 }
