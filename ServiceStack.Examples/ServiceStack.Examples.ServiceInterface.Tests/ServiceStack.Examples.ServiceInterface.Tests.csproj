@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GetUsersTests.cs" />
+    <Compile Include="MonoTests\Soap12WsdlProgram.cs" />
     <Compile Include="MonoTests\GetUsersProgram.cs" />
     <Compile Include="MonoTests\StoreNewUserProgram.cs" />
     <Compile Include="MonoTests\TestProgramBase.cs" />
