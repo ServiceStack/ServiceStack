@@ -30,3 +30,4 @@ COPY *.dll %SERVICESTACK_DEPLOY_PATH%
 COPY *.exe %SERVICESTACK_DEPLOY_PATH%
 
 COPY *.dll ..\..\..\ServiceStack.Examples\Lib
+COPY *.dll ..\..\..\release\latest
