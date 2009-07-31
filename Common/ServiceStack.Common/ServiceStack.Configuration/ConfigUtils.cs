@@ -7,14 +7,14 @@ namespace ServiceStack.Configuration
 {
 	public class ConfigUtils
 	{
-		const int KEY_INDEX = 0;
-		const int VALUE_INDEX = 1;
-		const string ERROR_APPSETTING_NOT_FOUND = "Unable to find App Setting: {0}";
-		const string ERROR_CONNECTION_STRING_NOT_FOUND = "Unable to find Connection String: {0}";
-		const string ERROR_CREATING_TYPE = "Error creating type {0} from text '{1}";
-		const char ITEM_SEPERATOR = ',';
-		const char KEY_VALUE_SEPERATOR = ':';
-		const string CONFIG_NULL_VALUE = "{null}";
+		const int KeyIndex = 0;
+		const int ValueIndex = 1;
+		const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
+		const string ErrorConnectionStringNotFound = "Unable to find Connection String: {0}";
+		const string ErrorCreatingType = "Error creating type {0} from text '{1}";
+		const char ItemSeperator = ',';
+		const char KeyValueSeperator = ':';
+		const string ConfigNullValue = "{null}";
 
 		/// <summary>
 		/// Gets the nullable app setting.
@@ -37,7 +37,7 @@ namespace ServiceStack.Configuration
 
 			if (value == null)
 			{
-				throw new ConfigurationErrorsException(String.Format(ERROR_APPSETTING_NOT_FOUND, key));
+				throw new ConfigurationErrorsException(String.Format(ErrorAppsettingNotFound, key));
 			}
 
 			return value;
@@ -76,7 +76,7 @@ namespace ServiceStack.Configuration
 			string val = ConfigurationManager.AppSettings[key];
 			if (val != null)
 			{
-				if (CONFIG_NULL_VALUE.EndsWith(val))
+				if (ConfigNullValue.EndsWith(val))
 				{
 					return default(T);
 				}
@@ -95,7 +95,7 @@ namespace ServiceStack.Configuration
 			var value = ConfigurationManager.ConnectionStrings[key];
 			if (value == null)
 			{
-				throw new ConfigurationErrorsException(String.Format(ERROR_CONNECTION_STRING_NOT_FOUND, key));
+				throw new ConfigurationErrorsException(String.Format(ErrorConnectionStringNotFound, key));
 			}
 
 			return value;
@@ -118,7 +118,7 @@ namespace ServiceStack.Configuration
 		/// <returns></returns>
 		public static List<string> GetListFromAppSetting(string key)
 		{
-			return new List<string>(GetAppSetting(key).Split(ITEM_SEPERATOR));
+			return new List<string>(GetAppSetting(key).Split(ItemSeperator));
 		}
 
 		/// <summary>
@@ -129,10 +129,10 @@ namespace ServiceStack.Configuration
 		public static Dictionary<string, string> GetDictionaryFromAppSetting(string key)
 		{
 			var dictionary = new Dictionary<string, string>();
-			foreach (var item in GetAppSetting(key).Split(ITEM_SEPERATOR))
+			foreach (var item in GetAppSetting(key).Split(ItemSeperator))
 			{
-				var keyValuePair = item.Split(KEY_VALUE_SEPERATOR);
-				dictionary.Add(keyValuePair[KEY_INDEX], keyValuePair[VALUE_INDEX]);
+				var keyValuePair = item.Split(KeyValueSeperator);
+				dictionary.Add(keyValuePair[KeyIndex], keyValuePair[ValueIndex]);
 			}
 			return dictionary;
 		}
@@ -145,12 +145,12 @@ namespace ServiceStack.Configuration
 		/// <returns>A delegate to the type's Parse(string) if it has one</returns>
 		private static MethodInfo GetParseMethod(Type type)
 		{
-			const string PARSE_METHOD = "Parse";
+			const string parseMethod = "Parse";
 			if (type == typeof(string))
 			{
-				return typeof(ConfigUtils).GetMethod(PARSE_METHOD, BindingFlags.Public | BindingFlags.Static);
+				return typeof(ConfigUtils).GetMethod(parseMethod, BindingFlags.Public | BindingFlags.Static);
 			}
-			var parseMethodInfo = type.GetMethod(PARSE_METHOD,
+			var parseMethodInfo = type.GetMethod(parseMethod,
 			                                     BindingFlags.Public | BindingFlags.Static, null,
 			                                     new Type[] { typeof(string) }, null);
 
@@ -192,7 +192,7 @@ namespace ServiceStack.Configuration
 				var ci = GetConstructorInfo(typeof(T));
 				if (ci == null)
 				{
-					throw new TypeLoadException(string.Format(ERROR_CREATING_TYPE, typeof(T).Name, textValue));
+					throw new TypeLoadException(string.Format(ErrorCreatingType, typeof(T).Name, textValue));
 				}
 				var newT = ci.Invoke(null, new object[] { textValue });
 				return (T)newT;

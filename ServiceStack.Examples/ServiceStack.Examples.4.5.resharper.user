@@ -20,34 +20,27 @@
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="823" fromTop="8" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="1073" fromTop="38" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="770" fromTop="26" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:default.css" caret="1973" fromTop="45" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="966" fromTop="35" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:StoreNewUserProgram.cs" caret="524" fromTop="23" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="458" fromTop="18" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="2378" fromTop="24" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of GetUsers.cs" caret="494" fromTop="12" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetUsersHandler.cs" caret="935" fromTop="27" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="371" fromTop="20" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3150" fromTop="16" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1174" fromTop="21" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Copy of Web.config" caret="3150" fromTop="29" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/d:js/f:JsonServiceClient.js" caret="3700" fromTop="24" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3778" fromTop="32" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="5087" fromTop="15" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="21349" fromTop="18" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1794" fromTop="36" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:TestProgramBase.cs" caret="660" fromTop="18" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="565" fromTop="14" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="88" fromTop="3" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="694" fromTop="23" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Copy of GetUsersProgram.cs" caret="613" fromTop="22" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Soap12WsdlProgram.cs" caret="613" fromTop="22" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="3521" fromTop="25" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:default.css" caret="232" fromTop="16" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="21314" fromTop="51" />
     </RecentFiles>
     <RecentEdits>
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetUsersHandler.cs" caret="1240" fromTop="35" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetUsersHandler.cs" caret="978" fromTop="25" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetUsersHandler.cs" caret="905" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetUsersHandler.cs" caret="735" fromTop="20" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="323" fromTop="15" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2699" fromTop="31" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2697" fromTop="34" />
@@ -56,24 +49,24 @@
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1174" fromTop="21" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3150" fromTop="16" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1888" fromTop="25" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Copy of Web.config" caret="3150" fromTop="29" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/d:js/f:JsonServiceClient.js" caret="3700" fromTop="24" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1661" fromTop="31" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3396" fromTop="23" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3778" fromTop="32" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="2201" fromTop="21" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="5080" fromTop="15" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="5152" fromTop="15" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="5073" fromTop="4" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="21337" fromTop="17" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Copy of GetUsersProgram.cs" caret="260" fromTop="11" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Copy of GetUsersProgram.cs" caret="655" fromTop="22" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Copy of GetUsersProgram.cs" caret="300" fromTop="11" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="21472" fromTop="17" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="698" fromTop="19" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="880" fromTop="26" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="565" fromTop="14" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="693" fromTop="23" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="348" fromTop="10" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Copy of GetUsersProgram.cs" caret="15" fromTop="1" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="21303" fromTop="17" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="4983" fromTop="9" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:default.css" caret="363" fromTop="25" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:default.css" caret="232" fromTop="16" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="21209" fromTop="37" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
