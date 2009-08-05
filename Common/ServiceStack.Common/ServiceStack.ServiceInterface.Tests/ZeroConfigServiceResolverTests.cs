@@ -11,9 +11,9 @@ namespace ServiceStack.ServiceInterface.Tests
 		public void ZeroConfig_basic_test()
 		{
 			var exampleOperation = typeof(GetCustomers);
-			var resolver = new ZeroConfigServiceResolver(GetType().Assembly, 
-			                                             exampleOperation.Assembly, exampleOperation.Namespace);
-			
+			var resolver = new ZeroConfigServiceResolver(GetType().Assembly,
+				exampleOperation.Assembly, exampleOperation.Namespace);
+
 			Assert.That(resolver.OperationTypes.Count, Is.GreaterThan(0));
 			Assert.That(resolver.FindService(exampleOperation.Name), Is.Not.Null);
 		}
@@ -23,7 +23,7 @@ namespace ServiceStack.ServiceInterface.Tests
 		{
 			var exampleOperation = typeof(GetCustomers);
 			var resolver = new ZeroConfigServiceResolver(GetType().Assembly,
-														 exampleOperation.Assembly, exampleOperation.Namespace);
+				exampleOperation.Assembly, exampleOperation.Namespace);
 
 			Assert.That(resolver.OperationTypes.Count, Is.EqualTo(base.AllOperations.Count));
 			Assert.That(resolver.OperationTypes, Is.EquivalentTo(base.AllOperations));

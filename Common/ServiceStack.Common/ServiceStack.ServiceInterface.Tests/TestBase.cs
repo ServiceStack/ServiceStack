@@ -14,7 +14,13 @@ namespace ServiceStack.ServiceInterface.Tests
 		protected TestBase()
 		{
 			this.ReplyOperations = new[] { typeof(GetCustomer), typeof(GetCustomers) }.ToList();
-			this.OneWayOperations = new[] { typeof(StoreCustomer) }.ToList();
+			this.OneWayOperations = new[] 
+			{ 
+				typeof(StoreCustomer), 
+				typeof(InternalOnly), 
+				typeof(HttpGet)
+			}.ToList();
+
 			this.AllOperations = new[] { typeof(GetCustomerResponse), typeof(GetCustomersResponse) }.ToList();
 			this.AllOperations.AddRange(ReplyOperations);
 			this.AllOperations.AddRange(OneWayOperations);

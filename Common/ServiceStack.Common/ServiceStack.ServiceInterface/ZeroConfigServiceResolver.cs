@@ -37,6 +37,9 @@ namespace ServiceStack.ServiceInterface
 
 		public ZeroConfigServiceResolver(Assembly serviceInterfaceAssembly, Assembly serviceModelAssembly, string operationNamespace)
 		{
+			AllOperationsMatch = AllOperationsMatch ?? DefaultAllOperationsMatch;
+			AllOperationTypes = new List<Type>();
+
 			LoadOperations(serviceModelAssembly, operationNamespace);
 
 			LoadHandlers(serviceInterfaceAssembly);
@@ -48,7 +51,6 @@ namespace ServiceStack.ServiceInterface
 		{
 			this.handlerCacheByVersion = new Dictionary<int, IDictionary<string, Type>>();
 			this.handlerVersions = new Dictionary<string, List<int>>();
-			AllOperationsMatch = AllOperationsMatch ?? DefaultAllOperationsMatch;
 
 			foreach (Type portType in serviceInterfaceAssembly.GetTypes())
 			{

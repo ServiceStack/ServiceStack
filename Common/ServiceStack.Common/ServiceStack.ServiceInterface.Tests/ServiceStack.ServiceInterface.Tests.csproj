@@ -62,10 +62,12 @@
     <Compile Include="Support\Handlers\Version100\StoreCustomerHandler.cs" />
     <Compile Include="Support\Handlers\Version100\GetCustomerHandler.cs" />
     <Compile Include="Support\Handlers\Version100\GetCustomersHandler.cs" />
+    <Compile Include="Support\Version100\Operations\InternalOnly.cs" />
     <Compile Include="Support\Version100\Operations\GetCustomer.cs" />
     <Compile Include="Support\Version100\Operations\GetCustomerResponse.cs" />
     <Compile Include="Support\Version100\Operations\GetCustomers.cs" />
     <Compile Include="Support\Version100\Operations\GetCustomersResponse.cs" />
+    <Compile Include="Support\Version100\Operations\HttpGet.cs" />
     <Compile Include="Support\Version100\Operations\StoreCustomer.cs" />
     <Compile Include="Support\Version100\Types\Customer.cs" />
     <Compile Include="TestBase.cs" />

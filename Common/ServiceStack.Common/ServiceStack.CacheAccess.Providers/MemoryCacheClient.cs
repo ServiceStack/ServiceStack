@@ -45,17 +45,21 @@ namespace ServiceStack.CacheAccess.Providers
 			return CacheAdd(key, value, DateTime.MaxValue);
 		}
 
+		/// <summary>
+		/// Stores The value with key only if such key doesn't exist at the server yet. 
+		/// </summary>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="expiresAt">The expires at.</param>
+		/// <returns></returns>
 		private bool CacheAdd(string key, object value, DateTime expiresAt)
 		{
-			if (!this.memory.ContainsKey(key))
-			{
-				var entry = new CacheEntry(value, expiresAt);
-				this.memory.Add(key, entry);
-				return true;
-			}
-			this.memory[key].Value = value;
-			this.memory[key].ExpiresAt = expiresAt;
-			return false;
+			CacheEntry entry;
+			if (!this.memory.TryGetValue(key, out entry)) return false;
+
+			entry.Value = value;
+			entry.ExpiresAt = expiresAt;
+			return true;
 		}
 
 		private bool CacheSet(string key, object value)
@@ -68,16 +72,30 @@ namespace ServiceStack.CacheAccess.Providers
 			return CacheSet(key, value, expiresAt, null);
 		}
 
+		/// <summary>
+		/// Adds or replaces the value with key. 
+		/// </summary>
+		/// <param name="key">The key.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="expiresAt">The expires at.</param>
+		/// <param name="checkLastModified">The check last modified.</param>
+		/// <returns></returns>
 		private bool CacheSet(string key, object value, DateTime expiresAt, long? checkLastModified)
 		{
-			if (!this.memory.ContainsKey(key)) return false;
-			var cacheEntry = this.memory[key];
-			
-			if (checkLastModified.HasValue && cacheEntry.LastModifiedTicks != checkLastModified.Value) return false;
-			
-			cacheEntry.Value = value;
-			cacheEntry.ExpiresAt = expiresAt;
-			return true;
+			CacheEntry entry;
+			if (!this.memory.TryGetValue(key, out entry))
+			{
+				entry = new CacheEntry(value, expiresAt);
+				this.memory.Add(key, entry);
+				return true;
+			}
+
+			if (checkLastModified.HasValue 
+				&& entry.LastModifiedTicks != checkLastModified.Value) return false;
+
+			entry.Value = value;
+			entry.ExpiresAt = expiresAt;
+			return false;
 		}
 
 		private bool CacheReplace(string key, object value)
@@ -87,7 +105,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		private bool CacheReplace(string key, object value, DateTime expiresAt)
 		{
-			return !CacheAdd(key, value, expiresAt);
+			return !CacheSet(key, value, expiresAt);
 		}
 
 		public void Dispose()

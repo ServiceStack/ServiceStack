@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Service;
 using ServiceStack.ServiceInterface.Tests.Support.Version100.Operations;
@@ -8,12 +9,12 @@ namespace ServiceStack.ServiceInterface.Tests
 	[TestFixture]
 	public class ServiceControllerTests : TestBase
 	{
-		[Port(typeof(GetCustomer), EndpointAttributes.Internal)]
+		[Port(typeof(InternalOnly), EndpointAttributes.Internal)]
 		public class InternalOnlyHandler
 		{
 		}
 
-		[Port(typeof(GetCustomer), EndpointAttributes.External | EndpointAttributes.HttpGet)]
+		[Port(typeof(HttpGet), EndpointAttributes.External | EndpointAttributes.HttpGet)]
 		public class HttpGetHandler
 		{
 		}
