@@ -79,7 +79,7 @@ namespace ServiceStack.ServiceInterface.Session
 		public void AddUserSession(UserSession userSession)
 		{
 			var cacheKey = UrnId.Create(userSession.GetType(), userSession.UserId.ToString());
-			this.cacheClient.Add(cacheKey, userSession, userSession.ExpiryDate);
+			this.cacheClient.Set(cacheKey, userSession, userSession.ExpiryDate);
 		}
 
 		/// <summary>

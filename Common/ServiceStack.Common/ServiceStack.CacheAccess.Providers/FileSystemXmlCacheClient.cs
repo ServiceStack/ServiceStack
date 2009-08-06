@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Logging;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.CacheAccess.Providers
@@ -15,6 +16,8 @@ namespace ServiceStack.CacheAccess.Providers
 	/// </summary>
 	public class FileSystemXmlCacheClient : ICacheClient
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(FileSystemXmlCacheClient));
+
 		private readonly string baseFilePath;
 
 		public FileSystemXmlCacheClient(string baseFilePath)
@@ -41,6 +44,21 @@ namespace ServiceStack.CacheAccess.Providers
 			catch
 			{
 				return false;
+			}
+		}
+
+		public void RemoveAll(IEnumerable<string> keys)
+		{
+			foreach (var key in keys)
+			{
+				try
+				{
+					this.Remove(key);
+				}
+				catch (Exception ex)
+				{
+					Log.Error(string.Format("Error trying to remove {0} from the FileSystem Cache", key), ex);
+				}
 			}
 		}
 

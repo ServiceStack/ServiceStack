@@ -21,9 +21,9 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public MemcachedClientCache(IEnumerable<string> hostIpAddresses)
 		{
-			const int DEFAULT_PORT = 11211;
-			const int IP_ADDRESS_INDEX = 0;
-			const int PORT_INDEX = 1;
+			const int defaultPort = 11211;
+			const int ipAddressIndex = 0;
+			const int portIndex = 1;
 
 			this.client = new MemcachedClient();
 			var ipEndpoints = new List<IPEndPoint>();
@@ -33,10 +33,10 @@ namespace ServiceStack.CacheAccess.Providers
 				if (ipAddressParts.Length == 0)
 					throw new ArgumentException("'{0}' is not a valid host IP Address: e.g. '127.0.0.0[:11211]'");
 
-				var ipAddress = IPAddress.Parse(ipAddressParts[IP_ADDRESS_INDEX]);
+				var ipAddress = IPAddress.Parse(ipAddressParts[ipAddressIndex]);
 				if (ipAddress == null) continue; //Keep R# happy
 
-				var port = (ipAddressParts.Length == 1) ? DEFAULT_PORT : int.Parse(ipAddressParts[PORT_INDEX]);
+				var port = (ipAddressParts.Length == 1) ? defaultPort : int.Parse(ipAddressParts[portIndex]);
 				var endpoint = new IPEndPoint(ipAddress, port);
 				ipEndpoints.Add(endpoint);
 			}
@@ -189,5 +189,21 @@ namespace ServiceStack.CacheAccess.Providers
 			//Calling client directly instead - Add try{} if warranted.
 			return client.Get(keys, out casValues);
 		}
+
+		public void RemoveAll(IEnumerable<string> keys)
+		{
+			foreach (var key in keys)
+			{
+				try
+				{
+					this.Remove(key);
+				}
+				catch (Exception ex)
+				{
+					Log.Error(string.Format("Error trying to remove {0} from memcached", key), ex);
+				}
+			}
+		}
+
 	}
 }

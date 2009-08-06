@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Logging;
 
 namespace ServiceStack.CacheAccess.Providers
 {
 	public class MemoryCacheClient : ICacheClient
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof (MemoryCacheClient));
+
 		private Dictionary<string, CacheEntry> memory;
 		private Dictionary<string, int> counters;
 
@@ -55,10 +58,11 @@ namespace ServiceStack.CacheAccess.Providers
 		private bool CacheAdd(string key, object value, DateTime expiresAt)
 		{
 			CacheEntry entry;
-			if (!this.memory.TryGetValue(key, out entry)) return false;
+			if (this.memory.TryGetValue(key, out entry)) return false;
 
-			entry.Value = value;
-			entry.ExpiresAt = expiresAt;
+			entry = new CacheEntry(value, expiresAt);
+			this.memory.Add(key, entry);
+
 			return true;
 		}
 
@@ -79,7 +83,7 @@ namespace ServiceStack.CacheAccess.Providers
 		/// <param name="value">The value.</param>
 		/// <param name="expiresAt">The expires at.</param>
 		/// <param name="checkLastModified">The check last modified.</param>
-		/// <returns></returns>
+		/// <returns>True; if it succeeded</returns>
 		private bool CacheSet(string key, object value, DateTime expiresAt, long? checkLastModified)
 		{
 			CacheEntry entry;
@@ -95,7 +99,8 @@ namespace ServiceStack.CacheAccess.Providers
 
 			entry.Value = value;
 			entry.ExpiresAt = expiresAt;
-			return false;
+
+			return true;
 		}
 
 		private bool CacheReplace(string key, object value)
@@ -122,6 +127,21 @@ namespace ServiceStack.CacheAccess.Providers
 				return true;
 			}
 			return false;
+		}
+
+		public void RemoveAll(IEnumerable<string> keys)
+		{
+			foreach (var key in keys)
+			{
+				try
+				{
+					this.Remove(key);
+				}
+				catch (Exception ex)
+				{
+					Log.Error(string.Format("Error trying to remove {0} from the cache", key), ex);
+				}
+			}
 		}
 
 		public object Get(string key)

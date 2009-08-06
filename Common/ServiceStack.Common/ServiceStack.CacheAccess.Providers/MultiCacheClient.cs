@@ -143,5 +143,13 @@ namespace ServiceStack.CacheAccess.Providers
 			lastModifiedValues = null;
 			return null;
 		}
+
+		public void RemoveAll(IEnumerable<string> keys)
+		{
+			foreach (var key in keys)
+			{
+				this.Remove(key);
+			}
+		}
 	}
 }

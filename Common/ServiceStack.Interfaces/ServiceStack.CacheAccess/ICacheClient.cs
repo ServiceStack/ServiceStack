@@ -23,6 +23,12 @@ namespace ServiceStack.CacheAccess
 		bool Remove(string key);
 
 		/// <summary>
+		/// Removes the cache for all the keys provided.
+		/// </summary>
+		/// <param name="keys">The keys.</param>
+		void RemoveAll(IEnumerable<string> keys);
+
+		/// <summary>
 		/// Retrieves the specified item from the cache.
 		/// </summary>
 		/// <param name="key">The identifier for the item to retrieve.</param>

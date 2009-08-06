@@ -58,6 +58,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceInterface.Tests", "ServiceStack.ServiceInterface.Tests\ServiceStack.ServiceInterface.Tests.csproj", "{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Providers.Tests", "ServiceStack.CacheAccess.Providers.Tests\ServiceStack.CacheAccess.Providers.Tests.csproj", "{EF5C737D-9D69-4844-AE09-FA706AD7AB91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -144,6 +146,10 @@ Global
 		{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
