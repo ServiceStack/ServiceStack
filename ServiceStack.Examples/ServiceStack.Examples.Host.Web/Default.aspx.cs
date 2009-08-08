@@ -11,7 +11,7 @@ namespace ServiceStack.Examples.Host.Web
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			Response.Redirect("Public/Metadata/");
+			Response.Redirect("Public/Metadata");
 		}
 	}
 }
