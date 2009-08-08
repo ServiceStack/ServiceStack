@@ -58,6 +58,10 @@ BODY
 	font: 13px/18px Arial;
 	color: #333;
 }
+BODY.host
+{
+	padding: 1em;
+}
 
 H2
 {
