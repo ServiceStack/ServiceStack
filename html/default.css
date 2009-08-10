@@ -1,4 +1,4 @@
-﻿/* http://meyerweb.com/eric/tools/css/reset/ */
+/* http://meyerweb.com/eric/tools/css/reset/ */
 /* v1.0 | 20080212 */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -60,7 +60,7 @@ BODY
 }
 BODY.host
 {
-	padding: 2em;
+	padding: 20px;
 }
 
 H2
@@ -101,10 +101,9 @@ H4
 UL
 {
 	list-style-type: square;
-	margin-left: 30px;
 	line-height: 1.5em;
+	padding-left: 20px;
 }
-
 A IMG 
 {
 	border: none;

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
 
 <head>
@@ -20,7 +20,7 @@
             if (sender != null && sender != 0) {
               appSource = sender.getHost().Source;
             }
-            
+
             var errorType = args.ErrorType;
             var iErrorCode = args.ErrorCode;
 
@@ -39,7 +39,7 @@
                 errMsg += "Line: " + args.lineNumber + "     \n";
                 errMsg += "Position: " + args.charPosition + "     \n";
             }
-            else if (errorType == "RuntimeError") {           
+            else if (errorType == "RuntimeError") {
                 if (args.lineNumber != 0) {
                     errMsg += "Line: " + args.lineNumber + "     \n";
                     errMsg += "Position: " +  args.charPosition + "     \n";
@@ -52,40 +52,42 @@
     </script>
 </head>
 <body>
-    <div id="header-links">        
+    <div id="header-links">
         <a href="Default.htm">Ajax Client Examples</a>
         <a href="Silverlight.htm">Silverlight Examples</a>
 <!--        <a href="Flash.htm">Flash Examples</a>-->
     </div>
 
+    <a href="http://www.servicestack.net/ServiceStack.Examples.Clients/"><img src="img/demo-logo-servicestack.png" alt="Service Stack Demo" /></a>
+
     <h1>Calling web services using Silverlight</h1>
-    
+
     <p>
-        For performance reasons, the preferred to call ServiceStack services for Silverlight clients 
+        For performance reasons, the preferred to call ServiceStack services for Silverlight clients
         is using standard DataContracts via the XML endpoint at: <br />
         <em>~/Public/Xml/SyncReply/{ServiceName}</em>
     </p>
     <div class="note">
        As Silverlight is a different target runtime you will not be able to reference the
-       dll's that contain your DTO types directly. 
+       dll's that contain your DTO types directly.
        Insead you can copy the DataContract's into your Silverlight Project and use them 'as-is', as done in this example.
     </div>
-    
+
     <h4>1. First step is to initialize the ServiceClient</h4>
-    <code>        
+    <code>
         //Create a XmlServiceClient passing in the baseUrl where your services are hosted.
         this.ServiceClient = new XmlServiceClient(
             "http://localhost/ServiceStack.Examples.Host.Web/Public/Xml/SyncReply");
     </code>
-    
+
     <h4>2. Ater that calling a service becomes as easy as:</h4>
     <code>
         var request = new GetFactorial { ForNumber = 3 };
-        
+
         //Note: As this is a synchronous request it should always be run in a backround thread.
         var response = this.ServiceClient.Send&lt;GetFactorialResponse&gt;(request);
     </code>
-    
+
     <h4>3. Try the live examples yourself:</h4>
     <form id="form1" runat="server">
     <div id="silverlightControlHost">
@@ -100,16 +102,16 @@
 		  </a>
 	    </object><iframe id="_sl_historyFrame" style="visibility:hidden;height:0px;width:0px;border:0px"></iframe></div>
     </form>
-    
+
     <h4>4. Get the source code:</h4>
     <p>
-        You can view the source code for this example at 
+        You can view the source code for this example at
         <a href="http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples/ServiceStack.Examples.Clients.Silverlight">
             http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples/ServiceStack.Examples.Clients.Silverlight
         </a>
     </p>
-    
-    <div id="footer-links">        
+
+    <div id="footer-links">
         <img src="img/Mono-powered-big.png" alt="powered by mono" />
 
         <a href="Default.htm">Ajax Client Examples</a>

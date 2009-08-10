@@ -1,4 +1,4 @@
-﻿BODY {
+BODY {
     font: 13px Arial;
     padding: 0 2em;
 }
@@ -30,6 +30,10 @@
 	display: block;
 }
 
+A IMG {
+	border: none;
+}
+
 P
 {
     width: 768px;        	
@@ -44,13 +48,13 @@ CODE
 }
 H1 
 {
-	padding-top: 1em;
-	color: #369;
+	font: 28px/34px Trebuchet MS;
+	color: #063;
 }
 H4
 {        	
 	clear: left;
-	color: #093;
+	color: #063;
 	font-size: 14px;
 	font-family: Verdana;
 }
@@ -92,7 +96,7 @@ acronym
 {
 	padding: 0 1em;
 	font-size: 18px;
-	color: #369;
+	color: #555;
 }
 .service UL
 {

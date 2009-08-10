@@ -131,10 +131,11 @@
     <div id="header-links">
         <a href="Default.htm">Ajax Client Examples</a>
         <a href="Silverlight.htm">Silverlight Examples</a>
-<!--        <a href="Flash.htm">Flash Examples</a>-->
     </div>
 
-    <h1>Calling web services using Ajax</h1>
+    <a href="http://www.servicestack.net/ServiceStack.Examples.Clients/"><img src="img/demo-logo-servicestack.png" alt="Service Stack Demo" /></a>
+
+    <h1>Calling ServiceStack Web Services with Ajax</h1>
 
     <p>
         For performance reasons, the preferred to call ServiceStack services for Ajax clients
@@ -407,7 +408,7 @@
             if (existingUsers.Count &gt; 0)
             {
                 return new StoreNewUserResponse {
-                    ResponseStatus = new ResponseStatus { ErrorCode = "UserAlreadyExists" }
+                    ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
                 };
             }
 
@@ -584,9 +585,9 @@
             <img src="img/Mono-powered-big.png" alt="powered by mono" />
         </a>
 
-        <a href="Default.htm">Ajax Client Examples</a>
-        <a href="Silverlight.htm">Silverlight Examples</a>
-<!--        <a href="Flash.htm">Flash Examples</a>-->
+        <a href="http://www.ajaxstack.com">Ajax Stack</a> |
+        <a href="http://www.servicestack.net">Service Stack</a>
+
     </div>
 
 </body>
