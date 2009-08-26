@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -66,6 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					return true;
 				}
 
+				/* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
 				var responseOptions = result as IHasOptions;
 				if (responseOptions != null)
 				{
@@ -79,7 +81,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						response.Headers[responseHeaders.Key] = responseHeaders.Value;
 					}
 				}
-
 
 				if (WriteToOutputStream(response.OutputStream, result))
 				{

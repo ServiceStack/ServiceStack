@@ -121,7 +121,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			//AssertOperationExists(operationName, operationType);
-			if (request.HttpMethod == "GET")
+			if (request.HttpMethod == "GET" || request.HttpMethod == "OPTIONS")
 			{
 				try
 				{

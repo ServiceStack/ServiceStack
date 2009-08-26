@@ -4,5 +4,6 @@
 	{
 		FieldIsRequired,
 		EmailAddressIsNotValid,
+		OutOfValidRange,
 	}
 }

@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Validators\ValidRangeAttribute.cs" />
     <Compile Include="Validators\CreditCardErrorCodes.cs" />
     <Compile Include="IValidatable.cs" />
     <Compile Include="IValidatableCommand.cs" />

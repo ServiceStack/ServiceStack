@@ -62,6 +62,7 @@
     <Compile Include="Extensions\HttpResponseExtensions.cs" />
     <Compile Include="Extensions\HttpRequestExtensions.cs" />
     <Compile Include="MetadataConfig.cs" />
+    <Compile Include="Results\HtmlResult.cs" />
     <Compile Include="Support\ContentType.cs" />
     <Compile Include="XmlSyncReplyHttpListener.cs" />
     <Compile Include="ServiceEndpointsMetadataConfig.cs" />

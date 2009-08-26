@@ -34,7 +34,7 @@ namespace ServiceStack.Validation
 		public string ErrorCode
 		{
 			get;
-			protected set;
+			set;
 		}
 
 		/// <summary>

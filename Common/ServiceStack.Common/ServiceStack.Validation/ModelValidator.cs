@@ -144,5 +144,16 @@ namespace ServiceStack.Validation
 				throw new ValidationException(validationResult);
 			}
 		}
+
+		public static void ThrowIfNotValid(object entity, string errorCode, string errorMessage)
+		{
+			var validationResult = ValidateObject(entity);
+			if (!validationResult.IsValid)
+			{
+				validationResult.ErrorCode = errorCode;
+				validationResult.ErrorMessage = errorMessage;
+				throw new ValidationException(validationResult);
+			}
+		}
 	}
 }

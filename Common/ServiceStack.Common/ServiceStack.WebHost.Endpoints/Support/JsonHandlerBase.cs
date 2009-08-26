@@ -10,8 +10,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected static object CreateRequest(HttpRequest request, string typeName)
         {
 			var operationType = EndpointHost.ServiceOperations.GetOperationType(typeName);
-            if (request.HttpMethod == "GET")
-            {
+			if (request.HttpMethod == "GET" || request.HttpMethod == "OPTIONS")
+			{
 				try
 				{
 					return KeyValueDataContractDeserializer.Instance.Parse(request.QueryString, operationType);

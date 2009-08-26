@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
-			if (request.HttpMethod == "GET")
+			if (request.HttpMethod == "GET" || request.HttpMethod == "OPTIONS")
 			{
 				try
 				{
