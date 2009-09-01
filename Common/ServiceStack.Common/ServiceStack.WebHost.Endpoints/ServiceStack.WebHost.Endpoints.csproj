@@ -68,6 +68,7 @@
     <Compile Include="MetadataConfig.cs" />
     <Compile Include="Results\HtmlResult.cs" />
     <Compile Include="Support\ContentType.cs" />
+    <Compile Include="Support\GzipOptimizationTest.cs" />
     <Compile Include="XmlSyncReplyHttpListener.cs" />
     <Compile Include="ServiceEndpointsMetadataConfig.cs" />
     <Compile Include="Metadata\Soap12WsdlMetadataHandler.cs" />

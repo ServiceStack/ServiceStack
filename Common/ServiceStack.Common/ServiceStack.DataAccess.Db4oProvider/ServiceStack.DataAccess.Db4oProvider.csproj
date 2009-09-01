@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Db4objects.Db4o, Version=7.4.71.12224, Culture=neutral, PublicKeyToken=6199cd4f203aa8eb, processorArchitecture=MSIL">
+    <Reference Include="Db4objects.Db4o, Version=7.11.110.13604, Culture=neutral, PublicKeyToken=6199cd4f203aa8eb, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Db4objects.Db4o.dll</HintPath>
     </Reference>
@@ -53,10 +53,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Db4oPersistenceProvider.cs" />
-    <Compile Include="Db4oFileProviderManager.cs" />
-    <Compile Include="Db4oResultSet.cs" />
-    <Compile Include="Db4oTransaction.cs" />
+    <Compile Include="Db4OPersistenceProvider.cs" />
+    <Compile Include="Db4OFileProviderManager.cs" />
+    <Compile Include="Db4OResultSet.cs" />
+    <Compile Include="Db4OTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

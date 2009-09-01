@@ -2,14 +2,14 @@ using System.Collections.Generic;
 
 namespace ServiceStack.DataAccess.Db4oProvider
 {
-	public class Db4oResultSet<T> : IResultSet<T>
+	public class Db4OResultSet<T> : IResultSet<T>
 	{
-		public Db4oResultSet()
+		public Db4OResultSet()
 		{
 			Results = new List<T>();
 		}
 
-		public Db4oResultSet(IEnumerable<T> results)
+		public Db4OResultSet(IEnumerable<T> results)
 		{
 			Results = new List<T>(results);
 		}

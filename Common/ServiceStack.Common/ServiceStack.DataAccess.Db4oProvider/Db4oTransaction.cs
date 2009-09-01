@@ -4,13 +4,13 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
 {
-	public class Db4oTransaction : ITransactionContext
+	public class Db4OTransaction : ITransactionContext
 	{
 		private IObjectContainer Provider { get; set; }
 
-		private readonly ILog log = LogManager.GetLogger(typeof(Db4oTransaction));
+		private readonly ILog log = LogManager.GetLogger(typeof(Db4OTransaction));
 
-		public Db4oTransaction(IObjectContainer provider)
+		public Db4OTransaction(IObjectContainer provider)
 		{
 			this.Provider = provider;
 			this.HasOpenTransaction = true;
@@ -53,7 +53,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public bool HasOpenTransaction { get; set; }
 
-		~Db4oTransaction()
+		~Db4OTransaction()
 		{
 			Dispose(true);
 		}

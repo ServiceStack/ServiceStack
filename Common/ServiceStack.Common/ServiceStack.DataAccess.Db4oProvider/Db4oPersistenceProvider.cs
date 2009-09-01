@@ -49,7 +49,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public ITransactionContext BeginTransaction()
 		{
-			return new Db4oTransaction(this.ObjectContainer);
+			return new Db4OTransaction(this.ObjectContainer);
 		}
 
 		public void CommitTransaction()
