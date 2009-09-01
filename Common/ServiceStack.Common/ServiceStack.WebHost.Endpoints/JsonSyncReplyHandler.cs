@@ -21,7 +21,8 @@ namespace ServiceStack.WebHost.Endpoints
 			
 			var result = ExecuteService(request, endpointAttributes);
 
-			context.Response.WriteToResponse(result, x => JsonDataContractSerializer.Instance.Parse(x), ContentType.Json);
+			var response = new HttpResponseWrapper(context.Response);
+			response.WriteToResponse(result, x => JsonDataContractSerializer.Instance.Parse(x), ContentType.Json);
 		}
 
 	}

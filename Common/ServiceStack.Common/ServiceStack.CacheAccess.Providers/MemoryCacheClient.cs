@@ -238,7 +238,21 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 		}
 
-		public IDictionary<string, object> Get(IEnumerable<string> keys)
+		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
+		{
+			var valueMap = new Dictionary<string, T>();
+			foreach (var key in keys)
+			{
+				var value = Get<T>(key);
+				if (!Equals(value, default(T)))
+				{
+					valueMap[key] = value;
+				}
+			}
+			return valueMap;
+		}
+
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
 		{
 			var valueMap = new Dictionary<string, object>();
 			foreach (var key in keys)
@@ -252,7 +266,7 @@ namespace ServiceStack.CacheAccess.Providers
 			return valueMap;
 		}
 
-		public IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> lostModifiedValues)
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lostModifiedValues)
 		{
 			var valueMap = new Dictionary<string, object>();
 			lostModifiedValues = new Dictionary<string, ulong>();

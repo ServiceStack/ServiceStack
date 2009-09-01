@@ -100,6 +100,16 @@ namespace ServiceStack.Validation
 			return sb.ToString();
 		}
 
+		public static ValidationException CreateException(Enum errorCode)
+		{
+			return new ValidationException(errorCode.ToString());
+		}
+
+		public static ValidationException CreateException(Enum errorCode, string errorMessage)
+		{
+			return new ValidationException(errorCode.ToString(), errorMessage);
+		}
+
 		public static ValidationException CreateException(string errorCode)
 		{
 			return new ValidationException(errorCode);

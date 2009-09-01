@@ -69,5 +69,15 @@ namespace ServiceStack.Common
 			}
 			return string.Format("urn:{0}:{1}:{2}", objectType.Name, idFieldName, idFieldValue);
 		}
+
+		public static Guid GetGuidId(string urn)
+		{
+			return new Guid(Parse(urn).IdFieldValue);
+		}
+
+		public static long GetLongId(string urn)
+		{
+			return long.Parse(Parse(urn).IdFieldValue);
+		}
 	}
 }

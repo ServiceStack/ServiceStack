@@ -18,7 +18,7 @@ namespace ServiceStack.Validation.Validators
 		/// 
 		/// If it is an error it returns an error code, otherwise null for success.
 		/// 
-		/// Use ValidationErrorCode.FieldIsRequired.ToString() to set the error code
+		/// Use ValidationErrorCode.Required.ToString() to set the error code
 		/// </summary>
 		/// <param name="value">The value.</param>
 		/// <returns>ValidationErrorCode if InValid otherwise null</returns>

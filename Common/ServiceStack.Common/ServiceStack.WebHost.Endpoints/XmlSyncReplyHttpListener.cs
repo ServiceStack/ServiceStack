@@ -19,7 +19,8 @@ namespace ServiceStack.WebHost.Endpoints
 			
 			var result = ExecuteService(request, endpointAttributes);
 
-			context.Response.WriteToResponse(result, x => DataContractSerializer.Instance.Parse(result), ContentType.Xml);
+			var response = new HttpListenerResponseWrapper(context.Response);
+			response.WriteToResponse(result, x => DataContractSerializer.Instance.Parse(result), ContentType.Xml);
 		}
 	}
 

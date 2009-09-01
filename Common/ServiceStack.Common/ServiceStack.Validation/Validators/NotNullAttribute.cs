@@ -10,13 +10,13 @@ namespace ServiceStack.Validation.Validators
 	{
 		public override string Validate(object value)
 		{
-			if (value == null) return ValidationErrorCodes.FieldIsRequired.ToString();
+			if (value == null) return ValidationErrorCodes.Required.ToString();
 
 			var valueType = value.GetType();
 			if (valueType.IsValueType)
 			{
 				var defaultValue = Activator.CreateInstance(valueType);
-				return !defaultValue.Equals(value) ? null : ValidationErrorCodes.FieldIsRequired.ToString(); //not the same as '=='
+				return !defaultValue.Equals(value) ? null : ValidationErrorCodes.Required.ToString(); //not the same as '=='
 			}
 			return null;
 		}

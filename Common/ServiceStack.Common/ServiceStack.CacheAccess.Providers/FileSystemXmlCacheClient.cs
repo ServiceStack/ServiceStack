@@ -146,14 +146,20 @@ namespace ServiceStack.CacheAccess.Providers
 			throw new NotImplementedException();
 		}
 
-		public IDictionary<string, object> Get(IEnumerable<string> keys)
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
 		{
 			throw new NotImplementedException();
 		}
 
-		public IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues)
+		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
 		{
 			throw new NotImplementedException();
 		}
+
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues)
+		{
+			throw new NotImplementedException();
+		}
+
 	}
 }

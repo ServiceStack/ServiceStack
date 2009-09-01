@@ -178,12 +178,24 @@ namespace ServiceStack.CacheAccess.Providers
 			Execute(() => client.FlushAll());
 		}
 
-		public IDictionary<string, object> Get(IEnumerable<string> keys)
+		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
+		{
+			var results = new Dictionary<string, T>();
+			foreach (var key in keys)
+			{
+				var result = this.Get<T>(key);
+				results[key] = result;
+			}
+
+			return results;
+		}
+
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
 		{
 			return Execute(() => client.Get(keys));
 		}
 
-		public IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> casValues)
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> casValues)
 		{
 			//Can't call methods with 'out' params in anonymous method blocks
 			//Calling client directly instead - Add try{} if warranted.

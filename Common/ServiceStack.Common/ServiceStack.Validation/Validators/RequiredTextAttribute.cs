@@ -8,7 +8,7 @@ namespace ServiceStack.Validation.Validators
 		public override string Validate(object value)
 		{
 			var text = (string)value;
-			return !string.IsNullOrEmpty(text) ? null : ValidationErrorCodes.FieldIsRequired.ToString();
+			return !string.IsNullOrEmpty(text) ? null : ValidationErrorCodes.Required.ToString();
 		}
 	}
 }

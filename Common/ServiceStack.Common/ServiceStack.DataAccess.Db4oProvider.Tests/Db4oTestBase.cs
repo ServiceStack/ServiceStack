@@ -60,7 +60,7 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 			{
 				File.Delete(db4oDatabasePath);
 			}
-			db4oProviderManager = new Db4oFileProviderManager(db4oDatabasePath);
+			db4oProviderManager = new Db4OFileProviderManager(db4oDatabasePath);
 			provider = (IQueryablePersistenceProvider)db4oProviderManager.GetProvider();
 			CreateTestDatabase();
 		}

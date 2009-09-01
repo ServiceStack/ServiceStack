@@ -40,6 +40,9 @@
     <Compile Include="Command\ICommandIList.cs" />
     <Compile Include="Command\ICommandList.cs" />
     <Compile Include="Command\ICommandVoid.cs" />
+    <Compile Include="Model\IHasId.cs" />
+    <Compile Include="Model\IHasUserId.cs" />
+    <Compile Include="Model\IHasUserSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\IStringDeserializer.cs" />
     <Compile Include="Serialization\IStringSerializer.cs" />

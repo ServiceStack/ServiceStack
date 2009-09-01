@@ -2,39 +2,63 @@ using System;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.WebHost.Endpoints.Support;
 
-namespace ServiceStack.WebHost.Endpoints.Extensions
+namespace ServiceStack.WebHost.Endpoints.Extensions.Backup
 {
-	public static class HttpListenerResponseExtensions
+	public static class HttpResponseExtensions
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerResponseExtensions));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensions));
 
-		public static bool WriteToResponse(this HttpListenerResponse response, object result, string defaultContentType)
+		public static bool WriteToOutputStream(Stream responseStream, object result)
+		{
+			var streamWriter = result as IStreamWriter;
+			if (streamWriter != null)
+			{
+				streamWriter.WriteTo(responseStream);
+				return true;
+			}
+
+			var stream = result as Stream;
+			if (stream != null)
+			{
+				stream.WriteTo(responseStream);
+				return true;
+			}
+
+			return false;
+		}
+
+
+		/// <summary>
+		/// Writes to response.
+		/// </summary>
+		/// <param name="response">The response.</param>
+		/// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
+		/// <param name="defaultContentType">Default response ContentType.</param>
+		/// <returns></returns>
+		public static bool WriteToResponse(this HttpResponse response, object result, string defaultContentType)
 		{
 			return WriteToResponse(response, result, null, defaultContentType);
 		}
 
 		/// <summary>
-		/// Writes the response of a PortHandler to the ResponseStream.
-		/// - Handles, strings (returns as xml)
-		/// - Stream/MemoryStream
-		/// - IStreamWriter result
+		/// Writes to response.
 		/// 
 		/// Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
 		/// 
-		/// If its not handled by any of the above it will call the defaultAction Func provided and write the xml output to the response
 		/// </summary>
 		/// <param name="response">The response.</param>
-		/// <param name="result">The result.</param>
+		/// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
 		/// <param name="defaultAction">The default action.</param>
-		/// <param name="defaultContentType">Default type of the content.</param>
+		/// <param name="defaultContentType">Default response ContentType.</param>
 		/// <returns></returns>
-		public static bool WriteToResponse(this HttpListenerResponse response, object result, Func<object, string> defaultAction, string defaultContentType)
+		public static bool WriteToResponse(this HttpResponse response, object result, Func<object, string> defaultAction, string defaultContentType)
 		{
 			try
 			{
@@ -43,6 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					return true;
 				}
 
+				/* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
 				var responseOptions = result as IHasOptions;
 				if (responseOptions != null)
 				{
@@ -57,7 +82,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					}
 				}
 
-				if (HttpResponseExtensions.WriteToOutputStream(response.OutputStream, result)) return true;
+				if (WriteToOutputStream(response.OutputStream, result))
+				{
+					return true;
+				}
 
 				var responseText = result as string;
 				if (responseText != null)
@@ -85,26 +113,23 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			finally
 			{
-				//There is no response.End();
-				response.Close();
+				//Both seem to throw an exception??
+				//Do not use response.Close(); does not have the same effect
+				//response.End();
 			}
 		}
 
-		public static void WriteTextToResponse(HttpListenerResponse response, string stringResult, string defaultContentType)
+		public static void WriteTextToResponse(HttpResponse response, string text, string defaultContentType)
 		{
 			try
 			{
-				var bOutput = System.Text.Encoding.UTF8.GetBytes(stringResult);
-
-				if (response.ContentType == null)
+				//ContentType='text/html' is the default for a HttpResponse
+				//Do not override if another has been set
+				if (response.ContentType == null || response.ContentType == ContentType.Html)
 				{
 					response.ContentType = defaultContentType;
 				}
-				response.ContentLength64 = bOutput.Length;
-
-				var outputStream = response.OutputStream;
-				outputStream.Write(bOutput, 0, bOutput.Length);
-				outputStream.Close();
+				response.Write(text);
 			}
 			catch (Exception ex)
 			{
@@ -113,12 +138,13 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
-		public static void WriteErrorToResponse(this HttpListenerResponse response, string errorMessage, Exception ex)
+		public static void WriteErrorToResponse(this HttpResponse response, string errorMessage, Exception ex)
 		{
 			var responseXml = string.Format("<Error>\n\t<Message>{0}</Message>\n\t<StackTrace>\n\t\t{1}\n\t</StackTrace>\n</Error>",
 				errorMessage, ex.StackTrace);
 
 			WriteTextToResponse(response, responseXml, ContentType.XmlText);
 		}
+
 	}
 }

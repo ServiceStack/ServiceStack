@@ -5,14 +5,14 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
 {
-	public class Db4oFileProviderManager : IPersistenceProviderManager
+	public class Db4OFileProviderManager : IPersistenceProviderManager
 	{
-		private readonly ILog log = LogManager.GetLogger(typeof(Db4oFileProviderManager));
+		private readonly ILog log = LogManager.GetLogger(typeof(Db4OFileProviderManager));
 
 		private IPersistenceProvider provider;
 		public string ConnectionString { get; private set; }
 
-		public Db4oFileProviderManager(string filePath)
+		public Db4OFileProviderManager(string filePath)
 		{
 			ConnectionString = filePath;
 		}
@@ -26,12 +26,17 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			if (this.provider == null)
 			{
 				var db = Db4oFactory.OpenFile(this.ConnectionString);
-				this.provider = new Db4oPersistenceProvider(db);
+				this.provider = new Db4OPersistenceProvider(db, this);
 			}
 			return this.provider;
 		}
 
-		~Db4oFileProviderManager()
+		internal void ProviderDispose(IPersistenceProvider dispose)
+		{
+			//end of using statement, do nothing for a db4o embedded db
+		}
+
+		~Db4OFileProviderManager()
 		{
 			Dispose(false);
 		}
@@ -46,14 +51,17 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			if (disposing)
 				GC.SuppressFinalize(this);
 
+			if (this.provider == null) return;
+			
+			log.DebugFormat("Disposing Db4oPersistenceProvider...");
 			try
 			{
-				log.DebugFormat("Disposing Db4oFileProviderManager...");
-				provider.Dispose();
+				//((Db4OPersistenceProvider)this.provider).ObjectContainer.Close();
+				((Db4OPersistenceProvider)this.provider).ObjectContainer.Dispose();
 			}
 			catch (Exception ex)
 			{
-				log.Error("Error disposing of Db4o provider", ex);
+				log.ErrorFormat("Error disposing: Db4OFileProviderManager.Dispose(): ", ex);
 			}
 			provider = null;
 		}

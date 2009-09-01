@@ -72,7 +72,7 @@ namespace ServiceStack.Configuration.Tests
 		[Test]
 		public void A_registered_db4o_provider_manager_can_be_resolved()
 		{
-			var db4oProvider = new Db4oFileProviderManager("test.db4o");
+			var db4oProvider = new Db4OFileProviderManager("test.db4o");
 			var factory = new FactoryProvider(this.factoryConfig);
 			factory.Register(db4oProvider);
 			var provider = factory.Resolve<IPersistenceProviderManager>();

@@ -4,26 +4,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Db4objects.Db4o;
-using Db4objects.Db4o.Ext;
 using Db4objects.Db4o.Query;
 using ServiceStack.DataAccess.Criteria;
 using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
 {
-	public class Db4oPersistenceProvider : IQueryablePersistenceProvider
+	public class Db4OPersistenceProvider : IQueryablePersistenceProvider
 	{
-		private readonly ILog log = LogManager.GetLogger(typeof(Db4oPersistenceProvider));
+		private readonly ILog log = LogManager.GetLogger(typeof(Db4OPersistenceProvider));
 
 		private static Dictionary<string, string> fieldNameTypeMappings;
 
-		private const string ID_PROPERTY_NAME = "Id";
+		private const string IdPropertyName = "Id";
 
 		public IObjectContainer ObjectContainer { get; private set; }
 
-		public Db4oPersistenceProvider(IObjectContainer provider)
+		private Db4OFileProviderManager manager;
+
+		public Db4OPersistenceProvider(IObjectContainer provider, Db4OFileProviderManager manager)
 		{
 			this.ObjectContainer = provider;
+			this.manager = manager;
 			fieldNameTypeMappings = new Dictionary<string, string>();
 		}
 
@@ -90,7 +92,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				throw new ArgumentNullException("id");
 
 			var entity = GetByInternalId<T>(id);
-			return entity ?? FindByValue<T>(ID_PROPERTY_NAME, id);
+			return entity ?? FindByValue<T>(IdPropertyName, id);
 		}
 
 		private T GetByInternalId<T>(object id) where T : class
@@ -98,7 +100,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			if (id.GetType().IsAssignableFrom(typeof(long)))
 			{
 				var type = id.GetType();
-				var fieldInfo = GetFieldInfo(ID_PROPERTY_NAME, typeof(T));
+				var fieldInfo = GetFieldInfo(IdPropertyName, typeof(T));
 				var isPotentialInternalId = fieldInfo != null
 											&& fieldInfo.FieldType.IsAssignableFrom(typeof(long));
 				if (isPotentialInternalId)
@@ -144,7 +146,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public IList<T> GetByIds<T>(ICollection ids) where T : class
 		{
-			return FindByValues<T>(ID_PROPERTY_NAME, ids);
+			return FindByValues<T>(IdPropertyName, ids);
 		}
 
 		public T FindByValue<T>(string name, object value) where T : class
@@ -312,7 +314,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			try
 			{
 				var type = typeof(T);
-				var fieldInfo = GetFieldInfo(ID_PROPERTY_NAME, type);
+				var fieldInfo = GetFieldInfo(IdPropertyName, type);
 				if (fieldInfo.FieldType.IsAssignableFrom(typeof(long)))
 				{
 					var existingId = (long)fieldInfo.GetValue(entity);
@@ -409,7 +411,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			}
 		}
 
-		~Db4oPersistenceProvider()
+		~Db4OPersistenceProvider()
 		{
 			Dispose(false);
 		}
@@ -439,9 +441,7 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			if (disposing)
 				GC.SuppressFinalize(this);
 
-			log.DebugFormat("Disposing Db4oPersistenceProvider...");
-			this.ObjectContainer.Close();
-			this.ObjectContainer.Dispose();
+			manager.ProviderDispose(this);
 		}
 	}
 }

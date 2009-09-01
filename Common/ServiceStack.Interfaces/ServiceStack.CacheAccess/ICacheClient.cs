@@ -125,7 +125,15 @@ namespace ServiceStack.CacheAccess
 		/// <returns>
 		/// a Dictionary holding all items indexed by their key.
 		/// </returns>
-		IDictionary<string, object> Get(IEnumerable<string> keys);
+		IDictionary<string, object> GetAll(IEnumerable<string> keys);
+
+		/// Retrieves multiple items from the cache.
+		/// </summary>
+		/// <param name="keys">The list of identifiers for the items to retrieve.</param>
+		/// <returns>
+		/// a Dictionary holding all items indexed by their key.
+		/// </returns>
+		IDictionary<string, T> GetAll<T>(IEnumerable<string> keys);
 
 		/// <summary>
 		/// Retrieves multiple items from the cache.
@@ -135,6 +143,6 @@ namespace ServiceStack.CacheAccess
 		/// <returns>
 		/// a Dictionary holding all items indexed by their key.
 		/// </returns>
-		IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues);
+		IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues);
 	}
 }

@@ -1,3 +1,4 @@
+using System;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Validation
@@ -7,8 +8,17 @@ namespace ServiceStack.Validation
 		public ValidationError(string errorCode, string fieldName) 
 			: this(errorCode, fieldName, null) {}
 
-		public ValidationError(string errorCode) 
-			: this(errorCode, null, null) {}
+		public ValidationError(string errorCode)
+			: this(errorCode, null, null) { }
+
+		public ValidationError(Enum errorCode)
+			: this(errorCode.ToString(), null, errorCode.ToString().SplitCamelCase()) { }
+
+		public ValidationError(Enum errorCode, string fieldName)
+			: this(errorCode.ToString(), fieldName, errorCode.ToString().SplitCamelCase()) { }
+
+		public ValidationError(Enum errorCode, string fieldName, string errorMessage)
+			: this(errorCode.ToString(), fieldName, errorMessage) { }
 
 		public ValidationError(string errorCode, string fieldName, string errorMessage)
 		{

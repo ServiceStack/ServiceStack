@@ -115,20 +115,13 @@ namespace ServiceStack.CacheAccess.Providers
 			cacheClients.ExecAll(client => client.FlushAll());
 		}
 
-		public IDictionary<string, object> Get(IEnumerable<string> keys)
-		{
-			IDictionary<string, object> firstResult = null;
-			cacheClients.ExecAllWithFirstOut(client => client.Get(keys), ref firstResult);
-			return firstResult;
-		}
-
-		public IDictionary<string, object> Get(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues)
+		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
 		{
 			foreach (var client in cacheClients)
 			{
 				try
 				{
-					var result = client.Get(keys, out lastModifiedValues);
+					var result = client.GetAll<T>(keys);
 					if (result != null)
 					{
 						return result;
@@ -140,8 +133,36 @@ namespace ServiceStack.CacheAccess.Providers
 				}
 			}
 
-			lastModifiedValues = null;
-			return null;
+			return new Dictionary<string, T>();
+		}
+
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
+		{
+			IDictionary<string, object> firstResult = null;
+			cacheClients.ExecAllWithFirstOut(client => client.GetAll(keys), ref firstResult);
+			return firstResult;
+		}
+
+		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues)
+		{
+			foreach (var client in cacheClients)
+			{
+				try
+				{
+					var result = client.GetAll(keys, out lastModifiedValues);
+					if (result != null)
+					{
+						return result;
+					}
+				}
+				catch (Exception ex)
+				{
+					ExecExtensions.LogError(client.GetType(), "Get", ex);
+				}
+			}
+
+			lastModifiedValues = new Dictionary<string, ulong>();
+			return new Dictionary<string, object>();
 		}
 
 		public void RemoveAll(IEnumerable<string> keys)

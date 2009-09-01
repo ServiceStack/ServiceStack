@@ -2,8 +2,9 @@
 {
 	public enum ValidationErrorCodes
 	{
-		FieldIsRequired,
+		Required,
+		Invalid,
 		EmailAddressIsNotValid,
-		OutOfValidRange,
+		OutOfRange,
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.Common.Utils;
 
@@ -6,7 +7,7 @@ namespace ServiceStack.Common.Extensions
 {
 	public static class StringExtensions
 	{
-		static readonly Regex RegexSplitCamelCase = new Regex("([A-Z])", RegexOptions.Compiled);
+		static readonly Regex RegexSplitCamelCase = new Regex("([A-Z]|[0-9]+)", RegexOptions.Compiled);
 
 		public static T ToEnum<T>(this string value)
 		{
@@ -38,11 +39,6 @@ namespace ServiceStack.Common.Extensions
 			return string.IsNullOrEmpty(value);
 		}
 
-		public static string UrlDecode(this string value)
-		{
-			return value;
-		}
-
 		/// <summary>
 		/// Converts from base: 0 - 62
 		/// </summary>
@@ -50,7 +46,7 @@ namespace ServiceStack.Common.Extensions
 		/// <param name="from">From.</param>
 		/// <param name="to">To.</param>
 		/// <returns></returns>
-        public static string BaseConvert(this string source, int from, int to)
+		public static string BaseConvert(this string source, int from, int to)
 		{
 			const string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 			var result = "";
@@ -92,6 +88,15 @@ namespace ServiceStack.Common.Extensions
 			return result;
 		}
 
+		public static bool ContainsAny(this string text, params string[] testMatches)
+		{	
+			foreach (var testMatch in testMatches)
+			{
+				if (text.Contains(testMatch)) return true;
+			}
+			return false;
+		}
+
 		public static string EncodeXml(this string value)
 		{
 			return value.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
@@ -101,60 +106,64 @@ namespace ServiceStack.Common.Extensions
 		{
 			if (string.IsNullOrEmpty(text)) return text;
 
-			string tmp;
-			string c;
+			var tmp = new StringBuilder();
 
-			for (var i=1; i<text.Length; i++)
+			for (var i=0; i < text.Length; i++)
 			{
-				c = text.Substring(i, 1);
+				var c = text.Substring(i, 1);
 				int charCode = text[i];
+
+				if (
+					charCode >= 65 && charCode <= 90		// A-Z
+					|| charCode >= 97 && charCode <= 122    // a-z
+					|| charCode >= 48 && charCode <= 57		// 0-9
+					|| charCode == 45						// - 
+					|| charCode == 46						// .
+					// || charCode == 47					// /
+					// || charCode == 38					// &
+					// || charCode == 58					// :
+					// || charCode == 61					// =
+					// || charCode == 63					// ?
+					// || charCode == 126					// ~
+					)
+				{
+					tmp.Append(c);
+				}
+				else
+				{
+					tmp.Append('%' + charCode.ToString("x"));
+				}
 			}
-			return text;
+			return tmp.ToString();
 		}
 
-		/*
-			//If Len(s) = 0 Then Exit Function
-	
-			//Dim tmp As String
-			//Dim c As String
-			//Dim i As Integer
-	
-			//For i = 1 To Len(s)
-			//    c = Mid(s, i, 1)
-			//    If (Asc(c) &gt;= 65 And Asc(c) &lt;= 90) _
-			//    Or (Asc(c) &gt;= 97 And Asc(c) &lt;= 122) _
-			//    Or (Asc(c) &gt;= 48 And Asc(c) &lt;= 58) _
-			//    Or Asc(c) = 38 _
-			//    Or (Asc(c) &gt;= 45 And Asc(c) &lt;= 47) _
-			//    Or Asc(c) = 58 Or Asc(c) = 61 _
-			//    Or Asc(c) = 63 Or Asc(c) = 126 Then
-			//        tmp = tmp + c
-			//    Else
-			//        tmp = tmp + "%" + Hex(Asc(c))
-			//    End If
-			//Next i
-			//urlEncode = tmp		
-		 * 
-		 * Public Function urlDecode(s As String) As String
-			If Len(s) = 0 Then Exit Function
-			Dim i As Integer
-			Dim tmp As String
-			Dim c As String
-			For i = 1 To Len(s)
-				c = Mid$(s, i, 1)
-				If c = "+" Then c = " "
-				If c = "%" Then
-					c = Chr$("&H" + Mid$(s, i + 1, 2))
-					i = i + 2
-				End If
-				tmp = tmp + c
-			Next i
-			urlDecode = tmp
-		End Function
- 
-		Public Function urlEncode(s As String) As String
+		public static string UrlDecode(this string text)
+		{
+			if (string.IsNullOrEmpty(text)) return null;
 
-		End Function */
+			var tmp = new StringBuilder();
+
+			for (var i=0; i < text.Length; i++)
+			{
+				var c = text.Substring(i, 1);
+				if (c == "+")
+				{
+					tmp.Append(" ");
+				}
+				else if (c == "%")
+				{
+					var hexNo = Convert.ToInt32(text.Substring(i + 1, 2), 16);
+					tmp.Append((char)hexNo);
+					i += 2;
+				}
+				else
+				{
+					tmp.Append(c);
+				}
+			}
+
+			return tmp.ToString();
+		}
 
 	}
 }
