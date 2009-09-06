@@ -4,25 +4,30 @@ using System.Collections.Generic;
 
 namespace ServiceStack.DataAccess
 {
-	public interface IPersistenceProvider : IDisposable
+	public interface IPersistenceProvider : IBasicPersistenceProvider, IDisposable
 	{
-		IList<T> GetAll<T>() where T : class;
-		IList<T> GetAllOrderedBy<T>(string fieldName, bool sortAsc) where T : class;
+		IList<T> GetAll<T>()
+			where T : class, new();
 
-		T GetById<T>(object id) where T : class;
-		IList<T> GetByIds<T>(ICollection ids) where T : class;
+		IList<T> GetAllOrderedBy<T>(string fieldName, bool sortAsc)
+			where T : class, new();
 
-		T FindByValue<T>(string name, object value) where T : class;
-		IList<T> FindAllByValue<T>(string name, object value) where T : class;
-		IList<T> FindByValues<T>(string name, ICollection values) where T : class;
+		T FindByValue<T>(string name, object value)
+			where T : class, new();
+
+		IList<T> FindAllByValue<T>(string name, object value)
+			where T : class, new();
+
+		IList<T> FindByValues<T>(string name, ICollection values)
+			where T : class, new();
 
 		void Flush();
 
-		T Store<T>(T entity) where T : class;
-		IList<T> StoreAll<T>(IList<T> entities) where T : class;
+		IList<T> StoreAll<T>(IList<T> entities)
+			where T : class, new();
 		
-		void Delete<T>(T entity) where T : class;
-		void DeleteAll<T>(IList<T> entities) where T : class;
+		void DeleteAll<T>(IList<T> entities)
+			where T : class, new();
 
 		ITransactionContext BeginTransaction();
 	}

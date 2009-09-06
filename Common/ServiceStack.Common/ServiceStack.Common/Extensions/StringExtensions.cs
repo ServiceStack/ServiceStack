@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.Common.Utils;
@@ -163,6 +164,13 @@ namespace ServiceStack.Common.Extensions
 			}
 
 			return tmp.ToString();
+		}
+
+		public static string UrlFormat(this string url, params string[] urlComponents)
+		{
+			var encodedUrlComponents = new List<string>(urlComponents).ConvertAll(x => x.UrlEncode());
+			
+			return string.Format(url, encodedUrlComponents.ToArray());
 		}
 
 	}

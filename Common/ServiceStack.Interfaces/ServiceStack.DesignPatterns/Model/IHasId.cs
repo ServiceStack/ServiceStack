@@ -1,9 +1,7 @@
-using System;
-
 namespace ServiceStack.DesignPatterns.Model
 {
-	public interface IHasId
+	public interface IHasId<T>
 	{
-		Guid Id { get; }
+		T Id { get; }
 	}
 }

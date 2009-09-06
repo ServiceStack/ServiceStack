@@ -38,6 +38,7 @@ namespace ServiceStack.Common.Tests
 
 			Assert.That(urlEncoded, Is.EqualTo(HttpUtility.UrlEncode(url)));
 		}
+
 		[Test]
 		public void To_UrlDecode()
 		{
@@ -46,6 +47,19 @@ namespace ServiceStack.Common.Tests
 			var decodedUrl = urlEncoded.UrlDecode();
 
 			Assert.That(decodedUrl, Is.EqualTo(url));
+		}
+
+		[Test]
+		public void UrlFormat_encodes_components()
+		{
+			const string url = "http://www.servicestack.net/a?b={0}&d={1}";
+			const string arg1 = "as@if.com";
+			const string arg2 = "&=";
+
+			var urlFormat = url.UrlFormat(arg1, arg2);
+			var expectedUrlFormat = string.Format(url, arg1.UrlEncode(), arg2.UrlEncode());
+
+			Assert.That(urlFormat, Is.EqualTo(expectedUrlFormat));
 		}
 
 	}

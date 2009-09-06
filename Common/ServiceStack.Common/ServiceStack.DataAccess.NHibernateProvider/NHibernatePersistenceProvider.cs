@@ -36,7 +36,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			this.Session.Evict(obj);
 		}
 
-		public void DeleteAll<T>(IList<T> entities) where T : class
+		public void DeleteAll<T>(IList<T> entities)
+			where T : class, new()
 		{
 			foreach (var entity in entities)
 			{
@@ -55,13 +56,15 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			this.Session.Flush();
 		}
 
-		public T FindByValue<T>(string name, object value) where T : class
+		public T FindByValue<T>(string name, object value)
+			where T : class, new()
 		{
 			var list = FindAllByValue<T>(name, value);
 			return list.Count == 0 ? null : list[0];
 		}
 
-		public IList<T> FindAllByValue<T>(string name, object value) where T : class
+		public IList<T> FindAllByValue<T>(string name, object value)
+			where T : class, new()
 		{
 			var list = this.Session.CreateCriteria(typeof (T))
 				.Add(Restrictions.Eq(name, value)).ToList<T>();
@@ -69,7 +72,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> FindByValues<T>(string name, object[] values) where T : class
+		public IList<T> FindByValues<T>(string name, object[] values)
+			where T : class, new()
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .Add(Restrictions.Eq(name, values))
@@ -78,7 +82,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> FindByValues<T>(string name, ICollection values) where T : class
+		public IList<T> FindByValues<T>(string name, ICollection values)
+			where T : class, new()
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .Add(Restrictions.In(name, values))
@@ -87,7 +92,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> GetAll<T>(string orderBy) where T : class
+		public IList<T> GetAll<T>(string orderBy)
+			where T : class, new()
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .AddOrder(Order.Asc(orderBy))
@@ -95,7 +101,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public T GetById<T>(object id) where T : class
+		public T GetById<T>(object id)
+			where T : class, new()
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .Add(Restrictions.Eq(ID_FIELD, id))
@@ -109,7 +116,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return (T)list[0];
 		}
 
-		public IList<T> GetByIds<T>(object[] ids) where T : class
+		public IList<T> GetByIds<T>(object[] ids)
+			where T : class, new()
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .Add(Restrictions.In(ID_FIELD, ids))
@@ -118,7 +126,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> GetByIds<T>(ICollection ids) where T : class
+		public IList<T> GetByIds<T>(ICollection ids)
+			where T : class, new()
 		{
 			var list = this.Session.CreateCriteria(typeof(T))
 				 .Add(Restrictions.In(ID_FIELD, ids))
@@ -127,12 +136,14 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return list;
 		}
 
-		public IList<T> GetAll<T>() where T : class
+		public IList<T> GetAll<T>()
+			where T : class, new()
 		{
 			return this.Session.CreateCriteria(typeof(T)).ToList<T>();
 		}
 
-		public IList<T> GetAllOrderedBy<T>(string fieldName, bool sortAsc) where T : class
+		public IList<T> GetAllOrderedBy<T>(string fieldName, bool sortAsc)
+			where T : class, new()
 		{
 			var orderBy = sortAsc ? Order.Asc(fieldName) : Order.Desc(fieldName);
 			return this.Session.CreateCriteria(typeof(T))
@@ -140,13 +151,15 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 				 .ToList<T>();
 		}
 
-		public T Store<T>(T obj) where T : class
+		public T Store<T>(T obj)
+			where T : class, new()
 		{
 			this.Session.Save(obj);
 			return obj;
 		}
 
-		public IList<T> StoreAll<T>(IList<T> entities) where T : class
+		public IList<T> StoreAll<T>(IList<T> entities)
+			where T : class, new()
 		{
 			foreach (var entity in entities)
 			{
@@ -155,7 +168,8 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 			return entities;
 		}
 
-		public void Delete<T>(T obj) where T : class
+		public void Delete<T>(T obj)
+			where T : class, new()
 		{
 			this.Session.Delete(obj);
 		}

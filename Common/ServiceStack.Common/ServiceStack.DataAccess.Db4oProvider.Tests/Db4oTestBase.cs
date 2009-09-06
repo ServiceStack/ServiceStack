@@ -19,6 +19,8 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 
 		public class PreferredCustomer : Customer
 		{
+			public PreferredCustomer(){}
+
 			public PreferredCustomer(long id, string firstName, string lastName)
 				: base(id, firstName, lastName)
 			{}
@@ -28,6 +30,10 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 
 		public class Customer
 		{
+			public Customer()
+			{
+			}
+
 			public Customer(long id, string firstName, string lastName)
 			{
 				Id = id;

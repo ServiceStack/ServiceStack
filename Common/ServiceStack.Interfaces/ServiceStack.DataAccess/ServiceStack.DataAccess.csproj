@@ -41,6 +41,7 @@
     <Compile Include="Criteria\PagingCriteria.cs" />
     <Compile Include="DataAccessException.cs" />
     <Compile Include="IAggregatable.cs" />
+    <Compile Include="IBasicPersistenceProvider.cs" />
     <Compile Include="IPersistenceProvider.cs" />
     <Compile Include="IPersistenceProviderManager.cs" />
     <Compile Include="IPersistenceProviderManagerFactory.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="ITransactionContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IQueryable.cs" />
+    <Compile Include="IndexAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

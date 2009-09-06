@@ -6,7 +6,7 @@ namespace ServiceStack.Common.Extensions
 {
 	public static class IEnumerableExtensions
 	{
-		public static IEnumerable<To> ConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
+		public static List<To> ConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
 		{
 			var list = new List<To>();
 			foreach (var item in items)
@@ -14,6 +14,25 @@ namespace ServiceStack.Common.Extensions
 				list.Add(converter(item));
 			}
 			return list;
+		}
+
+		public static List<To> ConvertAll<To>(this IEnumerable items, Func<object, To> converter)
+		{
+			var list = new List<To>();
+			foreach (var item in items)
+			{
+				list.Add(converter(item));
+			}
+			return list;
+		}
+
+		public static object First(this IEnumerable items)
+		{
+			foreach (var item in items)
+			{
+				return item;
+			}
+			return null;
 		}
 
 		public static List<To> ToList<To>(this IEnumerable items)

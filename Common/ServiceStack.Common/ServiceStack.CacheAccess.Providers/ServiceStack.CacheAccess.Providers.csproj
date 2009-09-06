@@ -57,17 +57,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicPersistenceProviderCacheBase.cs" />
     <Compile Include="CacheManager.cs" />
     <Compile Include="FileSystemXmlCacheClient.cs" />
     <Compile Include="MemoryCacheClient.cs" />
     <Compile Include="MemcachedClientCache.cs" />
     <Compile Include="MultiCacheClient.cs" />
+    <Compile Include="OrmLitePersistenceProviderCache.cs" />
+    <Compile Include="PersistenceProviderCache.cs" />
+    <Compile Include="PersistenceProviderCacheFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
+      <Name>ServiceStack.OrmLite</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>

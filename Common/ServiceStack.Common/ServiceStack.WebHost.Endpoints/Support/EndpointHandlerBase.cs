@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var isLoopback = IPAddress.IsLoopback(address);
 
-			//log.DebugFormat("Request IPAddress: '{0}', loopback = '{1}'", address, isLoopback);
+			//Log.DebugFormat("Request IPAddress: '{0}', loopback = '{1}'", address, isLoopback);
 
 			if (isLoopback)
 			{

@@ -39,7 +39,15 @@
   <ItemGroup>
     <Compile Include="ICacheClient.cs" />
     <Compile Include="ICacheManager.cs" />
+    <Compile Include="IPersistenceProviderCache.cs" />
+    <Compile Include="IPersistenceProviderCacheFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.DataAccess\ServiceStack.DataAccess.csproj">
+      <Project>{D732C853-AB76-4277-B6CE-6C7DA57901B7}</Project>
+      <Name>ServiceStack.DataAccess</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

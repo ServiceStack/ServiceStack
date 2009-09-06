@@ -5,6 +5,7 @@ namespace ServiceStack.DataAccess
 {
 	public interface IQueryablePersistenceProvider : IPersistenceProvider, IQueryable
 	{
-		IList<T> GetAll<T>(ICriteria criteria) where T : class;
+		IList<T> GetAll<T>(ICriteria criteria)
+			where T : class, new();
 	}
 }

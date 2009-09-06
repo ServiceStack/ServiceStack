@@ -35,6 +35,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Enyim.Caching.dll</HintPath>
     </Reference>
+    <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
@@ -64,6 +68,8 @@
     <Compile Include="CacheTest.cs" />
     <Compile Include="MemcachedClientTests.cs" />
     <Compile Include="MemoryCacheClientTests.cs" />
+    <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
+    <Compile Include="OrmLitePersistenceProviderCacheTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +84,14 @@
     <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
       <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
       <Name>ServiceStack.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">
+      <Project>{CF68A37D-D071-469D-AE04-68594CB95382}</Project>
+      <Name>ServiceStack.OrmLite.Sqlite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
+      <Name>ServiceStack.OrmLite</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

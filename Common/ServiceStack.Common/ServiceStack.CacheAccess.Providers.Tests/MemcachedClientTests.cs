@@ -4,6 +4,7 @@ using ServiceStack.Configuration;
 
 namespace ServiceStack.CacheAccess.Providers.Tests
 {
+	[Ignore("Integration test which requires Memcached installed")]
 	[TestFixture]
 	public class MemcachedClientTests : CacheClientTestBase
 	{

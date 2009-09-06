@@ -39,7 +39,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return list;
 		}
 
-		public void DeleteAll<T>(IList<T> entities) where T : class
+		public void DeleteAll<T>(IList<T> entities) 
+			where T : class, new()
 		{
 			foreach (var entity in entities)
 			{
@@ -62,14 +63,16 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			this.ObjectContainer.Rollback();
 		}
 
-		public IList<T> GetAll<T>() where T : class
+		public IList<T> GetAll<T>()
+			where T : class, new()
 		{
 			var query = this.ObjectContainer.Query();
 			query.Constrain(typeof(T));
 			return ConvertToList<T>(query.Execute());
 		}
 
-		public IList<T> GetAllOrderedBy<T>(string name, bool sortAsc) where T : class
+		public IList<T> GetAllOrderedBy<T>(string name, bool sortAsc)
+			where T : class, new()
 		{
 			var type = typeof(T);
 			var query = this.ObjectContainer.Query();
@@ -86,7 +89,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return ConvertToList<T>(query.Execute());
 		}
 
-		public T GetById<T>(object id) where T : class
+		public T GetById<T>(object id)
+			where T : class, new()
 		{
 			if (id == null)
 				throw new ArgumentNullException("id");
@@ -95,14 +99,16 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return entity ?? FindByValue<T>(IdPropertyName, id);
 		}
 
-		private T GetByInternalId<T>(object id) where T : class
+		private T GetByInternalId<T>(object id)
+			where T : class, new()
 		{
 			if (id.GetType().IsAssignableFrom(typeof(long)))
 			{
 				var type = id.GetType();
 				var fieldInfo = GetFieldInfo(IdPropertyName, typeof(T));
 				var isPotentialInternalId = fieldInfo != null
-											&& fieldInfo.FieldType.IsAssignableFrom(typeof(long));
+					&& fieldInfo.FieldType.IsAssignableFrom(typeof(long));
+
 				if (isPotentialInternalId)
 				{
 					var idValue = (long)id;
@@ -135,7 +141,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return null;
 		}
 
-		public IList<T> GetByIds<T>(object[] ids) where T : class
+		public IList<T> GetByIds<T>(object[] ids)
+			where T : class, new()
 		{
 			if (ids.Count() == 0)
 			{
@@ -144,18 +151,21 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return GetByIds<T>((ICollection)ids);
 		}
 
-		public IList<T> GetByIds<T>(ICollection ids) where T : class
+		public IList<T> GetByIds<T>(ICollection ids)
+			where T : class, new()
 		{
 			return FindByValues<T>(IdPropertyName, ids);
 		}
 
-		public T FindByValue<T>(string name, object value) where T : class
+		public T FindByValue<T>(string name, object value)
+			where T : class, new()
 		{
 			var results = FindAllByValue<T>(name, value);
 			return results.Count > 0 ? results[0] : null;
 		}
 
-		public IList<T> FindAllByValue<T>(string name, object value) where T : class
+		public IList<T> FindAllByValue<T>(string name, object value)
+			where T : class, new()
 		{
 			if (name == null)
 				throw new ArgumentNullException("name");
@@ -204,8 +214,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 		{
 			var fieldNameKey = type.FullName + ":" + name;
 
-			const string BACKING_FIELD = "<{0}>k__BackingField";
-			var backingField = string.Format(BACKING_FIELD, name);
+			const string backingFieldFormat = "<{0}>k__BackingField";
+			var backingField = string.Format(backingFieldFormat, name);
 			var camelCaseName = name.Substring(0, 1).ToLower() + name.Substring(1);
 			var possibleMatches = new[] { name, backingField, camelCaseName, "_" + name, "m_" + name }.ToList();
 
@@ -230,7 +240,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 				string.Format("Could not find underlying field name '{0}' in type '{1}'", name, type.FullName));
 		}
 
-		public IList<T> FindByValues<T>(string name, object[] values) where T : class
+		public IList<T> FindByValues<T>(string name, object[] values)
+			where T : class, new()
 		{
 			return FindByValues<T>(name, (ICollection)values);
 		}
@@ -280,7 +291,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			}
 		}
 
-		public IList<T> FindByValues<T>(string name, ICollection values) where T : class
+		public IList<T> FindByValues<T>(string name, ICollection values)
+			where T : class, new()
 		{
 			if (name == null)
 				throw new ArgumentNullException("name");
@@ -308,7 +320,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 
 		public void Flush() { }
 
-		public T Store<T>(T entity) where T : class
+		public T Store<T>(T entity)
+			where T : class, new()
 		{
 			this.ObjectContainer.Store(entity);
 			try
@@ -333,7 +346,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return entity;
 		}
 
-		public IList<T> StoreAll<T>(IList<T> entities) where T : class
+		public IList<T> StoreAll<T>(IList<T> entities)
+			where T : class, new()
 		{
 			foreach (var entity in entities)
 			{
@@ -342,7 +356,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return entities;
 		}
 
-		public void StoreAll<T>(IEnumerable<T> entities) where T : class
+		public void StoreAll<T>(IEnumerable<T> entities)
+			where T : class, new()
 		{
 			foreach (var entity in entities)
 			{
@@ -350,7 +365,8 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			}
 		}
 
-		public IList<T> GetAll<T>(ICriteria criteria) where T : class
+		public IList<T> GetAll<T>(ICriteria criteria)
+			where T : class, new()
 		{
 			var query = this.ObjectContainer.Query();
 			query.Constrain(typeof(T));
@@ -398,12 +414,14 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			}
 		}
 
-		public void Delete<T>(T entity) where T : class
+		public void Delete<T>(T entity)
+			where T : class, new()
 		{
 			this.ObjectContainer.Delete(entity);
 		}
 
-		public void DeleteAll<T>(IEnumerable<T> entities) where T : class
+		public void DeleteAll<T>(IEnumerable<T> entities)
+			where T : class, new()
 		{
 			foreach (var entity in entities)
 			{

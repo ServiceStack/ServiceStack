@@ -40,7 +40,11 @@
     <Compile Include="Command\ICommandIList.cs" />
     <Compile Include="Command\ICommandList.cs" />
     <Compile Include="Command\ICommandVoid.cs" />
+    <Compile Include="Model\IHasGuidId.cs" />
     <Compile Include="Model\IHasId.cs" />
+    <Compile Include="Model\IHasIntId.cs" />
+    <Compile Include="Model\IHasLongId.cs" />
+    <Compile Include="Model\IHasStringId.cs" />
     <Compile Include="Model\IHasUserId.cs" />
     <Compile Include="Model\IHasUserSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
