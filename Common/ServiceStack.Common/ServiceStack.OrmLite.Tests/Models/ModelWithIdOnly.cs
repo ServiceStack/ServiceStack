@@ -6,12 +6,13 @@ namespace ServiceStack.OrmLite.Tests.Models
 		{
 		}
 
-		public ModelWithIdOnly(int id)
+		public ModelWithIdOnly(long id)
 		{
 			Id = id;
 		}
 
-		public int Id { get; set; }
+		// must be long as you cannot have a table with only an autoincrement field
+		public long Id { get; set; }
 
 	}
 }

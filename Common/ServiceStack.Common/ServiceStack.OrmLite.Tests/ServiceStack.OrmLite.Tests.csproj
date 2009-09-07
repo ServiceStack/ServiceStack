@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\ModelWithIdOnly.cs" />
     <Compile Include="OrmLiteBasicPersistenceProviderTests.cs" />
     <Compile Include="OrmLiteDeleteTests.cs" />
     <Compile Include="OrmLiteUpdateTests.cs" />
@@ -63,7 +64,7 @@
     <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
     <Compile Include="Models\ModelWithLongIdAndStringFields.cs" />
     <Compile Include="Models\ModelWithOnlyStringFields.cs" />
-    <Compile Include="Models\ModelWithIdOnly.cs" />
+    <Compile Include="Models\ModelWithIdAndName.cs" />
     <Compile Include="OrmLiteCreateTableTests.cs" />
     <Compile Include="OrmLiteInsertTests.cs" />
     <Compile Include="OrmLiteTestBase.cs" />

@@ -50,6 +50,8 @@ namespace ServiceStack.OrmLite
 
 			public bool IsPrimaryKey { get; set; }
 
+			public bool AutoIncrement { get; set; }
+
 			public bool IsNullable { get; set; }
 
 			public bool IsUnique { get; set; }
@@ -106,6 +108,8 @@ namespace ServiceStack.OrmLite
 											? Nullable.GetUnderlyingType(propertyInfo.PropertyType)
 											: propertyInfo.PropertyType;
 
+						var autoIncrement = isPrimaryKey && propertyType == typeof(int);
+
 						var uniqueAttrs = propertyInfo.GetCustomAttributes(typeof(IndexAttribute), true);
 						var isUnique = uniqueAttrs.Count() > 0 && ((IndexAttribute) uniqueAttrs[0]).Unique;
 
@@ -115,6 +119,7 @@ namespace ServiceStack.OrmLite
 							PropertyInfo = propertyInfo,
 							IsNullable = isNullableType,
 							IsPrimaryKey = isPrimaryKey,
+							AutoIncrement = autoIncrement,
 							IsUnique = isUnique,
 							ConvertValueFn = DialectProvider.ConvertDbValue,
 							QuoteValueFn = DialectProvider.GetQuotedValue,
@@ -143,7 +148,8 @@ namespace ServiceStack.OrmLite
 				var columnDefinition = DialectProvider.GetColumnDefinition(
 					fieldDef.Name,
 					fieldDef.FieldType,
-					fieldDef.IsPrimaryKey,
+					fieldDef.IsPrimaryKey, 
+					fieldDef.AutoIncrement,
 					fieldDef.IsNullable);
 
 				sbColumns.AppendLine(columnDefinition);
@@ -386,6 +392,8 @@ namespace ServiceStack.OrmLite
 			var tableType = objWithProperties.GetType();
 			foreach (var fieldDef in GetFieldDefinitions(tableType))
 			{
+				if (fieldDef.AutoIncrement) continue;
+
 				if (sbColumnNames.Length > 0) sbColumnNames.Append(",");
 				if (sbColumnValues.Length > 0) sbColumnValues.Append(",");
 
@@ -402,6 +410,8 @@ namespace ServiceStack.OrmLite
 
 			var sql = string.Format("INSERT INTO \"{0}\" ({1}) VALUES ({2});",
 									tableType.Name, sbColumnNames, sbColumnValues);
+
+			Log.DebugFormat(sql.ToString());
 
 			return sql;
 		}

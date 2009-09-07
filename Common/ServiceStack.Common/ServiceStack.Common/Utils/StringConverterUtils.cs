@@ -13,12 +13,12 @@ namespace ServiceStack.Common.Utils
 	/// </summary>
 	public static class StringConverterUtils
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(StringConverterUtils));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(StringConverterUtils));
 
-		const string PARSE_METHOD = "Parse";
-		const string PARSE_STRING_ARRAY_METHOD = "ParseStringArray";
-		const char ITEM_SEPERATOR = ',';
-		const char KEY_VALUE_SEPERATOR = ':';
+		const string ParseMethod = "Parse";
+		const string ParseStringArrayMethod = "ParseStringArray";
+		const char ItemSeperator = ',';
+		const char KeyValueSeperator = ':';
 
 		private class TypeDefinition
 		{
@@ -74,7 +74,7 @@ namespace ServiceStack.Common.Utils
 
 				if (Type == typeof(string[]))
 				{
-					ParseMethod = GetType().GetMethod(PARSE_STRING_ARRAY_METHOD, 
+					ParseMethod = GetType().GetMethod(ParseStringArrayMethod, 
 						BindingFlags.Public | BindingFlags.Static, null,
 						new[] { typeof(string) }, null);
 					
@@ -82,7 +82,7 @@ namespace ServiceStack.Common.Utils
 				}
 
 				// Get the static Parse(string) method on the type supplied
-				ParseMethod = useType.GetMethod(PARSE_METHOD, BindingFlags.Public | BindingFlags.Static, null,
+				ParseMethod = useType.GetMethod(StringConverterUtils.ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
 											 new[] { typeof(string) }, null);
 
 				if (ParseMethod == null)
@@ -171,7 +171,7 @@ namespace ServiceStack.Common.Utils
 			{
 				var list = this.TypeConstructor.Invoke(new object[] { });
 				if (string.IsNullOrEmpty(text)) return list;
-				var textValues = text.Split(ITEM_SEPERATOR);
+				var textValues = text.Split(ItemSeperator);
 				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[0]);
 				foreach (var textValue in textValues)
 				{
@@ -188,9 +188,9 @@ namespace ServiceStack.Common.Utils
 				var map = this.TypeConstructor.Invoke(new object[] { });
 				var keyTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[keyIndex]);
 				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[valueIndex]);
-				foreach (var item in textValue.Split(ITEM_SEPERATOR))
+				foreach (var item in textValue.Split(ItemSeperator))
 				{
-					var keyValuePair = item.Split(KEY_VALUE_SEPERATOR);
+					var keyValuePair = item.Split(KeyValueSeperator);
 					var keyValue = keyTypeConverter.GetValue(keyValuePair[keyIndex]);
 					var value = valueTypeConverter.GetValue(keyValuePair[valueIndex]);
 					SetGenericCollection(map, new[] { keyValue, value });
@@ -208,7 +208,7 @@ namespace ServiceStack.Common.Utils
 				}
 				catch (Exception ex)
 				{
-					log.WarnFormat("Could not set generic collection '{0}' with values '{1}'\n {2}",
+					Log.WarnFormat("Could not set generic collection '{0}' with values '{1}'\n {2}",
 								   genericObj.GetType().FullName, genericValues, ex.Message);
 				}
 			}
@@ -230,7 +230,7 @@ namespace ServiceStack.Common.Utils
 			}
 
 			// Get the static Parse(string) method on the type supplied
-			var parseMethodInfo = type.GetMethod(PARSE_METHOD, BindingFlags.Public | BindingFlags.Static, null,
+			var parseMethodInfo = type.GetMethod(ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
 												 new[] { typeof(string) }, null);
 			if (parseMethodInfo != null)
 			{

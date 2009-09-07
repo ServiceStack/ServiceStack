@@ -71,6 +71,25 @@ namespace ServiceStack.OrmLite.Tests
 		}
 
 		[Test]
+		public void Can_preserve_ModelWithIdAndName_table()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithIdAndName>(false);
+
+				dbCmd.Insert(new ModelWithIdAndName(1));
+				dbCmd.Insert(new ModelWithIdAndName(2));
+
+				dbCmd.CreateTable<ModelWithIdAndName>(false);
+
+				var rows = dbCmd.Select<ModelWithIdAndName>();
+
+				Assert.That(rows, Has.Count(2));
+			}
+		}
+
+		[Test]
 		public void Can_overwrite_ModelWithIdOnly_table()
 		{
 			using (var db = ConnectionString.OpenDbConnection())

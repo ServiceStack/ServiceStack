@@ -13,6 +13,6 @@ namespace ServiceStack.OrmLite
 
 		IDbConnection CreateConnection(string connectionString);
 
-		string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool isNullable);
+		string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable);
 	}
 }

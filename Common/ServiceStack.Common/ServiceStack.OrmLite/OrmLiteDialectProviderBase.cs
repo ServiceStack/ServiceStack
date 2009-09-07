@@ -60,7 +60,7 @@ namespace ServiceStack.OrmLite
 		#endregion
 
 		public string StringColumnDefinition = "VARCHAR(8192)";
-		public string IntColumnDefinition = "INT";
+		public string IntColumnDefinition = "INTEGER";
 		public string LongColumnDefinition = "BIGINT";
 		public string GuidColumnDefinition = "GUID";
 		public string BoolColumnDefinition = "BOOL";
@@ -161,7 +161,7 @@ namespace ServiceStack.OrmLite
 				string.Format("Property of type: {0} is not supported", fieldType.FullName));
 		}
 
-		public virtual string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool isNullable)
+		public virtual string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable)
 		{
 			string fieldDefinition;
 			if (!columnTypeMap.TryGetValue(fieldType, out fieldDefinition))
@@ -175,6 +175,10 @@ namespace ServiceStack.OrmLite
 			if (isPrimaryKey)
 			{
 				sql.Append(" PRIMARY KEY");
+				if (autoIncrement)
+				{
+					sql.Append(" AUTOINCREMENT");
+				}
 			}
 			else
 			{
