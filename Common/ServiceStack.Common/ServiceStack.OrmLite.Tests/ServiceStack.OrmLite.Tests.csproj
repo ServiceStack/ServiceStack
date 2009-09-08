@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Models\ModelWithIdOnly.cs" />
     <Compile Include="OrmLiteBasicPersistenceProviderTests.cs" />
+    <Compile Include="OrmLiteConnectionTests.cs" />
     <Compile Include="OrmLiteDeleteTests.cs" />
     <Compile Include="OrmLiteUpdateTests.cs" />
     <Compile Include="OrmLiteSelectTests.cs" />
