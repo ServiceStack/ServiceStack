@@ -11,14 +11,14 @@ namespace ServiceStack.CacheAccess.Providers
 {
 	public abstract class BasicPersistenceProviderCacheBase : IPersistenceProviderCache
 	{
-		protected ICacheClient CacheClient { get; set; }
+		public ICacheClient CacheClient { get; set; }
 
 		protected BasicPersistenceProviderCacheBase(ICacheClient cacheClient)
 		{
 			CacheClient = cacheClient;
 		}
 
-		protected abstract IBasicPersistenceProvider GetBasicPersistenceProvider();
+		public abstract IBasicPersistenceProvider GetBasicPersistenceProvider();
 
 		public TEntity GetById<TEntity>(object entityId)
 			where TEntity : class, new()

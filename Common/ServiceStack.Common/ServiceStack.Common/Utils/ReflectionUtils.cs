@@ -106,9 +106,9 @@ namespace ServiceStack.Common.Utils
 			}
 		}
 
-		public static object PopulateObject(object to, object from)
+		public static To PopulateObject<To, From>(To to, From from)
 		{
-			if (to == null || from == null) return null;
+			if (Equals(to, default(To)) || Equals(from, default(From))) return default(To);
 
 			var assignmentDefinition = GetAssignmentDefinition(to.GetType(), from.GetType());
 
@@ -117,9 +117,9 @@ namespace ServiceStack.Common.Utils
 			return to;
 		}
 
-		public static object PopulateWithNonDefaultValues(object to, object from)
+		public static To PopulateWithNonDefaultValues<To, From>(To to, From from)
 		{
-			if (to == null || from == null) return null;
+			if (Equals(to, default(To)) || Equals(from, default(From))) return default(To);
 
 			var assignmentDefinition = GetAssignmentDefinition(to.GetType(), from.GetType());
 
@@ -128,10 +128,10 @@ namespace ServiceStack.Common.Utils
 			return to;
 		}
 
-		public static object PopulateFromPropertiesWithAttribute(object to, object from, 
+		public static To PopulateFromPropertiesWithAttribute<To, From>(To to, From from, 
 			Type attributeType)
 		{
-			if (to == null || from == null) return null;
+			if (Equals(to, default(To)) || Equals(from, default(From))) return default(To);
 
 			var assignmentDefinition = GetAssignmentDefinition(to.GetType(), from.GetType());
 

@@ -35,7 +35,7 @@ namespace ServiceStack.Validation.Tests
 			var errors = ModelValidator.ValidateObject(new ExampleModel1()).Errors;
 			Assert.That(errors.Count, Is.EqualTo(errorFieldNames.Count));
 
-			Assert.That(errors.ToList().All(x => x.ErrorCode == ErrorCodes.FieldIsRequired.ToString()));
+			Assert.That(errors.ToList().All(x => x.ErrorCode == ValidationErrorCodes.Required.ToString()));
 			Assert.That(errors.ToList().All(x => errorFieldNames.Contains(x.FieldName)));
 		}
 	}

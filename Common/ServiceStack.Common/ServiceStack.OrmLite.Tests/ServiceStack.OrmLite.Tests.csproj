@@ -69,6 +69,7 @@
     <Compile Include="OrmLiteInsertTests.cs" />
     <Compile Include="OrmLiteTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UseCase\SimpleUseCase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">

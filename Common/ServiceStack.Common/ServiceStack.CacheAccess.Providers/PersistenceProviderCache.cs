@@ -12,7 +12,7 @@ namespace ServiceStack.CacheAccess.Providers
 			this.ProviderManager = providerManager;
 		}
 
-		protected override IBasicPersistenceProvider GetBasicPersistenceProvider()
+		public override IBasicPersistenceProvider GetBasicPersistenceProvider()
 		{
 			return this.ProviderManager.GetProvider();
 		}

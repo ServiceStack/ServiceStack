@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Reflection;
 using System.Text;
@@ -23,8 +24,8 @@ namespace ServiceStack.OrmLite.Sqlite
 			foreach (var propertyInfo in objectWithProperties.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
 			{
 				var columnDefinition = (sbColumns.Length == 0)
-                   	? string.Format("{0} TEXT PRIMARY KEY", propertyInfo.Name)
-                   	: string.Format(", {0} TEXT", propertyInfo.Name);
+					? string.Format("{0} TEXT PRIMARY KEY", propertyInfo.Name)
+					: string.Format(", {0} TEXT", propertyInfo.Name);
 
 				sbColumns.AppendLine(columnDefinition);
 			}
@@ -35,7 +36,7 @@ namespace ServiceStack.OrmLite.Sqlite
 			return sql;
 		}
 
-		public override IDbConnection CreateConnection(string connectionString)
+		public override IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options)
 		{
 			var isFullConnectionString = connectionString.Contains(";");
 
@@ -43,6 +44,14 @@ namespace ServiceStack.OrmLite.Sqlite
 			{
 				connectionString =
 					@"Data Source=" + connectionString + ";Version=3;New=True;Compress=True;";
+			}
+
+			if (options != null)
+			{
+				foreach (var option in options)
+				{
+					connectionString += option.Key + "=" + option.Value + ";";
+				}
 			}
 
 			return new SqliteConnection(connectionString);

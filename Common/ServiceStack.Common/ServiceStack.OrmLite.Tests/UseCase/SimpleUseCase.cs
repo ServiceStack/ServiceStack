@@ -14,6 +14,7 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
+			//Inject your database provider here
 			OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
 		}
 

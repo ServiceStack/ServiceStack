@@ -1,9 +1,6 @@
 using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Logging;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.OrmLite.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
 {

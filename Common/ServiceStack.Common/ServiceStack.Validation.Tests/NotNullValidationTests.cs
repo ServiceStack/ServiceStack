@@ -30,7 +30,7 @@ namespace ServiceStack.Validation.Tests
 			Assert.That(result.Errors.Count, Is.EqualTo(1));
 
 			var error = result.Errors[0];
-			Assert.That(error.ErrorCode, Is.EqualTo(ErrorCodes.FieldIsRequired.ToString()));
+			Assert.That(error.ErrorCode, Is.EqualTo(ValidationErrorCodes.Required.ToString()));
 			Assert.That(error.FieldName, Is.EqualTo("NullString"));
 		}
 

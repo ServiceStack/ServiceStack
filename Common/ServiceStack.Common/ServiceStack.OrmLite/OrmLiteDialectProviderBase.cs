@@ -143,7 +143,7 @@ namespace ServiceStack.OrmLite
 			       	: value.ToString();
 		}
 
-		public abstract IDbConnection CreateConnection(string connectionString);
+		public abstract IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options);
 
 		public virtual string EscapeParam(object paramValue)
 		{

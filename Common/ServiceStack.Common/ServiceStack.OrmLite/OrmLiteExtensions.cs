@@ -111,7 +111,7 @@ namespace ServiceStack.OrmLite
 						var autoIncrement = isPrimaryKey && propertyType == typeof(int);
 
 						var uniqueAttrs = propertyInfo.GetCustomAttributes(typeof(IndexAttribute), true);
-						var isUnique = uniqueAttrs.Count() > 0 && ((IndexAttribute) uniqueAttrs[0]).Unique;
+						var isUnique = uniqueAttrs.Count() > 0 && ((IndexAttribute)uniqueAttrs[0]).Unique;
 
 						var fieldDefinition = new FieldDefinition {
 							Name = propertyInfo.Name,
@@ -148,16 +148,16 @@ namespace ServiceStack.OrmLite
 				var columnDefinition = DialectProvider.GetColumnDefinition(
 					fieldDef.Name,
 					fieldDef.FieldType,
-					fieldDef.IsPrimaryKey, 
+					fieldDef.IsPrimaryKey,
 					fieldDef.AutoIncrement,
 					fieldDef.IsNullable);
 
 				sbColumns.AppendLine(columnDefinition);
 
-				var propertyAttrs = fieldDef.PropertyInfo.GetCustomAttributes(typeof (IndexAttribute), true);
+				var propertyAttrs = fieldDef.PropertyInfo.GetCustomAttributes(typeof(IndexAttribute), true);
 				foreach (var attr in propertyAttrs)
 				{
-					var indexAttr = (IndexAttribute) attr;
+					var indexAttr = (IndexAttribute)attr;
 					indexAttrs.Add(new IndexAttribute(indexAttr.Unique, fieldDef.Name));
 				}
 			}
@@ -170,7 +170,7 @@ namespace ServiceStack.OrmLite
 
 				var indexName = string.Format("{0}idx_{1}_{2}", indexAttr.Unique ? "u" : "",
 					tableType.Name, string.Join("_", indexAttr.FieldNames.ToArray())).ToLower();
-	
+
 				var indexNames = string.Join(" ASC, ", indexAttr.FieldNames.ToArray());
 
 				sql.AppendFormat("CREATE {0} INDEX {1} ON \"{2}\" ({3} ASC); \n",
@@ -501,16 +501,16 @@ namespace ServiceStack.OrmLite
 			where T : new()
 		{
 			var tableType = typeof(T);
-			
-			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE Id = {1}", 
+
+			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE Id = {1}",
 				tableType.Name, DialectProvider.GetQuotedValue(id, id.GetType()));
-			
+
 			dbCommand.ExecuteNonQuery();
 		}
 
 		public static IDbConnection ToDbConnection(this string dbConnectionStringOrFilePath)
 		{
-			return DialectProvider.CreateConnection(dbConnectionStringOrFilePath);
+			return DialectProvider.CreateConnection(dbConnectionStringOrFilePath, null);
 		}
 
 		public static IDbConnection OpenDbConnection(this string dbConnectionStringOrFilePath)
@@ -518,6 +518,22 @@ namespace ServiceStack.OrmLite
 			try
 			{
 				var sqlConn = dbConnectionStringOrFilePath.ToDbConnection();
+				sqlConn.Open();
+				return sqlConn;
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
+		}
+
+		public static IDbConnection OpenReadOnlyDbConnection(this string dbConnectionStringOrFilePath)
+		{
+			try
+			{
+				var options = new Dictionary<string, string> { { "Read Only", "True" } };
+
+				var sqlConn = DialectProvider.CreateConnection(dbConnectionStringOrFilePath, options);
 				sqlConn.Open();
 				return sqlConn;
 			}

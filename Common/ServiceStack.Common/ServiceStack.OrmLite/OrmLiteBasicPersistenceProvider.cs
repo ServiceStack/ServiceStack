@@ -18,7 +18,7 @@ namespace ServiceStack.OrmLite
 		protected bool disposeConnection = true;
 
 		protected IDbConnection connection;
-		protected IDbConnection Connection
+		public IDbConnection Connection
 		{
 			get
 			{

@@ -20,7 +20,7 @@ namespace ServiceStack.CacheAccess.Providers
 			provider = new OrmLiteBasicPersistenceProvider(dbConnection);
 		}
 
-		protected override IBasicPersistenceProvider GetBasicPersistenceProvider()
+		public override IBasicPersistenceProvider GetBasicPersistenceProvider()
 		{
 			return provider;
 		}
