@@ -71,9 +71,14 @@
     <Compile Include="Support\Version100\Operations\StoreCustomer.cs" />
     <Compile Include="Support\Version100\Types\Customer.cs" />
     <Compile Include="TestBase.cs" />
+    <Compile Include="CreateFromLargestConstructorTypeFactoryTests.cs" />
     <Compile Include="ZeroConfigServiceResolverTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
+      <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
+      <Name>ServiceStack.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>

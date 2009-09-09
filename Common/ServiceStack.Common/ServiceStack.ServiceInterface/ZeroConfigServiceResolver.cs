@@ -19,14 +19,14 @@ namespace ServiceStack.ServiceInterface
 	public class ZeroConfigServiceResolver
 		: IServiceResolver
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(ZeroConfigServiceResolver));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(ZeroConfigServiceResolver));
 
 		private int minVersion;
 		private int maxVersion;
 		private IDictionary<int, IDictionary<string, Type>> handlerCacheByVersion;
 		private IDictionary<string, List<int>> handlerVersions;
-		private static readonly Regex handlerTypeNameRegex = new Regex(@".*\.Version([0-9]+)\.(.*)Handler$", RegexOptions.Compiled);
-		private static readonly Regex operationTypeRegex = new Regex(@".*Version([0-9]+)\..*", RegexOptions.Compiled);
+		private static readonly Regex HandlerTypeNameRegex = new Regex(@".*\.Version([0-9]+)\.(.*)Handler$", RegexOptions.Compiled);
+		private static readonly Regex OperationTypeRegex = new Regex(@".*Version([0-9]+)\..*", RegexOptions.Compiled);
 
 		/// <summary>
 		/// Returns a list of ALL operation types available in this service, required for WSDL generation.
@@ -34,6 +34,8 @@ namespace ServiceStack.ServiceInterface
 		public Regex DefaultAllOperationsMatch = new Regex(@"\.Operations\.");
 		public Regex AllOperationsMatch { get; set; }
 		public IList<Type> AllOperationTypes { get; protected set; }
+
+		public Func<Type, object> HandlerFactory { get; set; }
 
 		public ZeroConfigServiceResolver(Assembly serviceInterfaceAssembly, Assembly serviceModelAssembly, string operationNamespace)
 		{
@@ -45,6 +47,13 @@ namespace ServiceStack.ServiceInterface
 			LoadHandlers(serviceInterfaceAssembly);
 
 			SortOperationVersions();
+
+			this.HandlerFactory = DefaultCreateHandlerFactory;
+		}
+
+		private static object DefaultCreateHandlerFactory(Type type)
+		{
+			return Activator.CreateInstance(type);
 		}
 
 		private void LoadHandlers(Assembly serviceInterfaceAssembly)
@@ -54,19 +63,19 @@ namespace ServiceStack.ServiceInterface
 
 			foreach (Type portType in serviceInterfaceAssembly.GetTypes())
 			{
-				const int VERSION_INDEX = 1;
-				const int PORT_NAME_INDEX = 2;
+				const int versionIndex = 1;
+				const int portNameIndex = 2;
 				IDictionary<string, Type> handlerTypeCache;
 
-				Match match = handlerTypeNameRegex.Match(portType.Namespace + "." + portType.Name);
+				Match match = HandlerTypeNameRegex.Match(portType.Namespace + "." + portType.Name);
 
 				if (!match.Success)
 				{
 					continue;
 				}
 
-				int versionNumber = Convert.ToInt32(match.Groups[VERSION_INDEX].Value);
-				string operationName = match.Groups[PORT_NAME_INDEX].Value;
+				int versionNumber = Convert.ToInt32(match.Groups[versionIndex].Value);
+				string operationName = match.Groups[portNameIndex].Value;
 
 				if (!this.handlerVersions.ContainsKey(operationName))
 				{
@@ -98,8 +107,6 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
-
-
 		private void SortOperationVersions()
 		{
 			foreach (var list in this.handlerVersions.Values)
@@ -127,10 +134,10 @@ namespace ServiceStack.ServiceInterface
 					{
 						if (!serviceModelType.Namespace.Contains("Version"))
 						{
-							log.WarnFormat("Ignoring DTO candidate: '{0}'", serviceModelType.FullName);
+							Log.WarnFormat("Ignoring DTO candidate: '{0}'", serviceModelType.FullName);
 							continue;
 						}
-						Match match = operationTypeRegex.Match(serviceModelType.FullName);
+						Match match = OperationTypeRegex.Match(serviceModelType.FullName);
 						string versionText = match.Groups[1].Value;
 						int version = Convert.ToInt32(versionText);
 
@@ -141,7 +148,7 @@ namespace ServiceStack.ServiceInterface
 					}
 					catch (Exception ex)
 					{
-						log.ErrorFormat("Exception in ServiceModelFinderBase() parsing type: '{0}'",
+						Log.ErrorFormat("Exception in ServiceModelFinderBase() parsing type: '{0}'",
 							serviceModelType.FullName, ex);
 
 						throw;
@@ -196,7 +203,7 @@ namespace ServiceStack.ServiceInterface
 					return null;
 				}
 
-				return Activator.CreateInstance(type);
+				return HandlerFactory(type);
 			}
 
 			throw new NotSupportedException(string.Format("This service supports versions '{0}' to '{1}' version provided was '{2}'", 
@@ -232,5 +239,6 @@ namespace ServiceStack.ServiceInterface
 
 			return null;
 		}
+
 	}
 }

@@ -346,6 +346,20 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			return entity;
 		}
 
+		public void StoreAll<TEntity>(params TEntity[] entities) 
+			where TEntity : class, new()
+		{
+			using (var dbTrans = this.BeginTransaction())
+			{
+				foreach (var entity in entities)
+				{
+					this.Store(entity);
+				}
+
+				dbTrans.Commit();
+			}
+		}
+
 		public IList<T> StoreAll<T>(IList<T> entities)
 			where T : class, new()
 		{

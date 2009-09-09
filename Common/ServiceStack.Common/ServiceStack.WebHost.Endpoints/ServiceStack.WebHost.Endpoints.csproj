@@ -59,9 +59,7 @@
     <Compile Include="EndpointHostBase.cs" />
     <Compile Include="EndpointType.cs" />
     <Compile Include="Extensions\IHttpResponseExtensions.cs" />
-    <Compile Include="Extensions\Backup\HttpListenerResponseExtensions.cs" />
     <Compile Include="Extensions\HttpListenerResponseWrapper.cs" />
-    <Compile Include="Extensions\Backup\HttpResponseExtensions.cs" />
     <Compile Include="Extensions\HttpRequestExtensions.cs" />
     <Compile Include="Extensions\HttpResponseWrapper.cs" />
     <Compile Include="Extensions\IHttpResponse.cs" />

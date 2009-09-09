@@ -59,6 +59,20 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 		}
 
+		public void StoreAll<TEntity>(params TEntity[] entities) 
+			where TEntity : class, new()
+		{
+			using (var db = GetBasicPersistenceProvider())
+			{
+				db.StoreAll(entities);
+			}
+
+			foreach (var entity in entities)
+			{
+				this.SetCache(entity);
+			}
+		}
+
 		public List<TEntity> GetByIds<TEntity>(ICollection entityIds)
 			where TEntity : class, new()
 		{

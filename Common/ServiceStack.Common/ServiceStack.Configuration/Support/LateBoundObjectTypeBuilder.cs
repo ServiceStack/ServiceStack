@@ -17,14 +17,14 @@ namespace ServiceStack.Configuration.Support
 	/// </summary>
 	internal class LateBoundObjectTypeBuilder
 	{
-		private const string ERROR_NO_MATCHING_CONSTRUCTOR = "No matching constructor found for type '{0}'";
-		private const string ERROR_NO_PROPERTY_EXISTS = "No property named '{0}' was found on type '{1}'";
-		private const string ERROR_PROPERTY_TYPE_NOT_SUPPORTED = "setting property '{0}' on type '{1}' not supported";
-		private const string ERROR_SETTING_PROPERTY = "Cannot set property '{0}' on type '{1}'";
-		private const string ERROR_SETTING_REF_PROPERTY = "Cannot set ref property '{0}' on type '{1}'";
-		private const string ERROR_CREATING_TYPE = "Error creating type '{0}'";
-		private const string ERROR_TYPE_NOT_FOUND = "Could not find type '{0}'";
-		private const string ERROR_REF_NOT_FOUND = "Could not find type definition identified by ref '{0}'";
+		private const string ErrorNoMatchingConstructor = "No matching constructor found for type '{0}'";
+		private const string ErrorNoPropertyExists = "No property named '{0}' was found on type '{1}'";
+		private const string ErrorPropertyTypeNotSupported = "setting property '{0}' on type '{1}' not supported";
+		private const string ErrorSettingProperty = "Cannot set property '{0}' on type '{1}'";
+		private const string ErrorSettingRefProperty = "Cannot set ref property '{0}' on type '{1}'";
+		private const string ErrorCreatingType = "Error creating type '{0}'";
+		private const string ErrorTypeNotFound = "Could not find type '{0}'";
+		private const string ErrorRefNotFound = "Could not find type definition identified by ref '{0}'";
 
 		private readonly ObjectConfigurationTypeFactory factory;
 		private readonly Type objectType;
@@ -43,7 +43,7 @@ namespace ServiceStack.Configuration.Support
 			objectType = AssemblyUtils.FindType(objectTypeDefinition.Type);
 			if (objectType == null)
 			{
-				throw new TypeLoadException(string.Format(ERROR_TYPE_NOT_FOUND, objectTypeDefinition.Type));
+				throw new TypeLoadException(string.Format(ErrorTypeNotFound, objectTypeDefinition.Type));
 			}
 			constructorValueTypes = new List<Type>();
 			constructorRefTypes = new List<RefType>();
@@ -105,7 +105,7 @@ namespace ServiceStack.Configuration.Support
 				}
 			}
 			//if it got this far no matching constructor *that we can use* has been found
-			throw new TypeLoadException(string.Format(ERROR_NO_MATCHING_CONSTRUCTOR, objectType.Name));
+			throw new TypeLoadException(string.Format(ErrorNoMatchingConstructor, objectType.Name));
 		}
 
 		private RefType GetRefType(string definitionRef, Type paramType)
@@ -113,13 +113,13 @@ namespace ServiceStack.Configuration.Support
 			var refTypeDefinition = factory.GetObjectDefinition(definitionRef);
 			if (refTypeDefinition == null)
 			{
-				throw new TypeLoadException(string.Format(ERROR_REF_NOT_FOUND, definitionRef));
+				throw new TypeLoadException(string.Format(ErrorRefNotFound, definitionRef));
 			}
 
 			var type = AssemblyUtils.FindType(refTypeDefinition.Type);
 			if (type == null)
 			{
-				throw new TypeLoadException(string.Format(ERROR_TYPE_NOT_FOUND, refTypeDefinition.Type));
+				throw new TypeLoadException(string.Format(ErrorTypeNotFound, refTypeDefinition.Type));
 			}
 
 			return ReflectionUtils.CanCast(paramType, type) ? new RefType(definitionRef, paramType) : null;
@@ -138,7 +138,7 @@ namespace ServiceStack.Configuration.Support
 				if (pi == null)
 				{
 					throw new TypeLoadException(
-						string.Format(ERROR_NO_PROPERTY_EXISTS, propertyDefinition.Name, objectType.Name));
+						string.Format(ErrorNoPropertyExists, propertyDefinition.Name, objectType.Name));
 				}
 				if (!string.IsNullOrEmpty(propertyDefinition.Ref))
 				{
@@ -146,7 +146,7 @@ namespace ServiceStack.Configuration.Support
 					if (refType == null)
 					{
 						throw new TypeLoadException(
-							string.Format(ERROR_SETTING_REF_PROPERTY, propertyDefinition.Name, objectType.Name));
+							string.Format(ErrorSettingRefProperty, propertyDefinition.Name, objectType.Name));
 					}
 					propertyRefTypes.Add(refType);
 					properties.Add(pi);
@@ -160,7 +160,7 @@ namespace ServiceStack.Configuration.Support
 				else
 				{
 					throw new TypeLoadException(
-						string.Format(ERROR_PROPERTY_TYPE_NOT_SUPPORTED, propertyDefinition.Name, objectType.Name));
+						string.Format(ErrorPropertyTypeNotSupported, propertyDefinition.Name, objectType.Name));
 				}
 			}
 		}
@@ -253,14 +253,14 @@ namespace ServiceStack.Configuration.Support
 					}
 					catch (Exception ex)
 					{
-						throw new TypeLoadException(string.Format(ERROR_SETTING_PROPERTY, pi.Name, objectType.Name), ex);
+						throw new TypeLoadException(string.Format(ErrorSettingProperty, pi.Name, objectType.Name), ex);
 					}
 				}
 				return objectInstance;
 			}
 			catch (Exception ex)
 			{
-				throw new TypeLoadException(string.Format(ERROR_CREATING_TYPE, objectType.Name), ex);
+				throw new TypeLoadException(string.Format(ErrorCreatingType, objectType.Name), ex);
 			}
 		}
 	}

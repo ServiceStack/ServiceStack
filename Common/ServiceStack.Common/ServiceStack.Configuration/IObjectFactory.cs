@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack.Configuration
 {
 	/// <summary>
@@ -11,6 +13,13 @@ namespace ServiceStack.Configuration
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		T Create<T>();
+
+		/// <summary>
+		/// Creates an instance of the specified type.
+		/// </summary>
+		/// <param name="type">The type.</param>
+		/// <returns></returns>
+		object Create(Type type);
 		
 		/// <summary>
 		/// Creates an instance of type T

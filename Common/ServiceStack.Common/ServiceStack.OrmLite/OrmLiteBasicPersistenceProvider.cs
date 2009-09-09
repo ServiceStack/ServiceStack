@@ -64,18 +64,38 @@ namespace ServiceStack.OrmLite
 		{
 			using (var dbCmd = this.Connection.CreateCommand())
 			{
-				var id = IdUtils.GetId(entity);
-				var existingEntity = dbCmd.GetByIdOrDefault<T>(id);
-				if (existingEntity != null)
+				return InsertOrUpdate(dbCmd, entity);
+			}
+		}
+
+		private static T InsertOrUpdate<T>(IDbCommand dbCmd, T entity)
+			where T : class, new()
+		{
+			var id = IdUtils.GetId(entity);
+			var existingEntity = dbCmd.GetByIdOrDefault<T>(id);
+			if (existingEntity != null)
+			{
+				existingEntity.PopulateWith(entity);
+				dbCmd.Update(entity);
+
+				return existingEntity;
+			}
+
+			dbCmd.Insert(entity);
+			return entity;
+		}
+
+		public void StoreAll<TEntity>(params TEntity[] entities) 
+			where TEntity : class, new()
+		{
+			using (var dbCmd = this.Connection.CreateCommand())
+			using (var dbTrans = this.Connection.BeginTransaction())
+			{
+				foreach (var entity in entities)
 				{
-					existingEntity.PopulateWith(entity);
-					dbCmd.Update(entity);
-
-					return existingEntity;
+					InsertOrUpdate(dbCmd, entity);
 				}
-
-				dbCmd.Insert(entity);
-				return entity;
+				dbTrans.Commit();
 			}
 		}
 

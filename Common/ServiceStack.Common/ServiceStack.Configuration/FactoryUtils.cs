@@ -11,11 +11,11 @@ namespace ServiceStack.Configuration
 	/// </summary>
 	public class FactoryUtils 
 	{
-		private const string OBJECTS_SECTION_NAME = "objects";
-		private const string ERROR_APP_SETTING_NOT_FOUND = "AppSetting {0} not specified";
-		private const string ERROR_TYPE_NOT_FOUND = "Could not find type {0}";
-		private const string ERROR_CREATING_TYPE = "Error creating {0} type: '{1}'";
-		private const string ERROR_CONFIG_SECTION_NOT_FOUND = "The config section {0} is not defined";
+		private const string ObjectsSectionName = "objects";
+		private const string ErrorAppSettingNotFound = "AppSetting {0} not specified";
+		private const string ErrorTypeNotFound = "Could not find type {0}";
+		private const string ErrorCreatingType = "Error creating {0} type: '{1}'";
+		private const string ErrorConfigSectionNotFound = "The config section {0} is not defined";
 
 		private static IObjectFactory objectFactory;
 
@@ -31,7 +31,7 @@ namespace ServiceStack.Configuration
 			string typeName = ConfigurationManager.AppSettings[appSettingName];
 			if (string.IsNullOrEmpty(typeName))
 			{
-				throw new ArgumentException(string.Format(ERROR_APP_SETTING_NOT_FOUND, appSettingName));
+				throw new ArgumentException(string.Format(ErrorAppSettingNotFound, appSettingName));
 			}
 			try
 			{
@@ -39,7 +39,7 @@ namespace ServiceStack.Configuration
 			}
 			catch (Exception e)
 			{
-				throw new TypeLoadException(string.Format(ERROR_CREATING_TYPE, typeof(T).Name, typeName), e);
+				throw new TypeLoadException(string.Format(ErrorCreatingType, typeof(T).Name, typeName), e);
 			}
 		}
 
@@ -64,7 +64,7 @@ namespace ServiceStack.Configuration
 			if (objectTypes == null)
 			{
 				throw new ConfigurationErrorsException(
-					string.Format(ERROR_CONFIG_SECTION_NOT_FOUND, sectionName));
+					string.Format(ErrorConfigSectionNotFound, sectionName));
 			}
 			return CreateObjectFactoryFromConfig(objectTypes);
 		}
@@ -80,7 +80,7 @@ namespace ServiceStack.Configuration
 			{
 				if (objectFactory == null)
 				{
-					objectFactory = CreateObjectFactoryFromConfig(OBJECTS_SECTION_NAME);
+					objectFactory = CreateObjectFactoryFromConfig(ObjectsSectionName);
 				}
 				return objectFactory;
 			}
@@ -113,7 +113,7 @@ namespace ServiceStack.Configuration
 			Type factoryType = AssemblyUtils.FindType(factoryTypeName);
 			if (factoryType == null)
 			{
-				throw new TypeLoadException(string.Format(ERROR_TYPE_NOT_FOUND, factoryTypeName));
+				throw new TypeLoadException(string.Format(ErrorTypeNotFound, factoryTypeName));
 			}
 			return Create<T>(factoryType);
 		}

@@ -11,7 +11,7 @@ namespace ServiceStack.ServiceInterface
 		private readonly ILog log = LogManager.GetLogger(typeof(FactoryProvider));
 
 		private IObjectFactory Factory { get; set; }
-		private static readonly object semaphore = new object();
+		private static readonly object ReadWriteLock = new object();
 		List<IDisposable> Disposables { get; set; }
 		private Dictionary<string, object> ConfigInstanceCache { get; set; }
 		private Dictionary<Type, object> RuntimeInstanceCache { get; set; }
@@ -91,6 +91,17 @@ namespace ServiceStack.ServiceInterface
 			return this.Factory != null ? this.Factory.Create<T>() : default(T);
 		}
 
+		public object Resolve(Type type)
+		{
+			var key = FindTypeLookup(type);
+			if (key != null && this.RuntimeInstanceCache.ContainsKey(key))
+			{
+				return this.RuntimeInstanceCache[key];
+			}
+			//This will throw an exception if there is more than 1 match for typeof(T)
+			return this.Factory != null ? this.Factory.Create(type) : null;
+		}
+
 		/// <summary>
 		/// Gets a cached instance of a factory object.
 		/// </summary>
@@ -129,7 +140,7 @@ namespace ServiceStack.ServiceInterface
 		public T Create<T>(string name)
 		{
 			AssertFactory();
-			lock (semaphore)
+			lock (ReadWriteLock)
 			{
 				var instance = Factory.Create<T>(name);
 				RegisterDisposable(instance);

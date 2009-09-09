@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack.Configuration
 {
 	public class EmptyObjectFactory : IObjectFactory
@@ -5,6 +7,11 @@ namespace ServiceStack.Configuration
 		public T Create<T>()
 		{
 			return default(T);
+		}
+
+		public object Create(Type type)
+		{
+			return null;
 		}
 
 		public T Create<T>(string objectName)

@@ -50,5 +50,11 @@ namespace ServiceStack.ServiceInterface
 		/// <param name="version">The version.</param>
 		/// <returns></returns>
 		Type FindOperationType(string operationName, int? version);
+
+		/// <summary>
+		/// Gets or sets the handler factory.
+		/// </summary>
+		/// <value>The handler factory.</value>
+		Func<Type, object> HandlerFactory { get; set; }
 	}
 }

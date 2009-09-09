@@ -69,6 +69,27 @@ namespace ServiceStack.Configuration.Support
 			return Create<T>(matchingTypes[0].Key);
 		}
 
+		public object Create(Type toType)
+		{
+			if (objectTypes == null)
+			{
+				//TODO: implement properly so it navigates all config types for the bestmatch (like registered providers)
+				return Create(toType.Name, toType);
+			}
+			var matchingTypes = objectTypes.Where(objectType => ReflectionUtils.CanCast(toType, objectType.Value)).ToList();
+			if (matchingTypes.Count == 0)
+			{
+				return null;
+			}
+			if (matchingTypes.Count > 1)
+			{
+				throw new AmbiguousMatchException(
+					string.Format("There are '{0}' possible matches available for type '{1}'. You must reference ambiguous matches by name.",
+						matchingTypes.Count, toType.FullName));
+			}
+			return Create(matchingTypes[0].Key, toType);
+		}
+
 		public T Create<T>(string objectName)
 		{
 			return (T)Create(objectName, typeof(T));

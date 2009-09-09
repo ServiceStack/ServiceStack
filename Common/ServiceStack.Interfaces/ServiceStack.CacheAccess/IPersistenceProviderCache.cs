@@ -9,13 +9,16 @@ namespace ServiceStack.CacheAccess
 		TEntity GetById<TEntity>(object entityId)
 			where TEntity : class, new();
 
+		List<TEntity> GetByIds<TEntity>(ICollection entityIds)
+			where TEntity : class, new();
+
 		void SetCache<TEntity>(TEntity entity)
 			where TEntity : class, new();
 
 		void Store<TEntity>(TEntity entity)
 			where TEntity : class, new();
 
-		List<TEntity> GetByIds<TEntity>(ICollection entityIds)
+		void StoreAll<TEntity>(params TEntity[] entities)
 			where TEntity : class, new();
 
 		void ClearAll<TEntity>(ICollection entityIds)

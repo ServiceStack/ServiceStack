@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ServiceStack.Logging;
 using NHibernate;
@@ -156,6 +157,20 @@ namespace ServiceStack.DataAccess.NHibernateProvider
 		{
 			this.Session.Save(obj);
 			return obj;
+		}
+
+		public void StoreAll<TEntity>(params TEntity[] entities) 
+			where TEntity : class, new()
+		{
+			using (var dbTrans = this.Session.BeginTransaction())
+			{
+				foreach (var entity in entities)
+				{
+					this.Store(entity);
+				}
+
+				dbTrans.Commit();
+			}
 		}
 
 		public IList<T> StoreAll<T>(IList<T> entities)
