@@ -92,7 +92,7 @@ namespace ServiceStack.OrmLite
 					var objProperties = type.GetProperties(
 						BindingFlags.Public | BindingFlags.Instance).ToList();
 
-					var hasIdField = objProperties.Where(x => x.Name == IdField).Count() == 1;
+					var hasIdField = CheckForIdField(objProperties);
 
 					var i = 0;
 					foreach (var propertyInfo in objProperties)
@@ -133,6 +133,21 @@ namespace ServiceStack.OrmLite
 
 				return fieldDefinitions;
 			}
+		}
+
+		/// <summary>
+		/// Not using Linq.Where() and manually iterating through objProperties just to avoid dependencies on System.Xml??
+		/// </summary>
+		/// <param name="objProperties">The obj properties.</param>
+		/// <returns></returns>
+		private static bool CheckForIdField(IEnumerable<PropertyInfo> objProperties)
+		{
+			foreach (var objProperty in objProperties)
+			{
+				if (objProperty.Name != IdField) continue;
+				return true;
+			}
+			return false;
 		}
 
 		public static string ToCreateTableStatement(this Type tableType)

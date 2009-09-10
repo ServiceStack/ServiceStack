@@ -4,7 +4,8 @@ using System.Web;
 namespace ServiceStack.WebHost.Endpoints.Support
 {
 	/// <summary>
-	/// Highly optimized code to find if GZIP is supported
+	/// Highly optimized code to find if GZIP is supported from:
+	///  - http://dotnetperls.com/gzip-request
 	/// 
 	/// Other resources for GZip, deflate resources:
 	/// - http://www.west-wind.com/Weblog/posts/10564.aspx
