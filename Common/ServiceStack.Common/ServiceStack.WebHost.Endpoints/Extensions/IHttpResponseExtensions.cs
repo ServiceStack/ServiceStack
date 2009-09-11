@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						if (responseHeaders.Key.Contains(reservedOptions)) continue;
 
-						if (responseHeaders.Key == ContentType.HeaderContentType)
+						if (ContentType.HeaderContentType.Equals(responseHeaders.Key, StringComparison.InvariantCultureIgnoreCase))
 						{
 							response.ContentType = responseHeaders.Value;
 						}

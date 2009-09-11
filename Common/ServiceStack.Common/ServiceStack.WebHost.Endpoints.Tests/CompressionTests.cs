@@ -93,5 +93,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Log.Debug("Content-length: " + writtenBytes.Length);
 			Log.Debug(BitConverter.ToString(writtenBytes));
 		}
+
+
+
+		[Test]
+		public void Can_gzip_and_gunzip_SimpleDto()
+		{
+			var simpleDto = new TestCompress(1, "name");
+
+			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
+
+			var simpleDtoZip = simpleDtoXml.Gzip();
+
+			Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
+
+			var deserializedSimpleDtoXml = simpleDtoZip.Gunzip();
+
+			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
+
+			var deserializedSimpleDto = DataContractDeserializer.Instance.Parse<TestCompress>(
+				deserializedSimpleDtoXml);
+
+			Assert.That(deserializedSimpleDto, Is.Not.Null);
+
+			Assert.That(deserializedSimpleDto.Id, Is.EqualTo(simpleDto.Id));
+			Assert.That(deserializedSimpleDto.Name, Is.EqualTo(simpleDto.Name));
+		}
+
 	}
 }

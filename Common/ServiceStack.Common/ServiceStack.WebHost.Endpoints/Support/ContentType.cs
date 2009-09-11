@@ -2,7 +2,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public class ContentType
 	{
-		public const string HeaderContentType = "Content-type";
+		public const string HeaderContentType = "Content-Type";
 
 		public const string Html = "text/html";
 

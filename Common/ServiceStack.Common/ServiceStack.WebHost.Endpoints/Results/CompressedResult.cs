@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Results
 				throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
 			}
 
-			Contents = contents;
+			this.Contents = contents;
 			this.HttpHeaders = new Dictionary<string, string> {
            		{ "Content-Type", contentType },
 				{ "Content-Encoding", compressionType },
