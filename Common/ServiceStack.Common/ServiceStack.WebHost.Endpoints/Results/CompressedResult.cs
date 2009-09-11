@@ -42,8 +42,8 @@ namespace ServiceStack.WebHost.Endpoints.Results
 
 			Contents = contents;
 			this.HttpHeaders = new Dictionary<string, string> {
-           		{ "Content-type", contentType },
-				{ "Content-encoding", compressionType },
+           		{ "Content-Type", contentType },
+				{ "Content-Encoding", compressionType },
            	};
 		}
 
