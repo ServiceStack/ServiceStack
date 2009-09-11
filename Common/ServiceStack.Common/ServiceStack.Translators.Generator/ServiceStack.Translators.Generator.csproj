@@ -37,11 +37,11 @@
     <Reference Include="Microsoft.VisualC" />
     <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Build\ServiceStack.dll</HintPath>
+      <HintPath>..\..\..\release\latest\ServiceStack.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\..\release\latest\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">

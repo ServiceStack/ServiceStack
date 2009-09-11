@@ -51,7 +51,6 @@ namespace ServiceStack.WebHost.Endpoints
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
 			AssertConfig();
-
 			return Config.ServiceHost.ExecuteService(request, endpointAttributes);
 		}
 

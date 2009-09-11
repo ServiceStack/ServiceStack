@@ -12,5 +12,7 @@ namespace ServiceStack.LogicFacade
 		string IpAddress { get; }
 
 		EndpointAttributes EndpointAttributes { get; }
+		
+		IRequestAttributes RequestAttributes { get; }
 	}
 }

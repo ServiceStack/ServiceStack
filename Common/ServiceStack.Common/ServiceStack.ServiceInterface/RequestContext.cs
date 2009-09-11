@@ -18,11 +18,17 @@ namespace ServiceStack.ServiceInterface
 			this.Dto = dto;
 			this.EndpointAttributes = endpointAttributes;
 			this.Factory = factory;
+			this.RequestAttributes = new RequestAttributes(HttpContext.Current);
 		}
 
 		public object Dto { get; set; }
 
 		public EndpointAttributes EndpointAttributes { get; set; }
+
+		public IRequestAttributes RequestAttributes
+		{
+			get; private set;
+		}
 
 		public T Get<T>() where T : class
 		{
