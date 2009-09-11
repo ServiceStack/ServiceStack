@@ -23,6 +23,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			}
 		}
 
+		public byte[] GetOutputStreamAsBytes()
+		{
+			var ms = (MemoryStream) this.OutputStream;
+			return ms.ToArray();
+		}
+
 		public StringBuilder TextWritten
 		{
 			get;

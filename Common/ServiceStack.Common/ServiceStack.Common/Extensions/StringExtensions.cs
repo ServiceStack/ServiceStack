@@ -125,12 +125,6 @@ namespace ServiceStack.Common.Extensions
 					|| charCode >= 48 && charCode <= 57		// 0-9
 					|| charCode == 45						// - 
 					|| charCode == 46						// .
-					// || charCode == 47					// /
-					// || charCode == 38					// &
-					// || charCode == 58					// :
-					// || charCode == 61					// =
-					// || charCode == 63					// ?
-					// || charCode == 126					// ~
 					)
 				{
 					tmp.Append(c);

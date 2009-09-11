@@ -39,7 +39,7 @@ namespace ServiceStack.ServiceInterface.Tests
 		{
 			var requestContext = new RequestContext(new GetCustomer { CustomerId = 1 }, null);
 
-			var factory = new FactoryProvider(requestContext);
+			var factory = new FactoryProvider(requestContext);			
 
 			var resolver = new PortResolver(GetType().Assembly) {
 				HandlerFactory = new CreateFromLargestConstructorTypeFactory(factory).Create

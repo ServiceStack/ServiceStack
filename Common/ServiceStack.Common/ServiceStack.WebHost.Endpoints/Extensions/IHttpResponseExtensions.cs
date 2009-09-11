@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -75,7 +76,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						if (responseHeaders.Key.Contains(reservedOptions)) continue;
 
-						response.Headers[responseHeaders.Key] = responseHeaders.Value;
+						if (responseHeaders.Key == ContentType.HeaderContentType)
+						{
+							response.ContentType = responseHeaders.Value;
+						}
+						else
+						{
+							response.Headers[responseHeaders.Key] = responseHeaders.Value;
+						}
 					}
 				}
 
@@ -105,7 +113,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
-				response.WriteErrorToResponse(errorMessage, ex);
+
+				var operationName = result != null
+					? result.GetType().Name.Replace("Response", "")
+					: "OperationName";
+
+				response.WriteErrorToResponse(operationName, errorMessage, ex);
 				return true;
 			}
 			finally
@@ -135,12 +148,19 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
-		public static void WriteErrorToResponse(this IHttpResponse response, string errorMessage, Exception ex)
+		public static void WriteErrorToResponse(this IHttpResponse response,
+			string operationName, string errorMessage, Exception ex)
 		{
-			var responseXml = string.Format("<Error>\n\t<Message>{0}</Message>\n\t<StackTrace>\n\t\t{1}\n\t</StackTrace>\n</Error>",
-				errorMessage, ex.StackTrace);
+			var sb = new StringBuilder();
+			sb.AppendFormat("<{0}Response>\n", operationName);
+			sb.AppendLine("<ResponseStatus>");
+			sb.AppendFormat("<ErrorCode>{0}</ErrorCode>\n", ex.GetType().Name);
+			sb.AppendFormat("<ErrorMessage>{0}</ErrorMessage>\n", ex.Message.EncodeXml());
+			sb.AppendFormat("<StackTrace>{0}</StackTrace>\n", ex.StackTrace.EncodeXml());
+			sb.AppendLine("</ResponseStatus>");
+			sb.AppendFormat("</{0}Response>", operationName);
 
-			WriteTextToResponse(response, responseXml, ContentType.XmlText);
+			WriteTextToResponse(response, sb.ToString(), ContentType.XmlText);
 		}
 
 	}

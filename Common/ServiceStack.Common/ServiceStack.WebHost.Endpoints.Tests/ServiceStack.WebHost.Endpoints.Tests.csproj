@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompressionTests.cs" />
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
     <Compile Include="Support\Operations\GetCustomerResponse.cs" />
@@ -76,6 +77,14 @@
     <Compile Include="Support\Types\Customer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
+      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
+      <Name>ServiceStack.ServiceModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.WebHost.Endpoints\ServiceStack.WebHost.Endpoints.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack.WebHost.Endpoints</Name>

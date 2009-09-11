@@ -43,6 +43,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -56,6 +59,7 @@
   <ItemGroup>
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
     <Compile Include="Expressions\ExpressionTests.cs" />
+    <Compile Include="StreamExtensions.cs" />
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="StringConverterUtilsTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
@@ -69,6 +73,10 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
+      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
+      <Name>ServiceStack.ServiceModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Validation\ServiceStack.Validation.csproj">
       <Project>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</Project>

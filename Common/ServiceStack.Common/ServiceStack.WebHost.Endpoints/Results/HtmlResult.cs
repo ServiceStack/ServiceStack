@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Results
 	{
 		public HtmlResult()
 		{
-			this.HttpHeaders = new Dictionary<string, string> { { "ContentType", "text/html" } };
+			this.HttpHeaders = new Dictionary<string, string> { { "Content-type", "text/html" } };
 			this.Html = new StringBuilder();
 		}
 

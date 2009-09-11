@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
@@ -38,6 +39,27 @@ namespace ServiceStack.ServiceModel.Serialization
 			catch (Exception ex)
 			{
 				throw new SerializationException(string.Format("Error serializing object of type {0}", from.GetType().FullName), ex);
+			}
+		}
+
+		public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
+		{
+			using (var deflateStream = new DeflateStream(stream, CompressionMode.Compress))
+			using (var xw = new XmlTextWriter(deflateStream, Encoding.UTF8))
+			{
+				var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
+				serializer.WriteObject(xw, from);
+				xw.Flush();
+			}
+		}
+
+		public byte[] Compress<XmlDto>(XmlDto from)
+		{
+			using (var ms = new MemoryStream())
+			{
+				CompressToStream(from, ms);
+				
+				return ms.ToArray();
 			}
 		}
 

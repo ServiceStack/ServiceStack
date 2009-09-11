@@ -15,9 +15,9 @@ namespace ServiceStack.WebHost.Endpoints
 		public override void ProcessRequest(HttpContext context)
 		{
 			var response = new HttpResponseWrapper(context.Response);
+			var operationName = context.Request.GetOperationName();
 			try
 			{
-				var operationName = context.Request.GetOperationName();
 				if (string.IsNullOrEmpty(operationName)) return;
 
 				var request = CreateRequest(context.Request, operationName);
@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
 
-				response.WriteErrorToResponse(errorMessage, ex);
+				response.WriteErrorToResponse(operationName, errorMessage, ex);
 			}
 		}
 	}
