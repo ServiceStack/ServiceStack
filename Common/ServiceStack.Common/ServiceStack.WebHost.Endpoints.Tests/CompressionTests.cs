@@ -78,6 +78,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var simpleDtoZip = simpleDtoXml.Compress();
 
+			Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
+
 			var compressedResult = new CompressedResult(simpleDtoZip);
 
 			var reponseWasAutoHandled = mockResponse.WriteToResponse(
@@ -85,9 +87,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Assert.That(reponseWasAutoHandled, Is.True);
 
+			var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
+			Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);
+
 			var writtenBytes = mockResponse.GetOutputStreamAsBytes();
-			Assert.That(writtenBytes, Is.EqualTo(simpleDtoZip));
-			Assert.That(mockResponse.Headers[HttpHeaders.ContentType], Is.EqualTo(MimeTypes.Xml));
+			Assert.That(writtenBytes, Is.EqualTo(bytesToWriteToResponseStream));
+			Assert.That(mockResponse.ContentType, Is.EqualTo(MimeTypes.Xml));
 			Assert.That(mockResponse.Headers[HttpHeaders.ContentEncoding], Is.EqualTo(CompressionTypes.Deflate));
 
 			Log.Debug("Content-length: " + writtenBytes.Length);

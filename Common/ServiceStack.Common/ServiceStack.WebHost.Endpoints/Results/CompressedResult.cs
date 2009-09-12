@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Results
 
 		public void WriteTo(Stream stream)
 		{
-			stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length);
+			stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
 			stream.Flush();
 		}
 
