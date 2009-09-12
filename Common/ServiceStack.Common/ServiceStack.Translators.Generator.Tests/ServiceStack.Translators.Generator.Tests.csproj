@@ -103,10 +103,6 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Translators.Generator\ServiceStack.Translators.Generator.csproj">
-      <Project>{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}</Project>
-      <Name>ServiceStack.Translators.Generator</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Build\genetate-translators.bat" />

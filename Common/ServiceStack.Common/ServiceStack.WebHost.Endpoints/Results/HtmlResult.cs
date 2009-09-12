@@ -11,17 +11,17 @@ namespace ServiceStack.WebHost.Endpoints.Results
 	{
 		public HtmlResult()
 		{
-			this.HttpHeaders = new Dictionary<string, string> { { "Content-type", "text/html" } };
+			this.Headers = new Dictionary<string, string> { { HttpHeaders.ContentType, MimeTypes.Html } };
 			this.Html = new StringBuilder();
 		}
 
 		public StringBuilder Html { get; set; }
 
-		public Dictionary<string, string> HttpHeaders { get; set; }
+		public Dictionary<string, string> Headers { get; set; }
 
 		public IDictionary<string, string> Options
 		{
-			get { return this.HttpHeaders; }
+			get { return this.Headers; }
 		}
 
 		public void WriteTo(Stream stream)

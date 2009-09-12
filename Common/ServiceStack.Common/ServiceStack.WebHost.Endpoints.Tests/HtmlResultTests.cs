@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 				return new HtmlResult {
 					Html = new StringBuilder(html),
-					HttpHeaders = { { "Location", url } },
+					Headers = { { "Location", url } },
 				};
 			}
 		}

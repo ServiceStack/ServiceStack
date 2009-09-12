@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Configuration;
 using ServiceStack.Service;
 
 namespace ServiceStack.WebHost.Endpoints.Results
 {
-	public class CompressedResult
+	public class CompressedFileResult
 		: IStreamWriter, IHasOptions
 	{
 		public const int Adler32ChecksumLength = 4;
 
 		public const string DefaultContentType = MimeTypes.Xml;
 
-		public byte[] Contents { get; private set; }
+		public string FilePath { get; private set; }
 
 		public Dictionary<string, string> Headers { get; private set; }
 
@@ -22,20 +23,20 @@ namespace ServiceStack.WebHost.Endpoints.Results
 			get { return this.Headers; }
 		}
 
-		public CompressedResult(byte[] contents)
-			: this(contents, CompressionTypes.Deflate) { }
+		public CompressedFileResult(string filePath)
+			: this(filePath, CompressionTypes.Deflate) { }
 
-		public CompressedResult(byte[] contents, string compressionType)
-			: this(contents, compressionType, DefaultContentType) { }
+		public CompressedFileResult(string filePath, string compressionType)
+			: this(filePath, compressionType, DefaultContentType) { }
 
-		public CompressedResult(byte[] contents, string compressionType, string contentMimeType)
+		public CompressedFileResult(string filePath, string compressionType, string contentMimeType)
 		{
 			if (!CompressionTypes.IsValid(compressionType))
 			{
 				throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
 			}
 
-			this.Contents = contents;
+			this.FilePath = filePath;
 			this.Headers = new Dictionary<string, string> {
            		{ HttpHeaders.ContentType, contentMimeType },
 				{ HttpHeaders.ContentEncoding, compressionType },
@@ -44,8 +45,11 @@ namespace ServiceStack.WebHost.Endpoints.Results
 
 		public void WriteTo(Stream stream)
 		{
-			stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length);
-			stream.Flush();
+			using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
+			{
+				fs.WriteTo(stream);
+				stream.Flush();
+			}
 		}
 
 	}

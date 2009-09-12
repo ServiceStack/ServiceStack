@@ -81,14 +81,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var compressedResult = new CompressedResult(simpleDtoZip);
 
 			var reponseWasAutoHandled = mockResponse.WriteToResponse(
-				compressedResult, CompressedResult.Deflate);
+				compressedResult, CompressionTypes.Deflate);
 
 			Assert.That(reponseWasAutoHandled, Is.True);
 
 			var writtenBytes = mockResponse.GetOutputStreamAsBytes();
 			Assert.That(writtenBytes, Is.EqualTo(simpleDtoZip));
-			Assert.That(mockResponse.Headers["Content-type"], Is.EqualTo("text/xml"));
-			Assert.That(mockResponse.Headers["Content-encoding"], Is.EqualTo("deflate"));
+			Assert.That(mockResponse.Headers[HttpHeaders.ContentType], Is.EqualTo(MimeTypes.Xml));
+			Assert.That(mockResponse.Headers[HttpHeaders.ContentEncoding], Is.EqualTo(CompressionTypes.Deflate));
 
 			Log.Debug("Content-length: " + writtenBytes.Length);
 			Log.Debug(BitConverter.ToString(writtenBytes));

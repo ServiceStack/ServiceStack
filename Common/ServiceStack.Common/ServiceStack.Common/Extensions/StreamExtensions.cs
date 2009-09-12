@@ -25,7 +25,27 @@ namespace ServiceStack.Common.Extensions
 			}
 		}
 
+		/// <summary>
+		/// Compresses the specified text using the default compression method: Deflate
+		/// </summary>
+		/// <param name="text">The text.</param>
+		/// <returns></returns>
 		public static byte[] Compress(this string text)
+		{
+			return Deflate(text);
+		}
+
+		/// <summary>
+		/// Decompresses the specified gz buffer using the default compression method: Inflate
+		/// </summary>
+		/// <param name="gzBuffer">The gz buffer.</param>
+		/// <returns></returns>
+		public static string Decompress(this byte[] gzBuffer)
+		{
+			return Inflate(gzBuffer);
+		}
+
+		public static byte[] Deflate(this string text)
 		{
 			var buffer = Encoding.UTF8.GetBytes(text);
 			var ms = new MemoryStream();
@@ -46,7 +66,7 @@ namespace ServiceStack.Common.Extensions
 			return gzBuffer;
 		}
 
-		public static string Decompress(this byte[] gzBuffer)
+		public static string Inflate(this byte[] gzBuffer)
 		{
 			using (var ms = new MemoryStream())
 			{

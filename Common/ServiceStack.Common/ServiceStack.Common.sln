@@ -8,14 +8,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{0722888A-ECD1-44A8-B88E-5F286E0BAEFD}"
 	ProjectSection(SolutionItems) = preProject
 		Build\ilmerge-all.bat = Build\ilmerge-all.bat
-		Build\ServiceStack.dll = Build\ServiceStack.dll
-		Build\ServiceStack.Interfaces.dll = Build\ServiceStack.Interfaces.dll
-		Build\ServiceStack.Translators.Generator.exe = Build\ServiceStack.Translators.Generator.exe
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.NHibernateProvider", "ServiceStack.DataAccess.NHibernateProvider\ServiceStack.DataAccess.NHibernateProvider.csproj", "{480B3BA6-A20C-4626-8783-9865C109C83C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.NantTasks", "ServiceStack.NantTasks\ServiceStack.NantTasks.csproj", "{C1B3955F-56CA-451F-8F56-E78D1C1708F5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DDA3940A-A934-4807-AAF4-006554CC146E}"
 	ProjectSection(SolutionItems) = preProject
@@ -50,10 +45,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.Endpoi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Validation.Tests", "ServiceStack.Validation.Tests\ServiceStack.Validation.Tests.csproj", "{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Translators.Generator", "ServiceStack.Translators.Generator\ServiceStack.Translators.Generator.csproj", "{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Translators.Generator.Tests", "ServiceStack.Translators.Generator.Tests\ServiceStack.Translators.Generator.Tests.csproj", "{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Tests", "ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj", "{3FA9197A-462D-44CC-9AB3-61AF414D0B45}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceInterface.Tests", "ServiceStack.ServiceInterface.Tests\ServiceStack.ServiceInterface.Tests.csproj", "{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}"
@@ -66,8 +57,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Sqlite
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Tests", "ServiceStack.OrmLite.Tests\ServiceStack.OrmLite.Tests.csproj", "{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Tests.ConsoleApp", "ServiceStack.OrmLite.Tests.ConsoleApp\ServiceStack.OrmLite.Tests.ConsoleApp.csproj", "{A28506F6-3A41-4B52-B052-997E92B75DBB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,10 +67,6 @@ Global
 		{480B3BA6-A20C-4626-8783-9865C109C83C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{480B3BA6-A20C-4626-8783-9865C109C83C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{480B3BA6-A20C-4626-8783-9865C109C83C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1B3955F-56CA-451F-8F56-E78D1C1708F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -138,14 +123,6 @@ Global
 		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E11BF7F-BCD4-4111-883A-6C6B7F6752B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C6D29484-75A4-45E4-A50A-4F942E6F5DD4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -170,10 +147,6 @@ Global
 		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A28506F6-3A41-4B52-B052-997E92B75DBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A28506F6-3A41-4B52-B052-997E92B75DBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A28506F6-3A41-4B52-B052-997E92B75DBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A28506F6-3A41-4B52-B052-997E92B75DBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
