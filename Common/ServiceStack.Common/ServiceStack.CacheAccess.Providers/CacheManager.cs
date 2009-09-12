@@ -5,7 +5,7 @@ namespace ServiceStack.CacheAccess.Providers
 {
 	public class CacheManager : ICacheManager
 	{
-		private readonly ICacheClient cacheClient;
+		protected readonly ICacheClient cacheClient;
 
 		public CacheManager(ICacheClient cacheClient)
 		{
@@ -35,4 +35,5 @@ namespace ServiceStack.CacheAccess.Providers
 			this.cacheClient.RemoveAll(cacheKeys);
 		}
 	}
+
 }

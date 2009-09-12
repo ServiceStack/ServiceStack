@@ -64,13 +64,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppConfig.cs" />
     <Compile Include="CacheClientTestBase.cs" />
     <Compile Include="CacheTest.cs" />
+    <Compile Include="JsonCacheManagerTests.cs" />
     <Compile Include="MemcachedClientTests.cs" />
     <Compile Include="MemoryCacheClientTests.cs" />
     <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
     <Compile Include="OrmLitePersistenceProviderCacheTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XmlCacheManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.CacheAccess.Providers\ServiceStack.CacheAccess.Providers.csproj">
@@ -92,6 +95,10 @@
     <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
       <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
       <Name>ServiceStack.OrmLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
+      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
+      <Name>ServiceStack.ServiceModel</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

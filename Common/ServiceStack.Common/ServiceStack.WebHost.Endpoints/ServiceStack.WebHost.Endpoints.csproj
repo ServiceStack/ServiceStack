@@ -56,7 +56,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CompressionTypes.cs" />
     <Compile Include="EndpointHostBase.cs" />
     <Compile Include="EndpointType.cs" />
     <Compile Include="Extensions\IHttpResponseExtensions.cs" />
@@ -70,7 +69,6 @@
     <Compile Include="Results\CompressedFileResult.cs" />
     <Compile Include="Results\FileResult.cs" />
     <Compile Include="Results\HtmlResult.cs" />
-    <Compile Include="MimeTypes.cs" />
     <Compile Include="Support\ContentType.cs" />
     <Compile Include="Support\GzipOptimizationTest.cs" />
     <Compile Include="XmlSyncReplyHttpListener.cs" />

@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;

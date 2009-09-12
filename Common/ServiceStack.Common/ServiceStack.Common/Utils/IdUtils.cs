@@ -43,11 +43,13 @@ namespace ServiceStack.Common.Utils
 		}
 
 		public static string CreateUrn<T>(object id)
+			where T : class
 		{
 			return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
 		}
 
 		public static string CreateUrn<T>(this T entity)
+			where T : class 
 		{
 			var id = GetId(entity);
 			return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);

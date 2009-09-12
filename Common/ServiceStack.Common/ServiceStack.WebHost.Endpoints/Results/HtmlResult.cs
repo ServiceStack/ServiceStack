@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Service;
 

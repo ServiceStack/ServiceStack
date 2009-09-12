@@ -76,6 +76,8 @@
     <Compile Include="Support\CommandResultsHandler.cs" />
     <Compile Include="Support\TypeDefinition.cs" />
     <Compile Include="UrnId.cs" />
+    <Compile Include="Web\CompressionTypes.cs" />
+    <Compile Include="Web\MimeTypes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

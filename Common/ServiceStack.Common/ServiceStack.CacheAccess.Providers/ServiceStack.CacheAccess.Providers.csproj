@@ -59,7 +59,9 @@
   <ItemGroup>
     <Compile Include="BasicPersistenceProviderCacheBase.cs" />
     <Compile Include="CacheManager.cs" />
+    <Compile Include="CacheTextManagerFactory.cs" />
     <Compile Include="FileSystemXmlCacheClient.cs" />
+    <Compile Include="JsonCacheManager.cs" />
     <Compile Include="MemoryCacheClient.cs" />
     <Compile Include="MemcachedClientCache.cs" />
     <Compile Include="MultiCacheClient.cs" />
@@ -67,6 +69,7 @@
     <Compile Include="PersistenceProviderCache.cs" />
     <Compile Include="PersistenceProviderCacheFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="XmlCacheManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">

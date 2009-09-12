@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="ICacheClient.cs" />
     <Compile Include="ICacheManager.cs" />
+    <Compile Include="ICacheTextManager.cs" />
     <Compile Include="IPersistenceProviderCache.cs" />
     <Compile Include="IPersistenceProviderCacheFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

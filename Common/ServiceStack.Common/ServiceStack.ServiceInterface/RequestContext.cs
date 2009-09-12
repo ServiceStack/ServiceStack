@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using ServiceStack.CacheAccess;
 using ServiceStack.Configuration;
 using ServiceStack.LogicFacade;
 using ServiceStack.Service;
@@ -23,12 +24,11 @@ namespace ServiceStack.ServiceInterface
 
 		public object Dto { get; set; }
 
-		public EndpointAttributes EndpointAttributes { get; set; }
+		public EndpointAttributes EndpointAttributes { get; private set; }
 
-		public IRequestAttributes RequestAttributes
-		{
-			get; private set;
-		}
+		public IRequestAttributes RequestAttributes { get; private set; }
+
+		public ICacheTextManager CacheTextManager { get; set; }
 
 		public T Get<T>() where T : class
 		{
