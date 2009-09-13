@@ -63,12 +63,7 @@
     <Compile Include="Extensions\HttpRequestExtensions.cs" />
     <Compile Include="Extensions\HttpResponseWrapper.cs" />
     <Compile Include="Extensions\IHttpResponse.cs" />
-    <Compile Include="HttpHeaders.cs" />
     <Compile Include="MetadataConfig.cs" />
-    <Compile Include="Results\CompressedResult.cs" />
-    <Compile Include="Results\CompressedFileResult.cs" />
-    <Compile Include="Results\FileResult.cs" />
-    <Compile Include="Results\HtmlResult.cs" />
     <Compile Include="Support\ContentType.cs" />
     <Compile Include="Support\GzipOptimizationTest.cs" />
     <Compile Include="XmlSyncReplyHttpListener.cs" />

@@ -37,9 +37,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ICacheClearable.cs" />
     <Compile Include="ICacheClient.cs" />
+    <Compile Include="ICacheHasContentType.cs" />
     <Compile Include="ICacheManager.cs" />
     <Compile Include="ICacheTextManager.cs" />
+    <Compile Include="ICacheTextManagerFactory.cs" />
+    <Compile Include="ICompressableCacheTextManager.cs" />
+    <Compile Include="ICompressableCacheTextManagerFactory.cs" />
+    <Compile Include="IHasCacheClient.cs" />
     <Compile Include="IPersistenceProviderCache.cs" />
     <Compile Include="IPersistenceProviderCacheFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

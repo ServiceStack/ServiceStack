@@ -7,7 +7,6 @@ using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using ServiceStack.WebHost.Endpoints.Results;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 using DataContractSerializer = ServiceStack.ServiceModel.Serialization.DataContractSerializer;
 
@@ -46,11 +45,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
 
-			var simpleDtoZip = simpleDtoXml.Compress();
+			var simpleDtoZip = simpleDtoXml.Deflate();
 
 			Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
 
-			var deserializedSimpleDtoXml = simpleDtoZip.Decompress();
+			var deserializedSimpleDtoXml = simpleDtoZip.Inflate();
 
 			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
 
@@ -77,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Assert.That(simpleDtoXml, Is.EqualTo(expectedXml));
 
-			var simpleDtoZip = simpleDtoXml.Compress();
+			var simpleDtoZip = simpleDtoXml.Deflate();
 
 			Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
 

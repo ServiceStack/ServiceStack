@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Service;
 
-namespace ServiceStack.WebHost.Endpoints.Results
+namespace ServiceStack.Common.Web
 {
 	public class HtmlResult : IStreamWriter,  IHasOptions
 	{

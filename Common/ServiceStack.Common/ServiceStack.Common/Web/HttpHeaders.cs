@@ -1,4 +1,4 @@
-namespace ServiceStack.WebHost.Endpoints
+namespace ServiceStack.Common.Web
 {
 	public static class HttpHeaders
 	{

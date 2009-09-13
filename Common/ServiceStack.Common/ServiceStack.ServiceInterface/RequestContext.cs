@@ -1,6 +1,6 @@
 using System;
 using System.Web;
-using ServiceStack.CacheAccess;
+using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.LogicFacade;
 using ServiceStack.Service;
@@ -28,8 +28,6 @@ namespace ServiceStack.ServiceInterface
 
 		public IRequestAttributes RequestAttributes { get; private set; }
 
-		public ICacheTextManager CacheTextManager { get; set; }
-
 		public T Get<T>() where T : class
 		{
 			var isDto = this.Dto as T;
@@ -38,6 +36,33 @@ namespace ServiceStack.ServiceInterface
 
 		public IFactoryProvider Factory { get; set; }
 
+		public string ContentType
+		{
+			get
+			{
+				if ((this.EndpointAttributes & EndpointAttributes.Json) == EndpointAttributes.Json)
+					return MimeTypes.Json;
+
+				if ((this.EndpointAttributes & EndpointAttributes.Xml) == EndpointAttributes.Xml)
+					return MimeTypes.Xml;
+
+				return null;
+			}
+		}
+
+		public string CompressionType
+		{
+			get
+			{
+				if (this.RequestAttributes.AcceptsDeflate)
+					return CompressionTypes.Deflate;
+
+				if (this.RequestAttributes.AcceptsGzip)
+					return CompressionTypes.GZip;
+
+				return null;
+			}
+		}
 
 		public string IpAddress
 		{

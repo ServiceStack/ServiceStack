@@ -3,8 +3,11 @@ using System;
 namespace ServiceStack.CacheAccess
 {
 	public interface ICacheTextManager 
-		: ICacheManager
+		: IHasCacheClient, ICacheClearable
 	{
-		string ResolveText<T>(string cacheKey, Func<T> createCacheFn) where T : class;
+		string ContentType { get; }
+
+		string ResolveText<T>(string cacheKey, Func<T> createCacheFn) 
+			where T : class;
 	}
 }

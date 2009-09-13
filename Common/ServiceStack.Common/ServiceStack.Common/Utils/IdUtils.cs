@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using ServiceStack.Common.Web;
 using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Common.Utils
@@ -54,5 +56,26 @@ namespace ServiceStack.Common.Utils
 			var id = GetId(entity);
 			return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
 		}
+
+
+		public static string CreateCacheKeyPath<T>(string idValue)
+		{
+			if (idValue.Length < 4)
+			{
+				idValue = idValue.PadLeft(4, '0');
+			}
+			idValue = idValue.Replace(" ", "-");
+
+			var rootDir = typeof(T).Name;
+			var dir1 = idValue.Substring(0, 2);
+			var dir2 = idValue.Substring(2, 2);
+
+			var path = string.Format("{1}{0}{2}{0}{3}{0}{4}", Path.DirectorySeparatorChar,
+				rootDir, dir1, dir2, idValue);
+
+			return path;
+		}
+
 	}
+
 }

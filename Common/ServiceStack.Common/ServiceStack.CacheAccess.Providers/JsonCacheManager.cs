@@ -10,6 +10,16 @@ namespace ServiceStack.CacheAccess.Providers
 		public JsonCacheManager(ICacheClient cacheClient)
 			: base(cacheClient) { }
 
+		public ICacheClient CacheClient
+		{
+			get { return this.cacheClient; }
+		}
+
+		public string ContentType
+		{
+			get { return MimeTypes.Json; }
+		}
+
 		public string ResolveText<T>(string cacheKey, Func<T> createCacheFn)
 			where T : class
 		{

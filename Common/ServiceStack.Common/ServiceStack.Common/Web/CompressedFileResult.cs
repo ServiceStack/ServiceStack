@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Service;
 
-namespace ServiceStack.WebHost.Endpoints.Results
+namespace ServiceStack.Common.Web
 {
 	public class CompressedFileResult
 		: IStreamWriter, IHasOptions
@@ -39,9 +38,9 @@ namespace ServiceStack.WebHost.Endpoints.Results
 
 			this.FilePath = filePath;
 			this.Headers = new Dictionary<string, string> {
-           		{ HttpHeaders.ContentType, contentMimeType },
+				{ HttpHeaders.ContentType, contentMimeType },
 				{ HttpHeaders.ContentEncoding, compressionType },
-           	};
+			};
 		}
 
 		public void WriteTo(Stream stream)

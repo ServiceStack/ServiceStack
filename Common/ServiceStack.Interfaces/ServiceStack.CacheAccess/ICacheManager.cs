@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 
 namespace ServiceStack.CacheAccess
 {
 	public interface ICacheManager
+		: ICacheClearable
 	{
-		T Resolve<T>(string cacheKey, Func<T> createCacheFn) where T : class;
-
-		void Clear(IEnumerable<string> cacheKeys);
-
-		void Clear(params string[] cacheKeys);
+		T Resolve<T>(string cacheKey, Func<T> createCacheFn)
+			where T : class;
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using ServiceStack.Common.Web;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -29,20 +30,34 @@ namespace ServiceStack.Common.Extensions
 		/// Compresses the specified text using the default compression method: Deflate
 		/// </summary>
 		/// <param name="text">The text.</param>
+		/// <param name="compressionType">Type of the compression.</param>
 		/// <returns></returns>
-		public static byte[] Compress(this string text)
+		public static byte[] Compress(this string text, string compressionType)
 		{
-			return Deflate(text);
+			if (compressionType == CompressionTypes.Deflate)
+				return Deflate(text);
+			
+			if (compressionType == CompressionTypes.GZip)
+				return Gzip(text);
+
+			throw new NotSupportedException(compressionType);
 		}
 
 		/// <summary>
 		/// Decompresses the specified gz buffer using the default compression method: Inflate
 		/// </summary>
 		/// <param name="gzBuffer">The gz buffer.</param>
+		/// <param name="compressionType">Type of the compression.</param>
 		/// <returns></returns>
-		public static string Decompress(this byte[] gzBuffer)
+		public static string Decompress(this byte[] gzBuffer, string compressionType)
 		{
-			return Inflate(gzBuffer);
+			if (compressionType == CompressionTypes.Deflate)
+				return Inflate(gzBuffer);
+
+			if (compressionType == CompressionTypes.GZip)
+				return Gunzip(gzBuffer);
+
+			throw new NotSupportedException(compressionType);
 		}
 
 		public static byte[] Deflate(this string text)

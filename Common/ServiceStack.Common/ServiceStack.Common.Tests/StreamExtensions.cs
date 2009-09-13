@@ -33,11 +33,11 @@ namespace ServiceStack.Common.Tests
 
 			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
 
-			var simpleDtoZip = simpleDtoXml.Compress();
+			var simpleDtoZip = simpleDtoXml.Deflate();
 
 			Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
 
-			var deserializedSimpleDtoXml = simpleDtoZip.Decompress();
+			var deserializedSimpleDtoXml = simpleDtoZip.Inflate();
 
 			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
 

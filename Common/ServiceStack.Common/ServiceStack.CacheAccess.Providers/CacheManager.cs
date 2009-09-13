@@ -12,7 +12,7 @@ namespace ServiceStack.CacheAccess.Providers
 			this.cacheClient = cacheClient;
 		}
 
-		public T Resolve<T>(string cacheKey, Func<T> createCacheFn)
+		public virtual T Resolve<T>(string cacheKey, Func<T> createCacheFn)
 			where T : class
 		{
 			var result = this.cacheClient.Get<T>(cacheKey);

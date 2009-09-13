@@ -67,6 +67,7 @@
     <Compile Include="AppConfig.cs" />
     <Compile Include="CacheClientTestBase.cs" />
     <Compile Include="CacheTest.cs" />
+    <Compile Include="FileAndCacheTextManagerTests.cs" />
     <Compile Include="JsonCacheManagerTests.cs" />
     <Compile Include="MemcachedClientTests.cs" />
     <Compile Include="MemoryCacheClientTests.cs" />
@@ -103,6 +104,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

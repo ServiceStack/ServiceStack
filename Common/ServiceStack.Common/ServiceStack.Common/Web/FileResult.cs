@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Service;
 
-namespace ServiceStack.WebHost.Endpoints.Results
+namespace ServiceStack.Common.Web
 {
 	public class FileResult
 		: IStreamWriter, IHasOptions
@@ -29,8 +28,8 @@ namespace ServiceStack.WebHost.Endpoints.Results
 		{
 			this.FilePath = filePath;
 			this.HttpHeaders = new Dictionary<string, string> {
-           		{ "Content-Type", contentType },
-           	};
+				{ Web.HttpHeaders.ContentType, contentType },
+			};
 		}
 
 		public void WriteTo(Stream stream)

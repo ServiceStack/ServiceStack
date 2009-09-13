@@ -60,6 +60,8 @@
     <Compile Include="BasicPersistenceProviderCacheBase.cs" />
     <Compile Include="CacheManager.cs" />
     <Compile Include="CacheTextManagerFactory.cs" />
+    <Compile Include="CompressableFileAndCacheTextManagerFactory.cs" />
+    <Compile Include="FileAndCacheTextManager.cs" />
     <Compile Include="FileSystemXmlCacheClient.cs" />
     <Compile Include="JsonCacheManager.cs" />
     <Compile Include="MemoryCacheClient.cs" />

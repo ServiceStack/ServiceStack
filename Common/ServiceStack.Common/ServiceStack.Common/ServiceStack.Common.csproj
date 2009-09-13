@@ -76,7 +76,12 @@
     <Compile Include="Support\CommandResultsHandler.cs" />
     <Compile Include="Support\TypeDefinition.cs" />
     <Compile Include="UrnId.cs" />
+    <Compile Include="Web\CompressedFileResult.cs" />
+    <Compile Include="Web\CompressedResult.cs" />
     <Compile Include="Web\CompressionTypes.cs" />
+    <Compile Include="Web\FileResult.cs" />
+    <Compile Include="Web\HtmlResult.cs" />
+    <Compile Include="Web\HttpHeaders.cs" />
     <Compile Include="Web\MimeTypes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
