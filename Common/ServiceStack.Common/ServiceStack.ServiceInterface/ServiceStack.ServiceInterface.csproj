@@ -59,6 +59,7 @@
     <Compile Include="ApplicationContext.cs" />
     <Compile Include="BasicApplicationContext.cs" />
     <Compile Include="BasicOperationContext.cs" />
+    <Compile Include="FactoryProviderHandlerFactory.cs" />
     <Compile Include="PortResolver.cs" />
     <Compile Include="RequestAttributes.cs" />
     <Compile Include="Session\IUserSessionManager.cs" />

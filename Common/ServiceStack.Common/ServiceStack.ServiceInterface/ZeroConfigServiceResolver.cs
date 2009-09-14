@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using ServiceStack.Configuration;
 using ServiceStack.Logging;
 
 namespace ServiceStack.ServiceInterface
@@ -36,6 +37,12 @@ namespace ServiceStack.ServiceInterface
 		public IList<Type> AllOperationTypes { get; protected set; }
 
 		public Func<Type, object> HandlerFactory { get; set; }
+
+		public ZeroConfigServiceResolver(Assembly serviceInterfaceAssembly, Assembly serviceModelAssembly, string operationNamespace, ITypeFactory typeFactory)
+			: this(serviceInterfaceAssembly, serviceModelAssembly, operationNamespace)
+		{
+			this.HandlerFactory = typeFactory.CreateInstance;
+		}
 
 		public ZeroConfigServiceResolver(Assembly serviceInterfaceAssembly, Assembly serviceModelAssembly, string operationNamespace)
 		{

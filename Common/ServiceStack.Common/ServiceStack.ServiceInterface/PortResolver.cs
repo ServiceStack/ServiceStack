@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using ServiceStack.Configuration;
 using ServiceStack.Service;
 
 namespace ServiceStack.ServiceInterface
@@ -32,6 +33,12 @@ namespace ServiceStack.ServiceInterface
 		private static object DefaultCreateHandlerFactory(Type type)
 		{
 			return Activator.CreateInstance(type);
+		}
+
+		public PortResolver(ITypeFactory typeFactory, params Assembly[] serviceInterfaceAssemblies)
+			: this(serviceInterfaceAssemblies)
+		{
+			this.HandlerFactory = typeFactory.CreateInstance;
 		}
 
 		public PortResolver(params Assembly[] serviceInterfaceAssemblies)
