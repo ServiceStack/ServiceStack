@@ -25,12 +25,12 @@ namespace ServiceStack.CacheAccess.Providers
 			return cacheValue;
 		}
 
-		public void Clear(IEnumerable<string> cacheKeys)
+		public virtual void Clear(IEnumerable<string> cacheKeys)
 		{
 			this.cacheClient.RemoveAll(cacheKeys);
 		}
 
-		public void Clear(params string[] cacheKeys)
+		public virtual void Clear(params string[] cacheKeys)
 		{
 			this.cacheClient.RemoveAll(cacheKeys);
 		}

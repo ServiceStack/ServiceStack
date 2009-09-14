@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceModel.Serialization;
 
@@ -35,6 +37,19 @@ namespace ServiceStack.CacheAccess.Providers
 			this.cacheClient.Set(contentTypeCacheKey, cacheValueXml);
 
 			return cacheValueXml;
+		}
+
+		public override void Clear(IEnumerable<string> cacheKeys)
+		{
+			this.Clear(cacheKeys.ToArray());
+		}
+
+		public override void Clear(params string[] cacheKeys)
+		{
+			var ext = MimeTypes.GetExtension(MimeTypes.Xml);
+			var xmlCacheKeys = cacheKeys.ToList().ConvertAll(x => x + ext);
+
+			this.cacheClient.RemoveAll(xmlCacheKeys);
 		}
 	}
 

@@ -47,6 +47,8 @@ namespace ServiceStack.Common.Web
 		{
 			using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
 			{
+				fs.Position = Adler32ChecksumLength;
+
 				fs.WriteTo(stream);
 				stream.Flush();
 			}

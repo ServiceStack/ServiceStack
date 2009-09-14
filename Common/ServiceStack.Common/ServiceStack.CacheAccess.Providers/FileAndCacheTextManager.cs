@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 
 namespace ServiceStack.CacheAccess.Providers
@@ -85,11 +84,24 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public void Clear(params string[] cacheKeys)
 		{
-			this.CacheClient.RemoveAll(cacheKeys);
+			this.cacheManager.Clear(cacheKeys);
 
-			foreach (var cacheKey in cacheKeys)
+			var contentTypeCacheKeys = cacheKeys.ToList().ConvertAll(x => x + MimeTypes.GetExtension(this.ContentType));
+			foreach (var cacheKey in contentTypeCacheKeys)
 			{
 				var filePath = Path.Combine(this.baseCachePath, cacheKey);
+				var gzipFilePath = Path.Combine(this.baseCachePath, cacheKey + CompressionTypes.GetExtension(CompressionTypes.GZip));
+				var deflateFilePath = Path.Combine(this.baseCachePath, cacheKey + CompressionTypes.GetExtension(CompressionTypes.Deflate));
+
+				DeleteFiles(filePath, gzipFilePath, deflateFilePath);
+			}
+		}
+
+		private static void DeleteFiles(params string[] filePaths)
+		{
+			foreach (var filePath in filePaths)
+			{
+				//Catching an exception is quicker if you expect the file to be there.
 				try
 				{
 					File.Delete(filePath);
@@ -124,7 +136,9 @@ namespace ServiceStack.CacheAccess.Providers
 			try
 			{
 				var filePath = Path.Combine(this.baseCachePath, cacheKey);
-				return new FileResult(filePath, this.ContentType);
+				return File.Exists(filePath) 
+					? new FileResult(filePath, this.ContentType)
+					: null;
 			}
 			catch (Exception ignore)
 			{
