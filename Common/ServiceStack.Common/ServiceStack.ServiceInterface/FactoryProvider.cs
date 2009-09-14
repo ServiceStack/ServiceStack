@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ServiceStack.Common.Utils;
+using System.Linq;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 
@@ -11,11 +11,18 @@ namespace ServiceStack.ServiceInterface
 		private readonly ILog log = LogManager.GetLogger(typeof(FactoryProvider));
 
 		private IObjectFactory Factory { get; set; }
-		private static readonly object ReadWriteLock = new object();
+		private readonly object readWriteLock = new object();
 		List<IDisposable> Disposables { get; set; }
 		private Dictionary<string, object> ConfigInstanceCache { get; set; }
 		private Dictionary<Type, object> RuntimeInstanceCache { get; set; }
 		private Dictionary<Type, Type> TypeMapLookup { get; set; }
+
+		public FactoryProvider(FactoryProvider cloneProvider, params object[] providers)
+			: this(new EmptyObjectFactory())
+		{
+			RegisterAll(cloneProvider.RuntimeInstanceCache.Values.ToArray());
+			RegisterAll(providers);
+		}
 
 		public FactoryProvider(params object[] providers)
 			: this(new EmptyObjectFactory(), providers)
@@ -24,6 +31,11 @@ namespace ServiceStack.ServiceInterface
 
 		public FactoryProvider(IObjectFactory factory, params object[] providers)
 			: this(factory)
+		{
+			RegisterAll(providers);
+		}
+
+		private void RegisterAll(object[] providers)
 		{
 			foreach (var provider in providers)
 			{
@@ -46,9 +58,12 @@ namespace ServiceStack.ServiceInterface
 		/// <param name="provider">The provider.</param>
 		public void Register<T>(T provider)
 		{
-			var key = typeof(T);
-			this.RuntimeInstanceCache[key] = provider;
-			RegisterDisposable(provider);
+			var key = typeof(T) == typeof(object) ? provider.GetType() : typeof(T);
+			lock (readWriteLock)
+			{
+				this.RuntimeInstanceCache[key] = provider;
+				RegisterDisposable(provider);
+			}
 		}
 
 		private void RegisterDisposable<T>(T provider)
@@ -140,7 +155,7 @@ namespace ServiceStack.ServiceInterface
 		public T Create<T>(string name)
 		{
 			AssertFactory();
-			lock (ReadWriteLock)
+			lock (readWriteLock)
 			{
 				var instance = Factory.Create<T>(name);
 				RegisterDisposable(instance);

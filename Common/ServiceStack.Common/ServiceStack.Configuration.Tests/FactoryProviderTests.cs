@@ -62,7 +62,7 @@ namespace ServiceStack.Configuration.Tests
 		public void A_registered_provider_is_resolvable_by_an_interface_type()
 		{
 			var gateway = new TestGateway(new XmlServiceClient("http://mock.org/service.svc"));
-			var provider = new FactoryProvider(null, gateway);
+			var provider = new FactoryProvider(gateway);
 			var resolvedGateway = provider.Resolve<ITestGateway>();
 			Assert.That(resolvedGateway, Is.Not.Null);
 			var xmlServiceClient = (XmlServiceClient)resolvedGateway.ServiceClient;
