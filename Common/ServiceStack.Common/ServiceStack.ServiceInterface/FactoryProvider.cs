@@ -17,6 +17,8 @@ namespace ServiceStack.ServiceInterface
 		private Dictionary<Type, object> RuntimeInstanceCache { get; set; }
 		private Dictionary<Type, Type> TypeMapLookup { get; set; }
 
+		public bool AutoDispose { get; set; }
+
 		public FactoryProvider(FactoryProvider cloneProvider, params object[] providers)
 			: this(new EmptyObjectFactory())
 		{
@@ -50,6 +52,7 @@ namespace ServiceStack.ServiceInterface
 			this.RuntimeInstanceCache = new Dictionary<Type, object>();
 			this.TypeMapLookup = new Dictionary<Type, Type>();
 			this.Disposables = new List<IDisposable>();
+			this.AutoDispose = true;
 		}
 
 		/// <summary>
@@ -173,7 +176,10 @@ namespace ServiceStack.ServiceInterface
 
 		~FactoryProvider()
 		{
-			Dispose(false);
+			if (this.AutoDispose)
+			{
+				Dispose(false);
+			}
 		}
 
 		public void Dispose()

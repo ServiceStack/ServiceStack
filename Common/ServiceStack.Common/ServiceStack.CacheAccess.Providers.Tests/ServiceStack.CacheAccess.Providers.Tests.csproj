@@ -35,6 +35,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Enyim.Caching.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Moq.dll</HintPath>
@@ -67,7 +71,9 @@
     <Compile Include="AppConfig.cs" />
     <Compile Include="CacheClientTestBase.cs" />
     <Compile Include="CacheTest.cs" />
+    <Compile Include="CompressionNetProviderTests.cs" />
     <Compile Include="FileAndCacheTextManagerTests.cs" />
+    <Compile Include="CompressionICSharpProviderTests.cs" />
     <Compile Include="JsonCacheManagerTests.cs" />
     <Compile Include="MemcachedClientTests.cs" />
     <Compile Include="MemoryCacheClientTests.cs" />
