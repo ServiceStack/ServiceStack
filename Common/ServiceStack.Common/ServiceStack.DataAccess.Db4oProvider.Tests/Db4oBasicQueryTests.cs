@@ -5,7 +5,7 @@ using System.Linq;
 namespace ServiceStack.DataAccess.Db4oProvider.Tests
 {
 	[TestFixture]
-	public class Db4oBasicQueryTests : Db4oTestBase
+	public class Db4OBasicQueryTests : Db4OTestBase
 	{
 
 		[Test]

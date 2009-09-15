@@ -4,7 +4,7 @@ using NUnit.Framework.SyntaxHelpers;
 namespace ServiceStack.DataAccess.Db4oProvider.Tests
 {
 	[TestFixture]
-	public class Db4oBasicWriteTests : Db4oTestBase
+	public class Db4OBasicWriteTests : Db4OTestBase
 	{
 
 		[Test]

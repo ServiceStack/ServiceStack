@@ -85,6 +85,10 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Compression\ServiceStack.Compression.csproj">
+      <Project>{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}</Project>
+      <Name>ServiceStack.Compression</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
       <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
       <Name>ServiceStack.Configuration</Name>

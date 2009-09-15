@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using ServiceStack.CacheAccess;
+using ServiceStack.Common.Support;
 using ServiceStack.Common.Web;
 
 namespace ServiceStack.Common.Extensions
@@ -38,10 +40,14 @@ namespace ServiceStack.Common.Extensions
 				return Deflate(text);
 			
 			if (compressionType == CompressionTypes.GZip)
-				return Gzip(text);
+				return GZip(text);
 
 			throw new NotSupportedException(compressionType);
 		}
+
+		public static IDeflateProvider DeflateProvider = new NetDeflateProvider();
+
+		public static IGZipProvider GZipProvider = new NetGZipProvider();
 
 		/// <summary>
 		/// Decompresses the specified gz buffer using the default compression method: Inflate
@@ -55,92 +61,31 @@ namespace ServiceStack.Common.Extensions
 				return Inflate(gzBuffer);
 
 			if (compressionType == CompressionTypes.GZip)
-				return Gunzip(gzBuffer);
+				return GUnzip(gzBuffer);
 
 			throw new NotSupportedException(compressionType);
 		}
 
 		public static byte[] Deflate(this string text)
 		{
-			var buffer = Encoding.UTF8.GetBytes(text);
-			var ms = new MemoryStream();
-			using (var zipStream = new DeflateStream(ms, CompressionMode.Compress, true))
-			{
-				zipStream.Write(buffer, 0, buffer.Length);
-			}
-
-			ms.Position = 0;
-
-			var compressed = new byte[ms.Length];
-			ms.Read(compressed, 0, compressed.Length);
-
-			var gzBuffer = new byte[compressed.Length + 4];
-			Buffer.BlockCopy(compressed, 0, gzBuffer, 4, compressed.Length);
-			Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gzBuffer, 0, 4);
-
-			return gzBuffer;
+			return DeflateProvider.Deflate(text);
 		}
 
 		public static string Inflate(this byte[] gzBuffer)
 		{
-			using (var ms = new MemoryStream())
-			{
-				var msgLength = BitConverter.ToInt32(gzBuffer, 0);
-				ms.Write(gzBuffer, 4, gzBuffer.Length - 4);
-
-				var buffer = new byte[msgLength];
-
-				ms.Position = 0;
-				using (var zipStream = new DeflateStream(ms, CompressionMode.Decompress))
-				{
-					zipStream.Read(buffer, 0, buffer.Length);
-				}
-
-				return Encoding.UTF8.GetString(buffer);
-			}
+			return DeflateProvider.Inflate(gzBuffer);
 		}
 
-		public static byte[] Gzip(this string text)
+		public static byte[] GZip(this string text)
 		{
-			var buffer = Encoding.UTF8.GetBytes(text);
-			var ms = new MemoryStream();
-			using (var zipStream = new GZipStream(ms, CompressionMode.Compress, true))
-			{
-				zipStream.Write(buffer, 0, buffer.Length);
-			}
-
-			ms.Position = 0;
-
-			var compressed = new byte[ms.Length];
-			ms.Read(compressed, 0, compressed.Length);
-
-			var gzBuffer = new byte[compressed.Length + 4];
-			Buffer.BlockCopy(compressed, 0, gzBuffer, 4, compressed.Length);
-			Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gzBuffer, 0, 4);
-
-			return gzBuffer;
+			return GZipProvider.GZip(text);
 		}
 
-		public static string Gunzip(this byte[] gzBuffer)
+		public static string GUnzip(this byte[] gzBuffer)
 		{
-			using (var ms = new MemoryStream())
-			{
-				var msgLength = BitConverter.ToInt32(gzBuffer, 0);
-				ms.Write(gzBuffer, 4, gzBuffer.Length - 4);
-
-				var buffer = new byte[msgLength];
-
-				ms.Position = 0;
-				using (var zipStream = new GZipStream(ms, CompressionMode.Decompress))
-				{
-					zipStream.Read(buffer, 0, buffer.Length);
-				}
-
-				return Encoding.UTF8.GetString(buffer);
-			}
+			return GZipProvider.GUnzip(gzBuffer);
 		}
 
 
 	}
-
 }

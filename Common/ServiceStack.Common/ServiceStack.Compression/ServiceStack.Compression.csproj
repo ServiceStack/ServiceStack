@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{7FA3F4BC-E07D-47F4-BEF1-F6080E09E8F5}</ProjectGuid>
+    <ProjectGuid>{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.CacheAccess</RootNamespace>
-    <AssemblyName>ServiceStack.CacheAccess</AssemblyName>
+    <RootNamespace>ServiceStack.Compression</RootNamespace>
+    <AssemblyName>ServiceStack.Compression</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,32 +31,31 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Build\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICacheClearable.cs" />
-    <Compile Include="ICacheClient.cs" />
-    <Compile Include="ICacheHasContentType.cs" />
-    <Compile Include="ICacheManager.cs" />
-    <Compile Include="ICacheTextManager.cs" />
-    <Compile Include="ICacheTextManagerFactory.cs" />
-    <Compile Include="ICompressableCacheTextManager.cs" />
-    <Compile Include="ICompressableCacheTextManagerFactory.cs" />
-    <Compile Include="IDeflateProvider.cs" />
-    <Compile Include="IGZipProvider.cs" />
-    <Compile Include="IHasCacheClient.cs" />
-    <Compile Include="IPersistenceProviderCache.cs" />
-    <Compile Include="IPersistenceProviderCacheFactory.cs" />
+    <Compile Include="ICSharpGZipProvider.cs" />
+    <Compile Include="ICSharpDeflateProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.DataAccess\ServiceStack.DataAccess.csproj">
-      <Project>{D732C853-AB76-4277-B6CE-6C7DA57901B7}</Project>
-      <Name>ServiceStack.DataAccess</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

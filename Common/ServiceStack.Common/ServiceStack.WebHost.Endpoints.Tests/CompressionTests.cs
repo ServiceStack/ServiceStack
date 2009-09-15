@@ -1,4 +1,4 @@
-using System;
+	using System;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
@@ -108,11 +108,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var simpleDtoXml = DataContractSerializer.Instance.Parse(simpleDto);
 
-			var simpleDtoZip = simpleDtoXml.Gzip();
+			var simpleDtoZip = simpleDtoXml.GZip();
 
 			Assert.That(simpleDtoZip.Length, Is.GreaterThan(0));
 
-			var deserializedSimpleDtoXml = simpleDtoZip.Gunzip();
+			var deserializedSimpleDtoXml = simpleDtoZip.GUnzip();
 
 			Assert.That(deserializedSimpleDtoXml, Is.Not.Empty);
 

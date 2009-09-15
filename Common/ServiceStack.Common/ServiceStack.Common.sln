@@ -57,6 +57,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Sqlite
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Tests", "ServiceStack.OrmLite.Tests\ServiceStack.OrmLite.Tests.csproj", "{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Compression", "ServiceStack.Compression\ServiceStack.Compression.csproj", "{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -147,6 +149,10 @@ Global
 		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

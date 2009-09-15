@@ -52,6 +52,8 @@
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Extensions\ICollectionExtensions.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="Support\NetDeflateProvider.cs" />
+    <Compile Include="Support\NetGZipProvider.cs" />
     <Compile Include="Extensions\ITranslatorExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\ReflectionExtensions.cs" />

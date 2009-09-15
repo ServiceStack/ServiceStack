@@ -6,7 +6,7 @@ using ServiceStack.DataAccess.Criteria;
 namespace ServiceStack.DataAccess.Db4oProvider.Tests
 {
 	[TestFixture]
-	public class Db4oPagingTests : Db4oTestBase
+	public class Db4OPagingTests : Db4OTestBase
 	{
 
 		[Test]

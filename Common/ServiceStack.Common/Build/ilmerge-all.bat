@@ -5,7 +5,7 @@ CALL ilmerge-all.bat
 POPD
 
 COPY ..\..\ServiceStack.Interfaces\Build\ServiceStack.Interfaces.dll .
-COPY ..\ServiceStack.Translators.Generator\bin\Debug\ServiceStack.Translators.Generator.exe .
+REM COPY ..\ServiceStack.Translators.Generator\bin\Debug\ServiceStack.Translators.Generator.exe .
 
 SET PROJ_LIBS=
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Common\bin\Debug\ServiceStack.Common.dll
@@ -17,6 +17,7 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.WebHost.Endpoints\bin\Debug\ServiceSta
 
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceClient.Web\bin\Debug\ServiceStack.ServiceClient.Web.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\Debug\ServiceStack.CacheAccess.Providers.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Compression\bin\Debug\ServiceStack.Compression.dll
 REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\Debug\ServiceStack.DataAccess.NHibernateProvider.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.Db4oProvider\bin\Debug\ServiceStack.DataAccess.Db4oProvider.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite\bin\Debug\ServiceStack.OrmLite.dll

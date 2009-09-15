@@ -5,15 +5,16 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.DataAccess.Db4oProvider.Tests
 {
 	[TestFixture]
-	public class Db4oTestBase
+	public class Db4OTestBase
 	{
-		private const string db4oDatabasePath = @"C:\Projects\code.google\Common\ServiceStack.Common\ServiceStack.DataAccess.Db4oProvider.Tests\Lib\test.db4o";
+		private static readonly string Db4ODatabasePath = @"~\Lib\test.db4o".MapAbsolutePath();
 
-		protected IPersistenceProviderManager db4oProviderManager;
+		protected IPersistenceProviderManager db4OProviderManager;
 		protected IQueryablePersistenceProvider provider;
 		protected Customer[] Customers { get; set; }
 
@@ -62,12 +63,12 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		[TestFixtureSetUp]
 		public void Init()
 		{
-			if (File.Exists(db4oDatabasePath))
+			if (File.Exists(Db4ODatabasePath))
 			{
-				File.Delete(db4oDatabasePath);
+				File.Delete(Db4ODatabasePath);
 			}
-			db4oProviderManager = new Db4OFileProviderManager(db4oDatabasePath);
-			provider = (IQueryablePersistenceProvider)db4oProviderManager.GetProvider();
+			db4OProviderManager = new Db4OFileProviderManager(Db4ODatabasePath);
+			provider = (IQueryablePersistenceProvider)db4OProviderManager.GetProvider();
 			CreateTestDatabase();
 		}
 
@@ -75,7 +76,7 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		public void TearDown()
 		{
 			provider.Dispose();
-			db4oProviderManager.Dispose();
+			db4OProviderManager.Dispose();
 		}
 
 		public void CreateTestDatabase()

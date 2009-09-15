@@ -6,6 +6,7 @@ using ServiceStack.CacheAccess.Providers.Tests.Models;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.Compression;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.CacheAccess.Providers.Tests
@@ -23,6 +24,9 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		[SetUp]
 		public void SetUp()
 		{
+			//StreamExtensions.DeflateProvider = new ICSharpDeflateProvider();
+			//StreamExtensions.GZipProvider = new ICSharpGZipProvider();
+
 			this.cacheClient = new MemoryCacheClient();
 			this.cacheTextManager = new XmlCacheManager(this.cacheClient);
 			this.fileCacheManager = Create(cacheTextManager);
@@ -52,9 +56,9 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 			public string CompressionTypeCacheKey { get; set; }
 		}
 
-		public CacheKeyTuple GetCacheKeys<T>(string idValue)
+		public CacheKeyTuple GetCacheKeys<T>(string id)
 		{
-			var cacheKey = IdUtils.CreateCacheKeyPath<T>(idValue);
+			var cacheKey = IdUtils.CreateCacheKeyPath<T>(id);
 
 			var contentType = cacheKey + MimeTypes.GetExtension(MimeTypes.Xml);
 			var compressionType = contentType + CompressionTypes.GetExtension(CompressionTypes.Deflate);

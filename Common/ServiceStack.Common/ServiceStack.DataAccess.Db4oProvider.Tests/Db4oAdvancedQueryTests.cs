@@ -5,7 +5,7 @@ using NUnit.Framework.SyntaxHelpers;
 namespace ServiceStack.DataAccess.Db4oProvider.Tests
 {
 	[TestFixture]
-	public class Db4oAdvancedQueryTests : Db4oTestBase
+	public class Db4OAdvancedQueryTests : Db4OTestBase
 	{
 		public class ArrayOfIntId : List<int>
 		{

@@ -67,6 +67,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.DataAccess.Db4oProvider\ServiceStack.DataAccess.Db4oProvider.csproj">
       <Project>{01796492-6DFF-49EF-AE78-C49AE56AD9A8}</Project>
       <Name>ServiceStack.DataAccess.Db4oProvider</Name>
