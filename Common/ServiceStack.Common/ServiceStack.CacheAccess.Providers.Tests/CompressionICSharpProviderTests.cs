@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.CacheAccess.Providers.Tests.Models;

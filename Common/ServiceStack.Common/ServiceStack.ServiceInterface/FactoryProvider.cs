@@ -52,7 +52,6 @@ namespace ServiceStack.ServiceInterface
 			this.RuntimeInstanceCache = new Dictionary<Type, object>();
 			this.TypeMapLookup = new Dictionary<Type, Type>();
 			this.Disposables = new List<IDisposable>();
-			this.AutoDispose = true;
 		}
 
 		/// <summary>

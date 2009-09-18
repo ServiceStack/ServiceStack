@@ -9,6 +9,16 @@ namespace ServiceStack.ServiceInterface
 {
 	public class RequestContext : IRequestContext
 	{
+		public RequestContext(object dto)
+			: this(dto, null)
+		{
+		}
+
+		public RequestContext(object dto, EndpointAttributes endpointAttributes)
+			: this(dto, endpointAttributes, null)
+		{
+		}
+
 		public RequestContext(object requestDto, IFactoryProvider factory)
 			: this(requestDto, EndpointAttributes.None, factory)
 		{
@@ -22,6 +32,8 @@ namespace ServiceStack.ServiceInterface
 			this.RequestAttributes = new RequestAttributes(HttpContext.Current);
 		}
 
+		public bool AutoDispose { get; set; }
+
 		public object Dto { get; set; }
 
 		public EndpointAttributes EndpointAttributes { get; private set; }
@@ -31,7 +43,7 @@ namespace ServiceStack.ServiceInterface
 		public T Get<T>() where T : class
 		{
 			var isDto = this.Dto as T;
-			return isDto ?? this.Factory.Resolve<T>();
+			return isDto ?? (this.Factory != null ? this.Factory.Resolve<T>() : null);
 		}
 
 		public IFactoryProvider Factory { get; set; }
@@ -100,7 +112,10 @@ namespace ServiceStack.ServiceInterface
 
 		~RequestContext()
 		{
-			Dispose(false);
+			if (this.AutoDispose)
+			{
+				Dispose(false);
+			}
 		}
 
 		public void Dispose()
