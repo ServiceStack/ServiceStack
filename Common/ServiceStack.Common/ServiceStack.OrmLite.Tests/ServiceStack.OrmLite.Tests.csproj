@@ -53,6 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\TaskQueue.cs" />
+    <Compile Include="SqlFormatTests.cs" />
     <Compile Include="OrmLiteTransactionTests.cs" />
     <Compile Include="Models\ModelWithIdOnly.cs" />
     <Compile Include="OrmLiteBasicPersistenceProviderTests.cs" />

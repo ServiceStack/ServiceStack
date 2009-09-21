@@ -104,9 +104,12 @@ namespace ServiceStack.OrmLite
 
 						var isNullableType = IsNullableType(propertyInfo.PropertyType);
 
+						var isNullable = !propertyInfo.PropertyType.IsValueType
+							|| isNullableType;
+
 						var propertyType = isNullableType
-											? Nullable.GetUnderlyingType(propertyInfo.PropertyType)
-											: propertyInfo.PropertyType;
+							? Nullable.GetUnderlyingType(propertyInfo.PropertyType)
+							: propertyInfo.PropertyType;
 
 						var autoIncrement = isPrimaryKey && propertyType == typeof(int);
 
@@ -117,7 +120,7 @@ namespace ServiceStack.OrmLite
 							Name = propertyInfo.Name,
 							FieldType = propertyType,
 							PropertyInfo = propertyInfo,
-							IsNullable = isNullableType,
+							IsNullable = isNullable,
 							IsPrimaryKey = isPrimaryKey,
 							AutoIncrement = autoIncrement,
 							IsUnique = isUnique,
@@ -258,6 +261,12 @@ namespace ServiceStack.OrmLite
 			}
 		}
 
+		public static T First<T>(this IDbCommand dbCommand, string filter, params object[] filterParams)
+			where T : new()
+		{
+			return First<T>(dbCommand, filter.SqlFormat(filterParams));
+		}
+
 		public static T First<T>(this IDbCommand dbCommand, string filter)
 			where T : new()
 		{
@@ -268,6 +277,12 @@ namespace ServiceStack.OrmLite
 					"{0}: '{1}' does not exist", typeof(T).Name, filter));
 			}
 			return result;
+		}
+
+		public static T FirstOrDefault<T>(this IDbCommand dbCommand, string filter, params object[] filterParams)
+			where T : new()
+		{
+			return FirstOrDefault<T>(dbCommand, filter.SqlFormat(filterParams));
 		}
 
 		public static T FirstOrDefault<T>(this IDbCommand dbCommand, string filter)
@@ -307,72 +322,84 @@ namespace ServiceStack.OrmLite
 			return Select<T>(dbCommand, string.Format("Id IN ({0})", sql));
 		}
 
-		public static T ConvertTo<T>(this IDataReader sqliteReader)
+		public static T ConvertTo<T>(this IDataReader dataReader)
 			where T : new()
 		{
-			using (sqliteReader)
+			using (dataReader)
 			{
-				if (sqliteReader.Read())
+				if (dataReader.Read())
 				{
 					var row = new T();
-					row.PopulateWithSqlReader(sqliteReader);
+					row.PopulateWithSqlReader(dataReader);
 					return row;
 				}
 				return default(T);
 			}
 		}
 
-		public static List<T> ConvertToList<T>(this IDataReader sqliteReader)
+		public static List<T> ConvertToList<T>(this IDataReader dataReader)
 			where T : new()
 		{
 			var to = new List<T>();
-			using (sqliteReader)
+			using (dataReader)
 			{
-				while (sqliteReader.Read())
+				while (dataReader.Read())
 				{
 					var row = new T();
-					row.PopulateWithSqlReader(sqliteReader);
+					row.PopulateWithSqlReader(dataReader);
 					to.Add(row);
 				}
 			}
 			return to;
 		}
 
-		public static T PopulateWithSqlReader<T>(this T objWithProperties, IDataReader sqliteReader)
+		public static T PopulateWithSqlReader<T>(this T objWithProperties, IDataReader dataReader)
 		{
 			var i = 0;
 			var tableType = objWithProperties.GetType();
 			foreach (var fieldDef in GetFieldDefinitions(tableType))
 			{
-				var value = sqliteReader.GetValue(i++);
+				var value = dataReader.GetValue(i++);
 
 				fieldDef.SetValue(objWithProperties, value);
 			}
 			return objWithProperties;
 		}
 
-		public static List<string> GetFirstColumn(this IDbCommand sqlCmd)
+		public static List<string> GetFirstColumn(this IDbCommand dbCmd, string sql, params object[] sqlParams)
+		{
+			dbCmd.CommandText = sql.SqlFormat(sqlParams);
+			using (var dbReader = dbCmd.ExecuteReader())
+			{
+				return GetFirstColumn(dbReader);
+			}
+		}
+
+		public static List<string> GetFirstColumn(this IDataReader reader)
 		{
 			var columValues = new List<string>();
-			using (var reader = sqlCmd.ExecuteReader())
+			while (reader.Read())
 			{
-				while (reader.Read())
-				{
-					columValues.Add(reader.GetString(0));
-				}
+				columValues.Add(reader.GetString(0));
 			}
 			return columValues;
 		}
 
-		public static HashSet<string> GetFirstColumnDistinct(this IDbCommand sqlCmd)
+		public static HashSet<string> GetFirstColumnDistinct(this IDbCommand dbCmd, string sql, params object[] sqlParams)
+		{
+			dbCmd.CommandText = sql.SqlFormat(sqlParams);
+			using (var dbReader = dbCmd.ExecuteReader())
+			{
+				return GetFirstColumnDistinct(dbReader);
+			}
+		}
+
+		public static HashSet<string> GetFirstColumnDistinct(this IDataReader reader)
 		{
 			var columValues = new HashSet<string>();
-			using (var reader = sqlCmd.ExecuteReader())
+			while (reader.Read())
 			{
-				while (reader.Read())
-				{
-					columValues.Add(reader.GetString(0));
-				}
+				columValues.Add(reader.GetString(0));
 			}
 			return columValues;
 		}
@@ -420,6 +447,7 @@ namespace ServiceStack.OrmLite
 				catch (Exception ex)
 				{
 					Log.Error("ERROR in ToInsertRowStatement(): " + ex.Message, ex);
+					throw ex;
 				}
 			}
 
@@ -567,5 +595,18 @@ namespace ServiceStack.OrmLite
 			}
 			return string.Format(sqlText, escapedParams.ToArray());
 		}
+
+		public static string SqlJoin<T>(this List<T> values)
+		{
+			var sb = new StringBuilder();
+			foreach (var value in values)
+			{
+				if (sb.Length > 0) sb.Append(",");
+				sb.Append(DialectProvider.GetQuotedValue(value, value.GetType()));
+			}
+
+			return sb.ToString();
+		}
+
 	}
 }

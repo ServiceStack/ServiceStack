@@ -125,7 +125,7 @@ namespace ServiceStack.OrmLite
 
 		public virtual object ConvertDbValue(object value, Type type)
 		{
-			if (value == null) return null;
+			if (value == null || value.GetType() == typeof(DBNull)) return null;
 
 			if (type == typeof(string))
 			{
@@ -138,6 +138,8 @@ namespace ServiceStack.OrmLite
 
 		public virtual string GetQuotedValue(object value, Type type)
 		{
+			if (value == null) return "NULL";
+
 			return ShouldQuoteValue(type)
 			       	? "'" + EscapeParam(value) + "'"
 			       	: value.ToString();

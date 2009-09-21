@@ -72,6 +72,8 @@ namespace ServiceStack.OrmLite.Sqlite
 
 		public override string GetQuotedValue(object value, Type type)
 		{
+			if (value == null) return "NULL";
+
 			if (type == typeof(Guid))
 			{
 				var guidValue = (Guid)value;
