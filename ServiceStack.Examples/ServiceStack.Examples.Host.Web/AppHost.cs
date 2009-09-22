@@ -47,7 +47,7 @@ namespace ServiceStack.Examples.Host.Web
 			var cacheClient = factory.ResolveOptional<ICacheClient>("CacheProvider", new MemoryCacheClient()); // for Memcacehed use: 'new MemcachedClientCache()'
 
 			//Example of dynamically registering an external service
-			factory.Register<IPersistenceProviderManager>(new Db4oFileProviderManager(config.GetString("Db4oConnectionString").MapHostAbsolutePath()));
+			factory.Register<IPersistenceProviderManager>(new Db4OFileProviderManager(config.GetString("Db4oConnectionString").MapHostAbsolutePath()));
 
 			//Set your Applications Singleton Context. Contains providers that are available to all your services via 'ApplicationContext.Instance'
 			ApplicationContext.SetInstanceContext(new BasicApplicationContext(factory, cacheClient, config));
@@ -59,7 +59,9 @@ namespace ServiceStack.Examples.Host.Web
 				ServiceName = config.GetString("ServiceName"),
 
 				//Tell ServiceStack where to look for your services
-				ServiceController = new ServiceController(new PortResolver(typeof(GetFactorialHandler).Assembly)),
+				ServiceController = new ServiceController(
+					new PortResolver(new FactoryProviderHandlerFactory(factory),
+						typeof(GetFactorialHandler).Assembly)),
 			});
 
 

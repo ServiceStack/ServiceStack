@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Moq;
 using NUnit.Framework;
+using ServiceStack.DataAccess;
 using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests
@@ -18,8 +20,15 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 
 		protected OperationContext CreateOperationContext(object request)
 		{
-			return new OperationContext(ApplicationContext.Instance, new RequestContext(request, new FactoryProvider()));
+			return new OperationContext(ApplicationContext.Instance, 
+				new RequestContext(request));
 		}
 
+		protected IPersistenceProviderManager GetMockProviderManagerObject(Mock<IQueryablePersistenceProvider> mockPersistence)
+		{
+			var mockProviderManager = new Mock<IPersistenceProviderManager>();
+			mockProviderManager.Expect(x => x.GetProvider()).Returns(mockPersistence.Object);
+			return mockProviderManager.Object;
+		}
 	}
 }

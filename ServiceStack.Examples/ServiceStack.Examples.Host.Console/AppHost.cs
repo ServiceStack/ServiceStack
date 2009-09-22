@@ -48,7 +48,7 @@ namespace ServiceStack.Examples.Host.Console
 
 			//Example of dynamically registering an external service
 			var dbPath = config.GetString("Db4oConnectionString").MapAbsolutePath();
-			factory.Register<IPersistenceProviderManager>(new Db4oFileProviderManager(dbPath));
+			factory.Register<IPersistenceProviderManager>(new Db4OFileProviderManager(dbPath));
 
 
 			//Set your Applications Singleton Context. Contains providers that are available to all your services via 'ApplicationContext.Instance'
@@ -61,7 +61,9 @@ namespace ServiceStack.Examples.Host.Console
 				ServiceName = config.GetString("ServiceName"),
 
 				//Tell ServiceStack where to look for your services
-				ServiceController = new ServiceController(new PortResolver(typeof(GetFactorialHandler).Assembly)),
+				ServiceController = new ServiceController(
+					new PortResolver(new FactoryProviderHandlerFactory(factory),
+						typeof(GetFactorialHandler).Assembly)),
 			});
 
 
@@ -83,23 +85,26 @@ namespace ServiceStack.Examples.Host.Console
 
 		private void DatabaseTest()
 		{
-			var storeHandler = new StoreNewUserHandler();
-			var operationContext = CreateOperationContext(new StoreNewUser {
-				Email = "new@email",
-				Password = "password",
-				UserName = "new UserName"
-			}, EndpointAttributes.None);
-			
-			storeHandler.Execute(operationContext);
+			using (var db4OManager = new Db4OFileProviderManager("test.db4o"))
+			{
+				var storeHandler = new StoreNewUserHandler(db4OManager);
+				var operationContext = CreateOperationContext(new StoreNewUser {
+					Email = "new@email",
+					Password = "password",
+					UserName = "new UserName"
+				}, EndpointAttributes.None);
 
-			var getAllHandler = new GetAllUsersHandler();
-			var response = (GetAllUsersResponse) getAllHandler.Execute(
-				CreateOperationContext(new GetAllUsers(), EndpointAttributes.None));
+				storeHandler.Execute(operationContext);
 
-			var user = response.Users[0];
+				var getAllHandler = new GetAllUsersHandler(db4OManager);
+				var response = (GetAllUsersResponse)getAllHandler.Execute(
+					CreateOperationContext(new GetAllUsers(), EndpointAttributes.None));
 
-			System.Console.WriteLine("Stored and retrieved user: {0}, {1}, {2}",
-				user.Id, user.UserName, user.Email);
+				var user = response.Users[0];
+
+				System.Console.WriteLine("Stored and retrieved user: {0}, {1}, {2}",
+					user.Id, user.UserName, user.Email);
+			}
 		}
 
 

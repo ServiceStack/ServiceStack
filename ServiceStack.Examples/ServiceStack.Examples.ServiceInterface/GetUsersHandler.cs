@@ -17,13 +17,19 @@ namespace ServiceStack.Examples.ServiceInterface
 	[Port(typeof(GetUsers))]
 	public class GetUsersHandler : IService
 	{
+		private readonly IPersistenceProviderManager providerFactory;
+
+		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
+		public GetUsersHandler(IPersistenceProviderManager providerFactory)
+		{
+			this.providerFactory = providerFactory;
+		}
+
 		public object Execute(IOperationContext context)
 		{
 			var request = context.Request.Get<GetUsers>();
 
-			//Get the persistence provider registered in the AppHost
-			var persistenceProvider = (IQueryablePersistenceProvider)context.Application.
-			                                                         	Factory.Resolve<IPersistenceProviderManager>().GetProvider();
+			var persistenceProvider = (IQueryablePersistenceProvider)providerFactory.GetProvider();
 
 			var users = new List<User>();
 

@@ -12,16 +12,13 @@ namespace ServiceStack.Examples.ServiceInterface.Tests.MonoTests
 	{
 		protected static IOperationContext CreateOperationContext(object requestDto)
 		{
-			var requestContext = new RequestContext(requestDto, EndpointAttributes.None, new FactoryProvider());
-			return new OperationContext(ApplicationContext.Instance, requestContext);
+			return new OperationContext(ApplicationContext.Instance,
+				new RequestContext(requestDto));
 		}
 
 		protected static void InitApplicationContext()
 		{
 			var factory = new FactoryProvider();
-
-			factory.Register<IPersistenceProviderManager>(
-				new Db4oFileProviderManager("test.db4o"));
 
 			ApplicationContext.SetInstanceContext(
 				new BasicApplicationContext(factory, new MemoryCacheClient(), new ConfigurationResourceManager()));

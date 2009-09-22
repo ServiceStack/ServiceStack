@@ -30,9 +30,9 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 			mockPersistence.Expect(x => x.FindByValues<User>("UserName", It.IsAny<ICollection>())).Returns(
 				new List<User> { new User { UserName = "User1" }, new User { UserName = "User2" } });
 
-			TestAppHost.Instance.RegisterMockPersistenceProvider(mockPersistence.Object);
+			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
 
-			var handler = new GetUsersHandler();
+			var handler = new GetUsersHandler(providerManagerObject);
 
 			var response = (GetUsersResponse)handler.Execute(CreateOperationContext(request));
 

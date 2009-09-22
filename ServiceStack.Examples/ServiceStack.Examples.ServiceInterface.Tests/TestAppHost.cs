@@ -44,15 +44,6 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 			log.InfoFormat("TestAppHost Created: " + DateTime.Now);
 		}
 
-		//Helper method to inject a mock persistenceProvider into the factory.
-		public void RegisterMockPersistenceProvider(IPersistenceProvider persistenceProvider)
-		{
-			var mockProviderManager = new Mock<IPersistenceProviderManager>();
-			mockProviderManager.Expect(x => x.GetProvider()).Returns(persistenceProvider);
-			
-			ApplicationContext.Instance.Factory.Register(mockProviderManager.Object);
-		}
-
 		protected override IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
 		{
 			var requestContext = new RequestContext(requestDto, endpointAttributes, new FactoryProvider(FactoryUtils.ObjectFactory));

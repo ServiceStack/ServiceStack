@@ -31,9 +31,9 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 					user.Id = 10;
 				});
 
-			TestAppHost.Instance.RegisterMockPersistenceProvider(mockPersistence.Object);
+			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
 
-			var handler = new StoreNewUserHandler();
+			var handler = new StoreNewUserHandler(providerManagerObject);
 			var response = (StoreNewUserResponse)handler.Execute(CreateOperationContext(request));
 
 			mockPersistence.VerifyAll();
@@ -49,14 +49,14 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 			mockPersistence.Expect(x => x.Query(It.IsAny<Predicate<User>>())).Returns(
 				new[] { new User { UserName = request.UserName }, }.ToList());
 
-			TestAppHost.Instance.RegisterMockPersistenceProvider(mockPersistence.Object);
+			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
 
-			var handler = new StoreNewUserHandler();
+			var handler = new StoreNewUserHandler(providerManagerObject);
 			var response = (StoreNewUserResponse)handler.Execute(CreateOperationContext(request));
 
 			mockPersistence.VerifyAll();
 
-			Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo("UserAlreadyExists"));
+			Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo("UserNameMustBeUnique"));
 		}
 
 	}
