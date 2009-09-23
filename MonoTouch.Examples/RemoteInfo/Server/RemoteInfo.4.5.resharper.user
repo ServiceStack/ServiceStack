@@ -3,6 +3,7 @@
     <string />
     <integer />
     <boolean>
+      <setting name="livetemplates.csharp.usevar">True</setting>
       <setting name="SolutionAnalysisEnabled">False</setting>
     </boolean>
   </SettingsComponent>
@@ -12,26 +13,78 @@
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
       <Item value="Namespace" priority="1" />
-      <Item value="public" priority="6" />
-      <Item value="string" priority="2" />
+      <Item value="public" priority="8" />
+      <Item value="string" priority="10" />
       <Item value="DataMember" priority="4" />
       <Item value="DataContract" priority="0" />
       <Item value="class" priority="0" />
       <Item value="DirectoryInfoResponse" priority="0" />
       <Item value="int" priority="1" />
       <Item value="List&lt;DirectoryResult&gt;" priority="0" />
-      <Item value="new" priority="1" />
-      <Item value="List&lt;FileResult&gt;" priority="0" />
-      <Item value="typeof" priority="0" />
+      <Item value="new" priority="14" />
+      <Item value="List&lt;FileResult&gt;" priority="1" />
+      <Item value="typeof" priority="1" />
       <Item value="GetDirectoryInfoHandler" priority="0" />
-      <Item value="var" priority="0" />
-      <Item value="context" priority="0" />
+      <Item value="var" priority="9" />
+      <Item value="context" priority="1" />
       <Item value="GetDirectoryInfo" priority="0" />
-      <Item value="return" priority="0" />
-      <Item value="resources" priority="0" />
+      <Item value="return" priority="5" />
+      <Item value="resources" priority="1" />
       <Item value="factory" priority="0" />
-      <Item value="RemoteInfoConfig" priority="0" />
-      <Item value="config" priority="0" />
+      <Item value="RemoteInfoConfig" priority="1" />
+      <Item value="config" priority="2" />
+      <Item value="request" priority="1" />
+      <Item value="Path" priority="1" />
+      <Item value="Directory" priority="1" />
+      <Item value="GetSafePath" priority="0" />
+      <Item value="this" priority="0" />
+      <Item value="GetDirectoryInfoResponse" priority="0" />
+      <Item value="foreach" priority="1" />
+      <Item value="filePath" priority="2" />
+      <Item value="Files" priority="0" />
+      <Item value="x" priority="0" />
+      <Item value="File" priority="1" />
+      <Item value="FileInfo" priority="2" />
+      <Item value="response" priority="2" />
+      <Item value="FileResult" priority="0" />
+      <Item value="Name" priority="1" />
+      <Item value="Extension" priority="0" />
+      <Item value="fileInfo" priority="6" />
+      <Item value="FileSizeBytes" priority="0" />
+      <Item value="DirectoryInfo" priority="0" />
+      <Item value="dirPath" priority="0" />
+      <Item value="DirectoryResult" priority="0" />
+      <Item value="dirInfo" priority="1" />
+      <Item value="Length" priority="2" />
+      <Item value="IsTextFile" priority="0" />
+      <Item value="Contents" priority="1" />
+      <Item value="if" priority="0" />
+      <Item value="showTextFilePath" priority="1" />
+      <Item value="CreatedDate" priority="0" />
+      <Item value="using" priority="1" />
+      <Item value="Program" priority="0" />
+      <Item value="const" priority="2" />
+      <Item value="bool" priority="2" />
+      <Item value="false" priority="1" />
+      <Item value="UseJson" priority="0" />
+      <Item value="NewsStyleUriParser" priority="1" />
+      <Item value="XmlServiceClient" priority="0" />
+      <Item value="JsonServiceClient" priority="0" />
+      <Item value="JsonBaseServiceUrl" priority="0" />
+      <Item value="XmlBaseServiceUrl" priority="0" />
+      <Item value="args" priority="3" />
+      <Item value="StringComparison" priority="0" />
+      <Item value="useJson" priority="1" />
+      <Item value="serviceClient" priority="0" />
+      <Item value="ForPath" priority="0" />
+      <Item value="LogManager" priority="1" />
+      <Item value="log" priority="1" />
+      <Item value="dir" priority="1" />
+      <Item value="Console" priority="0" />
+      <Item value="viewRemotePath" priority="0" />
+      <Item value="propg" priority="0" />
+      <Item value="useConsoleHost" priority="1" />
+      <Item value="XmlConsoleBaseServiceUrl" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.LogicFacade.IOperationContext">
       <Item value="Request" priority="0" />
@@ -41,50 +94,159 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.IResourceManager">
       <Item value="GetString" priority="0" />
+      <Item value="GetList" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.FactoryProvider">
       <Item value="Register" priority="0" />
     </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.ServiceModel.Operations.GetDirectoryInfo">
+      <Item value="DirectoryPath" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.String">
+      <Item value="Replace" priority="3" />
+      <Item value="Remove" priority="0" />
+      <Item value="Equals" priority="0" />
+      <Item value="TrimStart" priority="0" />
+      <Item value="PadRight" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.String">
+      <Item value="Empty" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.Path">
+      <Item value="GetInvalidPathChars" priority="0" />
+      <Item value="Combine" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.ServiceInterface.GetDirectoryInfoHandler">
+      <Item value="config" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.ServiceInterface.RemoteInfoConfig">
+      <Item value="RootDirectory" priority="0" />
+      <Item value="TextFileExtensions" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.Directory">
+      <Item value="GetFiles" priority="0" />
+      <Item value="GetDirectories" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
+      <Item value="ConvertAll" priority="0" />
+      <Item value="Add" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.IO.FileInfo">
+      <Item value="Name" priority="1" />
+      <Item value="Extension" priority="2" />
+      <Item value="Length" priority="0" />
+      <Item value="Exists" priority="0" />
+      <Item value="OpenText" priority="0" />
+      <Item value="FullName" priority="0" />
+      <Item value="CreationTime" priority="0" />
+      <Item value="LastWriteTime" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.ServiceModel.Operations.GetDirectoryInfoResponse">
+      <Item value="Files" priority="1" />
+      <Item value="Directories" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.IO.DirectoryInfo">
+      <Item value="Name" priority="0" />
+      <Item value="GetFileSystemInfos" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.IList`1">
+      <Item value="Contains" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.ServiceModel.Operations.GetTextFile">
+      <Item value="AtPath" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.File">
+      <Item value="Exists" priority="0" />
+      <Item value="ReadAllText" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.IO.StreamReader">
+      <Item value="ReadToEnd" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.StringComparison">
+      <Item value="InvariantCultureIgnoreCase" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Service.IServiceClient">
+      <Item value="Send" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Logging.ILog">
+      <Item value="Debug" priority="0" />
+      <Item value="DebugFormat" priority="1" />
+      <Item value="InfoFormat" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.ServiceModel.Types.DirectoryResult">
+      <Item value="Name" priority="0" />
+      <Item value="FileCount" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.ServiceModel.Types.FileResult">
+      <Item value="FileSizeBytes" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Char">
+      <Item value="CompareTo" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Console">
+      <Item value="ReadKey" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Logging.LogManager">
+      <Item value="LogFactory" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Int64">
+      <Item value="ToString" priority="0" />
+    </ItemStatistics>
   </CompletionStatisticsManager>
   <RecentFiles>
     <RecentFiles>
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="78" fromTop="2" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryResult.cs" caret="78" fromTop="2" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="191" fromTop="9" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryInfoResponse.cs" caret="254" fromTop="7" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="497" fromTop="17" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3171" fromTop="18" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="366" fromTop="19" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3086" fromTop="60" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="85" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="157" fromTop="7" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="104" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.designer.cs" caret="0" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="0" fromTop="0" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryResult.cs" caret="277" fromTop="11" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="344" fromTop="14" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="145" fromTop="9" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax" caret="73" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax.cs" caret="723" fromTop="37" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:Copy of GetDirectoryInfo.cs" caret="188" fromTop="5" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:Copy of GetDirectoryInfoResponse.cs" caret="211" fromTop="6" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="378" fromTop="17" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="422" fromTop="11" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1106" fromTop="8" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryInfoResponse.cs" caret="250" fromTop="7" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="177" fromTop="5" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="841" fromTop="0" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="788" fromTop="19" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3198" fromTop="24" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="660" fromTop="33" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1006" fromTop="17" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="516" fromTop="12" />
     </RecentFiles>
     <RecentEdits>
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="0" fromTop="0" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="26" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="16" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="16" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="27" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="78" fromTop="2" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryResult.cs" caret="78" fromTop="2" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="9" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryInfoResponse.cs" caret="254" fromTop="7" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="363" fromTop="12" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="497" fromTop="17" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="584" fromTop="17" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="495" fromTop="12" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3184" fromTop="18" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="417" fromTop="19" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="33" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2504" fromTop="34" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1871" fromTop="21" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="34" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="33" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2790" fromTop="34" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="85" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="176" fromTop="7" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="104" fromTop="0" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="658" fromTop="32" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="403" fromTop="17" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1366" fromTop="31" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="397" fromTop="15" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="268" fromTop="9" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1415" fromTop="26" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="585" fromTop="21" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="894" fromTop="28" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="1113" fromTop="34" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="914" fromTop="31" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="811" fromTop="26" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="1167" fromTop="29" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="59" fromTop="1" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="925" fromTop="23" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="672" fromTop="17" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1729" fromTop="36" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1618" fromTop="33" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="2113" fromTop="37" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="788" fromTop="19" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3198" fromTop="24" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1182" fromTop="21" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="737" fromTop="19" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="292" fromTop="14" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="1473" fromTop="30" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="331" fromTop="9" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="833" fromTop="9" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="1389" fromTop="19" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="1909" fromTop="31" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="0" fromTop="0" />
+      <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="2148" fromTop="41" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

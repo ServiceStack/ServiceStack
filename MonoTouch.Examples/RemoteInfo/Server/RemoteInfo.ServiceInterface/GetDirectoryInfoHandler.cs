@@ -57,7 +57,12 @@ namespace RemoteInfo.ServiceInterface
 			{
 				filePath = filePath.Replace(invalidChar.ToString(), string.Empty);
 			}
-			return filePath.Replace("../", string.Empty).Replace('\\', '/').Replace('/', Path.DirectorySeparatorChar);
+
+			return filePath
+				.TrimStart('.','/','\\')
+				.Replace("../", string.Empty)
+				.Replace('\\', '/')
+				.Replace('/', Path.DirectorySeparatorChar);
 		}
 	}
 

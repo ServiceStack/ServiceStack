@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteInfo.Host.Web", "Remo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteInfo.ServiceInterface", "RemoteInfo.ServiceInterface\RemoteInfo.ServiceInterface.csproj", "{5B91935A-7ED6-4496-871B-6AD25BC3F097}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteInfo.Tests.ConsoleClient", "RemoteInfo.Tests.ConsoleClient\RemoteInfo.Tests.ConsoleClient.csproj", "{DAE4FFC2-B446-4020-8578-19B816FAA40A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{5B91935A-7ED6-4496-871B-6AD25BC3F097}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B91935A-7ED6-4496-871B-6AD25BC3F097}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B91935A-7ED6-4496-871B-6AD25BC3F097}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAE4FFC2-B446-4020-8578-19B816FAA40A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAE4FFC2-B446-4020-8578-19B816FAA40A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAE4FFC2-B446-4020-8578-19B816FAA40A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAE4FFC2-B446-4020-8578-19B816FAA40A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
