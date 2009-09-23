@@ -34,3 +34,4 @@ COPY *.exe %SERVICESTACK_DEPLOY_PATH%
 
 COPY *.dll ..\..\..\ServiceStack.Examples\Lib
 COPY *.dll ..\..\..\release\latest
+COPY *.dll ..\..\..\MonoTouch.Examples\RemoteInfo\Server\Lib

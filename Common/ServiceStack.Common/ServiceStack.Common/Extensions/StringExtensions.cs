@@ -45,6 +45,28 @@ namespace ServiceStack.Common.Extensions
 			return string.IsNullOrEmpty(value);
 		}
 
+		public static string ReplaceFirst(this string haystack, string needle, string replacement)
+		{
+			var pos = haystack.IndexOf(needle);
+			if (pos < 0) return haystack;
+
+			return haystack.Substring(0, pos) + replacement + haystack.Substring(pos + needle.Length);
+		}
+
+		public static string ReplaceAll(this string haystack, string needle, string replacement)
+		{
+			int pos;
+			// Avoid a possible infinite loop
+			if (needle == replacement) return haystack;
+			while ((pos = haystack.IndexOf(needle)) > 0)
+			{
+				haystack = haystack.Substring(0, pos) 
+					+ replacement 
+					+ haystack.Substring(pos + needle.Length);
+			}
+			return haystack;
+		}
+
 		/// <summary>
 		/// Converts from base: 0 - 62
 		/// </summary>

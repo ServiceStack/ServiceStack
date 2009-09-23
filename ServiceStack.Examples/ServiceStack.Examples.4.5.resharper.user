@@ -16,40 +16,60 @@
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:App.xaml.cs" caret="0" fromTop="0" />
       <File id="66071B2F-A190-450D-8EA3-CF3A5477D738/f:AppContext.cs" caret="589" fromTop="22" />
       <File id="8B071AF6-0860-4C1A-B41B-B6FB36EDF04F/f:Program.cs" caret="2030" fromTop="14" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="823" fromTop="8" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="1073" fromTop="38" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="966" fromTop="35" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:StoreNewUserProgram.cs" caret="524" fromTop="23" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="458" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="0" fromTop="0" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="371" fromTop="20" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1174" fromTop="21" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3778" fromTop="32" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1794" fromTop="36" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:TestProgramBase.cs" caret="660" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="565" fromTop="14" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="88" fromTop="3" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="694" fromTop="23" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Soap12WsdlProgram.cs" caret="613" fromTop="22" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="343" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="456" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="1048" fromTop="19" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="0" fromTop="0" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="1247" fromTop="14" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1846" fromTop="25" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestBase.cs" caret="558" fromTop="25" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1072" fromTop="19" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="0" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="1242" fromTop="28" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1532" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersHandler.cs" caret="958" fromTop="27" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:TestProgramBase.cs" caret="545" fromTop="16" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="380" fromTop="14" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:StoreNewUserProgram.cs" caret="444" fromTop="16" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1740" fromTop="28" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2306" fromTop="26" />
     </RecentFiles>
     <RecentEdits>
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="323" fromTop="15" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2699" fromTop="31" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2697" fromTop="34" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3227" fromTop="38" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3100" fromTop="25" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1174" fromTop="21" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1888" fromTop="25" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1661" fromTop="31" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3396" fromTop="23" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3778" fromTop="32" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="698" fromTop="19" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="880" fromTop="26" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="565" fromTop="14" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="693" fromTop="23" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="348" fromTop="10" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="251" fromTop="7" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="840" fromTop="14" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="2599" fromTop="19" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1111" fromTop="23" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="1247" fromTop="14" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:TestProgramBase.cs" caret="648" fromTop="21" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1869" fromTop="25" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestBase.cs" caret="456" fromTop="20" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="843" fromTop="30" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="328" fromTop="12" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1286" fromTop="26" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestBase.cs" caret="889" fromTop="33" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestBase.cs" caret="558" fromTop="25" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1021" fromTop="18" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1324" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1223" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="1114" fromTop="25" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1532" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersHandler.cs" caret="737" fromTop="19" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersHandler.cs" caret="958" fromTop="27" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:TestProgramBase.cs" caret="541" fromTop="15" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:StoreNewUserProgram.cs" caret="448" fromTop="16" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:StoreNewUserProgram.cs" caret="667" fromTop="24" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="991" fromTop="29" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1612" fromTop="35" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1962" fromTop="20" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3952" fromTop="40" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3946" fromTop="39" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3344" fromTop="22" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3647" fromTop="31" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1826" fromTop="30" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -71,17 +91,17 @@
       <Item value="GetFactorials" priority="2" />
       <Item value="DataMember" priority="2" />
       <Item value="type" priority="0" />
-      <Item value="var" priority="29" />
+      <Item value="var" priority="31" />
       <Item value="context" priority="2" />
       <Item value="return" priority="6" />
-      <Item value="new" priority="50" />
+      <Item value="new" priority="52" />
       <Item value="GetFactorialsResponse" priority="0" />
       <Item value="Result" priority="0" />
       <Item value="request" priority="18" />
       <Item value="base" priority="1" />
       <Item value="ApplicationContext" priority="4" />
       <Item value="BasicOperationContext" priority="0" />
-      <Item value="factory" priority="2" />
+      <Item value="factory" priority="3" />
       <Item value="cacheClient" priority="0" />
       <Item value="config" priority="4" />
       <Item value="MemcachedClientCache" priority="2" />
@@ -234,7 +254,7 @@
       <Item value="operationContext" priority="0" />
       <Item value="GetAllUsers" priority="1" />
       <Item value="requestHandler" priority="0" />
-      <Item value="ushort" priority="0" />
+      <Item value="ushort" priority="1" />
       <Item value="GetAllUsersResponse" priority="0" />
       <Item value="log" priority="0" />
       <Item value="DatabaseTest" priority="0" />
@@ -335,7 +355,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:Moq.Mock`1">
       <Item value="Expect" priority="3" />
-      <Item value="Object" priority="1" />
+      <Item value="Object" priority="3" />
       <Item value="VerifyAll" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Moq.Language.Flow.IExpect`1">

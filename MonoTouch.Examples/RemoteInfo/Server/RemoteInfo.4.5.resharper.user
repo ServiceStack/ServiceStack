@@ -1,0 +1,96 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer />
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="Namespace" priority="1" />
+      <Item value="public" priority="6" />
+      <Item value="string" priority="2" />
+      <Item value="DataMember" priority="4" />
+      <Item value="DataContract" priority="0" />
+      <Item value="class" priority="0" />
+      <Item value="DirectoryInfoResponse" priority="0" />
+      <Item value="int" priority="1" />
+      <Item value="List&lt;DirectoryResult&gt;" priority="0" />
+      <Item value="new" priority="1" />
+      <Item value="List&lt;FileResult&gt;" priority="0" />
+      <Item value="typeof" priority="0" />
+      <Item value="GetDirectoryInfoHandler" priority="0" />
+      <Item value="var" priority="0" />
+      <Item value="context" priority="0" />
+      <Item value="GetDirectoryInfo" priority="0" />
+      <Item value="return" priority="0" />
+      <Item value="resources" priority="0" />
+      <Item value="factory" priority="0" />
+      <Item value="RemoteInfoConfig" priority="0" />
+      <Item value="config" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.LogicFacade.IOperationContext">
+      <Item value="Request" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.LogicFacade.IRequestContext">
+      <Item value="Get" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Configuration.IResourceManager">
+      <Item value="GetString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.FactoryProvider">
+      <Item value="Register" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="78" fromTop="2" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryResult.cs" caret="78" fromTop="2" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="191" fromTop="9" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryInfoResponse.cs" caret="254" fromTop="7" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="497" fromTop="17" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3171" fromTop="18" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="366" fromTop="19" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="3086" fromTop="60" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="85" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="157" fromTop="7" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="104" fromTop="0" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="0" fromTop="0" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="26" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="16" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="16" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="27" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="78" fromTop="2" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryResult.cs" caret="78" fromTop="2" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="264" fromTop="9" />
+      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryInfoResponse.cs" caret="254" fromTop="7" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="363" fromTop="12" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="497" fromTop="17" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="584" fromTop="17" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="495" fromTop="12" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3184" fromTop="18" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="417" fromTop="19" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="33" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2504" fromTop="34" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1871" fromTop="21" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="34" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="33" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2790" fromTop="34" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="3831" fromTop="85" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="176" fromTop="7" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="104" fromTop="0" />
+    </RecentEdits>
+  </RecentFiles>
+  <UnitTestRunner>
+    <Providers />
+  </UnitTestRunner>
+  <UnitTestRunnerMSTest>
+    <UseTestRunConfigFromMetadataFile>False</UseTestRunConfigFromMetadataFile>
+  </UnitTestRunnerMSTest>
+</Configuration>
