@@ -78,16 +78,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public static IPAddress GetIpAddress(System.ServiceModel.OperationContext context)
 		{
-			var prop = context.IncomingMessageProperties;
-			if (context.IncomingMessageProperties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
-			{
-				var endpoint = prop[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name]
-					as System.ServiceModel.Channels.RemoteEndpointMessageProperty;
-				if (endpoint != null)
-				{
-					return IPAddress.Parse(endpoint.Address);
-				}
-			}
+//			var prop = context.IncomingMessageProperties;
+//			if (context.IncomingMessageProperties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
+//			{
+//				var endpoint = prop[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name]
+//					as System.ServiceModel.Channels.RemoteEndpointMessageProperty;
+//				if (endpoint != null)
+//				{
+//					return IPAddress.Parse(endpoint.Address);
+//				}
+//			}
 			return null;
 		}
 

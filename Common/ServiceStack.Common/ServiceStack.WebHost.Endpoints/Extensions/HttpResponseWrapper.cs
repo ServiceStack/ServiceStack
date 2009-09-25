@@ -22,7 +22,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public NameValueCollection Headers
 		{
-			get { return response.Headers; }
+			get 
+			{ 
+				return new NameValueCollection(); 
+//				return response.Headers; 
+			}
 		}
 
 		public Stream OutputStream

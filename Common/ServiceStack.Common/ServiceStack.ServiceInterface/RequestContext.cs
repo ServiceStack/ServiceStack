@@ -97,16 +97,18 @@ namespace ServiceStack.ServiceInterface
 
 		public static string GetIpAddress(System.ServiceModel.OperationContext context)
 		{
+#if MONO
 			var prop = context.IncomingMessageProperties;
 			if (context.IncomingMessageProperties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
 			{
 				var endpoint = prop[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name]
 					as System.ServiceModel.Channels.RemoteEndpointMessageProperty;
 				if (endpoint != null)
-				{
-					return endpoint.Address;
+				{					
+					return endpoint.Address;					
 				}
 			}
+#endif			
 			return null;
 		}
 

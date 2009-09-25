@@ -50,7 +50,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = rowIds.ConvertAll(x => ModelWithFieldsOfDifferentTypes.Create(x));
 
-				rows.ForEach(dbCmd.Insert);
+				rows.ForEach(x => dbCmd.Insert(x));
 
 				var getRowIds = new[] { 2, 4 };
 				var providerRows = basicProvider.GetByIds<ModelWithFieldsOfDifferentTypes>(getRowIds).ToList();
@@ -98,7 +98,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = rowIds.ConvertAll(x => ModelWithFieldsOfDifferentTypes.Create(x));
 
-				rows.ForEach(dbCmd.Insert);
+				rows.ForEach(x => dbCmd.Insert(x));
 
 				var deleteRowIds = new List<int> { 2, 4 };
 
