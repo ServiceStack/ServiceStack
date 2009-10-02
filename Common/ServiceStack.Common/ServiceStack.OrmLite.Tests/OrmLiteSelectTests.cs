@@ -112,7 +112,7 @@ namespace ServiceStack.OrmLite.Tests
 		}
 
 		[Test]
-		public void Can_select_scalable_value()
+		public void Can_select_scalar_value()
 		{
 			const int n = 5;
 			
