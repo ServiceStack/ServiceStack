@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common.Utils;
 using ServiceStack.DataAccess;
 using ServiceStack.Logging;
 
@@ -255,9 +256,30 @@ namespace ServiceStack.OrmLite
 			where T : new()
 		{
 			dbCommand.CommandText = ToSelectStatement(typeof(T), filter, filterParams);
-			using (var dbReader = dbCommand.ExecuteReader())
+			using (var reader = dbCommand.ExecuteReader())
 			{
-				return dbReader.ConvertToList<T>();
+				return reader.ConvertToList<T>();
+			}
+		}
+
+		public static IEnumerable<T> Each<T>(this IDbCommand dbCommand)
+			where T : new()
+		{
+			return Each<T>(dbCommand, null);
+		}
+
+		public static IEnumerable<T> Each<T>(this IDbCommand dbCommand, string filter, params object[] filterParams)
+			where T : new()
+		{
+			dbCommand.CommandText = ToSelectStatement(typeof(T), filter, filterParams);
+			using (var reader = dbCommand.ExecuteReader())
+			{
+				while (reader.Read())
+				{
+					var row = new T();
+					row.PopulateWithSqlReader(reader);
+					yield return row;
+				}
 			}
 		}
 
@@ -366,6 +388,24 @@ namespace ServiceStack.OrmLite
 			return objWithProperties;
 		}
 
+		public static T GetScalar<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
+		{
+			dbCmd.CommandText = sql.SqlFormat(sqlParams);
+			using (var reader = dbCmd.ExecuteReader())
+			{
+				return GetScalar<T>(reader);
+			}
+		}
+
+		public static T GetScalar<T>(this IDataReader reader)
+		{
+			while (reader.Read())
+			{
+				return StringConverterUtils.Parse<T>(reader.GetValue(0).ToString());
+			}
+			return default(T);
+		}
+
 		public static List<string> GetFirstColumn(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
 			dbCmd.CommandText = sql.SqlFormat(sqlParams);
@@ -454,7 +494,7 @@ namespace ServiceStack.OrmLite
 			var sql = string.Format("INSERT INTO \"{0}\" ({1}) VALUES ({2});",
 									tableType.Name, sbColumnNames, sbColumnValues);
 
-			Log.DebugFormat(sql.ToString());
+			//Log.DebugFormat(sql);
 
 			return sql;
 		}

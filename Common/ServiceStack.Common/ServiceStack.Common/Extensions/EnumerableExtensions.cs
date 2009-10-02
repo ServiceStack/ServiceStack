@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Common.Extensions
 {
-	public static class IEnumerableExtensions
+	public static class EnumerableExtensions
 	{
 		public static List<To> ConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
 		{

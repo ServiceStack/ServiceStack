@@ -3,7 +3,7 @@ using ServiceStack.DesignPatterns.Translator;
 
 namespace ServiceStack.Common.Extensions
 {
-    public static class ITranslatorExtensions
+    public static class TranslatorExtensions
     {
         // Methods
         public static List<To> ParseAll<To, From>(this ITranslator<To, From> translator, IEnumerable<From> from)
