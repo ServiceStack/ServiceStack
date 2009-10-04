@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using ServiceStack.CacheAccess.Memcached;
 using ServiceStack.Configuration;
 
 namespace ServiceStack.CacheAccess.Providers.Tests
@@ -12,7 +13,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		protected void SetUp()
 		{
 			var memcachedServers = ConfigUtils.GetListFromAppSetting("MemcachedServers");
-			this.cacheClient = new MemcachedClientCache(memcachedServers);
+			//this.cacheClient = new MemcachedClientCache(memcachedServers);
 		}
 
 		[Ignore("Debug output only, not really a test")][Test]

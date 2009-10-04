@@ -6,7 +6,7 @@ using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 using InnerClient=Enyim.Caching;
 
-namespace ServiceStack.CacheAccess.Providers
+namespace ServiceStack.CacheAccess.Memcached
 {
 	/// <summary>
 	/// A memcached implementation of the ServiceStack ICacheClient interface.
