@@ -19,12 +19,12 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceClient.Web\bin\Debug\ServiceSta
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\Debug\ServiceStack.CacheAccess.Providers.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Compression\bin\Debug\ServiceStack.Compression.dll
 REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\Debug\ServiceStack.DataAccess.NHibernateProvider.dll
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.Db4oProvider\bin\Debug\ServiceStack.DataAccess.Db4oProvider.dll
+REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.Db4oProvider\bin\Debug\ServiceStack.DataAccess.Db4oProvider.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite\bin\Debug\ServiceStack.OrmLite.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite.Sqlite\bin\Debug\ServiceStack.OrmLite.Sqlite.dll
 
 REM Include Adapters to popular 3rd party dll's
-SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\ServiceStack.Logging.Log4Net.dll
+REM SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\ServiceStack.Logging.Log4Net.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\Enyim.Caching.dll
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
