@@ -37,7 +37,6 @@
     </Reference>
     <Reference Include="Sakila.DomainModel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ServiceStack.DataAccess.Db4oProvider.Tests\Lib\Sakila.DomainModel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
