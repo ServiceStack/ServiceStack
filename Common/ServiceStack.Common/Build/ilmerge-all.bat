@@ -18,18 +18,16 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.WebHost.Endpoints\bin\Debug\ServiceSta
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceClient.Web\bin\Debug\ServiceStack.ServiceClient.Web.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\Debug\ServiceStack.CacheAccess.Providers.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Compression\bin\Debug\ServiceStack.Compression.dll
-REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\Debug\ServiceStack.DataAccess.NHibernateProvider.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite\bin\Debug\ServiceStack.OrmLite.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite.Sqlite\bin\Debug\ServiceStack.OrmLite.Sqlite.dll
 
-REM Include Adapters to popular 3rd party dll's
-REM SET PROJ_LIBS=%PROJ_LIBS% ..\Lib\ServiceStack.Logging.Log4Net.dll
-REM SET PROJ_LIBS=%PROJ_LIBS% 
+REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\Debug\ServiceStack.DataAccess.NHibernateProvider.dll
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.Memcached.dll ..\Lib\Enyim.Caching.dll ..\ServiceStack.CacheAccess.Memcached\bin\Debug\ServiceStack.CacheAccess.Memcached.dll
 COPY ..\ServiceStack.DataAccess.Db4oProvider\bin\Debug\ServiceStack.DataAccess.Db4oProvider.dll .
+COPY ..\Lib\ServiceStack.Logging.Log4Net.dll .
 
 COPY *.dll %SERVICESTACK_DEPLOY_PATH%
 COPY *.exe %SERVICESTACK_DEPLOY_PATH%
