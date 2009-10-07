@@ -19,12 +19,6 @@ namespace RemoteInfoClient
 	// The name AppDelegate is referenced in the MainWindow.xib file.
 	public partial class AppDelegate : UIApplicationDelegate
 	{
-		public static IServiceClient ServiceClient { get; private set; }
-		
-		static AppDelegate()
-		{
-			ServiceClient = new XmlServiceClient ("http://localhost:8080/Public/Xml/SyncReply");
-		}
 
 		// This method is invoked when the application has loaded its UI and its ready to run
 		public override bool FinishedLaunching (UIApplication app, NSDictionary options)

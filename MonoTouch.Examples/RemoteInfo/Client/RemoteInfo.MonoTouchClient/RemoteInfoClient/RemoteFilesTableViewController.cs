@@ -12,6 +12,11 @@ using RemoteInfo.ServiceModel.Types;
 
 namespace RemoteInfoClient
 {
+	/// <summary>
+	/// Standard Table View Controller, for tutorials check out:
+	/// 		- (video)  		http://www.vimeo.com/6689472
+	/// 		- (tutorial) 	http://www.alexyork.net/blog/post/UINavigationController-with-MonoTouch-Building-a-simple-RSS-reader-Part-1.aspx
+	/// </summary>
 	public partial class RemoteFilesTableViewController : UITableViewController
 	{
 		static NSString kCellIdentifier = new NSString ("RFTVCIdentifier");
@@ -67,15 +72,16 @@ namespace RemoteInfoClient
 					cell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
 					
 					cell.TextLabel.Text = string.Format("/{0} ({1})", dirResult.Name, dirResult.FileCount);
-					cell.TextLabel.TextColor = new UIColor(0, 0.7f, 0, 1);
+					var greenColor = new UIColor(0, 0.7f, 0, 1);
+					cell.TextLabel.TextColor = greenColor;
 				}
 				else
 				{
 					var fileResult = (FileResult) tvc.Items[indexPath.Row];
 
-					cell.Accessory = fileResult.IsTextFile 
-						? UITableViewCellAccessory.DisclosureIndicator
-						: UITableViewCellAccessory.None;
+//					cell.Accessory = fileResult.IsTextFile 
+//						? UITableViewCellAccessory.DisclosureIndicator
+//						: UITableViewCellAccessory.None;
 
 					cell.TextLabel.Text = fileResult.Name;
 				}
@@ -106,19 +112,19 @@ namespace RemoteInfoClient
 					var nextPath = string.Format("{0}/{1}", tvc.CurrentPath, dirResult.Name);				
 					tvc.NavigationController.PushViewController(new RemoteFilesTableViewController(nextPath), true); 
 				}
-				else
-				{
-					var fileResult = (FileResult) tvc.Items[indexPath.Row];
-					if (!fileResult.IsTextFile) return;
-					
-					var request = new GetTextFile { AtPath = string.Format("{0}/{1}", tvc.CurrentPath, fileResult.Name) };
-					var response = AppDelegate.ServiceClient.Send<GetTextFileResponse>(request);
-
-					Console.WriteLine("response for: " + request.AtPath + ", len: " + response.Contents.Length);
-					
-					var controller = new ViewTextFileController(fileResult.Name, response.Contents);
-					tvc.NavigationController.PushViewController(controller, true);
-				}
+//				else
+//				{
+//					var fileResult = (FileResult) tvc.Items[indexPath.Row];
+//					if (!fileResult.IsTextFile) return;
+//					
+//					var request = new GetTextFile { AtPath = string.Format("{0}/{1}", tvc.CurrentPath, fileResult.Name) };
+//					var response = AppConfig.ServiceClient.Send<GetTextFileResponse>(request);
+//
+//					Console.WriteLine("response for: " + request.AtPath + ", len: " + response.Contents.Length);
+//					
+//					var controller = new ViewTextFileController(fileResult.Name, response.Contents);
+//					tvc.NavigationController.PushViewController(controller, true);
+//				}
 				
 			}
 		}
@@ -131,7 +137,7 @@ namespace RemoteInfoClient
 			Title = directoryNames.Length > 0 ? directoryNames[directoryNames.Length - 1] : "/";
 			
 			var request = new GetDirectoryInfo { ForPath = this.CurrentPath };
-			var response = AppDelegate.ServiceClient.Send<GetDirectoryInfoResponse> (request);
+			var response = AppConfig.ServiceClient.Send<GetDirectoryInfoResponse> (request);
 			
 			this.Items = new List<object>();
 			response.Directories.ForEach(x => this.Items.Add(x));

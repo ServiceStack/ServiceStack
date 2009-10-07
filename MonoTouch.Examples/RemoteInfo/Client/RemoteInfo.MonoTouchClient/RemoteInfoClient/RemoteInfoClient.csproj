@@ -65,6 +65,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\..\..\Library\Frameworks\Mono.framework\Versions\2.6\lib\mono\gac\System.Security\2.0.0.0__b03f5f7f11d50a3a\System.Security.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Client, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Client.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainWindow.xib.designer.cs">
@@ -73,6 +77,7 @@
     <Compile Include="Main.cs" />
     <Compile Include="RemoteFilesTableViewController.cs" />
     <Compile Include="ViewTextFileController.cs" />
+    <Compile Include="AppConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainWindow.xib" />
@@ -83,10 +88,4 @@
       <Properties InternalTargetFrameworkVersion="IPhone" />
     </MonoDevelop>
   </ProjectExtensions>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}</Project>
-      <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-  </ItemGroup>
 </Project>
