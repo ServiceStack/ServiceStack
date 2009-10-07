@@ -31,6 +31,14 @@ namespace RemoteInfo.ServiceInterface
 			}
 		}
 
+		public IList<string> ExcludeDirectories
+		{
+			get
+			{
+				return resources.GetList("ExcludeDirectories");
+			}
+		}
+
 	}
 
 }
