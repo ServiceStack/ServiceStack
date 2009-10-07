@@ -197,20 +197,13 @@
     <RecentFiles>
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.designer.cs" caret="0" fromTop="0" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="0" fromTop="0" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryResult.cs" caret="277" fromTop="11" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="344" fromTop="14" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="145" fromTop="9" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax" caret="73" fromTop="0" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax.cs" caret="723" fromTop="37" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:Copy of GetDirectoryInfo.cs" caret="188" fromTop="5" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:Copy of GetDirectoryInfoResponse.cs" caret="211" fromTop="6" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="378" fromTop="17" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="422" fromTop="11" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1106" fromTop="8" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:DirectoryInfoResponse.cs" caret="250" fromTop="7" />
       <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:GetDirectoryInfo.cs" caret="177" fromTop="5" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="841" fromTop="0" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="788" fromTop="19" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3198" fromTop="24" />
       <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="660" fromTop="33" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1006" fromTop="17" />
@@ -218,24 +211,9 @@
     </RecentFiles>
     <RecentEdits>
       <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="658" fromTop="32" />
-      <File id="6BBEDCA5-1183-49EE-AE80-0269DEB2EDEF/d:Operations/f:FileResult.cs" caret="403" fromTop="17" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1366" fromTop="31" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="397" fromTop="15" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="268" fromTop="9" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1415" fromTop="26" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="585" fromTop="21" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="894" fromTop="28" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="1113" fromTop="34" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="914" fromTop="31" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="811" fromTop="26" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="1167" fromTop="29" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Copy of GetDirectoryInfoHandler.cs" caret="59" fromTop="1" />
       <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="925" fromTop="23" />
       <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="672" fromTop="17" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1729" fromTop="36" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="1618" fromTop="33" />
       <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="2113" fromTop="37" />
-      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:Class1.cs" caret="788" fromTop="19" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3198" fromTop="24" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1182" fromTop="21" />
       <File id="DAE4FFC2-B446-4020-8578-19B816FAA40A/f:Program.cs" caret="737" fromTop="19" />
