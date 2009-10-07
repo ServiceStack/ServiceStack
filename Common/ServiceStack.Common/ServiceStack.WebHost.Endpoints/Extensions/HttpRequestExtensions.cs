@@ -39,32 +39,42 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static string GetOperationName(this HttpRequest request)
 		{
-			var pathInfo = request.GetPathInfo();
-			return GetOperationNameFromPathInfo(pathInfo);
+			var pathInfo = request.GetLastPathInfo();
+			return GetOperationNameFromLastPathInfo(pathInfo);
 		}
 
-		public static string GetOperationNameFromPathInfo(string pathInfo)
+		public static string GetOperationNameFromLastPathInfo(string lastPathInfo)
 		{
-			if (string.IsNullOrEmpty(pathInfo)) return null;
+			if (string.IsNullOrEmpty(lastPathInfo)) return null;
 
-			var operationName = pathInfo.Substring("/".Length);
+			var operationName = lastPathInfo.Substring("/".Length);
+
 			return operationName;
 		}
 
-		public static string GetPathInfo(this HttpRequest request)
+		private static string GetLastPathInfoFromRawUrl(string rawUrl)
+		{
+			var pathInfo = rawUrl.IndexOf("?") != -1
+				? rawUrl.Substring(0, rawUrl.IndexOf("?")) 
+				: rawUrl;
+
+			pathInfo = pathInfo.Substring(pathInfo.LastIndexOf("/"));
+
+			return pathInfo;
+		}
+
+		public static string GetLastPathInfo(this HttpRequest request)
 		{
 			var pathInfo = request.PathInfo;
 			if (string.IsNullOrEmpty(pathInfo))
 			{
-				pathInfo = GetPathInfo(request.RawUrl);
+				pathInfo = GetLastPathInfoFromRawUrl(request.RawUrl);
 			}
-			return pathInfo.IndexOf("?") != -1 ? pathInfo.Substring(0, pathInfo.IndexOf("?")) : pathInfo;
-		}
+			
+			//Log.DebugFormat("Request.PathInfo: {0}, Request.RawUrl: {1}, pathInfo:{2}",
+			//    request.PathInfo, request.RawUrl, pathInfo);
 
-		private static string GetPathInfo(string rawUrl)
-		{
-			var pathInfo = rawUrl.Substring(rawUrl.LastIndexOf("/"));
-			return pathInfo.IndexOf("?") != -1 ? pathInfo.Substring(0, pathInfo.IndexOf("?")) : pathInfo;
+			return pathInfo;
 		}
 
 		public static string GetUrlHostName(this HttpRequest request)
@@ -110,9 +120,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			return request.Url.Segments[request.Url.Segments.Length - 1];
 		}
 
-		public static string GetPathInfo(this HttpListenerRequest request)
+		public static string GetLastPathInfo(this HttpListenerRequest request)
 		{
-			return GetPathInfo(request.RawUrl);
+			return GetLastPathInfoFromRawUrl(request.RawUrl);
 		}
 	}
 }
