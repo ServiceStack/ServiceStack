@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteInfoClient", "RemoteInfoClient\RemoteInfoClient.csproj", "{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client", "ServiceStack.Client\ServiceStack.Client.csproj", "{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|iPhone = Debug|iPhone
