@@ -1,0 +1,28 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" ctype="Workspace" />
+  <MonoDevelop.Ide.DebuggingService>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService>
+  <MonoDevelop.Ide.Workbench ActiveDocument="RemoteInfo.ServiceModel/Operations/GetDirectoryInfo.cs" ctype="Workbench">
+    <Files>
+      <File FileName="RemoteInfo.ServiceModel/Operations/GetDirectoryInfo.cs" Line="11" Column="2" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True" selected="True">
+          <Node name="RemoteInfo.Host.Console" expanded="True" />
+          <Node name="RemoteInfo.Host.Web" expanded="True" />
+          <Node name="RemoteInfo.ServiceInterface" expanded="True" />
+          <Node name="RemoteInfo.ServiceModel" expanded="True">
+            <Node name="Operations" expanded="True" />
+            <Node name="Types" expanded="True" />
+          </Node>
+          <Node name="RemoteInfo.Tests.ConsoleClient" expanded="True" />
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+</Properties>
