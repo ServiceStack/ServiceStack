@@ -70,6 +70,8 @@
   </Target>
   -->
   <ItemGroup>
-    <ApplicationDefinition Include="App.config" />
+    <ApplicationDefinition Include="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ApplicationDefinition>
   </ItemGroup>
 </Project>

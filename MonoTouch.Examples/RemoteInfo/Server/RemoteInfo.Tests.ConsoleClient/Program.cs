@@ -1,4 +1,4 @@
-﻿using RemoteInfo.ServiceModel.Operations;
+using RemoteInfo.ServiceModel.Operations;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Service;
@@ -6,12 +6,29 @@ using ServiceStack.ServiceClient.Web;
 
 namespace RemoteInfo.Tests.ConsoleClient
 {
+	/// <summary>
+	///	This is a Command Line program that calls the webservice in C#
+	///
+	/// It allows you to call the web service when running:
+	///   - hosted in IIS 6 or 7, apache using mod_mono or other browsers that support FastCGI
+	///   - hosted in xsp
+	///   - hosted inside a Console Application (i.e. without a web server)
+	/// 
+	/// It also allows you to run the same program using either JSON or XML.
+	/// 
+	/// </summary>
 	class Program
 	{
-		//IIS / mod_mono / FastCGI WebService endpoints:
-		private const string JsonServiceBaseUrl = "http://localhost/RemoteInfo.Host.Web/Public/Json/SyncReply/";
-		private const string XmlServiceBaseUrl = "http://localhost/RemoteInfo.Host.Web/Public/Xml/SyncReply/";
+		const bool UsingXspWebServer = true;
 
+		const string DefaultBaseUrl = "http://localhost/RemoteInfo.Host.Web";
+		const string XspBaseUrl = "http://localhost:8080";
+		const string WebServerBaseUrl = UsingXspWebServer ? XspBaseUrl : DefaultBaseUrl;
+		
+		//IIS / mod_mono / FastCGI WebService endpoints:
+		private const string JsonServiceBaseUrl = WebServerBaseUrl + "/Public/Json/SyncReply/";
+		private const string XmlServiceBaseUrl  = WebServerBaseUrl + "/Public/Xml/SyncReply/";
+		
 		//RemoteInfo.Host.Console ConsoleService endpoints:
 		private const string ConsoleHostXmlServiceBaseUrl = "http://localhost:81/";
 

@@ -47,15 +47,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Operations\GetTextFile.cs" />
-    <Compile Include="Operations\GetTextFileResponse.cs" />
-    <Compile Include="Operations\GetDirectoryInfoResponse.cs" />
     <Compile Include="Types\FileResult.cs" />
     <Compile Include="Types\DirectoryResult.cs" />
     <Compile Include="Operations\GetDirectoryInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using RemoteInfo.ServiceInterface;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
@@ -14,6 +14,8 @@ using ServiceStack.WebHost.Endpoints;
 namespace RemoteInfo.Host.Web
 {
 	/// <summary>
+	/// Web Services with http://www.servicestack.net/
+	/// 
 	/// An example of a AppHost to have your services running inside a webserver.
 	/// </summary>
 	public class AppHost : EndpointHostBase, IDisposable
@@ -38,9 +40,9 @@ namespace RemoteInfo.Host.Web
 			var factory = new FactoryProvider(FactoryUtils.ObjectFactory);
 
 			//Set up the Application providers. Overrideable at runtime via '<objects/>' in web.config 
-			LogManager.LogFactory = factory.ResolveOptional<ILogFactory>("LogFactory", new DebugLogFactory());				// prints to Debug output
-			var config = factory.ResolveOptional<IResourceManager>("ResourceManager", new ConfigurationResourceManager());  // uses <appSettings />
-			var cacheClient = factory.ResolveOptional<ICacheClient>("CacheProvider", new MemoryCacheClient());              // uses In-Memory Cache
+			LogManager.LogFactory = factory.ResolveOptional<ILogFactory>("LogFactory", new ConsoleLogFactory());				// logs to the Console
+			var config = factory.ResolveOptional<IResourceManager>("ResourceManager", new ConfigurationResourceManager());   // uses <appSettings />
+			var cacheClient = factory.ResolveOptional<ICacheClient>("CacheProvider", new MemoryCacheClient());               // uses In-Memory Cache
 
 			//Declare any dependencies you want injected in handlers
 			factory.Register(new RemoteInfoConfig(config));

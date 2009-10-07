@@ -14,6 +14,8 @@ using ServiceStack.WebHost.Endpoints;
 namespace RemoteInfo.Host.Console
 {
 	/// <summary>
+	/// Web Services with http://www.servicestack.net/
+	/// 
 	/// An example of a AppHost to have your services running inside a webserver.
 	/// </summary>
 	public class AppHost : XmlSyncReplyHttpListener
