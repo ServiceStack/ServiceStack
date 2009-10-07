@@ -1,10 +1,8 @@
 using System;
 using System.IO;
 using System.Net;
-using ServiceStack.Service;
-using ServiceStack.ServiceModel.Serialization;
 
-namespace ServiceStack.ServiceClient.Web
+namespace ServiceStack.Client
 {
 	public class JsonServiceClient : IServiceClient
 	{
@@ -57,6 +55,6 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
-		public void Dispose() {}
+		public void Dispose() { }
 	}
 }

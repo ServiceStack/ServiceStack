@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Compression", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Memcached", "ServiceStack.CacheAccess.Memcached\ServiceStack.CacheAccess.Memcached.csproj", "{600612F3-15B4-45B5-9D39-06FA016B81C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client", "ServiceStack.Client\ServiceStack.Client.csproj", "{6B133D45-91D4-4AA5-A6D4-247282879CBB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,6 +156,10 @@ Global
 		{600612F3-15B4-45B5-9D39-06FA016B81C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{600612F3-15B4-45B5-9D39-06FA016B81C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{600612F3-15B4-45B5-9D39-06FA016B81C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B133D45-91D4-4AA5-A6D4-247282879CBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B133D45-91D4-4AA5-A6D4-247282879CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B133D45-91D4-4AA5-A6D4-247282879CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B133D45-91D4-4AA5-A6D4-247282879CBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

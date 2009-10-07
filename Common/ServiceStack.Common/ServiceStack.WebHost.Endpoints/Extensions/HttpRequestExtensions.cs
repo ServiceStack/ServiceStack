@@ -40,6 +40,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public static string GetOperationName(this HttpRequest request)
 		{
 			var pathInfo = request.GetPathInfo();
+			return GetOperationNameFromPathInfo(pathInfo);
+		}
+
+		public static string GetOperationNameFromPathInfo(string pathInfo)
+		{
 			if (string.IsNullOrEmpty(pathInfo)) return null;
 
 			var operationName = pathInfo.Substring("/".Length);
@@ -53,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				pathInfo = GetPathInfo(request.RawUrl);
 			}
-			return pathInfo;
+			return pathInfo.IndexOf("?") != -1 ? pathInfo.Substring(0, pathInfo.IndexOf("?")) : pathInfo;
 		}
 
 		private static string GetPathInfo(string rawUrl)

@@ -40,6 +40,25 @@ namespace ServiceStack.CacheAccess.Providers
 			return cacheClients.ExecReturnFirstWithResult(client => client.Get<T>(key));
 		}
 
+		public T Get<T>(string key, out ulong ucas)
+		{
+			foreach (var client in cacheClients)
+			{
+				try
+				{
+					var result = client.Get<T>(key, out ucas);
+					if (!Equals(result, default(T)))
+					{
+						return result;
+					}
+				}
+				catch (Exception ignore) {}
+			}
+
+			ucas = default(ulong);
+			return default(T);
+		}
+
 		public long Increment(string key, uint amount)
 		{
 			var firstResult = default(long);

@@ -84,6 +84,11 @@ namespace ServiceStack.CacheAccess.Providers
 			return (T)DataContractDeserializer.Instance.Parse(xml, typeof(T));
 		}
 
+		public T Get<T>(string key, out ulong ucas)
+		{
+			throw new NotImplementedException();
+		}
+
 		public long Increment(string key, uint amount)
 		{
 			throw new NotImplementedException();

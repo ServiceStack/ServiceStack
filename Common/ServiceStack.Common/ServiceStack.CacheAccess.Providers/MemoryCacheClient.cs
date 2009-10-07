@@ -174,6 +174,22 @@ namespace ServiceStack.CacheAccess.Providers
 			return default(T);
 		}
 
+		public T Get<T>(string key, out ulong ucas)
+		{
+			IDictionary<string, ulong> casValues;
+			var results = GetAll(new[] { key }, out casValues);
+
+			object result;
+			if (results.TryGetValue(key, out result))
+			{
+				ucas = casValues[key];
+				return (T)result;
+			}
+
+			ucas = default(ulong);
+			return default(T);
+		}
+
 		private int UpdateCounter(string key, int value)
 		{
 			if (!this.counters.ContainsKey(key))

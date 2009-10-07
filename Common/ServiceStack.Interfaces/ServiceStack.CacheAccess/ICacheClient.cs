@@ -48,6 +48,15 @@ namespace ServiceStack.CacheAccess
 		T Get<T>(string key);
 
 		/// <summary>
+		/// Gets the specified key.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="key">The key.</param>
+		/// <param name="ucas">The ucas.</param>
+		/// <returns></returns>
+		T Get<T>(string key, out ulong ucas);
+
+		/// <summary>
 		/// Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
 		/// </summary>
 		/// <param name="key">The identifier for the item to increment.</param>

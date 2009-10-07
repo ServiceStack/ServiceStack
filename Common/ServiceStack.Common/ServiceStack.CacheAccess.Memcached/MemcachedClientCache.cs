@@ -4,7 +4,7 @@ using System.Net;
 using Enyim.Caching;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
-using InnerClient=Enyim.Caching;
+using InnerClient = Enyim.Caching;
 
 namespace ServiceStack.CacheAccess.Memcached
 {
@@ -91,6 +91,22 @@ namespace ServiceStack.CacheAccess.Memcached
 		public T Get<T>(string key)
 		{
 			return Execute(() => client.Get<T>(key));
+		}
+
+		public T Get<T>(string key, out ulong ucas)
+		{
+			IDictionary<string, ulong> casValues;
+			var results = GetAll(new[] { key }, out casValues);
+
+			object result;
+			if (results.TryGetValue(key, out result))
+			{
+				ucas = casValues[key];
+				return (T)result;
+			}
+
+			ucas = default(ulong);
+			return default(T);
 		}
 
 		public long Increment(string key, uint amount)

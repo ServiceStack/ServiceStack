@@ -16,12 +16,19 @@ namespace ServiceStack.ServiceClient.Web
 
 		public string BaseUri { get; set; }
 
+		public TimeSpan? Timeout { get; set; }
+
 		public T Send<T>(object request)
 		{
 			var xmlRequest = DataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			client.Method = "POST";
+			if (this.Timeout.HasValue)
+			{
+				client.Timeout = (int) this.Timeout.Value.TotalMilliseconds;
+			}
+
 			client.ContentType = "application/xml";
 			using (var writer = new StreamWriter(client.GetRequestStream()))
 			{
@@ -38,6 +45,11 @@ namespace ServiceStack.ServiceClient.Web
 			var xmlRequest = DataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
+			if (this.Timeout.HasValue)
+			{
+				client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+			}
+
 			client.Method = "POST";
 			client.ContentType = "application/xml";
 			using (var writer = new StreamWriter(client.GetRequestStream()))
