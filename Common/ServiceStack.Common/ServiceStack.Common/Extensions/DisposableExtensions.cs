@@ -28,6 +28,11 @@ namespace ServiceStack.Common.Extensions
 		{
 			Dispose(resources, null);
 		}
+
+		public static void Dispose(params IDisposable[] disposables)
+		{
+			Dispose(disposables, null);
+		}
 		
 	}
 }

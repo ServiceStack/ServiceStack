@@ -195,10 +195,14 @@
   </CompletionStatisticsManager>
   <RecentFiles>
     <RecentFiles>
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="0" fromTop="0" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="0" fromTop="0" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="0" fromTop="0" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="945" fromTop="11" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1077" fromTop="23" />
     </RecentFiles>
-    <RecentEdits />
+    <RecentEdits>
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="41" fromTop="1" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="1077" fromTop="23" />
+    </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
     <Providers />
