@@ -7,7 +7,7 @@ using ServiceStack.ServiceClient.Web;
 namespace RemoteInfo.Tests.ConsoleClient
 {
 	/// <summary>
-	///	This is a Command Line program that calls the webservice in C#
+	///	This is a Command Line program that calls the webservice 
 	///
 	/// It allows you to call the web service when running:
 	///   - hosted in IIS 6 or 7, apache using mod_mono or other browsers that support FastCGI
@@ -65,7 +65,8 @@ namespace RemoteInfo.Tests.ConsoleClient
 
 				foreach (var file in response.Files)
 				{
-					log.InfoFormat(" + {0} \t{1} bytes", file.Name.PadRight(45, ' '), file.FileSizeBytes.ToString().PadLeft(6,' '));
+					log.InfoFormat(" + {0} \t{1} bytes", 
+					               file.Name.PadRight(45, ' '), file.FileSizeBytes.ToString().PadLeft(6,' '));
 				}
 			}
 

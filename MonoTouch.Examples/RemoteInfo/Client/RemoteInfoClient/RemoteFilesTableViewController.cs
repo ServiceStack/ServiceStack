@@ -22,8 +22,6 @@ namespace RemoteInfoClient
 		static NSString kCellIdentifier = new NSString ("RFTVCIdentifier");
 
 		public string CurrentPath { get; set; }
-
-		private GetDirectoryInfoResponse Response { get; set; }
 		
 		public List<object> Items { get; set; }
 
@@ -38,7 +36,28 @@ namespace RemoteInfoClient
 		{
 			this.CurrentPath = currentPath;			
 		}	
-
+		
+		public override void ViewDidLoad ()
+		{
+			base.ViewDidLoad ();
+			
+			var directoryNames = (this.CurrentPath ?? string.Empty).Split('/');
+			var path = directoryNames.Length > 0
+				? directoryNames[directoryNames.Length - 1].Trim() : null;				
+			
+			Title = !string.IsNullOrEmpty(path) ? path : "/";
+			
+			var request = new GetDirectoryInfo { ForPath = this.CurrentPath };
+			var response = AppConfig.ServiceClient.Send<GetDirectoryInfoResponse> (request);
+			
+			this.Items = new List<object>();
+			response.Directories.ForEach(x => this.Items.Add(x));
+			response.Files.ForEach(x => this.Items.Add(x));
+			
+			TableView.Delegate = new TableDelegate (this);
+			TableView.DataSource = new DataSource (this);
+		}
+		
 
 		//
 		// The data source for our TableView
@@ -79,9 +98,9 @@ namespace RemoteInfoClient
 				{
 					var fileResult = (FileResult) tvc.Items[indexPath.Row];
 
-//					cell.Accessory = fileResult.IsTextFile 
-//						? UITableViewCellAccessory.DisclosureIndicator
-//						: UITableViewCellAccessory.None;
+					cell.Accessory = fileResult.IsTextFile 
+						? UITableViewCellAccessory.DisclosureIndicator
+						: UITableViewCellAccessory.None;
 
 					cell.TextLabel.Text = fileResult.Name;
 				}
@@ -112,40 +131,23 @@ namespace RemoteInfoClient
 					var nextPath = string.Format("{0}/{1}", tvc.CurrentPath, dirResult.Name);				
 					tvc.NavigationController.PushViewController(new RemoteFilesTableViewController(nextPath), true); 
 				}
-//				else
-//				{
-//					var fileResult = (FileResult) tvc.Items[indexPath.Row];
-//					if (!fileResult.IsTextFile) return;
-//					
-//					var request = new GetTextFile { AtPath = string.Format("{0}/{1}", tvc.CurrentPath, fileResult.Name) };
-//					var response = AppConfig.ServiceClient.Send<GetTextFileResponse>(request);
-//
-//					Console.WriteLine("response for: " + request.AtPath + ", len: " + response.Contents.Length);
-//					
-//					var controller = new ViewTextFileController(fileResult.Name, response.Contents);
-//					tvc.NavigationController.PushViewController(controller, true);
-//				}
+				else
+				{
+					var fileResult = (FileResult) tvc.Items[indexPath.Row];
+					if (!fileResult.IsTextFile) return;
+					
+					var request = new GetTextFile { AtPath = string.Format("{0}/{1}", tvc.CurrentPath, fileResult.Name) };
+					var response = AppConfig.ServiceClient.Send<GetTextFileResponse>(request);
+
+					Console.WriteLine("response for: " + request.AtPath + ", len: " + response.Contents.Length);
+					
+					var controller = new ViewTextFileController(fileResult.Name, response.Contents);
+					tvc.NavigationController.PushViewController(controller, true);
+				}
 				
 			}
 		}
-
-		public override void ViewDidLoad ()
-		{
-			base.ViewDidLoad ();
-			
-			var directoryNames = (this.CurrentPath ?? string.Empty).Split('/');
-			Title = directoryNames.Length > 0 ? directoryNames[directoryNames.Length - 1] : "/";
-			
-			var request = new GetDirectoryInfo { ForPath = this.CurrentPath };
-			var response = AppConfig.ServiceClient.Send<GetDirectoryInfoResponse> (request);
-			
-			this.Items = new List<object>();
-			response.Directories.ForEach(x => this.Items.Add(x));
-			response.Files.ForEach(x => this.Items.Add(x));
-			
-			TableView.Delegate = new TableDelegate (this);
-			TableView.DataSource = new DataSource (this);
-		}
+		
 		
 	}
 }

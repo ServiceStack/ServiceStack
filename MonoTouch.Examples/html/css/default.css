@@ -1,0 +1,110 @@
+/* http://meyerweb.com/eric/tools/css/reset/ */
+/* v1.0 | 20080212 */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	background: transparent;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+
+/* remember to define focus styles! */
+:focus {
+	outline: 0;
+}
+
+/* remember to highlight inserts somehow! */
+ins {
+	text-decoration: none;
+}
+del {
+	text-decoration: line-through;
+}
+
+/* tables still need 'cellspacing="0"' in the markup */
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+/* end reset */
+
+/* start global element styles */
+BODY 
+{
+	font: 13px/18px Arial;
+	color: #333;
+}
+BODY.host
+{
+	padding: 20px;
+}
+
+H2
+{
+	color: #555;
+	font: 28px/34px Trebuchet MS;
+	padding: 15px 10px;
+}
+
+P
+{
+	line-height: 1.5em;
+	width: 840px;
+	margin-bottom: 10px;
+}
+P A
+{
+	margin: 0 .2em;
+}
+p ACRONYM
+{
+	margin: 0 .2em;
+	border-bottom: dotted 1px #333;
+	background: #f1fcf1;
+}
+H3
+{
+	color: #063;
+	font: 28px/34px Trebuchet MS;
+	padding-bottom: 15px;
+}
+H4
+{
+	color: #555;
+	margin: 1em 0 .5em 0;
+	font: bold 18px/24px Arial;
+}
+UL
+{
+	list-style-type: square;
+	line-height: 1.5em;
+	padding-left: 20px;
+}
+A IMG 
+{
+	border: none;
+}

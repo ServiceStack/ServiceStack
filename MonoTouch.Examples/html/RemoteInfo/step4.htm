@@ -1,0 +1,143 @@
+<html class="tutorial">
+<head>
+	<title>MonoTouch Examples :: RemoteInfo</title>
+    <link rel="stylesheet" type="text/css" href="../css/default.css" />
+    <link rel="stylesheet" type="text/css" href="../css/remoteinfo.css" />
+</head>
+<body>
+	<a id="title-img" href="default.htm"><img src="../img/MonoTouch-ServiceStack.png" alt="MonoTouch ServiceStack"></a>
+	
+	<h3 class="step">Step 4 - Creating a new Web Service</h3>
+
+	<div class="section">
+
+	<h4>Adding the GetTextFile Web Service</h4>
+	<p>
+		In keeping with the theme of sending RemoteInfo to the client, I think another simple and useful new Web Service 
+		could be to retrieve the contents of a Text file.
+	</p>
+	<p>
+		To do this, I've added a new class called <b class="cs">GetTextFile</b> in the 
+		<b class="ns">RemoteInfo.ServiceModel.Operations</b> namespace.	This class contains
+		the Request and Response DTO's used for this Web Service as seen below:
+	</p>
+	
+	<img src="../img/GetTextFile-dto.png" class="left-wtext" alt="GetTextFile Request and Response DTO's" />
+	
+	<p>
+		Even simpler than the last Web Service, it just accepts a single <b>AtPath</b> argument 
+		while only returning the <b>Contents</b>, <b>CreatedDate</b> and <b>LastModifiedDate</b> of the Text File
+		located at <b>AtPath</b>. 
+	</p>
+	
+	<p class="clear">
+		To add the implementation for this Web Service just add a class named <b class="cs">GetTextFileHandler</b>
+		at the <b class="ns">RemoteInfo.ServiceInterface</b> namespace with the class below:
+	</p>
+	
+	<img src="../img/GetTextFile-handler.png" class="left-wtext" alt="GetTextFile Handler" />
+	
+	<p>
+		A simple implementation that just checks if the argument <b>AtPath</b> points to a Text file, if it does
+		it will return the Contents of the Text file otherwise it will return an empty DTO.
+	</p>
+	
+	<p class="clear">
+		That's actually all there is to it, it is now discoverable on the Web Services splash page:
+	</p>
+
+	<img src="../img/ws-splash2.png" />
+	
+	<p>
+		And callable via REST, you can use the Web Service to view the contents of itself with the following url:<br />
+		<a href="http://localhost:8080/Public/Xml/SyncReply/GetTextFile?AtPath=/Server/RemoteInfo.ServiceInterface/GetTextFileHandler.cs">
+			http://localhost:8080/Public/Xml/SyncReply/GetTextFile?AtPath=/Server/RemoteInfo.ServiceInterface/GetTextFileHandler.cs
+		</a>
+	</p>
+	
+	<img src="../img/GetTextFile-rest.png" />
+	
+	<p>
+		Now that we've made sure the new Web Service is working, let's add it to the MonoTouch application. <br />
+		To start off we'll uncomment the lines to allow the User to navigate further when it is a text file.
+	</p>
+
+	<img src="../img/tvc-new-getcell.png" />
+	
+	<p>
+		We'll now need to create a new View Controller to view this information. Do this by 
+		<ol>
+			<li>
+				Double clicking on <b class="xib">MainWindow.xib</b> to load Interface Builder.<br />
+			</li>
+			<li>
+				Drag a <b>ViewController</b> into the <b class="xib">MainWindow.xib</b> folder to create a new instance of a View Controller.
+			</li>
+			<li>
+				Drag a <b>View</b> into body of the ViewController and a <b>TextView</b> to put on top of the view. 
+			</li>
+			<li>
+				Now in the <b>Inspector</b>, add the text <b>ViewTextFileController</b> in the class field of the new View Controller.
+			</li>
+		</ol>
+		<br />
+		
+		If you got this far you should have a new View Controller that looks like this:
+	</p>
+	
+	<img src="../img/ib-viewtextfilecontroller.png" />
+
+	<p>
+		In order to access the new <b>TextView</b> you will need to declare and hook up an outlet.
+	</p>
+	<p>
+		Do this by finding your <b>ViewTextFileController</b> in the Library and adding a <b>textView</b> outlet
+		of type <b>UITextView</b> <br />
+		After you've done this you can now go back to the <b>Inspector</b> and 'hook up' your <b>textView</b> by dragging
+		the outlet and pointing it at your <b>textView</b> as below:
+	</p>
+
+	<img src="../img/ib-library.png" class="left-wtext" />
+	<img src="../img/ib-viewtextfilecontroller2.png" class="left" />
+	
+	<p class="clear">
+		Now that we've got the visuals sorted out, we just need to add the C# class for the controller.
+		For this we want to create a new class called <b>ViewTextFileController</b> with the contents below:
+	</p>
+	
+	<img src="../img/ViewTextFileController-cs.png" alt="ViewTextFileController c# controller" class="left-wtext" />
+	
+	<p>
+		This is a standard C# UIViewController class with an added constructor that takes 2 arguments: 
+		a <b>fileName</b> and the <b>fileContents</b>. You can set the <b>Title</b> in the constructor however
+		we will only be able to interact with the <b>textView</b> after it has been loaded, i.e. in the method
+		<code>void ViewDidLoad()</code>
+	</p>
+	<p>
+		Note: the iPhone Obj-C UIKit controls sometimes throw an error if you set it to null, in these cases you will
+		want to set it to an empty string instead. 
+	</p>
+	
+	<p class="clear">
+		At this point we should have a functional <b>ViewTextFileController</b> all that's left is to load it, for this we'll
+		go back to our <b>TableViewDelegate</b> class and add some code to load the controller when the user selects a Text file:
+	</p>
+	
+	<img src="../img/tvc-delegate2.png" />
+	
+	<p>
+		Our new implementation calls the <b>GetTextFile</b> web service passing in the full path of the Text file the user has selected.
+		Once we receive the response we load a new instance of the <b>ViewTextFileController</b> with the name and contents of the Text file.
+	</p>
+	
+
+	</div>
+
+	<div class="page-nav">
+		<div class="previous">
+			<a href="step2.htm">Step 3 - Calling the Web Service from MonoTouch</a>
+		</div>
+	</div>
+	
+</body>
+</html>

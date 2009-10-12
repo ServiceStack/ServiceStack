@@ -1,0 +1,92 @@
+.tutorial
+{
+	width: 980px;
+	padding-bottom: 20px;
+}
+P
+{
+	width: auto;	
+}
+.section {
+	padding: 0 20px;
+}
+#title-img
+{
+	margin: 10px;
+}
+H3.step
+{
+	margin: 0 0 10px 0;
+	padding: 10px;
+	background: #f1f1f1;
+}
+H3
+{
+	padding: 10px 0;
+}
+H4
+{
+	padding: 0;
+	margin: 0;
+}
+HR
+{
+	clear: left;
+	margin: 10px 0;
+	border: 0;
+}
+#sln-info
+{
+	float: left;
+	width: 500px;
+	padding-right: 10px;
+}
+.clear
+{
+	clear: both;
+}
+P.clear
+{
+	padding-top: 10px;
+}
+.right-col
+{
+	float: right;
+	width: 355px;
+}
+.left-wtext
+{
+	float: left;
+	padding-right: 10px;
+}
+.left
+{
+	float: left;
+}
+.page-nav
+{
+	clear: both;
+	padding: 20px;
+}
+.page-nav .previous
+{
+	float: left;
+}	
+.page-nav .next
+{
+	float: right;
+}
+code
+{
+	margin: 10px 0;
+	display: block;
+	white-space: pre;
+	background: #f1fff1;
+}
+UL
+{
+}
+IMG+P
+{
+	margin-top: 20px;
+}

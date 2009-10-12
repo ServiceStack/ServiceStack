@@ -32,7 +32,8 @@ namespace RemoteInfo.ServiceInterface
 		{
 			var request = context.Request.Get<GetDirectoryInfo>();
 
-			var showDirPath = Path.Combine(this.config.RootDirectory, GetSafePath(request.ForPath ?? string.Empty));
+			var showDirPath = Path.Combine(this.config.RootDirectory, 
+			                               GetSafePath(request.ForPath ?? string.Empty));
 
 			var response = new GetDirectoryInfoResponse();
 

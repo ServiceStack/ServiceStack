@@ -7,14 +7,14 @@
     <Files>
       <File FileName="RemoteInfoClient/Main.cs" Line="1" Column="1" />
       <File FileName="RemoteInfoClient/ViewTextFileController.cs" Line="1" Column="1" />
-      <File FileName="RemoteInfoClient/AppConfig.cs" Line="13" Column="22" />
+      <File FileName="RemoteInfoClient/AppConfig.cs" Line="1" Column="1" />
       <File FileName="RemoteInfoClient/RemoteFilesTableViewController.cs" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="RemoteInfoClient" expanded="True">
-            <Node name="AppConfig.cs" selected="True" />
+            <Node name="MainWindow.xib" selected="True" />
           </Node>
         </State>
       </Pad>

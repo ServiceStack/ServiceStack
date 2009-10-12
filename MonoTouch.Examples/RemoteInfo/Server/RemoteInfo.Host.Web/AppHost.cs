@@ -46,10 +46,11 @@ namespace RemoteInfo.Host.Web
 
 			//Declare any dependencies you want injected in handlers
 			factory.Register(new RemoteInfoConfig(config));
+			
 
-			//Set your Applications Singleton Context. Contains providers that are available to all your services via 'ApplicationContext.Instance'
+			//Set your Applications Singleton Context. Available to all your services via 'ApplicationContext.Instance'
 			ApplicationContext.SetInstanceContext(new BasicApplicationContext(factory, cacheClient, config));
-
+			
 			//Customize ServiceStack's behaviour 
 			base.SetConfig(new EndpointHostConfig {
 

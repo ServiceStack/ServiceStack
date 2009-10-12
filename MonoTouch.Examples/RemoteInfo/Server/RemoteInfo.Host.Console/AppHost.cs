@@ -38,7 +38,7 @@ namespace RemoteInfo.Host.Console
 		{
 			//The factory is responsible for creating instances of providers defined in <objects/> in the web.config 
 			var factory = new FactoryProvider(FactoryUtils.ObjectFactory);
-
+			
 			//Set up the Application providers. Overrideable at runtime via '<objects/>' in web.config 
 			LogManager.LogFactory = factory.ResolveOptional<ILogFactory>("LogFactory", new ConsoleLogFactory());				// logs to the Console
 			var config = factory.ResolveOptional<IResourceManager>("ResourceManager", new ConfigurationResourceManager());   // uses <appSettings />
@@ -46,8 +46,9 @@ namespace RemoteInfo.Host.Console
 
 			//Declare any dependencies you want injected in handlers
 			factory.Register(new RemoteInfoConfig(config));
+			
 
-			//Set your Applications Singleton Context. Contains providers that are available to all your services via 'ApplicationContext.Instance'
+			//Set your Applications Singleton Context. Available to all your services via 'ApplicationContext.Instance'
 			ApplicationContext.SetInstanceContext(new BasicApplicationContext(factory, cacheClient, config));
 
 			//Customize ServiceStack's behaviour 
@@ -91,8 +92,8 @@ namespace RemoteInfo.Host.Console
 		public override void Dispose()
 		{
 			this.Stop();
-
-			new IDisposable[] { ApplicationContext.Instance.Cache, ApplicationContext.Instance.Factory }.Dispose();
+			
+			DisposableExtensions.Dispose(ApplicationContext.Instance.Cache, ApplicationContext.Instance.Factory);
 
 			base.Dispose();
 		}

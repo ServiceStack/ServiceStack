@@ -10,8 +10,9 @@ namespace RemoteInfoClient
 		{ 
 			get
 			{
-//				return new XmlServiceClient ("http://localhost:8080/Public/Xml/SyncReply"); //xsp host
-				return new XmlServiceClient ("http://localhost:81"); //command line host
+				return new XmlServiceClient ("http://localhost:8080/Public/Xml/SyncReply"); 		//xsp host (XML)
+//				return new JsonServiceClient ("http://localhost:8080/Public/Json/SyncReply"); 	//xsp host (JSON)
+//				return new XmlServiceClient ("http://localhost:81"); 							//Console host (XML)
 			}
 		}
 	}
