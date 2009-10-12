@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteInfoClient", "RemoteInfoClient\RemoteInfoClient.csproj", "{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|iPhone = Debug|iPhone
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhone = Release|iPhone
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Debug|iPhone.Build.0 = Debug|iPhone
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Release|iPhone.ActiveCfg = Release|iPhone
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Release|iPhone.Build.0 = Release|iPhone
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{D97042E9-D316-44CB-9AB2-A0D66E1BC9A6}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Debug|iPhone.Build.0 = Debug|iPhone
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Release|iPhone.ActiveCfg = Release|iPhone
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Release|iPhone.Build.0 = Release|iPhone
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{FCF2188F-718D-4FAF-A3BB-45A66DE3488A}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = RemoteInfoClient\RemoteInfoClient.csproj
+	EndGlobalSection
+EndGlobal
