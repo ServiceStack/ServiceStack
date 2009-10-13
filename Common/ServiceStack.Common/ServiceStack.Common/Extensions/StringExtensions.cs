@@ -194,5 +194,15 @@ namespace ServiceStack.Common.Extensions
 			return string.Format(url, encodedUrlComponents.ToArray());
 		}
 
+		public static string Join(this List<string> items)
+		{
+			return string.Join(", ", items.ToArray());
+		}
+
+		public static string Join(this List<string> items, string delimeter)
+		{
+			return string.Join(delimeter, items.ToArray());
+		}
+
 	}
 }

@@ -81,7 +81,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 							response.ContentType = responseHeaders.Value;
 						}
 						else
-						{
+						{							
+							Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
 							response.Headers[responseHeaders.Key] = responseHeaders.Value;
 						}
 					}

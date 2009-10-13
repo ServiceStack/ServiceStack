@@ -24,8 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			get 
 			{ 
-				return new NameValueCollection(); 
-//				return response.Headers; 
+				return response.Headers; 
 			}
 		}
 
