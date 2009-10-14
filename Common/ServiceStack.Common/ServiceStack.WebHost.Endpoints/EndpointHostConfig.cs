@@ -8,7 +8,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class EndpointHostConfig
 	{
 		private const string USAGE_EXAMPLES_BASE_URI =
-    		"http://code.google.com/p/servicestack/source/browse/trunk/ExampleProjects/ServiceStack.Sakila/ServiceStack.UsageExamples";
+	    		"http://code.google.com/p/servicestack/source/browse/trunk/doc/UsageExamples";
 
 		public EndpointHostConfig()
 		{

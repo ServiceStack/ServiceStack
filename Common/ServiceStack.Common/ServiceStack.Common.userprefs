@@ -1,0 +1,31 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" ctype="Workspace" />
+  <MonoDevelop.Ide.DebuggingService>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService>
+  <MonoDevelop.Ide.Workbench ActiveDocument="ServiceStack.WebHost.Endpoints/Extensions/HttpResponseWrapper.cs" ctype="Workbench">
+    <Files>
+      <File FileName="ServiceStack.WebHost.Endpoints/Extensions/HttpResponseWrapper.cs" Line="22" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="ServiceStack.ServiceClient.Web" expanded="True" />
+          <Node name="ServiceStack.WebHost.Endpoints" expanded="True" selected="True">
+            <Node name="Extensions" expanded="True" />
+            <Node name="Properties" expanded="True" />
+            <Node name="Support" expanded="True">
+              <Node name="Metadata" expanded="True">
+                <Node name="Controls" expanded="True" />
+              </Node>
+              <Node name="Templates" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+</Properties>

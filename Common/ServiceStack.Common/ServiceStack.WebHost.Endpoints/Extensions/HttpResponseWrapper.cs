@@ -23,8 +23,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public NameValueCollection Headers
 		{
 			get 
-			{ 
+			{
+#if MONO
+				return new NameValueCollection();
+#else
 				return response.Headers; 
+#endif
 			}
 		}
 
