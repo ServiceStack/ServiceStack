@@ -15,6 +15,12 @@ namespace ServiceStack.Common.Extensions
 			return (T)Enum.Parse(typeof(T), value, true);
 		}
 
+		public static T ToEnumOrDefault<T>(this string value, T defaultValue)
+		{
+			if (string.IsNullOrEmpty(value)) return defaultValue;
+			return (T)Enum.Parse(typeof(T), value, true);
+		}
+
 		public static string SplitCamelCase(this string value)
 		{
 			return RegexSplitCamelCase.Replace(value, " $1").TrimStart();
