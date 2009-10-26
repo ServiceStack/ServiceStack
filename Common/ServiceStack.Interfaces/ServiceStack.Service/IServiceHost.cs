@@ -5,4 +5,5 @@ namespace ServiceStack.Service
 		object ExecuteService(object request, EndpointAttributes endpointAttributes);
 		string ExecuteXmlService(string xmlRequest, EndpointAttributes endpointAttributes);
 	}
+
 }

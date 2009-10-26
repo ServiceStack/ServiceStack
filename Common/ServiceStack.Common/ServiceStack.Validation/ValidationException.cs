@@ -110,6 +110,11 @@ namespace ServiceStack.Validation
 			return new ValidationException(errorCode.ToString(), errorMessage);
 		}
 
+		public static ValidationException CreateException(Enum errorCode, string errorMessage, string fieldName)
+		{
+			return CreateException(errorCode.ToString(), errorMessage, fieldName);
+		}
+
 		public static ValidationException CreateException(string errorCode)
 		{
 			return new ValidationException(errorCode);

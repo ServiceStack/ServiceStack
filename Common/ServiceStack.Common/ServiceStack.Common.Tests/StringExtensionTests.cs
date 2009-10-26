@@ -62,5 +62,11 @@ namespace ServiceStack.Common.Tests
 			Assert.That(urlFormat, Is.EqualTo(expectedUrlFormat));
 		}
 
+		[Test]
+		public void ErrorCode_to_English_format()
+		{
+			const string code = "EmailAddressIsInvalid";
+			Assert.That(code.ToEnglish(), Is.EqualTo("Email address is invalid"));
+		}
 	}
 }

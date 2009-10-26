@@ -26,6 +26,12 @@ namespace ServiceStack.Common.Extensions
 			return RegexSplitCamelCase.Replace(value, " $1").TrimStart();
 		}
 
+		public static string ToEnglish(this string camelCase)
+		{
+			var ucWords = camelCase.SplitCamelCase().ToLower();
+			return ucWords[0].ToString().ToUpper() + ucWords.Substring(1);
+		}
+
 		public static T To<T>(this string value)
 		{
 			return StringConverterUtils.Parse<T>(value);

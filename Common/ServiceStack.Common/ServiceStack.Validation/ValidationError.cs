@@ -12,10 +12,10 @@ namespace ServiceStack.Validation
 			: this(errorCode, null, null) { }
 
 		public ValidationError(Enum errorCode)
-			: this(errorCode.ToString(), null, errorCode.ToString().SplitCamelCase()) { }
+			: this(errorCode.ToString(), null, null) { }
 
 		public ValidationError(Enum errorCode, string fieldName)
-			: this(errorCode.ToString(), fieldName, errorCode.ToString().SplitCamelCase()) { }
+			: this(errorCode.ToString(), fieldName, null) { }
 
 		public ValidationError(Enum errorCode, string fieldName, string errorMessage)
 			: this(errorCode.ToString(), fieldName, errorMessage) { }
@@ -24,7 +24,7 @@ namespace ServiceStack.Validation
 		{
 			this.ErrorCode = errorCode;
 			this.FieldName = fieldName;
-			this.ErrorMessage = errorMessage ?? errorCode.SplitCamelCase();
+			this.ErrorMessage = errorMessage ?? errorCode.ToEnglish();
 		}
 
 		public string ErrorCode { get; set; }

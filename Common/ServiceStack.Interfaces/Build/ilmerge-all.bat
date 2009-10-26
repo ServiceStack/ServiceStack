@@ -7,6 +7,7 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess\bin\Debug\ServiceStack.Data
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DesignPatterns\bin\Debug\ServiceStack.DesignPatterns.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Logging\bin\Debug\ServiceStack.Logging.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.LogicFacade\bin\Debug\ServiceStack.LogicFacade.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceHost\bin\Debug\ServiceStack.ServiceHost.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.SearchIndex\bin\Debug\ServiceStack.SearchIndex.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Service\bin\Debug\ServiceStack.Service.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Translators\bin\Debug\ServiceStack.Translators.dll

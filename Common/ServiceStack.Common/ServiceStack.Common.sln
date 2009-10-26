@@ -62,6 +62,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Me
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client", "ServiceStack.Client\ServiceStack.Client.csproj", "{6B133D45-91D4-4AA5-A6D4-247282879CBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceHost", "ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj", "{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceHost.Tests", "ServiceStack.ServiceHost.Tests\ServiceStack.ServiceHost.Tests.csproj", "{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -160,6 +164,14 @@ Global
 		{6B133D45-91D4-4AA5-A6D4-247282879CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B133D45-91D4-4AA5-A6D4-247282879CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B133D45-91D4-4AA5-A6D4-247282879CBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

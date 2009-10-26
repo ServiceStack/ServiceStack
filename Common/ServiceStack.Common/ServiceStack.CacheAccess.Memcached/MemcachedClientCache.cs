@@ -19,7 +19,7 @@ namespace ServiceStack.CacheAccess.Memcached
 		protected override ILog Log { get { return LogManager.GetLogger(GetType()); } }
 		private InnerClient.MemcachedClient client;
 
-		public MemcachedClientCache(IEnumerable<string> hostIpAddresses)
+		public MemcachedClientCache(IEnumerable<string> hosts)
 		{
 			const int defaultPort = 11211;
 			const int ipAddressIndex = 0;
@@ -27,18 +27,20 @@ namespace ServiceStack.CacheAccess.Memcached
 
 			this.client = new MemcachedClient();
 			var ipEndpoints = new List<IPEndPoint>();
-			foreach (var hostIpAddress in hostIpAddresses)
+			foreach (var host in hosts)
 			{
-				var ipAddressParts = hostIpAddress.Split(':');
-				if (ipAddressParts.Length == 0)
+				var hostParts = host.Split(':');
+				if (hostParts.Length == 0)
 					throw new ArgumentException("'{0}' is not a valid host IP Address: e.g. '127.0.0.0[:11211]'");
 
-				var ipAddress = IPAddress.Parse(ipAddressParts[ipAddressIndex]);
-				if (ipAddress == null) continue; //Keep R# happy
+				var port = (hostParts.Length == 1) ? defaultPort : int.Parse(hostParts[portIndex]);
 
-				var port = (ipAddressParts.Length == 1) ? defaultPort : int.Parse(ipAddressParts[portIndex]);
-				var endpoint = new IPEndPoint(ipAddress, port);
-				ipEndpoints.Add(endpoint);
+				var hostAddresses = Dns.GetHostAddresses(hostParts[ipAddressIndex]);
+				foreach (var ipAddress in hostAddresses)
+				{
+					var endpoint = new IPEndPoint(ipAddress, port);
+					ipEndpoints.Add(endpoint);
+				}
 			}
 			LoadClient(ipEndpoints);
 		}
