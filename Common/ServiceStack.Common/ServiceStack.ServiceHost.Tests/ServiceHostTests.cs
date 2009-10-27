@@ -3,23 +3,14 @@ using System.Runtime.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.LogicFacade;
+using ServiceStack.ServiceHost.Tests.Support;
 
 namespace ServiceStack.ServiceHost.Tests
 {
 	[TestFixture]
 	public class ServiceHostTests
 	{
-		[DataContract]
-		public class BasicRequest { }
-
-		public class BasicService : IService<BasicRequest>
-		{
-			public object Execute(BasicRequest request)
-			{
-				return new BasicRequest();
-			}
-		}
-
+	
 		[Test]
 		public void Can_execute_BasicService()
 		{
@@ -30,7 +21,6 @@ namespace ServiceStack.ServiceHost.Tests
 
 			Assert.That(result, Is.Not.Null);
 		}
-
 
 		[Test]
 		public void Can_execute_BasicService_from_dynamic_Type()
@@ -46,5 +36,6 @@ namespace ServiceStack.ServiceHost.Tests
 
 			Assert.That(result, Is.Not.Null);
 		}
+
 	}
 }

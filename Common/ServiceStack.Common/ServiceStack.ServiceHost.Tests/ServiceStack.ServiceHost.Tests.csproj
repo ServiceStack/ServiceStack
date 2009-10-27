@@ -31,6 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Funq, Version=0.1.226.1, Culture=neutral, PublicKeyToken=e035bc90764f5360, processorArchitecture=MSIL" />
     <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
@@ -56,14 +57,44 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PerfTests.cs" />
     <Compile Include="ServiceHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Support\BasicService.cs" />
+    <Compile Include="TypeFactory\FuncTypeFactory.cs" />
+    <Compile Include="UseCase\CustomerUseCase.cs" />
+    <Compile Include="UseCase\Operations\GetCustomer.cs" />
+    <Compile Include="UseCase\Operations\StoreCustomers.cs" />
+    <Compile Include="UseCase\Services\GetCustomerService.cs" />
+    <Compile Include="UseCase\Services\StoreCustomersService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">
+      <Project>{CF68A37D-D071-469D-AE04-68594CB95382}</Project>
+      <Name>ServiceStack.OrmLite.Sqlite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
+      <Name>ServiceStack.OrmLite</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
       <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>
       <Name>ServiceStack.ServiceHost</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib\Funq.dll" />
+    <Content Include="lib\hiro\Hiro.Containers.dll" />
+    <Content Include="lib\hiro\Hiro.Containers.XML" />
+    <Content Include="lib\hiro\Hiro.Core.dll" />
+    <Content Include="lib\hiro\Hiro.Core.xml" />
+    <Content Include="lib\hiro\Iesi.Collections.dll" />
+    <Content Include="lib\hiro\Iesi.Collections.Generic.dll" />
+    <Content Include="lib\hiro\Mono.Cecil.dll" />
+    <Content Include="lib\hiro\NGenerics.dll" />
+    <None Include="sqlite3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

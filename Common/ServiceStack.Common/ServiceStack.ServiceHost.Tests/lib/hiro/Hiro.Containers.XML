@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Hiro.Containers</name>
+    </assembly>
+    <members>
+        <member name="T:Hiro.Containers.IMicroContainer">
+            <summary>
+            Represents the minimum amount of behavior necessary to implement a service container.
+            </summary>
+        </member>
+        <member name="M:Hiro.Containers.IMicroContainer.Contains(System.Type,System.String)">
+            <summary>
+            Determines whether or not the container holds a particular service implementation.
+            </summary>
+            <param name="serviceType">The service type to be instantiated.</param>
+            <param name="key">The name of the service itself.</param>
+            <returns>A boolean value that specifies whether or not the service exists.</returns>
+        </member>
+        <member name="M:Hiro.Containers.IMicroContainer.GetAllInstances(System.Type)">
+            <summary>
+            Returns all object instances that match the given <paramref name="serviceType"/>.
+            </summary>
+            <param name="serviceType">The service type to be instantiated.</param>
+            <returns>A list of objects that match the given service type</returns>
+        </member>
+        <member name="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)">
+            <summary>
+            Obtains an object instance that matches the given <paramref name="serviceType"/>
+            and <paramref name="key">service name</paramref>.
+            </summary>
+            <param name="serviceType">The service type to be instantiated.</param>
+            <param name="key">The name of the service itself.</param>
+            <returns>An object instance that matches the given service description.</returns>
+        </member>
+        <member name="P:Hiro.Containers.IMicroContainer.NextContainer">
+            <summary>
+            Gets or sets the value indicating the <see cref="T:Hiro.Containers.IMicroContainer"/> instance that will be added to the current container chain.
+            </summary>
+            <value>The next container.</value>
+        </member>
+        <member name="T:Hiro.Containers.ServiceNotFoundException">
+            <summary>
+            Represents the exception thrown when a particular service cannot be resolved by a <see cref="T:Hiro.Containers.IMicroContainer"/> instance.
+            </summary>
+        </member>
+        <member name="M:Hiro.Containers.ServiceNotFoundException.#ctor(System.String,System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Hiro.Containers.ServiceNotFoundException"/> class.
+            </summary>
+            <param name="serviceName">The service name.</param>
+            <param name="serviceType">The service type.</param>
+        </member>
+        <member name="P:Hiro.Containers.ServiceNotFoundException.ServiceName">
+            <summary>
+            Gets the value of the service name.
+            </summary>
+            <value>The name of the service.</value>
+        </member>
+        <member name="P:Hiro.Containers.ServiceNotFoundException.ServiceType">
+            <summary>
+            Gets the value of the service type.
+            </summary>
+            <value>The service type.</value>
+        </member>
+    </members>
+</doc>
