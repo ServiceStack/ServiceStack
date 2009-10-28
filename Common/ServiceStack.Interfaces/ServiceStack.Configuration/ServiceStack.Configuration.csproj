@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IFactoryProvider.cs" />
+    <Compile Include="IFactoryResolver.cs" />
     <Compile Include="IHasOptions.cs" />
     <Compile Include="IResourceManager.cs" />
     <Compile Include="ITypeFactory.cs" />

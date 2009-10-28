@@ -196,7 +196,7 @@ namespace ServiceStack.OrmLite
 					indexAttr.Unique ? "UNIQUE" : "", indexName, tableType.Name, indexNames);
 			}
 
-			Log.DebugFormat(sql.ToString());
+			//Log.DebugFormat(sql.ToString());
 
 			return sql.ToString();
 		}

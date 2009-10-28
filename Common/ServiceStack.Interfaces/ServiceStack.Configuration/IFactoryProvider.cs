@@ -2,11 +2,10 @@ using System;
 
 namespace ServiceStack.Configuration
 {
-	public interface IFactoryProvider : IDisposable
+	public interface IFactoryProvider 
+		: IFactoryResolver, IDisposable
 	{
 		void Register<T>(T provider);
-
-		T Resolve<T>();
 
 		T Resolve<T>(string name);
 

@@ -1,14 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using Funq;
 using ServiceStack.Configuration;
-using ServiceStack.ServiceHost.Tests.UseCase.Services;
 
 namespace ServiceStack.ServiceHost.Tests.TypeFactory
 {
-	public class FuncTypeFactory 
+	public class FuncTypeFactory
 		: ITypeFactory
 	{
 		private readonly Container container;
+		private readonly Dictionary<Type, Func<object>> resolveFnMap = new Dictionary<Type, Func<object>>();
 
 		public FuncTypeFactory(Container container)
 		{
@@ -17,13 +19,22 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 
 		public object CreateInstance(Type type)
 		{
-			if (type == typeof(GetCustomerService))
-				return this.container.Resolve<GetCustomerService>();
+			Func<object> resolveFn;
 
-			if (type == typeof(StoreCustomersService))
-				return this.container.Resolve<StoreCustomersService>();
+			if (!this.resolveFnMap.TryGetValue(type, out resolveFn))
+			{
+				var containerInstance = Expression.Constant(this.container);
+				var resolveInstance = Expression.Call(containerInstance, "Resolve", new[] {type}, new Expression[0]);
+				var resolveObject = Expression.Convert(resolveInstance, typeof (object));
+				resolveFn = (Func<object>)Expression.Lambda(resolveObject, new ParameterExpression[0]).Compile();
 
-			throw new NotSupportedException(type.Name);
+				lock (this.resolveFnMap)
+				{
+					this.resolveFnMap[type] = resolveFn;
+				}
+			}
+
+			return resolveFn();
 		}
 	}
 }

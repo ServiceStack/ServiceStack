@@ -9,13 +9,13 @@ namespace ServiceStack.ServiceHost.Tests
 	[TestFixture]
 	public class PerfTests
 	{
-		private const int Times = 1000000;
+		private const int Times = 100000;
 
 		[Test]
 		public void RunAll()
 		{
 			With_Native();
-			//With_Reflection(); //Very slow
+			With_Reflection(); //Very slow
 			With_Expressions();
 			With_custom_func();
 			With_TypeFactory();
@@ -43,6 +43,16 @@ namespace ServiceStack.ServiceHost.Tests
 			Console.WriteLine("With_Reflection(): {0}", Measure(() => serviceController.ExecuteReflection(request), Times));
 		}
 
+		[Test]
+		public void With_ServiceStackFunq()
+		{
+			var serviceController = new ServiceController();
+
+			serviceController.Register(() => new BasicService());
+			var request = new BasicRequest();
+
+			Console.WriteLine("With_TypedArguments(): {0}", Measure(() => serviceController.Execute(request), Times));
+		}
 
 		[Test]
 		public void With_TypedArguments()
