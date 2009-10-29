@@ -24,13 +24,8 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 
 		public ICacheClient CacheClient { get; set; }
 
-		public ITypeFactory TypeFactory { get; set; }
-
 		public object Execute(GetCustomer request)
 		{
-			var cacheClient = this.TypeFactory.CreateInstance(typeof (ICacheClient));
-			Console.WriteLine("cacheClient: " + cacheClient != null);
-
 			if (config.UseCache)
 			{
 				var inCache = this.CacheClient.Get(CacheKey);

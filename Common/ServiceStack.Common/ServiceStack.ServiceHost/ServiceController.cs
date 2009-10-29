@@ -10,8 +10,6 @@ namespace ServiceStack.ServiceHost
 	{
 		readonly Dictionary<Type, Func<object, object>> requestExecMap = new Dictionary<Type, Func<object, object>>();
 
-		Dictionary<Type, Func<object, object>> serviceExecMap = new Dictionary<Type, Func<object, object>>();
-
 		public void Register(Assembly assemblyWithServices)
 		{
 		}
@@ -73,8 +71,8 @@ namespace ServiceStack.ServiceHost
 
 			Expression callExecute = Expression.Call(serviceStrong, mi, new[] { requestDtoStrong });
 
-			var executeFunc = (Func<object, object, object>)
-				Expression.Lambda(callExecute, requestDtoParam, serviceParam).Compile();
+			var executeFunc = Expression.Lambda<Func<object, object, object>>
+				(callExecute, requestDtoParam, serviceParam).Compile();
 
 			return executeFunc;
 		}
@@ -90,7 +88,7 @@ namespace ServiceStack.ServiceHost
 			Expression callExecute = Expression.Call(serviceObj, mi,
 				new[] { requestDtoStrong });
 
-			var executeFunc = (Func<object, object>)Expression.Lambda(callExecute, requestDtoParam).Compile();
+			var executeFunc = Expression.Lambda<Func<object, object>>(callExecute, requestDtoParam).Compile();
 
 			return executeFunc;
 		}

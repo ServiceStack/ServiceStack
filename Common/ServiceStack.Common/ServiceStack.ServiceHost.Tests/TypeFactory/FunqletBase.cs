@@ -12,15 +12,16 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 		protected readonly IEnumerable<Type> serviceTypes;
 		protected Container Container { get; set; }
 
+		public ReuseScope Scope { get; set; }
+
 		protected FunqletBase(IEnumerable<Type> serviceTypes)
 		{
 			this.serviceTypes = serviceTypes;
+			this.Scope = ReuseScope.None;
 		}
 
 		protected FunqletBase(params Type[] serviceTypes)
-		{
-			this.serviceTypes = serviceTypes;
-		}
+			: this((IEnumerable<Type>)serviceTypes) {}
 
 		public void Configure(Container container)
 		{

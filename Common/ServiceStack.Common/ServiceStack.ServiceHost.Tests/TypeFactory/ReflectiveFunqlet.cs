@@ -55,7 +55,7 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 				return serviceFactoryFn();
 			};
 
-			this.Container.Register(registerFn).ReusedWithin(ReuseScope.None);
+			this.Container.Register(registerFn).ReusedWithin(this.Scope);
 		}
 
 		protected override void Run()

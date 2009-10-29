@@ -13,6 +13,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 		public StoreCustomersService(IDbConnection dbConn)
 		{
 			this.dbConn = dbConn;
+			//Console.WriteLine("StoreCustomersService()");
 		}
 
 		public object Execute(StoreCustomers request)

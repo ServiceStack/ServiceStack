@@ -30,13 +30,14 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 			OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
 		}
 
-		private const bool UseCache = true;
+		public const bool UseCache = false;
 
 		[Test]
 		public void Perf_All_IOC()
 		{
 			Hiro_Perf();
-			Funq_Perf();
+			NativeFunq_Perf();
+			AutoWiredFunq_Perf();
 		}
 
 		[Test]
@@ -44,8 +45,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		{
 			var serviceController = new ServiceController();
 
-			var typeFactory = GetHiroTypeFactory();
-			RegisterServices(serviceController, typeFactory);
+			RegisterServices(serviceController, GetHiroTypeFactory());
 
 			StoreAndGetCustomers(serviceController);
 
@@ -54,17 +54,29 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		}
 
 		[Test]
-		public void Funq_Perf()
+		public void NativeFunq_Perf()
 		{
 			var serviceController = new ServiceController();
 
-			var typeFactory = GetFuncTypeFactory();
-			RegisterServices(serviceController, typeFactory);
+			RegisterServices(serviceController, GetNativeFunqTypeFactory());
 
 			StoreAndGetCustomers(serviceController);
 
 			var request = new GetCustomer { CustomerId = 2 };
-			Console.WriteLine("Funq_Perf(): {0}", Measure(() => serviceController.Execute(request), Times));
+			Console.WriteLine("NativeFunq_Perf(): {0}", Measure(() => serviceController.Execute(request), Times));
+		}
+
+		[Test]
+		public void AutoWiredFunq_Perf()
+		{
+			var serviceController = new ServiceController();
+
+			RegisterServices(serviceController, GetAutoWiredFunqTypeFactory());
+
+			StoreAndGetCustomers(serviceController);
+
+			var request = new GetCustomer { CustomerId = 2 };
+			Console.WriteLine("AutoWiredFunq_Perf(): {0}", Measure(() => serviceController.Execute(request), Times));
 		}
 
 		private static long Measure(Action action, int iterations)
@@ -86,19 +98,27 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		{
 			var serviceController = new ServiceController();
 
-			var typeFactory = GetHiroTypeFactory();
-			RegisterServices(serviceController, typeFactory);
+			RegisterServices(serviceController, GetHiroTypeFactory());
 
 			StoreAndGetCustomers(serviceController);
 		}
 
 		[Test]
-		public void Using_Funq()
+		public void Using_NativeFunq()
 		{
 			var serviceController = new ServiceController();
 
-			var typeFactory = GetFuncTypeFactory();
-			RegisterServices(serviceController, typeFactory);
+			RegisterServices(serviceController, GetNativeFunqTypeFactory());
+
+			StoreAndGetCustomers(serviceController);
+		}
+
+		[Test]
+		public void Using_AutoWiredFunq()
+		{
+			var serviceController = new ServiceController();
+
+			RegisterServices(serviceController, GetAutoWiredFunqTypeFactory());
 
 			StoreAndGetCustomers(serviceController);
 		}
@@ -109,10 +129,15 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 				Customers = {
 	            	new Customer { Id = 1, FirstName = "First", LastName = "Customer" },
 	            	new Customer { Id = 2, FirstName = "Second", LastName = "Customer" },
-	            	new Customer { Id = 3, FirstName = "Third", LastName = "Customer" },
 	            }
 			};
+			serviceController.Execute(storeCustomers);
 
+			storeCustomers = new StoreCustomers {
+				Customers = {
+					new Customer {Id = 3, FirstName = "Third", LastName = "Customer"},
+				}
+			};
 			serviceController.Execute(storeCustomers);
 
 			var response = serviceController.Execute(new GetCustomer { CustomerId = 2 });
@@ -130,7 +155,6 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 			map.AddSingletonService(typeof(IDbConnection), typeof(InMemoryDbConnection));
 			map.AddSingletonService(typeof(ICacheClient), typeof(MemoryCacheClient));
 			map.AddSingletonService(typeof(CustomerUseCaseConfig), typeof(CustomerUseCaseConfig));
-			map.AddSingletonService(typeof(ITypeFactory), typeof(CustomerFuncTypeFactory));
 
 			var injector = new PropertyInjectionCall(new TransientType(typeof(GetCustomerService), map));
 			map.AddService(new Dependency(typeof(GetCustomerService)), injector);
@@ -151,42 +175,49 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 			serviceController.Register(typeof(GetCustomer), typeof(GetCustomerService), typeFactory);
 		}
 
-		public static ITypeFactory GetFuncTypeFactory()
+		public static ITypeFactory GetNativeFunqTypeFactory()
+		{
+			var container = GetContainerWithDependencies();
+
+			container.Register(c => new StoreCustomersService(c.Resolve<IDbConnection>()))
+				.ReusedWithin(ReuseScope.None);
+
+			container.Register(c =>
+					new GetCustomerService(c.Resolve<IDbConnection>(), c.Resolve<CustomerUseCaseConfig>()) 
+					{
+						CacheClient = c.TryResolve<ICacheClient>()
+					}
+				)
+				.ReusedWithin(ReuseScope.None);
+
+			return new FuncTypeFactory(container);
+		}
+
+		public static ITypeFactory GetAutoWiredFunqTypeFactory()
+		{
+			var container = GetContainerWithDependencies();
+
+			var funqlet = new ExpressionFunqlet(
+				typeof(StoreCustomersService), typeof(GetCustomerService));
+
+			funqlet.Configure(container);
+
+			return funqlet;
+		}
+
+		private static Container GetContainerWithDependencies()
 		{
 			var container = new Container();
 
 			container.Register(c => ":memory:".OpenDbConnection())
 				.ReusedWithin(ReuseScope.Container);
-			container.Register(c => new MemoryCacheClient() as ICacheClient)
+			container.Register<ICacheClient>(c => new MemoryCacheClient())
 				.ReusedWithin(ReuseScope.Container);
-			container.Register(c => new CustomerUseCaseConfig { UseCache = UseCache })
+			container.Register(c => new CustomerUseCaseConfig())
 				.ReusedWithin(ReuseScope.Container);
 
-			container.Register(c => new StoreCustomersService(c.Resolve<IDbConnection>()));
-			container.Register(c => 
-				new GetCustomerService(
-					c.Resolve<IDbConnection>(), c.Resolve<CustomerUseCaseConfig>()) 
-				{
-					CacheClient = c.TryResolve<ICacheClient>()
-				}
-			);
-
-			return new FuncTypeFactory(container);
+			return container;
 		}
 	}
 
-	public class CustomerFuncTypeFactory
-		: ITypeFactory
-	{
-		private readonly ITypeFactory typeFactory;
-		public CustomerFuncTypeFactory()
-		{
-			this.typeFactory = CustomerUseCase.GetFuncTypeFactory();
-		}
-
-		public object CreateInstance(Type type)
-		{
-			return this.typeFactory.CreateInstance(type);
-		}
-	}
 }
