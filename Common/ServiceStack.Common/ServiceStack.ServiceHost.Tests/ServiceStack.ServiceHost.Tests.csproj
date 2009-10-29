@@ -59,15 +59,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Examples\ExpressionTest_MemberBind .cs.txt" />
+    <Content Include="Examples\ExpressionTest_MemberInit .cs.txt" />
     <Compile Include="PerfTests.cs" />
+    <Compile Include="ServiceControllerPerfTests.cs" />
     <Compile Include="ServiceHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Support\BasicService.cs" />
     <Compile Include="Support\AutoWireService.cs" />
-    <Compile Include="TypeFactory\FactoryResolverAutoWirer.cs" />
+    <Compile Include="TypeFactory\ExpressionFunqlet.cs" />
+    <Compile Include="TypeFactory\ReflectiveFunqlet.cs" />
     <Compile Include="TypeFactory\FuncTypeFactory.cs" />
+    <Compile Include="Examples\FunqEasyRegistrationHelper.cs" />
     <Compile Include="TypeFactory\FunqFactoryResolver.cs" />
-    <Compile Include="TypeFactory\funq_easy_registration.cs" />
+    <Compile Include="Examples\funq_easy_registration.cs" />
+    <Compile Include="TypeFactory\FunqletBase.cs" />
     <Compile Include="TypeFactory\HiroTypeFactory.cs" />
     <Compile Include="UseCase\CustomerUseCase.cs" />
     <Compile Include="Support\InMemoryDbConnection.cs" />

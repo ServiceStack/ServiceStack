@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Funq;
+
+namespace ServiceStack.ServiceHost.Tests.TypeFactory
+{
+	public abstract class FunqletBase
+		: IFunqlet
+	{
+		protected readonly IEnumerable<Type> serviceTypes;
+		protected Container Container { get; set; }
+
+		protected FunqletBase(IEnumerable<Type> serviceTypes)
+		{
+			this.serviceTypes = serviceTypes;
+		}
+
+		protected FunqletBase(params Type[] serviceTypes)
+		{
+			this.serviceTypes = serviceTypes;
+		}
+
+		public void Configure(Container container)
+		{
+			this.Container = container;
+			Run();
+		}
+
+		protected abstract void Run();
+
+		protected static MethodInfo GetResolveMethod(Type typeWithResolveMethod, Type serviceType)
+		{
+			var methodInfo = typeWithResolveMethod.GetMethod("Resolve", new Type[0]);
+			return methodInfo.MakeGenericMethod(new[] { serviceType });
+		}
+
+		public static ConstructorInfo GetConstructorWithMostParams(Type type)
+		{
+			return type.GetConstructors()
+				.OrderByDescending(x => x.GetParameters().Length)
+				.Where(ctor => !ctor.IsStatic)
+				.First();
+		}
+
+		public void ConfigureExpression(Container container)
+		{
+			this.Container = container;
+
+			foreach (var serviceType in serviceTypes)
+			{
+
+				var methodInfo = GetType().GetMethod("RegisterExpression", new Type[0]);
+				var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
+				registerMethodInfo.Invoke(this, new object[0]);
+			}
+		}
+	}
+}

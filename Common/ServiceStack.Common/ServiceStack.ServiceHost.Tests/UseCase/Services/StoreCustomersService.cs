@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost.Tests.UseCase.Operations;
@@ -5,7 +6,7 @@ using ServiceStack.ServiceHost.Tests.UseCase.Operations;
 namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 {
 	public class StoreCustomersService
-		: IService<StoreCustomers>
+		: IService<StoreCustomers> 
 	{
 		private readonly IDbConnection dbConn;
 

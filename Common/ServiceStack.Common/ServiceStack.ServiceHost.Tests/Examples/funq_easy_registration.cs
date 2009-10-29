@@ -1,13 +1,16 @@
 using Funq;
 using NUnit.Framework;
+using ServiceStack.ServiceHost.Tests.TypeFactory;
 
-namespace ServiceStack.ServiceHost.Tests.TypeFactory
+namespace ServiceStack.ServiceHost.Tests.Examples
 {
+	/// <summary>
+	/// Other examples
+	///https://source.db4o.com/db4o/trunk/db4o.net/Libs/compact-3.5/System.Linq.Expressions/Test/System.Linq.Expressions/ExpressionTest_MemberInit.cs
+	/// </summary>
 	[TestFixture]
 	public class FunqEasyRegistration
 	{
-
-
 		public interface IFoo { }
 
 		public class Foo : IFoo { }
@@ -35,7 +38,6 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 				Bar = bar;
 			}
 		}
-
 
 		[Test]
 		public void should_be_able_to_get_service_impl()

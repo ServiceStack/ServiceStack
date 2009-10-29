@@ -73,7 +73,8 @@ namespace ServiceStack.ServiceHost
 
 			Expression callExecute = Expression.Call(serviceStrong, mi, new[] { requestDtoStrong });
 
-			var executeFunc = (Func<object, object, object>)Expression.Lambda(callExecute, requestDtoParam, serviceParam).Compile();
+			var executeFunc = (Func<object, object, object>)
+				Expression.Lambda(callExecute, requestDtoParam, serviceParam).Compile();
 
 			return executeFunc;
 		}
