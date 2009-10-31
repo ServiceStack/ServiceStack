@@ -6,13 +6,20 @@ using ServiceStack.LogicFacade;
 namespace ServiceStack.WebHost.Endpoints
 {
 	public class EndpointHostConfig
+		: HostConfig
 	{
-		private const string USAGE_EXAMPLES_BASE_URI =
+		public IServiceHost ServiceHost { get; set; }
+		public IServiceController ServiceController { get; set; }
+	}
+
+	public class HostConfig
+	{
+		private const string DefaultUsageExamplesBaseUri =
 	    		"http://code.google.com/p/servicestack/source/browse/trunk/doc/UsageExamples";
 
-		public EndpointHostConfig()
+		public HostConfig()
 		{
-			this.UsageExamplesBaseUri = USAGE_EXAMPLES_BASE_URI;
+			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
 			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig {
 				DefaultMetadataUri = "Public/Metadata",
 				Json = new MetadataConfig("Public/Json/SyncReply", "Public/Json/AsyncOneWay", "Public/Json/Metadata"),
@@ -25,8 +32,6 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		public string UsageExamplesBaseUri { get; set; }
-		public IServiceHost ServiceHost { get; set; }
-		public IServiceController ServiceController { get; set; }
 		public string ServiceName { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }

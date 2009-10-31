@@ -65,6 +65,7 @@
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="HttpRequestExtensionsTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
+    <Compile Include="ServiceStackIocTests.cs" />
     <Compile Include="Support\Operations\GetCustomerResponse.cs" />
     <Compile Include="Support\Operations\GetCustomers.cs" />
     <Compile Include="Support\Operations\GetCustomersResponse.cs" />

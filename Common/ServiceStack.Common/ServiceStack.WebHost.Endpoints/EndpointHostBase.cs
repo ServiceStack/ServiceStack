@@ -9,11 +9,11 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
 		private IServiceController ServiceController { get; set; }
-		private readonly DateTime StartTime;
+		private readonly DateTime startTime;
 
 		protected EndpointHostBase()
 		{
-			this.StartTime = DateTime.Now;
+			this.startTime = DateTime.Now;
 			log.Info("Begin Initializing Application...");
 		}
 
@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			this.ServiceController = config.ServiceController;
 
-			var elapsed = DateTime.Now - this.StartTime;
+			var elapsed = DateTime.Now - this.startTime;
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 

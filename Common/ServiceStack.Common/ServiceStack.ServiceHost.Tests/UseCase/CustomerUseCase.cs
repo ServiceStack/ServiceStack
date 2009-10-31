@@ -22,7 +22,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 	[TestFixture]
 	public class CustomerUseCase
 	{
-		private const int Times = 100000;
+		private const int Times = 1000000;
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
@@ -30,14 +30,14 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 			OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
 		}
 
-		public const bool UseCache = false;
+		public const bool UseCache = true;
 
 		[Test]
 		public void Perf_All_IOC()
 		{
 			Hiro_Perf();
-			NativeFunq_Perf();
 			AutoWiredFunq_Perf();
+			NativeFunq_Perf();
 		}
 
 		[Test]

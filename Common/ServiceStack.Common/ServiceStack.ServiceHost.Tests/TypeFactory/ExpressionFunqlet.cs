@@ -11,6 +11,8 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 	public class ExpressionFunqlet
 		: FunqletBase, ITypeFactory
 	{
+		private readonly Dictionary<Type, Func<object>> resolveFnMap = new Dictionary<Type, Func<object>>();
+
 		public ExpressionFunqlet(IEnumerable<Type> serviceTypes) : base(serviceTypes) {}
 
 		public ExpressionFunqlet(params Type[] serviceTypes) : base(serviceTypes) {}
@@ -81,8 +83,6 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 			}
 		}
 
-		private readonly Dictionary<Type, Func<object>> resolveFnMap = new Dictionary<Type, Func<object>>();
-
 		private void GenerateServiceInstanceCreator(Type type)
 		{
 			var containerInstance = Expression.Constant(this.Container);
@@ -104,4 +104,5 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 			return resolveFn();
 		}
 	}
+
 }
