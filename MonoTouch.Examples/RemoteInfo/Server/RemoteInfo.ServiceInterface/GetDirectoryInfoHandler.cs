@@ -1,9 +1,7 @@
 using System.IO;
 using RemoteInfo.ServiceModel.Operations;
 using RemoteInfo.ServiceModel.Types;
-using ServiceStack.LogicFacade;
-using ServiceStack.Service;
-using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceHost;
 
 namespace RemoteInfo.ServiceInterface
 {
@@ -17,9 +15,8 @@ namespace RemoteInfo.ServiceInterface
 	/// 		- xml:  http://localhost:8080/Public/Xml/SyncReply/GetDirectoryInfo?ForPath=/Server/RemoteInfo.ServiceInterface
 	///  	- json: http://localhost:8080/Public/Json/SyncReply/GetDirectoryInfo?ForPath=/Server/RemoteInfo.ServiceInterface
 	/// </summary>
-	[Port(typeof(GetDirectoryInfo))]
 	public class GetDirectoryInfoHandler
-		: IService
+		: IService<GetDirectoryInfo>
 	{
 		private readonly RemoteInfoConfig config;
 
@@ -28,10 +25,8 @@ namespace RemoteInfo.ServiceInterface
 			this.config = config;
 		}
 
-		public object Execute(IOperationContext context)
+		public object Execute(GetDirectoryInfo request)
 		{
-			var request = context.Request.Get<GetDirectoryInfo>();
-
 			var showDirPath = Path.Combine(this.config.RootDirectory, GetSafePath(request.ForPath ?? string.Empty));
 
 			var response = new GetDirectoryInfoResponse();
@@ -39,7 +34,7 @@ namespace RemoteInfo.ServiceInterface
 			foreach (var dirPath in Directory.GetDirectories(showDirPath))
 			{
 				var dirInfo = new DirectoryInfo(dirPath);
-				
+
 				if (this.config.ExcludeDirectories.Contains(dirInfo.Name)) continue;
 
 				response.Directories.Add(new DirectoryResult {

@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using RemoteInfo.ServiceInterface;
 
 namespace RemoteInfo.Host.Console
 {
@@ -6,7 +7,8 @@ namespace RemoteInfo.Host.Console
 	{
 		static void Main(string[] args)
 		{
-			AppHost.Init();
+			var appHost = new AppHost("MonoTouch RemoteInfo", typeof(GetDirectoryInfoHandler).Assembly);
+			appHost.Init();
 
 			Thread.Sleep(Timeout.Infinite);
 			System.Console.WriteLine("ReadLine()");
