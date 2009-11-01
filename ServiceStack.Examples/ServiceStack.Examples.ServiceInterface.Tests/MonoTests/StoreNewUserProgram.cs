@@ -10,18 +10,15 @@ namespace ServiceStack.Examples.ServiceInterface.Tests.MonoTests
 	{
 		public static void Main()
 		{
-			InitApplicationContext();
-
 			using (var db4OManager = new Db4OFileProviderManager("test.db4o"))
 			{
 				var handler = new StoreNewUserHandler(db4OManager);
 
-				handler.Execute(CreateOperationContext(
-					new StoreNewUser {
-						Email = "email",
-						UserName = "userName",
-						Password = "password"
-					}));
+				handler.Execute(new StoreNewUser {
+					Email = "email",
+					UserName = "userName",
+					Password = "password"
+				});
 			}
 
 		}

@@ -1,58 +1,39 @@
 using System;
-using Moq;
-using ServiceStack.CacheAccess.Providers;
+using System.Reflection;
+using Funq;
 using ServiceStack.Configuration;
-using ServiceStack.DataAccess;
 using ServiceStack.Logging;
-using ServiceStack.LogicFacade;
-using ServiceStack.Service;
-using ServiceStack.ServiceInterface;
+using ServiceStack.Logging.Support.Logging;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
-	public class TestAppHost : EndpointHostBase, IDisposable
+	public class TestAppHost 
+		: EndpointHostBase
 	{
-		public static TestAppHost Instance;
+		private static ILog log;
 
-		/// <summary>
-		/// Configure this applicaiton instance.  
-		/// Called by Application_Start() in Global.asax 
-		/// </summary>
-		public static void Init()
+		public Container Container { get; set; }
+
+		public TestAppHost(string serviceName, params Assembly[] assembliesWithServices) 
+			: base(serviceName, assembliesWithServices)
 		{
-			if (Instance == null)
-			{
-				Instance = new TestAppHost();
-			}
+			LogManager.LogFactory = new ConsoleLogFactory();
+			log = LogManager.GetLogger(GetType());
 		}
 
-		private TestAppHost()
+		public override void Configure(Container container)
 		{
-			var factory = new FactoryProvider();
+			this.Container = container;
 
-			ApplicationContext.SetInstanceContext(
-				new BasicApplicationContext(factory, new MemoryCacheClient(), new ConfigurationResourceManager()));
+			container.Register<IResourceManager>(c => new ConfigurationResourceManager());
 
-			base.SetConfig(new EndpointHostConfig {
-				ServiceName = "TestAppHost",
-				ServiceController = new ServiceController(new PortResolver(typeof(GetFactorialHandler).Assembly)),
-			});
-
-
-			var log = LogManager.GetLogger(GetType());
 			log.InfoFormat("TestAppHost Created: " + DateTime.Now);
 		}
 
-		protected override IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
+		public static void Reset()
 		{
-			var requestContext = new RequestContext(requestDto, endpointAttributes, new FactoryProvider(FactoryUtils.ObjectFactory));
-			return new OperationContext(ApplicationContext.Instance, requestContext);
-		}
-
-		public void Dispose()
-		{
-			ApplicationContext.Instance.Factory.Dispose();
+			Instance = null;
 		}
 	}
 }

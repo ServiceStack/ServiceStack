@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
+using ServiceStack.Examples.ServiceInterface;
 
 namespace ServiceStack.Examples.Host.Console
 {
@@ -10,7 +7,8 @@ namespace ServiceStack.Examples.Host.Console
 	{
 		static void Main(string[] args)
 		{
-			AppHost.Init();
+			var appHost = new AppHost("ServiceStack Examples", typeof(GetFactorialHandler).Assembly);
+			appHost.Init();
 
 			Thread.Sleep(Timeout.Infinite);
 			System.Console.WriteLine("ReadLine()");

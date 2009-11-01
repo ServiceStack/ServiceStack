@@ -1,21 +1,17 @@
 using System.Collections.Generic;
 using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
-using ServiceStack.LogicFacade;
-using ServiceStack.Service;
-using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
 	/// <summary>
-	/// The service or 'Port' handler that will be used to execute the request.
-	/// The 'Port' attribute is used to link the 'service request' to the 'service implementation'
+	/// The service handler that will be used to execute the request.
 	/// 
 	/// This example shows a simple introduction into SOA-like webservices. 
 	/// i.e. group similar operations into a single 'document-centric like' service request.
 	/// </summary>
-	[Port(typeof(GetUsers))]
-	public class GetUsersHandler : IService
+	public class GetUsersHandler : IService<GetUsers>
 	{
 		private readonly IPersistenceProviderManager providerFactory;
 
@@ -25,10 +21,8 @@ namespace ServiceStack.Examples.ServiceInterface
 			this.providerFactory = providerFactory;
 		}
 
-		public object Execute(IOperationContext context)
+		public object Execute(GetUsers request)
 		{
-			var request = context.Request.Get<GetUsers>();
-
 			var persistenceProvider = (IQueryablePersistenceProvider)providerFactory.GetProvider();
 
 			var users = new List<User>();

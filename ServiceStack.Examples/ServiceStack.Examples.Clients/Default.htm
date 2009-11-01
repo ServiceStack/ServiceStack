@@ -197,21 +197,18 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-    [Port(typeof(GetFactorial))]
-    public class GetFactorialHandler : IService
-    {
-        public object Execute(IOperationContext context)
-        {
-            var request = context.Request.Get<GetFactorial>();
+	public class GetFactorialHandler : IService&lt;GetFactorial&gt;
+	{
+		public object Execute(GetFactorial request)
+		{
+			return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
+		}
 
-            return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
-        }
-
-        static long GetFactorial(long n)
-        {
-            return n > 1 ? n * GetFactorial(n - 1) : 1;
-        }
-    }
+		static long GetFactorial(long n)
+		{
+			return n &gt; 1 ? n * GetFactorial(n - 1) : 1;
+		}
+	}
                         </code>
                     </div>
                 </div>
@@ -271,48 +268,52 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-    [Port(typeof(GetFibonacciNumbers))]
-    public class GetFibonacciNumbersHandler : IService
-    {
-        public object Execute(IOperationContext context)
-        {
-            var request = context.Request.Get&lt;GetFibonacciNumbers&gt;();
+	public class GetFibonacciNumbersHandler : IService&lt;GetFibonacciNumbers&gt;
+	{
+		private readonly IResourceManager config;
 
-            //An example of a service utilizing a 'provider' from the ApplicationContext.
-            var defaultLimit = context.Application.Resources.Get&lt;long&gt;("DefaultFibonacciLimit", 10);
+		public GetFibonacciNumbersHandler(IResourceManager config)
+		{
+			this.config = config;
+		}
 
-            var skip = request.Skip.GetValueOrDefault(0);
-            var take = request.Take.GetValueOrDefault(defaultLimit);
+		public object Execute(GetFibonacciNumbers request)
+		{
+			//An example of a service utilizing a 'provider' from the ApplicationContext.
+			var defaultLimit = this.config.Get&lt;long&gt;("DefaultFibonacciLimit", 10);
 
-            var results = new List&lt;long&gt;();
+			var skip = request.Skip.GetValueOrDefault(0);
+			var take = request.Take.GetValueOrDefault(defaultLimit);
 
-            var i = 0;
-            foreach (var fibonacciNumber in GetFibonacciNumbersNumbers())
-            {
-                if (i++ &lt; skip) continue;
+			var results = new List&lt;long&gt;();
 
-                results.Add(fibonacciNumber);
+			var i = 0;
+			foreach (var fibonacciNumber in GetFibonacciNumbersNumbers())
+			{
+				if (i++ &lt; skip) continue;
 
-                if (results.Count == take) break;
-            }
+				results.Add(fibonacciNumber);
 
-            return new GetFibonacciNumbersResponse { Results = new ArrayOfLong(results) };
-        }
+				if (results.Count == take) break;
+			}
 
-        static IEnumerable&lt;long&gt; GetFibonacciNumbersNumbers()
-        {
-            long n1 = 0;
-            long n2 = 1;
+			return new GetFibonacciNumbersResponse { Results = new ArrayOfLong(results) };
+		}
 
-            while (true)
-            {
-                var n3 = n1 + n2;
-                yield return n3;
-                n1 = n2;
-                n2 = n3;
-            }
-        }
-    }
+		static IEnumerable&lt;long&gt; GetFibonacciNumbersNumbers()
+		{
+			long n1 = 0;
+			long n2 = 1;
+
+			while (true)
+			{
+				var n3 = n1 + n2;
+				yield return n3;
+				n1 = n2;
+				n2 = n3;
+			}
+		}
+	}
                         </code>
                     </div>
                 </div>
@@ -391,35 +392,37 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-    [Port(typeof(StoreNewUser))]
-    public class StoreNewUserHandler : IService
-    {
-        public object Execute(IOperationContext context)
-        {
-            var request = context.Request.Get&lt;StoreNewUser&gt;();
+	public class StoreNewUserHandler : IService&lt;StoreNewUser&gt; 
+	{
+		private readonly IPersistenceProviderManager providerFactory;
 
-            //Get the persistence provider registered in the AppHost
-            var manager = context.Application.Factory.Resolve&lt;IPersistenceProviderManager&gt;();
-            var persistenceProvider = (IQueryablePersistenceProvider)manager.GetProvider();
+		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
+		public StoreNewUserHandler(IPersistenceProviderManager providerFactory)
+		{
+			this.providerFactory = providerFactory;
+		}
 
-            var existingUsers = persistenceProvider.Query&lt;User&gt;(
-                user =&gt; user.UserName == request.UserName).ToList();
+		public object Execute(StoreNewUser request)
+		{
+			var persistenceProvider = (IQueryablePersistenceProvider)providerFactory.GetProvider();
 
-            if (existingUsers.Count &gt; 0)
-            {
-                return new StoreNewUserResponse {
-                    ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
-                };
-            }
+			var existingUsers = persistenceProvider.Query<User>(user =&gt; user.UserName == request.UserName).ToList();
 
-            var newUser = new User { UserName = request.UserName, Email = request.Email,
-                                     Password = request.Password };
+			if (existingUsers.Count &gt; 0)
+			{
+				return new StoreNewUserResponse {
+					ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
+				};
+			}
 
-            persistenceProvider.Store(newUser);
+			var newUser = new User { UserName = request.UserName, Email = request.Email, Password = request.Password };
 
-            return new StoreNewUserResponse { UserId = newUser.Id };
-        }
-    }
+			persistenceProvider.Store(newUser);
+
+			return new StoreNewUserResponse { UserId = newUser.Id };
+		}
+	}
+
                         </code>
                     </div>
                 </div>
@@ -500,32 +503,35 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-    [Port(typeof(GetUsers))]
-    public class GetUsersHandler : IService
-    {
-        public object Execute(IOperationContext context)
-        {
-            var request = context.Request.Get&lt;GetUsers&gt;();
+	public class GetUsersHandler : IService&lt;GetUsers&gt;
+	{
+		private readonly IPersistenceProviderManager providerFactory;
 
-            //Get the persistence provider registered in the AppHost
-            var persistenceProvider = (IQueryablePersistenceProvider)context.Application.
-                Factory.Resolve&lt;IPersistenceProviderManager&gt;().GetProvider();
+		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
+		public GetUsersHandler(IPersistenceProviderManager providerFactory)
+		{
+			this.providerFactory = providerFactory;
+		}
 
-            var users = new List&lt;User&gt;();
+		public object Execute(GetUsers request)
+		{
+			var persistenceProvider = (IQueryablePersistenceProvider)providerFactory.GetProvider();
 
-            if (request.UserIds != null)
-            {
-                users.AddRange(persistenceProvider.GetByIds&lt;User&gt;(request.UserIds));
-            }
+			var users = new List&lt;User&gt;();
 
-            if (request.UserNames != null)
-            {
-                users.AddRange(persistenceProvider.FindByValues&lt;User&gt;("UserName", request.UserNames));
-            }
+			if (request.UserIds != null)
+			{
+				users.AddRange(persistenceProvider.GetByIds&lt;User&gt;(request.UserIds));
+			}
 
-            return new GetUsersResponse { Users = new ArrayOfUser(users) };
-        }
-    }
+			if (request.UserNames != null)
+			{
+				users.AddRange(persistenceProvider.FindByValues&lt;User&gt;("UserName", request.UserNames));
+			}
+
+			return new GetUsersResponse { Users = new ArrayOfUser(users) };
+		}
+	}
                         </code>
                     </div>
                 </div>

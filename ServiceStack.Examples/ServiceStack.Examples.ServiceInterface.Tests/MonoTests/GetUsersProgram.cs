@@ -8,16 +8,14 @@ namespace ServiceStack.Examples.ServiceInterface.Tests.MonoTests
 	{
 		public static void Main()
 		{
-			InitApplicationContext();
-
 			using (var db4OManager = new Db4OFileProviderManager("test.db4o"))
 			{
 				var handler = new GetUsersHandler(db4OManager);
 
-				var response = (GetUsersResponse)handler.Execute(CreateOperationContext(
+				var response = (GetUsersResponse)handler.Execute(
 					new GetUsers {
 						UserNames = new ArrayOfString("userName")
-					}));
+					});
 
 				if (response.Users.Count > 0)
 				{

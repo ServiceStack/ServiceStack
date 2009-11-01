@@ -1,18 +1,11 @@
-using System.Collections.Generic;
 using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
-using ServiceStack.LogicFacade;
-using ServiceStack.Service;
-using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
-	/// <summary>
-	/// The service or 'Port' handler that will be used to execute the request.
-	/// The 'Port' attribute is used to link the 'service request' to the 'service implementation'
-	/// </summary>
-	[Port(typeof(GetAllUsers))]
-	public class GetAllUsersHandler : IService
+	public class GetAllUsersHandler
+		: IService<GetAllUsers>
 	{
 		private readonly IPersistenceProviderManager providerFactory;
 
@@ -22,7 +15,7 @@ namespace ServiceStack.Examples.ServiceInterface
 			this.providerFactory = providerFactory;
 		}
 
-		public object Execute(IOperationContext context)
+		public object Execute(GetAllUsers request)
 		{
 			var persistenceProvider = providerFactory.GetProvider();
 

@@ -34,7 +34,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 
 			var handler = new GetUsersHandler(providerManagerObject);
 
-			var response = (GetUsersResponse)handler.Execute(CreateOperationContext(request));
+			var response = (GetUsersResponse)handler.Execute(request);
 
 			Assert.That(response.Users.Count, Is.EqualTo(4));
 		}

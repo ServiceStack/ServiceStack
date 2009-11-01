@@ -18,7 +18,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 
 			var handler = new GetFactorialHandler();
 			
-			var response = (GetFactorialResponse)handler.Execute(CreateOperationContext(request));
+			var response = (GetFactorialResponse)handler.Execute(request);
 
 			Assert.That(response.Result, Is.EqualTo(4 * 3 * 2 * 1));
 		}

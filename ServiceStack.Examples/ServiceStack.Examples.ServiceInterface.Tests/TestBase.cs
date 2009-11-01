@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Funq;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.DataAccess;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
@@ -15,13 +11,18 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 		[TestFixtureSetUp]
 		public void SetUp()
 		{
-			TestAppHost.Init();
+			TestAppHost.Reset();
+
+			var appHost = new TestAppHost("TestAppHost", typeof (GetFactorialHandler).Assembly);
+			appHost.Init();
 		}
 
-		protected OperationContext CreateOperationContext(object request)
+		protected Container Container
 		{
-			return new OperationContext(ApplicationContext.Instance, 
-				new RequestContext(request));
+			get
+			{
+				return ((TestAppHost)TestAppHost.Instance).Container;
+			}
 		}
 
 		protected IPersistenceProviderManager GetMockProviderManagerObject(Mock<IQueryablePersistenceProvider> mockPersistence)

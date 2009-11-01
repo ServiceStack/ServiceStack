@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Security;
 using System.Web.SessionState;
+using ServiceStack.Examples.ServiceInterface;
 
 namespace ServiceStack.Examples.Host.Web
 {
@@ -12,7 +13,8 @@ namespace ServiceStack.Examples.Host.Web
 
 		protected void Application_Start(object sender, EventArgs e)
 		{
-			AppHost.Init();
+			var appHost = new AppHost("ServiceStack Examples", typeof(GetFactorialHandler).Assembly);
+			appHost.Init();
 		}
 
 		protected void Session_Start(object sender, EventArgs e)

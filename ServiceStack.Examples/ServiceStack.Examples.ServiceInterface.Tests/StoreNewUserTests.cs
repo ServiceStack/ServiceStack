@@ -34,7 +34,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
 
 			var handler = new StoreNewUserHandler(providerManagerObject);
-			var response = (StoreNewUserResponse)handler.Execute(CreateOperationContext(request));
+			var response = (StoreNewUserResponse)handler.Execute(request);
 
 			mockPersistence.VerifyAll();
 
@@ -52,7 +52,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
 
 			var handler = new StoreNewUserHandler(providerManagerObject);
-			var response = (StoreNewUserResponse)handler.Execute(CreateOperationContext(request));
+			var response = (StoreNewUserResponse)handler.Execute(request);
 
 			mockPersistence.VerifyAll();
 

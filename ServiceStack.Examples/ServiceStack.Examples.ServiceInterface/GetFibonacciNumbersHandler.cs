@@ -1,27 +1,29 @@
 using System.Collections.Generic;
+using ServiceStack.Configuration;
 using ServiceStack.Examples.ServiceInterface.Types;
-using ServiceStack.LogicFacade;
-using ServiceStack.Service;
-using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
 	/// <summary>
-	/// The service or 'Port' handler that will be used to execute the request.
-	/// The 'Port' attribute is used to link the 'service request' to the 'service implementation'
+	/// The service handler that will be used to execute the request.
 	/// 
 	/// This purpose of this example is how you would implement a slightly more advanced
 	/// web service returning a slightly more 'complex object'.
 	/// </summary>
-	[Port(typeof(GetFibonacciNumbers))]
-	public class GetFibonacciNumbersHandler : IService
+	public class GetFibonacciNumbersHandler : IService<GetFibonacciNumbers>
 	{
-		public object Execute(IOperationContext context)
-		{
-			var request = context.Request.Get<GetFibonacciNumbers>();
+		private readonly IResourceManager config;
 
+		public GetFibonacciNumbersHandler(IResourceManager config)
+		{
+			this.config = config;
+		}
+
+		public object Execute(GetFibonacciNumbers request)
+		{
 			//An example of a service utilizing a 'provider' from the ApplicationContext.
-			var defaultLimit = context.Application.Resources.Get<long>("DefaultFibonacciLimit", 10);
+			var defaultLimit = this.config.Get<long>("DefaultFibonacciLimit", 10);
 
 			var skip = request.Skip.GetValueOrDefault(0);
 			var take = request.Take.GetValueOrDefault(defaultLimit);
@@ -54,6 +56,6 @@ namespace ServiceStack.Examples.ServiceInterface
 				n2 = n3;
 			}
 		}
-
 	}
+
 }
