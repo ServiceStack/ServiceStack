@@ -1,9 +1,11 @@
 using System;
 using ServiceStack.LogicFacade;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface
 {
-	public class BasicOperationContext<TApplicationContext, TRequestContext> : IOperationContext
+	public class BasicOperationContext<TApplicationContext, TRequestContext> 
+		: IOperationContext
 		where TApplicationContext : IApplicationContext
 		where TRequestContext : IRequestContext
 	{

@@ -118,6 +118,10 @@
     <Compile Include="Support\Templates\ListTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Funq\Funq.csproj">
+      <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
+      <Name>Funq</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
@@ -125,6 +129,14 @@
     <ProjectReference Include="..\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
       <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
       <Name>ServiceStack.ServiceClient.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
+      <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>
+      <Name>ServiceStack.ServiceHost</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
+      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
+      <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>

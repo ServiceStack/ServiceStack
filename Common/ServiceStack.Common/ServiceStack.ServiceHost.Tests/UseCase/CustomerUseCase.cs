@@ -183,8 +183,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 				.ReusedWithin(ReuseScope.None);
 
 			container.Register(c =>
-					new GetCustomerService(c.Resolve<IDbConnection>(), c.Resolve<CustomerUseCaseConfig>()) 
-					{
+					new GetCustomerService(c.Resolve<IDbConnection>(), c.Resolve<CustomerUseCaseConfig>()) {
 						CacheClient = c.TryResolve<ICacheClient>()
 					}
 				)
@@ -197,7 +196,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		{
 			var container = GetContainerWithDependencies();
 
-			var funqlet = new ExpressionFunqlet(
+			var funqlet = new TypeFactory.ExpressionFunqlet(
 				typeof(StoreCustomersService), typeof(GetCustomerService));
 
 			funqlet.Configure(container);

@@ -1,15 +1,22 @@
 using System;
+using System.IO;
+using System.Reflection;
+using Funq;
 using ServiceStack.Logging;
 using ServiceStack.LogicFacade;
-using ServiceStack.Service;
+using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-	public abstract class EndpointHostBase : IServiceHost
+	public abstract class EndpointHostBase
+		: IFunqlet, IDisposable
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
-		private IServiceController ServiceController { get; set; }
 		private readonly DateTime startTime;
+		private readonly ServiceManager serviceManager;
+
+		public static EndpointHostBase Instance { get; protected set; }
 
 		protected EndpointHostBase()
 		{
@@ -17,18 +24,65 @@ namespace ServiceStack.WebHost.Endpoints
 			log.Info("Begin Initializing Application...");
 		}
 
-		public void SetConfig(EndpointHostConfig config)
+		protected EndpointHostBase(string serviceName, params Assembly[] assembliesWithServices)
+			: this()
 		{
-			config.ServiceHost = config.ServiceHost ?? this;
-			EndpointHost.Config = config;
+			this.serviceManager = new ServiceManager(assembliesWithServices);
 
-			this.ServiceController = config.ServiceController;
+			SetConfig(new EndpointHostConfig {
+				ServiceName = serviceName,
+				ServiceController = serviceManager.ServiceController,
+			});
+		}
+
+		public void Init()
+		{
+			if (Instance != null)
+			{
+				throw new InvalidDataException("EndpointHostBase.Instance has already been set");
+			}
+
+			Instance = this;
+
+			if (this.serviceManager != null)
+			{
+				serviceManager.Init();
+				Configure(serviceManager.Container);
+			}
+			else
+			{
+				Configure(null);
+			}
+
+			EndpointHost.SetOperationTypes(
+				EndpointHost.Config.ServiceController.OperationTypes, 
+				EndpointHost.Config.ServiceController.AllOperationTypes
+			);
 
 			var elapsed = DateTime.Now - this.startTime;
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
-		protected abstract IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes);
+		public abstract void Configure(Container container);
+
+		public void SetConfig(EndpointHostConfig config)
+		{
+			EndpointHost.Config = config;
+
+			var contextController = EndpointHost.Config.ServiceController as ServiceControllerContext;
+			if (contextController != null)
+			{
+				contextController.OperationContextFactory = this.CreateOperationContext;
+			}
+		}
+
+		[Obsolete("Use IService<> instead")]
+		protected virtual IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
+		{
+			return new BasicOperationContext<IApplicationContext, RequestContext>(
+				ApplicationContext.Instance,
+				new RequestContext(requestDto, endpointAttributes));
+		}
 
 		public virtual object ExecuteService(object requestDto)
 		{
@@ -37,10 +91,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public object ExecuteService(object requestDto, EndpointAttributes endpointAttributes)
 		{
-			using (var context = CreateOperationContext(requestDto, endpointAttributes))
-			{
-				return this.ServiceController.Execute(context);
-			}
+			return EndpointHost.Config.ServiceController.Execute(requestDto,
+				new RequestContext(requestDto, endpointAttributes));
 		}
 
 		public virtual string ExecuteXmlService(string xml)
@@ -50,13 +102,15 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public string ExecuteXmlService(string xml, EndpointAttributes endpointAttributes)
 		{
-			// Create a xml request DTO which the service controller will parse and reassign the call
-			// context request DTO to a object expected by the relevant port
-			var requestDto = new XmlRequestDto(xml);
+			return (string)EndpointHost.Config.ServiceController.ExecuteText(xml,
+				new RequestContext(xml, endpointAttributes));
+		}
 
-			using (var context = CreateOperationContext(requestDto, endpointAttributes))
+		public virtual void Dispose()
+		{
+			if (this.serviceManager != null)
 			{
-				return this.ServiceController.ExecuteXml(context);
+				this.serviceManager.Dispose();
 			}
 		}
 	}

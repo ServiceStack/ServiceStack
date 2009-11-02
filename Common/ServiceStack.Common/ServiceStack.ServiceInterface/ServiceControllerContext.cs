@@ -7,21 +7,25 @@ using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Logging;
 using ServiceStack.LogicFacade;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.ServiceInterface
 {
-	public class ServiceController : IServiceController
+	[Obsolete("Use IService<> instead")]
+	public class ServiceControllerContext 
+		: IServiceController
 	{
-		private readonly ILog log = LogManager.GetLogger(typeof(ServiceController));
+		private readonly ILog log = LogManager.GetLogger(typeof(ServiceControllerContext));
 
-		public ServiceController(IServiceResolver serviceResolver)
+		public ServiceControllerContext(IServiceResolver serviceResolver)
 		{
 			this.ServiceResolver = serviceResolver;
 			this.XmlSerializer = DataContractSerializer.Instance;
 			this.XmlDeserializer = DataContractDeserializer.Instance;
 			this.MessageInspector = new XmlMessageInspector().Parse;
 			this.EnablePortRestrictions = true;
+			this.OperationContextFactory = CreateOperationContext;	
 		}
 
 		public IServiceResolver ServiceResolver { get; private set; }
@@ -48,9 +52,26 @@ namespace ServiceStack.ServiceInterface
 			return result;
 		}
 
+		public Func<object, EndpointAttributes, IOperationContext> OperationContextFactory;
+
+		private static IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
+		{
+			return new BasicOperationContext<IApplicationContext, RequestContext>(
+				ApplicationContext.Instance, new RequestContext(requestDto, endpointAttributes));
+		}
+
+		public object Execute(object request, IRequestContext requestContext)
+		{
+			using (var operationContext = OperationContextFactory(request, requestContext.EndpointAttributes))
+			{
+				return Execute(operationContext);
+			} 
+		}
+
 		public object Execute(IOperationContext context)
 		{
-			var serviceName = context.Request.Dto.GetType().Name;
+			var requestContext = (RequestContext) context.Request;
+			var serviceName = requestContext.Dto.GetType().Name;
 			var service = this.ServiceResolver.FindService(serviceName);
 			AssertServiceExists(service, serviceName);
 			if (EnablePortRestrictions)
@@ -62,23 +83,36 @@ namespace ServiceStack.ServiceInterface
 			return Execute(() => dtoService.Execute(context), serviceName);
 		}
 
+		public object ExecuteText(string text, IRequestContext requestContext)
+		{
+			// Create a xml request DTO which the service controller will parse and reassign the call
+			// context request DTO to a object expected by the relevant port
+			var requestDto = new XmlRequestDto(text);
+
+			using (var operationContext = OperationContextFactory(requestDto, requestContext.EndpointAttributes))
+			{
+				return ExecuteXml(operationContext);
+			}
+		}
+
 		public string ExecuteXml(IOperationContext context)
 		{
-			var xmlRequest = (IXmlRequest)context.Request.Dto;
+			var requestContext = (RequestContext)context.Request;
+			var xmlRequest = (IXmlRequest)requestContext.Dto;
 
-			var requestContext = this.MessageInspector(xmlRequest.Xml);
-			var service = this.ServiceResolver.FindService(requestContext.OperationName, requestContext.Version.GetValueOrDefault());
-			AssertServiceExists(service, requestContext.OperationName);
+			var xmlServiceRequest = this.MessageInspector(xmlRequest.Xml);
+			var service = this.ServiceResolver.FindService(xmlServiceRequest.OperationName, xmlServiceRequest.Version.GetValueOrDefault());
+			AssertServiceExists(service, xmlServiceRequest.OperationName);
 			if (EnablePortRestrictions)
 			{
-				AssertServiceRestrictions(service, context.Request.EndpointAttributes, requestContext.OperationName);
+				AssertServiceRestrictions(service, context.Request.EndpointAttributes, xmlServiceRequest.OperationName);
 			}
 
 			var xelementService = service as IXElementService;
 			if (xelementService != null)
 			{
-				context.Request.Dto = XElement.Parse(xmlRequest.Xml);
-				var response = Execute(() => xelementService.Execute(context), requestContext.OperationName);
+				requestContext.Dto = XElement.Parse(xmlRequest.Xml);
+				var response = Execute(() => xelementService.Execute(context), xmlServiceRequest.OperationName);
 				var responseXml = this.XmlSerializer.Parse(response);
 				return responseXml;
 			}
@@ -86,26 +120,26 @@ namespace ServiceStack.ServiceInterface
 			var xmlService = service as IXmlService;
 			if (xmlService != null)
 			{
-				context.Request.Dto = xmlRequest.Xml;
-				return Execute(() => xmlService.Execute(context), requestContext.OperationName);
+				requestContext.Dto = xmlRequest.Xml;
+				return Execute(() => xmlService.Execute(context), xmlServiceRequest.OperationName);
 			}
 
 			var dtoService = service as IService;
 			if (dtoService != null)
 			{
 
-				var requestType = this.ServiceResolver.FindOperationType(requestContext.OperationName, requestContext.Version);
+				var requestType = this.ServiceResolver.FindOperationType(xmlServiceRequest.OperationName, xmlServiceRequest.Version);
 
 				// Deserialize xml into request DTO
-				context.Request.Dto = this.XmlDeserializer.Parse(xmlRequest.Xml, requestType);
+				requestContext.Dto = this.XmlDeserializer.Parse(xmlRequest.Xml, requestType);
 
-				var response = Execute(() => dtoService.Execute(context), requestContext.OperationName);
+				var response = Execute(() => dtoService.Execute(context), xmlServiceRequest.OperationName);
 				if (response == null) return null;
 				var responseXml = this.XmlSerializer.Parse(response);
 				return responseXml;
 			}
 
-			throw new NotSupportedException("Cannot execute unknown service type: " + requestContext.OperationName);
+			throw new NotSupportedException("Cannot execute unknown service type: " + xmlServiceRequest.OperationName);
 		}
 
 		public static void AssertServiceRestrictions(object service, EndpointAttributes attributes, string serviceName)

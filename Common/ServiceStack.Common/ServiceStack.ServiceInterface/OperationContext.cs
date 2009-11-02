@@ -1,5 +1,6 @@
 using System;
 using ServiceStack.LogicFacade;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface
 {

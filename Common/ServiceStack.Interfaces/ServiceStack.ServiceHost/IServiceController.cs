@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.LogicFacade
+namespace ServiceStack.ServiceHost
 {
 	/// <summary>
 	/// Responsible for executing the operation within the specified context.
@@ -21,20 +21,8 @@ namespace ServiceStack.LogicFacade
 		/// <value>The operation types.</value>
 		IList<Type> AllOperationTypes { get; }
 
-		/// <summary>
-		/// Executes the specified context given a DTO request.
-		/// Will return a DTO response for SyncReply services.
-		/// </summary>
-		/// <param name="context">The context.</param>
-		/// <returns></returns>
-		object Execute(IOperationContext context);
+		object Execute(object request, IRequestContext requestContext);
 
-		/// <summary>
-		/// Executes the specified context given an XML request.
-		/// Will return an XML response
-		/// </summary>
-		/// <param name="context">The context.</param>
-		/// <returns></returns>
-		string ExecuteXml(IOperationContext context);
+		object ExecuteText(string text, IRequestContext requestContext);
 	}
 }

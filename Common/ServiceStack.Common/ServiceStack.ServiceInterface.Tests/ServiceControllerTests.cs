@@ -1,7 +1,7 @@
 using System;
-using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Tests.Support.Version100.Operations;
 
 namespace ServiceStack.ServiceInterface.Tests
@@ -22,7 +22,7 @@ namespace ServiceStack.ServiceInterface.Tests
 		[Test]
 		public void Internal_only_handler_can_be_called_internally()
 		{
-			ServiceController.AssertServiceRestrictions(
+			ServiceControllerContext.AssertServiceRestrictions(
 				new InternalOnlyHandler(), EndpointAttributes.Internal, "name");
 		}
 
@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceInterface.Tests
 		{
 			try
 			{
-				ServiceController.AssertServiceRestrictions(
+				ServiceControllerContext.AssertServiceRestrictions(
 					new InternalOnlyHandler(), EndpointAttributes.External, "name");
 			}
 			catch (UnauthorizedAccessException uae)
@@ -45,7 +45,7 @@ namespace ServiceStack.ServiceInterface.Tests
 		[Test]
 		public void Can_call_HttpGetHandler_with_HttpGet_request()
 		{
-			ServiceController.AssertServiceRestrictions(
+			ServiceControllerContext.AssertServiceRestrictions(
 				new HttpGetHandler(), EndpointAttributes.External | EndpointAttributes.HttpGet | EndpointAttributes.InSecure, "name");
 		}
 
@@ -54,7 +54,7 @@ namespace ServiceStack.ServiceInterface.Tests
 		{
 			try
 			{
-				ServiceController.AssertServiceRestrictions(
+				ServiceControllerContext.AssertServiceRestrictions(
 					new HttpGetHandler(), EndpointAttributes.External | EndpointAttributes.HttpPost | EndpointAttributes.InSecure, "name");
 			}
 			catch (UnauthorizedAccessException uae)

@@ -45,14 +45,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IRequiresRequestContext.cs" />
     <Compile Include="IOperationContext.cs" />
     <Compile Include="IInitContext.cs" />
     <Compile Include="ILogicFacade.cs" />
     <Compile Include="InitOptions.cs" />
     <Compile Include="IApplicationContext.cs" />
-    <Compile Include="IRequestContext.cs" />
-    <Compile Include="IServiceController.cs" />
     <Compile Include="IServiceModelFinder.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -75,6 +72,10 @@
     <ProjectReference Include="..\ServiceStack.Logging\ServiceStack.Logging.csproj">
       <Project>{4A2CC4DB-3C30-4455-B442-10E598E77487}</Project>
       <Name>ServiceStack.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
+      <Project>{61DD8BC4-8B71-4D16-9F8C-94933B2B36CB}</Project>
+      <Name>ServiceStack.ServiceHost</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Service\ServiceStack.Service.csproj">
       <Project>{3F0B9390-3A04-40BF-923F-4BF6D2DB81C9}</Project>

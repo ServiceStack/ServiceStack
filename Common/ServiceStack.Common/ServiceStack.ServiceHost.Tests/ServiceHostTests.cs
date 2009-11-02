@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceHost.Tests
 			var serviceController = new ServiceController();
 
 			serviceController.Register(() => new BasicService());
-			var result = serviceController.Execute(new BasicRequest()) as BasicRequest;
+			var result = serviceController.Execute(new BasicRequest()) as BasicRequestResponse;
 
 			Assert.That(result, Is.Not.Null);
 		}
@@ -32,7 +32,7 @@ namespace ServiceStack.ServiceHost.Tests
 
 			object request = Activator.CreateInstance(requestType);
 
-			var result = serviceController.Execute(request) as BasicRequest;
+			var result = serviceController.Execute(request) as BasicRequestResponse;
 
 			Assert.That(result, Is.Not.Null);
 		}
@@ -72,7 +72,5 @@ namespace ServiceStack.ServiceHost.Tests
 			Assert.That(service.Foo, Is.Not.Null);
 			Assert.That(service.Bar, Is.Not.Null);
 		}
-
-
 	}
 }

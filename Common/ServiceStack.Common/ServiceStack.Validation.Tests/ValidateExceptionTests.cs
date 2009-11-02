@@ -8,7 +8,7 @@ namespace ServiceStack.Validation.Tests
 	public class ValidateExceptionTests
 	{
 		const string errorCode = "ThisIsAnErrorCode";
-		const string errorMessage = "This Is An Error Code";
+		const string errorMessage = "This is an error code";
 		const string customErrorMessage = "Custom error message";
 
 		[Test]

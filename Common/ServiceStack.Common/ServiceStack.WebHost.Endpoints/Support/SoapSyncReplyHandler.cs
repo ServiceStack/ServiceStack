@@ -1,8 +1,8 @@
 using System.IO;
 using System.ServiceModel.Channels;
 using System.Xml;
-using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {

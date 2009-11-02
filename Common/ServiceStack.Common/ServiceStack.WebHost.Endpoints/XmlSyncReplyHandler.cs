@@ -2,6 +2,7 @@ using System;
 using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;

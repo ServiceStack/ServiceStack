@@ -1,0 +1,94 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer />
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="base" priority="1" />
+      <Item value="var" priority="3" />
+      <Item value="new" priority="1" />
+      <Item value="AppHost" priority="1" />
+      <Item value="appHost" priority="2" />
+      <Item value="override" priority="0" />
+      <Item value="container" priority="1" />
+      <Item value="c" priority="0" />
+      <Item value="IResourceManager" priority="1" />
+      <Item value="prop" priority="0" />
+      <Item value="static" priority="0" />
+      <Item value="ILog" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.EndpointHostBase">
+      <Item value="Dispose" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.Host.Web.AppHost">
+      <Item value="Init" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@RemoteInfo.Host.Web.AppHost">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RemoteInfo.Host.Console.AppHost">
+      <Item value="Start" priority="0" />
+      <Item value="Init" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Funq.Container">
+      <Item value="Register" priority="0" />
+      <Item value="Resolve" priority="1" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:RemoteInfoConfig.cs" caret="261" fromTop="11" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3202" fromTop="39" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:GetDirectoryInfoHandler.cs" caret="881" fromTop="17" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax.cs" caret="847" fromTop="41" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="401" fromTop="17" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="88" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="469" fromTop="16" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1242" fromTop="37" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="982" fromTop="6" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1043" fromTop="36" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1048" fromTop="29" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2192" fromTop="27" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="984" fromTop="27" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="523" fromTop="6" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="897" fromTop="17" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:GetDirectoryInfoHandler.cs" caret="734" fromTop="18" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:GetDirectoryInfoHandler.cs" caret="2431" fromTop="14" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:GetDirectoryInfoHandler.cs" caret="972" fromTop="14" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:GetDirectoryInfoHandler.cs" caret="1847" fromTop="41" />
+      <File id="5B91935A-7ED6-4496-871B-6AD25BC3F097/f:GetDirectoryInfoHandler.cs" caret="97" fromTop="2" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="697" fromTop="26" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2299" fromTop="20" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3387" fromTop="43" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2709" fromTop="32" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2569" fromTop="28" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="509" fromTop="10" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1242" fromTop="27" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1242" fromTop="31" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax.cs" caret="330" fromTop="17" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax.cs" caret="13" fromTop="0" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="278" fromTop="11" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1180" fromTop="37" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="913" fromTop="21" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="710" fromTop="14" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="88" fromTop="3" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="900" fromTop="27" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="88" fromTop="3" />
+    </RecentEdits>
+  </RecentFiles>
+  <UnitTestRunner>
+    <Providers />
+  </UnitTestRunner>
+  <UnitTestRunnerMSTest>
+    <UseTestRunConfigFromMetadataFile>False</UseTestRunConfigFromMetadataFile>
+  </UnitTestRunnerMSTest>
+</Configuration>

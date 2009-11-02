@@ -7,6 +7,7 @@ using ServiceStack.ServiceHost.Tests.TypeFactory;
 
 namespace ServiceStack.ServiceHost.Tests
 {
+	[Ignore("Perf Test Only")]
 	[TestFixture]
 	public class ServiceControllerPerfTests
 	{
@@ -56,7 +57,7 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IFoo>(c => new Foo());
 			container.Register<IBar>(c => new Bar());
 
-			var funqlet = new ExpressionFunqlet(typeof(AutoWireService));
+			var funqlet = new TypeFactory.ExpressionFunqlet(typeof(AutoWireService));
 			funqlet.Configure(container);
 
 			Console.WriteLine("With_Funq_and_Expressions(): {0}", Measure(() => container.Resolve<AutoWireService>(), Times));

@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.ServiceInterface
 {
 	/// <summary>
-	/// Once implemented (in the ServiceController area) this will ensure that the ports
+	/// Once implemented (in the ServiceControllerContext area) this will ensure that the ports
 	/// are only executed in the specified restrictions.
 	/// </summary>
 	public class MessagingRestrictionAttribute : Attribute

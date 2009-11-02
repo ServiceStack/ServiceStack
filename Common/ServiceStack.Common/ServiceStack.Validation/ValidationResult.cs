@@ -121,7 +121,7 @@ namespace ServiceStack.Validation
 			
 			if (this.ErrorMessage == null && this.ErrorCode != null)
 			{
-				this.ErrorMessage = this.ErrorCode.SplitCamelCase();
+				this.ErrorMessage = this.ErrorCode.ToEnglish();
 			}
 		}
 	}

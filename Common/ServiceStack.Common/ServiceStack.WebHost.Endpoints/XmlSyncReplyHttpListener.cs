@@ -1,13 +1,24 @@
 using System.Net;
-using ServiceStack.Service;
+using System.Reflection;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-	public abstract class XmlSyncReplyHttpListener : HttpListenerBase
+	public abstract class XmlSyncReplyHttpListener 
+		: HttpListenerBase
 	{
+		protected XmlSyncReplyHttpListener()
+		{
+		}
+
+		protected XmlSyncReplyHttpListener(string serviceName, params Assembly[] assembliesWithServices) 
+			: base(serviceName, assembliesWithServices)
+		{
+		}
+
 		protected override void ProcessRequest(HttpListenerContext context)
 		{
 			if (string.IsNullOrEmpty(context.Request.RawUrl)) return;

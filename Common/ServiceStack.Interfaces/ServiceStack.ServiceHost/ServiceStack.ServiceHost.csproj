@@ -50,6 +50,7 @@
     <Compile Include="IRequiresRequestContext.cs" />
     <Compile Include="IService.Generic.cs" />
     <Compile Include="IService.cs" />
+    <Compile Include="IServiceController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IRequestAttributes.cs" />
   </ItemGroup>

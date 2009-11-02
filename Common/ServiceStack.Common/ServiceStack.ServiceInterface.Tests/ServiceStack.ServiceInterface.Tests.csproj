@@ -63,7 +63,6 @@
     <Compile Include="Support\Handlers\Version100\StoreCustomerHandler.cs" />
     <Compile Include="Support\Handlers\Version100\GetCustomerHandler.cs" />
     <Compile Include="Support\Handlers\Version100\GetCustomersHandler.cs" />
-    <Compile Include="Support\Version100\Operations\GetCustomerGeneric.cs" />
     <Compile Include="Support\Version100\Operations\InternalOnly.cs" />
     <Compile Include="Support\Version100\Operations\GetCustomer.cs" />
     <Compile Include="Support\Version100\Operations\GetCustomers.cs" />
@@ -78,6 +77,10 @@
     <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
       <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
       <Name>ServiceStack.Configuration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
+      <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>
+      <Name>ServiceStack.ServiceHost</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>

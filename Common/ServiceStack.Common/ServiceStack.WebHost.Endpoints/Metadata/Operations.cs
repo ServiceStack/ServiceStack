@@ -6,7 +6,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 {
     public class Operations
     {
-		const string RESPONSE_SUFFIX = "Response";
+		const string ResponseSuffix = "Response";
 		
 		public Operations(IList<Type> types)
     	{
@@ -19,11 +19,11 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 			foreach (var type in types)
 			{
-				if (type.Name.EndsWith(RESPONSE_SUFFIX)) continue;
+				if (type.Name.EndsWith(ResponseSuffix)) continue;
 
 				Names.Add(type.Name);
 
-				var hasResponse = typeNames.Contains(type.Name + RESPONSE_SUFFIX);
+				var hasResponse = typeNames.Contains(type.Name + ResponseSuffix);
 				if (hasResponse)
 				{
 					ReplyOperations.Add(type);

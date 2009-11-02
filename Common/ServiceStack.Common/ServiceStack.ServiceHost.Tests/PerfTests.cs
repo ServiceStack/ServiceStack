@@ -6,6 +6,7 @@ using ServiceStack.ServiceHost.Tests.Support;
 
 namespace ServiceStack.ServiceHost.Tests
 {
+	[Ignore("Perf Test Only")]
 	[TestFixture]
 	public class PerfTests
 	{
@@ -17,7 +18,7 @@ namespace ServiceStack.ServiceHost.Tests
 			With_Native();
 			With_Reflection(); //Very slow
 			With_Expressions();
-			With_custom_func();
+			With_CustomFunc();
 			With_TypeFactory();
 			With_TypedArguments();
 		}
@@ -78,7 +79,7 @@ namespace ServiceStack.ServiceHost.Tests
 		}
 
 		[Test]
-		public void With_custom_func()
+		public void With_CustomFunc()
 		{
 			var requestType = typeof(BasicRequest);
 			var serviceController = new ServiceController();
@@ -87,7 +88,7 @@ namespace ServiceStack.ServiceHost.Tests
 
 			var request = new BasicRequest();
 
-			Console.WriteLine("With_custom_func(): {0}", Measure(() => serviceController.Execute(request), Times));
+			Console.WriteLine("With_CustomFunc(): {0}", Measure(() => serviceController.Execute(request), Times));
 		}
 
 		public class BasicServiceTypeFactory : ITypeFactory

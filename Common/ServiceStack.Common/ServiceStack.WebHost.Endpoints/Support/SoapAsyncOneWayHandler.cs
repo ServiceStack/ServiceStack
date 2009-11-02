@@ -1,6 +1,6 @@
 using System.ServiceModel.Channels;
-using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {

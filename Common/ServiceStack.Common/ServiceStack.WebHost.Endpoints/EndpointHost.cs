@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -21,43 +20,34 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 			set
 			{
-				var requiredFields = new Dictionary<string, object> {
-             		{"ServiceName", value.ServiceName},
-             		{"ServiceHost", value.ServiceHost},
-             		{"ServiceController", value.ServiceController},
-             	};
+				if (value.ServiceName == null)
+					throw new ArgumentNullException("ServiceName");
 
-				var fieldsNotProvided = new List<string>();
-				foreach (var requiredField in requiredFields)
-				{
-					if (requiredField.Value == null)
-					{
-						fieldsNotProvided.Add(requiredField.Key);
-					}
-				}
-
-				if (fieldsNotProvided.Count > 0)
-				{
-					throw new ArgumentException("'{0}' are required fields", string.Join(", ", fieldsNotProvided.ToArray()));
-				}
-
-				ServiceOperations = new ServiceOperations(value.ServiceController.OperationTypes);
-				AllServiceOperations = new ServiceOperations(value.ServiceController.AllOperationTypes);
+				if (value.ServiceController == null)
+					throw new ArgumentNullException("ServiceController");
 
 				config = value;
 			}
 		}
 
+		internal static void SetOperationTypes(IList<Type> operationTypes, IList<Type> allOperationTypes)
+		{
+			ServiceOperations = new ServiceOperations(operationTypes);
+			AllServiceOperations = new ServiceOperations(allOperationTypes);
+		}
+
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
 			AssertConfig();
-			return Config.ServiceHost.ExecuteService(request, endpointAttributes);
+			return Config.ServiceController.Execute(request,
+				new RequestContext(request, endpointAttributes));
 		}
 
 		internal static string ExecuteXmlService(string xmlRequest, EndpointAttributes endpointAttributes)
 		{
 			AssertConfig();
-			return Config.ServiceHost.ExecuteXmlService(xmlRequest, endpointAttributes);
+			return (string)Config.ServiceController.ExecuteText(xmlRequest,
+				new RequestContext(xmlRequest, endpointAttributes));
 		}
 
 		private static void AssertConfig()

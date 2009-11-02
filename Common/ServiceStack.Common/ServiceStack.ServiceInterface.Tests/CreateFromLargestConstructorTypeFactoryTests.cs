@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.LogicFacade;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Tests
 {
@@ -135,7 +136,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			Assert.That(newInstance.RequestContext, Is.Not.Null);
 			Assert.That(newInstance.ApplicationContext, Is.Not.Null);
 
-			var resolvedRequest = newInstance.RequestContext.Dto as ClassWithIntConstructor;
+			var resolvedRequest = ((RequestContext)newInstance.RequestContext).Dto as ClassWithIntConstructor;
 			Assert.That(resolvedRequest, Is.Not.Null);
 			Assert.That(resolvedRequest.IntValue, Is.EqualTo(1));
 		}
@@ -184,7 +185,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			Assert.That(newInstance.ApplicationContext, Is.Not.Null);
 			Assert.That(newInstance.IntValue, Is.EqualTo(default(int)));
 
-			var resolvedRequest = newInstance.RequestContext.Dto as ClassWithIntConstructor;
+			var resolvedRequest = ((RequestContext)newInstance.RequestContext).Dto as ClassWithIntConstructor;
 			Assert.That(resolvedRequest, Is.Not.Null);
 			Assert.That(resolvedRequest.IntValue, Is.EqualTo(1));
 		}

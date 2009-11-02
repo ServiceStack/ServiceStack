@@ -1,6 +1,6 @@
 using System;
 using System.Web;
-using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface
 {

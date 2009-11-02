@@ -1,5 +1,5 @@
 using System;
-using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.CacheAccess.Providers
 {

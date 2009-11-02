@@ -1,8 +1,7 @@
 using System;
 using System.Net;
 using System.Web;
-using ServiceStack.Logging;
-using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {

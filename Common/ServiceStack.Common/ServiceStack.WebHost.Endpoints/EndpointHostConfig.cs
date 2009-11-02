@@ -2,22 +2,16 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Service;
 using ServiceStack.LogicFacade;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
 {
 	public class EndpointHostConfig
-		: HostConfig
-	{
-		public IServiceHost ServiceHost { get; set; }
-		public IServiceController ServiceController { get; set; }
-	}
-
-	public class HostConfig
 	{
 		private const string DefaultUsageExamplesBaseUri =
 	    		"http://code.google.com/p/servicestack/source/browse/trunk/doc/UsageExamples";
 
-		public HostConfig()
+		public EndpointHostConfig()
 		{
 			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
 			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig {
@@ -31,6 +25,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.EnablePortRestrictions = false;
 		}
 
+		public IServiceController ServiceController { get; set; }
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }

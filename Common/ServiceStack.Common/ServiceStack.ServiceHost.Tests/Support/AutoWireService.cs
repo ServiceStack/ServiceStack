@@ -3,10 +3,17 @@ using System.Runtime.Serialization;
 namespace ServiceStack.ServiceHost.Tests.Support
 {
 	[DataContract]
-	public class AutoWireServiceRequest { }
+	public class AutoWire { }
 
-	public class AutoWireService 
-		: IService<AutoWireServiceRequest>
+	[DataContract]
+	public class AutoWireResponse
+	{
+		public IFoo Foo { get; set; }
+		public IBar Bar { get; set; }
+	}
+
+	public class AutoWireService
+		: IService<AutoWire>
 	{
 		private readonly IFoo foo;
 
@@ -22,13 +29,17 @@ namespace ServiceStack.ServiceHost.Tests.Support
 			this.foo = foo;
 		}
 
-		public object Execute(AutoWireServiceRequest request)
+		public object Execute(AutoWire request)
 		{
-			return new AutoWireServiceRequest();
+			return new AutoWireResponse { Foo = foo, Bar = Bar };
 		}
 	}
 
 	public class Foo : IFoo
+	{
+	}
+
+	public class Foo2 : IFoo
 	{
 	}
 
@@ -37,6 +48,10 @@ namespace ServiceStack.ServiceHost.Tests.Support
 	}
 
 	public class Bar : IBar
+	{
+	}
+
+	public class Bar2 : IBar
 	{
 	}
 

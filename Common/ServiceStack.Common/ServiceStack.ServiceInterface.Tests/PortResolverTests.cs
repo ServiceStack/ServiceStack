@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Tests.Support.Handlers.Version100;
 using ServiceStack.ServiceInterface.Tests.Support.Version100.Operations;
 
@@ -50,7 +51,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			Assert.That(handler, Is.Not.Null);
 			Assert.That(handler.RequestContext, Is.Not.Null);
 
-			var requestDto = handler.RequestContext.Dto as GetCustomer;
+			var requestDto = ((RequestContext)handler.RequestContext).Dto as GetCustomer;
 			Assert.That(requestDto, Is.Not.Null);
 			Assert.That(requestDto.CustomerId, Is.EqualTo(1));
 		}

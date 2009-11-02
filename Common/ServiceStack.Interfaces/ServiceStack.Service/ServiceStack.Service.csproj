@@ -40,12 +40,15 @@
     <Compile Include="IServiceClient.cs" />
     <Compile Include="IOneWayClient.cs" />
     <Compile Include="IReplyClient.cs" />
-    <Compile Include="IServiceHost.cs" />
-    <Compile Include="EndpointAttributes.cs" />
     <Compile Include="IStreamWriter.cs" />
     <Compile Include="PortAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestAttributes.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
+      <Project>{61DD8BC4-8B71-4D16-9F8C-94933B2B36CB}</Project>
+      <Name>ServiceStack.ServiceHost</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -2,12 +2,12 @@ using System;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
-using ServiceStack.LogicFacade;
-using ServiceStack.Service;
+using ServiceStack.ServiceInterface;
 
-namespace ServiceStack.ServiceInterface
+namespace ServiceStack.ServiceHost
 {
-	public class RequestContext : IRequestContext
+	public class RequestContext 
+		: IRequestContext
 	{
 		public RequestContext(object dto)
 			: this(dto, null)
@@ -90,25 +90,6 @@ namespace ServiceStack.ServiceInterface
 			{
 				return HttpContext.Current.Request.UserHostAddress;
 			}
-
-			var context = System.ServiceModel.OperationContext.Current;
-			return context == null ? null : GetIpAddress(context);
-		}
-
-		public static string GetIpAddress(System.ServiceModel.OperationContext context)
-		{
-#if MONO
-			var prop = context.IncomingMessageProperties;
-			if (context.IncomingMessageProperties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
-			{
-				var endpoint = prop[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name]
-					as System.ServiceModel.Channels.RemoteEndpointMessageProperty;
-				if (endpoint != null)
-				{					
-					return endpoint.Address;					
-				}
-			}
-#endif			
 			return null;
 		}
 

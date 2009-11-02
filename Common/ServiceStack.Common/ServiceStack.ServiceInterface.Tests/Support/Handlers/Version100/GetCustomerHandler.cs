@@ -1,5 +1,6 @@
 ﻿using ServiceStack.LogicFacade;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Tests.Support.Version100.Operations;
 
 namespace ServiceStack.ServiceInterface.Tests.Support.Handlers.Version100
