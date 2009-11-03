@@ -67,7 +67,7 @@ namespace ServiceStack.ServiceHost.Tests
 			var serviceController = serviceManager.ServiceController;
 
 			var request = new RequiresContext();
-			var response = serviceController.Execute(request, new RequestContext(request))
+			var response = serviceController.Execute(request, new HttpRequestContext(request))
 				as RequiresContextResponse;
 
 			Assert.That(response, Is.Not.Null);

@@ -60,6 +60,7 @@
     <Compile Include="BasicApplicationContext.cs" />
     <Compile Include="BasicOperationContext.cs" />
     <Compile Include="FactoryProviderHandlerFactory.cs" />
+    <Compile Include="IService.cs" />
     <Compile Include="PortResolver.cs" />
     <Compile Include="Session\IUserSessionManager.cs" />
     <Compile Include="CreateFromLargestConstructorTypeFactory.cs" />
@@ -72,7 +73,6 @@
     <Compile Include="Session\UserSessionManager.cs" />
     <Compile Include="XmlMessageInspector.cs" />
     <Compile Include="FactoryProvider.cs" />
-    <Compile Include="IService.cs" />
     <Compile Include="IServiceResolver.cs" />
     <Compile Include="IXElementService.cs" />
     <Compile Include="IXmlService.cs" />

@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public class Foo : IFoo { }
 
 		public class TestAppHost
-			: EndpointHostBase
+			: AppHostBase
 		{
 			public TestAppHost(string serviceName, params Assembly[] assemblies)
 				: base(serviceName, assemblies)
@@ -62,8 +62,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Assert.That(response, Is.Not.Null);
 			Assert.That(response.Foo, Is.Not.Null);
+		}
 
-			TestAppHost.Instance.Dispose();
+		public abstract class TestServiceBase<TRequest>
+			: IService<TRequest>
+		{
+			protected abstract object Run(TRequest request);
+			
+			public object Execute(TRequest request)
+			{
+				return Run(request);
+			}
+		}
+
+		[DataContract]
+		public class Nested { }
+		[DataContract]
+		public class NestedResponse { }
+
+		public class NestedService
+			: TestServiceBase<Nested>
+		{
+			protected override object Run(Nested request)
+			{
+				return new NestedResponse();
+			}
+		}
+
+		[Test]
+		public void Can_run_nested_service()
+		{
+			var host = new TestAppHost("Example Service", typeof(Nested).Assembly);
+			host.Init();
+
+			var request = new Nested();
+			var response = host.ExecuteService(request) as NestedResponse;
+
+			Assert.That(response, Is.Not.Null);
 		}
 	}
 }

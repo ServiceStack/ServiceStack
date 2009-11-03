@@ -56,7 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EndpointHostBase.cs" />
+    <Compile Include="AppHostBase.cs" />
     <Compile Include="EndpointType.cs" />
     <Compile Include="Extensions\IHttpResponseExtensions.cs" />
     <Compile Include="Extensions\HttpListenerResponseWrapper.cs" />

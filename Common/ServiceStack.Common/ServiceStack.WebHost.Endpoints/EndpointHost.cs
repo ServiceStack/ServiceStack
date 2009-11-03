@@ -40,14 +40,14 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			AssertConfig();
 			return Config.ServiceController.Execute(request,
-				new RequestContext(request, endpointAttributes));
+				new HttpRequestContext(request, endpointAttributes));
 		}
 
 		internal static string ExecuteXmlService(string xmlRequest, EndpointAttributes endpointAttributes)
 		{
 			AssertConfig();
 			return (string)Config.ServiceController.ExecuteText(xmlRequest,
-				new RequestContext(xmlRequest, endpointAttributes));
+				new HttpRequestContext(xmlRequest, endpointAttributes));
 		}
 
 		private static void AssertConfig()

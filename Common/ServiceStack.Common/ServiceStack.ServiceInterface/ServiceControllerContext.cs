@@ -56,8 +56,8 @@ namespace ServiceStack.ServiceInterface
 
 		private static IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
 		{
-			return new BasicOperationContext<IApplicationContext, RequestContext>(
-				ApplicationContext.Instance, new RequestContext(requestDto, endpointAttributes));
+			return new BasicOperationContext<IApplicationContext, HttpRequestContext>(
+				ApplicationContext.Instance, new HttpRequestContext(requestDto, endpointAttributes));
 		}
 
 		public object Execute(object request, IRequestContext requestContext)
@@ -70,7 +70,7 @@ namespace ServiceStack.ServiceInterface
 
 		public object Execute(IOperationContext context)
 		{
-			var requestContext = (RequestContext) context.Request;
+			var requestContext = (HttpRequestContext) context.Request;
 			var serviceName = requestContext.Dto.GetType().Name;
 			var service = this.ServiceResolver.FindService(serviceName);
 			AssertServiceExists(service, serviceName);
@@ -97,7 +97,7 @@ namespace ServiceStack.ServiceInterface
 
 		public string ExecuteXml(IOperationContext context)
 		{
-			var requestContext = (RequestContext)context.Request;
+			var requestContext = (HttpRequestContext)context.Request;
 			var xmlRequest = (IXmlRequest)requestContext.Dto;
 
 			var xmlServiceRequest = this.MessageInspector(xmlRequest.Xml);

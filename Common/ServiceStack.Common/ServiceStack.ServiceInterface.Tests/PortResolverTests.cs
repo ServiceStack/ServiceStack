@@ -38,7 +38,7 @@ namespace ServiceStack.ServiceInterface.Tests
 		[Test]
 		public void PortResolver_can_inject_dependencies_in_handlers_contructor()
 		{
-			var requestContext = new RequestContext(new GetCustomer { CustomerId = 1 }, null);
+			var requestContext = new HttpRequestContext(new GetCustomer { CustomerId = 1 }, null);
 
 			var factory = new FactoryProvider(requestContext);			
 
@@ -51,7 +51,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			Assert.That(handler, Is.Not.Null);
 			Assert.That(handler.RequestContext, Is.Not.Null);
 
-			var requestDto = ((RequestContext)handler.RequestContext).Dto as GetCustomer;
+			var requestDto = ((HttpRequestContext)handler.RequestContext).Dto as GetCustomer;
 			Assert.That(requestDto, Is.Not.Null);
 			Assert.That(requestDto.CustomerId, Is.EqualTo(1));
 		}

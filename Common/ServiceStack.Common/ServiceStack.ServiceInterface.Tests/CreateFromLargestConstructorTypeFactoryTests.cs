@@ -123,7 +123,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			var request = new ClassWithIntConstructor(1);
 			
 			var factory = new FactoryProvider();
-			factory.Register(new RequestContext(request, null));
+			factory.Register(new HttpRequestContext(request, null));
 			factory.Register(new BasicApplicationContext(null, null, null));
 
 			var typeFactory = CreateWithFactory(factory);
@@ -136,7 +136,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			Assert.That(newInstance.RequestContext, Is.Not.Null);
 			Assert.That(newInstance.ApplicationContext, Is.Not.Null);
 
-			var resolvedRequest = ((RequestContext)newInstance.RequestContext).Dto as ClassWithIntConstructor;
+			var resolvedRequest = ((HttpRequestContext)newInstance.RequestContext).Dto as ClassWithIntConstructor;
 			Assert.That(resolvedRequest, Is.Not.Null);
 			Assert.That(resolvedRequest.IntValue, Is.EqualTo(1));
 		}
@@ -171,7 +171,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			var request = new ClassWithIntConstructor(1);
 
 			var factory = new FactoryProvider();
-			factory.Register(new RequestContext(request, null));
+			factory.Register(new HttpRequestContext(request, null));
 			factory.Register(new BasicApplicationContext(null, null, null));
 
 			var typeFactory = CreateWithFactory(factory);
@@ -185,7 +185,7 @@ namespace ServiceStack.ServiceInterface.Tests
 			Assert.That(newInstance.ApplicationContext, Is.Not.Null);
 			Assert.That(newInstance.IntValue, Is.EqualTo(default(int)));
 
-			var resolvedRequest = ((RequestContext)newInstance.RequestContext).Dto as ClassWithIntConstructor;
+			var resolvedRequest = ((HttpRequestContext)newInstance.RequestContext).Dto as ClassWithIntConstructor;
 			Assert.That(resolvedRequest, Is.Not.Null);
 			Assert.That(resolvedRequest.IntValue, Is.EqualTo(1));
 		}

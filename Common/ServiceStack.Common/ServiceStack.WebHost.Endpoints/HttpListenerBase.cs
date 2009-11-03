@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// </summary>
 	public abstract class HttpListenerBase : IDisposable
 	{
-		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
+		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 
 		private const int RequestThreadAbortedException = 995;
 
@@ -244,21 +244,21 @@ namespace ServiceStack.WebHost.Endpoints
 		[Obsolete("Use IService<> instead")]
 		protected virtual IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
 		{
-			return new BasicOperationContext<IApplicationContext, RequestContext>(
+			return new BasicOperationContext<IApplicationContext, HttpRequestContext>(
 				ApplicationContext.Instance, 
-				new RequestContext(requestDto, endpointAttributes));
+				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 		
 		public virtual object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
 			return EndpointHost.Config.ServiceController.Execute(request,
-				new RequestContext(request, endpointAttributes));
+				new HttpRequestContext(request, endpointAttributes));
 		}
 
 		public virtual string ExecuteXmlService(string xmlRequest, EndpointAttributes endpointAttributes)
 		{
 			return (string)EndpointHost.Config.ServiceController.ExecuteText(xmlRequest,
-				new RequestContext(xmlRequest, endpointAttributes));
+				new HttpRequestContext(xmlRequest, endpointAttributes));
 		}
 
 		public virtual void Dispose()

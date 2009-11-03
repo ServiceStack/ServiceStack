@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using Enyim.Caching;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
@@ -90,6 +91,16 @@ namespace ServiceStack.CacheAccess.Memcached
 			return Execute(() => client.Get(key));
 		}
 
+		public string GetText(string key)
+		{
+			return Execute(() => Encoding.UTF8.GetString((byte[])client.Get(key)));
+		}
+
+		public byte[] GetBytes(string key)
+		{
+			return Execute(() => (byte[])client.Get(key));
+		}
+
 		public T Get<T>(string key)
 		{
 			return Execute(() => client.Get<T>(key));
@@ -119,6 +130,41 @@ namespace ServiceStack.CacheAccess.Memcached
 		public long Decrement(string key, uint amount)
 		{
 			return Execute(() => client.Decrement(key, amount));
+		}
+
+		public bool Set(string key, byte[] value)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Set, key, value));
+		}
+
+		public bool Add(string key, string value)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Add, key, Encoding.UTF8.GetBytes(value)));
+		}
+
+		public bool Set(string key, string value)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Set, key, Encoding.UTF8.GetBytes(value)));
+		}
+
+		public bool Replace(string key, string value)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Replace, key, Encoding.UTF8.GetBytes(value)));
+		}
+
+		public bool Add(string key, string value, DateTime expiresAt)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Add, key, Encoding.UTF8.GetBytes(value), expiresAt));
+		}
+
+		public bool Set(string key, string value, DateTime expiresAt)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Set, key, Encoding.UTF8.GetBytes(value), expiresAt));
+		}
+
+		public bool Replace(string key, string value, DateTime expiresAt)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Replace, key, Encoding.UTF8.GetBytes(value), expiresAt));
 		}
 
 		public bool Add(string key, object value)

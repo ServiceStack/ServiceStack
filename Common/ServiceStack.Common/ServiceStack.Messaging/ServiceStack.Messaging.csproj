@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</ProjectGuid>
+    <ProjectGuid>{BC383081-6CF7-4A78-8384-AE7279A9A063}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.ServiceHost</RootNamespace>
-    <AssemblyName>ServiceStack.ServiceHost</AssemblyName>
+    <RootNamespace>ServiceStack.Messaging</RootNamespace>
+    <AssemblyName>ServiceStack.Messaging</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,10 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
@@ -43,7 +39,6 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -54,25 +49,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExpressionFunqlet.cs" />
-    <Compile Include="FunqletBase.cs" />
-    <Compile Include="RequestAttributes.cs" />
-    <Compile Include="HttpRequestContext.cs" />
-    <Compile Include="ServiceController.cs" />
-    <Compile Include="ServiceControllerReflection.cs" />
-    <Compile Include="ServiceManager.cs" />
-    <Compile Include="IServiceResolver.cs" />
+    <Compile Include="Class1.cs" />
+    <Compile Include="Client\AmqpServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Support\RetryCounter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Funq\Funq.csproj">
-      <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
-      <Name>Funq</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
+    <Folder Include="Server\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

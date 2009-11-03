@@ -49,8 +49,10 @@ namespace ServiceStack.ServiceHost
 			foreach (var serviceType in assembly.GetTypes())
 			foreach (var service in serviceType.GetInterfaces())
 			{
-				if (!service.IsGenericType
-					|| service.GetGenericTypeDefinition() != typeof(IService<>)) continue;
+				if (serviceType.IsAbstract
+					|| !service.IsGenericType
+					|| service.GetGenericTypeDefinition() != typeof(IService<>)
+					) continue;
 
 				var requestType = service.GetGenericArguments()[0];
 
@@ -69,7 +71,7 @@ namespace ServiceStack.ServiceHost
 					this.OperationTypes.Add(responseType);
 				}
 
-				Log.DebugFormat("Registering {0} service with '{1}' request '{2}'",
+				Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
 					(responseType != null ? "SyncReply" : "OneWay"), 
 					serviceType.Name, requestType.Name);
 			}

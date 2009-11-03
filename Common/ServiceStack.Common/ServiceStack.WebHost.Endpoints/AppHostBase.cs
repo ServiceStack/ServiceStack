@@ -9,22 +9,22 @@ using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-	public abstract class EndpointHostBase
+	public abstract class AppHostBase
 		: IFunqlet, IDisposable
 	{
-		private readonly ILog log = LogManager.GetLogger(typeof(EndpointHostBase));
+		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 		private readonly DateTime startTime;
 		private readonly ServiceManager serviceManager;
 
-		public static EndpointHostBase Instance { get; protected set; }
+		public static AppHostBase Instance { get; protected set; }
 
-		protected EndpointHostBase()
+		protected AppHostBase()
 		{
 			this.startTime = DateTime.Now;
 			log.Info("Begin Initializing Application...");
 		}
 
-		protected EndpointHostBase(string serviceName, params Assembly[] assembliesWithServices)
+		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
 			this.serviceManager = new ServiceManager(assembliesWithServices);
@@ -35,11 +35,27 @@ namespace ServiceStack.WebHost.Endpoints
 			});
 		}
 
+		protected IServiceController ServiceController
+		{
+			get
+			{
+				return this.serviceManager != null ? this.serviceManager.ServiceController : null;
+			}
+		}
+
+		public Container Container
+		{
+			get
+			{
+				return this.serviceManager != null ? this.serviceManager.Container : null;
+			}
+		}
+
 		public void Init()
 		{
 			if (Instance != null)
 			{
-				throw new InvalidDataException("EndpointHostBase.Instance has already been set");
+				throw new InvalidDataException("AppHostBase.Instance has already been set");
 			}
 
 			Instance = this;
@@ -79,9 +95,9 @@ namespace ServiceStack.WebHost.Endpoints
 		[Obsolete("Use IService<> instead")]
 		protected virtual IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
 		{
-			return new BasicOperationContext<IApplicationContext, RequestContext>(
+			return new BasicOperationContext<IApplicationContext, HttpRequestContext>(
 				ApplicationContext.Instance,
-				new RequestContext(requestDto, endpointAttributes));
+				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 
 		public virtual object ExecuteService(object requestDto)
@@ -92,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public object ExecuteService(object requestDto, EndpointAttributes endpointAttributes)
 		{
 			return EndpointHost.Config.ServiceController.Execute(requestDto,
-				new RequestContext(requestDto, endpointAttributes));
+				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 
 		public virtual string ExecuteXmlService(string xml)
@@ -103,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public string ExecuteXmlService(string xml, EndpointAttributes endpointAttributes)
 		{
 			return (string)EndpointHost.Config.ServiceController.ExecuteText(xml,
-				new RequestContext(xml, endpointAttributes));
+				new HttpRequestContext(xml, endpointAttributes));
 		}
 
 		public virtual void Dispose()

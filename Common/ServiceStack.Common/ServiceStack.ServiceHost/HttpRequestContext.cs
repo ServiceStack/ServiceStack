@@ -6,25 +6,25 @@ using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.ServiceHost
 {
-	public class RequestContext 
+	public class HttpRequestContext 
 		: IRequestContext
 	{
-		public RequestContext(object dto)
+		public HttpRequestContext(object dto)
 			: this(dto, null)
 		{
 		}
 
-		public RequestContext(object dto, EndpointAttributes endpointAttributes)
+		public HttpRequestContext(object dto, EndpointAttributes endpointAttributes)
 			: this(dto, endpointAttributes, null)
 		{
 		}
 
-		public RequestContext(object requestDto, IFactoryProvider factory)
+		public HttpRequestContext(object requestDto, IFactoryProvider factory)
 			: this(requestDto, EndpointAttributes.None, factory)
 		{
 		}
 
-		public RequestContext(object dto, EndpointAttributes endpointAttributes, IFactoryProvider factory)
+		public HttpRequestContext(object dto, EndpointAttributes endpointAttributes, IFactoryProvider factory)
 		{
 			this.Dto = dto;
 			this.EndpointAttributes = endpointAttributes;
@@ -93,7 +93,7 @@ namespace ServiceStack.ServiceHost
 			return null;
 		}
 
-		~RequestContext()
+		~HttpRequestContext()
 		{
 			if (this.AutoDispose)
 			{

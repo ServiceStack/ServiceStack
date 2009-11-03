@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Funq;
 
-namespace ServiceStack.ServiceHost.Tests.TypeFactory
+namespace ServiceStack.ServiceHost.Tests.Examples
 {
 	/// <summary>
 	/// Funq helper for easy registration.
