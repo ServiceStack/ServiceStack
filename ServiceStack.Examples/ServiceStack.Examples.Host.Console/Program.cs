@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-using ServiceStack.Examples.ServiceInterface;
 
 namespace ServiceStack.Examples.Host.Console
 {
@@ -7,7 +6,7 @@ namespace ServiceStack.Examples.Host.Console
 	{
 		static void Main(string[] args)
 		{
-			var appHost = new AppHost("ServiceStack Examples", typeof(GetFactorialService).Assembly);
+			var appHost = new AppHost();
 			appHost.Init();
 
 			Thread.Sleep(Timeout.Infinite);

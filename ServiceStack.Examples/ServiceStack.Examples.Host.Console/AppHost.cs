@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Reflection;
 using Funq;
-using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
-using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
@@ -12,9 +8,6 @@ using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.LogicFacade;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Examples.Host.Console
@@ -26,8 +19,8 @@ namespace ServiceStack.Examples.Host.Console
 	{
 		private static ILog log;
 
-		public AppHost(string serviceName, params Assembly[] assembliesWithServices)
-			: base(serviceName, assembliesWithServices)
+		public AppHost()
+			: base("ServiceStack Examples", typeof(GetFactorialService).Assembly)
 		{
 			LogManager.LogFactory = new DebugLogFactory();
 			log = LogManager.GetLogger(typeof(AppHost));

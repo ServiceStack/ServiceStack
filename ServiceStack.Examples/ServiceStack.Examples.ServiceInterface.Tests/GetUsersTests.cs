@@ -12,7 +12,7 @@ using ServiceStack.Examples.ServiceInterface.Types;
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
 	[TestFixture]
-	public class GetUsersTests : TestBase
+	public class GetUsersTests : TestHostBase
 	{
 		[Test]
 		public void GetUsers_Test()

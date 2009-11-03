@@ -1,15 +1,40 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Funq;
+using ServiceStack.Configuration;
 
 namespace ServiceStack.ServiceHost.Tests.TypeFactory
 {
-	public class ReflectiveFunqlet
-		: FunqletBase
+	/// <summary>
+	/// Reflection example provided for performance comparisons
+	/// </summary>
+	public class ReflectionTypeFunqContainer
+		: ITypeFactory
 	{
-		public ReflectiveFunqlet(IEnumerable<Type> serviceTypes) : base(serviceTypes) {}
+		protected Container container;
+		public ReuseScope Scope { get; set; }
 
-		public ReflectiveFunqlet(params Type[] serviceTypes) : base(serviceTypes) {}
+		public ReflectionTypeFunqContainer(Container container)
+		{
+			this.container = container;
+			this.Scope = ReuseScope.None;
+		}
+
+		protected static MethodInfo GetResolveMethod(Type typeWithResolveMethod, Type serviceType)
+		{
+			var methodInfo = typeWithResolveMethod.GetMethod("Resolve", new Type[0]);
+			return methodInfo.MakeGenericMethod(new[] { serviceType });
+		}
+
+		public static ConstructorInfo GetConstructorWithMostParams(Type type)
+		{
+			return type.GetConstructors()
+				.OrderByDescending(x => x.GetParameters().Length)
+				.Where(ctor => !ctor.IsStatic)
+				.First();
+		}
 
 		public Func<TService> AutoWire<TService>(Func<Type, object> resolveFn)
 		{
@@ -50,15 +75,20 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 		public void Register<T>()
 		{
 			//Everything from here needs to be optimized
-			Func<Container, T> registerFn = delegate(Container container) {
-				Func<T> serviceFactoryFn = AutoWire<T>(Resolve(container));
+			Func<Container, T> registerFn = delegate(Container c) {
+				Func<T> serviceFactoryFn = AutoWire<T>(Resolve(c));
 				return serviceFactoryFn();
 			};
 
-			this.Container.Register(registerFn).ReusedWithin(this.Scope);
+			this.container.Register(registerFn).ReusedWithin(this.Scope);
 		}
 
-		protected override void Run()
+		public void Register(params Type[] serviceTypes)
+		{
+			RegisterTypes(serviceTypes);
+		}
+
+		public void RegisterTypes(IEnumerable<Type> serviceTypes)
 		{
 			foreach (var serviceType in serviceTypes)
 			{
@@ -66,6 +96,12 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 				var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
 				registerMethodInfo.Invoke(this, new object[0]);
 			}
+		}
+
+		public object CreateInstance(Type type)
+		{
+			var factoryFn = Resolve(this.container);
+			return factoryFn(type);
 		}
 	}
 }

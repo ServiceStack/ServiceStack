@@ -13,7 +13,7 @@ namespace ServiceStack.Examples.Host.Web
 
 		protected void Application_Start(object sender, EventArgs e)
 		{
-			var appHost = new AppHost("ServiceStack Examples", typeof(GetFactorialService).Assembly);
+			var appHost = new AppHost();
 			appHost.Init();
 		}
 
@@ -44,7 +44,6 @@ namespace ServiceStack.Examples.Host.Web
 
 		protected void Application_End(object sender, EventArgs e)
 		{
-
 		}
 	}
 }

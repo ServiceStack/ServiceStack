@@ -7,7 +7,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 {
 	[TestFixture]
 	public class GetFibonacciNumbersTests 
-		: TestBase
+		: TestHostBase
 	{
 		[Test]
 		public void GetFibonacciNumbers_Test()

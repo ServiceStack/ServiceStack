@@ -8,14 +8,35 @@ using ServiceStack.Configuration;
 
 namespace ServiceStack.ServiceHost
 {
-	public class ExpressionFunqlet
-		: FunqletBase, ITypeFactory
+	public class ExpressionTypeFunqContainer
+		: ITypeFactory
 	{
+		protected Container container;
+
+		public ReuseScope Scope { get; set; }
+
 		private readonly Dictionary<Type, Func<object>> resolveFnMap = new Dictionary<Type, Func<object>>();
 
-		public ExpressionFunqlet(IEnumerable<Type> serviceTypes) : base(serviceTypes) { }
+		public ExpressionTypeFunqContainer(Container container)
+		{
+			this.container = container;
+			this.Scope = ReuseScope.None;
+		}
 
-		public ExpressionFunqlet(params Type[] serviceTypes) : base(serviceTypes) { }
+		protected static MethodInfo GetResolveMethod(Type typeWithResolveMethod, Type serviceType)
+		{
+			var methodInfo = typeWithResolveMethod.GetMethod("Resolve", new Type[0]);
+			return methodInfo.MakeGenericMethod(new[] { serviceType });
+		}
+
+		public static ConstructorInfo GetConstructorWithMostParams(Type type)
+		{
+			return type.GetConstructors()
+				.OrderByDescending(x => x.GetParameters().Length)
+				.Where(ctor => !ctor.IsStatic)
+				.First();
+		}
+
 
 		public Func<Container, TService> AutoWire<TService>(ParameterExpression lambdaParam)
 		{
@@ -69,13 +90,18 @@ namespace ServiceStack.ServiceHost
 
 			var serviceFactory = AutoWire<T>(lambdaParam);
 
-			this.Container.Register(serviceFactory)
+			this.container.Register(serviceFactory)
 				.ReusedWithin(this.Scope);
 		}
 
-		protected override void Run()
+		public void Register(params Type[] serviceTypes)
 		{
-			foreach (var serviceType in ServiceTypes)
+			RegisterTypes(serviceTypes);
+		}
+
+		public void RegisterTypes(IEnumerable<Type> serviceTypes)
+		{
+			foreach (var serviceType in serviceTypes)
 			{
 				var methodInfo = GetType().GetMethod("Register", new Type[0]);
 				var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
@@ -87,7 +113,7 @@ namespace ServiceStack.ServiceHost
 
 		private void GenerateServiceFactory(Type type)
 		{
-			var containerInstance = Expression.Constant(this.Container);
+			var containerInstance = Expression.Constant(this.container);
 			var resolveInstance = Expression.Call(containerInstance, "Resolve", new[] { type }, new Expression[0]);
 			var resolveObject = Expression.Convert(resolveInstance, typeof(object));
 			var resolveFn = Expression.Lambda<Func<object>>(resolveObject, new ParameterExpression[0]).Compile();

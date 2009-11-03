@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ServiceAttribute.cs" />
     <Compile Include="EndpointAttributes.cs" />
     <Compile Include="IRequestContext.cs" />
     <Compile Include="IRequiresRequestContext.cs" />

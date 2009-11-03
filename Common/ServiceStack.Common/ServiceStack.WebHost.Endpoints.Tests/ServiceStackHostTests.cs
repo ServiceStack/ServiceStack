@@ -40,9 +40,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public class TestAppHost
 			: AppHostBase
 		{
-			public TestAppHost(string serviceName, params Assembly[] assemblies)
-				: base(serviceName, assemblies)
+			public TestAppHost()
+				: base("Example Service", typeof(Nested).Assembly)
 			{
+				Instance = null;
 			}
 
 			public override void Configure(Container container)
@@ -54,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_run_test_service()
 		{
-			var host = new TestAppHost("Example Service", typeof(TestService).Assembly);
+			var host = new TestAppHost();
 			host.Init();
 
 			var request = new Test();
@@ -92,7 +93,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_run_nested_service()
 		{
-			var host = new TestAppHost("Example Service", typeof(Nested).Assembly);
+			var host = new TestAppHost();
 			host.Init();
 
 			var request = new Nested();

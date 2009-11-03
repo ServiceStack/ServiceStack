@@ -73,8 +73,7 @@
     <Compile Include="StoreNewUserTests.cs" />
     <Compile Include="GetFibonacciNumbersTests.cs" />
     <Compile Include="GetFactorialTests.cs" />
-    <Compile Include="TestAppHost.cs" />
-    <Compile Include="TestBase.cs" />
+    <Compile Include="TestHostBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -67,13 +67,10 @@
     <Compile Include="Support\BasicService.cs" />
     <Compile Include="Support\AutoWireService.cs" />
     <Compile Include="Support\RequiresContextService.cs" />
-    <Compile Include="TypeFactory\ExpressionFunqlet.cs" />
-    <Compile Include="TypeFactory\ReflectiveFunqlet.cs" />
+    <Compile Include="TypeFactory\ReflectionTypeFunqContainer.cs" />
     <Compile Include="TypeFactory\FuncTypeFactory.cs" />
     <Compile Include="Examples\FunqEasyRegistrationHelper.cs" />
-    <Compile Include="TypeFactory\FunqFactoryResolver.cs" />
     <Compile Include="Examples\funq_easy_registration.cs" />
-    <Compile Include="TypeFactory\FunqletBase.cs" />
     <Compile Include="TypeFactory\HiroTypeFactory.cs" />
     <Compile Include="UseCase\CustomerUseCase.cs" />
     <Compile Include="Support\InMemoryDbConnection.cs" />

@@ -44,8 +44,8 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IFoo>(c => new Foo());
 			container.Register<IBar>(c => new Bar());
 
-			var funqlet = new ReflectiveFunqlet(typeof(AutoWireService));
-			funqlet.Configure(container);
+			var funqlet = new ReflectionTypeFunqContainer(container);
+			funqlet.Register(typeof(AutoWireService));
 
 			Console.WriteLine("With_Funq_and_Reflection(): {0}", Measure(() => container.Resolve<AutoWireService>(), Times));
 		}
@@ -57,8 +57,8 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IFoo>(c => new Foo());
 			container.Register<IBar>(c => new Bar());
 
-			var funqlet = new TypeFactory.ExpressionFunqlet(typeof(AutoWireService));
-			funqlet.Configure(container);
+			var funqlet = new ExpressionTypeFunqContainer(container);
+			funqlet.Register(typeof(AutoWireService));
 
 			Console.WriteLine("With_Funq_and_Expressions(): {0}", Measure(() => container.Resolve<AutoWireService>(), Times));
 		}

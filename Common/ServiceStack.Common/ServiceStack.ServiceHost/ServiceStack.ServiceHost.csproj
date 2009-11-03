@@ -54,14 +54,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExpressionFunqlet.cs" />
+    <Compile Include="ExpressionTypeFunqContainer.cs" />
     <Compile Include="FunqletBase.cs" />
     <Compile Include="RequestAttributes.cs" />
     <Compile Include="HttpRequestContext.cs" />
     <Compile Include="ServiceController.cs" />
     <Compile Include="ServiceControllerReflection.cs" />
     <Compile Include="ServiceManager.cs" />
-    <Compile Include="IServiceResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

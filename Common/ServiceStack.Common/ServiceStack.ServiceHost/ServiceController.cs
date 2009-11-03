@@ -11,7 +11,7 @@ namespace ServiceStack.ServiceHost
 	public class ServiceController
 		: IServiceController
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (ServiceController));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceController));
 		private const string ResponseDtoSuffix = "Response";
 
 		public ServiceController()
@@ -46,42 +46,42 @@ namespace ServiceStack.ServiceHost
 		public void Register(ITypeFactory serviceFactoryFn, params Assembly[] assembliesWithServices)
 		{
 			foreach (var assembly in assembliesWithServices)
-			foreach (var serviceType in assembly.GetTypes())
-			foreach (var service in serviceType.GetInterfaces())
-			{
-				if (serviceType.IsAbstract
-					|| !service.IsGenericType
-					|| service.GetGenericTypeDefinition() != typeof(IService<>)
-					) continue;
+				foreach (var serviceType in assembly.GetTypes())
+					foreach (var service in serviceType.GetInterfaces())
+					{
+						if (serviceType.IsAbstract
+							|| !service.IsGenericType
+							|| service.GetGenericTypeDefinition() != typeof(IService<>)
+							) continue;
 
-				var requestType = service.GetGenericArguments()[0];
+						var requestType = service.GetGenericArguments()[0];
 
-				Register(requestType, serviceType, serviceFactoryFn);
+						Register(requestType, serviceType, serviceFactoryFn);
 
-				this.ServiceTypes.Add(serviceType);
+						this.ServiceTypes.Add(serviceType);
 
-				this.AllOperationTypes.Add(requestType);
-				this.OperationTypes.Add(requestType);
+						this.AllOperationTypes.Add(requestType);
+						this.OperationTypes.Add(requestType);
 
-				var responseTypeName = requestType.FullName + ResponseDtoSuffix;
-				var responseType = AssemblyUtils.FindType(responseTypeName);
-				if (responseType != null)
-				{
-					this.AllOperationTypes.Add(responseType);
-					this.OperationTypes.Add(responseType);
-				}
+						var responseTypeName = requestType.FullName + ResponseDtoSuffix;
+						var responseType = AssemblyUtils.FindType(responseTypeName);
+						if (responseType != null)
+						{
+							this.AllOperationTypes.Add(responseType);
+							this.OperationTypes.Add(responseType);
+						}
 
-				Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
-					(responseType != null ? "SyncReply" : "OneWay"), 
-					serviceType.Name, requestType.Name);
-			}
+						Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
+							(responseType != null ? "SyncReply" : "OneWay"),
+							serviceType.Name, requestType.Name);
+					}
 		}
 
-		internal class GenericTypeFactory : ITypeFactory
+		internal class TypeFactoryWrapper : ITypeFactory
 		{
 			private readonly Func<Type, object> typeCreator;
 
-			public GenericTypeFactory(Func<Type, object> typeCreator)
+			public TypeFactoryWrapper(Func<Type, object> typeCreator)
 			{
 				this.typeCreator = typeCreator;
 			}
@@ -92,11 +92,6 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public void Register(Type requestType, Type serviceType, Func<Type, object> handlerFactoryFn)
-		{
-			Register(requestType, serviceType, new GenericTypeFactory(handlerFactoryFn));
-		}
-
 		public void Register(Type requestType, Type serviceType)
 		{
 			var handlerFactoryFn = Expression.Lambda<Func<Type, object>>
@@ -105,7 +100,12 @@ namespace ServiceStack.ServiceHost
 					Expression.Parameter(typeof(Type), "serviceType")
 				).Compile();
 
-			Register(requestType, serviceType, new GenericTypeFactory(handlerFactoryFn));
+			Register(requestType, serviceType, new TypeFactoryWrapper(handlerFactoryFn));
+		}
+
+		public void Register(Type requestType, Type serviceType, Func<Type, object> handlerFactoryFn)
+		{
+			Register(requestType, serviceType, new TypeFactoryWrapper(handlerFactoryFn));
 		}
 
 		public void Register(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)

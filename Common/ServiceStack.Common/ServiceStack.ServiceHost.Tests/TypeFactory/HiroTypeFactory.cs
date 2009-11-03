@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Hiro.Containers;
 using ServiceStack.Configuration;
 

@@ -72,7 +72,7 @@
   <ItemGroup>
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
-    <Content Include="Web.config" />
+    <None Include="Web.config.iis7" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHost.cs" />
@@ -95,7 +95,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Mono.Web.config" />
+    <None Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

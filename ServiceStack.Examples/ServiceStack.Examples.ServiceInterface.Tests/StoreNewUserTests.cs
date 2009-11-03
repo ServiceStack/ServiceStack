@@ -10,7 +10,7 @@ using ServiceStack.Examples.ServiceInterface.Types;
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
 	[TestFixture]
-	public class StoreNewUserTests : TestBase
+	public class StoreNewUserTests : TestHostBase
 	{
 		readonly StoreNewUser request = new StoreNewUser {
 			UserName = "Test",

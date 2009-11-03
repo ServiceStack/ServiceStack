@@ -7,7 +7,7 @@ using ServiceStack.Logging;
 namespace ServiceStack.ServiceHost
 {
 	public class ServiceManager
-		: IServiceResolver, IDisposable
+		: IDisposable
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (ServiceManager));
 
@@ -23,12 +23,13 @@ namespace ServiceStack.ServiceHost
 
 		public void Init()
 		{
-			var typeFactory = new ExpressionFunqlet(this.ServiceController.ServiceTypes);
+			this.Container = new Container();
+
+			var typeFactory = new ExpressionTypeFunqContainer(this.Container);
 
 			this.ServiceController.Register(typeFactory, assembliesWithServices);
 
-			this.Container = new Container();
-			typeFactory.Configure(this.Container);
+			typeFactory.RegisterTypes(this.ServiceController.ServiceTypes);
 		}
 
 		public void Dispose()

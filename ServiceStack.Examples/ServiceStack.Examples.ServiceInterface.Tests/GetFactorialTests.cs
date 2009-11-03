@@ -9,7 +9,7 @@ using ServiceStack.Examples.ServiceInterface.Types;
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
 	[TestFixture]
-	public class GetFactorialTests : TestBase
+	public class GetFactorialTests : TestHostBase
 	{
 		[Test]
 		public void GetFactorial_Test()

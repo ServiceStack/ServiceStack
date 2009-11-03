@@ -46,8 +46,8 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IFoo>(c => new Foo());
 			container.Register<IBar>(c => new Bar());
 
-			var funqlet = new ReflectiveFunqlet(serviceType);
-			funqlet.Configure(container);
+			var typeContainer = new ReflectionTypeFunqContainer(container);
+			typeContainer.Register(serviceType);
 
 			var service = container.Resolve<AutoWireService>();
 
@@ -64,8 +64,8 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IFoo>(c => new Foo());
 			container.Register<IBar>(c => new Bar());
 
-			var funqlet = new ExpressionFunqlet(serviceType);
-			funqlet.Configure(container);
+			var typeContainer = new ExpressionTypeFunqContainer(container);
+			typeContainer.Register(serviceType);
 
 			var service = container.Resolve<AutoWireService>();
 

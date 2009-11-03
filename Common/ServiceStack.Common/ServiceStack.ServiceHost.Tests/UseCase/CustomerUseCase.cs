@@ -22,7 +22,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 	[TestFixture]
 	public class CustomerUseCase
 	{
-		private const int Times = 1000000;
+		private const int Times = 100000;
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 			OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
 		}
 
-		public const bool UseCache = true;
+		public const bool UseCache = false;
 
 		[Test]
 		public void Perf_All_IOC()
@@ -196,12 +196,10 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		{
 			var container = GetContainerWithDependencies();
 
-			var funqlet = new TypeFactory.ExpressionFunqlet(
-				typeof(StoreCustomersService), typeof(GetCustomerService));
+			var typeFactory = new ExpressionTypeFunqContainer(container);
+			typeFactory.Register(typeof(StoreCustomersService), typeof(GetCustomerService));
 
-			funqlet.Configure(container);
-
-			return funqlet;
+			return typeFactory;
 		}
 
 		private static Container GetContainerWithDependencies()
