@@ -65,10 +65,10 @@ namespace ServiceStack.Examples.Host.Console
 					UserName = "new UserName"
 				};
 
-				var storeHandler = new StoreNewUserHandler(db4OManager);
+				var storeHandler = new StoreNewUserService(db4OManager);
 				storeHandler.Execute(storeRequest);
 
-				var getAllHandler = new GetAllUsersHandler(db4OManager);
+				var getAllHandler = new GetAllUsersService { ProviderManager = db4OManager };
 				var response = (GetAllUsersResponse)getAllHandler.Execute(new GetAllUsers());
 
 				var user = response.Users[0];

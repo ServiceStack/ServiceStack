@@ -1,8 +1,6 @@
 using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
-using ServiceStack.LogicFacade;
-using ServiceStack.Service;
-using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
@@ -11,15 +9,15 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// 
 	/// The 'Port' attribute is used to link the 'service request' to the 'service implementation'
 	/// </summary>
-	[Port(typeof(DeleteAllUsers))]
-	public class DeleteAllUsersHandler : IService
+	public class DeleteAllUsersService 
+		: IService<DeleteAllUsers>
 	{
-		public object Execute(IOperationContext context)
-		{
-			var request = context.Request.Get<DeleteAllUsers>();
+		public IPersistenceProviderManager ProviderManager { get; set; }
 
+		public object Execute(DeleteAllUsers request)
+		{
 			//Get the persistence provider registered in the AppHost
-			var persistenceProvider = context.Application.Factory.Resolve<IPersistenceProviderManager>().GetProvider();
+			var persistenceProvider = ProviderManager.GetProvider();
 
 			var deleteUsers = persistenceProvider.GetAll<User>();
 

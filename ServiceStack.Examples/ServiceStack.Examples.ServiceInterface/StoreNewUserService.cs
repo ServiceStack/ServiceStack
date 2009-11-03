@@ -15,12 +15,12 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// Note: This example is kept simple on purpose. In practice you would never persist your Data Transfer Objects
 	/// (i.e. DataContract's) directly. Instead you should be using other persisted domain models (aka ORM) for this purpose. 
 	/// </summary>
-	public class StoreNewUserHandler : IService<StoreNewUser>
+	public class StoreNewUserService : IService<StoreNewUser>
 	{
 		private readonly IPersistenceProviderManager providerFactory;
 
 		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
-		public StoreNewUserHandler(IPersistenceProviderManager providerFactory)
+		public StoreNewUserService(IPersistenceProviderManager providerFactory)
 		{
 			this.providerFactory = providerFactory;
 		}

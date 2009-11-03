@@ -7,7 +7,7 @@ namespace ServiceStack.Examples.Host.Console
 	{
 		static void Main(string[] args)
 		{
-			var appHost = new AppHost("ServiceStack Examples", typeof(GetFactorialHandler).Assembly);
+			var appHost = new AppHost("ServiceStack Examples", typeof(GetFactorialService).Assembly);
 			appHost.Init();
 
 			Thread.Sleep(Timeout.Infinite);

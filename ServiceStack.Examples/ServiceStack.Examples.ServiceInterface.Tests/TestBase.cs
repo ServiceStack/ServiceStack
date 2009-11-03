@@ -13,7 +13,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 		{
 			TestAppHost.Reset();
 
-			var appHost = new TestAppHost("TestAppHost", typeof (GetFactorialHandler).Assembly);
+			var appHost = new TestAppHost("TestAppHost", typeof (GetFactorialService).Assembly);
 			appHost.Init();
 		}
 

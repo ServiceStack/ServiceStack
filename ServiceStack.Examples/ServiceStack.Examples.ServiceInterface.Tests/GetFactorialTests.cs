@@ -16,7 +16,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 		{
 			var request = new GetFactorial { ForNumber = 4 };
 
-			var handler = new GetFactorialHandler();
+			var handler = new GetFactorialService();
 			
 			var response = (GetFactorialResponse)handler.Execute(request);
 

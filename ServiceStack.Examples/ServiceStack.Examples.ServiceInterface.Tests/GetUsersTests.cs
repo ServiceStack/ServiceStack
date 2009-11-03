@@ -32,7 +32,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 
 			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
 
-			var handler = new GetUsersHandler(providerManagerObject);
+			var handler = new GetUsersService { ProviderManager = providerManagerObject };
 
 			var response = (GetUsersResponse)handler.Execute(request);
 

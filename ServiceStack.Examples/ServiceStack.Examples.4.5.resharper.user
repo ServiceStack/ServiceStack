@@ -12,20 +12,13 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Soap12WsdlProgram.cs" caret="613" fromTop="22" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="456" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersHandler.cs" caret="0" fromTop="0" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1473" fromTop="29" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="541" fromTop="12" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersHandler.cs" caret="83" fromTop="1" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Global.asax.cs" caret="483" fromTop="11" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="358" fromTop="13" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="414" fromTop="14" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:StoreNewUserProgram.cs" caret="600" fromTop="21" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="486" fromTop="20" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1138" fromTop="20" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1800" fromTop="27" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:TestProgramBase.cs" caret="111" fromTop="6" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="404" fromTop="16" />
@@ -35,45 +28,52 @@
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="0" fromTop="0" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="0" fromTop="0" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Mono.Web.config" caret="2159" fromTop="15" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1959" fromTop="22" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="194" fromTop="5" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="697" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="992" fromTop="19" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1793" fromTop="26" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18266" fromTop="218" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="972" fromTop="27" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of GetFactorial.cs" caret="98" fromTop="4" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="440" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersHandler.cs" caret="463" fromTop="14" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="546" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersHandler.cs" caret="306" fromTop="10" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="735" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="240" fromTop="5" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="1525" fromTop="32" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetFactorialHandler.cs" caret="623" fromTop="22" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1072" fromTop="17" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="594" fromTop="19" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2542" fromTop="28" />
     </RecentFiles>
     <RecentEdits>
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1655" fromTop="38" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="0" fromTop="0" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestBase.cs" caret="79" fromTop="3" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="935" fromTop="32" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestBase.cs" caret="261" fromTop="14" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestAppHost.cs" caret="726" fromTop="25" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2181" fromTop="17" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Mono.Web.config" caret="2181" fromTop="17" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="61" fromTop="3" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="135" fromTop="5" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="7906" fromTop="29" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="509" fromTop="10" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="1567" fromTop="30" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="11176" fromTop="35" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="7672" fromTop="13" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10126" fromTop="12" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10469" fromTop="15" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10657" fromTop="20" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10993" fromTop="23" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10767" fromTop="16" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="826" fromTop="11" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="13788" fromTop="15" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14369" fromTop="22" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14742" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="512" fromTop="12" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17452" fromTop="10" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17906" fromTop="24" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18015" fromTop="28" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18148" fromTop="33" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18266" fromTop="5" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of GetFactorial.cs" caret="584" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of GetFactorial.cs" caret="574" fromTop="20" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of GetFactorial.cs" caret="466" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of GetFactorial.cs" caret="362" fromTop="10" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of GetFactorial.cs" caret="98" fromTop="4" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="386" fromTop="18" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialHandler.cs" caret="200" fromTop="6" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetFactorialHandler.cs" caret="423" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GetFactorialHandler.cs" caret="157" fromTop="6" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersHandler.cs" caret="513" fromTop="5" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserHandler.cs" caret="818" fromTop="10" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersHandler.cs" caret="534" fromTop="14" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersHandler.cs" caret="83" fromTop="1" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersHandler.cs" caret="685" fromTop="18" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersHandler.cs" caret="517" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersHandler.cs" caret="403" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersHandler.cs" caret="428" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="815" fromTop="19" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersHandler.cs" caret="735" fromTop="16" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:GetUsersProgram.cs" caret="418" fromTop="12" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1152" fromTop="18" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2286" fromTop="18" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -91,7 +91,7 @@
       <Item value="IApplicationContext" priority="0" />
       <Item value="IRequestContext" priority="1" />
       <Item value="Namespace" priority="2" />
-      <Item value="public" priority="19" />
+      <Item value="public" priority="20" />
       <Item value="GetFactorials" priority="2" />
       <Item value="DataMember" priority="2" />
       <Item value="type" priority="0" />
@@ -101,7 +101,7 @@
       <Item value="new" priority="56" />
       <Item value="GetFactorialsResponse" priority="0" />
       <Item value="Result" priority="0" />
-      <Item value="request" priority="18" />
+      <Item value="request" priority="19" />
       <Item value="base" priority="1" />
       <Item value="ApplicationContext" priority="4" />
       <Item value="BasicOperationContext" priority="0" />
@@ -137,7 +137,7 @@
       <Item value="ResponseStatus" priority="3" />
       <Item value="DataContract" priority="1" />
       <Item value="this" priority="5" />
-      <Item value="string" priority="13" />
+      <Item value="string" priority="15" />
       <Item value="persistenceProvider" priority="7" />
       <Item value="IQueryablePersistenceProvider" priority="1" />
       <Item value="delegate" priority="2" />
@@ -273,6 +273,7 @@
       <Item value="container" priority="2" />
       <Item value="GetType" priority="0" />
       <Item value="Container" priority="0" />
+      <Item value="ProviderManager" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.ConfigurationResourceManager">
       <Item value="GetString" priority="0" />
@@ -549,6 +550,9 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetFibonacciNumbersHandler">
       <Item value="config" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.Greet">
+      <Item value="Name" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

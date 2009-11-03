@@ -10,7 +10,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests.MonoTests
 		{
 			using (var db4OManager = new Db4OFileProviderManager("test.db4o"))
 			{
-				var handler = new GetUsersHandler(db4OManager);
+				var handler = new GetUsersService { ProviderManager = db4OManager };
 
 				var response = (GetUsersResponse)handler.Execute(
 					new GetUsers {

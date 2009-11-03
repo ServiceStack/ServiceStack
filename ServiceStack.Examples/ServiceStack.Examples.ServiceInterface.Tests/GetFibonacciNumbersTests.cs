@@ -14,7 +14,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 		{
 			var request = new GetFibonacciNumbers { Take = 5 };
 
-			var handler = new GetFibonacciNumbersHandler(Container.Resolve<IResourceManager>());
+			var handler = new GetFibonacciNumbersService(Container.Resolve<IResourceManager>());
 
 			var response = (GetFibonacciNumbersResponse)
 				handler.Execute(request);

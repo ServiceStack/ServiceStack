@@ -4,12 +4,10 @@ using ServiceStack.ServiceHost;
 namespace ServiceStack.Examples.ServiceInterface
 {
 	/// <summary>
-	/// The service handler that will be used to execute the request.
-	/// 
 	/// The purpose of this example is to show the minimum number and detail of classes 
 	/// required in order to implement a simple service.
 	/// </summary>
-	public class GetFactorialHandler
+	public class GetFactorialService
 		: IService<GetFactorial>
 	{
 		public object Execute(GetFactorial request)

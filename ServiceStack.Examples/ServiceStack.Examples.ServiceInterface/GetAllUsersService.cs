@@ -4,20 +4,14 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
-	public class GetAllUsersHandler
+	public class GetAllUsersService
 		: IService<GetAllUsers>
 	{
-		private readonly IPersistenceProviderManager providerFactory;
-
-		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
-		public GetAllUsersHandler(IPersistenceProviderManager providerFactory)
-		{
-			this.providerFactory = providerFactory;
-		}
+		public IPersistenceProviderManager ProviderManager { get; set; }
 
 		public object Execute(GetAllUsers request)
 		{
-			var persistenceProvider = providerFactory.GetProvider();
+			var persistenceProvider = ProviderManager.GetProvider();
 
 			var users = persistenceProvider.GetAll<User>();
 

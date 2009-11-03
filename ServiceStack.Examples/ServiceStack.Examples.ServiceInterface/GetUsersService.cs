@@ -11,19 +11,14 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// This example shows a simple introduction into SOA-like webservices. 
 	/// i.e. group similar operations into a single 'document-centric like' service request.
 	/// </summary>
-	public class GetUsersHandler : IService<GetUsers>
+	public class GetUsersService 
+		: IService<GetUsers>
 	{
-		private readonly IPersistenceProviderManager providerFactory;
-
-		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
-		public GetUsersHandler(IPersistenceProviderManager providerFactory)
-		{
-			this.providerFactory = providerFactory;
-		}
+		public IPersistenceProviderManager ProviderManager { get; set; }
 
 		public object Execute(GetUsers request)
 		{
-			var persistenceProvider = (IQueryablePersistenceProvider)providerFactory.GetProvider();
+			var persistenceProvider = (IQueryablePersistenceProvider)ProviderManager.GetProvider();
 
 			var users = new List<User>();
 

@@ -11,11 +11,12 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// This purpose of this example is how you would implement a slightly more advanced
 	/// web service returning a slightly more 'complex object'.
 	/// </summary>
-	public class GetFibonacciNumbersHandler : IService<GetFibonacciNumbers>
+	public class GetFibonacciNumbersService 
+		: IService<GetFibonacciNumbers>
 	{
 		private readonly IResourceManager config;
 
-		public GetFibonacciNumbersHandler(IResourceManager config)
+		public GetFibonacciNumbersService(IResourceManager config)
 		{
 			this.config = config;
 		}

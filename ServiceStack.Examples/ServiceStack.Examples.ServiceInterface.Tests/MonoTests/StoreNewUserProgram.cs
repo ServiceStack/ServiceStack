@@ -12,7 +12,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests.MonoTests
 		{
 			using (var db4OManager = new Db4OFileProviderManager("test.db4o"))
 			{
-				var handler = new StoreNewUserHandler(db4OManager);
+				var handler = new StoreNewUserService(db4OManager);
 
 				handler.Execute(new StoreNewUser {
 					Email = "email",
