@@ -58,7 +58,7 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IBar>(c => new Bar());
 
 			var funqlet = new ExpressionTypeFunqContainer(container);
-			funqlet.Register(typeof(AutoWireService));
+			funqlet.RegisterTypes(typeof(AutoWireService));
 
 			Console.WriteLine("With_Funq_and_Expressions(): {0}", Measure(() => container.Resolve<AutoWireService>(), Times));
 		}

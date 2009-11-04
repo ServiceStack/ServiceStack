@@ -65,7 +65,7 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IBar>(c => new Bar());
 
 			var typeContainer = new ExpressionTypeFunqContainer(container);
-			typeContainer.Register(serviceType);
+			typeContainer.RegisterTypes(serviceType);
 
 			var service = container.Resolve<AutoWireService>();
 

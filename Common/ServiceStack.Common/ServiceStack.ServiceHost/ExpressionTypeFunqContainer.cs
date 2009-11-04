@@ -94,9 +94,9 @@ namespace ServiceStack.ServiceHost
 				.ReusedWithin(this.Scope);
 		}
 
-		public void Register(params Type[] serviceTypes)
+		public void RegisterTypes(params Type[] serviceTypes)
 		{
-			RegisterTypes(serviceTypes);
+			RegisterTypes((IEnumerable<Type>) serviceTypes);
 		}
 
 		public void RegisterTypes(IEnumerable<Type> serviceTypes)
