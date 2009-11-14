@@ -42,8 +42,8 @@ namespace RemoteInfoClient {
 	}
 	
 	// Base type probably should be MonoTouch.UIKit.UIViewController or subclass
-	[MonoTouch.Foundation.Register("ViewTextFileController")]
-	public partial class ViewTextFileController {
+	[MonoTouch.Foundation.Register("ViewFileController")]
+	public partial class ViewFileController {
 		
 		[MonoTouch.Foundation.Connect("textView")]
 		private MonoTouch.UIKit.UITextView textView {
