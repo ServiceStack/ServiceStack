@@ -3,21 +3,27 @@
   <MonoDevelop.Ide.DebuggingService>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService>
-  <MonoDevelop.Ide.Workbench ActiveDocument="RemoteInfo.ServiceModel/Operations/GetDirectoryInfo.cs" ctype="Workbench">
+  <MonoDevelop.Ide.Workbench ActiveDocument="../Client/RemoteInfoClient/RemoteFilesTableViewController.cs" ctype="Workbench">
     <Files>
-      <File FileName="RemoteInfo.ServiceModel/Operations/GetDirectoryInfo.cs" Line="11" Column="2" />
+      <File FileName="RemoteInfo.ServiceModel/Operations/GetDirectoryInfo.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.Host.Web/AppHost.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.Host.Console/AppHost.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.Host.Web/Global.asax.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.Host.Console/Program.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.ServiceInterface/GetDirectoryInfoHandler.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.Tests.ConsoleClient/Program.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.Host.Console/App.config" Line="1" Column="1" />
+      <File FileName="RemoteInfo.ServiceModel/Operations/GetTextFile.cs" Line="1" Column="1" />
+      <File FileName="RemoteInfo.ServiceInterface/GetTextFileHandler.cs" Line="27" Column="19" />
+      <File FileName="../Client/RemoteInfoClient/ViewFileController.cs" Line="1" Column="1" />
+      <File FileName="../Client/RemoteInfoClient/RemoteFilesTableViewController.cs" Line="125" Column="5" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True" selected="True">
-          <Node name="RemoteInfo.Host.Console" expanded="True" />
-          <Node name="RemoteInfo.Host.Web" expanded="True" />
-          <Node name="RemoteInfo.ServiceInterface" expanded="True" />
-          <Node name="RemoteInfo.ServiceModel" expanded="True">
-            <Node name="Operations" expanded="True" />
-            <Node name="Types" expanded="True" />
+          <Node name="Clients" expanded="True">
+            <Node name="RemoteInfoClient" expanded="True" />
           </Node>
-          <Node name="RemoteInfo.Tests.ConsoleClient" expanded="True" />
         </State>
       </Pad>
       <Pad Id="ClassPad">

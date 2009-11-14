@@ -53,6 +53,7 @@
     <Compile Include="GetDirectoryInfoHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteInfoConfig.cs" />
+    <Compile Include="GetTextFileHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RemoteInfo.ServiceModel\RemoteInfo.ServiceModel.csproj">

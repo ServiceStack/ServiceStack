@@ -12,15 +12,15 @@ namespace RemoteInfo.Host.Web
 	/// <summary>
 	/// Web Services with http://www.servicestack.net/
 	/// 
-	/// An example of a AppHost to have your services running inside a webserver.
+	/// Configuring ServiceStack to run inside a webserver.
 	/// </summary>
 	public class AppHost 
-		: EndpointHostBase
+		: AppHostBase
 	{
 		private static ILog log;
 
-		public AppHost(string serviceName, params Assembly[] assembliesWithServices) 
-			: base(serviceName, assembliesWithServices)
+		public AppHost() 
+			: base("MonoTouch RemoteInfo", typeof(GetDirectoryInfoHandler).Assembly)
 		{
 			LogManager.LogFactory = new DebugLogFactory();
 			log = LogManager.GetLogger(GetType());

@@ -18,16 +18,14 @@ namespace RemoteInfo.ServiceInterface
 	public class GetDirectoryInfoHandler
 		: IService<GetDirectoryInfo>
 	{
-		private readonly RemoteInfoConfig config;
+		
+		public RemoteInfoConfig Config { get; set; }
 
-		public GetDirectoryInfoHandler(RemoteInfoConfig config)
-		{
-			this.config = config;
-		}
-
+		
 		public object Execute(GetDirectoryInfo request)
 		{
-			var showDirPath = Path.Combine(this.config.RootDirectory, GetSafePath(request.ForPath ?? string.Empty));
+			var showDirPath = Path.Combine(this.Config.RootDirectory, 
+			                               GetSafePath(request.ForPath ?? string.Empty));
 
 			var response = new GetDirectoryInfoResponse();
 
@@ -35,7 +33,7 @@ namespace RemoteInfo.ServiceInterface
 			{
 				var dirInfo = new DirectoryInfo(dirPath);
 
-				if (this.config.ExcludeDirectories.Contains(dirInfo.Name)) continue;
+				if (this.Config.ExcludeDirectories.Contains(dirInfo.Name)) continue;
 
 				response.Directories.Add(new DirectoryResult {
 					Name = dirInfo.Name,
@@ -51,7 +49,7 @@ namespace RemoteInfo.ServiceInterface
 					Name = fileInfo.Name,
 					Extension = fileInfo.Extension,
 					FileSizeBytes = fileInfo.Length,
-					IsTextFile = config.TextFileExtensions.Contains(fileInfo.Extension),
+					IsTextFile = Config.TextFileExtensions.Contains(fileInfo.Extension),
 				});
 			}
 

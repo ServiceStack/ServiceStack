@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using RemoteInfo.ServiceInterface;
 
 namespace RemoteInfo.Host.Web
@@ -8,7 +8,7 @@ namespace RemoteInfo.Host.Web
 
 		protected void Application_Start(object sender, EventArgs e)
 		{
-			var appHost = new AppHost("MonoTouch RemoteInfo", typeof(GetDirectoryInfoHandler).Assembly);
+			var appHost = new AppHost();
 			appHost.Init();
 		}
 

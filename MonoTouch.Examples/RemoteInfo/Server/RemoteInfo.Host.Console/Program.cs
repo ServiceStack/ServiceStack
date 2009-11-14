@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using RemoteInfo.ServiceInterface;
 
 namespace RemoteInfo.Host.Console
@@ -7,7 +7,7 @@ namespace RemoteInfo.Host.Console
 	{
 		static void Main(string[] args)
 		{
-			var appHost = new AppHost("MonoTouch RemoteInfo", typeof(GetDirectoryInfoHandler).Assembly);
+			var appHost = new AppHost();
 			appHost.Init();
 
 			Thread.Sleep(Timeout.Infinite);
