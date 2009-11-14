@@ -65,34 +65,32 @@
 	<img src="../img/ws-handler.png" class="left-wtext" />
 	<p>
 		So there a couple of things going here. The first is to tell ServiceStack which Web Service we are implementing.
-		This is done with the specifying the type of Request DTO in the <b class="attr">Port</b> Attribute.
-	</p>
-	<p>
-		The next step is to tell ServiceStack what type of Web Service implementation this is by inheriting from the service 
-		implementation interface of your choice. Nearly all times this will be <b class="interface">IService</b> as you'll
-		want to deal with strongly-typed DTO's. If you prefer to deal with the XML Stream directly than you can inherit from
-		IXmlService instead.
+		This is done by specifying the type of Request DTO in the <b class="cs">IService&lt;&gt;</b> interface.
 	</p>
 	<p>
 		The constructor for your handler should either be empty or containing members of providers you've registered in your 
-		<b class="cs">AppHost.cs</b> file.
+		<b class="cs">AppHost.cs</b> file. Public properties are also auto-wired to receive configured dependencies as well.
 	</p>
 	<p>
-		The <b class="interface">IService</b> has one method which is <code>object Execute(IOperationContext)</code>
-		The IOperationContext that gets passed in is also defined in the <b class="cs">AppHost.cs</b> and will contain
-		the Request DTO and ApplicationContext singleton at a minimum. You can retrieve anything from the RequestContext
-		including the Request DTO for this call using the method <code>context.Request.Get&lt;T&gt;();</code>
-	</p>
-	<p>
-		The last thing on the TODO list is to return the an instance of the Web Services Response DTO, which in this case is
+		The <b class="interface">IService</b> has one method which is <code>object Execute(TRequest)</code>
+		Quite simply ServiceStack calls your service passing in the request as a strongly-typed RequestDto.
+		To complete the request you just need to return the Web Services Response DTO, which in this case is
 		an instance of <b class="cs">GetDirectoryInfoResponse</b>.
 	</p>
 	
 	<p class="clear">
 		That's all there is to it! If you start XSP again you can now call this Web Service via REST using the following url:
 		<ul>
-			<li>(XML): http://localhost:8080/Public/Xml/SyncReply/GetDirectoryInfo</li>
-			<li>(JSON): http://localhost:8080/Public/Json/SyncReply/GetDirectoryInfo</li>
+			<li>(XML): 
+				<a href="http://localhost:8080/Public/Xml/SyncReply/GetDirectoryInfo">
+					http://localhost:8080/Public/Xml/SyncReply/GetDirectoryInfo
+				</a>
+			</li>
+			<li>(JSON): 
+				<a href="http://localhost:8080/Public/Json/SyncReply/GetDirectoryInfo">
+					http://localhost:8080/Public/Json/SyncReply/GetDirectoryInfo
+				</a>
+			</li>
 		</ul>
 	</p>
 	<p>
@@ -136,10 +134,10 @@
 
 	<div class="page-nav">
 		<div class="previous">
-			<a href="default.htm">Step 1 - Getting Started</a>
+			<a href="default.htm">&lt; Step 1 - Getting Started</a>
 		</div>
 		<div class="next">
-			<a href="step3.htm">Step 3 - Calling the Web Service from MonoTouch</a>
+			<a href="step3.htm">Step 3 - Calling the Web Service from MonoTouch &gt;</a>
 		</div>
 	</div>
 	

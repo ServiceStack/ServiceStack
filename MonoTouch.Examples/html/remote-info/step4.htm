@@ -43,7 +43,8 @@
 	</p>
 	
 	<p class="clear">
-		That's actually all there is to it, it is now discoverable on the Web Services splash page:
+		That's actually all there is to creating a new Web Service, just by adding the 2 files above it's now 
+		discoverable on the Web Services splash page:
 	</p>
 
 	<img src="../img/ws-splash2.png" />
@@ -66,23 +67,30 @@
 	
 	<p>
 		We'll now need to create a new View Controller to view this information. Do this by 
+
 		<ol>
 			<li>
-				Double clicking on <b class="xib">MainWindow.xib</b> to load Interface Builder.<br />
+				Create a new 'View Interface Definition with Controller' called <b class="cs">ViewTextFileController</b> 
+				<br />
+				<img src="../img/ViewTextFileController-new.png" alt="create new controller" />
 			</li>
 			<li>
-				Drag a <b>ViewController</b> into the <b class="xib">MainWindow.xib</b> folder to create a new instance of a View Controller.
+				Double-click <b class="xib">ViewTextFileController.xib</b> to load Interface Builder.<br />
 			</li>
 			<li>
-				Drag a <b>View</b> into body of the ViewController and a <b>TextView</b> to put on top of the view. 
-			</li>
-			<li>
-				Now in the <b>Inspector</b>, add the text <b>ViewTextFileController</b> in the class field of the new View Controller.
+				Drag a <b>UITextView</b> on to the <b>View</b> to add it
+				<br />
+				<img src="../img/ib-UITextView.png" alt="Add UITextView" />
 			</li>
 		</ol>
 		<br />
 		
-		If you got this far you should have a new View Controller that looks like this:
+		<p>
+			Now in the <b>Inspector</b>, check to make sure you have the text <b>ViewTextFileController</b> in the 
+			class field of the new View Controller.
+			<br />
+			If you got this far you should have a new View Controller that looks like this:
+		</p>
 	</p>
 	
 	<img src="../img/ib-viewtextfilecontroller.png" />
@@ -130,12 +138,41 @@
 		Once we receive the response we load a new instance of the <b>ViewTextFileController</b> with the name and contents of the Text file.
 	</p>
 	
+	<p>
+		Ok that's all we need to do, time for another test run. Hit <b>Debug</b> and navigate to a Text file that's on the server 
+		to test it out.
+		With this we should now be able to see the source code of the <b>GetTextFileHandler.cs</b> Web Service we've just created: 
+	</p>
+
+	<img src="../img/s4-screenshot-01.png" class="left" />
+	<img src="../img/s4-screenshot-02.png" class="left" />
+	
+	<p class="clear">&nbsp;</p>
+	
+	<h4>Last words</h4>
+	<p>
+		Hopefully this tutorial will help get you started in accessing your own Web Services in MonoTouch. 
+		<br />
+		With just two C# source files to create a new Web Service and requiring only two lines of code to call it, 
+		calling <a href="http://www.servicestack.net">Service Stack Web Services</a> in <a href="http://www.monotouch.net">MonoTouch</a>
+		has never been easier! 
+	</p>
+	<p>		
+		The full source code is available at: <a href="http://servicestack.googlecode.com/files/RemoteInfo.zip">http://servicestack.googlecode.com/files/RemoteInfo.zip</a>.
+	</p>
+	<p>
+		If you run into any problems with <a href="http://www.servicestack.net">Service Stack</a> feel free to
+		drop me an email at <b>demis.bellot <em>at</em> gmail.com</b>.
+		<br />
+		For other useful resources, check out the <a href="http://forums.monotouch.net/">MonoTouch forums</a>
+		or post an email to the MonoTouch mailing list at: <b>monotouch <em>at</em> lists.ximian.com</b>
+	</p>
 
 	</div>
 
 	<div class="page-nav">
 		<div class="previous">
-			<a href="step2.htm">Step 3 - Calling the Web Service from MonoTouch</a>
+			<a href="step2.htm">&lt; Step 3 - Calling the Web Service from MonoTouch</a>
 		</div>
 	</div>
 	

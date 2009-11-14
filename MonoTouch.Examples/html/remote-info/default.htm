@@ -8,26 +8,31 @@
 </head>
 <body>
 	<a id="title-img" href="default.htm"><img src="../img/MonoTouch-ServiceStack.png" alt="MonoTouch ServiceStack"></a>
-	<h2>RemoteInfo Example Project :: Calling web services with MonoTouch</h2>
+	<h2>Calling Web Services from MonoTouch</h2>
 	
 	<h3 class="step">Step 1 - Getting Started</h3>
 
 	<div class="section">
 	<p>
-		RemoteInfo is an example project that exposes information about a server's details 
-		(e.g. directory / file structure) via XML and JSON Web Services.
-		It shows how to create Web Services with <a href="http://www.servicestack.net">Service Stack</a> 
-		and how to call them from .NET clients like a MonoTouch application.
+		In this tutorial I will show how easy it is to create Web Services with <a href="http://www.servicestack.net">Service Stack</a> 
+		and call them from a <a href="http://www.monotouch.net">MonoTouch</a> application.
 	</p>
 	<p>
-		All source code in this example is be available at:
+		You can download the full source code for this tutorial at:
+		<a href="http://servicestack.googlecode.com/files/RemoteInfo.zip">http://servicestack.googlecode.com/files/RemoteInfo.zip</a>.
+		<br />
+		Alternatively, you can browse all the source code online at:
 		<a href="http://code.google.com/p/servicestack/source/browse/#svn/trunk/MonoTouch.Examples/RemoteInfo">
-			http://code.google.com/p/servicestack/
-		</a>
+			http://code.google.com/p/servicestack/source/browse/#svn/trunk/MonoTouch.Examples/RemoteInfo
+		</a>		
 	</p>
 
 	<p>
-		For simplicity we'll start with an existing Mono Develop solution that is already configured to host Web Services using Service Stack. 
+		For simplicity we'll start with an existing Mono Develop solution which has already been configured 
+		to host Web Services using Service Stack. 
+		<br />
+		<b>RemoteInfo</b> is an example project that exposes information about a servers' 
+		file / directory structure via XML and JSON Web Services:		
 	</p>
 
 	<dl id="sln-info">
@@ -68,7 +73,7 @@
 		<dd>
 			<br />
 			The configuration for the host projects are ultimately the same except that one is configured to be run in a 
-			Console Application while the other allows it to hosted within a Web Server configured to run ASP.NET 
+			Console Application while the other allows it to be hosted within a Web Server configured to run ASP.NET 
 			applications which include: 
 			<ul>
 				<li>IIS 6.0/7.0</li>
@@ -84,20 +89,19 @@
 		</dd>
 	</dl>
 
-	<img src="../img/RemoteInfo-sln.png" style="float:left;">
+	<img src="../img/remote-info-sln.png" style="float:left;">
 	
 	<hr />
 	
 	<h4>Configuring ServiceStack - Modifying AppHost.cs</h4>
 	<p>
 		The configuration of a ServiceStack Web Service Host is held in the <b class="cs">AppHost.cs</b> class.
-		The contents of RemoteInfo's AppHost.cs is included below. Most ServiceStack AppHost.cs files are essentially
-		the same so you can happily Copy and Paste the file to use as a template in your own project.
-		<br />
-		In most cases the only parts you will need to change are:
+		The contents of RemoteInfo's AppHost.cs is included below. <br />
+		Configuring ServiceStack as seen in this example is pretty easy, generally the only things you need to do is:
 		<ul>
-			<li>(Line 48) - Where you can use ServiceStack's IOC to register your own providers to be injected into your handlers</li>
-			<li>(Line 63) - Tell ServiceStack which assemblies your web service handlers (i.e. implementation) can be found</li>
+			<li>(Line 23) - Tell ServiceStack which assemblies your web service handlers (i.e. implementation) can be found</li>
+			<li>(Line 29) - Use ServiceStack's built-in <a href="http://funq.codeplex.com/">Funq</a> IOC Container to register
+				dependencies you want injected into your services</li>
 		</ul>
 		<br />
 	</p> 
@@ -109,7 +113,8 @@
 <code>
 	protected void Application_Start(object sender, EventArgs e)
 	{
-		AppHost.Init();
+		var appHost = new AppHost();
+		appHost.Init();
 	}
 </code>
 		to your <b class="cs">Global.asax.cs</b>.
@@ -145,7 +150,7 @@
 	
 	<div class="page-nav">
 		<div class="next">
-			<a href="step2.htm">Step 2 - Calling the GetDirectoryInfo Web Service</a>
+			<a href="step2.htm">Step 2 - Calling the GetDirectoryInfo Web Service &gt;</a>
 		</div>
 	</div>
 	
