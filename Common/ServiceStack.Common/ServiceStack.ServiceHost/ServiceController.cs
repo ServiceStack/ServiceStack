@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.Serialization;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -30,6 +31,8 @@ namespace ServiceStack.ServiceHost
 
 		public HashSet<Type> ServiceTypes { get; protected set; }
 
+		public string DefaultOperationsNamespace { get; set; }
+
 		public void Register<TServiceRequest>(Func<IService<TServiceRequest>> invoker)
 		{
 			var requestType = typeof(TServiceRequest);
@@ -46,7 +49,9 @@ namespace ServiceStack.ServiceHost
 		public void Register(ITypeFactory serviceFactoryFn, params Assembly[] assembliesWithServices)
 		{
 			foreach (var assembly in assembliesWithServices)
+			{
 				foreach (var serviceType in assembly.GetTypes())
+				{
 					foreach (var service in serviceType.GetInterfaces())
 					{
 						if (serviceType.IsAbstract
@@ -75,6 +80,8 @@ namespace ServiceStack.ServiceHost
 							(responseType != null ? "SyncReply" : "OneWay"),
 							serviceType.Name, requestType.Name);
 					}
+				}
+			}
 		}
 
 		internal class TypeFactoryWrapper : ITypeFactory

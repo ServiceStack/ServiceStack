@@ -74,10 +74,10 @@ namespace ServiceStack.Common.Utils
 
 				if (Type == typeof(string[]))
 				{
-					ParseMethod = GetType().GetMethod(ParseStringArrayMethod, 
+					ParseMethod = GetType().GetMethod(ParseStringArrayMethod,
 						BindingFlags.Public | BindingFlags.Static, null,
 						new[] { typeof(string) }, null);
-					
+
 					return;
 				}
 
@@ -148,13 +148,15 @@ namespace ServiceStack.Common.Utils
 				if (this.GenericCollectionArgumentTypes != null)
 				{
 					var isDictionary = Type.FindInterfaces((t, critera) =>
-														   t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null).Length == 1;
+						t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null).Length == 1;
+
 					if (isDictionary)
 					{
 						return CreateDictionaryFromTextValue(value);
 					}
 					var isList = this.Type.FindInterfaces((t, critera) =>
-														  t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null).Length == 1;
+						t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null).Length == 1;
+					
 					if (isList)
 					{
 						return CreateListFromTextValue(value);
@@ -224,22 +226,41 @@ namespace ServiceStack.Common.Utils
 		public static bool CanCreateFromString(Type type)
 		{
 			//True if Enum or string
-			if (type.IsEnum || type == typeof(string))
+			if (type.IsEnum || type == typeof(string) || type.UnderlyingSystemType.IsValueType)
 			{
 				return true;
 			}
 
 			// Get the static Parse(string) method on the type supplied
-			var parseMethodInfo = type.GetMethod(ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
-												 new[] { typeof(string) }, null);
+			var parseMethodInfo = type.GetMethod(
+				ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
+				new[] { typeof(string) }, null);
+
 			if (parseMethodInfo != null)
 			{
 				return true;
 			}
 
 			var hasStringConstructor = GetTypeStringConstructor(type) != null;
+			if (hasStringConstructor) return true;
 
-			return !hasStringConstructor;
+			var isCollection = type.IsAssignableFrom(typeof(ICollection))
+				|| type.FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
+
+			if (isCollection)
+			{
+				var typeInterfaces = type.GetInterfaces().Select(x => x.IsGenericType ? x.GetGenericTypeDefinition() : x)
+					.ToDictionary(x => x);
+
+				var isGenericCollection = typeInterfaces.ContainsKey(typeof(ICollection<>));
+				if (isGenericCollection)
+				{
+					return IsGenericCollectionOfValueTypesOrStrings(type);
+				}
+
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -308,20 +329,9 @@ namespace ServiceStack.Common.Utils
 					.ToDictionary(x => x);
 
 				var isGenericCollection = typeInterfaces.ContainsKey(typeof(ICollection<>));
-
 				if (isGenericCollection)
 				{
-					var genericArguments = type.FindInterfaces((x, criteria) =>
-						x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>), null)
-						.SelectMany(x => x.GetGenericArguments()).ToList();
-
-					genericArguments.AddRange(
-						type.FindInterfaces((x, criteria) =>
-						x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>), null)
-						.SelectMany(x => x.GetGenericArguments())
-					);
-					bool isSupported = genericArguments.All(x => x == typeof(string) || x.IsValueType);
-					if (!isSupported)
+					if (!IsGenericCollectionOfValueTypesOrStrings(type))
 					{
 						throw new NotSupportedException(
 							"Generic collections that contain generic arguments that are not strings or valuetypes are not supported");
@@ -371,6 +381,23 @@ namespace ServiceStack.Common.Utils
 			}
 
 			return value.ToString();
+		}
+
+		private static bool IsGenericCollectionOfValueTypesOrStrings(Type type)
+		{
+			var genericArguments = type.FindInterfaces(
+					(x, criteria) => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)
+				, null)
+				.SelectMany(x => x.GetGenericArguments()).ToList();
+
+			genericArguments.AddRange(
+				type.FindInterfaces((x, criteria) =>
+						x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>), null)
+					.SelectMany(x => x.GetGenericArguments())
+				);
+
+			var isSupported = genericArguments.All(x => x == typeof(string) || x.IsValueType);
+			return isSupported;
 		}
 
 		private static string EnumerableToString(IEnumerable valueCollection)

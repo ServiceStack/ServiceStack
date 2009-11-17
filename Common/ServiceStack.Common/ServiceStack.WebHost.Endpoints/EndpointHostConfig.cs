@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Service;
@@ -31,5 +32,45 @@ namespace ServiceStack.WebHost.Endpoints
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
 		public bool EnablePortRestrictions { get; set; }
+
+		private string defaultOperationNamespace;
+		public string DefaultOperationNamespace
+		{
+			get
+			{
+				if (this.defaultOperationNamespace == null)
+				{
+					this.defaultOperationNamespace = GetDefaultNamespace();
+				}
+				return this.defaultOperationNamespace;
+			}
+			set
+			{
+				this.defaultOperationNamespace = value;
+			}
+		}
+
+		private string GetDefaultNamespace()
+		{
+			if (!string.IsNullOrEmpty(this.defaultOperationNamespace) 
+				|| this.ServiceController == null) return null;
+
+			foreach (var operationType in this.ServiceController.OperationTypes)
+			{
+				var attrs = operationType.GetCustomAttributes(
+					typeof(DataContractAttribute), false);
+
+				if (attrs.Length <= 0) continue;
+
+				var attr = (DataContractAttribute)attrs[0];
+
+				if (string.IsNullOrEmpty(attr.Namespace)) continue;
+
+				return attr.Namespace;
+			}
+
+			return null;
+		}
+
 	}
 }

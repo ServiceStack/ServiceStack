@@ -70,6 +70,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Funq", "Funq\Funq.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging", "ServiceStack.Messaging\ServiceStack.Messaging.csproj", "{BC383081-6CF7-4A78-8384-AE7279A9A063}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging.Tests", "ServiceStack.Messaging.Tests\ServiceStack.Messaging.Tests.csproj", "{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -184,6 +186,10 @@ Global
 		{BC383081-6CF7-4A78-8384-AE7279A9A063}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC383081-6CF7-4A78-8384-AE7279A9A063}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC383081-6CF7-4A78-8384-AE7279A9A063}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -38,6 +38,8 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_comma_delimited_string_to_List_String()
 		{
+			Assert.That(StringConverterUtils.CanCreateFromString(typeof(List<string>)), Is.True);
+
 			var stringValueList = string.Join(",", stringValues);
 
 			var convertedStringValues = StringConverterUtils.Parse<List<string>>(stringValueList);
@@ -61,6 +63,8 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_string_collection()
 		{
+			Assert.That(StringConverterUtils.CanCreateFromString(typeof(string[])), Is.True);
+
 			var stringValue = StringConverterUtils.ToString(stringValues);
 			var expectedString = string.Join(",", stringValues.ToArray());
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -87,6 +91,8 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_to_nullable_enum()
 		{
+			Assert.That(StringConverterUtils.CanCreateFromString(typeof(TestEnum?)), Is.True);
+
 			TestEnum? enumValue = TestEnum.EnumValue1;
 			var actualValue = StringConverterUtils.Parse<TestEnum?>(enumValue.ToString());
 			Assert.That(actualValue, Is.EqualTo(enumValue));
@@ -109,6 +115,17 @@ namespace ServiceStack.Common.Tests
 		}
 
 		[Test]
+		public void Can_convert_Guid()
+		{
+			Assert.That(StringConverterUtils.CanCreateFromString(typeof(Guid)), Is.True);
+
+			var guidValue = Guid.NewGuid();
+			var stringValue = StringConverterUtils.ToString(guidValue);
+			var expectedString = guidValue.ToString();
+			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
 		public void Can_convert_nullable_datetime()
 		{
 			DateTime? dateValue = new DateTime(1979, 5, 9);
@@ -120,6 +137,8 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_to_nullable_datetime()
 		{
+			Assert.That(StringConverterUtils.CanCreateFromString(typeof(DateTime?)), Is.True);
+
 			DateTime? dateValue = new DateTime(1979, 5, 9);
 			var actualValue = StringConverterUtils.Parse<DateTime?>(dateValue.ToString());
 			Assert.That(actualValue, Is.EqualTo(dateValue));

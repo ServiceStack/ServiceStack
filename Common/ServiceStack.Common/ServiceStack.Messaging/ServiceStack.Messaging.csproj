@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageQueueUri.cs" />
     <Compile Include="MessagingHostBase.cs" />
     <Compile Include="Client\AmqpServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

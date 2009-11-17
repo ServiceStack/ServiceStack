@@ -153,7 +153,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			string operationName, string errorMessage, Exception ex)
 		{
 			var sb = new StringBuilder();
-			sb.AppendFormat("<{0}Response>\n", operationName);
+			sb.AppendFormat("<{0}Response xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"{1}\">\n", 
+				operationName, EndpointHost.Config.DefaultOperationNamespace);
 			sb.AppendLine("<ResponseStatus>");
 			sb.AppendFormat("<ErrorCode>{0}</ErrorCode>\n", ex.GetType().Name);
 			sb.AppendFormat("<ErrorMessage>{0}</ErrorMessage>\n", ex.Message.EncodeXml());
