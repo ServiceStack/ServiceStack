@@ -145,7 +145,7 @@ namespace ServiceStack.OrmLite
 			       	: value.ToString();
 		}
 
-		public abstract IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options);
+		public abstract IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
 
 		public virtual string EscapeParam(object paramValue)
 		{

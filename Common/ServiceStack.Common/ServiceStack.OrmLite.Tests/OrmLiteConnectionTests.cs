@@ -11,9 +11,27 @@ namespace ServiceStack.OrmLite.Tests
 		: OrmLiteTestBase
 	{
 		[Test]
+		public void Can_create_connection()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+			}
+		}
+
+		[Test]
+		public void Can_create_ReadOnly_connection()
+		{
+			using (var db = ConnectionString.OpenReadOnlyDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+			}
+		}
+
+		[Test]
 		public void Can_create_table_with_ReadOnly_connection()
 		{
-			using (var db = "test.sqlite".OpenReadOnlyDbConnection())
+			using (var db = ConnectionString.OpenReadOnlyDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
 				try
@@ -33,7 +51,7 @@ namespace ServiceStack.OrmLite.Tests
 		[Test]
 		public void Can_open_two_ReadOnlyConnections_to_same_database()
 		{
-			var db = "test.sqlite".OpenDbConnection();
+			var db = ConnectionString.OpenDbConnection();
 			using (var dbCmd = db.CreateCommand())
 			{
 				dbCmd.CreateTable<ModelWithIdAndName>(true);

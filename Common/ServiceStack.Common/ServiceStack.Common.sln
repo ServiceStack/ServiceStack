@@ -72,6 +72,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging.Tests", "ServiceStack.Messaging.Tests\ServiceStack.Messaging.Tests.csproj", "{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServer", "ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj", "{1887DC99-9139-43E3-A7AA-6D74714B3A5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -190,6 +192,10 @@ Global
 		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

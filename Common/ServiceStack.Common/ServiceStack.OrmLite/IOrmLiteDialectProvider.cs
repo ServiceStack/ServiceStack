@@ -12,7 +12,7 @@ namespace ServiceStack.OrmLite
 
 		string GetQuotedValue(object value, Type type);
 
-		IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options);
+		IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
 
 		string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable);
 	}
