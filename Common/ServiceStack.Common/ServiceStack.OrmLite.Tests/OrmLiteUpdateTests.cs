@@ -16,7 +16,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbConn = db.CreateCommand())
 			{
-				dbConn.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbConn.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var row = ModelWithFieldsOfDifferentTypes.Create(1);
 

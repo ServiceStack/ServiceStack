@@ -217,6 +217,7 @@ namespace ServiceStack.OrmLite
 					Log.DebugFormat("Cannot drop non-existing table '{0}': {1}", tableType.Name, ex.Message);
 				}
 			}
+
 			try
 			{
 				dbCommand.CommandText = ToCreateTableStatement(tableType);
@@ -224,7 +225,16 @@ namespace ServiceStack.OrmLite
 			}
 			catch (Exception ex)
 			{
-				Log.DebugFormat("Ignoring existing table '{0}': {1}", tableType.Name, ex.Message);
+				//ignore Sqlite table already exists error
+				const string SqliteTableExistsError = "already exists";
+				const string SqlServerAlreadyExistsError = "There is already an object named";
+				if (ex.Message.Contains(SqliteTableExistsError) 
+					|| ex.Message.Contains(SqlServerAlreadyExistsError))
+				{
+					Log.DebugFormat("Ignoring existing table '{0}': {1}", tableType.Name, ex.Message);
+					return;
+				}
+				throw;
 			}
 		}
 
@@ -481,7 +491,7 @@ namespace ServiceStack.OrmLite
 
 				try
 				{
-					sbColumnNames.Append(fieldDef.Name);
+					sbColumnNames.Append(string.Format("\"{0}\"", fieldDef.Name));
 					sbColumnValues.Append(fieldDef.GetQuotedValue(objWithProperties));
 				}
 				catch (Exception ex)
@@ -521,6 +531,8 @@ namespace ServiceStack.OrmLite
 						if (sqlFilter.Length > 0) sqlFilter.Append(" AND ");
 
 						sqlFilter.AppendFormat("\"{0}\" = {1}", fieldDef.Name, fieldDef.GetQuotedValue(objWithProperties));
+						
+						continue;
 					}
 
 					if (sql.Length > 0) sql.Append(",");

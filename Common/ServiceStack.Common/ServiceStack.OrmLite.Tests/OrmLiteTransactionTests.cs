@@ -14,11 +14,12 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithIdAndName>(false);
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
 				using (var dbTrans = db.BeginTransaction())
 				{
+					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(new ModelWithIdAndName(3));
 
@@ -39,11 +40,12 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithIdAndName>(false);
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
 				using (var dbTrans = db.BeginTransaction())
 				{
+					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(new ModelWithIdAndName(3));
 
@@ -62,14 +64,15 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithIdAndName>(false);
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
-				dbCmd.CreateTable<ModelWithOnlyStringFields>(false);
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
+				dbCmd.CreateTable<ModelWithOnlyStringFields>(true);
 
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
 				using (var dbTrans = db.BeginTransaction())
 				{
+					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(3));
 					dbCmd.Insert(ModelWithOnlyStringFields.Create("id3"));
@@ -91,14 +94,15 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithIdAndName>(false);
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
-				dbCmd.CreateTable<ModelWithOnlyStringFields>(false);
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
+				dbCmd.CreateTable<ModelWithOnlyStringFields>(true);
 
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
 				using (var dbTrans = db.BeginTransaction())
 				{
+					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(3));
 					dbCmd.Insert(ModelWithOnlyStringFields.Create("id3"));

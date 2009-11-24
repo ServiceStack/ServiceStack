@@ -22,7 +22,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
 
@@ -42,7 +42,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
 
@@ -66,7 +66,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
 
@@ -90,7 +90,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
 

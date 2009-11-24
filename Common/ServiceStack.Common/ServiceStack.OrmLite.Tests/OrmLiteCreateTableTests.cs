@@ -76,7 +76,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithIdAndName>(false);
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
 
 				dbCmd.Insert(new ModelWithIdAndName(1));
 				dbCmd.Insert(new ModelWithIdAndName(2));

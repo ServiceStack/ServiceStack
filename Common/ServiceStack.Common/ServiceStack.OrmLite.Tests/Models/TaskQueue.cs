@@ -1,11 +1,15 @@
 using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Logging;
+using ServiceStack.OrmLite.Tests.Support;
 
 namespace ServiceStack.OrmLite.Tests.Models
 {
 	public class TaskQueue
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(TaskQueue));
+
 		public const string TaskLoad = "Load";
 		public const string TaskIndex = "Index";
 
@@ -53,7 +57,15 @@ namespace ServiceStack.OrmLite.Tests.Models
 			Assert.That(actual.UserId, Is.EqualTo(expected.UserId));
 			Assert.That(actual.ContentUrn, Is.EqualTo(expected.ContentUrn));
 			Assert.That(actual.Status, Is.EqualTo(expected.Status));
-			Assert.That(actual.CreatedDate, Is.EqualTo(expected.CreatedDate));
+			try
+			{
+				Assert.That(actual.CreatedDate, Is.EqualTo(expected.CreatedDate));
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
+				Assert.That(actual.CreatedDate.RoundToSecond(), Is.EqualTo(expected.CreatedDate.RoundToSecond()));
+			}
 			Assert.That(actual.Priority, Is.EqualTo(expected.Priority));
 			Assert.That(actual.NoOfAttempts, Is.EqualTo(expected.NoOfAttempts));
 			Assert.That(actual.ErrorMessage, Is.EqualTo(expected.ErrorMessage));

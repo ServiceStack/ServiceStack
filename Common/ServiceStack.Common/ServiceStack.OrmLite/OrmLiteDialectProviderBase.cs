@@ -59,7 +59,8 @@ namespace ServiceStack.OrmLite
 		 */
 		#endregion
 
-		public string StringColumnDefinition = "VARCHAR(8192)";
+		public string AutoIncrementDefinition = "AUTOINCREMENT"; //SqlServer express limit
+		public string StringColumnDefinition = "VARCHAR(8000)"; //SqlServer express limit
 		public string IntColumnDefinition = "INTEGER";
 		public string LongColumnDefinition = "BIGINT";
 		public string GuidColumnDefinition = "GUID";
@@ -179,7 +180,7 @@ namespace ServiceStack.OrmLite
 				sql.Append(" PRIMARY KEY");
 				if (autoIncrement)
 				{
-					sql.Append(" AUTOINCREMENT");
+					sql.Append(" ").Append(AutoIncrementDefinition);
 				}
 			}
 			else

@@ -11,9 +11,12 @@ namespace ServiceStack.OrmLite.SqlServer
 	{
 		public SqlServerOrmLiteDialectProvider()
 		{
-			base.DateTimeColumnDefinition = base.StringColumnDefinition;
+			base.AutoIncrementDefinition = "IDENTITY(1,1)";
+			base.StringColumnDefinition = "VARCHAR(8000)";
+			//base.DateTimeColumnDefinition = base.StringColumnDefinition;
 			base.BoolColumnDefinition = base.IntColumnDefinition;
 			base.GuidColumnDefinition = "UniqueIdentifier";
+			base.RealColumnDefinition = "FLOAT";
 
 			base.InitColumnTypeMap();
 		}
@@ -46,7 +49,7 @@ namespace ServiceStack.OrmLite.SqlServer
 					{
 						if (option.Value.ToLower() == "true")
 						{
-							connectionString += "Mode=Read Only;";
+							connectionString += "Mode = Read Only;";
 						}
 						continue;
 					}
@@ -77,12 +80,12 @@ namespace ServiceStack.OrmLite.SqlServer
 			if (type == typeof(Guid))
 			{
 				var guidValue = (Guid)value;
-				return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
+				return string.Format("CAST('{0}' AS UNIQUEIDENTIFIER)", guidValue);
 			}
 			if (type == typeof(DateTime))
 			{
 				var dateValue = (DateTime)value;
-				const string iso8601Format = "yyyy-MM-dd HH:mm:ss.fffffff";
+				const string iso8601Format = "yyyy-MM-dd HH:mm:ss.fff";
 				return base.GetQuotedValue(dateValue.ToString(iso8601Format), typeof(string));
 			}
 			if (type == typeof(bool))

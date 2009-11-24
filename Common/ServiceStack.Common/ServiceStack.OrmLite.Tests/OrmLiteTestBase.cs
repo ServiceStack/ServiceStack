@@ -6,17 +6,16 @@ using ServiceStack.OrmLite.SqlServer;
 
 namespace ServiceStack.OrmLite.Tests
 {
-	[TestFixture]
 	public class OrmLiteTestBase
 	{
 		//protected const string ConnectionString = ":memory:";
-		protected string ConnectionString = "~/App_Data/test.mdf".MapAbsolutePath();
+		protected string ConnectionString = "~/App_Data/Database1.mdf".MapAbsolutePath();
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
 			//OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
-			OrmLiteExtensions.DialectProvider = new SqlServerFileOrmLiteDialectProvider();
+			OrmLiteExtensions.DialectProvider = new SqlServerOrmLiteDialectProvider();
 		}
 
 		public void Log(string text)

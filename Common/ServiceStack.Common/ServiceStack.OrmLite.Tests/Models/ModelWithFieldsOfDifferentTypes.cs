@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Logging;
+using ServiceStack.OrmLite.Tests.Support;
 
 namespace ServiceStack.OrmLite.Tests.Models
 {
@@ -45,7 +46,15 @@ namespace ServiceStack.OrmLite.Tests.Models
 			Assert.That(actual.Guid, Is.EqualTo(expected.Guid));
 			Assert.That(actual.LongId, Is.EqualTo(expected.LongId));
 			Assert.That(actual.Bool, Is.EqualTo(expected.Bool));
-			Assert.That(actual.DateTime, Is.EqualTo(expected.DateTime));
+			try
+			{
+				Assert.That(actual.DateTime, Is.EqualTo(expected.DateTime));
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
+				Assert.That(actual.DateTime.RoundToSecond(), Is.EqualTo(expected.DateTime.RoundToSecond()));
+			} 
 			try
 			{
 				Assert.That(actual.Double, Is.EqualTo(expected.Double));
