@@ -621,23 +621,31 @@ namespace ServiceStack.OrmLite
 		public static void SaveAll<T>(this IDbCommand dbCommand, IEnumerable<T> objs)
 			where T : new()
 		{
-			var idMap = objs.ToList().ToDictionary(x => IdUtils.GetId(x));
+			var saveRows = objs.ToList();
+
+			var firstRow = saveRows.FirstOrDefault();
+			if (Equals(firstRow, default(T))) return;
+
+			var defaultIdValue = ReflectionUtils.GetDefaultValue(IdUtils.GetId(firstRow).GetType());
+			var idMap = saveRows.Where(x => !defaultIdValue.Equals(IdUtils.GetId(x)))
+				.ToDictionary(x => IdUtils.GetId(x));
+
 			var existingRowsMap = dbCommand.GetByIds<T>(idMap.Keys).ToDictionary(x => IdUtils.GetId(x));
 
 			using (var dbTrans = dbCommand.Connection.BeginTransaction())
 			{
 				dbCommand.Transaction = dbTrans;
 
-				foreach (var id in idMap.Keys)
+				foreach (var saveRow in saveRows)
 				{
-					var storeRow = idMap[id];
-					if (existingRowsMap.ContainsKey(id))
+					var id = IdUtils.GetId(saveRow);
+					if (id != defaultIdValue && existingRowsMap.ContainsKey(id))
 					{
-						dbCommand.Update(storeRow);
+						dbCommand.Update(saveRow);
 					}
 					else
 					{
-						dbCommand.Insert(storeRow);
+						dbCommand.Insert(saveRow);
 					}
 				}
 
