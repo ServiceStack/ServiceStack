@@ -77,7 +77,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
-    <Compile Include="OrmLiteStoreTests.cs" />
+    <Compile Include="OrmLiteSaveTests.cs" />
     <Compile Include="Models\TaskQueue.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>

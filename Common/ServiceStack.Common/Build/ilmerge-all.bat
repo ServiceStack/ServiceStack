@@ -23,6 +23,7 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\Debug\Servic
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Compression\bin\Debug\ServiceStack.Compression.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite\bin\Debug\ServiceStack.OrmLite.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite.Sqlite\bin\Debug\ServiceStack.OrmLite.Sqlite.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite.SqlServer\bin\Debug\ServiceStack.OrmLite.SqlServer.dll
 
 REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\Debug\ServiceStack.DataAccess.NHibernateProvider.dll
 
