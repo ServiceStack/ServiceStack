@@ -8,14 +8,14 @@ namespace ServiceStack.OrmLite.Tests
 {
 	public class OrmLiteTestBase
 	{
-		//protected const string ConnectionString = ":memory:";
-		protected string ConnectionString = "~/App_Data/Database1.mdf".MapAbsolutePath();
+		protected const string ConnectionString = ":memory:";
+		//protected string ConnectionString = "~/App_Data/Database1.mdf".MapAbsolutePath();
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			//OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
-			OrmLiteExtensions.DialectProvider = new SqlServerOrmLiteDialectProvider();
+			OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
+			//OrmLiteExtensions.DialectProvider = new SqlServerOrmLiteDialectProvider();
 		}
 
 		public void Log(string text)

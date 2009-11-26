@@ -603,6 +603,48 @@ namespace ServiceStack.OrmLite
 			dbCommand.ExecuteNonQuery();
 		}
 
+		public static void Save<T>(this IDbCommand dbCommand, T obj)
+			where T : new()
+		{
+			var id = IdUtils.GetId(obj);
+			var existingRow = dbCommand.GetByIdOrDefault<T>(id);
+			if (existingRow == null)
+			{
+				dbCommand.Insert(obj);
+			}
+			else
+			{
+				dbCommand.Update(obj);
+			}
+		}
+
+		public static void SaveAll<T>(this IDbCommand dbCommand, IEnumerable<T> objs)
+			where T : new()
+		{
+			var idMap = objs.ToList().ToDictionary(x => IdUtils.GetId(x));
+			var existingRowsMap = dbCommand.GetByIds<T>(idMap.Keys).ToDictionary(x => IdUtils.GetId(x));
+
+			using (var dbTrans = dbCommand.Connection.BeginTransaction())
+			{
+				dbCommand.Transaction = dbTrans;
+
+				foreach (var id in idMap.Keys)
+				{
+					var storeRow = idMap[id];
+					if (existingRowsMap.ContainsKey(id))
+					{
+						dbCommand.Update(storeRow);
+					}
+					else
+					{
+						dbCommand.Insert(storeRow);
+					}
+				}
+
+				dbTrans.Commit();
+			}
+		}
+
 		public static IDbConnection ToDbConnection(this string dbConnectionStringOrFilePath)
 		{
 			return DialectProvider.CreateConnection(dbConnectionStringOrFilePath, null);
