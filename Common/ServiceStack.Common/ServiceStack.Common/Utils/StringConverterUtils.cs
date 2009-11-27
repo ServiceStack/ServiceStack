@@ -99,6 +99,16 @@ namespace ServiceStack.Common.Utils
 							TypeConstructor = useType.GetConstructor(Type.EmptyTypes);
 							if (TypeConstructor != null)
 							{
+								var dictionaryDefinition = Type.FindInterfaces((t, critera) =>
+									t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null).FirstOrDefault();
+
+								var isDictionary = dictionaryDefinition != null;
+								if (isDictionary)
+								{
+									GenericCollectionArgumentTypes = dictionaryDefinition.GetGenericArguments();
+									return;
+								}
+
 								GenericCollectionArgumentTypes = interfaces[0].GetGenericArguments();
 								return;
 							}

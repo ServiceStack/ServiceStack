@@ -10,7 +10,7 @@ namespace ServiceStack.OrmLite
 
 		object ConvertDbValue(object value, Type type);
 
-		string GetQuotedValue(object value, Type type);
+		string GetQuotedValue(object value, Type fieldType);
 
 		IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
 

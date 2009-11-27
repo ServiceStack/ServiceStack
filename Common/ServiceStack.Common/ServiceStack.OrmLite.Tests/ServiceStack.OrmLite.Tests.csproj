@@ -77,6 +77,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="OrmLiteComplexTypesTests.cs" />
+    <Compile Include="Models\ModelWithComplexTypes.cs" />
     <Compile Include="OrmLiteSaveTests.cs" />
     <Compile Include="Models\TaskQueue.cs" />
     <Compile Include="Properties\Settings.Designer.cs">

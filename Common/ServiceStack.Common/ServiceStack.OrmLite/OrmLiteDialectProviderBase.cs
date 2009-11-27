@@ -137,11 +137,22 @@ namespace ServiceStack.OrmLite
 			return convertedValue;
 		}
 
-		public virtual string GetQuotedValue(object value, Type type)
+		public virtual string GetQuotedValue(object value, Type fieldType)
 		{
 			if (value == null) return "NULL";
 
-			return ShouldQuoteValue(type)
+			if (!fieldType.UnderlyingSystemType.IsValueType)
+			{
+				if (StringConverterUtils.CanCreateFromString(fieldType))
+				{
+					return "'" + EscapeParam(StringConverterUtils.ToString(value)) + "'";
+				}
+
+				throw new NotSupportedException(
+					string.Format("Property of type: {0} is not supported", fieldType.FullName));
+			}
+
+			return ShouldQuoteValue(fieldType)
 			       	? "'" + EscapeParam(value) + "'"
 			       	: value.ToString();
 		}

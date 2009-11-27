@@ -196,6 +196,17 @@ namespace ServiceStack.Common.Tests
 		}
 
 		[Test]
+		public void Can_parse_string_dictionary()
+		{
+			var stringDictionary = new Dictionary<string, string> {
+				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
+			};
+			const string mapValues = "One:1st,Two:2nd,Three:3rd";
+			var parsedDictionary = StringConverterUtils.Parse(mapValues, stringDictionary.GetType());
+			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
+		}
+
+		[Test]
 		public void Can_convert_string_dictionary_as_object()
 		{
 			var stringDictionary = new Dictionary<string, string> {

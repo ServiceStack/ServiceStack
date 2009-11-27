@@ -61,7 +61,7 @@ namespace ServiceStack.OrmLite.Tests
 		[Test]
 		public void Can_open_two_ReadOnlyConnections_to_same_database()
 		{
-			var db = ConnectionString.OpenDbConnection();
+			var db = "test.sqlite".OpenDbConnection();
 			using (var dbCmd = db.CreateCommand())
 			{
 				dbCmd.CreateTable<ModelWithIdAndName>(true);

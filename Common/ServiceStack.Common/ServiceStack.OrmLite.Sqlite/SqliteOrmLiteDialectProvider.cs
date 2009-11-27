@@ -70,28 +70,28 @@ namespace ServiceStack.OrmLite.Sqlite
 			return base.ConvertDbValue(value, type);
 		}
 
-		public override string GetQuotedValue(object value, Type type)
+		public override string GetQuotedValue(object value, Type fieldType)
 		{
 			if (value == null) return "NULL";
 
-			if (type == typeof(Guid))
+			if (fieldType == typeof(Guid))
 			{
 				var guidValue = (Guid)value;
 				return base.GetQuotedValue(guidValue.ToString("N"), typeof(string));
 			}
-			if (type == typeof(DateTime))
+			if (fieldType == typeof(DateTime))
 			{
 				var dateValue = (DateTime)value;
 				const string iso8601Format = "yyyy-MM-dd HH:mm:ss.fffffff";
 				return base.GetQuotedValue(dateValue.ToString(iso8601Format), typeof(string));
 			}
-			if (type == typeof(bool))
+			if (fieldType == typeof(bool))
 			{
 				var boolValue = (bool)value;
 				return base.GetQuotedValue(boolValue ? 1 : 0, typeof(int));
 			}
 
-			return base.GetQuotedValue(value, type);
+			return base.GetQuotedValue(value, fieldType);
 		}
 	}
 }
