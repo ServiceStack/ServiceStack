@@ -1,4 +1,3 @@
-using System;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Extensions

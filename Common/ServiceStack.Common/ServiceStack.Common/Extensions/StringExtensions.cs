@@ -47,6 +47,11 @@ namespace ServiceStack.Common.Extensions
 			return string.IsNullOrEmpty(value) ? default(T) : StringConverterUtils.Parse<T>(value);
 		}
 
+		public static object To(this string value, Type type)
+		{
+			return StringConverterUtils.Parse(value, type);
+		}
+
 		public static bool IsEmpty(this string value)
 		{
 			return string.IsNullOrEmpty(value);
