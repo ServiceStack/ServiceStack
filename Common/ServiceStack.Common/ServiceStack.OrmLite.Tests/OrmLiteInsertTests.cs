@@ -62,7 +62,32 @@ namespace ServiceStack.OrmLite.Tests
 				Assert.That(rows, Has.Count(1));
 
 				ModelWithIdAndName.AssertIsEqual(rows[0], row);
-			}			
+			}
+		}
+
+		[Test]
+		public void Can_retrieve_LastInsertId_from_inserted_table()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
+
+				var row1 = ModelWithIdAndName.Create(5);
+				var row2 = ModelWithIdAndName.Create(6);
+
+				dbCmd.Insert(row1);
+				var row1LastInsertId = dbCmd.GetLastInsertId();
+
+				dbCmd.Insert(row2);
+				var row2LastInsertId = dbCmd.GetLastInsertId();
+
+				var insertedRow1 = dbCmd.GetById<ModelWithIdAndName>(row1LastInsertId);
+				var insertedRow2 = dbCmd.GetById<ModelWithIdAndName>(row2LastInsertId);
+
+				Assert.That(insertedRow1.Name, Is.EqualTo(row1.Name));
+				Assert.That(insertedRow2.Name, Is.EqualTo(row2.Name));
+			}
 		}
 
 		[Test]

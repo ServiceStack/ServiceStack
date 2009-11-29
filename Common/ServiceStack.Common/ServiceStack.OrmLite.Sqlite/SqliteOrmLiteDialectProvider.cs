@@ -7,7 +7,8 @@ using Mono.Data.Sqlite;
 
 namespace ServiceStack.OrmLite.Sqlite
 {
-	public class SqliteOrmLiteDialectProvider : OrmLiteDialectProviderBase
+	public class SqliteOrmLiteDialectProvider 
+		: OrmLiteDialectProviderBase
 	{
 		public SqliteOrmLiteDialectProvider()
 		{
@@ -92,6 +93,13 @@ namespace ServiceStack.OrmLite.Sqlite
 			}
 
 			return base.GetQuotedValue(value, fieldType);
+		}
+
+		public override long GetLastInsertId(IDbCommand dbCmd)
+		{
+			dbCmd.CommandText = "SELECT last_insert_rowid()";
+			var result = dbCmd.ExecuteScalar();
+			return (long)result;
 		}
 	}
 }

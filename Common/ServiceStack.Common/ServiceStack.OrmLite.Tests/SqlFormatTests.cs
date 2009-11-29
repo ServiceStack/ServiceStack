@@ -23,5 +23,14 @@ namespace ServiceStack.OrmLite.Tests
 			Assert.That(ids.SqlJoin(), Is.EqualTo("'1','2','3'"));
 		}
 
+		[Test]
+		public void SqlFormat_can_handle_null_args()
+		{
+			const string sql = "SELECT Id FROM FOO WHERE Bar = {0}";
+			var sqlFormat = sql.SqlFormat(1, null);
+
+			Assert.That(sqlFormat, Is.EqualTo("SELECT Id FROM FOO WHERE Bar = 1"));
+		}
+
 	}
 }

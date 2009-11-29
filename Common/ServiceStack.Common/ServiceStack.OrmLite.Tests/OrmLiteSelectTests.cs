@@ -115,7 +115,7 @@ namespace ServiceStack.OrmLite.Tests
 		public void Can_select_scalar_value()
 		{
 			const int n = 5;
-			
+
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
@@ -177,6 +177,66 @@ namespace ServiceStack.OrmLite.Tests
 
 				Assert.That(dbRowIds, Has.Count(1));
 				Assert.That(dbRowIds[0], Is.EqualTo(filterRow.Id));
+			}
+		}
+
+		[Test]
+		public void Can_GetFirstColumn()
+		{
+			const int n = 5;
+
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
+
+				n.Times(x => dbCmd.Insert(ModelWithIdAndName.Create(x)));
+
+				var ids = dbCmd.GetFirstColumn<long>("SELECT Id FROM ModelWithIdAndName");
+
+				Assert.That(ids.Count, Is.EqualTo(n));
+			}
+		}
+
+		[Test]
+		public void Can_GetFirstColumnDistinct()
+		{
+			const int n = 5;
+
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
+
+				n.Times(x => dbCmd.Insert(ModelWithIdAndName.Create(x)));
+
+				var ids = dbCmd.GetFirstColumnDistinct<int>("SELECT Id FROM ModelWithIdAndName");
+
+				Assert.That(ids.Count, Is.EqualTo(n));
+			}
+		}
+
+		[Test]
+		public void Can_GetLookup()
+		{
+			const int n = 5;
+
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
+
+				n.Times(x => {
+					var row = ModelWithIdAndName.Create(x);
+					row.Name = x % 2 == 0 ? "OddGroup" : "EvenGroup";
+					dbCmd.Insert(row);
+				});
+
+				var lookup = dbCmd.GetLookup<string, int>("SELECT Name, Id FROM ModelWithIdAndName");
+
+				Assert.That(lookup, Has.Count(2));
+				Assert.That(lookup["OddGroup"], Has.Count(3));
+				Assert.That(lookup["EvenGroup"], Has.Count(2));
 			}
 		}
 

@@ -6,7 +6,8 @@ using ServiceStack.Common.Utils;
 
 namespace ServiceStack.OrmLite
 {
-	public abstract class OrmLiteDialectProviderBase : IOrmLiteDialectProvider
+	public abstract class OrmLiteDialectProviderBase 
+		: IOrmLiteDialectProvider
 	{
 		#region ADO.NET supported types
 		/* ADO.NET UNDERSTOOD DATA TYPES:
@@ -208,5 +209,7 @@ namespace ServiceStack.OrmLite
 
 			return sql.ToString();
 		}
+
+		public abstract long GetLastInsertId(IDbCommand command);
 	}
 }

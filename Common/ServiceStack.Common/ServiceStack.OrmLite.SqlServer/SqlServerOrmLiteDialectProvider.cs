@@ -96,5 +96,12 @@ namespace ServiceStack.OrmLite.SqlServer
 
 			return base.GetQuotedValue(value, fieldType);
 		}
+
+		public override long GetLastInsertId(IDbCommand dbCmd)
+		{
+			dbCmd.CommandText = "SELECT SCOPE_IDENTITY()";
+			var result = dbCmd.ExecuteScalar();
+			return (long)result;
+		}
 	}
 }

@@ -35,7 +35,6 @@ namespace ServiceStack.OrmLite
 
 		private static readonly ILog Log = LogManager.GetLogger(typeof(OrmLiteExtensions));
 
-
 		private static readonly object ReadLock = new object();
 
 		private static readonly Dictionary<Type, List<FieldDefinition>> TypeFieldDefinitionsMap
@@ -139,6 +138,43 @@ namespace ServiceStack.OrmLite
 			}
 		}
 
+		private static Func<int, object> GetValueFn<T>(IDataRecord reader)
+		{
+			var type = typeof(T);
+
+			if (type == typeof(string))
+				return reader.GetString;
+
+			if (type == typeof(short))
+				return i => reader.GetInt16(i);
+
+			if (type == typeof(int))
+				return i => reader.GetInt32(i);
+
+			if (type == typeof(long))
+				return i => reader.GetInt64(i);
+
+			if (type == typeof(bool))
+				return i => reader.GetBoolean(i);
+
+			if (type == typeof(DateTime))
+				return i => reader.GetDateTime(i);
+
+			if (type == typeof(Guid))
+				return i => reader.GetGuid(i);
+
+			if (type == typeof(float))
+				return i => reader.GetFloat(i);
+
+			if (type == typeof(double))
+				return i => reader.GetDouble(i);
+
+			if (type == typeof(decimal))
+				return i => reader.GetDecimal(i);
+
+			return reader.GetValue;
+		}
+
 		/// <summary>
 		/// Not using Linq.Where() and manually iterating through objProperties just to avoid dependencies on System.Xml??
 		/// </summary>
@@ -228,7 +264,7 @@ namespace ServiceStack.OrmLite
 				//ignore Sqlite table already exists error
 				const string SqliteTableExistsError = "already exists";
 				const string SqlServerAlreadyExistsError = "There is already an object named";
-				if (ex.Message.Contains(SqliteTableExistsError) 
+				if (ex.Message.Contains(SqliteTableExistsError)
 					|| ex.Message.Contains(SqlServerAlreadyExistsError))
 				{
 					Log.DebugFormat("Ignoring existing table '{0}': {1}", tableType.Name, ex.Message);
@@ -342,14 +378,8 @@ namespace ServiceStack.OrmLite
 		public static List<T> GetByIds<T>(this IDbCommand dbCommand, IEnumerable idValues)
 			where T : new()
 		{
-			var sql = new StringBuilder();
-			foreach (var idValue in idValues)
-			{
-				if (sql.Length > 0) sql.Append(",");
-				sql.AppendFormat("{0}".SqlFormat(idValue));
-			}
-
-			if (sql.Length == 0) return new List<T>();
+			var sql = GetIdsInSql(idValues);
+			if (sql == null) return new List<T>();
 
 			return Select<T>(dbCommand, string.Format("Id IN ({0})", sql));
 		}
@@ -416,63 +446,82 @@ namespace ServiceStack.OrmLite
 			return default(T);
 		}
 
-		public static List<string> GetFirstColumn(this IDbCommand dbCmd, string sql, params object[] sqlParams)
+		public static long GetLastInsertId(this IDbCommand dbCmd)
+		{
+			return DialectProvider.GetLastInsertId(dbCmd);
+		}
+
+		public static List<T> GetFirstColumn<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
 			dbCmd.CommandText = sql.SqlFormat(sqlParams);
 			using (var dbReader = dbCmd.ExecuteReader())
 			{
-				return GetFirstColumn(dbReader);
+				return GetFirstColumn<T>(dbReader);
 			}
 		}
 
-		public static List<string> GetFirstColumn(this IDataReader reader)
+		public static List<T> GetFirstColumn<T>(this IDataReader reader)
 		{
-			var columValues = new List<string>();
+			var columValues = new List<T>();
+			var getValueFn = GetValueFn<T>(reader);
 			while (reader.Read())
 			{
-				columValues.Add(reader.GetString(0));
+				var value = getValueFn(0);
+				columValues.Add((T)value);
 			}
 			return columValues;
 		}
 
-		public static HashSet<string> GetFirstColumnDistinct(this IDbCommand dbCmd, string sql, params object[] sqlParams)
+		public static HashSet<T> GetFirstColumnDistinct<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
 			dbCmd.CommandText = sql.SqlFormat(sqlParams);
 			using (var dbReader = dbCmd.ExecuteReader())
 			{
-				return GetFirstColumnDistinct(dbReader);
+				return GetFirstColumnDistinct<T>(dbReader);
 			}
 		}
 
-		public static HashSet<string> GetFirstColumnDistinct(this IDataReader reader)
+		public static HashSet<T> GetFirstColumnDistinct<T>(this IDataReader reader)
 		{
-			var columValues = new HashSet<string>();
+			var columValues = new HashSet<T>();
+			var getValueFn = GetValueFn<T>(reader);
 			while (reader.Read())
 			{
-				columValues.Add(reader.GetString(0));
+				var value = getValueFn(0);
+				columValues.Add((T)value);
 			}
 			return columValues;
 		}
 
-		public static Dictionary<string, List<string>> GetLookup(this IDbCommand sqlCmd)
+		public static Dictionary<K, List<V>> GetLookup<K, V>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
-			var lookup = new Dictionary<string, List<string>>();
-			using (var reader = sqlCmd.ExecuteReader())
+			dbCmd.CommandText = sql.SqlFormat(sqlParams);
+			using (var dbReader = dbCmd.ExecuteReader())
 			{
-				List<string> values;
-				while (reader.Read())
+				return GetLookup<K,V>(dbReader);
+			}
+		}
+
+		public static Dictionary<K, List<V>> GetLookup<K, V>(this IDataReader reader)
+		{
+			var lookup = new Dictionary<K, List<V>>();
+			
+			List<V> values;
+			var getKeyFn = GetValueFn<K>(reader);
+			var getValueFn = GetValueFn<V>(reader);
+			while (reader.Read())
+			{
+				var key = (K)getKeyFn(0);
+				var value = (V)getValueFn(1);
+
+				if (!lookup.TryGetValue(key, out values))
 				{
-					var key = reader.GetString(0);
-					var value = reader.GetString(1);
-
-					if (!lookup.TryGetValue(key, out values))
-					{
-						values = new List<string>();
-						lookup[key] = values;
-					}
-					values.Add(value);
+					values = new List<V>();
+					lookup[key] = values;
 				}
+				values.Add(value);
 			}
+
 			return lookup;
 		}
 
@@ -531,7 +580,7 @@ namespace ServiceStack.OrmLite
 						if (sqlFilter.Length > 0) sqlFilter.Append(" AND ");
 
 						sqlFilter.AppendFormat("\"{0}\" = {1}", fieldDef.Name, fieldDef.GetQuotedValue(objWithProperties));
-						
+
 						continue;
 					}
 
@@ -601,6 +650,31 @@ namespace ServiceStack.OrmLite
 				tableType.Name, DialectProvider.GetQuotedValue(id, id.GetType()));
 
 			dbCommand.ExecuteNonQuery();
+		}
+
+		public static void DeleteByIds<T>(this IDbCommand dbCommand, IEnumerable idValues)
+			where T : new()
+		{
+			var sql = GetIdsInSql(idValues);
+			if (sql == null) return;
+
+			var tableType = typeof(T);
+
+			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE Id IN ({1})",
+				tableType.Name, sql);
+
+			dbCommand.ExecuteNonQuery();
+		}
+
+		private static string GetIdsInSql(IEnumerable idValues)
+		{
+			var sql = new StringBuilder();
+			foreach (var idValue in idValues)
+			{
+				if (sql.Length > 0) sql.Append(",");
+				sql.AppendFormat("{0}".SqlFormat(idValue));
+			}
+			return sql.Length == 0 ? null : sql.ToString();
 		}
 
 		public static void Save<T>(this IDbCommand dbCommand, T obj)
@@ -693,7 +767,14 @@ namespace ServiceStack.OrmLite
 			var escapedParams = new List<string>();
 			foreach (var sqlParam in sqlParams)
 			{
-				escapedParams.Add(DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
+				if (sqlParam == null)
+				{
+					escapedParams.Add("NULL");
+				}
+				else
+				{
+					escapedParams.Add(DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
+				}
 			}
 			return string.Format(sqlText, escapedParams.ToArray());
 		}

@@ -55,5 +55,25 @@ namespace ServiceStack.OrmLite.Tests
 			}
 		}
 
+		[Test]
+		public void Can_DeleteByIds_from_ModelWithFieldsOfDifferentTypes_table()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+
+				var rowIds = new List<int>(new[] { 1, 2, 3 });
+				rowIds.ForEach(x => dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(x)));
+
+				dbCmd.DeleteByIds<ModelWithFieldsOfDifferentTypes>(new[] { 1, 3 });
+
+				var rows = dbCmd.GetByIds<ModelWithFieldsOfDifferentTypes>(rowIds);
+				var dbRowIds = rows.ConvertAll(x => x.Id);
+
+				Assert.That(dbRowIds, Is.EquivalentTo(new[] { 2 }));
+			}
+		}
+
 	}
 }
