@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAccess;
 using ServiceStack.Logging;
@@ -279,17 +280,37 @@ namespace ServiceStack.OrmLite
 			return ToSelectStatement(tableType, null);
 		}
 
-		public static string ToSelectStatement(this Type tableType, string filter, params object[] filterParams)
+		public static string ToSelectStatement(this Type tableType, string sqlFilter, params object[] filterParams)
 		{
 			var sql = new StringBuilder();
-			sql.AppendFormat("SELECT * FROM \"{0}\"", tableType.Name);
-			if (!string.IsNullOrEmpty(filter))
+			const string SelectStatement = "SELECT ";
+
+			var isFullSelectStatement = 
+				!string.IsNullOrEmpty(sqlFilter)
+				&& sqlFilter.Length > SelectStatement.Length
+				&& sqlFilter.Substring(0, SelectStatement.Length).ToUpper().Equals(SelectStatement);
+
+			if (isFullSelectStatement) return string.Format(sqlFilter, filterParams);
+
+			sql.AppendFormat("SELECT {0} FROM \"{1}\"", GetColumnNames(tableType), tableType.Name);
+			if (!string.IsNullOrEmpty(sqlFilter))
 			{
-				filter = filter.SqlFormat(filterParams);
+				sqlFilter = sqlFilter.SqlFormat(filterParams);
 				sql.Append(" WHERE ");
-				sql.Append(filter);
+				sql.Append(sqlFilter);
 			}
+
 			return sql.ToString();
+		}
+
+		private static string GetColumnNames(Type tableType)
+		{
+			var sqlColumns = new StringBuilder();
+			GetFieldDefinitions(tableType)
+				.ForEach(x => sqlColumns.AppendFormat("{0}\"{1}\" ",
+					sqlColumns.Length > 0 ? "," : "", x.Name));
+
+			return sqlColumns.ToString();
 		}
 
 		public static List<T> Select<T>(this IDbCommand dbCommand)
@@ -298,13 +319,40 @@ namespace ServiceStack.OrmLite
 			return Select<T>(dbCommand, null);
 		}
 
-		public static List<T> Select<T>(this IDbCommand dbCommand, string filter, params object[] filterParams)
+		public static List<T> Select<T>(this IDbCommand dbCommand, string sqlFilter, params object[] filterParams)
 			where T : new()
 		{
-			dbCommand.CommandText = ToSelectStatement(typeof(T), filter, filterParams);
+			dbCommand.CommandText = ToSelectStatement(typeof(T), sqlFilter, filterParams);
 			using (var reader = dbCommand.ExecuteReader())
 			{
 				return reader.ConvertToList<T>();
+			}
+		}
+
+		public static List<TModel> SelectInto<TTable, TModel>(this IDbCommand dbCommand)
+			where TModel : new()
+		{
+			return SelectInto<TTable, TModel>(dbCommand, null);
+		}
+
+		public static List<TModel> SelectInto<TTable, TModel>(this IDbCommand dbCommand, string sqlFilter, params object[] filterParams)
+			where TModel : new()
+		{
+			var sql = new StringBuilder();
+			var tableType = typeof(TTable);
+			var modelType = typeof(TModel);
+			sql.AppendFormat("SELECT {0} FROM \"{1}\"", GetColumnNames(modelType), tableType.Name);
+			if (!string.IsNullOrEmpty(sqlFilter))
+			{
+				sqlFilter = sqlFilter.SqlFormat(filterParams);
+				sql.Append(" WHERE ");
+				sql.Append(sqlFilter);
+			}
+
+			dbCommand.CommandText = sql.ToString();
+			using (var reader = dbCommand.ExecuteReader())
+			{
+				return reader.ConvertToList<TModel>();
 			}
 		}
 
@@ -498,14 +546,14 @@ namespace ServiceStack.OrmLite
 			dbCmd.CommandText = sql.SqlFormat(sqlParams);
 			using (var dbReader = dbCmd.ExecuteReader())
 			{
-				return GetLookup<K,V>(dbReader);
+				return GetLookup<K, V>(dbReader);
 			}
 		}
 
 		public static Dictionary<K, List<V>> GetLookup<K, V>(this IDataReader reader)
 		{
 			var lookup = new Dictionary<K, List<V>>();
-			
+
 			List<V> values;
 			var getKeyFn = GetValueFn<K>(reader);
 			var getValueFn = GetValueFn<V>(reader);

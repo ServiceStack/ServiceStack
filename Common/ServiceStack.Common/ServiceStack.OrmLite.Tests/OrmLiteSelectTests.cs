@@ -240,5 +240,43 @@ namespace ServiceStack.OrmLite.Tests
 			}
 		}
 
+		[Test]
+		public void Can_Select_subset_ModelWithIdAndName_from_ModelWithFieldsOfDifferentTypes_table()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
+
+				var rowIds = new List<int>(new[] { 1, 2, 3 });
+
+				rowIds.ForEach(x => dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(x)));
+
+				var rows = dbCmd.Select<ModelWithIdAndName>("SELECT Id, Name FROM ModelWithFieldsOfDifferentTypes");
+				var dbRowIds = rows.ConvertAll(x => x.Id);
+
+				Assert.That(dbRowIds, Is.EquivalentTo(rowIds));
+			}
+		}
+
+		[Test]
+		public void Can_SelectInto_ModelWithIdAndName_from_ModelWithFieldsOfDifferentTypes_table()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
+
+				var rowIds = new List<int>(new[] { 1, 2, 3 });
+
+				rowIds.ForEach(x => dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(x)));
+
+				var rows = dbCmd.SelectInto<ModelWithFieldsOfDifferentTypes, ModelWithIdAndName>();
+				var dbRowIds = rows.ConvertAll(x => x.Id);
+
+				Assert.That(dbRowIds, Is.EquivalentTo(rowIds));
+			}
+		}
+
 	}
 }
