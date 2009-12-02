@@ -290,7 +290,7 @@ namespace ServiceStack.OrmLite
 				&& sqlFilter.Length > SelectStatement.Length
 				&& sqlFilter.Substring(0, SelectStatement.Length).ToUpper().Equals(SelectStatement);
 
-			if (isFullSelectStatement) return string.Format(sqlFilter, filterParams);
+			if (isFullSelectStatement) return sqlFilter.SqlFormat(filterParams);
 
 			sql.AppendFormat("SELECT {0} FROM \"{1}\"", GetColumnNames(tableType), tableType.Name);
 			if (!string.IsNullOrEmpty(sqlFilter))
