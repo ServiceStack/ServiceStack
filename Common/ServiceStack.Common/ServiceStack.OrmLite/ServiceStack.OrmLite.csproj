@@ -42,6 +42,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExpressionPropertyInvoker.cs" />
     <Compile Include="FieldDefinition.cs" />
     <Compile Include="IPropertyInvoker.cs" />
     <Compile Include="OrmLite.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="OrmLiteReadExtensions.cs" />
     <Compile Include="OrmLiteUtilExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReflectionPropertyInvoker.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">

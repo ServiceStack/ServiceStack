@@ -3,7 +3,7 @@ using System.Xml.Linq;
 using NUnit.Framework;
 using ServiceStack.ServiceModel.Extensions;
 
-namespace ServiceStack.Serialization.Tests
+namespace ServiceStack.ServiceModel.Tests
 {
 	[TestFixture]
 	public class XlinqExtensionsTests

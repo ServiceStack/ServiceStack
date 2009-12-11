@@ -19,31 +19,40 @@ namespace ServiceStack.OrmLite
 
 		public void SetPropertyValue(PropertyInfo propertyInfo, Type fieldType, object onInstance, object withValue)
 		{
-			var convertedValue = ConvertValueFn(withValue, fieldType);
-
-			Action<object, object> propertySetFn;
-			if (!propertySetFnMap.TryGetValue(propertyInfo, out propertySetFn))
+			try
 			{
-				var setMethodInfo = propertyInfo.GetSetMethod();
-				var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
-				var oValueParam = Expression.Parameter(typeof(object), "oValueParam");
+				var convertedValue = ConvertValueFn(withValue, fieldType);
 
-				var instanceParam = Expression.Convert(oInstanceParam, onInstance.GetType());
-				var useType = convertedValue != null ? convertedValue.GetType() : propertyInfo.PropertyType;
-				var valueParam = Expression.Convert(oValueParam, useType);
-				var exprCallPropertySetFn = Expression.Call(instanceParam, setMethodInfo, valueParam);
+				Action<object, object> propertySetFn;
+				if (!propertySetFnMap.TryGetValue(propertyInfo, out propertySetFn))
+				{
+					var setMethodInfo = propertyInfo.GetSetMethod();
+					if (setMethodInfo == null) return;
+					var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
+					var oValueParam = Expression.Parameter(typeof(object), "oValueParam");
 
-				propertySetFn = Expression.Lambda<Action<object, object>>
-					(
-					exprCallPropertySetFn,
-					oInstanceParam,
-					oValueParam
-					).Compile();
+					var instanceParam = Expression.Convert(oInstanceParam, onInstance.GetType());
+					var useType = convertedValue != null ? convertedValue.GetType() : propertyInfo.PropertyType;
+					var valueParam = Expression.Convert(oValueParam, useType);
+					var exprCallPropertySetFn = Expression.Call(instanceParam, setMethodInfo, valueParam);
 
-				propertySetFnMap[propertyInfo] = propertySetFn;
+					propertySetFn = Expression.Lambda<Action<object, object>>
+						(
+						exprCallPropertySetFn,
+						oInstanceParam,
+						oValueParam
+						).Compile();
+
+					propertySetFnMap[propertyInfo] = propertySetFn;
+				}
+
+				propertySetFn(onInstance, convertedValue);
+
 			}
-
-			propertySetFn(onInstance, convertedValue);
+			catch (Exception ex)
+			{				
+				throw;
+			}
 		}
 
 		public object GetPropertyValue(PropertyInfo propertyInfo, object fromInstance)
