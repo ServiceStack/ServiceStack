@@ -27,7 +27,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
+			OrmLiteWriteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
 		}
 
 		public const bool UseCache = false;

@@ -13,10 +13,10 @@ namespace ServiceStack.OrmLite.Tests
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			OrmLiteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
+			OrmLiteWriteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
 			ConnectionString = ":memory:";
 
-			//OrmLiteExtensions.DialectProvider = new SqlServerOrmLiteDialectProvider();
+			//OrmLiteWriteExtensions.DialectProvider = new SqlServerOrmLiteDialectProvider();
 			//ConnectionString = "~/App_Data/Database1.mdf".MapAbsolutePath();			
 		}
 
