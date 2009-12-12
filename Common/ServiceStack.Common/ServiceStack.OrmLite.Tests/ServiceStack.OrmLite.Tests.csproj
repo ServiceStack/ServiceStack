@@ -80,6 +80,7 @@
     <Compile Include="Models\SampleOrderLine.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
     <Compile Include="Models\ModelWithComplexTypes.cs" />
+    <Compile Include="OrmLiteLinqTests.cs" />
     <Compile Include="OrmLiteSaveTests.cs" />
     <Compile Include="Models\TaskQueue.cs" />
     <Compile Include="Properties\Settings.Designer.cs">

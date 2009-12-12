@@ -13,7 +13,11 @@ namespace ServiceStack.OrmLite
 		public void SetPropertyValue(PropertyInfo propertyInfo, Type fieldType, object onInstance, object withValue)
 		{
 			var convertedValue = ConvertValueFn(withValue, fieldType);
-			propertyInfo.GetSetMethod().Invoke(onInstance, new[] { convertedValue });
+
+			var propertySetMethod = propertyInfo.GetSetMethod();
+			if (propertySetMethod == null) return;
+
+			propertySetMethod.Invoke(onInstance, new[] { convertedValue });
 		}
 
 		public object GetPropertyValue(PropertyInfo propertyInfo, object fromInstance)

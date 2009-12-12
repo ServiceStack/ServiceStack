@@ -15,7 +15,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			OrmLiteWriteExtensions.DialectProvider = new SqliteOrmLiteDialectProvider();
+			OrmLite.OrmLiteConfig.DialectProvider = new SqliteOrmLiteDialectProvider();
 		}
 
 		[Test]

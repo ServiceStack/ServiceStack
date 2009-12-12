@@ -14,19 +14,6 @@ namespace ServiceStack.OrmLite
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(OrmLiteWriteExtensions));
 
-		[Obsolete("Use OrmLite.DialectProvider")]
-		public static IOrmLiteDialectProvider DialectProvider
-		{
-			get
-			{
-				return OrmLite.DialectProvider;
-			}
-			set
-			{
-				OrmLite.DialectProvider = value;
-			}
-		}
-
 		public static string ToCreateTableStatement(this Type tableType)
 		{
 			var sbColumns = new StringBuilder();
@@ -37,7 +24,7 @@ namespace ServiceStack.OrmLite
 			{
 				if (sbColumns.Length != 0) sbColumns.Append(", ");
 
-				var columnDefinition = OrmLite.DialectProvider.GetColumnDefinition(
+				var columnDefinition = OrmLiteConfig.DialectProvider.GetColumnDefinition(
 					fieldDef.Name,
 					fieldDef.FieldType,
 					fieldDef.IsPrimaryKey,
@@ -99,10 +86,10 @@ namespace ServiceStack.OrmLite
 			catch (Exception ex)
 			{
 				//ignore Sqlite table already exists error
-				const string SqliteTableExistsError = "already exists";
-				const string SqlServerAlreadyExistsError = "There is already an object named";
-				if (ex.Message.Contains(SqliteTableExistsError)
-					|| ex.Message.Contains(SqlServerAlreadyExistsError))
+				const string sqliteTableExistsError = "already exists";
+				const string sqlServerAlreadyExistsError = "There is already an object named";
+				if (ex.Message.Contains(sqliteTableExistsError)
+					|| ex.Message.Contains(sqlServerAlreadyExistsError))
 				{
 					Log.DebugFormat("Ignoring existing table '{0}': {1}", tableType.Name, ex.Message);
 					return;
@@ -248,7 +235,7 @@ namespace ServiceStack.OrmLite
 			var tableType = typeof(T);
 
 			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE Id = {1}",
-				tableType.Name, OrmLite.DialectProvider.GetQuotedValue(id, id.GetType()));
+				tableType.Name, OrmLiteConfig.DialectProvider.GetQuotedValue(id, id.GetType()));
 
 			dbCommand.ExecuteNonQuery();
 		}

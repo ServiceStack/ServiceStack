@@ -214,7 +214,7 @@ namespace ServiceStack.OrmLite
 
 		public static long GetLastInsertId(this IDbCommand dbCmd)
 		{
-			return OrmLite.DialectProvider.GetLastInsertId(dbCmd);
+			return OrmLiteConfig.DialectProvider.GetLastInsertId(dbCmd);
 		}
 
 		public static List<T> GetFirstColumn<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)

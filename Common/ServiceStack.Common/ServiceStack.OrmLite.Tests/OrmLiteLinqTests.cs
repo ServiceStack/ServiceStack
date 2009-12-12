@@ -1,23 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Extensions;
 using ServiceStack.DataAccess;
-using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.OrmLite.Tests.UseCase;
 
-namespace ServiceStack.OrmLite.Tests.UseCase
+namespace ServiceStack.OrmLite.Tests
 {
 	[TestFixture]
-	public class SimpleUseCase
+	public class OrmLiteLinqTests
+		: OrmLiteTestBase
 	{
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
-			//Inject your database provider here
-			OrmLiteConfig.DialectProvider = new SqliteOrmLiteDialectProvider();
-		}
-
 		public class User
 		{
 			public long Id { get; set; }
@@ -29,10 +24,10 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 		}
 
 		[Test]
-		public void Simple_CRUD_example()
+		public void Can_execute_simple_query()
 		{
-			using (IDbConnection db = ":memory:".OpenDbConnection())
-			using (IDbCommand dbCmd = db.CreateCommand())
+			using (var dbConn = base.ConnectionString.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
 			{
 				dbCmd.CreateTable<User>(false);
 
@@ -40,7 +35,8 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 				dbCmd.Insert(new User { Id = 2, Name = "B", CreatedDate = DateTime.Now });
 				dbCmd.Insert(new User { Id = 3, Name = "B", CreatedDate = DateTime.Now });
 
-				var rowsB = dbCmd.Select<User>("Name = {0}", "B");
+				var rowsB = dbCmd.From<User>().Where(x => x.Name == "B")
+					.ToList();
 
 				Assert.That(rowsB, Has.Count(2));
 
@@ -49,7 +45,9 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 
 				rowsB.ForEach(x => dbCmd.Delete(x));
 
-				rowsB = dbCmd.Select<User>("Name = {0}", "B");
+				rowsB = dbCmd.From<User>().Where(x => x.Name == "B")
+					.ToList();
+
 				Assert.That(rowsB, Has.Count(0));
 
 				var rowsLeft = dbCmd.Select<User>();
@@ -57,6 +55,7 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 
 				Assert.That(rowsLeft[0].Name, Is.EqualTo("A"));
 			}
+
 		}
 
 	}

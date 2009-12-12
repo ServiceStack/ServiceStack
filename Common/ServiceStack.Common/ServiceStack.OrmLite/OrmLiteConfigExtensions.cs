@@ -12,7 +12,7 @@ namespace ServiceStack.OrmLite
 
 		private static readonly object ReadLock = new object();
 
-		private static readonly Dictionary<Type, List<FieldDefinition>> TypeFieldDefinitionsMap
+		private static Dictionary<Type, List<FieldDefinition>> TypeFieldDefinitionsMap
 			= new Dictionary<Type, List<FieldDefinition>>();
 
 		private static bool IsNullableType(Type theType)
@@ -34,6 +34,11 @@ namespace ServiceStack.OrmLite
 				return true;
 			}
 			return false;
+		}
+
+		internal static void ClearCache()
+		{
+			TypeFieldDefinitionsMap = new Dictionary<Type, List<FieldDefinition>>();
 		}
 
 		internal static List<FieldDefinition> GetFieldDefinitions(this Type type)
@@ -80,9 +85,9 @@ namespace ServiceStack.OrmLite
 							IsPrimaryKey = isPrimaryKey,
 							AutoIncrement = autoIncrement,
 							IsUnique = isUnique,
-							ConvertValueFn = OrmLite.DialectProvider.ConvertDbValue,
-							QuoteValueFn = OrmLite.DialectProvider.GetQuotedValue,
-                            PropertyInvoker = OrmLite.PropertyInvoker,
+							ConvertValueFn = OrmLiteConfig.DialectProvider.ConvertDbValue,
+							QuoteValueFn = OrmLiteConfig.DialectProvider.GetQuotedValue,
+                            PropertyInvoker = OrmLiteConfig.PropertyInvoker,
 						};
 
 						fieldDefinitions.Add(fieldDefinition);

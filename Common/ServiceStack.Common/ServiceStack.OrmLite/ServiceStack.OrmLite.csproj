@@ -45,11 +45,12 @@
     <Compile Include="ExpressionPropertyInvoker.cs" />
     <Compile Include="FieldDefinition.cs" />
     <Compile Include="IPropertyInvoker.cs" />
-    <Compile Include="OrmLite.cs" />
+    <Compile Include="OrmLiteConfig.cs" />
     <Compile Include="OrmLiteBasicPersistenceProvider.cs" />
     <Compile Include="IOrmLiteDialectProvider.cs" />
     <Compile Include="OrmLiteConfigExtensions.cs" />
     <Compile Include="OrmLiteDialectProviderBase.cs" />
+    <Compile Include="OrmLiteLinqExtensions.cs" />
     <Compile Include="OrmLiteWriteExtensions.cs" />
     <Compile Include="OrmLiteReadExtensions.cs" />
     <Compile Include="OrmLiteUtilExtensions.cs" />

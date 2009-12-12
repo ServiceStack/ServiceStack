@@ -4,12 +4,15 @@ using System.Data;
 
 namespace ServiceStack.OrmLite
 {
-	public static class OrmLite
+	public static class OrmLiteConfig
 	{
-		static OrmLite()
+		static OrmLiteConfig()
 		{
-			//PropertyInvoker = ReflectionPropertyInvoker.Instance;
+#if NO_EXPRESSIONS
+			PropertyInvoker = ReflectionPropertyInvoker.Instance;
+#else
 			PropertyInvoker = ExpressionPropertyInvoker.Instance;
+#endif
 		}
 
 		private static IOrmLiteDialectProvider dialectProvider;
@@ -66,6 +69,11 @@ namespace ServiceStack.OrmLite
 			{
 				throw;
 			}
+		}
+
+		public static void ClearCache()
+		{
+			OrmLiteConfigExtensions.ClearCache();
 		}
 	}
 }

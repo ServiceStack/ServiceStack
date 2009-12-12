@@ -71,7 +71,7 @@ namespace ServiceStack.OrmLite
 				}
 				else
 				{
-					escapedParams.Add(OrmLite.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
+					escapedParams.Add(OrmLiteConfig.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
 				}
 			}
 			return string.Format(sqlText, escapedParams.ToArray());
@@ -83,7 +83,7 @@ namespace ServiceStack.OrmLite
 			foreach (var value in values)
 			{
 				if (sb.Length > 0) sb.Append(",");
-				sb.Append(OrmLite.DialectProvider.GetQuotedValue(value, value.GetType()));
+				sb.Append(OrmLiteConfig.DialectProvider.GetQuotedValue(value, value.GetType()));
 			}
 
 			return sb.ToString();
