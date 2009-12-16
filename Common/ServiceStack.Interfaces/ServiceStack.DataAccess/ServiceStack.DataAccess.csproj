@@ -34,6 +34,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AliasAttribute.cs" />
     <Compile Include="Criteria\ICriteria.cs" />
     <Compile Include="Criteria\IOrderAscendingCriteria.cs" />
     <Compile Include="Criteria\IOrderDescendingCriteria.cs" />
