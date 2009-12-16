@@ -1,4 +1,4 @@
-using ServiceStack.DataAccess;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Common.Tests.Support
 {

@@ -14,7 +14,9 @@ namespace ServiceStack.OrmLite
 
 		IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
 
-		string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable);
+		string GetColumnDefinition(
+			string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, 
+			bool isNullable, int? fieldLength, string defaultValue);
 
 		long GetLastInsertId(IDbCommand command);
 	}

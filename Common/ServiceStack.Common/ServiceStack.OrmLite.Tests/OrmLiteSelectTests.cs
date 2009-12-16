@@ -260,7 +260,7 @@ namespace ServiceStack.OrmLite.Tests
 		}
 
 		[Test]
-		public void Can_SelectInto_ModelWithIdAndName_from_ModelWithFieldsOfDifferentTypes_table()
+		public void Can_Select_Into_ModelWithIdAndName_from_ModelWithFieldsOfDifferentTypes_table()
 		{
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
@@ -271,7 +271,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				rowIds.ForEach(x => dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(x)));
 
-				var rows = dbCmd.SelectInto<ModelWithFieldsOfDifferentTypes, ModelWithIdAndName>();
+				var rows = dbCmd.Select<ModelWithIdAndName>(typeof(ModelWithFieldsOfDifferentTypes));
 				var dbRowIds = rows.ConvertAll(x => x.Id);
 
 				Assert.That(dbRowIds, Is.EquivalentTo(rowIds));

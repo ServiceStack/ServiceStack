@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Common.Extensions;
-using ServiceStack.DataAccess;
-using ServiceStack.OrmLite.Tests.UseCase;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite.Tests
 {
@@ -23,6 +21,7 @@ namespace ServiceStack.OrmLite.Tests
 			public DateTime CreatedDate { get; set; }
 		}
 
+		[Ignore]
 		[Test]
 		public void Can_execute_simple_query()
 		{
@@ -55,7 +54,6 @@ namespace ServiceStack.OrmLite.Tests
 
 				Assert.That(rowsLeft[0].Name, Is.EqualTo("A"));
 			}
-
 		}
 
 	}

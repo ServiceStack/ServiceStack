@@ -6,7 +6,7 @@ using ServiceStack.Common.Utils;
 
 namespace ServiceStack.OrmLite
 {
-	public abstract class OrmLiteDialectProviderBase 
+	public abstract class OrmLiteDialectProviderBase
 		: IOrmLiteDialectProvider
 	{
 		#region ADO.NET supported types
@@ -62,6 +62,7 @@ namespace ServiceStack.OrmLite
 
 		public string AutoIncrementDefinition = "AUTOINCREMENT"; //SqlServer express limit
 		public string StringColumnDefinition = "VARCHAR(8000)"; //SqlServer express limit
+		public string StringLengthColumnDefinitionFormat = "VARCHAR({0})";
 		public string IntColumnDefinition = "INTEGER";
 		public string LongColumnDefinition = "BIGINT";
 		public string GuidColumnDefinition = "GUID";
@@ -72,6 +73,20 @@ namespace ServiceStack.OrmLite
 		public string DateTimeColumnDefinition = "DATETIME";
 
 		protected Dictionary<Type, string> columnTypeMap;
+
+		public virtual bool UseUnicode
+		{
+			set
+			{
+				this.StringColumnDefinition = value
+					? "NVARCHAR(8000)"
+					: "VARCHAR(8000)";
+
+				this.StringLengthColumnDefinitionFormat = value
+					? "NVARCHAR({0})"
+					: "VARCHAR({0})";
+			}
+		}
 
 		protected OrmLiteDialectProviderBase()
 		{
@@ -110,6 +125,8 @@ namespace ServiceStack.OrmLite
         	};
 		}
 
+		public string DefaultValueFormat = " DEFAULT ({0})";
+
 		public virtual bool ShouldQuoteValue(Type fieldType)
 		{
 			string fieldDefinition;
@@ -119,10 +136,10 @@ namespace ServiceStack.OrmLite
 			}
 
 			return fieldDefinition != IntColumnDefinition
-			       && fieldDefinition != LongColumnDefinition
-			       && fieldDefinition != RealColumnDefinition
-			       && fieldDefinition != DecimalColumnDefinition
-			       && fieldDefinition != BoolColumnDefinition;
+				   && fieldDefinition != LongColumnDefinition
+				   && fieldDefinition != RealColumnDefinition
+				   && fieldDefinition != DecimalColumnDefinition
+				   && fieldDefinition != BoolColumnDefinition;
 		}
 
 		public virtual object ConvertDbValue(object value, Type type)
@@ -133,7 +150,7 @@ namespace ServiceStack.OrmLite
 			{
 				return value;
 			}
-			
+
 			var convertedValue = StringConverterUtils.Parse(value.ToString(), type);
 			return convertedValue;
 		}
@@ -154,8 +171,8 @@ namespace ServiceStack.OrmLite
 			}
 
 			return ShouldQuoteValue(fieldType)
-			       	? "'" + EscapeParam(value) + "'"
-			       	: value.ToString();
+					? "'" + EscapeParam(value) + "'"
+					: value.ToString();
 		}
 
 		public abstract IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
@@ -176,12 +193,20 @@ namespace ServiceStack.OrmLite
 				string.Format("Property of type: {0} is not supported", fieldType.FullName));
 		}
 
-		public virtual string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable)
+		public virtual string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, string defaultValue)
 		{
 			string fieldDefinition;
-			if (!columnTypeMap.TryGetValue(fieldType, out fieldDefinition))
+
+			if (fieldType == typeof(string) && fieldLength.HasValue)
 			{
-				fieldDefinition = this.GetUndefinedColumnDefintion(fieldType);
+				fieldDefinition = string.Format(StringLengthColumnDefinitionFormat, fieldLength.Value);
+			}
+			else
+			{
+				if (!columnTypeMap.TryGetValue(fieldType, out fieldDefinition))
+				{
+					fieldDefinition = this.GetUndefinedColumnDefintion(fieldType);
+				}
 			}
 
 			var sql = new StringBuilder();
@@ -205,6 +230,11 @@ namespace ServiceStack.OrmLite
 				{
 					sql.Append(" NOT NULL");
 				}
+			}
+
+			if (!string.IsNullOrEmpty(defaultValue))
+			{
+				sql.AppendFormat(DefaultValueFormat, defaultValue);
 			}
 
 			return sql.ToString();

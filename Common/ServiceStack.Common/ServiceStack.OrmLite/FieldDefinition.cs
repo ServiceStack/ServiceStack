@@ -19,6 +19,10 @@ namespace ServiceStack.OrmLite
 
 		public bool IsUnique { get; set; }
 
+		public int? FieldLength { get; set; }
+
+		public string DefaultValue { get; set; }
+
 		public Func<object, Type, object> ConvertValueFn { get; set; }
 
 		public Func<object, Type, string> QuoteValueFn { get; set; }

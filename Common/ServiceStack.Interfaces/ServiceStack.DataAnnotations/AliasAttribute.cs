@@ -1,15 +1,15 @@
 using System;
 
-namespace ServiceStack.DataAccess
+namespace ServiceStack.DataAnnotations
 {
 	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct)]
 	public class AliasAttribute : Attribute
 	{
-		protected string name;
+		public string Name { get; set; }
 
 		public AliasAttribute(string name)
 		{
-			this.name = name;
+			this.Name = name;
 		}
 	}
 }

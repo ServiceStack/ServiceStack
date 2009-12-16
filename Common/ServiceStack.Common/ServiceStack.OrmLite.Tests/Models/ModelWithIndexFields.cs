@@ -1,4 +1,4 @@
-using ServiceStack.DataAccess;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite.Tests.Models
 {

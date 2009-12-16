@@ -51,6 +51,9 @@
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -77,6 +80,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="Models\Northwind.models.cs" />
     <Compile Include="Models\SampleOrderLine.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
     <Compile Include="Models\ModelWithComplexTypes.cs" />
@@ -191,6 +195,12 @@
     <None Include="App_Data\Database1DataSet.xss">
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </None>
+    <None Include="App_Data\sql\instnwnd.Ingres.sql" />
+    <None Include="App_Data\sql\instnwnd.MySql.sql" />
+    <None Include="App_Data\sql\instnwnd.Oracle.sql" />
+    <None Include="App_Data\sql\instnwnd.PostgreSQL.sql" />
+    <None Include="App_Data\sql\instnwnd.SQLite.sql" />
+    <None Include="App_Data\sql\instnwnd.SqlServer.sql" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

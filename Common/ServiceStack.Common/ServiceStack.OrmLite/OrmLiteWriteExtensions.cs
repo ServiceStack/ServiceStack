@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAccess;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 
 namespace ServiceStack.OrmLite
@@ -29,7 +30,9 @@ namespace ServiceStack.OrmLite
 					fieldDef.FieldType,
 					fieldDef.IsPrimaryKey,
 					fieldDef.AutoIncrement,
-					fieldDef.IsNullable);
+					fieldDef.IsNullable, 
+					fieldDef.FieldLength, 
+					fieldDef.DefaultValue);
 
 				sbColumns.AppendLine(columnDefinition);
 
@@ -61,10 +64,23 @@ namespace ServiceStack.OrmLite
 			return sql.ToString();
 		}
 
+		public static void CreateTables(this IDbCommand dbCommand, bool overwrite, params Type[] tableTypes)
+		{
+			foreach (var tableType in tableTypes)
+			{
+				CreateTable(dbCommand, overwrite, tableType);
+			}
+		}
+
 		public static void CreateTable<T>(this IDbCommand dbCommand, bool overwrite)
 			where T : new()
 		{
 			var tableType = typeof(T);
+			CreateTable(dbCommand, overwrite, tableType);
+		}
+
+		public static void CreateTable(this IDbCommand dbCommand, bool overwrite, Type tableType)
+		{
 			if (overwrite)
 			{
 				try
@@ -89,7 +105,7 @@ namespace ServiceStack.OrmLite
 				const string sqliteTableExistsError = "already exists";
 				const string sqlServerAlreadyExistsError = "There is already an object named";
 				if (ex.Message.Contains(sqliteTableExistsError)
-					|| ex.Message.Contains(sqlServerAlreadyExistsError))
+				    || ex.Message.Contains(sqlServerAlreadyExistsError))
 				{
 					Log.DebugFormat("Ignoring existing table '{0}': {1}", tableType.Name, ex.Message);
 					return;

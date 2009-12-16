@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ServiceStack.DataAccess;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite
 {
@@ -12,7 +12,7 @@ namespace ServiceStack.OrmLite
 
 		private static readonly object ReadLock = new object();
 
-		private static Dictionary<Type, List<FieldDefinition>> TypeFieldDefinitionsMap
+		private static Dictionary<Type, List<FieldDefinition>> typeFieldDefinitionsMap
 			= new Dictionary<Type, List<FieldDefinition>>();
 
 		private static bool IsNullableType(Type theType)
@@ -38,7 +38,7 @@ namespace ServiceStack.OrmLite
 
 		internal static void ClearCache()
 		{
-			TypeFieldDefinitionsMap = new Dictionary<Type, List<FieldDefinition>>();
+			typeFieldDefinitionsMap = new Dictionary<Type, List<FieldDefinition>>();
 		}
 
 		internal static List<FieldDefinition> GetFieldDefinitions(this Type type)
@@ -46,7 +46,7 @@ namespace ServiceStack.OrmLite
 			lock (ReadLock)
 			{
 				List<FieldDefinition> fieldDefinitions;
-				if (!TypeFieldDefinitionsMap.TryGetValue(type, out fieldDefinitions))
+				if (!typeFieldDefinitionsMap.TryGetValue(type, out fieldDefinitions))
 				{
 					fieldDefinitions = new List<FieldDefinition>();
 
@@ -93,7 +93,7 @@ namespace ServiceStack.OrmLite
 						fieldDefinitions.Add(fieldDefinition);
 					}
 
-					TypeFieldDefinitionsMap[type] = fieldDefinitions;
+					typeFieldDefinitionsMap[type] = fieldDefinitions;
 				}
 
 				return fieldDefinitions;

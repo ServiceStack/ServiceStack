@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SearchIndex", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceHost", "ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj", "{61DD8BC4-8B71-4D16-9F8C-94933B2B36CB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAnnotations", "ServiceStack.DataAnnotations\ServiceStack.DataAnnotations.csproj", "{9B64E174-0CDE-4CA7-9344-62E40FA3DE65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{61DD8BC4-8B71-4D16-9F8C-94933B2B36CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61DD8BC4-8B71-4D16-9F8C-94933B2B36CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61DD8BC4-8B71-4D16-9F8C-94933B2B36CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B64E174-0CDE-4CA7-9344-62E40FA3DE65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B64E174-0CDE-4CA7-9344-62E40FA3DE65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B64E174-0CDE-4CA7-9344-62E40FA3DE65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B64E174-0CDE-4CA7-9344-62E40FA3DE65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

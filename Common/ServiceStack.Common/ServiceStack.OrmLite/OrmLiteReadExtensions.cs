@@ -78,7 +78,7 @@ namespace ServiceStack.OrmLite
 		public static List<T> Select<T>(this IDbCommand dbCommand)
 			where T : new()
 		{
-			return Select<T>(dbCommand, null);
+			return Select<T>(dbCommand, (string)null);
 		}
 
 		public static List<T> Select<T>(this IDbCommand dbCommand, string sqlFilter, params object[] filterParams)
@@ -91,19 +91,18 @@ namespace ServiceStack.OrmLite
 			}
 		}
 
-		public static List<TModel> SelectInto<TTable, TModel>(this IDbCommand dbCommand)
+		public static List<TModel> Select<TModel>(this IDbCommand dbCommand, Type fromTableType)
 			where TModel : new()
 		{
-			return SelectInto<TTable, TModel>(dbCommand, null);
+			return Select<TModel>(dbCommand, fromTableType, null);
 		}
 
-		public static List<TModel> SelectInto<TTable, TModel>(this IDbCommand dbCommand, string sqlFilter, params object[] filterParams)
+		public static List<TModel> Select<TModel>(this IDbCommand dbCommand, Type fromTableType, string sqlFilter, params object[] filterParams)
 			where TModel : new()
 		{
 			var sql = new StringBuilder();
-			var tableType = typeof(TTable);
 			var modelType = typeof(TModel);
-			sql.AppendFormat("SELECT {0} FROM \"{1}\"", modelType.GetColumnNames(), tableType.Name);
+			sql.AppendFormat("SELECT {0} FROM \"{1}\"", modelType.GetColumnNames(), fromTableType.Name);
 			if (!string.IsNullOrEmpty(sqlFilter))
 			{
 				sqlFilter = sqlFilter.SqlFormat(filterParams);

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.DataAccess;
 using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.OrmLite.Tests.UseCase
@@ -22,7 +21,7 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 		{
 			public long Id { get; set; }
 
-			[Index]
+			[DataAnnotations.Index]
 			public string Name { get; set; }
 
 			public DateTime CreatedDate { get; set; }

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Support;
 using ServiceStack.Common.Utils;
-using ServiceStack.DataAccess;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Validation.Validators;
 
 namespace ServiceStack.Common.Tests

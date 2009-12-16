@@ -108,5 +108,52 @@ namespace ServiceStack.OrmLite.Tests
 			}
 		}
 
+		[Test]
+		public void Can_create_multiple_tables()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTables(true, typeof(ModelWithIdOnly), typeof(ModelWithIdAndName));
+
+				dbCmd.Insert(new ModelWithIdOnly(1));
+				dbCmd.Insert(new ModelWithIdOnly(2));
+
+				dbCmd.Insert(new ModelWithIdAndName(1));
+				dbCmd.Insert(new ModelWithIdAndName(2));
+
+				var rows1 = dbCmd.Select<ModelWithIdOnly>();
+				var rows2 = dbCmd.Select<ModelWithIdOnly>();
+
+				Assert.That(rows1, Has.Count(2));
+				Assert.That(rows2, Has.Count(2));
+			}
+		}
+
+		[Test]
+		public void Can_create_all_Northwind_tables()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTables(true,
+					typeof(Employees),
+					typeof(Categories),
+					typeof(Customers),
+					typeof(Shippers),
+					typeof(Suppliers),
+					typeof(Orders),
+					typeof(Products),
+					typeof(OrderDetails),
+					typeof(CustomerCustomerDemo),
+					typeof(Categories),
+					typeof(CustomerDemographics),
+					typeof(Region),
+					typeof(Territories),
+					typeof(EmployeeTerritories)
+				);
+			}
+		}
+
 	}
 }
