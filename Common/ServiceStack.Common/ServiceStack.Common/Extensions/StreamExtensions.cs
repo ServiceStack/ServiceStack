@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -86,6 +87,17 @@ namespace ServiceStack.Common.Extensions
 			return GZipProvider.GUnzip(gzBuffer);
 		}
 
+		public static IEnumerable<string> ReadLines(this StreamReader reader)
+		{
+			if (reader == null)
+				throw new ArgumentNullException("reader");
+
+			string line;
+			while ((line = reader.ReadLine()) != null)
+			{
+				yield return line;
+			}
+		}
 
 	}
 }

@@ -22,13 +22,9 @@ namespace ServiceStack.OrmLite
 					&& theType.GetGenericTypeDefinition().Equals(typeof(Nullable<>)));
 		}
 
-		/// <summary>
-		/// Not using Linq.Where() and manually iterating through objProperties just to avoid dependencies on System.Xml??
-		/// </summary>
-		/// <param name="objProperties">The obj properties.</param>
-		/// <returns></returns>
 		internal static bool CheckForIdField(IEnumerable<PropertyInfo> objProperties)
 		{
+			// Not using Linq.Where() and manually iterating through objProperties just to avoid dependencies on System.Xml??
 			foreach (var objProperty in objProperties)
 			{
 				if (objProperty.Name != IdField) continue;
