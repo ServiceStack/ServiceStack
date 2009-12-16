@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.OrmLite.Tests.Models;
 
@@ -133,7 +135,11 @@ namespace ServiceStack.OrmLite.Tests
 		[Test]
 		public void Can_create_all_Northwind_tables()
 		{
-			using (var db = ConnectionString.OpenDbConnection())
+			var connectionString = "~/App_Data/db.sqlite".MapAbsolutePath();
+			if (File.Exists(connectionString))
+				File.Delete(connectionString);
+
+			using (var db = connectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
 				dbCmd.CreateTables(true,

@@ -17,6 +17,8 @@ namespace ServiceStack.OrmLite
 
 		public bool IsNullable { get; set; }
 
+		public bool IsIndexed { get; set; }
+
 		public bool IsUnique { get; set; }
 
 		public int? FieldLength { get; set; }

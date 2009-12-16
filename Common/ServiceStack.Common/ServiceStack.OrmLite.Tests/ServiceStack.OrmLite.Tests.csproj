@@ -195,6 +195,7 @@
     <None Include="App_Data\Database1DataSet.xss">
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </None>
+    <None Include="App_Data\db.sqlite" />
     <None Include="App_Data\sql\instnwnd.Ingres.sql" />
     <None Include="App_Data\sql\instnwnd.MySql.sql" />
     <None Include="App_Data\sql\instnwnd.Oracle.sql" />

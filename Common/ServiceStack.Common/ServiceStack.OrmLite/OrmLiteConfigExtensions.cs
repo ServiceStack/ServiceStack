@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.DataAnnotations;
@@ -74,8 +75,18 @@ namespace ServiceStack.OrmLite
 
 						var autoIncrement = isPrimaryKey && propertyType == typeof(int);
 
-						var uniqueAttrs = propertyInfo.GetCustomAttributes(typeof(IndexAttribute), true);
-						var isUnique = uniqueAttrs.Count() > 0 && ((IndexAttribute)uniqueAttrs[0]).Unique;
+						var indexAttr = propertyInfo.GetCustomAttributes(typeof(IndexAttribute), true);
+						var isUnique = indexAttr.Length > 0 && ((IndexAttribute)indexAttr[0]).Unique;
+
+						var stringLengthAttrs = propertyInfo.GetCustomAttributes(typeof(StringLengthAttribute), true);
+						var fieldLength = stringLengthAttrs.Length > 0 
+							? ((StringLengthAttribute) stringLengthAttrs[0]).MaximumLength 
+							: (int?) null;
+
+						var defaultValueAttrs = propertyInfo.GetCustomAttributes(typeof(DefaultAttribute), true);
+						var defaultValue = defaultValueAttrs.Length > 0
+							? ((DefaultAttribute)defaultValueAttrs[0]).DefaultValue
+							: null;
 
 						var fieldDefinition = new FieldDefinition {
 							Name = propertyInfo.Name,
@@ -84,7 +95,10 @@ namespace ServiceStack.OrmLite
 							IsNullable = isNullable,
 							IsPrimaryKey = isPrimaryKey,
 							AutoIncrement = autoIncrement,
+							IsIndexed = indexAttr.Length > 0,
 							IsUnique = isUnique,
+							FieldLength = fieldLength,
+							DefaultValue = defaultValue,
 							ConvertValueFn = OrmLiteConfig.DialectProvider.ConvertDbValue,
 							QuoteValueFn = OrmLiteConfig.DialectProvider.GetQuotedValue,
                             PropertyInvoker = OrmLiteConfig.PropertyInvoker,
