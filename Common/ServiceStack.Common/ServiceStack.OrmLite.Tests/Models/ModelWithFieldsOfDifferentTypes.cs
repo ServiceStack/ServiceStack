@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite.Tests.Support;
 
@@ -10,6 +11,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(OrmLiteTestBase));
 
+		[AutoIncrement]
 		public int Id { get; set; }
 
 		public string Name { get; set; }

@@ -1,10 +1,9 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Runtime.Serialization;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Utils;
-using ServiceStack.Validation.Validators;
 using System.Collections.Generic;
 
 namespace ServiceStack.Common.Tests
@@ -23,15 +22,15 @@ namespace ServiceStack.Common.Tests
 
 		public class TestClass
 		{
-			[NotNull]
+			[Required]
 			public string Member1 { get; set; }
 
 			public string Member2 { get; set; }
 
-			[NotNull]
+			[Required]
 			public string Member3 { get; set; }
 
-			[RequiredText]
+			[StringLength(1)]
 			public string Member4 { get; set; }
 		}
 
@@ -215,6 +214,50 @@ namespace ServiceStack.Common.Tests
 			var expectedString = "One:1st,Two:2nd,Three:3rd";
 			var stringValue = StringConverterUtils.ToString((object)stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_convert_string_dictionary_with_special_chars_as_object()
+		{
+			var stringDictionary = new Dictionary<string, string> {
+				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
+			};
+			var expectedString = "One:\"%221st\",Two:\"2%3and\",Three:\"3r%2cd\",Four:four%";
+			var stringValue = StringConverterUtils.ToString(stringDictionary);
+			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_parse_string_dictionary_with_special_chars_as_object()
+		{
+			var stringDictionary = new Dictionary<string, string> {
+				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
+			};
+			const string mapValues = "One:\"%221st\",Two:\"2%3and\",Three:\"3r%2cd\",Four:four%";
+			var parsedDictionary = StringConverterUtils.Parse(mapValues, stringDictionary.GetType());
+			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
+		}
+
+		[Test]
+		public void Can_convert_string_list_with_special_chars_as_object()
+		{
+			var stringList = new List<string> {
+				"\"1st", "2:nd", "3r,d", "four%"
+			};
+			var expectedString = "\"%221st\",\"2%3and\",\"3r%2cd\",four%";
+			var stringValue = StringConverterUtils.ToString(stringList);
+			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_parse_string_list_with_special_chars_as_object()
+		{
+			var stringList = new List<string> {
+				"\"1st", "2:nd", "3r,d", "four%"
+			};
+			const string listValues = "\"%221st\",\"2%3and\",\"3r%2cd\",four%";
+			var parsedList = StringConverterUtils.Parse(listValues, stringList.GetType());
+			Assert.That(parsedList, Is.EquivalentTo(stringList));
 		}
 	}
 }

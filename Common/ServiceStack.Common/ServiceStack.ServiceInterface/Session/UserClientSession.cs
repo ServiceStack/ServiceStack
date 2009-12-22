@@ -5,7 +5,7 @@ namespace ServiceStack.ServiceInterface.Session
 	[Serializable]
 	public class UserClientSession
 	{
-		private const int VALID_FOR_TWO_WEEKS = 14;
+		private const int ValidForTwoWeeks = 14;
 		private readonly UserSession userSession;
 		public string IpAddress { get; private set; }
 		public DateTime ExpiryDate { get; private set; }
@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceInterface.Session
 			this.IpAddress = ipAddress;
 			this.Base64ClientModulus = base64ClientModulus;
 			this.UserClientGlobalId = userClientGlobalId;
-			this.ExpiryDate = DateTime.Now.AddDays(VALID_FOR_TWO_WEEKS);
+			this.ExpiryDate = DateTime.Now.AddDays(ValidForTwoWeeks);
 		}
 
 		public Guid Id { get; set; }

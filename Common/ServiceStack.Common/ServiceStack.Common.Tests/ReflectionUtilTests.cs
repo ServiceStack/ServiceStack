@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
@@ -14,22 +15,22 @@ namespace ServiceStack.Common.Tests
 	{
 		public class TestClass
 		{
-			[NotNull]
+			[Required]
 			public string Member1 { get; set; }
 
 			public string Member2 { get; set; }
 
-			[NotNull]
+			[Required]
 			public string Member3 { get; set; }
 
-			[RequiredText]
+			[StringLength(1)]
 			public string Member4 { get; set; }
 		}
 
 		[Test]
 		public void GetTest()
 		{
-			var propertyAttributes = ReflectionUtils.GetPropertyAttributes<NotNullAttribute>(typeof(TestClass));
+			var propertyAttributes = ReflectionUtils.GetPropertyAttributes<RequiredAttribute>(typeof(TestClass));
 			var propertyNames = propertyAttributes.ToList().ConvertAll(x => x.Key.Name);
 			Assert.That(propertyNames, Is.EquivalentTo(new[] { "Member1", "Member3" }));
 		}

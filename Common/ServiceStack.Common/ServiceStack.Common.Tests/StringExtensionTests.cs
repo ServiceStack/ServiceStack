@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Web;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
@@ -68,5 +69,31 @@ namespace ServiceStack.Common.Tests
 			const string code = "EmailAddressIsInvalid";
 			Assert.That(code.ToEnglish(), Is.EqualTo("Email address is invalid"));
 		}
+
+		[Test]
+		public void Print_special_chars()
+		{
+			var specialChars = new List<char> { '"', ':', ',', '%' };
+			specialChars.ForEach(x => Console.WriteLine(x + " = " + ((int)x).ToString("x")));
+		}
+
+		[Test]
+		public void HexEscape_escapes_special_chars()
+		{
+			var specialChars = new List<char> { '"', ':', ',', '%' };
+			const string unescapedString = "\"1st 2:nd 3r,d 4th%";
+			const string expectedString = "%221st 2%3and 3r%2cd 4th%25";
+			Assert.That(unescapedString.HexEscape(specialChars.ToArray()), Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void HexUnescape_unescapes_special_chars()
+		{
+			var specialChars = new List<char> { '"', ':', ',', '%' };
+			const string escapedString = "%221st 2%3and 3r%2cd 4th%25";
+			const string expectedString = "\"1st 2:nd 3r,d 4th%";
+			Assert.That(escapedString.HexUnescape(specialChars.ToArray()), Is.EqualTo(expectedString));
+		}
+
 	}
 }

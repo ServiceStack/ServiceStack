@@ -151,7 +151,7 @@ namespace ServiceStack.Common.Extensions
 		{
 			if (string.IsNullOrEmpty(text)) return text;
 
-			var tmp = new StringBuilder();
+			var sb = new StringBuilder();
 
 			for (var i=0; i < text.Length; i++)
 			{
@@ -166,42 +166,90 @@ namespace ServiceStack.Common.Extensions
 					|| charCode == 46						// .
 					)
 				{
-					tmp.Append(c);
+					sb.Append(c);
 				}
 				else
 				{
-					tmp.Append('%' + charCode.ToString("x"));
+					sb.Append('%' + charCode.ToString("x"));
 				}
 			}
-			return tmp.ToString();
+			return sb.ToString();
 		}
 
 		public static string UrlDecode(this string text)
 		{
 			if (string.IsNullOrEmpty(text)) return null;
 
-			var tmp = new StringBuilder();
+			var sb = new StringBuilder();
 
 			for (var i=0; i < text.Length; i++)
 			{
 				var c = text.Substring(i, 1);
 				if (c == "+")
 				{
-					tmp.Append(" ");
+					sb.Append(" ");
 				}
 				else if (c == "%")
 				{
 					var hexNo = Convert.ToInt32(text.Substring(i + 1, 2), 16);
-					tmp.Append((char)hexNo);
+					sb.Append((char)hexNo);
 					i += 2;
 				}
 				else
 				{
-					tmp.Append(c);
+					sb.Append(c);
 				}
 			}
 
-			return tmp.ToString();
+			return sb.ToString();
+		}
+
+		public static string HexEscape(this string text, params char[] anyCharOf)
+		{
+			if (string.IsNullOrEmpty(text)) return text;
+			if (anyCharOf == null || anyCharOf.Length == 0) return text;
+
+			var encodeCharMap = new HashSet<char>(anyCharOf);
+
+			var sb = new StringBuilder();
+			for (var i=0; i < text.Length; i++)
+			{
+				var c = text[i];
+				if (encodeCharMap.Contains(c))
+				{
+					sb.Append('%' + ((int)c).ToString("x"));
+				}
+				else
+				{
+					sb.Append(c);
+				}
+			}
+			return sb.ToString();
+		}
+
+		public static string HexUnescape(this string text, params char[] anyCharOf)
+		{
+			if (string.IsNullOrEmpty(text)) return null;
+			if (anyCharOf == null || anyCharOf.Length == 0) return text;
+
+			var sb = new StringBuilder();
+
+			for (var i=0; i < text.Length; i++)
+			{
+				var c = text.Substring(i, 1);
+				if (c == "%")
+				{
+					var hexNo = Convert.ToInt32(text.Substring(i + 1, 2), 16);
+					sb.Append((char)hexNo);
+					i += 2;
+				}
+				else
+				{
+					sb.Append(c);
+				}
+			}
+
+			return sb.ToString();
 		}
 
 		public static string UrlFormat(this string url, params string[] urlComponents)
@@ -237,6 +285,12 @@ namespace ServiceStack.Common.Extensions
 				array[i] = (char)number;
 			}
 			return new string(array);
+		}
+
+		public static string SafeVarName(this string text)
+		{
+			if (string.IsNullOrEmpty(text)) return null;
+			return text.Replace(" ", "_");
 		}
 	}
 

@@ -72,7 +72,7 @@ namespace ServiceStack.OrmLite
 		public string BlobColumnDefinition = "BLOB";
 		public string DateTimeColumnDefinition = "DATETIME";
 
-		protected Dictionary<Type, string> columnTypeMap;
+		protected Dictionary<Type, string> ColumnTypeMap;
 
 		public virtual bool UseUnicode
 		{
@@ -95,7 +95,7 @@ namespace ServiceStack.OrmLite
 
 		protected void InitColumnTypeMap()
 		{
-			columnTypeMap = new Dictionary<Type, string>
+			ColumnTypeMap = new Dictionary<Type, string>
         	{
         		{ typeof(string), StringColumnDefinition },
         		{ typeof(char), StringColumnDefinition },
@@ -130,7 +130,7 @@ namespace ServiceStack.OrmLite
 		public virtual bool ShouldQuoteValue(Type fieldType)
 		{
 			string fieldDefinition;
-			if (!columnTypeMap.TryGetValue(fieldType, out fieldDefinition))
+			if (!ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
 			{
 				fieldDefinition = this.GetUndefinedColumnDefintion(fieldType);
 			}
@@ -203,7 +203,7 @@ namespace ServiceStack.OrmLite
 			}
 			else
 			{
-				if (!columnTypeMap.TryGetValue(fieldType, out fieldDefinition))
+				if (!ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
 				{
 					fieldDefinition = this.GetUndefinedColumnDefintion(fieldType);
 				}

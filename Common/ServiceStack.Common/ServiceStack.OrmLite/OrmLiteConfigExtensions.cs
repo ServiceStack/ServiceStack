@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.Common.Extensions;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite
@@ -11,10 +12,8 @@ namespace ServiceStack.OrmLite
 	{
 		public const string IdField = "Id";
 
-		private static readonly object ReadLock = new object();
-
-		private static Dictionary<Type, List<FieldDefinition>> typeFieldDefinitionsMap
-			= new Dictionary<Type, List<FieldDefinition>>();
+		private static Dictionary<Type, ModelDefinition> typeModelDefinitionMap
+			= new Dictionary<Type, ModelDefinition>();
 
 		private static bool IsNullableType(Type theType)
 		{
@@ -35,19 +34,28 @@ namespace ServiceStack.OrmLite
 
 		internal static void ClearCache()
 		{
-			typeFieldDefinitionsMap = new Dictionary<Type, List<FieldDefinition>>();
+			typeModelDefinitionMap = new Dictionary<Type, ModelDefinition>();
 		}
 
-		internal static List<FieldDefinition> GetFieldDefinitions(this Type type)
+		internal static ModelDefinition GetModelDefinition(this Type modelType)
 		{
-			lock (ReadLock)
+			lock (typeModelDefinitionMap)
 			{
-				List<FieldDefinition> fieldDefinitions;
-				if (!typeFieldDefinitionsMap.TryGetValue(type, out fieldDefinitions))
+				ModelDefinition modelDef;
+				if (!typeModelDefinitionMap.TryGetValue(modelType, out modelDef))
 				{
-					fieldDefinitions = new List<FieldDefinition>();
+					var modelAliasAttr = modelType.FirstAttribute<AliasAttribute>();
+					modelDef = new ModelDefinition {
+                        ModelType = modelType,
+						Name = modelType.Name,
+						Alias = modelAliasAttr != null ? modelAliasAttr.Name : null,
+					};
 
-					var objProperties = type.GetProperties(
+					modelDef.CompositeIndexes.AddRange(
+						modelType.GetCustomAttributes(typeof(CompositeIndexAttribute), true).ToList()
+						.ConvertAll(x => (CompositeIndexAttribute)x ) );
+
+					var objProperties = modelType.GetProperties(
 						BindingFlags.Public | BindingFlags.Instance).ToList();
 
 					var hasIdField = CheckForIdField(objProperties);
@@ -62,51 +70,51 @@ namespace ServiceStack.OrmLite
 
 						var isNullableType = IsNullableType(propertyInfo.PropertyType);
 
-						var isNullable = !propertyInfo.PropertyType.IsValueType
+						var isNullable = (!propertyInfo.PropertyType.IsValueType 
+											&& propertyInfo.FirstAttribute<RequiredAttribute>() == null)
 										 || isNullableType;
 
 						var propertyType = isNullableType
 											? Nullable.GetUnderlyingType(propertyInfo.PropertyType)
 											: propertyInfo.PropertyType;
 
-						var autoIncrement = isPrimaryKey && propertyType == typeof(int);
+						var aliasAttr = propertyInfo.FirstAttribute<AliasAttribute>();
 
-						var indexAttr = propertyInfo.GetCustomAttributes(typeof(IndexAttribute), true);
-						var isUnique = indexAttr.Length > 0 && ((IndexAttribute)indexAttr[0]).Unique;
+						var indexAttr = propertyInfo.FirstAttribute<IndexAttribute>();
+						var isIndex = indexAttr != null;
+						var isUnique = isIndex && indexAttr.Unique;
 
-						var stringLengthAttrs = propertyInfo.GetCustomAttributes(typeof(StringLengthAttribute), true);
-						var fieldLength = stringLengthAttrs.Length > 0 
-							? ((StringLengthAttribute) stringLengthAttrs[0]).MaximumLength 
-							: (int?) null;
+						var stringLengthAttr = propertyInfo.FirstAttribute<StringLengthAttribute>();
 
-						var defaultValueAttrs = propertyInfo.GetCustomAttributes(typeof(DefaultAttribute), true);
-						var defaultValue = defaultValueAttrs.Length > 0
-							? ((DefaultAttribute)defaultValueAttrs[0]).DefaultValue
-							: null;
+						var defaultValueAttr = propertyInfo.FirstAttribute<DefaultAttribute>();
+
+						var referencesAttr = propertyInfo.FirstAttribute<ReferencesAttribute>();
 
 						var fieldDefinition = new FieldDefinition {
 							Name = propertyInfo.Name,
+							Alias = aliasAttr != null ? aliasAttr.Name : null,
 							FieldType = propertyType,
 							PropertyInfo = propertyInfo,
 							IsNullable = isNullable,
 							IsPrimaryKey = isPrimaryKey,
-							AutoIncrement = autoIncrement,
-							IsIndexed = indexAttr.Length > 0,
+							AutoIncrement = isPrimaryKey && propertyInfo.FirstAttribute<AutoIncrementAttribute>() != null,
+							IsIndexed = isIndex,
 							IsUnique = isUnique,
-							FieldLength = fieldLength,
-							DefaultValue = defaultValue,
+							FieldLength = stringLengthAttr != null ? stringLengthAttr.MaximumLength : (int?)null,
+							DefaultValue = defaultValueAttr != null ? defaultValueAttr.DefaultValue : null,
+							ReferencesType = referencesAttr != null ? referencesAttr.Type : null,
 							ConvertValueFn = OrmLiteConfig.DialectProvider.ConvertDbValue,
 							QuoteValueFn = OrmLiteConfig.DialectProvider.GetQuotedValue,
-                            PropertyInvoker = OrmLiteConfig.PropertyInvoker,
+							PropertyInvoker = OrmLiteConfig.PropertyInvoker,
 						};
 
-						fieldDefinitions.Add(fieldDefinition);
+						modelDef.FieldDefinitions.Add(fieldDefinition);
 					}
 
-					typeFieldDefinitionsMap[type] = fieldDefinitions;
+					typeModelDefinitionMap[modelType] = modelDef;
 				}
 
-				return fieldDefinitions;
+				return modelDef;
 			}
 		}
 

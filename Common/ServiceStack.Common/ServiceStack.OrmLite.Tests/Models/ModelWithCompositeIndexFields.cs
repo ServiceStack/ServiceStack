@@ -2,7 +2,7 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.OrmLite.Tests.Models
 {
-	[Index(true, "Composite1", "Composite2")]
+	[CompositeIndex(true, "Composite1", "Composite2")]
 	public class ModelWithCompositeIndexFields
 	{
 		public string Id { get; set; }

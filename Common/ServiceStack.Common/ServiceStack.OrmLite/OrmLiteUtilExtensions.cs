@@ -42,9 +42,9 @@ namespace ServiceStack.OrmLite
 		internal static string GetColumnNames(this Type tableType)
 		{
 			var sqlColumns = new StringBuilder();
-			tableType.GetFieldDefinitions()
-				.ForEach(x => sqlColumns.AppendFormat("{0}\"{1}\" ",
-				                                      sqlColumns.Length > 0 ? "," : "", x.Name));
+			tableType.GetModelDefinition().FieldDefinitions
+				.ForEach(x => sqlColumns.AppendFormat(
+					"{0}\"{1}\" ", sqlColumns.Length > 0 ? "," : "", x.Name));
 
 			return sqlColumns.ToString();
 		}

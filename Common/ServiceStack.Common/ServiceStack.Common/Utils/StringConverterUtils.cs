@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Common.Utils
@@ -134,7 +135,7 @@ namespace ServiceStack.Common.Utils
 				bool isNullValue = string.IsNullOrEmpty(value);
 				if (isNullValue && this.Type.IsValueType)
 				{
-					return Activator.CreateInstance(this.Type);
+					return ReflectionUtils.GetDefaultValue(this.Type);
 				}
 				if (this.Type.IsEnum)
 				{
@@ -179,7 +180,7 @@ namespace ServiceStack.Common.Utils
 				throw new NotSupportedException(string.Format("Could not parse text value '{0}' to create type '{1}'", value, this.Type));
 			}
 
-			public object CreateListFromTextValue(string text)
+			private object CreateListFromTextValue(string text)
 			{
 				var list = this.TypeConstructor.Invoke(new object[] { });
 				if (string.IsNullOrEmpty(text)) return list;
@@ -187,13 +188,13 @@ namespace ServiceStack.Common.Utils
 				var valueTypeConverter = GetTypeDefinition(this.GenericCollectionArgumentTypes[0]);
 				foreach (var textValue in textValues)
 				{
-					var value = valueTypeConverter.GetValue(textValue);
+					var value = valueTypeConverter.GetValue(FromSafeString(textValue));
 					SetGenericCollection(list, new[] { value });
 				}
 				return list;
 			}
 
-			public object CreateDictionaryFromTextValue(string textValue)
+			private object CreateDictionaryFromTextValue(string textValue)
 			{
 				const int keyIndex = 0;
 				const int valueIndex = 1;
@@ -203,8 +204,8 @@ namespace ServiceStack.Common.Utils
 				foreach (var item in textValue.Split(ItemSeperator))
 				{
 					var keyValuePair = item.Split(KeyValueSeperator);
-					var keyValue = keyTypeConverter.GetValue(keyValuePair[keyIndex]);
-					var value = valueTypeConverter.GetValue(keyValuePair[valueIndex]);
+					var keyValue = keyTypeConverter.GetValue(FromSafeString(keyValuePair[keyIndex]));
+					var value = valueTypeConverter.GetValue(FromSafeString(keyValuePair[valueIndex]));
 					SetGenericCollection(map, new[] { keyValue, value });
 				}
 				return map;
@@ -315,9 +316,12 @@ namespace ServiceStack.Common.Utils
 			return typeDefinition.GetValue(value);
 		}
 
-		const string FieldSeperator = ",";
-		const string KeySeperator = ":";
-		static readonly string[] IllegalChars = new[] { FieldSeperator, KeySeperator };
+		const char FieldSeperator = ',';
+		const char KeySeperator = ':';
+		const char EscapeQuote = '"';
+		const char EncodeChar = '%';
+		static readonly char[] IllegalChars = new[] { FieldSeperator, KeySeperator };
+		static readonly char[] EscapeChars = new[] { FieldSeperator, KeySeperator, EscapeQuote, EncodeChar };
 
 		public static string ToString<T>(T value)
 		{
@@ -360,17 +364,13 @@ namespace ServiceStack.Common.Utils
 						var dictionaryValue = valueDictionary[key];
 						var valueString = dictionaryValue != null ? dictionaryValue.ToString() : string.Empty;
 
-						var keyValueString = keyString + valueString;
-						if (keyValueString.Contains(FieldSeperator) || keyValueString.Contains(KeySeperator))
-						{
-							throw new ArgumentException(
-								string.Format("collection contains an illegal character: '{0}'", IllegalChars));
-						}
 						if (sb.Length > 0)
 						{
 							sb.Append(FieldSeperator);
 						}
-						sb.AppendFormat("{0}{1}{2}", keyString, KeySeperator, valueString);
+						sb.Append(ToSafeString(keyString))
+						  .Append(KeySeperator)
+						  .Append(ToSafeString(valueString));
 					}
 					return sb.ToString();
 				}
@@ -391,6 +391,23 @@ namespace ServiceStack.Common.Utils
 			}
 
 			return value.ToString();
+		}
+
+		private static string ToSafeString(string text)
+		{
+			if (string.IsNullOrEmpty(text)
+				|| (text.IndexOfAny(IllegalChars) == -1 && text[0] != EscapeQuote)) return text;
+
+			return EscapeQuote + text.HexEscape(EscapeChars) + EscapeQuote;
+		}
+
+		private static string FromSafeString(string text)
+		{
+			if (string.IsNullOrEmpty(text) 
+				|| (text[0] != EscapeQuote)) return text;
+
+			var withoutQuotes = text.Substring(1, text.Length - 2);
+			return withoutQuotes.HexUnescape(EscapeChars);
 		}
 
 		private static bool IsGenericCollectionOfValueTypesOrStrings(Type type)
@@ -416,16 +433,11 @@ namespace ServiceStack.Common.Utils
 			foreach (var valueItem in valueCollection)
 			{
 				var stringValueItem = valueItem.ToString();
-				if (stringValueItem.Contains(FieldSeperator))
-				{
-					throw new ArgumentException(
-						string.Format("collection contains an illegal character: '{0}'", IllegalChars));
-				}
 				if (sb.Length > 0)
 				{
 					sb.Append(FieldSeperator);
 				}
-				sb.Append(stringValueItem);
+				sb.Append(ToSafeString(stringValueItem));
 			}
 			return sb.ToString();
 		}

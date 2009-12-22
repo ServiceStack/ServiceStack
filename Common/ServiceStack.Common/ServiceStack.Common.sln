@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceClient.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Configuration", "ServiceStack.Configuration\ServiceStack.Configuration.csproj", "{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Configuration.Tests", "ServiceStack.Configuration.Tests\ServiceStack.Configuration.Tests.csproj", "{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.Endpoints", "ServiceStack.WebHost.Endpoints\ServiceStack.WebHost.Endpoints.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceModel", "ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj", "{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}"
@@ -42,11 +40,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.Db4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.Endpoints.Tests", "ServiceStack.WebHost.Endpoints.Tests\ServiceStack.WebHost.Endpoints.Tests.csproj", "{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Validation.Tests", "ServiceStack.Validation.Tests\ServiceStack.Validation.Tests.csproj", "{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Tests", "ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj", "{3FA9197A-462D-44CC-9AB3-61AF414D0B45}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceInterface.Tests", "ServiceStack.ServiceInterface.Tests\ServiceStack.ServiceInterface.Tests.csproj", "{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Providers.Tests", "ServiceStack.CacheAccess.Providers.Tests\ServiceStack.CacheAccess.Providers.Tests.csproj", "{EF5C737D-9D69-4844-AE09-FA706AD7AB91}"
 EndProject
@@ -76,6 +70,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.TestsPerf", "ServiceStack.OrmLite.TestsPerf\ServiceStack.OrmLite.TestsPerf.csproj", "{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SpringFactory", "ServiceStack.SpringFactory\ServiceStack.SpringFactory.csproj", "{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SpringFactory.Tests", "ServiceStack.SpringFactory.Tests\ServiceStack.SpringFactory.Tests.csproj", "{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,10 +88,6 @@ Global
 		{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Release|Any CPU.Build.0 = Release|Any CPU
 		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -134,18 +128,10 @@ Global
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA65AF9F-EE3A-4E2D-9F35-09A61A629679}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45}.Release|Any CPU.Build.0 = Release|Any CPU
-		{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{03B7F8C3-50D3-41E8-A5AC-98C6514D5D14}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -202,6 +188,14 @@ Global
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

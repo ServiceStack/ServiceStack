@@ -374,5 +374,6 @@ namespace ServiceStack.Common.Utils
 			}
 			while ((baseType = baseType.BaseType) != null);
 		}
+
 	}
 }

@@ -233,20 +233,6 @@ namespace ServiceStack.WebHost.Endpoints
 		protected void SetConfig(EndpointHostConfig config)
 		{
 			EndpointHost.Config = config;
-			
-			var contextController = EndpointHost.Config.ServiceController as ServiceControllerContext;
-			if (contextController != null)
-			{
-				contextController.OperationContextFactory = this.CreateOperationContext;
-			}
-		}
-
-		[Obsolete("Use IService<> instead")]
-		protected virtual IOperationContext CreateOperationContext(object requestDto, EndpointAttributes endpointAttributes)
-		{
-			return new BasicOperationContext<IApplicationContext, HttpRequestContext>(
-				ApplicationContext.Instance, 
-				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 		
 		public virtual object ExecuteService(object request, EndpointAttributes endpointAttributes)

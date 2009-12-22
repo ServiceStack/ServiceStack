@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -163,6 +164,8 @@ namespace ServiceStack.ServiceHost
 
 		public object Execute(object request, IRequestContext requestContext)
 		{
+			AssertServiceRestrictions(request.GetType(), 
+				requestContext != null ? requestContext.EndpointAttributes : EndpointAttributes.None);
 			var handlerFn = GetService(request.GetType());
 			return handlerFn(requestContext, request);
 		}
@@ -184,6 +187,44 @@ namespace ServiceStack.ServiceHost
 			throw new NotImplementedException();
 		}
 
+		public static void AssertServiceRestrictions(Type requestType, EndpointAttributes attributes)
+		{
+			var attrs = requestType.GetCustomAttributes(typeof(ServiceAttribute), false);
+			if (attrs.Length == 0)
+			{
+				return;
+			}
+
+			var portAttr = (ServiceAttribute)attrs[0];
+
+			var allPortRestrictionsMet = (portAttr.AccessRestrictions & attributes) == portAttr.AccessRestrictions;
+			if (allPortRestrictionsMet)
+			{
+				return;
+			}
+
+			var failedRestrictions = new StringBuilder();
+			foreach (EndpointAttributes value in Enum.GetValues(typeof(EndpointAttributes)))
+			{
+				var attributeInCurrentRequest = (attributes & value) == value;
+				if (attributeInCurrentRequest)
+				{
+					continue;
+				}
+
+				//Not InCurrentRequest and Is in PortRestrictions
+				var portRestrictionNotMet = (portAttr.AccessRestrictions & value) == value;
+				if (portRestrictionNotMet)
+				{
+					if (failedRestrictions.Length != 0) failedRestrictions.Append(", ");
+					failedRestrictions.Append(value);
+				}
+			}
+
+			throw new UnauthorizedAccessException(
+				string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'",
+					requestType.Name, failedRestrictions));
+		}
 	}
 
 }

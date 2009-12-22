@@ -53,6 +53,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 
 		public string Notes { get; set; }
 
+		[References(typeof(Employees))]
 		public int ReportsTo { get; set; }
 
 		[StringLength(255)]
