@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -49,21 +49,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Validators\ValidIntRangeAttribute.cs" />
-    <Compile Include="Validators\CreditCardErrorCodes.cs" />
-    <Compile Include="IValidatable.cs" />
-    <Compile Include="IValidatableCommand.cs" />
-    <Compile Include="Model\ValidatableCreditCard.cs" />
     <Compile Include="Validators\ValidationErrorCodes.cs" />
-    <Compile Include="Model\CardType.cs" />
-    <Compile Include="Model\IValidatableCreditCard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Validators\NotNullAttribute.cs" />
-    <Compile Include="Validators\RequiredTextAttribute.cs" />
     <Compile Include="Validators\ValidationAttributeBase.cs" />
-    <Compile Include="Validators\ValidCreditCardAttribute.cs" />
     <Compile Include="Validators\ValidEmailAttribute.cs" />
-    <Compile Include="ModelValidator.cs" />
     <Compile Include="ValidationError.cs" />
     <Compile Include="ValidationException.cs" />
     <Compile Include="ValidationResult.cs" />
