@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Xml;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Configuration.Support;
 using ServiceStack.Configuration.Tests.Support;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.SpringFactory.Support;
 
-namespace ServiceStack.Configuration.Tests
+namespace ServiceStack.SpringFactory.Tests
 {
 	[TestFixture]
 	public class FactoryRefTests
 	{
 		const string objectsConfigXml = 
-		@"<objects>
+			@"<objects>
 			<object name=""Soap11ServiceClient"" type=""ServiceStack.ServiceClient.Web.Soap11ServiceClient, ServiceStack.ServiceClient.Web"">
 				<constructor-arg value=""http://mock.org/service.svc""/>
 			</object>

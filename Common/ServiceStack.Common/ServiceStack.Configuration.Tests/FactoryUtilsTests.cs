@@ -4,15 +4,15 @@ using System.Configuration;
 using System.Xml;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Configuration.Support;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.SpringFactory.Support;
 
-namespace ServiceStack.Configuration.Tests
+namespace ServiceStack.SpringFactory.Tests
 {
 	[TestFixture]
 	public class FactoryUtilsTests 
 	{
-		const string objectsConfigXml = 
+		const string ObjectsConfigXml = 
 			"<objects>"
 			+ "<object name=\"Soap11ServiceClient\" type=\"ServiceStack.ServiceClient.Web.Soap11ServiceClient, ServiceStack.ServiceClient.Web\">"
 			+ "  <constructor-arg value=\"http://mock.org/service.svc\"/>"
@@ -57,7 +57,7 @@ namespace ServiceStack.Configuration.Tests
 			+ "</object>"
 			+ "</objects>";
 
-		const string invalidConstructorIndexConfigXml = 
+		const string InvalidConstructorIndexConfigXml = 
 			"<objects>"
 			+ "<object name=\"InvalidConstructorIndex\" type=\"ServiceStack.Messaging.Destination, ServiceStack.Messaging\">"
 			+ "  <constructor-arg value=\"Topic\" index=\"1\"/>"
@@ -65,16 +65,13 @@ namespace ServiceStack.Configuration.Tests
 			+ "</object>"
 			+ "</objects>";
 
-
-		private const string BROKER_URI = "tcp://wwvis7020:61616";
-
 		private IObjectFactory factory;
 
 		[SetUp]
 		public void SetUp()
 		{
 			var doc = new XmlDocument();
-			doc.LoadXml(objectsConfigXml);
+			doc.LoadXml(ObjectsConfigXml);
 			var configHandler = new ObjectsConfigurationSectionHandler();
 			var objectConfigTypes = (Dictionary<string, ObjectConfigurationType>)configHandler.Create(null, null, doc.DocumentElement);
 			factory = FactoryUtils.CreateObjectFactoryFromConfig(objectConfigTypes);
@@ -129,7 +126,7 @@ namespace ServiceStack.Configuration.Tests
 		public void Create_IDestinationInvalidConstructorIndexTest()
 		{
 			var doc = new XmlDocument();
-			doc.LoadXml(invalidConstructorIndexConfigXml);
+			doc.LoadXml(InvalidConstructorIndexConfigXml);
 			var configHandler = new ObjectsConfigurationSectionHandler();
 			var objectConfigTypes = (Dictionary<string, ObjectConfigurationType>)configHandler.Create(null, null, doc.DocumentElement);
 			factory = FactoryUtils.CreateObjectFactoryFromConfig(objectConfigTypes);
@@ -160,7 +157,7 @@ namespace ServiceStack.Configuration.Tests
 		}
 
 		[Test]
-		[ExpectedException(typeof(NotSupportedException))]
+		[ExpectedException(typeof(TypeLoadException))]
 		public void PropertyNotCreatableFromStringTest()
 		{
 			var factoryInstance = factory.Create<object>("PropertyNotCreatableFromString");

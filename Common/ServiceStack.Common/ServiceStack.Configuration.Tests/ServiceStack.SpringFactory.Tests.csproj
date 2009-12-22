@@ -3,13 +3,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Configuration.Tests</RootNamespace>
-    <AssemblyName>ServiceStack.Configuration.Tests</AssemblyName>
+    <RootNamespace>ServiceStack.SpringFactory.Tests</RootNamespace>
+    <AssemblyName>ServiceStack.SpringFactory.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -100,6 +100,10 @@
     <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.SpringFactory\ServiceStack.SpringFactory.csproj">
+      <Project>{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}</Project>
+      <Name>ServiceStack.SpringFactory</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

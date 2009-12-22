@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Xml;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Configuration.Support;
+using ServiceStack.Configuration;
 using ServiceStack.Configuration.Tests.Support;
 using ServiceStack.Configuration.Tests.Support.Crypto;
 using ServiceStack.DataAccess.Db4oProvider;
@@ -10,14 +10,15 @@ using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
 using ServiceStack.DataAccess;
 using ServiceStack.Service;
+using ServiceStack.SpringFactory.Support;
 
-namespace ServiceStack.Configuration.Tests
+namespace ServiceStack.SpringFactory.Tests
 {
 	[TestFixture]
 	public class FactoryProviderTests
 	{
 		const string objectsConfigXml = 
-		@"<objects>
+			@"<objects>
 			<object name=""XmlServiceClient"" type=""ServiceStack.ServiceClient.Web.XmlServiceClient, ServiceStack.ServiceClient.Web"">
 				<constructor-arg value=""http://mock.org/service.svc""/>
 			</object>
@@ -48,7 +49,8 @@ namespace ServiceStack.Configuration.Tests
 			Assert.That(xmlServiceClient.BaseUri, Is.EqualTo("http://mock.org/service.svc"));
 		}
 
-		[Ignore("Needs to be implemented")][Test]
+		[Ignore("Needs to be implemented")]
+		[Test]
 		public void A_config_provider_is_resolvable_by_an_interface_type()
 		{
 			var provider = new FactoryProvider(factoryConfig);
