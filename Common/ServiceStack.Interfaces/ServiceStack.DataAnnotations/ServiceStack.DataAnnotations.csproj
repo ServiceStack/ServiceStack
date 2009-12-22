@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9B64E174-0CDE-4CA7-9344-62E40FA3DE65}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -46,6 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AliasAttribute.cs" />
+    <Compile Include="AutoIncrementAttribute.cs" />
+    <Compile Include="CompositeIndexAttribute.cs" />
     <Compile Include="DefaultAttribute.cs" />
     <Compile Include="IndexAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
