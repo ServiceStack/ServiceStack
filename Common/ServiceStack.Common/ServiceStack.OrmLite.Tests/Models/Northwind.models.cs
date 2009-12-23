@@ -8,6 +8,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 	public class Employees
 		: IHasIntId
 	{
+		[AutoIncrement]
 		[Alias("EmployeeID")]
 		public int Id { get; set; }
 
@@ -126,6 +127,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 	public class Shippers
 		: IHasIntId
 	{
+		[AutoIncrement]
 		[Alias("ShipperID")]
 		public int Id { get; set; }
 
@@ -140,6 +142,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 	public class Suppliers
 		: IHasIntId
 	{
+		[AutoIncrement]
 		[Alias("SupplierID")]
 		public int Id { get; set; }
 
@@ -182,6 +185,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 	public class Orders
 		: IHasIntId
 	{
+		[AutoIncrement]
 		[Alias("OrderID")]
 		public int Id { get; set; }
 
@@ -233,6 +237,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 	public class Products
 		: IHasIntId
 	{
+		[AutoIncrement]
 		[Alias("ProductID")]
 		public int Id { get; set; }
 
@@ -336,6 +341,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public string TerritoryDescription { get; set; }
 
 		[Alias("RegionID")]
+		[References(typeof(Region))]
 		public int RegionId { get; set; }
 	}
 

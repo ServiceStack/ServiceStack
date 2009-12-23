@@ -70,10 +70,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.TestsPerf", "ServiceStack.OrmLite.TestsPerf\ServiceStack.OrmLite.TestsPerf.csproj", "{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SpringFactory", "ServiceStack.SpringFactory\ServiceStack.SpringFactory.csproj", "{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SpringFactory.Tests", "ServiceStack.SpringFactory.Tests\ServiceStack.SpringFactory.Tests.csproj", "{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -188,14 +184,6 @@ Global
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E03DABD5-EAEC-48AB-B4BA-7E3A894C9C53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

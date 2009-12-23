@@ -80,6 +80,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="Models\NorthwindFactory.cs" />
     <Compile Include="Models\Northwind.models.cs" />
     <Compile Include="Models\SampleOrderLine.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
