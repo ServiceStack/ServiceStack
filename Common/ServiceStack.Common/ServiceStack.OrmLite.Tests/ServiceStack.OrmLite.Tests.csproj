@@ -81,11 +81,14 @@
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
     <Compile Include="Models\NorthwindFactory.cs" />
+    <Compile Include="Models\NorthwindData.cs" />
     <Compile Include="Models\Northwind.models.cs" />
+    <Compile Include="Models\NorthwindResources.cs" />
     <Compile Include="Models\SampleOrderLine.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
     <Compile Include="Models\ModelWithComplexTypes.cs" />
     <Compile Include="OrmLiteLinqTests.cs" />
+    <Compile Include="OrmLiteNorthwindTests.cs" />
     <Compile Include="OrmLiteSaveTests.cs" />
     <Compile Include="Models\TaskQueue.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -142,6 +145,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <DependentUpon>Database1.mdf</DependentUpon>
     </Content>
+    <Content Include="App_Data\Northwind\images.txt" />
     <Content Include="sqlite3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

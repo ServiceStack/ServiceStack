@@ -15,20 +15,20 @@ namespace ServiceStack.OrmLite.TestsPerf.Scenarios.OrmLite
 			if (this.IsFirstRun)
 			{
 				dbCmd.CreateTables(true,
-					typeof(Employees),
-					typeof(Categories),
-					typeof(Customers),
-					typeof(Shippers),
-					typeof(Suppliers),
-					typeof(Orders),
-					typeof(Products),
-					typeof(OrderDetails),
+					typeof(Employee),
+					typeof(Category),
+					typeof(Customer),
+					typeof(Shipper),
+					typeof(Supplier),
+					typeof(Order),
+					typeof(Product),
+					typeof(OrderDetail),
 					typeof(CustomerCustomerDemo),
-					typeof(Categories),
-					typeof(CustomerDemographics),
+					typeof(Category),
+					typeof(CustomerDemographic),
 					typeof(Region),
-					typeof(Territories),
-					typeof(EmployeeTerritories)
+					typeof(Territory),
+					typeof(EmployeeTerritory)
 				);
 			}
 

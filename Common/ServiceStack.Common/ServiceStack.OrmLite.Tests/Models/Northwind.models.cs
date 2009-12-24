@@ -5,7 +5,8 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.OrmLite.Tests.Models
 {
-	public class Employees
+	[Alias("Employees")]
+	public class Employee
 		: IHasIntId
 	{
 		[AutoIncrement]
@@ -20,6 +21,9 @@ namespace ServiceStack.OrmLite.Tests.Models
 		[Required]
 		[StringLength(10)]
 		public string FirstName { get; set; }
+
+		[StringLength(30)]
+		public string Title { get; set; }
 
 		[StringLength(25)]
 		public string TitleOfCourtesy { get; set; }
@@ -54,14 +58,15 @@ namespace ServiceStack.OrmLite.Tests.Models
 
 		public string Notes { get; set; }
 
-		[References(typeof(Employees))]
-		public int ReportsTo { get; set; }
+		[References(typeof(Employee))]
+		public int? ReportsTo { get; set; }
 
 		[StringLength(255)]
 		public string PhotoPath { get; set; }
 	}
 
-	public class Categories
+	[Alias("Categories")]
+	public class Category
 		: IHasIntId
 	{
 		[Alias("CategoryID")]
@@ -78,7 +83,8 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public byte[] Picture { get; set; }
 	}
 
-	public class Customers
+	[Alias("Customers")]
+	public class Customer
 		: IHasStringId
 	{
 		[Required]
@@ -124,7 +130,8 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public byte[] Picture { get; set; }
 	}
 
-	public class Shippers
+	[Alias("Shippers")]
+	public class Shipper
 		: IHasIntId
 	{
 		[AutoIncrement]
@@ -139,7 +146,8 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public string Phone { get; set; }
 	}
 
-	public class Suppliers
+	[Alias("Suppliers")]
+	public class Supplier
 		: IHasIntId
 	{
 		[AutoIncrement]
@@ -182,7 +190,8 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public string HomePage { get; set; }
 	}
 
-	public class Orders
+	[Alias("Orders")]
+	public class Order
 		: IHasIntId
 	{
 		[AutoIncrement]
@@ -190,13 +199,13 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public int Id { get; set; }
 
 		[Index]
-		[References(typeof(Customers))]
+		[References(typeof(Customer))]
 		[Alias("CustomerID")]
 		[StringLength(5)]
 		public string CustomerId { get; set; }
 
 		[Index]
-		[References(typeof(Customers))]
+		[References(typeof(Customer))]
 		[Alias("EmployeeID")]
 		public int EmployeeId { get; set; }
 
@@ -209,7 +218,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public DateTime? ShippedDate { get; set; }
 
 		[Index]
-		[References(typeof(Shippers))]
+		[References(typeof(Shipper))]
 		public int? ShipVia { get; set; }
 
 		public decimal Freight { get; set; }
@@ -234,7 +243,8 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public string ShipCountry { get; set; }
 	}
 
-	public class Products
+	[Alias("Products")]
+	public class Product
 		: IHasIntId
 	{
 		[AutoIncrement]
@@ -248,12 +258,12 @@ namespace ServiceStack.OrmLite.Tests.Models
 
 		[Index]
 		[Alias("SupplierID")]
-		[References(typeof(Suppliers))]		
+		[References(typeof(Supplier))]		
 		public int SupplierId { get; set; }
 
 		[Index]
 		[Alias("CategoryID")]
-		[References(typeof(Categories))]
+		[References(typeof(Category))]
 		public int CategoryId { get; set; }
 
 		[StringLength(20)]
@@ -275,15 +285,17 @@ namespace ServiceStack.OrmLite.Tests.Models
 	}
 
 	[Alias("Order Details")]
-	public class OrderDetails
-		: IHasIntId
+	public class OrderDetail
+		: IHasStringId
 	{
+		public string Id { get { return this.OrderId + "/" + this.ProductId; } }
+
 		[Alias("OrderID")]
-		public int Id { get; set; }
+		public int OrderId { get; set; }
 
 		[Index]
 		[Alias("ProductID")]
-		[References(typeof(Products))]
+		[References(typeof(Product))]
 		public int ProductId { get; set; }
 
 		[Range(0, double.MaxValue)]
@@ -308,7 +320,8 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public string CustomerTypeId { get; set; }
 	}
 
-	public class CustomerDemographics
+	[Alias("CustomerDemographics")]
+	public class CustomerDemographic
 		: IHasStringId
 	{
 		[StringLength(10)]
@@ -329,7 +342,8 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public string RegionDescription { get; set; }
 	}
 
-	public class Territories
+	[Alias("Territories")]
+	public class Territory
 		: IHasStringId
 	{
 		[StringLength(20)]
@@ -345,11 +359,14 @@ namespace ServiceStack.OrmLite.Tests.Models
 		public int RegionId { get; set; }
 	}
 
-	public class EmployeeTerritories
-		: IHasIntId
+	[Alias("EmployeeTerritories")]
+	public class EmployeeTerritory
+		: IHasStringId
 	{
+		public string Id { get { return this.EmployeeId + "/" + this.TerritoryId; } }
+
 		[Alias("EmployeeID")]
-		public int Id { get; set; }
+		public int EmployeeId { get; set; }
 
 		[Required]
 		[StringLength(20)]

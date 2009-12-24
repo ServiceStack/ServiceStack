@@ -1,8 +1,5 @@
-using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
-using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.OrmLite.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
@@ -20,7 +17,7 @@ namespace ServiceStack.OrmLite.Tests
 			{
 				dbConn.CreateTable<ModelWithIndexFields>(true);
 
-				var sql = typeof(ModelWithIndexFields).ToCreateIndexStatements().Join();
+				var sql = typeof (ModelWithIndexFields).ToCreateIndexStatements().Join();
 
 				Assert.IsTrue(sql.Contains("idx_modelwithindexfields_name"));
 				Assert.IsTrue(sql.Contains("uidx_modelwithindexfields_uniquename"));

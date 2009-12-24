@@ -57,6 +57,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenarios\DatabaseScenarioBase.cs" />
+    <Compile Include="Scenarios\OrmLite\InsertNorthwindDataScenario.cs" />
     <Compile Include="Scenarios\OrmLite\InsertNorthwindSampleDataScenario.cs" />
     <Compile Include="Scenarios\OrmLite\OrmLiteScenrioConfig.cs" />
     <Compile Include="Scenarios\OrmLite\InsertModelWithFieldsOfDifferentTypesScenario.cs" />

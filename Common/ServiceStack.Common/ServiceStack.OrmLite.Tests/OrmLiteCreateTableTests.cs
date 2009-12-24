@@ -1,8 +1,6 @@
 using System;
-using System.IO;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.OrmLite.Tests.Models;
 
@@ -129,35 +127,6 @@ namespace ServiceStack.OrmLite.Tests
 
 				Assert.That(rows1, Has.Count(2));
 				Assert.That(rows2, Has.Count(2));
-			}
-		}
-
-		[Test]
-		public void Can_create_all_Northwind_tables()
-		{
-			var connectionString = "~/App_Data/db.sqlite".MapAbsolutePath();
-			if (File.Exists(connectionString))
-				File.Delete(connectionString);
-
-			using (var db = connectionString.OpenDbConnection())
-			using (var dbCmd = db.CreateCommand())
-			{
-				dbCmd.CreateTables(true,
-					typeof(Employees),
-					typeof(Categories),
-					typeof(Customers),
-					typeof(Shippers),
-					typeof(Suppliers),
-					typeof(Orders),
-					typeof(Products),
-					typeof(OrderDetails),
-					typeof(CustomerCustomerDemo),
-					typeof(Categories),
-					typeof(CustomerDemographics),
-					typeof(Region),
-					typeof(Territories),
-					typeof(EmployeeTerritories)
-				);
 			}
 		}
 

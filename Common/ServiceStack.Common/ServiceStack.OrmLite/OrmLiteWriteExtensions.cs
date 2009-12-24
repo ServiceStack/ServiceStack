@@ -237,7 +237,7 @@ namespace ServiceStack.OrmLite
 						if (sqlFilter.Length > 0) sqlFilter.Append(" AND ");
 
 						sqlFilter.AppendFormat("\"{0}\" = {1}", fieldDef.FieldName, fieldDef.GetQuotedValue(objWithProperties));
-
+							
 						continue;
 					}
 
