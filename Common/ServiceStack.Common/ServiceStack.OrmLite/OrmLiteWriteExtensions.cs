@@ -287,7 +287,7 @@ namespace ServiceStack.OrmLite
 			}
 
 			var deleteSql = string.Format("DELETE FROM \"{0}\" WHERE {1}",
-				tableType.Name, sqlFilter);
+				modelDef.ModelName, sqlFilter);
 
 			return deleteSql;
 		}
@@ -322,6 +322,52 @@ namespace ServiceStack.OrmLite
 				modelDef.ModelName, sql);
 
 			dbCommand.ExecuteNonQuery();
+		}
+
+		public static void DeleteAll<T>(this IDbCommand dbCommand)
+		{
+			DeleteAll(dbCommand, typeof(T));
+		}
+
+		public static void DeleteAll(this IDbCommand dbCommand, Type tableType)
+		{
+			Delete(dbCommand, tableType, null);
+		}
+
+		public static void Delete<T>(this IDbCommand dbCommand, string sqlFilter, params object[] filterParams)
+			where T : new()
+		{
+			Delete(dbCommand, typeof(T), null);
+		}
+
+		public static void Delete(this IDbCommand dbCommand, Type tableType, string sqlFilter, params object[] filterParams)
+		{
+			dbCommand.CommandText = ToDeleteStatement(tableType, null);
+			dbCommand.ExecuteNonQuery();
+		}
+
+		public static string ToDeleteStatement(this Type tableType, string sqlFilter, params object[] filterParams)
+		{
+			var sql = new StringBuilder();
+			const string DeleteStatement = "DELETE ";
+
+			var isFullDeleteStatement = 
+				!string.IsNullOrEmpty(sqlFilter)
+				&& sqlFilter.Length > DeleteStatement.Length
+				&& sqlFilter.Substring(0, DeleteStatement.Length).ToUpper().Equals(DeleteStatement);
+
+			if (isFullDeleteStatement) return sqlFilter.SqlFormat(filterParams);
+
+			var modelDef = tableType.GetModelDefinition();
+			sql.AppendFormat("DELETE FROM \"{0}\"", modelDef.ModelName);
+			if (!string.IsNullOrEmpty(sqlFilter))
+			{
+				sqlFilter = sqlFilter.SqlFormat(filterParams);
+				sql.Append(" WHERE ");
+				sql.Append(sqlFilter);
+			}
+
+			return sql.ToString();
 		}
 
 		public static void Save<T>(this IDbCommand dbCommand, T obj)

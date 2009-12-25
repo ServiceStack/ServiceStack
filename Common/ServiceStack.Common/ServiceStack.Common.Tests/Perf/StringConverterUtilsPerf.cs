@@ -13,6 +13,12 @@ namespace ServiceStack.Common.Tests.Perf
 	public class StringConverterUtilsPerf
 		: PerfTestBase
 	{
+		public StringConverterUtilsPerf()
+			: base()
+		{
+			this.MultipleIterations = new List<int> { 1000000 };
+		}
+
 		public List<string> CreateList(Func<int, string> createStringFn, int noOfTimes)
 		{
 			var list = new List<string>();
@@ -44,7 +50,6 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_Guids()
 		{
-
 			CompareMultipleRuns(
 				"new Guid", () => new Guid("AC800C9C-B8BE-4829-868A-B43CFF7B2AFD"),
 				"SCU.Parse<Guid>", () => StringConverterUtils.Parse<Guid>("AC800C9C-B8BE-4829-868A-B43CFF7B2AFD")

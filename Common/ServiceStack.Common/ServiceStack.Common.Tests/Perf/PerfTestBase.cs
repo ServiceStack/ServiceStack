@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
@@ -16,12 +17,32 @@ namespace ServiceStack.Common.Tests.Perf
 			this.MultipleIterations = new List<int> { 1000, 10000, 100000, 1000000 };
 		}
 
+		protected StringBuilder SbLog = new StringBuilder();
+
+		public virtual void Log(string message)
+		{
+#if DEBUG
+			Console.WriteLine(message);
+#endif
+			SbLog.AppendLine(message);
+		}
+
+		public virtual void Log(string message, params object[] args)
+		{
+#if DEBUG
+			Console.WriteLine(message, args);
+#endif
+			SbLog.AppendFormat(message, args);
+			SbLog.AppendLine();
+		}
+
+
 		protected void CompareMultipleRuns(string run1Name, Action run1Action, string run2Name, Action run2Action)
 		{
 			WarmUp(run1Action, run2Action);
 			foreach (var iteration in this.MultipleIterations)
 			{
-				Console.WriteLine("\n{0} times:", iteration);
+				Log("\n{0} times:", iteration);
 				CompareRuns(iteration, run1Name, run1Action, run2Name, run2Action);
 			}
 		}
@@ -43,11 +64,11 @@ namespace ServiceStack.Common.Tests.Perf
 			var runDiffTime = run1IsSlower ? runDiff : runDiff * -1;
 			var runDiffAvg = run1IsSlower ? run1 / run2 : run2 / run1;
 
-			Console.WriteLine("{0} was {1}ms or {2} times slower than {3}",
+			Log("{0} was {1}ms or {2} times slower than {3}",
 				slowerRun, runDiffTime, Math.Round(runDiffAvg, 2), fasterRun);
 		}
 
-		private static void WarmUp(params Action[] actions)
+		protected void WarmUp(params Action[] actions)
 		{
 			foreach (var action in actions)
 			{
@@ -56,21 +77,33 @@ namespace ServiceStack.Common.Tests.Perf
 			}
 		}
 
-		protected static decimal RunAction(Action action, int iterations)
+		protected void RunMultipleTimes(Action action, string actionName)
+		{
+			WarmUp(action);
+			foreach (var iteration in this.MultipleIterations)
+			{
+				Log("\n{0} times:", iteration);
+				RunAction(action, iteration, actionName ?? "Action");
+			}
+		}
+
+		protected decimal RunAction(Action action, int iterations)
 		{
 			return RunAction(action, iterations, null);
 		}
 
-		protected static decimal RunAction(Action action, int iterations, string actionName)
+		protected decimal RunAction(Action action, int iterations, string actionName)
 		{
 			actionName = actionName ?? action.GetType().Name;
 			var ticksTaken = Measure(action, iterations);
-			Console.WriteLine("{0} took {1}ms", actionName, ticksTaken);
+			var msTaken = ticksTaken / TimeSpan.TicksPerMillisecond;
 
-			return ticksTaken;
+			Log("{0} took {1}ms, avg: {2}ms", actionName, msTaken, (msTaken / iterations));
+
+			return msTaken;
 		}
 
-		protected static decimal Measure(Action action, decimal iterations)
+		protected long Measure(Action action, decimal iterations)
 		{
 			GC.Collect();
 			var begin = Stopwatch.GetTimestamp();
@@ -82,7 +115,7 @@ namespace ServiceStack.Common.Tests.Perf
 
 			var end = Stopwatch.GetTimestamp();
 
-			return (end - begin) / iterations;
+			return (end - begin);
 		}
 	}
 }

@@ -44,7 +44,7 @@ namespace ServiceStack.OrmLite
 			var sqlColumns = new StringBuilder();
 			tableType.GetModelDefinition().FieldDefinitions
 				.ForEach(x => sqlColumns.AppendFormat(
-					"{0}\"{1}\" ", sqlColumns.Length > 0 ? "," : "", x.Name));
+					"{0}\"{1}\" ", sqlColumns.Length > 0 ? "," : "", x.FieldName));
 
 			return sqlColumns.ToString();
 		}

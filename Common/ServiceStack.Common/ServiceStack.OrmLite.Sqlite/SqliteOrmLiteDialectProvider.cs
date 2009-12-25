@@ -10,6 +10,8 @@ namespace ServiceStack.OrmLite.Sqlite
 	public class SqliteOrmLiteDialectProvider 
 		: OrmLiteDialectProviderBase
 	{
+		public static IOrmLiteDialectProvider Instance = new SqliteOrmLiteDialectProvider();
+
 		public SqliteOrmLiteDialectProvider()
 		{
 			base.DateTimeColumnDefinition = base.StringColumnDefinition;
@@ -68,7 +70,14 @@ namespace ServiceStack.OrmLite.Sqlite
 				return intVal != 0;
 			}
 
-			return base.ConvertDbValue(value, type);
+			try
+			{
+				return base.ConvertDbValue(value, type);
+			}
+			catch (Exception ex)
+			{				
+				throw;
+			}
 		}
 
 		public override string GetQuotedValue(object value, Type fieldType)

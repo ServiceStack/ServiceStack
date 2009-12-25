@@ -9,6 +9,8 @@ namespace ServiceStack.OrmLite.SqlServer
 	public class SqlServerOrmLiteDialectProvider 
 		: OrmLiteDialectProviderBase
 	{
+		public static IOrmLiteDialectProvider Instance = new SqlServerOrmLiteDialectProvider();
+
 		public SqlServerOrmLiteDialectProvider()
 		{
 			base.AutoIncrementDefinition = "IDENTITY(1,1)";

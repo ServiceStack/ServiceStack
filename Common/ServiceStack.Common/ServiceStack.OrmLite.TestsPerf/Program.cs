@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.OrmLite.TestsPerf.Scenarios;
+using ServiceStack.OrmLite.TestsPerf.Scenarios.Northwind;
 using ServiceStack.OrmLite.TestsPerf.Scenarios.OrmLite;
 
 namespace ServiceStack.OrmLite.TestsPerf
@@ -14,20 +15,22 @@ namespace ServiceStack.OrmLite.TestsPerf
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(Program));
 
-		const long DefaultIterations = 1000;
+		const long DefaultIterations = 10;
 
 		static readonly List<long> BatchIterations = new List<long> { 100, 1000, 5000, 20000, /*100000, 250000, 1000000, 5000000*/ };
+		//static readonly List<long> BatchIterations = new List<long> { 1, 10, 100 };
 
-		static List<ScenarioBase> GetUseCases()
+		static List<DatabaseScenarioBase> GetUseCases()
 		{
-			return new List<ScenarioBase>
+			return new List<DatabaseScenarioBase>
 			{
-				new InsertModelWithFieldsOfDifferentTypesScenario(),
-				new InsertSampleOrderLineScenario(),
-				new SelectOneModelWithFieldsOfDifferentTypesScenario(),
-				new SelectOneSampleOrderLineScenario(),
-				new SelectManyModelWithFieldsOfDifferentTypesScenario(),
-				new SelectManySampleOrderLineScenario(),
+				//new InsertModelWithFieldsOfDifferentTypesScenario(),
+				//new InsertSampleOrderLineScenario(),
+				//new SelectOneModelWithFieldsOfDifferentTypesScenario(),
+				//new SelectOneSampleOrderLineScenario(),
+				//new SelectManyModelWithFieldsOfDifferentTypesScenario(),
+				//new SelectManySampleOrderLineScenario(),
+				new InsertNorthwindDataScenario(),
 			};
 		}
 
@@ -35,13 +38,13 @@ namespace ServiceStack.OrmLite.TestsPerf
 		{
 			try
 			{
-				foreach (var configRun in OrmLiteScenrioConfig.ConfigRuns())
+				foreach (var configRun in OrmLiteScenrioConfig.DataProviderConfigRuns())
 				{
 					Console.WriteLine("\n\nStarting config run {0}...", configRun);
 					if (args.Length == 1 && args[0] == "csv")
-						RunBatch();
+						RunBatch(configRun);
 					else
-						RunInteractive(args);
+						RunInteractive(configRun, args);
 				}
 
 				Console.ReadKey();
@@ -53,7 +56,7 @@ namespace ServiceStack.OrmLite.TestsPerf
 			}
 		}
 
-		private static void RunBatch()
+		private static void RunBatch(OrmLiteConfigRun configRun)
 		{
 			Console.Write(";");
 			var useCases = GetUseCases();
@@ -63,6 +66,9 @@ namespace ServiceStack.OrmLite.TestsPerf
 			BatchIterations.ForEach(iterations => {
 				Console.Write("{0};", iterations);
 				useCases.ForEach(uc => {
+
+					configRun.Init(uc);
+
 					// warmup
 					uc.Run();
 					GC.Collect();
@@ -72,7 +78,7 @@ namespace ServiceStack.OrmLite.TestsPerf
 			});
 		}
 
-		private static void RunInteractive(string[] args)
+		private static void RunInteractive(OrmLiteConfigRun configRun, string[] args)
 		{
 			long iterations = DefaultIterations;
 
@@ -83,6 +89,9 @@ namespace ServiceStack.OrmLite.TestsPerf
 
 			var useCases = GetUseCases();
 			useCases.ForEach(uc => {
+
+				configRun.Init(uc);
+
 				// warmup
 				uc.Run();
 				GC.Collect();

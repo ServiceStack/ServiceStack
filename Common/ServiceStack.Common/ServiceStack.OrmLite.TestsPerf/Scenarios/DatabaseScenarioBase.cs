@@ -6,7 +6,7 @@ namespace ServiceStack.OrmLite.TestsPerf.Scenarios
 	public abstract class DatabaseScenarioBase
 		: ScenarioBase, IDisposable
 	{
-		public static string ConnectionString { get; set; }
+		public string ConnectionString { get; set; }
 
 		protected int Iteration;
 		public bool IsFirstRun
@@ -46,10 +46,14 @@ namespace ServiceStack.OrmLite.TestsPerf.Scenarios
 			try
 			{
 				this.dbCmd.Dispose();
+				this.dbCmd = null;
 			}
 			finally
 			{
-				if (dbConn != null) dbConn.Dispose();
+				if (dbConn != null)
+				{
+					dbConn.Dispose();
+				}
 			}
 		}
 	}

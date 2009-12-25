@@ -64,7 +64,8 @@ namespace ServiceStack.OrmLite
 
 			if (isFullSelectStatement) return sqlFilter.SqlFormat(filterParams);
 
-			sql.AppendFormat("SELECT {0} FROM \"{1}\"", tableType.GetColumnNames(), tableType.Name);
+			var modelDef = tableType.GetModelDefinition();
+			sql.AppendFormat("SELECT {0} FROM \"{1}\"", tableType.GetColumnNames(), modelDef.ModelName);
 			if (!string.IsNullOrEmpty(sqlFilter))
 			{
 				sqlFilter = sqlFilter.SqlFormat(filterParams);
@@ -175,13 +176,15 @@ namespace ServiceStack.OrmLite
 		public static T GetById<T>(this IDbCommand dbCommand, object idValue)
 			where T : new()
 		{
-			return First<T>(dbCommand, "Id = {0}".SqlFormat(idValue));
+			var modelDef = typeof (T).GetModelDefinition();
+			return First<T>(dbCommand, modelDef.PrimaryKey.FieldName + " = {0}".SqlFormat(idValue));
 		}
 
 		public static T GetByIdOrDefault<T>(this IDbCommand dbCommand, object idValue)
 			where T : new()
 		{
-			return FirstOrDefault<T>(dbCommand, "Id = {0}".SqlFormat(idValue));
+			var modelDef = typeof(T).GetModelDefinition();
+			return FirstOrDefault<T>(dbCommand, modelDef.PrimaryKey.FieldName + " = {0}".SqlFormat(idValue));
 		}
 
 		public static List<T> GetByIds<T>(this IDbCommand dbCommand, IEnumerable idValues)
@@ -190,7 +193,8 @@ namespace ServiceStack.OrmLite
 			var sql = idValues.GetIdsInSql();
 			if (sql == null) return new List<T>();
 
-			return Select<T>(dbCommand, string.Format("Id IN ({0})", sql));
+			var modelDef = typeof(T).GetModelDefinition();
+			return Select<T>(dbCommand, string.Format(modelDef.PrimaryKey.FieldName + " IN ({0})", sql));
 		}
 
 		public static T GetScalar<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)

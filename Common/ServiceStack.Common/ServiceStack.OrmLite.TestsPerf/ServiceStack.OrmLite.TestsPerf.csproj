@@ -33,6 +33,10 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
@@ -54,11 +58,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PerfTests\NorthwindPerfTests.cs" />
+    <Compile Include="PerfTests\OrmLitePerfTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenarios\DatabaseScenarioBase.cs" />
-    <Compile Include="Scenarios\OrmLite\InsertNorthwindDataScenario.cs" />
-    <Compile Include="Scenarios\OrmLite\InsertNorthwindSampleDataScenario.cs" />
+    <Compile Include="Scenarios\Northwind\SelectNorthwindDataScenario.cs" />
+    <Compile Include="Scenarios\Northwind\InsertNorthwindDataScenario.cs" />
+    <Compile Include="Scenarios\Northwind\InsertNorthwindModelScenario.cs" />
+    <Compile Include="Scenarios\Northwind\SelectNorthwindSupplierScenario.cs" />
     <Compile Include="Scenarios\OrmLite\OrmLiteScenrioConfig.cs" />
     <Compile Include="Scenarios\OrmLite\InsertModelWithFieldsOfDifferentTypesScenario.cs" />
     <Compile Include="Scenarios\ScenarioBase.cs" />
@@ -69,6 +77,10 @@
     <ProjectReference Include="..\ServiceStack.CacheAccess.Providers.Tests\ServiceStack.CacheAccess.Providers.Tests.csproj">
       <Project>{EF5C737D-9D69-4844-AE09-FA706AD7AB91}</Project>
       <Name>ServiceStack.CacheAccess.Providers.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
+      <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
+      <Name>ServiceStack.Common.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
@@ -88,7 +100,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
+    <Folder Include="App_Data\PerfTests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
