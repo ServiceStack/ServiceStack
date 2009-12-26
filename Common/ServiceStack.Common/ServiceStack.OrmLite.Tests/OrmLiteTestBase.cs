@@ -25,7 +25,7 @@ namespace ServiceStack.OrmLite.Tests
 		{
 			OrmLiteConfig.DialectProvider = new SqliteOrmLiteDialectProvider();
 			ConnectionString = ":memory:";
-			ConnectionString = GetFileConnectionString();
+			//ConnectionString = GetFileConnectionString();
 
 			//OrmLiteWriteExtensions.DialectProvider = new SqlServerOrmLiteDialectProvider();
 			//ConnectionString = "~/App_Data/Database1.mdf".MapAbsolutePath();			

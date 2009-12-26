@@ -45,6 +45,46 @@ namespace ServiceStack.OrmLite.Tests
 		}
 
 		[Test]
+		public void Can_insert_and_select_from_ModelWithFieldsOfNullableTypes_table()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbConn = db.CreateCommand())
+			{
+				dbConn.CreateTable<ModelWithFieldsOfNullableTypes>(true);
+
+				var row = ModelWithFieldsOfNullableTypes.Create(1);
+
+				dbConn.Insert(row);
+
+				var rows = dbConn.Select<ModelWithFieldsOfNullableTypes>();
+
+				Assert.That(rows, Has.Count(1));
+
+				ModelWithFieldsOfNullableTypes.AssertIsEqual(rows[0], row);
+			}
+		}
+
+		[Test]
+		public void Can_insert_and_select_from_ModelWithFieldsOfDifferentAndNullableTypes_table()
+		{
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbConn = db.CreateCommand())
+			{
+				dbConn.CreateTable<ModelWithFieldsOfDifferentAndNullableTypes>(true);
+
+				var row = ModelWithFieldsOfDifferentAndNullableTypes.Create(1);
+
+				dbConn.Insert(row);
+
+				var rows = dbConn.Select<ModelWithFieldsOfDifferentAndNullableTypes>();
+
+				Assert.That(rows, Has.Count(1));
+
+				ModelWithFieldsOfDifferentAndNullableTypes.AssertIsEqual(rows[0], row);
+			}
+		}
+
+		[Test]
 		public void Can_insert_table_with_null_fields()
 		{
 			using (var db = ConnectionString.OpenDbConnection())

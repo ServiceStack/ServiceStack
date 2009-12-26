@@ -80,6 +80,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="Models\ModelWithFieldsOfNullableTypes.cs" />
+    <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
     <Compile Include="Models\NorthwindFactory.cs" />
     <Compile Include="Models\NorthwindData.cs" />
     <Compile Include="Models\Northwind.models.cs" />
@@ -107,7 +109,7 @@
     <Compile Include="OrmLiteCreateTableWithIndexesTests.cs" />
     <Compile Include="Models\ModelWithCompositeIndexFields.cs" />
     <Compile Include="Models\ModelWithIndexFields.cs" />
-    <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
+    <Compile Include="Models\ModelWithFieldsOfDifferentAndNullableTypes.cs" />
     <Compile Include="Models\ModelWithLongIdAndStringFields.cs" />
     <Compile Include="Models\ModelWithOnlyStringFields.cs" />
     <Compile Include="Models\ModelWithIdAndName.cs" />

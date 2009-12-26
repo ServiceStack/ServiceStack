@@ -33,15 +33,20 @@ namespace ServiceStack.OrmLite
 
 					var instanceParam = Expression.Convert(oInstanceParam, onInstance.GetType());
 					var useType = convertedValue != null ? convertedValue.GetType() : propertyInfo.PropertyType;
+					if (useType == Nullable.GetUnderlyingType(propertyInfo.PropertyType))
+					{
+						useType = propertyInfo.PropertyType;
+					}
+
 					var valueParam = Expression.Convert(oValueParam, useType);
 					var exprCallPropertySetFn = Expression.Call(instanceParam, setMethodInfo, valueParam);
 
 					propertySetFn = Expression.Lambda<Action<object, object>>
-						(
+					(
 						exprCallPropertySetFn,
 						oInstanceParam,
 						oValueParam
-						).Compile();
+					).Compile();
 
 					propertySetFnMap[propertyInfo] = propertySetFn;
 				}

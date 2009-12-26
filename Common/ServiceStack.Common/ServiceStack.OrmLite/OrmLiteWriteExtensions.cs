@@ -176,7 +176,14 @@ namespace ServiceStack.OrmLite
 			{
 				var value = dataReader.GetValue(i++);
 
-				fieldDef.SetValue(objWithProperties, value);
+				try
+				{
+					fieldDef.SetValue(objWithProperties, value);
+				}
+				catch (Exception ex)
+				{
+					throw;
+				}
 			}
 			return objWithProperties;
 		}

@@ -62,7 +62,7 @@ namespace ServiceStack.OrmLite.Sqlite
 
 		public override object ConvertDbValue(object value, Type type)
 		{
-			if (value == null) return null;
+			if (value == null || value is DBNull) return null;
 
 			if (type == typeof(bool))
 			{
