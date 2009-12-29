@@ -311,8 +311,9 @@ namespace ServiceStack.OrmLite
 		{
 			var modelDef = typeof(T).GetModelDefinition();
 
-			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE Id = {1}",
-				modelDef.ModelName, OrmLiteConfig.DialectProvider.GetQuotedValue(id, id.GetType()));
+			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" = {2}",
+				modelDef.ModelName, modelDef.PrimaryKey.FieldName, 
+				OrmLiteConfig.DialectProvider.GetQuotedValue(id, id.GetType()));
 
 			dbCommand.ExecuteNonQuery();
 		}
@@ -325,8 +326,8 @@ namespace ServiceStack.OrmLite
 
 			var modelDef = typeof(T).GetModelDefinition();
 
-			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE Id IN ({1})",
-				modelDef.ModelName, sql);
+			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" IN ({2})",
+				modelDef.ModelName, modelDef.PrimaryKey.FieldName, sql);
 
 			dbCommand.ExecuteNonQuery();
 		}
