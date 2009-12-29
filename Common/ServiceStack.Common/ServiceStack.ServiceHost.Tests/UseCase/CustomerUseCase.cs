@@ -19,6 +19,7 @@ using ServiceStack.ServiceHost.Tests.UseCase.Services;
 
 namespace ServiceStack.ServiceHost.Tests.UseCase
 {
+	[Ignore]
 	[TestFixture]
 	public class CustomerUseCase
 	{
