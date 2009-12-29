@@ -101,10 +101,6 @@
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.SpringFactory\ServiceStack.SpringFactory.csproj">
-      <Project>{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}</Project>
-      <Name>ServiceStack.SpringFactory</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
