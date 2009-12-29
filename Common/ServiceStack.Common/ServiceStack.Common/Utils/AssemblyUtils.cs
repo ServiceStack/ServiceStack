@@ -10,10 +10,10 @@ namespace ServiceStack.Common.Utils
 	/// </summary>
 	public class AssemblyUtils
 	{
-		private const string FILE_URI = "file:///";
-		private const string DLL_EXT = "dll";
-		private const string EXE_EXT = "dll";
-		private const char URI_SEPERATOR = '/';
+		private const string FileUri = "file:///";
+		private const string DllExt = "dll";
+		private const string ExeExt = "dll";
+		private const char UriSeperator = '/';
 
 		/// <summary>
 		/// Find the type from the name supplied
@@ -22,7 +22,7 @@ namespace ServiceStack.Common.Utils
 		/// <returns></returns>
 		public static Type FindType(string typeName)
 		{
-			var typeDef = new TypeDefinition(typeName);
+			var typeDef = new AssemblyTypeDefinition(typeName);
 			if (!string.IsNullOrEmpty(typeDef.AssemblyName))
 			{
 				return FindType(typeDef.TypeName, typeDef.AssemblyName);
@@ -48,12 +48,12 @@ namespace ServiceStack.Common.Utils
 			}
 			var binPath = GetAssemblyBinPath(Assembly.GetExecutingAssembly());
 			Assembly assembly = null;
-			var assemblyDllPath = binPath + string.Format("{0}.{1}", assemblyName, DLL_EXT);
+			var assemblyDllPath = binPath + string.Format("{0}.{1}", assemblyName, DllExt);
 			if (File.Exists(assemblyDllPath))
 			{
 				assembly = LoadAssembly(assemblyDllPath);
 			}
-			var assemblyExePath = binPath + string.Format("{0}.{1}", assemblyName, EXE_EXT);
+			var assemblyExePath = binPath + string.Format("{0}.{1}", assemblyName, ExeExt);
 			if (File.Exists(assemblyExePath))
 			{
 				assembly = LoadAssembly(assemblyExePath);
@@ -81,11 +81,11 @@ namespace ServiceStack.Common.Utils
 
 		public static string GetAssemblyBinPath(Assembly assembly)
 		{
-			var binPathPos = assembly.CodeBase.LastIndexOf(URI_SEPERATOR);
+			var binPathPos = assembly.CodeBase.LastIndexOf(UriSeperator);
 			var assemblyPath = assembly.CodeBase.Substring(0, binPathPos + 1);
-			if (assemblyPath.StartsWith(FILE_URI))
+			if (assemblyPath.StartsWith(FileUri))
 			{
-				assemblyPath = assemblyPath.Remove(0, FILE_URI.Length);
+				assemblyPath = assemblyPath.Remove(0, FileUri.Length);
 			}
 			return assemblyPath;
 		}

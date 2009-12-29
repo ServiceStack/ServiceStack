@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{982416DB-C143-4028-A0C3-CF41892D18D3}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -66,6 +66,13 @@
     <Compile Include="Support\AdapterBase.cs" />
     <Compile Include="Support\LogicFacadeBase.cs" />
     <Compile Include="Support\CommandProcessor.cs" />
+    <Compile Include="Support\AssemblyTypeDefinition.cs" />
+    <Compile Include="Text\ParseStringCollectionMethods.cs" />
+    <Compile Include="Text\ParseStringDictionaryMethods.cs" />
+    <Compile Include="Text\ParseStringArrayMethods.cs" />
+    <Compile Include="Text\ParseStringListMethods.cs" />
+    <Compile Include="Text\ParseStringBuiltinMethods.cs" />
+    <Compile Include="Text\ParseStringTypeConstructor.cs" />
     <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\AssertUtils.cs" />
     <Compile Include="Support\AssignmentDefinition.cs" />
@@ -78,8 +85,12 @@
     <Compile Include="Utils\StringConverterUtils.cs" />
     <Compile Include="Support\CommandExecsHandler.cs" />
     <Compile Include="Support\CommandResultsHandler.cs" />
-    <Compile Include="Support\TypeDefinition.cs" />
     <Compile Include="UrnId.cs" />
+    <Compile Include="Extensions\TextExtensions.cs" />
+    <Compile Include="Text\TypeDefinition.cs" />
+    <Compile Include="Text\ParseStringMethods.cs" />
+    <Compile Include="Text\ParseStringStaticParseMethod.cs" />
+    <Compile Include="Text\ToStringMethods.cs" />
     <Compile Include="Web\CompressedFileResult.cs" />
     <Compile Include="Web\CompressedResult.cs" />
     <Compile Include="Web\CompressionTypes.cs" />
