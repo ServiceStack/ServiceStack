@@ -135,7 +135,7 @@ namespace ServiceStack.OrmLite.Tests.Models
 				NorthwindFactory.Customer("WOLZA","Wolski  Zajazd","Zbyszek Piestrzeniewicz","Owner","ul. Filtrowa 68","Warszawa",null,"01-012","Poland","(26) 642-7012","(26) 642-7012", null),
 			};
 
-			getImage = NorthwindResources.GetImage<Employee>;
+			getImage = GetImage<Employee>;
 			Employees = new List<Employee> {
 				NorthwindFactory.Employee(1,"Davolio","Nancy","Sales Representative","Ms.",ToDateTime("12/08/1948"),ToDateTime("05/01/1992"),"507 - 20th Ave. E. Apt. 2A","Seattle","WA","98122","USA","(206) 555-9857","5467",getImage(1),"Education includes a BA in psychology from Colorado State University in 1970.  She also completed 'The Art of the Cold Call.'  Nancy is a member of Toastmasters International.",2,"http://accweb/emmployees/davolio.bmp"),
 				NorthwindFactory.Employee(2,"Fuller","Andrew","Vice President, Sales","Dr.",ToDateTime("02/19/1952"),ToDateTime("08/14/1992"),"908 W. Capital Way","Tacoma","WA","98401","USA","(206) 555-9482","3457",getImage(2),"Andrew received his BTS commercial in 1974 and a Ph.D. in international marketing from the University of Dallas in 1981.  He is fluent in French and Italian and reads German.  He joined the company as a sales representative, was promoted to sales manager in January 1992 and to vice president of sales in March 1993.  Andrew is a member of the Sales Management Roundtable, the Seattle Chamber of Commerce, and the Pacific Rim Importers Association.",null,"http://accweb/emmployees/fuller.bmp"),

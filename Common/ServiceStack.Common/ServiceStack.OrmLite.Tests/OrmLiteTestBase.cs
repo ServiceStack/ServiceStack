@@ -20,6 +20,12 @@ namespace ServiceStack.OrmLite.Tests
 			return connectionString;
 		}
 
+		protected void CreateNewDatabase()
+		{
+			if (ConnectionString.Contains(".sqlite"))
+				ConnectionString = GetFileConnectionString();
+		}
+
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{

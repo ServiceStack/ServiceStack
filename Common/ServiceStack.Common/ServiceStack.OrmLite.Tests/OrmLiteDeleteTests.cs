@@ -11,6 +11,11 @@ namespace ServiceStack.OrmLite.Tests
 	public class OrmLiteDeleteTests
 		: OrmLiteTestBase
 	{
+		[SetUp]
+		public void SetUp()
+		{
+			CreateNewDatabase();
+		}
 
 		[Test]
 		public void Can_Delete_from_ModelWithFieldsOfDifferentTypes_table()
