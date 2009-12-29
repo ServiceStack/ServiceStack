@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Utils;
@@ -259,5 +260,28 @@ namespace ServiceStack.Common.Tests
 			var parsedList = StringConverterUtils.Parse(listValues, stringList.GetType());
 			Assert.That(parsedList, Is.EquivalentTo(stringList));
 		}
+
+
+		[Test]
+		public void Can_convert_Byte_array()
+		{
+			var byteArrayValue = new byte[]{ 0, 65, 97, 255, };
+			var stringValue = StringConverterUtils.ToString(byteArrayValue);
+			var expectedString = System.Text.Encoding.Default.GetString(byteArrayValue);
+			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_convert_to_Byte_array()
+		{
+			Assert.That(StringConverterUtils.CanCreateFromString(typeof(byte[])), Is.True);
+
+			var byteArrayValue = new byte[] { 0, 65, 97, 255, };
+			var byteArrayString = StringConverterUtils.ToString(byteArrayValue);
+			var actualValue = StringConverterUtils.Parse<byte[]>(byteArrayString);
+			Assert.That(actualValue, Is.EqualTo(byteArrayValue));
+		}
+
+
 	}
 }

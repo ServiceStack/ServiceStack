@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
     <Compile Include="Expressions\ExpressionTests.cs" />
+    <Compile Include="Perf\AdhocFastPerfTests.cs" />
     <Compile Include="Perf\PerfTestBase.cs" />
     <Compile Include="Perf\StringConverterUtilsPerf.cs" />
     <Compile Include="StreamExtensions.cs" />

@@ -98,9 +98,9 @@ namespace ServiceStack.Common.Tests.Perf
 			var ticksTaken = Measure(action, iterations);
 			var msTaken = ticksTaken / TimeSpan.TicksPerMillisecond;
 
-			Log("{0} took {1}ms, avg: {2}ms", actionName, msTaken, (msTaken / iterations));
+			Log("{0} took {1}ms ({2} ticks), avg: {3} ticks", actionName, msTaken, ticksTaken, (ticksTaken / iterations));
 
-			return msTaken;
+			return ticksTaken;
 		}
 
 		protected long Measure(Action action, decimal iterations)
