@@ -12,7 +12,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		public NorthwindPerfTests()
 		{
 			//this.MultipleIterations = new List<int> { 1000, 10000, 100000 };
-			this.MultipleIterations = new List<int> { 10000 };
+			this.MultipleIterations = new List<int> { 10 };
 		}
 
 		[TestFixtureTearDown]
