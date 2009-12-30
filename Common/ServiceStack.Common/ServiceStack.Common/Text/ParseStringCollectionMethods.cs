@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
@@ -16,10 +15,10 @@ namespace ServiceStack.Common.Text
 				throw new ArgumentException(string.Format("Type {0} is not of type ICollection<>", type.FullName));
 
 			//optimized access for regularly used types
-			if (type == typeof(ICollection<string>))
+			if (type.FindInterfaces((t, critera) => t == typeof(ICollection<string>), null).Length > 0)
 				return value => ParseStringCollection(value, type);
 
-			if (type == typeof(ICollection<int>))
+			if (type.FindInterfaces((t, critera) => t == typeof(ICollection<int>), null).Length > 0)
 				return value => ParseIntCollection(value, type);
 
 			var elementType =  collectionInterfaces[0].GetGenericArguments()[0];
@@ -36,36 +35,21 @@ namespace ServiceStack.Common.Text
 		public static ICollection<string> ParseStringCollection(string value, Type createType)
 		{
 			var collection = (ICollection<string>) Activator.CreateInstance(createType);
-			var values = value.Split(ParseStringMethods.ItemSeperator);
-			var valuesLength = values.Length;
-			for (var i=0; i<valuesLength; i++)
-			{
-				collection.Add(values[i].FromSafeString());
-			}
+			collection.CopyTo(ParseStringArrayMethods.ParseArray<string>(value, ParseStringMethods.ParseString), 0);
 			return collection;
 		}
 
 		public static ICollection<int> ParseIntCollection(string value, Type createType)
 		{
 			var collection = (ICollection<int>)Activator.CreateInstance(createType);
-			var values = value.Split(ParseStringMethods.ItemSeperator);
-			var valuesLength = values.Length;
-			for (var i=0; i < valuesLength; i++)
-			{
-				collection.Add(int.Parse(values[i]));
-			}
+			collection.CopyTo(ParseStringArrayMethods.ParseArray<int>(value, x => int.Parse(x)), 0);
 			return collection;
 		}
 
 		public static ICollection<T> ParseCollection<T>(string value, Type createType, Func<string, object> parseFn)
 		{
 			var collection = (ICollection<T>)Activator.CreateInstance(createType);
-			var values = value.Split(ParseStringMethods.ItemSeperator);
-			var valuesLength = values.Length;
-			for (var i=0; i < valuesLength; i++)
-			{
-				collection.Add((T) parseFn(values[i]));
-			}
+			collection.CopyTo(ParseStringArrayMethods.ParseArray<T>(value, parseFn), 0);
 			return collection;
 		}
 

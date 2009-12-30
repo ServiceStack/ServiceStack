@@ -50,79 +50,19 @@ namespace ServiceStack.Common.Utils
 			return typeDefinition.GetValue(value);
 		}
 
-		public static string ToString<T>(T value)
+		//public static string ToString<T>(T value)
+		//{
+		//    if (Equals(value, default(T))) return default(T).ToString();
+		//    var toStringMethod = ToStringMethods.GetToStringMethod(value.GetType());
+		//    return toStringMethod(value);
+		//}
+
+		public static string ToString(object value)
 		{
-			if (Equals(value, default(T))) return default(T).ToString();
-
-			var type = value.GetType();
-			if (type == typeof(string) || type.IsValueType)
-			{
-				return ToStringMethods.ToString(value);
-			}
-
-			if (type == typeof(byte[]))
-			{
-				return ToStringMethods.ToString(value as byte[]);
-			}
-
-			var isCollection = type.IsAssignableFrom(typeof(ICollection))
-				|| type.FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
-
-			if (isCollection)
-			{
-				//Get a collection of all the types interfaces, if the interface is generic store the generic definition instead
-				var typeInterfaces = type.GetInterfaces().Select(x => x.IsGenericType ? x.GetGenericTypeDefinition() : x)
-					.ToDictionary(x => x);
-
-				var isGenericCollection = typeInterfaces.ContainsKey(typeof(ICollection<>));
-				if (isGenericCollection)
-				{
-					if (!IsGenericCollectionOfValueTypesOrStrings(type))
-					{
-						throw new NotSupportedException(
-							"Generic collections that contain generic arguments that are not strings or valuetypes are not supported");
-					}
-				}
-
-				var isDictionary = type.IsAssignableFrom(typeof(IDictionary))
-					|| type.FindInterfaces((x, y) => x == typeof(IDictionary), null).Length > 0;
-
-				if (isDictionary)
-				{
-					return ToStringMethods.ToString((IDictionary)value);
-				}
-				else
-				{
-					return ToStringMethods.ToString((IEnumerable)value);
-				}
-			}
-
-			var isEnumerable = type.IsAssignableFrom(typeof(IEnumerable))
-				|| type.FindInterfaces((x, y) => x == typeof(IEnumerable), null).Length > 0;
-
-			if (isEnumerable)
-			{
-				return ToStringMethods.ToString((IEnumerable)value);
-			}
-
-			return value.ToString();
+			if (value == null) return null;
+			var toStringMethod = ToStringMethods.GetToStringMethod(value.GetType());
+			return toStringMethod(value);
 		}
 
-		private static bool IsGenericCollectionOfValueTypesOrStrings(Type type)
-		{
-			var genericArguments = type.FindInterfaces(
-					(x, criteria) => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(ICollection<>)
-				, null)
-				.SelectMany(x => x.GetGenericArguments()).ToList();
-
-			genericArguments.AddRange(
-				type.FindInterfaces((x, criteria) =>
-						x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDictionary<,>), null)
-					.SelectMany(x => x.GetGenericArguments())
-				);
-
-			var isSupported = genericArguments.All(x => x == typeof(string) || x.IsValueType);
-			return isSupported;
-		}
 	}
 }

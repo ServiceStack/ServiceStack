@@ -17,18 +17,15 @@ namespace ServiceStack.Common.Text
 		{
 			ParseDelegate parseDelegate;
 
-			lock (ParseDelegateCache)
+			if (!ParseDelegateCache.TryGetValue(type, out parseDelegate))
 			{
-				if (!ParseDelegateCache.TryGetValue(type, out parseDelegate))
-				{
-					// Get the static Parse(string) method on the type supplied
-					var parseMethodInfo = type.GetMethod(
-						ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
-						new[] { typeof(string) }, null);
+				// Get the static Parse(string) method on the type supplied
+				var parseMethodInfo = type.GetMethod(
+					ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
+					new[] { typeof(string) }, null);
 
-					parseDelegate = (ParseDelegate)Delegate.CreateDelegate(typeof(ParseDelegate), parseMethodInfo);
-					ParseDelegateCache[type] = parseDelegate;
-				}
+				parseDelegate = (ParseDelegate)Delegate.CreateDelegate(typeof(ParseDelegate), parseMethodInfo);
+				ParseDelegateCache[type] = parseDelegate;
 			}
 
 			if (parseDelegate != null)
