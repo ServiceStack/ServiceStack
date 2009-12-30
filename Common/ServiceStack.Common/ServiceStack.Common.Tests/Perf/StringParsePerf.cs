@@ -8,10 +8,10 @@ namespace ServiceStack.Common.Tests.Perf
 {
 	[Ignore]
 	[TestFixture]
-	public class StringConverterUtilsPerf
+	public class StringParsePerf
 		: PerfTestBase
 	{
-		public StringConverterUtilsPerf()
+		public StringParsePerf()
 		{
 			this.MultipleIterations = new List<int> { 1000000 };
 		}
@@ -108,7 +108,7 @@ namespace ServiceStack.Common.Tests.Perf
 			const string stringValues = "8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50";
 			CompareMultipleRuns(
 				".Split(',').ConvertAll(x => new Guid(x))", () => stringValues.Split(',').ConvertAll(x => new Guid(x)),
-				"SCU.Parse<double[]>", () => StringConverterUtils.Parse<Guid[]>(stringValues)
+				"SCU.Parse<Guid[]>", () => StringConverterUtils.Parse<Guid[]>(stringValues)
 			);
 		}
 
@@ -133,12 +133,32 @@ namespace ServiceStack.Common.Tests.Perf
 		}
 
 		[Test]
+		public void Compare_GuidList()
+		{
+			const string stringValues = "8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50";
+			CompareMultipleRuns(
+				".Split(',').ConvertAll(x => new Guid(x))", () => stringValues.Split(',').ConvertAll(x => new Guid(x)),
+				"SCU.Parse<List<Guid>>", () => StringConverterUtils.Parse<List<Guid>>(stringValues)
+			);
+		}
+
+		[Test]
 		public void Compare_StringHashSet()
 		{
 			const string stringValues = "a,b,c,d,e,f,g,h,i,j";
 			CompareMultipleRuns(
 				"new HashSet<string>(.Split(',').FromSafeStrings())", () => new HashSet<string>(stringValues.Split(',').FromSafeStrings()),
 				"SCU.Parse<HashSet<string>>", () => StringConverterUtils.Parse<HashSet<string>>(stringValues)
+			);
+		}
+
+		[Test]
+		public void Compare_IntHashSet()
+		{
+			const string stringValues = "0,1,2,3,4,5,6,7,8,9";
+			CompareMultipleRuns(
+				"new HashSet<int>(.Split(',').ConvertAll(x => int.Parse(x))", () => new HashSet<int>(stringValues.Split(',').ConvertAll(x => int.Parse(x))),
+				"SCU.Parse<HashSet<int>>", () => StringConverterUtils.Parse<HashSet<int>>(stringValues)
 			);
 		}
 
@@ -188,7 +208,7 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_ByteArray()
 		{
-			var byteArrayValue = new byte[] { 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, };
+			var byteArrayValue = new byte[] { 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, };
 			var byteArrayString = System.Text.Encoding.Default.GetString(byteArrayValue);
 
 			CompareMultipleRuns(

@@ -110,8 +110,7 @@ namespace ServiceStack.Common.Tests
 		{
 			TestEnum? enumValue = null;
 			var stringValue = StringConverterUtils.ToString(enumValue);
-			string expectedString = default(TestEnum?).ToString();
-			Assert.That(stringValue, Is.EqualTo(expectedString));
+			Assert.That(stringValue, Is.Null);
 		}
 
 		[Test]
@@ -123,6 +122,25 @@ namespace ServiceStack.Common.Tests
 			var stringValue = StringConverterUtils.ToString(guidValue);
 			var expectedString = guidValue.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_convert_datetime()
+		{
+			var dateValue = new DateTime(1979, 5, 9);
+			var stringValue = StringConverterUtils.ToString(dateValue);
+			var expectedString = dateValue.ToString();
+			Assert.That(stringValue, Is.EqualTo(expectedString));
+		}
+
+		[Test]
+		public void Can_convert_to_datetime()
+		{
+			Assert.That(StringConverterUtils.CanCreateFromString(typeof(DateTime)), Is.True);
+
+			var dateValue = new DateTime(1979, 5, 9);
+			var actualValue = StringConverterUtils.Parse<DateTime>(dateValue.ToString());
+			Assert.That(actualValue, Is.EqualTo(dateValue));
 		}
 
 		[Test]
