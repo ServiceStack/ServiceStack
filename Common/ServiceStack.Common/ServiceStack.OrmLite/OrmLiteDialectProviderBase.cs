@@ -159,7 +159,7 @@ namespace ServiceStack.OrmLite
 		{
 			if (value == null) return "NULL";
 
-			if (!fieldType.UnderlyingSystemType.IsValueType)
+			if (!fieldType.UnderlyingSystemType.IsValueType && fieldType != typeof(string))
 			{
 				if (StringConverterUtils.CanCreateFromString(fieldType))
 				{
