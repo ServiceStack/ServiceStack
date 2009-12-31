@@ -8,9 +8,6 @@ namespace ServiceStack.Common.Text
 {
 	internal static class ToStringMethods
 	{
-		const char FieldSeperator = ',';
-		const char KeySeperator = ':';
-
 		public static string ToString(object value)
 		{
 			var toStringMethod = GetToStringMethod(value.GetType());
@@ -54,9 +51,16 @@ namespace ServiceStack.Common.Text
 				return BuiltinToString;
 			}
 
-			if (type == typeof(byte[]))
+			if (type.IsArray)
 			{
-				return BytesToString;
+				if (type == typeof(byte[]))
+				{
+					return x => BytesToString((byte[])x);
+				}
+				if (type == typeof(string[]))
+				{
+					return x => StringArrayToString((string[])x);
+				}
 			}
 
 			var isCollection = type.FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
@@ -84,9 +88,27 @@ namespace ServiceStack.Common.Text
 			return BuiltinToString;
 		}
 
-		public static string StringToString(object value)
+		public static string StringArrayToString(string[] arrayValue)
 		{
-			return StringToString((string)value);
+			var sb = new StringBuilder();
+			var arrayValueLength = arrayValue.Length;
+			for (var i=0; i < arrayValueLength; i++)
+			{
+				if (sb.Length > 0) sb.Append(ParseStringMethods.ItemSeperator);
+				sb.Append(arrayValue[i].ToSafeString());
+			}
+			return sb.ToString();
+		}
+
+		public static string ArrayToString<T>(T[] arrayValue)
+		{
+			var sb = new StringBuilder();
+			var arrayValueLength = arrayValue.Length;
+			for (var i=0; i<arrayValueLength; i++)
+			{
+				if (sb.Length > 0) sb.Append(ParseStringMethods.ItemSeperator);
+			}
+			return sb.ToString();
 		}
 
 		public static string StringToString(string value)
@@ -99,11 +121,6 @@ namespace ServiceStack.Common.Text
 			return value.ToString();
 		}
 
-		public static string BytesToString(object byteValue)
-		{
-			return BytesToString((byte[])byteValue);
-		}
-
 		public static string BytesToString(byte[] byteValue)
 		{
 			return byteValue == null ? null : Encoding.Default.GetString(byteValue);
@@ -111,13 +128,20 @@ namespace ServiceStack.Common.Text
 
 		public static string IEnumerableToString(IEnumerable valueCollection)
 		{
+			Func<object,string> toStringFn = null;
+
 			var sb = new StringBuilder();
 			foreach (var valueItem in valueCollection)
 			{
-				var elementValueString = ToString(valueItem);
+				if (toStringFn == null)
+				{
+					toStringFn = GetToStringMethodToCache(valueItem.GetType());
+				}
+
+				var elementValueString = toStringFn(valueItem);
 				if (sb.Length > 0)
 				{
-					sb.Append(FieldSeperator);
+					sb.Append(ParseStringMethods.ItemSeperator);
 				}
 				sb.Append(elementValueString);
 			}
@@ -126,6 +150,9 @@ namespace ServiceStack.Common.Text
 
 		public static string IDictionaryToString(IDictionary valueDictionary)
 		{
+			Func<object,string> toStringKeyFn = null;
+			Func<object,string> toStringValueFn = null;
+
 			var sb = new StringBuilder();
 			foreach (var key in valueDictionary.Keys)
 			{
@@ -135,10 +162,10 @@ namespace ServiceStack.Common.Text
 
 				if (sb.Length > 0)
 				{
-					sb.Append(FieldSeperator);
+					sb.Append(ParseStringMethods.ItemSeperator);
 				}
 				sb.Append(keyString)
-					.Append(KeySeperator)
+					.Append(ParseStringMethods.KeyValueSeperator)
 					.Append(valueString);
 			}
 			return sb.ToString();

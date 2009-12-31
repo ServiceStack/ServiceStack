@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
@@ -17,14 +18,22 @@ namespace ServiceStack.Common.Tests.Perf
 			this.MultipleIterations = new List<int> { 1000000 };
 		}
 
-		public List<string> CreateList(Func<int, string> createStringFn, int noOfTimes)
+		[Test]
+		public void Compare_string()
 		{
-			var list = new List<string>();
-			for (var i=0; i < noOfTimes; i++)
-			{
-				list.Add(createStringFn(i));
-			}
-			return list;
+			CompareMultipleRuns(
+				"'test'.ToSafeString()", () => "test".ToSafeString(),
+				"SCU.ToString('test')", () => StringConverterUtils.ToString("test")
+			);
+		}
+
+		[Test]
+		public void Compare_escaped_string()
+		{
+			CompareMultipleRuns(
+				"'t,e:st'.ToSafeString()", () => "t,e:st".ToSafeString(),
+				"SCU.ToString('t,e:st')", () => StringConverterUtils.ToString("t,e:st")
+			);
 		}
 
 		[Test]
@@ -214,50 +223,73 @@ namespace ServiceStack.Common.Tests.Perf
 			);
 		}
 
-		//[Test]
-		//public void Compare_StringStringMap()
-		//{
-		//    const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
-		//    var map = new Dictionary<string, string>();
-		//    CompareMultipleRuns(
-		//        "mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromSafeString()] = y[1].FromSafeString()),
-		//        "SCU.Parse<Dictionary<string, string>>", () => StringConverterUtils.Parse<Dictionary<string, string>>(mapValues)
-		//    );
-		//}
+		[Test]
+		public void Compare_StringStringMap()
+		{
+			var map = new Dictionary<string, string> {
+          		{"A", "1"},{"B", "2"},{"C", "3"},{"D", "4"},{"E", "5"},
+          		{"F", "6"},{"G", "7"},{"H", "8"},{"I", "9"},{"j", "10"},
+          	};
+			CompareMultipleRuns(
+				"sb.Append(kv.Key.ToSafeString()).Append(ParseStringMethods.KeyValueSeperator).", () => {
+					var sb = new StringBuilder();
+					foreach (var kv in map)
+					{
+						if (sb.Length > 0) sb.Append(",");
+						sb.Append(kv.Key.ToSafeString())
+							.Append(ParseStringMethods.KeyValueSeperator)
+							.Append(kv.Value.ToSafeString());
+					}
+					sb.ToString();
+				},
+				"SCU.ToString(map)", () => StringConverterUtils.ToString(map)
+			);
+		}
 
-		//[Test]
-		//public void Compare_StringIntMap()
-		//{
-		//    const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
-		//    var map = new Dictionary<string, int>();
-		//    CompareMultipleRuns(
-		//        "mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromSafeString()] = int.Parse(y[1])),
-		//        "SCU.Parse<Dictionary<string, int>>", () => StringConverterUtils.Parse<Dictionary<string, int>>(mapValues)
-		//    );
-		//}
+		[Test]
+		public void Compare_StringIntMap()
+		{
+			var map = new Dictionary<string, int> {
+          		{"A", 1},{"B", 2},{"C", 3},{"D", 4},{"E", 5},
+          		{"F", 6},{"G", 7},{"H", 8},{"I", 9},{"j", 10},
+          	};
+			CompareMultipleRuns(
+				".Append(ParseStringMethods.KeyValueSeperator).Append(kv.Value.ToString())", () => {
+					var sb = new StringBuilder();
+					foreach (var kv in map)
+					{
+						if (sb.Length > 0) sb.Append(",");
+						sb.Append(kv.Key.ToSafeString())
+							.Append(ParseStringMethods.KeyValueSeperator)
+							.Append(kv.Value.ToString());
+					}
+					sb.ToString();
+				},
+				"SCU.ToString(map)", () => StringConverterUtils.ToString(map)
+			);
+		}
 
-		//[Test]
-		//public void Compare_StringInt_SortedDictionary()
-		//{
-		//    const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
-		//    var map = new SortedDictionary<string, int>();
-		//    CompareMultipleRuns(
-		//        "mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromSafeString()] = int.Parse(y[1])),
-		//        "SCU.Parse<Dictionary<string, int>>", () => StringConverterUtils.Parse<SortedDictionary<string, int>>(mapValues)
-		//    );
-		//}
+		[Test]
+		public void Compare_StringInt_SortedDictionary()
+		{
+			const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
+			var map = new SortedDictionary<string, int>();
+			CompareMultipleRuns(
+				"mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromSafeString()] = int.Parse(y[1])),
+				"SCU.Parse<Dictionary<string, int>>", () => StringConverterUtils.Parse<SortedDictionary<string, int>>(mapValues)
+			);
+		}
 
-		//[Test]
-		//public void Compare_ByteArray()
-		//{
-		//    var byteArrayValue = new byte[] { 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, };
-		//    var byteArrayString = System.Text.Encoding.Default.GetString(byteArrayValue);
+		[Test]
+		public void Compare_ByteArray()
+		{
+			var byteArrayValue = new byte[] { 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, };
 
-		//    CompareMultipleRuns(
-		//        "Encoding.Default.GetBytes", () => System.Text.Encoding.Default.GetBytes(byteArrayString),
-		//        "SCU.Parse<byte[]>", () => StringConverterUtils.Parse<byte[]>(byteArrayString)
-		//    );
-		//}
+			CompareMultipleRuns(
+				"Encoding.Default.GetString(byteArrayValue)", () => Encoding.Default.GetString(byteArrayValue),
+				"SCU.ToString(byteArrayValue)", () => StringConverterUtils.ToString(byteArrayValue)
+			);
+		}
 
 	}
 }
