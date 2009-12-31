@@ -272,11 +272,23 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_StringInt_SortedDictionary()
 		{
-			const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
-			var map = new SortedDictionary<string, int>();
+			var map = new SortedDictionary<string, int>{
+          		{"A", 1},{"B", 2},{"C", 3},{"D", 4},{"E", 5},
+          		{"F", 6},{"G", 7},{"H", 8},{"I", 9},{"j", 10},
+          	};
 			CompareMultipleRuns(
-				"mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromSafeString()] = int.Parse(y[1])),
-				"SCU.Parse<Dictionary<string, int>>", () => StringConverterUtils.Parse<SortedDictionary<string, int>>(mapValues)
+				".Append(ParseStringMethods.KeyValueSeperator).Append(kv.Value.ToString())", () => {
+					var sb = new StringBuilder();
+					foreach (var kv in map)
+					{
+						if (sb.Length > 0) sb.Append(",");
+						sb.Append(kv.Key.ToSafeString())
+							.Append(ParseStringMethods.KeyValueSeperator)
+							.Append(kv.Value.ToString());
+					}
+					sb.ToString();
+				},
+				"SCU.ToString(map)", () => StringConverterUtils.ToString(map)
 			);
 		}
 
