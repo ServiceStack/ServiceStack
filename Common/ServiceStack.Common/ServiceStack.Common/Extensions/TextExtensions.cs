@@ -4,13 +4,18 @@ namespace ServiceStack.Common.Extensions
 {
 	public static class TextExtensions
 	{
-		public const char FieldSeperator = ',';
-		public const char KeySeperator = ':';
+		public const char ItemSeperator = ',';
+		public const char KeyValueSeperator = ':';
+
+		public const char TypeStartChar = '{';
+		public const char TypeEndChar = '}';
+		public const char PropertyNameSeperator = '=';
+		public const char PropertyItemSeperator = '\t';
 
 		const char EscapeQuote = '"';
 		const char EncodeChar = '%';
-		static readonly char[] IllegalChars = new[] { FieldSeperator, KeySeperator };
-		static readonly char[] EscapeChars = new[] { FieldSeperator, KeySeperator, EscapeQuote, EncodeChar };
+		static readonly char[] IllegalChars = new[] { ItemSeperator, KeyValueSeperator, PropertyItemSeperator };
+		static readonly char[] EscapeChars = new[] { ItemSeperator, KeyValueSeperator, PropertyItemSeperator, EscapeQuote, EncodeChar };
 
 		public static string ToSafeString(this string text)
 		{

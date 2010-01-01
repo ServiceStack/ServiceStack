@@ -6,7 +6,7 @@ using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
-	internal static class ToStringMethods
+	public static class ToStringMethods
 	{
 		public static string ToString(object value)
 		{
@@ -85,6 +85,15 @@ namespace ServiceStack.Common.Text
 				return obj => IEnumerableToString((IEnumerable)obj);
 			}
 
+			if (type.IsClass)
+			{
+				var typeToStringMethod = TypeToStringMethods.GetToStringMethod(type);
+				if (typeToStringMethod != null)
+				{
+					return typeToStringMethod;
+				}
+			}
+
 			return BuiltinToString;
 		}
 
@@ -94,7 +103,7 @@ namespace ServiceStack.Common.Text
 			var arrayValueLength = arrayValue.Length;
 			for (var i=0; i < arrayValueLength; i++)
 			{
-				if (sb.Length > 0) sb.Append(ParseStringMethods.ItemSeperator);
+				if (sb.Length > 0) sb.Append(TextExtensions.ItemSeperator);
 				sb.Append(arrayValue[i].ToSafeString());
 			}
 			return sb.ToString();
@@ -106,7 +115,7 @@ namespace ServiceStack.Common.Text
 			var arrayValueLength = arrayValue.Length;
 			for (var i=0; i<arrayValueLength; i++)
 			{
-				if (sb.Length > 0) sb.Append(ParseStringMethods.ItemSeperator);
+				if (sb.Length > 0) sb.Append(TextExtensions.ItemSeperator);
 			}
 			return sb.ToString();
 		}
@@ -141,7 +150,7 @@ namespace ServiceStack.Common.Text
 				var elementValueString = toStringFn(valueItem);
 				if (sb.Length > 0)
 				{
-					sb.Append(ParseStringMethods.ItemSeperator);
+					sb.Append(TextExtensions.ItemSeperator);
 				}
 				sb.Append(elementValueString);
 			}
@@ -156,16 +165,24 @@ namespace ServiceStack.Common.Text
 			var sb = new StringBuilder();
 			foreach (var key in valueDictionary.Keys)
 			{
-				var keyString = ToString(key);
 				var dictionaryValue = valueDictionary[key];
-				var valueString = dictionaryValue != null ? ToString(dictionaryValue) : string.Empty;
+				if (toStringKeyFn == null)
+				{
+					toStringKeyFn = GetToStringMethodToCache(key.GetType());
+				}
+				if (toStringValueFn == null)
+				{
+					toStringValueFn = GetToStringMethodToCache(dictionaryValue.GetType());
+				}
+				var keyString = toStringKeyFn(key);
+				var valueString = dictionaryValue != null ? toStringValueFn(dictionaryValue) : string.Empty;
 
 				if (sb.Length > 0)
 				{
-					sb.Append(ParseStringMethods.ItemSeperator);
+					sb.Append(TextExtensions.ItemSeperator);
 				}
 				sb.Append(keyString)
-					.Append(ParseStringMethods.KeyValueSeperator)
+					.Append(TextExtensions.KeyValueSeperator)
 					.Append(valueString);
 			}
 			return sb.ToString();

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace ServiceStack.Common.Text
@@ -10,23 +9,16 @@ namespace ServiceStack.Common.Text
 
 		private delegate object ParseDelegate(string value);
 
-		private static readonly Dictionary<Type, ParseDelegate> ParseDelegateCache 
-			= new Dictionary<Type, ParseDelegate>();
-
 		public static Func<string, object> GetParseMethod(Type type)
 		{
-			ParseDelegate parseDelegate;
+			// Get the static Parse(string) method on the type supplied
+			var parseMethodInfo = type.GetMethod(
+				ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
+				new[] { typeof(string) }, null);
 
-			if (!ParseDelegateCache.TryGetValue(type, out parseDelegate))
-			{
-				// Get the static Parse(string) method on the type supplied
-				var parseMethodInfo = type.GetMethod(
-					ParseMethod, BindingFlags.Public | BindingFlags.Static, null,
-					new[] { typeof(string) }, null);
+			if (parseMethodInfo == null) return null;
 
-				parseDelegate = (ParseDelegate)Delegate.CreateDelegate(typeof(ParseDelegate), parseMethodInfo);
-				ParseDelegateCache[type] = parseDelegate;
-			}
+			var parseDelegate = (ParseDelegate)Delegate.CreateDelegate(typeof(ParseDelegate), parseMethodInfo);
 
 			if (parseDelegate != null)
 				return value => parseDelegate(value);

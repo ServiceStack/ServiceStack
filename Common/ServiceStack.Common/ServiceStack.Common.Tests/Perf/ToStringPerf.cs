@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
@@ -237,7 +236,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToSafeString())
-							.Append(ParseStringMethods.KeyValueSeperator)
+							.Append(TextExtensions.KeyValueSeperator)
 							.Append(kv.Value.ToSafeString());
 					}
 					sb.ToString();
@@ -260,7 +259,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToSafeString())
-							.Append(ParseStringMethods.KeyValueSeperator)
+							.Append(TextExtensions.KeyValueSeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();
@@ -283,7 +282,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToSafeString())
-							.Append(ParseStringMethods.KeyValueSeperator)
+							.Append(TextExtensions.KeyValueSeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();

@@ -58,8 +58,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PerfTests\TextDeserializerPerfTests.cs" />
     <Compile Include="PerfTests\NorthwindPerfTests.cs" />
     <Compile Include="PerfTests\OrmLitePerfTests.cs" />
+    <Compile Include="PerfTests\TextSerializerPerfTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenarios\DatabaseScenarioBase.cs" />
@@ -71,12 +73,21 @@
     <Compile Include="Scenarios\OrmLite\InsertModelWithFieldsOfDifferentTypesScenario.cs" />
     <Compile Include="Scenarios\ScenarioBase.cs" />
     <Compile Include="Scenarios\OrmLite\InsertSampleOrderLineScenario.cs" />
+    <Compile Include="Scenarios\Text\NorthwindCustomerToStringScenario.cs" />
+    <Compile Include="Scenarios\Text\NorthwindSupplierToStringScenario.cs" />
+    <Compile Include="Scenarios\Text\NorthwindOrderToStringScenario.cs" />
     <Compile Include="Support\Northwind.models.cs" />
+    <Compile Include="Tests\TextTestBase.cs" />
+    <Compile Include="Tests\TypeToStringTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.CacheAccess.Providers.Tests\ServiceStack.CacheAccess.Providers.Tests.csproj">
       <Project>{EF5C737D-9D69-4844-AE09-FA706AD7AB91}</Project>
       <Name>ServiceStack.CacheAccess.Providers.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">
+      <Project>{6B133D45-91D4-4AA5-A6D4-247282879CBB}</Project>
+      <Name>ServiceStack.Client</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
       <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
@@ -97,6 +108,10 @@
     <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
       <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
       <Name>ServiceStack.OrmLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.WebHost.Endpoints.Tests\ServiceStack.WebHost.Endpoints.Tests.csproj">
+      <Project>{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}</Project>
+      <Name>ServiceStack.WebHost.Endpoints.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

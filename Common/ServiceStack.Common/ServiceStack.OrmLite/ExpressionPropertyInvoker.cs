@@ -55,7 +55,7 @@ namespace ServiceStack.OrmLite
 
 			}
 			catch (Exception ex)
-			{				
+			{
 				throw;
 			}
 		}
@@ -73,10 +73,10 @@ namespace ServiceStack.OrmLite
 				var oExprCallPropertyGetFn = Expression.Convert(exprCallPropertyGetFn, typeof(object));
 
 				propertyGetFn = Expression.Lambda<Func<object, object>>
-					(
+				(
 					oExprCallPropertyGetFn,
 					oInstanceParam
-					).Compile();
+				).Compile();
 
 				propertyGetFnMap[propertyInfo] = propertyGetFn;
 			}

@@ -11,5 +11,4 @@ namespace ServiceStack.OrmLite
 
 		object GetPropertyValue(PropertyInfo propertyInfo, object fromInstance);
 	}
-
 }

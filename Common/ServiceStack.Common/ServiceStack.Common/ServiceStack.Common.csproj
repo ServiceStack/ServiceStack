@@ -67,12 +67,14 @@
     <Compile Include="Support\LogicFacadeBase.cs" />
     <Compile Include="Support\CommandProcessor.cs" />
     <Compile Include="Support\AssemblyTypeDefinition.cs" />
+    <Compile Include="Text\ParseStringTypeMethod.cs" />
     <Compile Include="Text\ParseStringCollectionMethods.cs" />
     <Compile Include="Text\ParseStringDictionaryMethods.cs" />
     <Compile Include="Text\ParseStringArrayMethods.cs" />
     <Compile Include="Text\ParseStringListMethods.cs" />
     <Compile Include="Text\ParseStringBuiltinMethods.cs" />
     <Compile Include="Text\ParseStringTypeConstructor.cs" />
+    <Compile Include="Text\TypeToStringMethods.cs" />
     <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\AssertUtils.cs" />
     <Compile Include="Support\AssignmentDefinition.cs" />

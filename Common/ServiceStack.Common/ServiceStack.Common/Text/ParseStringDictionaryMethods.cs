@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
@@ -40,10 +41,10 @@ namespace ServiceStack.Common.Text
 		{
 			var result = new Dictionary<string, string>();
 
-			var entryValues = value.Split(ParseStringMethods.ItemSeperator);
+			var entryValues = value.Split(TextExtensions.ItemSeperator);
 			foreach (var entryValue in entryValues)
 			{
-				var keyValuePair = entryValue.Split(ParseStringMethods.KeyValueSeperator);
+				var keyValuePair = entryValue.Split(TextExtensions.KeyValueSeperator);
 				var mapKey = ParseStringMethods.ParseString(keyValuePair[KeyIndex]);
 				var mapValue = ParseStringMethods.ParseString(keyValuePair[ValueIndex]);
 				result[mapKey] = mapValue;
@@ -59,10 +60,10 @@ namespace ServiceStack.Common.Text
 				? new Dictionary<TKey, TValue>()
 				: (IDictionary<TKey, TValue>)Activator.CreateInstance(createMapType);
 
-			var entryValues = value.Split(ParseStringMethods.ItemSeperator);
+			var entryValues = value.Split(TextExtensions.ItemSeperator);
 			foreach (var entryValue in entryValues)
 			{
-				var keyValuePair = entryValue.Split(ParseStringMethods.KeyValueSeperator);
+				var keyValuePair = entryValue.Split(TextExtensions.KeyValueSeperator);
 				var mapKey = (TKey)parseKeyFn(keyValuePair[KeyIndex]);
 				var mapValue = (TValue)parseValueFn(keyValuePair[ValueIndex]);
 				to[mapKey] = mapValue;

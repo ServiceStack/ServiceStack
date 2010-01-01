@@ -38,14 +38,14 @@ namespace ServiceStack.Common.Text
 		{
 			return string.IsNullOrEmpty(value)
 				? new List<string>()
-				: value.Split(ParseStringMethods.ItemSeperator).FromSafeStrings();
+				: value.Split(TextExtensions.ItemSeperator).FromSafeStrings();
 		}
 
 		public static List<int> ParseIntList(string value)
 		{
 			return string.IsNullOrEmpty(value)
 				? new List<int>()
-				: value.Split(ParseStringMethods.ItemSeperator).ConvertAll(x => int.Parse(x));
+				: value.Split(TextExtensions.ItemSeperator).ConvertAll(x => int.Parse(x));
 		}
 
 		public static IList<T> ParseList<T>(string value, Type createListType, Func<string, object> parseFn)
@@ -56,7 +56,7 @@ namespace ServiceStack.Common.Text
 
 			if (!string.IsNullOrEmpty(value))
 			{
-				var values = value.Split(ParseStringMethods.ItemSeperator);
+				var values = value.Split(TextExtensions.ItemSeperator);
 				var valuesLength = values.Length;
 				for (var i=0; i < valuesLength; i++)
 				{

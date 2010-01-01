@@ -7,9 +7,6 @@ namespace ServiceStack.Common.Text
 {
 	public static class ParseStringMethods
 	{
-		public const char ItemSeperator = ',';
-		public const char KeyValueSeperator = ':';
-
 		public static Func<string, object> GetParseMethod(Type type)
 		{
 			type = Nullable.GetUnderlyingType(type) ?? type;
@@ -57,8 +54,14 @@ namespace ServiceStack.Common.Text
 			if (staticParseMethod != null)
 				return staticParseMethod;
 
+			var typeConstructor = ParseStringTypeMethod.GetParseMethod(type);
+			if (typeConstructor != null)
+				return typeConstructor;
+
 			var stringConstructor = ParseStringTypeConstructor.GetParseMethod(type);
-			return stringConstructor;
+			if (stringConstructor != null) return stringConstructor;
+
+			return null;
 		}
 
 		public static bool IsGenericType(Type type)
