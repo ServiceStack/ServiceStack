@@ -50,5 +50,30 @@ namespace ServiceStack.Common.Extensions
 			return (TAttribute)(attrs.Length > 0 ? attrs[0] : null);
 		}
 
+		public static bool IsGenericType(this Type type)
+		{
+			while (type != null)
+			{
+				if (type.IsGenericType)
+					return true;
+
+				type = type.BaseType;
+			}
+			return false;
+		}
+
+		public static Type FirstGenericTypeDefinition(this Type type)
+		{
+			while (type != null)
+			{
+				if (type.IsGenericType)
+					return type.GetGenericTypeDefinition();
+
+				type = type.BaseType;
+			}
+
+			return null;
+		}
+
 	}
 }

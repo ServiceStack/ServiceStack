@@ -1,63 +1,161 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Tests.Perf;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite.Tests.Models;
+using ServiceStack.OrmLite.TestsPerf.Model;
 
 namespace ServiceStack.OrmLite.TestsPerf.Tests
 {
+	[Ignore]
 	[TestFixture]
 	public class TypeToStringTests
 		: TextTestBase
 	{
+
+		readonly CustomerDto customer = NorthwindDtoFactory.Customer(
+		1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
+		"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
+
+		readonly OrderDto order = NorthwindDtoFactory.Order(
+			1, "VINET", 5, new DateTime(1996, 7, 4), new DateTime(1996, 1, 8), new DateTime(1996, 7, 16),
+			3, 32.38m, "Vins et alcools Chevalier", "59 rue de l'Abbaye", "Reims", null, "51100", "France");
+
+		readonly OrderDto order2 = NorthwindDtoFactory.Order(
+			2, "VINET", 5, new DateTime(1996, 7, 4), new DateTime(1996, 1, 8), new DateTime(1996, 7, 16),
+			3, 32.38m, "Vins et alcools Chevalier", "59 rue de l'Abbaye", "Reims", null, "51100", "France");
+
+		readonly OrderDto order3 = NorthwindDtoFactory.Order(
+			2, "VINET", 5, new DateTime(1996, 7, 4), new DateTime(1996, 1, 8), new DateTime(1996, 7, 16),
+			3, 32.38m, "Vins et alcools Chevalier", "59 rue de l'Abbaye", "Reims", null, "51100", "France");
+
+		readonly SupplierDto supplier = NorthwindDtoFactory.Supplier(
+			1, "Exotic Liquids", "Charlotte Cooper", "Purchasing Manager", "49 Gilbert St.", "London", null,
+			"EC1 4SD", "UK", "(171) 555-2222", null, null);
+
 		[Test]
 		public void Can_deserialize_CustomerDto()
 		{
-			var dto = NorthwindDtoFactory.Customer(
-			1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
-			"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
-
-			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoString = StringConverterUtils.ToString(customer);
 
 			Log(dtoString);
 
 			var newDto = StringConverterUtils.Parse<CustomerDto>(dtoString);
 
-			Assert.That(dto.Equals(newDto), Is.True);
+			Assert.That(customer.Equals(newDto), Is.True);
 		}
 
 		[Test]
 		public void Can_deserialize_OrderDto()
 		{
-			var dto = NorthwindDtoFactory.Order(
-				1, "VINET", 5, new DateTime(1996, 7, 4), new DateTime(1996, 1, 8), new DateTime(1996, 7, 16),
-				3, 32.38m, "Vins et alcools Chevalier", "59 rue de l'Abbaye", "Reims", null, "51100", "France");
-
-			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoString = StringConverterUtils.ToString(order);
 
 			Log(dtoString);
 
 			var newDto = StringConverterUtils.Parse<OrderDto>(dtoString);
 
-			Assert.That(dto.Equals(newDto), Is.True);
+			Assert.That(order.Equals(newDto), Is.True);
 		}
 
 		[Test]
 		public void Can_deserialize_SupplierDto()
 		{
-			var dto = NorthwindDtoFactory.Supplier(
-				1, "Exotic Liquids", "Charlotte Cooper", "Purchasing Manager", "49 Gilbert St.", "London", null,
-				"EC1 4SD", "UK", "(171) 555-2222", null, null);
-
-			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoString = StringConverterUtils.ToString(supplier);
 
 			Log(dtoString);
 
 			var newDto = StringConverterUtils.Parse<SupplierDto>(dtoString);
 
-			Assert.That(dto.Equals(newDto), Is.True);
+			Assert.That(supplier.Equals(newDto), Is.True);
 		}
+
+		[Test]
+		public void Can_deserialize_MultiDto()
+		{
+			var multiDto = new MultiDto { Id = Guid.NewGuid(), Customer = customer, Supplier = supplier, };
+
+			var dtoString = StringConverterUtils.ToString(multiDto);
+
+			Log(dtoString);
+
+			var newDto = StringConverterUtils.Parse<MultiDto>(dtoString);
+
+			Assert.That(multiDto.Equals(newDto), Is.True);
+		}
+
+		[Test]
+		public void Can_deserialize_MultiDtoWithOrders()
+		{
+			var multiDto = DtoFactory.MultiDtoWithOrders;
+
+			var dtoString = StringConverterUtils.ToString(multiDto);
+
+			Log(dtoString);
+
+			var newDto = StringConverterUtils.Parse<MultiDtoWithOrders>(dtoString);
+
+			Assert.That(multiDto.Equals(newDto), Is.True);
+		}
+
+		[Test]
+		public void Can_deserialize_MultiOrderProperties()
+		{
+			var multiDto = DtoFactory.MultiOrderProperties;
+
+			var dtoString = StringConverterUtils.ToString(multiDto);
+
+			Log(dtoString);
+
+			var newDto = StringConverterUtils.Parse<MultiOrderProperties>(dtoString);
+
+			Assert.That(multiDto.Equals(newDto), Is.True);
+		}
+
+		[Test]
+		public void Can_deserialize_MultiCustomerProperties()
+		{
+			var multiDto = DtoFactory.MultiCustomerProperties;
+
+			var dtoString = StringConverterUtils.ToString(multiDto);
+
+			Log(dtoString);
+
+			var newDto = StringConverterUtils.Parse<MultiCustomerProperties>(dtoString);
+
+			Assert.That(multiDto.Equals(newDto), Is.True);
+		}
+
+		[Test]
+		public void Can_deserialize_ArrayDtoWithOrders()
+		{
+			var arrayDto = DtoFactory.ArrayDtoWithOrders;
+
+			var dtoString = StringConverterUtils.ToString(arrayDto);
+
+			Log(dtoString);
+
+			var newDto = StringConverterUtils.Parse<ArrayDtoWithOrders>(dtoString);
+
+			Assert.That(arrayDto.Equals(newDto), Is.True);
+		}
+
+		[Test]
+		public void profile_Serialize_MultiDtoWithOrders()
+		{
+			var dto = DtoFactory.MultiDtoWithOrders;
+			100.Times(i => StringConverterUtils.ToString(dto));
+		}
+
+		[Test]
+		public void profile_Deserialize_MultiDtoWithOrders()
+		{
+			const string dtoString = "{Id=f8e1b4a8-a8d2-4d39-a92e-426809821474	Customer={Id=1	CompanyName=Alfreds Futterkiste	ContactName=Maria Anders	ContactTitle=Sales Representative	Address=Obere Str. 57	City=Berlin	Region=	PostalCode=12209	Country=Germany	Phone=030-0074321	Fax=030-0076545	Picture=}	Supplier={Id=1	CompanyName=Exotic Liquids	ContactName=Charlotte Cooper	ContactTitle=Purchasing Manager	Address=49 Gilbert St.	City=London	Region=	PostalCode=EC1 4SD	Country=UK	Phone=(171) 555-2222	Fax=	HomePage=}	Orders={Id=1	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=2	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=3	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=4	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France}}";
+			var newDto = StringConverterUtils.Parse<MultiDtoWithOrders>(dtoString);
+		}
+
 	}
 }

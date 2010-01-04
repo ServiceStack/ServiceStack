@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
@@ -38,19 +39,36 @@ namespace ServiceStack.Common.Text
 
 			var instance = Activator.CreateInstance(type);
 
-			for (var i=1; i < value.Length; i++)
+			try
 			{
-				var propertyName = EatPropertyName(value, ref i);
-				i++;
-				var propertyValueString = EatPropertyValue(value, ref i);
+				for (var i=1; i < value.Length; i++)
+				{
+					var propertyName = EatPropertyName(value, ref i);
+					i++;
+					var propertyValueString = EatPropertyValue(value, ref i);
+					if (value[i] == TextExtensions.ItemSeperator)
+					{
+						var sbCollection = new StringBuilder(propertyValueString);
+						while (value[i] == TextExtensions.ItemSeperator)
+						{
+							sbCollection.Append(value[i++]);
+							sbCollection.Append(EatPropertyValue(value, ref i));
+						}
+						propertyValueString = sbCollection.ToString();
+					}
 
-				var parseStringFn = parseStringFnMap[propertyName];
-				var propertyValue = parseStringFn(propertyValueString);
-				var setterFn = setterMap[propertyName];
+					var parseStringFn = parseStringFnMap[propertyName];
+					var propertyValue = parseStringFn(propertyValueString);
+					var setterFn = setterMap[propertyName];
 
-				setterFn(instance, propertyValue);
+					setterFn(instance, propertyValue);
+				}
+
 			}
-
+			catch (Exception ex)
+			{
+				throw;
+			}
 			return instance;
 		}
 
@@ -70,6 +88,19 @@ namespace ServiceStack.Common.Text
 				|| valueChar == TextExtensions.TypeEndChar)
 			{
 				return null;
+			}
+
+			if (valueChar == TextExtensions.TypeStartChar)
+			{
+				var typeEndsToEat = 1;
+				while (++i < value.Length && typeEndsToEat > 0)
+				{
+					if (value[i] == TextExtensions.TypeStartChar)
+						typeEndsToEat++;
+					if (value[i] == TextExtensions.TypeEndChar)
+						typeEndsToEat--;
+				}
+				return value.Substring(tokenStartPos, i - tokenStartPos);
 			}
 
 			while (++i < value.Length

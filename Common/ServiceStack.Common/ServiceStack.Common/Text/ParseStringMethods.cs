@@ -31,7 +31,7 @@ namespace ServiceStack.Common.Text
 			if (builtInMethod != null)
 				return builtInMethod;
 
-			if (IsGenericType(type))
+			if (type.IsGenericType())
 			{
 				var listInterfaces = type.FindInterfaces(
 					(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
@@ -60,31 +60,6 @@ namespace ServiceStack.Common.Text
 
 			var stringConstructor = ParseStringTypeConstructor.GetParseMethod(type);
 			if (stringConstructor != null) return stringConstructor;
-
-			return null;
-		}
-
-		public static bool IsGenericType(Type type)
-		{
-			while (type != null)
-			{
-				if (type.IsGenericType)
-					return true;
-
-				type = type.BaseType;
-			}
-			return false;
-		}
-
-		public static Type GetGenericTypeDefinition(Type type)
-		{
-			while (type != null)
-			{
-				if (type.IsGenericType)
-					return type.GetGenericTypeDefinition();
-
-				type = type.BaseType;
-			}
 
 			return null;
 		}

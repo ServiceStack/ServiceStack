@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -40,15 +41,21 @@ namespace ServiceStack.Common.Text
 			Dictionary<string, Func<object, object>> getterMap, Dictionary<string, Func<object, string>> toStringMap)
 		{
 			var sb = new StringBuilder();
+
+			//var timePoints = new List<KeyValuePair<string, long>>();
+			//var stopWatch = new Stopwatch();
+			//stopWatch.Start();
 			
+			//timePoints.Add(new KeyValuePair<string, long>("Begin TypeToString:" + value.GetType().Name, stopWatch.ElapsedTicks));
 			foreach (var getterEntry in getterMap)
 			{
 				if (sb.Length > 0) sb.Append(TextExtensions.PropertyItemSeperator);
 
 				var propertyValue = getterEntry.Value(value);
+				var propertyValueString = toStringMap[getterEntry.Key](propertyValue);
 				sb.Append(getterEntry.Key)
 					.Append(TextExtensions.PropertyNameSeperator)
-					.Append(propertyValue);
+					.Append(propertyValueString);
 			}
 			sb.Insert(0, TextExtensions.TypeStartChar);
 			sb.Append(TextExtensions.TypeEndChar);

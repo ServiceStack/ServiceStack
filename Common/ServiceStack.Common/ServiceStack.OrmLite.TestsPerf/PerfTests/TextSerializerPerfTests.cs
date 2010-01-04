@@ -7,17 +7,19 @@ using ServiceStack.Common.Tests.Perf;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite.Tests.Models;
+using ServiceStack.OrmLite.TestsPerf.Model;
 using ServiceStack.OrmLite.TestsPerf.Scenarios;
 
 namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 {
+	[Ignore("Slow performance tests")]
 	[TestFixture]
 	public class TextSerializerPerfTests
 		: PerfTestBase
 	{
 		public TextSerializerPerfTests()
 		{
-			this.MultipleIterations = new List<int> { 1000, 10000, 100000 };			
+			this.MultipleIterations = new List<int> { 1000, 10000 };			
 		}
 
 		public void WriteLog()
@@ -72,8 +74,65 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 			Log(ToStringMethods.ToString(supplier));
 
 			RunMultipleTimes(() => StringConverterUtils.ToString(supplier), "ToStringMethods.ToString(supplier)");
-			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(supplier), "DataContractSerializer.Instance.Parse(order)");
-			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(supplier), "JsonDataContractSerializer.Instance.Parse(order)");
+			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(supplier), "DataContractSerializer.Instance.Parse(supplier)");
+			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(supplier), "JsonDataContractSerializer.Instance.Parse(supplier)");
 		}
+
+		[Test]
+		public void Serialize_MultiOrderProperties()
+		{
+			var dto = DtoFactory.MultiOrderProperties;
+
+			Log(ToStringMethods.ToString(dto));
+			Log(DataContractSerializer.Instance.Parse(dto));
+			Log(JsonDataContractSerializer.Instance.Parse(dto));
+
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+		}
+
+		[Test]
+		public void Serialize_MultiCustomerProperties()
+		{
+			var dto = DtoFactory.MultiCustomerProperties;
+
+			Log(ToStringMethods.ToString(dto));
+			Log(DataContractSerializer.Instance.Parse(dto));
+			Log(JsonDataContractSerializer.Instance.Parse(dto));
+
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+		}
+
+		[Test]
+		public void Serialize_MultiDtoWithOrders()
+		{
+			var dto = DtoFactory.MultiDtoWithOrders;
+
+			Log(ToStringMethods.ToString(dto));
+			Log(DataContractSerializer.Instance.Parse(dto));
+			Log(JsonDataContractSerializer.Instance.Parse(dto));
+
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+		}
+
+		[Test]
+		public void Serialize_ArrayDtoWithOrders()
+		{
+			var dto = DtoFactory.ArrayDtoWithOrders;
+
+			Log(ToStringMethods.ToString(dto));
+			Log(DataContractSerializer.Instance.Parse(dto));
+			Log(JsonDataContractSerializer.Instance.Parse(dto));
+
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+		}
+
 	}
 }

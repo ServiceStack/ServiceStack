@@ -48,6 +48,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -58,6 +61,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\ArrayDtoWithOrders.cs" />
+    <Compile Include="Model\DtoFactory.cs" />
+    <Compile Include="Model\MultiCustomerProperties.cs" />
+    <Compile Include="Model\MultiOrderProperties.cs" />
     <Compile Include="PerfTests\TextDeserializerPerfTests.cs" />
     <Compile Include="PerfTests\NorthwindPerfTests.cs" />
     <Compile Include="PerfTests\OrmLitePerfTests.cs" />
@@ -77,6 +84,8 @@
     <Compile Include="Scenarios\Text\NorthwindSupplierToStringScenario.cs" />
     <Compile Include="Scenarios\Text\NorthwindOrderToStringScenario.cs" />
     <Compile Include="Support\Northwind.models.cs" />
+    <Compile Include="Model\MultiDtoWithOrders.cs" />
+    <Compile Include="Model\MultiDto.cs" />
     <Compile Include="Tests\TextTestBase.cs" />
     <Compile Include="Tests\TypeToStringTests.cs" />
   </ItemGroup>

@@ -7,10 +7,12 @@ using ServiceStack.Common.Tests.Perf;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite.Tests.Models;
+using ServiceStack.OrmLite.TestsPerf.Model;
 using ServiceStack.OrmLite.TestsPerf.Scenarios;
 
 namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 {
+	[Ignore("Slow performance tests")]
 	[TestFixture]
 	public class TextDeserializerPerfTests
 		: PerfTestBase
@@ -35,11 +37,9 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		}
 
 		[Test]
-		public void Run_NorthwindCustomerToStringScenario()
+		public void Deserialize_Customer()
 		{
-			var dto = NorthwindDtoFactory.Customer(
-			1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
-			"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
+			var dto = DtoFactory.CustomerDto;
 
 			var dtoString = StringConverterUtils.ToString(dto);
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
@@ -51,11 +51,9 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		}
 
 		[Test]
-		public void Run_NorthwindOrderToStringScenario()
+		public void Deserialize_Order()
 		{
-			var dto = NorthwindDtoFactory.Order(
-				1, "VINET", 5, new DateTime(1996, 7, 4), new DateTime(1996, 1, 8), new DateTime(1996, 7, 16), 
-				3, 32.38m, "Vins et alcools Chevalier", "59 rue de l'Abbaye", "Reims", null, "51100", "France");
+			var dto = DtoFactory.OrderDto;
 
 			var dtoString = StringConverterUtils.ToString(dto);
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
@@ -67,11 +65,9 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		}
 
 		[Test]
-		public void Run_NorthwindSupplierToStringScenario()
+		public void Deserialize_Supplier()
 		{
-			var dto = NorthwindDtoFactory.Supplier(
-			1, "Exotic Liquids", "Charlotte Cooper", "Purchasing Manager", "49 Gilbert St.", "London", null,
-			"EC1 4SD", "UK", "(171) 555-2222", null, null);
+			var dto = DtoFactory.SupplierDto;
 
 			var dtoString = StringConverterUtils.ToString(dto);
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
@@ -80,6 +76,34 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 			RunMultipleTimes(() => StringConverterUtils.Parse<SupplierDto>(dtoString), "StringConverterUtils.Parse<SupplierDto>(dtoString)");
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<SupplierDto>(dtoXml), "DataContractDeserializer.Instance.Parse<SupplierDto>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<SupplierDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<SupplierDto>(dtoJson)");
+		}
+
+		[Test]
+		public void Deserialize_MultiDtoWithOrders()
+		{
+			var dto = DtoFactory.MultiDtoWithOrders;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoXml = DataContractSerializer.Instance.Parse(dto);
+			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
+
+			RunMultipleTimes(() => StringConverterUtils.Parse<MultiDtoWithOrders>(dtoString), "StringConverterUtils.Parse<MultiDtoWithOrders>(dtoString)");
+			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoXml), "DataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoXml)");
+			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoJson)");
+		}
+
+		[Test]
+		public void Deserialize_ArrayDtoWithOrders()
+		{
+			var dto = DtoFactory.ArrayDtoWithOrders;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoXml = DataContractSerializer.Instance.Parse(dto);
+			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
+
+			RunMultipleTimes(() => StringConverterUtils.Parse<ArrayDtoWithOrders>(dtoString), "StringConverterUtils.Parse<ArrayDtoWithOrders>(dtoString)");
+			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoXml), "DataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoXml)");
+			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoJson)");
 		}
 	}
 }

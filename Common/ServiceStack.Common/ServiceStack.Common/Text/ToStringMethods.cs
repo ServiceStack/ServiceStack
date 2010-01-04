@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
 using System.Text;
 using ServiceStack.Common.Extensions;
 
@@ -8,6 +10,8 @@ namespace ServiceStack.Common.Text
 {
 	public static class ToStringMethods
 	{
+		public delegate string ToStringDelegate(object value);
+
 		public static string ToString(object value)
 		{
 			var toStringMethod = GetToStringMethod(value.GetType());
@@ -48,6 +52,12 @@ namespace ServiceStack.Common.Text
 
 			if (type.IsValueType)
 			{
+				if (type == typeof(DateTime))
+					return value => DateTimeToString((DateTime)value);
+
+				if (type == typeof(DateTime?))
+					return value => value == null ? null : DateTimeToString((DateTime)value);
+
 				return BuiltinToString;
 			}
 
@@ -61,24 +71,26 @@ namespace ServiceStack.Common.Text
 				{
 					return x => StringArrayToString((string[])x);
 				}
+
+				return GetArrayToStringMethod(type.GetElementType());
 			}
 
 			var isCollection = type.FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
 			if (isCollection)
 			{
 				var isDictionary = type.IsAssignableFrom(typeof(IDictionary))
-				                   || type.FindInterfaces((x, y) => x == typeof(IDictionary), null).Length > 0;
+								   || type.FindInterfaces((x, y) => x == typeof(IDictionary), null).Length > 0;
 
 				if (isDictionary)
 				{
 					return obj => IDictionaryToString((IDictionary)obj);
 				}
-				
+
 				return obj => IEnumerableToString((IEnumerable)obj);
 			}
 
 			var isEnumerable = type.IsAssignableFrom(typeof(IEnumerable))
-			                   || type.FindInterfaces((x, y) => x == typeof(IEnumerable), null).Length > 0;
+							   || type.FindInterfaces((x, y) => x == typeof(IEnumerable), null).Length > 0;
 
 			if (isEnumerable)
 			{
@@ -97,6 +109,28 @@ namespace ServiceStack.Common.Text
 			return BuiltinToString;
 		}
 
+		static Dictionary<DateTime, string> dateTimeValues = new Dictionary<DateTime, string>();
+
+		/// <summary>
+		/// DateTime.ToString() is really slow, need to cache values or return ticks.
+		/// </summary>
+		/// <param name="dateTime">The date time.</param>
+		/// <returns></returns>
+		public static string DateTimeToString(DateTime dateTime)
+		{
+			string dateTimeString;
+			if (!dateTimeValues.TryGetValue(dateTime, out dateTimeString))
+			{
+				if (dateTimeValues.Count > 100)
+				{
+					dateTimeValues = new Dictionary<DateTime, string>();
+				}
+				dateTimeString = dateTime.ToString();
+				dateTimeValues[dateTime] = dateTimeString;
+			}
+			return dateTimeString;
+		}
+
 		public static string StringArrayToString(string[] arrayValue)
 		{
 			var sb = new StringBuilder();
@@ -109,13 +143,38 @@ namespace ServiceStack.Common.Text
 			return sb.ToString();
 		}
 
-		public static string ArrayToString<T>(T[] arrayValue)
+		public static Func<object, string> GetArrayToStringMethod(Type elementType)
 		{
+			var mi = typeof(ToStringMethods).GetMethod("ArrayToString",
+				BindingFlags.Static | BindingFlags.Public);
+
+			var genericMi = mi.MakeGenericMethod(new[] { elementType });
+			var genericDelegate = (ToStringDelegate)Delegate.CreateDelegate(typeof(ToStringDelegate), genericMi);
+
+			return genericDelegate.Invoke;
+		}
+
+		public static string ArrayToString<T>(object oArrayValue)
+		{
+			Func<object, string> toStringFn = null;
+
+			var arrayValue = (T[])oArrayValue;
 			var sb = new StringBuilder();
 			var arrayValueLength = arrayValue.Length;
-			for (var i=0; i<arrayValueLength; i++)
+			for (var i=0; i < arrayValueLength; i++)
 			{
-				if (sb.Length > 0) sb.Append(TextExtensions.ItemSeperator);
+				var item = arrayValue[i];
+				if (toStringFn == null)
+				{
+					toStringFn = GetToStringMethod(item.GetType());
+				}
+
+				var itemString = toStringFn(item);
+				if (sb.Length > 0)
+				{
+					sb.Append(TextExtensions.ItemSeperator);
+				}
+				sb.Append(itemString);
 			}
 			return sb.ToString();
 		}
@@ -135,6 +194,31 @@ namespace ServiceStack.Common.Text
 			return byteValue == null ? null : Encoding.Default.GetString(byteValue);
 		}
 
+		public static string IListGenericToString(IList list)
+		{
+			Func<object, string> toStringFn = null;
+
+			var sb = new StringBuilder();
+			var listLength = list.Count;
+			for (var i=0; i < listLength; i++)
+			{
+				var item = list[i];
+				if (toStringFn == null)
+				{
+					toStringFn = GetToStringMethod(item.GetType());
+				}
+
+				var itemString = toStringFn(item);
+				if (sb.Length > 0)
+				{
+					sb.Append(TextExtensions.ItemSeperator);
+				}
+				sb.Append(itemString);
+			}
+
+			return sb.ToString();
+		}
+
 		public static string IEnumerableToString(IEnumerable valueCollection)
 		{
 			Func<object,string> toStringFn = null;
@@ -144,7 +228,7 @@ namespace ServiceStack.Common.Text
 			{
 				if (toStringFn == null)
 				{
-					toStringFn = GetToStringMethodToCache(valueItem.GetType());
+					toStringFn = GetToStringMethod(valueItem.GetType());
 				}
 
 				var elementValueString = toStringFn(valueItem);
