@@ -72,15 +72,34 @@ namespace ServiceStack.Common.Text
 			if (value == null) return null;
 			if (value == string.Empty) return new T[0];
 
-			var strValues = value.Split(',');
-			var strValuesLength = strValues.Length;
-			var results = new T[strValuesLength];
-			for (var i = 0; i < strValuesLength; i++)
+			if (value[0] == TextExtensions.TypeStartChar)
 			{
-				results[i] = (T) parseFn(strValues[i]);
+				var itemValues = new List<string>();
+				var i = 0;
+				do
+				{
+					itemValues.Add(ParseStringMethods.EatElementValue(value, ref i));
+				} while (++i < value.Length);
+
+				var results = new T[itemValues.Count];
+				for (var j=0; j < itemValues.Count; j++)
+				{
+					results[j] = (T)parseFn(itemValues[j]);
+				}
+				return results;
+			}
+			else
+			{
+				var values = value.Split(TextExtensions.ItemSeperator);
+				var valuesLength = values.Length;
+				var results = new T[valuesLength];
+				for (var i = 0; i < valuesLength; i++)
+				{
+					results[i] = (T)parseFn(values[i]);
+				}
+				return results;
 			}
 
-			return results;
 		}
 	}
 }

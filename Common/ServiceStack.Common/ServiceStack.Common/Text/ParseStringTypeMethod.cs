@@ -38,15 +38,16 @@ namespace ServiceStack.Common.Text
 					"Type definitions should start with a '{0}'", TextExtensions.TypeStartChar));
 
 			var instance = Activator.CreateInstance(type);
+			string propertyName;
 
 			try
 			{
 				for (var i=1; i < value.Length; i++)
 				{
-					var propertyName = EatPropertyName(value, ref i);
+					propertyName = EatPropertyName(value, ref i);
 					i++;
 					var propertyValueString = EatPropertyValue(value, ref i);
-					if (value[i] == TextExtensions.ItemSeperator)
+					if (i < value.Length && value[i] == TextExtensions.ItemSeperator)
 					{
 						var sbCollection = new StringBuilder(propertyValueString);
 						while (value[i] == TextExtensions.ItemSeperator)
@@ -61,7 +62,10 @@ namespace ServiceStack.Common.Text
 					var propertyValue = parseStringFn(propertyValueString);
 					var setterFn = setterMap[propertyName];
 
-					setterFn(instance, propertyValue);
+					if (setterFn != null)
+					{
+						setterFn(instance, propertyValue);
+					}
 				}
 
 			}

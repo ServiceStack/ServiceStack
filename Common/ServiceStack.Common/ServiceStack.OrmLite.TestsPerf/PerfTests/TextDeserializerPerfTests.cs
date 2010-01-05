@@ -105,5 +105,33 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoXml), "DataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoJson)");
 		}
+
+		[Test]
+		public void Deserialize_CustomerOrderListDto()
+		{
+			var dto = DtoFactory.CustomerOrderListDto;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoXml = DataContractSerializer.Instance.Parse(dto);
+			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
+
+			RunMultipleTimes(() => StringConverterUtils.Parse<CustomerOrderListDto>(dtoString), "StringConverterUtils.Parse<CustomerOrderListDto>(dtoString)");
+			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoXml), "DataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoXml)");
+			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoJson)");
+		}
+
+		[Test]
+		public void Deserialize_CustomerOrderArrayDto()
+		{
+			var dto = DtoFactory.CustomerOrderArrayDto;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoXml = DataContractSerializer.Instance.Parse(dto);
+			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
+
+			RunMultipleTimes(() => StringConverterUtils.Parse<CustomerOrderArrayDto>(dtoString), "StringConverterUtils.Parse<CustomerOrderArrayDto>(dtoString)");
+			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoXml), "DataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoXml)");
+			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoJson)");
+		}
 	}
 }

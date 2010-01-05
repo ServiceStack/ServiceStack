@@ -79,5 +79,19 @@ namespace ServiceStack.Common.Text
 			return Enum.Parse(type, value);
 		}
 
+		public static string EatElementValue(string value, ref int i)
+		{
+			var tokenStartPos = i;
+			var typeEndsToEat = 1;
+			while (++i < value.Length && typeEndsToEat > 0)
+			{
+				if (value[i] == TextExtensions.TypeStartChar)
+					typeEndsToEat++;
+				if (value[i] == TextExtensions.TypeEndChar)
+					typeEndsToEat--;
+			}
+			return value.Substring(tokenStartPos, i - tokenStartPos);
+		}
+
 	}
 }

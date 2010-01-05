@@ -62,7 +62,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\ArrayDtoWithOrders.cs" />
+    <Compile Include="Model\CustomerOrderArrayDto.cs" />
+    <Compile Include="Model\CustomerOrderListDto.cs" />
     <Compile Include="Model\DtoFactory.cs" />
+    <Compile Include="Model\FullOrderDto.cs" />
     <Compile Include="Model\MultiCustomerProperties.cs" />
     <Compile Include="Model\MultiOrderProperties.cs" />
     <Compile Include="PerfTests\TextDeserializerPerfTests.cs" />

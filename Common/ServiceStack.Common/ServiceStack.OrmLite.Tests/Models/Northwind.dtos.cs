@@ -323,7 +323,6 @@ namespace ServiceStack.OrmLite.Tests.Models
 	public class OrderDetailDto
 		: IHasStringId
 	{
-		[DataMember]
 		public string Id { get { return this.OrderId + "/" + this.ProductId; } }
 
 		[DataMember]
@@ -340,6 +339,19 @@ namespace ServiceStack.OrmLite.Tests.Models
 
 		[DataMember]
 		public double Discount { get; set; }
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as OrderDetailDto;
+			if (other == null) return false;
+
+			return this.Id == other.Id
+			       && this.OrderId == other.OrderId
+			       && this.ProductId == other.ProductId
+			       && this.UnitPrice == other.UnitPrice
+			       && this.Quantity == other.Quantity
+			       && this.Discount == other.Discount;
+		}
 	}
 
 	[DataContract]

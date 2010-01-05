@@ -144,6 +144,34 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		}
 
 		[Test]
+		public void Can_deserialize_CustomerOrderListDto()
+		{
+			var dto = DtoFactory.CustomerOrderListDto;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+
+			Log(dtoString);
+
+			var newDto = StringConverterUtils.Parse<CustomerOrderListDto>(dtoString);
+
+			Assert.That(dto.Equals(newDto), Is.True);
+		}
+
+		[Test]
+		public void Can_deserialize_CustomerOrderArrayDto()
+		{
+			var dto = DtoFactory.CustomerOrderArrayDto;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+
+			Log(dtoString);
+
+			var newDto = StringConverterUtils.Parse<CustomerOrderArrayDto>(dtoString);
+
+			Assert.That(dto.Equals(newDto), Is.True);
+		}
+
+		[Test]
 		public void profile_Serialize_MultiDtoWithOrders()
 		{
 			var dto = DtoFactory.MultiDtoWithOrders;
