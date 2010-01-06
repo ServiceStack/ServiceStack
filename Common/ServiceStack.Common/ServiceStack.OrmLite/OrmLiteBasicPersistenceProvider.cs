@@ -85,7 +85,7 @@ namespace ServiceStack.OrmLite
 			return entity;
 		}
 
-		public void StoreAll<TEntity>(params TEntity[] entities) 
+		public void StoreAll<TEntity>(IEnumerable<TEntity> entities) 
 			where TEntity : class, new()
 		{
 			using (var dbCmd = this.Connection.CreateCommand())
@@ -105,6 +105,22 @@ namespace ServiceStack.OrmLite
 			using (var dbCmd = this.Connection.CreateCommand())
 			{
 				dbCmd.Delete(entity);
+			}
+		}
+
+		public void DeleteById<T>(object id) where T : class, new()
+		{
+			using (var dbCmd = this.Connection.CreateCommand())
+			{
+				dbCmd.DeleteById<T>(id);
+			}
+		}
+
+		public void DeleteByIds<T>(ICollection ids) where T : class, new()
+		{
+			using (var dbCmd = this.Connection.CreateCommand())
+			{
+				dbCmd.DeleteByIds<T>(ids);
 			}
 		}
 

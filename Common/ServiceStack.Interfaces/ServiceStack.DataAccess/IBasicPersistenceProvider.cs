@@ -15,10 +15,16 @@ namespace ServiceStack.DataAccess
 		T Store<T>(T entity)
 			where T : class, new();
 
-		void StoreAll<TEntity>(params TEntity[] entities)
+		void StoreAll<TEntity>(IEnumerable<TEntity> entities)
 			where TEntity : class, new();
 
 		void Delete<T>(T entity)
+			where T : class, new();
+
+		void DeleteById<T>(object id)
+			where T : class, new();
+
+		void DeleteByIds<T>(ICollection ids)
 			where T : class, new();
 	}
 }

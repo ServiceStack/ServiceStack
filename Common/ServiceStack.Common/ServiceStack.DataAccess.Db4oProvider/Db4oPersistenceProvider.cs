@@ -10,7 +10,8 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.DataAccess.Db4oProvider
 {
-	public class Db4OPersistenceProvider : IQueryablePersistenceProvider
+	public class Db4OPersistenceProvider 
+		: IQueryablePersistenceProvider
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(Db4OPersistenceProvider));
 
@@ -432,6 +433,18 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			where T : class, new()
 		{
 			this.ObjectContainer.Delete(entity);
+		}
+
+		public void DeleteById<T>(object id) where T : class, new()
+		{
+			var entity = GetById<T>(id);
+			Delete(entity);
+		}
+
+		public void DeleteByIds<T>(ICollection ids) where T : class, new()
+		{
+			var entities = GetByIds<T>(ids);
+			DeleteAll(entities);
 		}
 
 		public void DeleteAll<T>(IEnumerable<T> entities)

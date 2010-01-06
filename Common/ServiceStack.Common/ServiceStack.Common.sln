@@ -70,6 +70,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.TestsPerf", "ServiceStack.OrmLite.TestsPerf\ServiceStack.OrmLite.TestsPerf.csproj", "{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis", "ServiceStack.Redis\ServiceStack.Redis.csproj", "{AF99F19B-4C04-4F58-81EF-B092F1FCC540}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis.Tests", "ServiceStack.Redis.Tests\ServiceStack.Redis.Tests.csproj", "{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -184,6 +188,14 @@ Global
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24E0D2DB-1F1E-43BE-83DB-B999ACE5A700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF99F19B-4C04-4F58-81EF-B092F1FCC540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF99F19B-4C04-4F58-81EF-B092F1FCC540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF99F19B-4C04-4F58-81EF-B092F1FCC540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF99F19B-4C04-4F58-81EF-B092F1FCC540}.Release|Any CPU.Build.0 = Release|Any CPU
+		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

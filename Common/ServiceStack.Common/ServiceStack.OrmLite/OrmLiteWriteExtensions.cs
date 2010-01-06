@@ -345,12 +345,12 @@ namespace ServiceStack.OrmLite
 		public static void Delete<T>(this IDbCommand dbCommand, string sqlFilter, params object[] filterParams)
 			where T : new()
 		{
-			Delete(dbCommand, typeof(T), null);
+			Delete(dbCommand, typeof(T), sqlFilter, filterParams);
 		}
 
 		public static void Delete(this IDbCommand dbCommand, Type tableType, string sqlFilter, params object[] filterParams)
 		{
-			dbCommand.CommandText = ToDeleteStatement(tableType, null);
+			dbCommand.CommandText = ToDeleteStatement(tableType, sqlFilter, filterParams);
 			dbCommand.ExecuteNonQuery();
 		}
 
