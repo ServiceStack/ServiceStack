@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="RedisClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RedisClient.Set.cs" />
     <Compile Include="RedisPersistenceProvider.cs" />
   </ItemGroup>
   <ItemGroup>

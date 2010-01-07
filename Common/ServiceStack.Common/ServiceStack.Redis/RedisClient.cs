@@ -19,7 +19,7 @@ using System.Diagnostics;
 
 namespace ServiceStack.Redis
 {
-	public class RedisClient
+	public partial class RedisClient
 		: IDisposable
 	{
 		Socket socket;
@@ -316,21 +316,7 @@ namespace ServiceStack.Redis
 			if (!SendCommand(cmd, args))
 				throw new Exception("Unable to connect");
 
-			int c = bstream.ReadByte();
-			if (c == -1)
-				throw new ResponseException("No more data");
-
-			var s = ReadLine();
-			Log("R: " + s);
-			if (c == '-')
-				throw new ResponseException(s.StartsWith("ERR") ? s.Substring(4) : s);
-			if (c == ':')
-			{
-				int i;
-				if (int.TryParse(s, out i))
-					return i;
-			}
-			throw new ResponseException("Unknown reply on integer request: " + c + s);
+			return ReadInt();
 		}
 
 		string SendExpectString(string cmd, params object[] args)
@@ -398,6 +384,25 @@ namespace ServiceStack.Redis
 				throw new ResponseException("Invalid length");
 			}
 			throw new ResponseException("Unexpected reply: " + r);
+		}
+
+		private int ReadInt()
+		{
+			int c = bstream.ReadByte();
+			if (c == -1)
+				throw new ResponseException("No more data");
+
+			var s = ReadLine();
+			Log("R: " + s);
+			if (c == '-')
+				throw new ResponseException(s.StartsWith("ERR") ? s.Substring(4) : s);
+			if (c == ':')
+			{
+				int i;
+				if (int.TryParse(s, out i))
+					return i;
+			}
+			throw new ResponseException("Unknown reply on integer request: " + c + s);
 		}
 
 		public bool ContainsKey(string key)
@@ -576,6 +581,11 @@ namespace ServiceStack.Redis
 
 			if (!SendDataCommand(null, "MGET {0}\r\n", string.Join(" ", keys)))
 				throw new Exception("Unable to connect");
+			return ReadMultiData();
+		}
+
+		private byte[][] ReadMultiData()
+		{
 			int c = bstream.ReadByte();
 			if (c == -1)
 				throw new ResponseException("No more data");
