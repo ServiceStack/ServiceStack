@@ -1,11 +1,46 @@
+//
+// ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+//
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace ServiceStack.Redis
 {
+	/// <summary>
+	/// This class contains all the set operations for the RedisClient.
+	/// </summary>
 	public partial class RedisClient
 	{
+		public RedisClientSets Sets { get; set; }
+
+		public List<string> GetRangeFromSortedSet(string setId, int startingFrom, int endingAt)
+		{
+			var multiDataList = Sort(setId, startingFrom, endingAt, true, false);
+			return CreateList(multiDataList);
+		}
+
+		internal byte[][] SMembers(string setId)
+		{
+			if (!SendDataCommand(null, "SMEMBERS {0}\r\n", setId))
+				throw new Exception("Unable to connect");
+			return ReadMultiData();
+		}
+
+		public List<string> GetAllFromSet(string setId)
+		{
+			var multiDataList = SMembers(setId);
+			return CreateList(multiDataList);
+		}
+
 		internal void SAdd(string setId, byte[] value)
 		{
 			if (setId == null)
@@ -21,19 +56,6 @@ namespace ServiceStack.Redis
 		public void AddToSet(string setId, string value)
 		{
 			SAdd(setId, Encoding.UTF8.GetBytes(value));
-		}
-
-		internal byte[][] SMembers(string setId)
-		{
-			if (!SendDataCommand(null, "SMEMBERS {0}\r\n", setId))
-				throw new Exception("Unable to connect");
-			return ReadMultiData();
-		}
-
-		public List<string> GetAllFromSet(string setId)
-		{
-			var multiDataList = SMembers(setId);
-			return CreateList(multiDataList);
 		}
 
 		internal void SRem(string setId, byte[] value)
@@ -89,7 +111,7 @@ namespace ServiceStack.Redis
 			return SendExpectInt("SCARD {0}\r\n", setId);
 		}
 
-		public int GetCountFromSet(string setId)
+		public int GetSetCount(string setId)
 		{
 			return SCard(setId);
 		}
@@ -171,6 +193,45 @@ namespace ServiceStack.Redis
 		public void StoreUnionFromSets(string intoSetId, params string[] setIds)
 		{
 			SUnionStore(intoSetId, setIds);
+		}
+
+		internal byte[][] SDiff(string fromSetId, params string[] withSetIds)
+		{
+			if (!SendDataCommand(null, "SDIFF {0} {1}\r\n", fromSetId, string.Join(" ", withSetIds)))
+				throw new Exception("Unable to connect");
+
+			return ReadMultiData();
+		}
+
+		public List<string> GetDifferencesFromSet(string fromSetId, params string[] withSetIds)
+		{
+			var multiDataList = SDiff(fromSetId, withSetIds);
+			return CreateList(multiDataList);
+		}
+
+		internal void SDiffStore(string intoSetId, string fromSetId, params string[] withSetIds)
+		{
+			if (!SendDataCommand(null, "SDIFFSTORE {0} {1} {2}\r\n", intoSetId, fromSetId, string.Join(" ", withSetIds)))
+				throw new Exception("Unable to connect");
+
+			ExpectSuccess();
+		}
+
+		public void StoreDifferencesFromSet(string intoSetId, string fromSetId, params string[] withSetIds)
+		{
+			SDiffStore(intoSetId, fromSetId, withSetIds);
+		}
+
+		internal byte[] SRandMember(string setId)
+		{
+			if (!SendDataCommand(null, "SRANDMEMBER {0}\r\n", setId))
+				throw new Exception("Unable to connect");
+			return ReadData();
+		}
+
+		public string GetRandomEntryFromSet(string setId)
+		{
+			return Encoding.UTF8.GetString(SRandMember(setId));
 		}
 
 	}

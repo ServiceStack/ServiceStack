@@ -19,6 +19,16 @@ using System.Diagnostics;
 
 namespace ServiceStack.Redis
 {
+	/// <summary>
+	/// This class contains all the common operations for the RedisClient.
+	/// 
+	/// The client contains a 1:1 mapping of c# methods to redis operations of the same name.
+	/// These operations are then wrapped in more readable c# methods.
+	/// 
+	/// Where possible these operations are also exposed in common c# interfacies, 
+	/// e.g. RedisClient.Lists => IList[string]
+	///		 RedisClient.Sets => ICollection[string]
+	/// </summary>
 	public partial class RedisClient
 		: IDisposable
 	{
@@ -49,6 +59,9 @@ namespace ServiceStack.Redis
 			Host = host;
 			Port = port;
 			SendTimeout = -1;
+
+			this.Lists = new RedisClientLists(this);
+			this.Sets = new RedisClientSets(this);
 		}
 
 		public RedisClient()
@@ -215,20 +228,28 @@ namespace ServiceStack.Redis
 			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
 				SendTimeout = SendTimeout
 			};
-			socket.Connect(Host, Port);
-			if (!socket.Connected)
+			try
 			{
-				socket.Close();
-				socket = null;
-				return;
-			}
-			bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
+				socket.Connect(Host, Port);
 
-			if (Password != null)
-				SendExpectSuccess("AUTH {0}\r\n", Password);
+				if (!socket.Connected)
+				{
+					socket.Close();
+					socket = null;
+					return;
+				}
+				bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
+
+				if (Password != null)
+					SendExpectSuccess("AUTH {0}\r\n", Password);
+			}
+			catch (SocketException ex)
+			{				
+				throw new InvalidOperationException("could not connect to redis instance at " + Host + ":" + Port, ex);
+			} 
 		}
 
-		byte [] end_data = new byte[] { (byte)'\r', (byte)'\n' };
+		readonly byte [] endData = new[] { (byte)'\r', (byte)'\n' };
 
 		bool SendDataCommand(byte[] data, string cmd, params object[] args)
 		{
@@ -246,7 +267,7 @@ namespace ServiceStack.Redis
 				if (data != null)
 				{
 					socket.Send(data);
-					socket.Send(end_data);
+					socket.Send(endData);
 				}
 			}
 			catch (SocketException)
@@ -542,6 +563,16 @@ namespace ServiceStack.Redis
 			}
 		}
 
+		public void FlushDb()
+		{
+			SendExpectSuccess("FLUSHDB\r\n");
+		}
+
+		public void FlushAll()
+		{
+			SendExpectSuccess("FLUSHALL\r\n");
+		}
+
 		public Dictionary<string, string> GetInfo()
 		{
 			byte [] r = SendExpectData(null, "INFO\r\n");
@@ -626,7 +657,8 @@ namespace ServiceStack.Redis
 			if (disposing)
 			{
 				SendCommand("QUIT\r\n");
-				socket.Close();
+				if (socket != null) 
+					socket.Close();
 				socket = null;
 			}
 		}
