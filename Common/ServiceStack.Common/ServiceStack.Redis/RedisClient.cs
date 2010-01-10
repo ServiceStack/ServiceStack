@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Diagnostics;
+using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Redis
 {
@@ -32,6 +34,9 @@ namespace ServiceStack.Redis
 	public partial class RedisClient
 		: IDisposable
 	{
+		private const int Success = 1;
+		private const int OneGb = 1073741824;
+
 		Socket socket;
 		BufferedStream bstream;
 
@@ -94,10 +99,10 @@ namespace ServiceStack.Redis
 		public string this[string key]
 		{
 			get { return GetString(key); }
-			set { Set(key, value); }
+			set { SetString(key, value); }
 		}
 
-		public void Set(string key, string value)
+		public void SetString(string key, string value)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
@@ -114,7 +119,7 @@ namespace ServiceStack.Redis
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			if (value.Length > 1073741824)
+			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "SET {0} {1}\r\n", key, value.Length))
@@ -122,29 +127,29 @@ namespace ServiceStack.Redis
 			ExpectSuccess();
 		}
 
-		public void SetNX(string key, string value)
+		public bool SetIfNotExists(string key, string value)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			SetNX(key, Encoding.UTF8.GetBytes(value));
+			return SetNX(key, Encoding.UTF8.GetBytes(value)) == Success;
 		}
 
-		public void SetNX(string key, byte[] value)
+		public int SetNX(string key, byte[] value)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			if (value.Length > 1073741824)
+			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "SETNX {0} {1}\r\n", key, value.Length))
 				throw new Exception("Unable to connect");
-			ExpectSuccess();
+			return ReadInt();
 		}
 
 #if false
@@ -189,7 +194,7 @@ namespace ServiceStack.Redis
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			if (value.Length > 1073741824)
+			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "GETSET {0} {1}\r\n", key, value.Length))
@@ -198,7 +203,7 @@ namespace ServiceStack.Redis
 			return ReadData();
 		}
 
-		public string GetSet(string key, string value)
+		public string GetAndSetString(string key, string value)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
@@ -430,14 +435,14 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("EXISTS " + key + "\r\n") == 1;
+			return SendExpectInt("EXISTS " + key + "\r\n") == Success;
 		}
 
 		public bool Remove(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("DEL " + key + "\r\n", key) == 1;
+			return SendExpectInt("DEL " + key + "\r\n", key) == Success;
 		}
 
 		public int Remove(params string[] args)
@@ -511,21 +516,31 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("EXPIRE {0} {1}\r\n", key, seconds) == 1;
+			return SendExpectInt("EXPIRE {0} {1}\r\n", key, seconds) == Success;
 		}
 
-		public bool ExpireAt(string key, int time)
+		public int ExpireAt(string key, long unixTime)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("EXPIREAT {0} {1}\r\n", key, time) == 1;
+			return SendExpectInt("EXPIREAT {0} {1}\r\n", key, unixTime);
 		}
 
-		public int TimeToLive(string key)
+		public int SetExpiryDate(string key, DateTime dateTime)
+		{
+			return ExpireAt(key, dateTime.ToUnixTime());
+		}
+
+		public int Ttl(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
 			return SendExpectInt("TTL {0}\r\n", key);
+		}
+
+		public TimeSpan GetTimeToLive(string key)
+		{
+			return TimeSpan.FromSeconds(Ttl(key));
 		}
 
 		public int DbSize
@@ -551,15 +566,13 @@ namespace ServiceStack.Redis
 			SendGetString("SHUTDOWN\r\n");
 		}
 
-		const long UnixEpoch = 621355968000000000L;
-
 		public DateTime LastSave
 		{
 			get
 			{
 				int t = SendExpectInt("LASTSAVE\r\n");
 
-				return new DateTime(UnixEpoch) + TimeSpan.FromSeconds(t);
+				return DateTimeExtensions.FromUnixTime(t);
 			}
 		}
 
@@ -599,20 +612,37 @@ namespace ServiceStack.Redis
 		public string[] GetKeys(string pattern)
 		{
 			if (pattern == null)
-				throw new ArgumentNullException("key");
+				throw new ArgumentNullException("pattern");
 			return Encoding.UTF8.GetString(SendExpectData(null, "KEYS {0}\r\n", pattern)).Split(' ');
 		}
 
 		public byte[][] GetKeys(params string[] keys)
 		{
 			if (keys == null)
-				throw new ArgumentNullException("key1");
+				throw new ArgumentNullException("keys");
 			if (keys.Length == 0)
 				throw new ArgumentException("keys");
 
 			if (!SendDataCommand(null, "MGET {0}\r\n", string.Join(" ", keys)))
 				throw new Exception("Unable to connect");
 			return ReadMultiData();
+		}
+
+		public List<T> GetKeyValues<T>(List<string> keys)
+		{
+			var resultBytesArray = GetKeys(keys.ToArray());
+
+			var results = new List<T>();
+			foreach (var resultBytes in resultBytesArray)
+			{
+				if (resultBytes == null) continue;
+
+				var resultString = Encoding.UTF8.GetString(resultBytes);
+				var result = StringConverterUtils.Parse<T>(resultString);
+				results.Add(result);
+			}
+
+			return results;
 		}
 
 		private byte[][] ReadMultiData()

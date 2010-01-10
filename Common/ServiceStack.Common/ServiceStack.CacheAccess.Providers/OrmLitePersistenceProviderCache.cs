@@ -6,18 +6,18 @@ namespace ServiceStack.CacheAccess.Providers
 {
 	public class OrmLitePersistenceProviderCache : BasicPersistenceProviderCacheBase
 	{
-		private readonly OrmLiteBasicPersistenceProvider provider;
+		private readonly OrmLitePersistenceProvider provider;
 
 		public OrmLitePersistenceProviderCache(ICacheClient cacheClient, string connectionString) 
 			: base(cacheClient)
 		{
-			provider = new OrmLiteBasicPersistenceProvider(connectionString);
+			provider = new OrmLitePersistenceProvider(connectionString);
 		}
 
 		public OrmLitePersistenceProviderCache(ICacheClient cacheClient, IDbConnection dbConnection)
 			: base(cacheClient)
 		{
-			provider = new OrmLiteBasicPersistenceProvider(dbConnection);
+			provider = new OrmLitePersistenceProvider(dbConnection);
 		}
 
 		public override IBasicPersistenceProvider GetBasicPersistenceProvider()

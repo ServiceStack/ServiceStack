@@ -11,11 +11,11 @@ namespace ServiceStack.OrmLite
 	/// <summary>
 	/// Allow for code-sharing between OrmLite, IPersistenceProvider and ICacheClient
 	/// </summary>
-	public class OrmLiteBasicPersistenceProvider
+	public class OrmLitePersistenceProvider
 		: IBasicPersistenceProvider
 	{
 		protected string ConnectionString { get; set; }
-		protected bool disposeConnection = true;
+		protected bool DisposeConnection = true;
 
 		protected IDbConnection connection;
 		public IDbConnection Connection
@@ -30,15 +30,15 @@ namespace ServiceStack.OrmLite
 			}
 		}
 
-		public OrmLiteBasicPersistenceProvider(string connectionString)
+		public OrmLitePersistenceProvider(string connectionString)
 		{
 			ConnectionString = connectionString;
 		}
 
-		public OrmLiteBasicPersistenceProvider(IDbConnection connection)
+		public OrmLitePersistenceProvider(IDbConnection connection)
 		{
 			this.connection = connection;
-			this.disposeConnection = false;
+			this.DisposeConnection = false;
 		}
 
 		public T GetById<T>(object id)
@@ -126,7 +126,7 @@ namespace ServiceStack.OrmLite
 
 		public void Dispose()
 		{
-			if (!disposeConnection) return;
+			if (!DisposeConnection) return;
 			if (this.connection == null) return;
 			
 			this.connection.Dispose();

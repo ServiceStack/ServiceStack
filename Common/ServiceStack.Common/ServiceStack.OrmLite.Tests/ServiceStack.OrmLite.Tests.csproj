@@ -94,6 +94,7 @@
     <Compile Include="Models\OrderDetailBlob.cs" />
     <Compile Include="Models\OrderBlob.cs" />
     <Compile Include="Models\SampleOrderLine.cs" />
+    <Compile Include="NorthwindPerfTests.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
     <Compile Include="Models\ModelWithComplexTypes.cs" />
     <Compile Include="OrmLiteLinqTests.cs" />

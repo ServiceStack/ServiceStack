@@ -186,7 +186,7 @@ namespace ServiceStack.Common.Text
 
 		public static string BuiltinToString(object value)
 		{
-			return value.ToString();
+			return value == null ? null : value.ToString();
 		}
 
 		public static string BytesToString(byte[] byteValue)

@@ -50,7 +50,7 @@
     <Compile Include="IPropertyInvoker.cs" />
     <Compile Include="ModelDefinition.cs" />
     <Compile Include="OrmLiteConfig.cs" />
-    <Compile Include="OrmLiteBasicPersistenceProvider.cs" />
+    <Compile Include="OrmLitePersistenceProvider.cs" />
     <Compile Include="IOrmLiteDialectProvider.cs" />
     <Compile Include="OrmLiteConfigExtensions.cs" />
     <Compile Include="OrmLiteDialectProviderBase.cs" />

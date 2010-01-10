@@ -25,7 +25,7 @@ namespace ServiceStack.Redis
 		private readonly string listId;
 		private const int PageLimit = 1000;
 
-		public RedisClientList(string listId, RedisClient client)
+		public RedisClientList(RedisClient client, string listId)
 		{
 			this.listId = listId;
 			this.client = client;
@@ -33,7 +33,7 @@ namespace ServiceStack.Redis
 
 		public IEnumerator<string> GetEnumerator()
 		{
-			return this.Count <= 1000
+			return this.Count <= PageLimit
 				? client.GetAllFromList(listId).GetEnumerator()
 				: GetPagingEnumerator();
 		}
@@ -49,8 +49,8 @@ namespace ServiceStack.Redis
 				{
 					yield return result;
 				}
-				skip += 1000;
-			} while (pageResults.Count < PageLimit);
+				skip += PageLimit;
+			} while (pageResults.Count == PageLimit);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

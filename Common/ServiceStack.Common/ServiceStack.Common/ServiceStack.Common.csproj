@@ -46,6 +46,7 @@
     <Compile Include="Environment.cs" />
     <Compile Include="Expressions\DelegateFactory.cs" />
     <Compile Include="Extensions\ActionExecExtensions.cs" />
+    <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ExecExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DisposableExtensions.cs" />

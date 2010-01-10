@@ -281,14 +281,16 @@ namespace ServiceStack.Redis.Tests
 
 			using (var redis = new RedisClient())
 			{
-				storeMembers.ForEach(x => redis.AddToList(SetId, x));
+				storeMembers.ForEach(x => redis.AddToSet(SetId, x));
 
-				var readMembers = new List<string>();
+				var members = new List<string>();
 				foreach (var item in redis.Sets[SetId])
 				{
-					readMembers.Add(item);
+					members.Add(item);
 				}
-				Assert.That(readMembers, Is.EquivalentTo(storeMembers));
+				members.Sort();
+				Assert.That(members.Count, Is.EqualTo(storeMembers.Count));
+				Assert.That(members, Is.EquivalentTo(storeMembers));
 			}
 		}
 
@@ -310,6 +312,8 @@ namespace ServiceStack.Redis.Tests
 				{
 					members.Add(item);
 				}
+				members.Sort((x, y) => int.Parse(x).CompareTo(int.Parse(y)));
+				Assert.That(members.Count, Is.EqualTo(storeMembers.Count));
 				Assert.That(members, Is.EquivalentTo(storeMembers));
 			}
 		}

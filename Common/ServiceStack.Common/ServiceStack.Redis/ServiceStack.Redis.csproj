@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RedisCacheClient.cs" />
     <Compile Include="RedisClientSet.cs" />
     <Compile Include="RedisClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

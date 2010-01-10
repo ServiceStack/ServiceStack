@@ -15,7 +15,7 @@ namespace ServiceStack.Redis
 		{
 			get
 			{
-				return new RedisClientList(listId, client);
+				return new RedisClientList(client, listId);
 			}
 		}
 	}

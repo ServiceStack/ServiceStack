@@ -37,19 +37,7 @@ namespace ServiceStack.Redis
 				keys.Add(key);
 			}
 
-			var resultBytesArray = GetKeys(keys.ToArray());
-
-			var results = new List<T>();
-			foreach (var resultBytes in resultBytesArray)
-			{
-				if (resultBytes == null) continue;
-			
-				var resultString = Encoding.UTF8.GetString(resultBytes);
-				var result = StringConverterUtils.Parse<T>(resultString);
-				results.Add(result);
-			}
-
-			return results;
+			return GetKeyValues<T>(keys);
 		}
 
 		public T Store<T>(T entity) 
@@ -57,7 +45,7 @@ namespace ServiceStack.Redis
 		{
 			var urnKey = entity.CreateUrn();
 			var valueString = StringConverterUtils.ToString(entity);
-			base.Set(urnKey, valueString);
+			base.SetString(urnKey, valueString);
 
 			return entity;
 		}
@@ -65,6 +53,8 @@ namespace ServiceStack.Redis
 		public void StoreAll<TEntity>(IEnumerable<TEntity> entities)
 			where TEntity : class, new()
 		{
+			if (entities == null) return;
+
 			foreach (var entity in entities)
 			{
 				Store(entity);
@@ -86,6 +76,8 @@ namespace ServiceStack.Redis
 
 		public void DeleteByIds<T>(ICollection ids) where T : class, new()
 		{
+			if (ids == null) return;
+
 			var keysLength = ids.Count;
 			var keys = new string[keysLength];
 

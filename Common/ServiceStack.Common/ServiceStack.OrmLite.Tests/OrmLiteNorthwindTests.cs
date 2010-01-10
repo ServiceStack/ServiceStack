@@ -9,7 +9,7 @@ namespace ServiceStack.OrmLite.Tests
 	public class OrmLiteNorthwindTests
 		: OrmLiteTestBase
 	{
-		private static void CreateNorthwindTables(IDbCommand dbCmd)
+		public static void CreateNorthwindTables(IDbCommand dbCmd)
 		{
 			dbCmd.CreateTables
 			(

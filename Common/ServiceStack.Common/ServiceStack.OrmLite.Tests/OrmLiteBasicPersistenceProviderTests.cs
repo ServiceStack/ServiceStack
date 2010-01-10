@@ -24,7 +24,7 @@ namespace ServiceStack.OrmLite.Tests
 			{
 				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
-				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
+				var basicProvider = new OrmLitePersistenceProvider(db);
 
 				var row = ModelWithFieldsOfDifferentTypes.Create(1);
 
@@ -44,7 +44,7 @@ namespace ServiceStack.OrmLite.Tests
 			{
 				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
-				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
+				var basicProvider = new OrmLitePersistenceProvider(db);
 
 				var rowIds = new List<int> { 1, 2, 3, 4, 5 };
 
@@ -68,7 +68,7 @@ namespace ServiceStack.OrmLite.Tests
 			{
 				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
-				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
+				var basicProvider = new OrmLitePersistenceProvider(db);
 
 				var rowIds = new List<int> { 1, 2, 3, 4, 5 };
 
@@ -92,7 +92,7 @@ namespace ServiceStack.OrmLite.Tests
 			{
 				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
-				var basicProvider = new OrmLiteBasicPersistenceProvider(db);
+				var basicProvider = new OrmLitePersistenceProvider(db);
 
 				var rowIds = new List<int> { 1, 2, 3, 4, 5 };
 

@@ -15,7 +15,7 @@ namespace ServiceStack.Redis.Tests
 			const string value = "value";
 			using (var redis = new RedisClient())
 			{
-				redis.Set("key", value);
+				redis.SetString("key", value);
 				var valueBytes = redis.Get("key");
 				var valueString = Encoding.UTF8.GetString(valueBytes);
 
