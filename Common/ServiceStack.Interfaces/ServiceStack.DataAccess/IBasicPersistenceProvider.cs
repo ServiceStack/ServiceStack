@@ -26,5 +26,8 @@ namespace ServiceStack.DataAccess
 
 		void DeleteByIds<T>(ICollection ids)
 			where T : class, new();
+
+		void DeleteAll<TEntity>()
+			where TEntity : class, new();
 	}
 }

@@ -11,7 +11,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{59B70761-26FD-4768-B0E9-C83BA3414D0A}"
 	ProjectSection(SolutionItems) = preProject
 		Build\ilmerge-all.bat = Build\ilmerge-all.bat
-		Build\ServiceStack.Interfaces.dll = Build\ServiceStack.Interfaces.dll
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{62EEF247-1090-4208-8922-84B2120C040F}"
