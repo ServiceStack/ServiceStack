@@ -1,9 +1,8 @@
 using System;
-using System.Data;
 using System.Diagnostics;
+using Northwind.Common.DataModel;
 using NUnit.Framework;
 using ServiceStack.DataAccess;
-using ServiceStack.OrmLite.Tests.Models;
 
 namespace ServiceStack.Redis.Tests
 {
