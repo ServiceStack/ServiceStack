@@ -49,16 +49,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IRedisClient.cs" />
+    <Compile Include="IRedisNativeClient.cs" />
     <Compile Include="RedisCacheClient.cs" />
     <Compile Include="RedisClientSet.cs" />
     <Compile Include="RedisClient.cs" />
+    <Compile Include="RedisKeyType.cs" />
+    <Compile Include="RedisNativeClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RedisClient.Set.cs" />
-    <Compile Include="RedisClient.List.cs" />
     <Compile Include="RedisClientList.cs" />
-    <Compile Include="RedisClientLists.cs" />
-    <Compile Include="RedisClientSets.cs" />
     <Compile Include="RedisPersistenceProvider.cs" />
+    <Compile Include="RedisResponseException.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj">

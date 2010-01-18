@@ -90,5 +90,11 @@ namespace ServiceStack.Redis
 
 			base.Remove(keys);
 		}
+
+		public void DeleteAll<TEntity>() where TEntity : class, new()
+		{
+			//TODO: replace with DeleteAll of TEntity
+			base.FlushDb();
+		}
 	}
 }

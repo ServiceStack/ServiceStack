@@ -1,105 +1,55 @@
-﻿//
-// redis-sharp.cs: ECMA CLI Binding to the Redis key-value storage system
-//
-// Authors:
-//   Miguel de Icaza (miguel@gnome.org)
-//
-// Copyright 2010 Novell, Inc.
-//
-// Licensed under the same terms of reddis: new BSD license.
-//
-#define DEBUG
-
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Net.Sockets;
+using System.Linq;
 using System.Text;
-using System.Diagnostics;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
+using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis
 {
 	/// <summary>
-	/// This class contains all the common operations for the RedisClient.
+	/// The client wraps the native redis operations into a more readable c# API.
 	/// 
-	/// The client contains a 1:1 mapping of c# methods to redis operations of the same name.
-	/// These operations are then wrapped in more readable c# methods.
-	/// 
-	/// Where possible these operations are also exposed in common c# interfacies, 
+	/// Where possible these operations are also exposed in common c# interfaces, 
 	/// e.g. RedisClient.Lists => IList[string]
 	///		 RedisClient.Sets => ICollection[string]
 	/// </summary>
-	public partial class RedisClient
-		: IDisposable
+	public class RedisClient
+		: RedisNativeClient, IRedisClient
 	{
-		private const int Success = 1;
-		private const int OneGb = 1073741824;
-
-		Socket socket;
-		BufferedStream bstream;
-
-		public enum KeyType
-		{
-			None, String, List, Set
-		}
-
-		public class ResponseException : Exception
-		{
-			public ResponseException(string code)
-				: base("Response error")
-			{
-				Code = code;
-			}
-
-			public string Code { get; private set; }
-		}
-
 		public RedisClient(string host, int port)
+			: base(host, port)
 		{
-			if (host == null)
-				throw new ArgumentNullException("host");
+			Init();
+		}
 
-			Host = host;
-			Port = port;
-			SendTimeout = -1;
+		public RedisClient()
+		{
+			Init();
+		}
 
+		public void Init()
+		{
 			this.Lists = new RedisClientLists(this);
 			this.Sets = new RedisClientSets(this);
 		}
 
-		public RedisClient()
-			: this("localhost", 6379)
-		{
-		}
 
-		public string Host { get; private set; }
-		public int Port { get; private set; }
-		public int RetryTimeout { get; set; }
-		public int RetryCount { get; set; }
-		public int SendTimeout { get; set; }
-		public string Password { get; set; }
-
-		int db;
-		public int Db
-		{
-			get
-			{
-				return db;
-			}
-
-			set
-			{
-				db = value;
-				SendExpectSuccess("SELECT {0}\r\n", db);
-			}
-		}
-
+		#region Common Methods
+		
 		public string this[string key]
 		{
 			get { return GetString(key); }
 			set { SetString(key, value); }
+		}
+
+		public string[] AllKeys
+		{
+			get
+			{
+				return Encoding.UTF8.GetString(Keys("*")).Split(' ');
+			}
 		}
 
 		public void SetString(string key, string value)
@@ -112,21 +62,6 @@ namespace ServiceStack.Redis
 			Set(key, Encoding.UTF8.GetBytes(value));
 		}
 
-		public void Set(string key, byte[] value)
-		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			if (value == null)
-				throw new ArgumentNullException("value");
-
-			if (value.Length > OneGb)
-				throw new ArgumentException("value exceeds 1G", "value");
-
-			if (!SendDataCommand(value, "SET {0} {1}\r\n", key, value.Length))
-				throw new Exception("Unable to connect");
-			ExpectSuccess();
-		}
-
 		public bool SetIfNotExists(string key, string value)
 		{
 			if (key == null)
@@ -137,405 +72,80 @@ namespace ServiceStack.Redis
 			return SetNX(key, Encoding.UTF8.GetBytes(value)) == Success;
 		}
 
-		public int SetNX(string key, byte[] value)
-		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			if (value == null)
-				throw new ArgumentNullException("value");
-
-			if (value.Length > OneGb)
-				throw new ArgumentException("value exceeds 1G", "value");
-
-			if (!SendDataCommand(value, "SETNX {0} {1}\r\n", key, value.Length))
-				throw new Exception("Unable to connect");
-			return ReadInt();
-		}
-
-#if false
-	// Not well documented how bulk operations work
-	public void Set (IDictionary<string,byte []> dict)
-	{
-		if (dict == null)
-			throw new ArgumentNullException ("dict");
-
-		var ms = new MemoryStream ();
-		foreach (var key in dict.Keys){
-			var val = dict [key];
-			
-			var s = "$" + val.Length.ToString () + "\r\n";
-			var b = Encoding.UTF8.GetBytes (s);
-			ms.Write (b, 0, b.Length);
-			ms.Write (val, 0, val.Length);
-		}
-		
-		SendDataCommand (ms.ToArray (), "MSET\r\n");
-		ExpectSuccess ();
-	}
-#endif
-		public byte[] Get(string key)
-		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectData(null, "GET " + key + "\r\n");
-		}
-
 		public string GetString(string key)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
 			return Encoding.UTF8.GetString(Get(key));
-		}
-
-		public byte[] GetSet(string key, byte[] value)
-		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			if (value == null)
-				throw new ArgumentNullException("value");
-
-			if (value.Length > OneGb)
-				throw new ArgumentException("value exceeds 1G", "value");
-
-			if (!SendDataCommand(value, "GETSET {0} {1}\r\n", key, value.Length))
-				throw new Exception("Unable to connect");
-
-			return ReadData();
 		}
 
 		public string GetAndSetString(string key, string value)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			if (value == null)
-				throw new ArgumentNullException("value");
 			return Encoding.UTF8.GetString(GetSet(key, Encoding.UTF8.GetBytes(value)));
-		}
-
-		string ReadLine()
-		{
-			var sb = new StringBuilder();
-			int c;
-
-			while ((c = bstream.ReadByte()) != -1)
-			{
-				if (c == '\r')
-					continue;
-				if (c == '\n')
-					break;
-				sb.Append((char)c);
-			}
-			return sb.ToString();
-		}
-
-		void Connect()
-		{
-			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
-				SendTimeout = SendTimeout
-			};
-			try
-			{
-				socket.Connect(Host, Port);
-
-				if (!socket.Connected)
-				{
-					socket.Close();
-					socket = null;
-					return;
-				}
-				bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
-
-				if (Password != null)
-					SendExpectSuccess("AUTH {0}\r\n", Password);
-			}
-			catch (SocketException ex)
-			{				
-				throw new InvalidOperationException("could not connect to redis instance at " + Host + ":" + Port, ex);
-			} 
-		}
-
-		readonly byte [] endData = new[] { (byte)'\r', (byte)'\n' };
-
-		bool SendDataCommand(byte[] data, string cmd, params object[] args)
-		{
-			if (socket == null)
-				Connect();
-			if (socket == null)
-				return false;
-
-			var s = args.Length > 0 ? String.Format(cmd, args) : cmd;
-			byte [] r = Encoding.UTF8.GetBytes(s);
-			try
-			{
-				Log("S: " + String.Format(cmd, args));
-				socket.Send(r);
-				if (data != null)
-				{
-					socket.Send(data);
-					socket.Send(endData);
-				}
-			}
-			catch (SocketException)
-			{
-				// timeout;
-				socket.Close();
-				socket = null;
-
-				return false;
-			}
-			return true;
-		}
-
-		bool SendCommand(string cmd, params object[] args)
-		{
-			if (socket == null)
-				Connect();
-			if (socket == null)
-				return false;
-
-			var s = args != null && args.Length > 0 ? String.Format(cmd, args) : cmd;
-			byte [] r = Encoding.UTF8.GetBytes(s);
-			try
-			{
-				Log("S: " + String.Format(cmd, args));
-				socket.Send(r);
-			}
-			catch (SocketException)
-			{
-				// timeout;
-				socket.Close();
-				socket = null;
-
-				return false;
-			}
-			return true;
-		}
-
-		[Conditional("DEBUG")]
-		void Log(string fmt, params object[] args)
-		{
-			Console.WriteLine("{0}", String.Format(fmt, args).Trim());
-		}
-
-		void ExpectSuccess()
-		{
-			int c = bstream.ReadByte();
-			if (c == -1)
-				throw new ResponseException("No more data");
-
-			var s = ReadLine();
-			Log((char)c + s);
-			if (c == '-')
-				throw new ResponseException(s.StartsWith("ERR") ? s.Substring(4) : s);
-		}
-
-		void SendExpectSuccess(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw new Exception("Unable to connect");
-
-			ExpectSuccess();
-		}
-
-		int SendExpectInt(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw new Exception("Unable to connect");
-
-			return ReadInt();
-		}
-
-		string SendExpectString(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw new Exception("Unable to connect");
-
-			int c = bstream.ReadByte();
-			if (c == -1)
-				throw new ResponseException("No more data");
-
-			var s = ReadLine();
-			Log("R: " + s);
-			if (c == '-')
-				throw new ResponseException(s.StartsWith("ERR") ? s.Substring(4) : s);
-			if (c == '+')
-				return s;
-
-			throw new ResponseException("Unknown reply on integer request: " + c + s);
-		}
-
-		//
-		// This one does not throw errors
-		//
-		string SendGetString(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw new Exception("Unable to connect");
-
-			return ReadLine();
-		}
-
-		byte[] SendExpectData(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw new Exception("Unable to connect");
-
-			return ReadData();
-		}
-
-		byte[] ReadData()
-		{
-			string r = ReadLine();
-			Log("R: {0}", r);
-			if (r.Length == 0)
-				throw new ResponseException("Zero length respose");
-
-			char c = r[0];
-			if (c == '-')
-				throw new ResponseException(r.StartsWith("-ERR") ? r.Substring(5) : r.Substring(1));
-			if (c == '$')
-			{
-				if (r == "$-1")
-					return null;
-				int n;
-
-				if (Int32.TryParse(r.Substring(1), out n))
-				{
-					byte[] retbuf = new byte[n];
-					bstream.Read(retbuf, 0, n);
-					if (bstream.ReadByte() != '\r' || bstream.ReadByte() != '\n')
-						throw new ResponseException("Invalid termination");
-					return retbuf;
-				}
-				throw new ResponseException("Invalid length");
-			}
-			throw new ResponseException("Unexpected reply: " + r);
-		}
-
-		private int ReadInt()
-		{
-			int c = bstream.ReadByte();
-			if (c == -1)
-				throw new ResponseException("No more data");
-
-			var s = ReadLine();
-			Log("R: " + s);
-			if (c == '-')
-				throw new ResponseException(s.StartsWith("ERR") ? s.Substring(4) : s);
-			if (c == ':')
-			{
-				int i;
-				if (int.TryParse(s, out i))
-					return i;
-			}
-			throw new ResponseException("Unknown reply on integer request: " + c + s);
 		}
 
 		public bool ContainsKey(string key)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("EXISTS " + key + "\r\n") == Success;
+			return Exists(key) == Success;
 		}
 
 		public bool Remove(string key)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("DEL " + key + "\r\n", key) == Success;
+			return Del(key) == Success;
 		}
 
-		public int Remove(params string[] args)
+		public bool Remove(params string[] keys)
 		{
-			if (args == null)
-				throw new ArgumentNullException("args");
-			return SendExpectInt("DEL " + string.Join(" ", args) + "\r\n");
+			return Del(keys) == Success;
 		}
 
 		public int Increment(string key)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("INCR " + key + "\r\n");
+			return Incr(key);
 		}
 
-		public int Increment(string key, int count)
+		public int IncrementBy(string key, int count)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("INCRBY {0} {1}\r\n", key, count);
+			return IncrBy(key, count);
 		}
 
 		public int Decrement(string key)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("DECR " + key + "\r\n");
+			return Decr(key);
 		}
 
-		public int Decrement(string key, int count)
+		public int DecrementBy(string key, int count)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("DECRBY {0} {1}\r\n", key, count);
+			return DecrBy(key, count);
 		}
 
-		public KeyType TypeOf(string key)
+		public RedisKeyType GetKeyType(string key)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			switch (SendExpectString("TYPE {0}\r\n", key))
+			switch (Type(key))
 			{
 				case "none":
-					return KeyType.None;
+					return RedisKeyType.None;
 				case "string":
-					return KeyType.String;
+					return RedisKeyType.String;
 				case "set":
-					return KeyType.Set;
+					return RedisKeyType.Set;
 				case "list":
-					return KeyType.List;
+					return RedisKeyType.List;
 			}
-			throw new ResponseException("Invalid value");
+			throw new RedisResponseException("Invalid value");
 		}
 
-		public string RandomKey()
+		public string NewRandomKey()
 		{
-			return SendExpectString("RANDOMKEY\r\n");
+			return RandomKey();
 		}
 
-		public bool Rename(string oldKeyname, string newKeyname)
+		public bool ExpireKeyIn(string key, TimeSpan expireIn)
 		{
-			if (oldKeyname == null)
-				throw new ArgumentNullException("oldKeyname");
-			if (newKeyname == null)
-				throw new ArgumentNullException("newKeyname");
-			return SendGetString("RENAME {0} {1}\r\n", oldKeyname, newKeyname)[0] == '+';
+			return Expire(key, (int)expireIn.TotalSeconds) == Success;
 		}
 
-		public bool Expire(string key, int seconds)
+		public bool ExpireKeyAt(string key, DateTime dateTime)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("EXPIRE {0} {1}\r\n", key, seconds) == Success;
-		}
-
-		public int ExpireAt(string key, long unixTime)
-		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("EXPIREAT {0} {1}\r\n", key, unixTime);
-		}
-
-		public int SetExpiryDate(string key, DateTime dateTime)
-		{
-			return ExpireAt(key, dateTime.ToUnixTime());
-		}
-
-		public int Ttl(string key)
-		{
-			if (key == null)
-				throw new ArgumentNullException("key");
-			return SendExpectInt("TTL {0}\r\n", key);
+			return ExpireAt(key, dateTime.ToUnixTime()) == Success;
 		}
 
 		public TimeSpan GetTimeToLive(string key)
@@ -543,94 +153,19 @@ namespace ServiceStack.Redis
 			return TimeSpan.FromSeconds(Ttl(key));
 		}
 
-		public int DbSize
+		public void SaveAsync()
 		{
-			get
-			{
-				return SendExpectInt("DBSIZE\r\n");
-			}
-		}
-
-		public string Save()
-		{
-			return SendGetString("SAVE\r\n");
-		}
-
-		public void BackgroundSave()
-		{
-			SendGetString("BGSAVE\r\n");
-		}
-
-		public void Shutdown()
-		{
-			SendGetString("SHUTDOWN\r\n");
-		}
-
-		public DateTime LastSave
-		{
-			get
-			{
-				int t = SendExpectInt("LASTSAVE\r\n");
-
-				return DateTimeExtensions.FromUnixTime(t);
-			}
-		}
-
-		public void FlushDb()
-		{
-			SendExpectSuccess("FLUSHDB\r\n");
-		}
-
-		public void FlushAll()
-		{
-			SendExpectSuccess("FLUSHALL\r\n");
-		}
-
-		public Dictionary<string, string> GetInfo()
-		{
-			byte [] r = SendExpectData(null, "INFO\r\n");
-			var dict = new Dictionary<string, string>();
-
-			foreach (var line in Encoding.UTF8.GetString(r).Split('\n'))
-			{
-				int p = line.IndexOf(':');
-				if (p == -1)
-					continue;
-				dict.Add(line.Substring(0, p), line.Substring(p + 1));
-			}
-			return dict;
-		}
-
-		public string[] Keys
-		{
-			get
-			{
-				return Encoding.UTF8.GetString(SendExpectData(null, "KEYS *\r\n")).Split(' ');
-			}
+			BgSave();
 		}
 
 		public string[] GetKeys(string pattern)
 		{
-			if (pattern == null)
-				throw new ArgumentNullException("pattern");
-			return Encoding.UTF8.GetString(SendExpectData(null, "KEYS {0}\r\n", pattern)).Split(' ');
-		}
-
-		public byte[][] GetKeys(params string[] keys)
-		{
-			if (keys == null)
-				throw new ArgumentNullException("keys");
-			if (keys.Length == 0)
-				throw new ArgumentException("keys");
-
-			if (!SendDataCommand(null, "MGET {0}\r\n", string.Join(" ", keys)))
-				throw new Exception("Unable to connect");
-			return ReadMultiData();
+			return Encoding.UTF8.GetString(Keys(pattern)).Split(' ');
 		}
 
 		public List<T> GetKeyValues<T>(List<string> keys)
 		{
-			var resultBytesArray = GetKeys(keys.ToArray());
+			var resultBytesArray = MGet(keys.ToArray());
 
 			var results = new List<T>();
 			foreach (var resultBytes in resultBytesArray)
@@ -645,52 +180,252 @@ namespace ServiceStack.Redis
 			return results;
 		}
 
-		private byte[][] ReadMultiData()
+		#endregion
+
+
+		#region Set Methods
+
+		public IHasNamedCollection<string> Sets { get; set; }
+
+		internal class RedisClientSets
+			: IHasNamedCollection<string>
 		{
-			int c = bstream.ReadByte();
-			if (c == -1)
-				throw new ResponseException("No more data");
+			private readonly RedisClient client;
 
-			var s = ReadLine();
-			Log("R: " + s);
-			if (c == '-')
-				throw new ResponseException(s.StartsWith("ERR") ? s.Substring(4) : s);
-			if (c == '*')
+			public RedisClientSets(RedisClient client)
 			{
-				int count;
-				if (int.TryParse(s, out count))
+				this.client = client;
+			}
+
+			public ICollection<string> this[string setId]
+			{
+				get
 				{
-					byte [][] result = new byte[count][];
-
-					for (int i = 0; i < count; i++)
-						result[i] = ReadData();
-
-					return result;
+					return new RedisClientSet(client, setId);
+				}
+				set 
+				{
+					var col = this[setId];
+					col.Clear();
+					col.CopyTo(value.ToArray(), 0);
 				}
 			}
-			throw new ResponseException("Unknown reply on multi-request: " + c + s);
 		}
 
-		public void Dispose()
+		private static HashSet<string> CreateHashSet(byte[][] multiDataList)
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		~RedisClient()
-		{
-			Dispose(false);
-		}
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
+			var results = new HashSet<string>();
+			foreach (var multiData in multiDataList)
 			{
-				SendCommand("QUIT\r\n");
-				if (socket != null) 
-					socket.Close();
-				socket = null;
+				results.Add(Encoding.UTF8.GetString(multiData));
+			}
+			return results;
+		}
+
+		public List<string> GetRangeFromSortedSet(string setId, int startingFrom, int endingAt)
+		{
+			var multiDataList = Sort(setId, startingFrom, endingAt, true, false);
+			return CreateList(multiDataList);
+		}
+
+		public HashSet<string> GetAllFromSet(string setId)
+		{
+			var multiDataList = SMembers(setId);
+			return CreateHashSet(multiDataList);
+		}
+
+		public void AddToSet(string setId, string value)
+		{
+			SAdd(setId, Encoding.UTF8.GetBytes(value));
+		}
+
+		public void RemoveFromSet(string setId, string value)
+		{
+			SRem(setId, Encoding.UTF8.GetBytes(value));
+		}
+
+		public string PopFromSet(string setId)
+		{
+			return Encoding.UTF8.GetString(SPop(setId));
+		}
+
+		public void MoveBetweenSets(string fromSetId, string toSetId, string value)
+		{
+			SMove(fromSetId, toSetId, Encoding.UTF8.GetBytes(value));
+		}
+
+		public int GetSetCount(string setId)
+		{
+			return SCard(setId);
+		}
+
+		public bool SetContainsValue(string setId, string value)
+		{
+			return SIsMember(setId, Encoding.UTF8.GetBytes(value)) == 1;
+		}
+
+		public HashSet<string> GetIntersectFromSets(params string[] setIds)
+		{
+			var multiDataList = SInter(setIds);
+			return CreateHashSet(multiDataList);
+		}
+
+		public void StoreIntersectFromSets(string intoSetId, params string[] setIds)
+		{
+			SInterStore(intoSetId, setIds);
+		}
+
+		public HashSet<string> GetUnionFromSets(params string[] setIds)
+		{
+			var multiDataList = SUnion(setIds);
+			return CreateHashSet(multiDataList);
+		}
+
+		public void StoreUnionFromSets(string intoSetId, params string[] setIds)
+		{
+			SUnionStore(intoSetId, setIds);
+		}
+
+		public HashSet<string> GetDifferencesFromSet(string fromSetId, params string[] withSetIds)
+		{
+			var multiDataList = SDiff(fromSetId, withSetIds);
+			return CreateHashSet(multiDataList);
+		}
+
+		public void StoreDifferencesFromSet(string intoSetId, string fromSetId, params string[] withSetIds)
+		{
+			SDiffStore(intoSetId, fromSetId, withSetIds);
+		}
+
+		public string GetRandomEntryFromSet(string setId)
+		{
+			return Encoding.UTF8.GetString(SRandMember(setId));
+		}
+	
+		#endregion
+
+
+		#region List Methods
+
+		const int FirstElement = 0;
+		const int LastElement = -1;
+
+		public IHasNamedList<string> Lists { get; set; }
+
+		internal class RedisClientLists 
+			: IHasNamedList<string>
+		{
+			private readonly RedisClient client;
+
+			public RedisClientLists(RedisClient client)
+			{
+				this.client = client;
+			}
+
+			public IList<string> this[string listId]
+			{
+				get
+				{
+					return new RedisClientList(client, listId);
+				}
+				set
+				{
+					var list = this[listId];
+					list.Clear();
+					list.CopyTo(value.ToArray(), 0);
+				}
 			}
 		}
+
+		private static List<string> CreateList(byte[][] multiDataList)
+		{
+			var results = new List<string>();
+			foreach (var multiData in multiDataList)
+			{
+				results.Add(Encoding.UTF8.GetString(multiData));
+			}
+			return results;
+		}
+
+		public List<string> GetAllFromList(string listId)
+		{
+			var multiDataList = LRange(listId, FirstElement, LastElement);
+			return CreateList(multiDataList);
+		}
+
+		public List<string> GetRangeFromList(string listId, int startingFrom, int endingAt)
+		{
+			var multiDataList = LRange(listId, startingFrom, endingAt);
+			return CreateList(multiDataList);
+		}
+
+		public List<string> GetRangeFromSortedList(string listId, int startingFrom, int endingAt)
+		{
+			var multiDataList = Sort(listId, startingFrom, endingAt, true, false);
+			return CreateList(multiDataList);
+		}
+
+		public void AddToList(string listId, string value)
+		{
+			RPush(listId, Encoding.UTF8.GetBytes(value));
+		}
+
+		public void PrependToList(string listId, string value)
+		{
+			LPush(listId, Encoding.UTF8.GetBytes(value));
+		}
+
+		public void RemoveAllFromList(string listId)
+		{
+			LTrim(listId, LastElement, FirstElement);
+		}
+
+		public void TrimList(string listId, int keepStartingFrom, int keepEndingAt)
+		{
+			LTrim(listId, keepStartingFrom, keepEndingAt);
+		}
+
+		public int RemoveValueFromList(string listId, string value)
+		{
+			return LRem(listId, 0, Encoding.UTF8.GetBytes(value));
+		}
+
+		public int RemoveValueFromList(string listId, string value, int noOfMatches)
+		{
+			return LRem(listId, noOfMatches, Encoding.UTF8.GetBytes(value));
+		}
+
+		public int GetListCount(string setId)
+		{
+			return LLen(setId);
+		}
+
+		public string GetItemFromList(string listId, int listIndex)
+		{
+			return Encoding.UTF8.GetString(LIndex(listId, listIndex));
+		}
+
+		public void SetItemInList(string listId, int listIndex, string value)
+		{
+			LSet(listId, listIndex, Encoding.UTF8.GetBytes(value));
+		}
+
+		public string DequeueFromList(string listId)
+		{
+			return Encoding.UTF8.GetString(LPop(listId));
+		}
+
+		public string PopFromList(string listId)
+		{
+			return Encoding.UTF8.GetString(RPop(listId));
+		}
+
+		public void PopAndPushBetweenLists(string fromListId, string toListId)
+		{
+			RPopLPush(fromListId, toListId);
+		}
+	
+		#endregion
+
 	}
 }

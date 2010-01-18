@@ -10,7 +10,8 @@ namespace ServiceStack.Redis
 	public class RedisCacheClient 
 		: RedisClient, ICacheClient 
 	{
-		public RedisCacheClient(string host, int port) : base(host, port)
+		public RedisCacheClient(string host, int port) 
+			: base(host, port)
 		{
 		}
 
@@ -35,12 +36,12 @@ namespace ServiceStack.Redis
 
 		public long Increment(string key, uint amount)
 		{
-			return Increment(key, (int) amount);
+			return IncrementBy(key, (int) amount);
 		}
 
 		public long Decrement(string key, uint amount)
 		{
-			return Decrement(key, (int)amount);
+			return DecrementBy(key, (int) amount);
 		}
 
 		public bool Add(string key, object value)
@@ -68,7 +69,7 @@ namespace ServiceStack.Redis
 		{
 			if (Add(key, value))
 			{
-				SetExpiryDate(key, expiresAt);
+				ExpireKeyAt(key, expiresAt);
 				return true;
 			}
 			return false;
@@ -77,7 +78,7 @@ namespace ServiceStack.Redis
 		public bool Set(string key, object value, DateTime expiresAt)
 		{
 			Set(key, value);
-			SetExpiryDate(key, expiresAt);
+			ExpireKeyAt(key, expiresAt);
 			return true;
 		}
 
@@ -85,7 +86,7 @@ namespace ServiceStack.Redis
 		{
 			if (Replace(key, value))
 			{
-				SetExpiryDate(key, expiresAt);
+				ExpireKeyAt(key, expiresAt);
 				return true;
 			}
 			return false;
@@ -94,7 +95,7 @@ namespace ServiceStack.Redis
 		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
 		{
 			var keysArray = keys.ToArray();
-			var keyValues = GetKeys(keysArray);
+			var keyValues = MGet(keysArray);
 			var results = new Dictionary<string, object>();
 
 			var i = 0;
@@ -109,7 +110,7 @@ namespace ServiceStack.Redis
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
 		{
 			var keysArray = keys.ToArray();
-			var keyValues = GetKeys(keysArray);
+			var keyValues = MGet(keysArray);
 			var results = new Dictionary<string, T>();
 
 			var i = 0;
