@@ -17,5 +17,10 @@ namespace ServiceStack.Common.Extensions
 		{
 			return UnixEpochDateTime + TimeSpan.FromSeconds(unixTime);
 		}
+
+		public static DateTime RoundToSecond(this DateTime dateTime)
+		{
+			return new DateTime(((dateTime.Ticks) / 10000000) * 10000000);
+		}
 	}
 }
