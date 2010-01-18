@@ -46,6 +46,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Northwind.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Northwind.Common.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\nunit.framework.dll</HintPath>
@@ -83,16 +87,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
-    <Compile Include="Models\NorthwindDtoFactory.cs" />
-    <Compile Include="Models\Northwind.dtos.cs" />
     <Compile Include="Models\ModelWithFieldsOfNullableTypes.cs" />
     <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
-    <Compile Include="Models\NorthwindFactory.cs" />
-    <Compile Include="Models\NorthwindData.cs" />
-    <Compile Include="Models\Northwind.models.cs" />
-    <Compile Include="Models\NorthwindResources.cs" />
-    <Compile Include="Models\OrderDetailBlob.cs" />
-    <Compile Include="Models\OrderBlob.cs" />
     <Compile Include="Models\SampleOrderLine.cs" />
     <Compile Include="NorthwindPerfTests.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
@@ -125,7 +121,6 @@
     <Compile Include="OrmLiteInsertTests.cs" />
     <Compile Include="OrmLiteTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Support\DateTimeExtensions.cs" />
     <Compile Include="Support\TestScripts.cs" />
     <Compile Include="UseCase\SimpleUseCase.cs" />
   </ItemGroup>

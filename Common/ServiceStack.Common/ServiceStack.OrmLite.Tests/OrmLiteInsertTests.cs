@@ -1,4 +1,5 @@
 using System;
+using Northwind.Common.DataModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.OrmLite.Tests.Models;
