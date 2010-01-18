@@ -1,0 +1,147 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer />
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:TypeToStringTests.cs" caret="189" fromTop="6" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Model/f:ArrayDtoWithOrders.cs" caret="133" fromTop="0" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:OrmLite/f:InsertModelWithFieldsOfDifferentTypesScenario.cs" caret="82" fromTop="0" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Model/f:ModelWithFieldsOfDifferentTypes.cs" caret="1851" fromTop="14" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Model/f:SampleOrderLine.cs" caret="108" fromTop="4" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:OrmLite/f:InsertSampleOrderLineScenario.cs" caret="470" fromTop="8" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:OrmLite/f:OrmLiteScenrioConfig.cs" caret="1228" fromTop="4" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/f:Program.cs" caret="2781" fromTop="35" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Misc/f:MiscTests.cs" caret="576" fromTop="7" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Northwind/f:InsertNorthwindModelScenario.cs" caret="0" fromTop="0" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Northwind/f:SelectNorthwindDataScenario.cs" caret="456" fromTop="17" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Northwind/f:SelectNorthwindSupplierScenario.cs" caret="634" fromTop="19" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindOrderToStringScenario.cs" caret="0" fromTop="0" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindCustomerToStringScenario.cs" caret="461" fromTop="10" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="0" fromTop="0" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindData.cs" caret="168" fromTop="8" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindFactory.cs" caret="170" fromTop="7" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:NorthwindPerfTests.cs" caret="0" fromTop="0" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:OrmLitePerfTests.cs" caret="111" fromTop="0" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextDeserializerPerfTests.cs" caret="151" fromTop="0" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:OrderBlob.cs" caret="0" fromTop="0" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/f:NorthwindResources.cs" caret="0" fromTop="0" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="5609" fromTop="137" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:DatabaseScenarioBase.cs" caret="632" fromTop="19" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:ScenarioBase.cs" caret="52" fromTop="2" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="337" fromTop="11" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Northwind/f:InsertNorthwindDataScenario.cs" caret="436" fromTop="8" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="1678" fromTop="18" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:OrmLite/f:InsertNorthwindDatabase.cs" caret="240" fromTop="7" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="559" fromTop="16" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="5716" fromTop="137" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:DatabaseScenarioBase.cs" caret="225" fromTop="3" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:DatabaseScenarioBase.cs" caret="90" fromTop="5" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:ScenarioBase.cs" caret="70" fromTop="4" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="320" fromTop="11" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="1673" fromTop="30" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="694" fromTop="24" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="619" fromTop="10" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="1673" fromTop="18" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="1673" fromTop="18" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="694" fromTop="24" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="694" fromTop="23" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="629" fromTop="4" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="694" fromTop="8" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="1169" fromTop="25" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="629" fromTop="8" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="1385" fromTop="22" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="339" fromTop="10" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="337" fromTop="11" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:OrmLite/f:InsertNorthwindDatabase.cs" caret="728" fromTop="13" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:OrmLite/f:InsertNorthwindDatabase.cs" caret="130" fromTop="2" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:OrmLite/f:InsertNorthwindDatabase.cs" caret="467" fromTop="13" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:OrmLite/f:InsertNorthwindDatabase.cs" caret="570" fromTop="15" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="245" fromTop="7" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/f:BasicPersistenceProviderScenarioBase.cs" caret="1678" fromTop="18" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="1027" fromTop="12" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="340" fromTop="6" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="1027" fromTop="22" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="766" fromTop="19" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="191" fromTop="5" />
+    </RecentEdits>
+  </RecentFiles>
+  <UnitTestRunner>
+    <Providers />
+  </UnitTestRunner>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="var" priority="9" />
+      <Item value="TimeSpan" priority="3" />
+      <Item value="public" priority="2" />
+      <Item value="void" priority="0" />
+      <Item value="new" priority="5" />
+      <Item value="Stopwatch" priority="1" />
+      <Item value="stopWatch" priority="0" />
+      <Item value="static" priority="0" />
+      <Item value="InsertNorthwindDataScenario" priority="0" />
+      <Item value="NorthwindData" priority="0" />
+      <Item value="virtual" priority="1" />
+      <Item value="override" priority="1" />
+      <Item value="Redis" priority="0" />
+      <Item value="protected" priority="0" />
+      <Item value="persistenceProvider" priority="1" />
+      <Item value="CreateProvider" priority="0" />
+      <Item value="OnFirstRun" priority="0" />
+      <Item value="client" priority="1" />
+      <Item value="RedisClient" priority="0" />
+      <Item value="InsertNorthwindDatabase" priority="0" />
+      <Item value="Category" priority="0" />
+      <Item value="return" priority="1" />
+      <Item value="OrmLiteConfig" priority="0" />
+      <Item value="provider" priority="1" />
+      <Item value="null" priority="0" />
+      <Item value="IDisposable" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.TimeSpan">
+      <Item value="TicksPerMillisecond" priority="2" />
+      <Item value="FromSeconds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Threading.Thread">
+      <Item value="Sleep" priority="0" />
+      <Item value="SpinWait" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Diagnostics.Stopwatch">
+      <Item value="Start" priority="1" />
+      <Item value="ElapsedTicks" priority="0" />
+      <Item value="ElapsedMilliseconds" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Northwind.Common.DataModel.NorthwindFactory">
+      <Item value="ModelTypes" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.DataAccess.IBasicPersistenceProvider">
+      <Item value="Store" priority="0" />
+      <Item value="Delete" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.RedisClient">
+      <Item value="Dispose" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.OrmLite.OrmLiteConfig">
+      <Item value="DialectProvider" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.OrmLite.Sqlite.SqliteOrmLiteDialectProvider">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.OrmLite.OrmLitePersistenceProvider">
+      <Item value="Connection" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Data.IDbConnection">
+      <Item value="ChangeDatabase" priority="0" />
+      <Item value="CreateCommand" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
+</Configuration>
