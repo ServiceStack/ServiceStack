@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using NUnit.Framework;
 
-namespace Northwind.Benchmarks.Misc
+namespace Northwind.Benchmarks._Misc
 {
 	[TestFixture]
 	public class StopWatchTests
@@ -25,12 +25,14 @@ namespace Northwind.Benchmarks.Misc
 			var end = stopWatch.ElapsedTicks;
 
 			var avgTicks = (end - begin);
+			var avgTimeSpan = TimeSpan.FromTicks(avgTicks);
 
-			Console.WriteLine("Avg: {0} ticks / {1} ms / {2} secs",
-				avgTicks,
-				avgTicks / TimeSpan.TicksPerMillisecond,
-				avgTicks / TimeSpan.TicksPerSecond
-			);
+			Console.WriteLine("Avg: {0} ticks / {1} ms / {2} secs / {3} secs",
+							  avgTicks,
+							  avgTicks / TimeSpan.TicksPerMillisecond,
+							  avgTicks / TimeSpan.TicksPerSecond,
+							  avgTimeSpan.TotalSeconds
+				);
 		}
 
 		[Test]
@@ -52,10 +54,10 @@ namespace Northwind.Benchmarks.Misc
 			var avgMs = (end - begin);
 
 			Console.WriteLine("Avg: {0} ticks / {1} ms / {2} secs",
-				avgMs * TimeSpan.TicksPerMillisecond,
-				avgMs,
-				avgMs / 1000
-			);
+							  avgMs * TimeSpan.TicksPerMillisecond,
+							  avgMs,
+							  avgMs / 1000
+				);
 		}
 
 	}
