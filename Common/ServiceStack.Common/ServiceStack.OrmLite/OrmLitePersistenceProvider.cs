@@ -124,6 +124,14 @@ namespace ServiceStack.OrmLite
 			}
 		}
 
+		public void DeleteAll<TEntity>() where TEntity : class, new()
+		{
+			using (var dbCmd = this.Connection.CreateCommand())
+			{
+				dbCmd.DeleteAll<TEntity>();
+			}
+		}
+
 		public void Dispose()
 		{
 			if (!DisposeConnection) return;
