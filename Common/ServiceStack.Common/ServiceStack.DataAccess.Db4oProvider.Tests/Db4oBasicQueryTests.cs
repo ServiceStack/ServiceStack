@@ -79,8 +79,8 @@ namespace ServiceStack.DataAccess.Db4oProvider.Tests
 		[Test]
 		public void GetById_that_does_not_exist_returns_null()
 		{
-			const long NON_EXISTANT_USER_ID = 100;
-			var customer = provider.GetById<Customer>(NON_EXISTANT_USER_ID);
+			const long nonExistantUserId = 100;
+			var customer = provider.GetById<Customer>(nonExistantUserId);
 			Assert.That(customer, Is.Null);
 		}
 
