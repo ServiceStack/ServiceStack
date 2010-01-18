@@ -8,7 +8,7 @@
 //
 // Licensed under the same terms of reddis: new BSD license.
 //
-#define DEBUG
+//#define DEBUG
 
 using System;
 using System.IO;
@@ -188,7 +188,7 @@ namespace ServiceStack.Redis
 		[Conditional("DEBUG")]
 		protected void Log(string fmt, params object[] args)
 		{
-			Console.WriteLine("{0}", String.Format(fmt, args).Trim());
+			//Console.WriteLine("{0}", String.Format(fmt, args).Trim());
 		}
 
 		protected void ExpectSuccess()

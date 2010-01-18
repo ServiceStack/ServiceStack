@@ -1,9 +1,11 @@
 using System;
 using System.Runtime.Serialization;
 using Northwind.Common.ServiceModel;
+using Platform.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Model
+namespace Northwind.Common.ComplexModel
 {
+	[TextRecord]
 	[DataContract]
 	public class ArrayDtoWithOrders
 	{
@@ -12,15 +14,19 @@ namespace ServiceStack.OrmLite.TestsPerf.Model
 			Orders = new OrderDto[0];
 		}
 
+		[TextField]
 		[DataMember]
 		public Guid Id { get; set; }
 
+		[TextField]
 		[DataMember]
 		public CustomerDto Customer { get; set; }
 
+		[TextField]
 		[DataMember]
 		public SupplierDto Supplier { get; set; }
 
+		[TextField]
 		[DataMember]
 		public OrderDto[] Orders { get; set; }
 

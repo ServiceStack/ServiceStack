@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Platform, Version=1.0.0.341, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Platform.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\release\latest\ServiceStack.Interfaces.dll</HintPath>
@@ -55,6 +59,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComplexModel\ArrayDtoWithOrders.cs" />
+    <Compile Include="ComplexModel\CustomerOrderArrayDto.cs" />
+    <Compile Include="ComplexModel\CustomerOrderListDto.cs" />
+    <Compile Include="ComplexModel\DtoFactory.cs" />
+    <Compile Include="ComplexModel\FullOrderDto.cs" />
+    <Compile Include="ComplexModel\MultiCustomerProperties.cs" />
+    <Compile Include="ComplexModel\MultiDto.cs" />
+    <Compile Include="ComplexModel\MultiDtoWithOrders.cs" />
+    <Compile Include="ComplexModel\MultiOrderProperties.cs" />
     <Compile Include="ServiceModel\Northwind.dtos.cs" />
     <Compile Include="DataModel\Northwind.models.cs" />
     <Compile Include="DataModel\NorthwindData.cs" />

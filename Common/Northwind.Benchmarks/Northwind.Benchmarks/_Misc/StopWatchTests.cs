@@ -24,8 +24,8 @@ namespace Northwind.Benchmarks._Misc
 
 			var end = stopWatch.ElapsedTicks;
 
-			var avgTicks = (end - begin);
-			var avgTimeSpan = TimeSpan.FromTicks(avgTicks);
+			var avgTicks = stopWatch.ElapsedTicks;
+			var avgTimeSpan = TimeSpan.FromSeconds(avgTicks * 1d / Stopwatch.Frequency);
 
 			Console.WriteLine("Avg: {0} ticks / {1} ms / {2} secs / {3} secs",
 							  avgTicks,

@@ -153,7 +153,8 @@ namespace ServiceStack.Common.Extensions
 
 			var sb = new StringBuilder();
 
-			for (var i=0; i < text.Length; i++)
+			var textLength = text.Length;
+			for (var i=0; i < textLength; i++)
 			{
 				var c = text.Substring(i, 1);
 				int charCode = text[i];
@@ -182,7 +183,8 @@ namespace ServiceStack.Common.Extensions
 
 			var sb = new StringBuilder();
 
-			for (var i=0; i < text.Length; i++)
+			var textLength = text.Length;
+			for (var i=0; i < textLength; i++)
 			{
 				var c = text.Substring(i, 1);
 				if (c == "+")
@@ -212,7 +214,8 @@ namespace ServiceStack.Common.Extensions
 			var encodeCharMap = new HashSet<char>(anyCharOf);
 
 			var sb = new StringBuilder();
-			for (var i=0; i < text.Length; i++)
+			var textLength = text.Length;
+			for (var i=0; i < textLength; i++)
 			{
 				var c = text[i];
 				if (encodeCharMap.Contains(c))
@@ -234,7 +237,8 @@ namespace ServiceStack.Common.Extensions
 
 			var sb = new StringBuilder();
 
-			for (var i=0; i < text.Length; i++)
+			var textLength = text.Length;
+			for (var i=0; i < textLength; i++)
 			{
 				var c = text.Substring(i, 1);
 				if (c == "%")

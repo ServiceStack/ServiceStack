@@ -1,7 +1,7 @@
 using System;
 using Northwind.Common.ServiceModel;
 
-namespace ServiceStack.OrmLite.TestsPerf.Model
+namespace Northwind.Common.ComplexModel
 {
 	public class MultiDto
 	{

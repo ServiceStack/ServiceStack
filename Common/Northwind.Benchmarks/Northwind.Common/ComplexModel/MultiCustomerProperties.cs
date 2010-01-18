@@ -1,17 +1,22 @@
 using System.Runtime.Serialization;
 using Northwind.Common.ServiceModel;
+using Platform.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Model
+namespace Northwind.Common.ComplexModel
 {
+	[TextRecord]
 	[DataContract]
 	public class MultiCustomerProperties
 	{
+		[TextField]
 		[DataMember]
 		public CustomerDto Customer1 { get; set; }
 
+		[TextField]
 		[DataMember]
 		public CustomerDto Customer2 { get; set; }
 
+		[TextField]
 		[DataMember]
 		public CustomerDto Customer3 { get; set; }
 

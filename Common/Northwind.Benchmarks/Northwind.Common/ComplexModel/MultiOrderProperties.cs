@@ -1,20 +1,26 @@
 using System.Runtime.Serialization;
 using Northwind.Common.ServiceModel;
+using Platform.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Model
+namespace Northwind.Common.ComplexModel
 {
+	[TextRecord]
 	[DataContract]
 	public class MultiOrderProperties
 	{
+		[TextField]
 		[DataMember]
 		public OrderDto Orders1 { get; set; }
 
+		[TextField]
 		[DataMember]
 		public OrderDto Orders2 { get; set; }
 
+		[TextField]
 		[DataMember]
 		public OrderDto Orders3 { get; set; }
 
+		[TextField]
 		[DataMember]
 		public OrderDto Orders4 { get; set; }
 
@@ -24,9 +30,9 @@ namespace ServiceStack.OrmLite.TestsPerf.Model
 			if (other == null) return false;
 
 			return this.Orders1.Equals(other.Orders1)
-				   && this.Orders2.Equals(other.Orders2)
-				   && this.Orders3.Equals(other.Orders3)
-				   && this.Orders4.Equals(other.Orders4);
+			       && this.Orders2.Equals(other.Orders2)
+			       && this.Orders3.Equals(other.Orders3)
+			       && this.Orders4.Equals(other.Orders4);
 		}
 	}
 }

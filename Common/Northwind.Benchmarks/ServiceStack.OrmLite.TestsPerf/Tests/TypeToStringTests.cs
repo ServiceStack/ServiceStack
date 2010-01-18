@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Northwind.Common.ComplexModel;
 using Northwind.Common.ServiceModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
-using ServiceStack.OrmLite.TestsPerf.Model;
 
 namespace ServiceStack.OrmLite.TestsPerf.Tests
 {

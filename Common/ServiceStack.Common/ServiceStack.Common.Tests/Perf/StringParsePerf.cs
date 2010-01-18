@@ -6,7 +6,7 @@ using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
 {
-	[Ignore]
+	//[Ignore]
 	[TestFixture]
 	public class StringParsePerf
 		: PerfTestBase
@@ -128,7 +128,7 @@ namespace ServiceStack.Common.Tests.Perf
 			const string stringValues = "1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1";
 			CompareMultipleRuns(
 				".Split(',').ConvertAll(x => double.Parse(x))", () => stringValues.Split(',').ConvertAll(x => double.Parse(x)),
-				"List<double>", () => StringConverterUtils.Parse<List<double>>(stringValues)
+				"SCU.Parse<List<double>>", () => StringConverterUtils.Parse<List<double>>(stringValues)
 			);
 		}
 

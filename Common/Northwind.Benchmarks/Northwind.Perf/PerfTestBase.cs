@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Northwind.Perf
 {
+
 	public class PerfTestBase
 	{
 		protected int DefaultIterations { get; set; }
@@ -20,17 +21,17 @@ namespace Northwind.Perf
 
 		public virtual void Log(string message)
 		{
-#if DEBUG
+//#if DEBUG
 			Console.WriteLine(message);
-#endif
+//#endif
 			SbLog.AppendLine(message);
 		}
 
 		public virtual void Log(string message, params object[] args)
 		{
-#if DEBUG
+//#if DEBUG
 			Console.WriteLine(message, args);
-#endif
+//#endif
 			SbLog.AppendFormat(message, args);
 			SbLog.AppendLine();
 		}

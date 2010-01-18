@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\ServiceStack.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
@@ -63,12 +67,6 @@
     <Compile Include="Support\ObjectConfigurationTypeFactory.cs" />
     <Compile Include="Support\PropertyConfigurationType.cs" />
     <Compile Include="Support\RefType.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Northwind.Common.ServiceModel;
+using Platform.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Model
+namespace Northwind.Common.ComplexModel
 {
+	[TextRecord]
 	public class FullOrderDto
 	{
 		public FullOrderDto()
@@ -11,8 +13,10 @@ namespace ServiceStack.OrmLite.TestsPerf.Model
 			this.OrderDetails = new List<OrderDetailDto>();
 		}
 
+		[TextField]
 		public OrderDto Order { get; set; }
 
+		[TextField]
 		public List<OrderDetailDto> OrderDetails { get; set; }
 
 		public override bool Equals(object obj)

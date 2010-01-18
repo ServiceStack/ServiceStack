@@ -57,12 +57,12 @@ namespace ServiceStack.Common.Tests.Perf
 			var run1 = RunAction(run1Action, DefaultIterations, run1Name);
 			var run2 = RunAction(run2Action, DefaultIterations, run2Name);
 
-			var runDiff = run1 - run2;
+			var runDiff = run1.Ticks - run2.Ticks;
 			var run1IsSlower = runDiff > 0;
 			var slowerRun = run1IsSlower ? run1Name : run2Name;
 			var fasterRun = run1IsSlower ? run2Name : run1Name;
 			var runDiffTime = run1IsSlower ? runDiff : runDiff * -1;
-			var runDiffAvg = run1IsSlower ? run1 / run2 : run2 / run1;
+			var runDiffAvg = run1IsSlower ? run1.Ticks / (double)run2.Ticks : run2.Ticks / (double)run1.Ticks;
 
 			Log("{0} was {1}ms or {2} times slower than {3}",
 				slowerRun, runDiffTime, Math.Round(runDiffAvg, 2), fasterRun);
@@ -87,20 +87,20 @@ namespace ServiceStack.Common.Tests.Perf
 			}
 		}
 
-		protected decimal RunAction(Action action, int iterations)
+		protected TimeSpan RunAction(Action action, int iterations)
 		{
 			return RunAction(action, iterations, null);
 		}
 
-		protected decimal RunAction(Action action, int iterations, string actionName)
+		protected TimeSpan RunAction(Action action, int iterations, string actionName)
 		{
 			actionName = actionName ?? action.GetType().Name;
 			var ticksTaken = Measure(action, iterations);
-			var msTaken = ticksTaken / TimeSpan.TicksPerMillisecond;
+			var timeSpan = TimeSpan.FromSeconds(ticksTaken * 1d / Stopwatch.Frequency);
 
-			Log("{0} took {1}ms ({2} ticks), avg: {3} ticks", actionName, msTaken, ticksTaken, (ticksTaken / iterations));
+			Log("{0} took {1}ms ({2} ticks), avg: {3} ticks", actionName, timeSpan.TotalMilliseconds, timeSpan.Ticks, (timeSpan.Ticks / iterations));
 
-			return ticksTaken;
+			return timeSpan;
 		}
 
 		protected long Measure(Action action, decimal iterations)

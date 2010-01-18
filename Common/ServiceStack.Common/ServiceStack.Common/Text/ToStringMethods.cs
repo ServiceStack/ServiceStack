@@ -79,7 +79,7 @@ namespace ServiceStack.Common.Text
 			if (isCollection)
 			{
 				var isDictionary = type.IsAssignableFrom(typeof(IDictionary))
-								   || type.FindInterfaces((x, y) => x == typeof(IDictionary), null).Length > 0;
+					|| type.FindInterfaces((x, y) => x == typeof(IDictionary), null).Length > 0;
 
 				if (isDictionary)
 				{
@@ -90,7 +90,7 @@ namespace ServiceStack.Common.Text
 			}
 
 			var isEnumerable = type.IsAssignableFrom(typeof(IEnumerable))
-							   || type.FindInterfaces((x, y) => x == typeof(IEnumerable), null).Length > 0;
+				|| type.FindInterfaces((x, y) => x == typeof(IEnumerable), null).Length > 0;
 
 			if (isEnumerable)
 			{
@@ -119,14 +119,17 @@ namespace ServiceStack.Common.Text
 		public static string DateTimeToString(DateTime dateTime)
 		{
 			string dateTimeString;
-			if (!dateTimeValues.TryGetValue(dateTime, out dateTimeString))
+			lock (dateTimeValues)
 			{
-				if (dateTimeValues.Count > 100)
+				if (!dateTimeValues.TryGetValue(dateTime, out dateTimeString))
 				{
-					dateTimeValues = new Dictionary<DateTime, string>();
+					if (dateTimeValues.Count > 100)
+					{
+						dateTimeValues = new Dictionary<DateTime, string>();
+					}
+					dateTimeString = dateTime.ToString();
+					dateTimeValues[dateTime] = dateTimeString;
 				}
-				dateTimeString = dateTime.ToString();
-				dateTimeValues[dateTime] = dateTimeString;
 			}
 			return dateTimeString;
 		}

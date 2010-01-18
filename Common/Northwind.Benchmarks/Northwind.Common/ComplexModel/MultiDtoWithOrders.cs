@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Northwind.Common.ServiceModel;
+using Platform.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Model
+namespace Northwind.Common.ComplexModel
 {
+	[TextRecord]
 	[DataContract]
 	public class MultiDtoWithOrders
 	{
@@ -13,15 +15,19 @@ namespace ServiceStack.OrmLite.TestsPerf.Model
 			Orders = new List<OrderDto>();
 		}
 
+		[TextField]
 		[DataMember]
 		public Guid Id { get; set; }
 
+		[TextField]
 		[DataMember]
 		public CustomerDto Customer { get; set; }
 
+		[TextField]
 		[DataMember]
 		public SupplierDto Supplier { get; set; }
 
+		[TextField]
 		[DataMember]
 		public List<OrderDto> Orders { get; set; }
 
@@ -31,9 +37,9 @@ namespace ServiceStack.OrmLite.TestsPerf.Model
 			if (other == null) return false;
 
 			return this.Id == other.Id
-				   && this.Customer.Equals(other.Customer)
-				   && this.Supplier.Equals(other.Supplier)
-				   && this.Orders.Count == other.Orders.Count;
+			       && this.Customer.Equals(other.Customer)
+			       && this.Supplier.Equals(other.Supplier)
+			       && this.Orders.Count == other.Orders.Count;
 		}
 	}
 }

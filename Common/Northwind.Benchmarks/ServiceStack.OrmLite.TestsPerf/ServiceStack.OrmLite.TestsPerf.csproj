@@ -41,6 +41,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ServiceStack.Common\Lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Platform, Version=1.0.0.341, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Platform.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\release\latest\ServiceStack.dll</HintPath>
@@ -69,14 +73,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\ArrayDtoWithOrders.cs" />
-    <Compile Include="Model\CustomerOrderArrayDto.cs" />
-    <Compile Include="Model\CustomerOrderListDto.cs" />
-    <Compile Include="Model\DtoFactory.cs" />
-    <Compile Include="Model\FullOrderDto.cs" />
-    <Compile Include="Model\ModelWithFieldsOfDifferentTypes.cs" />
-    <Compile Include="Model\MultiCustomerProperties.cs" />
-    <Compile Include="Model\MultiOrderProperties.cs" />
+    <Compile Include="Model\ModelWithFieldsOfDifferentTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\SampleOrderLine.cs" />
     <Compile Include="PerfTests\TextDeserializerPerfTests.cs" />
     <Compile Include="PerfTests\NorthwindPerfTests.cs" />
@@ -94,8 +93,6 @@
     <Compile Include="Scenarios\Text\NorthwindCustomerToStringScenario.cs" />
     <Compile Include="Scenarios\Text\NorthwindSupplierToStringScenario.cs" />
     <Compile Include="Scenarios\Text\NorthwindOrderToStringScenario.cs" />
-    <Compile Include="Model\MultiDtoWithOrders.cs" />
-    <Compile Include="Model\MultiDto.cs" />
     <Compile Include="Tests\TextTestBase.cs" />
     <Compile Include="Tests\TypeToStringTests.cs" />
   </ItemGroup>

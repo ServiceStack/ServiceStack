@@ -1,24 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Northwind.Common.ComplexModel;
 using Northwind.Common.ServiceModel;
 using Northwind.Perf;
 using NUnit.Framework;
+using Platform.Text;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
-using ServiceStack.OrmLite.TestsPerf.Model;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 {
-	[Ignore("Slow performance tests")]
 	[TestFixture]
 	public class TextSerializerPerfTests
 		: PerfTestBase
 	{
 		public TextSerializerPerfTests()
 		{
-			this.MultipleIterations = new List<int> { 1000, 10000 };			
+			this.MultipleIterations = new List<int> { 1000, 10000};			
 		}
 
 		public void WriteLog()
@@ -44,9 +44,10 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			Log(ToStringMethods.ToString(customer));
 
-			RunMultipleTimes(() => StringConverterUtils.ToString(customer), "ToStringMethods.ToString(customer)");
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(customer), "DataContractSerializer.Instance.Parse(customer)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(customer), "JsonDataContractSerializer.Instance.Parse(customer)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(customer), "ToStringMethods.ToString(customer)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(customer), "TextSerializer.SerializeToString(customer)");
 		}
 
 		[Test]
@@ -58,9 +59,10 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			Log(ToStringMethods.ToString(order));
 
-			RunMultipleTimes(() => StringConverterUtils.ToString(order), "ToStringMethods.ToString(order)");
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(order), "DataContractSerializer.Instance.Parse(order)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(order), "JsonDataContractSerializer.Instance.Parse(order)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(order), "ToStringMethods.ToString(order)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(order), "TextSerializer.SerializeToString(order)");
 		}
 
 		[Test]
@@ -72,9 +74,10 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			Log(ToStringMethods.ToString(supplier));
 
-			RunMultipleTimes(() => StringConverterUtils.ToString(supplier), "ToStringMethods.ToString(supplier)");
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(supplier), "DataContractSerializer.Instance.Parse(supplier)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(supplier), "JsonDataContractSerializer.Instance.Parse(supplier)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(supplier), "ToStringMethods.ToString(supplier)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(supplier), "TextSerializer.SerializeToString(supplier)");
 		}
 
 		[Test]
@@ -82,13 +85,15 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		{
 			var dto = DtoFactory.MultiOrderProperties;
 
-			Log(ToStringMethods.ToString(dto));
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
+			Log(ToStringMethods.ToString(dto));
+			Log(TextSerializer.SerializeToString(dto));
 
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
 		[Test]
@@ -96,13 +101,15 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		{
 			var dto = DtoFactory.MultiCustomerProperties;
 
-			Log(ToStringMethods.ToString(dto));
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
+			Log(ToStringMethods.ToString(dto));
+			Log(TextSerializer.SerializeToString(dto));
 
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
 		[Test]
@@ -110,13 +117,15 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		{
 			var dto = DtoFactory.MultiDtoWithOrders;
 
-			Log(ToStringMethods.ToString(dto));
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
+			Log(ToStringMethods.ToString(dto));
+			Log(TextSerializer.SerializeToString(dto));
 
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
 		[Test]
@@ -124,13 +133,47 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		{
 			var dto = DtoFactory.ArrayDtoWithOrders;
 
-			Log(ToStringMethods.ToString(dto));
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
+			Log(ToStringMethods.ToString(dto));
+			Log(TextSerializer.SerializeToString(dto));
 
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
+		}
+
+		[Test]
+		public void Serialize_CustomerOrderArrayDto()
+		{
+			var dto = DtoFactory.CustomerOrderArrayDto;
+
+			Log(DataContractSerializer.Instance.Parse(dto));
+			Log(JsonDataContractSerializer.Instance.Parse(dto));
+			Log(ToStringMethods.ToString(dto));
+			Log(TextSerializer.SerializeToString(dto));
+
+			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
+		}
+
+		[Test]
+		public void Serialize_CustomerOrderListDto()
+		{
+			var dto = DtoFactory.CustomerOrderListDto;
+
+			Log(DataContractSerializer.Instance.Parse(dto));
+			Log(JsonDataContractSerializer.Instance.Parse(dto));
+			Log(ToStringMethods.ToString(dto));
+			Log(TextSerializer.SerializeToString(dto));
+
+			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
+			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
 	}

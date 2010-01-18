@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Utils;
@@ -300,6 +301,27 @@ namespace ServiceStack.Common.Tests
 			Assert.That(actualValue, Is.EqualTo(byteArrayValue));
 		}
 
+		[Test]
+		public void Can_convert_CustomerOrderListDto()
+		{
+			var dto = DtoFactory.CustomerOrderListDto;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+			dtoString = StringConverterUtils.ToString(dto);
+
+			Assert.That(dtoString, Is.Not.Null);
+		}
+
+		[Test]
+		public void Can_convert_to_CustomerOrderListDto()
+		{
+			var dto = DtoFactory.CustomerOrderListDto;
+
+			var dtoString = StringConverterUtils.ToString(dto);
+			var fromDto = StringConverterUtils.Parse<CustomerOrderListDto>(dtoString);
+
+			Assert.That(fromDto, Is.Not.Null);
+		}
 
 	}
 }

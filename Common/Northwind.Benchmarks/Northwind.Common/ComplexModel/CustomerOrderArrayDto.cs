@@ -1,8 +1,10 @@
 using System.Linq;
 using Northwind.Common.ServiceModel;
+using Platform.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Model
+namespace Northwind.Common.ComplexModel
 {
+	[TextRecord]
 	public class CustomerOrderArrayDto
 	{
 		public CustomerOrderArrayDto()
@@ -10,8 +12,10 @@ namespace ServiceStack.OrmLite.TestsPerf.Model
 			this.Orders = new FullOrderDto[0];
 		}
 
+		[TextField]
 		public CustomerDto Customer { get; set; }
 
+		[TextField]
 		public FullOrderDto[] Orders { get; set; }
 
 		public override bool Equals(object obj)

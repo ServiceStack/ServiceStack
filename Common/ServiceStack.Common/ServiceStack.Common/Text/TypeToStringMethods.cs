@@ -25,35 +25,39 @@ namespace ServiceStack.Common.Text
 			var propertyInfos = type.GetProperties();
 			if (propertyInfos.Length == 0) return null;
 
-			var getterMap = new Dictionary<string, Func<object, object>>();
-			var map = new Dictionary<string, Func<object, string>>();
+			var propertyInfosLength = propertyInfos.Length;
+			var propertyNames = new string[propertyInfos.Length];
 
-			foreach (var propertyInfo in propertyInfos)
+			var getterFns = new Func<object, object>[propertyInfosLength];
+			var toStringFns = new Func<object, string>[propertyInfosLength];
+
+			for (var i = 0; i<propertyInfosLength; i++)
 			{
-				map[propertyInfo.Name] = ToStringMethods.GetToStringMethod(propertyInfo.PropertyType);
-				getterMap[propertyInfo.Name] = GetPropertyValueMethod(type, propertyInfo);
+				var propertyInfo = propertyInfos[i];
+				propertyNames[i] = propertyInfo.Name;
+
+				getterFns[i] = GetPropertyValueMethod(type, propertyInfo);
+				toStringFns[i] = ToStringMethods.GetToStringMethod(propertyInfo.PropertyType);
 			}
 
-			return value => TypeToString(value, getterMap, map);
+			return value => TypeToString(value, propertyNames, getterFns, toStringFns);
 		}
 
-		public static string TypeToString(object value, 
-			Dictionary<string, Func<object, object>> getterMap, Dictionary<string, Func<object, string>> toStringMap)
+		public static string TypeToString(object value, string[] propertyNames,
+			Func<object, object>[] getterFns, Func<object, string>[] toStringFns)
 		{
 			var sb = new StringBuilder();
 
-			//var timePoints = new List<KeyValuePair<string, long>>();
-			//var stopWatch = new Stopwatch();
-			//stopWatch.Start();
-			
-			//timePoints.Add(new KeyValuePair<string, long>("Begin TypeToString:" + value.GetType().Name, stopWatch.ElapsedTicks));
-			foreach (var getterEntry in getterMap)
+			var propertyNamesLength = propertyNames.Length;
+			for (var i = 0; i < propertyNamesLength; i++)
 			{
 				if (sb.Length > 0) sb.Append(TextExtensions.PropertyItemSeperator);
 
-				var propertyValue = getterEntry.Value(value);
-				var propertyValueString = toStringMap[getterEntry.Key](propertyValue);
-				sb.Append(getterEntry.Key)
+				var propertyName = propertyNames[i];
+
+				var propertyValue = getterFns[i](value);
+				var propertyValueString = toStringFns[i](propertyValue);
+				sb.Append(propertyName)
 					.Append(TextExtensions.PropertyNameSeperator)
 					.Append(propertyValueString);
 			}

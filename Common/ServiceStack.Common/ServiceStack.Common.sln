@@ -72,6 +72,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis", "Servi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis.Tests", "ServiceStack.Redis.Tests\ServiceStack.Redis.Tests.csproj", "{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SpringFactory", "ServiceStack.SpringFactory\ServiceStack.SpringFactory.csproj", "{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -190,6 +192,10 @@ Global
 		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
