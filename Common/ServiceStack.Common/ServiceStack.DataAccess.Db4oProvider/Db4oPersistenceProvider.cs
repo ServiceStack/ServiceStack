@@ -447,6 +447,12 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			DeleteAll(entities);
 		}
 
+		public void DeleteAll<TEntity>() where TEntity : class, new()
+		{
+			var entities = this.GetAll<TEntity>();
+			DeleteAll(entities);
+		}
+
 		public void DeleteAll<T>(IEnumerable<T> entities)
 			where T : class, new()
 		{
@@ -461,19 +467,19 @@ namespace ServiceStack.DataAccess.Db4oProvider
 			Dispose(false);
 		}
 
-		public IList<Extent> Query<Extent>(IComparer<Extent> comparer)
+		public IList<TExtent> Query<TExtent>(IComparer<TExtent> comparer)
 		{
 			return ObjectContainer.Query(comparer);
 		}
 
-		public IList<Extent> Query<Extent>(Predicate<Extent> match)
+		public IList<TExtent> Query<TExtent>(Predicate<TExtent> match)
 		{
 			return ObjectContainer.Query(match);
 		}
 
-		public IList<Extent> QueryByExample<Extent>(object template)
+		public IList<TExtent> QueryByExample<TExtent>(object template)
 		{
-			return ConvertToList<Extent>(ObjectContainer.QueryByExample(template));
+			return ConvertToList<TExtent>(ObjectContainer.QueryByExample(template));
 		}
 
 		public void Dispose()
