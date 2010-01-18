@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Logging;
 using ServiceStack.OrmLite.Tests.Support;
 
