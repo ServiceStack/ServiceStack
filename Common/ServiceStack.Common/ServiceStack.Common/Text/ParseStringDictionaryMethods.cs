@@ -37,16 +37,26 @@ namespace ServiceStack.Common.Text
 			return value => ParseDictionaryType(value, createMapType, dictionaryArgs, keyTypeParseMethod, valueTypeParseMethod);
 		}
 
+		/*
+			var stringDictionary = new Dictionary<string, string> {
+				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
+			};
+			const string mapValues = "One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\",Four:four%";
+		 */
 		public static Dictionary<string, string> ParseStringDictionary(string value)
 		{
 			var result = new Dictionary<string, string>();
 
-			var entryValues = value.Split(TextExtensions.ItemSeperator);
-			foreach (var entryValue in entryValues)
+			var valueLength = value.Length;
+			for (var i=0; i < valueLength; i++)
 			{
-				var keyValuePair = entryValue.Split(TextExtensions.KeyValueSeperator);
-				var mapKey = ParseStringMethods.ParseString(keyValuePair[KeyIndex]);
-				var mapValue = ParseStringMethods.ParseString(keyValuePair[ValueIndex]);
+				var keyValue = ParseStringMethods.EatKey(value, ref i);
+				i++;
+				var elementValue = ParseStringMethods.EatValue(value, ref i);
+
+				var mapKey = ParseStringMethods.ParseString(keyValue);
+				var mapValue = ParseStringMethods.ParseString(elementValue);
+
 				result[mapKey] = mapValue;
 			}
 
@@ -60,14 +70,19 @@ namespace ServiceStack.Common.Text
 				? new Dictionary<TKey, TValue>()
 				: (IDictionary<TKey, TValue>)Activator.CreateInstance(createMapType);
 
-			var entryValues = value.Split(TextExtensions.ItemSeperator);
-			foreach (var entryValue in entryValues)
+			var valueLength = value.Length;
+			for (var i=0; i < valueLength; i++)
 			{
-				var keyValuePair = entryValue.Split(TextExtensions.KeyValueSeperator);
-				var mapKey = (TKey)parseKeyFn(keyValuePair[KeyIndex]);
-				var mapValue = (TValue)parseValueFn(keyValuePair[ValueIndex]);
+				var keyValue = ParseStringMethods.EatKey(value, ref i);
+				i++;
+				var elementValue = ParseStringMethods.EatValue(value, ref i);
+
+				var mapKey = (TKey)parseKeyFn(keyValue);
+				var mapValue = (TValue)parseValueFn(elementValue);
+
 				to[mapKey] = mapValue;
 			}
+
 			return to;
 		}
 

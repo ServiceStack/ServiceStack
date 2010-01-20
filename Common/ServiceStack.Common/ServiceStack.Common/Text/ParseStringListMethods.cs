@@ -36,9 +36,19 @@ namespace ServiceStack.Common.Text
 
 		public static List<string> ParseStringList(string value)
 		{
-			return string.IsNullOrEmpty(value)
-				? new List<string>()
-				: value.Split(TextExtensions.ItemSeperator).FromSafeStrings();
+			if (string.IsNullOrEmpty(value))
+				return new List<string>();
+
+			var to = new List<string>();
+			var valueLength = value.Length;
+			for (var i=0; i < valueLength; i++)
+			{
+				var elementValue = ParseStringMethods.EatValue(value, ref i);
+				var listValue = ParseStringMethods.ParseString(elementValue);
+				to.Add(listValue);
+			}
+
+			return to;
 		}
 
 		public static List<int> ParseIntList(string value)
@@ -61,17 +71,18 @@ namespace ServiceStack.Common.Text
 					var i = 0;
 					do
 					{
-						var itemValue = ParseStringMethods.EatElementValue(value, ref i);
+						var itemValue = ParseStringMethods.EatTypeValue(value, ref i);
 						to.Add((T) parseFn(itemValue));
 					} while (++i < value.Length);
 				}
 				else
 				{
-					var values = value.Split(TextExtensions.ItemSeperator);
-					var valuesLength = values.Length;
-					for (var i=0; i < valuesLength; i++)
+					var valueLength = value.Length;
+					for (var i=0; i < valueLength; i++)
 					{
-						to.Add((T)parseFn(values[i]));
+						var elementValue = ParseStringMethods.EatValue(value, ref i);
+						var listValue = ParseStringMethods.ParseString(elementValue);
+						to.Add((T)parseFn(listValue));
 					}
 				}
 			}

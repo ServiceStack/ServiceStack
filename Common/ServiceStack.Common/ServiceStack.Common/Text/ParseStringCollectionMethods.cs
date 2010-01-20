@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Text
 {
@@ -34,21 +35,21 @@ namespace ServiceStack.Common.Text
 
 		public static ICollection<string> ParseStringCollection(string value, Type createType)
 		{
-			var collection = (ICollection<string>) Activator.CreateInstance(createType);
+			var collection = (ICollection<string>)ReflectionUtils.CreateInstance(createType);
 			collection.CopyTo(ParseStringArrayMethods.ParseArray<string>(value, ParseStringMethods.ParseString), 0);
 			return collection;
 		}
 
 		public static ICollection<int> ParseIntCollection(string value, Type createType)
 		{
-			var collection = (ICollection<int>)Activator.CreateInstance(createType);
+			var collection = (ICollection<int>)ReflectionUtils.CreateInstance(createType);
 			collection.CopyTo(ParseStringArrayMethods.ParseArray<int>(value, x => int.Parse(x)), 0);
 			return collection;
 		}
 
 		public static ICollection<T> ParseCollection<T>(string value, Type createType, Func<string, object> parseFn)
 		{
-			var collection = (ICollection<T>)Activator.CreateInstance(createType);
+			var collection = (ICollection<T>)ReflectionUtils.CreateInstance(createType);
 			collection.CopyTo(ParseStringArrayMethods.ParseArray<T>(value, parseFn), 0);
 			return collection;
 		}

@@ -3,8 +3,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using Northwind.Common.ComplexModel;
+using Northwind.Common.DataModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using System.Collections.Generic;
 
@@ -39,34 +41,34 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_comma_delimited_string_to_List_String()
 		{
-			Assert.That(StringConverterUtils.CanCreateFromString(typeof(List<string>)), Is.True);
+			Assert.That(StringSerializer.CanCreateFromString(typeof(List<string>)), Is.True);
 
 			var stringValueList = string.Join(",", stringValues);
 
-			var convertedStringValues = StringConverterUtils.Parse<List<string>>(stringValueList);
+			var convertedStringValues = StringSerializer.DeserializeFromString<List<string>>(stringValueList);
 			Assert.That(convertedStringValues, Is.EquivalentTo(stringValues));
 		}
 
 		[Test]
 		public void Empty_string_returns_empty_List_String()
 		{
-			var convertedStringValues = StringConverterUtils.Parse<List<string>>(string.Empty);
+			var convertedStringValues = StringSerializer.DeserializeFromString<List<string>>(string.Empty);
 			Assert.That(convertedStringValues, Is.EqualTo(new List<string>()));
 		}
 
 		[Test]
 		public void Null_string_returns_empty_List_String()
 		{
-			var convertedStringValues = StringConverterUtils.Parse<List<string>>(null);
+			var convertedStringValues = StringSerializer.DeserializeFromString<List<string>>(null);
 			Assert.That(convertedStringValues, Is.EqualTo(new List<string>()));
 		}
 
 		[Test]
 		public void Can_convert_string_collection()
 		{
-			Assert.That(StringConverterUtils.CanCreateFromString(typeof(string[])), Is.True);
+			Assert.That(StringSerializer.CanCreateFromString(typeof(string[])), Is.True);
 
-			var stringValue = StringConverterUtils.ToString(stringValues);
+			var stringValue = StringSerializer.SerializeToString(stringValues);
 			var expectedString = string.Join(",", stringValues.ToArray());
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -75,7 +77,7 @@ namespace ServiceStack.Common.Tests
 		public void Can_convert_enum()
 		{
 			var enumValue = TestEnum.EnumValue1;
-			var stringValue = StringConverterUtils.ToString(enumValue);
+			var stringValue = StringSerializer.SerializeToString(enumValue);
 			var expectedString = TestEnum.EnumValue1.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -84,7 +86,7 @@ namespace ServiceStack.Common.Tests
 		public void Can_convert_nullable_enum()
 		{
 			TestEnum? enumValue = TestEnum.EnumValue1;
-			var stringValue = StringConverterUtils.ToString(enumValue);
+			var stringValue = StringSerializer.SerializeToString(enumValue);
 			var expectedString = TestEnum.EnumValue1.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -92,17 +94,17 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_to_nullable_enum()
 		{
-			Assert.That(StringConverterUtils.CanCreateFromString(typeof(TestEnum?)), Is.True);
+			Assert.That(StringSerializer.CanCreateFromString(typeof(TestEnum?)), Is.True);
 
 			TestEnum? enumValue = TestEnum.EnumValue1;
-			var actualValue = StringConverterUtils.Parse<TestEnum?>(enumValue.ToString());
+			var actualValue = StringSerializer.DeserializeFromString<TestEnum?>(enumValue.ToString());
 			Assert.That(actualValue, Is.EqualTo(enumValue));
 		}
 
 		[Test]
 		public void Can_convert_to_nullable_enum_with_null_value()
 		{
-			var enumValue = StringConverterUtils.Parse<TestEnum?>(null);
+			var enumValue = StringSerializer.DeserializeFromString<TestEnum?>(null);
 			Assert.That(enumValue, Is.Null);
 		}
 
@@ -110,17 +112,17 @@ namespace ServiceStack.Common.Tests
 		public void Can_convert_nullable_enum_with_null_value()
 		{
 			TestEnum? enumValue = null;
-			var stringValue = StringConverterUtils.ToString(enumValue);
+			var stringValue = StringSerializer.SerializeToString(enumValue);
 			Assert.That(stringValue, Is.Null);
 		}
 
 		[Test]
 		public void Can_convert_Guid()
 		{
-			Assert.That(StringConverterUtils.CanCreateFromString(typeof(Guid)), Is.True);
+			Assert.That(StringSerializer.CanCreateFromString(typeof(Guid)), Is.True);
 
 			var guidValue = Guid.NewGuid();
-			var stringValue = StringConverterUtils.ToString(guidValue);
+			var stringValue = StringSerializer.SerializeToString(guidValue);
 			var expectedString = guidValue.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -129,7 +131,7 @@ namespace ServiceStack.Common.Tests
 		public void Can_convert_datetime()
 		{
 			var dateValue = new DateTime(1979, 5, 9);
-			var stringValue = StringConverterUtils.ToString(dateValue);
+			var stringValue = StringSerializer.SerializeToString(dateValue);
 			var expectedString = dateValue.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -137,10 +139,10 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_to_datetime()
 		{
-			Assert.That(StringConverterUtils.CanCreateFromString(typeof(DateTime)), Is.True);
+			Assert.That(StringSerializer.CanCreateFromString(typeof(DateTime)), Is.True);
 
 			var dateValue = new DateTime(1979, 5, 9);
-			var actualValue = StringConverterUtils.Parse<DateTime>(dateValue.ToString());
+			var actualValue = StringSerializer.DeserializeFromString<DateTime>(dateValue.ToString());
 			Assert.That(actualValue, Is.EqualTo(dateValue));
 		}
 
@@ -148,7 +150,7 @@ namespace ServiceStack.Common.Tests
 		public void Can_convert_nullable_datetime()
 		{
 			DateTime? dateValue = new DateTime(1979, 5, 9);
-			var stringValue = StringConverterUtils.ToString(dateValue);
+			var stringValue = StringSerializer.SerializeToString(dateValue);
 			var expectedString = dateValue.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -156,17 +158,17 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_to_nullable_datetime()
 		{
-			Assert.That(StringConverterUtils.CanCreateFromString(typeof(DateTime?)), Is.True);
+			Assert.That(StringSerializer.CanCreateFromString(typeof(DateTime?)), Is.True);
 
 			DateTime? dateValue = new DateTime(1979, 5, 9);
-			var actualValue = StringConverterUtils.Parse<DateTime?>(dateValue.ToString());
+			var actualValue = StringSerializer.DeserializeFromString<DateTime?>(dateValue.ToString());
 			Assert.That(actualValue, Is.EqualTo(dateValue));
 		}
 
 		[Test]
 		public void Can_convert_string_List()
 		{
-			var stringValue = StringConverterUtils.ToString(stringValues.ToList());
+			var stringValue = StringSerializer.SerializeToString(stringValues.ToList());
 			var expectedString = string.Join(",", stringValues.ToArray());
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -174,7 +176,7 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_string_array()
 		{
-			var stringValue = StringConverterUtils.ToString(stringValues.ToArray());
+			var stringValue = StringSerializer.SerializeToString(stringValues.ToArray());
 			var expectedString = string.Join(",", stringValues.ToArray());
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -182,7 +184,7 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_string_List_as_object()
 		{
-			var stringValue = StringConverterUtils.ToString((object)stringValues.ToList());
+			var stringValue = StringSerializer.SerializeToString((object)stringValues.ToList());
 			var expectedString = string.Join(",", stringValues.ToArray());
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -190,7 +192,7 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_empty_List()
 		{
-			var stringValue = StringConverterUtils.ToString(new List<string>());
+			var stringValue = StringSerializer.SerializeToString(new List<string>());
 			var expectedString = "";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -198,7 +200,7 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_empty_List_as_object()
 		{
-			var stringValue = StringConverterUtils.ToString((object)new List<string>());
+			var stringValue = StringSerializer.SerializeToString((object)new List<string>());
 			var expectedString = "";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -210,7 +212,7 @@ namespace ServiceStack.Common.Tests
 				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
 			};
 			var expectedString = "One:1st,Two:2nd,Three:3rd";
-			var stringValue = StringConverterUtils.ToString(stringDictionary);
+			var stringValue = StringSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -221,7 +223,7 @@ namespace ServiceStack.Common.Tests
 				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
 			};
 			const string mapValues = "One:1st,Two:2nd,Three:3rd";
-			var parsedDictionary = StringConverterUtils.Parse(mapValues, stringDictionary.GetType());
+			var parsedDictionary = StringSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
 		}
 
@@ -232,7 +234,7 @@ namespace ServiceStack.Common.Tests
 				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
 			};
 			var expectedString = "One:1st,Two:2nd,Three:3rd";
-			var stringValue = StringConverterUtils.ToString((object)stringDictionary);
+			var stringValue = StringSerializer.SerializeToString((object)stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -242,8 +244,8 @@ namespace ServiceStack.Common.Tests
 			var stringDictionary = new Dictionary<string, string> {
 				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
 			};
-			var expectedString = "One:\"%221st\",Two:\"2%3and\",Three:\"3r%2cd\",Four:four%";
-			var stringValue = StringConverterUtils.ToString(stringDictionary);
+			var expectedString = "One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\",Four:four%";
+			var stringValue = StringSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -251,10 +253,10 @@ namespace ServiceStack.Common.Tests
 		public void Can_parse_string_dictionary_with_special_chars_as_object()
 		{
 			var stringDictionary = new Dictionary<string, string> {
-				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
+				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }
 			};
-			const string mapValues = "One:\"%221st\",Two:\"2%3and\",Three:\"3r%2cd\",Four:four%";
-			var parsedDictionary = StringConverterUtils.Parse(mapValues, stringDictionary.GetType());
+			const string mapValues = "One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\"";
+			var parsedDictionary = StringSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
 		}
 
@@ -264,8 +266,8 @@ namespace ServiceStack.Common.Tests
 			var stringList = new List<string> {
 				"\"1st", "2:nd", "3r,d", "four%"
 			};
-			var expectedString = "\"%221st\",\"2%3and\",\"3r%2cd\",four%";
-			var stringValue = StringConverterUtils.ToString(stringList);
+			var expectedString = "\"\"\"1st\",2:nd,\"3r,d\",four%";
+			var stringValue = StringSerializer.SerializeToString(stringList);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -275,8 +277,8 @@ namespace ServiceStack.Common.Tests
 			var stringList = new List<string> {
 				"\"1st", "2:nd", "3r,d", "four%"
 			};
-			const string listValues = "\"%221st\",\"2%3and\",\"3r%2cd\",four%";
-			var parsedList = StringConverterUtils.Parse(listValues, stringList.GetType());
+			const string listValues = "\"\"\"1st\",2:nd,\"3r,d\",four%";
+			var parsedList = StringSerializer.DeserializeFromString(listValues, stringList.GetType());
 			Assert.That(parsedList, Is.EquivalentTo(stringList));
 		}
 
@@ -285,7 +287,7 @@ namespace ServiceStack.Common.Tests
 		public void Can_convert_Byte_array()
 		{
 			var byteArrayValue = new byte[]{ 0, 65, 97, 255, };
-			var stringValue = StringConverterUtils.ToString(byteArrayValue);
+			var stringValue = StringSerializer.SerializeToString(byteArrayValue);
 			var expectedString = System.Text.Encoding.Default.GetString(byteArrayValue);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -293,11 +295,11 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void Can_convert_to_Byte_array()
 		{
-			Assert.That(StringConverterUtils.CanCreateFromString(typeof(byte[])), Is.True);
+			Assert.That(StringSerializer.CanCreateFromString(typeof(byte[])), Is.True);
 
 			var byteArrayValue = new byte[] { 0, 65, 97, 255, };
-			var byteArrayString = StringConverterUtils.ToString(byteArrayValue);
-			var actualValue = StringConverterUtils.Parse<byte[]>(byteArrayString);
+			var byteArrayString = StringSerializer.SerializeToString(byteArrayValue);
+			var actualValue = StringSerializer.DeserializeFromString<byte[]>(byteArrayString);
 			Assert.That(actualValue, Is.EqualTo(byteArrayValue));
 		}
 
@@ -306,8 +308,8 @@ namespace ServiceStack.Common.Tests
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = StringConverterUtils.ToString(dto);
-			dtoString = StringConverterUtils.ToString(dto);
+			var dtoString = StringSerializer.SerializeToString(dto);
+			dtoString = StringSerializer.SerializeToString(dto);
 
 			Assert.That(dtoString, Is.Not.Null);
 		}
@@ -317,8 +319,20 @@ namespace ServiceStack.Common.Tests
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = StringConverterUtils.ToString(dto);
-			var fromDto = StringConverterUtils.Parse<CustomerOrderListDto>(dtoString);
+			var dtoString = StringSerializer.SerializeToString(dto);
+			var fromDto = StringSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString);
+
+			Assert.That(fromDto, Is.Not.Null);
+		}
+
+		[Test]
+		public void Can_convert_to_Customers()
+		{
+			NorthwindData.LoadData(false);
+			var dto = NorthwindData.Customers;
+
+			var dtoString = StringSerializer.SerializeToString(dto);
+			var fromDto = StringSerializer.DeserializeFromString<List<Customer>>(dtoString);
 
 			Assert.That(fromDto, Is.Not.Null);
 		}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 
@@ -375,5 +376,39 @@ namespace ServiceStack.Common.Utils
 			while ((baseType = baseType.BaseType) != null);
 		}
 
+		public delegate object CtorDelegate();
+
+		static readonly Dictionary<Type, Func<object>> ConstructorMethods = new Dictionary<Type, Func<object>>();
+		public static Func<object> GetConstructorMethod(Type type)
+		{
+			lock (ConstructorMethods)
+			{
+				Func<object> ctorFn;
+				if (!ConstructorMethods.TryGetValue(type, out ctorFn))
+				{
+					ctorFn = GetConstructorMethodToCache(type);
+					ConstructorMethods[type] = ctorFn;
+				}
+				return ctorFn;
+			}
+		}
+
+		public static Func<object> GetConstructorMethodToCache(Type type)
+		{
+			var dm = new DynamicMethod("MyCtor", type, Type.EmptyTypes, typeof(ReflectionUtils).Module, true);
+			var ilgen = dm.GetILGenerator();
+			ilgen.Emit(OpCodes.Nop);
+			ilgen.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
+			ilgen.Emit(OpCodes.Ret);
+
+			Func<object> ctorFn = ((CtorDelegate) dm.CreateDelegate(typeof (CtorDelegate))).Invoke;
+			return ctorFn;
+		}
+
+		public static object CreateInstance(Type type)
+		{
+			var ctorFn = GetConstructorMethod(type);
+			return ctorFn();
+		}
 	}
 }

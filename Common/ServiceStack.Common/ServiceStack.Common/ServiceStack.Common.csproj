@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{982416DB-C143-4028-A0C3-CF41892D18D3}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -46,6 +46,7 @@
     <Compile Include="Environment.cs" />
     <Compile Include="Expressions\DelegateFactory.cs" />
     <Compile Include="Extensions\ActionExecExtensions.cs" />
+    <Compile Include="Extensions\CsvStreamExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ExecExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
@@ -75,6 +76,8 @@
     <Compile Include="Text\ParseStringListMethods.cs" />
     <Compile Include="Text\ParseStringBuiltinMethods.cs" />
     <Compile Include="Text\ParseStringTypeConstructor.cs" />
+    <Compile Include="Text\StringSerializer.cs" />
+    <Compile Include="Text\ToStringListMethods.cs" />
     <Compile Include="Text\TypeToStringMethods.cs" />
     <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\AssertUtils.cs" />

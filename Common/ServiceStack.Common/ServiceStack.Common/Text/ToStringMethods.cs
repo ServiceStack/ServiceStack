@@ -1,17 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Reflection;
 using System.Text;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
+	internal delegate string CollectionToStringDelegate(object oList, Func<object, string> toStringFn);
+
+	internal delegate string ToStringDelegate(object value);
+
 	public static class ToStringMethods
 	{
-		public delegate string ToStringDelegate(object value);
-
 		public static string ToString(object value)
 		{
 			var toStringMethod = GetToStringMethod(value.GetType());
@@ -73,6 +74,14 @@ namespace ServiceStack.Common.Text
 				}
 
 				return GetArrayToStringMethod(type.GetElementType());
+			}
+
+			if (type.IsGenericType())
+			{
+				var listInterfaces = type.FindInterfaces(
+					(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
+				if (listInterfaces.Length > 0)
+					return ToStringListMethods.GetToStringMethod(type);
 			}
 
 			var isCollection = type.FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
@@ -141,7 +150,7 @@ namespace ServiceStack.Common.Text
 			for (var i=0; i < arrayValueLength; i++)
 			{
 				if (sb.Length > 0) sb.Append(TextExtensions.ItemSeperator);
-				sb.Append(arrayValue[i].ToSafeString());
+				sb.Append(arrayValue[i].ToCsvField());
 			}
 			return sb.ToString();
 		}
@@ -152,25 +161,20 @@ namespace ServiceStack.Common.Text
 				BindingFlags.Static | BindingFlags.Public);
 
 			var genericMi = mi.MakeGenericMethod(new[] { elementType });
-			var genericDelegate = (ToStringDelegate)Delegate.CreateDelegate(typeof(ToStringDelegate), genericMi);
+			var genericDelegate = (CollectionToStringDelegate)Delegate.CreateDelegate(typeof(CollectionToStringDelegate), genericMi);
 
-			return genericDelegate.Invoke;
+			var toStringFn = GetToStringMethod(elementType);
+			return value => genericDelegate(value, toStringFn);
 		}
 
-		public static string ArrayToString<T>(object oArrayValue)
+		public static string ArrayToString<T>(object oArrayValue, Func<object, string> toStringFn)
 		{
-			Func<object, string> toStringFn = null;
-
 			var arrayValue = (T[])oArrayValue;
 			var sb = new StringBuilder();
 			var arrayValueLength = arrayValue.Length;
 			for (var i=0; i < arrayValueLength; i++)
 			{
 				var item = arrayValue[i];
-				if (toStringFn == null)
-				{
-					toStringFn = GetToStringMethod(item.GetType());
-				}
 
 				var itemString = toStringFn(item);
 				if (sb.Length > 0)
@@ -184,7 +188,7 @@ namespace ServiceStack.Common.Text
 
 		public static string StringToString(string value)
 		{
-			return value.ToSafeString();
+			return value.ToCsvField();
 		}
 
 		public static string BuiltinToString(object value)
@@ -195,31 +199,6 @@ namespace ServiceStack.Common.Text
 		public static string BytesToString(byte[] byteValue)
 		{
 			return byteValue == null ? null : Encoding.Default.GetString(byteValue);
-		}
-
-		public static string IListGenericToString(IList list)
-		{
-			Func<object, string> toStringFn = null;
-
-			var sb = new StringBuilder();
-			var listLength = list.Count;
-			for (var i=0; i < listLength; i++)
-			{
-				var item = list[i];
-				if (toStringFn == null)
-				{
-					toStringFn = GetToStringMethod(item.GetType());
-				}
-
-				var itemString = toStringFn(item);
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(itemString);
-			}
-
-			return sb.ToString();
 		}
 
 		public static string IEnumerableToString(IEnumerable valueCollection)

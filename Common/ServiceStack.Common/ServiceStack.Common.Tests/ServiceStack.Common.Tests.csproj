@@ -64,6 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CsvStreamTests.cs" />
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
     <Compile Include="Expressions\ExpressionTests.cs" />
     <Compile Include="Perf\AdhocFastPerfTests.cs" />

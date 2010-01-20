@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
 {
-	[Ignore]
+	//[Ignore]
 	[TestFixture]
 	public class ToStringPerf
 		: PerfTestBase
@@ -21,8 +22,8 @@ namespace ServiceStack.Common.Tests.Perf
 		public void Compare_string()
 		{
 			CompareMultipleRuns(
-				"'test'.ToSafeString()", () => "test".ToSafeString(),
-				"SCU.ToString('test')", () => StringConverterUtils.ToString("test")
+				"'test'.ToCsvField()", () => "test".ToCsvField(),
+				"SCU.ToString('test')", () => StringSerializer.SerializeToString("test")
 			);
 		}
 
@@ -30,8 +31,8 @@ namespace ServiceStack.Common.Tests.Perf
 		public void Compare_escaped_string()
 		{
 			CompareMultipleRuns(
-				"'t,e:st'.ToSafeString()", () => "t,e:st".ToSafeString(),
-				"SCU.ToString('t,e:st')", () => StringConverterUtils.ToString("t,e:st")
+				"'t,e:st'.ToCsvField()", () => "t,e:st".ToCsvField(),
+				"SCU.ToString('t,e:st')", () => StringSerializer.SerializeToString("t,e:st")
 			);
 		}
 
@@ -40,7 +41,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			CompareMultipleRuns(
 				"1.ToString()", () => 1.ToString(),
-				"SCU.ToString(1)", () => StringConverterUtils.ToString(1)
+				"SCU.ToString(1)", () => StringSerializer.SerializeToString(1)
 			);
 		}
 
@@ -49,7 +50,7 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			CompareMultipleRuns(
 				"1L.ToString()", () => 1L.ToString(),
-				"SCU.ToString(1L)", () => StringConverterUtils.ToString(1L)
+				"SCU.ToString(1L)", () => StringSerializer.SerializeToString(1L)
 			);
 		}
 
@@ -59,7 +60,7 @@ namespace ServiceStack.Common.Tests.Perf
 			var guid = new Guid("AC800C9C-B8BE-4829-868A-B43CFF7B2AFD");
 			CompareMultipleRuns(
 				"guid.ToString()", () => guid.ToString(),
-				"SCU.ToString(guid)", () => StringConverterUtils.ToString(guid)
+				"SCU.ToString(guid)", () => StringSerializer.SerializeToString(guid)
 			);
 		}
 
@@ -69,7 +70,7 @@ namespace ServiceStack.Common.Tests.Perf
 			var now = DateTime.Now;
 			CompareMultipleRuns(
 				"now.ToString()", () => now.ToString(),
-				"SCU.ToString(now)", () => StringConverterUtils.ToString(now)
+				"SCU.ToString(now)", () => StringSerializer.SerializeToString(now)
 			);
 		}
 
@@ -83,7 +84,7 @@ namespace ServiceStack.Common.Tests.Perf
 					intList.ForEach(x => { if (sb.Length > 0) sb.Append(","); sb.Append(x.ToString()); });
 					sb.ToString();
 				},
-				"SCU.ToString(intList)", () => StringConverterUtils.ToString(intList)
+				"SCU.ToString(intList)", () => StringSerializer.SerializeToString(intList)
 			);
 		}
 
@@ -97,7 +98,7 @@ namespace ServiceStack.Common.Tests.Perf
 					longList.ForEach(x => { if (sb.Length > 0) sb.Append(","); sb.Append(x.ToString()); });
 					sb.ToString();
 				},
-				"SCU.ToString(longList)", () => StringConverterUtils.ToString(longList)
+				"SCU.ToString(longList)", () => StringSerializer.SerializeToString(longList)
 			);
 		}
 
@@ -106,16 +107,16 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			var stringArray = new[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
 			CompareMultipleRuns(
-				"sb.Append(s.ToSafeString());", () => {
+				"sb.Append(s.ToCsvField());", () => {
 					var sb = new StringBuilder();
 					foreach (var s in stringArray)
 					{
 						if (sb.Length > 0) sb.Append(",");
-						sb.Append(s.ToSafeString());
+						sb.Append(s.ToCsvField());
 					}
 					sb.ToString();
 				},
-				"SCU.ToString(stringArray)", () => StringConverterUtils.ToString(stringArray)
+				"SCU.ToString(stringArray)", () => StringSerializer.SerializeToString(stringArray)
 			);
 		}
 
@@ -124,12 +125,12 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			var stringList = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
 			CompareMultipleRuns(
-				"sb.Append(s.ToSafeString());", () => {
+				"sb.Append(s.ToCsvField());", () => {
 					var sb = new StringBuilder();
 					stringList.ForEach(x => { if (sb.Length > 0) sb.Append(","); sb.Append(x.ToString()); });
 					sb.ToString();
 				},
-				"SCU.ToString(stringList)", () => StringConverterUtils.ToString(stringList)
+				"SCU.ToString(stringList)", () => StringSerializer.SerializeToString(stringList)
 			);
 		}
 
@@ -143,7 +144,7 @@ namespace ServiceStack.Common.Tests.Perf
 					doubleList.ForEach(x => { if (sb.Length > 0) sb.Append(","); sb.Append(x.ToString()); });
 					sb.ToString();
 				},
-				"SCU.ToString(doubleList)", () => StringConverterUtils.ToString(doubleList)
+				"SCU.ToString(doubleList)", () => StringSerializer.SerializeToString(doubleList)
 			);
 		}
 
@@ -164,7 +165,7 @@ namespace ServiceStack.Common.Tests.Perf
 					guidList.ForEach(x => { if (sb.Length > 0) sb.Append(","); sb.Append(x.ToString()); });
 					sb.ToString();
 				},
-				"SCU.ToString(guidList)", () => StringConverterUtils.ToString(guidList)
+				"SCU.ToString(guidList)", () => StringSerializer.SerializeToString(guidList)
 			);
 		}
 
@@ -173,16 +174,16 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			var stringHashSet = new HashSet<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j" };
 			CompareMultipleRuns(
-				"sb.Append(s.ToSafeString());", () => {
+				"sb.Append(s.ToCsvField());", () => {
 					var sb = new StringBuilder();
 					foreach (var s in stringHashSet)
 					{
 						if (sb.Length > 0) sb.Append(",");
-						sb.Append(s.ToSafeString());
+						sb.Append(s.ToCsvField());
 					}
 					sb.ToString();
 				},
-				"SCU.ToString(stringHashSet)", () => StringConverterUtils.ToString(stringHashSet)
+				"SCU.ToString(stringHashSet)", () => StringSerializer.SerializeToString(stringHashSet)
 			);
 		}
 
@@ -200,7 +201,7 @@ namespace ServiceStack.Common.Tests.Perf
 					}
 					sb.ToString();
 				},
-				"SCU.ToString(intHashSet)", () => StringConverterUtils.ToString(intHashSet)
+				"SCU.ToString(intHashSet)", () => StringSerializer.SerializeToString(intHashSet)
 			);
 		}
 
@@ -218,7 +219,7 @@ namespace ServiceStack.Common.Tests.Perf
 					}
 					sb.ToString();
 				},
-				"SCU.ToString(doubleHashSet)", () => StringConverterUtils.ToString(doubleHashSet)
+				"SCU.ToString(doubleHashSet)", () => StringSerializer.SerializeToString(doubleHashSet)
 			);
 		}
 
@@ -230,18 +231,18 @@ namespace ServiceStack.Common.Tests.Perf
           		{"F", "6"},{"G", "7"},{"H", "8"},{"I", "9"},{"j", "10"},
           	};
 			CompareMultipleRuns(
-				"sb.Append(kv.Key.ToSafeString()).Append(ParseStringMethods.KeyValueSeperator).", () => {
+				"sb.Append(kv.Key.ToCsvField()).Append(ParseStringMethods.KeyValueSeperator).", () => {
 					var sb = new StringBuilder();
 					foreach (var kv in map)
 					{
 						if (sb.Length > 0) sb.Append(",");
-						sb.Append(kv.Key.ToSafeString())
+						sb.Append(kv.Key.ToCsvField())
 							.Append(TextExtensions.KeyValueSeperator)
-							.Append(kv.Value.ToSafeString());
+							.Append(kv.Value.ToCsvField());
 					}
 					sb.ToString();
 				},
-				"SCU.ToString(map)", () => StringConverterUtils.ToString(map)
+				"SCU.ToString(map)", () => StringSerializer.SerializeToString(map)
 			);
 		}
 
@@ -258,13 +259,13 @@ namespace ServiceStack.Common.Tests.Perf
 					foreach (var kv in map)
 					{
 						if (sb.Length > 0) sb.Append(",");
-						sb.Append(kv.Key.ToSafeString())
+						sb.Append(kv.Key.ToCsvField())
 							.Append(TextExtensions.KeyValueSeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();
 				},
-				"SCU.ToString(map)", () => StringConverterUtils.ToString(map)
+				"SCU.ToString(map)", () => StringSerializer.SerializeToString(map)
 			);
 		}
 
@@ -281,13 +282,13 @@ namespace ServiceStack.Common.Tests.Perf
 					foreach (var kv in map)
 					{
 						if (sb.Length > 0) sb.Append(",");
-						sb.Append(kv.Key.ToSafeString())
+						sb.Append(kv.Key.ToCsvField())
 							.Append(TextExtensions.KeyValueSeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();
 				},
-				"SCU.ToString(map)", () => StringConverterUtils.ToString(map)
+				"SCU.ToString(map)", () => StringSerializer.SerializeToString(map)
 			);
 		}
 
@@ -298,7 +299,7 @@ namespace ServiceStack.Common.Tests.Perf
 
 			CompareMultipleRuns(
 				"Encoding.Default.GetString(byteArrayValue)", () => Encoding.Default.GetString(byteArrayValue),
-				"SCU.ToString(byteArrayValue)", () => StringConverterUtils.ToString(byteArrayValue)
+				"SCU.ToString(byteArrayValue)", () => StringSerializer.SerializeToString(byteArrayValue)
 			);
 		}
 

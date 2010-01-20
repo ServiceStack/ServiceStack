@@ -71,7 +71,7 @@ namespace ServiceStack.Common.Text
 
 		public static string ParseString(string value)
 		{
-			return value.FromSafeString();
+			return value.FromCsvField();
 		}
 
 		public static object ParseEnum(Type type, string value)
@@ -79,7 +79,7 @@ namespace ServiceStack.Common.Text
 			return Enum.Parse(type, value);
 		}
 
-		public static string EatElementValue(string value, ref int i)
+		public static string EatTypeValue(string value, ref int i)
 		{
 			var tokenStartPos = i;
 			var typeEndsToEat = 1;
@@ -91,6 +91,41 @@ namespace ServiceStack.Common.Text
 					typeEndsToEat--;
 			}
 			return value.Substring(tokenStartPos, i - tokenStartPos);
+		}
+
+
+		public static string EatKey(string value, ref int i)
+		{
+			return EatUntilCharFound(value, ref i, TextExtensions.KeyValueSeperator);
+		}
+
+		public static string EatValue(string value, ref int i)
+		{
+			return EatUntilCharFound(value, ref i, TextExtensions.ItemSeperator);
+		}
+
+		public static string EatUntilCharFound(string value, ref int i, char findChar)
+		{
+			var tokenStartPos = i;
+			var valueLength = value.Length;
+			if (value[tokenStartPos] != TextExtensions.QuoteChar)
+			{
+				i = value.IndexOf(findChar, tokenStartPos);
+				if (i == -1) i = valueLength;
+				return value.Substring(tokenStartPos, i - tokenStartPos);
+			}
+
+			while (++i < valueLength)
+			{
+				if (value[i] == TextExtensions.QuoteChar
+					&& (i + 1 >= valueLength || value[i + 1] == findChar))
+				{
+					i++;
+					return value.Substring(tokenStartPos, i - tokenStartPos);
+				}
+			}
+
+			throw new IndexOutOfRangeException("Could not find ending quote");
 		}
 
 	}

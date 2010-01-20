@@ -33,7 +33,7 @@ namespace ServiceStack.Common.Text
 			if (value == null) return null;
 			return value == string.Empty
 					? new string[0]
-					: TextExtensions.FromSafeStrings(value.Split(','));
+					: ParseStringListMethods.ParseStringList(value).ToArray();
 		}
 
 		public static byte[] ParseByteArray(string value)
@@ -78,7 +78,7 @@ namespace ServiceStack.Common.Text
 				var i = 0;
 				do
 				{
-					itemValues.Add(ParseStringMethods.EatElementValue(value, ref i));
+					itemValues.Add(ParseStringMethods.EatTypeValue(value, ref i));
 				} while (++i < value.Length);
 
 				var results = new T[itemValues.Count];
@@ -90,14 +90,15 @@ namespace ServiceStack.Common.Text
 			}
 			else
 			{
-				var values = value.Split(TextExtensions.ItemSeperator);
-				var valuesLength = values.Length;
-				var results = new T[valuesLength];
-				for (var i = 0; i < valuesLength; i++)
+				var to = new List<T>();
+				var valueLength = value.Length;
+				for (var i=0; i < valueLength; i++)
 				{
-					results[i] = (T)parseFn(values[i]);
+					var elementValue = ParseStringMethods.EatValue(value, ref i);
+					var listValue = ParseStringMethods.ParseString(elementValue);
+					to.Add((T)parseFn(listValue));
 				}
-				return results;
+				return to.ToArray();
 			}
 
 		}

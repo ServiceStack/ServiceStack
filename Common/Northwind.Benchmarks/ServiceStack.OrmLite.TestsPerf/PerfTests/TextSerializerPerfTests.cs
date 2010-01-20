@@ -18,7 +18,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 	{
 		public TextSerializerPerfTests()
 		{
-			this.MultipleIterations = new List<int> { 1000, 10000};			
+			this.MultipleIterations = new List<int> { 1000, 10000 };
 		}
 
 		public void WriteLog()
@@ -46,7 +46,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(customer), "DataContractSerializer.Instance.Parse(customer)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(customer), "JsonDataContractSerializer.Instance.Parse(customer)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(customer), "ToStringMethods.ToString(customer)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(customer), "ToStringMethods.ToString(customer)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(customer), "TextSerializer.SerializeToString(customer)");
 		}
 
@@ -61,7 +61,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(order), "DataContractSerializer.Instance.Parse(order)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(order), "JsonDataContractSerializer.Instance.Parse(order)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(order), "ToStringMethods.ToString(order)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(order), "ToStringMethods.ToString(order)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(order), "TextSerializer.SerializeToString(order)");
 		}
 
@@ -76,7 +76,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(supplier), "DataContractSerializer.Instance.Parse(supplier)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(supplier), "JsonDataContractSerializer.Instance.Parse(supplier)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(supplier), "ToStringMethods.ToString(supplier)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(supplier), "ToStringMethods.ToString(supplier)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(supplier), "TextSerializer.SerializeToString(supplier)");
 		}
 
@@ -92,7 +92,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
@@ -108,7 +108,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
@@ -124,7 +124,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
@@ -140,7 +140,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
@@ -156,7 +156,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 
@@ -172,7 +172,7 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
-			RunMultipleTimes(() => StringConverterUtils.ToString(dto), "StringConverterUtils.ToString(dto)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
 		}
 

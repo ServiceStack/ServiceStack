@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Text
 {
@@ -27,22 +28,24 @@ namespace ServiceStack.Common.Text
 				setterMap[propertyInfo.Name] = GetSetPropertyMethod(type, propertyInfo);
 			}
 
-			return value => StringToType(value, type, setterMap, map);
+			var ctorFn = ReflectionUtils.GetConstructorMethodToCache(type);
+			return value => StringToType(value, ctorFn, setterMap, map);
 		}
 
-		private static object StringToType(string value, Type type,
+		private static object StringToType(string value, Func<object> ctorFn,
 			IDictionary<string, Action<object, object>> setterMap, IDictionary<string, Func<string, object>> parseStringFnMap)
 		{
 			if (value[0] != TextExtensions.TypeStartChar)
 				throw new SerializationException(string.Format(
 					"Type definitions should start with a '{0}'", TextExtensions.TypeStartChar));
 
-			var instance = Activator.CreateInstance(type);
+			var instance = ctorFn();
 			string propertyName;
 
 			try
 			{
-				for (var i=1; i < value.Length; i++)
+				var valueLength = value.Length;
+				for (var i=1; i < valueLength; i++)
 				{
 					propertyName = EatPropertyName(value, ref i);
 					i++;
@@ -87,7 +90,9 @@ namespace ServiceStack.Common.Text
 		{
 			var tokenStartPos = i;
 			var valueChar = value[i];
-			if (i == value.Length
+			var valueLength = value.Length;
+
+			if (i == valueLength
 				|| valueChar == TextExtensions.PropertyItemSeperator
 				|| valueChar == TextExtensions.TypeEndChar)
 			{
@@ -97,7 +102,7 @@ namespace ServiceStack.Common.Text
 			if (valueChar == TextExtensions.TypeStartChar)
 			{
 				var typeEndsToEat = 1;
-				while (++i < value.Length && typeEndsToEat > 0)
+				while (++i < valueLength && typeEndsToEat > 0)
 				{
 					if (value[i] == TextExtensions.TypeStartChar)
 						typeEndsToEat++;
@@ -107,9 +112,10 @@ namespace ServiceStack.Common.Text
 				return value.Substring(tokenStartPos, i - tokenStartPos);
 			}
 
-			while (++i < value.Length
+			while (++i < valueLength
 				&& value[i] != TextExtensions.PropertyItemSeperator
 				&& value[i] != TextExtensions.TypeEndChar) { }
+
 			return value.Substring(tokenStartPos, i - tokenStartPos);
 		}
 

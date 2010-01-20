@@ -19,23 +19,15 @@ namespace ServiceStack.Common.Tests.Perf
 
 		protected StringBuilder SbLog = new StringBuilder();
 
-		public virtual void Log(string message)
-		{
-#if DEBUG
-			Console.WriteLine(message);
-#endif
-			SbLog.AppendLine(message);
-		}
-
 		public virtual void Log(string message, params object[] args)
 		{
 #if DEBUG
-			Console.WriteLine(message, args);
 #endif
+			Console.WriteLine(message, args);
+
 			SbLog.AppendFormat(message, args);
 			SbLog.AppendLine();
 		}
-
 
 		protected void CompareMultipleRuns(string run1Name, Action run1Action, string run2Name, Action run2Action)
 		{
