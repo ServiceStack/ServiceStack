@@ -87,16 +87,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
-    <Compile Include="Models\ModelWithFieldsOfNullableTypes.cs" />
-    <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
-    <Compile Include="Models\SampleOrderLine.cs" />
     <Compile Include="NorthwindPerfTests.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
-    <Compile Include="Models\ModelWithComplexTypes.cs" />
     <Compile Include="OrmLiteLinqTests.cs" />
     <Compile Include="OrmLiteNorthwindTests.cs" />
     <Compile Include="OrmLiteSaveTests.cs" />
-    <Compile Include="Models\TaskQueue.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -104,19 +99,12 @@
     </Compile>
     <Compile Include="SqlFormatTests.cs" />
     <Compile Include="OrmLiteTransactionTests.cs" />
-    <Compile Include="Models\ModelWithIdOnly.cs" />
     <Compile Include="OrmLiteBasicPersistenceProviderTests.cs" />
     <Compile Include="OrmLiteConnectionTests.cs" />
     <Compile Include="OrmLiteDeleteTests.cs" />
     <Compile Include="OrmLiteUpdateTests.cs" />
     <Compile Include="OrmLiteSelectTests.cs" />
     <Compile Include="OrmLiteCreateTableWithIndexesTests.cs" />
-    <Compile Include="Models\ModelWithCompositeIndexFields.cs" />
-    <Compile Include="Models\ModelWithIndexFields.cs" />
-    <Compile Include="Models\ModelWithFieldsOfDifferentAndNullableTypes.cs" />
-    <Compile Include="Models\ModelWithLongIdAndStringFields.cs" />
-    <Compile Include="Models\ModelWithOnlyStringFields.cs" />
-    <Compile Include="Models\ModelWithIdAndName.cs" />
     <Compile Include="OrmLiteCreateTableTests.cs" />
     <Compile Include="OrmLiteInsertTests.cs" />
     <Compile Include="OrmLiteTestBase.cs" />
@@ -125,6 +113,10 @@
     <Compile Include="UseCase\SimpleUseCase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
+      <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
+      <Name>ServiceStack.Common.Tests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>

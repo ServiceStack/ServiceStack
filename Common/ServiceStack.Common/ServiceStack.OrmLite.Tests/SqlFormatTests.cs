@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.OrmLite.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
 {
