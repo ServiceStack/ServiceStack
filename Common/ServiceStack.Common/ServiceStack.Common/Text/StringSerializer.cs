@@ -43,6 +43,7 @@ namespace ServiceStack.Common.Text
 		/// <returns></returns>
 		public static object DeserializeFromString(string value, Type type)
 		{
+			if (type == typeof(string)) return value;
 			var typeDefinition = TypeDefinition.GetTypeDefinition(type);
 			return typeDefinition.GetValue(value);
 		}
@@ -50,6 +51,9 @@ namespace ServiceStack.Common.Text
 		public static string SerializeToString(object value)
 		{
 			if (value == null) return null;
+			var strValue = value as string;
+			if (strValue != null) return strValue;
+
 			var toStringMethod = ToStringMethods.GetToStringMethod(value.GetType());
 			return toStringMethod(value);
 		}

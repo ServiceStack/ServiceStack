@@ -32,10 +32,10 @@ namespace ServiceStack.Common.Text
 			return value => StringToType(value, ctorFn, setterMap, map);
 		}
 
-		private static object StringToType(string value, Func<object> ctorFn,
+		private static object StringToType(string strType, Func<object> ctorFn,
 			IDictionary<string, Action<object, object>> setterMap, IDictionary<string, Func<string, object>> parseStringFnMap)
 		{
-			if (value[0] != TextExtensions.TypeStartChar)
+			if (strType[0] != TextExtensions.TypeStartChar)
 				throw new SerializationException(string.Format(
 					"Type definitions should start with a '{0}'", TextExtensions.TypeStartChar));
 
@@ -44,19 +44,19 @@ namespace ServiceStack.Common.Text
 
 			try
 			{
-				var valueLength = value.Length;
-				for (var i=1; i < valueLength; i++)
+				var strTypeLength = strType.Length;
+				for (var i=1; i < strTypeLength; i++)
 				{
-					propertyName = EatPropertyName(value, ref i);
+					propertyName = EatPropertyName(strType, ref i);
 					i++;
-					var propertyValueString = EatPropertyValue(value, ref i);
-					if (i < value.Length && value[i] == TextExtensions.ItemSeperator)
+					var propertyValueString = EatPropertyValue(strType, ref i);
+					if (i < strType.Length && strType[i] == TextExtensions.ItemSeperator)
 					{
 						var sbCollection = new StringBuilder(propertyValueString);
-						while (value[i] == TextExtensions.ItemSeperator)
+						while (strType[i] == TextExtensions.ItemSeperator)
 						{
-							sbCollection.Append(value[i++]);
-							sbCollection.Append(EatPropertyValue(value, ref i));
+							sbCollection.Append(strType[i++]);
+							sbCollection.Append(EatPropertyValue(strType, ref i));
 						}
 						propertyValueString = sbCollection.ToString();
 					}
@@ -70,7 +70,6 @@ namespace ServiceStack.Common.Text
 						setterFn(instance, propertyValue);
 					}
 				}
-
 			}
 			catch (Exception ex)
 			{
@@ -89,8 +88,8 @@ namespace ServiceStack.Common.Text
 		private static string EatPropertyValue(string value, ref int i)
 		{
 			var tokenStartPos = i;
-			var valueChar = value[i];
 			var valueLength = value.Length;
+			var valueChar = value[i];
 
 			if (i == valueLength
 				|| valueChar == TextExtensions.PropertyItemSeperator
@@ -99,22 +98,70 @@ namespace ServiceStack.Common.Text
 				return null;
 			}
 
-			if (valueChar == TextExtensions.TypeStartChar)
+			//Is List, i.e. [...]
+			var withinQuotes = false;
+			if (valueChar == TextExtensions.ListStartChar)
 			{
-				var typeEndsToEat = 1;
-				while (++i < valueLength && typeEndsToEat > 0)
+				var endsToEat = 1;
+				while (++i < valueLength && endsToEat > 0)
 				{
-					if (value[i] == TextExtensions.TypeStartChar)
-						typeEndsToEat++;
-					if (value[i] == TextExtensions.TypeEndChar)
-						typeEndsToEat--;
+					valueChar = value[i];
+
+					if (valueChar == TextExtensions.QuoteChar)
+						withinQuotes = !withinQuotes;
+
+					if (withinQuotes)
+						continue;
+
+					if (valueChar == TextExtensions.ListStartChar)
+						endsToEat++;
+
+					if (valueChar == TextExtensions.ListEndChar)
+						endsToEat--;
 				}
 				return value.Substring(tokenStartPos, i - tokenStartPos);
 			}
 
-			while (++i < valueLength
-				&& value[i] != TextExtensions.PropertyItemSeperator
-				&& value[i] != TextExtensions.TypeEndChar) { }
+			//Is Type/Map, i.e. {...}
+			if (valueChar == TextExtensions.TypeStartChar)
+			{
+				var endsToEat = 1;
+				while (++i < valueLength && endsToEat > 0)
+				{
+					valueChar = value[i];
+
+					if (valueChar == TextExtensions.QuoteChar)
+						withinQuotes = !withinQuotes;
+
+					if (withinQuotes)
+						continue;
+
+					if (valueChar == TextExtensions.TypeStartChar)
+						endsToEat++;
+
+					if (valueChar == TextExtensions.TypeEndChar)
+						endsToEat--;
+				}
+				return value.Substring(tokenStartPos, i - tokenStartPos);
+			}
+
+			//Is Value
+			if (valueChar == TextExtensions.QuoteChar) 
+				withinQuotes = true;
+
+			while (++i < valueLength)
+			{
+				valueChar = value[i];
+
+				if (valueChar == TextExtensions.QuoteChar)
+					withinQuotes = !withinQuotes;
+
+				if (valueChar == TextExtensions.PropertyItemSeperator
+					|| (!withinQuotes && valueChar == TextExtensions.TypeEndChar))
+				{
+					break;
+				}
+			}
 
 			return value.Substring(tokenStartPos, i - tokenStartPos);
 		}

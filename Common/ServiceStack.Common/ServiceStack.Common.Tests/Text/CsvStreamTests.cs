@@ -5,9 +5,8 @@ using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Text;
 
-namespace ServiceStack.Common.Tests
+namespace ServiceStack.Common.Tests.Text
 {
-
 	[TestFixture]
 	public class CsvStreamTests
 	{
@@ -66,5 +65,4 @@ namespace ServiceStack.Common.Tests
 		}
 
 	}
-
 }

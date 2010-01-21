@@ -1,9 +1,11 @@
 using System.Linq;
 using Northwind.Common.ServiceModel;
 using Platform.Text;
+using ProtoBuf;
 
 namespace Northwind.Common.ComplexModel
 {
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	public class CustomerOrderArrayDto
 	{

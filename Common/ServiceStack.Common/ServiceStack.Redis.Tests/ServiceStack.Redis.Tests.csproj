@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -65,13 +65,13 @@
     <Compile Include="RedisPersistenceProviderTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
+      <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
+      <Name>ServiceStack.Common.Tests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.OrmLite.Tests\ServiceStack.OrmLite.Tests.csproj">
-      <Project>{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}</Project>
-      <Name>ServiceStack.OrmLite.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Redis\ServiceStack.Redis.csproj">
       <Project>{AF99F19B-4C04-4F58-81EF-B092F1FCC540}</Project>

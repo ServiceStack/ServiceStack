@@ -3,7 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
-using ServiceStack.OrmLite.Tests.Models;
+using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.Redis.Tests
 {

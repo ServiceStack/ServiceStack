@@ -1,8 +1,10 @@
 using System;
 using Northwind.Common.ServiceModel;
+using ProtoBuf;
 
 namespace Northwind.Common.ComplexModel
 {
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	public class MultiDto
 	{
 		public Guid Id { get; set; }

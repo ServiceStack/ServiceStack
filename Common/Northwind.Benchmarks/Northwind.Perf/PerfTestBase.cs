@@ -21,17 +21,17 @@ namespace Northwind.Perf
 
 		public virtual void Log(string message)
 		{
-//#if DEBUG
+			//#if DEBUG
 			Console.WriteLine(message);
-//#endif
+			//#endif
 			SbLog.AppendLine(message);
 		}
 
 		public virtual void Log(string message, params object[] args)
 		{
-//#if DEBUG
+			//#if DEBUG
 			Console.WriteLine(message, args);
-//#endif
+			//#endif
 			SbLog.AppendFormat(message, args);
 			SbLog.AppendLine();
 		}
@@ -42,7 +42,7 @@ namespace Northwind.Perf
 			WarmUp(run1Action, run2Action);
 			foreach (var iteration in this.MultipleIterations)
 			{
-				Log("\n{0} times:", iteration);
+				Log("{0} times:", iteration);
 				CompareRuns(iteration, run1Name, run1Action, run2Name, run2Action);
 			}
 		}
@@ -65,7 +65,7 @@ namespace Northwind.Perf
 			var runDiffAvg = run1IsSlower ? run1 / run2 : run2 / run1;
 
 			Log("{0} was {1}ms or {2} times slower than {3}",
-			    slowerRun, runDiffTime, Math.Round(runDiffAvg, 2), fasterRun);
+				slowerRun, runDiffTime, Math.Round(runDiffAvg, 2), fasterRun);
 		}
 
 		protected void WarmUp(params Action[] actions)
@@ -77,14 +77,21 @@ namespace Northwind.Perf
 			}
 		}
 
-		protected void RunMultipleTimes(Action action, string actionName)
+		protected decimal RunMultipleTimes(Action action, string actionName)
 		{
+			Log("\n");
 			WarmUp(action);
+
+			var i = 0;
+			var total = 0M;
 			foreach (var iteration in this.MultipleIterations)
 			{
-				Log("\n{0} times:", iteration);
-				RunAction(action, iteration, actionName ?? "Action");
+				i += iteration;
+				Log("{0} times:", iteration);
+				total += RunAction(action, iteration, actionName ?? "Action");
 			}
+
+			return total / i;
 		}
 
 		protected decimal RunAction(Action action, int iterations)

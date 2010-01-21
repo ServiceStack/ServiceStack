@@ -33,6 +33,14 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Jayrock, Version=0.9.8316.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Jayrock.dll</HintPath>
+    </Reference>
+    <Reference Include="Jayrock.Json, Version=0.9.8316.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Jayrock.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Mono.Data.Sqlite.dll</HintPath>
@@ -44,6 +52,10 @@
     <Reference Include="Platform, Version=1.0.0.341, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Platform.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=1.0.0.278, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -93,6 +105,7 @@
     <Compile Include="Scenarios\Text\NorthwindCustomerToStringScenario.cs" />
     <Compile Include="Scenarios\Text\NorthwindSupplierToStringScenario.cs" />
     <Compile Include="Scenarios\Text\NorthwindOrderToStringScenario.cs" />
+    <Compile Include="Tests\SerializationTests.cs" />
     <Compile Include="Tests\TextTestBase.cs" />
     <Compile Include="Tests\TypeToStringTests.cs" />
   </ItemGroup>

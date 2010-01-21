@@ -2,9 +2,11 @@ using System;
 using System.Runtime.Serialization;
 using Northwind.Common.ServiceModel;
 using Platform.Text;
+using ProtoBuf;
 
 namespace Northwind.Common.ComplexModel
 {
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class ArrayDtoWithOrders

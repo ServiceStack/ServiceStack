@@ -70,10 +70,10 @@ namespace ServiceStack.Common.Text
 				}
 				if (type == typeof(string[]))
 				{
-					return x => StringArrayToString((string[])x);
+					return x => ToStringListMethods.StringArrayToString((string[])x);
 				}
 
-				return GetArrayToStringMethod(type.GetElementType());
+				return ToStringListMethods.GetArrayToStringMethod(type.GetElementType());
 			}
 
 			if (type.IsGenericType())
@@ -143,49 +143,6 @@ namespace ServiceStack.Common.Text
 			return dateTimeString;
 		}
 
-		public static string StringArrayToString(string[] arrayValue)
-		{
-			var sb = new StringBuilder();
-			var arrayValueLength = arrayValue.Length;
-			for (var i=0; i < arrayValueLength; i++)
-			{
-				if (sb.Length > 0) sb.Append(TextExtensions.ItemSeperator);
-				sb.Append(arrayValue[i].ToCsvField());
-			}
-			return sb.ToString();
-		}
-
-		public static Func<object, string> GetArrayToStringMethod(Type elementType)
-		{
-			var mi = typeof(ToStringMethods).GetMethod("ArrayToString",
-				BindingFlags.Static | BindingFlags.Public);
-
-			var genericMi = mi.MakeGenericMethod(new[] { elementType });
-			var genericDelegate = (CollectionToStringDelegate)Delegate.CreateDelegate(typeof(CollectionToStringDelegate), genericMi);
-
-			var toStringFn = GetToStringMethod(elementType);
-			return value => genericDelegate(value, toStringFn);
-		}
-
-		public static string ArrayToString<T>(object oArrayValue, Func<object, string> toStringFn)
-		{
-			var arrayValue = (T[])oArrayValue;
-			var sb = new StringBuilder();
-			var arrayValueLength = arrayValue.Length;
-			for (var i=0; i < arrayValueLength; i++)
-			{
-				var item = arrayValue[i];
-
-				var itemString = toStringFn(item);
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(itemString);
-			}
-			return sb.ToString();
-		}
-
 		public static string StringToString(string value)
 		{
 			return value.ToCsvField();
@@ -251,6 +208,9 @@ namespace ServiceStack.Common.Text
 					.Append(TextExtensions.KeyValueSeperator)
 					.Append(valueString);
 			}
+
+			sb.Insert(0, TextExtensions.MapStartChar);
+			sb.Append(TextExtensions.MapEndChar);
 			return sb.ToString();
 		}
 

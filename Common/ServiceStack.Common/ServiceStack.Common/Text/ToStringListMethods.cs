@@ -101,7 +101,56 @@ namespace ServiceStack.Common.Text
 				}
 				sb.Append(itemString);
 			}
+			sb.Insert(0, TextExtensions.ListStartChar);
+			sb.Append(TextExtensions.ListEndChar);
 
+			return sb.ToString();
+		}
+
+		public static string StringArrayToString(string[] arrayValue)
+		{
+			var sb = new StringBuilder();
+			var arrayValueLength = arrayValue.Length;
+			for (var i=0; i < arrayValueLength; i++)
+			{
+				if (sb.Length > 0) sb.Append(TextExtensions.ItemSeperator);
+				sb.Append(arrayValue[i].ToCsvField());
+			}
+			sb.Insert(0, TextExtensions.ListStartChar);
+			sb.Append(TextExtensions.ListEndChar);
+			return sb.ToString();
+		}
+
+		public static Func<object, string> GetArrayToStringMethod(Type elementType)
+		{
+			var mi = typeof(ToStringListMethods).GetMethod("ArrayToString",
+				BindingFlags.Static | BindingFlags.Public);
+
+			var genericMi = mi.MakeGenericMethod(new[] { elementType });
+			var genericDelegate = (CollectionToStringDelegate)Delegate.CreateDelegate(typeof(CollectionToStringDelegate), genericMi);
+
+			var toStringFn = ToStringMethods.GetToStringMethod(elementType);
+			return value => genericDelegate(value, toStringFn);
+		}
+
+		public static string ArrayToString<T>(object oArrayValue, Func<object, string> toStringFn)
+		{
+			var arrayValue = (T[])oArrayValue;
+			var sb = new StringBuilder();
+			var arrayValueLength = arrayValue.Length;
+			for (var i=0; i < arrayValueLength; i++)
+			{
+				var item = arrayValue[i];
+
+				var itemString = toStringFn(item);
+				if (sb.Length > 0)
+				{
+					sb.Append(TextExtensions.ItemSeperator);
+				}
+				sb.Append(itemString);
+			}
+			sb.Insert(0, TextExtensions.ListStartChar);
+			sb.Append(TextExtensions.ListEndChar);
 			return sb.ToString();
 		}
 
@@ -117,6 +166,8 @@ namespace ServiceStack.Common.Text
 				}
 				sb.Append(ToStringMethods.BuiltinToString(list[i]));
 			}
+			sb.Insert(0, TextExtensions.ListStartChar);
+			sb.Append(TextExtensions.ListEndChar);
 			return sb.ToString();
 		}
 
@@ -133,6 +184,8 @@ namespace ServiceStack.Common.Text
 				}
 				sb.Append(list[i]);
 			}
+			sb.Insert(0, TextExtensions.ListStartChar);
+			sb.Append(TextExtensions.ListEndChar);
 			return sb.ToString();
 		}
 
@@ -150,6 +203,8 @@ namespace ServiceStack.Common.Text
 				var value = toStringFn(list[i]);
 				sb.Append(value);
 			}
+			sb.Insert(0, TextExtensions.ListStartChar);
+			sb.Append(TextExtensions.ListEndChar);
 			return sb.ToString();
 		}
 	}

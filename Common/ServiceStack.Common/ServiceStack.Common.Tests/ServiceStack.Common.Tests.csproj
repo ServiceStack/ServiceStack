@@ -64,18 +64,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CsvStreamTests.cs" />
+    <Compile Include="Text\CsvStreamTests.cs" />
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
     <Compile Include="Expressions\ExpressionTests.cs" />
+    <Compile Include="Models\ModelWithComplexTypes.cs" />
+    <Compile Include="Models\ModelWithCompositeIndexFields.cs" />
+    <Compile Include="Models\ModelWithFieldsOfDifferentAndNullableTypes.cs" />
+    <Compile Include="Models\ModelWithFieldsOfDifferentTypes.cs" />
+    <Compile Include="Models\ModelWithFieldsOfNullableTypes.cs" />
+    <Compile Include="Models\ModelWithIdAndName.cs" />
+    <Compile Include="Models\ModelWithIdOnly.cs" />
+    <Compile Include="Models\ModelWithIndexFields.cs" />
+    <Compile Include="Models\ModelWithLongIdAndStringFields.cs" />
+    <Compile Include="Models\ModelWithOnlyStringFields.cs" />
+    <Compile Include="Models\SampleOrderLine.cs" />
+    <Compile Include="Models\TaskQueue.cs" />
     <Compile Include="Perf\AdhocFastPerfTests.cs" />
     <Compile Include="Perf\ToStringPerf.cs" />
     <Compile Include="Perf\PerfTestBase.cs" />
     <Compile Include="Perf\StringParsePerf.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="StringExtensionTests.cs" />
-    <Compile Include="StringConverterUtilsTests.cs" />
+    <Compile Include="Text\StringConverterUtilsTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Text\StringSerializerTests.cs" />
     <Compile Include="Support\InvokeSimpleCommandsTests.cs" />
     <Compile Include="Support\ModelWithFieldsOfDifferentTypes.cs" />
     <Compile Include="Support\ModelWithOnlyStringFields.cs" />
@@ -85,10 +98,6 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.OrmLite.Tests\ServiceStack.OrmLite.Tests.csproj">
-      <Project>{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}</Project>
-      <Name>ServiceStack.OrmLite.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>

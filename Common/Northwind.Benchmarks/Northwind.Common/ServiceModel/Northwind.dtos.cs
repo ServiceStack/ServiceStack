@@ -2,12 +2,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using Platform.Text;
+using ProtoBuf;
 using ServiceStack.DataAnnotations;
 using ServiceStack.DesignPatterns.Model;
 
 namespace Northwind.Common.ServiceModel
 {
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class EmployeeDto
@@ -86,6 +88,7 @@ namespace Northwind.Common.ServiceModel
 		public string PhotoPath { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class CategoryDto
@@ -108,6 +111,7 @@ namespace Northwind.Common.ServiceModel
 		public byte[] Picture { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class CustomerDto
@@ -181,6 +185,7 @@ namespace Northwind.Common.ServiceModel
 		}
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class ShipperDto
@@ -199,6 +204,7 @@ namespace Northwind.Common.ServiceModel
 		public string Phone { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class SupplierDto
@@ -272,6 +278,7 @@ namespace Northwind.Common.ServiceModel
 		}
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class OrderDto
@@ -362,6 +369,7 @@ namespace Northwind.Common.ServiceModel
 		}
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class ProductDto
@@ -408,6 +416,7 @@ namespace Northwind.Common.ServiceModel
 		public bool Discontinued { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class OrderDetailDto
@@ -449,6 +458,7 @@ namespace Northwind.Common.ServiceModel
 		}
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class CustomerCustomerDemoDto
@@ -463,6 +473,7 @@ namespace Northwind.Common.ServiceModel
 		public string CustomerTypeId { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class CustomerDemographicDto
@@ -477,6 +488,7 @@ namespace Northwind.Common.ServiceModel
 		public string CustomerDesc { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class RegionDto
@@ -491,6 +503,7 @@ namespace Northwind.Common.ServiceModel
 		public string RegionDescription { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class TerritoryDto
@@ -509,6 +522,7 @@ namespace Northwind.Common.ServiceModel
 		public int RegionId { get; set; }
 	}
 
+	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
 	public class EmployeeTerritoryDto

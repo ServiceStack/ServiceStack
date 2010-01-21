@@ -45,6 +45,9 @@ namespace ServiceStack.Common.Text
 		 */
 		public static Dictionary<string, string> ParseStringDictionary(string value)
 		{
+			if (string.IsNullOrEmpty(value)) return new Dictionary<string, string>();
+			value = value.Substring(1, value.Length - 2);
+
 			var result = new Dictionary<string, string>();
 
 			var valueLength = value.Length;
@@ -66,6 +69,9 @@ namespace ServiceStack.Common.Text
 		public static IDictionary<TKey, TValue> ParseDictionary<TKey, TValue>(string value, Type createMapType,
 			Func<string, object> parseKeyFn, Func<string, object> parseValueFn)
 		{
+			if (string.IsNullOrEmpty(value)) return new Dictionary<TKey, TValue>();
+			value = value.Substring(1, value.Length - 2);
+
 			var to = (createMapType == null)
 				? new Dictionary<TKey, TValue>()
 				: (IDictionary<TKey, TValue>)Activator.CreateInstance(createMapType);
