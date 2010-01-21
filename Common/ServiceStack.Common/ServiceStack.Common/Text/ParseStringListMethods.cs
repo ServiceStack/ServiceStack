@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Text
 {
@@ -34,13 +35,20 @@ namespace ServiceStack.Common.Text
 			return null;
 		}
 
+		private static string StripList(string value)
+		{
+			if (string.IsNullOrEmpty(value)) 
+				return null;
+
+			return value[0] == TextExtensions.ListStartChar 
+				? value.Substring(1, value.Length - 2) 
+				: value;
+		}
+
 		public static List<string> ParseStringList(string value)
 		{
-			if (string.IsNullOrEmpty(value)) return new List<string>();
-			value = value.Substring(1, value.Length - 2);
-
-			if (value == string.Empty)
-				return new List<string>();
+			if ((value = StripList(value)) == null) return null;
+			if (value == string.Empty) return new List<string>();
 
 			var to = new List<string>();
 			var valueLength = value.Length;
@@ -56,22 +64,20 @@ namespace ServiceStack.Common.Text
 
 		public static List<int> ParseIntList(string value)
 		{
-			if (string.IsNullOrEmpty(value)) return new List<int>();
-			value = value.Substring(1, value.Length - 2);
+			if ((value = StripList(value)) == null) return null;
+			if (value == string.Empty) return new List<int>();
 
-			return value == string.Empty
-				? new List<int>()
-				: value.Split(TextExtensions.ItemSeperator).ConvertAll(x => int.Parse(x));
+			return value.Split(TextExtensions.ItemSeperator).ConvertAll(x => int.Parse(x));
 		}
 
 		public static IList<T> ParseList<T>(string value, Type createListType, Func<string, object> parseFn)
 		{
-			if (string.IsNullOrEmpty(value)) return new List<T>();
-			value = value.Substring(1, value.Length - 2);
+			if ((value = StripList(value)) == null) return null;
+			if (value == string.Empty) return new List<T>();
 
 			var to = (createListType == null)
 				? new List<T>()
-				: (IList<T>)Activator.CreateInstance(createListType);
+				: (IList<T>)ReflectionUtils.CreateInstance(createListType);
 
 			if (!string.IsNullOrEmpty(value))
 			{

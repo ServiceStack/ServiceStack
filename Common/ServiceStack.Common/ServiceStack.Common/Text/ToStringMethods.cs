@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Xml;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
@@ -127,6 +128,8 @@ namespace ServiceStack.Common.Text
 		/// <returns></returns>
 		public static string DateTimeToString(DateTime dateTime)
 		{
+			return DateTimeSerializer.ToShortestXsdDateTimeString(dateTime);
+
 			string dateTimeString;
 			lock (dateTimeValues)
 			{

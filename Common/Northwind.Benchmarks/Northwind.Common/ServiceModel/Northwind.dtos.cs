@@ -529,7 +529,6 @@ namespace Northwind.Common.ServiceModel
 		: IHasStringId
 	{
 		[TextField]
-		[DataMember]
 		public string Id { get { return this.EmployeeId + "/" + this.TerritoryId; } }
 
 		[TextField]

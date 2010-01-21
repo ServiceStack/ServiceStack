@@ -69,6 +69,7 @@
     <Compile Include="Support\LogicFacadeBase.cs" />
     <Compile Include="Support\CommandProcessor.cs" />
     <Compile Include="Support\AssemblyTypeDefinition.cs" />
+    <Compile Include="Text\DateTimeSerializer.cs" />
     <Compile Include="Text\ParseStringTypeMethod.cs" />
     <Compile Include="Text\ParseStringCollectionMethods.cs" />
     <Compile Include="Text\ParseStringDictionaryMethods.cs" />

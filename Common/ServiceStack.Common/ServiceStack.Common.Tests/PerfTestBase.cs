@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using ServiceStack.Common.Utils;
 
-namespace ServiceStack.Common.Tests.Perf
+namespace ServiceStack.Common.Tests
 {
 	public class PerfTestBase
+		: TestBase
 	{
 		protected int DefaultIterations { get; set; }
 		protected List<int> MultipleIterations { get; set; }
@@ -19,10 +19,8 @@ namespace ServiceStack.Common.Tests.Perf
 
 		protected StringBuilder SbLog = new StringBuilder();
 
-		public virtual void Log(string message, params object[] args)
+		public override void Log(string message, params object[] args)
 		{
-#if DEBUG
-#endif
 			Console.WriteLine(message, args);
 
 			SbLog.AppendFormat(message, args);
@@ -57,7 +55,7 @@ namespace ServiceStack.Common.Tests.Perf
 			var runDiffAvg = run1IsSlower ? run1.Ticks / (double)run2.Ticks : run2.Ticks / (double)run1.Ticks;
 
 			Log("{0} was {1}ms or {2} times slower than {3}",
-				slowerRun, runDiffTime, Math.Round(runDiffAvg, 2), fasterRun);
+			    slowerRun, runDiffTime, Math.Round(runDiffAvg, 2), fasterRun);
 		}
 
 		protected void WarmUp(params Action[] actions)

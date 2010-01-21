@@ -23,7 +23,8 @@ namespace ServiceStack.Common.Extensions
 		//public const string ListEndChar = "";
 
 		public const char PropertyNameSeperator = ':';
-		public const char PropertyItemSeperator = '\t';
+		//public const char PropertyItemSeperator = '\t';
+		public const char PropertyItemSeperator = '|';
 		public const char QuoteChar = '"';
 		public const string QuoteString = "\"";
 		public const string DoubleQuoteString = "\"\"";

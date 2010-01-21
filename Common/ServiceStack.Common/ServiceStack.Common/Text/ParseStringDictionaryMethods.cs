@@ -37,16 +37,20 @@ namespace ServiceStack.Common.Text
 			return value => ParseDictionaryType(value, createMapType, dictionaryArgs, keyTypeParseMethod, valueTypeParseMethod);
 		}
 
-		/*
-			var stringDictionary = new Dictionary<string, string> {
-				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
-			};
-			const string mapValues = "One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\",Four:four%";
-		 */
+		private static string StripMap(string value)
+		{
+			if (string.IsNullOrEmpty(value))
+				return null;
+
+			return value[0] == TextExtensions.MapStartChar
+				? value.Substring(1, value.Length - 2)
+				: value;
+		}
+
 		public static Dictionary<string, string> ParseStringDictionary(string value)
 		{
-			if (string.IsNullOrEmpty(value)) return new Dictionary<string, string>();
-			value = value.Substring(1, value.Length - 2);
+			if ((value = StripMap(value)) == null) return null;
+			if (value == string.Empty) return new Dictionary<string, string>();
 
 			var result = new Dictionary<string, string>();
 
@@ -69,8 +73,8 @@ namespace ServiceStack.Common.Text
 		public static IDictionary<TKey, TValue> ParseDictionary<TKey, TValue>(string value, Type createMapType,
 			Func<string, object> parseKeyFn, Func<string, object> parseValueFn)
 		{
-			if (string.IsNullOrEmpty(value)) return new Dictionary<TKey, TValue>();
-			value = value.Substring(1, value.Length - 2);
+			if ((value = StripMap(value)) == null) return null;
+			if (value == string.Empty) return (IDictionary<TKey, TValue>)Activator.CreateInstance(createMapType);
 
 			var to = (createMapType == null)
 				? new Dictionary<TKey, TValue>()

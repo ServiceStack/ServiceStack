@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.OrmLite
@@ -151,7 +152,7 @@ namespace ServiceStack.OrmLite
 				return value;
 			}
 
-			var convertedValue = StringConverterUtils.Parse(value.ToString(), type);
+			var convertedValue = StringSerializer.DeserializeFromString(value.ToString(), type);
 			return convertedValue;
 		}
 
@@ -161,9 +162,9 @@ namespace ServiceStack.OrmLite
 
 			if (!fieldType.UnderlyingSystemType.IsValueType && fieldType != typeof(string))
 			{
-				if (StringConverterUtils.CanCreateFromString(fieldType))
+				if (StringSerializer.CanCreateFromString(fieldType))
 				{
-					return "'" + EscapeParam(StringConverterUtils.ToString(value)) + "'";
+					return "'" + EscapeParam(StringSerializer.SerializeToString(value)) + "'";
 				}
 
 				throw new NotSupportedException(
@@ -184,7 +185,7 @@ namespace ServiceStack.OrmLite
 
 		protected virtual string GetUndefinedColumnDefintion(Type fieldType)
 		{
-			if (StringConverterUtils.CanCreateFromString(fieldType))
+			if (StringSerializer.CanCreateFromString(fieldType))
 			{
 				return this.StringColumnDefinition;
 			}

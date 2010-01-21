@@ -1,4 +1,5 @@
 using System;
+using System.Xml;
 
 namespace ServiceStack.Common.Text
 {
@@ -30,7 +31,7 @@ namespace ServiceStack.Common.Text
 			if (type == typeof(Guid))
 				return value => new Guid(value);
 			if (type == typeof(DateTime))
-				return value => DateTime.Parse(value);
+				return value => DateTimeSerializer.ParseShortestXsdDateTime(value);
 			if (type == typeof(TimeSpan))
 				return value => TimeSpan.Parse(value);
 

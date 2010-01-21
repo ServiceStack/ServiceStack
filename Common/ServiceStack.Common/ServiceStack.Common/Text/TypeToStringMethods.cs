@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -51,12 +48,15 @@ namespace ServiceStack.Common.Text
 			var propertyNamesLength = propertyNames.Length;
 			for (var i = 0; i < propertyNamesLength; i++)
 			{
-				if (sb.Length > 0) sb.Append(TextExtensions.PropertyItemSeperator);
-
 				var propertyName = propertyNames[i];
 
 				var propertyValue = getterFns[i](value);
+				if (propertyValue == null) continue;
+
+				if (sb.Length > 0) sb.Append(TextExtensions.PropertyItemSeperator);
+
 				var propertyValueString = toStringFns[i](propertyValue);
+
 				sb.Append(propertyName)
 					.Append(TextExtensions.PropertyNameSeperator)
 					.Append(propertyValueString);

@@ -64,6 +64,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Perf\DateTimePerf.cs" />
+    <Compile Include="TestBase.cs" />
     <Compile Include="Text\CsvStreamTests.cs" />
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
     <Compile Include="Expressions\ExpressionTests.cs" />
@@ -81,13 +83,15 @@
     <Compile Include="Models\TaskQueue.cs" />
     <Compile Include="Perf\AdhocFastPerfTests.cs" />
     <Compile Include="Perf\ToStringPerf.cs" />
-    <Compile Include="Perf\PerfTestBase.cs" />
+    <Compile Include="PerfTestBase.cs" />
     <Compile Include="Perf\StringParsePerf.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="StringExtensionTests.cs" />
+    <Compile Include="Text\DateTimeSerializerTests.cs" />
     <Compile Include="Text\StringConverterUtilsTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Text\StringSerializerNorthwindDatabaseTests.cs" />
     <Compile Include="Text\StringSerializerTests.cs" />
     <Compile Include="Support\InvokeSimpleCommandsTests.cs" />
     <Compile Include="Support\ModelWithFieldsOfDifferentTypes.cs" />

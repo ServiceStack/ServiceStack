@@ -57,18 +57,24 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_DateTime()
 		{
+			const string dateTimeStr = "2009-12-20T19:24:37.4379982Z";
 			CompareMultipleRuns(
-				"DateTime.Parse", () => DateTime.Parse("20/12/2009 19:24:37"),
-				"SCU.Parse<DateTime>", () => StringSerializer.DeserializeFromString<DateTime>("20/12/2009 19:24:37")
+				"DateTime.Parse", () => DateTime.Parse(dateTimeStr),
+				"SCU.Parse<DateTime>", () => StringSerializer.DeserializeFromString<DateTime>(dateTimeStr)
 			);
+		}
+
+		private static string[] SplitList(string listStr)
+		{
+			return listStr.Substring(1, listStr.Length - 2).Split(',');
 		}
 
 		[Test]
 		public void Compare_IntList()
 		{
-			const string intValues = "0,1,2,3,4,5,6,7,8,9";
+			const string intValues = "[0,1,2,3,4,5,6,7,8,9]";
 			CompareMultipleRuns(
-				"intValues.Split(',').ConvertAll", () => intValues.Split(',').ConvertAll(x => int.Parse(x)),
+				"intValues.Split(',').ConvertAll", () => SplitList(intValues).ConvertAll(x => int.Parse(x)),
 				"SCU.Parse<List<int>>", () => StringSerializer.DeserializeFromString<List<int>>(intValues)
 			);
 		}
@@ -76,9 +82,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_LongList()
 		{
-			const string longValues = "0,1,2,3,4,5,6,7,8,9";
+			const string longValues = "[0,1,2,3,4,5,6,7,8,9]";
 			CompareMultipleRuns(
-				"intValues.Split(',').ConvertAll", () => longValues.Split(',').ConvertAll(x => long.Parse(x)),
+				"intValues.Split(',').ConvertAll", () => SplitList(longValues).ConvertAll(x => long.Parse(x)),
 				"SCU.Parse<List<long>>", () => StringSerializer.DeserializeFromString<List<long>>(longValues)
 			);
 		}
@@ -86,7 +92,7 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_StringArray()
 		{
-			const string stringValues = "a,b,c,d,e,f,g,h,i,j";
+			const string stringValues = "[a,b,c,d,e,f,g,h,i,j]";
 			CompareMultipleRuns(
 				"TextExtensions.FromCsvFields", () => TextExtensions.FromCsvFields(stringValues.Split(',')),
 				"SCU.Parse<string[]>", () => StringSerializer.DeserializeFromString<string[]>(stringValues)
@@ -96,9 +102,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_DoubleArray()
 		{
-			const string stringValues = "1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1";
+			const string stringValues = "[1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => double.Parse(x))", () => stringValues.Split(',').ConvertAll(x => double.Parse(x)),
+				".Split(',').ConvertAll(x => double.Parse(x))", () => SplitList(stringValues).ConvertAll(x => double.Parse(x)),
 				"SCU.Parse<double[]>", () => StringSerializer.DeserializeFromString<double[]>(stringValues)
 			);
 		}
@@ -106,9 +112,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_GuidArray()
 		{
-			const string stringValues = "8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50";
+			const string stringValues = "[8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => new Guid(x))", () => stringValues.Split(',').ConvertAll(x => new Guid(x)),
+				".Split(',').ConvertAll(x => new Guid(x))", () => SplitList(stringValues).ConvertAll(x => new Guid(x)),
 				"SCU.Parse<Guid[]>", () => StringSerializer.DeserializeFromString<Guid[]>(stringValues)
 			);
 		}
@@ -116,9 +122,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_StringList()
 		{
-			const string stringValues = "a,b,c,d,e,f,g,h,i,j";
+			const string stringValues = "[a,b,c,d,e,f,g,h,i,j]";
 			CompareMultipleRuns(
-				"stringValues.Split(',').FromCsvFields()", () => stringValues.Split(',').FromCsvFields(),
+				"stringValues.Split(',').FromCsvFields()", () => SplitList(stringValues).FromCsvFields(),
 				"SCU.Parse<List<string>>", () => StringSerializer.DeserializeFromString<List<string>>(stringValues)
 			);
 		}
@@ -126,9 +132,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_DoubleList()
 		{
-			const string stringValues = "1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1";
+			const string stringValues = "[1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => double.Parse(x))", () => stringValues.Split(',').ConvertAll(x => double.Parse(x)),
+				".Split(',').ConvertAll(x => double.Parse(x))", () => SplitList(stringValues).ConvertAll(x => double.Parse(x)),
 				"SCU.Parse<List<double>>", () => StringSerializer.DeserializeFromString<List<double>>(stringValues)
 			);
 		}
@@ -136,9 +142,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_GuidList()
 		{
-			const string stringValues = "8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50";
+			const string stringValues = "[8F403A5E-CDFC-4C6F-B0EB-C055C1C8BA60,5673BAC7-BAC5-4B3F-9B69-4180E6227508,B0CA730F-14C9-4D00-AC7F-07E7DE8D566E,4E26AF94-6B13-4F89-B192-36C6ABE73DAE,08491B16-2270-4DF9-8AEE-A8861A791C50]";
 			CompareMultipleRuns(
-				".Split(',').ConvertAll(x => new Guid(x))", () => stringValues.Split(',').ConvertAll(x => new Guid(x)),
+				".Split(',').ConvertAll(x => new Guid(x))", () => SplitList(stringValues).ConvertAll(x => new Guid(x)),
 				"SCU.Parse<List<Guid>>", () => StringSerializer.DeserializeFromString<List<Guid>>(stringValues)
 			);
 		}
@@ -146,9 +152,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_StringHashSet()
 		{
-			const string stringValues = "a,b,c,d,e,f,g,h,i,j";
+			const string stringValues = "[a,b,c,d,e,f,g,h,i,j]";
 			CompareMultipleRuns(
-				"new HashSet<string>(.Split(',').FromCsvFields())", () => new HashSet<string>(stringValues.Split(',').FromCsvFields()),
+				"new HashSet<string>(.Split(',').FromCsvFields())", () => new HashSet<string>(SplitList(stringValues).FromCsvFields()),
 				"SCU.Parse<HashSet<string>>", () => StringSerializer.DeserializeFromString<HashSet<string>>(stringValues)
 			);
 		}
@@ -156,9 +162,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_IntHashSet()
 		{
-			const string stringValues = "0,1,2,3,4,5,6,7,8,9";
+			const string stringValues = "[0,1,2,3,4,5,6,7,8,9]";
 			CompareMultipleRuns(
-				"new HashSet<int>(.Split(',').ConvertAll(x => int.Parse(x))", () => new HashSet<int>(stringValues.Split(',').ConvertAll(x => int.Parse(x))),
+				"new HashSet<int>(.Split(',').ConvertAll(x => int.Parse(x))", () => new HashSet<int>(SplitList(stringValues).ConvertAll(x => int.Parse(x))),
 				"SCU.Parse<HashSet<int>>", () => StringSerializer.DeserializeFromString<HashSet<int>>(stringValues)
 			);
 		}
@@ -166,9 +172,9 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_DoubleHashSet()
 		{
-			const string stringValues = "1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1";
+			const string stringValues = "[1.1,2.2,3.3,4.4,5.5,6.6,7.7,8.8,9.9,0.1]";
 			CompareMultipleRuns(
-				"new HashSet<double>(.ConvertAll(x => double.Parse(x)))", () => new HashSet<double>(stringValues.Split(',').ConvertAll(x => double.Parse(x))),
+				"new HashSet<double>(.ConvertAll(x => double.Parse(x)))", () => new HashSet<double>(SplitList(stringValues).ConvertAll(x => double.Parse(x))),
 				"SCU.Parse<HashSet<double>>", () => StringSerializer.DeserializeFromString<HashSet<double>>(stringValues)
 			);
 		}
@@ -176,10 +182,10 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_StringStringMap()
 		{
-			const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
+			const string mapValues = "{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0}";
 			var map = new Dictionary<string, string>();
 			CompareMultipleRuns(
-				"mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = y[1].FromCsvField()),
+				"mapValues.Split(',').ConvertAll", () => SplitList(mapValues).ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = y[1].FromCsvField()),
 				"SCU.Parse<Dictionary<string, string>>", () => StringSerializer.DeserializeFromString<Dictionary<string, string>>(mapValues)
 			);
 		}
@@ -187,10 +193,10 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_StringIntMap()
 		{
-			const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
+			const string mapValues = "{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0}";
 			var map = new Dictionary<string, int>();
 			CompareMultipleRuns(
-				"mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
+				"mapValues.Split(',').ConvertAll", () => SplitList(mapValues).ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
 				"SCU.Parse<Dictionary<string, int>>", () => StringSerializer.DeserializeFromString<Dictionary<string, int>>(mapValues)
 			);
 		}
@@ -198,10 +204,10 @@ namespace ServiceStack.Common.Tests.Perf
 		[Test]
 		public void Compare_StringInt_SortedDictionary()
 		{
-			const string mapValues = "A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0";
+			const string mapValues = "{A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:0}";
 			var map = new SortedDictionary<string, int>();
 			CompareMultipleRuns(
-				"mapValues.Split(',').ConvertAll", () => mapValues.Split(',').ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
+				"mapValues.Split(',').ConvertAll", () => SplitList(mapValues).ConvertAll(x => x.Split(':')).ForEach(y => map[y[0].FromCsvField()] = int.Parse(y[1])),
 				"SCU.Parse<Dictionary<string, int>>", () => StringSerializer.DeserializeFromString<SortedDictionary<string, int>>(mapValues)
 			);
 		}

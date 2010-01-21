@@ -4,6 +4,7 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 using Mono.Data.Sqlite;
+using ServiceStack.Common.Text;
 
 namespace ServiceStack.OrmLite.Sqlite
 {
@@ -92,8 +93,9 @@ namespace ServiceStack.OrmLite.Sqlite
 			if (fieldType == typeof(DateTime))
 			{
 				var dateValue = (DateTime)value;
-				const string iso8601Format = "yyyy-MM-dd HH:mm:ss.fffffff";
-				return base.GetQuotedValue(dateValue.ToString(iso8601Format), typeof(string));
+				return base.GetQuotedValue(
+					DateTimeSerializer.ToShortestXsdDateTimeString(dateValue), 
+					typeof(string));
 			}
 			if (fieldType == typeof(bool))
 			{

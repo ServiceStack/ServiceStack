@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Northwind.Common.ComplexModel;
+using Newtonsoft.Json;
 using Northwind.Perf;
 using NUnit.Framework;
 using Platform.Text;
@@ -11,18 +11,13 @@ using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.OrmLite.TestsPerf.Tests
 {
-	[TestFixture]
-	public class SerializationTests
+	public class SerializationTestBase
 		: PerfTestBase
 	{
-		//private const bool DoSerializationPerf = true;
-		//private const bool DoDeserializationPerf = true;
 
-		public SerializationTests()
+		public SerializationTestBase()
 		{
 			this.MultipleIterations = new List<int> { 1000, 10000 };
-
-			Serializer.GlobalOptions.InferTagFromName = true;
 		}
 
 		public void LogDto(string dtoString)
@@ -71,6 +66,13 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 			return ProtoBufFromBytes<T>(bytes);
 		}
 
+		public T With_JsonNet<T>(T dto)
+		{
+			var dtoString = JsonConvert.SerializeObject(dto);
+			LogDto(dtoString);
+			return JsonConvert.DeserializeObject<T>(dtoString);
+		}
+
 		public T With_StringSerializer<T>(T dto)
 		{
 			var dtoString = StringSerializer.SerializeToString(dto);
@@ -85,12 +87,12 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 			return TextSerializer.DeserializeFromString<T>(dtoString);
 		}
 
-		public void AssertEqual<T>(T dto, T originalDto)
+		protected void AssertEqual<T>(T dto, T originalDto)
 		{
 			Assert.That(originalDto.Equals(dto));
 		}
 
-		private void AssertAllAreEqual<T>(T dto)
+		protected void AssertAllAreEqual<T>(T dto)
 		{
 			AssertEqual(With_DataContractSerializer(dto), dto);
 			AssertEqual(With_JsonDataContractSerializer(dto), dto);
@@ -98,25 +100,24 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 			{
 				AssertEqual(With_ProtoBuf(dto), dto);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				Log("Error in ProtoBuf");
+				Log("AssertEqual Error in ProtoBuf: {0}", ex);
 			}
+			AssertEqual(With_JsonNet(dto), dto);
 			AssertEqual(With_StringSerializer(dto), dto);
 			try
 			{
 				AssertEqual(With_TextSerializer(dto), dto);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				Log("Error in ProtoBuf");
+				Log("AssertEqual Error in TextSerializer: {0}", ex);
 			}
 		}
 
-		private void DoAll<T>(T dto)
+		protected void SerializeDto<T>(T dto)
 		{
-			AssertAllAreEqual(dto);
-
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var totalAvg = RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			totalAvg += RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<T>(dtoXml), "DataContractDeserializer.Instance.Parse<T>(dtoXml)");
@@ -127,6 +128,7 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 			totalAvg += RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<T>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<T>(dtoJson)");
 			Log("Total Avg: " + totalAvg / 2);
 
+			//Very slow
 			//var dtoJayrock = JsonConvert.ExportToString(dto);
 			//RunMultipleTimes(() => JsonConvert.ExportToString(dto), "JsonConvert.ExportToString(dto)");
 			//RunMultipleTimes(() => JsonConvert.Import(typeof(T), dtoJayrock), "JsonConvert.Import(typeof(T), dtoJayrock)");
@@ -138,10 +140,15 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 				totalAvg += RunMultipleTimes(() => ProtoBufFromBytes<T>(dtoProtoBuf), "ProtoBufFromBytes<T>(dtoProtoBuf)");
 				Log("Total Avg: " + totalAvg / 2);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				Log("Error in ProtoBuf");
+				Log("Error in ProtoBuf: {0}", ex);
 			}
+
+			var dtoJsonNet = JsonConvert.SerializeObject(dto);
+			totalAvg = RunMultipleTimes(() => JsonConvert.SerializeObject(dto), "JsonConvert.SerializeObject(dto)");
+			totalAvg += RunMultipleTimes(() => JsonConvert.DeserializeObject<T>(dtoJsonNet), "JsonConvert.DeserializeObject<T>(dtoJsonNet)");
+			Log("Total Avg: " + totalAvg / 2);
 
 			var dtoString = StringSerializer.SerializeToString(dto);
 			totalAvg = RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
@@ -153,55 +160,5 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 			totalAvg += RunMultipleTimes(() => TextSerializer.DeserializeFromString<T>(dtoPlatformText), "TextSerializer.DeserializeFromString<T>(dtoPlatformText)");
 			Log("Total Avg: " + totalAvg / 2);
 		}
-
-		[Test]
-		public void deserialize_Customer()
-		{
-			DoAll(DtoFactory.CustomerDto);
-		}
-
-		[Test]
-		public void deserialize_Order()
-		{
-			DoAll(DtoFactory.OrderDto);
-		}
-
-		[Test]
-		public void deserialize_Supplier()
-		{
-			DoAll(DtoFactory.SupplierDto);
-		}
-
-		[Test]
-		public void deserialize_MultiOrderProperties()
-		{
-			DoAll(DtoFactory.MultiOrderProperties);
-		}
-
-		[Test]
-		public void deserialize_MultiCustomerProperties()
-		{
-			DoAll(DtoFactory.MultiCustomerProperties);
-		}
-
-		[Test]
-		public void deserialize_CustomerOrderArrayDto()
-		{
-			DoAll(DtoFactory.CustomerOrderArrayDto);
-		}
-
-		[Test]
-		public void deserialize_CustomerOrderListDto()
-		{
-			DoAll(DtoFactory.CustomerOrderListDto);
-		}
-
-		[Test]
-		public void deserialize_ArrayDtoWithOrders()
-		{
-			DoAll(DtoFactory.ArrayDtoWithOrders);
-		}
-
 	}
-
 }

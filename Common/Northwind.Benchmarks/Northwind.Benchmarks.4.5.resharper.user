@@ -11,7 +11,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:OrmLitePerfTests.cs" caret="111" fromTop="0" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/f:NorthwindResources.cs" caret="0" fromTop="0" />
       <File id="373D954D-93F9-439D-937F-28709BB04B65/f:DatabaseScenarioBase.cs" caret="632" fromTop="19" />
       <File id="373D954D-93F9-439D-937F-28709BB04B65/f:ScenarioBase.cs" caret="52" fromTop="2" />
@@ -24,55 +23,56 @@
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Model/f:SampleOrderLine.cs" caret="745" fromTop="37" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:_Misc/f:StopWatchTests.cs" caret="345" fromTop="17" />
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/f:Program.cs" caret="1663" fromTop="29" />
-      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="665" fromTop="28" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:OrderBlob.cs" caret="707" fromTop="19" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindData.cs" caret="343655" fromTop="1027" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:Northwind.models.cs" caret="6316" fromTop="26" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:ArrayDtoWithOrders.cs" caret="148" fromTop="5" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderListDto.cs" caret="156" fromTop="6" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDto.cs" caret="89" fromTop="3" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDtoWithOrders.cs" caret="183" fromTop="6" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiOrderProperties.cs" caret="141" fromTop="5" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiCustomerProperties.cs" caret="391" fromTop="19" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:NorthwindDtoFactory.cs" caret="3122" fromTop="35" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="972" fromTop="36" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="8894" fromTop="3" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderArrayDto.cs" caret="191" fromTop="9" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="325" fromTop="16" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="6611" fromTop="73" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextDeserializerPerfTests.cs" caret="5367" fromTop="18" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:NorthwindDtoFactory.cs" caret="2752" fromTop="20" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindData.cs" caret="0" fromTop="0" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiOrderProperties.cs" caret="246" fromTop="8" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDtoWithOrders.cs" caret="296" fromTop="10" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDto.cs" caret="202" fromTop="7" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiCustomerProperties.cs" caret="0" fromTop="0" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="264" fromTop="9" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="2379" fromTop="35" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextDeserializerPerfTests.cs" caret="1809" fromTop="25" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderArrayDto.cs" caret="258" fromTop="9" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderListDto.cs" caret="293" fromTop="10" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2888" fromTop="28" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:ArrayDtoWithOrders.cs" caret="402" fromTop="17" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2560" fromTop="32" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="1038" fromTop="16" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="2555" fromTop="103" />
     </RecentFiles>
     <RecentEdits>
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="8561" fromTop="38" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="8574" fromTop="39" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="6557" fromTop="27" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="5413" fromTop="15" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="4794" fromTop="34" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="3626" fromTop="21" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="156" fromTop="5" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDto.cs" caret="94" fromTop="3" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDtoWithOrders.cs" caret="188" fromTop="6" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiOrderProperties.cs" caret="138" fromTop="4" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="328" fromTop="11" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiCustomerProperties.cs" caret="155" fromTop="6" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiCustomerProperties.cs" caret="230" fromTop="10" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiCustomerProperties.cs" caret="391" fromTop="19" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:NorthwindDtoFactory.cs" caret="3216" fromTop="29" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="5986" fromTop="43" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="7075" fromTop="12" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextDeserializerPerfTests.cs" caret="8066" fromTop="31" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextDeserializerPerfTests.cs" caret="7368" fromTop="26" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="7326" fromTop="32" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="8099" fromTop="46" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="6662" fromTop="18" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:PerfTests/f:TextSerializerPerfTests.cs" caret="554" fromTop="20" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="5604" fromTop="13" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="6150" fromTop="38" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="6240" fromTop="41" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="6333" fromTop="31" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="6423" fromTop="36" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="6515" fromTop="32" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="6611" fromTop="37" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="3100" fromTop="34" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="3035" fromTop="30" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2963" fromTop="26" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2888" fromTop="22" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2817" fromTop="18" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2748" fromTop="14" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2676" fromTop="10" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2599" fromTop="6" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2523" fromTop="2" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2382" fromTop="10" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2284" fromTop="6" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="5039" fromTop="20" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="1055" fromTop="29" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="1085" fromTop="25" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="983" fromTop="18" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2994" fromTop="29" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="1975" fromTop="18" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2562" fromTop="33" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2344" fromTop="24" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2218" fromTop="18" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2560" fromTop="32" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="3198" fromTop="18" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="3420" fromTop="22" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="2885" fromTop="14" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="5008" fromTop="39" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="4195" fromTop="31" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="2447" fromTop="9" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="2607" fromTop="16" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="2668" fromTop="18" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="2736" fromTop="20" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -80,11 +80,11 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="var" priority="11" />
+      <Item value="var" priority="20" />
       <Item value="TimeSpan" priority="4" />
-      <Item value="public" priority="2" />
-      <Item value="void" priority="0" />
-      <Item value="new" priority="5" />
+      <Item value="public" priority="7" />
+      <Item value="void" priority="3" />
+      <Item value="new" priority="6" />
       <Item value="Stopwatch" priority="2" />
       <Item value="stopWatch" priority="2" />
       <Item value="static" priority="0" />
@@ -93,7 +93,7 @@
       <Item value="virtual" priority="1" />
       <Item value="override" priority="1" />
       <Item value="Redis" priority="0" />
-      <Item value="protected" priority="0" />
+      <Item value="protected" priority="1" />
       <Item value="persistenceProvider" priority="1" />
       <Item value="CreateProvider" priority="0" />
       <Item value="OnFirstRun" priority="0" />
@@ -101,7 +101,7 @@
       <Item value="RedisClient" priority="0" />
       <Item value="InsertNorthwindDatabase" priority="0" />
       <Item value="Category" priority="0" />
-      <Item value="return" priority="1" />
+      <Item value="return" priority="8" />
       <Item value="OrmLiteConfig" priority="0" />
       <Item value="provider" priority="1" />
       <Item value="null" priority="0" />
@@ -110,10 +110,48 @@
       <Item value="TextSerializerPerfTests" priority="0" />
       <Item value="dtoJson" priority="0" />
       <Item value="CustomerDto" priority="0" />
-      <Item value="Log" priority="0" />
-      <Item value="dtoPlatformText" priority="0" />
+      <Item value="Log" priority="7" />
+      <Item value="dtoPlatformText" priority="1" />
       <Item value="TextField" priority="1" />
-      <Item value="TextSerializer" priority="0" />
+      <Item value="TextSerializer" priority="1" />
+      <Item value="ServiceStack" priority="0" />
+      <Item value="Common" priority="0" />
+      <Item value="Text" priority="0" />
+      <Item value="customer" priority="1" />
+      <Item value="byte" priority="2" />
+      <Item value="T" priority="7" />
+      <Item value="using" priority="0" />
+      <Item value="MemberSerializationOptions" priority="0" />
+      <Item value="Serializer" priority="3" />
+      <Item value="ms" priority="1" />
+      <Item value="dto" priority="8" />
+      <Item value="ProtoBuf" priority="0" />
+      <Item value="string" priority="2" />
+      <Item value="_AppDomain" priority="0" />
+      <Item value="bytes" priority="3" />
+      <Item value="Test" priority="0" />
+      <Item value="Assert" priority="1" />
+      <Item value="dtoString" priority="3" />
+      <Item value="DataContractDeserializer" priority="0" />
+      <Item value="StringSerializer" priority="0" />
+      <Item value="originalDto" priority="0" />
+      <Item value="With_DataContractSerializer" priority="0" />
+      <Item value="Length" priority="0" />
+      <Item value="DtoFactory" priority="0" />
+      <Item value="private" priority="0" />
+      <Item value="AssertAllAreEqual" priority="0" />
+      <Item value="const" priority="0" />
+      <Item value="bool" priority="0" />
+      <Item value="true" priority="1" />
+      <Item value="if" priority="0" />
+      <Item value="ProtoBufToBytes" priority="0" />
+      <Item value="dtoProtoBuf" priority="0" />
+      <Item value="i" priority="2" />
+      <Item value="iteration" priority="0" />
+      <Item value="decimal" priority="1" />
+      <Item value="total" priority="0" />
+      <Item value="totalAvg" priority="0" />
+      <Item value="try" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.TimeSpan">
       <Item value="TicksPerMillisecond" priority="2" />
@@ -159,8 +197,57 @@
       <Item value="Frequency" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@Platform.Text.TextSerializer">
-      <Item value="SerializeToString" priority="1" />
+      <Item value="SerializeToString" priority="2" />
       <Item value="DeserializeFromString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Common.Text.StringSerializer">
+      <Item value="SerializeToString" priority="1" />
+      <Item value="CanCreateFromString" priority="0" />
+      <Item value="DeserializeFromString" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Jayrock.Json.Conversion.JsonConvert">
+      <Item value="ExportToString" priority="1" />
+      <Item value="Import" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ProtoBuf.Serializer">
+      <Item value="Serialize" priority="1" />
+      <Item value="Deserialize" priority="0" />
+      <Item value="GlobalOptions" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.IO.MemoryStream">
+      <Item value="ToArray" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Text.Encoding">
+      <Item value="UTF8" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Text.Encoding">
+      <Item value="GetString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
+      <Item value="That" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.ServiceModel.Serialization.DataContractDeserializer">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceModel.Serialization.DataContractDeserializer">
+      <Item value="Parse" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:">
+      <Item value="Equals" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.String">
+      <Item value="Length" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@Northwind.Common.ComplexModel.DtoFactory">
+      <Item value="CustomerOrderArrayDto" priority="0" />
+      <Item value="ArrayDtoWithOrders" priority="0" />
+      <Item value="MultiCustomerProperties" priority="0" />
+      <Item value="SupplierDto" priority="0" />
+      <Item value="OrderDto" priority="0" />
+      <Item value="CustomerDto" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ProtoBuf.Serializer+GlobalOptions">
+      <Item value="InferTagFromName" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
   <UnitTestRunnerMSTest>
