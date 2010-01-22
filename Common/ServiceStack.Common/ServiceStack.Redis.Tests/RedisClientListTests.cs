@@ -115,7 +115,7 @@ namespace ServiceStack.Redis.Tests
 			}
 		}
 
-		[Test]
+		[Test][Ignore("Makes redis 1.2 hang")]
 		public void Can_MoveBetweenLists()
 		{
 			var list1Members = new List<string> { "one", "two", "three", "four" };
