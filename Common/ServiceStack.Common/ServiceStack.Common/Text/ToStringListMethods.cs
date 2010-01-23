@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using ServiceStack.Common.Extensions;
@@ -9,14 +10,14 @@ namespace ServiceStack.Common.Text
 {
 	public static class ToStringListMethods
 	{
-		public static Func<object, string> GetToStringMethod<T>()
+		public static Action<TextWriter, object> GetToStringMethod<T>()
 		{
 			var type = typeof(T);
 
 			return GetToStringMethod(type);
 		}
 
-		public static Func<object, string> GetToStringMethod(Type type)
+		public static Action<TextWriter, object> GetToStringMethod(Type type)
 		{
 			var listInterfaces = type.FindInterfaces(
 				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
@@ -27,10 +28,10 @@ namespace ServiceStack.Common.Text
 
 			//optimized access for regularly used types
 			if (type == typeof(IList<string>))
-				return value => IListStringToString((IList<string>)value);
+				return (w, x) => WriteIListString(w, (IList<string>)x);
 
 			if (type == typeof(IList<int>))
-				return ValueTypeToString<int>;
+				return WriteListValueType<int>;
 
 
 			var elementType = listInterfaces[0].GetGenericArguments()[0];
@@ -40,172 +41,189 @@ namespace ServiceStack.Common.Text
 				return GetValueTypeListToStringMethod(elementType);
 			}
 
-			var toStringFn = ToStringMethods.GetToStringMethod(elementType);
 			var toStringDelegate = GetGenericListToStringMethod(elementType);
+			var writeFn = ToStringMethods.GetToStringMethod(elementType);
 
-			return value => toStringDelegate(value, toStringFn);
+			return (w, x) => toStringDelegate(w, x, writeFn);
 		}
 
-		private static Func<object, string> GetValueTypeListToStringMethod(Type elementType)
+		private static Action<TextWriter, object> GetValueTypeListToStringMethod(Type elementType)
 		{
-			var mi = typeof(ToStringListMethods).GetMethod("ValueTypeToString", BindingFlags.Static | BindingFlags.Public);
-			ToStringDelegate valueTypeToStringDelegate;
-			if (!ValueTypeToStringDelegateCache.TryGetValue(elementType, out valueTypeToStringDelegate))
+			var mi = typeof(ToStringListMethods).GetMethod("WriteListValueType", BindingFlags.Static | BindingFlags.Public);
+			WriteDelegate valueTypeWriteDelegate;
+			if (!ValueTypeToStringDelegateCache.TryGetValue(elementType, out valueTypeWriteDelegate))
 			{
 				var genericMi = mi.MakeGenericMethod(new[] { elementType });
-				valueTypeToStringDelegate = (ToStringDelegate)Delegate.CreateDelegate(typeof(ToStringDelegate), genericMi);
-				ValueTypeToStringDelegateCache[elementType] = valueTypeToStringDelegate;
+				valueTypeWriteDelegate = (WriteDelegate)Delegate.CreateDelegate(typeof(WriteDelegate), genericMi);
+				ValueTypeToStringDelegateCache[elementType] = valueTypeWriteDelegate;
 			}
 
-			return valueTypeToStringDelegate.Invoke;
+			return valueTypeWriteDelegate.Invoke;
 		}
 
-		private static CollectionToStringDelegate GetGenericListToStringMethod(Type elementType)
+		private static WriteListDelegate GetGenericListToStringMethod(Type elementType)
 		{
-			var mi = typeof(ToStringListMethods).GetMethod("GenericIListToString", BindingFlags.Static | BindingFlags.Public);
-			CollectionToStringDelegate toStringDelegate;
-			if (!GenericToStringDelegateCache.TryGetValue(elementType, out toStringDelegate))
+			var mi = typeof(ToStringListMethods).GetMethod("WriteGenericIListObject", BindingFlags.Static | BindingFlags.Public);
+			WriteListDelegate @delegate;
+			if (!GenericToStringDelegateCache.TryGetValue(elementType, out @delegate))
 			{
 				var genericMi = mi.MakeGenericMethod(new[] { elementType });
-				toStringDelegate = (CollectionToStringDelegate)Delegate.CreateDelegate(typeof(CollectionToStringDelegate), genericMi);
-				GenericToStringDelegateCache[elementType] = toStringDelegate;
+				@delegate = (WriteListDelegate)Delegate.CreateDelegate(typeof(WriteListDelegate), genericMi);
+				GenericToStringDelegateCache[elementType] = @delegate;
 			}
 
-			return toStringDelegate;
+			return @delegate;
 		}
 
-		private static readonly Dictionary<Type, CollectionToStringDelegate> GenericToStringDelegateCache 
-			= new Dictionary<Type, CollectionToStringDelegate>();
+		private static readonly Dictionary<Type, WriteListDelegate> GenericToStringDelegateCache 
+			= new Dictionary<Type, WriteListDelegate>();
 
-		private static readonly Dictionary<Type, ToStringDelegate> ValueTypeToStringDelegateCache 
-			= new Dictionary<Type, ToStringDelegate>();
+		private static readonly Dictionary<Type, WriteDelegate> ValueTypeToStringDelegateCache 
+			= new Dictionary<Type, WriteDelegate>();
 
-		public static string IListToString(IList list)
+
+		public static void WriteIEnumerable(TextWriter writer, IEnumerable valueCollection)
 		{
-			Func<object, string> toStringFn = null;
+			Action<TextWriter, object> toStringFn = null;
 
-			var sb = new StringBuilder();
+			writer.Write(StringSerializer.ListStartChar);
+
+			var ranOnce = false;
+			foreach (var valueItem in valueCollection)
+			{
+				if (toStringFn == null)
+					toStringFn = ToStringMethods.GetToStringMethod(valueItem.GetType());
+
+				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+
+				toStringFn(writer, valueItem);
+			}
+
+			writer.Write(StringSerializer.ListEndChar);
+		}
+
+		public static void WriteIList(TextWriter writer, IList list)
+		{
+			Action<TextWriter, object> writeFn = null;
+
+			writer.Write(StringSerializer.ListStartChar);
+
+			var ranOnce = false;
 			var listLength = list.Count;
 			for (var i=0; i < listLength; i++)
 			{
 				var item = list[i];
-				if (toStringFn == null)
-				{
-					toStringFn = GetToStringMethod(item.GetType());
-				}
+				if (writeFn == null)
+					writeFn = ToStringMethods.GetToStringMethod(item.GetType());
 
-				var itemString = toStringFn(item);
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(itemString);
+				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+
+				writeFn(writer, item);
 			}
-			sb.Insert(0, TextExtensions.ListStartChar);
-			sb.Append(TextExtensions.ListEndChar);
 
-			return sb.ToString();
+			writer.Write(StringSerializer.ListEndChar);
 		}
 
-		public static string StringArrayToString(string[] arrayValue)
+		public static void WriteStringArray(TextWriter writer, string[] list)
 		{
-			var sb = new StringBuilder();
-			var arrayValueLength = arrayValue.Length;
-			for (var i=0; i < arrayValueLength; i++)
+			writer.Write(StringSerializer.ListStartChar);
+
+			var ranOnce = false;
+			var listLength = list.Length;
+			for (var i=0; i < listLength; i++)
 			{
-				if (sb.Length > 0) sb.Append(TextExtensions.ItemSeperator);
-				sb.Append(arrayValue[i].ToCsvField());
+				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				writer.Write(list[i].ToCsvField());
 			}
-			sb.Insert(0, TextExtensions.ListStartChar);
-			sb.Append(TextExtensions.ListEndChar);
-			return sb.ToString();
+
+			writer.Write(StringSerializer.ListEndChar);
 		}
 
-		public static Func<object, string> GetArrayToStringMethod(Type elementType)
+		public static Action<TextWriter, object> GetArrayToStringMethod(Type elementType)
 		{
-			var mi = typeof(ToStringListMethods).GetMethod("ArrayToString",
+			var mi = typeof(ToStringListMethods).GetMethod("WriteArray",
 				BindingFlags.Static | BindingFlags.Public);
 
 			var genericMi = mi.MakeGenericMethod(new[] { elementType });
-			var genericDelegate = (CollectionToStringDelegate)Delegate.CreateDelegate(typeof(CollectionToStringDelegate), genericMi);
+			var genericDelegate = (WriteListDelegate)Delegate.CreateDelegate(typeof(WriteListDelegate), genericMi);
 
-			var toStringFn = ToStringMethods.GetToStringMethod(elementType);
-			return value => genericDelegate(value, toStringFn);
+			var writeFn = ToStringMethods.GetToStringMethod(elementType);
+			return (w, x) => genericDelegate(w, x, writeFn);
 		}
 
-		public static string ArrayToString<T>(object oArrayValue, Func<object, string> toStringFn)
+		public static void WriteArray<T>(TextWriter writer, object oArrayValue, Action<TextWriter, object> writeFn)
 		{
-			var arrayValue = (T[])oArrayValue;
-			var sb = new StringBuilder();
-			var arrayValueLength = arrayValue.Length;
-			for (var i=0; i < arrayValueLength; i++)
-			{
-				var item = arrayValue[i];
-
-				var itemString = toStringFn(item);
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(itemString);
-			}
-			sb.Insert(0, TextExtensions.ListStartChar);
-			sb.Append(TextExtensions.ListEndChar);
-			return sb.ToString();
+			WriteGenericArray(writer, (T[])oArrayValue, writeFn);
 		}
 
-		public static string IListStringToString(IList<string> list)
+		public static void WriteGenericArray<T>(TextWriter writer, T[] list, Action<TextWriter, object> writeFn)
 		{
-			var sb = new StringBuilder();
-			var listCount = list.Count;
-			for (var i=0; i < listCount; i++)
+			writer.Write(StringSerializer.ListStartChar);
+
+			var ranOnce = false;
+			var listLength = list.Length;
+			for (var i=0; i < listLength; i++)
 			{
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(ToStringMethods.BuiltinToString(list[i]));
+				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				writeFn(writer, list[i]);
 			}
-			sb.Insert(0, TextExtensions.ListStartChar);
-			sb.Append(TextExtensions.ListEndChar);
-			return sb.ToString();
+
+			writer.Write(StringSerializer.ListEndChar);
 		}
 
-		public static string ValueTypeToString<T>(object oList)
+		public static void WriteIListString(TextWriter writer, IList<string> list)
 		{
-			var list = (IList<T>)oList;
-			var sb = new StringBuilder();
-			var listCount = list.Count;
-			for (var i=0; i < listCount; i++)
+			writer.Write(StringSerializer.ListStartChar);
+
+			var ranOnce = false;
+			var listLength = list.Count;
+			for (var i=0; i < listLength; i++)
 			{
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(list[i]);
+				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				writer.Write(list[i].ToCsvField());
 			}
-			sb.Insert(0, TextExtensions.ListStartChar);
-			sb.Append(TextExtensions.ListEndChar);
-			return sb.ToString();
+
+			writer.Write(StringSerializer.ListEndChar);
 		}
 
-		public static string GenericIListToString<T>(object oList, Func<object, string> toStringFn)
+		public static void WriteListValueType<T>(TextWriter writer, object oList)
 		{
-			var list = (IList<T>)oList;
-			var sb = new StringBuilder();
-			var listCount = list.Count;
-			for (var i=0; i < listCount; i++)
+			WriteGenericListValueType(writer, (IList<T>)oList);
+		}
+
+		public static void WriteGenericListValueType<T>(TextWriter writer, IList<T> list)
+		{
+			writer.Write(StringSerializer.ListStartChar);
+
+			var ranOnce = false;
+			var listLength = list.Count;
+			for (var i=0; i < listLength; i++)
 			{
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				var value = toStringFn(list[i]);
-				sb.Append(value);
+				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				writer.Write(list[i]);
 			}
-			sb.Insert(0, TextExtensions.ListStartChar);
-			sb.Append(TextExtensions.ListEndChar);
-			return sb.ToString();
+
+			writer.Write(StringSerializer.ListEndChar);
+		}
+
+		public static void WriteGenericIListObject<T>(TextWriter writer, object oList, Action<TextWriter, object> writeFn)
+		{
+			WriteGenericIList(writer, (IList<T>)oList, writeFn);
+		}
+
+		public static void WriteGenericIList<T>(TextWriter writer, IList<T> list, Action<TextWriter, object> writeFn)
+		{
+			writer.Write(StringSerializer.ListStartChar);
+
+			var ranOnce = false;
+			var listLength = list.Count;
+			for (var i=0; i < listLength; i++)
+			{
+				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				writeFn(writer, list[i]);
+			}
+
+			writer.Write(StringSerializer.ListEndChar);
 		}
 	}
 }

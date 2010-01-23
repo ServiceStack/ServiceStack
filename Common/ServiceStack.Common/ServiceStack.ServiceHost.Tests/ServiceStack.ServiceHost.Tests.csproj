@@ -81,6 +81,14 @@
     <Compile Include="UseCase\Services\StoreCustomersService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">
+      <Project>{CF68A37D-D071-469D-AE04-68594CB95382}</Project>
+      <Name>ServiceStack.OrmLite.Sqlite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
+      <Name>ServiceStack.OrmLite</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Funq\Funq.csproj">
       <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
       <Name>Funq</Name>
@@ -88,14 +96,6 @@
     <ProjectReference Include="..\ServiceStack.CacheAccess.Providers\ServiceStack.CacheAccess.Providers.csproj">
       <Project>{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}</Project>
       <Name>ServiceStack.CacheAccess.Providers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">
-      <Project>{CF68A37D-D071-469D-AE04-68594CB95382}</Project>
-      <Name>ServiceStack.OrmLite.Sqlite</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
-      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
-      <Name>ServiceStack.OrmLite</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
       <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>

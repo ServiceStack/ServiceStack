@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}</ProjectGuid>
+    <ProjectGuid>{CF68A37D-D071-469D-AE04-68594CB95382}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.CacheAccess.Providers</RootNamespace>
-    <AssemblyName>ServiceStack.CacheAccess.Providers</AssemblyName>
+    <RootNamespace>ServiceStack.OrmLite.Sqlite</RootNamespace>
+    <AssemblyName>ServiceStack.OrmLite.Sqlite</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,51 +31,28 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Mono.Data.Sqlite.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasicPersistenceProviderCacheBase.cs" />
-    <Compile Include="CacheManager.cs" />
-    <Compile Include="CacheTextManagerFactory.cs" />
-    <Compile Include="CompressableFileAndCacheTextManagerFactory.cs" />
-    <Compile Include="FileAndCacheTextManager.cs" />
-    <Compile Include="FileSystemXmlCacheClient.cs" />
-    <Compile Include="JsonCacheManager.cs" />
-    <Compile Include="MemoryCacheClient.cs" />
-    <Compile Include="MultiCacheClient.cs" />
-    <Compile Include="OrmLitePersistenceProviderCache.cs" />
-    <Compile Include="PersistenceProviderCache.cs" />
-    <Compile Include="PersistenceProviderCacheFactory.cs" />
+    <Compile Include="SqliteOrmLiteDialectProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XmlCacheManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
-      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
-      <Name>ServiceStack.OrmLite</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+    <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
-      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
-      <Name>ServiceStack.ServiceModel</Name>
+    <ProjectReference Include="..\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
+      <Name>ServiceStack.OrmLite</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

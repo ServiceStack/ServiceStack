@@ -42,7 +42,7 @@ namespace ServiceStack.Common.Text
 			if (string.IsNullOrEmpty(value))
 				return null;
 
-			return value[0] == TextExtensions.MapStartChar
+			return value[0] == StringSerializer.MapStartChar
 				? value.Substring(1, value.Length - 2)
 				: value;
 		}

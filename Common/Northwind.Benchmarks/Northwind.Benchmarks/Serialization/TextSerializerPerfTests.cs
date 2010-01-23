@@ -68,7 +68,7 @@ namespace Northwind.Benchmarks.Serialization
 				1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
 				"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
 
-			Log(ToStringMethods.ToString(customer));
+			Log(StringSerializer.SerializeToString(customer));
 			Log(JsonConvert.ExportToString(customer));
 			Log(ProtoBufToString(customer));
 
@@ -76,7 +76,7 @@ namespace Northwind.Benchmarks.Serialization
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(customer), "JsonDataContractSerializer.Instance.Parse(customer)");
 			RunMultipleTimes(() => JsonConvert.ExportToString(customer), "JsonConvert.ExportToString(customer)");
 			RunMultipleTimes(() => ProtoBufToBytes(customer), "ProtoBufToBytes(customer)");
-			RunMultipleTimes(() => StringSerializer.SerializeToString(customer), "ToStringMethods.ToString(customer)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(customer), "StringSerializer.SerializeToString(customer)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(customer), "TextSerializer.SerializeToString(customer)");
 		}
 
@@ -87,13 +87,15 @@ namespace Northwind.Benchmarks.Serialization
 				1, "VINET", 5, new DateTime(1996, 7, 4), new DateTime(1996, 1, 8), new DateTime(1996, 7, 16), 
 				3, 32.38m, "Vins et alcools Chevalier", "59 rue de l'Abbaye", "Reims", null, "51100", "France");
 
-			Log(ToStringMethods.ToString(order));
+			Log(StringSerializer.SerializeToString(order));
+			Log(TextSerializer.SerializeToString(order));
 			Log(JsonConvert.ExportToString(order));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(order), "DataContractSerializer.Instance.Parse(order)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(order), "JsonDataContractSerializer.Instance.Parse(order)");
 			RunMultipleTimes(() => JsonConvert.ExportToString(order), "JsonConvert.ExportToString(order)");
-			RunMultipleTimes(() => StringSerializer.SerializeToString(order), "ToStringMethods.ToString(order)");
+			RunMultipleTimes(() => SerializationTestBase.ProtoBufToBytes(order), "SerializationTestBase.ProtoBufToBytes(order)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(order), "StringSerializer.SerializeToString(order)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(order), "TextSerializer.SerializeToString(order)");
 		}
 
@@ -104,13 +106,13 @@ namespace Northwind.Benchmarks.Serialization
 				1, "Exotic Liquids", "Charlotte Cooper", "Purchasing Manager", "49 Gilbert St.", "London", null,
 				"EC1 4SD", "UK", "(171) 555-2222", null, null);
 
-			Log(ToStringMethods.ToString(supplier));
+			Log(StringSerializer.SerializeToString(supplier));
 			Log(JsonConvert.ExportToString(supplier));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(supplier), "DataContractSerializer.Instance.Parse(supplier)");
 			RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(supplier), "JsonDataContractSerializer.Instance.Parse(supplier)");
 			RunMultipleTimes(() => JsonConvert.ExportToString(supplier), "JsonConvert.ExportToString(supplier)");
-			RunMultipleTimes(() => StringSerializer.SerializeToString(supplier), "ToStringMethods.ToString(supplier)");
+			RunMultipleTimes(() => StringSerializer.SerializeToString(supplier), "StringSerializer.SerializeToString(supplier)");
 			RunMultipleTimes(() => TextSerializer.SerializeToString(supplier), "TextSerializer.SerializeToString(supplier)");
 		}
 
@@ -122,7 +124,7 @@ namespace Northwind.Benchmarks.Serialization
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
 			Log(JsonConvert.ExportToString(dto));
-			Log(ToStringMethods.ToString(dto));
+			Log(StringSerializer.SerializeToString(dto));
 			Log(TextSerializer.SerializeToString(dto));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
@@ -140,7 +142,7 @@ namespace Northwind.Benchmarks.Serialization
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
 			Log(JsonConvert.ExportToString(dto));
-			Log(ToStringMethods.ToString(dto));
+			Log(StringSerializer.SerializeToString(dto));
 			Log(TextSerializer.SerializeToString(dto));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
@@ -158,7 +160,7 @@ namespace Northwind.Benchmarks.Serialization
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
 			Log(JsonConvert.ExportToString(dto));
-			Log(ToStringMethods.ToString(dto));
+			Log(StringSerializer.SerializeToString(dto));
 			Log(TextSerializer.SerializeToString(dto));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
@@ -176,7 +178,7 @@ namespace Northwind.Benchmarks.Serialization
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
 			Log(JsonConvert.ExportToString(dto));
-			Log(ToStringMethods.ToString(dto));
+			Log(StringSerializer.SerializeToString(dto));
 			Log(TextSerializer.SerializeToString(dto));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
@@ -194,7 +196,7 @@ namespace Northwind.Benchmarks.Serialization
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
 			Log(JsonConvert.ExportToString(dto));
-			Log(ToStringMethods.ToString(dto));
+			Log(StringSerializer.SerializeToString(dto));
 			Log(TextSerializer.SerializeToString(dto));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
@@ -212,7 +214,7 @@ namespace Northwind.Benchmarks.Serialization
 			Log(DataContractSerializer.Instance.Parse(dto));
 			Log(JsonDataContractSerializer.Instance.Parse(dto));
 			Log(JsonConvert.ExportToString(dto));
-			Log(ToStringMethods.ToString(dto));
+			Log(StringSerializer.SerializeToString(dto));
 			Log(TextSerializer.SerializeToString(dto));
 
 			RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");

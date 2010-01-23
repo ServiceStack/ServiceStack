@@ -41,7 +41,7 @@ namespace ServiceStack.Common.Text
 			if (value == null) return null;
 			return value == string.Empty
 					? new byte[0]
-					: Encoding.Default.GetBytes(value);
+					: Convert.FromBase64String(value);
 		}
 
 		private static readonly Dictionary<Type, ParseArrayDelegate> ParseDelegateCache 
@@ -75,7 +75,7 @@ namespace ServiceStack.Common.Text
 			value = value.Substring(1, value.Length - 2);
 			if (value == string.Empty) return new T[0];
 
-			if (value[0] == TextExtensions.TypeStartChar)
+			if (value[0] == StringSerializer.MapStartChar)
 			{
 				var itemValues = new List<string>();
 				var i = 0;

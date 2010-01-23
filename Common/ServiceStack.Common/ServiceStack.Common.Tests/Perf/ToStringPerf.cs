@@ -237,7 +237,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToCsvField())
-							.Append(TextExtensions.KeyValueSeperator)
+							.Append(StringSerializer.MapKeySeperator)
 							.Append(kv.Value.ToCsvField());
 					}
 					sb.ToString();
@@ -260,7 +260,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToCsvField())
-							.Append(TextExtensions.KeyValueSeperator)
+							.Append(StringSerializer.MapKeySeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();
@@ -283,7 +283,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToCsvField())
-							.Append(TextExtensions.KeyValueSeperator)
+							.Append(StringSerializer.MapKeySeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();

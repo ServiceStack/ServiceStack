@@ -1,21 +1,21 @@
 ﻿using System;
+using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
 	public class TypeToStringMethods
 	{
-		public static string ToString(object value)
+		public static void ToString(TextWriter writer, object value)
 		{
-			if (value == null) return null;
-			var toStringFn = GetToStringMethod(value.GetType());
-			return toStringFn(value);
+			if (value == null) return;
+			var writeFn = GetToStringMethod(value.GetType());
+			writeFn(writer, value);
 		}
 
-		public static Func<object, string> GetToStringMethod(Type type)
+		public static Action<TextWriter, object> GetToStringMethod(Type type)
 		{
 			if (!type.IsClass) return null;
 
@@ -26,25 +26,53 @@ namespace ServiceStack.Common.Text
 			var propertyNames = new string[propertyInfos.Length];
 
 			var getterFns = new Func<object, object>[propertyInfosLength];
-			var toStringFns = new Func<object, string>[propertyInfosLength];
+			var writeFns = new Action<TextWriter, object>[propertyInfosLength];
 
-			for (var i = 0; i<propertyInfosLength; i++)
+			for (var i = 0; i < propertyInfosLength; i++)
 			{
 				var propertyInfo = propertyInfos[i];
 				propertyNames[i] = propertyInfo.Name;
 
 				getterFns[i] = GetPropertyValueMethod(type, propertyInfo);
-				toStringFns[i] = ToStringMethods.GetToStringMethod(propertyInfo.PropertyType);
+				writeFns[i] = ToStringMethods.GetToStringMethod(propertyInfo.PropertyType);
 			}
 
-			return value => TypeToString(value, propertyNames, getterFns, toStringFns);
+			return (w, x) => TypeToString(w, x, propertyNames, getterFns, writeFns);
 		}
 
-		public static string TypeToString(object value, string[] propertyNames,
-			Func<object, object>[] getterFns, Func<object, string>[] toStringFns)
-		{
-			var sb = new StringBuilder();
+		//public static void TypeToString(TextWriter writer, object value, string[] propertyNames,
+		//    Func<object, object>[] getterFns, Action<TextWriter, object>[] toStringFns)
+		//{
+		//    var sb = new StringBuilder();
 
+		//    var propertyNamesLength = propertyNames.Length;
+		//    for (var i = 0; i < propertyNamesLength; i++)
+		//    {
+		//        var propertyName = propertyNames[i];
+
+		//        var propertyValue = getterFns[i](value);
+		//        if (propertyValue == null) continue;
+
+		//        if (sb.Length > 0) sb.Append(StringSerializer.MapItemSeperator);
+
+		//        var propertyValueString = toStringFns[i](propertyValue);
+
+		//        sb.Append(propertyName)
+		//            .Append(StringSerializer.MapKeySeperator)
+		//            .Append(propertyValueString);
+		//    }
+		//    sb.Insert(0, StringSerializer.MapStartChar);
+		//    sb.Append(TextExtensions.TypeEndChar);
+
+		//    return sb.ToString();
+		//}
+
+		public static void TypeToString(TextWriter writer, object value, string[] propertyNames,
+			Func<object, object>[] getterFns, Action<TextWriter, object>[] toStringFns)
+		{
+			writer.Write(StringSerializer.MapStartChar);
+
+			var ranOnce = false;
 			var propertyNamesLength = propertyNames.Length;
 			for (var i = 0; i < propertyNamesLength; i++)
 			{
@@ -53,19 +81,16 @@ namespace ServiceStack.Common.Text
 				var propertyValue = getterFns[i](value);
 				if (propertyValue == null) continue;
 
-				if (sb.Length > 0) sb.Append(TextExtensions.PropertyItemSeperator);
+				ToStringMethods.WriteMapItemSeperatorIfRanOnce(writer, ref ranOnce);
 
-				var propertyValueString = toStringFns[i](propertyValue);
-
-				sb.Append(propertyName)
-					.Append(TextExtensions.PropertyNameSeperator)
-					.Append(propertyValueString);
+				writer.Write(propertyName);
+				writer.Write(StringSerializer.MapKeySeperator);
+				toStringFns[i](writer, propertyValue);
 			}
-			sb.Insert(0, TextExtensions.TypeStartChar);
-			sb.Append(TextExtensions.TypeEndChar);
 
-			return sb.ToString();
+			writer.Write(StringSerializer.MapEndChar);
 		}
+
 
 		public static Func<object, object> GetPropertyValueMethod(Type type, PropertyInfo propertyInfo)
 		{

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Extensions
@@ -34,22 +35,22 @@ namespace ServiceStack.Common.Extensions
 
 		public static T To<T>(this string value)
 		{
-			return StringConverterUtils.Parse<T>(value);
+			return StringSerializer.DeserializeFromString<T>(value);
 		}
 
 		public static T To<T>(this string value, T defaultValue)
 		{
-			return string.IsNullOrEmpty(value) ? defaultValue : StringConverterUtils.Parse<T>(value);
+			return string.IsNullOrEmpty(value) ? defaultValue : StringSerializer.DeserializeFromString<T>(value);
 		}
 
 		public static T ToOrDefaultValue<T>(this string value)
 		{
-			return string.IsNullOrEmpty(value) ? default(T) : StringConverterUtils.Parse<T>(value);
+			return string.IsNullOrEmpty(value) ? default(T) : StringSerializer.DeserializeFromString<T>(value);
 		}
 
 		public static object To(this string value, Type type)
 		{
-			return StringConverterUtils.Parse(value, type);
+			return StringSerializer.DeserializeFromString(value, type);
 		}
 
 		public static bool IsEmpty(this string value)

@@ -11,6 +11,23 @@ namespace ServiceStack.Common.Text
 	/// </summary>
 	public static class StringSerializer
 	{
+		public const char MapStartChar = '{';
+		public const char MapKeySeperator = ':';
+		public const char MapItemSeperator = ',';
+		public const char MapEndChar = '}';
+		public const string MapNullValue = "\"\"";
+
+		public const char ListStartChar = '[';
+		public const char ListItemSeperator = ',';
+		public const char ListEndChar = ']';
+
+		public const char QuoteChar = '"';
+		public const string QuoteString = "\"";
+		public const string DoubleQuoteString = "\"\"";
+
+		public static readonly char[] CsvChars = new[] { ListItemSeperator, QuoteChar };
+		public static readonly char[] EscapeChars = new[] { ListItemSeperator, QuoteChar, MapStartChar, MapEndChar };
+
 		/// <summary>
 		/// Determines whether the specified type is convertible from string.
 		/// </summary>
@@ -35,6 +52,12 @@ namespace ServiceStack.Common.Text
 			return (T)DeserializeFromString(value, type);
 		}
 
+		public static T DeserializeFromReader<T>(TextReader reader)
+		{
+			var type = typeof(T);
+			return (T)DeserializeFromString(reader.ReadToEnd(), type);
+		}
+
 		/// <summary>
 		/// Parses the specified type.
 		/// </summary>
@@ -48,14 +71,37 @@ namespace ServiceStack.Common.Text
 			return typeDefinition.GetValue(value);
 		}
 
+		public static object DeserializeFromReader(TextReader reader, Type type)
+		{
+			return DeserializeFromString(reader.ReadToEnd(), type);
+		}
+
 		public static string SerializeToString(object value)
 		{
 			if (value == null) return null;
 			var strValue = value as string;
 			if (strValue != null) return strValue;
 
-			var toStringMethod = ToStringMethods.GetToStringMethod(value.GetType());
-			return toStringMethod(value);
+			var sb = new StringBuilder(4096);
+			using (var writer = new StringWriter(sb))
+			{
+				SerializeToWriter(value, writer);
+			}
+			return sb.ToString();
+		}
+
+		public static void SerializeToWriter(object value, TextWriter writer)
+		{
+			if (value == null) return;
+			var strValue = value as string;
+			if (strValue != null)
+			{
+				writer.Write(strValue);
+				return;
+			}
+
+			var writeFn = ToStringMethods.GetToStringMethod(value.GetType());
+			writeFn(writer, value);
 		}
 
 		public static string SerializeToCsv<T>(IEnumerable<T> records)

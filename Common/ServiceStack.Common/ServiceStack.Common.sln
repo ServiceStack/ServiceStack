@@ -34,21 +34,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common", "Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Providers", "ServiceStack.CacheAccess.Providers\ServiceStack.CacheAccess.Providers.csproj", "{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.Db4oProvider", "ServiceStack.DataAccess.Db4oProvider\ServiceStack.DataAccess.Db4oProvider.csproj", "{01796492-6DFF-49EF-AE78-C49AE56AD9A8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.DataAccess.Db4oProvider.Tests", "ServiceStack.DataAccess.Db4oProvider.Tests\ServiceStack.DataAccess.Db4oProvider.Tests.csproj", "{B375DA6C-7E63-4F14-88A0-739CAD655550}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.Endpoints.Tests", "ServiceStack.WebHost.Endpoints.Tests\ServiceStack.WebHost.Endpoints.Tests.csproj", "{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Tests", "ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj", "{3FA9197A-462D-44CC-9AB3-61AF414D0B45}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Providers.Tests", "ServiceStack.CacheAccess.Providers.Tests\ServiceStack.CacheAccess.Providers.Tests.csproj", "{EF5C737D-9D69-4844-AE09-FA706AD7AB91}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite", "ServiceStack.OrmLite\ServiceStack.OrmLite.csproj", "{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Sqlite", "ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj", "{CF68A37D-D071-469D-AE04-68594CB95382}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Tests", "ServiceStack.OrmLite.Tests\ServiceStack.OrmLite.Tests.csproj", "{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Compression", "ServiceStack.Compression\ServiceStack.Compression.csproj", "{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}"
 EndProject
@@ -66,13 +56,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging.Tests", "ServiceStack.Messaging.Tests\ServiceStack.Messaging.Tests.csproj", "{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServer", "ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj", "{1887DC99-9139-43E3-A7AA-6D74714B3A5D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis", "ServiceStack.Redis\ServiceStack.Redis.csproj", "{AF99F19B-4C04-4F58-81EF-B092F1FCC540}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis.Tests", "ServiceStack.Redis.Tests\ServiceStack.Redis.Tests.csproj", "{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.SpringFactory", "ServiceStack.SpringFactory\ServiceStack.SpringFactory.csproj", "{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis", "..\ServiceStack.Redis\ServiceStack.Redis\ServiceStack.Redis.csproj", "{AF99F19B-4C04-4F58-81EF-B092F1FCC540}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Redis.Tests", "..\ServiceStack.Redis\ServiceStack.Redis.Tests\ServiceStack.Redis.Tests.csproj", "{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite", "..\ServiceStack.OrmLite\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj", "{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Sqlite", "..\ServiceStack.OrmLite\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj", "{CF68A37D-D071-469D-AE04-68594CB95382}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -116,14 +108,6 @@ Global
 		{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{01796492-6DFF-49EF-AE78-C49AE56AD9A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{01796492-6DFF-49EF-AE78-C49AE56AD9A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{01796492-6DFF-49EF-AE78-C49AE56AD9A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{01796492-6DFF-49EF-AE78-C49AE56AD9A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B375DA6C-7E63-4F14-88A0-739CAD655550}.Release|Any CPU.Build.0 = Release|Any CPU
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -136,18 +120,6 @@ Global
 		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF5C737D-9D69-4844-AE09-FA706AD7AB91}.Release|Any CPU.Build.0 = Release|Any CPU
-		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF68A37D-D071-469D-AE04-68594CB95382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF68A37D-D071-469D-AE04-68594CB95382}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF68A37D-D071-469D-AE04-68594CB95382}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF68A37D-D071-469D-AE04-68594CB95382}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC12FEF4-E335-4C9D-9AA0-764A2203C26F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -180,10 +152,10 @@ Global
 		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AF99F19B-4C04-4F58-81EF-B092F1FCC540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AF99F19B-4C04-4F58-81EF-B092F1FCC540}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF99F19B-4C04-4F58-81EF-B092F1FCC540}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -192,10 +164,14 @@ Global
 		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F3C4BFC5-8A3C-4588-B1D4-C108C22D519C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF68A37D-D071-469D-AE04-68594CB95382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF68A37D-D071-469D-AE04-68594CB95382}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF68A37D-D071-469D-AE04-68594CB95382}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF68A37D-D071-469D-AE04-68594CB95382}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -40,7 +40,7 @@ namespace ServiceStack.Common.Text
 			if (string.IsNullOrEmpty(value)) 
 				return null;
 
-			return value[0] == TextExtensions.ListStartChar 
+			return value[0] == StringSerializer.ListStartChar 
 				? value.Substring(1, value.Length - 2) 
 				: value;
 		}
@@ -67,7 +67,7 @@ namespace ServiceStack.Common.Text
 			if ((value = StripList(value)) == null) return null;
 			if (value == string.Empty) return new List<int>();
 
-			return value.Split(TextExtensions.ItemSeperator).ConvertAll(x => int.Parse(x));
+			return value.Split(StringSerializer.ListItemSeperator).ConvertAll(x => int.Parse(x));
 		}
 
 		public static IList<T> ParseList<T>(string value, Type createListType, Func<string, object> parseFn)
@@ -81,7 +81,7 @@ namespace ServiceStack.Common.Text
 
 			if (!string.IsNullOrEmpty(value))
 			{
-				if (value[0] == TextExtensions.TypeStartChar)
+				if (value[0] == StringSerializer.MapStartChar)
 				{
 					var i = 0;
 					do

@@ -49,8 +49,8 @@ namespace ServiceStack.Common.Text
 			if (string.IsNullOrEmpty(dateTimeStr)) 
 				return DateTime.MinValue;
 
-			if (dateTimeStr.Length == XsdDateTimeFormat.Length
-				|| dateTimeStr.Length == XsdDateTimeFormat3F.Length)
+			if (dateTimeStr.Length <= XsdDateTimeFormat.Length
+				|| dateTimeStr.Length >= XsdDateTimeFormat3F.Length)
 				return XmlConvert.ToDateTime(dateTimeStr, XmlDateTimeSerializationMode.Utc);
 
 			if (dateTimeStr.Length == XsdDateTimeFormatSeconds.Length)

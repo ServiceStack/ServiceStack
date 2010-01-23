@@ -39,7 +39,7 @@ namespace Northwind.Benchmarks.Serialization
 			return JsonDataContractDeserializer.Instance.Parse<T>(dtoString);
 		}
 
-		public byte[] ProtoBufToBytes<T>(T dto)
+		public static byte[] ProtoBufToBytes<T>(T dto)
 		{
 			using (var ms = new MemoryStream())
 			{
@@ -49,7 +49,7 @@ namespace Northwind.Benchmarks.Serialization
 			}
 		}
 
-		public T ProtoBufFromBytes<T>(byte[] bytes)
+		public static T ProtoBufFromBytes<T>(byte[] bytes)
 		{
 			using (var ms = new MemoryStream(bytes))
 			{

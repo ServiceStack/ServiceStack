@@ -1,38 +1,37 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using System.Xml;
+using System.IO;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
-	internal delegate string CollectionToStringDelegate(object oList, Func<object, string> toStringFn);
+	internal delegate void WriteListDelegate(TextWriter writer, object oList, Action<TextWriter, object> toStringFn);
+	internal delegate void WriteGenericListDelegate<T>(TextWriter writer, IList<T> list, Action<TextWriter, object> toStringFn);
 
-	internal delegate string ToStringDelegate(object value);
+	internal delegate void WriteDelegate(TextWriter writer, object value);
 
 	public static class ToStringMethods
 	{
-		public static string ToString(object value)
-		{
-			var toStringMethod = GetToStringMethod(value.GetType());
-			return toStringMethod(value);
-		}
+		//public static Action<TextWriter, object> ToString(TextWriter writer, object value)
+		//{
+		//    var toStringMethod = GetToStringMethod(writer, value.GetType());
+		//    return toStringMethod(writer, value);
+		//}
 
-		public static Func<object, string> GetToStringMethod<T>()
+		public static Action<TextWriter, object> GetToStringMethod<T>()
 		{
 			var type = typeof(T);
 
 			return GetToStringMethod(type);
 		}
 
-		private static readonly Dictionary<Type, Func<object, string>> ToStringMethodCache 
-			= new Dictionary<Type, Func<object, string>>();
+		private static readonly Dictionary<Type, Action<TextWriter, object>> ToStringMethodCache 
+			= new Dictionary<Type, Action<TextWriter, object>>();
 
-		public static Func<object, string> GetToStringMethod(Type type)
+		public static Action<TextWriter, object> GetToStringMethod(Type type)
 		{
-			Func<object, string> toStringMethod;
+			Action<TextWriter, object> toStringMethod;
 			lock (ToStringMethodCache)
 			{
 				if (!ToStringMethodCache.TryGetValue(type, out toStringMethod))
@@ -45,34 +44,37 @@ namespace ServiceStack.Common.Text
 			return toStringMethod;
 		}
 
-		private static Func<object, string> GetToStringMethodToCache(Type type)
+		private static Action<TextWriter, object> GetToStringMethodToCache(Type type)
 		{
 			if (type == typeof(string))
 			{
-				return x => StringToString((string)x);
+				return (w, x) => WriteString(w, (string)x);
 			}
 
 			if (type.IsValueType)
 			{
 				if (type == typeof(DateTime))
-					return value => DateTimeToString((DateTime)value);
+					return (w, x) => WriteDateTime(w, (DateTime)x);
 
 				if (type == typeof(DateTime?))
-					return value => value == null ? null : DateTimeToString((DateTime)value);
+					return (w, x) => WriteDateTime(w, (DateTime?)x);
 
-				return BuiltinToString;
+				if (type == typeof(Guid))
+					return (w, x) => WriteGuid(w, (Guid)x);
+
+				if (type == typeof(Guid?))
+					return (w, x) => WriteGuid(w, (Guid?)x);
+
+				return WriteBuiltIn;
 			}
 
 			if (type.IsArray)
 			{
 				if (type == typeof(byte[]))
-				{
-					return x => BytesToString((byte[])x);
-				}
+					return (w, x) => WriteBytes(w, (byte[])x);
+
 				if (type == typeof(string[]))
-				{
-					return x => ToStringListMethods.StringArrayToString((string[])x);
-				}
+					return (w, x) => ToStringListMethods.WriteStringArray(w, (string[])x);
 
 				return ToStringListMethods.GetArrayToStringMethod(type.GetElementType());
 			}
@@ -93,10 +95,10 @@ namespace ServiceStack.Common.Text
 
 				if (isDictionary)
 				{
-					return obj => IDictionaryToString((IDictionary)obj);
+					return (w, x) => WriteIDictionary(w, (IDictionary)x);
 				}
 
-				return obj => IEnumerableToString((IEnumerable)obj);
+				return (w, x) => ToStringListMethods.WriteIEnumerable(w, (IEnumerable)x);
 			}
 
 			var isEnumerable = type.IsAssignableFrom(typeof(IEnumerable))
@@ -104,7 +106,7 @@ namespace ServiceStack.Common.Text
 
 			if (isEnumerable)
 			{
-				return obj => IEnumerableToString((IEnumerable)obj);
+				return (w, x) => ToStringListMethods.WriteIEnumerable(w, (IEnumerable)x);
 			}
 
 			if (type.IsClass)
@@ -116,105 +118,117 @@ namespace ServiceStack.Common.Text
 				}
 			}
 
-			return BuiltinToString;
+			return WriteBuiltIn;
 		}
 
-		static Dictionary<DateTime, string> dateTimeValues = new Dictionary<DateTime, string>();
-
-		/// <summary>
-		/// DateTime.ToString() is really slow, need to cache values or return ticks.
-		/// </summary>
-		/// <param name="dateTime">The date time.</param>
-		/// <returns></returns>
-		public static string DateTimeToString(DateTime dateTime)
+		public static void WriteString(TextWriter writer, string value)
 		{
-			return DateTimeSerializer.ToShortestXsdDateTimeString(dateTime);
+			writer.Write(value.ToCsvField());
+		}
 
-			string dateTimeString;
-			lock (dateTimeValues)
+		public static void WriteDateTime(TextWriter writer, DateTime dateTime)
+		{
+			writer.Write(DateTimeSerializer.ToShortestXsdDateTimeString(dateTime));
+		}
+
+		public static void WriteDateTime(TextWriter writer, DateTime? dateTime)
+		{
+			if (dateTime == null) return;
+			WriteDateTime(writer, dateTime.Value);
+		}
+
+		public static void WriteGuid(TextWriter writer, Guid value)
+		{
+			writer.Write(value.ToString("N"));
+		}
+
+		public static void WriteGuid(TextWriter writer, Guid? guid)
+		{
+			if (guid == null) return;
+			WriteGuid(writer, guid.Value);
+		}
+
+		public static void WriteBuiltIn(TextWriter writer, object value)
+		{
+			if (value == null) return;
+			writer.Write(value);
+		}
+
+		public static void WriteBytes(TextWriter writer, byte[] byteValue)
+		{
+			if (byteValue == null) return;
+			writer.Write(Convert.ToBase64String(byteValue));
+		}
+
+		public static void WriteListItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
+		{
+			if (ranOnce)
+				writer.Write(StringSerializer.ListItemSeperator);
+			else
+				ranOnce = true;
+		}
+
+		public static void WriteMapItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
+		{
+			if (ranOnce)
+				writer.Write(StringSerializer.MapItemSeperator);
+			else
+				ranOnce = true;
+		}
+
+		public static void WriteIDictionary(TextWriter writer, IDictionary map)
+		{
+			Action<TextWriter, object> writeKeyFn = null;
+			Action<TextWriter, object> writeValueFn = null;
+
+			writer.Write(StringSerializer.MapStartChar);
+
+			var ranOnce = false;
+			foreach (var key in map.Keys)
 			{
-				if (!dateTimeValues.TryGetValue(dateTime, out dateTimeString))
-				{
-					if (dateTimeValues.Count > 100)
-					{
-						dateTimeValues = new Dictionary<DateTime, string>();
-					}
-					dateTimeString = dateTime.ToString();
-					dateTimeValues[dateTime] = dateTimeString;
-				}
-			}
-			return dateTimeString;
-		}
+				var dictionaryValue = map[key];
+				if (writeKeyFn == null)
+					writeKeyFn = GetToStringMethodToCache(key.GetType());
 
-		public static string StringToString(string value)
-		{
-			return value.ToCsvField();
-		}
+				if (writeValueFn == null)
+					writeValueFn = GetToStringMethodToCache(dictionaryValue.GetType());
 
-		public static string BuiltinToString(object value)
-		{
-			return value == null ? null : value.ToString();
-		}
 
-		public static string BytesToString(byte[] byteValue)
-		{
-			return byteValue == null ? null : Encoding.Default.GetString(byteValue);
-		}
+				WriteMapItemSeperatorIfRanOnce(writer, ref ranOnce);
 
-		public static string IEnumerableToString(IEnumerable valueCollection)
-		{
-			Func<object,string> toStringFn = null;
+				writeKeyFn(writer, key);
 
-			var sb = new StringBuilder();
-			foreach (var valueItem in valueCollection)
-			{
-				if (toStringFn == null)
-				{
-					toStringFn = GetToStringMethod(valueItem.GetType());
-				}
+				writer.Write(StringSerializer.MapKeySeperator);
 
-				var elementValueString = toStringFn(valueItem);
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(elementValueString);
-			}
-			return sb.ToString();
-		}
-
-		public static string IDictionaryToString(IDictionary valueDictionary)
-		{
-			Func<object,string> toStringKeyFn = null;
-			Func<object,string> toStringValueFn = null;
-
-			var sb = new StringBuilder();
-			foreach (var key in valueDictionary.Keys)
-			{
-				var dictionaryValue = valueDictionary[key];
-				if (toStringKeyFn == null)
-				{
-					toStringKeyFn = GetToStringMethodToCache(key.GetType());
-				}
-				if (toStringValueFn == null)
-				{
-					toStringValueFn = GetToStringMethodToCache(dictionaryValue.GetType());
-				}
-				var keyString = toStringKeyFn(key);
-				var valueString = dictionaryValue != null ? toStringValueFn(dictionaryValue) : string.Empty;
-
-				if (sb.Length > 0)
-				{
-					sb.Append(TextExtensions.ItemSeperator);
-				}
-				sb.Append(keyString)
-					.Append(TextExtensions.KeyValueSeperator)
-					.Append(valueString);
+				writeValueFn(writer, dictionaryValue ?? StringSerializer.MapNullValue);
 			}
 
-			sb.Insert(0, TextExtensions.MapStartChar);
-			sb.Append(TextExtensions.MapEndChar);
-			return sb.ToString();
+			writer.Write(StringSerializer.MapEndChar);
+		}
+
+		public static void WriteGenericIDictionary<K, V>(
+			TextWriter writer, 
+			IDictionary<K, V> map, 
+			Action<TextWriter, object> writeKeyFn,
+			Action<TextWriter, object> writeValueFn)
+		{
+			writer.Write(StringSerializer.MapStartChar);
+
+			var ranOnce = false;
+			foreach (var key in map.Keys)
+			{
+				var mapValue = map[key];
+
+				WriteMapItemSeperatorIfRanOnce(writer, ref ranOnce);
+
+				writeKeyFn(writer, key);
+
+				writer.Write(StringSerializer.MapKeySeperator);
+
+				writeValueFn(writer, mapValue);
+			}
+
+			writer.Write(StringSerializer.MapEndChar);
 		}
 
 	}
