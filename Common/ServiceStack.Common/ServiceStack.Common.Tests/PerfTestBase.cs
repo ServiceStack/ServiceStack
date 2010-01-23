@@ -90,7 +90,7 @@ namespace ServiceStack.Common.Tests
 
 			Log("{0} took {1}ms ({2} ticks), avg: {3} ticks", actionName, timeSpan.TotalMilliseconds, timeSpan.Ticks, (timeSpan.Ticks / iterations));
 
-			return timeSpan;
+			return timeSpan; 
 		}
 
 		protected long Measure(Action action, decimal iterations)
