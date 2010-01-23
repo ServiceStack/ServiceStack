@@ -103,9 +103,9 @@ namespace Northwind.Perf
 		{
 			actionName = actionName ?? action.GetType().Name;
 			var ticksTaken = Measure(action, iterations);
-			var msTaken = ticksTaken / TimeSpan.TicksPerMillisecond;
+			var timeSpan = TimeSpan.FromSeconds(ticksTaken * 1d / Stopwatch.Frequency);
 
-			Log("{0} took {1}ms ({2} ticks), avg: {3} ticks", actionName, msTaken, ticksTaken, (ticksTaken / iterations));
+			Log("{0} took {1}ms ({2} ticks), avg: {3} ticks", actionName, timeSpan.TotalMilliseconds, ticksTaken, (ticksTaken / iterations));
 
 			return ticksTaken;
 		}

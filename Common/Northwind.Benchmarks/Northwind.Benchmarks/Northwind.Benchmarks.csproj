@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{97A8E62D-14DF-402B-8B6A-C5C0D959E68A}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -35,9 +35,29 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Db4objects.Db4o.dll</HintPath>
     </Reference>
+    <Reference Include="Jayrock, Version=0.9.8316.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Jayrock.dll</HintPath>
+    </Reference>
+    <Reference Include="Jayrock.Json, Version=0.9.8316.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Jayrock.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json.Net20, Version=3.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Newtonsoft.Json.Net20.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.4.8.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ServiceStack.Common\Lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Platform, Version=1.0.0.341, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Platform.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=1.0.0.278, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -70,6 +90,13 @@
     <Compile Include="BasicPersistenceProviders\OrmLite\InsertNorthwindDatabase.cs" />
     <Compile Include="BasicPersistenceProviders\Redis\InsertNorthwindDatabase.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="Serialization\NorthwindDatabaseSerializtionPerf.cs" />
+    <Compile Include="Serialization\SerializationTestBase.cs" />
+    <Compile Include="Serialization\SingleModelSerializationPerf.cs" />
+    <Compile Include="Serialization\TextDeserializerPerfTests.cs" />
+    <Compile Include="Serialization\TextSerializerPerfTests.cs" />
+    <Compile Include="Serialization\TextTestBase.cs" />
+    <Compile Include="Serialization\TypeToStringTests.cs" />
     <Compile Include="_Misc\StopWatchTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -91,9 +118,6 @@
     <Folder Include="Databases\PostgreSql\" />
     <Folder Include="Databases\Sqlite\" />
     <Folder Include="Databases\SqlServer\" />
-    <Folder Include="Serialization\JsonDataContractSerializer\" />
-    <Folder Include="Serialization\TextSerializer\" />
-    <Folder Include="Serialization\XmlDataContractSerializer\" />
     <Folder Include="WebServices\ServiceStack\" />
     <Folder Include="WebServices\Wcf\" />
   </ItemGroup>

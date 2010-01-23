@@ -1,12 +1,18 @@
+using System.Collections.Generic;
 using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 
-namespace ServiceStack.OrmLite.TestsPerf.Tests
+namespace Northwind.Benchmarks.Serialization
 {
 	[TestFixture]
 	public class SingleModelSerializationPerf
 		: SerializationTestBase
 	{
+		public SingleModelSerializationPerf()
+		{
+			this.MultipleIterations = new List<int> { 10000 };
+		}
+
 		private void DoAll<T>(T dto)
 		{
 			AssertAllAreEqual(dto);
@@ -16,6 +22,12 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 
 		[Test]
 		public void serialize_Customer()
+		{
+			DoAll(DtoFactory.CustomerDto);
+		}
+
+		[Test]
+		public void serialize_Customers()
 		{
 			DoAll(DtoFactory.CustomerDto);
 		}
@@ -63,5 +75,4 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		}
 
 	}
-
 }

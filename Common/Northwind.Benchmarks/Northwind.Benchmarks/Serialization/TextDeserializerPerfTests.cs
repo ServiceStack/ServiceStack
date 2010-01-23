@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Jayrock.Json.Conversion;
+using Newtonsoft.Json;
 using Northwind.Common.ComplexModel;
 using Northwind.Common.ServiceModel;
 using Northwind.Perf;
@@ -10,10 +11,10 @@ using Platform.Text;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceModel.Serialization;
+using JsonConvert=Jayrock.Json.Conversion.JsonConvert;
 
-namespace ServiceStack.OrmLite.TestsPerf.PerfTests
+namespace Northwind.Benchmarks.Serialization
 {
-	//[Ignore("Slow performance tests")]
 	[TestFixture]
 	public class TextDeserializerPerfTests
 		: PerfTestBase

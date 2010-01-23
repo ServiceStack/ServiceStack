@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Tests
+namespace Northwind.Benchmarks.Serialization
 {
 	public class TextTestBase
 	{

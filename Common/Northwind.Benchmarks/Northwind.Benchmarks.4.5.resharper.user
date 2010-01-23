@@ -36,42 +36,14 @@
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="1038" fromTop="16" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindData.cs" caret="344517" fromTop="33" />
       <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="144" fromTop="8" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTestBase.cs" caret="2310" fromTop="20" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="822" fromTop="20" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="11180" fromTop="404" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="335" fromTop="9" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="301" fromTop="9" />
     </RecentFiles>
     <RecentEdits>
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="6707" fromTop="38" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="1594" fromTop="31" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="1912" fromTop="34" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="1952" fromTop="34" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="90" fromTop="4" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTestBase.cs" caret="525" fromTop="21" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="582" fromTop="24" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="1317" fromTop="22" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="443" fromTop="0" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTestBase.cs" caret="5448" fromTop="46" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTestBase.cs" caret="2840" fromTop="18" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="156" fromTop="6" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="60" fromTop="1" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:SerializationTests.cs" caret="327" fromTop="17" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="396" fromTop="17" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="489" fromTop="23" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="652" fromTop="21" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="547" fromTop="15" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="442" fromTop="9" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="768" fromTop="27" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="886" fromTop="33" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="991" fromTop="39" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="1092" fromTop="35" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="1194" fromTop="41" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="1296" fromTop="44" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="1355" fromTop="36" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="1400" fromTop="30" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="1507" fromTop="36" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Tests/f:NorthwindDatabaseSerializtionTests.cs" caret="1569" fromTop="40" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="11445" fromTop="36" />
     </RecentEdits>
   </RecentFiles>

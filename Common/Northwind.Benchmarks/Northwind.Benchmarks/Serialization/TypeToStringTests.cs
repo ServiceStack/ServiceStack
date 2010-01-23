@@ -1,13 +1,12 @@
 using System;
-using System.Collections.Generic;
 using Northwind.Common.ComplexModel;
 using Northwind.Common.ServiceModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Utils;
+using ServiceStack.Common.Text;
 
-namespace ServiceStack.OrmLite.TestsPerf.Tests
+namespace Northwind.Benchmarks.Serialization
 {
 	[Ignore]
 	[TestFixture]
@@ -16,8 +15,8 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 	{
 
 		readonly CustomerDto customer = NorthwindDtoFactory.Customer(
-		1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
-		"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
+			1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
+			"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
 
 		readonly OrderDto order = NorthwindDtoFactory.Order(
 			1, "VINET", 5, new DateTime(1996, 7, 4), new DateTime(1996, 1, 8), new DateTime(1996, 7, 16),
@@ -38,11 +37,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		[Test]
 		public void Can_deserialize_CustomerDto()
 		{
-			var dtoString = StringConverterUtils.ToString(customer);
+			var dtoString = StringSerializer.SerializeToString(customer);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<CustomerDto>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<CustomerDto>(dtoString);
 
 			Assert.That(customer.Equals(newDto), Is.True);
 		}
@@ -50,11 +49,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		[Test]
 		public void Can_deserialize_OrderDto()
 		{
-			var dtoString = StringConverterUtils.ToString(order);
+			var dtoString = StringSerializer.SerializeToString(order);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<OrderDto>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<OrderDto>(dtoString);
 
 			Assert.That(order.Equals(newDto), Is.True);
 		}
@@ -62,11 +61,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		[Test]
 		public void Can_deserialize_SupplierDto()
 		{
-			var dtoString = StringConverterUtils.ToString(supplier);
+			var dtoString = StringSerializer.SerializeToString(supplier);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<SupplierDto>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<SupplierDto>(dtoString);
 
 			Assert.That(supplier.Equals(newDto), Is.True);
 		}
@@ -76,11 +75,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		{
 			var multiDto = new MultiDto { Id = Guid.NewGuid(), Customer = customer, Supplier = supplier, };
 
-			var dtoString = StringConverterUtils.ToString(multiDto);
+			var dtoString = StringSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<MultiDto>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<MultiDto>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -90,11 +89,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		{
 			var multiDto = DtoFactory.MultiDtoWithOrders;
 
-			var dtoString = StringConverterUtils.ToString(multiDto);
+			var dtoString = StringSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<MultiDtoWithOrders>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -104,11 +103,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		{
 			var multiDto = DtoFactory.MultiOrderProperties;
 
-			var dtoString = StringConverterUtils.ToString(multiDto);
+			var dtoString = StringSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<MultiOrderProperties>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<MultiOrderProperties>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -118,11 +117,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		{
 			var multiDto = DtoFactory.MultiCustomerProperties;
 
-			var dtoString = StringConverterUtils.ToString(multiDto);
+			var dtoString = StringSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<MultiCustomerProperties>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<MultiCustomerProperties>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -132,11 +131,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		{
 			var arrayDto = DtoFactory.ArrayDtoWithOrders;
 
-			var dtoString = StringConverterUtils.ToString(arrayDto);
+			var dtoString = StringSerializer.SerializeToString(arrayDto);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<ArrayDtoWithOrders>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoString);
 
 			Assert.That(arrayDto.Equals(newDto), Is.True);
 		}
@@ -146,11 +145,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoString = StringSerializer.SerializeToString(dto);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<CustomerOrderListDto>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString);
 
 			Assert.That(dto.Equals(newDto), Is.True);
 		}
@@ -160,11 +159,11 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		{
 			var dto = DtoFactory.CustomerOrderArrayDto;
 
-			var dtoString = StringConverterUtils.ToString(dto);
+			var dtoString = StringSerializer.SerializeToString(dto);
 
 			Log(dtoString);
 
-			var newDto = StringConverterUtils.Parse<CustomerOrderArrayDto>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoString);
 
 			Assert.That(dto.Equals(newDto), Is.True);
 		}
@@ -173,14 +172,14 @@ namespace ServiceStack.OrmLite.TestsPerf.Tests
 		public void profile_Serialize_MultiDtoWithOrders()
 		{
 			var dto = DtoFactory.MultiDtoWithOrders;
-			100.Times(i => StringConverterUtils.ToString(dto));
+			100.Times(i => StringSerializer.SerializeToString(dto));
 		}
 
 		[Test]
 		public void profile_Deserialize_MultiDtoWithOrders()
 		{
 			const string dtoString = "{Id=f8e1b4a8-a8d2-4d39-a92e-426809821474	Customer={Id=1	CompanyName=Alfreds Futterkiste	ContactName=Maria Anders	ContactTitle=Sales Representative	Address=Obere Str. 57	City=Berlin	Region=	PostalCode=12209	Country=Germany	Phone=030-0074321	Fax=030-0076545	Picture=}	Supplier={Id=1	CompanyName=Exotic Liquids	ContactName=Charlotte Cooper	ContactTitle=Purchasing Manager	Address=49 Gilbert St.	City=London	Region=	PostalCode=EC1 4SD	Country=UK	Phone=(171) 555-2222	Fax=	HomePage=}	Orders={Id=1	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=2	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=3	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=4	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France}}";
-			var newDto = StringConverterUtils.Parse<MultiDtoWithOrders>(dtoString);
+			var newDto = StringSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString);
 		}
 
 	}

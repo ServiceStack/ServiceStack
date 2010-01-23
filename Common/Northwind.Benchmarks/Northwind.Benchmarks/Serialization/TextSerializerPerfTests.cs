@@ -13,7 +13,7 @@ using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceModel.Serialization;
 
-namespace ServiceStack.OrmLite.TestsPerf.PerfTests
+namespace Northwind.Benchmarks.Serialization
 {
 	[TestFixture]
 	public class TextSerializerPerfTests
@@ -22,7 +22,6 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		public TextSerializerPerfTests()
 		{
 			this.MultipleIterations = new List<int> { 1000, 10000 };
-			Serializer.GlobalOptions.InferTagFromName = true;
 		}
 
 		public void WriteLog()
@@ -66,8 +65,8 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		public void Serialize_Customer()
 		{
 			var customer = NorthwindDtoFactory.Customer(
-			1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
-			"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
+				1.ToString("x"), "Alfreds Futterkiste", "Maria Anders", "Sales Representative", "Obere Str. 57",
+				"Berlin", null, "12209", "Germany", "030-0074321", "030-0076545", null);
 
 			Log(ToStringMethods.ToString(customer));
 			Log(JsonConvert.ExportToString(customer));
@@ -102,8 +101,8 @@ namespace ServiceStack.OrmLite.TestsPerf.PerfTests
 		public void Run_NorthwindSupplierToStringScenario()
 		{
 			var supplier = NorthwindDtoFactory.Supplier(
-			1, "Exotic Liquids", "Charlotte Cooper", "Purchasing Manager", "49 Gilbert St.", "London", null,
-			"EC1 4SD", "UK", "(171) 555-2222", null, null);
+				1, "Exotic Liquids", "Charlotte Cooper", "Purchasing Manager", "49 Gilbert St.", "London", null,
+				"EC1 4SD", "UK", "(171) 555-2222", null, null);
 
 			Log(ToStringMethods.ToString(supplier));
 			Log(JsonConvert.ExportToString(supplier));

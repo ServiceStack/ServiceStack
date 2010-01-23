@@ -9,7 +9,7 @@ using ProtoBuf;
 using ServiceStack.Common.Text;
 using ServiceStack.ServiceModel.Serialization;
 
-namespace ServiceStack.OrmLite.TestsPerf.Tests
+namespace Northwind.Benchmarks.Serialization
 {
 	public class SerializationTestBase
 		: PerfTestBase
