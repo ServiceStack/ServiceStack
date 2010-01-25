@@ -121,6 +121,7 @@ namespace Northwind.Benchmarks.Serialization
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var totalAvg = RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
 			totalAvg += RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<T>(dtoXml), "DataContractDeserializer.Instance.Parse<T>(dtoXml)");
+			Log("Len: " + dtoXml.Length);
 			Log("Total Avg: " + totalAvg / 2);
 
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
@@ -153,6 +154,7 @@ namespace Northwind.Benchmarks.Serialization
 			var dtoString = StringSerializer.SerializeToString(dto);
 			totalAvg = RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
 			totalAvg += RunMultipleTimes(() => StringSerializer.DeserializeFromString<T>(dtoString), "StringSerializer.DeserializeFromString<T>(dtoString)");
+			Log("Len: " + dtoString.Length);
 			Log("Total Avg: " + totalAvg / 2);
 
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
