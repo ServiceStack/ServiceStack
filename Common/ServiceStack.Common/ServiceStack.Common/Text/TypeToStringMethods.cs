@@ -40,35 +40,8 @@ namespace ServiceStack.Common.Text
 			return (w, x) => TypeToString(w, x, propertyNames, getterFns, writeFns);
 		}
 
-		//public static void TypeToString(TextWriter writer, object value, string[] propertyNames,
-		//    Func<object, object>[] getterFns, Action<TextWriter, object>[] toStringFns)
-		//{
-		//    var sb = new StringBuilder();
-
-		//    var propertyNamesLength = propertyNames.Length;
-		//    for (var i = 0; i < propertyNamesLength; i++)
-		//    {
-		//        var propertyName = propertyNames[i];
-
-		//        var propertyValue = getterFns[i](value);
-		//        if (propertyValue == null) continue;
-
-		//        if (sb.Length > 0) sb.Append(StringSerializer.ItemSeperator);
-
-		//        var propertyValueString = toStringFns[i](propertyValue);
-
-		//        sb.Append(propertyName)
-		//            .Append(StringSerializer.MapKeySeperator)
-		//            .Append(propertyValueString);
-		//    }
-		//    sb.Insert(0, StringSerializer.MapStartChar);
-		//    sb.Append(TextExtensions.TypeEndChar);
-
-		//    return sb.ToString();
-		//}
-
 		public static void TypeToString(TextWriter writer, object value, string[] propertyNames,
-			Func<object, object>[] getterFns, Action<TextWriter, object>[] toStringFns)
+			Func<object, object>[] getterFns, Action<TextWriter, object>[] writeFns)
 		{
 			writer.Write(StringSerializer.MapStartChar);
 
@@ -85,7 +58,7 @@ namespace ServiceStack.Common.Text
 
 				writer.Write(propertyName);
 				writer.Write(StringSerializer.MapKeySeperator);
-				toStringFns[i](writer, propertyValue);
+				writeFns[i](writer, propertyValue);
 			}
 
 			writer.Write(StringSerializer.MapEndChar);

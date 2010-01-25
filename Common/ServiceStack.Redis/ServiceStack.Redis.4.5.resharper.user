@@ -10,8 +10,14 @@
     <NAntPath value="" />
   </NAntValidationSettings>
   <RecentFiles>
-    <RecentFiles />
-    <RecentEdits />
+    <RecentFiles>
+      <File id="38F69F8F-9303-4BAF-B081-D28339163E07/f:ilmerge-all.bat" caret="550" fromTop="17" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="38F69F8F-9303-4BAF-B081-D28339163E07/f:ilmerge-all.bat" caret="146" fromTop="10" />
+      <File id="38F69F8F-9303-4BAF-B081-D28339163E07/f:ilmerge-all.bat" caret="493" fromTop="12" />
+      <File id="38F69F8F-9303-4BAF-B081-D28339163E07/f:ilmerge-all.bat" caret="332" fromTop="9" />
+    </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
     <Providers />
