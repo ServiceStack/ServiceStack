@@ -58,7 +58,6 @@
     <Compile Include="RedisNativeClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisClientList.cs" />
-    <Compile Include="RedisPersistenceProvider.cs" />
     <Compile Include="RedisResponseException.cs" />
   </ItemGroup>
   <ItemGroup>

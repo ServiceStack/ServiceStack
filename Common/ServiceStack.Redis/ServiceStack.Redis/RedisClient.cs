@@ -1,9 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
+using ServiceStack.DataAccess;
 using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis
@@ -16,7 +19,7 @@ namespace ServiceStack.Redis
 	///		 RedisClient.Sets => ICollection[string]
 	/// </summary>
 	public class RedisClient
-		: RedisNativeClient, IRedisClient
+		: RedisNativeClient, IRedisClient, IBasicPersistenceProvider
 	{
 		public RedisClient(string host, int port)
 			: base(host, port)
@@ -425,6 +428,88 @@ namespace ServiceStack.Redis
 			RPopLPush(fromListId, toListId);
 		}
 	
+		#endregion
+
+		#region IBasicPersistenceProvider
+
+		public T GetById<T>(object id) where T : class, new()
+		{
+			var key = IdUtils.CreateUrn<T>(id);
+			var valueString = this.GetString(key);
+			var value = StringSerializer.DeserializeFromString<T>(valueString);
+			return value;
+		}
+
+		public IList<T> GetByIds<T>(ICollection ids)
+			where T : class, new()
+		{
+			var keys = new List<string>();
+			foreach (var id in ids)
+			{
+				var key = IdUtils.CreateUrn<T>(id);
+				keys.Add(key);
+			}
+
+			return GetKeyValues<T>(keys);
+		}
+
+		public T Store<T>(T entity)
+			where T : class, new()
+		{
+			var urnKey = entity.CreateUrn();
+			var valueString = StringSerializer.SerializeToString(entity);
+			this.SetString(urnKey, valueString);
+
+			return entity;
+		}
+
+		public void StoreAll<TEntity>(IEnumerable<TEntity> entities)
+			where TEntity : class, new()
+		{
+			if (entities == null) return;
+
+			foreach (var entity in entities)
+			{
+				Store(entity);
+			}
+		}
+
+		public void Delete<T>(T entity)
+			where T : class, new()
+		{
+			var urnKey = entity.CreateUrn();
+			this.Remove(urnKey);
+		}
+
+		public void DeleteById<T>(object id) where T : class, new()
+		{
+			var key = IdUtils.CreateUrn<T>(id);
+			this.Remove(key);
+		}
+
+		public void DeleteByIds<T>(ICollection ids) where T : class, new()
+		{
+			if (ids == null) return;
+
+			var keysLength = ids.Count;
+			var keys = new string[keysLength];
+
+			var i = 0;
+			foreach (var id in ids)
+			{
+				var key = IdUtils.CreateUrn<T>(id);
+				keys[i++] = key;
+			}
+
+			this.Remove(keys);
+		}
+
+		public void DeleteAll<TEntity>() where TEntity : class, new()
+		{
+			//TODO: replace with DeleteAll of TEntity
+			base.FlushDb();
+		}
+
 		#endregion
 
 	}

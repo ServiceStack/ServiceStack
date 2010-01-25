@@ -18,7 +18,7 @@ namespace ServiceStack.Redis.Tests
 			var stopWatch = new Stopwatch();
 			stopWatch.Start();
 
-			using (var client = new RedisPersistenceProvider())
+			using (var client = new RedisClient())
 			{
 				LoadNorthwindData(client);
 			}
