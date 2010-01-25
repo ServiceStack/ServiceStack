@@ -41,7 +41,7 @@
     <Reference Include="System.Data" />
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\ServiceStack.Common\Lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

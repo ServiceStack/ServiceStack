@@ -62,12 +62,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScenarioBase.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
-      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
-      <Name>ServiceStack.OrmLite</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

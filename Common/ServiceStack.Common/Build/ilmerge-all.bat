@@ -8,7 +8,6 @@ REM SET BUILD=Debug
 SET BUILD=Release
 
 COPY ..\..\ServiceStack.Interfaces\Build\ServiceStack.Interfaces.dll .
-REM COPY ..\ServiceStack.Translators.Generator\bin\%BUILD%\ServiceStack.Translators.Generator.exe .
 
 SET PROJ_LIBS=
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Common\bin\%BUILD%\ServiceStack.Common.dll
@@ -24,12 +23,14 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceHost\bin\%BUILD%\ServiceStack.S
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceClient.Web\bin\%BUILD%\ServiceStack.ServiceClient.Web.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\%BUILD%\ServiceStack.CacheAccess.Providers.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Compression\bin\%BUILD%\ServiceStack.Compression.dll
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite\bin\%BUILD%\ServiceStack.OrmLite.dll
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite.Sqlite\bin\%BUILD%\ServiceStack.OrmLite.Sqlite.dll
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.OrmLite.SqlServer\bin\%BUILD%\ServiceStack.OrmLite.SqlServer.dll
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Redis\bin\%BUILD%\ServiceStack.Redis.dll
 
-REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.DataAccess.NHibernateProvider\bin\%BUILD%\ServiceStack.DataAccess.NHibernateProvider.dll
+REM External ServiceStack components
+SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\bin\%BUILD%\ServiceStack.OrmLite.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.OrmLite\ServiceStack.OrmLite.Sqlite\bin\%BUILD%\ServiceStack.OrmLite.Sqlite.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.OrmLite\ServiceStack.OrmLite.SqlServer\bin\%BUILD%\ServiceStack.OrmLite.SqlServer.dll
+
+SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.Redis\ServiceStack.Redis\bin\%BUILD%\ServiceStack.Redis.dll
+
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
 

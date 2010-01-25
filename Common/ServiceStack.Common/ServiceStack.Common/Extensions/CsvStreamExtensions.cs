@@ -9,6 +9,8 @@ namespace ServiceStack.Common.Extensions
 {
 	public static class CsvStreamExtensions
 	{
+		public const char DelimiterChar = ',';
+
 		internal class RecordTypePropertyData<T>
 		{
 			public List<string> Headers { get; set; }
@@ -85,27 +87,28 @@ namespace ServiceStack.Common.Extensions
 		{
 			var dataSource = new RecordTypePropertyData<T>(records);
 
-			var sb = new StringBuilder();
 			if (dataSource.Headers.Count > 0)
 			{
+				var ranOnce = false;
 				foreach (var header in dataSource.Headers)
 				{
-					if (sb.Length > 0) sb.Append(",");
-					sb.Append(header);
+					ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+					writer.Write(header);
 				}
-				writer.WriteLine(sb.ToString());
+				writer.WriteLine();
 			}
 
 			foreach (var row in dataSource.Rows)
 			{
-				sb = new StringBuilder();
+				var ranOnce = false;
 				foreach (var field in row)
 				{
-					if (sb.Length > 0) sb.Append(",");
+					ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
-					sb.Append(field.ToCsvField());
+					writer.Write(field.ToCsvField());
 				}
-				writer.WriteLine(sb.ToString());
+
+				writer.WriteLine();
 			}
 		}
 
