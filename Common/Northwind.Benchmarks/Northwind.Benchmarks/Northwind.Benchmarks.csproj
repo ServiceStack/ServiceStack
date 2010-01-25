@@ -101,6 +101,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">
+      <Project>{CF68A37D-D071-469D-AE04-68594CB95382}</Project>
+      <Name>ServiceStack.OrmLite.Sqlite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
+      <Name>ServiceStack.OrmLite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.Redis\ServiceStack.Redis\ServiceStack.Redis.csproj">
+      <Project>{AF99F19B-4C04-4F58-81EF-B092F1FCC540}</Project>
+      <Name>ServiceStack.Redis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Northwind.Common\Northwind.Common.csproj">
       <Project>{495EBC3A-0F73-4D25-9641-D6ECA70D0026}</Project>
       <Name>Northwind.Common</Name>

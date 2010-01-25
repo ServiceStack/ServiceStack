@@ -9,7 +9,7 @@ namespace Northwind.Benchmarks.BasicPersistenceProviders.Redis
 	{
 		protected override IBasicPersistenceProvider CreateProvider()
 		{
-			return new RedisPersistenceProvider();
+			return new RedisClient();
 		}
 	}
 }

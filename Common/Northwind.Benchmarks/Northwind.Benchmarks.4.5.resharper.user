@@ -29,12 +29,15 @@
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TypeToStringTests.cs" caret="223" fromTop="0" />
       <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="585" fromTop="25" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="4850" fromTop="0" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SingleModelSerializationPerf.cs" caret="1152" fromTop="31" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="345" fromTop="3" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="568" fromTop="20" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="184" fromTop="0" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseSerializtionPerf.cs" caret="1766" fromTop="27" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="9570" fromTop="15" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SingleModelSerializationPerf.cs" caret="283" fromTop="11" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:DatabaseScenarioBase.cs" caret="453" fromTop="21" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:OrmLite/f:InsertNorthwindDatabase.cs" caret="656" fromTop="21" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="351" fromTop="14" />
     </RecentFiles>
     <RecentEdits>
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="2231" fromTop="28" />
@@ -64,6 +67,8 @@
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="1044" fromTop="10" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="1244" fromTop="20" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="3549" fromTop="12" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="330" fromTop="11" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="348" fromTop="13" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
