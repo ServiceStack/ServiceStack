@@ -67,7 +67,7 @@ namespace ServiceStack.Common.Text
 			if ((value = StripList(value)) == null) return null;
 			if (value == string.Empty) return new List<int>();
 
-			return value.Split(StringSerializer.ListItemSeperator).ConvertAll(x => int.Parse(x));
+			return value.Split(StringSerializer.ItemSeperator).ConvertAll(x => int.Parse(x));
 		}
 
 		public static IList<T> ParseList<T>(string value, Type createListType, Func<string, object> parseFn)

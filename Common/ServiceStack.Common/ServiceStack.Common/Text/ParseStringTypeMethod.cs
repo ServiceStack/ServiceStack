@@ -82,7 +82,7 @@ namespace ServiceStack.Common.Text
 			var valueChar = value[i];
 
 			if (i == valueLength
-				|| valueChar == StringSerializer.MapItemSeperator
+				|| valueChar == StringSerializer.ItemSeperator
 				|| valueChar == StringSerializer.MapEndChar)
 			{
 				return null;
@@ -148,10 +148,8 @@ namespace ServiceStack.Common.Text
 					var isLiteralQuote = i + 1 < valueLength && value[i + 1] == StringSerializer.QuoteChar;
 
 					i++; //skip quote
-					if (isLiteralQuote)
-						continue;
-
-					break;
+					if (!isLiteralQuote)
+						break;
 				}
 				return value.Substring(tokenStartPos, i - tokenStartPos);
 			}
@@ -161,7 +159,7 @@ namespace ServiceStack.Common.Text
 			{
 				valueChar = value[i];
 
-				if (valueChar == StringSerializer.MapItemSeperator
+				if (valueChar == StringSerializer.ItemSeperator
 					|| valueChar == StringSerializer.MapEndChar)
 				{
 					break;

@@ -94,7 +94,7 @@ namespace ServiceStack.Common.Text
 				if (toStringFn == null)
 					toStringFn = ToStringMethods.GetToStringMethod(valueItem.GetType());
 
-				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				toStringFn(writer, valueItem);
 			}
@@ -116,7 +116,7 @@ namespace ServiceStack.Common.Text
 				if (writeFn == null)
 					writeFn = ToStringMethods.GetToStringMethod(item.GetType());
 
-				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				writeFn(writer, item);
 			}
@@ -132,7 +132,7 @@ namespace ServiceStack.Common.Text
 			var listLength = list.Length;
 			for (var i=0; i < listLength; i++)
 			{
-				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(list[i].ToCsvField());
 			}
 
@@ -164,7 +164,7 @@ namespace ServiceStack.Common.Text
 			var listLength = list.Length;
 			for (var i=0; i < listLength; i++)
 			{
-				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writeFn(writer, list[i]);
 			}
 
@@ -179,7 +179,7 @@ namespace ServiceStack.Common.Text
 			var listLength = list.Count;
 			for (var i=0; i < listLength; i++)
 			{
-				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(list[i].ToCsvField());
 			}
 
@@ -199,7 +199,7 @@ namespace ServiceStack.Common.Text
 			var listLength = list.Count;
 			for (var i=0; i < listLength; i++)
 			{
-				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(list[i]);
 			}
 
@@ -219,7 +219,7 @@ namespace ServiceStack.Common.Text
 			var listLength = list.Count;
 			for (var i=0; i < listLength; i++)
 			{
-				ToStringMethods.WriteListItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writeFn(writer, list[i]);
 			}
 

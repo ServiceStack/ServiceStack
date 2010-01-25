@@ -216,7 +216,7 @@ namespace ServiceStack.Common.Tests.Perf
 		public void Compare_ByteArray()
 		{
 			var byteArrayValue = new byte[] { 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, 0, 65, 97, 255, };
-			var byteArrayString = System.Text.Encoding.Default.GetString(byteArrayValue);
+			var byteArrayString = Convert.ToBase64String(byteArrayValue);
 
 			CompareMultipleRuns(
 				"Encoding.Default.GetBytes", () => System.Text.Encoding.Default.GetBytes(byteArrayString),

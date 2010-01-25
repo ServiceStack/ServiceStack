@@ -13,20 +13,19 @@ namespace ServiceStack.Common.Text
 	{
 		public const char MapStartChar = '{';
 		public const char MapKeySeperator = ':';
-		public const char MapItemSeperator = ',';
+		public const char ItemSeperator = ',';
 		public const char MapEndChar = '}';
 		public const string MapNullValue = "\"\"";
 
 		public const char ListStartChar = '[';
-		public const char ListItemSeperator = ',';
 		public const char ListEndChar = ']';
 
 		public const char QuoteChar = '"';
 		public const string QuoteString = "\"";
 		public const string DoubleQuoteString = "\"\"";
 
-		public static readonly char[] CsvChars = new[] { ListItemSeperator, QuoteChar };
-		public static readonly char[] EscapeChars = new[] { ListItemSeperator, QuoteChar, MapStartChar, MapEndChar };
+		public static readonly char[] CsvChars = new[] { ItemSeperator, QuoteChar };
+		public static readonly char[] EscapeChars = new[] { ItemSeperator, QuoteChar, MapStartChar, MapEndChar };
 
 		/// <summary>
 		/// Determines whether the specified type is convertible from string.

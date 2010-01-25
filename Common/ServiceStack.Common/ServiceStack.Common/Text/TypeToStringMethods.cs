@@ -53,7 +53,7 @@ namespace ServiceStack.Common.Text
 		//        var propertyValue = getterFns[i](value);
 		//        if (propertyValue == null) continue;
 
-		//        if (sb.Length > 0) sb.Append(StringSerializer.MapItemSeperator);
+		//        if (sb.Length > 0) sb.Append(StringSerializer.ItemSeperator);
 
 		//        var propertyValueString = toStringFns[i](propertyValue);
 
@@ -81,7 +81,7 @@ namespace ServiceStack.Common.Text
 				var propertyValue = getterFns[i](value);
 				if (propertyValue == null) continue;
 
-				ToStringMethods.WriteMapItemSeperatorIfRanOnce(writer, ref ranOnce);
+				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				writer.Write(propertyName);
 				writer.Write(StringSerializer.MapKeySeperator);

@@ -13,11 +13,6 @@ namespace ServiceStack.Common.Text
 
 	public static class ToStringMethods
 	{
-		//public static Action<TextWriter, object> ToString(TextWriter writer, object value)
-		//{
-		//    var toStringMethod = GetToStringMethod(writer, value.GetType());
-		//    return toStringMethod(writer, value);
-		//}
 
 		public static Action<TextWriter, object> GetToStringMethod<T>()
 		{
@@ -160,18 +155,10 @@ namespace ServiceStack.Common.Text
 			writer.Write(Convert.ToBase64String(byteValue));
 		}
 
-		public static void WriteListItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
+		public static void WriteItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
 		{
 			if (ranOnce)
-				writer.Write(StringSerializer.ListItemSeperator);
-			else
-				ranOnce = true;
-		}
-
-		public static void WriteMapItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
-		{
-			if (ranOnce)
-				writer.Write(StringSerializer.MapItemSeperator);
+				writer.Write(StringSerializer.ItemSeperator);
 			else
 				ranOnce = true;
 		}
@@ -194,7 +181,7 @@ namespace ServiceStack.Common.Text
 					writeValueFn = GetToStringMethodToCache(dictionaryValue.GetType());
 
 
-				WriteMapItemSeperatorIfRanOnce(writer, ref ranOnce);
+				WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				writeKeyFn(writer, key);
 
@@ -219,7 +206,7 @@ namespace ServiceStack.Common.Text
 			{
 				var mapValue = map[key];
 
-				WriteMapItemSeperatorIfRanOnce(writer, ref ranOnce);
+				WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				writeKeyFn(writer, key);
 

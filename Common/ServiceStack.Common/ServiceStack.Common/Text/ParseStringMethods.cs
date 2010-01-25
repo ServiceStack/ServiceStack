@@ -101,7 +101,7 @@ namespace ServiceStack.Common.Text
 
 		public static string EatValue(string value, ref int i)
 		{
-			return EatUntilCharFound(value, ref i, StringSerializer.ListItemSeperator);
+			return EatUntilCharFound(value, ref i, StringSerializer.ItemSeperator);
 		}
 
 		public static string EatUntilCharFound(string value, ref int i, char findChar)
