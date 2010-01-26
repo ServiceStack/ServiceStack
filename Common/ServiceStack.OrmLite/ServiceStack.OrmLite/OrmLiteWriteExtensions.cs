@@ -117,7 +117,7 @@ namespace ServiceStack.OrmLite
 				}
 				catch (Exception ex)
 				{
-					Log.DebugFormat("Cannot drop non-existing table '{0}': {1}", modelDef.ModelName, ex.Message);
+					//Log.DebugFormat("Cannot drop non-existing table '{0}': {1}", modelDef.ModelName, ex.Message);
 				}
 			}
 

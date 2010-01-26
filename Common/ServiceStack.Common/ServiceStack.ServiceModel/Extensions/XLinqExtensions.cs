@@ -247,6 +247,14 @@ namespace ServiceStack.ServiceModel.Extensions
 			return els;
 		}
 
+		public static XElement FirstElement(this XElement element)
+		{
+			if (element.FirstNode.NodeType == XmlNodeType.Element)
+			{
+				return (XElement) element.FirstNode;
+			}
+			return null;
+		}
 
 	}
 }

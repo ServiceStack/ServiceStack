@@ -44,8 +44,8 @@ namespace ServiceStack.Common.Tests
 
 		protected void CompareRuns(int iterations, string run1Name, Action run1Action, string run2Name, Action run2Action)
 		{
-			var run1 = RunAction(run1Action, DefaultIterations, run1Name);
-			var run2 = RunAction(run2Action, DefaultIterations, run2Name);
+			var run1 = RunAction(run1Action, iterations, run1Name);
+			var run2 = RunAction(run2Action, iterations, run2Name);
 
 			var runDiff = run1.Ticks - run2.Ticks;
 			var run1IsSlower = runDiff > 0;

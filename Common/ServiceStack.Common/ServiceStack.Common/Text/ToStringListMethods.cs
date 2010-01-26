@@ -153,6 +153,7 @@ namespace ServiceStack.Common.Text
 
 		public static void WriteArray<T>(TextWriter writer, object oArrayValue, Action<TextWriter, object> writeFn)
 		{
+			if (oArrayValue == null) return;			
 			WriteGenericArray(writer, (T[])oArrayValue, writeFn);
 		}
 
@@ -188,6 +189,7 @@ namespace ServiceStack.Common.Text
 
 		public static void WriteListValueType<T>(TextWriter writer, object oList)
 		{
+			if (oList == null) return;
 			WriteGenericListValueType(writer, (IList<T>)oList);
 		}
 
@@ -208,6 +210,7 @@ namespace ServiceStack.Common.Text
 
 		public static void WriteGenericIListObject<T>(TextWriter writer, object oList, Action<TextWriter, object> writeFn)
 		{
+			if (oList == null) return;
 			WriteGenericIList(writer, (IList<T>)oList, writeFn);
 		}
 

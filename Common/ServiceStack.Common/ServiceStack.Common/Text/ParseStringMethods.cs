@@ -19,6 +19,9 @@ namespace ServiceStack.Common.Text
 			if (type == typeof(string))
 				return ParseString;
 
+			if (type == typeof(object))
+				return ParseObject;
+
 			if (type.IsEnum)
 				return value => ParseEnum(type, value);
 
@@ -72,6 +75,11 @@ namespace ServiceStack.Common.Text
 		public static string ParseString(string value)
 		{
 			return value.FromCsvField();
+		}
+
+		public static object ParseObject(string value)
+		{
+			return value;
 		}
 
 		public static object ParseEnum(Type type, string value)

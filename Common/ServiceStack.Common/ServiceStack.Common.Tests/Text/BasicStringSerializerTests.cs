@@ -13,6 +13,17 @@ namespace ServiceStack.Common.Tests.Text
 	[TestFixture]
 	public class BasicStringSerializerTests
 	{
+		readonly char[] allCharsUsed = new[] {
+				StringSerializer.QuoteChar, StringSerializer.ItemSeperator,
+           		StringSerializer.MapStartChar, StringSerializer.MapKeySeperator, StringSerializer.MapEndChar,
+           		StringSerializer.ListEndChar, StringSerializer.ListEndChar,
+           	};
+
+		readonly string fieldWithInvalidChars = string.Format("all {0} {1} {2} {3} {4} {5} {6} invalid chars",
+			StringSerializer.QuoteChar, StringSerializer.ItemSeperator,
+           		StringSerializer.MapStartChar, StringSerializer.MapKeySeperator, StringSerializer.MapEndChar,
+           		StringSerializer.ListEndChar, StringSerializer.ListEndChar);
+
 		readonly string[] stringValues = new[] { "One", "Two", "Three", "Four", "Five" };
 		readonly string[] stringValuesWithIllegalChar = new[] { "One", ",", "Three", "Four", "Five" };
 
@@ -320,7 +331,7 @@ namespace ServiceStack.Common.Tests.Text
 			Assert.That(actualValue, Is.EqualTo(byteArrayValue));
 		}
 
-		public T ConvertModel<T>(T model)
+		public T Serialize<T>(T model)
 		{
 			var strModel = StringSerializer.SerializeToString(model);
 			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
@@ -332,7 +343,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_ModelWithFieldsOfDifferentTypes()
 		{
 			var model = ModelWithFieldsOfDifferentTypes.Create(1);
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			ModelWithFieldsOfDifferentTypes.AssertIsEqual(toModel, model);
 		}
@@ -341,7 +352,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_ModelWithFieldsOfNullableTypes()
 		{
 			var model = ModelWithFieldsOfNullableTypes.Create(1);
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			ModelWithFieldsOfNullableTypes.AssertIsEqual(toModel, model);
 		}
@@ -350,7 +361,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_ModelWithFieldsOfNullableTypes_of_nullables()
 		{
 			var model = new ModelWithFieldsOfNullableTypes();
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			ModelWithFieldsOfNullableTypes.AssertIsEqual(toModel, model);
 		}
@@ -359,7 +370,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_ModelWithComplexTypes()
 		{
 			var model = ModelWithComplexTypes.Create(1);
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			ModelWithComplexTypes.AssertIsEqual(toModel, model);
 		}
@@ -368,7 +379,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_model_with_TypeChar()
 		{
 			var model = new ModelWithIdAndName { Id = 1, Name = "in } valid" };
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			ModelWithIdAndName.AssertIsEqual(toModel, model);
 		}
@@ -377,7 +388,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_model_with_ListChar()
 		{
 			var model = new ModelWithIdAndName { Id = 1, Name = "in [ valid" };
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			ModelWithIdAndName.AssertIsEqual(toModel, model);
 		}
@@ -386,16 +397,47 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_ArrayDtoWithOrders()
 		{
 			var model = DtoFactory.ArrayDtoWithOrders;
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			Assert.That(model.Equals(toModel), Is.True);
+		}
+
+		[Test]
+		public void Can_convert_Field_Map_or_List_with_invalid_chars()
+		{
+			var instance = new ModelWithMapAndList<string> {
+				Id = 1,
+				Name = fieldWithInvalidChars,
+				List = new List<string> { fieldWithInvalidChars, fieldWithInvalidChars },
+				Map = new Dictionary<string, string> { { fieldWithInvalidChars, fieldWithInvalidChars } },
+			};
+
+			Serialize(instance);
+		}
+
+		[Test]
+		public void Can_convert_Field_Map_or_List_with_single_invalid_char()
+		{
+			foreach (var invalidChar in allCharsUsed)
+			{
+				var singleInvalidChar = string.Format("a {0} b", invalidChar);
+
+				var instance = new ModelWithMapAndList<string> {
+					Id = 1,
+					Name = singleInvalidChar,
+					List = new List<string> { singleInvalidChar, singleInvalidChar },
+					Map = new Dictionary<string, string> { { singleInvalidChar, singleInvalidChar } },
+				};
+
+				Serialize(instance);
+			}
 		}
 
 		[Test]
 		public void Can_convert_CustomerDto()
 		{
 			var model = DtoFactory.CustomerDto;
-			var toModel = ConvertModel(model);
+			var toModel = Serialize(model);
 
 			Assert.That(model.Equals(toModel), Is.True);
 		}

@@ -49,6 +49,7 @@ namespace ServiceStack.Common.Text
 
 		public static ICollection<T> ParseCollection<T>(string value, Type createType, Func<string, object> parseFn)
 		{
+			if (value == null) return null;
 			var collection = (ICollection<T>)ReflectionUtils.CreateInstance(createType);
 			collection.CopyTo(ParseStringArrayMethods.ParseArray<T>(value, parseFn), 0);
 			return collection;

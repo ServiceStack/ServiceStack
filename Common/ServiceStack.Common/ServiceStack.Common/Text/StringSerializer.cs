@@ -25,7 +25,7 @@ namespace ServiceStack.Common.Text
 		public const string DoubleQuoteString = "\"\"";
 
 		public static readonly char[] CsvChars = new[] { ItemSeperator, QuoteChar };
-		public static readonly char[] EscapeChars = new[] { ItemSeperator, QuoteChar, MapStartChar, MapEndChar };
+		public static readonly char[] EscapeChars = new[] { QuoteChar, ItemSeperator, MapStartChar, MapKeySeperator, MapEndChar, ListStartChar, ListEndChar, };
 
 		/// <summary>
 		/// Determines whether the specified type is convertible from string.

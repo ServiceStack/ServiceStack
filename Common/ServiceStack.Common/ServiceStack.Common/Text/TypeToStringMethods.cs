@@ -64,8 +64,9 @@ namespace ServiceStack.Common.Text
 			writer.Write(StringSerializer.MapEndChar);
 		}
 
-
-		public static Func<object, object> GetPropertyValueMethod(Type type, PropertyInfo propertyInfo)
+#if !STATIC_ONLY
+		public static Func<object, object> GetPropertyValueMethod(
+			Type type, PropertyInfo propertyInfo)
 		{
 			var getMethodInfo = propertyInfo.GetGetMethod();
 			var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
@@ -82,6 +83,26 @@ namespace ServiceStack.Common.Text
 
 			return propertyGetFn;
 		}
+#else
+		public static Func<object, object> GetPropertyValueMethod(
+			Type type, PropertyInfo propertyInfo)
+		{
+			var mi = typeof(TypeToStringMethods).GetMethod("CreateFunc");
+
+			var genericMi = mi.MakeGenericMethod(type, propertyInfo.PropertyType);
+			var del = genericMi.Invoke(null, new[] { propertyInfo.GetGetMethod() });
+
+			return (Func<object, object>)del;
+		}
+
+		public static Func<object, object> CreateFunc<T1, T2>(MethodInfo mi)
+		{
+			if (mi == null) return null;
+			var del = (Func<T1, T2>)Delegate.CreateDelegate(typeof(Func<T1, T2>), mi);
+			return x => del((T1)x);
+		}
+#endif
+
 	}
 
 }

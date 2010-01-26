@@ -12,14 +12,17 @@
   <RecentFiles>
     <RecentFiles>
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteCreateTableWithIndexesTests.cs" caret="410" fromTop="15" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="1727" fromTop="64" />
       <File id="1887DC99-9139-43E3-A7AA-6D74714B3A5D/f:SqlServerOrmLiteDialectProvider.cs" caret="860" fromTop="25" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/d:Support/f:TestScripts.cs" caret="491" fromTop="19" />
-      <File id="CF68A37D-D071-469D-AE04-68594CB95382/f:SqliteOrmLiteDialectProvider.cs" caret="600" fromTop="19" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteTestBase.cs" caret="536" fromTop="21" />
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindCustomerToStringScenario.cs" caret="564" fromTop="15" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindSupplierToStringScenario.cs" caret="553" fromTop="19" />
+      <File id="6CEB3EDE-9F02-4F4F-BD8A-1B2939C1AE6E/f:ilmerge-all.bat" caret="94" fromTop="3" />
     </RecentFiles>
-    <RecentEdits />
+    <RecentEdits>
+      <File id="6CEB3EDE-9F02-4F4F-BD8A-1B2939C1AE6E/f:ilmerge-all.bat" caret="678" fromTop="14" />
+      <File id="6CEB3EDE-9F02-4F4F-BD8A-1B2939C1AE6E/f:ilmerge-all.bat" caret="611" fromTop="14" />
+    </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
     <Providers />

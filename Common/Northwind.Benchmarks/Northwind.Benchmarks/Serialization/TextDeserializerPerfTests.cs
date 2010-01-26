@@ -8,9 +8,9 @@ using Northwind.Common.ServiceModel;
 using Northwind.Perf;
 using NUnit.Framework;
 using Platform.Text;
+using ServiceStack.Client;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
-using ServiceStack.ServiceModel.Serialization;
 using JsonConvert=Jayrock.Json.Conversion.JsonConvert;
 
 namespace Northwind.Benchmarks.Serialization

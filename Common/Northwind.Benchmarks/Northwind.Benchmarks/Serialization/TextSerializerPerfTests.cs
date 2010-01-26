@@ -9,9 +9,9 @@ using Northwind.Perf;
 using NUnit.Framework;
 using Platform.Text;
 using ProtoBuf;
+using ServiceStack.Client;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
-using ServiceStack.ServiceModel.Serialization;
 
 namespace Northwind.Benchmarks.Serialization
 {
