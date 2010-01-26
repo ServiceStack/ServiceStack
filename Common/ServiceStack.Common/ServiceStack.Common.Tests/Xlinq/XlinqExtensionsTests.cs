@@ -50,8 +50,7 @@ namespace ServiceStack.Common.Tests.Xlinq
 			//OrmLiteConfig.DialectProvider = SqlServerOrmLiteDialectProvider.Instance;
 			OrmLiteConfig.DialectProvider = SqliteOrmLiteDialectProvider.Instance;
 
-			var el = XElement.Parse(xml);
-			var element2 = el.AnyElement("Body").AnyElement("Element1").AnyElement("Element2");
+			var element2 = XElement.Parse(xml).AnyElement("Body").AnyElement("Element1").AnyElement("Element2");
 
 			using (var db = ":memory:".OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
