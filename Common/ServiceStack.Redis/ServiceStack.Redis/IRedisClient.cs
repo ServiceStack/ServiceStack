@@ -1,3 +1,14 @@
+//
+// ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+//
+
 using System;
 using System.Collections.Generic;
 using ServiceStack.DesignPatterns.Model;
