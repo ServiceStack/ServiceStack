@@ -37,11 +37,11 @@ namespace Northwind.Benchmarks.Serialization
 		[Test]
 		public void Can_deserialize_CustomerDto()
 		{
-			var dtoString = StringSerializer.SerializeToString(customer);
+			var dtoString = TypeSerializer.SerializeToString(customer);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<CustomerDto>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<CustomerDto>(dtoString);
 
 			Assert.That(customer.Equals(newDto), Is.True);
 		}
@@ -49,11 +49,11 @@ namespace Northwind.Benchmarks.Serialization
 		[Test]
 		public void Can_deserialize_OrderDto()
 		{
-			var dtoString = StringSerializer.SerializeToString(order);
+			var dtoString = TypeSerializer.SerializeToString(order);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<OrderDto>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<OrderDto>(dtoString);
 
 			Assert.That(order.Equals(newDto), Is.True);
 		}
@@ -61,11 +61,11 @@ namespace Northwind.Benchmarks.Serialization
 		[Test]
 		public void Can_deserialize_SupplierDto()
 		{
-			var dtoString = StringSerializer.SerializeToString(supplier);
+			var dtoString = TypeSerializer.SerializeToString(supplier);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<SupplierDto>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<SupplierDto>(dtoString);
 
 			Assert.That(supplier.Equals(newDto), Is.True);
 		}
@@ -75,11 +75,11 @@ namespace Northwind.Benchmarks.Serialization
 		{
 			var multiDto = new MultiDto { Id = Guid.NewGuid(), Customer = customer, Supplier = supplier, };
 
-			var dtoString = StringSerializer.SerializeToString(multiDto);
+			var dtoString = TypeSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<MultiDto>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<MultiDto>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -89,11 +89,11 @@ namespace Northwind.Benchmarks.Serialization
 		{
 			var multiDto = DtoFactory.MultiDtoWithOrders;
 
-			var dtoString = StringSerializer.SerializeToString(multiDto);
+			var dtoString = TypeSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -103,11 +103,11 @@ namespace Northwind.Benchmarks.Serialization
 		{
 			var multiDto = DtoFactory.MultiOrderProperties;
 
-			var dtoString = StringSerializer.SerializeToString(multiDto);
+			var dtoString = TypeSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<MultiOrderProperties>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<MultiOrderProperties>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -117,11 +117,11 @@ namespace Northwind.Benchmarks.Serialization
 		{
 			var multiDto = DtoFactory.MultiCustomerProperties;
 
-			var dtoString = StringSerializer.SerializeToString(multiDto);
+			var dtoString = TypeSerializer.SerializeToString(multiDto);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<MultiCustomerProperties>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<MultiCustomerProperties>(dtoString);
 
 			Assert.That(multiDto.Equals(newDto), Is.True);
 		}
@@ -131,11 +131,11 @@ namespace Northwind.Benchmarks.Serialization
 		{
 			var arrayDto = DtoFactory.ArrayDtoWithOrders;
 
-			var dtoString = StringSerializer.SerializeToString(arrayDto);
+			var dtoString = TypeSerializer.SerializeToString(arrayDto);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoString);
 
 			Assert.That(arrayDto.Equals(newDto), Is.True);
 		}
@@ -145,11 +145,11 @@ namespace Northwind.Benchmarks.Serialization
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString);
 
 			Assert.That(dto.Equals(newDto), Is.True);
 		}
@@ -159,11 +159,11 @@ namespace Northwind.Benchmarks.Serialization
 		{
 			var dto = DtoFactory.CustomerOrderArrayDto;
 
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 
 			Log(dtoString);
 
-			var newDto = StringSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoString);
 
 			Assert.That(dto.Equals(newDto), Is.True);
 		}
@@ -172,14 +172,14 @@ namespace Northwind.Benchmarks.Serialization
 		public void profile_Serialize_MultiDtoWithOrders()
 		{
 			var dto = DtoFactory.MultiDtoWithOrders;
-			100.Times(i => StringSerializer.SerializeToString(dto));
+			100.Times(i => TypeSerializer.SerializeToString(dto));
 		}
 
 		[Test]
 		public void profile_Deserialize_MultiDtoWithOrders()
 		{
 			const string dtoString = "{Id=f8e1b4a8-a8d2-4d39-a92e-426809821474	Customer={Id=1	CompanyName=Alfreds Futterkiste	ContactName=Maria Anders	ContactTitle=Sales Representative	Address=Obere Str. 57	City=Berlin	Region=	PostalCode=12209	Country=Germany	Phone=030-0074321	Fax=030-0076545	Picture=}	Supplier={Id=1	CompanyName=Exotic Liquids	ContactName=Charlotte Cooper	ContactTitle=Purchasing Manager	Address=49 Gilbert St.	City=London	Region=	PostalCode=EC1 4SD	Country=UK	Phone=(171) 555-2222	Fax=	HomePage=}	Orders={Id=1	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=2	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=3	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France},{Id=4	CustomerId=VINET	EmployeeId=5	OrderDate=04/07/1996 00:00:00	RequiredDate=08/01/1996 00:00:00	ShippedDate=16/07/1996 00:00:00	ShipVia=3	Freight=32.38	ShipName=Vins et alcools Chevalier	ShipAddress=59 rue de l'Abbaye	ShipCity=Reims	ShipRegion=	ShipPostalCode=51100	ShipCountry=France}}";
-			var newDto = StringSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString);
+			var newDto = TypeSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString);
 		}
 
 	}

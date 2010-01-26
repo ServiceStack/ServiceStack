@@ -158,7 +158,7 @@ namespace ServiceStack.Common.Text
 		public static void WriteItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
 		{
 			if (ranOnce)
-				writer.Write(StringSerializer.ItemSeperator);
+				writer.Write(TypeSerializer.ItemSeperator);
 			else
 				ranOnce = true;
 		}
@@ -168,7 +168,7 @@ namespace ServiceStack.Common.Text
 			Action<TextWriter, object> writeKeyFn = null;
 			Action<TextWriter, object> writeValueFn = null;
 
-			writer.Write(StringSerializer.MapStartChar);
+			writer.Write(TypeSerializer.MapStartChar);
 
 			var ranOnce = false;
 			foreach (var key in map.Keys)
@@ -185,12 +185,12 @@ namespace ServiceStack.Common.Text
 
 				writeKeyFn(writer, key);
 
-				writer.Write(StringSerializer.MapKeySeperator);
+				writer.Write(TypeSerializer.MapKeySeperator);
 
-				writeValueFn(writer, dictionaryValue ?? StringSerializer.MapNullValue);
+				writeValueFn(writer, dictionaryValue ?? TypeSerializer.MapNullValue);
 			}
 
-			writer.Write(StringSerializer.MapEndChar);
+			writer.Write(TypeSerializer.MapEndChar);
 		}
 
 		public static void WriteGenericIDictionary<K, V>(
@@ -199,7 +199,7 @@ namespace ServiceStack.Common.Text
 			Action<TextWriter, object> writeKeyFn,
 			Action<TextWriter, object> writeValueFn)
 		{
-			writer.Write(StringSerializer.MapStartChar);
+			writer.Write(TypeSerializer.MapStartChar);
 
 			var ranOnce = false;
 			foreach (var key in map.Keys)
@@ -210,12 +210,12 @@ namespace ServiceStack.Common.Text
 
 				writeKeyFn(writer, key);
 
-				writer.Write(StringSerializer.MapKeySeperator);
+				writer.Write(TypeSerializer.MapKeySeperator);
 
 				writeValueFn(writer, mapValue);
 			}
 
-			writer.Write(StringSerializer.MapEndChar);
+			writer.Write(TypeSerializer.MapEndChar);
 		}
 
 	}

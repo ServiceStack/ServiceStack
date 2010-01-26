@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
-using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
@@ -43,7 +42,7 @@ namespace ServiceStack.Common.Text
 		public static void TypeToString(TextWriter writer, object value, string[] propertyNames,
 			Func<object, object>[] getterFns, Action<TextWriter, object>[] writeFns)
 		{
-			writer.Write(StringSerializer.MapStartChar);
+			writer.Write(TypeSerializer.MapStartChar);
 
 			var ranOnce = false;
 			var propertyNamesLength = propertyNames.Length;
@@ -57,11 +56,11 @@ namespace ServiceStack.Common.Text
 				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				writer.Write(propertyName);
-				writer.Write(StringSerializer.MapKeySeperator);
+				writer.Write(TypeSerializer.MapKeySeperator);
 				writeFns[i](writer, propertyValue);
 			}
 
-			writer.Write(StringSerializer.MapEndChar);
+			writer.Write(TypeSerializer.MapEndChar);
 		}
 
 #if !STATIC_ONLY

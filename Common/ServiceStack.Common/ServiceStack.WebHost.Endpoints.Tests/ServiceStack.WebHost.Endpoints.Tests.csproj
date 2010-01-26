@@ -78,15 +78,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="HttpRequestExtensionsTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
+    <Compile Include="ServiceHostTestBase.cs" />
+    <Compile Include="Support\Services\HttpPostXmlAndSecureLocalSubnetRestrictionService.cs" />
+    <Compile Include="Support\Services\HttpPostXmlOrSecureLocalSubnetRestrictionService.cs" />
+    <Compile Include="Support\Services\SecureLocalSubnetRestrictionService.cs" />
+    <Compile Include="Support\Services\InternalRestrictionService.cs" />
+    <Compile Include="Support\Services\LocalhostRestrictionService.cs" />
+    <Compile Include="Support\Services\LocalSubnetRestrictionService.cs" />
+    <Compile Include="Support\Services\NestedService.cs" />
     <Compile Include="ServiceStackHostTests.cs" />
     <Compile Include="Support\Operations\GetCustomerResponse.cs" />
     <Compile Include="Support\Operations\GetCustomers.cs" />
     <Compile Include="Support\Operations\GetCustomersResponse.cs" />
     <Compile Include="Support\Operations\StoreCustomer.cs" />
+    <Compile Include="Support\Services\TestServiceBase.cs" />
+    <Compile Include="Support\Host\TestAppHost.cs" />
     <Compile Include="TestBase.cs" />
+    <Compile Include="Support\Services\TestService.cs" />
     <Compile Include="WsdlMetadataTests.cs" />
     <Compile Include="OperationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -73,11 +73,11 @@ namespace Northwind.Benchmarks.Serialization
 			return JsonConvert.DeserializeObject<T>(dtoString);
 		}
 
-		public T With_StringSerializer<T>(T dto)
+		public T With_TypeSerializer<T>(T dto)
 		{
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			LogDto(dtoString);
-			return StringSerializer.DeserializeFromString<T>(dtoString);
+			return TypeSerializer.DeserializeFromString<T>(dtoString);
 		}
 
 		public T With_TextSerializer<T>(T dto)
@@ -105,7 +105,7 @@ namespace Northwind.Benchmarks.Serialization
 				Log("AssertEqual Error in ProtoBuf: {0}", ex);
 			}
 			AssertEqual(With_JsonNet(dto), dto);
-			AssertEqual(With_StringSerializer(dto), dto);
+			AssertEqual(With_TypeSerializer(dto), dto);
 			try
 			{
 				AssertEqual(With_TextSerializer(dto), dto);
@@ -151,9 +151,9 @@ namespace Northwind.Benchmarks.Serialization
 			totalAvg += RunMultipleTimes(() => JsonConvert.DeserializeObject<T>(dtoJsonNet), "JsonConvert.DeserializeObject<T>(dtoJsonNet)");
 			Log("Total Avg: " + totalAvg / 2);
 
-			var dtoString = StringSerializer.SerializeToString(dto);
-			totalAvg = RunMultipleTimes(() => StringSerializer.SerializeToString(dto), "StringSerializer.SerializeToString(dto)");
-			totalAvg += RunMultipleTimes(() => StringSerializer.DeserializeFromString<T>(dtoString), "StringSerializer.DeserializeFromString<T>(dtoString)");
+			var dtoString = TypeSerializer.SerializeToString(dto);
+			totalAvg = RunMultipleTimes(() => TypeSerializer.SerializeToString(dto), "TypeSerializer.SerializeToString(dto)");
+			totalAvg += RunMultipleTimes(() => TypeSerializer.DeserializeFromString<T>(dtoString), "TypeSerializer.DeserializeFromString<T>(dtoString)");
 			Log("Len: " + dtoString.Length);
 			Log("Total Avg: " + totalAvg / 2);
 

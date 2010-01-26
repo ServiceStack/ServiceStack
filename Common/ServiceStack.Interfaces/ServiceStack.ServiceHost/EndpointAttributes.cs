@@ -23,12 +23,23 @@ namespace ServiceStack.ServiceHost
 		//Javascript
 		Json = 128,
 		
+		//TypeSerializer, Csv
+		Text = 256,
+		
+		//protobuf-net
+		Binary = 512,
+
 		//HTTP request type
-		HttpGet = 256,
-		HttpPost = 512,
+		HttpGet = 1024,
+		HttpPost = 2048,
 		
 		//Whether it came from an Internal or External address
-		Internal = 1024,
-		External = 2048,
+		Localhost = 4096,
+		LocalSubnet = 16384,
+
+		//will be set if its either Localhost or LocalSubnet
+		Internal = 32768,
+
+		External = 65536,
 	}
 }

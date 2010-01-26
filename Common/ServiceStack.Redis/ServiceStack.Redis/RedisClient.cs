@@ -447,7 +447,7 @@ namespace ServiceStack.Redis
 		{
 			var key = IdUtils.CreateUrn<T>(id);
 			var valueString = this.GetString(key);
-			var value = StringSerializer.DeserializeFromString<T>(valueString);
+			var value = TypeSerializer.DeserializeFromString<T>(valueString);
 			return value;
 		}
 
@@ -468,7 +468,7 @@ namespace ServiceStack.Redis
 			where T : class, new()
 		{
 			var urnKey = entity.CreateUrn();
-			var valueString = StringSerializer.SerializeToString(entity);
+			var valueString = TypeSerializer.SerializeToString(entity);
 			this.SetString(urnKey, valueString);
 
 			return entity;

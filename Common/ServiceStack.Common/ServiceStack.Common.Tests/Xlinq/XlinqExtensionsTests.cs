@@ -67,7 +67,7 @@ namespace ServiceStack.Common.Tests.Xlinq
 					};
 					dbCmd.Insert(xmlData);
 				}
-				dbCmd.Select<XmlData>().ForEach(x => Console.WriteLine(StringSerializer.SerializeToString(x)));
+				dbCmd.Select<XmlData>().ForEach(x => Console.WriteLine(TypeSerializer.SerializeToString(x)));
 			}
 		}
 

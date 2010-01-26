@@ -10,29 +10,29 @@ using ServiceStack.Common.Text;
 namespace ServiceStack.Common.Utils
 {
 	/// <summary>
-	/// Wrapper around StringSerializer, use it instead
+	/// Wrapper around TypeSerializer, use it instead
 	/// </summary>
-	[Obsolete("Use StringSerializer instead")]
+	[Obsolete("Use TypeSerializer instead")]
 	public static class StringConverterUtils
 	{
 		public static bool CanCreateFromString(Type type)
 		{
-			return StringSerializer.CanCreateFromString(type);
+			return TypeSerializer.CanCreateFromString(type);
 		}
 
 		public static T Parse<T>(string value)
 		{
-			return StringSerializer.DeserializeFromString<T>(value);
+			return TypeSerializer.DeserializeFromString<T>(value);
 		}
 
 		public static object Parse(string value, Type type)
 		{
-			return StringSerializer.DeserializeFromString(value, type);
+			return TypeSerializer.DeserializeFromString(value, type);
 		}
 
 		public static string ToString(object value)
 		{
-			return StringSerializer.SerializeToString(value);
+			return TypeSerializer.SerializeToString(value);
 		}
 	}
 

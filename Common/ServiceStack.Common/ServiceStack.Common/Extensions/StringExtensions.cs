@@ -35,22 +35,22 @@ namespace ServiceStack.Common.Extensions
 
 		public static T To<T>(this string value)
 		{
-			return StringSerializer.DeserializeFromString<T>(value);
+			return TypeSerializer.DeserializeFromString<T>(value);
 		}
 
 		public static T To<T>(this string value, T defaultValue)
 		{
-			return string.IsNullOrEmpty(value) ? defaultValue : StringSerializer.DeserializeFromString<T>(value);
+			return string.IsNullOrEmpty(value) ? defaultValue : TypeSerializer.DeserializeFromString<T>(value);
 		}
 
 		public static T ToOrDefaultValue<T>(this string value)
 		{
-			return string.IsNullOrEmpty(value) ? default(T) : StringSerializer.DeserializeFromString<T>(value);
+			return string.IsNullOrEmpty(value) ? default(T) : TypeSerializer.DeserializeFromString<T>(value);
 		}
 
 		public static object To(this string value, Type type)
 		{
-			return StringSerializer.DeserializeFromString(value, type);
+			return TypeSerializer.DeserializeFromString(value, type);
 		}
 
 		public static bool IsEmpty(this string value)

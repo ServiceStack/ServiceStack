@@ -22,8 +22,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_from_Customer_to_Dictionary()
 		{
 			var model = DtoFactory.CustomerDto;
-			var modelString = StringSerializer.SerializeToString(model);
-			var translateToModel = StringSerializer.DeserializeFromString<Dictionary<string, string>>(modelString);
+			var modelString = TypeSerializer.SerializeToString(model);
+			var translateToModel = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(modelString);
 
 			AssertDictonaryIsEqualToCustomer(model, translateToModel);
 		}
@@ -49,8 +49,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_ModelWithFieldsOfDifferentTypes_to_string_Dictionary()
 		{
 			var model = ModelWithFieldsOfDifferentTypes.Create(1);
-			var modelString = StringSerializer.SerializeToString(model);
-			var translateToModel = StringSerializer.DeserializeFromString<Dictionary<string, string>>(modelString);
+			var modelString = TypeSerializer.SerializeToString(model);
+			var translateToModel = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(modelString);
 
 			Assert.That(translateToModel["Id"], Is.EqualTo(model.Id.ToString()));
 			Assert.That(translateToModel["Name"], Is.EqualTo(model.Name));
@@ -75,8 +75,8 @@ namespace ServiceStack.Common.Tests.Text
 				{ "LongId", "999" },
         	};
 
-			var modelString = StringSerializer.SerializeToString(model);
-			var translateToModel = StringSerializer.DeserializeFromString<ModelWithFieldsOfDifferentTypes>(modelString);
+			var modelString = TypeSerializer.SerializeToString(model);
+			var translateToModel = TypeSerializer.DeserializeFromString<ModelWithFieldsOfDifferentTypes>(modelString);
 
 			Assert.That(translateToModel.Id, Is.EqualTo(int.Parse(model["Id"])));
 			Assert.That(translateToModel.Name, Is.EqualTo(model["Name"]));
@@ -91,8 +91,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_ModelWithFieldsOfDifferentTypes_to_object_Dictionary()
 		{
 			var model = ModelWithFieldsOfDifferentTypes.Create(1);
-			var modelString = StringSerializer.SerializeToString(model);
-			var translateToModel = StringSerializer.DeserializeFromString<Dictionary<string, object>>(modelString);
+			var modelString = TypeSerializer.SerializeToString(model);
+			var translateToModel = TypeSerializer.DeserializeFromString<Dictionary<string, object>>(modelString);
 
 			Assert.That(translateToModel["Id"], Is.EqualTo(model.Id.ToString()));
 			Assert.That(translateToModel["Bool"], Is.EqualTo(model.Bool.ToString()));
@@ -107,8 +107,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_Dictionary_to_ModelWithIdAndName()
 		{
 			var model = new Dictionary<string, string> { { "Id", "1" }, { "Name", "Name" } };
-			var modelString = StringSerializer.SerializeToString(model);
-			var translateToModel = StringSerializer.DeserializeFromString<ModelWithIdAndName>(modelString);
+			var modelString = TypeSerializer.SerializeToString(model);
+			var translateToModel = TypeSerializer.DeserializeFromString<ModelWithIdAndName>(modelString);
 
 			Assert.That(translateToModel.Id, Is.EqualTo(int.Parse(model["Id"])));
 			Assert.That(translateToModel.Name, Is.EqualTo(model["Name"]));
@@ -125,8 +125,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_MultiCustomerProperties_to_MultiCustomerDictionaries()
 		{
 			var model = DtoFactory.MultiCustomerProperties;
-			var modelString = StringSerializer.SerializeToString(model);
-			var translateToModel = StringSerializer.DeserializeFromString<MultiCustomerDictionaries>(modelString);
+			var modelString = TypeSerializer.SerializeToString(model);
+			var translateToModel = TypeSerializer.DeserializeFromString<MultiCustomerDictionaries>(modelString);
 
 			AssertDictonaryIsEqualToCustomer(model.Customer1, translateToModel.Customer1);
 			AssertDictonaryIsEqualToCustomer(model.Customer2, translateToModel.Customer2);

@@ -1,20 +1,21 @@
 using System;
+using System.Collections.Generic;
 
 namespace ServiceStack.ServiceHost
 {
 	public class ServiceAttribute
 		: Attribute
 	{
-		public EndpointAttributes AccessRestrictions { get; set; }
+		public List<EndpointAttributes> AccessRestrictions { get; set; }
 		public int? Version { get; set; }
 
-		public ServiceAttribute(EndpointAttributes restrictAccessTo)
+		public ServiceAttribute(params EndpointAttributes[] restrictAccessToScenarios)
 		{
-			this.AccessRestrictions = restrictAccessTo;
+			this.AccessRestrictions = new List<EndpointAttributes>(restrictAccessToScenarios);
 		}
 
-		public ServiceAttribute(EndpointAttributes endpointAttributes, int version)
-			: this(endpointAttributes)
+		public ServiceAttribute(int version, params EndpointAttributes[] restrictAccessScenarios)
+			: this(restrictAccessScenarios)
 		{
 			this.Version = version;
 		}

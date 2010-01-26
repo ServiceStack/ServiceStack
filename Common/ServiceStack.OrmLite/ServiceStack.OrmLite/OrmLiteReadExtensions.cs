@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.OrmLite
@@ -210,7 +211,7 @@ namespace ServiceStack.OrmLite
 		{
 			while (reader.Read())
 			{
-				return StringConverterUtils.Parse<T>(reader.GetValue(0).ToString());
+				return TypeSerializer.DeserializeFromString<T>(reader.GetValue(0).ToString());
 			}
 			return default(T);
 		}

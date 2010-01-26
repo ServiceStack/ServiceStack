@@ -75,7 +75,7 @@ namespace ServiceStack.Common.Text
 			value = value.Substring(1, value.Length - 2);
 			if (value == string.Empty) return new T[0];
 
-			if (value[0] == StringSerializer.MapStartChar)
+			if (value[0] == TypeSerializer.MapStartChar)
 			{
 				var itemValues = new List<string>();
 				var i = 0;

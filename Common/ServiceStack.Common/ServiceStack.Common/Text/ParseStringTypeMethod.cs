@@ -35,9 +35,9 @@ namespace ServiceStack.Common.Text
 		private static object StringToType(string strType, Func<object> ctorFn,
 			IDictionary<string, Action<object, object>> setterMap, IDictionary<string, Func<string, object>> parseStringFnMap)
 		{
-			if (strType[0] != StringSerializer.MapStartChar)
+			if (strType[0] != TypeSerializer.MapStartChar)
 				throw new SerializationException(string.Format(
-					"Type definitions should start with a '{0}'", StringSerializer.MapStartChar));
+					"Type definitions should start with a '{0}'", TypeSerializer.MapStartChar));
 
 			var instance = ctorFn();
 			string propertyName;
@@ -71,7 +71,7 @@ namespace ServiceStack.Common.Text
 		private static string EatPropertyName(string value, ref int i)
 		{
 			var tokenStartPos = i;
-			while (value[++i] != StringSerializer.MapKeySeperator) { }
+			while (value[++i] != TypeSerializer.MapKeySeperator) { }
 			return value.Substring(tokenStartPos, i - tokenStartPos);
 		}
 
@@ -82,54 +82,54 @@ namespace ServiceStack.Common.Text
 			var valueChar = value[i];
 
 			if (i == valueLength
-				|| valueChar == StringSerializer.ItemSeperator
-				|| valueChar == StringSerializer.MapEndChar)
+				|| valueChar == TypeSerializer.ItemSeperator
+				|| valueChar == TypeSerializer.MapEndChar)
 			{
 				return null;
 			}
 
 			//Is List, i.e. [...]
 			var withinQuotes = false;
-			if (valueChar == StringSerializer.ListStartChar)
+			if (valueChar == TypeSerializer.ListStartChar)
 			{
 				var endsToEat = 1;
 				while (++i < valueLength && endsToEat > 0)
 				{
 					valueChar = value[i];
 
-					if (valueChar == StringSerializer.QuoteChar)
+					if (valueChar == TypeSerializer.QuoteChar)
 						withinQuotes = !withinQuotes;
 
 					if (withinQuotes)
 						continue;
 
-					if (valueChar == StringSerializer.ListStartChar)
+					if (valueChar == TypeSerializer.ListStartChar)
 						endsToEat++;
 
-					if (valueChar == StringSerializer.ListEndChar)
+					if (valueChar == TypeSerializer.ListEndChar)
 						endsToEat--;
 				}
 				return value.Substring(tokenStartPos, i - tokenStartPos);
 			}
 
 			//Is Type/Map, i.e. {...}
-			if (valueChar == StringSerializer.MapStartChar)
+			if (valueChar == TypeSerializer.MapStartChar)
 			{
 				var endsToEat = 1;
 				while (++i < valueLength && endsToEat > 0)
 				{
 					valueChar = value[i];
 
-					if (valueChar == StringSerializer.QuoteChar)
+					if (valueChar == TypeSerializer.QuoteChar)
 						withinQuotes = !withinQuotes;
 
 					if (withinQuotes)
 						continue;
 
-					if (valueChar == StringSerializer.MapStartChar)
+					if (valueChar == TypeSerializer.MapStartChar)
 						endsToEat++;
 
-					if (valueChar == StringSerializer.MapEndChar)
+					if (valueChar == TypeSerializer.MapEndChar)
 						endsToEat--;
 				}
 				return value.Substring(tokenStartPos, i - tokenStartPos);
@@ -137,15 +137,15 @@ namespace ServiceStack.Common.Text
 
 
 			//Is Within Quotes, i.e. "..."
-			if (valueChar == StringSerializer.QuoteChar)
+			if (valueChar == TypeSerializer.QuoteChar)
 			{
 				while (++i < valueLength)
 				{
 					valueChar = value[i];
 
-					if (valueChar != StringSerializer.QuoteChar) continue;
+					if (valueChar != TypeSerializer.QuoteChar) continue;
 				
-					var isLiteralQuote = i + 1 < valueLength && value[i + 1] == StringSerializer.QuoteChar;
+					var isLiteralQuote = i + 1 < valueLength && value[i + 1] == TypeSerializer.QuoteChar;
 
 					i++; //skip quote
 					if (!isLiteralQuote)
@@ -159,8 +159,8 @@ namespace ServiceStack.Common.Text
 			{
 				valueChar = value[i];
 
-				if (valueChar == StringSerializer.ItemSeperator
-					|| valueChar == StringSerializer.MapEndChar)
+				if (valueChar == TypeSerializer.ItemSeperator
+					|| valueChar == TypeSerializer.MapEndChar)
 				{
 					break;
 				}

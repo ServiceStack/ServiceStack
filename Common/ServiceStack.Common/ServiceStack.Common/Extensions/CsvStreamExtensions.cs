@@ -36,7 +36,7 @@ namespace ServiceStack.Common.Extensions
 				foreach (var propertyInfo in recordType.GetProperties())
 				{
 					if (!propertyInfo.CanRead || propertyInfo.GetGetMethod() == null) continue;
-					if (!StringSerializer.CanCreateFromString(propertyInfo.PropertyType)) continue;
+					if (!TypeSerializer.CanCreateFromString(propertyInfo.PropertyType)) continue;
 					//if (propertyInfo.PropertyType.FindInterfaces((x, criteria) => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IList<>), null).Length > 0) continue;
 
 					propertyGetters.Add(propertyInfo.GetGetMethod());
@@ -52,7 +52,7 @@ namespace ServiceStack.Common.Extensions
 
 						var strValue = value.GetType() == typeof(string)
 							? (string) value
-							: StringSerializer.SerializeToString(value);
+							: TypeSerializer.SerializeToString(value);
 
 						row.Add(strValue);
 					}
@@ -67,7 +67,7 @@ namespace ServiceStack.Common.Extensions
 				{
 					var strValue = recordType == typeof(string)
 						? value as string
-						: StringSerializer.SerializeToString(value);
+						: TypeSerializer.SerializeToString(value);
 
 					row.Add(strValue);
 				}

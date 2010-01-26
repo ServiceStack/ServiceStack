@@ -46,13 +46,13 @@ namespace Northwind.Benchmarks.Serialization
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
 			var dtoJayrock = JsonConvert.ExportToString(dto);
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
 
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<CustomerDto>(dtoXml), "DataContractDeserializer.Instance.Parse<CustomerDto>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<CustomerDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<CustomerDto>(dtoJson)");
 			RunMultipleTimes(() => JsonConvert.Import(typeof(CustomerDto), dtoJayrock), "JsonConvert.Import(typeof(CustomerDto), dtoJayrock)");
-			RunMultipleTimes(() => StringSerializer.DeserializeFromString<CustomerDto>(dtoString), "StringSerializer.DeserializeFromString<CustomerDto>(dtoString)");
+			RunMultipleTimes(() => TypeSerializer.DeserializeFromString<CustomerDto>(dtoString), "TypeSerializer.DeserializeFromString<CustomerDto>(dtoString)");
 			RunMultipleTimes(() => TextSerializer.DeserializeFromString<CustomerDto>(dtoPlatformText), "TextSerializer.DeserializeFromString<CustomerDto>(dtoPlatformText)");
 		}
 
@@ -63,12 +63,12 @@ namespace Northwind.Benchmarks.Serialization
 
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
 
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<OrderDto>(dtoXml), "DataContractDeserializer.Instance.Parse<OrderDto>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<OrderDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<OrderDto>(dtoJson)");
-			RunMultipleTimes(() => StringSerializer.DeserializeFromString<OrderDto>(dtoString), "StringSerializer.DeserializeFromString<OrderDto>(dtoString)");
+			RunMultipleTimes(() => TypeSerializer.DeserializeFromString<OrderDto>(dtoString), "TypeSerializer.DeserializeFromString<OrderDto>(dtoString)");
 			RunMultipleTimes(() => TextSerializer.DeserializeFromString<OrderDto>(dtoPlatformText), "TextSerializer.DeserializeFromString<OrderDto>(dtoPlatformText)");
 		}
 
@@ -79,12 +79,12 @@ namespace Northwind.Benchmarks.Serialization
 
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
 
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<SupplierDto>(dtoXml), "DataContractDeserializer.Instance.Parse<SupplierDto>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<SupplierDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<SupplierDto>(dtoJson)");
-			RunMultipleTimes(() => StringSerializer.DeserializeFromString<SupplierDto>(dtoString), "StringSerializer.DeserializeFromString<SupplierDto>(dtoString)");
+			RunMultipleTimes(() => TypeSerializer.DeserializeFromString<SupplierDto>(dtoString), "TypeSerializer.DeserializeFromString<SupplierDto>(dtoString)");
 			RunMultipleTimes(() => TextSerializer.DeserializeFromString<SupplierDto>(dtoPlatformText), "TextSerializer.DeserializeFromString<SupplierDto>(dtoPlatformText)");
 		}
 
@@ -95,12 +95,12 @@ namespace Northwind.Benchmarks.Serialization
 
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
 
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoXml), "DataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<MultiDtoWithOrders>(dtoJson)");
-			RunMultipleTimes(() => StringSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString), "StringSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString)");
+			RunMultipleTimes(() => TypeSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString), "TypeSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoString)");
 			RunMultipleTimes(() => TextSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoPlatformText), "TextSerializer.DeserializeFromString<MultiDtoWithOrders>(dtoPlatformText)");
 		}
 
@@ -111,12 +111,12 @@ namespace Northwind.Benchmarks.Serialization
 
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
 
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoXml), "DataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<ArrayDtoWithOrders>(dtoJson)");
-			RunMultipleTimes(() => StringSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoString), "StringSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoString)");
+			RunMultipleTimes(() => TypeSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoString), "TypeSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoString)");
 			RunMultipleTimes(() => TextSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoPlatformText), "TextSerializer.DeserializeFromString<ArrayDtoWithOrders>(dtoPlatformText)");
 		}
 
@@ -127,12 +127,12 @@ namespace Northwind.Benchmarks.Serialization
 
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
 
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoXml), "DataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<CustomerOrderListDto>(dtoJson)");
-			RunMultipleTimes(() => StringSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString), "StringSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString)");
+			RunMultipleTimes(() => TypeSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString), "TypeSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString)");
 			RunMultipleTimes(() => TextSerializer.DeserializeFromString<CustomerOrderListDto>(dtoPlatformText), "TextSerializer.DeserializeFromString<CustomerOrderListDto>(dtoPlatformText)");
 		}
 
@@ -144,13 +144,13 @@ namespace Northwind.Benchmarks.Serialization
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
 			//var dtoJayrock = JsonConvert.ExportToString(dto);
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
 
 			RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoXml), "DataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoXml)");
 			RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<CustomerOrderArrayDto>(dtoJson)");
 			//RunMultipleTimes(() => JsonConvert.Import(typeof(CustomerOrderArrayDto), dtoJayrock), "JsonConvert.Import(typeof(CustomerOrderArrayDto), dtoJayrock)");  #doesn't do nullables
-			RunMultipleTimes(() => StringSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoString), "StringSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoString)");
+			RunMultipleTimes(() => TypeSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoString), "TypeSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoString)");
 			RunMultipleTimes(() => TextSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoPlatformText), "TextSerializer.DeserializeFromString<CustomerOrderArrayDto>(dtoPlatformText)");
 		}
 	}

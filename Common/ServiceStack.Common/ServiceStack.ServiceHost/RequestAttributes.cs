@@ -1,8 +1,7 @@
 using System;
 using System.Web;
-using ServiceStack.ServiceHost;
 
-namespace ServiceStack.ServiceInterface
+namespace ServiceStack.ServiceHost
 {
 	public class RequestAttributes : IRequestAttributes
 	{
@@ -64,5 +63,4 @@ namespace ServiceStack.ServiceInterface
 		}
 	
 	}
-
 }

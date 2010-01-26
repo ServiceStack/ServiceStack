@@ -62,6 +62,7 @@
     <Compile Include="Environment.cs" />
     <Compile Include="Expressions\DelegateFactory.cs" />
     <Compile Include="Extensions\ActionExecExtensions.cs" />
+    <Compile Include="Extensions\IPAddressExtensions.cs" />
     <Compile Include="Extensions\CsvStreamExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ExecExtensions.cs" />
@@ -93,7 +94,7 @@
     <Compile Include="Text\ParseStringListMethods.cs" />
     <Compile Include="Text\ParseStringBuiltinMethods.cs" />
     <Compile Include="Text\ParseStringTypeConstructor.cs" />
-    <Compile Include="Text\StringSerializer.cs" />
+    <Compile Include="Text\TypeSerializer.cs" />
     <Compile Include="Text\ToStringListMethods.cs" />
     <Compile Include="Text\TypeRegistration.cs" />
     <Compile Include="Text\TypeToStringMethods.cs" />

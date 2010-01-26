@@ -30,6 +30,8 @@
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="338" fromTop="14" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="629" fromTop="17" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="652" fromTop="0" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:DatabaseScenarioBase.cs" caret="451" fromTop="22" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TypeToStringTests.cs" caret="1376" fromTop="31" />
     </RecentFiles>
     <RecentEdits>
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="2231" fromTop="28" />
@@ -37,6 +39,7 @@
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="1230" fromTop="22" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="239" fromTop="9" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="652" fromTop="29" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TypeToStringTests.cs" caret="1691" fromTop="23" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

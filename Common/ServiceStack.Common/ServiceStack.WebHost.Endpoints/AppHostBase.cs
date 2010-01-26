@@ -84,6 +84,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public void SetConfig(EndpointHostConfig config)
 		{
 			EndpointHost.Config = config;
+			this.serviceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 		}
 
 		public virtual object ExecuteService(object requestDto)

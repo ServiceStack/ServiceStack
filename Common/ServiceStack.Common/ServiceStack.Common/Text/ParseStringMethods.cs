@@ -93,9 +93,9 @@ namespace ServiceStack.Common.Text
 			var typeEndsToEat = 1;
 			while (++i < value.Length && typeEndsToEat > 0)
 			{
-				if (value[i] == StringSerializer.MapStartChar)
+				if (value[i] == TypeSerializer.MapStartChar)
 					typeEndsToEat++;
-				if (value[i] == StringSerializer.MapEndChar)
+				if (value[i] == TypeSerializer.MapEndChar)
 					typeEndsToEat--;
 			}
 			return value.Substring(tokenStartPos, i - tokenStartPos);
@@ -104,19 +104,19 @@ namespace ServiceStack.Common.Text
 
 		public static string EatKey(string value, ref int i)
 		{
-			return EatUntilCharFound(value, ref i, StringSerializer.MapKeySeperator);
+			return EatUntilCharFound(value, ref i, TypeSerializer.MapKeySeperator);
 		}
 
 		public static string EatValue(string value, ref int i)
 		{
-			return EatUntilCharFound(value, ref i, StringSerializer.ItemSeperator);
+			return EatUntilCharFound(value, ref i, TypeSerializer.ItemSeperator);
 		}
 
 		public static string EatUntilCharFound(string value, ref int i, char findChar)
 		{
 			var tokenStartPos = i;
 			var valueLength = value.Length;
-			if (value[tokenStartPos] != StringSerializer.QuoteChar)
+			if (value[tokenStartPos] != TypeSerializer.QuoteChar)
 			{
 				i = value.IndexOf(findChar, tokenStartPos);
 				if (i == -1) i = valueLength;
@@ -125,7 +125,7 @@ namespace ServiceStack.Common.Text
 
 			while (++i < valueLength)
 			{
-				if (value[i] == StringSerializer.QuoteChar
+				if (value[i] == TypeSerializer.QuoteChar
 					&& (i + 1 >= valueLength || value[i + 1] == findChar))
 				{
 					i++;

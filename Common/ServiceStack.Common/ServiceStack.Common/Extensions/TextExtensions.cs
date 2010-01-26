@@ -8,22 +8,22 @@ namespace ServiceStack.Common.Extensions
 	{
 		public static string ToCsvField(this string text)
 		{
-			return string.IsNullOrEmpty(text) || text.IndexOfAny(StringSerializer.EscapeChars) == -1
+			return string.IsNullOrEmpty(text) || text.IndexOfAny(TypeSerializer.EscapeChars) == -1
 				? text
 				: string.Concat
 					(
-						StringSerializer.QuoteString,
-						text.Replace(StringSerializer.QuoteString, StringSerializer.DoubleQuoteString),
-						StringSerializer.QuoteString
+						TypeSerializer.QuoteString,
+						text.Replace(TypeSerializer.QuoteString, TypeSerializer.DoubleQuoteString),
+						TypeSerializer.QuoteString
 					);
 		}
 
 		public static string FromCsvField(this string text)
 		{
-			return string.IsNullOrEmpty(text) || text[0] != StringSerializer.QuoteChar
+			return string.IsNullOrEmpty(text) || text[0] != TypeSerializer.QuoteChar
 				? text
 				: text.Substring(1, text.Length - 2)
-					.Replace(StringSerializer.DoubleQuoteString, StringSerializer.QuoteString);
+					.Replace(TypeSerializer.DoubleQuoteString, TypeSerializer.QuoteString);
 		}
 
 		public static List<string> FromCsvFields(this IEnumerable<string> texts)

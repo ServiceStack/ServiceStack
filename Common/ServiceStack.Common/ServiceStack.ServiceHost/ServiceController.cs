@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
@@ -25,6 +24,11 @@ namespace ServiceStack.ServiceHost
 
 		readonly Dictionary<Type, Func<IRequestContext, object, object>> requestExecMap 
 			= new Dictionary<Type, Func<IRequestContext, object, object>>();
+
+		readonly Dictionary<Type, ServiceAttribute> requestServiceAttrs 
+			= new Dictionary<Type, ServiceAttribute>();
+
+		public bool EnableAccessRestrictions { get; set; }
 
 		public IList<Type> AllOperationTypes { get; protected set; }
 
@@ -126,6 +130,12 @@ namespace ServiceStack.ServiceHost
 				return typeFactoryFn(dto, service);
 			};
 			requestExecMap.Add(requestType, handlerFn);
+
+			var serviceAttrs = requestType.GetCustomAttributes(typeof(ServiceAttribute), false);
+			if (serviceAttrs.Length > 0)
+			{
+				requestServiceAttrs.Add(requestType, (ServiceAttribute)serviceAttrs[0]);
+			}
 		}
 
 		private static void InjectRequestContext(object service, IRequestContext requestContext)
@@ -164,9 +174,15 @@ namespace ServiceStack.ServiceHost
 
 		public object Execute(object request, IRequestContext requestContext)
 		{
-			AssertServiceRestrictions(request.GetType(), 
-				requestContext != null ? requestContext.EndpointAttributes : EndpointAttributes.None);
-			var handlerFn = GetService(request.GetType());
+			var requestType = request.GetType();
+
+			if (EnableAccessRestrictions)
+			{
+				AssertServiceRestrictions(requestType,
+					requestContext != null ? requestContext.EndpointAttributes : EndpointAttributes.None);
+			}
+
+			var handlerFn = GetService(requestType);
 			return handlerFn(requestContext, request);
 		}
 
@@ -187,43 +203,37 @@ namespace ServiceStack.ServiceHost
 			throw new NotImplementedException();
 		}
 
-		public static void AssertServiceRestrictions(Type requestType, EndpointAttributes attributes)
+		public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)
 		{
-			var attrs = requestType.GetCustomAttributes(typeof(ServiceAttribute), false);
-			if (attrs.Length == 0)
+			ServiceAttribute serviceAttr;
+			var hasAccessRestrictions = requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
+				&& serviceAttr.AccessRestrictions.Count > 0;
+
+			if (!hasAccessRestrictions)
 			{
 				return;
 			}
+			
+			var requiredAttributesScenarios = serviceAttr.AccessRestrictions;
 
-			var portAttr = (ServiceAttribute)attrs[0];
-
-			var allPortRestrictionsMet = (portAttr.AccessRestrictions & attributes) == portAttr.AccessRestrictions;
-			if (allPortRestrictionsMet)
+			var failedScenarios = new StringBuilder();
+			foreach (var requiredAttributes in requiredAttributesScenarios)
 			{
-				return;
-			}
-
-			var failedRestrictions = new StringBuilder();
-			foreach (EndpointAttributes value in Enum.GetValues(typeof(EndpointAttributes)))
-			{
-				var attributeInCurrentRequest = (attributes & value) == value;
-				if (attributeInCurrentRequest)
+				var allServiceRestrictionsMet = (requiredAttributes & actualAttributes) == requiredAttributes;
+				if (allServiceRestrictionsMet)
 				{
-					continue;
+					return;
 				}
 
-				//Not InCurrentRequest and Is in PortRestrictions
-				var portRestrictionNotMet = (portAttr.AccessRestrictions & value) == value;
-				if (portRestrictionNotMet)
-				{
-					if (failedRestrictions.Length != 0) failedRestrictions.Append(", ");
-					failedRestrictions.Append(value);
-				}
+				var passed = requiredAttributes & actualAttributes;
+				var failed = requiredAttributes & ~(passed);
+
+				failedScenarios.AppendFormat("\n -[{0}]", failed);
 			}
 
 			throw new UnauthorizedAccessException(
 				string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'",
-					requestType.Name, failedRestrictions));
+					requestType.Name, failedScenarios));
 		}
 	}
 

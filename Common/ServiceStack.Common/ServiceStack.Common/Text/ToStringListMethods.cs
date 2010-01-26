@@ -86,7 +86,7 @@ namespace ServiceStack.Common.Text
 		{
 			Action<TextWriter, object> toStringFn = null;
 
-			writer.Write(StringSerializer.ListStartChar);
+			writer.Write(TypeSerializer.ListStartChar);
 
 			var ranOnce = false;
 			foreach (var valueItem in valueCollection)
@@ -99,14 +99,14 @@ namespace ServiceStack.Common.Text
 				toStringFn(writer, valueItem);
 			}
 
-			writer.Write(StringSerializer.ListEndChar);
+			writer.Write(TypeSerializer.ListEndChar);
 		}
 
 		public static void WriteIList(TextWriter writer, IList list)
 		{
 			Action<TextWriter, object> writeFn = null;
 
-			writer.Write(StringSerializer.ListStartChar);
+			writer.Write(TypeSerializer.ListStartChar);
 
 			var ranOnce = false;
 			var listLength = list.Count;
@@ -121,12 +121,12 @@ namespace ServiceStack.Common.Text
 				writeFn(writer, item);
 			}
 
-			writer.Write(StringSerializer.ListEndChar);
+			writer.Write(TypeSerializer.ListEndChar);
 		}
 
 		public static void WriteStringArray(TextWriter writer, string[] list)
 		{
-			writer.Write(StringSerializer.ListStartChar);
+			writer.Write(TypeSerializer.ListStartChar);
 
 			var ranOnce = false;
 			var listLength = list.Length;
@@ -136,7 +136,7 @@ namespace ServiceStack.Common.Text
 				writer.Write(list[i].ToCsvField());
 			}
 
-			writer.Write(StringSerializer.ListEndChar);
+			writer.Write(TypeSerializer.ListEndChar);
 		}
 
 		public static Action<TextWriter, object> GetArrayToStringMethod(Type elementType)
@@ -159,7 +159,7 @@ namespace ServiceStack.Common.Text
 
 		public static void WriteGenericArray<T>(TextWriter writer, T[] list, Action<TextWriter, object> writeFn)
 		{
-			writer.Write(StringSerializer.ListStartChar);
+			writer.Write(TypeSerializer.ListStartChar);
 
 			var ranOnce = false;
 			var listLength = list.Length;
@@ -169,12 +169,12 @@ namespace ServiceStack.Common.Text
 				writeFn(writer, list[i]);
 			}
 
-			writer.Write(StringSerializer.ListEndChar);
+			writer.Write(TypeSerializer.ListEndChar);
 		}
 
 		public static void WriteIListString(TextWriter writer, IList<string> list)
 		{
-			writer.Write(StringSerializer.ListStartChar);
+			writer.Write(TypeSerializer.ListStartChar);
 
 			var ranOnce = false;
 			var listLength = list.Count;
@@ -184,7 +184,7 @@ namespace ServiceStack.Common.Text
 				writer.Write(list[i].ToCsvField());
 			}
 
-			writer.Write(StringSerializer.ListEndChar);
+			writer.Write(TypeSerializer.ListEndChar);
 		}
 
 		public static void WriteListValueType<T>(TextWriter writer, object oList)
@@ -195,7 +195,7 @@ namespace ServiceStack.Common.Text
 
 		public static void WriteGenericListValueType<T>(TextWriter writer, IList<T> list)
 		{
-			writer.Write(StringSerializer.ListStartChar);
+			writer.Write(TypeSerializer.ListStartChar);
 
 			var ranOnce = false;
 			var listLength = list.Count;
@@ -205,7 +205,7 @@ namespace ServiceStack.Common.Text
 				writer.Write(list[i]);
 			}
 
-			writer.Write(StringSerializer.ListEndChar);
+			writer.Write(TypeSerializer.ListEndChar);
 		}
 
 		public static void WriteGenericIListObject<T>(TextWriter writer, object oList, Action<TextWriter, object> writeFn)
@@ -216,7 +216,7 @@ namespace ServiceStack.Common.Text
 
 		public static void WriteGenericIList<T>(TextWriter writer, IList<T> list, Action<TextWriter, object> writeFn)
 		{
-			writer.Write(StringSerializer.ListStartChar);
+			writer.Write(TypeSerializer.ListStartChar);
 
 			var ranOnce = false;
 			var listLength = list.Count;
@@ -226,7 +226,7 @@ namespace ServiceStack.Common.Text
 				writeFn(writer, list[i]);
 			}
 
-			writer.Write(StringSerializer.ListEndChar);
+			writer.Write(TypeSerializer.ListEndChar);
 		}
 	}
 }

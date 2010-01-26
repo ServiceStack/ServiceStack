@@ -152,7 +152,7 @@ namespace ServiceStack.OrmLite
 				return value;
 			}
 
-			var convertedValue = StringSerializer.DeserializeFromString(value.ToString(), type);
+			var convertedValue = TypeSerializer.DeserializeFromString(value.ToString(), type);
 			return convertedValue;
 		}
 
@@ -162,9 +162,9 @@ namespace ServiceStack.OrmLite
 
 			if (!fieldType.UnderlyingSystemType.IsValueType && fieldType != typeof(string))
 			{
-				if (StringSerializer.CanCreateFromString(fieldType))
+				if (TypeSerializer.CanCreateFromString(fieldType))
 				{
-					return "'" + EscapeParam(StringSerializer.SerializeToString(value)) + "'";
+					return "'" + EscapeParam(TypeSerializer.SerializeToString(value)) + "'";
 				}
 
 				throw new NotSupportedException(
@@ -185,7 +185,7 @@ namespace ServiceStack.OrmLite
 
 		protected virtual string GetUndefinedColumnDefintion(Type fieldType)
 		{
-			if (StringSerializer.CanCreateFromString(fieldType))
+			if (TypeSerializer.CanCreateFromString(fieldType))
 			{
 				return this.StringColumnDefinition;
 			}

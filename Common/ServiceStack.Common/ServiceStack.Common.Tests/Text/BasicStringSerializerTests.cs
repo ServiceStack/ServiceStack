@@ -14,15 +14,15 @@ namespace ServiceStack.Common.Tests.Text
 	public class BasicStringSerializerTests
 	{
 		readonly char[] allCharsUsed = new[] {
-				StringSerializer.QuoteChar, StringSerializer.ItemSeperator,
-           		StringSerializer.MapStartChar, StringSerializer.MapKeySeperator, StringSerializer.MapEndChar,
-           		StringSerializer.ListEndChar, StringSerializer.ListEndChar,
+				TypeSerializer.QuoteChar, TypeSerializer.ItemSeperator,
+           		TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
+           		TypeSerializer.ListEndChar, TypeSerializer.ListEndChar,
            	};
 
 		readonly string fieldWithInvalidChars = string.Format("all {0} {1} {2} {3} {4} {5} {6} invalid chars",
-			StringSerializer.QuoteChar, StringSerializer.ItemSeperator,
-           		StringSerializer.MapStartChar, StringSerializer.MapKeySeperator, StringSerializer.MapEndChar,
-           		StringSerializer.ListEndChar, StringSerializer.ListEndChar);
+			TypeSerializer.QuoteChar, TypeSerializer.ItemSeperator,
+           		TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
+           		TypeSerializer.ListEndChar, TypeSerializer.ListEndChar);
 
 		readonly string[] stringValues = new[] { "One", "Two", "Three", "Four", "Five" };
 		readonly string[] stringValuesWithIllegalChar = new[] { "One", ",", "Three", "Four", "Five" };
@@ -50,54 +50,54 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_comma_delimited_string_to_List_String()
 		{
-			Assert.That(StringSerializer.CanCreateFromString(typeof(List<string>)), Is.True);
+			Assert.That(TypeSerializer.CanCreateFromString(typeof(List<string>)), Is.True);
 
 			var stringValueList = "[" + string.Join(",", stringValues) + "]";
 
-			var convertedStringValues = StringSerializer.DeserializeFromString<List<string>>(stringValueList);
+			var convertedStringValues = TypeSerializer.DeserializeFromString<List<string>>(stringValueList);
 			Assert.That(convertedStringValues, Is.EquivalentTo(stringValues));
 		}
 
 		[Test]
 		public void Null_or_Empty_string_returns_null()
 		{
-			var convertedStringValues = StringSerializer.DeserializeFromString<List<string>>(null);
+			var convertedStringValues = TypeSerializer.DeserializeFromString<List<string>>(null);
 			Assert.That(convertedStringValues, Is.EqualTo(null));
 
-			convertedStringValues = StringSerializer.DeserializeFromString<List<string>>(string.Empty);
+			convertedStringValues = TypeSerializer.DeserializeFromString<List<string>>(string.Empty);
 			Assert.That(convertedStringValues, Is.EqualTo(null));
 		}
 
 		[Test]
 		public void Empty_list_string_returns_empty_List()
 		{
-			var convertedStringValues = StringSerializer.DeserializeFromString<List<string>>("[]");
+			var convertedStringValues = TypeSerializer.DeserializeFromString<List<string>>("[]");
 			Assert.That(convertedStringValues, Is.EqualTo(new List<string>()));
 		}
 
 		[Test]
 		public void Null_or_Empty_string_returns_null_Map()
 		{
-			var convertedStringValues = StringSerializer.DeserializeFromString<Dictionary<string, string>>(null);
+			var convertedStringValues = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(null);
 			Assert.That(convertedStringValues, Is.EqualTo(null));
 
-			convertedStringValues = StringSerializer.DeserializeFromString<Dictionary<string, string>>(string.Empty);
+			convertedStringValues = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(string.Empty);
 			Assert.That(convertedStringValues, Is.EqualTo(null));
 		}
 
 		[Test]
 		public void Empty_map_string_returns_empty_List()
 		{
-			var convertedStringValues = StringSerializer.DeserializeFromString<Dictionary<string, string>>("{}");
+			var convertedStringValues = TypeSerializer.DeserializeFromString<Dictionary<string, string>>("{}");
 			Assert.That(convertedStringValues, Is.EqualTo(new Dictionary<string, string>()));
 		}
 
 		[Test]
 		public void Can_convert_string_collection()
 		{
-			Assert.That(StringSerializer.CanCreateFromString(typeof(string[])), Is.True);
+			Assert.That(TypeSerializer.CanCreateFromString(typeof(string[])), Is.True);
 
-			var stringValue = StringSerializer.SerializeToString(stringValues);
+			var stringValue = TypeSerializer.SerializeToString(stringValues);
 			var expectedString = "[" + string.Join(",", stringValues.ToArray()) + "]";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -106,7 +106,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_enum()
 		{
 			var enumValue = TestEnum.EnumValue1;
-			var stringValue = StringSerializer.SerializeToString(enumValue);
+			var stringValue = TypeSerializer.SerializeToString(enumValue);
 			var expectedString = TestEnum.EnumValue1.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -115,7 +115,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_nullable_enum()
 		{
 			TestEnum? enumValue = TestEnum.EnumValue1;
-			var stringValue = StringSerializer.SerializeToString(enumValue);
+			var stringValue = TypeSerializer.SerializeToString(enumValue);
 			var expectedString = TestEnum.EnumValue1.ToString();
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -123,17 +123,17 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_to_nullable_enum()
 		{
-			Assert.That(StringSerializer.CanCreateFromString(typeof(TestEnum?)), Is.True);
+			Assert.That(TypeSerializer.CanCreateFromString(typeof(TestEnum?)), Is.True);
 
 			TestEnum? enumValue = TestEnum.EnumValue1;
-			var actualValue = StringSerializer.DeserializeFromString<TestEnum?>(enumValue.ToString());
+			var actualValue = TypeSerializer.DeserializeFromString<TestEnum?>(enumValue.ToString());
 			Assert.That(actualValue, Is.EqualTo(enumValue));
 		}
 
 		[Test]
 		public void Can_convert_to_nullable_enum_with_null_value()
 		{
-			var enumValue = StringSerializer.DeserializeFromString<TestEnum?>(null);
+			var enumValue = TypeSerializer.DeserializeFromString<TestEnum?>(null);
 			Assert.That(enumValue, Is.Null);
 		}
 
@@ -141,17 +141,17 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_nullable_enum_with_null_value()
 		{
 			TestEnum? enumValue = null;
-			var stringValue = StringSerializer.SerializeToString(enumValue);
+			var stringValue = TypeSerializer.SerializeToString(enumValue);
 			Assert.That(stringValue, Is.Null);
 		}
 
 		[Test]
 		public void Can_convert_Guid()
 		{
-			Assert.That(StringSerializer.CanCreateFromString(typeof(Guid)), Is.True);
+			Assert.That(TypeSerializer.CanCreateFromString(typeof(Guid)), Is.True);
 
 			var guidValue = Guid.NewGuid();
-			var stringValue = StringSerializer.SerializeToString(guidValue);
+			var stringValue = TypeSerializer.SerializeToString(guidValue);
 			var expectedString = guidValue.ToString("N");
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -160,7 +160,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_datetime()
 		{
 			var dateValue = new DateTime(1979, 5, 9);
-			var stringValue = StringSerializer.SerializeToString(dateValue);
+			var stringValue = TypeSerializer.SerializeToString(dateValue);
 			var expectedString = "1979-05-09";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -168,10 +168,10 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_to_datetime()
 		{
-			Assert.That(StringSerializer.CanCreateFromString(typeof(DateTime)), Is.True);
+			Assert.That(TypeSerializer.CanCreateFromString(typeof(DateTime)), Is.True);
 
 			var dateValue = new DateTime(1979, 5, 9);
-			var actualValue = StringSerializer.DeserializeFromString<DateTime>("1979-05-09");
+			var actualValue = TypeSerializer.DeserializeFromString<DateTime>("1979-05-09");
 			Assert.That(actualValue, Is.EqualTo(dateValue));
 		}
 
@@ -179,7 +179,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_nullable_datetime()
 		{
 			DateTime? dateValue = new DateTime(1979, 5, 9);
-			var stringValue = StringSerializer.SerializeToString(dateValue);
+			var stringValue = TypeSerializer.SerializeToString(dateValue);
 			var expectedString = "1979-05-09";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -187,17 +187,17 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_to_nullable_datetime()
 		{
-			Assert.That(StringSerializer.CanCreateFromString(typeof(DateTime?)), Is.True);
+			Assert.That(TypeSerializer.CanCreateFromString(typeof(DateTime?)), Is.True);
 
 			DateTime? dateValue = new DateTime(1979, 5, 9);
-			var actualValue = StringSerializer.DeserializeFromString<DateTime?>("1979-05-09");
+			var actualValue = TypeSerializer.DeserializeFromString<DateTime?>("1979-05-09");
 			Assert.That(actualValue, Is.EqualTo(dateValue));
 		}
 
 		[Test]
 		public void Can_convert_string_List()
 		{
-			var stringValue = StringSerializer.SerializeToString(stringValues.ToList());
+			var stringValue = TypeSerializer.SerializeToString(stringValues.ToList());
 			var expectedString = "[" + string.Join(",", stringValues.ToArray()) + "]";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -205,7 +205,7 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_string_array()
 		{
-			var stringValue = StringSerializer.SerializeToString(stringValues.ToArray());
+			var stringValue = TypeSerializer.SerializeToString(stringValues.ToArray());
 			var expectedString = "[" + string.Join(",", stringValues.ToArray()) + "]";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -213,7 +213,7 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_string_List_as_object()
 		{
-			var stringValue = StringSerializer.SerializeToString((object)stringValues.ToList());
+			var stringValue = TypeSerializer.SerializeToString((object)stringValues.ToList());
 			var expectedString = "[" + string.Join(",", stringValues.ToArray()) + "]";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -221,7 +221,7 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_empty_List()
 		{
-			var stringValue = StringSerializer.SerializeToString(new List<string>());
+			var stringValue = TypeSerializer.SerializeToString(new List<string>());
 			var expectedString = "[]";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -229,7 +229,7 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_empty_List_as_object()
 		{
-			var stringValue = StringSerializer.SerializeToString((object)new List<string>());
+			var stringValue = TypeSerializer.SerializeToString((object)new List<string>());
 			var expectedString = "[]";
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -241,7 +241,7 @@ namespace ServiceStack.Common.Tests.Text
           		{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
 			  };
 			var expectedString = "{One:1st,Two:2nd,Three:3rd}";
-			var stringValue = StringSerializer.SerializeToString(stringDictionary);
+			var stringValue = TypeSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -252,7 +252,7 @@ namespace ServiceStack.Common.Tests.Text
 				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
 			};
 			const string mapValues = "{One:1st,Two:2nd,Three:3rd}";
-			var parsedDictionary = StringSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
+			var parsedDictionary = TypeSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
 		}
 
@@ -263,7 +263,7 @@ namespace ServiceStack.Common.Tests.Text
 				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
 			};
 			var expectedString = "{One:1st,Two:2nd,Three:3rd}";
-			var stringValue = StringSerializer.SerializeToString((object)stringDictionary);
+			var stringValue = TypeSerializer.SerializeToString((object)stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -274,7 +274,7 @@ namespace ServiceStack.Common.Tests.Text
 				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
 			};
 			var expectedString = "{One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\",Four:four%}";
-			var stringValue = StringSerializer.SerializeToString(stringDictionary);
+			var stringValue = TypeSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -285,7 +285,7 @@ namespace ServiceStack.Common.Tests.Text
 				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }
 			};
 			const string mapValues = "{One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\"}";
-			var parsedDictionary = StringSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
+			var parsedDictionary = TypeSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
 		}
 
@@ -296,7 +296,7 @@ namespace ServiceStack.Common.Tests.Text
 				"\"1st", "2:nd", "3r,d", "four%"
 			};
 			var expectedString = "[\"\"\"1st\",2:nd,\"3r,d\",four%]";
-			var stringValue = StringSerializer.SerializeToString(stringList);
+			var stringValue = TypeSerializer.SerializeToString(stringList);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
 
@@ -307,7 +307,7 @@ namespace ServiceStack.Common.Tests.Text
           		"\"1st", "2:nd", "3r,d", "four%"
 			  };
 			const string listValues = "[\"\"\"1st\",2:nd,\"3r,d\",four%]";
-			var parsedList = StringSerializer.DeserializeFromString(listValues, stringList.GetType());
+			var parsedList = TypeSerializer.DeserializeFromString(listValues, stringList.GetType());
 			Assert.That(parsedList, Is.EquivalentTo(stringList));
 		}
 
@@ -315,7 +315,7 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_Byte_array()
 		{
 			var byteArrayValue = new byte[] { 0, 65, 97, 255, };
-			var stringValue = StringSerializer.SerializeToString(byteArrayValue);
+			var stringValue = TypeSerializer.SerializeToString(byteArrayValue);
 			var expectedString = Convert.ToBase64String(byteArrayValue);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -323,19 +323,19 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_convert_to_Byte_array()
 		{
-			Assert.That(StringSerializer.CanCreateFromString(typeof(byte[])), Is.True);
+			Assert.That(TypeSerializer.CanCreateFromString(typeof(byte[])), Is.True);
 
 			var byteArrayValue = new byte[] { 0, 65, 97, 255, };
-			var byteArrayString = StringSerializer.SerializeToString(byteArrayValue);
-			var actualValue = StringSerializer.DeserializeFromString<byte[]>(byteArrayString);
+			var byteArrayString = TypeSerializer.SerializeToString(byteArrayValue);
+			var actualValue = TypeSerializer.DeserializeFromString<byte[]>(byteArrayString);
 			Assert.That(actualValue, Is.EqualTo(byteArrayValue));
 		}
 
 		public T Serialize<T>(T model)
 		{
-			var strModel = StringSerializer.SerializeToString(model);
+			var strModel = TypeSerializer.SerializeToString(model);
 			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
-			var toModel = StringSerializer.DeserializeFromString<T>(strModel);
+			var toModel = TypeSerializer.DeserializeFromString<T>(strModel);
 			return toModel;
 		}
 

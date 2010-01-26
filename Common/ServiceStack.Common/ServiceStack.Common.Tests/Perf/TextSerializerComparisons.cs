@@ -19,19 +19,19 @@ namespace ServiceStack.Common.Tests.Perf
 		private void CompareSerializers<T>(T dto)
 		{
 			CompareMultipleRuns(
-				"StringSerializer", () => StringSerializer.SerializeToString(dto),
+				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
 				"TextSerializer", () => TextSerializer.SerializeToString(dto)
 				);
 
-			var stringStr = StringSerializer.SerializeToString(dto);
+			var stringStr = TypeSerializer.SerializeToString(dto);
 			var textStr = TextSerializer.SerializeToString(dto);
 
 			CompareMultipleRuns(
-				"StringSerializer", () => StringSerializer.DeserializeFromString<T>(stringStr),
+				"TypeSerializer", () => TypeSerializer.DeserializeFromString<T>(stringStr),
 				"TextSerializer", () => TextSerializer.DeserializeFromString<T>(textStr)
 			);
 
-			var seraializedStringDto = StringSerializer.DeserializeFromString<T>(stringStr);
+			var seraializedStringDto = TypeSerializer.DeserializeFromString<T>(stringStr);
 			Assert.That(seraializedStringDto.Equals(dto), Is.True);
 
 			var seraializedTextDto = TextSerializer.DeserializeFromString<T>(textStr);

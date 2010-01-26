@@ -17,9 +17,9 @@ namespace ServiceStack.Common.Tests.Text
 
 		public T Serialize<T>(T model)
 		{
-			var strModel = StringSerializer.SerializeToString(model);
+			var strModel = TypeSerializer.SerializeToString(model);
 			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
-			var toModel = StringSerializer.DeserializeFromString<T>(strModel);
+			var toModel = TypeSerializer.DeserializeFromString<T>(strModel);
 			return toModel;
 		}
 

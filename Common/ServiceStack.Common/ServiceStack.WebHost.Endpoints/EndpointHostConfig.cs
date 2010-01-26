@@ -1,8 +1,6 @@
 using System.Runtime.Serialization;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.Service;
-using ServiceStack.LogicFacade;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -23,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints
 				Soap12 = new SoapMetadataConfig("Public/Soap12/SyncReply.svc", "Public/Soap12/AsyncOneWay.svc", "Public/Soap12/Metadata", "Public/Soap12/Wsdl"),
 			};
 			this.LogFactory = new NullLogFactory();
-			this.EnablePortRestrictions = false;
+			this.EnableAccessRestrictions = true;
 		}
 
 		public IServiceController ServiceController { get; set; }
@@ -31,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public string ServiceName { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
-		public bool EnablePortRestrictions { get; set; }
+		public bool EnableAccessRestrictions { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace

@@ -9,7 +9,7 @@ namespace ServiceStack.Common.Text
 	/// <summary>
 	/// Creates an instance of a Type from a string value
 	/// </summary>
-	public static class StringSerializer
+	public static class TypeSerializer
 	{
 		public const char MapStartChar = '{';
 		public const char MapKeySeperator = ':';

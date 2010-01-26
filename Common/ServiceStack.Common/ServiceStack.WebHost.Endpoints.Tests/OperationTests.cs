@@ -18,11 +18,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(groupedOperations.OneWayOperations.Names.Count, Is.EqualTo(base.OneWayOperations.Count));
 		}
 
-		[Test]
-		public void Test_local_ipAddresses()
-		{
-			var isInternal = EndpointHandlerBase.IsPrivateNetworkAddress(IPAddress.Parse("172.20.0.96"));
-			Assert.That(isInternal, Is.True);
-		}
 	}
 }

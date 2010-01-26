@@ -22,8 +22,8 @@ namespace ServiceStack.Common.Tests.Text
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = StringSerializer.SerializeToString(dto);
-			dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
+			dtoString = TypeSerializer.SerializeToString(dto);
 
 			Assert.That(dtoString, Is.Not.Null);
 		}
@@ -33,9 +33,9 @@ namespace ServiceStack.Common.Tests.Text
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			Console.WriteLine(dtoString);
-			var fromDto = StringSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString);
+			var fromDto = TypeSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString);
 
 			Assert.That(fromDto, Is.Not.Null);
 		}
@@ -45,9 +45,9 @@ namespace ServiceStack.Common.Tests.Text
 		{
 			var dto = NorthwindData.Customers;
 
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			Console.WriteLine(dtoString);
-			var fromDto = StringSerializer.DeserializeFromString<List<Customer>>(dtoString);
+			var fromDto = TypeSerializer.DeserializeFromString<List<Customer>>(dtoString);
 
 			Assert.That(fromDto, Is.Not.Null);
 		}
@@ -58,9 +58,9 @@ namespace ServiceStack.Common.Tests.Text
 			NorthwindData.LoadData(false);
 			var dto = NorthwindData.Orders;
 
-			var dtoString = StringSerializer.SerializeToString(dto);
+			var dtoString = TypeSerializer.SerializeToString(dto);
 			Console.WriteLine(dtoString);
-			var fromDto = StringSerializer.DeserializeFromString<List<Order>>(dtoString);
+			var fromDto = TypeSerializer.DeserializeFromString<List<Order>>(dtoString);
 
 			Assert.That(fromDto, Is.Not.Null);
 		}
