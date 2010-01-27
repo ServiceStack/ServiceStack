@@ -15,7 +15,8 @@ namespace ServiceStack.IntegrationTests.ServiceModel
 		{
 			this.EnpointAttributes = new List<string>();
 			this.RequestAttributes = new List<string>();
-			this.NetworkAttributes = new Dictionary<string, string>();
+			this.Ipv4Addresses = new Dictionary<string, string>();
+			this.Ipv6Addresses = new List<string>();
 		}
 
 		[DataMember]
@@ -26,9 +27,13 @@ namespace ServiceStack.IntegrationTests.ServiceModel
 
 		[DataMember]
 		public string IpAddress { get; set; }
+		public string IpAddressFamily { get; set; }
 
 		[DataMember]
-		public Dictionary<string, string> NetworkAttributes { get; set; }
+		public Dictionary<string, string> Ipv4Addresses { get; set; }
+
+		[DataMember]
+		public List<string> Ipv6Addresses { get; set; }
 
 		[DataMember]
 		public string NetworkLog { get; set; }

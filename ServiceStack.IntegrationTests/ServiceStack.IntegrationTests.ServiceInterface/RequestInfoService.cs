@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Web;
 using ServiceStack.IntegrationTests.ServiceModel;
 using ServiceStack.ServiceHost;
 
@@ -16,11 +17,15 @@ namespace ServiceStack.IntegrationTests.ServiceInterface
 
 		public object Execute(RequestInfo request)
 		{
+			var ipAddr = HttpContext.Current.Request.UserHostAddress;
+
 			var response = new RequestInfoResponse {
 				EnpointAttributes = RequestContext.EndpointAttributes.ToString().Split(',').ToList().ConvertAll(x => x.Trim()),
-				IpAddress = RequestContext.IpAddress,
+				IpAddress = ipAddr,
+				IpAddressFamily = ipAddr,
 				NetworkLog = GetNetworkLog(),
-				NetworkAttributes = GetIpv4Addresses(),
+				Ipv4Addresses = GetIpv4Addresses(),
+				Ipv6Addresses = GetIpv6Addresses(),
 			};
 
 			var requestAttr = RequestContext.RequestAttributes;
@@ -40,18 +45,29 @@ namespace ServiceStack.IntegrationTests.ServiceInterface
 			{
 				foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
 				{
-					if (uipi.Address.AddressFamily == AddressFamily.InterNetwork)
-					{
-						if (uipi.IPv4Mask == null)
-						{
-							continue;
-						}
+					if (uipi.Address.AddressFamily != AddressFamily.InterNetwork) continue;
+					if (uipi.IPv4Mask == null) continue;					
 
-						map[uipi.Address.ToString()] = uipi.IPv4Mask.ToString();
-					}
+					map[uipi.Address.ToString()] = uipi.IPv4Mask.ToString();
 				}
 			}
 			return map;
+		}
+
+		public List<string> GetIpv6Addresses()
+		{
+			var list = new List<string>();
+			foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+			{
+				foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+				{
+					if (uipi.Address.AddressFamily == AddressFamily.InterNetworkV6)
+					{
+						list.Add(uipi.Address.ToString());
+					}
+				}
+			}
+			return list;
 		}
 
 		public string GetNetworkLog()

@@ -129,7 +129,17 @@ namespace ServiceStack.ServiceHost
 				InjectRequestContext(service, requestContext);
 				return typeFactoryFn(dto, service);
 			};
-			requestExecMap.Add(requestType, handlerFn);
+			
+			try
+			{
+				requestExecMap.Add(requestType, handlerFn);
+			}
+			catch (ArgumentException)
+			{
+				throw new AmbiguousMatchException(
+					string.Format("Could not register the service '{0}' as another service with the definition of type 'IService<{1}>' already exists.", 
+					serviceType.FullName, requestType.Name));
+			}
 
 			var serviceAttrs = requestType.GetCustomAttributes(typeof(ServiceAttribute), false);
 			if (serviceAttrs.Length > 0)
