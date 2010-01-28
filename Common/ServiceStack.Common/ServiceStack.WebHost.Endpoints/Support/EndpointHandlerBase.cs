@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var portRestrictions = EndpointAttributes.None;
 
-			portRestrictions |= request.RequestType == "GET" ? EndpointAttributes.HttpGet : EndpointAttributes.HttpPost;
+			portRestrictions |= GetRequestTypeEndpointAttributes(request.RequestType);
 			portRestrictions |= request.IsSecureConnection ? EndpointAttributes.Secure : EndpointAttributes.InSecure;
 
 			var ipAddress = IPAddress.Parse(request.UserHostAddress);
@@ -78,17 +78,33 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return portRestrictions;
 		}
 
+		private static EndpointAttributes GetRequestTypeEndpointAttributes(string requestType)
+		{
+			switch (requestType)
+			{
+				case "HEAD":
+					return EndpointAttributes.HttpHead;
+				case "GET":
+					return EndpointAttributes.HttpGet;
+				case "POST":
+					return EndpointAttributes.HttpPost;
+				case "PUT":
+					return EndpointAttributes.HttpPut;
+				case "DELETE":
+					return EndpointAttributes.HttpDelete;
+			}
+			
+			return EndpointAttributes.None;
+		}
+
 		private EndpointAttributes GetIpAddressEndpointAttributes(IPAddress ipAddress)
 		{
 			if (IPAddress.IsLoopback(ipAddress))
-			{
-				return EndpointAttributes.Internal | EndpointAttributes.Localhost;
-			}
-			if (IsInLocalSubnet(ipAddress))
-			{
-				return EndpointAttributes.Internal | EndpointAttributes.LocalSubnet;
-			}
-			return EndpointAttributes.External;
+				return EndpointAttributes.Localhost;
+
+			return IsInLocalSubnet(ipAddress) 
+				? EndpointAttributes.LocalSubnet 
+				: EndpointAttributes.External;
 		}
 
 		private bool IsInLocalSubnet(IPAddress ipAddress)

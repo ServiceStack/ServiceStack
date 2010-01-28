@@ -216,27 +216,25 @@ namespace ServiceStack.ServiceHost
 		public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)
 		{
 			ServiceAttribute serviceAttr;
-			var hasAccessRestrictions = requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
-				&& serviceAttr.AccessRestrictions.Count > 0;
+			var hasNoAccessRestrictions = requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
+				&& serviceAttr.HasNoAccessRestrictions;
 
-			if (!hasAccessRestrictions)
+			if (hasNoAccessRestrictions)
 			{
 				return;
 			}
 			
-			var requiredAttributesScenarios = serviceAttr.AccessRestrictions;
-
 			var failedScenarios = new StringBuilder();
-			foreach (var requiredAttributes in requiredAttributesScenarios)
+			foreach (var requiredScenario in serviceAttr.RestrictAccessToScenarios)
 			{
-				var allServiceRestrictionsMet = (requiredAttributes & actualAttributes) == requiredAttributes;
+				var allServiceRestrictionsMet = (requiredScenario & actualAttributes) == actualAttributes;
 				if (allServiceRestrictionsMet)
 				{
 					return;
 				}
 
-				var passed = requiredAttributes & actualAttributes;
-				var failed = requiredAttributes & ~(passed);
+				var passed = requiredScenario & actualAttributes;
+				var failed = requiredScenario & ~(passed);
 
 				failedScenarios.AppendFormat("\n -[{0}]", failed);
 			}
