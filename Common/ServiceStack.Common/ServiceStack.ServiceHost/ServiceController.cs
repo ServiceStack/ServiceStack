@@ -216,8 +216,8 @@ namespace ServiceStack.ServiceHost
 		public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)
 		{
 			ServiceAttribute serviceAttr;
-			var hasNoAccessRestrictions = requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
-				&& serviceAttr.HasNoAccessRestrictions;
+			var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out serviceAttr)
+				|| serviceAttr.HasNoAccessRestrictions;
 
 			if (hasNoAccessRestrictions)
 			{
