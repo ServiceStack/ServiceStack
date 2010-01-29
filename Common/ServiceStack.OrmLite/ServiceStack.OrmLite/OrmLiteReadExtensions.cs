@@ -104,7 +104,7 @@ namespace ServiceStack.OrmLite
 		{
 			var sql = new StringBuilder();
 			var modelType = typeof(TModel);
-			sql.AppendFormat("SELECT {0} FROM \"{1}\"", modelType.GetColumnNames(), fromTableType.Name);
+			sql.AppendFormat("SELECT {0} FROM \"{1}\"", modelType.GetColumnNames(), fromTableType.GetModelDefinition().ModelName);
 			if (!string.IsNullOrEmpty(sqlFilter))
 			{
 				sqlFilter = sqlFilter.SqlFormat(filterParams);

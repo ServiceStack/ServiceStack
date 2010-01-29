@@ -17,9 +17,8 @@ namespace ServiceStack.OrmLite.Tests
 				dbCmd.CreateTable<ModelWithIdAndName>(true);
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
-				using (var dbTrans = db.BeginTransaction())
+				using (var dbTrans = dbCmd.BeginTransaction())
 				{
-					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(new ModelWithIdAndName(3));
 
@@ -43,9 +42,8 @@ namespace ServiceStack.OrmLite.Tests
 				dbCmd.CreateTable<ModelWithIdAndName>(true);
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
-				using (var dbTrans = db.BeginTransaction())
+				using (var dbTrans = dbCmd.BeginTransaction())
 				{
-					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(new ModelWithIdAndName(3));
 
@@ -70,9 +68,8 @@ namespace ServiceStack.OrmLite.Tests
 
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
-				using (var dbTrans = db.BeginTransaction())
+				using (var dbTrans = dbCmd.BeginTransaction())
 				{
-					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(3));
 					dbCmd.Insert(ModelWithOnlyStringFields.Create("id3"));
@@ -100,9 +97,8 @@ namespace ServiceStack.OrmLite.Tests
 
 				dbCmd.Insert(new ModelWithIdAndName(1));
 
-				using (var dbTrans = db.BeginTransaction())
+				using (var dbTrans = dbCmd.BeginTransaction())
 				{
-					dbCmd.Transaction = dbTrans;
 					dbCmd.Insert(new ModelWithIdAndName(2));
 					dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(3));
 					dbCmd.Insert(ModelWithOnlyStringFields.Create("id3"));

@@ -13,7 +13,7 @@ namespace ServiceStack.OrmLite.TestsPerf.Scenarios.Text
 
 		public override void Run()
 		{
-			StringSerializer.SerializeToString(customer);
+			TypeSerializer.SerializeToString(customer);
 		}
 	}
 }

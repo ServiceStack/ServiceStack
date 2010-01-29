@@ -14,7 +14,7 @@ namespace ServiceStack.OrmLite.TestsPerf.Scenarios.Text
 
 		public override void Run()
 		{
-			StringSerializer.SerializeToString(order);
+			TypeSerializer.SerializeToString(order);
 		}
 	}
 }

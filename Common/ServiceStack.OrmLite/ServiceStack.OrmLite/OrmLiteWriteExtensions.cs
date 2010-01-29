@@ -2,12 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
-using ServiceStack.DataAccess;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Logging;
 
 namespace ServiceStack.OrmLite
@@ -15,6 +14,12 @@ namespace ServiceStack.OrmLite
 	public static class OrmLiteWriteExtensions
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(OrmLiteWriteExtensions));
+
+		[Conditional("DEBUG")]
+		private static void LogDebug(string fmt, params object[] args)
+		{
+			Log.DebugFormat("{0}", String.Format(fmt, args).Trim());
+		}
 
 		public static string ToCreateTableStatement(this Type tableType)
 		{
@@ -24,7 +29,7 @@ namespace ServiceStack.OrmLite
 			var modelDef = tableType.GetModelDefinition();
 			foreach (var fieldDef in modelDef.FieldDefinitions)
 			{
-				if (sbColumns.Length != 0) sbColumns.Append(", ");
+				if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
 
 				var columnDefinition = OrmLiteConfig.DialectProvider.GetColumnDefinition(
 					fieldDef.FieldName,
@@ -35,17 +40,17 @@ namespace ServiceStack.OrmLite
 					fieldDef.FieldLength,
 					fieldDef.DefaultValue);
 
-				sbColumns.AppendLine(columnDefinition);
+				sbColumns.Append(columnDefinition);
 
 				if (fieldDef.ReferencesType == null) continue;
 
 				var refModelDef = fieldDef.ReferencesType.GetModelDefinition();
-				sbConstraints.AppendFormat(", CONSTRAINT \"FK_{0}_{1}\" FOREIGN KEY (\"{2}\") REFERENCES \"{3}\" (\"{4}\") \n",
+				sbConstraints.AppendFormat(", \n\n  CONSTRAINT \"FK_{0}_{1}\" FOREIGN KEY (\"{2}\") REFERENCES \"{3}\" (\"{4}\")",
 					modelDef.ModelName, refModelDef.ModelName, fieldDef.FieldName, refModelDef.ModelName, modelDef.PrimaryKey.FieldName);
 			}
 
 			var sql = new StringBuilder(string.Format(
-				"CREATE TABLE \"{0}\" ({1}{2}); \n", modelDef.ModelName, sbColumns, sbConstraints));
+				"CREATE TABLE \"{0}\" \n(\n  {1}{2} \n); \n", modelDef.ModelName, sbColumns, sbConstraints));
 
 			return sql.ToString();
 		}
@@ -112,8 +117,7 @@ namespace ServiceStack.OrmLite
 			{
 				try
 				{
-					dbCommand.CommandText = string.Format("DROP TABLE \"{0}\";", modelDef.ModelName);
-					dbCommand.ExecuteNonQuery();
+					dbCommand.ExecuteSql(string.Format("DROP TABLE \"{0}\";", modelDef.ModelName));
 				}
 				catch (Exception ex)
 				{
@@ -123,16 +127,14 @@ namespace ServiceStack.OrmLite
 
 			try
 			{
-				dbCommand.CommandText = ToCreateTableStatement(modelType);
-				dbCommand.ExecuteNonQuery();
+				ExecuteSql(dbCommand, ToCreateTableStatement(modelType));
 
 				var sqlIndexes = ToCreateIndexStatements(modelType);
 				foreach (var sqlIndex in sqlIndexes)
 				{
 					try
 					{
-						dbCommand.CommandText = sqlIndex;
-						dbCommand.ExecuteNonQuery();
+						dbCommand.ExecuteSql(sqlIndex);
 					}
 					catch (Exception exIndex)
 					{
@@ -155,6 +157,14 @@ namespace ServiceStack.OrmLite
 				throw;
 			}
 
+		}
+
+		private static void ExecuteSql(this IDbCommand dbCommand, string sql)
+		{
+			LogDebug(sql);
+
+			dbCommand.CommandText = sql;
+			dbCommand.ExecuteNonQuery();
 		}
 
 		private static bool IgnoreAlreadyExistsError(Exception ex)
@@ -224,8 +234,7 @@ namespace ServiceStack.OrmLite
 		public static void Insert<T>(this IDbCommand dbCommand, T obj)
 			where T : new()
 		{
-			dbCommand.CommandText = ToInsertRowStatement(obj);
-			dbCommand.ExecuteNonQuery();
+			dbCommand.ExecuteSql(ToInsertRowStatement(obj));
 		}
 
 		public static string ToUpdateRowStatement(this object objWithProperties)
@@ -266,8 +275,7 @@ namespace ServiceStack.OrmLite
 		public static void Update<T>(this IDbCommand dbCommand, T obj)
 			where T : new()
 		{
-			dbCommand.CommandText = ToUpdateRowStatement(obj);
-			dbCommand.ExecuteNonQuery();
+			dbCommand.ExecuteSql(ToUpdateRowStatement(obj));
 		}
 
 		public static string ToDeleteRowStatement(this object objWithProperties)
@@ -302,8 +310,7 @@ namespace ServiceStack.OrmLite
 		public static void Delete<T>(this IDbCommand dbCommand, T obj)
 			where T : new()
 		{
-			dbCommand.CommandText = ToDeleteRowStatement(obj);
-			dbCommand.ExecuteNonQuery();
+			dbCommand.ExecuteSql(ToDeleteRowStatement(obj));
 		}
 
 		public static void DeleteById<T>(this IDbCommand dbCommand, object id)
@@ -311,25 +318,25 @@ namespace ServiceStack.OrmLite
 		{
 			var modelDef = typeof(T).GetModelDefinition();
 
-			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" = {2}",
+			var sql = string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" = {2}",
 				modelDef.ModelName, modelDef.PrimaryKey.FieldName, 
 				OrmLiteConfig.DialectProvider.GetQuotedValue(id, id.GetType()));
 
-			dbCommand.ExecuteNonQuery();
+			dbCommand.ExecuteSql(sql);
 		}
 
 		public static void DeleteByIds<T>(this IDbCommand dbCommand, IEnumerable idValues)
 			where T : new()
 		{
-			var sql = idValues.GetIdsInSql();
-			if (sql == null) return;
+			var sqlIn = idValues.GetIdsInSql();
+			if (sqlIn == null) return;
 
 			var modelDef = typeof(T).GetModelDefinition();
 
-			dbCommand.CommandText = string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" IN ({2})",
-				modelDef.ModelName, modelDef.PrimaryKey.FieldName, sql);
+			var sql = string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" IN ({2})",
+				modelDef.ModelName, modelDef.PrimaryKey.FieldName, sqlIn);
 
-			dbCommand.ExecuteNonQuery();
+			dbCommand.ExecuteSql(sql);
 		}
 
 		public static void DeleteAll<T>(this IDbCommand dbCommand)
@@ -350,19 +357,18 @@ namespace ServiceStack.OrmLite
 
 		public static void Delete(this IDbCommand dbCommand, Type tableType, string sqlFilter, params object[] filterParams)
 		{
-			dbCommand.CommandText = ToDeleteStatement(tableType, sqlFilter, filterParams);
-			dbCommand.ExecuteNonQuery();
+			dbCommand.ExecuteSql(ToDeleteStatement(tableType, sqlFilter, filterParams));
 		}
 
 		public static string ToDeleteStatement(this Type tableType, string sqlFilter, params object[] filterParams)
 		{
 			var sql = new StringBuilder();
-			const string DeleteStatement = "DELETE ";
+			const string deleteStatement = "DELETE ";
 
 			var isFullDeleteStatement = 
 				!string.IsNullOrEmpty(sqlFilter)
-				&& sqlFilter.Length > DeleteStatement.Length
-				&& sqlFilter.Substring(0, DeleteStatement.Length).ToUpper().Equals(DeleteStatement);
+				&& sqlFilter.Length > deleteStatement.Length
+				&& sqlFilter.Substring(0, deleteStatement.Length).ToUpper().Equals(deleteStatement);
 
 			if (isFullDeleteStatement) return sqlFilter.SqlFormat(filterParams);
 
@@ -426,6 +432,20 @@ namespace ServiceStack.OrmLite
 
 				dbTrans.Commit();
 			}
+		}
+
+		public static IDbTransaction BeginTransaction(this IDbCommand dbCmd)
+		{
+			var dbTrans = dbCmd.Connection.BeginTransaction();
+			dbCmd.Transaction = dbTrans;
+			return dbTrans;
+		}
+
+		public static IDbTransaction BeginTransaction(this IDbCommand dbCmd, IsolationLevel isolationLevel)
+		{
+			var dbTrans = dbCmd.Connection.BeginTransaction(isolationLevel);
+			dbCmd.Transaction = dbTrans;
+			return dbTrans;
 		}
 
 	}

@@ -87,6 +87,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Database1DataSet.xsd</DependentUpon>
     </Compile>
+    <Compile Include="ShippersExample.cs" />
     <Compile Include="NorthwindPerfTests.cs" />
     <Compile Include="OrmLiteComplexTypesTests.cs" />
     <Compile Include="OrmLiteLinqTests.cs" />

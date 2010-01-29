@@ -139,6 +139,7 @@ namespace Northwind.Common.DataModel
 		public int Id { get; set; }
 
 		[Required]
+		[Index(Unique = true)]
 		[StringLength(40)]
 		public string CompanyName { get; set; }
 
@@ -290,7 +291,9 @@ namespace Northwind.Common.DataModel
 	{
 		public string Id { get { return this.OrderId + "/" + this.ProductId; } }
 
+		[Index]
 		[Alias("OrderID")]
+		[References(typeof(Order))]
 		public int OrderId { get; set; }
 
 		[Index]

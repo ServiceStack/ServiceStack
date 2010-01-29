@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.CacheAccess;
-using ServiceStack.Common.Utils;
+using ServiceStack.Common.Text;
 
 namespace ServiceStack.Redis
 {
@@ -42,7 +42,7 @@ namespace ServiceStack.Redis
 
 		public T Get<T>(string key)
 		{
-			return StringConverterUtils.Parse<T>(GetString(key));
+			return TypeSerializer.DeserializeFromString<T>(GetString(key));
 		}
 
 		public long Increment(string key, uint amount)
@@ -57,13 +57,13 @@ namespace ServiceStack.Redis
 
 		public bool Add(string key, object value)
 		{
-			var valueString = StringConverterUtils.ToString(value);
+			var valueString = TypeSerializer.SerializeToString(value);
 			return SetIfNotExists(key, valueString);
 		}
 
 		public bool Set(string key, object value)
 		{
-			var valueString = StringConverterUtils.ToString(value);
+			var valueString = TypeSerializer.SerializeToString(value);
 			SetString(key, valueString);
 			return true;
 		}
@@ -72,7 +72,7 @@ namespace ServiceStack.Redis
 		{
 			var exists = ContainsKey(key);
 			if (!exists) return false;
-			SetString(key, StringConverterUtils.ToString(value));
+			SetString(key, TypeSerializer.SerializeToString(value));
 			return true;
 		}
 
@@ -129,7 +129,7 @@ namespace ServiceStack.Redis
 			{
 				var key = keysArray[i++];
 				var keyValueString = Encoding.UTF8.GetString(keyValue);
-				results[key] = StringConverterUtils.Parse<T>(keyValueString);
+				results[key] = TypeSerializer.DeserializeFromString<T>(keyValueString);
 			}
 			return results;
 		}
