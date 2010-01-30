@@ -2,6 +2,9 @@ namespace ServiceStack.Redis
 {
 	public enum RedisKeyType
 	{
-		None, String, List, Set
+		None, 
+		String, 
+		List, 
+		Set
 	}
 }

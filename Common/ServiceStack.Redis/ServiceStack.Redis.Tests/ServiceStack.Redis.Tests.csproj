@@ -73,6 +73,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Generic\RedisClientListTestsBase.cs" />
+    <Compile Include="Generic\RedisClientListTestsModels.cs" />
+    <Compile Include="Generic\RedisClientSetTests.cs" />
+    <Compile Include="Generic\RedisClientTests.cs" />
+    <Compile Include="Generic\RedisClientTestsBase.cs" />
+    <Compile Include="Generic\RedisPersistenceProviderTestsBase.cs" />
+    <Compile Include="Generic\RedisPersistenceProviderTestsBaseImpl.cs" />
     <Compile Include="NorthwindPerfTests.cs">
       <SubType>Code</SubType>
     </Compile>

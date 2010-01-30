@@ -57,6 +57,7 @@ namespace ServiceStack.Redis
 		void FlushDb();
 		void FlushAll();
 		string[] GetKeys(string pattern);
+		List<string> GetKeyValues(List<string> keys);
 		List<T> GetKeyValues<T>(List<string> keys);
 		List<string> GetRangeFromSortedSet(string setId, int startingFrom, int endingAt);
 		HashSet<string> GetAllFromSet(string setId);

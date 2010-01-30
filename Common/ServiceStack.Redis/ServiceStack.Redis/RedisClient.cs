@@ -68,8 +68,6 @@ namespace ServiceStack.Redis
 
 		public void SetString(string key, string value)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
 			if (value == null)
 				throw new ArgumentNullException("value");
 
@@ -78,8 +76,6 @@ namespace ServiceStack.Redis
 
 		public bool SetIfNotExists(string key, string value)
 		{
-			if (key == null)
-				throw new ArgumentNullException("key");
 			if (value == null)
 				throw new ArgumentNullException("value");
 
@@ -131,22 +127,6 @@ namespace ServiceStack.Redis
 			return DecrBy(key, count);
 		}
 
-		public RedisKeyType GetKeyType(string key)
-		{
-			switch (Type(key))
-			{
-				case "none":
-					return RedisKeyType.None;
-				case "string":
-					return RedisKeyType.String;
-				case "set":
-					return RedisKeyType.Set;
-				case "list":
-					return RedisKeyType.List;
-			}
-			throw new RedisResponseException("Invalid value");
-		}
-
 		public string NewRandomKey()
 		{
 			return RandomKey();
@@ -167,14 +147,25 @@ namespace ServiceStack.Redis
 			return TimeSpan.FromSeconds(Ttl(key));
 		}
 
-		public void SaveAsync()
-		{
-			BgSave();
-		}
-
 		public string[] GetKeys(string pattern)
 		{
 			return Encoding.UTF8.GetString(Keys(pattern)).Split(' ');
+		}
+
+		public List<string> GetKeyValues(List<string> keys)
+		{
+			var resultBytesArray = MGet(keys.ToArray());
+
+			var results = new List<string>();
+			foreach (var resultBytes in resultBytesArray)
+			{
+				if (resultBytes == null) continue;
+
+				var resultString = Encoding.UTF8.GetString(resultBytes);
+				results.Add(resultString);
+			}
+
+			return results;
 		}
 
 		public List<T> GetKeyValues<T>(List<string> keys)
@@ -187,7 +178,7 @@ namespace ServiceStack.Redis
 				if (resultBytes == null) continue;
 
 				var resultString = Encoding.UTF8.GetString(resultBytes);
-				var result = StringConverterUtils.Parse<T>(resultString);
+				var result = TypeSerializer.DeserializeFromString<T>(resultString);
 				results.Add(result);
 			}
 
@@ -517,6 +508,7 @@ namespace ServiceStack.Redis
 
 		public void DeleteAll<TEntity>() where TEntity : class, new()
 		{
+			throw new NotImplementedException();
 			//TODO: replace with DeleteAll of TEntity
 			base.FlushDb();
 		}

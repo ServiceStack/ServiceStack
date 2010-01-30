@@ -27,8 +27,8 @@ namespace ServiceStack.Redis
 	public class RedisNativeClient
 		: IRedisNativeClient
 	{
-		protected const int Success = 1;
-		protected const int OneGb = 1073741824;
+		internal const int Success = 1;
+		internal const int OneGb = 1073741824;
 		private readonly byte [] endData = new[] { (byte)'\r', (byte)'\n' };
 
 		protected Socket socket;
@@ -363,6 +363,22 @@ namespace ServiceStack.Redis
 			return SendExpectString("TYPE {0}\r\n", key);
 		}
 
+		public RedisKeyType GetKeyType(string key)
+		{
+			switch (Type(key))
+			{
+				case "none":
+					return RedisKeyType.None;
+				case "string":
+					return RedisKeyType.String;
+				case "set":
+					return RedisKeyType.Set;
+				case "list":
+					return RedisKeyType.List;
+			}
+			throw new RedisResponseException("Invalid value");
+		}
+
 		public void Set(string key, byte[] value)
 		{
 			if (key == null)
@@ -385,7 +401,7 @@ namespace ServiceStack.Redis
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			if (value.Length > RedisNativeClient.OneGb)
+			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "SETNX {0} {1}\r\n", key, value.Length))
@@ -394,6 +410,11 @@ namespace ServiceStack.Redis
 		}
 
 		public byte[] Get(string key)
+		{
+			return GetBytes(key);
+		}
+
+		public byte[] GetBytes(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
@@ -407,7 +428,7 @@ namespace ServiceStack.Redis
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			if (value.Length > RedisNativeClient.OneGb)
+			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "GETSET {0} {1}\r\n", key, value.Length))
@@ -502,6 +523,11 @@ namespace ServiceStack.Redis
 		public string Save()
 		{
 			return SendGetString("SAVE\r\n");
+		}
+
+		public void SaveAsync()
+		{
+			BgSave();
 		}
 
 		public void BgSave()
