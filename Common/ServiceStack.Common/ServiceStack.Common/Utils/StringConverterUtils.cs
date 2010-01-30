@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Utils
 	/// Wrapper around TypeSerializer, use it instead
 	/// </summary>
 	[Obsolete("Use TypeSerializer instead")]
-	public static class StringConverterUtils
+	public static class StringConverterUtils2
 	{
 		public static bool CanCreateFromString(Type type)
 		{

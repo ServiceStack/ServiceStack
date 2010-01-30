@@ -5,6 +5,7 @@ using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceModel.Tests.DataContracts;
 
@@ -41,7 +42,7 @@ namespace ServiceStack.ServiceModel.Tests
 		{
 			var textValue = "1,2,3";
 			var convertedValue = textValue.Split(',').ToList().ConvertAll(x => Convert.ToInt32(x));
-			var result = StringConverterUtils.Parse<ArrayOfIntId>(textValue);
+			var result = TypeSerializer.DeserializeFromString<ArrayOfIntId>(textValue);
 			Assert.That(result, Is.EquivalentTo(convertedValue));
 		}
 
@@ -50,7 +51,7 @@ namespace ServiceStack.ServiceModel.Tests
 		{
 			var textValue = "40DFA5A2-8054-4b3e-B7F5-06E61FF387EF";
 			var convertedValue = new Guid(textValue);
-			var result = StringConverterUtils.Parse<Guid>(textValue);
+			var result = TypeSerializer.DeserializeFromString<Guid>(textValue);
 			Assert.That(result, Is.EqualTo(convertedValue));
 		}
 
@@ -59,7 +60,7 @@ namespace ServiceStack.ServiceModel.Tests
 		{
 			var textValue = "99";
 			var convertedValue = int.Parse(textValue);
-			var result = StringConverterUtils.Parse<int>(textValue);
+			var result = TypeSerializer.DeserializeFromString<int>(textValue);
 			Assert.That(result, Is.EqualTo(convertedValue));
 		}
 
@@ -68,7 +69,7 @@ namespace ServiceStack.ServiceModel.Tests
 		{
 			var textValue = "True";
 			var convertedValue = bool.Parse(textValue);
-			var result = StringConverterUtils.Parse<bool>(textValue);
+			var result = TypeSerializer.DeserializeFromString<bool>(textValue);
 			Assert.That(result, Is.EqualTo(convertedValue));
 		}
 
@@ -77,7 +78,7 @@ namespace ServiceStack.ServiceModel.Tests
 		{
 			var convertedValue = new[] { "Hello", "World" };
 			var textValue = string.Join(",", convertedValue);
-			var result = StringConverterUtils.Parse<string[]>(textValue);
+			var result = TypeSerializer.DeserializeFromString<string[]>(textValue);
 			Assert.That(result, Is.EqualTo(convertedValue));
 		}
 
@@ -85,8 +86,8 @@ namespace ServiceStack.ServiceModel.Tests
 		public void Create_from_StringEnumerable()
 		{
 			var value = StringEnumerable.Parse("d,e,f");
-			var convertedValue = StringConverterUtils.ToString(value);
-			var result = StringConverterUtils.Parse<StringEnumerable>(convertedValue);
+			var convertedValue = TypeSerializer.SerializeToString(value);
+			var result = TypeSerializer.DeserializeFromString<StringEnumerable>(convertedValue);
 			Assert.That(result, Is.EquivalentTo(value.Items));
 		}
 

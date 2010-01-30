@@ -49,6 +49,24 @@ namespace ServiceStack.Common.Tests.Models
 			return row;
 		}
 
+		public static ModelWithFieldsOfNullableTypes CreateConstant(int id)
+		{
+			var row = new ModelWithFieldsOfNullableTypes {
+				Id = id,
+				NId = id,
+				NBool = id % 2 == 0,
+				NDateTime = new DateTime(1979, (id % 12) + 1, (id % 28) + 1),
+				NFloat = 1.11f + id,
+				NDouble = 1.11d + id,
+				NGuid = new Guid(((id % 240) + 16).ToString("X") + "7DA519-73B6-4525-84BA-B57673B2360D"),
+				NLongId = 999 + id,
+				NDecimal = id + 0.5m,
+				NTimeSpan = TimeSpan.FromSeconds(id),
+			};
+
+			return row;
+		}
+
 		public static void AssertIsEqual(ModelWithFieldsOfNullableTypes actual, ModelWithFieldsOfNullableTypes expected)
 		{
 			Assert.That(actual.Id, Is.EqualTo(expected.Id));

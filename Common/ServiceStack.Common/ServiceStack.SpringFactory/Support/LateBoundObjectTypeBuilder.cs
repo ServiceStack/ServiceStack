@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.SpringFactory.Support
@@ -86,7 +87,7 @@ namespace ServiceStack.SpringFactory.Support
 							constructorRefTypes.Add(refType);
 							constructorValueTypes.Add(refType.GetType());
 						}
-						else if (StringConverterUtils.CanCreateFromString(constructorParam.ParameterType))
+						else if (TypeSerializer.CanCreateFromString(constructorParam.ParameterType))
 						{
 							constructorValueTypes.Add(constructorParam.ParameterType);
 						}
@@ -151,8 +152,8 @@ namespace ServiceStack.SpringFactory.Support
 					propertyRefTypes.Add(refType);
 					properties.Add(pi);
 					propertyValueTypes.Add(refType.GetType());
-				} 
-				else if (StringConverterUtils.CanCreateFromString(pi.PropertyType))
+				}
+				else if (TypeSerializer.CanCreateFromString(pi.PropertyType))
 				{
 					properties.Add(pi);
 					propertyValueTypes.Add(pi.PropertyType);
@@ -194,7 +195,7 @@ namespace ServiceStack.SpringFactory.Support
 				else
 				{
 					var constructorArgTextValue = objectTypeDefinition.ConstructorArgs[i].Value;
-					argValue = StringConverterUtils.Parse(constructorArgTextValue, constructorValueType);
+					argValue = TypeSerializer.DeserializeFromString(constructorArgTextValue, constructorValueType);
 				}
 				constructorArgValues[i] = argValue;
 			}
@@ -217,7 +218,7 @@ namespace ServiceStack.SpringFactory.Support
 				else
 				{
 					var propertyTextValue = objectTypeDefinition.Properties[i].Value;
-					argValue = StringConverterUtils.Parse(propertyTextValue, propertyValueType);
+					argValue = TypeSerializer.DeserializeFromString(propertyTextValue, propertyValueType);
 				}
 				propertyValues[i] = argValue;
 			}

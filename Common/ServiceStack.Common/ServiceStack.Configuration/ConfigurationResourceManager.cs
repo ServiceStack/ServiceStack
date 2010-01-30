@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Configuration
@@ -23,7 +24,7 @@ namespace ServiceStack.Configuration
 		public T Get<T>(string name, T defaultValue)
 		{
 			var stringValue = ConfigUtils.GetNullableAppSetting(name);
-			return StringConverterUtils.Parse<T>(stringValue);
+			return TypeSerializer.DeserializeFromString<T>(stringValue);
 		}
 	}
 }

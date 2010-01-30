@@ -41,6 +41,42 @@ namespace ServiceStack.Common.Tests.Models
 			return row;
 		}
 
+		public static ModelWithFieldsOfDifferentTypes CreateConstant(int id)
+		{
+			var row = new ModelWithFieldsOfDifferentTypes {
+				Id = id,
+				Bool = id % 2 == 0,
+				DateTime = new DateTime(1979, (id % 12) + 1, (id % 28) + 1),
+				Double = 1.11d + id,
+				Guid = new Guid(((id % 240) + 16).ToString("X") + "726E3B-9983-40B4-A8CB-2F8ADA8C8760"),
+				LongId = 999 + id,
+				Name = "Name" + id
+			};
+
+			return row;
+		}
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as ModelWithFieldsOfDifferentTypes;
+			if (other == null) return false;
+
+			try
+			{
+				AssertIsEqual(this, other);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		public override int GetHashCode()
+		{
+			return (Id + Guid.ToString()).GetHashCode();
+		}
+
 		public static void AssertIsEqual(ModelWithFieldsOfDifferentTypes actual, ModelWithFieldsOfDifferentTypes expected)
 		{
 			Assert.That(actual.Id, Is.EqualTo(expected.Id));

@@ -1,62 +1,121 @@
 using System;
 using System.IO;
-using ServiceStack.Common.Web;
+using System.Linq.Expressions;
+using ServiceStack.Common.Reflection;
 using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Common.Utils
 {
+	public static class IdUtils<T>
+	{
+		private static readonly Func<T,object> CanGetId;
+
+		static IdUtils()
+		{
+			var hasIdInterfaces = typeof(T).FindInterfaces(
+				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
+
+			if (hasIdInterfaces.Length > 0)
+			{
+				CanGetId = HasId<T>.GetId;
+			}
+			else if (typeof(T).IsClass
+				&& typeof(T).GetProperty(IdUtils.IdField) != null
+				&& typeof(T).GetProperty(IdUtils.IdField).GetGetMethod() != null)
+			{
+				CanGetId = HasPropertyId<T>.GetId;
+			}
+			else
+			{
+				CanGetId = x => x.GetHashCode();
+			}
+		}
+
+		public static object GetId(T entity)
+		{
+			return CanGetId(entity);
+		}
+	}
+
+	internal static class HasPropertyId<TEntity>
+	{
+
+		private static readonly Func<TEntity, object> GetIdFn;
+
+		static HasPropertyId()
+		{
+			var pi = typeof(TEntity).GetProperty(IdUtils.IdField);
+			GetIdFn = StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
+		}
+
+		public static object GetId(TEntity entity)
+		{
+			return GetIdFn(entity);
+		}
+	}
+
+	internal static class HasId<TEntity>
+	{
+		private static readonly Func<TEntity, object> GetIdFn;
+
+		static HasId()
+		{
+			var hasIdInterfaces = typeof(TEntity).FindInterfaces(
+				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
+
+			var genericArg = hasIdInterfaces[0].GetGenericArguments()[0];
+			var genericType = typeof(HasIdGetter<,>).MakeGenericType(typeof(TEntity), genericArg);
+
+			var oInstanceParam = Expression.Parameter(typeof(TEntity), "oInstanceParam");
+			var exprCallStaticMethod = Expression.Call
+				(
+					genericType,
+					"GetId",
+					new Type[0],
+					oInstanceParam
+				);
+			GetIdFn = Expression.Lambda<Func<TEntity, object>>
+				(
+					exprCallStaticMethod,
+					oInstanceParam
+				).Compile();
+		}
+
+		public static object GetId(TEntity entity)
+		{
+			return GetIdFn(entity);
+		}
+	}
+
+	internal class HasIdGetter<TEntity, TId>
+		where TEntity : IHasId<TId>
+	{
+		public static object GetId(TEntity entity)
+		{
+			return entity.Id;
+		}
+	}
+
 	public static class IdUtils
 	{
-		private const string IdField = "Id";
+		public const string IdField = "Id";
 
-		public static object GetId<T>(T entity)
+		public static object GetId<T>(this T entity)
 		{
-			var guidEntity = entity as IHasGuidId;
-			if (guidEntity != null)
-			{
-				return guidEntity.Id;
-			}
-
-			var intEntity = entity as IHasIntId;
-			if (intEntity != null)
-			{
-				return intEntity.Id;
-			}
-
-			var longEntity = entity as IHasLongId;
-			if (longEntity != null)
-			{
-				return longEntity.Id;
-			}
-
-			var stringEntity = entity as IHasStringId;
-			if (stringEntity != null)
-			{
-				return stringEntity.Id;
-			}
-
-			var propertyInfo = typeof (T).GetProperty(IdField);
-			if (propertyInfo != null)
-			{
-				return propertyInfo.GetGetMethod().Invoke(entity, new object[0]);
-			}
-
-			throw new NotSupportedException("Cannot retrieve value of Id field, use IHasId<>");
+			return IdUtils<T>.GetId(entity);
 		}
 
 		public static string CreateUrn<T>(object id)
-			where T : class
 		{
 			return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
 		}
 
 		public static string CreateUrn<T>(this T entity)
-			where T : class 
+//			where T : class
 		{
 			var id = GetId(entity);
 			return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
 		}
-
 
 		public static string CreateCacheKeyPath<T>(string idValue)
 		{

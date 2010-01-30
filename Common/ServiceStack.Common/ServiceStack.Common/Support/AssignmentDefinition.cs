@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 
@@ -82,12 +83,12 @@ namespace ServiceStack.Common.Support
 					{
 						if (fromPropertyInfo.PropertyType == typeof(string))
 						{
-							fromValue = StringConverterUtils.Parse((string)fromValue,
+							fromValue = TypeSerializer.DeserializeFromString((string)fromValue,
 								toPropertyInfo.PropertyType);
 						}
 						else if (toPropertyInfo.PropertyType == typeof(string))
 						{
-							fromValue = StringConverterUtils.ToString(fromValue);
+							fromValue = TypeSerializer.SerializeToString(fromValue);
 						}
 					}
 

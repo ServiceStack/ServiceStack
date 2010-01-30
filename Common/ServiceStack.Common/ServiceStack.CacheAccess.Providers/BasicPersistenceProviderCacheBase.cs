@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAccess;
 
@@ -87,8 +88,8 @@ namespace ServiceStack.CacheAccess.Providers
 
 				var entityIdsNotInCache = cacheKeys
 					.Where(x => !cacheEntitiesMap.ContainsKey(x))
-					.ConvertAll(x => 
-						StringConverterUtils.Parse(UrnId.GetStringId(x), entityIdType));
+					.ConvertAll(x =>
+						TypeSerializer.DeserializeFromString(UrnId.GetStringId(x), entityIdType));
 
 				using (var db = GetBasicPersistenceProvider())
 				{

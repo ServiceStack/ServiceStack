@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.Serialization;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
 
@@ -42,7 +43,7 @@ namespace ServiceStack.ServiceModel.Serialization
 						log.WarnFormat("Property '{0}' does not exist on type '{1}'", propertyName, returnType.FullName);
 						continue;
 					}
-					var value = StringConverterUtils.Parse(propertyTextValue, propertyInfo.PropertyType);
+					var value = TypeSerializer.DeserializeFromString(propertyTextValue, propertyInfo.PropertyType);
 					if (value == null)
 					{
 						log.WarnFormat("Could not create instance of '{0}' with text value '{1}' for property '{2}'", 

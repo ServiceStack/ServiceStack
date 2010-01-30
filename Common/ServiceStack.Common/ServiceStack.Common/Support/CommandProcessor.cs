@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Support
@@ -59,7 +60,7 @@ namespace ServiceStack.Common.Support
 			{
 				var propertyValueType = types[i];
 				var propertyValueString = values[i];
-				var argValue = StringConverterUtils.Parse(propertyValueString, propertyValueType);
+				var argValue = TypeSerializer.DeserializeFromString(propertyValueString, propertyValueType);
 				convertedValues[i] = argValue;
 			}
 			return convertedValues;

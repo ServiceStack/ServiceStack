@@ -84,10 +84,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IdUtilsTests.cs" />
+    <Compile Include="Models\IModelFactory.cs" />
+    <Compile Include="Models\ModelFactoryBase.cs" />
+    <Compile Include="Models\ModelWithComplexTypesFactory.cs" />
+    <Compile Include="Models\ModelWithFieldsOfDifferentAndNullableTypesFactory.cs" />
+    <Compile Include="Models\ModelWithFieldsOfDifferentTypesFactory.cs" />
+    <Compile Include="Models\ModelWithFieldsOfNullableTypesFactory.cs" />
     <Compile Include="Models\ModelWithMapAndList.cs" />
+    <Compile Include="Models\Shipper.cs" />
+    <Compile Include="Models\ShipperFactory.cs" />
+    <Compile Include="Models\StringFactory.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
+    <Compile Include="Perf\IdUtilsPerf.cs" />
+    <Compile Include="Perf\PropertyAccessorPerf.cs" />
     <Compile Include="Perf\ReflectionTests.cs" />
     <Compile Include="Perf\TextSerializerComparisons.cs" />
+    <Compile Include="Reflection\PropertyAccessorTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Text\CsvStreamTests.cs" />
     <Compile Include="Expressions\DelegateFactoryTests.cs" />

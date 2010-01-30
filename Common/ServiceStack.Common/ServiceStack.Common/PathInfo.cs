@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common
@@ -42,7 +43,7 @@ namespace ServiceStack.Common
 
 		public T GetArgumentValue<T>(int index)
 		{
-			return StringConverterUtils.Parse<T>(this.Arguments[index]);
+			return TypeSerializer.DeserializeFromString<T>(this.Arguments[index]);
 		}
 
 		/// <summary>

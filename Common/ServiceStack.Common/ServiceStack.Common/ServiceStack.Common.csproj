@@ -74,6 +74,8 @@
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Reflection\StaticAccessors.cs" />
+    <Compile Include="Reflection\TypeProperyAccessor.cs" />
     <Compile Include="Support\NetDeflateProvider.cs" />
     <Compile Include="Support\NetGZipProvider.cs" />
     <Compile Include="Extensions\ITranslatorExtensions.cs" />
@@ -98,6 +100,7 @@
     <Compile Include="Text\TypeSerializer.cs" />
     <Compile Include="Text\ToStringListMethods.cs" />
     <Compile Include="Text\TypeRegistration.cs" />
+    <Compile Include="Text\TypeSerializer.Generic.cs" />
     <Compile Include="Text\TypeToStringMethods.cs" />
     <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\AssertUtils.cs" />
@@ -107,6 +110,7 @@
     <Compile Include="Utils\ObjectDumperUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\PathUtils.cs" />
+    <Compile Include="Reflection\PropertyAccessor.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
     <Compile Include="Utils\StringConverterUtils.cs" />
     <Compile Include="Support\CommandExecsHandler.cs" />
