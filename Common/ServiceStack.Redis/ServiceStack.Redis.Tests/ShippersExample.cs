@@ -39,7 +39,10 @@ namespace ServiceStack.Redis.Tests
 		{
 			using (var redisClient = new RedisClient())
 			{
+				//Create a 'strongly-typed' API that makes all Redis Value operations to apply against Shippers
 				var redis = redisClient.CreateGenericClient<Shipper>();
+
+				//Redis lists implement IList<T> while Redis sets implement ICollection<T>
 				var currentShippers = redis.Lists["urn:shippers:current"];
 				var prospectiveShippers = redis.Lists["urn:shippers:prospective"];
 

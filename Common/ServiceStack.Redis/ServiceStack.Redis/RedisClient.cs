@@ -17,7 +17,6 @@ using System.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
-using ServiceStack.DataAccess;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
 
@@ -31,7 +30,7 @@ namespace ServiceStack.Redis
 	///		 RedisClient.Sets => ICollection[string]
 	/// </summary>
 	public class RedisClient
-		: RedisNativeClient, IRedisClient, IBasicPersistenceProvider
+		: RedisNativeClient, IRedisClient
 	{
 		public RedisClient(string host, int port)
 			: base(host, port)

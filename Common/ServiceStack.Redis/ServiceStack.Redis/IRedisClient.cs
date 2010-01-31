@@ -11,13 +11,14 @@
 
 using System;
 using System.Collections.Generic;
+using ServiceStack.DataAccess;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
 
 namespace ServiceStack.Redis
 {
-	public interface IRedisClient 
-		: IDisposable
+	public interface IRedisClient
+		: IBasicPersistenceProvider
 	{
 		string Host { get; }
 		int Port { get; }
