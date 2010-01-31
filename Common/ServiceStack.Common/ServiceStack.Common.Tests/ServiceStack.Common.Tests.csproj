@@ -94,7 +94,7 @@
     <Compile Include="Models\ModelWithMapAndList.cs" />
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShipperFactory.cs" />
-    <Compile Include="Models\StringFactory.cs" />
+    <Compile Include="Models\BuiltInsFactory.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
     <Compile Include="Perf\IdUtilsPerf.cs" />
     <Compile Include="Perf\PropertyAccessorPerf.cs" />
@@ -154,21 +154,10 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceHost.Tests\ServiceStack.ServiceHost.Tests.csproj">
-      <Project>{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA}</Project>
-      <Name>ServiceStack.ServiceHost.Tests</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
       <Name>ServiceStack.ServiceModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Validation\ServiceStack.Validation.csproj">
-      <Project>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</Project>
-      <Name>ServiceStack.Validation</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Perf\Reports\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

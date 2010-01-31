@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Reflection
 {
@@ -12,28 +11,28 @@ namespace ServiceStack.Common.Reflection
 			return new PropertyAccessor<TEntity>(propertyName).GetPropertyFn();
 		}
 
-		public static Func<object, object> GetPropertyFnByType(Type type, string propertyName)
-		{
-			var mi = typeof(PropertyAccessor).GetMethod("GetPropertyFn");
-			var genericMi = mi.MakeGenericMethod(type);
-			var getPropertyFn = genericMi.Invoke(null, new object[] { propertyName });
+		//public static Func<object, object> GetPropertyFnByType(Type type, string propertyName)
+		//{
+		//    var mi = typeof(PropertyAccessor).GetMethod("GetPropertyFn");
+		//    var genericMi = mi.MakeGenericMethod(type);
+		//    var getPropertyFn = genericMi.Invoke(null, new object[] { propertyName });
 
-			return (Func<object, object>)getPropertyFn;
-		}
+		//    return (Func<object, object>)getPropertyFn;
+		//}
 
 		public static Action<TEntity, object> SetPropertyFn<TEntity>(string propertyName)
 		{
 			return new PropertyAccessor<TEntity>(propertyName).SetPropertyFn();
 		}
 
-		public static Action<object, object> SetPropertyFnByType(Type type, string propertyName)
-		{
-			var mi = typeof(PropertyAccessor).GetMethod("SetPropertyFn");
-			var genericMi = mi.MakeGenericMethod(type);
-			var setPropertyFn = genericMi.Invoke(null, new object[] { propertyName });
+		//public static Action<object, object> SetPropertyFnByType(Type type, string propertyName)
+		//{
+		//    var mi = typeof(PropertyAccessor).GetMethod("SetPropertyFn");
+		//    var genericMi = mi.MakeGenericMethod(type);
+		//    var setPropertyFn = genericMi.Invoke(null, new object[] { propertyName });
 
-			return (Action<object, object>)setPropertyFn;
-		}
+		//    return (Action<object, object>)setPropertyFn;
+		//}
 	}
 
 	public class PropertyAccessor<TEntity>

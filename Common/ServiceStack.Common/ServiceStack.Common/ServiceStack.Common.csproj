@@ -75,7 +75,7 @@
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />
-    <Compile Include="Reflection\TypeProperyAccessor.cs" />
+    <Compile Include="Reflection\TypeSerializerPropertyAccessor.cs" />
     <Compile Include="Support\NetDeflateProvider.cs" />
     <Compile Include="Support\NetGZipProvider.cs" />
     <Compile Include="Extensions\ITranslatorExtensions.cs" />

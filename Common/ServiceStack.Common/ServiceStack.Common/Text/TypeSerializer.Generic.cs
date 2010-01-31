@@ -20,7 +20,7 @@ namespace ServiceStack.Common.Text
 
 		public string SerializeToString(T value)
 		{
-			if (Equals(value, default(T))) return null;
+			if (value == null) return null;
 			if (value is string) return value as string;
 
 			var sb = new StringBuilder(4096);
