@@ -21,25 +21,27 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Working_with_int_values()
 		{
+			const string intKey = "intkey";
+			const int intValue = 1;
+
+			//STORING AN INT USING THE BASIC CLIENT
 			using (var redisClient = new RedisClient())
 			{
-				const string intKey = "intkey";
-				const int intValue = 1;
-
-				//STORING AN INT USING THE BASIC CLIENT
 				redisClient.SetString(intKey, intValue.ToString());
 				string strGetIntValue = redisClient.GetString(intKey);
 				int toIntValue = int.Parse(strGetIntValue);
 
 				Assert.That(toIntValue, Is.EqualTo(intValue));
+			}
 
-
-				//STORING AN INT USING THE GENERIC CLIENT
+			//STORING AN INT USING THE GENERIC CLIENT
+			using (var redisClient = new RedisClient())
+			{
 				//Create a generic client that treats all values as ints:
 				IRedisGenericClient<int> intRedis = redisClient.CreateGenericClient<int>();
 
 				intRedis.Set(intKey, intValue);
-				toIntValue = intRedis.Get(intKey);
+				var toIntValue = intRedis.Get(intKey);
 
 				Assert.That(toIntValue, Is.EqualTo(intValue));
 			}
@@ -48,12 +50,12 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Working_with_int_list_values()
 		{
+			const string intListKey = "intListKey";
+			var intValues = new List<int> {2, 4, 6, 8};
+
+			//STORING INTS INTO A LIST USING THE BASIC CLIENT
 			using (var redisClient = new RedisClient())
 			{
-				const string intListKey = "intListKey";
-				var intValues = new List<int> { 2, 4, 6, 8 };
-
-				//STORING INTS INTO A LIST USING THE BASIC CLIENT
 				IList<string> strList = redisClient.Lists[intListKey];
 
 				//storing all int values in the redis list 'intListKey' as strings
@@ -69,8 +71,11 @@ namespace ServiceStack.Redis.Tests
 
 				//delete all items in the list
 				strList.Clear();
+			}
 
-				//STORING INTS INTO A LIST USING THE GENERIC CLIENT
+			//STORING INTS INTO A LIST USING THE GENERIC CLIENT
+			using (var redisClient = new RedisClient())
+			{
 				//Create a generic client that treats all values as ints:
 				IRedisGenericClient<int> intRedis = redisClient.CreateGenericClient<int>();
 
@@ -94,12 +99,12 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Working_with_Generic_types()
 		{
+			const string pocoKey = "pocoKey";
+			var pocoValue = new IntAndString { Id = 1, Letter = "A" };
+
+			//STORING A POCO TYPE USING THE GENERIC CLIENT
 			using (var redisClient = new RedisClient())
 			{
-				const string pocoKey = "pocoKey";
-				var pocoValue = new IntAndString { Id = 1, Letter = "A" };
-
-				//STORING A POCO TYPE USING THE GENERIC CLIENT
 				//Create a generic client that treats all values as IntAndString:
 				IRedisGenericClient<IntAndString> genericRedis = redisClient.CreateGenericClient<IntAndString>();
 
