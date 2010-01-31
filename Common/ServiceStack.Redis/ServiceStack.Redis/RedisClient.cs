@@ -59,6 +59,16 @@ namespace ServiceStack.Redis
 			set { SetString(key, value); }
 		}
 
+		public string GetTypeSequenceKey<T>()
+		{
+			return "seq:" + typeof(T).Name;
+		}
+
+		public string GetTypeIdsSetKey<T>()
+		{
+			return "ids:" + typeof(T).Name;
+		}
+
 		public string[] AllKeys
 		{
 			get
@@ -171,6 +181,9 @@ namespace ServiceStack.Redis
 
 		public List<T> GetKeyValues<T>(List<string> keys)
 		{
+			if (keys == null) throw new ArgumentNullException("keys");
+			if (keys.Count == 0) return new List<T>();
+
 			var resultBytesArray = MGet(keys.ToArray());
 
 			var results = new List<T>();
@@ -461,11 +474,23 @@ namespace ServiceStack.Redis
 			return GetKeyValues<T>(keys);
 		}
 
+		public IList<T> GetAll<T>()
+			where T : class, new()
+		{
+			var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
+			var allKeys = this.GetAllFromSet(typeIdsSetKy);
+			return GetKeyValues<T>(allKeys.ToList());
+		}
+
 		public T Store<T>(T entity)
 			where T : class, new()
 		{
 			var urnKey = entity.CreateUrn();
 			var valueString = TypeSerializer.SerializeToString(entity);
+
+			var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
+			this.AddToSet(typeIdsSetKy, urnKey);
+
 			this.SetString(urnKey, valueString);
 
 			return entity;
@@ -491,8 +516,12 @@ namespace ServiceStack.Redis
 
 		public void DeleteById<T>(object id) where T : class, new()
 		{
-			var key = IdUtils.CreateUrn<T>(id);
-			this.Remove(key);
+			var urnKey = IdUtils.CreateUrn<T>(id);
+
+			var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
+			this.RemoveFromSet(typeIdsSetKy, urnKey);
+
+			this.Remove(urnKey);
 		}
 
 		public void DeleteByIds<T>(ICollection ids) where T : class, new()
@@ -505,18 +534,22 @@ namespace ServiceStack.Redis
 			var i = 0;
 			foreach (var id in ids)
 			{
-				var key = IdUtils.CreateUrn<T>(id);
-				keys[i++] = key;
+				var urnKey = IdUtils.CreateUrn<T>(id);
+				keys[i++] = urnKey;
+
+				var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
+				this.RemoveFromSet(typeIdsSetKy, urnKey);
 			}
 
 			this.Remove(keys);
 		}
 
-		public void DeleteAll<TEntity>() where TEntity : class, new()
+		public void DeleteAll<T>() where T : class, new()
 		{
-			throw new NotImplementedException();
-			//TODO: replace with DeleteAll of TEntity
-			base.FlushDb();
+			var typeIdsSetKey = this.GetTypeIdsSetKey<T>();
+			var urnKeys = this.GetAllFromSet(typeIdsSetKey);
+			this.Remove(urnKeys.ToArray());
+			this.Remove(typeIdsSetKey);
 		}
 
 		#endregion

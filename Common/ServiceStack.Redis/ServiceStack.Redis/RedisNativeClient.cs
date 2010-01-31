@@ -290,6 +290,12 @@ namespace ServiceStack.Redis
 				int count;
 				if (int.TryParse(s, out count))
 				{
+					if (count == -1)
+					{
+						//redis is in an invalid state
+						return new byte[0][];
+					}
+
 					byte [][] result = new byte[count][];
 
 					for (int i = 0; i < count; i++)

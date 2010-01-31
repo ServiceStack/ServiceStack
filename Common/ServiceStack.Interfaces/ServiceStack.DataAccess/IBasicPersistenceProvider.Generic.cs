@@ -14,6 +14,8 @@ namespace ServiceStack.DataAccess
 	
 		IList<T> GetByIds(ICollection<string> ids);
 
+		IList<T> GetAll();
+
 		T Store(T entity);
 
 		void StoreAll(IEnumerable<T> entities);

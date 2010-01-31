@@ -20,15 +20,16 @@ namespace ServiceStack.Redis.Tests
 	[TestFixture]
 	public class ShippersExample
 	{
+
 		static void Dump<T>(string message, T entity)
 		{
 			var text = TypeSerializer.SerializeToString(entity);
-			
+
 			//make it a little easier on the eyes
 			var prettyLines = text.Split(new[] { "[", "},{", "]" },
 				StringSplitOptions.RemoveEmptyEntries)
 				.ToList().ConvertAll(x => x.Replace("{", "").Replace("}", ""));
-			
+
 			Console.WriteLine("\n" + message);
 			prettyLines.ForEach(Console.WriteLine);
 		}
@@ -84,7 +85,7 @@ namespace ServiceStack.Redis.Tests
 						ShipperType = ShipperType.Automobiles,
 						UniqueRef = Guid.NewGuid()
 					});
-				
+
 				Dump("ADDED A PROSPECTIVE SHIPPER:", prospectiveShippers);
 
 				redis.PopAndPushBetweenLists(prospectiveShippers, currentShippers);
@@ -97,9 +98,9 @@ namespace ServiceStack.Redis.Tests
 				Dump("CURRENT SHIPPERS AFTER POP:", currentShippers);
 
 				//reset sequence and delete all lists
-				Dump("DELETING CURRENT AND PROSPECTIVE SHIPPERS:", currentShippers);
 				redis.SetSequence(0);
 				redis.Remove(currentShippers, prospectiveShippers);
+				Dump("DELETING CURRENT AND PROSPECTIVE SHIPPERS:", currentShippers);
 			}
 
 		}
