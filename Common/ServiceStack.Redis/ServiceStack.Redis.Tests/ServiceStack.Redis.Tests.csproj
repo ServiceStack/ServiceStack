@@ -90,6 +90,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisPersistenceProviderTests.cs" />
     <Compile Include="ShippersExample.cs" />
+    <Compile Include="ValueTypeExamples.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">

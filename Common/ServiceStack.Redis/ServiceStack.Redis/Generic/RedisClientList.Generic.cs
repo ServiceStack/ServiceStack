@@ -83,29 +83,8 @@ namespace ServiceStack.Redis.Generic
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			var allItemsInSet = client.GetAllFromList(this);
-			allItemsInSet.CopyTo(array, arrayIndex);
-
-			//if (arrayIndex == 0)
-			//{
-			//    for (var i=array.Length - 1; i >= 0; i--)
-			//    {
-			//        client.PrependToList(this, array[i]);
-			//    }
-			//}
-			//else if (arrayIndex == this.Count)
-			//{
-			//    foreach (var item in array)
-			//    {
-			//        client.AddToList(this, item);
-			//    }
-			//}
-			//else
-			//{
-			//    //TODO: replace with implementation involving creating on new temp list then replacing
-			//    //otherwise wait for native implementation
-			//    throw new NotImplementedException();
-			//}
+			var allItemsInList = client.GetAllFromList(this);
+			allItemsInList.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(T item)

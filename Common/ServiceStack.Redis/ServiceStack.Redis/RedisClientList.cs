@@ -80,26 +80,8 @@ namespace ServiceStack.Redis
 
 		public void CopyTo(string[] array, int arrayIndex)
 		{
-			if (arrayIndex == 0)
-			{
-				for (var i=array.Length - 1; i >= 0; i--)
-				{
-					client.PrependToList(listId, array[i]);
-				}
-			}
-			else if (arrayIndex == this.Count)
-			{
-				foreach (var item in array)
-				{
-					client.AddToList(listId, item);
-				}
-			}
-			else
-			{
-				//TODO: replace with implementation involving creating on new temp list then replacing
-				//otherwise wait for native implementation
-				throw new NotImplementedException();
-			}
+			var allItemsInList = client.GetAllFromList(listId);
+			allItemsInList.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(string item)

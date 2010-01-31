@@ -75,10 +75,8 @@ namespace ServiceStack.Redis
 
 		public void CopyTo(string[] array, int arrayIndex)
 		{
-			foreach (var item in array)
-			{
-				client.AddToSet(setId, item);
-			}
+			var allItemsInSet = client.GetAllFromSet(setId);
+			allItemsInSet.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(string item)
