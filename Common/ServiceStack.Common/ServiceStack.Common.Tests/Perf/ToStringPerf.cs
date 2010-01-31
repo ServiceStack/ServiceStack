@@ -8,14 +8,14 @@ using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
 {
-	//[Ignore]
+	[Ignore("Bencharks for serializing basic .NET types")]
 	[TestFixture]
 	public class ToStringPerf
 		: PerfTestBase
 	{
 		public ToStringPerf()
 		{
-			this.MultipleIterations = new List<int> { 1000000 };
+			this.MultipleIterations = new List<int> { 10000 };
 		}
 
 		[Test]

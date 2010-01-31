@@ -5,10 +5,10 @@ using System.Reflection;
 using NUnit.Framework;
 using ServiceStack.Common.Reflection;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
 {
+	[Ignore("Benchmark for comparing property access")]
 	[TestFixture]
 	public class PropertyAccessorPerf
 		: PerfTestBase

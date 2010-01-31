@@ -7,14 +7,14 @@ using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Tests.Perf
 {
-	//[Ignore]
+	[Ignore("Benchmarks for deserializing basic .NET types")]
 	[TestFixture]
 	public class StringParsePerf
 		: PerfTestBase
 	{
 		public StringParsePerf()
 		{
-			this.MultipleIterations = new List<int> { 1000000 };
+			this.MultipleIterations = new List<int> { 10000 };
 		}
 
 		public List<string> CreateList(Func<int, string> createStringFn, int noOfTimes)

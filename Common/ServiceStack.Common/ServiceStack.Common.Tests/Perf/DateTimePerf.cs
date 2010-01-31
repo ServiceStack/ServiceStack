@@ -14,7 +14,7 @@ namespace ServiceStack.Common.Tests.Perf
 	{
 		public DateTimePerf()
 		{
-			this.MultipleIterations = new List<int> { 1000000 };
+			this.MultipleIterations = new List<int> { 10000 };
 		}
 
 

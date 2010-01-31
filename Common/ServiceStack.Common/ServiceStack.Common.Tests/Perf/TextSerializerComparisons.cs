@@ -7,13 +7,14 @@ using ServiceStack.Common.Text;
 
 namespace ServiceStack.Common.Tests.Perf
 {
+	[Ignore("Benchmarks on the war of the two text serializers")]
 	[TestFixture]
 	public class TextSerializerComparisons
 		: PerfTestBase
 	{
 		public TextSerializerComparisons()
 		{
-			this.MultipleIterations = new List<int> { 10000 };
+			this.MultipleIterations = new List<int> { 1000 };
 		}
 
 		private void CompareSerializers<T>(T dto)

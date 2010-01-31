@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Tests.Perf
 		public AdhocFastPerfTests()
 		{
 			//this.MultipleIterations = new List<int> { 1000, 10000, 100000, 1000000 };
-			this.MultipleIterations = new List<int> { 1000000 };
+			this.MultipleIterations = new List<int> { 10000 };
 		}
 
 		public static byte[] ToByteArray(string hexString)

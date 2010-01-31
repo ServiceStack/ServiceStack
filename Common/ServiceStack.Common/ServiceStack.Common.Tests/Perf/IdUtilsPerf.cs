@@ -6,13 +6,14 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Common.Tests.Perf
 {
+	[Ignore("Benchmarks for measuring Id access")]
 	[TestFixture]
 	public class IdUtilsPerf
 		: PerfTestBase
 	{
 		public IdUtilsPerf()
 		{
-			this.MultipleIterations = new List<int> { 1000000 };
+			this.MultipleIterations = new List<int> { 100000 };
 		}
 
 		public static object OldGetId<T>(T entity)

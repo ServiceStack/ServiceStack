@@ -7,6 +7,7 @@ using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.Common.Tests.Perf
 {
+	[Ignore("Benchmark for comparing expressions / delegates around generic methods.")]
 	[TestFixture]
 	public class ReflectionTests
 		: PerfTestBase
