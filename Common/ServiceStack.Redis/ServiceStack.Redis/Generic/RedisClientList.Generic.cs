@@ -16,11 +16,8 @@ using System.Text;
 
 namespace ServiceStack.Redis.Generic
 {
-	/// <summary>
-	/// Wrap the common redis list operations under a IList[string] interface.
-	/// </summary>
 	internal class RedisClientList<T>
-		: IList<T>
+		: IRedisList<T>
 	{
 		private readonly RedisGenericClient<T> client;
 		private readonly string listId;
@@ -32,10 +29,15 @@ namespace ServiceStack.Redis.Generic
 			this.client = client;
 		}
 
+		public string Id
+		{
+			get { return listId; }
+		}
+
 		public IEnumerator<T> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-			       	? client.GetAllFromList(listId).GetEnumerator()
+			       	? client.GetAllFromList(this).GetEnumerator()
 			       	: GetPagingEnumerator();
 		}
 
@@ -45,7 +47,7 @@ namespace ServiceStack.Redis.Generic
 			List<T> pageResults;
 			do
 			{
-				pageResults = client.GetRangeFromList(listId, skip, PageLimit);
+				pageResults = client.GetRangeFromList(this, skip, PageLimit);
 				foreach (var result in pageResults)
 				{
 					yield return result;
@@ -61,12 +63,12 @@ namespace ServiceStack.Redis.Generic
 
 		public void Add(T item)
 		{
-			client.AddToList(listId, item);
+			client.AddToList(this, item);
 		}
 
 		public void Clear()
 		{
-			client.RemoveAllFromList(listId);
+			client.RemoveAllFromList(this);
 		}
 
 		public bool Contains(T item)
@@ -81,38 +83,41 @@ namespace ServiceStack.Redis.Generic
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			if (arrayIndex == 0)
-			{
-				for (var i=array.Length - 1; i >= 0; i--)
-				{
-					client.PrependToList(listId, array[i]);
-				}
-			}
-			else if (arrayIndex == this.Count)
-			{
-				foreach (var item in array)
-				{
-					client.AddToList(listId, item);
-				}
-			}
-			else
-			{
-				//TODO: replace with implementation involving creating on new temp list then replacing
-				//otherwise wait for native implementation
-				throw new NotImplementedException();
-			}
+			var allItemsInSet = client.GetAllFromList(this);
+			allItemsInSet.CopyTo(array, arrayIndex);
+
+			//if (arrayIndex == 0)
+			//{
+			//    for (var i=array.Length - 1; i >= 0; i--)
+			//    {
+			//        client.PrependToList(this, array[i]);
+			//    }
+			//}
+			//else if (arrayIndex == this.Count)
+			//{
+			//    foreach (var item in array)
+			//    {
+			//        client.AddToList(this, item);
+			//    }
+			//}
+			//else
+			//{
+			//    //TODO: replace with implementation involving creating on new temp list then replacing
+			//    //otherwise wait for native implementation
+			//    throw new NotImplementedException();
+			//}
 		}
 
 		public bool Remove(T item)
 		{
-			return client.RemoveValueFromList(listId, item) > 0;
+			return client.RemoveValueFromList(this, item) > 0;
 		}
 
 		public int Count
 		{
 			get
 			{
-				return client.GetListCount(listId);
+				return client.GetListCount(this);
 			}
 		}
 
@@ -149,8 +154,9 @@ namespace ServiceStack.Redis.Generic
 
 		public T this[int index]
 		{
-			get { return client.GetItemFromList(listId, index); }
-			set { client.SetItemInList(listId, index, value); }
+			get { return client.GetItemFromList(this, index); }
+			set { client.SetItemInList(this, index, value); }
 		}
+
 	}
 }

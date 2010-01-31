@@ -14,10 +14,10 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_Set_and_Get_string()
 		{
 			const string value = "value";
-			using (var redis = new RedisGenericClient<string>())
+			using (var redis = new RedisClient())
 			{
-				redis.Set("key", value);
-				var valueString = redis.Get("key");
+				redis.SetString("key", value);
+				var valueString = redis.GetString("key");
 
 				Assert.That(valueString, Is.EqualTo(value));
 			}

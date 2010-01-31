@@ -121,8 +121,8 @@ namespace ServiceStack.OrmLite.Tests
 
 				//Performing custom queries
 				//Select only a subset from the table
-				var partialRows = dbCmd.Select<SubsetOfShipper>(typeof (Shipper), "ShipperTypeId = {0}", planesTypeId);
-				Assert.That(partialRows, Has.Count(2));
+				var partialColumns = dbCmd.Select<SubsetOfShipper>(typeof (Shipper), "ShipperTypeId = {0}", planesTypeId);
+				Assert.That(partialColumns, Has.Count(2));
 
 				//Select into another POCO class that matches sql
 				var rows = dbCmd.Select<ShipperTypeCount>(
@@ -133,9 +133,9 @@ namespace ServiceStack.OrmLite.Tests
 				Assert.That(rows[0].Total, Is.EqualTo(1));
 				Assert.That(rows[1].ShipperTypeId, Is.EqualTo(planesTypeId));
 				Assert.That(rows[1].Total, Is.EqualTo(2));
-				
 
-				//And finally no CRUD example is complete without fast deletes:
+
+				//And finally lets quickly clean up the mess we've made:
 				dbCmd.DeleteAll<Shipper>();
 				dbCmd.DeleteAll<ShipperType>();
 

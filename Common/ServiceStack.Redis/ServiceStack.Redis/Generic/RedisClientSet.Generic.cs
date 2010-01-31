@@ -19,7 +19,7 @@ namespace ServiceStack.Redis.Generic
 	/// Wrap the common redis set operations under a ICollection[string] interface.
 	/// </summary>
 	internal class RedisClientSet<T>
-		: ICollection<T>
+		: IRedisSet<T>
 	{
 		private readonly RedisGenericClient<T> client;
 		private readonly string setId;
@@ -31,10 +31,15 @@ namespace ServiceStack.Redis.Generic
 			this.setId = setId;
 		}
 
+		public string Id
+		{
+			get { return this.setId; }
+		}
+
 		public IEnumerator<T> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-					? client.GetAllFromSet(setId).GetEnumerator()
+					? client.GetAllFromSet(this).GetEnumerator()
 					: GetPagingEnumerator();
 		}
 
@@ -44,7 +49,7 @@ namespace ServiceStack.Redis.Generic
 			List<T> pageResults;
 			do
 			{
-				pageResults = client.GetRangeFromSortedSet(setId, skip, PageLimit);
+				pageResults = client.GetRangeFromSortedSet(this, skip, PageLimit);
 				foreach (var result in pageResults)
 				{
 					yield return result;
@@ -60,7 +65,7 @@ namespace ServiceStack.Redis.Generic
 
 		public void Add(T item)
 		{
-			client.AddToSet(setId, item);
+			client.AddToSet(this, item);
 		}
 
 		public void Clear()
@@ -70,20 +75,18 @@ namespace ServiceStack.Redis.Generic
 
 		public bool Contains(T item)
 		{
-			return client.SetContainsValue(setId, item);
+			return client.SetContainsValue(this, item);
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			foreach (var item in array)
-			{
-				client.AddToSet(setId, item);
-			}
+			var allItemsInSet = client.GetAllFromSet(this);
+			allItemsInSet.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(T item)
 		{
-			client.RemoveFromSet(setId, item);
+			client.RemoveFromSet(this, item);
 			return true;
 		}
 
@@ -91,11 +94,11 @@ namespace ServiceStack.Redis.Generic
 		{
 			get
 			{
-				return client.GetSetCount(setId);
+				var setCount = client.GetSetCount(this);
+				return setCount;
 			}
 		}
 
 		public bool IsReadOnly { get { return false; } }
-
 	}
 }

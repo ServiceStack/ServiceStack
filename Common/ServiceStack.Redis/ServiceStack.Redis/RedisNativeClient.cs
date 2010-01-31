@@ -188,7 +188,7 @@ namespace ServiceStack.Redis
 		[Conditional("DEBUG")]
 		protected void Log(string fmt, params object[] args)
 		{
-			//Console.WriteLine("{0}", String.Format(fmt, args).Trim());
+			Console.WriteLine("{0}", String.Format(fmt, args).Trim());
 		}
 
 		protected void ExpectSuccess()
@@ -344,7 +344,8 @@ namespace ServiceStack.Redis
 				byte [] r = SendExpectData(null, "INFO\r\n");
 				var dict = new Dictionary<string, string>();
 
-				foreach (var line in Encoding.UTF8.GetString(r).Split('\n'))
+				foreach (var line in Encoding.UTF8.GetString(r)
+					.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
 				{
 					int p = line.IndexOf(':');
 					if (p == -1)
@@ -352,6 +353,16 @@ namespace ServiceStack.Redis
 					dict.Add(line.Substring(0, p), line.Substring(p + 1));
 				}
 				return dict;
+			}
+		}
+
+		public string ServerVersion
+		{
+			get
+			{
+				string version;
+				this.Info.TryGetValue("redis_version", out version);
+				return version;
 			}
 		}
 
@@ -831,6 +842,17 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("fromListId");
 			if (toListId == null)
 				throw new ArgumentNullException("toListId");
+
+			var hasBug = this.ServerVersion.CompareTo("1.2.0") <= 0;
+			if (hasBug)
+			{
+				var value = Encoding.UTF8.GetBytes(toListId);
+				if (!SendDataCommand(value, "RPOPLPUSH {0} {1}\r\n", fromListId, value.Length))
+					throw new Exception("Unable to connect");
+
+				ReadData();
+				return;
+			}
 
 			if (!SendCommand("RPOPLPUSH {0} {1}\r\n", fromListId, toListId))
 				throw new Exception("Unable to connect");

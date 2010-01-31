@@ -13,69 +13,68 @@ namespace ServiceStack.Redis.Tests.Generic
 	{
 		protected abstract IModelFactory<T> Factory { get; }
 
+		private RedisClient client;
+		private IRedisGenericClient<T> redis;
+
 		[SetUp]
 		public void SetUp()
 		{
-			using (var redis = new RedisGenericClient<T>())
+			if (client != null)
 			{
-				redis.FlushAll();
+				client.Dispose();
+				client = null;
 			}
+			client = new RedisClient();
+			client.FlushAll();
+
+			redis = client.CreateGenericClient<T>();
 		}
 
 		[Test]
 		public void Can_Store_and_GetById_ModelWithIdAndName()
 		{
-			using (var redis = new RedisGenericClient<T>())
-			{
-				const int modelId = 1;
-				var to = Factory.CreateInstance(modelId);
-				redis.Store(to);
+			const int modelId = 1;
+			var to = Factory.CreateInstance(modelId);
+			redis.Store(to);
 
-				var from = redis.GetById(to.GetId().ToString());
+			var from = redis.GetById(to.GetId().ToString());
 
-				Factory.AssertIsEqual(to, from);
-			}
+			Factory.AssertIsEqual(to, from);
 		}
 
 		[Test]
 		public void Can_StoreAll_and_GetByIds_ModelWithIdAndName()
 		{
-			using (var redis = new RedisGenericClient<T>())
-			{
-				var tos = Factory.CreateList();
-				var ids = tos.ConvertAll(x => x.GetId().ToString());
+			var tos = Factory.CreateList();
+			var ids = tos.ConvertAll(x => x.GetId().ToString());
 
-				redis.StoreAll(tos);
+			redis.StoreAll(tos);
 
-				var froms = redis.GetByIds(ids);
-				var fromIds = froms.ConvertAll(x => x.GetId().ToString());
+			var froms = redis.GetByIds(ids);
+			var fromIds = froms.ConvertAll(x => x.GetId().ToString());
 
-				Assert.That(fromIds, Is.EquivalentTo(ids));
-			}
+			Assert.That(fromIds, Is.EquivalentTo(ids));
 		}
 
 		[Test]
 		public void Can_Delete_ModelWithIdAndName()
 		{
-			using (var redis = new RedisGenericClient<T>())
-			{
-				var tos = Factory.CreateList();
-				var ids = tos.ConvertAll(x => x.GetId().ToString());
+			var tos = Factory.CreateList();
+			var ids = tos.ConvertAll(x => x.GetId().ToString());
 
-				redis.StoreAll(tos);
+			redis.StoreAll(tos);
 
-				var deleteIds = new [] { ids[1], ids[3] };
+			var deleteIds = new[] { ids[1], ids[3] };
 
-				redis.DeleteByIds(deleteIds);
+			redis.DeleteByIds(deleteIds);
 
-				var froms = redis.GetByIds(ids);
-				var fromIds = froms.ConvertAll(x => x.GetId().ToString());
+			var froms = redis.GetByIds(ids);
+			var fromIds = froms.ConvertAll(x => x.GetId().ToString());
 
-				var expectedIds = ids.Where(x => !deleteIds.Contains(x))
-					.ToList().ConvertAll(x => x.ToString());
+			var expectedIds = ids.Where(x => !deleteIds.Contains(x))
+				.ToList().ConvertAll(x => x.ToString());
 
-				Assert.That(fromIds, Is.EquivalentTo(expectedIds));
-			}
+			Assert.That(fromIds, Is.EquivalentTo(expectedIds));
 		}
 
 	}

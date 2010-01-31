@@ -18,7 +18,7 @@ namespace ServiceStack.Redis.Tests.Generic
 	public class RedisPersistenceProviderTestsStringFactory
 		: RedisPersistenceProviderTestsBase<string>
 	{
-		private readonly IModelFactory<string> factory = new StringFactory();
+		private readonly IModelFactory<string> factory = new BuiltInsFactory();
 
 		protected override IModelFactory<string> Factory
 		{

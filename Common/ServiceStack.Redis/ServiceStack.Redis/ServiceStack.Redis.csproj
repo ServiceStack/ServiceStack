@@ -65,13 +65,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Generic\IRedisList.Generic.cs" />
+    <Compile Include="Generic\IRedisSet.Generic.cs" />
     <Compile Include="Generic\RedisClientSet.Generic.cs" />
     <Compile Include="Generic\RedisClientList.Generic.cs" />
-    <Compile Include="Generic\IRedisClient.Generic.cs" />
+    <Compile Include="Generic\IRedisGenericClient.cs" />
     <Compile Include="IRedisClient.cs" />
     <Compile Include="IRedisNativeClient.cs" />
     <Compile Include="RedisCacheClient.cs" />
-    <Compile Include="Generic\RedisClient.Generic.cs" />
+    <Compile Include="Generic\RedisGenericClient.cs" />
     <Compile Include="RedisClientSet.cs" />
     <Compile Include="RedisClient.cs" />
     <Compile Include="RedisKeyType.cs" />

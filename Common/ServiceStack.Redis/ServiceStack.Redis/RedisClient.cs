@@ -19,6 +19,7 @@ using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAccess;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Redis.Generic;
 
 namespace ServiceStack.Redis
 {
@@ -51,7 +52,7 @@ namespace ServiceStack.Redis
 
 
 		#region Common Methods
-		
+
 		public string this[string key]
 		{
 			get { return GetString(key); }
@@ -208,7 +209,7 @@ namespace ServiceStack.Redis
 				{
 					return new RedisClientSet(client, setId);
 				}
-				set 
+				set
 				{
 					var col = this[setId];
 					col.Clear();
@@ -306,7 +307,7 @@ namespace ServiceStack.Redis
 		{
 			return Encoding.UTF8.GetString(SRandMember(setId));
 		}
-	
+
 		#endregion
 
 
@@ -315,9 +316,14 @@ namespace ServiceStack.Redis
 		const int FirstElement = 0;
 		const int LastElement = -1;
 
+		public IRedisGenericClient<T> CreateGenericClient<T>()
+		{
+			return new RedisGenericClient<T>(this);
+		}
+
 		public IHasNamedList<string> Lists { get; set; }
 
-		internal class RedisClientLists 
+		internal class RedisClientLists
 			: IHasNamedList<string>
 		{
 			private readonly RedisClient client;
@@ -429,7 +435,7 @@ namespace ServiceStack.Redis
 		{
 			RPopLPush(fromListId, toListId);
 		}
-	
+
 		#endregion
 
 		#region IBasicPersistenceProvider

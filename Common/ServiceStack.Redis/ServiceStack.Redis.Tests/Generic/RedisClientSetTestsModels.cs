@@ -3,8 +3,8 @@ using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.Redis.Tests.Generic
 {
-	public class RedisClientListTestsModelWithFieldsOfDifferentTypes
-		: RedisClientListTestsBase<ModelWithFieldsOfDifferentTypes>
+	public class RedisClientSetTestsModelWithFieldsOfDifferentTypes
+		: RedisClientSetTestsBase<ModelWithFieldsOfDifferentTypes>
 	{
 		private readonly IModelFactory<ModelWithFieldsOfDifferentTypes> factory = 
 			new ModelWithFieldsOfDifferentTypesFactory();
@@ -15,8 +15,8 @@ namespace ServiceStack.Redis.Tests.Generic
 		}
 	}
 
-	public class RedisClientListTestsString
-		: RedisClientListTestsBase<string>
+	public class RedisClientSetTestsString
+		: RedisClientSetTestsBase<string>
 	{
 		private readonly IModelFactory<string> factory = new BuiltInsFactory();
 
@@ -26,8 +26,8 @@ namespace ServiceStack.Redis.Tests.Generic
 		}
 	}
 
-	public class RedisClientListTestsShipper
-		: RedisClientListTestsBase<Shipper>
+	public class RedisClientSetTestsShipper
+		: RedisClientSetTestsBase<Shipper>
 	{
 		private readonly IModelFactory<Shipper> factory = new ShipperFactory();
 
@@ -37,8 +37,8 @@ namespace ServiceStack.Redis.Tests.Generic
 		}
 	}
 
-	public class RedisClientListTestsInt
-		: RedisClientListTestsBase<int>
+	public class RedisClientSetTestsInt
+		: RedisClientSetTestsBase<int>
 	{
 		private readonly IModelFactory<int> factory = new IntFactory();
 
@@ -48,8 +48,8 @@ namespace ServiceStack.Redis.Tests.Generic
 		}
 	}
 
-	//public class RedisClientListTestsDateTime
-	//    : RedisClientListTestsBase<DateTime>
+	//public class RedisClientSetTestsDateTime
+	//    : RedisClientSetTestsBase<DateTime>
 	//{
 	//    private readonly IModelFactory<DateTime> factory = new DateTimeFactory();
 
@@ -58,4 +58,5 @@ namespace ServiceStack.Redis.Tests.Generic
 	//        get { return factory; }
 	//    }
 	//}
+
 }

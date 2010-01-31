@@ -2,8 +2,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.DesignPatterns.Model
 {
-	public interface IHasNamedCollection<T>
+	public interface IHasNamedCollection<T> : IHasNamed<ICollection<T>>
 	{
-		ICollection<T> this[string listId] { get; set; }
 	}
 }

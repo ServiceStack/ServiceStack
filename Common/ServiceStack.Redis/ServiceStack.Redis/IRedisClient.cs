@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Redis.Generic;
 
 namespace ServiceStack.Redis
 {
@@ -24,6 +25,8 @@ namespace ServiceStack.Redis
 		int RetryCount { get; set; }
 		int SendTimeout { get; set; }
 		string Password { get; set; }
+
+		IRedisGenericClient<T> CreateGenericClient<T>();
 
 		IHasNamedList<string> Lists { get; set; }
 		IHasNamedCollection<string> Sets { get; set; }
