@@ -26,15 +26,35 @@ namespace ServiceStack.Common.Reflection
 		const string DataContract = "DataContract";
 		const string DataMember = "DataMember";
 		private static readonly PropertyAccessor<TEntity>[] PropertyAccessors;
+		private static readonly string[] PropertyNamesIndex;
+
+		public static PropertyAccessor<TEntity>[] AllPropertyAccessors
+		{
+			get { return PropertyAccessors; }
+		}
+
+		public static PropertyAccessor<TEntity> GetByName(string name)
+		{
+			for (var i=0; i<PropertyNamesIndex.Length; i++)
+			{
+				if (PropertyNamesIndex[i] == name)
+				{
+					return PropertyAccessors[i];
+				}
+			}
+			return null;
+		}
 
 		static TypeSerializerPropertyAccessor()
 		{
 			var pis = GetPropertyInfos();
 			PropertyAccessors = new PropertyAccessor<TEntity>[pis.Count];
+			PropertyNamesIndex = new string[pis.Count];
 			for (var i=0; i < pis.Count; i++)
 			{
 				var pi = pis[i];
 				PropertyAccessors[i] = new PropertyAccessor<TEntity>(pi.Name);
+				PropertyNamesIndex[i] = pi.Name;
 			}
 		}
 

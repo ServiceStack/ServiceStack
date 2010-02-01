@@ -67,8 +67,8 @@ namespace ServiceStack.OrmLite.Tests
 		[Test]
 		public void Shippers_UseCase()
 		{
-			using (var dbConn = ":memory:".OpenDbConnection())
-			using (var dbCmd = dbConn.CreateCommand())
+			using (IDbConnection dbConn = ":memory:".OpenDbConnection())
+			using (IDbCommand dbCmd = dbConn.CreateCommand())
 			{
 				const bool overwrite = false;
 				dbCmd.CreateTables(overwrite, typeof(Shipper), typeof(ShipperType));
@@ -76,7 +76,7 @@ namespace ServiceStack.OrmLite.Tests
 				int trainsTypeId, planesTypeId;
 
 				//Playing with transactions
-				using (var dbTrans = dbCmd.BeginTransaction())
+				using (IDbTransaction dbTrans = dbCmd.BeginTransaction())
 				{
 					dbCmd.Insert(new ShipperType { Name = "Trains" });
 					trainsTypeId = (int)dbCmd.GetLastInsertId();
@@ -86,7 +86,7 @@ namespace ServiceStack.OrmLite.Tests
 
 					dbTrans.Commit();
 				}
-				using (var dbTrans = dbCmd.BeginTransaction(IsolationLevel.ReadCommitted))
+				using (IDbTransaction dbTrans = dbCmd.BeginTransaction(IsolationLevel.ReadCommitted))
 				{
 					dbCmd.Insert(new ShipperType { Name = "Automobiles" });
 					Assert.That(dbCmd.Select<ShipperType>(), Has.Count(3));

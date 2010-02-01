@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
@@ -9,42 +11,32 @@ namespace ServiceStack.Common.Tests.Perf
 {
 	[Ignore("Benchmarks on the war of the two text serializers")]
 	[TestFixture]
-	public class TextSerializerComparisons
+	public class TypeToStringComparisons
 		: PerfTestBase
 	{
-		public TextSerializerComparisons()
+		public TypeToStringComparisons()
 		{
 			this.MultipleIterations = new List<int> { 10000 };
 		}
 
-		private void CompareSerializers2<T>(T dto)
-		{
-			CompareMultipleRuns(
-				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
-				"TextSerializer", () => TextSerializer.SerializeToString(dto)
-				);
-
-			var stringStr = TypeSerializer.SerializeToString(dto);
-			var textStr = TextSerializer.SerializeToString(dto);
-
-			CompareMultipleRuns(
-				"TypeSerializer", () => TypeSerializer.DeserializeFromString<T>(stringStr),
-				"TextSerializer", () => TextSerializer.DeserializeFromString<T>(textStr)
-			);
-
-			var seraializedStringDto = TypeSerializer.DeserializeFromString<T>(stringStr);
-			Assert.That(seraializedStringDto.Equals(dto), Is.True);
-
-			var seraializedTextDto = TextSerializer.DeserializeFromString<T>(textStr);
-			//Assert.That(seraializedTextDto.Equals(dto), Is.True);
-		}
-
 		private void CompareSerializers<T>(T dto)
 		{
+			var typeToStringFn = TypeToStringMethods.GetToStringMethod(typeof(T));
+			var jsvTypeToStringFn = Common.Text.Jsv.TypeToStringMethods<T>.GetToStringMethod();
 			CompareMultipleRuns(
-				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
-				"Jsv.TypeSerializer", () => Common.Text.Jsv.TypeSerializer.SerializeToString(dto)
+				"TypeSerializer", () =>
+                  	{
+						using (var writer = new StringWriter(new StringBuilder()))
+							typeToStringFn(writer, dto);
+                  	},
+				"Jsv.TypeSerializer", () =>
+                  	{
+						using (var writer = new StringWriter(new StringBuilder()))
+							jsvTypeToStringFn(writer, dto);
+					}
 				);
+
+			return;
 
 			var stringStr = TypeSerializer.SerializeToString(dto);
 			var textStr = Common.Text.Jsv.TypeSerializer.SerializeToString(dto);

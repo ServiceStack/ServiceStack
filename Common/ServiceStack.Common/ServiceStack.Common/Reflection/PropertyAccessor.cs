@@ -38,19 +38,30 @@ namespace ServiceStack.Common.Reflection
 	public class PropertyAccessor<TEntity>
 	{
 		readonly PropertyInfo pi;
+		public string Name { get; set; }
+		public Type PropertyType { get; set; }
+
+		private readonly Func<TEntity, object> getPropertyFn;
+		private readonly Action<TEntity, object> setPropertyFn;
+
 		public PropertyAccessor(string propertyName)
 		{
 			this.pi = typeof(TEntity).GetProperty(propertyName);
+			this.Name = propertyName;
+			this.PropertyType = pi.PropertyType;
+
+			getPropertyFn = StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
+			setPropertyFn = StaticAccessors<TEntity>.ValueUnTypedSetPropertyTypeFn(pi);
 		}
 
 		public Func<TEntity, object> GetPropertyFn()
 		{
-			return StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
+			return getPropertyFn;
 		}
 
 		public Action<TEntity, object> SetPropertyFn()
 		{
-			return StaticAccessors<TEntity>.ValueUnTypedSetPropertyTypeFn(pi);
+			return setPropertyFn;
 		}
 
 		/// <summary>

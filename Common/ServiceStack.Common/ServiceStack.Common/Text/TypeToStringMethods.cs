@@ -33,7 +33,11 @@ namespace ServiceStack.Common.Text
 				propertyNames[i] = propertyInfo.Name;
 
 				getterFns[i] = GetPropertyValueMethod(type, propertyInfo);
-				writeFns[i] = ToStringMethods.GetToStringMethod(propertyInfo.PropertyType);
+
+				var avoidRecursion = (propertyInfo.PropertyType == type);
+				writeFns[i] = avoidRecursion
+                    ? (w, x) => GetToStringMethod(type)(w, x)
+					: ToStringMethods.GetToStringMethod(propertyInfo.PropertyType);
 			}
 
 			return (w, x) => TypeToString(w, x, propertyNames, getterFns, writeFns);
