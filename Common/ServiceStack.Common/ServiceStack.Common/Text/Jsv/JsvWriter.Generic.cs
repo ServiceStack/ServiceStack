@@ -30,6 +30,38 @@ namespace ServiceStack.Common.Text.Jsv
 			}
 			return writeFn();
 		}
+
+		public static void WriteLateBoundObject(TextWriter writer, object value)
+		{
+			if (value == null) return;
+			var writeFn = GetWriteFn(value.GetType());
+			writeFn(writer, value);
+		}
+
+		public static bool ShouldUseDefaultToStringMethod(Type type)
+		{
+			return type != typeof (DateTime)
+			       || type != typeof (DateTime?)
+				   || type != typeof(Guid)
+				   || type != typeof(Guid?);
+		}
+
+		public static Action<TextWriter, object> GetValueTypeToStringMethod(Type type)
+		{
+			if (type == typeof(DateTime))
+				return (w, x) => ToStringMethods.WriteDateTime(w, (DateTime)x);
+
+			if (type == typeof(DateTime?))
+				return (w, x) => ToStringMethods.WriteDateTime(w, (DateTime?)x);
+
+			if (type == typeof(Guid))
+				return (w, x) => ToStringMethods.WriteGuid(w, (Guid)x);
+
+			if (type == typeof(Guid?))
+				return (w, x) => ToStringMethods.WriteGuid(w, (Guid?)x);
+
+			return ToStringMethods.WriteBuiltIn;
+		}
 	}
 
 	/// <summary>
@@ -47,46 +79,75 @@ namespace ServiceStack.Common.Text.Jsv
 
 		public static Action<TextWriter, object> GetWriteFn()
 		{
+			if (typeof(T) == typeof(object))
+			{
+				return JsvWriter.WriteLateBoundObject;
+			}
+
 			if (typeof(T) == typeof(string))
 			{
-				return (w, x) => ToStringMethods.WriteString(w, (string)x); 
+				return (w, x) => WriteString(w, (string)x); 
 			}
 
 			if (typeof(T).IsValueType)
 			{
-				if (typeof(T) == typeof(DateTime))
-					return (w, x) => ToStringMethods.WriteDateTime(w, (DateTime)x);
-
-				if (typeof(T) == typeof(DateTime?))
-					return (w, x) => ToStringMethods.WriteDateTime(w, (DateTime?)x);
-
-				if (typeof(T) == typeof(Guid))
-					return (w, x) => ToStringMethods.WriteGuid(w, (Guid)x);
-
-				if (typeof(T) == typeof(Guid?))
-					return (w, x) => ToStringMethods.WriteGuid(w, (Guid?)x);
-
-				return ToStringMethods.WriteBuiltIn;
+				return JsvWriter.GetValueTypeToStringMethod(typeof(T));
 			}
 
 
 			if (typeof(T).IsArray)
 			{
 				if (typeof(T) == typeof(byte[]))
-					return (w, x) => ToStringMethods.WriteBytes(w, (byte[])x);
+					return (w, x) => ToStringListMethodsCache.WriteBytes(w, (byte[])x);
 
 				if (typeof(T) == typeof(string[]))
-					return (w, x) => ToStringListMethods.WriteStringArray(w, (string[])x);
+					return (w, x) => ToStringListMethodsCache.WriteStringArray(w, (string[])x);
 
-				return ToStringListMethods.GetArrayToStringMethod(typeof(T).GetElementType());
+				if (typeof(T) == typeof(int[]))
+					return (w, x) => ToStringListMethods<int>.WriteGenericArrayValueType(w, (int[])x);
+				if (typeof(T) == typeof(long[]))
+					return (w, x) => ToStringListMethods<long>.WriteGenericArrayValueType(w, (long[])x);
+
+				var elementType = typeof (T).GetElementType();
+				var writeFn = ToStringListMethodsCache.GetGenericWriteArray(elementType);
+				return writeFn;
 			}
 
 			if (typeof(T).IsGenericType())
 			{
 				var listInterfaces = typeof(T).FindInterfaces(
-					(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
+					(t, critera) => t.IsGenericType
+						&& t.GetGenericTypeDefinition() == typeof(IList<>), null);
+
 				if (listInterfaces.Length > 0)
-					return ToStringListMethods.GetToStringMethod(typeof(T));
+					return ToStringListMethods<T>.GetToStringMethod();
+
+				var mapInterfaces = typeof(T).FindInterfaces(
+					(t, critera) => t.IsGenericType
+						&& t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null);
+
+				if (mapInterfaces.Length > 0)
+				{
+					var mapTypeArgs = mapInterfaces[0].GetGenericArguments();
+					var writeFn = ToStringDictionaryMethods.GetWriteGenericDictionary(
+						mapTypeArgs[0], mapTypeArgs[1]);
+
+					var keyWriteFn = JsvWriter.GetWriteFn(mapTypeArgs[0]);
+					var valueWriteFn = JsvWriter.GetWriteFn(mapTypeArgs[1]);
+
+					return (w, x) => writeFn(w, x, keyWriteFn, valueWriteFn);
+				}
+
+				var enumerableInterfaces = typeof(T).FindInterfaces(
+					(t, critera) => t.IsGenericType
+						&& t.GetGenericTypeDefinition() == typeof(IEnumerable<>), null);
+
+				if (enumerableInterfaces.Length > 0)
+				{
+					var elementType = enumerableInterfaces[0].GetGenericArguments()[0];
+					var writeFn = ToStringListMethodsCache.GetGenericWriteEnumerable(elementType);
+					return writeFn;
+				}
 			}
 
 			var isCollection = typeof(T).FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
@@ -122,6 +183,12 @@ namespace ServiceStack.Common.Text.Jsv
 
 			return ToStringMethods.WriteBuiltIn;
 		}
+
+		public static void WriteString(TextWriter writer, string value)
+		{
+			writer.Write(value.ToCsvField());
+		}
+
 
 		public static void WriteObject(TextWriter writer, object value)
 		{

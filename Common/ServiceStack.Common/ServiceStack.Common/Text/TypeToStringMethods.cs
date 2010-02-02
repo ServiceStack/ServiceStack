@@ -2,17 +2,18 @@
 using System.IO;
 using System.Linq.Expressions;
 using System.Reflection;
+using ServiceStack.Common.Reflection;
 
 namespace ServiceStack.Common.Text
 {
 	public class TypeToStringMethods
 	{
-		public static void ToString(TextWriter writer, object value)
-		{
-			if (value == null) return;
-			var writeFn = GetToStringMethod(value.GetType());
-			writeFn(writer, value);
-		}
+		//public static void ToString(TextWriter writer, object value)
+		//{
+		//    if (value == null) return;
+		//    var writeFn = GetToStringMethod(value.GetType());
+		//    writeFn(writer, value);
+		//}
 
 		public static Action<TextWriter, object> GetToStringMethod(Type type)
 		{
@@ -36,7 +37,7 @@ namespace ServiceStack.Common.Text
 
 				var avoidRecursion = (propertyInfo.PropertyType == type);
 				writeFns[i] = avoidRecursion
-                    ? (w, x) => GetToStringMethod(type)(w, x)
+					? (w, x) => GetToStringMethod(type)(w, x)
 					: ToStringMethods.GetToStringMethod(propertyInfo.PropertyType);
 			}
 
@@ -87,26 +88,27 @@ namespace ServiceStack.Common.Text
 			return propertyGetFn;
 		}
 #else
-		public static Func<object, object> GetPropertyValueMethod(
-			Type type, PropertyInfo propertyInfo)
-		{
-			var mi = typeof(TypeToStringMethods).GetMethod("CreateFunc");
+		        public static Func<object, object> GetPropertyValueMethod(
+		            Type type, PropertyInfo propertyInfo)
+		        {
+		            var mi = typeof(TypeToStringMethods).GetMethod("CreateFunc");
 
-			var genericMi = mi.MakeGenericMethod(type, propertyInfo.PropertyType);
-			var del = genericMi.Invoke(null, new[] { propertyInfo.GetGetMethod() });
+		            var genericMi = mi.MakeGenericMethod(type, propertyInfo.PropertyType);
+		            var del = genericMi.Invoke(null, new[] { propertyInfo.GetGetMethod() });
 
-			return (Func<object, object>)del;
-		}
+		            return (Func<object, object>)del;
+		        }
 
-		public static Func<object, object> CreateFunc<T1, T2>(MethodInfo mi)
-		{
-			if (mi == null) return null;
-			var del = (Func<T1, T2>)Delegate.CreateDelegate(typeof(Func<T1, T2>), mi);
-			return x => del((T1)x);
-		}
+		        public static Func<object, object> CreateFunc<T1, T2>(MethodInfo mi)
+		        {
+		            if (mi == null) return null;
+		            var del = (Func<T1, T2>)Delegate.CreateDelegate(typeof(Func<T1, T2>), mi);
+		            return x => del((T1)x);
+		        }
 #endif
 
 	}
 
 }
+
 

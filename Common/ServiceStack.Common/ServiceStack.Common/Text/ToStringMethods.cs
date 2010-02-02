@@ -6,7 +6,7 @@ using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
-	internal delegate void WriteListDelegate(TextWriter writer, object oList, Action<TextWriter, object> toStringFn);
+	public delegate void WriteListDelegate(TextWriter writer, object oList, Action<TextWriter, object> toStringFn);
 	internal delegate void WriteGenericListDelegate<T>(TextWriter writer, IList<T> list, Action<TextWriter, object> toStringFn);
 
 	internal delegate void WriteDelegate(TextWriter writer, object value);

@@ -78,5 +78,13 @@ namespace ServiceStack.Common.Extensions
 			return default(T);
 		}
 
+		public static void ForEach<T>(this IEnumerable<T> values, Action<T> action)
+		{
+			foreach (var value in values)
+			{
+				action(value);
+			}
+		}
+
 	}
 }

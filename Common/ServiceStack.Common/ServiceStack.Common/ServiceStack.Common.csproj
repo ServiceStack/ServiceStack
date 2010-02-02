@@ -90,8 +90,11 @@
     <Compile Include="Support\CommandProcessor.cs" />
     <Compile Include="Support\AssemblyTypeDefinition.cs" />
     <Compile Include="Text\DateTimeSerializer.cs" />
+    <Compile Include="Text\Jsv\JsvMethods.cs" />
     <Compile Include="Text\Jsv\JsvWriter.Generic.cs" />
     <Compile Include="Text\Jsv\JsvReader.Generic.cs" />
+    <Compile Include="Text\Jsv\ToStringDictionaryMethods.cs" />
+    <Compile Include="Text\Jsv\ToStringListMethods.cs" />
     <Compile Include="Text\Jsv\TypeSerializer.cs" />
     <Compile Include="Text\Jsv\JsvSerializer.Generic.cs" />
     <Compile Include="Text\Jsv\TypeToStringMethods.cs" />

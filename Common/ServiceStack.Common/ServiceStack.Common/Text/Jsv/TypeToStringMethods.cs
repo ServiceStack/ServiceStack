@@ -15,31 +15,32 @@ namespace ServiceStack.Common.Text.Jsv
 
 		public static Action<TextWriter, object> GetToStringMethod()
 		{
-			if (!typeof(T).IsClass) return null;
+			var type = typeof (T);
+			if (!type.IsClass) return null;
 
-			var typePropertyAccessors = TypeSerializerPropertyAccessor<T>.AllPropertyAccessors;
-			if (typePropertyAccessors.Length == 0) return null;
+			var propertyInfos = type.GetProperties();
+			if (propertyInfos.Length == 0) return null;
 
-			var propertyInfosLength = typePropertyAccessors.Length;
-			var propertyNames = new string[typePropertyAccessors.Length];
+			var propertyInfosLength = propertyInfos.Length;
 
+			var propertyNames = new string[propertyInfos.Length];
 			var getterFns = new Func<T, object>[propertyInfosLength];
 			var writeFns = new Action<TextWriter, object>[propertyInfosLength];
 
 			for (var i = 0; i < propertyInfosLength; i++)
 			{
-				var propertyAccessor = typePropertyAccessors[i];
-				propertyNames[i] = propertyAccessor.Name;
+				var propertyInfo = propertyInfos[i];
+				propertyNames[i] = propertyInfo.Name;
 
-				getterFns[i] = propertyAccessor.GetPropertyFn();
+				getterFns[i] = propertyInfo.GetValueGetter<T>();
 
-				writeFns[i] = JsvWriter.GetWriteFn(propertyAccessor.PropertyType);
+				writeFns[i] = JsvWriter.GetWriteFn(propertyInfo.PropertyType);
 			}
 
-			return (w, x) => TypeToString(w, (T) x, propertyNames, getterFns, writeFns);
+			return (w, x) => TypeToString(w, x, propertyNames, getterFns, writeFns);
 		}
 
-		public static void TypeToString(TextWriter writer, T value, string[] propertyNames,
+		public static void TypeToString(TextWriter writer, object value, string[] propertyNames,
 			Func<T, object>[] getterFns, Action<TextWriter, object>[] writeFns)
 		{
 			writer.Write(TypeSerializer.MapStartChar);
@@ -50,7 +51,7 @@ namespace ServiceStack.Common.Text.Jsv
 			{
 				var propertyName = propertyNames[i];
 
-				var propertyValue = getterFns[i](value);
+				var propertyValue = getterFns[i]((T) value);
 				if (propertyValue == null) continue;
 
 				ToStringMethods.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
@@ -62,7 +63,6 @@ namespace ServiceStack.Common.Text.Jsv
 
 			writer.Write(TypeSerializer.MapEndChar);
 		}
-
 	}
 
 }

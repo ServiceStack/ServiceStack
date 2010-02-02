@@ -101,8 +101,9 @@ namespace ServiceStack.Common.Text.Jsv
 
 		public static object Parse(string value)
 		{
-			return ReadFn(value);
+			return value == null 
+				? null 
+				: ReadFn(value);
 		}
-
 	}
 }

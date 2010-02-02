@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Text
 {
+
 	public static class ToStringListMethods
 	{
 		public static Action<TextWriter, object> GetToStringMethod<T>()
@@ -24,7 +24,6 @@ namespace ServiceStack.Common.Text
 
 			if (listInterfaces.Length == 0)
 				throw new ArgumentException(string.Format("Type {0} is not of type IList<>", type.FullName));
-
 
 			//optimized access for regularly used types
 			if (type == typeof(IList<string>))
@@ -47,9 +46,9 @@ namespace ServiceStack.Common.Text
 			return (w, x) => toStringDelegate(w, x, writeFn);
 		}
 
-		private static Action<TextWriter, object> GetValueTypeListToStringMethod(Type elementType)
+		public static Action<TextWriter, object> GetValueTypeListToStringMethod(Type elementType)
 		{
-			var mi = typeof(ToStringListMethods).GetMethod("WriteListValueType", BindingFlags.Static | BindingFlags.Public);
+			var mi = typeof(ToStringListMethods).GetMethod("WriteIList", BindingFlags.Static | BindingFlags.Public);
 			WriteDelegate valueTypeWriteDelegate;
 			if (!ValueTypeToStringDelegateCache.TryGetValue(elementType, out valueTypeWriteDelegate))
 			{
@@ -61,7 +60,7 @@ namespace ServiceStack.Common.Text
 			return valueTypeWriteDelegate.Invoke;
 		}
 
-		private static WriteListDelegate GetGenericListToStringMethod(Type elementType)
+		public static WriteListDelegate GetGenericListToStringMethod(Type elementType)
 		{
 			var mi = typeof(ToStringListMethods).GetMethod("WriteGenericIListObject", BindingFlags.Static | BindingFlags.Public);
 			WriteListDelegate @delegate;
@@ -153,7 +152,7 @@ namespace ServiceStack.Common.Text
 
 		public static void WriteArray<T>(TextWriter writer, object oArrayValue, Action<TextWriter, object> writeFn)
 		{
-			if (oArrayValue == null) return;			
+			if (oArrayValue == null) return;
 			WriteGenericArray(writer, (T[])oArrayValue, writeFn);
 		}
 

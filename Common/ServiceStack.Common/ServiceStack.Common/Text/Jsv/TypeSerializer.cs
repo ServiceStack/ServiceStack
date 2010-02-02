@@ -62,12 +62,14 @@ namespace ServiceStack.Common.Text.Jsv
 		/// <returns></returns>
 		public static object DeserializeFromString(string value, Type type)
 		{
-			throw new NotImplementedException();
+			return value == null 
+				? null 
+				: JsvReader.GetParseMethod(type)(value);
 		}
 
 		public static object DeserializeFromReader(TextReader reader, Type type)
 		{
-			throw new NotImplementedException();
+			return DeserializeFromString(reader.ReadToEnd(), type);
 		}
 
 		public static string SerializeToString<T>(T value)

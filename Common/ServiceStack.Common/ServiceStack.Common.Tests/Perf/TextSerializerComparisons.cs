@@ -17,15 +17,17 @@ namespace ServiceStack.Common.Tests.Perf
 			this.MultipleIterations = new List<int> { 10000 };
 		}
 
-		private void CompareSerializers2<T>(T dto)
+		private void CompareSerializers<T>(T dto)
 		{
 			CompareMultipleRuns(
-				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
+				"TypeSerializer", () => Common.Text.Jsv.TypeSerializer.SerializeToString(dto),
 				"TextSerializer", () => TextSerializer.SerializeToString(dto)
 				);
 
-			var stringStr = TypeSerializer.SerializeToString(dto);
+			var stringStr = Common.Text.Jsv.TypeSerializer.SerializeToString(dto);
 			var textStr = TextSerializer.SerializeToString(dto);
+
+			//return;
 
 			CompareMultipleRuns(
 				"TypeSerializer", () => TypeSerializer.DeserializeFromString<T>(stringStr),
@@ -39,7 +41,7 @@ namespace ServiceStack.Common.Tests.Perf
 			//Assert.That(seraializedTextDto.Equals(dto), Is.True);
 		}
 
-		private void CompareSerializers<T>(T dto)
+		private void CompareSerializers2<T>(T dto)
 		{
 			CompareMultipleRuns(
 				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),

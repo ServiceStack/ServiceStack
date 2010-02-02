@@ -16,6 +16,27 @@ using System.Reflection;
 
 namespace ServiceStack.Common.Reflection
 {
+	public static class TypeSerializerPropertyAccessor
+	{
+		const string DataContract = "DataContract";
+		const string DataMember = "DataMember";
+
+		public static List<PropertyInfo> GetPropertyInfos(Type type)
+		{
+			var attrs = type.GetCustomAttributes(false);
+			var isDataContract = attrs.ToList().Any(x => x.GetType().Name == DataContract);
+			if (isDataContract)
+			{
+				return type.GetProperties(BindingFlags.Instance)
+					.Where(x =>
+						   x.GetCustomAttributes(false).ToList()
+							.Any(attr => attr.GetType().Name == DataMember)).ToList();
+			}
+
+			return type.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
+		}
+	}
+
 	/// <summary>
 	/// Type serializer cache of all the property accessors required when
 	/// serializing/deserializing types.
@@ -27,10 +48,16 @@ namespace ServiceStack.Common.Reflection
 		const string DataMember = "DataMember";
 		private static readonly PropertyAccessor<TEntity>[] PropertyAccessors;
 		private static readonly string[] PropertyNamesIndex;
+		private static readonly PropertyInfo[] propertyInfos;
 
 		public static PropertyAccessor<TEntity>[] AllPropertyAccessors
 		{
 			get { return PropertyAccessors; }
+		}
+
+		public static PropertyInfo[] PropertyInfos
+		{
+			get { return propertyInfos; }
 		}
 
 		public static PropertyAccessor<TEntity> GetByName(string name)
@@ -47,15 +74,15 @@ namespace ServiceStack.Common.Reflection
 
 		static TypeSerializerPropertyAccessor()
 		{
-			var pis = GetPropertyInfos();
-			PropertyAccessors = new PropertyAccessor<TEntity>[pis.Count];
-			PropertyNamesIndex = new string[pis.Count];
-			for (var i=0; i < pis.Count; i++)
-			{
-				var pi = pis[i];
-				PropertyAccessors[i] = new PropertyAccessor<TEntity>(pi.Name);
-				PropertyNamesIndex[i] = pi.Name;
-			}
+			propertyInfos = GetPropertyInfos().ToArray();
+			//PropertyAccessors = new PropertyAccessor<TEntity>[propertyInfos.Length];
+			//PropertyNamesIndex = new string[propertyInfos.Length];
+			//for (var i=0; i < propertyInfos.Length; i++)
+			//{
+			//    var pi = propertyInfos[i];
+			//    PropertyAccessors[i] = new PropertyAccessor<TEntity>(pi.Name);
+			//    PropertyNamesIndex[i] = pi.Name;
+			//}
 		}
 
 		/// <summary>

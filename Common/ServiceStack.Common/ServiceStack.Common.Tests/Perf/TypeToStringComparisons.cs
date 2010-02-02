@@ -23,6 +23,13 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			var typeToStringFn = TypeToStringMethods.GetToStringMethod(typeof(T));
 			var jsvTypeToStringFn = Common.Text.Jsv.TypeToStringMethods<T>.GetToStringMethod();
+
+			using (var writer = new StringWriter(new StringBuilder()))
+			{
+				typeToStringFn(writer, dto);
+				jsvTypeToStringFn(writer, dto);
+			}
+
 			CompareMultipleRuns(
 				"TypeSerializer", () =>
                   	{
@@ -35,8 +42,6 @@ namespace ServiceStack.Common.Tests.Perf
 							jsvTypeToStringFn(writer, dto);
 					}
 				);
-
-			return;
 
 			var stringStr = TypeSerializer.SerializeToString(dto);
 			var textStr = Common.Text.Jsv.TypeSerializer.SerializeToString(dto);
