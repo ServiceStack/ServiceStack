@@ -7,7 +7,7 @@ using NUnit.Framework;
 using Platform.Text;
 using ProtoBuf;
 using ServiceStack.Client;
-using ServiceStack.Common.Text.Jsv;
+using ServiceStack.Text;
 
 namespace Northwind.Benchmarks.Serialization
 {

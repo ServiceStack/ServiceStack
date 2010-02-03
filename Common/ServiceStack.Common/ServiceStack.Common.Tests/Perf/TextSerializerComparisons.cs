@@ -20,11 +20,11 @@ namespace ServiceStack.Common.Tests.Perf
 		private void CompareSerializers<T>(T dto)
 		{
 			CompareMultipleRuns(
-				"TypeSerializer", () => Common.Text.Jsv.TypeSerializer.SerializeToString(dto),
+				"TypeSerializer", () => ServiceStack.Text.TypeSerializer.SerializeToString(dto),
 				"TextSerializer", () => TextSerializer.SerializeToString(dto)
 				);
 
-			var stringStr = Common.Text.Jsv.TypeSerializer.SerializeToString(dto);
+			var stringStr = ServiceStack.Text.TypeSerializer.SerializeToString(dto);
 			var textStr = TextSerializer.SerializeToString(dto);
 
 			//return;
@@ -45,21 +45,21 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			CompareMultipleRuns(
 				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
-				"Jsv.TypeSerializer", () => Common.Text.Jsv.TypeSerializer.SerializeToString(dto)
+				"Jsv.TypeSerializer", () => ServiceStack.Text.TypeSerializer.SerializeToString(dto)
 				);
 
 			var stringStr = TypeSerializer.SerializeToString(dto);
-			var textStr = Common.Text.Jsv.TypeSerializer.SerializeToString(dto);
+			var textStr = ServiceStack.Text.TypeSerializer.SerializeToString(dto);
 
 			CompareMultipleRuns(
 				"TypeSerializer", () => TypeSerializer.DeserializeFromString<T>(stringStr),
-				"Jsv.TypeSerializer", () => Common.Text.Jsv.TypeSerializer.DeserializeFromString<T>(textStr)
+				"Jsv.TypeSerializer", () => ServiceStack.Text.TypeSerializer.DeserializeFromString<T>(textStr)
 				);
 
 			var seraializedStringDto = TypeSerializer.DeserializeFromString<T>(stringStr);
 			Assert.That(seraializedStringDto.Equals(dto), Is.True);
 
-			var seraializedTextDto = Common.Text.Jsv.TypeSerializer.DeserializeFromString<T>(textStr);
+			var seraializedTextDto = ServiceStack.Text.TypeSerializer.DeserializeFromString<T>(textStr);
 			Assert.That(seraializedTextDto.Equals(dto), Is.True);
 		}
 

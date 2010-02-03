@@ -5,7 +5,7 @@ using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Common.Text.Jsv;
+using ServiceStack.Text;
 using System.Collections.Generic;
 
 namespace ServiceStack.Common.Tests.Text
@@ -441,5 +441,17 @@ namespace ServiceStack.Common.Tests.Text
 
 			Assert.That(model.Equals(toModel), Is.True);
 		}
+
+
+
+		[Test]
+		public void Can_convert_CustomerOrderListDto()
+		{
+			var model = DtoFactory.CustomerOrderListDto;
+			var toModel = Serialize(model);
+
+			Assert.That(model.Equals(toModel), Is.True);
+		}
+
 	}
 }

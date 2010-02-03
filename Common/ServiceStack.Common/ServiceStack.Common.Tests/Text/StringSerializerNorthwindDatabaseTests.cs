@@ -1,7 +1,7 @@
 using System;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using ServiceStack.Common.Text.Jsv;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Text
 {

@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Platform.Text;
 using ProtoBuf;
 using ServiceStack.Client;
-using ServiceStack.Common.Text.Jsv;
+using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 
 namespace Northwind.Benchmarks.Serialization

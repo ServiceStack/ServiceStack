@@ -22,7 +22,7 @@ namespace ServiceStack.Common.Tests.Perf
 		private void CompareSerializers<T>(T dto)
 		{
 			var typeToStringFn = TypeToStringMethods.GetToStringMethod(typeof(T));
-			var jsvTypeToStringFn = Common.Text.Jsv.TypeToStringMethods<T>.GetToStringMethod();
+			var jsvTypeToStringFn = ServiceStack.Text.Jsv.WriteType<T>.Write;
 
 			using (var writer = new StringWriter(new StringBuilder()))
 			{
@@ -44,17 +44,17 @@ namespace ServiceStack.Common.Tests.Perf
 				);
 
 			var stringStr = TypeSerializer.SerializeToString(dto);
-			var textStr = Common.Text.Jsv.TypeSerializer.SerializeToString(dto);
+			var textStr = ServiceStack.Text.TypeSerializer.SerializeToString(dto);
 
 			CompareMultipleRuns(
 				"TypeSerializer", () => TypeSerializer.DeserializeFromString<T>(stringStr),
-				"Jsv.TypeSerializer", () => Common.Text.Jsv.TypeSerializer.DeserializeFromString<T>(textStr)
+				"Jsv.TypeSerializer", () => ServiceStack.Text.TypeSerializer.DeserializeFromString<T>(textStr)
 				);
 
 			var seraializedStringDto = TypeSerializer.DeserializeFromString<T>(stringStr);
 			Assert.That(seraializedStringDto.Equals(dto), Is.True);
 
-			var seraializedTextDto = Common.Text.Jsv.TypeSerializer.DeserializeFromString<T>(textStr);
+			var seraializedTextDto = ServiceStack.Text.TypeSerializer.DeserializeFromString<T>(textStr);
 			Assert.That(seraializedTextDto.Equals(dto), Is.True);
 		}
 

@@ -10,7 +10,7 @@ namespace Northwind.Benchmarks.Serialization
 	{
 		public NorthwindDatabaseSerializtionPerf()
 		{
-			this.MultipleIterations = new List<int> { 1, 10 };
+			this.MultipleIterations = new List<int> { 10 };
 
 			NorthwindDtoData.LoadData(false);
 		}

@@ -9,7 +9,7 @@ using Northwind.Perf;
 using NUnit.Framework;
 using Platform.Text;
 using ServiceStack.Client;
-using ServiceStack.Common.Text.Jsv;
+using ServiceStack.Text;
 using ServiceStack.Common.Utils;
 using JsonConvert=Jayrock.Json.Conversion.JsonConvert;
 
