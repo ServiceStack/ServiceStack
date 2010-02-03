@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace ServiceStack.Common.Extensions
@@ -36,6 +37,10 @@ namespace ServiceStack.Common.Extensions
 			return @enum.ToString();
 		}
 
+		public static List<string> ToList(this Enum @enum)
+		{
+			return new List<string>(Enum.GetNames(@enum.GetType()));
+		}
 
 	}
 }

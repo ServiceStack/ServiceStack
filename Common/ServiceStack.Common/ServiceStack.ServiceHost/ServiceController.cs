@@ -239,8 +239,12 @@ namespace ServiceStack.ServiceHost
 				failedScenarios.AppendFormat("\n -[{0}]", failed);
 			}
 
+			string internalDebugMsg = (EndpointAttributes.InternalNetworkAccess & actualAttributes) != 0
+				? "\n Unauthorized call was made from: " + actualAttributes
+				: "";			
+
 			throw new UnauthorizedAccessException(
-				string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'",
+				string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'" + internalDebugMsg,
 					requestType.Name, failedScenarios));
 		}
 	}

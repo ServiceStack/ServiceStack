@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Security.Authentication;
 
 namespace ServiceStack.Client
 {
@@ -12,27 +13,32 @@ namespace ServiceStack.Client
 		}
 
 		public string BaseUri { get; set; }
-		
+
 		public TimeSpan? Timeout { get; set; }
 
 		public T Send<T>(object request)
 		{
 			var xmlRequest = DataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
-
 			var client = WebRequest.Create(requestUri);
-			if (this.Timeout.HasValue)
+			try
 			{
-				client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-			}
-			
-			client.Method = "POST";
-			client.ContentType = "application/xml";
-			using (var writer = new StreamWriter(client.GetRequestStream()))
-			{
-				writer.Write(xmlRequest);
-			}
+				client.Method = "POST";
+				if (this.Timeout.HasValue)
+				{
+					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+				}
 
+				client.ContentType = "application/xml";
+				using (var writer = new StreamWriter(client.GetRequestStream()))
+				{
+					writer.Write(xmlRequest);
+				}
+			}
+			catch (AuthenticationException ex)
+			{
+				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
+			}
 			var xml = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
 			var response = (T)DataContractDeserializer.Instance.Parse(xml, typeof(T));
 			return response;
@@ -42,18 +48,24 @@ namespace ServiceStack.Client
 		{
 			var xmlRequest = DataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
-
 			var client = WebRequest.Create(requestUri);
-			if (this.Timeout.HasValue)
+			try
 			{
-				client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+				if (this.Timeout.HasValue)
+				{
+					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+				}
+
+				client.Method = "POST";
+				client.ContentType = "application/xml";
+				using (var writer = new StreamWriter(client.GetRequestStream()))
+				{
+					writer.Write(xmlRequest);
+				}
 			}
-			
-			client.Method = "POST";
-			client.ContentType = "application/xml";
-			using (var writer = new StreamWriter(client.GetRequestStream()))
+			catch (AuthenticationException ex)
 			{
-				writer.Write(xmlRequest);
+				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
 			}
 		}
 

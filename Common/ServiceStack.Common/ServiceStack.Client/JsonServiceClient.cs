@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Security.Authentication;
 
 namespace ServiceStack.Client
 {
@@ -20,16 +21,23 @@ namespace ServiceStack.Client
 			var xmlRequest = JsonDataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
-			if (this.Timeout.HasValue)
+			try
 			{
-				client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-			}
+				if (this.Timeout.HasValue)
+				{
+					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+				}
 
-			client.Method = "POST";
-			client.ContentType = "application/json";
-			using (var writer = new StreamWriter(client.GetRequestStream()))
+				client.Method = "POST";
+				client.ContentType = "application/json";
+				using (var writer = new StreamWriter(client.GetRequestStream()))
+				{
+					writer.Write(xmlRequest);
+				}
+			}
+			catch (AuthenticationException ex)
 			{
-				writer.Write(xmlRequest);
+				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
 			}
 
 			var xml = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
@@ -42,19 +50,26 @@ namespace ServiceStack.Client
 			var xmlRequest = JsonDataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
-			if (this.Timeout.HasValue)
+			try
 			{
-				client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-			}
+				if (this.Timeout.HasValue)
+				{
+					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+				}
 
-			client.Method = "POST";
-			client.ContentType = "application/json";
-			using (var writer = new StreamWriter(client.GetRequestStream()))
+				client.Method = "POST";
+				client.ContentType = "application/json";
+				using (var writer = new StreamWriter(client.GetRequestStream()))
+				{
+					writer.Write(xmlRequest);
+				}
+			}
+			catch (AuthenticationException ex)
 			{
-				writer.Write(xmlRequest);
+				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
 			}
 		}
 
-		public void Dispose() { }
+		public void Dispose() {}
 	}
 }

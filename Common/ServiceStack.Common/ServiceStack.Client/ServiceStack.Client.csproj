@@ -67,6 +67,7 @@
     <Compile Include="JsonDataContractSerializer.cs" />
     <Compile Include="JsonServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebRequestUtils.cs" />
     <Compile Include="XmlServiceClient.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

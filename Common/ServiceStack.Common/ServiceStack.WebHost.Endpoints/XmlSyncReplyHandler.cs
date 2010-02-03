@@ -17,6 +17,9 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			var response = new HttpResponseWrapper(context.Response);
 			var operationName = context.Request.GetOperationName();
+
+			if (!AllowRequest(context)) return;
+
 			try
 			{
 				if (string.IsNullOrEmpty(operationName)) return;

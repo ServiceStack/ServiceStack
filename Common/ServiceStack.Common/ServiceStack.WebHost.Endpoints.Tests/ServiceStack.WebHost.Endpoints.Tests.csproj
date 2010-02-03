@@ -83,6 +83,10 @@
     <Compile Include="HttpRequestExtensionsTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
+    <Compile Include="Support\Services\InSecureLiveEnvironmentRestriction.cs" />
+    <Compile Include="Support\Services\SecureLiveEnvironmentRestriction.cs" />
+    <Compile Include="Support\Services\SecureDevEnvironmentRestrictionService.cs" />
+    <Compile Include="Support\Services\InsecureDevEnvironmentRestrictionService.cs" />
     <Compile Include="Support\Services\HttpPostXmlAndSecureLocalSubnetRestrictionService.cs" />
     <Compile Include="Support\Services\HttpPostXmlOrSecureLocalSubnetRestrictionService.cs" />
     <Compile Include="Support\Services\SecureLocalSubnetRestrictionService.cs" />

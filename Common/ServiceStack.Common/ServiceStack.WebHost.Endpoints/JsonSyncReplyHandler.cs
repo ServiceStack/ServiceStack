@@ -13,6 +13,8 @@ namespace ServiceStack.WebHost.Endpoints
 			var operationName = context.Request.GetOperationName();
 			if (string.IsNullOrEmpty(operationName)) return;
 
+			if (!AllowRequest(context)) return;
+
 			var request = CreateRequest(context.Request, operationName);
 
 			var endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Json 

@@ -164,6 +164,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			ShouldAllowAccessWhen<HttpPostXmlOrSecureLocalSubnetRestriction>(EndpointAttributes.HttpPost | EndpointAttributes.Xml | EndpointAttributes.Secure | EndpointAttributes.LocalSubnet);
 		}
 
+		[Test]
+		public void Can_access_from_insecure_dev_environment()
+		{
+			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.Localhost | EndpointAttributes.InSecure | EndpointAttributes.HttpPost);
+			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost);
+			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
+			ShouldAllowAccessWhen<InSecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+		}
+
+		[Test]
+		public void Can_access_from_secure_dev_environment()
+		{
+			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.Localhost | EndpointAttributes.Secure | EndpointAttributes.HttpPost);
+			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost);
+			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
+			ShouldAllowAccessWhen<SecureDevEnvironmentRestriction>(EndpointAttributes.LocalSubnet | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+		}
+
+		[Test]
+		public void Can_access_from_insecure_live_environment()
+		{
+			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost);
+			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
+			ShouldAllowAccessWhen<InSecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.InSecure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+		}
+
+		[Test]
+		public void Can_access_from_secure_live_environment()
+		{
+			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost);
+			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.SyncReply);
+			ShouldAllowAccessWhen<SecureLiveEnvironmentRestriction>(EndpointAttributes.External | EndpointAttributes.Secure | EndpointAttributes.HttpPost | EndpointAttributes.AsyncOneWay);
+		}
+
 
 		[Ignore]
 		[Test]

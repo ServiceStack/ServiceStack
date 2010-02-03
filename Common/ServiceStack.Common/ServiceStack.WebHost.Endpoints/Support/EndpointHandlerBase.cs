@@ -20,6 +20,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			this.networkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
 		}
 
+		protected static bool AllowRequest(HttpContext context)
+		{
+			return context.Request.HttpMethod != "OPTIONS";
+		}
+
 		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
 			return EndpointHost.ExecuteService(request, endpointAttributes);

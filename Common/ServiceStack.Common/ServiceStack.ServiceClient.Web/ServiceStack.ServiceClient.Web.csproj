@@ -82,6 +82,7 @@
     <Compile Include="Soap11ServiceClient.cs" />
     <Compile Include="Soap12ServiceClient.cs" />
     <Compile Include="WcfServiceClient.cs" />
+    <Compile Include="WebRequestUtils.cs" />
     <Compile Include="XmlServiceClient.cs" />
   </ItemGroup>
   <ItemGroup>
