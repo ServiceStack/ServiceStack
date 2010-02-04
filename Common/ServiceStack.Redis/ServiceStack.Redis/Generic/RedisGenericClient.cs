@@ -50,11 +50,6 @@ namespace ServiceStack.Redis.Generic
 			this.TypeIdsSetKey = client.GetTypeIdsSetKey<T>(); 
 		}
 
-		public DateTime LastSave
-		{
-			get { return client.LastSave; }
-		}
-
 		public string TypeIdsSetKey { get; set; }
 
 		public string[] AllKeys
@@ -197,11 +192,6 @@ namespace ServiceStack.Redis.Generic
 			client.SaveAsync();
 		}
 
-		public void Shutdown()
-		{
-			client.Shutdown();
-		}
-
 		public void FlushDb()
 		{
 			client.FlushDb();
@@ -244,20 +234,11 @@ namespace ServiceStack.Redis.Generic
 
 
 		public IHasNamed<IRedisSet<T>> Sets { get; set; }
-		public Dictionary<string, string> Info
-		{
-			get { return client.Info; }
-		}
 
 		public int Db
 		{
 			get { return client.Db; }
 			set { client.Db = value; }
-		}
-
-		public int DbSize
-		{
-			get { return client.DbSize; }
 		}
 
 		internal class RedisClientSets
@@ -375,40 +356,6 @@ namespace ServiceStack.Redis.Generic
 			return FromBytes(client.SRandMember(fromSet.Id));
 		}
 
-
-		public string Host
-		{
-			get { return client.Host; }
-		}
-
-		public int Port
-		{
-			get { return client.Port; }
-		}
-
-		public int RetryTimeout
-		{
-			get { return client.RetryTimeout; }
-			set { client.RetryTimeout = value; }
-		}
-
-		public int RetryCount
-		{
-			get { return client.RetryCount; }
-			set { client.RetryCount = value; }
-		}
-
-		public int SendTimeout
-		{
-			get { return client.SendTimeout; }
-			set { client.SendTimeout = value; }
-		}
-
-		public string Password
-		{
-			get { return client.Password; }
-			set { client.Password = value; }
-		}
 
 
 		const int FirstElement = 0;

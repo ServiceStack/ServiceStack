@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using Northwind.Perf;
 using NUnit.Framework;
 using Platform.Text;
 using ProtoBuf;
 using ServiceStack.Client;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Text;
 
 namespace Northwind.Benchmarks.Serialization
@@ -18,6 +21,67 @@ namespace Northwind.Benchmarks.Serialization
 		public SerializationTestBase()
 		{
 			this.MultipleIterations = new List<int> { 1000, 10000 };
+		}
+
+		List<SerializersBenchmarkEntry> TestRestults;
+		public List<List<SerializersBenchmarkEntry>> FixtureTestResults = new List<List<SerializersBenchmarkEntry>>();
+		string ModelName { get; set; }
+
+		public string ToHtmlReport()
+		{
+			if (FixtureTestResults.Count == 0)
+				throw new ArgumentException("FixtureTestResults is empty");
+
+			var sb = new StringBuilder();
+
+			sb.AppendLine("<html>\n<head>");
+			sb.AppendLine("\t<title>Serialization benchmark results</title>");
+			sb.AppendLine("\t<link href='default.css' rel='stylesheet' type='text/css' />");
+			sb.AppendLine("</head>\n<body>\n");
+
+			sb.AppendFormat("<h2>Serialization results of <span>{0}</span> run at {1}</h2>\n", 
+				GetType().Name.ToEnglish(), DateTime.Now.ToShortDateString());
+
+			foreach (var fixtureTestResult in FixtureTestResults)
+			{
+				var testResultCount = 0;
+
+				foreach (var benchmarkEntry in fixtureTestResult)
+				{
+					if (testResultCount++ == 0)
+					{
+						sb.AppendFormat("<h3>Results of serializing and deserializing {0} {1} times</h3>", benchmarkEntry.ModelName, benchmarkEntry.Iterations);
+						sb.AppendFormat("<table>\n<caption>* All times measured in ticks and payload size in bytes</caption>");
+						sb.AppendFormat(
+							"<thead><tr><th>{0}</th><th>{1}</th><th>{6}</th><th>{2}</th><th>{3}</th><th>{4}</th><th>{5}</th><th>{7}</th></tr></thead>",
+							"Serializer", 
+							"Payload size",
+							"Serialization",
+							"Deserialization",
+							"Total",
+							"Avg per iteration",
+							"smaller than best",
+							"slower than best"
+						);
+						sb.AppendLine("\n<tbody>");
+					}
+					sb.AppendFormat(
+						"<tr><th class='c1'>{0}</th><td>{1}</td><th>{6}x</th><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><th>{7}x</th></tr>",
+						benchmarkEntry.SerializerName, 
+						benchmarkEntry.SerializedBytesLength,
+						benchmarkEntry.TotalSerializationTicks,
+						benchmarkEntry.TotalDeserializationTicks,
+						benchmarkEntry.TotalTicks,
+						benchmarkEntry.AvgTicksPerIteration,
+						benchmarkEntry.TimesLargerThanBest,
+						benchmarkEntry.TimesSlowerThanBest
+					);
+				}
+				sb.AppendLine("\n</tbody>\n</table>");
+			}
+
+			sb.AppendLine("</body>\n</html>\n");
+			return sb.ToString();
 		}
 
 		public void LogDto(string dtoString)
@@ -116,51 +180,84 @@ namespace Northwind.Benchmarks.Serialization
 			}
 		}
 
+		protected void RecordRunResults(string serializerName, object serialziedDto,
+			Action serializeFn, Action deSerializeFn)
+		{
+			var dtoString = serialziedDto as string;
+			var dtoBytes = serialziedDto as byte[];
+
+			var totalSerializationTicks = GetTotalTicksTakenForAllIterations(
+				serializeFn, serializerName + " Serializing");
+
+			var totalDeserializationTicks = GetTotalTicksTakenForAllIterations(
+				deSerializeFn, serializerName + " Deserializing");
+
+			var result = new SerializersBenchmarkEntry {
+				Iterations = this.MultipleIterations.Sum(),
+				ModelName = this.ModelName,
+				SerializerName = serializerName,
+				SerializedBytesLength = dtoString != null 
+					? Encoding.UTF8.GetBytes(dtoString).Length
+					: dtoBytes.Length,
+				TotalSerializationTicks = totalSerializationTicks,
+				TotalDeserializationTicks = totalDeserializationTicks,
+			};
+			TestRestults.Add(result);
+
+			Log("Len: " + result.SerializedBytesLength);
+			Log("Total: " + result.AvgTicksPerIteration);
+		}
+
 		protected void SerializeDto<T>(T dto)
 		{
+			TestRestults = new List<SerializersBenchmarkEntry>();
+			FixtureTestResults.Add(TestRestults);
+			this.ModelName = typeof(T).IsGenericType 
+				&& typeof(T).GetGenericTypeDefinition() == typeof(List<>)
+				? typeof(T).GetGenericArguments()[0].Name
+				: typeof(T).Name;
+
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
-			var totalAvg = RunMultipleTimes(() => DataContractSerializer.Instance.Parse(dto), "DataContractSerializer.Instance.Parse(dto)");
-			totalAvg += RunMultipleTimes(() => DataContractDeserializer.Instance.Parse<T>(dtoXml), "DataContractDeserializer.Instance.Parse<T>(dtoXml)");
-			Log("Len: " + dtoXml.Length);
-			Log("Total Avg: " + totalAvg / 2);
+			RecordRunResults("Microsoft.DataContractSerializer", dtoXml,
+				() => DataContractSerializer.Instance.Parse(dto),
+				() => DataContractDeserializer.Instance.Parse<T>(dtoXml)
+			);
 
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			totalAvg = RunMultipleTimes(() => JsonDataContractSerializer.Instance.Parse(dto), "JsonDataContractSerializer.Instance.Parse(dto)");
-			totalAvg += RunMultipleTimes(() => JsonDataContractDeserializer.Instance.Parse<T>(dtoJson), "JsonDataContractDeserializer.Instance.Parse<T>(dtoJson)");
-			Log("Total Avg: " + totalAvg / 2);
+			RecordRunResults("Microsoft.JsonDataContractSerializer", dtoJson,
+				() => JsonDataContractSerializer.Instance.Parse(dto),
+				() => JsonDataContractDeserializer.Instance.Parse<T>(dtoJson)
+			);
 
-			//Very slow
-			//var dtoJayrock = JsonConvert.ExportToString(dto);
-			//RunMultipleTimes(() => JsonConvert.ExportToString(dto), "JsonConvert.ExportToString(dto)");
-			//RunMultipleTimes(() => JsonConvert.Import(typeof(T), dtoJayrock), "JsonConvert.Import(typeof(T), dtoJayrock)");
-
-			try
-			{
-				var dtoProtoBuf = ProtoBufToBytes(dto);
-				totalAvg = RunMultipleTimes(() => ProtoBufToBytes(dto), "ProtoBufToBytes(customer)");
-				totalAvg += RunMultipleTimes(() => ProtoBufFromBytes<T>(dtoProtoBuf), "ProtoBufFromBytes<T>(dtoProtoBuf)");
-				Log("Total Avg: " + totalAvg / 2);
-			}
-			catch (Exception ex)
-			{
-				Log("Error in ProtoBuf: {0}", ex);
-			}
+			var dtoProtoBuf = ProtoBufToBytes(dto);
+			RecordRunResults("ProtoBuf.net", dtoProtoBuf,
+				() => ProtoBufToBytes(dto),
+				() => ProtoBufFromBytes<T>(dtoProtoBuf)
+			);
 
 			var dtoJsonNet = JsonConvert.SerializeObject(dto);
-			totalAvg = RunMultipleTimes(() => JsonConvert.SerializeObject(dto), "JsonConvert.SerializeObject(dto)");
-			totalAvg += RunMultipleTimes(() => JsonConvert.DeserializeObject<T>(dtoJsonNet), "JsonConvert.DeserializeObject<T>(dtoJsonNet)");
-			Log("Total Avg: " + totalAvg / 2);
+			RecordRunResults("NewtonSoft.Json", dtoJsonNet,
+				() => JsonConvert.SerializeObject(dto),
+				() => JsonConvert.DeserializeObject<T>(dtoJsonNet)
+			);
 
 			var dtoString = TypeSerializer.SerializeToString(dto);
-			totalAvg = RunMultipleTimes(() => TypeSerializer.SerializeToString(dto), "TypeSerializer.SerializeToString(dto)");
-			totalAvg += RunMultipleTimes(() => TypeSerializer.DeserializeFromString<T>(dtoString), "TypeSerializer.DeserializeFromString<T>(dtoString)");
-			Log("Len: " + dtoString.Length);
-			Log("Total Avg: " + totalAvg / 2);
+			RecordRunResults("ServiceStack.TypeSerializer", dtoString,
+				() => TypeSerializer.SerializeToString(dto),
+				() => TypeSerializer.DeserializeFromString<T>(dtoString)
+			);
 
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
-			totalAvg = RunMultipleTimes(() => TextSerializer.SerializeToString(dto), "TextSerializer.SerializeToString(dto)");
-			totalAvg += RunMultipleTimes(() => TextSerializer.DeserializeFromString<T>(dtoPlatformText), "TextSerializer.DeserializeFromString<T>(dtoPlatformText)");
-			Log("Total Avg: " + totalAvg / 2);
+			RecordRunResults("Platform.TextSerializer", dtoPlatformText,
+				() => TextSerializer.SerializeToString(dto),
+				() => TextSerializer.DeserializeFromString<T>(dtoPlatformText)
+			);
+
+			var smallestTime = TestRestults.ConvertAll(x => x.TotalTicks).Min();
+			var smallestSize = TestRestults.ConvertAll(x => x.SerializedBytesLength).Min();
+			TestRestults.ForEach(x => x.TimesSlowerThanBest = Math.Round(x.TotalTicks / (decimal)smallestTime, 2));
+			TestRestults.ForEach(x => x.TimesLargerThanBest = Math.Round(x.SerializedBytesLength / (decimal) smallestSize, 2));
 		}
+
 	}
 }

@@ -7,6 +7,7 @@ namespace ServiceStack.Text.Jsv
 	public static class WriteType<T>
 	{
 		private static readonly Action<TextWriter, object> CacheFn;
+		private static  TypePropertyWriter[] propertyWriters;
 
 		static WriteType()
 		{
@@ -26,47 +27,88 @@ namespace ServiceStack.Text.Jsv
 			var propertyInfos = type.GetProperties();
 			if (propertyInfos.Length == 0) return null;
 
-			var propertyInfosLength = propertyInfos.Length;
+			var propertyNamesLength = propertyInfos.Length;
 
-			var propertyNames = new string[propertyInfos.Length];
-			var getterFns = new Func<T, object>[propertyInfosLength];
-			var writeFns = new Action<TextWriter, object>[propertyInfosLength];
+			propertyWriters = new TypePropertyWriter[propertyNamesLength];
 
-			for (var i = 0; i < propertyInfosLength; i++)
-			{
-				var propertyInfo = propertyInfos[i];
-				propertyNames[i] = propertyInfo.Name;
-
-				getterFns[i] = propertyInfo.GetValueGetter<T>();
-
-				writeFns[i] = JsvWriter.GetWriteFn(propertyInfo.PropertyType);
-			}
-
-			return (w, x) => TypeToString(w, x, propertyNames, getterFns, writeFns);
-		}
-
-		public static void TypeToString(TextWriter writer, object value, string[] propertyNames,
-		                                Func<T, object>[] getterFns, Action<TextWriter, object>[] writeFns)
-		{
-			writer.Write(TypeSerializer.MapStartChar);
-
-			var ranOnce = false;
-			var propertyNamesLength = propertyNames.Length;
 			for (var i = 0; i < propertyNamesLength; i++)
 			{
-				var propertyName = propertyNames[i];
+				var propertyInfo = propertyInfos[i];
 
-				var propertyValue = getterFns[i]((T) value);
-				if (propertyValue == null) continue;
+				propertyWriters[i] = new TypePropertyWriter
+					(
+						propertyInfo.Name,
+						propertyInfo.GetValueGetter<T>(),
+						JsvWriter.GetWriteFn(propertyInfo.PropertyType),
+						i
+					);
+			}
 
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+			return WriteProperties;
+		}
+
+		internal class TypePropertyWriter
+		{
+			private readonly string propertyName;
+			private readonly Func<T, object> getterFn;
+			private readonly Action<TextWriter, object> writeFn;
+			private readonly int index;
+
+			public TypePropertyWriter(string propertyName, 
+				Func<T, object> getterFn, Action<TextWriter, object> writeFn, int index)
+			{
+				this.propertyName = propertyName;
+				this.getterFn = getterFn;
+				this.writeFn = writeFn;
+				this.index = index;
+			}
+
+			internal void WriteProperty(TextWriter writer, object value)
+			{
+				var propertyValue = getterFn((T)value);
+				if (propertyValue == null) return;
+
+				if (index > 0)
+					writer.Write(TypeSerializer.ItemSeperator);
 
 				writer.Write(propertyName);
 				writer.Write(TypeSerializer.MapKeySeperator);
-				writeFns[i](writer, propertyValue);
+				writeFn(writer, propertyValue);
 			}
+		}
 
+		public static void WriteProperties(TextWriter writer, object value)
+		{
+			writer.Write(TypeSerializer.MapStartChar);
+			foreach (var propertyWriter in propertyWriters)
+			{
+				propertyWriter.WriteProperty(writer, value);
+			}
 			writer.Write(TypeSerializer.MapEndChar);
 		}
+
+		//public static void TypeToString(TextWriter writer, object value)
+		//{
+		//    writer.Write(TypeSerializer.MapStartChar);
+
+		//    var ranOnce = false;
+
+		//    for (var i = 0; i < propertyNamesLength; i++)
+		//    {
+		//        var propertyName = propertyNames[i];
+
+		//        var propertyValue = propertyWriters[i]((T) value);
+		//        if (propertyValue == null) continue;
+
+		//        WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+
+		//        writer.Write(propertyName);
+		//        writer.Write(TypeSerializer.MapKeySeperator);
+		//        writeFns[i](writer, propertyValue);
+		//    }
+
+		//    writer.Write(TypeSerializer.MapEndChar);
+		//}
+
 	}
 }

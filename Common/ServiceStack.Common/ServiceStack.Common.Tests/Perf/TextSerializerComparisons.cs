@@ -3,7 +3,8 @@ using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using Platform.Text;
-using ServiceStack.Common.Text;
+using ServiceStack.Text;
+//using ServiceStack.Common.Text;
 
 namespace ServiceStack.Common.Tests.Perf
 {
@@ -20,11 +21,11 @@ namespace ServiceStack.Common.Tests.Perf
 		private void CompareSerializers<T>(T dto)
 		{
 			CompareMultipleRuns(
-				"TypeSerializer", () => ServiceStack.Text.TypeSerializer.SerializeToString(dto),
+				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
 				"TextSerializer", () => TextSerializer.SerializeToString(dto)
 				);
 
-			var stringStr = ServiceStack.Text.TypeSerializer.SerializeToString(dto);
+			var stringStr = TypeSerializer.SerializeToString(dto);
 			var textStr = TextSerializer.SerializeToString(dto);
 
 			//return;

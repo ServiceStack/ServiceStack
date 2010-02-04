@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
+using ServiceStack.Common.Utils;
 
 namespace Northwind.Benchmarks.Serialization
 {
@@ -13,6 +16,16 @@ namespace Northwind.Benchmarks.Serialization
 			this.MultipleIterations = new List<int> { 10 };
 
 			NorthwindDtoData.LoadData(false);
+		}
+
+		[TestFixtureTearDown]
+		public void AfterAllTests()
+		{
+			var path =
+				"~/_Results/Serialization/".MapAbsolutePath()
+				+ string.Format("Northwind-database.{0:yyyy-MM-dd}.html", DateTime.Now);
+
+			File.WriteAllText(path, base.ToHtmlReport());
 		}
 
 		[Test]

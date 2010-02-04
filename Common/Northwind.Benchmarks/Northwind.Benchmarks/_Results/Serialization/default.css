@@ -1,0 +1,63 @@
+BODY
+{
+  font-family: arial;
+}
+
+H2
+{
+  color: #073;
+  margin-bottom: 20px;
+  font: normal 26px Tahoma;
+}
+H2 SPAN
+{
+  color: #444;
+  background: #f1f1f1;
+  padding: 0 5px;
+}
+
+H3
+{
+  border-top: solid 1px #ccc;
+  padding: 10px 0;
+  color: #333;
+  font: normal 22px Tahoma;
+  margin-left: 10px;
+}
+
+TABLE
+{
+  border-collapse: collapse;
+  margin: 20px;
+}
+TABLE CAPTION
+{
+  color: #333;
+  padding-bottom: 5px;
+  font-style: italic;
+  font-size: 13px;
+}
+TABLE THEAD TH
+{
+  background: #444;
+  color: #fff;
+  padding: 5px 10px;
+  font-weight: normal;
+}
+TABLE TBODY TH
+{
+  background: #f1f1f1;
+  font-weight: normal;
+  padding: 5px 20px 5px 10px;
+}
+TABLE TBODY TH.c1
+{
+  text-align: left;
+}
+TABLE TD
+{
+  padding: 5px 10px;
+  text-align: center;
+  border-right: solid 1px #f1f1f1;  
+  border-bottom: solid 1px #f1f1f1;  
+}

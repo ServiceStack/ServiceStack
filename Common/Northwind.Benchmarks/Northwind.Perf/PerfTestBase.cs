@@ -94,6 +94,31 @@ namespace Northwind.Perf
 			return total / i;
 		}
 
+		protected long GetTotalTicksTakenForAllIterations(Action action, string actionName)
+		{
+			Log("\n");
+			try
+			{
+				WarmUp(action);
+
+				var i = 0;
+				var total = 0M;
+				foreach (var iteration in this.MultipleIterations)
+				{
+					i += iteration;
+					Log("{0} times:", iteration);
+					total += RunAction(action, iteration, actionName ?? "Action");
+				}
+				return (long)total;
+			}
+			catch (Exception ex)
+			{
+				Log("Error in {0}: {1}", actionName, ex);
+			}
+
+			return 0;
+		}
+
 		protected decimal RunAction(Action action, int iterations)
 		{
 			return RunAction(action, iterations, null);

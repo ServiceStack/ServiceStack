@@ -85,7 +85,7 @@
     <Compile Include="BasicPersistenceProviders\Db4o\InsertNorthwindDatabase.cs" />
     <Compile Include="BasicPersistenceProviders\OrmLite\InsertNorthwindDatabase.cs" />
     <Compile Include="BasicPersistenceProviders\Redis\InsertNorthwindDatabase.cs" />
-    <Compile Include="Class1.cs" />
+    <Compile Include="SerializersBenchmarkEntry.cs" />
     <Compile Include="Serialization\NorthwindDatabaseSerializtionPerf.cs" />
     <Compile Include="Serialization\SerializationTestBase.cs" />
     <Compile Include="Serialization\SingleModelSerializationPerf.cs" />
@@ -140,6 +140,7 @@
     <Folder Include="Databases\SqlServer\" />
     <Folder Include="WebServices\ServiceStack\" />
     <Folder Include="WebServices\Wcf\" />
+    <Folder Include="_Results\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
