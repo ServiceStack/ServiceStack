@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>baa2dd29-b464-4ad6-93e7-4f3dbb367be0</ProjectGuid>
+    <ProjectGuid>{D5681EFB-0FCE-4E55-910B-F4620CFECBD2}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Nortwind.Benchmarks.Console</RootNamespace>
-    <AssemblyName>Nortwind.Benchmarks.Console</AssemblyName>
+    <RootNamespace>Northwind.Benchmarks.Console</RootNamespace>
+    <AssemblyName>Northwind.Benchmarks.Console</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -47,6 +47,21 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Northwind.Benchmarks\Northwind.Benchmarks.csproj">
+      <Project>{97A8E62D-14DF-402B-8B6A-C5C0D959E68A}</Project>
+      <Name>Northwind.Benchmarks</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Northwind.Perf\Northwind.Perf.csproj">
+      <Project>{373D954D-93F9-439D-937F-28709BB04B65}</Project>
+      <Name>Northwind.Perf</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="_Results\Serialization\default.css" />
+    <Content Include="_Results\Serialization\Northwind-database.2010-02-04.html" />
+    <Content Include="_Results\Serialization\Northwind-database.2010-02-05.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

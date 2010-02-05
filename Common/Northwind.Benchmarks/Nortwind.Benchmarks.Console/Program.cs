@@ -1,20 +1,23 @@
 ﻿using Northwind.Benchmarks.Serialization;
 
-namespace Nortwind.Benchmarks.Console
+namespace Northwind.Benchmarks.Console
 {
 	class Program
 	{
 		static void Main(string[] args)
 		{
-			var noOfIterations = 1;
-			int.TryParse(args[0], out noOfIterations);
+			System.Console.WriteLine(string.Join(", ", args));
+
+			int noOfIterations;
+			if (args.Length < 1 || !int.TryParse(args[0], out noOfIterations))
+				noOfIterations = 1;
 
 			RunNorthwindSerializationBenchmarks(noOfIterations);
 		}
 
 		private static void RunNorthwindSerializationBenchmarks(int iterations)
 		{
-			var fixture = new NorthwindDatabaseSerializtionPerf(iterations);
+			var fixture = new NorthwindDatabaseTablesSerializtion(iterations);
 
 			fixture.serialize_Categories();
 			fixture.serialize_Customers();
