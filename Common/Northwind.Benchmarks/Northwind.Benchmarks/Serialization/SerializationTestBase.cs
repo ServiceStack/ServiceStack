@@ -56,12 +56,8 @@ namespace Northwind.Benchmarks.Serialization
 
 			foreach (var fixtureTestResult in FixtureTestResults)
 			{
-				var firstEntry = fixtureTestResult[0];
-				var htmlHeader = string.Format(
-					"<h3>Results of serializing and deserializing {0} {1} times</h3>",
-					firstEntry.ModelName, firstEntry.Iterations);
-
-				WriteTable(sb, fixtureTestResult, htmlHeader);
+				WriteTable(sb, fixtureTestResult, 
+					"<h3>Results of serializing and deserializing {0} {1} times</h3>");
 			}
 
 			sb.AppendLine("</body>\n</html>\n");
@@ -78,7 +74,7 @@ namespace Northwind.Benchmarks.Serialization
 			{
 				if (testResultCount++ == 0)
 				{
-					sb.AppendLine(benchmarkTitleHtml);
+					sb.AppendFormat(benchmarkTitleHtml, benchmarkEntry.ModelName, benchmarkEntry.Iterations);
 					sb.AppendFormat("<table>\n<caption>* All times measured in ticks and payload size in bytes</caption>");
 					sb.AppendFormat(
 						"<thead><tr><th>{0}</th><th>{1}</th><th>{6}</th><th>{2}</th><th>{3}</th><th>{4}</th><th>{5}</th><th>{7}</th></tr></thead>",
@@ -304,12 +300,13 @@ namespace Northwind.Benchmarks.Serialization
 				() => JsonDataContractDeserializer.Instance.Parse<T>(dtoJson)
 			);
 
-			var js = new JavaScriptSerializer();
-			var dtoJs = js.Serialize(dto);
-			RecordRunResults("Microsoft JavaScriptSerializer", dtoJs,
-				() => js.Serialize(dto),
-				() => js.Deserialize<T>(dtoJs)
-			);
+			//To slow to include 230x slower than ProtoBuf
+			//var js = new JavaScriptSerializer();
+			//var dtoJs = js.Serialize(dto);
+			//RecordRunResults("Microsoft JavaScriptSerializer", dtoJs,
+			//    () => js.Serialize(dto),
+			//    () => js.Deserialize<T>(dtoJs)
+			//);
 
 			var msBytes = BinaryFormatterSerializer.Instance.Serialize(dto);
 			RecordRunResults("Microsoft BinaryFormatter", msBytes,
