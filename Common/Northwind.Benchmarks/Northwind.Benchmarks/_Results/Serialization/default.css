@@ -25,6 +25,17 @@ H3
   margin-left: 10px;
 }
 
+SPAN.summary
+{
+  background: #FAFFBD;
+  border: solid 1px #C3D9FF;
+  display: block;
+  margin: 10px;
+  padding: 10px;
+  width: 850px;
+  font-size: 13px;
+}
+
 TABLE
 {
   border-collapse: collapse;
