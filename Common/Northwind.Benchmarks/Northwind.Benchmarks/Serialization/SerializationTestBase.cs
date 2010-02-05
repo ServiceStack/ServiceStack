@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Web.Script.Serialization;
 using Newtonsoft.Json;
 using Northwind.Perf;
 using NUnit.Framework;
@@ -23,6 +24,8 @@ namespace Northwind.Benchmarks.Serialization
 			this.MultipleIterations = new List<int> { 1000, 10000 };
 		}
 
+		protected string HtmlSummary { get; set; }
+
 		List<SerializersBenchmarkEntry> TestRestults;
 		public List<List<SerializersBenchmarkEntry>> FixtureTestResults = new List<List<SerializersBenchmarkEntry>>();
 		string ModelName { get; set; }
@@ -42,6 +45,8 @@ namespace Northwind.Benchmarks.Serialization
 			sb.AppendFormat("<h2>Serialization results of <span>{0}</span> run at {1}</h2>\n", 
 				GetType().Name.ToEnglish(), DateTime.Now.ToShortDateString());
 
+			sb.AppendFormat("<span class=\"summary\">{0}</span>", this.HtmlSummary);
+
 			foreach (var fixtureTestResult in FixtureTestResults)
 			{
 				var testResultCount = 0;
@@ -60,8 +65,8 @@ namespace Northwind.Benchmarks.Serialization
 							"Deserialization",
 							"Total",
 							"Avg per iteration",
-							"smaller than best",
-							"slower than best"
+							"Larger than best",
+							"Slower than best"
 						);
 						sb.AppendLine("\n<tbody>");
 					}
@@ -218,21 +223,28 @@ namespace Northwind.Benchmarks.Serialization
 				: typeof(T).Name;
 
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
-			RecordRunResults("Microsoft.DataContractSerializer", dtoXml,
+			RecordRunResults("Microsoft DataContractSerializer", dtoXml,
 				() => DataContractSerializer.Instance.Parse(dto),
 				() => DataContractDeserializer.Instance.Parse<T>(dtoXml)
 			);
 
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			RecordRunResults("Microsoft.JsonDataContractSerializer", dtoJson,
+			RecordRunResults("Microsoft JsonDataContractSerializer", dtoJson,
 				() => JsonDataContractSerializer.Instance.Parse(dto),
 				() => JsonDataContractDeserializer.Instance.Parse<T>(dtoJson)
 			);
 
-			var dtoProtoBuf = ProtoBufToBytes(dto);
-			RecordRunResults("ProtoBuf.net", dtoProtoBuf,
-				() => ProtoBufToBytes(dto),
-				() => ProtoBufFromBytes<T>(dtoProtoBuf)
+			var js = new JavaScriptSerializer();
+			var dtoJs = js.Serialize(dto);
+			RecordRunResults("Microsoft JavaScriptSerializer", dtoJs,
+				() => js.Serialize(dto),
+				() => js.Deserialize<T>(dtoJs)
+			);
+
+			var msBytes = BinaryFormatterSerializer.Instance.Serialize(dto);
+			RecordRunResults("Microsoft BinaryFormatter", msBytes,
+				() => BinaryFormatterSerializer.Instance.Serialize(dto),
+				() => BinaryFormatterDeserializer.Instance.Deserialize<T>(msBytes)
 			);
 
 			var dtoJsonNet = JsonConvert.SerializeObject(dto);
@@ -241,14 +253,20 @@ namespace Northwind.Benchmarks.Serialization
 				() => JsonConvert.DeserializeObject<T>(dtoJsonNet)
 			);
 
+			var dtoProtoBuf = ProtoBufToBytes(dto);
+			RecordRunResults("ProtoBuf.net", dtoProtoBuf,
+				() => ProtoBufToBytes(dto),
+				() => ProtoBufFromBytes<T>(dtoProtoBuf)
+			);
+
 			var dtoString = TypeSerializer.SerializeToString(dto);
-			RecordRunResults("ServiceStack.TypeSerializer", dtoString,
+			RecordRunResults("ServiceStack TypeSerializer", dtoString,
 				() => TypeSerializer.SerializeToString(dto),
 				() => TypeSerializer.DeserializeFromString<T>(dtoString)
 			);
 
 			var dtoPlatformText = TextSerializer.SerializeToString(dto);
-			RecordRunResults("Platform.TextSerializer", dtoPlatformText,
+			RecordRunResults("Platform TextSerializer", dtoPlatformText,
 				() => TextSerializer.SerializeToString(dto),
 				() => TextSerializer.DeserializeFromString<T>(dtoPlatformText)
 			);
