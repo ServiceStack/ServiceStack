@@ -3,6 +3,7 @@
     <string />
     <integer />
     <boolean>
+      <setting name="livetemplates.csharp.usevar">True</setting>
       <setting name="SolutionAnalysisEnabled">False</setting>
     </boolean>
   </SettingsComponent>
@@ -11,43 +12,67 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:OrderBlob.cs" caret="707" fromTop="19" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:Northwind.models.cs" caret="6316" fromTop="26" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:NorthwindDtoFactory.cs" caret="2752" fromTop="20" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiOrderProperties.cs" caret="246" fromTop="8" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDtoWithOrders.cs" caret="296" fromTop="10" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiDto.cs" caret="202" fromTop="7" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:MultiCustomerProperties.cs" caret="0" fromTop="0" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="264" fromTop="9" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderArrayDto.cs" caret="258" fromTop="9" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:ArrayDtoWithOrders.cs" caret="402" fromTop="17" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindData.cs" caret="344517" fromTop="33" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="11180" fromTop="404" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="480" fromTop="9" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:OrmLite/f:InsertNorthwindDatabase.cs" caret="649" fromTop="19" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="629" fromTop="17" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="338" fromTop="14" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderListDto.cs" caret="308" fromTop="10" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseSerializtionPerf.cs" caret="0" fromTop="0" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="6629" fromTop="0" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="3237" fromTop="2" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="487" fromTop="16" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TypeToStringTests.cs" caret="0" fromTop="0" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextTestBase.cs" caret="0" fromTop="0" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SingleModelSerializationPerf.cs" caret="452" fromTop="22" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="1773" fromTop="18" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="316" fromTop="11" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="1004" fromTop="32" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:ToStringMethods.cs" caret="876" fromTop="18" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:TypeSerializer.cs" caret="2519" fromTop="24" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Jsv/f:WriteType.cs" caret="2952" fromTop="36" />
+      <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:RedisClient.cs" caret="0" fromTop="0" />
+      <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:IRedisClient.cs" caret="483" fromTop="4" />
+      <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/d:Generic/f:IRedisGenericClient.cs" caret="709" fromTop="0" />
+      <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/d:Generic/f:RedisGenericClient.cs" caret="11633" fromTop="58" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SingleModelSerializationPerf.cs" caret="561" fromTop="29" />
+      <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2659" fromTop="12" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Jsv/f:JsvWriter.Generic.cs" caret="2162" fromTop="23" />
+      <File id="6B133D45-91D4-4AA5-A6D4-247282879CBB/f:DataContractSerializer.cs" caret="699" fromTop="25" />
+      <File id="6B133D45-91D4-4AA5-A6D4-247282879CBB/f:DataContractDeserializer.cs" caret="885" fromTop="36" />
+      <File id="6B133D45-91D4-4AA5-A6D4-247282879CBB/f:JsonDataContractSerializer.cs" caret="835" fromTop="34" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Jsv/f:WriteLists.cs" caret="204" fromTop="9" />
+      <File id="6B133D45-91D4-4AA5-A6D4-247282879CBB/f:BinaryFormatterDeserializer.cs" caret="376" fromTop="12" />
+      <File id="6B133D45-91D4-4AA5-A6D4-247282879CBB/f:BinaryFormatterSerializer.cs" caret="800" fromTop="30" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="656" fromTop="15" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/f:Class1.cs" caret="657" fromTop="24" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="3244" fromTop="19" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="4793" fromTop="22" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseSerializtionPerf.cs" caret="509" fromTop="20" />
+      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="83" fromTop="2" />
     </RecentFiles>
     <RecentEdits>
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="2231" fromTop="28" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="222" fromTop="9" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="1230" fromTop="22" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="5490" fromTop="9" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="5490" fromTop="29" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="10314" fromTop="0" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="8750" fromTop="24" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="331" fromTop="11" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="344" fromTop="9" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="225" fromTop="9" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseSerializtionPerf.cs" caret="449" fromTop="16" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="782" fromTop="14" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11372" fromTop="37" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11620" fromTop="40" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="4353" fromTop="33" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="3862" fromTop="17" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="4484" fromTop="22" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="4385" fromTop="18" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="3666" fromTop="3" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2399" fromTop="16" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2995" fromTop="21" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="3529" fromTop="34" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="3004" fromTop="22" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2534" fromTop="24" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2356" fromTop="16" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2131" fromTop="13" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseSerializtionPerf.cs" caret="1285" fromTop="31" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="1734" fromTop="16" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="1847" fromTop="18" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="1443" fromTop="18" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2170" fromTop="18" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="3227" fromTop="18" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11556" fromTop="34" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="10797" fromTop="17" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="5019" fromTop="28" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="4792" fromTop="22" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseSerializtionPerf.cs" caret="1097" fromTop="30" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseSerializtionPerf.cs" caret="559" fromTop="21" />
+      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="83" fromTop="2" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -55,20 +80,20 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="var" priority="21" />
+      <Item value="var" priority="40" />
       <Item value="TimeSpan" priority="4" />
-      <Item value="public" priority="9" />
-      <Item value="void" priority="3" />
-      <Item value="new" priority="11" />
+      <Item value="public" priority="21" />
+      <Item value="void" priority="6" />
+      <Item value="new" priority="29" />
       <Item value="Stopwatch" priority="2" />
       <Item value="stopWatch" priority="2" />
-      <Item value="static" priority="0" />
+      <Item value="static" priority="1" />
       <Item value="InsertNorthwindDataScenario" priority="0" />
       <Item value="NorthwindData" priority="3" />
       <Item value="virtual" priority="1" />
       <Item value="override" priority="1" />
       <Item value="Redis" priority="0" />
-      <Item value="protected" priority="1" />
+      <Item value="protected" priority="2" />
       <Item value="persistenceProvider" priority="1" />
       <Item value="CreateProvider" priority="0" />
       <Item value="OnFirstRun" priority="0" />
@@ -76,10 +101,10 @@
       <Item value="RedisClient" priority="0" />
       <Item value="InsertNorthwindDatabase" priority="0" />
       <Item value="Category" priority="1" />
-      <Item value="return" priority="10" />
+      <Item value="return" priority="17" />
       <Item value="OrmLiteConfig" priority="0" />
       <Item value="provider" priority="1" />
-      <Item value="null" priority="0" />
+      <Item value="null" priority="1" />
       <Item value="IDisposable" priority="0" />
       <Item value="avgTicks" priority="1" />
       <Item value="TextSerializerPerfTests" priority="0" />
@@ -90,40 +115,40 @@
       <Item value="TextField" priority="1" />
       <Item value="TextSerializer" priority="2" />
       <Item value="ServiceStack" priority="0" />
-      <Item value="Common" priority="0" />
+      <Item value="Common" priority="1" />
       <Item value="Text" priority="0" />
       <Item value="customer" priority="1" />
-      <Item value="byte" priority="2" />
-      <Item value="T" priority="7" />
+      <Item value="byte" priority="4" />
+      <Item value="T" priority="9" />
       <Item value="using" priority="0" />
       <Item value="MemberSerializationOptions" priority="0" />
       <Item value="Serializer" priority="4" />
-      <Item value="ms" priority="1" />
-      <Item value="dto" priority="8" />
+      <Item value="ms" priority="3" />
+      <Item value="dto" priority="10" />
       <Item value="ProtoBuf" priority="0" />
-      <Item value="string" priority="2" />
+      <Item value="string" priority="20" />
       <Item value="_AppDomain" priority="0" />
-      <Item value="bytes" priority="3" />
+      <Item value="bytes" priority="6" />
       <Item value="Test" priority="0" />
       <Item value="Assert" priority="1" />
-      <Item value="dtoString" priority="3" />
+      <Item value="dtoString" priority="5" />
       <Item value="DataContractDeserializer" priority="0" />
       <Item value="StringSerializer" priority="2" />
       <Item value="originalDto" priority="0" />
       <Item value="With_DataContractSerializer" priority="0" />
-      <Item value="Length" priority="0" />
+      <Item value="Length" priority="2" />
       <Item value="DtoFactory" priority="0" />
       <Item value="private" priority="0" />
       <Item value="AssertAllAreEqual" priority="0" />
-      <Item value="const" priority="0" />
-      <Item value="bool" priority="0" />
+      <Item value="const" priority="1" />
+      <Item value="bool" priority="1" />
       <Item value="true" priority="1" />
-      <Item value="if" priority="1" />
+      <Item value="if" priority="4" />
       <Item value="ProtoBufToBytes" priority="0" />
       <Item value="dtoProtoBuf" priority="0" />
       <Item value="i" priority="2" />
       <Item value="iteration" priority="0" />
-      <Item value="decimal" priority="1" />
+      <Item value="decimal" priority="7" />
       <Item value="total" priority="0" />
       <Item value="totalAvg" priority="0" />
       <Item value="try" priority="0" />
@@ -188,19 +213,89 @@
       <Item value="ToOrderDetailDto" priority="0" />
       <Item value="ToCustomerCustomerDemoDto" priority="0" />
       <Item value="ToEmployeeTerritoryDto" priority="0" />
-      <Item value="this" priority="1" />
-      <Item value="List&lt;int&gt;" priority="1" />
+      <Item value="this" priority="15" />
+      <Item value="List&lt;int&gt;" priority="2" />
       <Item value="Northwind" priority="0" />
-      <Item value="from" priority="0" />
+      <Item value="from" priority="1" />
       <Item value="NorthwindDtoData" priority="2" />
-      <Item value="SerializeDto" priority="0" />
+      <Item value="SerializeDto" priority="1" />
       <Item value="Services" priority="0" />
       <Item value="DataMember" priority="0" />
-      <Item value="typeof" priority="0" />
+      <Item value="typeof" priority="7" />
       <Item value="is" priority="0" />
       <Item value="ValueType" priority="0" />
       <Item value="entity" priority="0" />
       <Item value="Jsv" priority="2" />
+      <Item value="value" priority="0" />
+      <Item value="writeFn" priority="0" />
+      <Item value="int" priority="6" />
+      <Item value="GetType" priority="1" />
+      <Item value="List" priority="4" />
+      <Item value="long" priority="5" />
+      <Item value="DateTime" priority="3" />
+      <Item value="SerializersBenchmarkEntry" priority="4" />
+      <Item value="List&lt;SerializersBenchmarkEntry&gt;" priority="3" />
+      <Item value="testName" priority="0" />
+      <Item value="TestRestults" priority="1" />
+      <Item value="TestNumber" priority="0" />
+      <Item value="TestIndex" priority="0" />
+      <Item value="EntryDate" priority="0" />
+      <Item value="Iterations" priority="1" />
+      <Item value="SerializerName" priority="2" />
+      <Item value="serializerName" priority="2" />
+      <Item value="SerializationTicksAvg" priority="0" />
+      <Item value="serializtionTicksAvg" priority="0" />
+      <Item value="DeserializationTicksAvg" priority="0" />
+      <Item value="deserializtionTicksAvg" priority="0" />
+      <Item value="ModelName" priority="1" />
+      <Item value="double" priority="1" />
+      <Item value="Math" priority="2" />
+      <Item value="result" priority="0" />
+      <Item value="List&lt;List&lt;SerializersBenchmarkEntry&gt;&gt;" priority="0" />
+      <Item value="object" priority="0" />
+      <Item value="serialziedDto" priority="1" />
+      <Item value="as" priority="1" />
+      <Item value="dtoBytes" priority="0" />
+      <Item value="XmlDto" priority="0" />
+      <Item value="StringBuilder" priority="1" />
+      <Item value="StringWriter" priority="0" />
+      <Item value="StreamReader" priority="0" />
+      <Item value="StreamWriter" priority="0" />
+      <Item value="sb" priority="11" />
+      <Item value="RecordTestRun" priority="0" />
+      <Item value="RecordRunResults" priority="0" />
+      <Item value="dtoXml" priority="0" />
+      <Item value="Action" priority="0" />
+      <Item value="serializeFn" priority="0" />
+      <Item value="FixtureTestResults" priority="0" />
+      <Item value="throw" priority="0" />
+      <Item value="ArgumentNullException" priority="0" />
+      <Item value="foreach" priority="6" />
+      <Item value="fixtureTestResult" priority="1" />
+      <Item value="testResultCount" priority="0" />
+      <Item value="benchmarkEntry" priority="16" />
+      <Item value="FileAssert" priority="0" />
+      <Item value="base" priority="0" />
+      <Item value="x" priority="3" />
+      <Item value="smallestSize" priority="0" />
+      <Item value="obj" priority="0" />
+      <Item value="BinaryFormatterSerializer" priority="0" />
+      <Item value="dtoJsonNet" priority="0" />
+      <Item value="fixture" priority="1" />
+      <Item value="args" priority="0" />
+      <Item value="out" priority="1" />
+      <Item value="noOfIterations" priority="0" />
+      <Item value="iterations" priority="0" />
+      <Item value="serializtionFailedWhenUnderSizeBytes" priority="0" />
+      <Item value="Dictionary" priority="0" />
+      <Item value="map" priority="0" />
+      <Item value="list" priority="0" />
+      <Item value="combinedEntry" priority="6" />
+      <Item value="combinedBenchmarksMap" priority="1" />
+      <Item value="to" priority="1" />
+      <Item value="headerText" priority="0" />
+      <Item value="htmlHeader" priority="0" />
+      <Item value="CalculateBestTimes" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.TimeSpan">
       <Item value="TicksPerMillisecond" priority="2" />
@@ -266,13 +361,14 @@
       <Item value="GlobalOptions" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.IO.MemoryStream">
-      <Item value="ToArray" priority="0" />
+      <Item value="ToArray" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Text.Encoding">
-      <Item value="UTF8" priority="0" />
+      <Item value="UTF8" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Text.Encoding">
       <Item value="GetString" priority="0" />
+      <Item value="GetBytes" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
       <Item value="That" priority="1" />
@@ -395,7 +491,14 @@
       <Item value="TerritoryId" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
-      <Item value="ConvertAll" priority="0" />
+      <Item value="ConvertAll" priority="1" />
+      <Item value="Add" priority="3" />
+      <Item value="Sum" priority="0" />
+      <Item value="Count" priority="0" />
+      <Item value="Min" priority="0" />
+      <Item value="ForEach" priority="0" />
+      <Item value="Where" priority="2" />
+      <Item value="Contains" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.OrmLite.TestsPerf.Tests.NorthwindDatabaseSerializtionPerf">
       <Item value="MultipleIterations" priority="0" />
@@ -423,6 +526,86 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Type">
       <Item value="IsValueType" priority="0" />
+      <Item value="Name" priority="3" />
+      <Item value="IsGenericType" priority="0" />
+      <Item value="GetGenericTypeDefinition" priority="0" />
+      <Item value="GetGenericArguments" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Northwind.Benchmarks.Serialization.SerializationTestBase">
+      <Item value="CurrentTestName" priority="0" />
+      <Item value="ModelName" priority="1" />
+      <Item value="MultipleIterations" priority="1" />
+      <Item value="ToHtmlReport" priority="0" />
+      <Item value="HtmlSummary" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.DateTime">
+      <Item value="Now" priority="3" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Northwind.Benchmarks.SerializersBenchmarkEntry">
+      <Item value="SerializationTicksAvg" priority="2" />
+      <Item value="DeserializationTicksAvg" priority="0" />
+      <Item value="Iterations" priority="2" />
+      <Item value="TotalTicks" priority="4" />
+      <Item value="AvgTicksPerIteration" priority="1" />
+      <Item value="SerializedBytesLength" priority="6" />
+      <Item value="ModelName" priority="2" />
+      <Item value="SerializerName" priority="5" />
+      <Item value="TotalSerializationTicks" priority="0" />
+      <Item value="TotalDeserializationTicks" priority="0" />
+      <Item value="TimesLargerThanBest" priority="3" />
+      <Item value="TimesSlowerThanBest" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Math">
+      <Item value="Round" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Object">
+      <Item value="GetType" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Text.StringBuilder">
+      <Item value="ToString" priority="1" />
+      <Item value="AppendFormat" priority="4" />
+      <Item value="AppendLine" priority="5" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.DateTime">
+      <Item value="ToShortDateString" priority="0" />
+      <Item value="ToString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.IO.File">
+      <Item value="WriteAllText" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.String">
+      <Item value="Format" priority="3" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Common.Utils.PathUtils">
+      <Item value="MapAbsolutePath" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Web.Script.Serialization.JavaScriptSerializer">
+      <Item value="Serialize" priority="0" />
+      <Item value="Deserialize" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter">
+      <Item value="Serialize" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Client.BinaryFormatterSerializer">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Client.BinaryFormatterSerializer">
+      <Item value="Parse" priority="0" />
+      <Item value="Serialize" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Northwind.Benchmarks.Serialization.NorthwindDatabaseSerializtionPerf">
+      <Item value="HtmlSummary" priority="0" />
+      <Item value="MultipleIterations" priority="1" />
+      <Item value="AfterAllTests" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Int32">
+      <Item value="TryParse" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.IEnumerable`1">
+      <Item value="ConvertAll" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
+      <Item value="TryGetValue" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
   <UnitTestRunnerMSTest>

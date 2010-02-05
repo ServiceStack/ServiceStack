@@ -9,27 +9,28 @@ using ServiceStack.Common.Utils;
 namespace Northwind.Benchmarks.Serialization
 {
 	[TestFixture]
-	public class NorthwindDatabaseSerializtionPerf
+	public class NorthwindDatabaseTablesSerializtion
 		: SerializationTestBase
 	{
-		public NorthwindDatabaseSerializtionPerf(int iterations)
+		public NorthwindDatabaseTablesSerializtion(int iterations)
+			: this()
 		{
 			this.MultipleIterations = new List<int> { iterations };
 		}
 
-		public NorthwindDatabaseSerializtionPerf()
+		public NorthwindDatabaseTablesSerializtion()
 		{
-			this.MultipleIterations = new List<int> { 1 };
+			this.MultipleIterations = new List<int> { 100 };
 
 			NorthwindDtoData.LoadData(false);
 
 			this.HtmlSummary =
 				"These benchmarks show the total time in ticks (1/1000ms) that it takes"
-			  + " each serializer to serialize and deserialize the entire table from the "
+			  + " each serializer to serialize and deserialize each entire table from the "
 			  + " <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Common/DataModel/NorthwindData.cs'>Northwind Database</a>"
 			  + " (3202 records) " + this.MultipleIterations.Sum() + " Times. <br/><br/>"
-			  + "The full source code of the benchmarks (which generated this report)"
-			  + " is <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Benchmarks/Serialization/NorthwindDatabaseSerializtionPerf.cs'>available here</a>.";
+			  + "The full source code of the serialization benchmarks (which generated this report)"
+			  + " is <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Nortwind.Benchmarks.Console/Program.cs'>available here</a>.";
 		}
 
 		[TestFixtureTearDown]

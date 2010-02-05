@@ -36,6 +36,22 @@ SPAN.summary
   font-size: 13px;
 }
 
+#combined H3
+{
+  color: #073;
+  margin-left: 350px;
+  border: none;
+}
+#combined TABLE THEAD TH
+{
+  background: #036;
+}
+
+.failed 
+{
+  background: #FFFABD !important;
+}
+
 TABLE
 {
   border-collapse: collapse;

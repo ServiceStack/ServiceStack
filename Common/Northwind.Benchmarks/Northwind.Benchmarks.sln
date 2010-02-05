@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Client", "..\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "..\ServiceStack.Common\ServiceStack.Text\ServiceStack.Text.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Northwind.Benchmarks.Console", "Northwind.Benchmarks.Console\Northwind.Benchmarks.Console.csproj", "{D5681EFB-0FCE-4E55-910B-F4620CFECBD2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5681EFB-0FCE-4E55-910B-F4620CFECBD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5681EFB-0FCE-4E55-910B-F4620CFECBD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5681EFB-0FCE-4E55-910B-F4620CFECBD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5681EFB-0FCE-4E55-910B-F4620CFECBD2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

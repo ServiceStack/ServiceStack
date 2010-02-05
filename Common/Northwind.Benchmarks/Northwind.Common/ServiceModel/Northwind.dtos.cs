@@ -70,8 +70,9 @@ namespace Northwind.Common.ServiceModel
 		[DataMember]
 		public string Extension { get; set; }
 
+		//Some serializers can't handle bytes so disabling for all
 		//[TextField]
-		[DataMember]
+		//[DataMember]
 		public byte[] Photo { get; set; }
 
 		[TextField]
@@ -107,7 +108,7 @@ namespace Northwind.Common.ServiceModel
 		public string Description { get; set; }
 
 		//[TextField]
-		[DataMember]
+		//[DataMember]
 		public byte[] Picture { get; set; }
 	}
 
@@ -163,7 +164,7 @@ namespace Northwind.Common.ServiceModel
 		public string Fax { get; set; }
 
 		//[TextField]
-		[DataMember]
+		//[DataMember]
 		public byte[] Picture { get; set; }
 
 		public override bool Equals(object obj)

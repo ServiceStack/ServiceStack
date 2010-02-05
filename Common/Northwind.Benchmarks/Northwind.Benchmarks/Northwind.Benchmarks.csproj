@@ -89,7 +89,7 @@
     <Compile Include="BasicPersistenceProviders\OrmLite\InsertNorthwindDatabase.cs" />
     <Compile Include="BasicPersistenceProviders\Redis\InsertNorthwindDatabase.cs" />
     <Compile Include="SerializersBenchmarkEntry.cs" />
-    <Compile Include="Serialization\NorthwindDatabaseSerializtionPerf.cs" />
+    <Compile Include="Serialization\NorthwindDatabaseTablesSerializtion.cs" />
     <Compile Include="Serialization\SerializationTestBase.cs" />
     <Compile Include="Serialization\SingleModelSerializationPerf.cs" />
     <Compile Include="Serialization\TextDeserializerPerfTests.cs" />
@@ -134,6 +134,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="_Results\Serialization\default.css" />
+    <Content Include="_Results\Serialization\Northwind-database.2010-02-04.html" />
+    <Content Include="_Results\Serialization\Northwind-database.2010-02-05.html" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="App_Data\databases\" />
     <Folder Include="BasicPersistenceProviders\Memcached\" />
     <Folder Include="Databases\Db4o\" />
@@ -143,7 +148,6 @@
     <Folder Include="Databases\SqlServer\" />
     <Folder Include="WebServices\ServiceStack\" />
     <Folder Include="WebServices\Wcf\" />
-    <Folder Include="_Results\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
