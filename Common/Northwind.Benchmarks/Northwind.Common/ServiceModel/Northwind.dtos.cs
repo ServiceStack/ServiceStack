@@ -1,9 +1,7 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 using Platform.Text;
 using ProtoBuf;
-using ServiceStack.DataAnnotations;
 using ServiceStack.DesignPatterns.Model;
 
 namespace Northwind.Common.ServiceModel
@@ -12,6 +10,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class EmployeeDto
 		: IHasIntId
 	{
@@ -91,6 +90,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class CategoryDto
 		: IHasIntId
 	{
@@ -114,6 +114,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class CustomerDto
 		: IHasStringId
 	{
@@ -188,6 +189,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class ShipperDto
 		: IHasIntId
 	{
@@ -207,6 +209,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class SupplierDto
 		: IHasIntId
 	{
@@ -281,6 +284,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class OrderDto
 		: IHasIntId
 	{
@@ -372,6 +376,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class ProductDto
 		: IHasIntId
 	{
@@ -419,6 +424,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class OrderDetailDto
 		: IHasStringId
 	{
@@ -461,6 +467,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class CustomerCustomerDemoDto
 		: IHasStringId
 	{
@@ -476,6 +483,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class CustomerDemographicDto
 		: IHasStringId
 	{
@@ -491,6 +499,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class RegionDto
 		: IHasIntId
 	{
@@ -506,6 +515,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class TerritoryDto
 		: IHasStringId
 	{
@@ -525,6 +535,7 @@ namespace Northwind.Common.ServiceModel
 	[ProtoContract(ImplicitFields = ImplicitFields.AllPublic, InferTagFromName = true)]
 	[TextRecord]
 	[DataContract]
+	[Serializable]
 	public class EmployeeTerritoryDto
 		: IHasStringId
 	{
