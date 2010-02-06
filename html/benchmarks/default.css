@@ -35,22 +35,26 @@ SPAN.summary
   width: 850px;
   font-size: 13px;
 }
+SPAN.summary STRONG
+{
+  padding: 0 5px;
+  font-size: 18px;
+  line-height: 28px;
+}
 
 #combined H3
 {
   color: #073;
   margin-left: 350px;
+  margin-bottom: 0;
   border: none;
+  font-size: 26px;
 }
 #combined TABLE THEAD TH
 {
   background: #036;
 }
 
-.failed 
-{
-  background: #FFFABD !important;
-}
 
 TABLE
 {
@@ -87,4 +91,15 @@ TABLE TD
   text-align: center;
   border-right: solid 1px #f1f1f1;  
   border-bottom: solid 1px #f1f1f1;  
+}
+
+TR.failed TD, TR.failed TH
+{
+  text-decoration: line-through;
+  color: red;
+}
+TR.best-time TD, TR.best-time TH
+{
+  color: green;
+  font-weight: bold;
 }
