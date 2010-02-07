@@ -38,7 +38,7 @@ namespace ServiceStack.Redis.Tests
 			using (var redisClient = new RedisClient())
 			{
 				//Create a generic client that treats all values as ints:
-				IRedisGenericClient<int> intRedis = redisClient.CreateGenericClient<int>();
+				IRedisTypedClient<int> intRedis = redisClient.GetTypedClient<int>();
 
 				intRedis.Set(intKey, intValue);
 				var toIntValue = intRedis.Get(intKey);
@@ -77,7 +77,7 @@ namespace ServiceStack.Redis.Tests
 			using (var redisClient = new RedisClient())
 			{
 				//Create a generic client that treats all values as ints:
-				IRedisGenericClient<int> intRedis = redisClient.CreateGenericClient<int>();
+				IRedisTypedClient<int> intRedis = redisClient.GetTypedClient<int>();
 
 				IRedisList<int> intList = intRedis.Lists[intListKey];
 
@@ -106,7 +106,7 @@ namespace ServiceStack.Redis.Tests
 			using (var redisClient = new RedisClient())
 			{
 				//Create a generic client that treats all values as IntAndString:
-				IRedisGenericClient<IntAndString> genericRedis = redisClient.CreateGenericClient<IntAndString>();
+				IRedisTypedClient<IntAndString> genericRedis = redisClient.GetTypedClient<IntAndString>();
 
 				genericRedis.Set(pocoKey, pocoValue);
 				IntAndString toPocoValue = genericRedis.Get(pocoKey);

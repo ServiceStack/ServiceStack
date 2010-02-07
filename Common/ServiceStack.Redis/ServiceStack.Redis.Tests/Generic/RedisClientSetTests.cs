@@ -19,7 +19,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		protected abstract IModelFactory<T> Factory { get; }
 
 		private RedisClient client;
-		private IRedisGenericClient<T> redis;
+		private IRedisTypedClient<T> redis;
 		private IRedisSet<T> Set;
 		private IRedisSet<T> Set2;
 		private IRedisSet<T> Set3;
@@ -35,7 +35,7 @@ namespace ServiceStack.Redis.Tests.Generic
 			client = new RedisClient();
 			client.FlushAll();
 
-			redis = client.CreateGenericClient<T>();
+			redis = client.GetTypedClient<T>();
 
 			Set = redis.Sets[SetId];
 			Set2 = redis.Sets[SetId2];

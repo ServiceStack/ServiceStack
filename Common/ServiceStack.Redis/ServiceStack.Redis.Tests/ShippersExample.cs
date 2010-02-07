@@ -14,6 +14,7 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Text;
+using ServiceStack.Redis.Generic;
 
 namespace ServiceStack.Redis.Tests
 {
@@ -40,7 +41,7 @@ namespace ServiceStack.Redis.Tests
 			using (var redisClient = new RedisClient())
 			{
 				//Create a 'strongly-typed' API that makes all Redis Value operations to apply against Shippers
-				var redis = redisClient.CreateGenericClient<Shipper>();
+				IRedisTypedClient<Shipper> redis = redisClient.GetTypedClient<Shipper>();
 
 				//Redis lists implement IList<T> while Redis sets implement ICollection<T>
 				var currentShippers = redis.Lists["urn:shippers:current"];

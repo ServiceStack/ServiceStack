@@ -87,7 +87,7 @@ P A
 {
 	margin: 0 0.2em;
 }
-P ACRONYM
+ACRONYM
 {
 	margin: 0 0.2em;
 	border-bottom: 1px dotted #333;
@@ -132,7 +132,7 @@ H3#logo-title
 #breadcrumbs
 {
 	padding: 0 0 4px 120px;
-	border-bottom: 1px solid #EEE;
+	border-bottom: 1px solid #DCDCDC;
 	margin-bottom: 5px;
 }
 #breadcrumbs A
@@ -146,11 +146,11 @@ H3#logo-title
 }
 #footer
 {
-	border-top: 1px solid #EEE;
+	border-top: 1px solid #DCDCDC;
 	font-size: 11px;
 	color: #666;
 	padding: 4px 0 0 10px;
-	margin-top: 20px;
+	margin-top: 40px;
 }
 #content
 {

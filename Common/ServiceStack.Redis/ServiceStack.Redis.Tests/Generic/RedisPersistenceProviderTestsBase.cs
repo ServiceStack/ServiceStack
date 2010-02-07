@@ -14,7 +14,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		protected abstract IModelFactory<T> Factory { get; }
 
 		private RedisClient client;
-		private IRedisGenericClient<T> redis;
+		private IRedisTypedClient<T> redis;
 
 		[SetUp]
 		public void SetUp()
@@ -27,7 +27,7 @@ namespace ServiceStack.Redis.Tests.Generic
 			client = new RedisClient();
 			client.FlushAll();
 
-			redis = client.CreateGenericClient<T>();
+			redis = client.GetTypedClient<T>();
 		}
 
 		[Test]
