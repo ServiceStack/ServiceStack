@@ -328,7 +328,7 @@ namespace ServiceStack.Redis
 		const int FirstElement = 0;
 		const int LastElement = -1;
 
-		public IRedisGenericClient<T> CreateGenericClient<T>()
+		public IRedisTypedClient<T> GetTypedClient<T>()
 		{
 			return new RedisGenericClient<T>(this);
 		}

@@ -237,3 +237,7 @@ H3#logo-title
 	/*[disabled]color:#666;*/
 	margin: 0 0 10px;
 }
+CODE.inline
+{
+	color: rgb(12, 82, 201);
+}

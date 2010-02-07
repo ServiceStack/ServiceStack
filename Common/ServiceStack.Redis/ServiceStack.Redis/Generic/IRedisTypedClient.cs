@@ -16,7 +16,7 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis.Generic
 {
-	public interface IRedisGenericClient<T> 
+	public interface IRedisTypedClient<T> 
 		: IBasicPersistenceProvider<T>
 	{
 		IHasNamed<IRedisList<T>> Lists { get; set; }

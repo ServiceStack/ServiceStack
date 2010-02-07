@@ -15,6 +15,7 @@
 		<a href="http://www.servicestack.net" class="selected">servicestack.net</a>
 		| <a href="http://code.google.com/p/servicestack">code.google.com</a>
 		| <a href="http://www.servicestack.net/monotouch/remote-info/">monotouch tutorial</a>
+		| <a href="http://www.servicestack.net/mythz_blog/">blog</a>
 	</div>
 </div>
 
@@ -83,7 +84,7 @@
 	<span class="summary">
 		Included in ServiceStack are a number of other libraries that are useful in developing
 		high-performance scalable web services.<br />
-		These sub-components are included in ServiceStack.dll but are also available seperately
+		These sub-components are included in ServiceStack.dll but are also available to download seperately.
 	</span>
 
 	<div id="typeserializer" class="sub-component">
@@ -132,9 +133,12 @@
 	<div id="ormlite" class="sub-component">
 		<a class="lnk-component" href="http://code.google.com/p/servicestack/wiki/OrmLite">OrmLite</a>
 		<div>
-			A convention-based, configuration-free lightweight ORM that uses standard POCO classes
-			and Data Annotation attributes to infer its table schema.
 
+
+			A fast, convention-based, configuration-free <acronym title="Plain Old CSharp Objects">POCO</acronym>
+			<acronym title="Object Relational Mapper">ORM</acronym> providing lightweight extension methods
+			on top of <code class="inline">IDbCommand</code> and <code class="inline">IDbConnection</code> classes and uses
+			standard Data Annotation attributes simplifying the effort required to access an <acronym title="Relational Database Management System">RDBMS</acronym>.
 			<br />
 			<br />
 			OrmLite is focused on it's core objectives:
@@ -159,7 +163,7 @@
 				<li>Memcached - The tried and tested most widely used cache provider</li>
 				<li>Redis - The hottest and fastest new kid on the block</li>
 				<li>In Memory Cache - Useful for single host web services and unit tests</li>
-				<li>FileAndCacheTextManager - A two-tiered cache provider that also caches on the filesystem</li>
+				<li>FileAndCacheTextManager - A two-tiered cache provider that has a backup filesystem cache</li>
 			</ul>
 		</div>
 	</div>

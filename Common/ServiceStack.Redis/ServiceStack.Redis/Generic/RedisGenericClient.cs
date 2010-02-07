@@ -26,7 +26,7 @@ namespace ServiceStack.Redis.Generic
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
 	internal class RedisGenericClient<T>
-		: IRedisGenericClient<T>
+		: IRedisTypedClient<T>
 	{
 		readonly TypeSerializer<T> Serializer = new TypeSerializer<T>();
 		private readonly RedisClient client;

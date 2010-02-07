@@ -27,7 +27,7 @@ namespace ServiceStack.Redis
 		int SendTimeout { get; set; }
 		string Password { get; set; }
 
-		IRedisGenericClient<T> CreateGenericClient<T>();
+		IRedisTypedClient<T> GetTypedClient<T>();
 
 		IHasNamedList<string> Lists { get; set; }
 		IHasNamedCollection<string> Sets { get; set; }

@@ -69,7 +69,7 @@
     <Compile Include="Generic\IRedisSet.Generic.cs" />
     <Compile Include="Generic\RedisClientSet.Generic.cs" />
     <Compile Include="Generic\RedisClientList.Generic.cs" />
-    <Compile Include="Generic\IRedisGenericClient.cs" />
+    <Compile Include="Generic\IRedisTypedClient.cs" />
     <Compile Include="IRedisClient.cs" />
     <Compile Include="IRedisNativeClient.cs" />
     <Compile Include="RedisCacheClient.cs" />
