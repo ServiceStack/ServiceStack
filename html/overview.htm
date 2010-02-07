@@ -1,0 +1,70 @@
+<html>
+<head>
+    <title>Service Stack Overview</title>
+    <link rel="stylesheet" type="text/css" href="default.css" />
+</head>
+<body class="host">
+
+<div id="header">
+	<a id="btn-googlecode" href="http://code.google.com/p/servicestack" title="go to service stack project on google code"><img src="btn-googlecode.png" alt="google code project" alt="Google Code logo" /></a>
+
+	<a href="http://www.servicestack.net" title="Open source Mono and .NET web service framework"><img src="logo-servicestack.png" alt="Service Stack" /></a>
+	<h3 id="logo-title">Open source Mono and .NET web services framework</h3>
+
+	<div id="breadcrumbs">
+		<a href="http://www.servicestack.net" class="selected">servicestack.net</a>
+		| <a href="http://code.google.com/p/servicestack">code.google.com</a>
+		| <a href="http://www.servicestack.net/monotouch/remote-info/">monotouch tutorial</a>
+		| <a href="http://www.servicestack.net/mythz_blog/">blog</a>
+	</div>
+</div>
+
+
+
+<div id="content">
+<div id="top-nav"><a href="default.htm">&lt; Back</a></div>
+
+<h2>Detailed overview of Service Stack</h2>
+
+<img src="detailed-overview.png" alt="Detailed overview of Service Stack" />
+
+<br />
+<p>
+	The diagram above shows all the code that is required to write a simple web service in Service Stack.
+</p>
+<p>
+	You only need to write your service logic against strongly-typed DataContract's and Service Stack
+	takes care of hosting and translating your service on all the available endpoints.
+	The endpoint protocols and transport is completely abstracted away (although still discoverable)
+	free-ing you to concentrate
+</p>
+
+<p>
+	The Xml and Json endpoints are efficient IHttpHandler's that also allow your service to be called via
+	REST HTTP GET requests, i.e.
+</p>
+<pre>
+/Xml/SyncReply/GetFactorial?ForNumber=2
+
+</pre>
+
+<div id="top-nav"><a href="default.htm">&lt; Back</a></div>
+
+</div>
+
+<span class="r"></span>
+<div id="footer">
+	Copyright &copy; 2010 Liquidbit Limited. All rights reserved.
+</div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7722718-7");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>

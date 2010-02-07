@@ -307,7 +307,7 @@ namespace Northwind.Benchmarks.Serialization
 
 			if (this.MultipleIterations.Sum() <= 10)
 			{
-				//To slow to include up to 280x slower than ProtoBuf
+				//To slow to include, up to 280x slower than ProtoBuf
 				var js = new JavaScriptSerializer();
 				var dtoJs = js.Serialize(dto);
 				RecordRunResults("Microsoft JavaScriptSerializer", dtoJs,
