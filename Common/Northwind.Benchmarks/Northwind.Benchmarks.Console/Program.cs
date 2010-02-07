@@ -6,18 +6,17 @@ namespace Northwind.Benchmarks.Console
 	{
 		static void Main(string[] args)
 		{
-			System.Console.WriteLine(string.Join(", ", args));
-
 			int noOfIterations;
 			if (args.Length < 1 || !int.TryParse(args[0], out noOfIterations))
 				noOfIterations = 1;
 
-			RunNorthwindSerializationBenchmarks(noOfIterations);
+			//Run_NorthwindDatabaseRowsSerialization(noOfIterations);
+			Run_NorthwindDatabaseTablesSerialization(noOfIterations);
 		}
 
-		private static void RunNorthwindSerializationBenchmarks(int iterations)
+		private static void Run_NorthwindDatabaseRowsSerialization(int iterations)
 		{
-			var fixture = new NorthwindDatabaseTablesSerializtion(iterations);
+			var fixture = new NorthwindDatabaseRowsSerialization(iterations);
 
 			fixture.serialize_Categories();
 			fixture.serialize_Customers();
@@ -31,7 +30,26 @@ namespace Northwind.Benchmarks.Console
 			fixture.serialize_Suppliers();
 			fixture.serialize_Territories();
 
-			fixture.GenerateHtmlReport();
+			fixture.AfterAllTests();
+		}
+
+		private static void Run_NorthwindDatabaseTablesSerialization(int iterations)
+		{
+			var fixture = new NorthwindDatabaseTablesSerialization(iterations);
+
+			fixture.serialize_Categories();
+			fixture.serialize_Customers();
+			fixture.serialize_Employees();
+			fixture.serialize_EmployeeTerritories();
+			fixture.serialize_OrderDetails();
+			fixture.serialize_Orders();
+			fixture.serialize_Products();
+			fixture.serialize_Regions();
+			fixture.serialize_Shippers();
+			fixture.serialize_Suppliers();
+			fixture.serialize_Territories();
+
+			fixture.AfterAllTests();
 		}
 	}
 }

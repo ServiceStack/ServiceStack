@@ -9,38 +9,34 @@ using ServiceStack.Common.Utils;
 namespace Northwind.Benchmarks.Serialization
 {
 	[TestFixture]
-	public class NorthwindDatabaseTablesSerializtion
+	public class NorthwindDatabaseTablesSerialization
 		: SerializationTestBase
 	{
-		public NorthwindDatabaseTablesSerializtion(int iterations)
+		public NorthwindDatabaseTablesSerialization(int iterations)
 			: this()
 		{
 			this.MultipleIterations = new List<int> { iterations };
 		}
 
-		public NorthwindDatabaseTablesSerializtion()
+		public NorthwindDatabaseTablesSerialization()
 		{
-			this.MultipleIterations = new List<int> { 100 };
+			this.MultipleIterations = new List<int> { 1 };
 
 			NorthwindDtoData.LoadData(false);
-
-			this.HtmlSummary =
-				"These benchmarks show the total time in ticks (1/1000ms) that it takes"
-			  + " each serializer to serialize and deserialize each entire table from the "
-			  + " <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Common/DataModel/NorthwindData.cs'>Northwind Database</a>"
-			  + " (3202 records) " + this.MultipleIterations.Sum() + " Times. <br/><br/>"
-			  + "The full source code of the serialization benchmarks (which generated this report)"
-			  + " is <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Benchmarks.Console/Program.cs'>available here</a>.";
 		}
 
 		[TestFixtureTearDown]
-		public void GenerateHtmlReport()
+		public void AfterAllTests()
 		{
-			var path =
-				"~/_Results/Serialization/".MapAbsolutePath()
-				+ string.Format("Northwind-database.{0:yyyy-MM-dd}.html", DateTime.Now);
+			var htmlSummary =
+				"These benchmarks show the total time in ticks (1/1000ms) that it takes"
+			  + " each serializer to serialize and deserialize each entire table from the "
+			  + " <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Common/DataModel/NorthwindData.cs'>Northwind Database</a>"
+			  + " (3202 records) <strong>" + this.MultipleIterations.Sum().ToString("#,##0") + "</strong> Times. <br/><br/>"
+			  + "The full source code of the serialization benchmarks (which generated this report)"
+			  + " is <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Benchmarks.Console/Program.cs'>available here</a>.";
 
-			File.WriteAllText(path, base.ToHtmlReport());
+			base.GenerateHtmlReport(htmlSummary);
 		}
 
 		[Test]
@@ -109,11 +105,11 @@ namespace Northwind.Benchmarks.Serialization
 			SerializeDto(NorthwindDtoData.Instance.Territories);
 		}
 
-		[Test]
-		public void serialize_EntireDatabase()
-		{
-			//			SerializeDto(NorthwindDtoData.Instance);
-		}
+		//[Test]
+		//public void serialize_EntireDatabase()
+		//{
+		//    SerializeDto(NorthwindDtoData.Instance);
+		//}
 
 	}
 }

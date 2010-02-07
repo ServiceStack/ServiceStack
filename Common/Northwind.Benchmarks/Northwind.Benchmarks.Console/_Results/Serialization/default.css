@@ -35,6 +35,12 @@ SPAN.summary
   width: 850px;
   font-size: 13px;
 }
+SPAN.summary STRONG
+{
+  padding: 0 5px;
+  font-size: 18px;
+  line-height: 28px;
+}
 
 #combined H3
 {

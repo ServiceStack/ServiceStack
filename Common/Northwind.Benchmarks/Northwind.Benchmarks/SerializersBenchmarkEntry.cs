@@ -13,6 +13,15 @@ namespace Northwind.Benchmarks
 		public int SerializedBytesLength { get; set; }
 		public long TotalSerializationTicks { get; set; }
 		public long TotalDeserializationTicks { get; set; }
+		
+		public bool Success
+		{
+			get
+			{
+				return this.TotalSerializationTicks > -1
+				       && this.TotalDeserializationTicks > -1;
+			}
+		}
 
 		public decimal AvgTicksPerIteration
 		{

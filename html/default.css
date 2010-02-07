@@ -53,15 +53,29 @@ BODY
 {
 	font: 13px/18px Arial;
 	color: #333;
+	width: 830px;
 }
 BODY.host
 {
+	background: url(bg-body.png) repeat-y;
+	padding-left: 40px;
+	padding-bottom: 40px;
+}
+.r
+{
+	clear: both;
+	display: block;
+	margin: 0;
+	padding: 0;
+	height: 1px;
+	line-height: 1px;
+	font-size: 1px;
 }
 H2
 {
 	color: #555;
-	font: 28px/34px "Trebuchet MS";
-	padding: 15px 10px;
+	font: 24px Arial;
+	padding: 15px 0;
 }
 P
 {
@@ -101,27 +115,125 @@ A IMG
 }
 #btn-googlecode
 {
-	margin: 20px 0 0 736px;
+	margin: 8px 0 0 635px;
 	position: absolute;
 }
 H3#logo-title
 {
 	margin-top: -57px;
 	margin-right: 0;
-	margin-bottom: 56px;
+	margin-bottom: 17px;
 	margin-left: 120px;
 	color: #0E5710;
 	font-size: 18px;
 	font-weight: bold;
 	font-family: Arial;
 }
+#breadcrumbs
+{
+	padding: 0 0 4px 120px;
+	border-bottom: 1px solid #EEE;
+	margin-bottom: 5px;
+}
+#breadcrumbs A
+{
+	color: #0E5710;
+}
+#breadcrumbs A.selected
+{
+	text-decoration: none;
+	color: #000;
+}
+#footer
+{
+	border-top: 1px solid #EEE;
+	font-size: 11px;
+	color: #666;
+	padding: 4px 0 0 10px;
+	margin-top: 20px;
+}
 #content
 {
-	width: 900px;
+	width: 800px;
 	padding: 20px;
 }
 #img-overview
 {
 	float: right;
 	margin: 0 0 0 20px;
+}
+#img-overview IMG
+{
+	border: 1px solid #7BB682;
+}
+#img-overview A
+{
+	display: block;
+	text-align: center;
+	margin: 8px 0 0;
+}
+#download
+{
+	margin: -70px 0 20px 10px;
+	padding: 10px;
+	border-top: 1px solid #EEE;
+	border-left: 1px solid #EEE;
+	border-right: 1px solid #CCC;
+	border-bottom: 1px solid #CCC;
+	width: 320px;
+	text-align: center;
+	float: right;
+}
+#download H2
+{
+	margin: 0;
+	padding: 0;
+}
+#download SPAN
+{
+	display: block;
+	margin: 10px;
+	color: #666;
+	font-size: 12px;
+}
+.section
+{
+}
+#sub-components
+{
+	margin-top: 60px;
+}
+#sub-components SPAN.summary
+{
+	padding: 10px;
+	margin: 0;
+	display: block;
+	background: #F1F1F1;
+}
+.sub-component
+{
+	padding-top: 20px;
+	height: 320px;
+	float: left;
+	width: 380px;
+	padding-right: 20px;
+}
+.sub-component .lnk-component
+{
+	background: url(btn-subcomponent.png) no-repeat;
+	display: block;
+	width: 122px;
+	height: 37px;
+	text-decoration: none;
+	color: #000;
+	font-weight: bold;
+	font-size: 16px;
+	padding: 32px 0 0 61px;
+	margin: 0 0 10px;
+}
+.sub-component DL
+{
+	font-size: 11px;
+	/*[disabled]color:#666;*/
+	margin: 0 0 10px;
 }

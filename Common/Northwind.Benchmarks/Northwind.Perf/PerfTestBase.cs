@@ -116,7 +116,7 @@ namespace Northwind.Perf
 				Log("Error in {0}: {1}", actionName, ex);
 			}
 
-			return 0;
+			return -1;
 		}
 
 		protected decimal RunAction(Action action, int iterations)
@@ -138,6 +138,9 @@ namespace Northwind.Perf
 		protected long Measure(Action action, decimal iterations)
 		{
 			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect(); 
+			
 			var begin = Stopwatch.GetTimestamp();
 
 			for (var i = 0; i < iterations; i++)

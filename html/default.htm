@@ -1,19 +1,31 @@
 <html>
 <head>
-    <title>Service Stack :: Open Source Mono and .NET web services Framework</title>
+    <title>Open source Mono and .NET web services framework</title>
     <link rel="stylesheet" type="text/css" href="default.css" />
 </head>
 <body class="host">
 
-<a id="btn-googlecode" href="http://code.google.com/p/servicestack"><img src="btn-googlecode.png" alt="google code project" /></a>
+<div id="header">
+	<a id="btn-googlecode" href="http://code.google.com/p/servicestack" title="go to service stack project on google code"><img src="btn-googlecode.png" alt="google code project" alt="Google Code logo" /></a>
 
-<a href="http://www.servicestack.net"><img src="logo-servicestack.png" alt="Service Stack" /></a>
+	<a href="http://www.servicestack.net" title="Open source Mono and .NET web service framework"><img src="logo-servicestack.png" alt="Service Stack" /></a>
+	<h3 id="logo-title">Open source Mono and .NET web services framework</h3>
 
-<h3 id="logo-title">Open Source Mono and .NET Web Services Framework</h3>
+	<div id="breadcrumbs">
+		<a href="http://www.servicestack.net" class="selected">servicestack.net</a>
+		| <a href="http://code.google.com/p/servicestack">code.google.com</a>
+		| <a href="http://www.servicestack.net/monotouch/remote-info/">monotouch tutorial</a>
+	</div>
+</div>
+
+
 
 <div id="content">
 
-<img id="img-overview" src="ss-overview.png" alt="Service Stack Overview" title="Service Stack Overview" />
+<div id="img-overview">
+	<img src="ss-overview.png" alt="Service Stack Overview" title="Service Stack Overview" />
+	<a href="#">view architecture overview</a>
+</div>
 
 <p>
 	ServiceStack allows you to build re-usable SOA-style web services with plain
@@ -22,20 +34,20 @@
 </p>
 
 <p>
-	To create a web service, simply add a new
+	<a href="http://www.servicestack.net/monotouch/remote-info/step4.htm">Creating a web service</a>
+	 is done by adding a new
 	Request
 	and
 	Response
 	DataContract and the
 	Handler
 	to handle them.
-	With nothing to subclass and no other configuration required, ServiceStack allows them to be immediately discoverable and callable via the following supported endpoints:
+	With no other configuration required, they are immediately discoverable and callable via the following supported endpoints:
 </p>
 <ul>
-	<li>SOAP 1.1</li>
-	<li>SOAP 1.2</li>
 	<li>REST and XML</li>
 	<li>REST and JSON</li>
+	<li>SOAP 1.1 / 1.2</li>
 </ul>
 
 <p>
@@ -53,6 +65,112 @@
 	<li><a href="http://www.ajaxstack.com">Ajax Stack</a></li>
 </ul>
 
+<div id="download">
+	<h2>Download the latest release</h2>
+
+	<span>
+		Service Stack is merged into a single ServiceStack.dll assembly that's an
+		easy drop-in into any .NET project.
+	</span>
+
+	<a href="http://servicestack.googlecode.com/files/ServiceStack.zip">
+		<img src="btn-download.gif" alt="Download ServiceStack.zip" />
+	</a>
+</div>
+
+<div id="sub-components" class="section">
+	<h2>Running on high performance parts</h2>
+	<span class="summary">
+		Included in ServiceStack are a number of other libraries that are useful in developing
+		high-performance scalable web services.<br />
+		These sub-components are included in ServiceStack.dll but are also available seperately
+	</span>
+
+	<div id="typeserializer" class="sub-component">
+		<a class="lnk-component" title="ServiceStack.Text.TypeSerializer" href="http://code.google.com/p/servicestack/wiki/TypeSerializer">TypeSerializer</a>
+		<div>
+			The fastest and most compact <strong>text serializer</strong> for .NET<br/>
+
+			<dl>
+				<dd>3.5x quicker and 2.6x smaller than the .NET XML DataContractSerializer</dd>
+				<dd>5.3x quicker and 1.3x smaller than the .NET JSON DataContractSerializer </dd>
+				<dd>
+					<em><a href="http://www.servicestack.net/benchmarks/NorthwindDatabaseRowsSerialization.1000000-times.2010-02-06.html">view the benchmarks</a></em>
+				</dd>
+			</dl>
+
+			TypeSerializer's main goals are:
+			<ul>
+				<li>Fast</li>
+				<li>Compact</li>
+				<li>Human readable and writeable, self-describing text format</li>
+				<li>Resilient to schema changes</li>
+				<li>Non-invasive and configuration-free</li>
+			</ul>
+		</div>
+	</div>
+
+	<div id="redis" class="sub-component">
+		<a class="lnk-component" title="ServiceStack.Redis" href="http://code.google.com/p/servicestack/wiki/ServiceStackRedis">Redis</a>
+		<div>
+			<a href="http://code.google.com/p/redis/">Redis</a> is arguably the best key-value store to come from the NoSQL movement.
+			Similar to memcached but the dataset is not volatile. Values can either be strings lists, sets, or ordered sets.
+
+			<br /><br />
+			ServiceStack.Redis is fast, feature-rich open source C# Redis client:
+
+			<ul>
+				<li>Native support for persisting POCO objects</li>
+				<li>Has both low-level raw bytes and high-level typed access</li>
+				<li>Exposes Redis server-side lists &amp; sets as IList&lt;&gt; ICollection&lt;&gt;</li>
+				<li>Rich API support</li>
+				<li>Comprehensive regression and test suite</li>
+			</ul>
+		</div>
+	</div>
+
+	<div id="ormlite" class="sub-component">
+		<a class="lnk-component" href="http://code.google.com/p/servicestack/wiki/OrmLite">OrmLite</a>
+		<div>
+			A convention-based, configuration-free lightweight ORM that uses standard POCO classes
+			and Data Annotation attributes to infer its table schema.
+
+			<br />
+			<br />
+			OrmLite is focused on it's core objectives:
+			<ul>
+				<li>Performance - with support for indexes, text blobs, etc.</li>
+				<li>Simplicity - with minimal, convention-based attribute configuration</li>
+				<li>Expressive power and flexibility - with access to IDbCommand and raw SQL</li>
+				<li>Portable - supports multiple dbs running on both .NET and Mono platforms.</li>
+			</ul>
+		</div>
+	</div>
+
+	<div id="caching" class="sub-component">
+		<a class="lnk-component" href="http://code.google.com/p/servicestack/wiki/Caching">Caching</a>
+		<div>
+			As caching is an essential technology in the development of high-performance web services,
+			Service Stack has a number of different caching options available that each share the
+			same common client interface for the following cache providers:
+			<br /><br />
+
+			<ul>
+				<li>Memcached - The tried and tested most widely used cache provider</li>
+				<li>Redis - The hottest and fastest new kid on the block</li>
+				<li>In Memory Cache - Useful for single host web services and unit tests</li>
+				<li>FileAndCacheTextManager - A two-tiered cache provider that also caches on the filesystem</li>
+			</ul>
+		</div>
+	</div>
+
+</div>
+
+</div>
+
+<span class="r"></span>
+<div id="footer">
+	Copyright &copy; 2010 Liquidbit Limited. All rights reserved.
 </div>
 
 <script type="text/javascript">

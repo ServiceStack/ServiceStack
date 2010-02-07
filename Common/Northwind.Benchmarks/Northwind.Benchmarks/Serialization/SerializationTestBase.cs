@@ -11,6 +11,7 @@ using Platform.Text;
 using ProtoBuf;
 using ServiceStack.Client;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Utils;
 using ServiceStack.Text;
 
 namespace Northwind.Benchmarks.Serialization
@@ -24,15 +25,13 @@ namespace Northwind.Benchmarks.Serialization
 			this.MultipleIterations = new List<int> { 1000, 10000 };
 		}
 
-		protected string HtmlSummary { get; set; }
-
 		List<SerializersBenchmarkEntry> TestResults;
 		public List<List<SerializersBenchmarkEntry>> FixtureTestResults = new List<List<SerializersBenchmarkEntry>>();
 		public List<SerializersBenchmarkEntry> FixtureTestResultsSummary = new List<SerializersBenchmarkEntry>();
 
 		string ModelName { get; set; }
 
-		public string ToHtmlReport()
+		public string ToHtmlReport(string htmlSummary)
 		{
 			if (FixtureTestResults.Count == 0)
 				throw new ArgumentException("FixtureTestResults is empty");
@@ -44,10 +43,13 @@ namespace Northwind.Benchmarks.Serialization
 			sb.AppendLine("\t<link href='default.css' rel='stylesheet' type='text/css' />");
 			sb.AppendLine("</head>\n<body>\n");
 
-			sb.AppendFormat("<h2>Serialization results of <span>{0}</span> run at {1}</h2>\n",
+			sb.AppendFormat("<h2>Results of <span>{0}</span> benchmarks run at {1}</h2>\n",
 				GetType().Name.ToEnglish(), DateTime.Now.ToShortDateString());
 
-			sb.AppendFormat("<span class=\"summary\">{0}</span>", this.HtmlSummary);
+			if (!htmlSummary.IsNullOrEmpty())
+			{
+				sb.AppendFormat("<span class=\"summary\">{0}</span>", htmlSummary);
+			}
 
 			sb.AppendLine("<div id='combined'>");
 			var combinedResults = GetCombinedResults(FixtureTestResults);
@@ -74,7 +76,10 @@ namespace Northwind.Benchmarks.Serialization
 			{
 				if (testResultCount++ == 0)
 				{
-					sb.AppendFormat(benchmarkTitleHtml, benchmarkEntry.ModelName, benchmarkEntry.Iterations);
+					sb.AppendFormat(benchmarkTitleHtml, 
+						benchmarkEntry.ModelName, 
+						benchmarkEntry.Iterations.ToString("#,##0"));
+
 					sb.AppendFormat("<table>\n<caption>* All times measured in ticks and payload size in bytes</caption>");
 					sb.AppendFormat(
 						"<thead><tr><th>{0}</th><th>{1}</th><th>{6}</th><th>{2}</th><th>{3}</th><th>{4}</th><th>{5}</th><th>{7}</th></tr></thead>",
@@ -91,7 +96,7 @@ namespace Northwind.Benchmarks.Serialization
 				}
 
 				var trClass = "";
-				if (benchmarkEntry.TotalDeserializationTicks == 0)
+				if (!benchmarkEntry.Success)
 					trClass += "failed ";
 				if (benchmarkEntry.TimesLargerThanBest == 1)
 					trClass += "best-size ";
@@ -122,7 +127,7 @@ namespace Northwind.Benchmarks.Serialization
 
 			foreach (var benchmarkEntries in textFixtureResults)
 			{
-				var skipIfOneSerializerFailed = benchmarkEntries.Any(x => x.TotalDeserializationTicks == 0);
+				var skipIfOneSerializerFailed = benchmarkEntries.Any(x => !x.Success);
 				if (skipIfOneSerializerFailed) continue;
 
 				foreach (var benchmarkEntry in benchmarkEntries)
@@ -300,13 +305,23 @@ namespace Northwind.Benchmarks.Serialization
 				() => JsonDataContractDeserializer.Instance.Parse<T>(dtoJson)
 			);
 
-			//To slow to include 230x slower than ProtoBuf
-			//var js = new JavaScriptSerializer();
-			//var dtoJs = js.Serialize(dto);
-			//RecordRunResults("Microsoft JavaScriptSerializer", dtoJs,
-			//    () => js.Serialize(dto),
-			//    () => js.Deserialize<T>(dtoJs)
-			//);
+			if (this.MultipleIterations.Sum() <= 10)
+			{
+				//To slow to include 230x slower than ProtoBuf
+				var js = new JavaScriptSerializer();
+				var dtoJs = js.Serialize(dto);
+				RecordRunResults("Microsoft JavaScriptSerializer", dtoJs,
+					() => js.Serialize(dto),
+					() => js.Deserialize<T>(dtoJs)
+				);
+
+				//Can't import complex types, e.g. Lists, etc
+				//var jayRockString = Jayrock.Json.Conversion.JsonConvert.ExportToString(dto);
+				//RecordRunResults("JayRock JsonConvert", jayRockString,
+				//    () => Jayrock.Json.Conversion.JsonConvert.ExportToString(dto),
+				//    () => Jayrock.Json.Conversion.JsonConvert.Import(typeof(T), jayRockString)
+				//);
+			}
 
 			var msBytes = BinaryFormatterSerializer.Instance.Serialize(dto);
 			RecordRunResults("Microsoft BinaryFormatter", msBytes,
@@ -332,32 +347,48 @@ namespace Northwind.Benchmarks.Serialization
 				() => TypeSerializer.DeserializeFromString<T>(dtoString)
 			);
 
-			var dtoPlatformText = TextSerializer.SerializeToString(dto);
-			RecordRunResults("Platform TextSerializer", dtoPlatformText,
-				() => TextSerializer.SerializeToString(dto),
-				() => TextSerializer.DeserializeFromString<T>(dtoPlatformText)
-			);
+			//Propietary library, not freely available.
+			//var dtoPlatformText = TextSerializer.SerializeToString(dto);
+			//RecordRunResults("Platform TextSerializer", dtoPlatformText,
+			//    () => TextSerializer.SerializeToString(dto),
+			//    () => TextSerializer.DeserializeFromString<T>(dtoPlatformText)
+			//);
 
 			CalculateBestTimes(TestResults);
 		}
 
 		private static void CalculateBestTimes(IEnumerable<SerializersBenchmarkEntry> testResults)
 		{
-			//omit serializer scores that fail and to serialize
-			var modelsWithAtLeastOneFailedSerialise = testResults.Any(x =>
-				x.TotalDeserializationTicks == 0);
+			try
+			{
+				//omit serializer scores that fail and to serialize
+				var modelsWithAtLeastOneFailedToSerialise = testResults.Any(x => !x.Success);
 
-			if (modelsWithAtLeastOneFailedSerialise) return;
-			
-			var smallestTime = testResults.ConvertAll(x => x.TotalTicks).Min();
+				if (modelsWithAtLeastOneFailedToSerialise) return;
 
-			var smallestSize = testResults.ConvertAll(x => x.SerializedBytesLength).Min();
+				var smallestTime = testResults.ConvertAll(x => x.TotalTicks).Min();
 
-			testResults.ForEach(x => 
-				x.TimesSlowerThanBest = Math.Round(x.TotalTicks / (decimal)smallestTime, 2));
+				var smallestSize = testResults.ConvertAll(x => x.SerializedBytesLength).Min();
 
-			testResults.ForEach(x => 
-				x.TimesLargerThanBest = Math.Round(x.SerializedBytesLength / (decimal)smallestSize, 2));
+				testResults.ForEach(x =>
+					x.TimesSlowerThanBest = Math.Round(x.TotalTicks / (decimal)smallestTime, 2));
+
+				testResults.ForEach(x =>
+					x.TimesLargerThanBest = Math.Round(x.SerializedBytesLength / (decimal)smallestSize, 2));
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error trying to calculate the best times: {0}\n{1}", ex.Message, ex);
+			}
+		}
+
+		public void GenerateHtmlReport(string htmlSummary)
+		{
+			var path = "~/_Results/Serialization/".MapAbsolutePath()
+				+ string.Format("{0}.{1}-times.{2:yyyy-MM-dd}.html",
+					GetType().Name, this.MultipleIterations.Sum(), DateTime.Now);
+
+			File.WriteAllText(path, this.ToHtmlReport(htmlSummary));
 		}
 	}
 }
