@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -13,6 +14,8 @@ namespace ServiceStack.Common.Extensions
 	/// </summary>
 	public static class IPAddressExtensions
 	{
+		private static ILog log = LogManager.GetLogger(typeof (IPAddressExtensions));
+
 		public static IPAddress GetBroadcastAddress(this IPAddress address, IPAddress subnetMask)
 		{
 			var ipAdressBytes = address.GetAddressBytes();
@@ -110,16 +113,23 @@ namespace ServiceStack.Common.Extensions
 		{
 			var map = new Dictionary<IPAddress, IPAddress>();
 
-			foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+			try
 			{
-				foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+				foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
 				{
-					if (uipi.Address.AddressFamily != AddressFamily.InterNetwork) continue;
+					foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+					{
+						if (uipi.Address.AddressFamily != AddressFamily.InterNetwork) continue;
 
-					if (uipi.IPv4Mask == null) continue; //ignore 127.0.0.1
-					map[uipi.Address] = uipi.IPv4Mask;
+						if (uipi.IPv4Mask == null) continue; //ignore 127.0.0.1
+						map[uipi.Address] = uipi.IPv4Mask;
+					}
 				}
 			}
+			catch (NotImplementedException ex)
+			{
+				log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
+			} 
 			return map;
 		}
 
@@ -131,14 +141,23 @@ namespace ServiceStack.Common.Extensions
 		{
 			var list = new List<IPAddress>();
 
-			foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+			try
 			{
-				foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+				foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
 				{
-					if (uipi.Address.AddressFamily != AddressFamily.InterNetworkV6) continue;
-					list.Add(uipi.Address);
+					foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
+					{
+						if (uipi.Address.AddressFamily != AddressFamily.InterNetworkV6) continue;
+						list.Add(uipi.Address);
+					}
 				}
+
 			}
+			catch (NotImplementedException ex)
+			{
+				log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
+			}
+			
 			return list;
 		}
 

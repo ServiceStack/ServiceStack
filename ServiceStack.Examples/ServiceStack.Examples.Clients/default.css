@@ -1,6 +1,9 @@
-BODY {
-    font: 13px Arial;
-    padding: 0 2em;
+BODY
+{
+	font: 13px Arial;
+	padding: 0 0 0 45px;
+	background: url(img/bg-body-large.png) repeat-y;
+	width: 870px;
 }
 #header-links
 {
@@ -8,51 +11,56 @@ BODY {
 }
 #header-links A, #footer-links A
 {
-	color: Blue;
-	margin-left: .5em;
+	color: #0000FF;
+	margin-left: 0.5em;
 }
 #footer-links
 {
-	border-top: solid 2px #ccc;
-	margin: 9em 0 2em 0;
-	padding-top: 1em;
+	margin: 9em 0 2em;
+	padding-top: 20px;
 	text-align: center;
 	font-size: larger;
+	border-top: 1px solid #DCDCDC;
+	margin-left: -10px;
+	padding-left: 10px;
 }
-#footer-links img
+#footer-links IMG
 {
 	float: left;
 	margin-top: -10px;
 }
-.r 
+.r
 {
 	clear: both;
 	display: block;
 }
-
-A IMG {
+A IMG
+{
 	border: none;
 }
-
 P
 {
-    width: 768px;        	
+	width: 768px;
 }
 CODE
 {
 	display: block;
-	background: #f1f1f1;
+	background: #F1F1F1;
 	white-space: pre;
 	color: #333;
 	width: 880px;
 }
-H1 
+H1
 {
-	font: 28px/34px Trebuchet MS;
+	font: 28px/34px "Trebuchet MS";
 	color: #063;
+	border-top: 1px solid #DCDCDC;
+	padding-top: 5px;
+	padding-left: 10px;
+	margin-left: -10px;
 }
 H4
-{        	
+{
 	clear: left;
 	color: #063;
 	font-size: 14px;
@@ -62,9 +70,9 @@ INPUT.int
 {
 	width: 20px;
 }
-acronym 
+ACRONYM
 {
-	border-bottom: dashed 1px #a0a0a0;
+	border-bottom: 1px dashed #A0A0A0;
 }
 .note
 {
@@ -72,22 +80,21 @@ acronym
 	border: 1px solid rgb(196, 194, 149);
 	margin: 1ex 0px;
 	min-height: 35px;
-    width: 700px;        	
+	width: 700px;
 	padding: 5px 30px;
 }
-
-.service 
+.service
 {
 	float: left;
 	margin-right: 1em;
 	padding: 1em;
-	border: solid 1px #a0a0a0;
+	border: 1px solid #A0A0A0;
 }
-.service H3 
+.service H3
 {
 	clear: right;
 }
-.service H4 
+.service H4
 {
 	margin: 1em 0;
 	padding: 0;
@@ -102,27 +109,26 @@ acronym
 {
 	list-style-type: square;
 }
-.form 
+.form
 {
 	margin-bottom: 1em;
 }
 .form LABEL
 {
 	display: block;
-	padding: .5em;
+	padding: 0.5em;
 }
-.user 
+.user
 {
-	border-top: dashed 1px #a0a0a0;
-	margin-top: .5em;
-	padding-top: .5em;
+	border-top: 1px dashed #A0A0A0;
+	margin-top: 0.5em;
+	padding-top: 0.5em;
 }
-
 .code-link SPAN
 {
 	float: right;
 	margin: -10px -5px 10px 0;
-	color: Blue;
+	color: #0000FF;
 	cursor: pointer;
 }
 .code-preview
@@ -131,10 +137,10 @@ acronym
 	position: absolute;
 	margin: 10px 0;
 	left: 2em;
-	border: solid 5px #555;
+	border: 5px solid #555;
 	border-top: none;
 }
-.code-link SPAN:hover 
+.code-link SPAN:hover
 {
 	text-decoration: underline;
 }
@@ -144,17 +150,17 @@ acronym
 	background: #555;
 	color: #DEDEDE;
 	margin: 0;
-	padding: .5em 1em; 
+	padding: 0.5em 1em;
 }
 .code-preview .client-code
 {
-	background-color: #fff;
+	background-color: #FFF;
 }
 .code-preview .dto
 {
-	background-color: #f1f9f1;
+	background-color: #F1F9F1;
 }
 .code-preview .server-code
 {
-	background-color: #f1f1f9;
+	background-color: #F1F1F9;
 }
