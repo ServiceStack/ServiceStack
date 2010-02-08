@@ -292,10 +292,12 @@ namespace ServiceStack.Common.Extensions
 			return new string(array);
 		}
 
+		private static readonly Regex InvalidVarCharsRegEx = new Regex(@"[^A-Za-z0-9]", RegexOptions.Compiled);
+
 		public static string SafeVarName(this string text)
 		{
 			if (string.IsNullOrEmpty(text)) return null;
-			return text.Replace(" ", "_");
+			return InvalidVarCharsRegEx.Replace(text, "_");
 		}
 	}
 

@@ -95,5 +95,12 @@ namespace ServiceStack.Common.Tests
 			Assert.That(escapedString.HexUnescape(specialChars.ToArray()), Is.EqualTo(expectedString));
 		}
 
+		[Test]
+		public void SafeVarName_strips_illegal_chars()
+		{
+			Assert.That("with space".SafeVarName(), Is.EqualTo("with_space"));
+			Assert.That("with @+:\\illegals".SafeVarName(), Is.EqualTo("with_____illegals"));
+			Assert.That("UPPER_lower_0123456789".SafeVarName(), Is.EqualTo("UPPER_lower_0123456789"));
+		}
 	}
 }
