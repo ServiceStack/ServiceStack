@@ -16,7 +16,7 @@
 		</sectionGroup>
 	</configSections>
 	<appSettings>
-		<add key="Db4oConnectionString" value="~/App_Data/exampledb.db4o"/>
+		<add key="SqliteConnectionString" value="~/App_Data/exampledb.sqlite"/>
 		<add key="DefaultFibonacciLimit" value="10"/>
 	</appSettings>
 	<connectionStrings/>

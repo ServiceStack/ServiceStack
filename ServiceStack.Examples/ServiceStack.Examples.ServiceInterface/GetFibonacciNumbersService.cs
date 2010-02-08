@@ -14,20 +14,13 @@ namespace ServiceStack.Examples.ServiceInterface
 	public class GetFibonacciNumbersService 
 		: IService<GetFibonacciNumbers>
 	{
-		private readonly IResourceManager config;
-
-		public GetFibonacciNumbersService(IResourceManager config)
-		{
-			this.config = config;
-		}
+		//Example of ServiceStack's IOC property injection
+		public ExampleConfig Config { get; set; }
 
 		public object Execute(GetFibonacciNumbers request)
 		{
-			//An example of a service utilizing a 'provider' from the ApplicationContext.
-			var defaultLimit = this.config.Get<long>("DefaultFibonacciLimit", 10);
-
 			var skip = request.Skip.GetValueOrDefault(0);
-			var take = request.Take.GetValueOrDefault(defaultLimit);
+			var take = request.Take.GetValueOrDefault(Config.DefaultFibonacciLimit);
 
 			var results = new List<long>();
 

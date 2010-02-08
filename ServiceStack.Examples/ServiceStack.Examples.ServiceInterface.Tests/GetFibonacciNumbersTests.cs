@@ -6,7 +6,7 @@ using ServiceStack.Examples.ServiceInterface.Types;
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
 	[TestFixture]
-	public class GetFibonacciNumbersTests 
+	public class GetFibonacciNumbersTests
 		: TestHostBase
 	{
 		[Test]
@@ -14,7 +14,9 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 		{
 			var request = new GetFibonacciNumbers { Take = 5 };
 
-			var handler = new GetFibonacciNumbersService(Container.Resolve<IResourceManager>());
+			var handler = new GetFibonacciNumbersService {
+				Config = new ExampleConfig { DefaultFibonacciLimit = 10 }
+			};
 
 			var response = (GetFibonacciNumbersResponse)
 				handler.Execute(request);

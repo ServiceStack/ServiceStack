@@ -212,7 +212,7 @@ H3#logo-title
 .sub-component
 {
 	padding-top: 20px;
-	height: 320px;
+	height: 300px;
 	float: left;
 	width: 380px;
 	padding-right: 20px;
@@ -236,7 +236,18 @@ H3#logo-title
 	/*[disabled]color:#666;*/
 	margin: 0 0 10px;
 }
+DL
+{
+	margin-bottom: 10px;
+}
 CODE.inline
 {
 	color: rgb(12, 82, 201);
+}
+#img-metadata
+{
+	border-left: 1px solid #F1F1F1;
+	border-right: 1px solid #DCDCDC;
+	border-bottom: 1px solid #DCDCDC;
+	margin-bottom: 20px;
 }

@@ -1,5 +1,5 @@
-using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
@@ -7,15 +7,18 @@ namespace ServiceStack.Examples.ServiceInterface
 	public class GetAllUsersService
 		: IService<GetAllUsers>
 	{
-		public IPersistenceProviderManager ProviderManager { get; set; }
+		//Example of ServiceStack's IOC property injection
+		public ExampleConfig Config { get; set; }
 
 		public object Execute(GetAllUsers request)
 		{
-			var persistenceProvider = ProviderManager.GetProvider();
-
-			var users = persistenceProvider.GetAll<User>();
-
-			return new GetAllUsersResponse { Users = new ArrayOfUser(users) };
+			using (var dbConn = Config.ConnectionString.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
+			{
+				var users = dbCmd.Select<User>();
+				return new GetAllUsersResponse { Users = new ArrayOfUser(users) };
+			}
 		}
 	}
+
 }

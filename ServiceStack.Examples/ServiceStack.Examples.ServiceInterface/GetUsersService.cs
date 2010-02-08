@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
@@ -14,25 +15,29 @@ namespace ServiceStack.Examples.ServiceInterface
 	public class GetUsersService 
 		: IService<GetUsers>
 	{
-		public IPersistenceProviderManager ProviderManager { get; set; }
+		//Example of ServiceStack's IOC property injection
+		public ExampleConfig Config { get; set; }
 
 		public object Execute(GetUsers request)
 		{
-			var persistenceProvider = (IQueryablePersistenceProvider)ProviderManager.GetProvider();
-
-			var users = new List<User>();
-
-			if (request.UserIds != null)
+			using (var dbConn = Config.ConnectionString.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
 			{
-				users.AddRange(persistenceProvider.GetByIds<User>(request.UserIds));
-			}
+				var users = new List<User>();
 
-			if (request.UserNames != null)
-			{
-				users.AddRange(persistenceProvider.FindByValues<User>("UserName", request.UserNames));
-			}
+				if (request.UserIds != null)
+				{
+					users.AddRange(dbCmd.GetByIds<User>(request.UserIds));
+				}
 
-			return new GetUsersResponse { Users = new ArrayOfUser(users) };
+				if (request.UserNames != null)
+				{
+					users.AddRange(dbCmd.Select<User>("UserName IN ({0})", 
+						request.UserNames.SqlJoin()));
+				}
+
+				return new GetUsersResponse { Users = new ArrayOfUser(users) };
+			}
 		}
 	}
 }

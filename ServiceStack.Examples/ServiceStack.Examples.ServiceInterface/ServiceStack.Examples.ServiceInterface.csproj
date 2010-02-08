@@ -56,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExampleConfig.cs" />
     <Compile Include="GetFactorialService.cs" />
     <Compile Include="GetAllUsersService.cs" />
     <Compile Include="StoreNewUserService.cs" />

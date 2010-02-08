@@ -1,5 +1,5 @@
-using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface
@@ -12,18 +12,19 @@ namespace ServiceStack.Examples.ServiceInterface
 	public class DeleteAllUsersService 
 		: IService<DeleteAllUsers>
 	{
-		public IPersistenceProviderManager ProviderManager { get; set; }
+		//Example of ServiceStack's IOC property injection
+		public ExampleConfig Config { get; set; }
 
 		public object Execute(DeleteAllUsers request)
 		{
-			//Get the persistence provider registered in the AppHost
-			var persistenceProvider = ProviderManager.GetProvider();
+			using (var dbConn = Config.ConnectionString.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
+			{
+				dbCmd.DeleteAll<User>();
 
-			var deleteUsers = persistenceProvider.GetAll<User>();
-
-			persistenceProvider.DeleteAll(deleteUsers);
-
-			return new DeleteAllUsersResponse();
+				return new DeleteAllUsersResponse();
+			}
 		}
 	}
+
 }

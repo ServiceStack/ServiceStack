@@ -8,6 +8,8 @@ using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Examples.Host.Console
@@ -24,6 +26,8 @@ namespace ServiceStack.Examples.Host.Console
 		{
 			LogManager.LogFactory = new DebugLogFactory();
 			log = LogManager.GetLogger(typeof(AppHost));
+
+			OrmLiteConfig.DialectProvider = SqliteOrmLiteDialectProvider.Instance;
 		}
 
 		public override void Configure(Container container)
@@ -32,43 +36,40 @@ namespace ServiceStack.Examples.Host.Console
 
 			var config = container.Resolve<IResourceManager>();
 
-			var dbPath = config.GetString("Db4oConnectionString").MapAbsolutePath();
-			container.Register<IPersistenceProviderManager>(new Db4OFileProviderManager(dbPath));
+			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
+			var appConfig = container.Resolve<ExampleConfig>();
 
 			var listeningOn = config.GetString("ListenBaseUrl");
 			this.Start(listeningOn);
 
 			log.InfoFormat("AppHost Created at {0}, listening on {1}, saving to db at {2}",
-				DateTime.Now, listeningOn, dbPath);
+				DateTime.Now, listeningOn, appConfig.ConnectionString);
 
 			if (config.Get("PerformTestsOnInit", false))
 			{
 				log.Debug("Performing database tests...");
-				DatabaseTest();
+				DatabaseTest(appConfig);
 			}
 		}
 
-		private static void DatabaseTest()
+		private static void DatabaseTest(ExampleConfig config)
 		{
-			using (var db4OManager = new Db4OFileProviderManager("test.db4o"))
-			{
-				var storeRequest = new StoreNewUser {
-					Email = "new@email",
-					Password = "password",
-					UserName = "new UserName"
-				};
+			var storeRequest = new StoreNewUser {
+				Email = "new@email",
+				Password = "password",
+				UserName = "new UserName"
+			};
 
-				var storeHandler = new StoreNewUserService(db4OManager);
-				storeHandler.Execute(storeRequest);
+			var storeHandler = new StoreNewUserService(config);
+			storeHandler.Execute(storeRequest);
 
-				var getAllHandler = new GetAllUsersService { ProviderManager = db4OManager };
-				var response = (GetAllUsersResponse)getAllHandler.Execute(new GetAllUsers());
+			var getAllHandler = new GetAllUsersService { Config = config };
+			var response = (GetAllUsersResponse)getAllHandler.Execute(new GetAllUsers());
 
-				var user = response.Users[0];
+			var user = response.Users[0];
 
-				System.Console.WriteLine("Stored and retrieved user: {0}, {1}, {2}",
-					user.Id, user.UserName, user.Email);
-			}
+			System.Console.WriteLine("Stored and retrieved user: {0}, {1}, {2}",
+				user.Id, user.UserName, user.Email);
 		}
 
 	}
