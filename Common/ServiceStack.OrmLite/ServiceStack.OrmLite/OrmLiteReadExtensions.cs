@@ -15,9 +15,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Text;
-using ServiceStack.Common.Text;
-using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite
 {

@@ -4,6 +4,7 @@ using System.Web;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {

@@ -4,7 +4,6 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using Platform.Text;
 using ServiceStack.Text;
-//using ServiceStack.Common.Text;
 
 namespace ServiceStack.Common.Tests.Perf
 {
@@ -40,28 +39,6 @@ namespace ServiceStack.Common.Tests.Perf
 
 			var seraializedTextDto = TextSerializer.DeserializeFromString<T>(textStr);
 			//Assert.That(seraializedTextDto.Equals(dto), Is.True);
-		}
-
-		private void CompareSerializers2<T>(T dto)
-		{
-			CompareMultipleRuns(
-				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
-				"Jsv.TypeSerializer", () => ServiceStack.Text.TypeSerializer.SerializeToString(dto)
-				);
-
-			var stringStr = TypeSerializer.SerializeToString(dto);
-			var textStr = ServiceStack.Text.TypeSerializer.SerializeToString(dto);
-
-			CompareMultipleRuns(
-				"TypeSerializer", () => TypeSerializer.DeserializeFromString<T>(stringStr),
-				"Jsv.TypeSerializer", () => ServiceStack.Text.TypeSerializer.DeserializeFromString<T>(textStr)
-				);
-
-			var seraializedStringDto = TypeSerializer.DeserializeFromString<T>(stringStr);
-			Assert.That(seraializedStringDto.Equals(dto), Is.True);
-
-			var seraializedTextDto = ServiceStack.Text.TypeSerializer.DeserializeFromString<T>(textStr);
-			Assert.That(seraializedTextDto.Equals(dto), Is.True);
 		}
 
 		[Test]

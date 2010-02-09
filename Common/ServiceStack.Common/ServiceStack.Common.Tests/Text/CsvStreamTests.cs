@@ -2,8 +2,7 @@ using System;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Text
 {

@@ -95,7 +95,6 @@
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />
-    <Compile Include="Perf\TypeToStringComparisons.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
     <Compile Include="Perf\IdUtilsPerf.cs" />
     <Compile Include="Perf\PropertyAccessorPerf.cs" />

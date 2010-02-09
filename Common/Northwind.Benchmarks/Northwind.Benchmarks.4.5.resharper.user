@@ -20,11 +20,8 @@
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextTestBase.cs" caret="0" fromTop="0" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="316" fromTop="11" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="1004" fromTop="32" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:ToStringMethods.cs" caret="876" fromTop="18" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:TypeSerializer.cs" caret="2519" fromTop="24" />
       <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Jsv/f:WriteType.cs" caret="2952" fromTop="36" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:RedisClient.cs" caret="0" fromTop="0" />
-      <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/d:Generic/f:RedisGenericClient.cs" caret="11631" fromTop="58" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SingleModelSerializationPerf.cs" caret="561" fromTop="29" />
       <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2659" fromTop="12" />
       <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Jsv/f:JsvWriter.Generic.cs" caret="2162" fromTop="23" />
@@ -33,7 +30,6 @@
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="3244" fromTop="19" />
       <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="83" fromTop="2" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseRowsSerialization.cs" caret="616" fromTop="25" />
-      <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/d:Generic/f:IRedisGenericClient.cs" caret="462" fromTop="15" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:IRedisClient.cs" caret="742" fromTop="14" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11916" fromTop="34" />
     </RecentFiles>
@@ -63,7 +59,6 @@
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="5019" fromTop="28" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="4792" fromTop="22" />
       <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="83" fromTop="2" />
-      <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/d:Generic/f:IRedisGenericClient.cs" caret="462" fromTop="15" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:IRedisClient.cs" caret="742" fromTop="14" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="9784" fromTop="15" />
     </RecentEdits>

@@ -13,8 +13,8 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Common.Text;
 using ServiceStack.Redis.Generic;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Tests
 {

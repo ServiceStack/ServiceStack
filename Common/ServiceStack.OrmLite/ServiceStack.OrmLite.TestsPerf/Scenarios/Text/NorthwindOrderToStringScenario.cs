@@ -1,7 +1,7 @@
 using System;
 using Northwind.Common.ServiceModel;
 using Northwind.Perf;
-using ServiceStack.Common.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.TestsPerf.Scenarios.Text
 {

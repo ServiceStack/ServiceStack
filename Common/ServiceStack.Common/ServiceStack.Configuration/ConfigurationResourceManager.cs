@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-using ServiceStack.Common.Text;
-using ServiceStack.Common.Utils;
+using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
 {

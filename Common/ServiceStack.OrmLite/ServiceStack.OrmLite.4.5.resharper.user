@@ -17,13 +17,9 @@
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteBasicPersistenceProviderTests.cs" caret="0" fromTop="0" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSaveTests.cs" caret="0" fromTop="0" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteNorthwindTests.cs" caret="609" fromTop="0" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindOrderToStringScenario.cs" caret="587" fromTop="19" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindCustomerToStringScenario.cs" caret="533" fromTop="15" />
-      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindSupplierToStringScenario.cs" caret="508" fromTop="15" />
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:OrmLite/f:OrmLiteScenrioConfig.cs" caret="1349" fromTop="28" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/d:Support/f:TestScripts.cs" caret="237" fromTop="9" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:Northwind.models.cs" caret="2664" fromTop="15" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteConnectionFactoryTests.cs" caret="487" fromTop="18" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:IDbConnectionFactory.cs" caret="182" fromTop="9" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="19" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnection.cs" caret="185" fromTop="7" />
@@ -35,21 +31,16 @@
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteComplexTypesTests.cs" caret="734" fromTop="8" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:FieldDefinition.cs" caret="1519" fromTop="44" />
       <File id="CF68A37D-D071-469D-AE04-68594CB95382/f:SqliteOrmLiteDialectProvider.cs" caret="2867" fromTop="37" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:TypeSerializer.cs" caret="2995" fromTop="31" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:ToStringMethods.cs" caret="2350" fromTop="33" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:ToStringListMethods.cs" caret="3612" fromTop="23" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteInsertTests.cs" caret="4080" fromTop="16" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteWriteExtensions.cs" caret="4558" fromTop="6" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="4754" fromTop="27" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/d:Xlinq/f:XlinqExtensionsTests.cs" caret="1852" fromTop="17" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteConnectionFactoryTests.cs" caret="235" fromTop="8" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindCustomerToStringScenario.cs" caret="567" fromTop="18" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindSupplierToStringScenario.cs" caret="87" fromTop="3" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindOrderToStringScenario.cs" caret="523" fromTop="15" />
     </RecentFiles>
     <RecentEdits>
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1896" fromTop="23" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1896" fromTop="19" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="484" fromTop="1" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1896" fromTop="35" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1987" fromTop="31" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="19" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="5" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="30" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteConnectionFactoryTests.cs" caret="1030" fromTop="15" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="318" fromTop="5" />
@@ -73,6 +64,13 @@
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteComplexTypesTests.cs" caret="688" fromTop="8" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="363" fromTop="15" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="4754" fromTop="27" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/d:Xlinq/f:XlinqExtensionsTests.cs" caret="207" fromTop="7" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/d:Xlinq/f:XlinqExtensionsTests.cs" caret="1852" fromTop="17" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteConnectionFactoryTests.cs" caret="15" fromTop="0" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteConnectionFactoryTests.cs" caret="802" fromTop="28" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindCustomerToStringScenario.cs" caret="80" fromTop="2" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindSupplierToStringScenario.cs" caret="80" fromTop="2" />
+      <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindOrderToStringScenario.cs" caret="102" fromTop="4" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -146,6 +144,7 @@
       <Item value="autoDisposeConnection" priority="0" />
       <Item value="Length" priority="0" />
       <Item value="Ignore" priority="1" />
+      <Item value="Common" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Xml.Linq.XElement">
       <Item value="Parse" priority="0" />

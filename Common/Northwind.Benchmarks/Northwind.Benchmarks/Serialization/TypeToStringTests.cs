@@ -4,7 +4,7 @@ using Northwind.Common.ServiceModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Text;
+using ServiceStack.Text;
 
 namespace Northwind.Benchmarks.Serialization
 {

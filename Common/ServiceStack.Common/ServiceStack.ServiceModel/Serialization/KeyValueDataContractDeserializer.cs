@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.Serialization;
-using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Serialization
 {

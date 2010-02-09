@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Support
 {

@@ -64,7 +64,6 @@
     <Compile Include="Extensions\ActionExecExtensions.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="Extensions\IPAddressExtensions.cs" />
-    <Compile Include="Extensions\CsvStreamExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ExecExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
@@ -83,25 +82,10 @@
     <Compile Include="Extensions\ReflectionExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="PathInfo.cs" />
     <Compile Include="Support\ActionExecHandler.cs" />
     <Compile Include="Support\AdapterBase.cs" />
     <Compile Include="Support\LogicFacadeBase.cs" />
-    <Compile Include="Support\CommandProcessor.cs" />
     <Compile Include="Support\AssemblyTypeDefinition.cs" />
-    <Compile Include="Text\DateTimeSerializer.cs" />
-    <Compile Include="Text\ParseStringTypeMethod.cs" />
-    <Compile Include="Text\ParseStringCollectionMethods.cs" />
-    <Compile Include="Text\ParseStringDictionaryMethods.cs" />
-    <Compile Include="Text\ParseStringArrayMethods.cs" />
-    <Compile Include="Text\ParseStringListMethods.cs" />
-    <Compile Include="Text\ParseStringBuiltinMethods.cs" />
-    <Compile Include="Text\ParseStringTypeConstructor.cs" />
-    <Compile Include="Text\TypeSerializer.cs" />
-    <Compile Include="Text\ToStringListMethods.cs" />
-    <Compile Include="Text\TypeRegistration.cs" />
-    <Compile Include="Text\TypeSerializer.Generic.cs" />
-    <Compile Include="Text\TypeToStringMethods.cs" />
     <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\AssertUtils.cs" />
     <Compile Include="Support\AssignmentDefinition.cs" />
@@ -112,15 +96,9 @@
     <Compile Include="Utils\PathUtils.cs" />
     <Compile Include="Reflection\PropertyAccessor.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
-    <Compile Include="Utils\StringConverterUtils.cs" />
     <Compile Include="Support\CommandExecsHandler.cs" />
     <Compile Include="Support\CommandResultsHandler.cs" />
     <Compile Include="UrnId.cs" />
-    <Compile Include="Extensions\TextExtensions.cs" />
-    <Compile Include="Text\TypeDefinition.cs" />
-    <Compile Include="Text\ParseStringMethods.cs" />
-    <Compile Include="Text\ParseStringStaticParseMethod.cs" />
-    <Compile Include="Text\ToStringMethods.cs" />
     <Compile Include="Web\CompressedFileResult.cs" />
     <Compile Include="Web\CompressedResult.cs" />
     <Compile Include="Web\CompressionTypes.cs" />
@@ -128,6 +106,12 @@
     <Compile Include="Web\HtmlResult.cs" />
     <Compile Include="Web\HttpHeaders.cs" />
     <Compile Include="Web\MimeTypes.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

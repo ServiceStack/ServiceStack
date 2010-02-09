@@ -1,13 +1,13 @@
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Common.Text;
+using ServiceStack.Text;
 
 
 namespace ServiceStack.Common.Tests.Text
 {
 
-#if STATIC_ONLY
+#if AOT
 
 	[TestFixture]
 	public class TypeRegistrationTests

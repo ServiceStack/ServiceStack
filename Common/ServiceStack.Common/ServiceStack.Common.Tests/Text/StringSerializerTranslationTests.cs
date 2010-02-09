@@ -6,7 +6,8 @@ using Northwind.Common.ServiceModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Common.Text;
+using ServiceStack.Text;
+using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.Common.Tests.Text
 {

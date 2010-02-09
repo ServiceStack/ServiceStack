@@ -46,6 +46,7 @@ namespace ServiceStack.Text
 		/// <returns></returns>
 		public static T DeserializeFromString<T>(string value)
 		{
+			if (string.IsNullOrEmpty(value)) return default(T);
 			return (T) JsvReader<T>.Parse(value);
 		}
 

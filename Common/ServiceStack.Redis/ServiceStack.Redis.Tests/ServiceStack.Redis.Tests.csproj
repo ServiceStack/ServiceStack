@@ -101,6 +101,10 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Redis\ServiceStack.Redis.csproj">
       <Project>{AF99F19B-4C04-4F58-81EF-B092F1FCC540}</Project>
       <Name>ServiceStack.Redis</Name>

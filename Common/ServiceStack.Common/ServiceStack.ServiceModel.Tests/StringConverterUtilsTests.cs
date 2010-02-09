@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Text;
-using ServiceStack.Common.Utils;
 using ServiceStack.ServiceModel.Tests.DataContracts;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Tests
 {

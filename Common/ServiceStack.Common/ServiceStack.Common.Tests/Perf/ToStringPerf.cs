@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Text;
-using ServiceStack.Common.Utils;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Perf
 {
