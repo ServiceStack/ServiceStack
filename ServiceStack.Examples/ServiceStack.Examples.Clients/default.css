@@ -45,7 +45,7 @@ P
 CODE
 {
 	display: block;
-	background: #F1F1F1;
+	background-color: #F1F9F1;
 	white-space: pre;
 	color: #333;
 	width: 880px;
@@ -154,7 +154,7 @@ ACRONYM
 }
 .code-preview .client-code
 {
-	background-color: #FFF;
+	background-color: #F1F9F1;
 }
 .code-preview .dto
 {
@@ -162,7 +162,7 @@ ACRONYM
 }
 .code-preview .server-code
 {
-	background-color: #F1F1F9;
+	background-color: #F5F9C7;
 }
 #silverlightControlHost
 {

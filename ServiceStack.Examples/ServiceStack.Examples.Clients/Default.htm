@@ -272,14 +272,14 @@
 	{
 		private readonly IResourceManager config;
 
-		public GetFibonacciNumbersHandler(IResourceManager config)
+		//Example of ServiceStack's Func IOC constructor injection
+		public GetFibonacciNumbersService(IResourceManager config)
 		{
 			this.config = config;
 		}
 
 		public object Execute(GetFibonacciNumbers request)
 		{
-			//An example of a service utilizing a 'provider' from the ApplicationContext.
 			var defaultLimit = this.config.Get&lt;long&gt;("DefaultFibonacciLimit", 10);
 
 			var skip = request.Skip.GetValueOrDefault(0);
@@ -392,32 +392,40 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-	public class StoreNewUserService : IService&lt;StoreNewUser&gt;
-	{
-		public IDbConnectionFactory ConnectionFactory { get; set; }
+    public class StoreNewUserService : IService&lt;StoreNewUser&gt;
+    {
+		//Example of ServiceStack's Func IOC property injection
+	    public IDbConnectionFactory ConnectionFactory { get; set; }
 
-		public object Execute(StoreNewUser request)
-		{
-			using (var dbConn = ConnectionFactory.OpenDbConnection())
-			using (var dbCmd = dbConn.CreateCommand())
-			{
-				var existingUsers = dbCmd.Select&lt;User&gt;("UserName = {0}", request.UserName).ToList();
+	    public object Execute(StoreNewUser request)
+	    {
+		    using (var dbConn = ConnectionFactory.OpenDbConnection())
+		    using (var dbCmd = dbConn.CreateCommand())
+		    {
+			    var existingUsers = dbCmd.Select&lt;User&gt;("UserName = {0}", 
+			      request.UserName).ToList();
 
-				if (existingUsers.Count &gt; 0)
-				{
-					return new StoreNewUserResponse {
-						ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
-					};
-				}
+			    if (existingUsers.Count &gt; 0)
+			    {
+				    return new StoreNewUserResponse {
+					    ResponseStatus = new ResponseStatus { 
+					      ErrorCode = "UserNameMustBeUnique" 
+					    }
+				    };
+			    }
 
-				var newUser = new User { UserName = request.UserName, Email = request.Email, Password = request.Password };
+			    var newUser = new User { 
+			        UserName = request.UserName, 
+			        Email = request.Email, 
+			        Password = request.Password 
+			    };
 
-				dbCmd.Insert(newUser);
+			    dbCmd.Insert(newUser);
 
-				return new StoreNewUserResponse { UserId = dbCmd.GetLastInsertId() };
-			}
-		}
-	}
+			    return new StoreNewUserResponse { UserId = dbCmd.GetLastInsertId() };
+		    }
+	    }
+    }
                         </code>
                     </div>
                 </div>
@@ -498,33 +506,33 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-	public class GetUsersService : IService&lt;GetUsers&gt;
-	{
-		//Example of ServiceStack's IOC property injection
-		public IDbConnectionFactory ConnectionFactory { get; set; }
+    public class GetUsersService : IService&lt;GetUsers&gt;
+    {
+		//Example of ServiceStack's Func IOC property injection
+	    public IDbConnectionFactory ConnectionFactory { get; set; }
 
-		public object Execute(GetUsers request)
-		{
-			using (var dbConn = ConnectionFactory.OpenDbConnection())
-			using (var dbCmd = dbConn.CreateCommand())
-			{
-				var users = new List&lt;User&gt;();
+	    public object Execute(GetUsers request)
+	    {
+		    using (var dbConn = ConnectionFactory.OpenDbConnection())
+		    using (var dbCmd = dbConn.CreateCommand())
+		    {
+			    var users = new List&lt;User&gt;();
 
-				if (request.UserIds != null &amp;&amp; request.UserIds.Count &gt; 0)
-				{
-					users.AddRange(dbCmd.GetByIds&lt;User&gt;(request.UserIds));
-				}
+			    if (request.UserIds != null &amp;&amp; request.UserIds.Count &gt; 0)
+			    {
+				    users.AddRange(dbCmd.GetByIds&lt;User&gt;(request.UserIds));
+			    }
 
-				if (request.UserNames != null &amp;&amp; request.UserNames.Count &gt; 0)
-				{
-					users.AddRange(dbCmd.Select&lt;User&gt;("UserName IN ({0})",
-						request.UserNames.SqlInValues()));
-				}
+			    if (request.UserNames != null &amp;&amp; request.UserNames.Count &gt; 0)
+			    {
+				    users.AddRange(dbCmd.Select&lt;User&gt;("UserName IN ({0})",
+					    request.UserNames.SqlInValues()));
+			    }
 
-				return new GetUsersResponse { Users = new ArrayOfUser(users) };
-			}
-		}
-	}
+			    return new GetUsersResponse { Users = new ArrayOfUser(users) };
+		    }
+	    }
+    }
                         </code>
                     </div>
                 </div>
