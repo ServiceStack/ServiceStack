@@ -14,10 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
-using ServiceStack.DataAccess;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Generic
 {
@@ -25,7 +24,7 @@ namespace ServiceStack.Redis.Generic
 	/// Allows you to get Redis value operations to operate against POCO types.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	internal class RedisGenericClient<T>
+	internal class RedisTypedClient<T>
 		: IRedisTypedClient<T>
 	{
 		readonly TypeSerializer<T> Serializer = new TypeSerializer<T>();
@@ -40,7 +39,7 @@ namespace ServiceStack.Redis.Generic
 		/// Use this to share the same redis connection with another
 		/// </summary>
 		/// <param name="client">The client.</param>
-		public RedisGenericClient(RedisClient client)
+		public RedisTypedClient(RedisClient client)
 		{
 			this.client = client;
 			this.Lists = new RedisClientLists(this);
@@ -244,9 +243,9 @@ namespace ServiceStack.Redis.Generic
 		internal class RedisClientSets
 			: IHasNamed<IRedisSet<T>>
 		{
-			private readonly RedisGenericClient<T> client;
+			private readonly RedisTypedClient<T> client;
 
-			public RedisClientSets(RedisGenericClient<T> client)
+			public RedisClientSets(RedisTypedClient<T> client)
 			{
 				this.client = client;
 			}
@@ -366,9 +365,9 @@ namespace ServiceStack.Redis.Generic
 		internal class RedisClientLists
 			: IHasNamed<IRedisList<T>>
 		{
-			private readonly RedisGenericClient<T> client;
+			private readonly RedisTypedClient<T> client;
 
-			public RedisClientLists(RedisGenericClient<T> client)
+			public RedisClientLists(RedisTypedClient<T> client)
 			{
 				this.client = client;
 			}

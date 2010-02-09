@@ -82,7 +82,15 @@ namespace ServiceStack.OrmLite
 				}
 				else
 				{
-					escapedParams.Add(OrmLiteConfig.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
+					var sqlInValues = sqlParam as SqlInValues;
+					if (sqlInValues != null)
+					{
+						escapedParams.Add(sqlInValues.ToSqlInString());
+					}
+					else
+					{
+						escapedParams.Add(OrmLiteConfig.DialectProvider.GetQuotedValue(sqlParam, sqlParam.GetType()));
+					}
 				}
 			}
 			return string.Format(sqlText, escapedParams.ToArray());
@@ -98,6 +106,28 @@ namespace ServiceStack.OrmLite
 			}
 
 			return sb.ToString();
+		}
+
+		public static string SqlJoin(IEnumerable values)
+		{
+			var sb = new StringBuilder();
+			foreach (var value in values)
+			{
+				if (sb.Length > 0) sb.Append(",");
+				sb.Append(OrmLiteConfig.DialectProvider.GetQuotedValue(value, value.GetType()));
+			}
+
+			return sb.ToString();
+		}
+
+		public static SqlInValues SqlInValues<T>(this List<T> values)
+		{
+			return new SqlInValues(values);
+		}
+
+		public static SqlInValues SqlInValues<T>(this T[] values)
+		{
+			return new SqlInValues(values);
 		}
 	}
 }

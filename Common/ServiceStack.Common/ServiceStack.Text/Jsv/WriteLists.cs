@@ -437,7 +437,7 @@ namespace ServiceStack.Text.Jsv
 				return WriteLists.WriteIListString;
 
 			if (type == typeof(List<int>))
-				return WriteListsOfElements<long>.WriteListValueType;
+				return WriteListsOfElements<int>.WriteListValueType;
 			if (type == typeof(IList<int>))
 				return WriteListsOfElements<int>.WriteIListValueType;
 

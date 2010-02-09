@@ -29,7 +29,10 @@ namespace ServiceStack.OrmLite
 		[Conditional("DEBUG")]
 		private static void LogDebug(string fmt, params object[] args)
 		{
-			Log.DebugFormat("{0}", String.Format(fmt, args).Trim());
+			if (args.Length > 0)
+				Log.DebugFormat(fmt, args);
+			else
+				Log.Debug(fmt);
 		}
 
 		public static string ToCreateTableStatement(this Type tableType)

@@ -14,6 +14,7 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 	public class TestHostBase
 		: AppHostBase
 	{
+		protected const string InMemoryDb = ":memory:";
 		private static ILog log;
 
 		public TestHostBase()

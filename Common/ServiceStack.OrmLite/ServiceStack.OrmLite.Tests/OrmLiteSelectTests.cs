@@ -278,5 +278,25 @@ namespace ServiceStack.OrmLite.Tests
 			}
 		}
 
+
+		[Test]
+		public void Can_Select_In_for_string_value()
+		{
+			const int n = 5;
+
+			using (var db = ConnectionString.OpenDbConnection())
+			using (var dbCmd = db.CreateCommand())
+			{
+				dbCmd.CreateTable<ModelWithIdAndName>(true);
+
+				n.Times(x => dbCmd.Insert(ModelWithIdAndName.Create(x)));
+
+				var selectInNames = new[] {"Name1", "Name2"};
+				var rows = dbCmd.Select<ModelWithIdAndName>("Name IN ({0})", selectInNames.SqlInValues());
+
+				Assert.That(rows.Count, Is.EqualTo(selectInNames.Length));
+			}
+		}
+
 	}
 }

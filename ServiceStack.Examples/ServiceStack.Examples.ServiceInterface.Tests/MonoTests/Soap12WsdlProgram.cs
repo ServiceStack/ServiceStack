@@ -4,7 +4,7 @@ using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests.MonoTests
 {
-	public class Soap12WsdlProgram : TestProgramBase
+	public class Soap12WsdlProgram 
 	{
 		public static void Main()
 		{

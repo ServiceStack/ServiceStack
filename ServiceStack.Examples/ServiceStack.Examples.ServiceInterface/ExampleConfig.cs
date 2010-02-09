@@ -5,9 +5,7 @@ namespace ServiceStack.Examples.ServiceInterface
 {
 	public class ExampleConfig
 	{
-		public ExampleConfig()
-		{
-		}
+		public ExampleConfig() {}
 
 		public ExampleConfig(IResourceManager appConfig)
 		{

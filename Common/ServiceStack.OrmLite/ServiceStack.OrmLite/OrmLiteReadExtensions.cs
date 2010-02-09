@@ -13,14 +13,34 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
 using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
+using ServiceStack.Logging;
 
 namespace ServiceStack.OrmLite
 {
 	public static class OrmLiteReadExtensions
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(OrmLiteReadExtensions));
+
+		[Conditional("DEBUG")]
+		private static void LogDebug(string fmt, params object[] args)
+		{
+			if (args.Length > 0)
+				Log.DebugFormat(fmt, args);
+			else
+				Log.Debug(fmt);
+		}
+
+		private static IDataReader ExecReader(this IDbCommand dbCmd, string sql)
+		{
+			LogDebug(sql);
+			dbCmd.CommandText = sql;
+			return dbCmd.ExecuteReader();
+		}
+
 		public static Func<int, object> GetValueFn<T>(IDataRecord reader)
 		{
 			var type = typeof(T);
@@ -97,8 +117,7 @@ namespace ServiceStack.OrmLite
 		public static List<T> Select<T>(this IDbCommand dbCommand, string sqlFilter, params object[] filterParams)
 			where T : new()
 		{
-			dbCommand.CommandText = ToSelectStatement(typeof(T), sqlFilter, filterParams);
-			using (var reader = dbCommand.ExecuteReader())
+			using (var reader = dbCommand.ExecReader(ToSelectStatement(typeof(T), sqlFilter, filterParams)))
 			{
 				return reader.ConvertToList<T>();
 			}
@@ -123,8 +142,7 @@ namespace ServiceStack.OrmLite
 				sql.Append(sqlFilter);
 			}
 
-			dbCommand.CommandText = sql.ToString();
-			using (var reader = dbCommand.ExecuteReader())
+			using (var reader = dbCommand.ExecReader(sql.ToString()))
 			{
 				return reader.ConvertToList<TModel>();
 			}
@@ -139,8 +157,7 @@ namespace ServiceStack.OrmLite
 		public static IEnumerable<T> Each<T>(this IDbCommand dbCommand, string filter, params object[] filterParams)
 			where T : new()
 		{
-			dbCommand.CommandText = ToSelectStatement(typeof(T), filter, filterParams);
-			using (var reader = dbCommand.ExecuteReader())
+			using (var reader = dbCommand.ExecReader(ToSelectStatement(typeof(T), filter, filterParams)))
 			{
 				while (reader.Read())
 				{
@@ -178,8 +195,7 @@ namespace ServiceStack.OrmLite
 		public static T FirstOrDefault<T>(this IDbCommand dbCommand, string filter)
 			where T : new()
 		{
-			dbCommand.CommandText = ToSelectStatement(typeof(T), filter);
-			using (var dbReader = dbCommand.ExecuteReader())
+			using (var dbReader = dbCommand.ExecReader(ToSelectStatement(typeof(T), filter)))
 			{
 				return dbReader.ConvertTo<T>();
 			}
@@ -211,8 +227,7 @@ namespace ServiceStack.OrmLite
 
 		public static T GetScalar<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
-			dbCmd.CommandText = sql.SqlFormat(sqlParams);
-			using (var reader = dbCmd.ExecuteReader())
+			using (var reader = dbCmd.ExecReader(sql.SqlFormat(sqlParams)))
 			{
 				return GetScalar<T>(reader);
 			}
@@ -234,8 +249,7 @@ namespace ServiceStack.OrmLite
 
 		public static List<T> GetFirstColumn<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
-			dbCmd.CommandText = sql.SqlFormat(sqlParams);
-			using (var dbReader = dbCmd.ExecuteReader())
+			using (var dbReader = dbCmd.ExecReader(sql.SqlFormat(sqlParams)))
 			{
 				return GetFirstColumn<T>(dbReader);
 			}
@@ -255,8 +269,7 @@ namespace ServiceStack.OrmLite
 
 		public static HashSet<T> GetFirstColumnDistinct<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
-			dbCmd.CommandText = sql.SqlFormat(sqlParams);
-			using (var dbReader = dbCmd.ExecuteReader())
+			using (var dbReader = dbCmd.ExecReader(sql.SqlFormat(sqlParams)))
 			{
 				return GetFirstColumnDistinct<T>(dbReader);
 			}
@@ -276,8 +289,7 @@ namespace ServiceStack.OrmLite
 
 		public static Dictionary<K, List<V>> GetLookup<K, V>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
 		{
-			dbCmd.CommandText = sql.SqlFormat(sqlParams);
-			using (var dbReader = dbCmd.ExecuteReader())
+			using (var dbReader = dbCmd.ExecReader(sql.SqlFormat(sqlParams)))
 			{
 				return GetLookup<K, V>(dbReader);
 			}

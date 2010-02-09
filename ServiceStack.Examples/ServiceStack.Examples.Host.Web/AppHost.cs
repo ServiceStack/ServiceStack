@@ -3,10 +3,11 @@ using Funq;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
-using ServiceStack.DataAccess.Db4oProvider;
 using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Examples.Host.Web
@@ -30,10 +31,12 @@ namespace ServiceStack.Examples.Host.Web
 		{
 			container.Register<IResourceManager>(new ConfigurationResourceManager());
 
-			var config = container.Resolve<IResourceManager>();
+			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
+			var appConfig = container.Resolve<ExampleConfig>();
 
-			container.Register<IPersistenceProviderManager>(
-				new Db4OFileProviderManager(config.GetString("Db4oConnectionString").MapHostAbsolutePath()));
+			container.Register<IDbConnectionFactory>(c =>
+				new OrmLiteConnectionFactory(
+					appConfig.ConnectionString, SqliteOrmLiteDialectProvider.Instance));
 
 			log.InfoFormat("AppHost Configured: " + DateTime.Now);
 		}

@@ -1,42 +1,43 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Moq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Logging;
+using ServiceStack.Logging.Support.Logging;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
 	[TestFixture]
-	public class GetUsersTests : TestHostBase
+	public class GetUsersTests
+		: TestHostBase
 	{
 		[Test]
 		public void GetUsers_Test()
 		{
 			var request = new GetUsers {
 				UserIds = new ArrayOfLong(1, 2),
-				UserNames = new ArrayOfString("User1", "User2")
+				UserNames = new ArrayOfString("User3", "User4")
 			};
 
-			var mockPersistence = new Mock<IQueryablePersistenceProvider>();
+			var factory = new OrmLiteConnectionFactory(
+				InMemoryDb, false, SqliteOrmLiteDialectProvider.Instance);
 
-			mockPersistence.Expect(x => x.GetByIds<User>(It.IsAny<ICollection>())).Returns(
-				new List<User> { new User { Id = 1 }, new User { Id = 2 } });
+			using (var dbConn = factory.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
+			{
+				dbCmd.CreateTable<User>(true);
+				dbCmd.Insert(new User { Id = 1, UserName = "User1" });
+				dbCmd.Insert(new User { Id = 2, UserName = "User2" });
+				dbCmd.Insert(new User { Id = 3, UserName = "User3" });
+				dbCmd.Insert(new User { Id = 4, UserName = "User4" });
 
-			mockPersistence.Expect(x => x.FindByValues<User>("UserName", It.IsAny<ICollection>())).Returns(
-				new List<User> { new User { UserName = "User1" }, new User { UserName = "User2" } });
+				var handler = new GetUsersService { ConnectionFactory = factory };
 
-			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
+				var response = (GetUsersResponse)handler.Execute(request);
 
-			var handler = new GetUsersService { ProviderManager = providerManagerObject };
-
-			var response = (GetUsersResponse)handler.Execute(request);
-
-			Assert.That(response.Users.Count, Is.EqualTo(4));
+				Assert.That(response.Users.Count, Is.EqualTo(4));
+			}
 		}
 	}
 

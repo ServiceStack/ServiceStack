@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{6CEB3EDE
 		Build\ilmerge-all.bat = Build\ilmerge-all.bat
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "..\ServiceStack.Common\ServiceStack.Text\ServiceStack.Text.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,10 @@ Global
 		{373D954D-93F9-439D-937F-28709BB04B65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{373D954D-93F9-439D-937F-28709BB04B65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{373D954D-93F9-439D-937F-28709BB04B65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

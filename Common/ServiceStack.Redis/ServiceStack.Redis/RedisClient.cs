@@ -15,10 +15,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Text;
 using ServiceStack.Common.Utils;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
@@ -330,7 +330,7 @@ namespace ServiceStack.Redis
 
 		public IRedisTypedClient<T> GetTypedClient<T>()
 		{
-			return new RedisGenericClient<T>(this);
+			return new RedisTypedClient<T>(this);
 		}
 
 		public IHasNamedList<string> Lists { get; set; }

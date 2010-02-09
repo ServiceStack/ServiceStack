@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CsvStreamExtensions.cs" />
+    <Compile Include="ITypeSerializer.Generic.cs" />
     <Compile Include="Jsv\DateTimeSerializer.cs" />
     <Compile Include="Jsv\JsvReader.Generic.cs" />
     <Compile Include="Jsv\JsvSerializer.Generic.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="Jsv\WriteType.cs" />
     <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="TextExtensions.cs" />
+    <Compile Include="TypeSerializer.Generic.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Build\ilmerge-all.bat" />

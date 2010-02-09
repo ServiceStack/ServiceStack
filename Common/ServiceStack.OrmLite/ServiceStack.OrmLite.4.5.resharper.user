@@ -11,68 +11,68 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:ReflectionPropertyInvoker.cs" caret="913" fromTop="28" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:PropertyInvoker.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteWriteExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteUtilExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteReadExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLitePersistenceProvider.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteLinqExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConfigExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConfig.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:ModelDefinition.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:IPropertyInvoker.cs" caret="247" fromTop="11" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:IOrmLiteDialectProvider.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:FieldDefinition.cs" caret="247" fromTop="11" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:ExpressionPropertyInvoker.cs" caret="247" fromTop="11" />
-      <File id="CF68A37D-D071-469D-AE04-68594CB95382/f:SqliteOrmLiteDialectProvider.cs" caret="2209" fromTop="13" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteTransactionTests.cs" caret="3569" fromTop="30" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:Northwind.models.cs" caret="2626" fromTop="2" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteTestBase.cs" caret="739" fromTop="24" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteBasicPersistenceProviderTests.cs" caret="0" fromTop="0" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSaveTests.cs" caret="0" fromTop="0" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteNorthwindTests.cs" caret="609" fromTop="0" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteInsertTests.cs" caret="2866" fromTop="25" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSelectTests.cs" caret="0" fromTop="0" />
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindOrderToStringScenario.cs" caret="587" fromTop="19" />
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindCustomerToStringScenario.cs" caret="533" fromTop="15" />
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:Text/f:NorthwindSupplierToStringScenario.cs" caret="508" fromTop="15" />
       <File id="24E0D2DB-1F1E-43BE-83DB-B999ACE5A700/d:Scenarios/d:OrmLite/f:OrmLiteScenrioConfig.cs" caret="1349" fromTop="28" />
       <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/d:Support/f:TestScripts.cs" caret="237" fromTop="9" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:Example.cs" caret="1742" fromTop="47" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:Northwind.models.cs" caret="2664" fromTop="15" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteConnectionFactoryTests.cs" caret="487" fromTop="18" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:IDbConnectionFactory.cs" caret="182" fromTop="9" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="19" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnection.cs" caret="185" fromTop="7" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/d:Models/f:ModelWithIdAndName.cs" caret="384" fromTop="21" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSelectTests.cs" caret="8321" fromTop="18" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteTestBase.cs" caret="223" fromTop="0" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:NorthwindPerfTests.cs" caret="252" fromTop="6" />
+      <File id="3FA9197A-462D-44CC-9AB3-61AF414D0B45/d:Models/f:ModelWithComplexTypes.cs" caret="764" fromTop="2" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteComplexTypesTests.cs" caret="734" fromTop="8" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:FieldDefinition.cs" caret="1519" fromTop="44" />
+      <File id="CF68A37D-D071-469D-AE04-68594CB95382/f:SqliteOrmLiteDialectProvider.cs" caret="2867" fromTop="37" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:TypeSerializer.cs" caret="2995" fromTop="31" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:ToStringMethods.cs" caret="2350" fromTop="33" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Text/f:ToStringListMethods.cs" caret="3612" fromTop="23" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteInsertTests.cs" caret="4080" fromTop="16" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteWriteExtensions.cs" caret="4558" fromTop="6" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="4754" fromTop="27" />
     </RecentFiles>
     <RecentEdits>
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConfigExtensions.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConfigExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteLinqExtensions.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteLinqExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLitePersistenceProvider.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLitePersistenceProvider.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteReadExtensions.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteReadExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteUtilExtensions.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteUtilExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteWriteExtensions.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteWriteExtensions.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:PropertyInvoker.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:PropertyInvoker.cs" caret="247" fromTop="11" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:ReflectionPropertyInvoker.cs" caret="0" fromTop="0" />
-      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:ReflectionPropertyInvoker.cs" caret="247" fromTop="11" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Reflection/f:PropertyAccessor.cs" caret="2976" fromTop="1" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Reflection/f:TypeProperyAccessor.cs" caret="255" fromTop="13" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Reflection/f:TypeProperyAccessor.cs" caret="180" fromTop="7" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Reflection/f:TypeProperyAccessor.cs" caret="505" fromTop="19" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Reflection/f:TypeProperyAccessor.cs" caret="531" fromTop="20" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Reflection/f:TypeProperyAccessor.cs" caret="2976" fromTop="30" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Reflection/f:StaticAccessors.cs" caret="0" fromTop="0" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:Example.cs" caret="4299" fromTop="23" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:Example.cs" caret="3623" fromTop="21" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:Example.cs" caret="1511" fromTop="10" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:Example.cs" caret="2065" fromTop="19" />
-      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:Example.cs" caret="1755" fromTop="9" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1896" fromTop="23" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1896" fromTop="19" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="484" fromTop="1" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1896" fromTop="35" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1987" fromTop="31" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="19" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="5" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="30" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteConnectionFactoryTests.cs" caret="1030" fromTop="15" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="318" fromTop="5" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="388" fromTop="10" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="655" fromTop="20" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1154" fromTop="27" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1154" fromTop="23" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1143" fromTop="24" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="1051" fromTop="23" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="642" fromTop="11" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="807" fromTop="16" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="70" fromTop="0" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:IDbConnectionFactory.cs" caret="8884" fromTop="9" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteConnectionFactory.cs" caret="2313" fromTop="19" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSelectTests.cs" caret="8598" fromTop="36" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSelectTests.cs" caret="8562" fromTop="24" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSelectTests.cs" caret="8122" fromTop="11" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteSelectTests.cs" caret="8582" fromTop="25" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:NorthwindPerfTests.cs" caret="251" fromTop="6" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteComplexTypesTests.cs" caret="305" fromTop="4" />
+      <File id="9B64F4A7-C008-46A8-AD6F-99626DCFEFBD/f:OrmLiteComplexTypesTests.cs" caret="688" fromTop="8" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="363" fromTop="15" />
+      <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="4754" fromTop="27" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -83,9 +83,9 @@
   </UnitTestRunnerMSTest>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="public" priority="3" />
-      <Item value="void" priority="1" />
-      <Item value="var" priority="11" />
+      <Item value="public" priority="5" />
+      <Item value="void" priority="3" />
+      <Item value="var" priority="15" />
       <Item value="xml" priority="0" />
       <Item value="class" priority="1" />
       <Item value="string" priority="2" />
@@ -94,41 +94,58 @@
       <Item value="el" priority="0" />
       <Item value="Index" priority="0" />
       <Item value="Unique" priority="0" />
-      <Item value="true" priority="0" />
+      <Item value="true" priority="5" />
       <Item value="static" priority="1" />
-      <Item value="using" priority="3" />
-      <Item value="dbConn" priority="0" />
-      <Item value="dbCmd" priority="18" />
+      <Item value="using" priority="5" />
+      <Item value="dbConn" priority="1" />
+      <Item value="dbCmd" priority="20" />
       <Item value="Order" priority="0" />
       <Item value="References" priority="0" />
       <Item value="typeof" priority="4" />
       <Item value="ShipperType" priority="4" />
-      <Item value="false" priority="2" />
-      <Item value="Shipper" priority="7" />
-      <Item value="new" priority="1" />
+      <Item value="false" priority="5" />
+      <Item value="Shipper" priority="8" />
+      <Item value="new" priority="4" />
       <Item value="Log" priority="0" />
       <Item value="sql" priority="2" />
       <Item value="sqlIndex" priority="0" />
       <Item value="IDbCommand" priority="0" />
       <Item value="IsolationLevel" priority="0" />
       <Item value="isolationLevel" priority="1" />
-      <Item value="return" priority="0" />
+      <Item value="return" priority="1" />
       <Item value="dbTrans" priority="4" />
-      <Item value="Assert" priority="6" />
-      <Item value="CompanyName" priority="0" />
+      <Item value="Assert" priority="7" />
+      <Item value="CompanyName" priority="1" />
       <Item value="Phone" priority="0" />
       <Item value="ShipperTypeId" priority="0" />
       <Item value="trainsTypeId" priority="2" />
-      <Item value="Has" priority="2" />
+      <Item value="Has" priority="3" />
       <Item value="ShipperTypeCount" priority="0" />
       <Item value="rows" priority="0" />
       <Item value="Is" priority="3" />
       <Item value="UseCase" priority="0" />
       <Item value="trainsAreUs" priority="4" />
       <Item value="TEntity" priority="0" />
-      <Item value="if" priority="0" />
+      <Item value="if" priority="2" />
       <Item value="attrs" priority="0" />
       <Item value="const" priority="0" />
+      <Item value="OrmLiteConnectionFactory" priority="0" />
+      <Item value="factory" priority="2" />
+      <Item value="ShippersExample" priority="0" />
+      <Item value="TestFixture" priority="0" />
+      <Item value="OrmLiteConfig" priority="1" />
+      <Item value="bool" priority="0" />
+      <Item value="isOpen" priority="1" />
+      <Item value="IOrmLiteDialectProvider" priority="0" />
+      <Item value="value" priority="0" />
+      <Item value="DialectProvider" priority="0" />
+      <Item value="dialectProvider" priority="2" />
+      <Item value="null" priority="1" />
+      <Item value="this" priority="0" />
+      <Item value="connectionString" priority="0" />
+      <Item value="autoDisposeConnection" priority="0" />
+      <Item value="Length" priority="0" />
+      <Item value="Ignore" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Xml.Linq.XElement">
       <Item value="Parse" priority="0" />
@@ -137,24 +154,24 @@
       <Item value="Elements" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.OrmLite.Sqlite.SqliteOrmLiteDialectProvider">
-      <Item value="Instance" priority="0" />
+      <Item value="Instance" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.String">
       <Item value="OpenDbConnection" priority="0" />
       <Item value="ToString" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Data.IDbConnection">
-      <Item value="CreateCommand" priority="0" />
+      <Item value="CreateCommand" priority="1" />
       <Item value="BeginTransaction" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Data.IDbCommand">
-      <Item value="CreateTable" priority="0" />
+      <Item value="CreateTable" priority="1" />
       <Item value="CreateTables" priority="0" />
       <Item value="ExecuteSql" priority="6" />
       <Item value="Connection" priority="2" />
       <Item value="Transaction" priority="0" />
-      <Item value="Select" priority="4" />
-      <Item value="Insert" priority="1" />
+      <Item value="Select" priority="6" />
+      <Item value="Insert" priority="2" />
       <Item value="GetLastInsertId" priority="0" />
       <Item value="Update" priority="1" />
       <Item value="First" priority="0" />
@@ -174,10 +191,10 @@
       <Item value="ToString" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
-      <Item value="That" priority="6" />
+      <Item value="That" priority="7" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Has">
-      <Item value="Count" priority="3" />
+      <Item value="Count" priority="4" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Data.IDbTransaction">
       <Item value="Rollback" priority="0" />
@@ -187,7 +204,7 @@
       <Item value="Total" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Is">
-      <Item value="EqualTo" priority="3" />
+      <Item value="EqualTo" priority="4" />
       <Item value="Null" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Data.IsolationLevel">
@@ -213,6 +230,12 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Attribute">
       <Item value="GetType" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.OrmLite.OrmLiteConnectionFactory">
+      <Item value="OpenDbConnection" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.OrmLite.OrmLiteConfig">
+      <Item value="DialectProvider" priority="1" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

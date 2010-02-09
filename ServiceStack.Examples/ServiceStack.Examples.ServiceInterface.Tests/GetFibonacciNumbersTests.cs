@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Configuration;
 using ServiceStack.Examples.ServiceInterface.Types;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests
@@ -14,9 +13,8 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 		{
 			var request = new GetFibonacciNumbers { Take = 5 };
 
-			var handler = new GetFibonacciNumbersService {
-				Config = new ExampleConfig { DefaultFibonacciLimit = 10 }
-			};
+			var handler = new GetFibonacciNumbersService(
+				new ExampleConfig { DefaultFibonacciLimit = 10 });
 
 			var response = (GetFibonacciNumbersResponse)
 				handler.Execute(request);

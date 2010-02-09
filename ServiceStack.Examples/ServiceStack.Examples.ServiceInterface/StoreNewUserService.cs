@@ -17,17 +17,11 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// </summary>
 	public class StoreNewUserService : IService<StoreNewUser>
 	{
-		private readonly ExampleConfig config;
-
-		//Example of ServiceStack's IOC constructor injection
-		public StoreNewUserService(ExampleConfig config)
-		{
-			this.config = config;
-		}
+		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(StoreNewUser request)
 		{
-			using (var dbConn = config.ConnectionString.OpenDbConnection())
+			using (var dbConn = ConnectionFactory.OpenDbConnection())
 			using (var dbCmd = dbConn.CreateCommand())
 			{
 				var existingUsers = dbCmd.Select<User>("UserName = {0}", request.UserName).ToList();
@@ -43,7 +37,7 @@ namespace ServiceStack.Examples.ServiceInterface
 
 				dbCmd.Insert(newUser);
 
-				return new StoreNewUserResponse { UserId = newUser.Id };
+				return new StoreNewUserResponse { UserId = dbCmd.GetLastInsertId() };
 			}
 		}
 	}

@@ -8,6 +8,7 @@ using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.OrmLite.Tests
 {
+	[Ignore("Perf test")]
 	[TestFixture]
 	public class NorthwindPerfTests
 	{

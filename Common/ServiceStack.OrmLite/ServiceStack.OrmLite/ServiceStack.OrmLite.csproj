@@ -63,9 +63,12 @@
   <ItemGroup>
     <Compile Include="ExpressionPropertyInvoker.cs" />
     <Compile Include="FieldDefinition.cs" />
+    <Compile Include="IDbConnectionFactory.cs" />
     <Compile Include="IPropertyInvoker.cs" />
     <Compile Include="ModelDefinition.cs" />
     <Compile Include="OrmLiteConfig.cs" />
+    <Compile Include="OrmLiteConnection.cs" />
+    <Compile Include="OrmLiteConnectionFactory.cs" />
     <Compile Include="OrmLitePersistenceProvider.cs" />
     <Compile Include="IOrmLiteDialectProvider.cs" />
     <Compile Include="OrmLiteConfigExtensions.cs" />
@@ -77,11 +80,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyInvoker.cs" />
     <Compile Include="ReflectionPropertyInvoker.cs" />
+    <Compile Include="SqlInValues.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

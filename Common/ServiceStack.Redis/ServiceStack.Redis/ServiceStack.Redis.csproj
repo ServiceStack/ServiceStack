@@ -73,7 +73,7 @@
     <Compile Include="IRedisClient.cs" />
     <Compile Include="IRedisNativeClient.cs" />
     <Compile Include="RedisCacheClient.cs" />
-    <Compile Include="Generic\RedisGenericClient.cs" />
+    <Compile Include="Generic\RedisTypedClient.cs" />
     <Compile Include="RedisClientSet.cs" />
     <Compile Include="RedisClient.cs" />
     <Compile Include="RedisKeyType.cs" />
@@ -90,6 +90,10 @@
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

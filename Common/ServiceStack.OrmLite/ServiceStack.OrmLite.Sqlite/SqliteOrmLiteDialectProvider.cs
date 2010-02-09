@@ -4,7 +4,7 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 using Mono.Data.Sqlite;
-using ServiceStack.Common.Text;
+using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.OrmLite.Sqlite
 {

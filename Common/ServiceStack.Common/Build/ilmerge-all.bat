@@ -23,6 +23,7 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceHost\bin\%BUILD%\ServiceStack.S
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceClient.Web\bin\%BUILD%\ServiceStack.ServiceClient.Web.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\%BUILD%\ServiceStack.CacheAccess.Providers.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Compression\bin\%BUILD%\ServiceStack.Compression.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Text\bin\%BUILD%\ServiceStack.Text.dll
 
 REM External ServiceStack components
 SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\bin\%BUILD%\ServiceStack.OrmLite.dll
@@ -34,9 +35,9 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.Redis\ServiceStack.Redis\bin\%BUILD
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
 
-%ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.Memcached.dll ..\Lib\Enyim.Caching.dll ..\ServiceStack.CacheAccess.Memcached\bin\%BUILD%\ServiceStack.CacheAccess.Memcached.dll
+REM mergiing and copying other external servicestack components:
+REM %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.Memcached.dll ..\Lib\Enyim.Caching.dll ..\ServiceStack.CacheAccess.Memcached\bin\%BUILD%\ServiceStack.CacheAccess.Memcached.dll
 
-REM copying other external servicestack components:
 REM COPY ..\ServiceStack.DataAccess.Db4oProvider\bin\%BUILD%\ServiceStack.DataAccess.Db4oProvider.dll .
 REM COPY ..\ServiceStack.SpringFactory\bin\%BUILD%\ServiceStack.SpringFactory.dll .
 REM COPY ..\Lib\ServiceStack.Logging.Log4Net.dll .

@@ -14,13 +14,18 @@ namespace ServiceStack.Examples.ServiceInterface
 	public class GetFibonacciNumbersService 
 		: IService<GetFibonacciNumbers>
 	{
-		//Example of ServiceStack's IOC property injection
-		public ExampleConfig Config { get; set; }
+		private readonly ExampleConfig config;
+
+		//Example of ServiceStack's IOC constructor injection
+		public GetFibonacciNumbersService(ExampleConfig config)
+		{
+			this.config = config;
+		}
 
 		public object Execute(GetFibonacciNumbers request)
 		{
 			var skip = request.Skip.GetValueOrDefault(0);
-			var take = request.Take.GetValueOrDefault(Config.DefaultFibonacciLimit);
+			var take = request.Take.GetValueOrDefault(config.DefaultFibonacciLimit);
 
 			var results = new List<long>();
 

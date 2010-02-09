@@ -8,11 +8,11 @@ namespace ServiceStack.Examples.ServiceInterface
 		: IService<GetAllUsers>
 	{
 		//Example of ServiceStack's IOC property injection
-		public ExampleConfig Config { get; set; }
+		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(GetAllUsers request)
 		{
-			using (var dbConn = Config.ConnectionString.OpenDbConnection())
+			using (var dbConn = ConnectionFactory.OpenDbConnection())
 			using (var dbCmd = dbConn.CreateCommand())
 			{
 				var users = dbCmd.Select<User>();

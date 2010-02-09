@@ -6,6 +6,8 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.Examples.ServiceInterface.Tests
 {
@@ -21,42 +23,42 @@ namespace ServiceStack.Examples.ServiceInterface.Tests
 		[Test]
 		public void StoreNewUser_Test()
 		{
-			var mockPersistence = new Mock<IQueryablePersistenceProvider>();
+			var factory = new OrmLiteConnectionFactory(
+				InMemoryDb, false, SqliteOrmLiteDialectProvider.Instance);
 
-			mockPersistence.Expect(x => x.Query(It.IsAny<Predicate<User>>())).Returns(
-				new List<User>());
+			using (var dbConn = factory.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
+			{
+				dbCmd.CreateTable<User>(true);
 
-			mockPersistence.Expect(x => x.Store(It.IsAny<User>())).Callback(
-				delegate(User user) {
-					user.Id = 10;
-				});
+				var service = new StoreNewUserService { ConnectionFactory = factory };
+				var response = (StoreNewUserResponse)service.Execute(request);
 
-			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
+				Assert.That(response.UserId, Is.EqualTo(1));
 
-			var handler = new StoreNewUserService(providerManagerObject);
-			var response = (StoreNewUserResponse)handler.Execute(request);
-
-			mockPersistence.VerifyAll();
-
-			Assert.That(response.UserId, Is.EqualTo(10));
+				var storedUser = dbCmd.First<User>("UserName = {0}", request.UserName);
+				Assert.That(storedUser.Email, Is.EqualTo(request.Email));
+				Assert.That(storedUser.Password, Is.EqualTo(request.Password));
+			}
 		}
 
 		[Test]
 		public void Existing_user_returns_error_response()
 		{
-			var mockPersistence = new Mock<IQueryablePersistenceProvider>();
+			var factory = new OrmLiteConnectionFactory(
+				InMemoryDb, false, SqliteOrmLiteDialectProvider.Instance);
 
-			mockPersistence.Expect(x => x.Query(It.IsAny<Predicate<User>>())).Returns(
-				new[] { new User { UserName = request.UserName }, }.ToList());
+			using (var dbConn = factory.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
+			{
+				dbCmd.CreateTable<User>(true);
+				dbCmd.Insert(new User { UserName = request.UserName });
 
-			var providerManagerObject = GetMockProviderManagerObject(mockPersistence);
+				var service = new StoreNewUserService { ConnectionFactory = factory };
+				var response = (StoreNewUserResponse)service.Execute(request);
 
-			var handler = new StoreNewUserService(providerManagerObject);
-			var response = (StoreNewUserResponse)handler.Execute(request);
-
-			mockPersistence.VerifyAll();
-
-			Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo("UserNameMustBeUnique"));
+				Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo("UserNameMustBeUnique"));
+			}
 		}
 
 	}

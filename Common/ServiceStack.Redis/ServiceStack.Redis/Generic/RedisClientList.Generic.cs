@@ -19,11 +19,11 @@ namespace ServiceStack.Redis.Generic
 	internal class RedisClientList<T>
 		: IRedisList<T>
 	{
-		private readonly RedisGenericClient<T> client;
+		private readonly RedisTypedClient<T> client;
 		private readonly string listId;
 		private const int PageLimit = 1000;
 
-		public RedisClientList(RedisGenericClient<T> client, string listId)
+		public RedisClientList(RedisTypedClient<T> client, string listId)
 		{
 			this.listId = listId;
 			this.client = client;

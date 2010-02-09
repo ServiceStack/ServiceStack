@@ -60,6 +60,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryFormatterDeserializer.cs" />
+    <Compile Include="BinaryFormatterSerializer.cs" />
     <Compile Include="DataContractDeserializer.cs" />
     <Compile Include="DataContractSerializer.cs" />
     <Compile Include="IServiceClient.cs" />

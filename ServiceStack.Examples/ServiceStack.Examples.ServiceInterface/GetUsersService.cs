@@ -12,28 +12,28 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// This example shows a simple introduction into SOA-like webservices. 
 	/// i.e. group similar operations into a single 'document-centric like' service request.
 	/// </summary>
-	public class GetUsersService 
+	public class GetUsersService
 		: IService<GetUsers>
 	{
 		//Example of ServiceStack's IOC property injection
-		public ExampleConfig Config { get; set; }
+		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(GetUsers request)
 		{
-			using (var dbConn = Config.ConnectionString.OpenDbConnection())
+			using (var dbConn = ConnectionFactory.OpenDbConnection())
 			using (var dbCmd = dbConn.CreateCommand())
 			{
 				var users = new List<User>();
 
-				if (request.UserIds != null)
+				if (request.UserIds != null && request.UserIds.Count > 0)
 				{
 					users.AddRange(dbCmd.GetByIds<User>(request.UserIds));
 				}
 
-				if (request.UserNames != null)
+				if (request.UserNames != null && request.UserNames.Count > 0)
 				{
-					users.AddRange(dbCmd.Select<User>("UserName IN ({0})", 
-						request.UserNames.SqlJoin()));
+					users.AddRange(dbCmd.Select<User>("UserName IN ({0})",
+						request.UserNames.SqlInValues()));
 				}
 
 				return new GetUsersResponse { Users = new ArrayOfUser(users) };

@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\Mono.Data.Sqlite.dll</HintPath>
+    </Reference>
     <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\Moq.dll</HintPath>
@@ -67,9 +71,6 @@
   <ItemGroup>
     <Compile Include="GetUsersTests.cs" />
     <Compile Include="MonoTests\Soap12WsdlProgram.cs" />
-    <Compile Include="MonoTests\GetUsersProgram.cs" />
-    <Compile Include="MonoTests\StoreNewUserProgram.cs" />
-    <Compile Include="MonoTests\TestProgramBase.cs" />
     <Compile Include="StoreNewUserTests.cs" />
     <Compile Include="GetFibonacciNumbersTests.cs" />
     <Compile Include="GetFactorialTests.cs" />
@@ -81,6 +82,16 @@
       <Project>{519A7B72-D144-436D-AAC3-7BAAEAD3FF52}</Project>
       <Name>ServiceStack.Examples.ServiceInterface</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="sqlite3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="sqlite3.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

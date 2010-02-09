@@ -13,11 +13,11 @@ namespace ServiceStack.Examples.ServiceInterface
 		: IService<DeleteAllUsers>
 	{
 		//Example of ServiceStack's IOC property injection
-		public ExampleConfig Config { get; set; }
+		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(DeleteAllUsers request)
 		{
-			using (var dbConn = Config.ConnectionString.OpenDbConnection())
+			using (var dbConn = ConnectionFactory.OpenDbConnection())
 			using (var dbCmd = dbConn.CreateCommand())
 			{
 				dbCmd.DeleteAll<User>();
