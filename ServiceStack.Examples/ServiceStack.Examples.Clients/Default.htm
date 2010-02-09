@@ -392,37 +392,32 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-	public class StoreNewUserHandler : IService&lt;StoreNewUser&gt;
+	public class StoreNewUserService : IService&lt;StoreNewUser&gt;
 	{
-		private readonly IPersistenceProviderManager providerFactory;
-
-		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
-		public StoreNewUserHandler(IPersistenceProviderManager providerFactory)
-		{
-			this.providerFactory = providerFactory;
-		}
+		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(StoreNewUser request)
 		{
-			var persistenceProvider = (IQueryablePersistenceProvider)providerFactory.GetProvider();
-
-			var existingUsers = persistenceProvider.Query<User>(user =&gt; user.UserName == request.UserName).ToList();
-
-			if (existingUsers.Count &gt; 0)
+			using (var dbConn = ConnectionFactory.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
 			{
-				return new StoreNewUserResponse {
-					ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
-				};
+				var existingUsers = dbCmd.Select&lt;User&gt;("UserName = {0}", request.UserName).ToList();
+
+				if (existingUsers.Count &gt; 0)
+				{
+					return new StoreNewUserResponse {
+						ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
+					};
+				}
+
+				var newUser = new User { UserName = request.UserName, Email = request.Email, Password = request.Password };
+
+				dbCmd.Insert(newUser);
+
+				return new StoreNewUserResponse { UserId = dbCmd.GetLastInsertId() };
 			}
-
-			var newUser = new User { UserName = request.UserName, Email = request.Email, Password = request.Password };
-
-			persistenceProvider.Store(newUser);
-
-			return new StoreNewUserResponse { UserId = newUser.Id };
 		}
 	}
-
                         </code>
                     </div>
                 </div>
@@ -503,33 +498,31 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-	public class GetUsersHandler : IService&lt;GetUsers&gt;
+	public class GetUsersService : IService&lt;GetUsers&gt;
 	{
-		private readonly IPersistenceProviderManager providerFactory;
-
-		//FactoryProviderHandlerFactory in AppHost provides IOC constructor injection
-		public GetUsersHandler(IPersistenceProviderManager providerFactory)
-		{
-			this.providerFactory = providerFactory;
-		}
+		//Example of ServiceStack's IOC property injection
+		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(GetUsers request)
 		{
-			var persistenceProvider = (IQueryablePersistenceProvider)providerFactory.GetProvider();
-
-			var users = new List&lt;User&gt;();
-
-			if (request.UserIds != null)
+			using (var dbConn = ConnectionFactory.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
 			{
-				users.AddRange(persistenceProvider.GetByIds&lt;User&gt;(request.UserIds));
-			}
+				var users = new List&lt;User&gt;();
 
-			if (request.UserNames != null)
-			{
-				users.AddRange(persistenceProvider.FindByValues&lt;User&gt;("UserName", request.UserNames));
-			}
+				if (request.UserIds != null &amp;&amp; request.UserIds.Count &gt; 0)
+				{
+					users.AddRange(dbCmd.GetByIds&lt;User&gt;(request.UserIds));
+				}
 
-			return new GetUsersResponse { Users = new ArrayOfUser(users) };
+				if (request.UserNames != null &amp;&amp; request.UserNames.Count &gt; 0)
+				{
+					users.AddRange(dbCmd.Select&lt;User&gt;("UserName IN ({0})",
+						request.UserNames.SqlInValues()));
+				}
+
+				return new GetUsersResponse { Users = new ArrayOfUser(users) };
+			}
 		}
 	}
                         </code>
