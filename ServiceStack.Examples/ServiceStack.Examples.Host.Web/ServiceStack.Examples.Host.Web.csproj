@@ -106,11 +106,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Web.config.rename.for.iis7" />
+    <None Include="Web.config.rename_for_iis7" />
     <None Include="sqlite3.so">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Web.config-rename.for.iis6-mono" />
+    <None Include="Web.config.rename_for_iis6_mono" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

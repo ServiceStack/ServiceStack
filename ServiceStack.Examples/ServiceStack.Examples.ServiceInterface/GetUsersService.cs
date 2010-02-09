@@ -12,8 +12,7 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// This example shows a simple introduction into SOA-like webservices. 
 	/// i.e. group similar operations into a single 'document-centric like' service request.
 	/// </summary>
-	public class GetUsersService
-		: IService<GetUsers>
+	public class GetUsersService : IService<GetUsers>
 	{
 		//Example of ServiceStack's IOC property injection
 		public IDbConnectionFactory ConnectionFactory { get; set; }

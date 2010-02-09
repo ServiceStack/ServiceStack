@@ -8,7 +8,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	{
 		[AutoIncrement]
 		[DataMember]
-		public long Id { get; set; }
+		public int Id { get; set; }
 
 		[DataMember]
 		public string UserName { get; set; }

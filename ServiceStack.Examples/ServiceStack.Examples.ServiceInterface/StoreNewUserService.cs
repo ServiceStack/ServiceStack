@@ -17,6 +17,7 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// </summary>
 	public class StoreNewUserService : IService<StoreNewUser>
 	{
+		//Example of ServiceStack's Func IOC property injection
 		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(StoreNewUser request)
