@@ -81,7 +81,7 @@
     <Content Include="Public\Soap12\AsyncOneWay.svc" />
     <Content Include="Public\Soap12\SyncReply.svc" />
     <Content Include="sqlite3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="Web.config.iis7" />
   </ItemGroup>
@@ -107,7 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="sqlite3.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Web.config" />
   </ItemGroup>

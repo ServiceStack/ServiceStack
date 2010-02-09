@@ -37,7 +37,7 @@ namespace ServiceStack.Examples.Host.Console
 
 			container.Register<IDbConnectionFactory>(c => 
 				new OrmLiteConnectionFactory(
-					appConfig.ConnectionString.MapHostAbsolutePath(), 
+					appConfig.ConnectionString.MapAbsolutePath(), 
 					SqliteOrmLiteDialectProvider.Instance));
 
 			var listeningOn = appSettings.GetString("ListenBaseUrl");
