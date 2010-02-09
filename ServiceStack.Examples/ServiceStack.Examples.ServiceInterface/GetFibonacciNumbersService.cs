@@ -16,7 +16,7 @@ namespace ServiceStack.Examples.ServiceInterface
 	{
 		private readonly ExampleConfig config;
 
-		//Example of ServiceStack's Func IOC constructor injection
+		//Example of ServiceStack's built-in Funq IOC property injection
 		public GetFibonacciNumbersService(ExampleConfig config)
 		{
 			this.config = config;

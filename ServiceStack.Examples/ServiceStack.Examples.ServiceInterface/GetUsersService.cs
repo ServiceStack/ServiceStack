@@ -14,7 +14,7 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// </summary>
 	public class GetUsersService : IService<GetUsers>
 	{
-		//Example of ServiceStack's IOC property injection
+		//Example of ServiceStack's built-in Funq IOC property injection
 		public IDbConnectionFactory ConnectionFactory { get; set; }
 
 		public object Execute(GetUsers request)

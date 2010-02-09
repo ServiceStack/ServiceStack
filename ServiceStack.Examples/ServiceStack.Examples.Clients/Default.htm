@@ -197,7 +197,7 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-	public class GetFactorialHandler : IService&lt;GetFactorial&gt;
+	public class GetFactorialService : IService&lt;GetFactorial&gt;
 	{
 		public object Execute(GetFactorial request)
 		{
@@ -268,11 +268,11 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-	public class GetFibonacciNumbersHandler : IService&lt;GetFibonacciNumbers&gt;
+	public class GetFibonacciNumbersService : IService&lt;GetFibonacciNumbers&gt;
 	{
 		private readonly IResourceManager config;
 
-	    //Example of ServiceStack's Func IOC constructor injection
+	    //Example of ServiceStack's built-in Funq IOC constructor injection
 	    public GetFibonacciNumbersService(IResourceManager config)
 		{
 			this.config = config;
@@ -394,7 +394,7 @@
                         <code class="server-code">
     public class StoreNewUserService : IService&lt;StoreNewUser&gt;
     {
-	    //Example of ServiceStack's Func IOC property injection
+	    //Example of ServiceStack's built-in Funq IOC property injection
 	    public IDbConnectionFactory ConnectionFactory { get; set; }
 
 	    public object Execute(StoreNewUser request)
@@ -508,7 +508,7 @@
                         <code class="server-code">
     public class GetUsersService : IService&lt;GetUsers&gt;
     {
-	    //Example of ServiceStack's Func IOC property injection
+	    //Example of ServiceStack's built-in Funq IOC property injection
 	    public IDbConnectionFactory ConnectionFactory { get; set; }
 
 	    public object Execute(GetUsers request)
