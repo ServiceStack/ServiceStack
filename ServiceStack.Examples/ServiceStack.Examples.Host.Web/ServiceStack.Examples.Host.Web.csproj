@@ -107,9 +107,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Web.config.rename_for_iis7" />
-    <None Include="sqlite3.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Web.config.rename_for_iis6_mono" />
   </ItemGroup>
   <ItemGroup>
