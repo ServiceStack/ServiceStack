@@ -36,7 +36,8 @@ namespace ServiceStack.Examples.Host.Web
 
 			container.Register<IDbConnectionFactory>(c =>
 				new OrmLiteConnectionFactory(
-					appConfig.ConnectionString, SqliteOrmLiteDialectProvider.Instance));
+					appConfig.ConnectionString.MapHostAbsolutePath(),
+					SqliteOrmLiteDialectProvider.Instance));
 
 			log.InfoFormat("AppHost Configured: " + DateTime.Now);
 		}

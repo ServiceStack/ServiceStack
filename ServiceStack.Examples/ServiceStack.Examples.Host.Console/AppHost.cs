@@ -1,5 +1,6 @@
 ﻿using System;
 using Funq;
+using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.Examples.ServiceInterface.Types;
@@ -36,7 +37,8 @@ namespace ServiceStack.Examples.Host.Console
 
 			container.Register<IDbConnectionFactory>(c => 
 				new OrmLiteConnectionFactory(
-					appConfig.ConnectionString, SqliteOrmLiteDialectProvider.Instance));
+					appConfig.ConnectionString.MapHostAbsolutePath(), 
+					SqliteOrmLiteDialectProvider.Instance));
 
 			var listeningOn = appSettings.GetString("ListenBaseUrl");
 			this.Start(listeningOn);
