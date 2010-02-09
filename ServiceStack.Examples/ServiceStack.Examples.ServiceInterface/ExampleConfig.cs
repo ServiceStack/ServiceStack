@@ -9,7 +9,7 @@ namespace ServiceStack.Examples.ServiceInterface
 
 		public ExampleConfig(IResourceManager appConfig)
 		{
-			ConnectionString = appConfig.GetString("ConnectionString").MapAbsolutePath();
+			ConnectionString = appConfig.GetString("ConnectionString");
 			DefaultFibonacciLimit = appConfig.Get("DefaultFibonacciLimit", 10);
 		}
 

@@ -1,10 +1,12 @@
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
 	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
 	public class User
 	{
+		[AutoIncrement]
 		[DataMember]
 		public long Id { get; set; }
 
