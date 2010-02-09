@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
 
 namespace Northwind.Benchmarks.Serialization
 {
