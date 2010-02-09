@@ -4,6 +4,7 @@ using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface;
+using ServiceStack.Examples.ServiceInterface.Support;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
@@ -38,6 +39,8 @@ namespace ServiceStack.Examples.Host.Web
 				new OrmLiteConnectionFactory(
 					appConfig.ConnectionString.MapHostAbsolutePath(),
 					SqliteOrmLiteDialectProvider.Instance));
+
+			ConfigureDatabase.Init(container.Resolve<IDbConnectionFactory>());
 
 			log.InfoFormat("AppHost Configured: " + DateTime.Now);
 		}

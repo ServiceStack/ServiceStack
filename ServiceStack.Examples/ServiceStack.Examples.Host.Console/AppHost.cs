@@ -3,6 +3,7 @@ using Funq;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.Examples.ServiceInterface;
+using ServiceStack.Examples.ServiceInterface.Support;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -55,6 +56,8 @@ namespace ServiceStack.Examples.Host.Console
 
 		private static void DatabaseTest(IDbConnectionFactory connectionFactory)
 		{
+			ConfigureDatabase.Init(connectionFactory);
+
 			var storeRequest = new StoreNewUser {
 				Email = "new@email",
 				Password = "password",
