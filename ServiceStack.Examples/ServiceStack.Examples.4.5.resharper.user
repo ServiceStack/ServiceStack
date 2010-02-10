@@ -18,42 +18,59 @@
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GreetService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="592" fromTop="5" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="157" fromTop="7" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersService.cs" caret="352" fromTop="11" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersService.cs" caret="837" fromTop="29" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestHostBase.cs" caret="335" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="190" fromTop="5" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Soap12WsdlProgram.cs" caret="219" fromTop="6" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="557" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="826" fromTop="24" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1017" fromTop="15" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1469" fromTop="28" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="1132" fromTop="15" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="797" fromTop="16" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1306" fromTop="23" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="328" fromTop="10" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="139" fromTop="8" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2005" fromTop="41" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="218" fromTop="8" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1122" fromTop="28" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="491" fromTop="18" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="336" fromTop="10" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.iis7" caret="2315" fromTop="19" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="476" fromTop="20" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="522" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="808" fromTop="21" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="875" fromTop="19" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10214" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="1188" fromTop="39" />
     </RecentFiles>
     <RecentEdits>
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1671" fromTop="23" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1919" fromTop="25" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="1919" fromTop="18" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Soap12WsdlProgram.cs" caret="219" fromTop="6" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="472" fromTop="17" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="60" fromTop="1" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1853" fromTop="28" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1760" fromTop="24" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2215" fromTop="30" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="548" fromTop="8" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="869" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1535" fromTop="28" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="923" fromTop="15" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="428" fromTop="17" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="95" fromTop="2" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="1160" fromTop="28" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1290" fromTop="23" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="252" fromTop="7" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="1171" fromTop="28" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2070" fromTop="23" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="514" fromTop="16" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1412" fromTop="18" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1959" fromTop="33" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1382" fromTop="39" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="485" fromTop="21" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.iis7" caret="2331" fromTop="20" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="306" fromTop="11" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="129" fromTop="4" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.iis7" caret="2197" fromTop="17" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17856" fromTop="23" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18027" fromTop="28" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18294" fromTop="38" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14396" fromTop="20" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14166" fromTop="14" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14728" fromTop="43" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14587" fromTop="27" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10388" fromTop="21" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="284" fromTop="10" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="13773" fromTop="25" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10061" fromTop="16" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="7640" fromTop="23" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17453" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="635" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="883" fromTop="20" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="653" fromTop="18" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10214" fromTop="25" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -71,11 +88,11 @@
       <Item value="IApplicationContext" priority="0" />
       <Item value="IRequestContext" priority="1" />
       <Item value="Namespace" priority="2" />
-      <Item value="public" priority="22" />
+      <Item value="public" priority="23" />
       <Item value="GetFactorials" priority="2" />
       <Item value="DataMember" priority="2" />
       <Item value="type" priority="0" />
-      <Item value="var" priority="46" />
+      <Item value="var" priority="49" />
       <Item value="context" priority="2" />
       <Item value="return" priority="7" />
       <Item value="new" priority="61" />
@@ -91,7 +108,7 @@
       <Item value="MemcachedClientCache" priority="2" />
       <Item value="LogManager" priority="6" />
       <Item value="AppHost" priority="3" />
-      <Item value="void" priority="9" />
+      <Item value="void" priority="10" />
       <Item value="if" priority="11" />
       <Item value="Instance" priority="1" />
       <Item value="null" priority="9" />
@@ -135,7 +152,7 @@
       <Item value="List&lt;User&gt;" priority="2" />
       <Item value="users" priority="3" />
       <Item value="Users" priority="0" />
-      <Item value="false" priority="3" />
+      <Item value="false" priority="4" />
       <Item value="FactoryProvider" priority="0" />
       <Item value="IPersistenceProviderManager" priority="1" />
       <Item value="x" priority="0" />
@@ -170,7 +187,7 @@
       <Item value="IList" priority="0" />
       <Item value="ICollection" priority="1" />
       <Item value="Id" priority="1" />
-      <Item value="static" priority="6" />
+      <Item value="static" priority="7" />
       <Item value="class" priority="3" />
       <Item value="const" priority="2" />
       <Item value="Config" priority="2" />
@@ -250,7 +267,7 @@
       <Item value="ILog" priority="1" />
       <Item value="typeof" priority="1" />
       <Item value="DebugLogFactory" priority="0" />
-      <Item value="container" priority="6" />
+      <Item value="container" priority="7" />
       <Item value="GetType" priority="0" />
       <Item value="Container" priority="0" />
       <Item value="ProviderManager" priority="0" />
@@ -258,10 +275,10 @@
       <Item value="resourceManager" priority="1" />
       <Item value="ExampleConfig" priority="5" />
       <Item value="XmlSyncReplyHandler" priority="0" />
-      <Item value="using" priority="5" />
+      <Item value="using" priority="7" />
       <Item value="dbPath" priority="0" />
-      <Item value="dbConn" priority="2" />
-      <Item value="dbCmd" priority="7" />
+      <Item value="dbConn" priority="3" />
+      <Item value="dbCmd" priority="8" />
       <Item value="ConnectionString" priority="0" />
       <Item value="testConfig" priority="0" />
       <Item value="DefaultFibonacciLimit" priority="0" />
@@ -272,7 +289,7 @@
       <Item value="storedUser" priority="0" />
       <Item value="Is" priority="0" />
       <Item value="ConnectionFactory" priority="2" />
-      <Item value="connectionFactory" priority="0" />
+      <Item value="connectionFactory" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.ConfigurationResourceManager">
       <Item value="GetString" priority="0" />
@@ -465,6 +482,7 @@
     <ItemStatistics item="Qualified:System.String">
       <Item value="Split" priority="0" />
       <Item value="OpenDbConnection" priority="0" />
+      <Item value="MapHostAbsolutePath" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Convert">
       <Item value="ToInt64" priority="0" />
@@ -546,7 +564,7 @@
       <Item value="Init" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Funq.Container">
-      <Item value="Resolve" priority="7" />
+      <Item value="Resolve" priority="9" />
       <Item value="Register" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetFibonacciNumbersHandler">
@@ -567,12 +585,12 @@
       <Item value="ConnectionString" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Data.IDbConnection">
-      <Item value="CreateCommand" priority="2" />
+      <Item value="CreateCommand" priority="3" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Data.IDbCommand">
       <Item value="Select" priority="4" />
       <Item value="Insert" priority="2" />
-      <Item value="CreateTable" priority="0" />
+      <Item value="CreateTable" priority="1" />
       <Item value="FirstOrDefault" priority="0" />
       <Item value="First" priority="0" />
       <Item value="GetLastInsertId" priority="0" />
@@ -591,6 +609,13 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetUsers">
       <Item value="UserIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.OrmLite.IDbConnectionFactory">
+      <Item value="CreateDbConnection" priority="0" />
+      <Item value="OpenDbConnection" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Examples.ServiceInterface.Support.ConfigureDatabase">
+      <Item value="Init" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

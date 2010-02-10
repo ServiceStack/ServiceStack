@@ -29,12 +29,12 @@
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="3244" fromTop="19" />
       <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="83" fromTop="2" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:IRedisClient.cs" caret="742" fromTop="14" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="10898" fromTop="30" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:_Misc/f:StopWatchTests.cs" caret="524" fromTop="11" />
       <File id="6B133D45-91D4-4AA5-A6D4-247282879CBB/f:BinaryFormatterSerializer.cs" caret="504" fromTop="18" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SingleModelSerializationPerf.cs" caret="1157" fromTop="62" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseTablesSerialization.cs" caret="2052" fromTop="73" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseRowsSerialization.cs" caret="1273" fromTop="33" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="966" fromTop="34" />
     </RecentFiles>
     <RecentEdits>
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11379" fromTop="37" />
