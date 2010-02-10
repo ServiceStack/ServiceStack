@@ -48,6 +48,11 @@ namespace ServiceStack.Common
 			return string.Format("urn:{0}:{1}", objectTypeName, idFieldValue);
 		}
 
+		public static string Create<T>(string idFieldValue)
+		{
+			return Create(typeof (T), idFieldValue);
+		}
+
 		public static string Create(Type objectType, string idFieldValue)
 		{
 			if (idFieldValue.Contains(FieldSeperator.ToString()))
@@ -55,6 +60,11 @@ namespace ServiceStack.Common
 				throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
 			}
 			return string.Format("urn:{0}:{1}", objectType.Name, idFieldValue);
+		}
+
+		public static string Create<T>(string idFieldName, string idFieldValue)
+		{
+			return Create(typeof (T), idFieldName, idFieldValue);
 		}
 
 		public static string Create(Type objectType, string idFieldName, string idFieldValue)

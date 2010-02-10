@@ -27,6 +27,9 @@ namespace ServiceStack.Redis
 	public class RedisNativeClient
 		: IRedisNativeClient
 	{
+		private const string DefaultHost = "localhost";
+		private const int DefaultPort = 6379;
+
 		internal const int Success = 1;
 		internal const int OneGb = 1073741824;
 		private readonly byte [] endData = new[] { (byte)'\r', (byte)'\n' };
@@ -40,6 +43,12 @@ namespace ServiceStack.Redis
 		public int RetryCount { get; set; }
 		public int SendTimeout { get; set; }
 		public string Password { get; set; }
+		private readonly object readWriteLock = new object();
+
+		public RedisNativeClient(string host)
+			: this(host, DefaultPort)
+		{
+		}
 
 		public RedisNativeClient(string host, int port)
 		{
@@ -52,7 +61,7 @@ namespace ServiceStack.Redis
 		}
 
 		public RedisNativeClient()
-			: this("localhost", 6379)
+			: this(DefaultHost, DefaultPort)
 		{
 		}
 
@@ -60,42 +69,48 @@ namespace ServiceStack.Redis
 		#region Protocol helper methods
 		private void Connect()
 		{
-			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
-				SendTimeout = SendTimeout
-			};
-			try
+			lock (readWriteLock)
 			{
-				socket.Connect(Host, Port);
-
-				if (!socket.Connected)
+				socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
+					SendTimeout = SendTimeout
+				};
+				try
 				{
-					socket.Close();
-					socket = null;
-					return;
-				}
-				bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
+					socket.Connect(Host, Port);
 
-				if (Password != null)
-					SendExpectSuccess("AUTH {0}\r\n", Password);
-			}
-			catch (SocketException ex)
-			{
-				throw new InvalidOperationException("could not connect to redis instance at " + Host + ":" + Port, ex);
+					if (!socket.Connected)
+					{
+						socket.Close();
+						socket = null;
+						return;
+					}
+					bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
+
+					if (Password != null)
+						SendExpectSuccess("AUTH {0}\r\n", Password);
+				}
+				catch (SocketException ex)
+				{
+					throw new InvalidOperationException("could not connect to redis instance at " + Host + ":" + Port, ex);
+				}
 			}
 		}
 
 		protected string ReadLine()
 		{
 			var sb = new StringBuilder();
-			int c;
 
-			while ((c = bstream.ReadByte()) != -1)
+			lock (readWriteLock)
 			{
-				if (c == '\r')
-					continue;
-				if (c == '\n')
-					break;
-				sb.Append((char)c);
+				int c;
+				while ((c = bstream.ReadByte()) != -1)
+				{
+					if (c == '\r')
+						continue;
+					if (c == '\n')
+						break;
+					sb.Append((char)c);
+				}
 			}
 			return sb.ToString();
 		}
@@ -112,11 +127,14 @@ namespace ServiceStack.Redis
 			try
 			{
 				Log("S: " + String.Format(cmd, args));
-				socket.Send(r);
-				if (data != null)
+				lock (readWriteLock)
 				{
-					socket.Send(data);
-					socket.Send(endData);
+					socket.Send(r);
+					if (data != null)
+					{
+						socket.Send(data);
+						socket.Send(endData);
+					}
 				}
 			}
 			catch (SocketException)
@@ -142,7 +160,10 @@ namespace ServiceStack.Redis
 			try
 			{
 				Log("S: " + String.Format(cmd, args));
-				socket.Send(r);
+				lock (readWriteLock)
+				{
+					socket.Send(r);
+				}
 			}
 			catch (SocketException)
 			{
@@ -160,7 +181,7 @@ namespace ServiceStack.Redis
 			if (!SendCommand(cmd, args))
 				throw new Exception("Unable to connect");
 
-			int c = bstream.ReadByte();
+			var c = SafeReadByte();
 			if (c == -1)
 				throw new RedisResponseException("No more data");
 
@@ -172,6 +193,14 @@ namespace ServiceStack.Redis
 				return s;
 
 			throw new RedisResponseException("Unknown reply on integer request: " + c + s);
+		}
+
+		private int SafeReadByte()
+		{
+			lock (readWriteLock)
+			{
+				return bstream.ReadByte();
+			}
 		}
 
 		//
@@ -193,7 +222,7 @@ namespace ServiceStack.Redis
 
 		protected void ExpectSuccess()
 		{
-			int c = bstream.ReadByte();
+			int c = SafeReadByte();
 			if (c == -1)
 				throw new RedisResponseException("No more data");
 
@@ -229,7 +258,7 @@ namespace ServiceStack.Redis
 
 		private int ReadInt()
 		{
-			int c = bstream.ReadByte();
+			int c = SafeReadByte();
 			if (c == -1)
 				throw new RedisResponseException("No more data");
 
@@ -265,9 +294,12 @@ namespace ServiceStack.Redis
 				if (Int32.TryParse(r.Substring(1), out n))
 				{
 					byte[] retbuf = new byte[n];
-					bstream.Read(retbuf, 0, n);
-					if (bstream.ReadByte() != '\r' || bstream.ReadByte() != '\n')
-						throw new RedisResponseException("Invalid termination");
+					lock (readWriteLock)
+					{
+						bstream.Read(retbuf, 0, n);
+						if (bstream.ReadByte() != '\r' || bstream.ReadByte() != '\n')
+							throw new RedisResponseException("Invalid termination");						
+					} 
 					return retbuf;
 				}
 				throw new RedisResponseException("Invalid length");
@@ -277,7 +309,7 @@ namespace ServiceStack.Redis
 
 		private byte[][] ReadMultiData()
 		{
-			int c = bstream.ReadByte();
+			int c = SafeReadByte();
 			if (c == -1)
 				throw new RedisResponseException("No more data");
 
@@ -884,10 +916,15 @@ namespace ServiceStack.Redis
 			if (disposing)
 			{
 				Quit();
-				if (socket != null)
-					socket.Close();
-				socket = null;
+				lock (readWriteLock)
+				{
+					if (socket != null)
+						socket.Close();
+					socket = null;
+				}
 			}
 		}
+
 	}
+
 }

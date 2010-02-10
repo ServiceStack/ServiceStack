@@ -73,7 +73,9 @@ namespace ServiceStack.Text.Jsv
 		                                                                      Func<string, object> parseKeyFn, Func<string, object> parseValueFn)
 		{
 			if ((value = StripMap(value)) == null) return null;
-			if (value == string.Empty) return (IDictionary<TKey, TValue>)Activator.CreateInstance(createMapType);
+			if (value == string.Empty) return createMapType != null 
+				? (IDictionary<TKey, TValue>)Activator.CreateInstance(createMapType)
+				: new Dictionary<TKey, TValue>();
 
 			var to = (createMapType == null)
 			         	? new Dictionary<TKey, TValue>()

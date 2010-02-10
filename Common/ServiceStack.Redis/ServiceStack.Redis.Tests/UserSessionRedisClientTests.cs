@@ -1,27 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Logging;
+using ServiceStack.Logging.Support.Logging;
 
 namespace ServiceStack.Redis.Tests
 {
 	[TestFixture]
 	public class UserSessionTests
 	{
+		static UserSessionTests()
+		{
+			LogManager.LogFactory = new ConsoleLogFactory();
+		}
+
 		//MasterUser master;
 
-		static readonly Guid UserClientGlobalId = new Guid("71A30DE3-D7AF-4B8E-BCA2-AB646EE1F3E9");
+		static readonly Guid UserClientGlobalId1 = new Guid("71A30DE3-D7AF-4B8E-BCA2-AB646EE1F3E9");
+		static readonly Guid UserClientGlobalId2 = new Guid("A8D300CF-0414-4C99-A495-A7F34C93CDE1");
 		static readonly string UserClientKey = new Guid("10B7D0F7-4D4E-4676-AAC7-CF0234E9133E").ToString("N");
 		static readonly Guid UserId = new Guid("5697B030-A369-43A2-A842-27303A0A62BC");
 		private const string UserName = "User1";
 		private const string ShardId = "0";
 
 		readonly UserClientSession session = new UserClientSession(
-			UserId, Guid.NewGuid(), "192.168.0.1", UserClientKey, UserClientGlobalId);
+			Guid.NewGuid(), UserId, "192.168.0.1", UserClientKey, UserClientGlobalId1);
 
 		private RedisCacheClient redisCache;
 
@@ -38,6 +47,16 @@ namespace ServiceStack.Redis.Tests
 			return new CachedUserSessionManager(cacheClient);
 		}
 
+		private static void AssertClientSessionsAreEqual(
+			UserClientSession clientSession, UserClientSession resolvedClientSession)
+		{
+			Assert.That(resolvedClientSession.Id, Is.EqualTo(clientSession.Id));
+			Assert.That(resolvedClientSession.Base64ClientModulus, Is.EqualTo(clientSession.Base64ClientModulus));
+			Assert.That(resolvedClientSession.IPAddress, Is.EqualTo(clientSession.IPAddress));
+			Assert.That(resolvedClientSession.UserClientGlobalId, Is.EqualTo(clientSession.UserClientGlobalId));
+			Assert.That(resolvedClientSession.UserId, Is.EqualTo(clientSession.UserId));
+		}
+
 		[Test]
 		public void Can_add_single_UserSession()
 		{
@@ -49,26 +68,93 @@ namespace ServiceStack.Redis.Tests
 				ShardId,
 				session.IPAddress,
 				UserClientKey,
-				UserClientGlobalId);
+				UserClientGlobalId1);
 
 			var resolvedClientSession = cacheManager.GetUserClientSession(
 				clientSession.UserId, clientSession.Id);
 
-			Assert.That(resolvedClientSession.Id, Is.EqualTo(clientSession.Id));
-			Assert.That(resolvedClientSession.Base64ClientModulus, Is.EqualTo(clientSession.Base64ClientModulus));
-			Assert.That(resolvedClientSession.IPAddress, Is.EqualTo(clientSession.IPAddress));
-			Assert.That(resolvedClientSession.UserClientGlobalId, Is.EqualTo(clientSession.UserClientGlobalId));
-			Assert.That(resolvedClientSession.UserId, Is.EqualTo(clientSession.UserId));
+			AssertClientSessionsAreEqual(clientSession, resolvedClientSession);
+		}
+
+		[Test]
+		public void Can_add_multiple_UserClientSessions()
+		{
+			var cacheManager = GetCacheManager(redisCache);
+
+			var clientSession1 = cacheManager.StoreClientSession(
+				UserId,
+				UserName,
+				ShardId,
+				session.IPAddress,
+				UserClientKey,
+				UserClientGlobalId1);
+
+			var clientSession2 = cacheManager.StoreClientSession(
+				UserId,
+				UserName,
+				ShardId,
+				session.IPAddress,
+				UserClientKey,
+				UserClientGlobalId2);
+
+			var resolvedClientSession1 = cacheManager.GetUserClientSession(
+				clientSession1.UserId, clientSession1.Id);
+
+			var resolvedClientSession2 = cacheManager.GetUserClientSession(
+				clientSession2.UserId, clientSession2.Id);
+
+			AssertClientSessionsAreEqual(clientSession1, resolvedClientSession1);
+			AssertClientSessionsAreEqual(clientSession2, resolvedClientSession2);
+		}
+
+		[Test]
+		public void Does_remove_UserClientSession()
+		{
+			var cacheManager = GetCacheManager(redisCache);
+
+			var clientSession1 = cacheManager.StoreClientSession(
+				UserId,
+				UserName,
+				ShardId,
+				session.IPAddress,
+				UserClientKey,
+				UserClientGlobalId1);
+
+			var userSession = cacheManager.GetUserSession(UserId);
+			var resolvedClientSession1 = userSession.GetClientSession(clientSession1.Id);
+			AssertClientSessionsAreEqual(resolvedClientSession1, clientSession1);
+
+			resolvedClientSession1.ExpiryDate = DateTime.UtcNow.AddSeconds(-1);
+			cacheManager.UpdateUserSession(userSession);
+
+			userSession = cacheManager.GetUserSession(UserId);
+			Assert.That(userSession, Is.Null);
 		}
 
 	}
 
 	public class CachedUserSessionManager
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(CachedUserSessionManager));
+
 		/// <summary>
 		/// Google/Yahoo seems to make you to login every 2 weeks??
 		/// </summary>
 		private readonly ICacheClient cacheClient;
+
+		/// <summary>
+		/// Big perf hit if we Log on every session change
+		/// </summary>
+		/// <param name="fmt">The FMT.</param>
+		/// <param name="args">The args.</param>
+		[Conditional("DEBUG")]
+		protected void LogIfDebug(string fmt, params object[] args)
+		{
+			if (args.Length > 0)
+				Log.DebugFormat(fmt, args);
+			else
+				Log.Debug(fmt);
+		}
 
 		public CachedUserSessionManager(ICacheClient cacheClient)
 		{
@@ -113,7 +199,9 @@ namespace ServiceStack.Redis.Tests
 				userSession.RemoveClientSession(existingClientSession.Id);
 			}
 
-			var newClientSession = userSession.CreateNewClientSession(ipAddress, base64ClientModulus, userClientGlobalId);
+			var newClientSession = userSession.CreateNewClientSession(
+				ipAddress, base64ClientModulus, userClientGlobalId);
+
 			this.UpdateUserSession(userSession);
 
 			return newClientSession;
@@ -126,14 +214,15 @@ namespace ServiceStack.Redis.Tests
 		public void UpdateUserSession(UserSession userSession)
 		{
 			var hasSessionExpired = userSession.HasExpired();
-			var cacheKey = UrnId.Create(userSession.GetType(), userSession.UserId.ToString());
 			if (hasSessionExpired)
 			{
-				this.cacheClient.Remove(cacheKey);
+				LogIfDebug("Session has expired, removing: " + userSession.ToCacheKey());
+				this.cacheClient.Remove(userSession.ToCacheKey());
 			}
 			else
 			{
-				this.cacheClient.Replace(cacheKey, userSession, userSession.ExpiryDate);
+				LogIfDebug("Updating session: " + userSession.ToCacheKey());
+				this.cacheClient.Replace(userSession.ToCacheKey(), userSession, userSession.ExpiryDate.Value);
 			}
 		}
 
@@ -144,12 +233,12 @@ namespace ServiceStack.Redis.Tests
 		/// <returns></returns>
 		public UserSession GetUserSession(Guid userId)
 		{
-			var cacheKey = UrnId.Create(typeof(UserSession), userId.ToString());
+			var cacheKey = UserSession.ToCacheKey(userId);
 			var bytes = this.cacheClient.Get(cacheKey) as byte[];
 			if (bytes != null)
 			{
 				var modelStr = Encoding.UTF8.GetString(bytes);
-				Console.WriteLine("UserSession => " + modelStr);
+				LogIfDebug("UserSession => " + modelStr);
 			}
 			return this.cacheClient.Get<UserSession>(cacheKey);
 		}
@@ -168,8 +257,8 @@ namespace ServiceStack.Redis.Tests
 			{
 				userSession = new UserSession(userId, userName, shardId);
 
-				var cacheKey = UrnId.Create(userSession.GetType(), userSession.UserId.ToString());
-				this.cacheClient.Add(cacheKey, userSession, userSession.ExpiryDate + TimeSpan.FromHours(1));
+				this.cacheClient.Add(userSession.ToCacheKey(), userSession,
+					userSession.ExpiryDate.GetValueOrDefault(DateTime.UtcNow) + TimeSpan.FromHours(1));
 			}
 			return userSession;
 		}
@@ -186,8 +275,9 @@ namespace ServiceStack.Redis.Tests
 			return userSession != null ? userSession.GetClientSession(clientSessionId) : null;
 		}
 	}
-	
-	[Serializable]
+
+
+	[Serializable /* was required when storing in memcached, not required in Redis */]
 	public class UserSession
 	{
 		//Empty constructor required for TypeSerializer
@@ -217,15 +307,15 @@ namespace ServiceStack.Redis.Tests
 		/// If the user has no more active client sessions we can remove them from the cache.
 		/// </summary>
 		/// <value>The expiry date.</value>
-		public DateTime ExpiryDate
+		public DateTime? ExpiryDate
 		{
 			get
 			{
-				var maxExpiryDate = DateTime.UtcNow + TimeSpan.FromDays(1);
+				DateTime? maxExpiryDate = null;
 
 				foreach (var session in this.PublicClientSessions.Values)
 				{
-					if (session.ExpiryDate > maxExpiryDate)
+					if (maxExpiryDate == null || session.ExpiryDate > maxExpiryDate)
 					{
 						maxExpiryDate = session.ExpiryDate;
 					}
@@ -250,7 +340,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var clientSession = new UserClientSession(
 				sessionId, this.UserId, ipAddress, base64ClientModulus, userClientGlobalId);
-	
+
 			this.PublicClientSessions[clientSession.Id] = clientSession;
 
 			return clientSession;
@@ -293,7 +383,9 @@ namespace ServiceStack.Redis.Tests
 			RemoveExpiredSessions(this.PublicClientSessions);
 
 			//If there are no more active client sessions we can remove the entire UserSessions
-			var sessionHasExpired = this.ExpiryDate <= DateTime.UtcNow;
+			var sessionHasExpired = 
+				this.ExpiryDate == null							//There are no UserClientSessions
+				|| this.ExpiryDate.Value <= DateTime.UtcNow;	//The max UserClientSession ExpiryDate has expired
 
 			return sessionHasExpired;
 		}
@@ -332,6 +424,16 @@ namespace ServiceStack.Redis.Tests
 
 			return null;
 		}
+
+		public string ToCacheKey()
+		{
+			return ToCacheKey(this.UserId);
+		}
+
+		public static string ToCacheKey(Guid userId)
+		{
+			return UrnId.Create<UserSession>(userId.ToString());
+		}
 	}
 
 	[Serializable]
@@ -340,7 +442,7 @@ namespace ServiceStack.Redis.Tests
 	{
 		private const int ValidForTwoWeeks = 14;
 		public string IPAddress { get; private set; }
-		public DateTime ExpiryDate { get; private set; }
+		public DateTime ExpiryDate { get; set; }
 
 		//Empty constructor required for TypeSerializer
 		public UserClientSession() { }
@@ -360,6 +462,5 @@ namespace ServiceStack.Redis.Tests
 		public string Base64ClientModulus { get; set; }
 		public Guid UserClientGlobalId { get; set; }
 	}
-
 
 }

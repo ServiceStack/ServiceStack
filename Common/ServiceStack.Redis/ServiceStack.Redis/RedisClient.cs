@@ -32,13 +32,18 @@ namespace ServiceStack.Redis
 	public class RedisClient
 		: RedisNativeClient, IRedisClient
 	{
-		public RedisClient(string host, int port)
-			: base(host, port)
+		public RedisClient()
 		{
 			Init();
 		}
 
-		public RedisClient()
+		public RedisClient(string host) : base(host)
+		{
+			Init();
+		}
+
+		public RedisClient(string host, int port)
+			: base(host, port)
 		{
 			Init();
 		}

@@ -18,10 +18,15 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
-	public class RedisCacheClient 
-		: RedisClient, ICacheClient 
+	public class RedisCacheClient
+		: RedisClient, ICacheClient
 	{
-		public RedisCacheClient(string host, int port) 
+		public RedisCacheClient(string host)
+			: base(host)
+		{
+		}
+
+		public RedisCacheClient(string host, int port)
 			: base(host, port)
 		{
 		}
@@ -42,17 +47,19 @@ namespace ServiceStack.Redis
 
 		public T Get<T>(string key)
 		{
-			return TypeSerializer.DeserializeFromString<T>(GetString(key));
+			return typeof(T) == typeof(byte[])
+				? (T)(object)base.Get(key)
+				: TypeSerializer.DeserializeFromString<T>(GetString(key));
 		}
 
 		public long Increment(string key, uint amount)
 		{
-			return IncrementBy(key, (int) amount);
+			return IncrementBy(key, (int)amount);
 		}
 
 		public long Decrement(string key, uint amount)
 		{
-			return DecrementBy(key, (int) amount);
+			return DecrementBy(key, (int)amount);
 		}
 
 		public bool Add(string key, object value)
@@ -123,13 +130,21 @@ namespace ServiceStack.Redis
 			var keysArray = keys.ToArray();
 			var keyValues = MGet(keysArray);
 			var results = new Dictionary<string, T>();
+			var isBytes = typeof(T) == typeof(byte[]);
 
 			var i = 0;
 			foreach (var keyValue in keyValues)
 			{
 				var key = keysArray[i++];
-				var keyValueString = Encoding.UTF8.GetString(keyValue);
-				results[key] = TypeSerializer.DeserializeFromString<T>(keyValueString);
+				if (isBytes)
+				{
+					results[key] = (T)(object)keyValue;
+				}
+				else
+				{
+					var keyValueString = Encoding.UTF8.GetString(keyValue);
+					results[key] = TypeSerializer.DeserializeFromString<T>(keyValueString);
+				}
 			}
 			return results;
 		}
