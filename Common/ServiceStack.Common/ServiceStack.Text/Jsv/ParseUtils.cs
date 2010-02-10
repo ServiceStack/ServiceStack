@@ -5,66 +5,6 @@ namespace ServiceStack.Text.Jsv
 {
 	public static class ParseUtils
 	{
-		//public static Func<string, object> GetParseMethod(Type type)
-		//{
-		//    type = Nullable.GetUnderlyingType(type) ?? type;
-
-		//    if (type.IsEnum)
-		//    {
-		//        return value => ParseEnum(type, value);
-		//    }
-
-		//    if (type == typeof(string))
-		//        return ParseString;
-
-		//    if (type == typeof(object))
-		//        return ParseObject;
-
-		//    if (type.IsEnum)
-		//        return value => ParseEnum(type, value);
-
-		//    if (type.IsArray)
-		//    {
-		//        return DeserializeArray.GetParseFn(type);
-		//    }
-
-		//    var builtInMethod = DeserializeBuiltin.GetParseMethod(type);
-		//    if (builtInMethod != null)
-		//        return builtInMethod;
-
-		//    if (type.IsGenericType())
-		//    {
-		//        var listInterfaces = type.FindInterfaces(
-		//            (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
-		//        if (listInterfaces.Length > 0)
-		//            return DeserializeListWithElements.GetParseMethod(type);
-
-		//        var mapInterfaces = type.FindInterfaces(
-		//            (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null);
-		//        if (mapInterfaces.Length > 0)
-		//            return DeserializeDictionary.GetParseMethod(type);
-
-		//        var collectionInterfaces = type.FindInterfaces(
-		//            (t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>), null);
-
-		//        if (collectionInterfaces.Length > 0)
-		//            return DeserializeCollection.GetParseMethod(type);
-		//    }
-
-		//    var staticParseMethod = StaticParseMethod.GetParseMethod(type);
-		//    if (staticParseMethod != null)
-		//        return staticParseMethod;
-
-		//    var typeConstructor = DeserializeType.GetParseMethod(type);
-		//    if (typeConstructor != null)
-		//        return typeConstructor;
-
-		//    var stringConstructor = DeserializeTypeUtils.GetParseMethod(type);
-		//    if (stringConstructor != null) return stringConstructor;
-
-		//    return null;
-		//}
-		
 		public static object NullValueType(Type type)
 		{
 			return ReflectionExtensions.GetDefaultValue(type);
@@ -99,18 +39,12 @@ namespace ServiceStack.Text.Jsv
 			return value.Substring(tokenStartPos, i - tokenStartPos);
 		}
 
-
-		public static string EatKey(string value, ref int i)
-		{
-			return EatUntilCharFound(value, ref i, TypeSerializer.MapKeySeperator);
-		}
-
-		public static string EatValue(string value, ref int i)
+		public static string EatElementValue(string value, ref int i)
 		{
 			return EatUntilCharFound(value, ref i, TypeSerializer.ItemSeperator);
 		}
 
-		public static string EatUntilCharFound(string value, ref int i, char findChar)
+		private static string EatUntilCharFound(string value, ref int i, char findChar)
 		{
 			var tokenStartPos = i;
 			var valueLength = value.Length;
@@ -132,6 +66,108 @@ namespace ServiceStack.Text.Jsv
 			}
 
 			throw new IndexOutOfRangeException("Could not find ending quote");
+		}
+
+		public static string EatMapKey(string value, ref int i)
+		{
+			var tokenStartPos = i;
+			while (value[++i] != TypeSerializer.MapKeySeperator) { }
+			return value.Substring(tokenStartPos, i - tokenStartPos);
+		}
+
+		public static string EatMapValue(string value, ref int i)
+		{
+			var tokenStartPos = i;
+			var valueLength = value.Length;
+			var valueChar = value[i];
+
+			//If we are at the end, return.
+			if (i == valueLength
+				|| valueChar == TypeSerializer.ItemSeperator
+				|| valueChar == TypeSerializer.MapEndChar)
+			{
+				return null;
+			}
+
+			//Is List, i.e. [...]
+			var withinQuotes = false;
+			if (valueChar == TypeSerializer.ListStartChar)
+			{
+				var endsToEat = 1;
+				while (++i < valueLength && endsToEat > 0)
+				{
+					valueChar = value[i];
+
+					if (valueChar == TypeSerializer.QuoteChar)
+						withinQuotes = !withinQuotes;
+
+					if (withinQuotes)
+						continue;
+
+					if (valueChar == TypeSerializer.ListStartChar)
+						endsToEat++;
+
+					if (valueChar == TypeSerializer.ListEndChar)
+						endsToEat--;
+				}
+				return value.Substring(tokenStartPos, i - tokenStartPos);
+			}
+
+			//Is Type/Map, i.e. {...}
+			if (valueChar == TypeSerializer.MapStartChar)
+			{
+				var endsToEat = 1;
+				while (++i < valueLength && endsToEat > 0)
+				{
+					valueChar = value[i];
+
+					if (valueChar == TypeSerializer.QuoteChar)
+						withinQuotes = !withinQuotes;
+
+					if (withinQuotes)
+						continue;
+
+					if (valueChar == TypeSerializer.MapStartChar)
+						endsToEat++;
+
+					if (valueChar == TypeSerializer.MapEndChar)
+						endsToEat--;
+				}
+				return value.Substring(tokenStartPos, i - tokenStartPos);
+			}
+
+
+			//Is Within Quotes, i.e. "..."
+			if (valueChar == TypeSerializer.QuoteChar)
+			{
+				while (++i < valueLength)
+				{
+					valueChar = value[i];
+
+					if (valueChar != TypeSerializer.QuoteChar) continue;
+
+					var isLiteralQuote = i + 1 < valueLength && value[i + 1] == TypeSerializer.QuoteChar;
+
+					i++; //skip quote
+					if (!isLiteralQuote)
+						break;
+				}
+				return value.Substring(tokenStartPos, i - tokenStartPos);
+			}
+
+			//Is Value
+			while (++i < valueLength)
+			{
+				valueChar = value[i];
+
+				if (valueChar == TypeSerializer.ItemSeperator
+					|| valueChar == TypeSerializer.MapEndChar)
+				{
+					break;
+				}
+			}
+
+			return value.Substring(tokenStartPos, i - tokenStartPos);
 		}
 
 	}

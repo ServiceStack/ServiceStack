@@ -12,8 +12,8 @@ namespace ServiceStack.ServiceInterface.Session
 	{
 		public long UserId { get; private set; }
 		public string UserName { get; private set; }
-		public Dictionary<Guid, UserClientSession> PublicClientSessions { get; private set; }
-		public Dictionary<Guid, UserClientSession> SecureClientSessions { get; private set; }
+		public Dictionary<Guid, UserClientSession> PublicClientSessions { get; set; }
+		public Dictionary<Guid, UserClientSession> SecureClientSessions { get; set; }
 
 		public UserSession(long userId, string userName)
 		{

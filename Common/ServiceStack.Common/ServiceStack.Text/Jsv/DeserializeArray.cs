@@ -57,7 +57,7 @@ namespace ServiceStack.Text.Jsv
 				var valueLength = value.Length;
 				for (var i=0; i < valueLength; i++)
 				{
-					var elementValue = ParseUtils.EatValue(value, ref i);
+					var elementValue = ParseUtils.EatElementValue(value, ref i);
 					var listValue = ParseUtils.ParseString(elementValue);
 					to.Add((T)elementParseFn(listValue));
 				}

@@ -56,9 +56,9 @@ namespace ServiceStack.Text.Jsv
 			var valueLength = value.Length;
 			for (var i=0; i < valueLength; i++)
 			{
-				var keyValue = ParseUtils.EatKey(value, ref i);
+				var keyValue = ParseUtils.EatMapKey(value, ref i);
 				i++;
-				var elementValue = ParseUtils.EatValue(value, ref i);
+				var elementValue = ParseUtils.EatMapValue(value, ref i);
 
 				var mapKey = ParseUtils.ParseString(keyValue);
 				var mapValue = ParseUtils.ParseString(elementValue);
@@ -82,9 +82,9 @@ namespace ServiceStack.Text.Jsv
 			var valueLength = value.Length;
 			for (var i=0; i < valueLength; i++)
 			{
-				var keyValue = ParseUtils.EatKey(value, ref i);
+				var keyValue = ParseUtils.EatMapKey(value, ref i);
 				i++;
-				var elementValue = ParseUtils.EatValue(value, ref i);
+				var elementValue = ParseUtils.EatMapValue(value, ref i);
 
 				var mapKey = (TKey)parseKeyFn(keyValue);
 				var mapValue = (TValue)parseValueFn(elementValue);

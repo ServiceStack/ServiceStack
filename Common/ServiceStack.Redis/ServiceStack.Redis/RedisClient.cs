@@ -94,7 +94,10 @@ namespace ServiceStack.Redis
 
 		public string GetString(string key)
 		{
-			return Encoding.UTF8.GetString(Get(key));
+			var bytes = Get(key);
+			return bytes == null
+				? null
+				: Encoding.UTF8.GetString(bytes);
 		}
 
 		public string GetAndSetString(string key, string value)

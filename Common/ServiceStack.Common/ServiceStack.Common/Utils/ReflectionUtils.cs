@@ -395,10 +395,14 @@ namespace ServiceStack.Common.Utils
 
 		public static Func<object> GetConstructorMethodToCache(Type type)
 		{
+			var emptyCtor = type.GetConstructor(Type.EmptyTypes);
+			if (emptyCtor == null)
+				throw new ArgumentException(type.FullName + " does not have an empty constructor");
+
 			var dm = new DynamicMethod("MyCtor", type, Type.EmptyTypes, typeof(ReflectionUtils).Module, true);
 			var ilgen = dm.GetILGenerator();
 			ilgen.Emit(OpCodes.Nop);
-			ilgen.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
+			ilgen.Emit(OpCodes.Newobj, emptyCtor);
 			ilgen.Emit(OpCodes.Ret);
 
 			Func<object> ctorFn = ((CtorDelegate) dm.CreateDelegate(typeof (CtorDelegate))).Invoke;
