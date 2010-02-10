@@ -27,8 +27,8 @@ namespace ServiceStack.Redis
 	public class RedisNativeClient
 		: IRedisNativeClient
 	{
-		private const string DefaultHost = "localhost";
-		private const int DefaultPort = 6379;
+		public const int DefaultPort = 6379;
+		public const string DefaultHost = "localhost";
 
 		internal const int Success = 1;
 		internal const int OneGb = 1073741824;
