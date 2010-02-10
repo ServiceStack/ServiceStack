@@ -12,6 +12,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public const string JsonText = "text/json";
 
+		public const string JsvText = "text/jsv";
+
 		public const string Json = "application/json";
 	}
 }

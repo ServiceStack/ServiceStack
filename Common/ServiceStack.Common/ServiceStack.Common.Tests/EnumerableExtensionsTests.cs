@@ -1,0 +1,74 @@
+using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Extensions;
+using System.Linq;
+using ServiceStack.Text;
+
+namespace ServiceStack.Common.Tests
+{
+	[TestFixture]
+	public class EnumerableExtensionsTests
+	{
+		readonly int[] IntValues = new[] { 1, 2, 3 };
+		readonly int[] NoValues = new int[]{};
+		readonly int[] DifferentValues = new[] { 5, 6, 7};
+		readonly int[] MoreIntValues = new[] { 1, 2, 3, 4 };
+		readonly int[] LessIntValues = new[] { 1, 2 };
+		readonly int[] UnorderedIntValues = new[] { 3, 2, 1 };
+
+		[Test]
+		public void Can_Join()
+		{
+			Assert.That(IntValues.Join(), Is.EqualTo("1,2,3"));
+		}
+
+		[Test]
+		public void EquivalentTo_self()
+		{
+			Assert.That(IntValues.EquivalentTo(IntValues), Is.True);
+		}
+
+		[Test]
+		public void EquivalentTo_List()
+		{
+			Assert.That(IntValues.EquivalentTo(IntValues.ToList()), Is.True);
+		}
+
+		[Test]
+		public void Not_EquivalentTo_NoValues()
+		{
+			Assert.That(IntValues.EquivalentTo(NoValues), Is.False);
+		}
+
+		[Test]
+		public void Not_EquivalentTo_DifferentValues()
+		{
+			Assert.That(IntValues.EquivalentTo(DifferentValues), Is.False);
+		}
+
+		[Test]
+		public void Not_EquivalentTo_LessIntValues()
+		{
+			Assert.That(IntValues.EquivalentTo(LessIntValues), Is.False);
+		}
+
+		[Test]
+		public void Not_EquivalentTo_MoreIntValues()
+		{
+			Assert.That(IntValues.EquivalentTo(MoreIntValues), Is.False);
+		}
+
+		[Test]
+		public void Not_EquivalentTo_UnorderedIntValues()
+		{
+			Assert.That(IntValues.EquivalentTo(UnorderedIntValues), Is.False);
+		}
+
+		[Test]
+		public void Not_EquivalentTo_null()
+		{
+			Assert.That(IntValues.EquivalentTo(null), Is.False);
+		}
+
+	}
+}

@@ -19,12 +19,13 @@ namespace ServiceStack.Text
 		/// <returns></returns>
 		public T DeserializeFromString(string value)
 		{
+			if (string.IsNullOrEmpty(value)) return default(T);
 			return (T)JsvReader<T>.Parse(value);
 		}
 
 		public T DeserializeFromReader(TextReader reader)
 		{
-			return (T)JsvReader<T>.Parse(reader.ReadToEnd());
+			return DeserializeFromString(reader.ReadToEnd());
 		}
 
 		public string SerializeToString(T value)

@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -84,6 +86,20 @@ namespace ServiceStack.Common.Extensions
 			{
 				action(value);
 			}
+		}
+
+		public static bool EquivalentTo<T>(this IEnumerable<T> thisList, IEnumerable<T> otherList)
+		{
+			if (thisList == null || otherList == null) return thisList == otherList;
+
+			var otherEnum = otherList.GetEnumerator();
+			foreach (var item in thisList)
+			{
+				if (!otherEnum.MoveNext()) return false;
+				if (!item.Equals(otherEnum.Current)) return false;
+			}
+			var hasNoMoreLeftAsWell = !otherEnum.MoveNext();
+			return hasNoMoreLeftAsWell;
 		}
 
 	}

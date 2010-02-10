@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -16,6 +18,21 @@ namespace ServiceStack.Common.Extensions
 			{
 				onEachFn(entry.Key, entry.Value);
 			}
+		}
+
+		public static bool EquivalentTo<K, V>(this IDictionary<K, V> thisMap, IDictionary<K, V> otherMap)
+		{
+			if (thisMap == null || otherMap == null) return thisMap == otherMap;
+			if (thisMap.Count != otherMap.Count) return false;
+
+			foreach (var entry in thisMap)
+			{
+				V otherValue;
+				if (!otherMap.TryGetValue(entry.Key, out otherValue)) return false;
+				if (!Equals(entry.Value, otherValue)) return false;
+			}
+
+			return true;
 		}
 	}
 }

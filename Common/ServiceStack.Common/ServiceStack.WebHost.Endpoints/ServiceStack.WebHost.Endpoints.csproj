@@ -73,6 +73,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
+    <Compile Include="JsvAsyncOneWayHandler.cs" />
+    <Compile Include="JsvSyncReplyHandler.cs" />
     <Compile Include="EndpointType.cs" />
     <Compile Include="Extensions\IHttpResponseExtensions.cs" />
     <Compile Include="Extensions\HttpListenerResponseWrapper.cs" />
@@ -81,6 +83,7 @@
     <Compile Include="Extensions\IHttpResponse.cs" />
     <Compile Include="MetadataConfig.cs" />
     <Compile Include="Support\ContentType.cs" />
+    <Compile Include="Support\JsvHandlerBase.cs" />
     <Compile Include="Support\GzipOptimizationTest.cs" />
     <Compile Include="XmlSyncReplyHttpListener.cs" />
     <Compile Include="ServiceEndpointsMetadataConfig.cs" />

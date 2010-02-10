@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -81,7 +82,7 @@ namespace ServiceStack.Common.Extensions
 
 		public static string Join(this List<string> items)
 		{
-			return string.Join(", ", items.ToArray());
+			return string.Join(TypeSerializer.ItemSeperatorString, items.ToArray());
 		}
 
 		public static string Join(this List<string> items, string delimeter)

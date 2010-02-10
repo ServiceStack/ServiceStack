@@ -1,4 +1,5 @@
 using System.Runtime.Serialization;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Types;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 {
@@ -7,5 +8,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 	{
 		[DataMember]
 		public long CustomerId { get; set; }
+	}
+
+	[DataContract]
+	public class GetCustomerResponse
+	{
+		[DataMember]
+		public Customer Customer { get; set; }
 	}
 }

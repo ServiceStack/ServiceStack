@@ -32,10 +32,7 @@ namespace ServiceStack.Text.Jsv
 	{
 		public static T[] ParseGenericArray(string value, Func<string, object> elementParseFn)
 		{
-			if (value == null) return null;
-			if (value == string.Empty) return new T[0];
-
-			value = value.Substring(1, value.Length - 2);
+			if ((value = DeserializeListWithElements.StripList(value)) == null) return null;
 			if (value == string.Empty) return new T[0];
 
 			if (value[0] == TypeSerializer.MapStartChar)
@@ -131,7 +128,7 @@ namespace ServiceStack.Text.Jsv
 
 		public static string[] ParseStringArray(string value)
 		{
-			if (value == null) return null;
+			if ((value = DeserializeListWithElements.StripList(value)) == null) return null;
 			return value == string.Empty
 			       	? new string[0]
 			       	: DeserializeListWithElements.ParseStringList(value).ToArray();
@@ -139,7 +136,7 @@ namespace ServiceStack.Text.Jsv
 
 		public static byte[] ParseByteArray(string value)
 		{
-			if (value == null) return null;
+			if ((value = DeserializeListWithElements.StripList(value)) == null) return null;
 			return value == string.Empty
 			       	? new byte[0]
 			       	: Convert.FromBase64String(value);

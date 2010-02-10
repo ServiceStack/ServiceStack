@@ -407,8 +407,12 @@ namespace ServiceStack.Common.Utils
 
 		public static object CreateInstance(Type type)
 		{
+#if NO_EMIT
+			return Activator.CreateInstance(type);
+#else
 			var ctorFn = GetConstructorMethod(type);
 			return ctorFn();
+#endif
 		}
 	}
 }

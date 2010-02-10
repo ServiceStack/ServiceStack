@@ -79,6 +79,7 @@
     <Compile Include="Serialization\KeyValueDataContractDeserializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DeprecatedServiceModelFinderBase.cs" />
+    <Compile Include="Serialization\StringMapTypeDeserializer.cs" />
     <Compile Include="Support\XmlSerializableWrapper.cs" />
     <Compile Include="Serialization\XmlSerializableDeserializer.cs" />
     <Compile Include="Serialization\XmlSerializableSerializer.cs" />

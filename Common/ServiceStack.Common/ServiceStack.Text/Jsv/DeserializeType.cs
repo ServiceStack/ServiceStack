@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ServiceStack.Text.Jsv
 {
-	public class DeserializeType
+	public static class DeserializeType
 	{
 		public static Func<string, object> GetParseMethod(Type type)
 		{
@@ -167,7 +167,7 @@ namespace ServiceStack.Text.Jsv
 			return value.Substring(tokenStartPos, i - tokenStartPos);
 		}
 
-		private static Action<object, object> GetSetPropertyMethod(Type type, PropertyInfo propertyInfo)
+		public static Action<object, object> GetSetPropertyMethod(Type type, PropertyInfo propertyInfo)
 		{
 			var setMethodInfo = propertyInfo.GetSetMethod();
 			if (setMethodInfo == null) return null;
@@ -182,9 +182,9 @@ namespace ServiceStack.Text.Jsv
 
 			var propertySetFn = Expression.Lambda<Action<object, object>>
 				(
-				exprCallPropertySetFn,
-				oInstanceParam,
-				oValueParam
+					exprCallPropertySetFn,
+					oInstanceParam,
+					oValueParam
 				).Compile();
 
 			return propertySetFn;

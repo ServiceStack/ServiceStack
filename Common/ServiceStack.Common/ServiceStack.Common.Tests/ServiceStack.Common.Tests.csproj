@@ -84,6 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnumerableExtensionsTests.cs" />
     <Compile Include="IdUtilsTests.cs" />
     <Compile Include="Models\IModelFactory.cs" />
     <Compile Include="Models\ModelFactoryBase.cs" />

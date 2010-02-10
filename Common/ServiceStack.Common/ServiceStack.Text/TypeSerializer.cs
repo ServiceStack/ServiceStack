@@ -23,6 +23,8 @@ namespace ServiceStack.Text
 		public const char QuoteChar = '"';
 		public const string QuoteString = "\"";
 		public const string DoubleQuoteString = "\"\"";
+		public const string ItemSeperatorString = ",";
+		public const string MapKeySeperatorString = ":";
 
 		public static readonly char[] CsvChars = new[] { ItemSeperator, QuoteChar };
 		public static readonly char[] EscapeChars = new[] { QuoteChar, ItemSeperator, MapStartChar, MapEndChar, ListStartChar, ListEndChar, };
@@ -52,7 +54,7 @@ namespace ServiceStack.Text
 
 		public static T DeserializeFromReader<T>(TextReader reader)
 		{
-			return (T)JsvReader<T>.Parse(reader.ReadToEnd());
+			return DeserializeFromString<T>(reader.ReadToEnd());
 		}
 
 		/// <summary>

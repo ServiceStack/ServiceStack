@@ -48,6 +48,7 @@
     <Compile Include="Controller\CommandProcessor.cs" />
     <Compile Include="Controller\PathInfo.cs" />
     <Compile Include="CsvStreamExtensions.cs" />
+    <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="ITypeSerializer.Generic.cs" />
     <Compile Include="Jsv\DateTimeSerializer.cs" />
     <Compile Include="Jsv\JsvReader.Generic.cs" />
@@ -63,6 +64,8 @@
     <Compile Include="Jsv\DeserializeTypeUtils.cs" />
     <Compile Include="Jsv\DeserializeType.cs" />
     <Compile Include="Jsv\JsvDelegates.cs" />
+    <Compile Include="ListExtensions.cs" />
+    <Compile Include="MapExtensions.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />
     <Compile Include="Jsv\WriterUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -31,7 +31,6 @@ namespace ServiceStack.Text.Jsv
 			return parseDelegate.Invoke;
 		}
 
-
 		internal static string StripList(string value)
 		{
 			if (string.IsNullOrEmpty(value))

@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using System.Web;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	public abstract class JsonHandlerBase : EndpointHandlerBase, IHttpHandler
+	public abstract class JsvHandlerBase : EndpointHandlerBase, IHttpHandler
     {
 		protected static object CreateRequest(HttpRequest request, string typeName)
         {
@@ -18,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 				catch (Exception ex)
 				{
-					var log = EndpointHost.Config.LogFactory.GetLogger(typeof(JsonHandlerBase));
+					var log = EndpointHost.Config.LogFactory.GetLogger(typeof(JsvHandlerBase));
 					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}' '{2}'",
 						operationType, request.QueryString, ex);
 					throw;
@@ -26,17 +27,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
 
             var formData = new StreamReader(request.InputStream).ReadToEnd();
-			var isJson = formData.StartsWith("{");
+			var isJsv = formData.StartsWith("{");
 
 			try
 			{
-				return isJson ? JsonDataContractDeserializer.Instance.Parse(formData, operationType)
+				return isJsv ? TypeSerializer.DeserializeFromString(formData, operationType)
 							  : KeyValueDataContractDeserializer.Instance.Parse(request.Form, operationType);
 			}
 			catch (Exception ex)
 			{
-				var log = EndpointHost.Config.LogFactory.GetLogger(typeof(JsonHandlerBase));
-				var deserializer = isJson ? "JsonDataContractDeserializer" : "KeyValueDataContractDeserializer";
+				var log = EndpointHost.Config.LogFactory.GetLogger(typeof(JsvHandlerBase));
+				var deserializer = isJsv ? "TypeSerializer" : "KeyValueDataContractDeserializer";
 				log.ErrorFormat("Could not deserialize '{0}' request using {1}: '{2}'\nError: {3}",
 					operationType, deserializer, formData, ex);
 				throw;

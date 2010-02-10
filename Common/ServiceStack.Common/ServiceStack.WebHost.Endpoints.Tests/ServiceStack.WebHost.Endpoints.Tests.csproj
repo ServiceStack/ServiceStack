@@ -81,8 +81,11 @@
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="HttpRequestExtensionsTests.cs" />
+    <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
+    <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
+    <Compile Include="Support\Operations\RequestOfComplexTypes.cs" />
     <Compile Include="Support\Services\InSecureLiveEnvironmentRestriction.cs" />
     <Compile Include="Support\Services\SecureLiveEnvironmentRestriction.cs" />
     <Compile Include="Support\Services\SecureDevEnvironmentRestrictionService.cs" />
@@ -95,9 +98,7 @@
     <Compile Include="Support\Services\LocalSubnetRestrictionService.cs" />
     <Compile Include="Support\Services\NestedService.cs" />
     <Compile Include="ServiceStackHostTests.cs" />
-    <Compile Include="Support\Operations\GetCustomerResponse.cs" />
     <Compile Include="Support\Operations\GetCustomers.cs" />
-    <Compile Include="Support\Operations\GetCustomersResponse.cs" />
     <Compile Include="Support\Operations\StoreCustomer.cs" />
     <Compile Include="Support\Services\TestServiceBase.cs" />
     <Compile Include="Support\Host\TestAppHost.cs" />
@@ -122,6 +123,10 @@
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
       <Name>ServiceStack.ServiceModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.WebHost.Endpoints\ServiceStack.WebHost.Endpoints.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
