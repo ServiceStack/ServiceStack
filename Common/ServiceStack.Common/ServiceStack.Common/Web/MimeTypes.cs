@@ -1,4 +1,5 @@
 using System;
+using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Common.Web
 {
@@ -20,6 +21,34 @@ namespace ServiceStack.Common.Web
 					return ".js";
 				default:
 					throw new NotSupportedException("Unknown mimeType: " + mimeType);
+			}
+		}
+
+		public static string GetMimeType(string fileExt)
+		{
+			fileExt.ThrowIfNullOrEmpty();
+			fileExt = fileExt.TrimStart('.');
+
+			switch (fileExt)
+			{
+				case "jpg":
+				case "jpeg":
+				case "gif":
+				case "png":
+					return "image/" + fileExt;
+
+				case "htm":
+				case "html":
+					return "text/html";
+
+				case "js":
+					return "text/javascript";
+
+				case "css":
+					return "text/" + fileExt;
+
+				default:
+					throw new NotSupportedException("Unknown fileExt: " + fileExt);
 			}
 		}
 	}

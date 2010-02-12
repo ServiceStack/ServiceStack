@@ -89,6 +89,7 @@ namespace ServiceStack.Common.Extensions
 		{
 			return string.Join(delimeter, items.ToArray());
 		}
+		
 	}
 
 }

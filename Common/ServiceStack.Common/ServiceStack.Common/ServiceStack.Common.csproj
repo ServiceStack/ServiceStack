@@ -62,6 +62,7 @@
     <Compile Include="Environment.cs" />
     <Compile Include="Expressions\DelegateFactory.cs" />
     <Compile Include="Extensions\ActionExecExtensions.cs" />
+    <Compile Include="Extensions\AssertExtensions.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="Extensions\IPAddressExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />

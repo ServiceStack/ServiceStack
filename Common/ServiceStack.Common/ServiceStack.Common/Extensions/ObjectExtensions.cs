@@ -1,7 +1,8 @@
+using System;
+
 namespace ServiceStack.Common.Extensions
 {
-	public class ObjectExtensions
+	public static class ObjectExtensions
 	{
-		
 	}
 }

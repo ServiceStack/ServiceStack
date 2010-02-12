@@ -1,30 +1,66 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
 
 namespace ServiceStack.Redis
 {
+	/// <summary>
+	/// Allows pooling of redis clients and the ability
+	/// </summary>
 	public class RedisPooledClientsManager
 		: IRedisClient
 	{
 		private List<IPEndPoint> WriteOnlyHosts { get; set; }
 		private List<IPEndPoint> ReadOnlyHosts { get; set; }
 
-		public RedisPooledClientsManager(params string[] readWriteHosts)
-		{
-			ReadOnlyHosts = ConvertToIpEndPoints(readWriteHosts);
+		//Queue<RedisClient> 
 
-			WriteOnlyHosts = ConvertToIpEndPoints(readWriteHosts);
+		public RedisPooledClientsManager() : this(RedisNativeClient.DefaultHost) {}
+
+		public RedisPooledClientsManager(params string[] readWriteHosts)
+			: this(readWriteHosts, readWriteHosts)
+		{
+		}
+
+		/// <summary>
+		/// Hosts can be an IP Address or Hostname in the format: host[:port]
+		/// e.g. 127.0.0.1:6379
+		/// default is: localhost:6379
+		/// </summary>
+		/// <param name="writeHosts">The write hosts.</param>
+		/// <param name="readHosts">The read hosts.</param>
+		public RedisPooledClientsManager(IEnumerable<string> writeHosts, IEnumerable<string> readHosts)
+		{
+			WriteOnlyHosts = ConvertToIpEndPoints(writeHosts);
+			ReadOnlyHosts = ConvertToIpEndPoints(readHosts);
 		}
 
 		private static List<IPEndPoint> ConvertToIpEndPoints(IEnumerable<string> hosts)
 		{
-			return hosts.ToList().ConvertAll(x =>
-				new IPEndPoint(Dns.GetHostAddresses(x)[0], RedisNativeClient.DefaultPort));
+			const int hostOrIpAddressIndex = 0;
+			const int portIndex = 1;
+
+			var ipEndpoints = new List<IPEndPoint>();
+			foreach (var host in hosts)
+			{
+				var hostParts = host.Split(':');
+				if (hostParts.Length == 0)
+					throw new ArgumentException("'{0}' is not a valid Host or IP Address: e.g. '127.0.0.0[:11211]'");
+
+				var port = (hostParts.Length == 1) 
+					? RedisNativeClient.DefaultPort : int.Parse(hostParts[portIndex]);
+
+				var hostAddresses = Dns.GetHostAddresses(hostParts[hostOrIpAddressIndex]);
+				foreach (var ipAddress in hostAddresses)
+				{
+					var endpoint = new IPEndPoint(ipAddress, port);
+					ipEndpoints.Add(endpoint);
+				}
+			}
+			return ipEndpoints;
 		}
 
 		public void Dispose()
