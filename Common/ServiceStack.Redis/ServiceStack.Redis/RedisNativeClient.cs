@@ -37,13 +37,18 @@ namespace ServiceStack.Redis
 		protected Socket socket;
 		protected BufferedStream bstream;
 
+		/// <summary>
+		/// Used to manage connection pooling
+		/// </summary>
+		internal bool Active { get; set; }
+		internal PooledRedisClientsManager ClientsManager { get; set; }
+
 		public string Host { get; private set; }
 		public int Port { get; private set; }
 		public int RetryTimeout { get; set; }
 		public int RetryCount { get; set; }
 		public int SendTimeout { get; set; }
 		public string Password { get; set; }
-		private readonly object readWriteLock = new object();
 
 		public RedisNativeClient(string host)
 			: this(host, DefaultPort)
@@ -69,30 +74,27 @@ namespace ServiceStack.Redis
 		#region Protocol helper methods
 		private void Connect()
 		{
-			lock (readWriteLock)
+			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
+				SendTimeout = SendTimeout
+			};
+			try
 			{
-				socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
-					SendTimeout = SendTimeout
-				};
-				try
-				{
-					socket.Connect(Host, Port);
+				socket.Connect(Host, Port);
 
-					if (!socket.Connected)
-					{
-						socket.Close();
-						socket = null;
-						return;
-					}
-					bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
-
-					if (Password != null)
-						SendExpectSuccess("AUTH {0}\r\n", Password);
-				}
-				catch (SocketException ex)
+				if (!socket.Connected)
 				{
-					throw new InvalidOperationException("could not connect to redis instance at " + Host + ":" + Port, ex);
+					socket.Close();
+					socket = null;
+					return;
 				}
+				bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
+
+				if (Password != null)
+					SendExpectSuccess("AUTH {0}\r\n", Password);
+			}
+			catch (SocketException ex)
+			{
+				throw new InvalidOperationException("could not connect to redis instance at " + Host + ":" + Port, ex);
 			}
 		}
 
@@ -100,17 +102,14 @@ namespace ServiceStack.Redis
 		{
 			var sb = new StringBuilder();
 
-			lock (readWriteLock)
+			int c;
+			while ((c = bstream.ReadByte()) != -1)
 			{
-				int c;
-				while ((c = bstream.ReadByte()) != -1)
-				{
-					if (c == '\r')
-						continue;
-					if (c == '\n')
-						break;
-					sb.Append((char)c);
-				}
+				if (c == '\r')
+					continue;
+				if (c == '\n')
+					break;
+				sb.Append((char)c);
 			}
 			return sb.ToString();
 		}
@@ -127,14 +126,11 @@ namespace ServiceStack.Redis
 			try
 			{
 				Log("S: " + String.Format(cmd, args));
-				lock (readWriteLock)
+				socket.Send(r);
+				if (data != null)
 				{
-					socket.Send(r);
-					if (data != null)
-					{
-						socket.Send(data);
-						socket.Send(endData);
-					}
+					socket.Send(data);
+					socket.Send(endData);
 				}
 			}
 			catch (SocketException)
@@ -160,10 +156,7 @@ namespace ServiceStack.Redis
 			try
 			{
 				Log("S: " + String.Format(cmd, args));
-				lock (readWriteLock)
-				{
-					socket.Send(r);
-				}
+				socket.Send(r);
 			}
 			catch (SocketException)
 			{
@@ -197,10 +190,7 @@ namespace ServiceStack.Redis
 
 		private int SafeReadByte()
 		{
-			lock (readWriteLock)
-			{
-				return bstream.ReadByte();
-			}
+			return bstream.ReadByte();
 		}
 
 		//
@@ -294,12 +284,10 @@ namespace ServiceStack.Redis
 				if (Int32.TryParse(r.Substring(1), out n))
 				{
 					byte[] retbuf = new byte[n];
-					lock (readWriteLock)
-					{
-						bstream.Read(retbuf, 0, n);
-						if (bstream.ReadByte() != '\r' || bstream.ReadByte() != '\n')
-							throw new RedisResponseException("Invalid termination");						
-					} 
+					bstream.Read(retbuf, 0, n);
+					if (bstream.ReadByte() != '\r' || bstream.ReadByte() != '\n')
+						throw new RedisResponseException("Invalid termination");
+
 					return retbuf;
 				}
 				throw new RedisResponseException("Invalid length");
@@ -915,14 +903,24 @@ namespace ServiceStack.Redis
 		{
 			if (disposing)
 			{
-				Quit();
-				lock (readWriteLock)
-				{
-					if (socket != null)
-						socket.Close();
-					socket = null;
-				}
+				//dispose managed resources
 			}
+
+			if (ClientsManager != null)
+			{
+				ClientsManager.DisposeClient(this);
+				return;
+			}
+
+			DisposeConnection();
+		}
+
+		internal void DisposeConnection()
+		{
+			Quit();
+			if (socket != null)
+				socket.Close();
+			socket = null;
 		}
 
 	}
