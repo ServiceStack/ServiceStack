@@ -9,7 +9,7 @@ namespace ServiceStack.ServiceHost
 
 		public RequestAttributes(HttpContext httpContext)
 		{
-			this.httpContext = httpContext;
+			this.httpContext = httpContext;			
 		}
 
 		public static HttpWorkerRequest GetWorker(HttpContext context)

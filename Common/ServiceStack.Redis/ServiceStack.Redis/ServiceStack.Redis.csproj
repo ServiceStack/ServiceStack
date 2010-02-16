@@ -71,6 +71,7 @@
     <Compile Include="Generic\RedisClientList.Generic.cs" />
     <Compile Include="Generic\IRedisTypedClient.cs" />
     <Compile Include="IRedisClient.cs" />
+    <Compile Include="IRedisClientsManager.cs" />
     <Compile Include="IRedisNativeClient.cs" />
     <Compile Include="PooledRedisClientCachesManager.cs" />
     <Compile Include="RedisCacheClient.cs" />

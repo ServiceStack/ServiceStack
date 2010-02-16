@@ -7,9 +7,10 @@ using ServiceStack.Logging;
 namespace ServiceStack.Redis
 {
 	/// <summary>
-	/// Allows pooling of redis clients and the ability
+	/// Provides thread-safe pooling of redis clients.
+	/// Provides seperate pool 
 	/// </summary>
-	public class PooledRedisClientsManager
+	public class PooledRedisClientsManager : IRedisClientsManager
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientsManager));
 
@@ -18,18 +19,18 @@ namespace ServiceStack.Redis
 
 		public int MaxWritePoolSize { get; set; }
 		private RedisClient[] writeClients;
-		protected int WritePoolIndex;
+		protected int writePoolIndex;
 
 		public int MaxReadPoolSize { get; set; }
 		private RedisClient[] readClients;
-		protected int ReadPoolIndex;
+		protected int readPoolIndex;
 
 		public virtual RedisClient CreateRedisClient(IPEndPoint hostEndpoint)
 		{
 			return new RedisClient(hostEndpoint.Address.ToString(), hostEndpoint.Port);
 		}
 
-		public IRedisClient GetWriteClient()
+		public IRedisClient GetClient()
 		{
 			lock (writeClients)
 			{
@@ -39,7 +40,7 @@ namespace ServiceStack.Redis
 					Monitor.Wait(writeClients);
 				}
 
-				WritePoolIndex++;
+				writePoolIndex++;
 				inActiveClient.Active = true;
 				return inActiveClient;
 			}
@@ -49,7 +50,7 @@ namespace ServiceStack.Redis
 		{
 			for (var i=0; i < writeClients.Length; i++)
 			{
-				var nextIndex = (WritePoolIndex + i) % writeClients.Length;
+				var nextIndex = (writePoolIndex + i) % writeClients.Length;
 
 				//Initialize if not exists
 				if (writeClients[nextIndex] == null)
@@ -67,7 +68,7 @@ namespace ServiceStack.Redis
 			return null;
 		}
 
-		public virtual IRedisClient GetReadClient()
+		public virtual IRedisClient GetReadOnlyClient()
 		{
 			lock (readClients)
 			{
@@ -77,7 +78,7 @@ namespace ServiceStack.Redis
 					Monitor.Wait(readClients);
 				}
 
-				ReadPoolIndex++;
+				readPoolIndex++;
 				inActiveClient.Active = true;
 				return inActiveClient;
 			}
@@ -87,7 +88,7 @@ namespace ServiceStack.Redis
 		{
 			for (var i=0; i < readClients.Length; i++)
 			{
-				var nextIndex = (ReadPoolIndex + i) % readClients.Length;
+				var nextIndex = (readPoolIndex + i) % readClients.Length;
 
 				//Initialize if not exists
 				if (readClients[nextIndex] == null)
@@ -107,20 +108,28 @@ namespace ServiceStack.Redis
 
 		public void DisposeClient(RedisNativeClient client)
 		{
-			foreach (var readClient in readClients)
+			lock (readClients)
 			{
-				if (client != readClient) continue;
-				client.Active = false;
-				Monitor.PulseAll(readClients);
-				return;
+				for (var i = 0; i < readClients.Length; i++)
+				{
+					var readClient = readClients[i];
+					if (client != readClient) continue;
+					client.Active = false;
+					Monitor.PulseAll(readClients);
+					return;
+				}
 			}
 
-			foreach (var writeClient in writeClients)
+			lock (writeClients)
 			{
-				if (client != writeClient) continue;
-				client.Active = false;
-				Monitor.PulseAll(writeClients);
-				return;
+				for (var i = 0; i < writeClients.Length; i++)
+				{
+					var writeClient = writeClients[i];
+					if (client != writeClient) continue;
+					client.Active = false;
+					Monitor.PulseAll(writeClients);
+					return;
+				}
 			}
 
 			throw new NotSupportedException("Cannot add unknown client back to the pool");
@@ -182,10 +191,10 @@ namespace ServiceStack.Redis
 				throw new ArgumentException("Need a minimum read pool size of 1");
 
 			writeClients = new RedisClient[MaxWritePoolSize];
-			WritePoolIndex = 0;
+			writePoolIndex = 0;
 
 			readClients = new RedisClient[MaxReadPoolSize];
-			ReadPoolIndex = 0;
+			readPoolIndex = 0;
 		}
 
 		~PooledRedisClientsManager()

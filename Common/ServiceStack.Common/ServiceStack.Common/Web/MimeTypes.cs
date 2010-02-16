@@ -31,21 +31,69 @@ namespace ServiceStack.Common.Web
 
 			switch (fileExt)
 			{
-				case "jpg":
 				case "jpeg":
 				case "gif":
 				case "png":
+				case "tiff":
+				case "bmp":
 					return "image/" + fileExt;
+
+				case "jpg":
+					return "image/jpeg";
+
+				case "tif":
+					return "image/tiff";
 
 				case "htm":
 				case "html":
+				case "shtml":
 					return "text/html";
 
 				case "js":
 					return "text/javascript";
 
+				case "csv":
 				case "css":
+				case "sgml":
 					return "text/" + fileExt;
+
+				case "txt":
+					return "text/plain";
+
+				case "wav":
+					return "audio/wav";
+
+				case "mp3":
+					return "audio/mpeg3";
+
+				case "mid":
+					return "audio/midi";
+
+				case "qt":
+				case "mov":
+					return "video/quicktime";
+
+				case "mpg":
+					return "video/mpeg";
+
+				case "avi":
+					return "video/" + fileExt;
+
+				case "rtf":
+					return "application/" + fileExt;
+
+				case "xls":
+					return "application/x-excel";
+
+				case "doc":
+					return "application/msword";
+
+				case "ppt":
+					return "application/powerpoint";
+
+				case "gz":
+				case "tgz":
+					return "application/x-compressed";
 
 				default:
 					throw new NotSupportedException("Unknown fileExt: " + fileExt);
