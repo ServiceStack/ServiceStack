@@ -8,30 +8,70 @@ namespace ServiceStack.Redis
 {
 	/// <summary>
 	/// Provides thread-safe pooling of redis clients.
-	/// Provides seperate pool 
+	/// Allows the configuration of different ReadWrite and ReadOnly hosts
 	/// </summary>
-	public class PooledRedisClientsManager : IRedisClientsManager
+	public class PooledRedisClientManager : IRedisClientsManager
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientsManager));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientManager));
 
-		private List<IPEndPoint> WriteOnlyHosts { get; set; }
-		private List<IPEndPoint> ReadOnlyHosts { get; set; }
+		private List<EndPoint> ReadWriteHosts { get; set; }
+		private List<EndPoint> ReadOnlyHosts { get; set; }
 
 		public int MaxWritePoolSize { get; set; }
-		private RedisClient[] writeClients;
+		private RedisClient[] writeClients = new RedisClient[0];
 		protected int writePoolIndex;
 
 		public int MaxReadPoolSize { get; set; }
-		private RedisClient[] readClients;
+		private RedisClient[] readClients = new RedisClient[0];
 		protected int readPoolIndex;
 
-		public virtual RedisClient CreateRedisClient(IPEndPoint hostEndpoint)
+		public IRedisClientFactory RedisClientFactory { get; set; }
+
+		public PooledRedisClientManager() : this(RedisNativeClient.DefaultHost) { }
+
+		public PooledRedisClientManager(params string[] readWriteHosts)
+			: this(readWriteHosts, readWriteHosts)
 		{
-			return new RedisClient(hostEndpoint.Address.ToString(), hostEndpoint.Port);
 		}
 
+		/// <summary>
+		/// Hosts can be an IP Address or Hostname in the format: host[:port]
+		/// e.g. 127.0.0.1:6379
+		/// default is: localhost:6379
+		/// </summary>
+		/// <param name="writeHosts">The write hosts.</param>
+		/// <param name="readHosts">The read hosts.</param>
+		public PooledRedisClientManager(IEnumerable<string> writeHosts, IEnumerable<string> readHosts)
+		{
+			ReadWriteHosts = ConvertToIpEndPoints(writeHosts);
+			ReadOnlyHosts = ConvertToIpEndPoints(readHosts);
+
+			this.MaxWritePoolSize = ReadWriteHosts.Count;
+			this.MaxReadPoolSize = ReadOnlyHosts.Count;
+
+			this.RedisClientFactory = Redis.RedisClientFactory.Instance;
+		}
+
+		internal class EndPoint
+		{
+			internal string Host { get; private set; }
+			internal int Port { get; private set; }
+
+			public EndPoint(string host, int port)
+			{
+				Host = host;
+				Port = port;
+			}
+		}
+
+		/// <summary>
+		/// Returns a Read/Write client (The default) using the hosts defined in ReadWriteHosts
+		/// </summary>
+		/// <returns></returns>
 		public IRedisClient GetClient()
 		{
+			AssertValidReadWritePool();
+
 			lock (writeClients)
 			{
 				RedisClient inActiveClient;
@@ -55,8 +95,16 @@ namespace ServiceStack.Redis
 				//Initialize if not exists
 				if (writeClients[nextIndex] == null)
 				{
-					writeClients[nextIndex] = CreateRedisClient(WriteOnlyHosts[nextIndex]);
-					return writeClients[nextIndex];
+					var nextHost = ReadWriteHosts[nextIndex % ReadWriteHosts.Count];
+					
+					var client = RedisClientFactory.CreateRedisClient(
+						nextHost.Host, nextHost.Port);
+
+					client.ClientManager = this;
+
+					writeClients[nextIndex] = client;
+
+					return client;
 				}
 
 				//look for free one
@@ -68,8 +116,14 @@ namespace ServiceStack.Redis
 			return null;
 		}
 
+		/// <summary>
+		/// Returns a ReadOnly client using the hosts defined in ReadOnlyHosts.
+		/// </summary>
+		/// <returns></returns>
 		public virtual IRedisClient GetReadOnlyClient()
 		{
+			AssertValidReadOnlyPool();
+
 			lock (readClients)
 			{
 				RedisClient inActiveClient;
@@ -93,8 +147,15 @@ namespace ServiceStack.Redis
 				//Initialize if not exists
 				if (readClients[nextIndex] == null)
 				{
-					readClients[nextIndex] = CreateRedisClient(ReadOnlyHosts[nextIndex]);
-					return readClients[nextIndex];
+					var nextHost = ReadOnlyHosts[nextIndex % ReadOnlyHosts.Count];
+					var client = RedisClientFactory.CreateRedisClient(
+						nextHost.Host, nextHost.Port);
+					
+					client.ClientManager = this;
+
+					readClients[nextIndex] = client;
+					
+					return client;
 				}
 
 				//look for free one
@@ -135,35 +196,14 @@ namespace ServiceStack.Redis
 			throw new NotSupportedException("Cannot add unknown client back to the pool");
 		}
 
-		public PooledRedisClientsManager() : this(RedisNativeClient.DefaultHost) { }
-
-		public PooledRedisClientsManager(params string[] readWriteHosts)
-			: this(readWriteHosts, readWriteHosts)
+		private static List<EndPoint> ConvertToIpEndPoints(IEnumerable<string> hosts)
 		{
-		}
+			if (hosts == null) return new List<EndPoint>();
 
-		/// <summary>
-		/// Hosts can be an IP Address or Hostname in the format: host[:port]
-		/// e.g. 127.0.0.1:6379
-		/// default is: localhost:6379
-		/// </summary>
-		/// <param name="writeHosts">The write hosts.</param>
-		/// <param name="readHosts">The read hosts.</param>
-		public PooledRedisClientsManager(IEnumerable<string> writeHosts, IEnumerable<string> readHosts)
-		{
-			WriteOnlyHosts = ConvertToIpEndPoints(writeHosts);
-			ReadOnlyHosts = ConvertToIpEndPoints(readHosts);
-
-			this.MaxWritePoolSize = WriteOnlyHosts.Count;
-			this.MaxReadPoolSize = ReadOnlyHosts.Count;
-		}
-
-		private static List<IPEndPoint> ConvertToIpEndPoints(IEnumerable<string> hosts)
-		{
 			const int hostOrIpAddressIndex = 0;
 			const int portIndex = 1;
 
-			var ipEndpoints = new List<IPEndPoint>();
+			var ipEndpoints = new List<EndPoint>();
 			foreach (var host in hosts)
 			{
 				var hostParts = host.Split(':');
@@ -173,23 +213,14 @@ namespace ServiceStack.Redis
 				var port = (hostParts.Length == 1)
 					? RedisNativeClient.DefaultPort : int.Parse(hostParts[portIndex]);
 
-				var hostAddresses = Dns.GetHostAddresses(hostParts[hostOrIpAddressIndex]);
-				foreach (var ipAddress in hostAddresses)
-				{
-					var endpoint = new IPEndPoint(ipAddress, port);
-					ipEndpoints.Add(endpoint);
-				}
+				var endpoint = new EndPoint(hostParts[hostOrIpAddressIndex], port);
+				ipEndpoints.Add(endpoint);
 			}
 			return ipEndpoints;
 		}
 
 		public void Start()
 		{
-			if (MaxWritePoolSize < 1)
-				throw new ArgumentException("Need a minimum write pool size of 1");
-			if (MaxReadPoolSize < 1)
-				throw new ArgumentException("Need a minimum read pool size of 1");
-
 			writeClients = new RedisClient[MaxWritePoolSize];
 			writePoolIndex = 0;
 
@@ -197,7 +228,19 @@ namespace ServiceStack.Redis
 			readPoolIndex = 0;
 		}
 
-		~PooledRedisClientsManager()
+		private void AssertValidReadWritePool()
+		{
+			if (writeClients.Length < 1)
+				throw new InvalidOperationException("Need a minimum read-write pool size of 1, then call Start()");
+		}
+
+		private void AssertValidReadOnlyPool()
+		{
+			if (readClients.Length < 1)
+				throw new InvalidOperationException("Need a minimum read pool size of 1, then call Start()");
+		}
+
+		~PooledRedisClientManager()
 		{
 			Dispose(false);
 		}
@@ -216,13 +259,13 @@ namespace ServiceStack.Redis
 			}
 
 			// get rid of unmanaged resources
-			foreach (var writeClient in writeClients)
+			for (var i = 0; i < writeClients.Length; i++)
 			{
-				Dispose(writeClient);
+				Dispose(writeClients[i]);
 			}
-			foreach (var readClient in readClients)
+			for (var i = 0; i < readClients.Length; i++)
 			{
-				Dispose(readClient);
+				Dispose(readClients[i]);
 			}
 		}
 
@@ -230,6 +273,8 @@ namespace ServiceStack.Redis
 		{
 			try
 			{
+				if (redisClient == null) return;
+				
 				redisClient.DisposeConnection();
 			}
 			catch (Exception ex)

@@ -65,24 +65,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RedisClientFactory.cs" />
     <Compile Include="Generic\IRedisList.Generic.cs" />
     <Compile Include="Generic\IRedisSet.Generic.cs" />
     <Compile Include="Generic\RedisClientSet.Generic.cs" />
     <Compile Include="Generic\RedisClientList.Generic.cs" />
     <Compile Include="Generic\IRedisTypedClient.cs" />
     <Compile Include="IRedisClient.cs" />
+    <Compile Include="IRedisClientCacheManager.cs" />
+    <Compile Include="IRedisClientFactory.cs" />
     <Compile Include="IRedisClientsManager.cs" />
     <Compile Include="IRedisNativeClient.cs" />
-    <Compile Include="PooledRedisClientCachesManager.cs" />
+    <Compile Include="PooledRedisClientCacheManager.cs" />
     <Compile Include="RedisCacheClient.cs" />
     <Compile Include="Generic\RedisTypedClient.cs" />
+    <Compile Include="RedisCacheClientFactory.cs" />
     <Compile Include="RedisClientSet.cs" />
     <Compile Include="RedisClient.cs" />
     <Compile Include="RedisKeyType.cs" />
     <Compile Include="RedisNativeClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisClientList.cs" />
-    <Compile Include="PooledRedisClientsManager.cs" />
+    <Compile Include="PooledRedisClientManager.cs" />
     <Compile Include="RedisResponseException.cs" />
   </ItemGroup>
   <ItemGroup>

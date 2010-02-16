@@ -41,7 +41,7 @@ namespace ServiceStack.Redis
 		/// Used to manage connection pooling
 		/// </summary>
 		internal bool Active { get; set; }
-		internal PooledRedisClientsManager ClientsManager { get; set; }
+		internal PooledRedisClientManager ClientManager { get; set; }
 
 		public string Host { get; private set; }
 		public int Port { get; private set; }
@@ -94,7 +94,7 @@ namespace ServiceStack.Redis
 			}
 			catch (SocketException ex)
 			{
-				throw new InvalidOperationException("could not connect to redis instance at " + Host + ":" + Port, ex);
+				throw new InvalidOperationException("could not connect to redis Instance at " + Host + ":" + Port, ex);
 			}
 		}
 
@@ -906,9 +906,9 @@ namespace ServiceStack.Redis
 				//dispose managed resources
 			}
 
-			if (ClientsManager != null)
+			if (ClientManager != null)
 			{
-				ClientsManager.DisposeClient(this);
+				ClientManager.DisposeClient(this);
 				return;
 			}
 
@@ -917,6 +917,8 @@ namespace ServiceStack.Redis
 
 		internal void DisposeConnection()
 		{
+			if (socket == null) return;
+
 			Quit();
 			if (socket != null)
 				socket.Close();
