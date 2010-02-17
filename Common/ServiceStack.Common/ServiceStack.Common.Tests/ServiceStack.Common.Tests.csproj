@@ -103,6 +103,7 @@
     <Compile Include="Perf\TextSerializerComparisons.cs" />
     <Compile Include="Reflection\PropertyAccessorTests.cs" />
     <Compile Include="TestBase.cs" />
+    <Compile Include="Text\AdhocModelTests.cs" />
     <Compile Include="Text\CsvStreamTests.cs" />
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
     <Compile Include="Expressions\ExpressionTests.cs" />

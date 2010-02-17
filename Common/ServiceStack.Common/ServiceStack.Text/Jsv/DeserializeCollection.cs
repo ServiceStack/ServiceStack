@@ -8,10 +8,8 @@ namespace ServiceStack.Text.Jsv
 	{
 		public static Func<string, object> GetParseMethod(Type type)
 		{
-			var collectionInterfaces = type.FindInterfaces(
-				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>), null);
-
-			if (collectionInterfaces.Length == 0)
+			var collectionInterface = type.GetTypeWithInterfaceOf(typeof(ICollection<>));
+			if (collectionInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type ICollection<>", type.FullName));
 
 			//optimized access for regularly used types
@@ -21,12 +19,15 @@ namespace ServiceStack.Text.Jsv
 			if (type.FindInterfaces((t, critera) => t == typeof(ICollection<int>), null).Length > 0)
 				return value => ParseIntCollection(value, type);
 
-			var elementType =  collectionInterfaces[0].GetGenericArguments()[0];
+			var elementType =  collectionInterface.GetGenericArguments()[0];
 
 			var supportedTypeParseMethod = JsvReader.GetParseFn(elementType);
 			if (supportedTypeParseMethod != null)
 			{
-				return value => ParseCollectionType(value, type, elementType, supportedTypeParseMethod);
+				var createCollectionType = type.HasAnyTypeDefinitionsOf(typeof(ICollection<>))
+					? null : type;
+
+				return value => ParseCollectionType(value, createCollectionType, elementType, supportedTypeParseMethod);
 			}
 
 			return null;
@@ -34,14 +35,14 @@ namespace ServiceStack.Text.Jsv
 
 		public static ICollection<string> ParseStringCollection(string value, Type createType)
 		{
-			var collection = (ICollection<string>)ReflectionExtensions.CreateInstance(createType);
+			var collection = (ICollection<string>)ReflectionExtensions.CreateInstance(createType ?? typeof(List<string>));
 			collection.CopyTo(DeserializeArrayWithElements<string>.ParseGenericArray(value, ParseUtils.ParseString), 0);
 			return collection;
 		}
 
 		public static ICollection<int> ParseIntCollection(string value, Type createType)
 		{
-			var collection = (ICollection<int>)ReflectionExtensions.CreateInstance(createType);
+			var collection = (ICollection<int>)ReflectionExtensions.CreateInstance(createType ?? typeof(List<int>));
 			collection.CopyTo(DeserializeArrayWithElements<int>.ParseGenericArray(value, x => int.Parse(x)), 0);
 			return collection;
 		}
@@ -49,7 +50,7 @@ namespace ServiceStack.Text.Jsv
 		public static ICollection<T> ParseCollection<T>(string value, Type createType, Func<string, object> parseFn)
 		{
 			if (value == null) return null;
-			var collection = (ICollection<T>)ReflectionExtensions.CreateInstance(createType);
+			var collection = (ICollection<T>)ReflectionExtensions.CreateInstance(createType ?? typeof(List<T>));
 			collection.CopyTo(DeserializeArrayWithElements<T>.ParseGenericArray(value, parseFn), 0);
 			return collection;
 		}

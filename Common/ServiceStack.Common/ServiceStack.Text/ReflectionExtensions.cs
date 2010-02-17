@@ -37,6 +37,54 @@ namespace ServiceStack.Text
 			return false;
 		}
 
+		public static Type GetGenericType(this Type type)
+		{
+			while (type != null)
+			{
+				if (type.IsGenericType)
+					return type;
+
+				type = type.BaseType;
+			}
+			return null;
+		}
+
+		public static bool IsOrHasInterfaceOf(this Type type, Type interfaceType)
+		{
+			var genericType = type.GetGenericType();
+			var listInterfaces = type.FindInterfaces((t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == interfaceType, null);
+			return listInterfaces.Length > 0 || (genericType != null && genericType.GetGenericTypeDefinition() == interfaceType);
+		}
+
+		public static Type GetTypeWithInterfaceOf(this Type type, Type interfaceType)
+		{
+			var listInterfaces = type.FindInterfaces(
+				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == interfaceType, null);
+
+			if (listInterfaces.Length > 0)
+				return listInterfaces[0];
+
+			var genericType = type.GetGenericType();			
+			return genericType.GetGenericTypeDefinition() == interfaceType
+			       	? genericType
+			       	: null;
+		}
+
+		public static bool HasAnyTypeDefinitionsOf(this Type type, params Type[] genericTypes)
+		{
+			var thisGenericType = type.GetGenericType();
+			if (thisGenericType == null) return false;
+
+			var genericTypeDefinition = thisGenericType.GetGenericTypeDefinition();
+
+			foreach (var genericType in genericTypes)
+			{
+				if (genericTypeDefinition == genericType)
+					return true;
+			}
+
+			return false;
+		}
 
 		internal delegate object CtorDelegate();
 
@@ -69,8 +117,15 @@ namespace ServiceStack.Text
 
 		public static object CreateInstance(Type type)
 		{
-			var ctorFn = GetConstructorMethod(type);
-			return ctorFn();
+			try
+			{
+				var ctorFn = GetConstructorMethod(type);
+				return ctorFn();
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
 		}
 	}
 }

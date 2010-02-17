@@ -155,10 +155,9 @@ namespace ServiceStack.Text.Jsv
 		public static Func<string, object> GetParseFn()
 		{
 			var type = typeof(T);
-			var listInterfaces = type.FindInterfaces(
-				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
 
-			if (listInterfaces.Length == 0)
+			var listInterface = type.GetTypeWithInterfaceOf(typeof (IList<>));
+			if (listInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type IList<>", type.FullName));
 
 			//optimized access for regularly used types
@@ -168,12 +167,14 @@ namespace ServiceStack.Text.Jsv
 			if (type == typeof(List<int>))
 				return DeserializeListWithElements.ParseIntList;
 
-			var elementType = listInterfaces[0].GetGenericArguments()[0];
+			var elementType = listInterface.GetGenericArguments()[0];
 
 			var supportedTypeParseMethod = JsvReader.GetParseFn(elementType);
 			if (supportedTypeParseMethod != null)
 			{
-				var createListType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) ? null : type;
+				var createListType = type.HasAnyTypeDefinitionsOf(typeof(List<>), typeof(IList<>))
+					? null : type;
+
 				var parseFn = DeserializeListWithElements.GetListTypeParseFn(createListType, elementType, supportedTypeParseMethod);
 				return value => parseFn(value, createListType, supportedTypeParseMethod);
 			}

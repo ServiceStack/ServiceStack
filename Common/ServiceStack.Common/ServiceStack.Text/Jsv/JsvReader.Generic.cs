@@ -68,20 +68,13 @@ namespace ServiceStack.Text.Jsv
 
 			if (type.IsGenericType())
 			{
-				var listInterfaces = type.FindInterfaces(
-					(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
-				if (listInterfaces.Length > 0)
+				if (type.IsOrHasInterfaceOf(typeof(IList<>)))
 					return DeserializeList<T>.Parse;
 
-				var mapInterfaces = type.FindInterfaces(
-					(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null);
-				if (mapInterfaces.Length > 0)
+				if (type.IsOrHasInterfaceOf(typeof(IDictionary<,>)))
 					return DeserializeDictionary.GetParseMethod(type);
 
-				var collectionInterfaces = type.FindInterfaces(
-					(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>), null);
-
-				if (collectionInterfaces.Length > 0)
+				if (type.IsOrHasInterfaceOf(typeof(ICollection<>)))
 					return DeserializeCollection.GetParseMethod(type);
 			}
 

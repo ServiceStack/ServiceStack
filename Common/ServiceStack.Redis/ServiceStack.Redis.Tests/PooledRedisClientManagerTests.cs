@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Moq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Tests
 {
@@ -49,7 +51,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var parts = host.Split(':');
 			return parts.Length > 1
-				? new RedisClient(parts[0], int.Parse(parts[1])) {  }
+				? new RedisClient(parts[0], int.Parse(parts[1])) { }
 				: new RedisClient(host);
 		}
 
@@ -234,12 +236,15 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Does_block_ReadOnly_clients_pool()
 		{
+			SetupRedisFactoryMock(testReadOnlyHosts);
+
+			var delay = TimeSpan.FromSeconds(1);
+
 			using (var manager = CreateAndStartManager())
 			{
-				var delay = TimeSpan.FromSeconds(1);
-				var client1 = manager.GetClient();
-				var client2 = manager.GetClient();
-				var client3 = manager.GetClient();
+				var client1 = manager.GetReadOnlyClient();
+				var client2 = manager.GetReadOnlyClient();
+				var client3 = manager.GetReadOnlyClient();
 
 				Action func = delegate {
 					Thread.Sleep(delay + TimeSpan.FromSeconds(0.5));
@@ -250,16 +255,67 @@ namespace ServiceStack.Redis.Tests
 
 				var start = DateTime.Now;
 
-				var client4 = manager.GetClient();
+				var client4 = manager.GetReadOnlyClient();
 
 				Assert.That(DateTime.Now - start, Is.GreaterThanOrEqualTo(delay));
 
-				AssertClientHasHost(client1, testReadWriteHosts[0]);
-				AssertClientHasHost(client2, testReadWriteHosts[1]);
-				AssertClientHasHost(client3, testReadWriteHosts[2]);
-				AssertClientHasHost(client4, testReadWriteHosts[2]);
+				AssertClientHasHost(client1, testReadOnlyHosts[0]);
+				AssertClientHasHost(client2, testReadOnlyHosts[1]);
+				AssertClientHasHost(client3, testReadOnlyHosts[2]);
+				AssertClientHasHost(client4, testReadOnlyHosts[2]);
 
 				mockFactory.VerifyAll();
+			}
+		}
+
+		[Test]
+		public void Can_support_64_threads_using_the_client_simultaneously()
+		{
+			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
+			var clientUsageMap = new Dictionary<string, int>();
+
+			var clientAsyncResults = new List<IAsyncResult>();
+			using (var manager = CreateAndStartManager())
+			{
+				for (var i = 0; i < noOfConcurrentClients; i++)
+				{
+					var clientNo = i;
+					var action = (Action)(() => UseClient(manager, clientNo, clientUsageMap));
+					clientAsyncResults.Add(action.BeginInvoke(null, null));
+				}
+			}
+
+			WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
+
+			Console.WriteLine(TypeSerializer.SerializeToString(clientUsageMap));
+
+			var hostCount = 0;
+			foreach (var entry in clientUsageMap)
+			{
+				Assert.That(entry.Value, Is.GreaterThanOrEqualTo(5), "Host has unproportianate distrobution: " + entry.Value);
+				Assert.That(entry.Value, Is.LessThanOrEqualTo(30), "Host has unproportianate distrobution: " + entry.Value);
+				hostCount += entry.Value;
+			}
+
+			Assert.That(hostCount, Is.EqualTo(noOfConcurrentClients), "Invalid no of clients used");
+		}
+
+		private static void UseClient(IRedisClientsManager manager, int clientNo, Dictionary<string, int> hostCountMap)
+		{
+			using (var client = manager.GetClient())
+			{
+				lock (hostCountMap)
+				{
+					int hostCount;
+					if (!hostCountMap.TryGetValue(client.Host, out hostCount))
+					{
+						hostCount = 0;
+					}
+
+					hostCountMap[client.Host] = ++hostCount;
+				}
+
+				Console.WriteLine("Client '{0}' is using '{1}'", clientNo, client.Host);
 			}
 		}
 

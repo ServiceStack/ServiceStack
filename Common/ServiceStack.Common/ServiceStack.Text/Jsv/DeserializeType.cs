@@ -35,7 +35,7 @@ namespace ServiceStack.Text.Jsv
 		{
 			if (strType[0] != TypeSerializer.MapStartChar)
 				throw new SerializationException(string.Format(
-				                                 	"Type definitions should start with a '{0}'", TypeSerializer.MapStartChar));
+					"Type definitions should start with a '{0}'", TypeSerializer.MapStartChar));
 
 			var instance = ctorFn();
 			string propertyName;

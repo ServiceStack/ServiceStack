@@ -12,10 +12,8 @@ namespace ServiceStack.Text.Jsv
 
 		public static Func<string, object> GetParseMethod(Type type)
 		{
-			var mapInterfaces = type.FindInterfaces(
-				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null);
-
-			if (mapInterfaces.Length == 0)
+			var mapInterface = type.GetTypeWithInterfaceOf(typeof(IDictionary<,>));
+			if (mapInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type IDictionary<,>", type.FullName));
 
 			//optimized access for regularly used types
@@ -24,7 +22,7 @@ namespace ServiceStack.Text.Jsv
 				return ParseStringDictionary;
 			}
 
-			var dictionaryArgs =  mapInterfaces[0].GetGenericArguments();
+			var dictionaryArgs =  mapInterface.GetGenericArguments();
 
 			var keyTypeParseMethod = JsvReader.GetParseFn(dictionaryArgs[KeyIndex]);
 			if (keyTypeParseMethod == null) return null;
@@ -32,7 +30,9 @@ namespace ServiceStack.Text.Jsv
 			var valueTypeParseMethod = JsvReader.GetParseFn(dictionaryArgs[ValueIndex]);
 			if (valueTypeParseMethod == null) return null;
 
-			var createMapType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>) ? null : type;
+			var createMapType = type.HasAnyTypeDefinitionsOf(typeof(Dictionary<,>), typeof(IDictionary<,>))
+				? null : type;
+			
 			return value => ParseDictionaryType(value, createMapType, dictionaryArgs, keyTypeParseMethod, valueTypeParseMethod);
 		}
 
