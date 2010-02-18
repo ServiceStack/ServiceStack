@@ -22,5 +22,20 @@ namespace ServiceStack.Redis.Tests
 				Assert.That(valueString, Is.EqualTo(value));
 			}
 		}
+
+		[Test]
+		public void Can_Set_and_Get_key_with_spaces()
+		{
+			const string key = "key with spaces";
+			const string value = "value";
+			using (var redis = new RedisClient())
+			{
+				redis.SetString(key, value);
+				var valueBytes = redis.Get(key);
+				var valueString = Encoding.UTF8.GetString(valueBytes);
+
+				Assert.That(valueString, Is.EqualTo(value));
+			}
+		}
 	}
 }

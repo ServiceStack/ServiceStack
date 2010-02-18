@@ -22,9 +22,6 @@ namespace ServiceStack.Redis.Tests
 		private string firstReadWriteHost;
 		private string firstReadOnlyHost;
 
-		private int testHostsPoolIndex;
-		private string[] testHostsPool;
-
 		private Mock<IRedisClientFactory> mockFactory;
 
 		[SetUp]
@@ -33,26 +30,15 @@ namespace ServiceStack.Redis.Tests
 			firstReadWriteHost = testReadWriteHosts[0];
 			firstReadOnlyHost = testReadOnlyHosts[0];
 
-			SetupRedisFactoryMock(testReadWriteHosts);
+			SetupRedisFactoryMock();
 		}
 
-		private void SetupRedisFactoryMock(string[] useHosts)
+		private void SetupRedisFactoryMock()
 		{
-			testHostsPoolIndex = 0;
-			testHostsPool = useHosts;
-
 			mockFactory = new Mock<IRedisClientFactory>();
 			mockFactory.Expect(x => x.CreateRedisClient(
 				It.IsAny<string>(), It.IsAny<int>()))
-				.Returns(() => CreateWithHost(testHostsPool[testHostsPoolIndex++]));
-		}
-
-		public RedisClient CreateWithHost(string host)
-		{
-			var parts = host.Split(':');
-			return parts.Length > 1
-				? new RedisClient(parts[0], int.Parse(parts[1])) { }
-				: new RedisClient(host);
+				.Returns((Func<string, int, RedisClient>)((host, port) => new RedisClient(host, port)));
 		}
 
 		public PooledRedisClientManager CreateManager(
@@ -140,8 +126,6 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_get_ReadOnly_client()
 		{
-			SetupRedisFactoryMock(testReadOnlyHosts);
-
 			using (var manager = CreateAndStartManager())
 			{
 				var client = manager.GetReadOnlyClient();
@@ -177,8 +161,6 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Does_loop_through_ReadOnly_hosts()
 		{
-			SetupRedisFactoryMock(testReadOnlyHosts);
-
 			using (var manager = CreateAndStartManager())
 			{
 				var client1 = manager.GetReadOnlyClient();
@@ -194,6 +176,65 @@ namespace ServiceStack.Redis.Tests
 				AssertClientHasHost(client3, testReadOnlyHosts[2]);
 				AssertClientHasHost(client4, testReadOnlyHosts[0]);
 				AssertClientHasHost(client5, testReadOnlyHosts[1]);
+
+				mockFactory.VerifyAll();
+			}
+		}
+
+		[Test]
+		public void Can_have_different_pool_size_and_host_configurations()
+		{
+			var writeHosts = new[] { "readwrite1" };
+			var readHosts = new[] { "read1", "read2" };
+
+			const int poolSizeMultiplier = 4;
+
+			using (var manager = new PooledRedisClientManager(writeHosts, readHosts,
+					new RedisClientManagerConfig 
+					{
+						MaxWritePoolSize = writeHosts.Length * poolSizeMultiplier,
+						MaxReadPoolSize = readHosts.Length * poolSizeMultiplier,
+						AutoStart = true,
+					}
+				) 
+				{
+					RedisClientFactory = mockFactory.Object,
+				}
+			)
+			{
+				manager.Start();
+
+				//A poolsize of 4 will not block getting 4 clients
+				using (var client1 = manager.GetClient())
+				using (var client2 = manager.GetClient())
+				using (var client3 = manager.GetClient())
+				using (var client4 = manager.GetClient())
+				{
+					AssertClientHasHost(client1, writeHosts[0]);
+					AssertClientHasHost(client2, writeHosts[0]);
+					AssertClientHasHost(client3, writeHosts[0]);
+					AssertClientHasHost(client4, writeHosts[0]);
+				}
+
+				//A poolsize of 8 will not block getting 8 clients
+				using (var client1 = manager.GetReadOnlyClient())
+				using (var client2 = manager.GetReadOnlyClient())
+				using (var client3 = manager.GetReadOnlyClient())
+				using (var client4 = manager.GetReadOnlyClient())
+				using (var client5 = manager.GetReadOnlyClient())
+				using (var client6 = manager.GetReadOnlyClient())
+				using (var client7 = manager.GetReadOnlyClient())
+				using (var client8 = manager.GetReadOnlyClient())
+				{
+					AssertClientHasHost(client1, readHosts[0]);
+					AssertClientHasHost(client2, readHosts[1]);
+					AssertClientHasHost(client3, readHosts[0]);
+					AssertClientHasHost(client4, readHosts[1]);
+					AssertClientHasHost(client5, readHosts[0]);
+					AssertClientHasHost(client6, readHosts[1]);
+					AssertClientHasHost(client7, readHosts[0]);
+					AssertClientHasHost(client8, readHosts[1]);
+				}
 
 				mockFactory.VerifyAll();
 			}
@@ -236,8 +277,6 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Does_block_ReadOnly_clients_pool()
 		{
-			SetupRedisFactoryMock(testReadOnlyHosts);
-
 			var delay = TimeSpan.FromSeconds(1);
 
 			using (var manager = CreateAndStartManager())

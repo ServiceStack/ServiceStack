@@ -114,6 +114,25 @@ namespace ServiceStack.Redis
 			return sb.ToString();
 		}
 
+		private static string SafeKey(string key)
+		{
+			return key == null ? null : key.Replace(' ', '_');
+		}
+
+		private static string SafeKeys(params string[] keys)
+		{
+			var sb = new StringBuilder();
+			foreach (var key in keys)
+			{
+				if (sb.Length > 0)
+					sb.Append(" ");
+
+				sb.Append(SafeKey(key));
+			}
+
+			return sb.ToString();
+		}
+
 		protected bool SendDataCommand(byte[] data, string cmd, params object[] args)
 		{
 			if (socket == null)
@@ -397,7 +416,7 @@ namespace ServiceStack.Redis
 			if (key == null)
 				throw new ArgumentNullException("key");
 
-			return SendExpectString("TYPE {0}\r\n", key);
+			return SendExpectString("TYPE {0}\r\n", SafeKey(key));
 		}
 
 		public RedisKeyType GetKeyType(string key)
@@ -426,7 +445,7 @@ namespace ServiceStack.Redis
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
-			if (!SendDataCommand(value, "SET {0} {1}\r\n", key, value.Length))
+			if (!SendDataCommand(value, "SET {0} {1}\r\n", SafeKey(key), value.Length))
 				throw new Exception("Unable to connect");
 			ExpectSuccess();
 		}
@@ -441,7 +460,7 @@ namespace ServiceStack.Redis
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
-			if (!SendDataCommand(value, "SETNX {0} {1}\r\n", key, value.Length))
+			if (!SendDataCommand(value, "SETNX {0} {1}\r\n", SafeKey(key), value.Length))
 				throw new Exception("Unable to connect");
 			return ReadInt();
 		}
@@ -455,7 +474,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectData(null, "GET " + key + "\r\n");
+			return SendExpectData(null, "GET " + SafeKey(key) + "\r\n");
 		}
 
 		public byte[] GetSet(string key, byte[] value)
@@ -468,58 +487,60 @@ namespace ServiceStack.Redis
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
-			if (!SendDataCommand(value, "GETSET {0} {1}\r\n", key, value.Length))
+			if (!SendDataCommand(value, "GETSET {0} {1}\r\n", SafeKey(key), value.Length))
 				throw new Exception("Unable to connect");
 
 			return ReadData();
 		}
+
 		public int Exists(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("EXISTS " + key + "\r\n");
+			return SendExpectInt("EXISTS " + SafeKey(key) + "\r\n");
 		}
 
 		public int Del(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("DEL " + key + "\r\n", key);
+			return SendExpectInt("DEL " + SafeKey(key) + "\r\n", key);
 		}
 
-		public int Del(params string[] args)
+		public int Del(params string[] keys)
 		{
-			if (args == null)
-				throw new ArgumentNullException("args");
-			return SendExpectInt("DEL " + string.Join(" ", args) + "\r\n");
+			if (keys == null)
+				throw new ArgumentNullException("keys");
+
+			return SendExpectInt("DEL " + SafeKeys(keys) + "\r\n");
 		}
 
 		public int Incr(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("INCR " + key + "\r\n");
+			return SendExpectInt("INCR " + SafeKey(key) + "\r\n");
 		}
 
 		public int IncrBy(string key, int count)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("INCRBY {0} {1}\r\n", key, count);
+			return SendExpectInt("INCRBY {0} {1}\r\n", SafeKey(key), count);
 		}
 
 		public int Decr(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("DECR " + key + "\r\n");
+			return SendExpectInt("DECR " + SafeKey(key) + "\r\n");
 		}
 
 		public int DecrBy(string key, int count)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("DECRBY {0} {1}\r\n", key, count);
+			return SendExpectInt("DECRBY {0} {1}\r\n", SafeKey(key), count);
 		}
 
 		public string RandomKey()
@@ -533,28 +554,28 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("oldKeyname");
 			if (newKeyname == null)
 				throw new ArgumentNullException("newKeyname");
-			return SendGetString("RENAME {0} {1}\r\n", oldKeyname, newKeyname)[0] == '+';
+			return SendGetString("RENAME {0} {1}\r\n", SafeKey(oldKeyname), SafeKey(newKeyname))[0] == '+';
 		}
 
 		public int Expire(string key, int seconds)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("EXPIRE {0} {1}\r\n", key, seconds);
+			return SendExpectInt("EXPIRE {0} {1}\r\n", SafeKey(key), seconds);
 		}
 
 		public int ExpireAt(string key, long unixTime)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("EXPIREAT {0} {1}\r\n", key, unixTime);
+			return SendExpectInt("EXPIREAT {0} {1}\r\n", SafeKey(key), unixTime);
 		}
 
 		public int Ttl(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectInt("TTL {0}\r\n", key);
+			return SendExpectInt("TTL {0}\r\n", SafeKey(key));
 		}
 
 		public string Save()
@@ -607,7 +628,7 @@ namespace ServiceStack.Redis
 			if (keys.Length == 0)
 				throw new ArgumentException("keys");
 
-			if (!SendDataCommand(null, "MGET {0}\r\n", string.Join(" ", keys)))
+			if (!SendDataCommand(null, "MGET {0}\r\n", SafeKeys(keys)))
 				throw new Exception("Unable to connect");
 			return ReadMultiData();
 		}

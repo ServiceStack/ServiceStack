@@ -80,6 +80,7 @@
     <Compile Include="RedisCacheClient.cs" />
     <Compile Include="Generic\RedisTypedClient.cs" />
     <Compile Include="RedisCacheClientFactory.cs" />
+    <Compile Include="RedisClientManagerConfig.cs" />
     <Compile Include="RedisClientSet.cs" />
     <Compile Include="RedisClient.cs" />
     <Compile Include="RedisKeyType.cs" />

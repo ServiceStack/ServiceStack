@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using ServiceStack.Logging;
 
@@ -10,22 +9,25 @@ namespace ServiceStack.Redis
 	/// Provides thread-safe pooling of redis clients.
 	/// Allows the configuration of different ReadWrite and ReadOnly hosts
 	/// </summary>
-	public class PooledRedisClientManager : IRedisClientsManager
+	public class PooledRedisClientManager 
+		: IRedisClientsManager
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientManager));
 
 		private List<EndPoint> ReadWriteHosts { get; set; }
 		private List<EndPoint> ReadOnlyHosts { get; set; }
 
-		public int MaxWritePoolSize { get; set; }
 		private RedisClient[] writeClients = new RedisClient[0];
 		protected int writePoolIndex;
 
-		public int MaxReadPoolSize { get; set; }
 		private RedisClient[] readClients = new RedisClient[0];
 		protected int readPoolIndex;
 
+		protected RedisClientManagerConfig Config { get; set; }
+
 		public IRedisClientFactory RedisClientFactory { get; set; }
+
+		public int Db { get; set; }
 
 		public PooledRedisClientManager() : this(RedisNativeClient.DefaultHost) { }
 
@@ -34,22 +36,44 @@ namespace ServiceStack.Redis
 		{
 		}
 
+		public PooledRedisClientManager(IEnumerable<string> readWriteHosts, IEnumerable<string> readOnlyHosts)
+			: this(readWriteHosts, readOnlyHosts, null)
+		{
+		}
+
 		/// <summary>
 		/// Hosts can be an IP Address or Hostname in the format: host[:port]
 		/// e.g. 127.0.0.1:6379
 		/// default is: localhost:6379
 		/// </summary>
-		/// <param name="writeHosts">The write hosts.</param>
-		/// <param name="readHosts">The read hosts.</param>
-		public PooledRedisClientManager(IEnumerable<string> writeHosts, IEnumerable<string> readHosts)
+		/// <param name="readWriteHosts">The write hosts.</param>
+		/// <param name="readOnlyHosts">The read hosts.</param>
+		/// <param name="config">The config.</param>
+		public PooledRedisClientManager(
+			IEnumerable<string> readWriteHosts,
+			IEnumerable<string> readOnlyHosts,
+			RedisClientManagerConfig config)
 		{
-			ReadWriteHosts = ConvertToIpEndPoints(writeHosts);
-			ReadOnlyHosts = ConvertToIpEndPoints(readHosts);
-
-			this.MaxWritePoolSize = ReadWriteHosts.Count;
-			this.MaxReadPoolSize = ReadOnlyHosts.Count;
+			ReadWriteHosts = ConvertToIpEndPoints(readWriteHosts);
+			ReadOnlyHosts = ConvertToIpEndPoints(readOnlyHosts);
 
 			this.RedisClientFactory = Redis.RedisClientFactory.Instance;
+
+			this.Config = config ?? new RedisClientManagerConfig {
+				MaxWritePoolSize = ReadWriteHosts.Count,
+				MaxReadPoolSize = ReadOnlyHosts.Count,
+				AutoStart = false,
+			};
+
+			if (this.Config.AutoStart)
+			{
+				this.OnStart();
+			}
+		}
+
+		protected virtual void OnStart()
+		{
+			this.Start();
 		}
 
 		internal class EndPoint
@@ -96,7 +120,7 @@ namespace ServiceStack.Redis
 				if (writeClients[nextIndex] == null)
 				{
 					var nextHost = ReadWriteHosts[nextIndex % ReadWriteHosts.Count];
-					
+
 					var client = RedisClientFactory.CreateRedisClient(
 						nextHost.Host, nextHost.Port);
 
@@ -150,11 +174,11 @@ namespace ServiceStack.Redis
 					var nextHost = ReadOnlyHosts[nextIndex % ReadOnlyHosts.Count];
 					var client = RedisClientFactory.CreateRedisClient(
 						nextHost.Host, nextHost.Port);
-					
+
 					client.ClientManager = this;
 
 					readClients[nextIndex] = client;
-					
+
 					return client;
 				}
 
@@ -221,10 +245,10 @@ namespace ServiceStack.Redis
 
 		public void Start()
 		{
-			writeClients = new RedisClient[MaxWritePoolSize];
+			writeClients = new RedisClient[Config.MaxWritePoolSize];
 			writePoolIndex = 0;
 
-			readClients = new RedisClient[MaxReadPoolSize];
+			readClients = new RedisClient[Config.MaxReadPoolSize];
 			readPoolIndex = 0;
 		}
 
@@ -271,10 +295,9 @@ namespace ServiceStack.Redis
 
 		protected void Dispose(RedisClient redisClient)
 		{
+			if (redisClient == null) return;
 			try
 			{
-				if (redisClient == null) return;
-				
 				redisClient.DisposeConnection();
 			}
 			catch (Exception ex)
