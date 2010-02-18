@@ -64,12 +64,25 @@ namespace ServiceStack.Redis
 
 		public bool Add(string key, object value)
 		{
+			var bytesValue = value as byte[];
+			if (bytesValue != null)
+			{
+				return base.SetNX(key, bytesValue) == Success;
+			}
+
 			var valueString = TypeSerializer.SerializeToString(value);
 			return SetIfNotExists(key, valueString);
 		}
 
 		public bool Set(string key, object value)
 		{
+			var bytesValue = value as byte[];
+			if (bytesValue != null)
+			{
+				base.Set(key, bytesValue);
+				return true;
+			}
+
 			var valueString = TypeSerializer.SerializeToString(value);
 			SetString(key, valueString);
 			return true;
@@ -79,6 +92,14 @@ namespace ServiceStack.Redis
 		{
 			var exists = ContainsKey(key);
 			if (!exists) return false;
+
+			var bytesValue = value as byte[];
+			if (bytesValue != null)
+			{
+				base.Set(key, bytesValue);
+				return true;
+			}
+
 			SetString(key, TypeSerializer.SerializeToString(value));
 			return true;
 		}

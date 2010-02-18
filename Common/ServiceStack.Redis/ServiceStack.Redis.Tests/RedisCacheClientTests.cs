@@ -15,6 +15,9 @@ namespace ServiceStack.Redis.Tests
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
+			if (cacheClient != null)
+				cacheClient.Dispose();
+
 			cacheClient = new RedisCacheClient();
 			cacheClient.FlushAll();
 		}
@@ -48,5 +51,23 @@ namespace ServiceStack.Redis.Tests
 			var existingModel = cacheClient.Get<ModelWithIdAndName>(cacheKey);
 			ModelWithIdAndName.AssertIsEqual(existingModel, model);
 		}
+
+		[Test]
+		public void Can_Set_and_Get_key_with_all_byte_values()
+		{
+			const string key = "bytesKey";
+
+			var value = new byte[256];
+			for (var i = 0; i < value.Length; i++)
+			{
+				value[i] = (byte)i;
+			}
+
+			cacheClient.Set(key, value);
+			var resultValue = cacheClient.Get(key);
+
+			Assert.That(resultValue, Is.EquivalentTo(value));
+		}
+
 	}
 }

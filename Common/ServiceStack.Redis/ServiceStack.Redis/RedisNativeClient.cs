@@ -941,8 +941,10 @@ namespace ServiceStack.Redis
 			if (socket == null) return;
 
 			Quit();
+
 			if (socket != null)
 				socket.Close();
+	
 			socket = null;
 		}
 

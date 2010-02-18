@@ -37,5 +37,26 @@ namespace ServiceStack.Redis.Tests
 				Assert.That(valueString, Is.EqualTo(value));
 			}
 		}
+
+		[Test]
+		public void Can_Set_and_Get_key_with_all_byte_values()
+		{
+			const string key = "bytesKey";
+			
+			var value = new byte[256];
+			for (var i = 0; i < value.Length; i++)
+			{
+				value[i] = (byte) i;
+			}
+
+			using (var redis = new RedisClient())
+			{
+				redis.Set(key, value);
+				var resultValue = redis.Get(key);
+
+				Assert.That(resultValue, Is.EquivalentTo(value));
+			}
+		}
+
 	}
 }

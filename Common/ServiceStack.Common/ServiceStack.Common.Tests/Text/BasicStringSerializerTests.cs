@@ -442,8 +442,6 @@ namespace ServiceStack.Common.Tests.Text
 			Assert.That(model.Equals(toModel), Is.True);
 		}
 
-
-
 		[Test]
 		public void Can_convert_CustomerOrderListDto()
 		{
@@ -454,4 +452,5 @@ namespace ServiceStack.Common.Tests.Text
 		}
 
 	}
+
 }
