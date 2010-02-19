@@ -5,8 +5,12 @@ namespace ServiceStack.Redis
 	public class RedisResponseException 
 		: Exception
 	{
-		public RedisResponseException(string code)
-			: base("Response error")
+		public RedisResponseException(string message)
+			: base(message)
+		{
+		}
+
+		public RedisResponseException(string message, string code) : base(message)
 		{
 			Code = code;
 		}

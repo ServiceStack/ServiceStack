@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.CacheAccess;
 
 namespace ServiceStack.Redis
@@ -23,24 +24,36 @@ namespace ServiceStack.Redis
 		}
 
 		public PooledRedisClientCacheManager(params string[] readWriteHosts)
-			: base(readWriteHosts)
+			: this(readWriteHosts, readWriteHosts)
 		{
 		}
 
-		public PooledRedisClientCacheManager(IEnumerable<string> readWriteHosts, IEnumerable<string> readOnlyHosts)
-			: base(readWriteHosts, readOnlyHosts)
+		public PooledRedisClientCacheManager(
+			IEnumerable<string> readWriteHosts, IEnumerable<string> readOnlyHosts)
+			: base(readWriteHosts, readOnlyHosts, null, DefaultCacheDb)
 		{
 		}
 
-		public PooledRedisClientCacheManager(IEnumerable<string> readWriteHosts, IEnumerable<string> readOnlyHosts, RedisClientManagerConfig config) 
-			: base(readWriteHosts, readOnlyHosts, config)
+		public PooledRedisClientCacheManager(
+			IEnumerable<string> readWriteHosts, 
+			IEnumerable<string> readOnlyHosts, 
+			int initialDb)
+			: base(readWriteHosts, readOnlyHosts, null, initialDb)
 		{
 		}
 
-		protected override void  OnStart()
+		public PooledRedisClientCacheManager(
+			IEnumerable<string> readWriteHosts,
+			IEnumerable<string> readOnlyHosts,
+			RedisClientManagerConfig config
+		)
+			: base(readWriteHosts, readOnlyHosts, config, DefaultCacheDb)
+		{
+		}
+
+		protected override void OnStart()
 		{
 			RedisClientFactory = RedisCacheClientFactory.Instance;
-			this.Db = DefaultCacheDb;
 			base.OnStart();
 		}
 
@@ -54,11 +67,16 @@ namespace ServiceStack.Redis
 			return ConfigureRedisClient(base.GetReadOnlyClient());
 		}
 
-		private static ICacheClient ConfigureRedisClient(IRedisClient client)
+		private ICacheClient ConfigureRedisClient(IRedisClient client)
 		{
 			//Provide automatic partitioning of 'Redis Caches' from normal persisted data 
 			//which is on DB '0' by default.
-			client.Db = DefaultCacheDb;
+
+			var notUserSpecified = this.Db == RedisNativeClient.DefaultDb;
+			if (notUserSpecified)
+			{
+				client.Db = DefaultCacheDb;
+			}
 			return (RedisCacheClient)client;
 		}
 

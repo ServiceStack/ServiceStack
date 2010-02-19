@@ -85,6 +85,9 @@
     <Compile Include="Generic\RedisClientTestsBase.cs" />
     <Compile Include="Generic\RedisPersistenceProviderTestsBase.cs" />
     <Compile Include="Generic\RedisPersistenceProviderTestsBaseImpl.cs" />
+    <Compile Include="Integration\MultiThreadedRedisClientIntegrationTests.cs" />
+    <Compile Include="Integration\MultiThreadedCachePoolIntegrationTests.cs" />
+    <Compile Include="Integration\MultiThreadedPoolIntegrationTests.cs" />
     <Compile Include="NorthwindPerfTests.cs">
       <SubType>Code</SubType>
     </Compile>

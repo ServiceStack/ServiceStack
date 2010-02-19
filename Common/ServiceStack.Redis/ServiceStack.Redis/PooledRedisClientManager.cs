@@ -9,10 +9,12 @@ namespace ServiceStack.Redis
 	/// Provides thread-safe pooling of redis clients.
 	/// Allows the configuration of different ReadWrite and ReadOnly hosts
 	/// </summary>
-	public class PooledRedisClientManager 
+	public class PooledRedisClientManager
 		: IRedisClientsManager
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientManager));
+
+		protected const int PoolSizeMultiplier = 4;
 
 		private List<EndPoint> ReadWriteHosts { get; set; }
 		private List<EndPoint> ReadOnlyHosts { get; set; }
@@ -27,7 +29,7 @@ namespace ServiceStack.Redis
 
 		public IRedisClientFactory RedisClientFactory { get; set; }
 
-		public int Db { get; set; }
+		public int Db { get; private set; }
 
 		public PooledRedisClientManager() : this(RedisNativeClient.DefaultHost) { }
 
@@ -53,16 +55,36 @@ namespace ServiceStack.Redis
 			IEnumerable<string> readWriteHosts,
 			IEnumerable<string> readOnlyHosts,
 			RedisClientManagerConfig config)
+			: this(readWriteHosts, readOnlyHosts, config, RedisNativeClient.DefaultDb)
 		{
+		}
+
+		public PooledRedisClientManager(
+			IEnumerable<string> readWriteHosts,
+			IEnumerable<string> readOnlyHosts,
+			int initalDb)
+			: this(readWriteHosts, readOnlyHosts, null, initalDb)
+		{
+		}
+
+		public PooledRedisClientManager(
+			IEnumerable<string> readWriteHosts,
+			IEnumerable<string> readOnlyHosts,
+			RedisClientManagerConfig config,
+			int initalDb)
+		{
+			this.Db = config != null
+				? config.DefaultDb.GetValueOrDefault(initalDb)
+				: initalDb;
+
 			ReadWriteHosts = ConvertToIpEndPoints(readWriteHosts);
 			ReadOnlyHosts = ConvertToIpEndPoints(readOnlyHosts);
 
 			this.RedisClientFactory = Redis.RedisClientFactory.Instance;
 
 			this.Config = config ?? new RedisClientManagerConfig {
-				MaxWritePoolSize = ReadWriteHosts.Count,
-				MaxReadPoolSize = ReadOnlyHosts.Count,
-				AutoStart = false,
+				MaxWritePoolSize = ReadWriteHosts.Count * PoolSizeMultiplier,
+				MaxReadPoolSize = ReadOnlyHosts.Count * PoolSizeMultiplier,
 			};
 
 			if (this.Config.AutoStart)
@@ -94,10 +116,10 @@ namespace ServiceStack.Redis
 		/// <returns></returns>
 		public IRedisClient GetClient()
 		{
-			AssertValidReadWritePool();
-
 			lock (writeClients)
 			{
+				AssertValidReadWritePool();
+
 				RedisClient inActiveClient;
 				while ((inActiveClient = GetInActiveWriteClient()) == null)
 				{
@@ -106,6 +128,13 @@ namespace ServiceStack.Redis
 
 				writePoolIndex++;
 				inActiveClient.Active = true;
+
+				//Reset database to default if changed
+				if (inActiveClient.Db != Db)
+				{
+					inActiveClient.Db = Db;
+				}
+
 				return inActiveClient;
 			}
 		}
@@ -146,10 +175,10 @@ namespace ServiceStack.Redis
 		/// <returns></returns>
 		public virtual IRedisClient GetReadOnlyClient()
 		{
-			AssertValidReadOnlyPool();
-
 			lock (readClients)
 			{
+				AssertValidReadOnlyPool();
+
 				RedisClient inActiveClient;
 				while ((inActiveClient = GetInActiveReadClient()) == null)
 				{
@@ -158,6 +187,13 @@ namespace ServiceStack.Redis
 
 				readPoolIndex++;
 				inActiveClient.Active = true;
+
+				//Reset database to default if changed
+				if (inActiveClient.Db != Db)
+				{
+					inActiveClient.Db = Db;
+				}
+
 				return inActiveClient;
 			}
 		}
@@ -245,6 +281,9 @@ namespace ServiceStack.Redis
 
 		public void Start()
 		{
+			if (writeClients.Length > 0 || readClients.Length > 0)
+				throw new InvalidOperationException("Pool has already been started");
+
 			writeClients = new RedisClient[Config.MaxWritePoolSize];
 			writePoolIndex = 0;
 

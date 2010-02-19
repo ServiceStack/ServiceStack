@@ -44,9 +44,15 @@ namespace ServiceStack.Redis.Tests
 		public PooledRedisClientManager CreateManager(
 			IRedisClientFactory usingFactory, string[] readWriteHosts, string[] readOnlyHosts)
 		{
-			return new PooledRedisClientManager(readWriteHosts, readOnlyHosts) {
-				RedisClientFactory = usingFactory,
-			};
+			return new PooledRedisClientManager(readWriteHosts, readOnlyHosts,
+				new RedisClientManagerConfig {
+					MaxWritePoolSize = readWriteHosts.Length,
+					MaxReadPoolSize = readOnlyHosts.Length,
+					AutoStart = false,
+				}) 
+				{
+					RedisClientFactory = usingFactory,
+				};
 		}
 
 		public PooledRedisClientManager CreateManager(
@@ -190,20 +196,16 @@ namespace ServiceStack.Redis.Tests
 			const int poolSizeMultiplier = 4;
 
 			using (var manager = new PooledRedisClientManager(writeHosts, readHosts,
-					new RedisClientManagerConfig 
-					{
+					new RedisClientManagerConfig {
 						MaxWritePoolSize = writeHosts.Length * poolSizeMultiplier,
 						MaxReadPoolSize = readHosts.Length * poolSizeMultiplier,
 						AutoStart = true,
 					}
-				) 
-				{
+				) {
 					RedisClientFactory = mockFactory.Object,
 				}
 			)
 			{
-				manager.Start();
-
 				//A poolsize of 4 will not block getting 4 clients
 				using (var client1 = manager.GetClient())
 				using (var client2 = manager.GetClient())
