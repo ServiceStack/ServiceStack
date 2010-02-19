@@ -287,7 +287,7 @@ namespace ServiceStack.Redis
 		protected void SendExpectSuccess(string cmd, params object[] args)
 		{
 			if (!SendCommand(cmd, args))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -504,7 +504,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "SET {0} {1}\r\n", SafeKey(key), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			ExpectSuccess();
 		}
 
@@ -519,7 +519,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "SETNX {0} {1}\r\n", SafeKey(key), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadInt();
 		}
 
@@ -546,7 +546,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentException("value exceeds 1G", "value");
 
 			if (!SendDataCommand(value, "GETSET {0} {1}\r\n", SafeKey(key), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			return ReadData();
 		}
@@ -687,7 +687,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentException("keys");
 
 			if (!SendDataCommand(null, "MGET {0}\r\n", SafeKeys(keys)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadMultiData();
 		}
 
@@ -721,7 +721,7 @@ namespace ServiceStack.Redis
 		public byte[][] SMembers(string setId)
 		{
 			if (!SendDataCommand(null, "SMEMBERS {0}\r\n", setId))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadMultiData();
 		}
 
@@ -733,7 +733,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("value");
 
 			if (!SendDataCommand(value, "SADD {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			ExpectSuccess();
 		}
 
@@ -742,7 +742,7 @@ namespace ServiceStack.Redis
 			if (setId == null)
 				throw new ArgumentNullException("setId");
 			if (!SendDataCommand(value, "SREM {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -750,7 +750,7 @@ namespace ServiceStack.Redis
 		public byte[] SPop(string setId)
 		{
 			if (!SendDataCommand(null, "SPOP {0}\r\n", SafeKey(setId)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadData();
 		}
 
@@ -762,7 +762,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("toSetId");
 
 			if (!SendDataCommand(value, "SMOVE {0} {1} {2}\r\n", SafeKey(fromSetId), SafeKey(toSetId), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -780,7 +780,7 @@ namespace ServiceStack.Redis
 			if (setId == null)
 				throw new ArgumentNullException("setId");
 			if (!SendDataCommand(value, "SISMEMBER {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			return ReadInt();
 		}
@@ -788,7 +788,7 @@ namespace ServiceStack.Redis
 		public byte[][] SInter(params string[] setIds)
 		{
 			if (!SendDataCommand(null, "SINTER {0}\r\n", SafeKeys(setIds)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			return ReadMultiData();
 		}
@@ -796,7 +796,7 @@ namespace ServiceStack.Redis
 		public void SInterStore(string intoSetId, params string[] setIds)
 		{
 			if (!SendDataCommand(null, "SINTERSTORE {0} {1}\r\n", SafeKey(intoSetId), SafeKeys(setIds)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -804,7 +804,7 @@ namespace ServiceStack.Redis
 		public byte[][] SUnion(params string[] setIds)
 		{
 			if (!SendDataCommand(null, "SUNION {0}\r\n", SafeKeys(setIds)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			return ReadMultiData();
 		}
@@ -812,7 +812,7 @@ namespace ServiceStack.Redis
 		public void SUnionStore(string intoSetId, params string[] setIds)
 		{
 			if (!SendDataCommand(null, "SUNIONSTORE {0} {1}\r\n", SafeKey(intoSetId), SafeKeys(setIds)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -820,7 +820,7 @@ namespace ServiceStack.Redis
 		public byte[][] SDiff(string fromSetId, params string[] withSetIds)
 		{
 			if (!SendDataCommand(null, "SDIFF {0} {1}\r\n", SafeKey(fromSetId), SafeKeys(withSetIds)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			return ReadMultiData();
 		}
@@ -828,7 +828,7 @@ namespace ServiceStack.Redis
 		public void SDiffStore(string intoSetId, string fromSetId, params string[] withSetIds)
 		{
 			if (!SendDataCommand(null, "SDIFFSTORE {0} {1} {2}\r\n", SafeKey(intoSetId), SafeKey(fromSetId), SafeKeys(withSetIds)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -836,7 +836,7 @@ namespace ServiceStack.Redis
 		public byte[] SRandMember(string setId)
 		{
 			if (!SendDataCommand(null, "SRANDMEMBER {0}\r\n", SafeKey(setId)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadData();
 		}
 		#endregion
@@ -847,7 +847,7 @@ namespace ServiceStack.Redis
 		public byte[][] LRange(string listId, int startingFrom, int endingAt)
 		{
 			if (!SendDataCommand(null, "LRANGE {0} {1} {2}\r\n", SafeKey(listId), startingFrom, endingAt))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			return ReadMultiData();
 		}
@@ -857,9 +857,9 @@ namespace ServiceStack.Redis
 			var sortAlphaOption = sortAlpha ? " ALPHA" : "";
 			var sortDescOption = sortDesc ? " DESC" : "";
 
-			if (!SendDataCommand(null, "SORT {0} LIMIT {1} {2}{3}{4}\r\n", SafeKey(listOrSetId), startingFrom, endingAt,
-								 sortAlphaOption, sortDescOption))
-				throw new Exception("Unable to connect");
+			if (!SendDataCommand(null, "SORT {0} LIMIT {1} {2}{3}{4}\r\n", 
+				SafeKey(listOrSetId), startingFrom, endingAt, sortAlphaOption, sortDescOption))
+				throw CreateConnectionError();
 
 			return ReadMultiData();
 		}
@@ -872,7 +872,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("value");
 
 			if (!SendDataCommand(value, "RPUSH {0} {1}\r\n", SafeKey(listId), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			ExpectSuccess();
 		}
 
@@ -884,14 +884,14 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("value");
 
 			if (!SendDataCommand(value, "LPUSH {0} {1}\r\n", SafeKey(listId), value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			ExpectSuccess();
 		}
 
 		public void LTrim(string listId, int keepStartingFrom, int keepEndingAt)
 		{
 			if (!SendCommand("LTRIM {0} {1} {2}\r\n", SafeKey(listId), keepStartingFrom, keepEndingAt))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -899,7 +899,7 @@ namespace ServiceStack.Redis
 		public int LRem(string listId, int removeNoOfMatches, byte[] value)
 		{
 			if (!SendDataCommand(value, "LREM {0} {1} {2}\r\n", SafeKey(listId), removeNoOfMatches, value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			return ReadInt();
 		}
@@ -915,14 +915,14 @@ namespace ServiceStack.Redis
 		public byte[] LIndex(string listId, int listIndex)
 		{
 			if (!SendCommand("LINDEX {0} {1}\r\n", SafeKey(listId), listIndex))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadData();
 		}
 
 		public void LSet(string listId, int listIndex, byte[] value)
 		{
 			if (!SendDataCommand(value, "LSET {0} {1} {2}\r\n", SafeKey(listId), listIndex, value.Length))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -930,14 +930,14 @@ namespace ServiceStack.Redis
 		public byte[] LPop(string listId)
 		{
 			if (!SendCommand("LPOP {0}\r\n", SafeKey(listId)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadData();
 		}
 
 		public byte[] RPop(string listId)
 		{
 			if (!SendCommand("RPOP {0}\r\n", SafeKey(listId)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 			return ReadData();
 		}
 
@@ -953,14 +953,14 @@ namespace ServiceStack.Redis
 			{
 				var value = Encoding.UTF8.GetBytes(toListId);
 				if (!SendDataCommand(value, "RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), value.Length))
-					throw new Exception("Unable to connect");
+					throw CreateConnectionError();
 
 				ReadData();
 				return;
 			}
 
 			if (!SendCommand("RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), SafeKey(toListId)))
-				throw new Exception("Unable to connect");
+				throw CreateConnectionError();
 
 			ExpectSuccess();
 		}
@@ -1004,9 +1004,10 @@ namespace ServiceStack.Redis
 			}
 			finally
 			{
-				if (socket != null)
-					socket.Close();
-
+				try {
+					if (socket != null)
+						socket.Close();
+				} catch {}
 				socket = null;
 			}
 		}
