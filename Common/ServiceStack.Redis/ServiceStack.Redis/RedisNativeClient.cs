@@ -18,6 +18,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Diagnostics;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Support;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Redis
 {
@@ -30,6 +32,8 @@ namespace ServiceStack.Redis
 	public class RedisNativeClient
 		: IRedisNativeClient
 	{
+		private static readonly ILog log = LogManager.GetLogger(typeof(RedisNativeClient));
+
 		public const int DefaultDb = 0;
 		public const int DefaultPort = 6379;
 		public const string DefaultHost = "localhost";
@@ -41,6 +45,7 @@ namespace ServiceStack.Redis
 		private int clientPort;
 		private string lastCommand;
 		private SocketException lastSocketException;
+		private bool HadExceptions { get; set; }
 
 		protected Socket socket;
 		protected BufferedStream bstream;
@@ -100,6 +105,7 @@ namespace ServiceStack.Redis
 				if (Password != null)
 					SendExpectSuccess("AUTH {0}\r\n", Password);
 
+				db = 0;
 				var ipEndpoint = socket.LocalEndPoint as IPEndPoint;
 				clientPort = ipEndpoint != null ? ipEndpoint.Port : -1;
 				lastCommand = null;
@@ -107,7 +113,10 @@ namespace ServiceStack.Redis
 			}
 			catch (SocketException ex)
 			{
-				throw new InvalidOperationException("could not connect to redis Instance at " + Host + ":" + Port, ex);
+				HadExceptions = true;
+				var throwEx = new InvalidOperationException("could not connect to redis Instance at " + Host + ":" + Port, ex);
+				log.Error(throwEx.Message, ex);
+				throw throwEx;
 			}
 		}
 
@@ -137,6 +146,9 @@ namespace ServiceStack.Redis
 
 		private bool HandleSocketException(SocketException ex)
 		{
+			HadExceptions = true;
+			log.Error("SocketException: ", ex);
+
 			lastSocketException = ex;
 
 			// timeout?
@@ -148,16 +160,22 @@ namespace ServiceStack.Redis
 
 		private RedisResponseException CreateResponseError(string error)
 		{
-			return new RedisResponseException(
+			HadExceptions = true;
+			var throwEx = new RedisResponseException(
 				string.Format("{0}, sPort: {1}, LastCommand: {2}",
 					error, clientPort, lastCommand));
+			log.Error(throwEx.Message);
+			throw throwEx;
 		}
 
 		private Exception CreateConnectionError()
 		{
-			return new Exception(
+			HadExceptions = true;
+			var throwEx = new Exception(
 				string.Format("Unable to Connect: sPort: {0}", 
 					clientPort), lastSocketException);
+			log.Error(throwEx.Message);
+			throw throwEx;
 		}
 
 		private static string SafeKey(string key)
@@ -253,9 +271,6 @@ namespace ServiceStack.Redis
 			return bstream.ReadByte();
 		}
 
-		//
-		// This one does not throw errors
-		//
 		protected string SendGetString(string cmd, params object[] args)
 		{
 			if (!SendCommand(cmd, args))
@@ -267,7 +282,7 @@ namespace ServiceStack.Redis
 		[Conditional("DEBUG")]
 		protected void Log(string fmt, params object[] args)
 		{
-			Console.WriteLine("{0}", String.Format(fmt, args).Trim());
+			log.DebugFormat("{0}", string.Format(fmt, args).Trim());
 		}
 
 		protected void ExpectSuccess()

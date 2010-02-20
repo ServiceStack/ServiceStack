@@ -15,7 +15,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void TestFixture()
 		{
 			NorthwindData.LoadData(false);
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				redis.FlushAll();
 			}
@@ -25,7 +25,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_Set_and_Get_string()
 		{
 			const string value = "value";
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				redis.SetString("key", value);
 				var valueString = redis.GetString("key");
@@ -45,7 +45,7 @@ namespace ServiceStack.Redis.Tests.Generic
 				value[i] = (byte) i;
 			}
 
-			using (var redisClient = new RedisClient())
+			using (var redisClient = new RedisClient(RedisHosts.SingleHost))
 			{
 				var redis = redisClient.GetTypedClient<byte[]>();
 
@@ -92,7 +92,7 @@ namespace ServiceStack.Redis.Tests.Generic
 				  + NorthwindData.Territories.Count
 				  + NorthwindData.EmployeeTerritories.Count;
 
-			using (var client = new RedisClient())
+			using (var client = new RedisClient(RedisHosts.SingleHost))
 			{
 				var before = DateTime.Now;
 

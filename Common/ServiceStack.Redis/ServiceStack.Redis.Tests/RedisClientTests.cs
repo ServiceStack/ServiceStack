@@ -13,7 +13,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_Set_and_Get_string()
 		{
 			const string value = "value";
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				redis.SetString("key", value);
 				var valueBytes = redis.Get("key");
@@ -28,7 +28,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			const string key = "key with spaces";
 			const string value = "value";
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				redis.SetString(key, value);
 				var valueBytes = redis.Get(key);
@@ -49,7 +49,7 @@ namespace ServiceStack.Redis.Tests
 				value[i] = (byte) i;
 			}
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				redis.Set(key, value);
 				var resultValue = redis.Get(key);

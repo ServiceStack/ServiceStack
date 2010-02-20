@@ -10,9 +10,6 @@ namespace ServiceStack.Redis.Tests.Integration
 	[TestFixture]
 	public class MultiThreadedCachePoolIntegrationTests
 	{
-		readonly string [] masterHosts = new[] { "chi-dev-mem1.ddnglobal.local" };
-		readonly string [] slaveHosts = new[] { "chi-dev-mem1.ddnglobal.local", "chi-dev-mem2.ddnglobal.local" };
-
 		private static string testData;
 
 		[TestFixtureSetUp]
@@ -36,7 +33,7 @@ namespace ServiceStack.Redis.Tests.Integration
 			var clientUsageMap = new Dictionary<string, int>();
 
 			var clientAsyncResults = new List<IAsyncResult>();
-			using (var manager = CreateAndStartManager(masterHosts, slaveHosts))
+			using (var manager = CreateAndStartManager(RedisHosts.MasterHosts, RedisHosts.SlaveHosts))
 			{
 				for (var i = 0; i < noOfConcurrentClients; i++)
 				{

@@ -21,7 +21,7 @@ namespace ServiceStack.Redis.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				redis.FlushAll();
 			}			
@@ -31,7 +31,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_AddToList_and_GetAllFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -45,7 +45,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_GetListCount()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -59,7 +59,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_GetItemFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -74,7 +74,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_SetItemInList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -91,7 +91,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_PopFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -105,7 +105,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_DequeueFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -122,7 +122,7 @@ namespace ServiceStack.Redis.Tests
 			var list2Members = new List<string> { "five", "six", "seven" };
 			const string item4 = "four";
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				list1Members.ForEach(x => redis.AddToList(ListId, x));
 				list2Members.ForEach(x => redis.AddToList(ListId2, x));
@@ -145,7 +145,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -163,7 +163,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			const int listSize = 2500;
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				listSize.Times(x => redis.AddToList(ListId, x.ToString()));
 
@@ -180,7 +180,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -195,7 +195,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -213,7 +213,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -228,7 +228,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -247,7 +247,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -266,7 +266,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -283,7 +283,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient())
+			using (var redis = new RedisClient(RedisHosts.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);

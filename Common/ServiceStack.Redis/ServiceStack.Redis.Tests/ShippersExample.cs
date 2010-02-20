@@ -38,7 +38,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Shippers_UseCase()
 		{
-			using (var redisClient = new RedisClient())
+			using (var redisClient = new RedisClient(RedisHosts.SingleHost))
 			{
 				//Create a 'strongly-typed' API that makes all Redis Value operations to apply against Shippers
 				IRedisTypedClient<Shipper> redis = redisClient.GetTypedClient<Shipper>();
