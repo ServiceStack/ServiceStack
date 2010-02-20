@@ -11,7 +11,8 @@
     <RootNamespace>ServiceStack.Examples.Clients</RootNamespace>
     <AssemblyName>ServiceStack.Examples.Clients</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <SilverlightApplicationList>{66071B2F-A190-450D-8EA3-CF3A5477D738}|..\ServiceStack.Examples.Clients.Silverlight\ServiceStack.Examples.Clients.Silverlight.csproj|ClientBin|False</SilverlightApplicationList>
+    <SilverlightApplicationList>
+    </SilverlightApplicationList>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

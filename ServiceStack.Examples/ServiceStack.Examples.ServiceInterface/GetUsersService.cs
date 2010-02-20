@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
@@ -31,8 +30,8 @@ namespace ServiceStack.Examples.ServiceInterface
 
 				if (request.UserNames != null && request.UserNames.Count > 0)
 				{
-					users.AddRange(dbCmd.Select<User>("UserName IN ({0})",
-						request.UserNames.SqlInValues()));
+					users.AddRange(dbCmd.Select<User>(
+						"UserName IN ({0})", request.UserNames.SqlInValues()));
 				}
 
 				return new GetUsersResponse { Users = new ArrayOfUser(users) };

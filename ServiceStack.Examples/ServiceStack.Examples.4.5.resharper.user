@@ -32,7 +32,6 @@
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1122" fromTop="28" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="491" fromTop="18" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="336" fromTop="10" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.iis7" caret="2315" fromTop="19" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="476" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="522" fromTop="16" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="808" fromTop="21" />
@@ -50,10 +49,8 @@
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1959" fromTop="33" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1382" fromTop="39" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="485" fromTop="21" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.iis7" caret="2331" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="306" fromTop="11" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="129" fromTop="4" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.iis7" caret="2197" fromTop="17" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17856" fromTop="23" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18027" fromTop="28" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18294" fromTop="38" />

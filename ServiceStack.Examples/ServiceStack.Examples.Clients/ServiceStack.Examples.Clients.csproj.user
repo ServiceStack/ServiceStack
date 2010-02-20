@@ -28,10 +28,6 @@
           <EnableENC>False</EnableENC>
           <AlwaysStartWebServerOnDebug>True</AlwaysStartWebServerOnDebug>
           <EnableWcfTestClientForSVC>False</EnableWcfTestClientForSVC>
-          <ProjectOutputReferences>
-            <Ref Project="{66071B2F-A190-450D-8EA3-CF3A5477D738}" Folder="ClientBin">
-            </Ref>
-          </ProjectOutputReferences>
         </WebProjectProperties>
       </FlavorProperties>
     </VisualStudio>

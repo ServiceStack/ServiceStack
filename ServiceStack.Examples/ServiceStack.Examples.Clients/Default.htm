@@ -268,52 +268,51 @@
                         </div>
                         <h5>Server code</h5>
                         <code class="server-code">
-	public class GetFibonacciNumbersService : IService&lt;GetFibonacciNumbers&gt;
-	{
-		private readonly IResourceManager config;
+    public class GetFibonacciNumbersService 
+	    : IService&lt;GetFibonacciNumbers&gt;
+    {
+	    private readonly ExampleConfig config;
 
 	    //Example of ServiceStack's built-in Funq IOC constructor injection
-	    public GetFibonacciNumbersService(IResourceManager config)
-		{
-			this.config = config;
-		}
+	    public GetFibonacciNumbersService(ExampleConfig config)
+	    {
+		    this.config = config;
+	    }
 
-		public object Execute(GetFibonacciNumbers request)
-		{
-			var defaultLimit = this.config.Get&lt;long&gt;("DefaultFibonacciLimit", 10);
+	    public object Execute(GetFibonacciNumbers request)
+	    {
+		    var skip = request.Skip.GetValueOrDefault(0);
+		    var take = request.Take.GetValueOrDefault(config.DefaultFibonacciLimit);
 
-			var skip = request.Skip.GetValueOrDefault(0);
-			var take = request.Take.GetValueOrDefault(defaultLimit);
+		    var results = new List&lt;long&gt;();
 
-			var results = new List&lt;long&gt;();
+		    var i = 0;
+		    foreach (var fibonacciNumber in GetFibonacciNumbersNumbers())
+		    {
+			    if (i++ &lt; skip) continue;
 
-			var i = 0;
-			foreach (var fibonacciNumber in GetFibonacciNumbersNumbers())
-			{
-				if (i++ &lt; skip) continue;
+			    results.Add(fibonacciNumber);
 
-				results.Add(fibonacciNumber);
+			    if (results.Count == take) break;
+		    }
 
-				if (results.Count == take) break;
-			}
+		    return new GetFibonacciNumbersResponse { Results = new ArrayOfLong(results) };
+	    }
 
-			return new GetFibonacciNumbersResponse { Results = new ArrayOfLong(results) };
-		}
+	    static IEnumerable&lt;long&gt; GetFibonacciNumbersNumbers()
+	    {
+		    long n1 = 0;
+		    long n2 = 1;
 
-		static IEnumerable&lt;long&gt; GetFibonacciNumbersNumbers()
-		{
-			long n1 = 0;
-			long n2 = 1;
-
-			while (true)
-			{
-				var n3 = n1 + n2;
-				yield return n3;
-				n1 = n2;
-				n2 = n3;
-			}
-		}
-	}
+		    while (true)
+		    {
+			    var n3 = n1 + n2;
+			    yield return n3;
+			    n1 = n2;
+			    n2 = n3;
+		    }
+	    }
+    }
                         </code>
                     </div>
                 </div>
@@ -525,8 +524,8 @@
 
 			    if (request.UserNames != null &amp;&amp; request.UserNames.Count &gt; 0)
 			    {
-				    users.AddRange(dbCmd.Select&lt;User&gt;("UserName IN ({0})",
-					    request.UserNames.SqlInValues()));
+				    users.AddRange(dbCmd.Select&lt;User&gt;(
+				        "UserName IN ({0})", request.UserNames.SqlInValues()));
 			    }
 
 			    return new GetUsersResponse { Users = new ArrayOfUser(users) };
