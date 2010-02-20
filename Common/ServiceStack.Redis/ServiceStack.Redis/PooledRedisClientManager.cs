@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Redis
@@ -77,8 +78,8 @@ namespace ServiceStack.Redis
 				? config.DefaultDb.GetValueOrDefault(initalDb)
 				: initalDb;
 
-			ReadWriteHosts = ConvertToIpEndPoints(readWriteHosts);
-			ReadOnlyHosts = ConvertToIpEndPoints(readOnlyHosts);
+			ReadWriteHosts = readWriteHosts.ToIpEndPoints();
+			ReadOnlyHosts = readOnlyHosts.ToIpEndPoints();
 
 			this.RedisClientFactory = Redis.RedisClientFactory.Instance;
 
@@ -96,18 +97,6 @@ namespace ServiceStack.Redis
 		protected virtual void OnStart()
 		{
 			this.Start();
-		}
-
-		internal class EndPoint
-		{
-			internal string Host { get; private set; }
-			internal int Port { get; private set; }
-
-			public EndPoint(string host, int port)
-			{
-				Host = host;
-				Port = port;
-			}
 		}
 
 		/// <summary>
@@ -254,29 +243,6 @@ namespace ServiceStack.Redis
 			}
 
 			throw new NotSupportedException("Cannot add unknown client back to the pool");
-		}
-
-		private static List<EndPoint> ConvertToIpEndPoints(IEnumerable<string> hosts)
-		{
-			if (hosts == null) return new List<EndPoint>();
-
-			const int hostOrIpAddressIndex = 0;
-			const int portIndex = 1;
-
-			var ipEndpoints = new List<EndPoint>();
-			foreach (var host in hosts)
-			{
-				var hostParts = host.Split(':');
-				if (hostParts.Length == 0)
-					throw new ArgumentException("'{0}' is not a valid Host or IP Address: e.g. '127.0.0.0[:11211]'");
-
-				var port = (hostParts.Length == 1)
-					? RedisNativeClient.DefaultPort : int.Parse(hostParts[portIndex]);
-
-				var endpoint = new EndPoint(hostParts[hostOrIpAddressIndex], port);
-				ipEndpoints.Add(endpoint);
-			}
-			return ipEndpoints;
 		}
 
 		public void Start()

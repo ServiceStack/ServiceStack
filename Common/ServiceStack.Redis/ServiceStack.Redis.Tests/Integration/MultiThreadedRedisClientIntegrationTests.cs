@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
@@ -9,6 +10,7 @@ namespace ServiceStack.Redis.Tests.Integration
 {
 	[TestFixture]
 	public class MultiThreadedRedisClientIntegrationTests
+		: IntegrationTestBase
 	{
 		private static string testData;
 
@@ -23,6 +25,8 @@ namespace ServiceStack.Redis.Tests.Integration
 		[Test]
 		public void Can_support_64_threads_using_the_client_simultaneously()
 		{
+			var before = Stopwatch.GetTimestamp();
+
 			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
 			var clientAsyncResults = new List<IAsyncResult>();
@@ -37,11 +41,15 @@ namespace ServiceStack.Redis.Tests.Integration
 			}
 
 			WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
+
+			Console.WriteLine("Time Taken: {0}", (Stopwatch.GetTimestamp() - before) / 1000);
 		}
 
 		[Test]
 		public void Can_support_64_threads_using_the_client_sequentially()
 		{
+			var before = Stopwatch.GetTimestamp();
+
 			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
 			using (var redisClient = new RedisClient(RedisHosts.SingleHost))
@@ -52,6 +60,8 @@ namespace ServiceStack.Redis.Tests.Integration
 					UseClient(redisClient, clientNo);
 				}
 			}
+
+			Console.WriteLine("Time Taken: {0}", (Stopwatch.GetTimestamp() - before) / 1000);
 		}
 
 		private void UseClientAsync(RedisClient client, int clientNo)
@@ -70,13 +80,13 @@ namespace ServiceStack.Redis.Tests.Integration
 			{
 				host = client.Host;
 
-				Console.WriteLine("Client '{0}' is using '{1}'", clientNo, client.Host);
+				Log("Client '{0}' is using '{1}'", clientNo, client.Host);
 
 				var testClientKey = "test:" + host + ":" + clientNo;
 				client.SetString(testClientKey, testData);
 				var result = client.GetString(testClientKey) ?? "";
 
-				Console.WriteLine("\t{0} => {1} len {2} {3} len", testClientKey,
+				Log("\t{0} => {1} len {2} {3} len", testClientKey,
 					testData.Length, testData.Length == result.Length ? "==" : "!=", result.Length);
 
 			}

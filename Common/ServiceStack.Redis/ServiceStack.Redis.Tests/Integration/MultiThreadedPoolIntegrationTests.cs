@@ -1,16 +1,15 @@
-using System;
 using System.Collections.Generic;
-using System.Threading;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Tests.Integration
 {
 	[TestFixture]
 	public class MultiThreadedPoolIntegrationTests
+		 : IntegrationTestBase
 	{
-		public PooledRedisClientManager CreateAndStartManager(
+		static Dictionary<string, int> hostCountMap;
+
+		public IRedisClientsManager CreateAndStartManager(
 			string[] readWriteHosts, string[] readOnlyHosts)
 		{
 			return new PooledRedisClientManager(readWriteHosts, readOnlyHosts,
@@ -21,41 +20,31 @@ namespace ServiceStack.Redis.Tests.Integration
 				});
 		}
 
-		[Test]
-		public void Can_support_64_threads_using_the_client_simultaneously()
+		[SetUp]
+		public void BeforeEachTest()
 		{
-			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
-			var clientUsageMap = new Dictionary<string, int>();
-
-			var clientAsyncResults = new List<IAsyncResult>();
-			using (var manager = CreateAndStartManager(RedisHosts.MasterHosts, RedisHosts.SlaveHosts))
-			{
-				for (var i = 0; i < noOfConcurrentClients; i++)
-				{
-					var clientNo = i;
-					var action = (Action)(() => UseClient(manager, clientNo, clientUsageMap));
-					clientAsyncResults.Add(action.BeginInvoke(null, null));
-				}
-			}
-
-			WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
-
-			Console.WriteLine(TypeSerializer.SerializeToString(clientUsageMap));
-
-			if (RedisHosts.SlaveHosts.Length <= 1) return;
-			
-			var hostCount = 0;
-			foreach (var entry in clientUsageMap)
-			{
-				Assert.That(entry.Value, Is.GreaterThanOrEqualTo(5), "Host has unproportianate distrobution: " + entry.Value);
-				Assert.That(entry.Value, Is.LessThanOrEqualTo(60), "Host has unproportianate distrobution: " + entry.Value);
-				hostCount += entry.Value;
-			}
-
-			Assert.That(hostCount, Is.EqualTo(noOfConcurrentClients), "Invalid no of clients used");
+			hostCountMap = new Dictionary<string, int>();
 		}
 
-		private static void UseClient(IRedisClientsManager manager, int clientNo, Dictionary<string, int> hostCountMap)
+		[TearDown]
+		public void AfterEachTest()
+		{
+			CheckHostCountMap(hostCountMap);
+		}
+
+		[Test]
+		public void Pool_can_support_64_threads_using_the_client_simultaneously()
+		{
+			RunSimultaneously(CreateAndStartManager, UseClient);
+		}
+
+		[Test]
+		public void Basic_can_support_64_threads_using_the_client_simultaneously()
+		{
+			RunSimultaneously(CreateAndStartBasicManager, UseClient);
+		}
+
+		private static void UseClient(IRedisClientsManager manager, int clientNo)
 		{
 			using (var client = manager.GetReadOnlyClient())
 			{
@@ -70,7 +59,7 @@ namespace ServiceStack.Redis.Tests.Integration
 					hostCountMap[client.Host] = ++hostCount;
 				}
 
-				Console.WriteLine("Client '{0}' is using '{1}'", clientNo, client.Host);
+				Log("Client '{0}' is using '{1}'", clientNo, client.Host);
 			}
 		}
 

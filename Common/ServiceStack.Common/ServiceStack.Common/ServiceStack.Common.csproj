@@ -104,6 +104,7 @@
     <Compile Include="Web\CompressedFileResult.cs" />
     <Compile Include="Web\CompressedResult.cs" />
     <Compile Include="Web\CompressionTypes.cs" />
+    <Compile Include="Web\EndPoint.cs" />
     <Compile Include="Web\FileResult.cs" />
     <Compile Include="Web\HtmlResult.cs" />
     <Compile Include="Web\HttpHeaders.cs" />

@@ -1,8 +1,10 @@
+using System;
 using ServiceStack.CacheAccess;
 
 namespace ServiceStack.Redis
 {
-	public interface IRedisClientCacheManager
+	public interface IRedisClientCacheManager 
+		: IDisposable
 	{
 		/// <summary>
 		/// Returns a Read/Write ICacheClient (The default) using the hosts defined in ReadWriteHosts
@@ -27,7 +29,5 @@ namespace ServiceStack.Redis
 		/// </summary>
 		/// <returns></returns>
 		IRedisClient GetReadOnlyClient();
-
-		void Dispose();
 	}
 }

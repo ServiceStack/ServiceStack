@@ -65,6 +65,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicRedisClientManager.cs" />
+    <Compile Include="BasicRedisClientCacheManager.cs" />
     <Compile Include="RedisClientFactory.cs" />
     <Compile Include="Generic\IRedisList.Generic.cs" />
     <Compile Include="Generic\IRedisSet.Generic.cs" />
@@ -89,6 +91,7 @@
     <Compile Include="RedisClientList.cs" />
     <Compile Include="PooledRedisClientManager.cs" />
     <Compile Include="RedisResponseException.cs" />
+    <Compile Include="RedisExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Client\ServiceStack.Client.csproj">
