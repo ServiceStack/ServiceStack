@@ -17,7 +17,7 @@ namespace ServiceStack.Redis.Tests
 			if (cacheClient != null)
 				cacheClient.Dispose();
 
-			cacheClient = new RedisCacheClient();
+			cacheClient = new RedisCacheClient(TestConfig.SingleHost);
 			cacheClient.FlushAll();
 		}
 

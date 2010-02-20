@@ -956,7 +956,7 @@ namespace ServiceStack.Redis
 			return ReadData();
 		}
 
-		public void RPopLPush(string fromListId, string toListId)
+		public byte[] RPopLPush(string fromListId, string toListId)
 		{
 			if (fromListId == null)
 				throw new ArgumentNullException("fromListId");
@@ -970,14 +970,13 @@ namespace ServiceStack.Redis
 				if (!SendDataCommand(value, "RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), value.Length))
 					throw CreateConnectionError();
 
-				ReadData();
-				return;
+				return ReadData();
 			}
 
 			if (!SendCommand("RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), SafeKey(toListId)))
 				throw CreateConnectionError();
 
-			ExpectSuccess();
+			return ReadData();
 		}
 		#endregion
 

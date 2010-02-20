@@ -28,7 +28,7 @@ namespace ServiceStack.Redis.Tests.Generic
 				client.Dispose();
 				client = null;
 			}
-			client = new RedisClient(RedisHosts.SingleHost);
+			client = new RedisClient(TestConfig.SingleHost);
 			client.FlushAll();
 
 			redis = client.GetTypedClient<T>();
@@ -146,6 +146,8 @@ namespace ServiceStack.Redis.Tests.Generic
 		[Test]
 		public void Can_enumerate_large_list()
 		{
+			if (TestConfig.IgnoreLongTests) return;
+
 			const int listSize = 2500;
 
 			listSize.Times(x => redis.AddToList(List, Factory.CreateInstance(x)));

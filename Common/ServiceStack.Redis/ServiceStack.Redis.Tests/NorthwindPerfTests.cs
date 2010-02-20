@@ -9,7 +9,7 @@ namespace ServiceStack.Redis.Tests
 	[TestFixture]
 	public class NorthwindPerfTests
 	{
-		[Test]
+		[Test][Ignore("Hangs")]
 		public void Load_Northwind_database_with_redis()
 		{
 			NorthwindData.LoadData(false);
@@ -18,7 +18,7 @@ namespace ServiceStack.Redis.Tests
 			var stopWatch = new Stopwatch();
 			stopWatch.Start();
 
-			using (var client = new RedisClient(RedisHosts.SingleHost))
+			using (var client = new RedisClient(TestConfig.SingleHost))
 			{
 				LoadNorthwindData(client);
 			}

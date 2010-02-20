@@ -24,7 +24,7 @@ namespace ServiceStack.Redis.Tests.Generic
 				client.Dispose();
 				client = null;
 			}
-			client = new RedisClient(RedisHosts.SingleHost);
+			client = new RedisClient(TestConfig.SingleHost);
 			client.FlushAll();
 
 			redis = client.GetTypedClient<T>();

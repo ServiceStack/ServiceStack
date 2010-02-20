@@ -35,6 +35,19 @@ namespace ServiceStack.Common.Utils
 			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..", Path.DirectorySeparatorChar));
 			return mapPath;
 		}
+
+		public static string CombinePaths(params string[] paths)
+		{
+			var sb = new StringBuilder();
+			foreach (var path in paths)
+			{
+				if (sb.Length > 0)
+					sb.Append("/");
+				sb.Append(path);
+			}
+
+			return sb.ToString();
+		}
 	}
 
 

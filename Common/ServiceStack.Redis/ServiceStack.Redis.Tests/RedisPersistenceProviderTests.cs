@@ -13,7 +13,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_Store_and_GetById_ModelWithIdAndName()
 		{
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				const int modelId = 1;
 				var to = ModelWithIdAndName.Create(modelId);
@@ -28,7 +28,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_StoreAll_and_GetByIds_ModelWithIdAndName()
 		{
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var ids = new[] { 1, 2, 3, 4, 5 };
 				var tos = ids.ConvertAll(x => ModelWithIdAndName.Create(x));
@@ -45,7 +45,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_Delete_ModelWithIdAndName()
 		{
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var ids = new List<int> { 1, 2, 3, 4, 5 };
 				var tos = ids.ConvertAll(x => ModelWithIdAndName.Create(x));

@@ -42,7 +42,7 @@ namespace ServiceStack.Redis
 		void LSet(string listId, int listIndex, byte[] value);
 		byte[] LPop(string listId);
 		byte[] RPop(string listId);
-		void RPopLPush(string fromListId, string toListId);
+		byte[] RPopLPush(string fromListId, string toListId);
 		void Set(string key, byte[] value);
 		int SetNX(string key, byte[] value);
 		byte[] Get(string key);

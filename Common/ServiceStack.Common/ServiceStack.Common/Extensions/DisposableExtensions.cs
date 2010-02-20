@@ -33,6 +33,15 @@ namespace ServiceStack.Common.Extensions
 		{
 			Dispose(disposables, null);
 		}
+
+		public static void Run<T>(this T disposable, Action<T> runActionThenDispose)
+			where T : IDisposable
+		{
+			using (disposable)
+			{
+				runActionThenDispose(disposable);
+			}
+		}
 		
 	}
 }

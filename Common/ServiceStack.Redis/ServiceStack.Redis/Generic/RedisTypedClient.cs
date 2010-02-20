@@ -471,9 +471,9 @@ namespace ServiceStack.Redis.Generic
 			return FromBytes(client.RPop(fromList.Id));
 		}
 
-		public void PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList)
+		public T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList)
 		{
-			client.RPopLPush(fromList.Id, toList.Id);
+			return FromBytes(client.RPopLPush(fromList.Id, toList.Id));
 		}
 
 		#region Implementation of IBasicPersistenceProvider<T>

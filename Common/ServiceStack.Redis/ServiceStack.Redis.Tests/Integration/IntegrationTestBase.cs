@@ -47,7 +47,7 @@ namespace ServiceStack.Redis.Tests.Integration
 			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
 			var clientAsyncResults = new List<IAsyncResult>();
-			using (var manager = clientManagerFactory(RedisHosts.MasterHosts, RedisHosts.SlaveHosts))
+			using (var manager = clientManagerFactory(TestConfig.MasterHosts, TestConfig.SlaveHosts))
 			{
 				for (var i = 0; i < noOfConcurrentClients; i++)
 				{
@@ -66,7 +66,7 @@ namespace ServiceStack.Redis.Tests.Integration
 		{
 			Console.WriteLine(TypeSerializer.SerializeToString(hostCountMap));
 
-			if (RedisHosts.SlaveHosts.Length <= 1) return;
+			if (TestConfig.SlaveHosts.Length <= 1) return;
 
 			var hostCount = 0;
 			foreach (var entry in hostCountMap)

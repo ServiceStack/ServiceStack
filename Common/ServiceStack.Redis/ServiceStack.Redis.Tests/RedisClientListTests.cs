@@ -21,7 +21,7 @@ namespace ServiceStack.Redis.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				redis.FlushAll();
 			}			
@@ -31,7 +31,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_AddToList_and_GetAllFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -45,7 +45,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_GetListCount()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -59,7 +59,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_GetItemFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -74,7 +74,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_SetItemInList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -91,7 +91,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_PopFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -105,7 +105,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_DequeueFromList()
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -115,14 +115,14 @@ namespace ServiceStack.Redis.Tests
 			}
 		}
 
-		[Test][Ignore("Makes redis 1.2 hang")]
+		[Test]
 		public void Can_MoveBetweenLists()
 		{
 			var list1Members = new List<string> { "one", "two", "three", "four" };
 			var list2Members = new List<string> { "five", "six", "seven" };
 			const string item4 = "four";
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				list1Members.ForEach(x => redis.AddToList(ListId, x));
 				list2Members.ForEach(x => redis.AddToList(ListId2, x));
@@ -145,7 +145,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				storeMembers.ForEach(x => redis.AddToList(ListId, x));
 
@@ -161,9 +161,11 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_enumerate_large_list()
 		{
+			if (TestConfig.IgnoreLongTests) return;
+
 			const int listSize = 2500;
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				listSize.Times(x => redis.AddToList(ListId, x.ToString()));
 
@@ -180,7 +182,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -195,7 +197,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -213,7 +215,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -228,7 +230,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -247,7 +249,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -266,7 +268,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);
@@ -283,7 +285,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var storeMembers = new List<string> { "one", "two", "three", "four" };
 
-			using (var redis = new RedisClient(RedisHosts.SingleHost))
+			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var list = redis.Lists[ListId];
 				storeMembers.ForEach(list.Add);

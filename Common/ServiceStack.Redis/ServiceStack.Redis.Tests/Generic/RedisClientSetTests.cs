@@ -32,7 +32,7 @@ namespace ServiceStack.Redis.Tests.Generic
 				client.Dispose();
 				client = null;
 			}
-			client = new RedisClient(RedisHosts.SingleHost);
+			client = new RedisClient(TestConfig.SingleHost);
 			client.FlushAll();
 
 			redis = client.GetTypedClient<T>();
@@ -273,6 +273,8 @@ namespace ServiceStack.Redis.Tests.Generic
 		[Test]
 		public void Can_enumerate_large_ICollection_Set()
 		{
+			if (TestConfig.IgnoreLongTests) return;
+
 			const int setSize = 2500;
 
 			var storeMembers = new List<T>();

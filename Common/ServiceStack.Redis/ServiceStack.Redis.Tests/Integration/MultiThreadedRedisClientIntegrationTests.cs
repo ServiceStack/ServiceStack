@@ -30,7 +30,7 @@ namespace ServiceStack.Redis.Tests.Integration
 			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
 			var clientAsyncResults = new List<IAsyncResult>();
-			using (var redisClient = new RedisClient(RedisHosts.SingleHost))
+			using (var redisClient = new RedisClient(TestConfig.SingleHost))
 			{
 				for (var i = 0; i < noOfConcurrentClients; i++)
 				{
@@ -52,7 +52,7 @@ namespace ServiceStack.Redis.Tests.Integration
 
 			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
-			using (var redisClient = new RedisClient(RedisHosts.SingleHost))
+			using (var redisClient = new RedisClient(TestConfig.SingleHost))
 			{
 				for (var i = 0; i < noOfConcurrentClients; i++)
 				{

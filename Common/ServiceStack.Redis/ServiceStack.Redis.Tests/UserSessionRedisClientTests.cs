@@ -37,7 +37,7 @@ namespace ServiceStack.Redis.Tests
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			redisCache = new RedisCacheClient();
+			redisCache = new RedisCacheClient(TestConfig.SingleHost);
 			redisCache.FlushAll();
 			//master = UserMasterDataAccessModel.Instance.MasterUsers.NewDataAccessObject(true);
 		}

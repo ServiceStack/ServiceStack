@@ -89,6 +89,7 @@
     <Compile Include="Integration\MultiThreadedRedisClientIntegrationTests.cs" />
     <Compile Include="Integration\MultiThreadedCacheClientManagerIntegrationTests.cs" />
     <Compile Include="Integration\MultiThreadedPoolIntegrationTests.cs" />
+    <Compile Include="Integration\RedisRegressionTestRun.cs" />
     <Compile Include="NorthwindPerfTests.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -98,7 +99,7 @@
     <Compile Include="RedisClientSetTests.cs" />
     <Compile Include="RedisClientTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RedisHosts.cs" />
+    <Compile Include="TestConfig.cs" />
     <Compile Include="RedisPersistenceProviderTests.cs" />
     <Compile Include="ShippersExample.cs" />
     <Compile Include="UserSessionRedisClientTests.cs" />

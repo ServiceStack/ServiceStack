@@ -85,6 +85,6 @@ namespace ServiceStack.Redis.Generic
 		void SetItemInList(IRedisList<T> toList, int listIndex, T value);
 		T DequeueFromList(IRedisList<T> fromList);
 		T PopFromList(IRedisList<T> fromList);
-		void PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList);
+		T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList);
 	}
 }
