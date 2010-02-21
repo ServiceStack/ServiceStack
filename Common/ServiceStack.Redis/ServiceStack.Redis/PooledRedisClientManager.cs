@@ -135,8 +135,15 @@ namespace ServiceStack.Redis
 				var nextIndex = (writePoolIndex + i) % writeClients.Length;
 
 				//Initialize if not exists
-				if (writeClients[nextIndex] == null)
+				var existingClient = writeClients[nextIndex];
+				if (existingClient == null
+					|| existingClient.HadExceptions)
 				{
+					if (existingClient != null)
+					{
+						existingClient.DisposeConnection();
+					}
+
 					var nextHost = ReadWriteHosts[nextIndex % ReadWriteHosts.Count];
 
 					var client = RedisClientFactory.CreateRedisClient(
@@ -194,8 +201,15 @@ namespace ServiceStack.Redis
 				var nextIndex = (readPoolIndex + i) % readClients.Length;
 
 				//Initialize if not exists
-				if (readClients[nextIndex] == null)
+				var existingClient = readClients[nextIndex];
+				if (existingClient == null
+					|| existingClient.HadExceptions)
 				{
+					if (existingClient != null)
+					{
+						existingClient.DisposeConnection();
+					}
+
 					var nextHost = ReadOnlyHosts[nextIndex % ReadOnlyHosts.Count];
 					var client = RedisClientFactory.CreateRedisClient(
 						nextHost.Host, nextHost.Port);

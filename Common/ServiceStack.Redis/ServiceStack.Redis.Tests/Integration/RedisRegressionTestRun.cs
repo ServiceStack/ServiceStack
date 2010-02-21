@@ -13,9 +13,6 @@ namespace ServiceStack.Redis.Tests.Integration
 	[TestFixture]
 	public class RedisRegressionTestRun
 	{
-		readonly string [] masterHosts = new[] { "chi-dev-mem1.ddnglobal.local" };
-		readonly string [] slaveHosts = new[] { "chi-dev-mem1.ddnglobal.local", "chi-dev-mem2.ddnglobal.local" };
-
 		private static string testData;
 
 		[TestFixtureSetUp]
@@ -34,7 +31,7 @@ namespace ServiceStack.Redis.Tests.Integration
 			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
 			var clientAsyncResults = new List<IAsyncResult>();
-			using (var manager = new PooledRedisClientManager(masterHosts, slaveHosts))
+			using (var manager = new PooledRedisClientManager(TestConfig.MasterHosts, TestConfig.SlaveHosts))
 			{
 				manager.GetClient().Run(x => x.FlushAll());
 
@@ -58,7 +55,7 @@ namespace ServiceStack.Redis.Tests.Integration
 
 			const int noOfConcurrentClients = 64; //WaitHandle.WaitAll limit is <= 64
 
-			using (var redisClient = new RedisClient(masterHosts[0]))
+			using (var redisClient = new RedisClient(TestConfig.SingleHost))
 			{
 				redisClient.FlushAll();
 

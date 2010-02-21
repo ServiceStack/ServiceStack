@@ -26,6 +26,7 @@ namespace ServiceStack.Redis
 		int RetryCount { get; set; }
 		int SendTimeout { get; set; }
 		string Password { get; set; }
+		bool HadExceptions { get; }
 
 		IRedisTypedClient<T> GetTypedClient<T>();
 

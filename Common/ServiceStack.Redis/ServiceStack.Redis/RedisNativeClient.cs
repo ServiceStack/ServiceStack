@@ -18,7 +18,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Diagnostics;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Redis
@@ -45,7 +44,7 @@ namespace ServiceStack.Redis
 		private int clientPort;
 		private string lastCommand;
 		private SocketException lastSocketException;
-		private bool HadExceptions { get; set; }
+		public bool HadExceptions { get; protected set; }
 
 		protected Socket socket;
 		protected BufferedStream bstream;
@@ -55,6 +54,9 @@ namespace ServiceStack.Redis
 		/// </summary>
 		internal bool Active { get; set; }
 		internal PooledRedisClientManager ClientManager { get; set; }
+		
+		internal int IdleTimeOutSecs = 240; //default on redis is 300
+		internal long lastConnectedAtTimestamp;
 
 		public string Host { get; private set; }
 		public int Port { get; private set; }
@@ -110,6 +112,7 @@ namespace ServiceStack.Redis
 				clientPort = ipEndpoint != null ? ipEndpoint.Port : -1;
 				lastCommand = null;
 				lastSocketException = null;
+				lastConnectedAtTimestamp = Stopwatch.GetTimestamp();
 			}
 			catch (SocketException ex)
 			{
@@ -138,8 +141,37 @@ namespace ServiceStack.Redis
 
 		private bool AssertConnectedSocket()
 		{
+			if (lastConnectedAtTimestamp > 0)
+			{
+				var now = Stopwatch.GetTimestamp();
+				var elapsedSecs = (now - lastConnectedAtTimestamp) / Stopwatch.Frequency;
+
+				if (elapsedSecs > IdleTimeOutSecs && !socket.IsConnected())
+				{
+					return Reconnect();
+				}
+				lastConnectedAtTimestamp = now;
+			}
+
 			if (socket == null)
 				Connect();
+
+			var isConnected = socket != null;
+			
+			return isConnected;
+		}
+
+		private bool Reconnect()
+		{
+			var previousDb = db;
+	
+			SafeConnectionClose();
+			Connect(); //sets db to 0
+
+			if (previousDb != DefaultDb)
+			{
+				this.Db = previousDb;
+			}
 
 			return socket != null;
 		}
@@ -1016,16 +1048,31 @@ namespace ServiceStack.Redis
 			{
 				Quit();
 			}
+			catch (Exception ex)
+			{
+				log.Error("Error when trying to Quit()", ex);
+			}
 			finally
 			{
-				try {
-					if (socket != null)
-						socket.Close();
-				} catch {}
-				socket = null;
+				SafeConnectionClose();
 			}
 		}
 
+		private void SafeConnectionClose()
+		{
+			try {
+				// workaround for a .net bug: http://support.microsoft.com/kb/821625
+				if (bstream != null)
+					bstream.Close();
+			} catch { }
+			try {
+				if (socket != null)
+					socket.Close();
+			}
+			catch { }
+			bstream = null;
+			socket = null;
+		}
 	}
 
 }
