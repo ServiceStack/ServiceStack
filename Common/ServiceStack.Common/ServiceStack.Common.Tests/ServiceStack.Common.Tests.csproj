@@ -129,6 +129,8 @@
     <Compile Include="Text\BasicStringSerializerTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Text\DdnDtos.cs" />
+    <Compile Include="Text\DdnDtoTests.cs" />
     <Compile Include="Text\StringSerializerNorthwindDatabaseTests.cs" />
     <Compile Include="Text\StringSerializerTests.cs" />
     <Compile Include="Support\InvokeSimpleCommandsTests.cs" />

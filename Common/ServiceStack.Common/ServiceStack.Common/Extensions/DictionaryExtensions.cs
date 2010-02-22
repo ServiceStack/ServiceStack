@@ -34,5 +34,12 @@ namespace ServiceStack.Common.Extensions
 
 			return true;
 		}
+
+		public static List<T> ConvertAll<T, K, V>(IDictionary<K, V> map, Func<K, V, T> createFn)
+		{
+			var list = new List<T>();
+			map.ForEach((kvp) => list.Add(createFn(kvp.Key, kvp.Value)));
+			return list;
+		}
 	}
 }

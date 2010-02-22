@@ -70,16 +70,14 @@ namespace ServiceStack.Text
 			       	: null;
 		}
 
-		public static bool HasAnyTypeDefinitionsOf(this Type type, params Type[] genericTypes)
+		public static bool HasAnyTypeDefinitionsOf(this Type genericType, params Type[] theseGenericTypes)
 		{
-			var thisGenericType = type.GetGenericType();
-			if (thisGenericType == null) return false;
+			if (!genericType.IsGenericType) return false;
+			var genericTypeDefinition = genericType.GetGenericTypeDefinition();
 
-			var genericTypeDefinition = thisGenericType.GetGenericTypeDefinition();
-
-			foreach (var genericType in genericTypes)
+			foreach (var thisGenericType in theseGenericTypes)
 			{
-				if (genericTypeDefinition == genericType)
+				if (genericTypeDefinition == thisGenericType)
 					return true;
 			}
 

@@ -80,11 +80,12 @@ namespace ServiceStack.Text.Jsv
 		public static IList<T> ParseGenericList(string value, Type createListType, Func<string, object> parseFn)
 		{
 			if ((value = DeserializeListWithElements.StripList(value)) == null) return null;
-			if (value == string.Empty) return new List<T>();
 
 			var to = (createListType == null)
 						? new List<T>()
 						: (IList<T>)ReflectionExtensions.CreateInstance(createListType);
+
+			if (value == string.Empty) return to;
 
 			if (!string.IsNullOrEmpty(value))
 			{
