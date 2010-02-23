@@ -12,11 +12,6 @@ namespace ServiceStack.CacheAccess.Providers
 		public XmlCacheManager(ICacheClient cacheClient)
 			: base(cacheClient) { }
 
-		public ICacheClient CacheClient
-		{
-			get { return this.cacheClient; }
-		}
-
 		public string ContentType
 		{
 			get { return MimeTypes.Xml; }
@@ -27,14 +22,14 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			var contentTypeCacheKey = cacheKey + MimeTypes.GetExtension(MimeTypes.Xml);
 
-			var result = this.cacheClient.Get<string>(contentTypeCacheKey);
+			var result = this.CacheClient.Get<string>(contentTypeCacheKey);
 			if (result != null) return result;
 
 			var cacheValue = createCacheFn();
 
 			var cacheValueXml = DataContractSerializer.Instance.Parse(cacheValue);
 
-			this.cacheClient.Set(contentTypeCacheKey, cacheValueXml);
+			this.CacheClient.Set(contentTypeCacheKey, cacheValueXml);
 
 			return cacheValueXml;
 		}
@@ -49,7 +44,7 @@ namespace ServiceStack.CacheAccess.Providers
 			var ext = MimeTypes.GetExtension(MimeTypes.Xml);
 			var xmlCacheKeys = cacheKeys.ToList().ConvertAll(x => x + ext);
 
-			this.cacheClient.RemoveAll(xmlCacheKeys);
+			this.CacheClient.RemoveAll(xmlCacheKeys);
 		}
 	}
 

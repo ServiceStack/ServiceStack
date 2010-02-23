@@ -12,11 +12,6 @@ namespace ServiceStack.CacheAccess.Providers
 		public JsonCacheManager(ICacheClient cacheClient)
 			: base(cacheClient) { }
 
-		public ICacheClient CacheClient
-		{
-			get { return this.cacheClient; }
-		}
-
 		public string ContentType
 		{
 			get { return MimeTypes.Json; }
@@ -27,14 +22,14 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			cacheKey = cacheKey + MimeTypes.GetExtension(MimeTypes.Json);
 
-			var result = this.cacheClient.Get<string>(cacheKey);
+			var result = this.CacheClient.Get<string>(cacheKey);
 			if (result != null) return result;
 
 			var cacheValue = createCacheFn();
 
 			var cacheValueText = JsonDataContractSerializer.Instance.Parse(cacheValue);
 
-			this.cacheClient.Set(cacheKey, cacheValueText);
+			this.CacheClient.Set(cacheKey, cacheValueText);
 
 			return cacheValueText;
 		}
@@ -49,7 +44,7 @@ namespace ServiceStack.CacheAccess.Providers
 			var ext = MimeTypes.GetExtension(MimeTypes.Json);
 			var xmlCacheKeys = cacheKeys.ToList().ConvertAll(x => x + ext);
 
-			this.cacheClient.RemoveAll(xmlCacheKeys);
+			this.CacheClient.RemoveAll(xmlCacheKeys);
 		}
 	}
 }

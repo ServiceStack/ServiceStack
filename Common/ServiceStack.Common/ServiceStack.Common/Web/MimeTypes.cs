@@ -8,6 +8,8 @@ namespace ServiceStack.Common.Web
 		public const string Html = "text/html";
 		public const string Xml = "text/xml";
 		public const string Json = "text/json";
+		public const string Jsv = "text/jsv";
+		public const string Csv = "text/csv";
 
 		public static string GetExtension(string mimeType)
 		{
@@ -19,6 +21,10 @@ namespace ServiceStack.Common.Web
 					return ".xml";
 				case Json:
 					return ".js";
+				case Jsv:
+					return ".jsv";
+				case Csv:
+					return ".csv";
 				default:
 					throw new NotSupportedException("Unknown mimeType: " + mimeType);
 			}

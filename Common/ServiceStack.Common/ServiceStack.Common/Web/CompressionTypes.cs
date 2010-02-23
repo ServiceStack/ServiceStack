@@ -4,6 +4,7 @@ namespace ServiceStack.Common.Web
 {
 	public static class CompressionTypes
 	{
+		public const string Default = Deflate;
 		public const string Deflate = "deflate";
 		public const string GZip = "gzip";
 
