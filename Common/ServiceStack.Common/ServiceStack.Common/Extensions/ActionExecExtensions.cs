@@ -33,9 +33,24 @@ namespace ServiceStack.Common.Extensions
 			return waitHandles;
 		}
 
+		public static bool WaitAll(this List<WaitHandle> waitHandles, int timeoutMs)
+		{
+			return WaitAll(waitHandles.ToArray(), timeoutMs);
+		}
+
+		public static bool WaitAll(this ICollection<WaitHandle> waitHandles, int timeoutMs)
+		{
+			return WaitAll(waitHandles.ToArray(), timeoutMs);
+		}
+
 		public static bool WaitAll(this ICollection<WaitHandle> waitHandles, TimeSpan timeout)
 		{
-			return WaitAll(waitHandles.ToArray(), (int) timeout.TotalMilliseconds);
+			return WaitAll(waitHandles.ToArray(), (int)timeout.TotalMilliseconds);
+		}
+		
+		public static bool WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
+		{
+			return WaitAll(waitHandles, (int)timeout.TotalMilliseconds);
 		}
 
 		public static bool WaitAll(WaitHandle[] waitHandles, int timeOutMs)
