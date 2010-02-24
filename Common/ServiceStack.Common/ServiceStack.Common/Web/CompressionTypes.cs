@@ -4,6 +4,8 @@ namespace ServiceStack.Common.Web
 {
 	public static class CompressionTypes
 	{
+		public static readonly string[] AllCompressionTypes = new[] { Deflate, GZip };
+
 		public const string Default = Deflate;
 		public const string Deflate = "deflate";
 		public const string GZip = "gzip";
@@ -17,7 +19,7 @@ namespace ServiceStack.Common.Web
 		{
 			if (!IsValid(compressionType))
 			{
-				throw new NotSupportedException(compressionType 
+				throw new NotSupportedException(compressionType
 					+ " is not a supported compression type. Valid types: gzip, deflate.");
 			}
 		}

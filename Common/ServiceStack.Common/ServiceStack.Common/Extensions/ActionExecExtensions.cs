@@ -1,13 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using ServiceStack.Common.Support;
-using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common.Extensions
 {
 	public static class ActionExecExtensions
 	{
+		public static void ExecAllAndWait(this ICollection<Action> actions, TimeSpan timeout)
+		{
+			var waitHandles = new WaitHandle[actions.Count];
+			var i = 0;
+			foreach (var action in actions)
+			{
+				waitHandles[i++] = action.BeginInvoke(null, null).AsyncWaitHandle;
+			}
+
+			WaitAll(waitHandles, timeout);
+		}
 
 		public static List<WaitHandle> ExecAsync(this IEnumerable<Action> actions)
 		{
@@ -22,14 +33,9 @@ namespace ServiceStack.Common.Extensions
 			return waitHandles;
 		}
 
-		public static bool WaitAll(this List<WaitHandle> waitHandles, TimeSpan timeOut)
+		public static bool WaitAll(this ICollection<WaitHandle> waitHandles, TimeSpan timeout)
 		{
-			return WaitAll(waitHandles.ToArray(), timeOut.Milliseconds);
-		}
-
-		public static bool WaitAll(this List<WaitHandle> waitHandles, int timeOutMs)
-		{
-			return WaitAll(waitHandles.ToArray(), timeOutMs);
+			return WaitAll(waitHandles.ToArray(), (int) timeout.TotalMilliseconds);
 		}
 
 		public static bool WaitAll(WaitHandle[] waitHandles, int timeOutMs)

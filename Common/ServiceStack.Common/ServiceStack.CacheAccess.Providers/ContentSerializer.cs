@@ -65,7 +65,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public static byte[] ToCompressedResult(string serializedResult, string compressionType)
 		{
-			serializedResult.ThrowIfNull("serializedResult");
+			if (serializedResult == null) return null;
 
 			var compressedResult = serializedResult.Compress(compressionType);
 
@@ -74,7 +74,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public static string ToSerializedString(object result, string mimeType)
 		{
-			result.ThrowIfNull("result");
+			if (result == null) return null;
 
 			switch (mimeType)
 			{

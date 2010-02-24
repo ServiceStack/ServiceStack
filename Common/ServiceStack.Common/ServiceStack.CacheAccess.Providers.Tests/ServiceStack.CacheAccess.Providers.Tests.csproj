@@ -88,6 +88,7 @@
     <Compile Include="CacheClientTestBase.cs" />
     <Compile Include="CacheTest.cs" />
     <Compile Include="CompressionNetProviderTests.cs" />
+    <Compile Include="ContentCacheManagerTests.cs" />
     <Compile Include="FileAndCacheTextManagerTests.cs" />
     <Compile Include="CompressionICSharpProviderTests.cs" />
     <Compile Include="JsonCacheManagerTests.cs" />
@@ -114,6 +115,10 @@
     <ProjectReference Include="..\ServiceStack.CacheAccess.Providers\ServiceStack.CacheAccess.Providers.csproj">
       <Project>{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}</Project>
       <Name>ServiceStack.CacheAccess.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
+      <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
+      <Name>ServiceStack.Common.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>

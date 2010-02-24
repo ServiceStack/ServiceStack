@@ -544,8 +544,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			if (value == null)
-				throw new ArgumentNullException("value");
+			value = value ?? new byte[0];
 
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
@@ -559,8 +558,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			if (value == null)
-				throw new ArgumentNullException("value");
+			value = value ?? new byte[0];
 
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
@@ -586,8 +584,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			if (value == null)
-				throw new ArgumentNullException("value");
+			value = value ?? new byte[0];
 
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");

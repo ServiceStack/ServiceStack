@@ -9,8 +9,8 @@ namespace ServiceStack.CacheAccess.Providers
 	/// </summary>
 	public static class ContentCacheManager
 	{
-		public static string[] CachedMimeTypeExtensions = new[] {
-			".xml", ".js", ".jsv"
+		public static string[] AllCachedMimeTypes = new[] {
+			MimeTypes.Xml, MimeTypes.Json, MimeTypes.Jsv
 		};
 
 		/// <summary>
@@ -75,7 +75,7 @@ namespace ServiceStack.CacheAccess.Providers
 			var dto = factoryFn();
 
 			cacheClient.Set(cacheKey, dto);
-			
+
 			var serializedDto = ContentSerializer<TResult>.ToSerializedString(
 				dto, mimeType);
 
@@ -86,9 +86,11 @@ namespace ServiceStack.CacheAccess.Providers
 				var compressedSerializedDto = ContentSerializer<TResult>.ToCompressedResult(
 					serializedDto, compressionType);
 
-				cacheClient.Set(cacheKeySerializedZip, cacheKeySerializedZip);
+				cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto);
 
-				return new CompressedResult(compressedSerializedDto, compressionType, mimeType);
+				return (compressedSerializedDto != null)
+					? new CompressedResult(compressedSerializedDto, compressionType, mimeType)
+					: null;
 			}
 
 			return serializedDto;
@@ -103,8 +105,8 @@ namespace ServiceStack.CacheAccess.Providers
 			string cacheKeySerialized, string compressionType)
 		{
 			return compressionType != null
-			       	? cacheKeySerialized + "." + compressionType
-			       	: null;
+					? cacheKeySerialized + "." + compressionType
+					: null;
 		}
 
 		/// <summary>
@@ -120,16 +122,19 @@ namespace ServiceStack.CacheAccess.Providers
 			foreach (var cacheKey in cacheKeys)
 			{
 				allCacheKeys.Add(cacheKey);
-				foreach (var serializedExt in CachedMimeTypeExtensions)
+				foreach (var serializedExt in AllCachedMimeTypes)
 				{
 					var serializedCacheKey = GetSerializedCacheKey(cacheKey, serializedExt);
 					allCacheKeys.Add(serializedCacheKey);
-					allCacheKeys.Add(GetCompressedCacheKey(serializedCacheKey, CompressionTypes.Deflate));
-					allCacheKeys.Add(GetCompressedCacheKey(serializedCacheKey, CompressionTypes.GZip));
+
+					foreach (var compressionType in CompressionTypes.AllCompressionTypes)
+					{
+						allCacheKeys.Add(GetCompressedCacheKey(serializedCacheKey, compressionType));
+					}
 				}
 			}
 
-			cacheClient.RemoveAll(cacheKeys);
+			cacheClient.RemoveAll(allCacheKeys);
 		}
 
 

@@ -83,10 +83,11 @@ namespace ServiceStack.Redis
 
 		public void SetString(string key, string value)
 		{
-			if (value == null)
-				throw new ArgumentNullException("value");
+			var bytesValue = value != null
+				? Encoding.UTF8.GetBytes(value)
+				: null;
 
-			Set(key, Encoding.UTF8.GetBytes(value));
+			Set(key, bytesValue);
 		}
 
 		public bool SetIfNotExists(string key, string value)
