@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -13,10 +14,10 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	public class GetUsers
 	{
 		[DataMember]
-		public ArrayOfLong UserIds { get; set; }
+		public List<long> UserIds { get; set; }
 
 		[DataMember]
-		public ArrayOfString UserNames { get; set; }
+		public List<string> UserNames { get; set; }
 	}
 
 	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]

@@ -11,5 +11,9 @@ namespace ServiceStack.ServiceHost
 		EndpointAttributes EndpointAttributes { get; }
 		
 		IRequestAttributes RequestAttributes { get; }
+
+		string MimeType { get; }
+
+		string CompressionType { get; }
 	}
 }
