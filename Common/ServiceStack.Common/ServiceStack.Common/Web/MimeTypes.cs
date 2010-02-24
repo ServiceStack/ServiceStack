@@ -10,6 +10,7 @@ namespace ServiceStack.Common.Web
 		public const string Json = "text/json";
 		public const string Jsv = "text/jsv";
 		public const string Csv = "text/csv";
+		public const string ProtoBuf = "application/x-protobuf";
 
 		public static string GetExtension(string mimeType)
 		{
@@ -25,6 +26,8 @@ namespace ServiceStack.Common.Web
 					return ".jsv";
 				case Csv:
 					return ".csv";
+				case ProtoBuf:
+					return ".pbuf";
 				default:
 					throw new NotSupportedException("Unknown mimeType: " + mimeType);
 			}

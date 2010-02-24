@@ -47,7 +47,7 @@ namespace ServiceStack.ServiceHost
 
 		public IFactoryProvider Factory { get; set; }
 
-		public string ContentType
+		public string MimeType
 		{
 			get
 			{
@@ -56,6 +56,15 @@ namespace ServiceStack.ServiceHost
 
 				if ((this.EndpointAttributes & EndpointAttributes.Xml) == EndpointAttributes.Xml)
 					return MimeTypes.Xml;
+
+				if ((this.EndpointAttributes & EndpointAttributes.Jsv) == EndpointAttributes.Jsv)
+					return MimeTypes.Jsv;
+
+				if ((this.EndpointAttributes & EndpointAttributes.Csv) == EndpointAttributes.Csv)
+					return MimeTypes.Csv;
+
+				if ((this.EndpointAttributes & EndpointAttributes.ProtoBuf) == EndpointAttributes.ProtoBuf)
+					return MimeTypes.ProtoBuf;
 
 				return null;
 			}

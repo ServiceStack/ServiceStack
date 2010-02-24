@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceHost
 		AllSecurityModes = Secure | InSecure,
 		AllHttpMethods = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete,
 		AllCallStyles = AsyncOneWay | SyncReply,
-		AllEndpointTypes = Soap11 | Soap12 | Xml | Json | Text | Binary,
+		AllEndpointTypes = Soap11 | Soap12 | Xml | Json | Jsv | ProtoBuf | Csv,
 		
 		InternalNetworkAccess = Localhost | LocalSubnet,
 
@@ -43,10 +43,12 @@ namespace ServiceStack.ServiceHost
 		Xml = 1 << 14,
 		//Javascript
 		Json = 1 << 15,
-		//TypeSerializer, Csv
-		Text = 1 << 16,
+		//Jsv i.e. TypeSerializer
+		Jsv = 1 << 16,
 		//e.g. protobuf-net
-		Binary = 1 << 17,
+		ProtoBuf = 1 << 17,
+		//e.g. text/csv
+		Csv = 1 << 18,
 	}
 
 }

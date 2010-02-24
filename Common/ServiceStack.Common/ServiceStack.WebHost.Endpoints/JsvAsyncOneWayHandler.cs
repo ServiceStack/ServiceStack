@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var request = CreateRequest(context.Request, operationName);
 
-			var endpointAttributes = EndpointAttributes.AsyncOneWay | EndpointAttributes.Text 
+			var endpointAttributes = EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv
 				| GetEndpointAttributes(context.Request);
 
 			var response = ExecuteService(request, endpointAttributes);

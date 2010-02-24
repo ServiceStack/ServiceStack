@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ServiceStack.Common.Web;
 
 namespace ServiceStack.CacheAccess.Providers
@@ -8,6 +9,10 @@ namespace ServiceStack.CacheAccess.Providers
 	/// </summary>
 	public static class ContentCacheManager
 	{
+		public static string[] CachedMimeTypeExtensions = new[] {
+			".xml", ".js", ".jsv"
+		};
+
 		/// <summary>
 		/// Returns a serialized dto based on the mime-type, created using the factoryFn().
 		/// If the correct mimeType is found, it will return the cached result.
@@ -40,13 +45,12 @@ namespace ServiceStack.CacheAccess.Providers
 			string cacheKey)
 			where TResult : class
 		{
-			var cacheKeySerialized = cacheKey + MimeTypes.GetExtension(mimeType);
+			var cacheKeySerialized = GetSerializedCacheKey(cacheKey, mimeType);
 
 			var doCompression = compressionType != null;
 
-			var cacheKeySerializedZip = doCompression
-				? cacheKeySerialized + "." + compressionType
-            	: null;
+			var cacheKeySerializedZip = GetCompressedCacheKey(
+				cacheKeySerialized, compressionType);
 
 			if (doCompression)
 			{
@@ -89,6 +93,45 @@ namespace ServiceStack.CacheAccess.Providers
 
 			return serializedDto;
 		}
+
+		public static string GetSerializedCacheKey(string cacheKey, string mimeType)
+		{
+			return cacheKey + MimeTypes.GetExtension(mimeType);
+		}
+
+		public static string GetCompressedCacheKey(
+			string cacheKeySerialized, string compressionType)
+		{
+			return compressionType != null
+			       	? cacheKeySerialized + "." + compressionType
+			       	: null;
+		}
+
+		/// <summary>
+		/// Clears all the serialized and compressed caches set 
+		/// by the 'Resolve' method for the cacheKey provided
+		/// </summary>
+		/// <param name="cacheClient">The cache client.</param>
+		/// <param name="cacheKeys">The cache keys.</param>
+		public static void Clear(ICacheClient cacheClient, params string[] cacheKeys)
+		{
+			var allCacheKeys = new List<string>();
+
+			foreach (var cacheKey in cacheKeys)
+			{
+				allCacheKeys.Add(cacheKey);
+				foreach (var serializedExt in CachedMimeTypeExtensions)
+				{
+					var serializedCacheKey = GetSerializedCacheKey(cacheKey, serializedExt);
+					allCacheKeys.Add(serializedCacheKey);
+					allCacheKeys.Add(GetCompressedCacheKey(serializedCacheKey, CompressionTypes.Deflate));
+					allCacheKeys.Add(GetCompressedCacheKey(serializedCacheKey, CompressionTypes.GZip));
+				}
+			}
+
+			cacheClient.RemoveAll(cacheKeys);
+		}
+
 
 		/// <summary>
 		/// Helper method on ContentSerializer to 'Resolve' the serialized/compressed
