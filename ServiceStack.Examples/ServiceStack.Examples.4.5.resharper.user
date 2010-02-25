@@ -29,45 +29,49 @@
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="139" fromTop="8" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2005" fromTop="41" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="218" fromTop="8" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1122" fromTop="28" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="491" fromTop="18" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="336" fromTop="10" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="476" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="522" fromTop="16" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="808" fromTop="21" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="875" fromTop="19" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10214" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="1188" fromTop="39" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="1141" fromTop="33" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="726" fromTop="20" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="609" fromTop="19" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2602" fromTop="27" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1462" fromTop="46" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18434" fromTop="35" />
     </RecentFiles>
     <RecentEdits>
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="428" fromTop="17" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="95" fromTop="2" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="1171" fromTop="28" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="2070" fromTop="23" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="514" fromTop="16" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1412" fromTop="18" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1959" fromTop="33" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1382" fromTop="39" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="485" fromTop="21" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="306" fromTop="11" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="129" fromTop="4" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17856" fromTop="23" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18027" fromTop="28" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18294" fromTop="38" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14396" fromTop="20" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14166" fromTop="14" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14728" fromTop="43" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14587" fromTop="27" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10388" fromTop="21" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17889" fromTop="23" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18331" fromTop="38" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14429" fromTop="20" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14199" fromTop="14" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14761" fromTop="43" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="14620" fromTop="27" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10021" fromTop="21" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="284" fromTop="10" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="13773" fromTop="25" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10061" fromTop="16" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="13806" fromTop="25" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10021" fromTop="16" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="7640" fromTop="23" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17453" fromTop="22" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="635" fromTop="17" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="17486" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="603" fromTop="17" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="883" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="653" fromTop="18" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10214" fromTop="25" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="10021" fromTop="2" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="11171" fromTop="40" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="1150" fromTop="34" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="18187" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="33" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="3147" fromTop="37" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="629" fromTop="19" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2357" fromTop="21" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="2602" fromTop="27" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -109,7 +113,7 @@
       <Item value="if" priority="11" />
       <Item value="Instance" priority="1" />
       <Item value="null" priority="9" />
-      <Item value="long" priority="6" />
+      <Item value="long" priority="7" />
       <Item value="defaultLimit" priority="0" />
       <Item value="List" priority="1" />
       <Item value="int" priority="1" />
@@ -131,7 +135,7 @@
       <Item value="ResponseStatus" priority="3" />
       <Item value="DataContract" priority="1" />
       <Item value="this" priority="5" />
-      <Item value="string" priority="17" />
+      <Item value="string" priority="18" />
       <Item value="persistenceProvider" priority="7" />
       <Item value="IQueryablePersistenceProvider" priority="1" />
       <Item value="delegate" priority="2" />

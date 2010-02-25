@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 
 namespace ServiceStack.CacheAccess.Providers
@@ -19,21 +20,21 @@ namespace ServiceStack.CacheAccess.Providers
 		/// If a compressionType is set it will return a compressed version of the result.
 		/// 
 		/// If no result is found, the dto is created by the factoryFn()
-		/// The dto is set on the cacheClient => cacheKey
-		///		e.g. dto => urn:user:1
+		/// The dto is set on the cacheClient[cacheKey] => factoryFn()
+		///		e.g. urn:user:1 => dto
 		/// 
-		/// The serialized dto is set on the cacheClient => cacheKey.mimeType 
-		///		e.g. xmlDto => urn:user:1.xml
+		/// The serialized dto is set on the cacheClient[cacheKey.mimeType] => serialized(factoryFn())
+		///		e.g. urn:user:1.xml => xmlDto 
 		/// 
-		/// Finally, if a compressionType is specified, the compressed dto 
-		/// is set on the cacheClient => cacheKey.mimeType.compressionType
-		///		e.g. compressedXmlDto => urn:user:1.xml.gzip
+		/// Finally, if a compressionType is specified, the compressed dto is set on the 
+		/// cacheClient[cacheKey.mimeType.compressionType] => compressed(serialized(factoryFn()))
+		///		e.g. urn:user:1.xml.gzip => compressedXmlDto 
 		/// 
 		/// </summary>
 		/// <typeparam name="TResult">The type of the result.</typeparam>
 		/// <param name="factoryFn">The factory fn.</param>
 		/// <param name="mimeType">The mime type to serialize it to.</param>
-		/// <param name="compressionType">Type of the compression. null means no compression</param>
+		/// <param name="compressionType">Type of the compression. -optional null means no compression</param>
 		/// <param name="cacheClient">The cache client</param>
 		/// <param name="cacheKey">The base cache key</param>
 		/// <returns></returns>
@@ -45,6 +46,11 @@ namespace ServiceStack.CacheAccess.Providers
 			string cacheKey)
 			where TResult : class
 		{
+			factoryFn.ThrowIfNull("factoryFn");
+			mimeType.ThrowIfNull("mimeType");
+			cacheClient.ThrowIfNull("cacheClient");
+			cacheKey.ThrowIfNull("cacheKey");
+
 			var cacheKeySerialized = GetSerializedCacheKey(cacheKey, mimeType);
 
 			var doCompression = compressionType != null;
@@ -76,8 +82,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 			cacheClient.Set(cacheKey, dto);
 
-			var serializedDto = ContentSerializer<TResult>.ToSerializedString(
-				dto, mimeType);
+			var serializedDto = ContentSerializer<TResult>.ToSerializedString(dto, mimeType);
 
 			cacheClient.Set(cacheKeySerialized, serializedDto);
 
@@ -147,7 +152,7 @@ namespace ServiceStack.CacheAccess.Providers
 		/// <param name="cacheClient">The cache client.</param>
 		/// <param name="cacheKey">The cache key.</param>
 		/// <returns></returns>
-		public static object Resolve<T>(this ContentSerializer<T> contentSerializer,
+		public static object ResolveFromCache<T>(this ContentSerializer<T> contentSerializer,
 				ICacheClient cacheClient, string cacheKey)
 			where T : class
 		{

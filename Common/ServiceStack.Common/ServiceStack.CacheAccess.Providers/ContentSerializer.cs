@@ -92,5 +92,12 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 		}
 
+		public static object ToOptimizedResult(string mimeType, string compressionType, T result)
+		{
+			return compressionType == null
+		       	? (object) ToSerializedString(result, mimeType)
+		       	: ToCompressedResult(result, mimeType, compressionType);
+		}
+
 	}
 }
