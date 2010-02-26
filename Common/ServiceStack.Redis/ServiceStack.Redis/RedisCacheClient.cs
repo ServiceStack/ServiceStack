@@ -157,6 +157,13 @@ namespace ServiceStack.Redis
 			foreach (var keyValue in keyValues)
 			{
 				var key = keysArray[i++];
+
+				if (keyValue == null)
+				{
+					results[key] = default(T);
+					continue;
+				}
+
 				if (isBytes)
 				{
 					results[key] = (T)(object)keyValue;

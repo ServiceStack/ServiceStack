@@ -73,7 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
-    <Compile Include="Extensions\IRequestContextExtensions.cs" />
+    <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="JsvAsyncOneWayHandler.cs" />
     <Compile Include="JsvSyncReplyHandler.cs" />
     <Compile Include="EndpointType.cs" />
