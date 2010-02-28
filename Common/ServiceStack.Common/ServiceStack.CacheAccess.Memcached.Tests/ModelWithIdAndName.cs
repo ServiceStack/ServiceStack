@@ -2,8 +2,9 @@ using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 
-namespace ServiceStack.Common.Tests.Models
+namespace ServiceStack.CacheAccess.Memcached.Tests
 {
+	[Serializable]
 	public class ModelWithIdAndName
 	{
 		public ModelWithIdAndName()

@@ -8,7 +8,7 @@ namespace ServiceStack.Text.Jsv
 	{
 		public static Func<string, object> GetParseMethod(Type type)
 		{
-			var collectionInterface = type.GetTypeWithInterfaceOf(typeof(ICollection<>));
+			var collectionInterface = type.GetTypeWithGenericInterfaceOf(typeof(ICollection<>));
 			if (collectionInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type ICollection<>", type.FullName));
 

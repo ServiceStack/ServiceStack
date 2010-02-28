@@ -68,6 +68,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "ServiceStack.Text\ServiceStack.Text.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Memcached.Tests", "ServiceStack.CacheAccess.Memcached.Tests\ServiceStack.CacheAccess.Memcached.Tests.csproj", "{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -178,6 +180,10 @@ Global
 		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

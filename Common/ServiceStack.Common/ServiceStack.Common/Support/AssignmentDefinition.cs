@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Common.Utils;
@@ -89,6 +90,16 @@ namespace ServiceStack.Common.Support
 						else if (toPropertyInfo.PropertyType == typeof(string))
 						{
 							fromValue = TypeSerializer.SerializeToString(fromValue);
+						}
+						else
+						{
+							var listResult = TranslateListWithElements.TryTranslateToGenericICollection(
+								fromPropertyInfo.PropertyType, toPropertyInfo.PropertyType, fromValue);
+
+							if (listResult != null)
+							{
+								fromValue = listResult;
+							}
 						}
 					}
 

@@ -84,21 +84,24 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
+		private string ipAddress;
 		public string IpAddress
 		{
 			get
 			{
-				return GetIpAddress();
+				if (ipAddress == null)
+				{
+					ipAddress = GetIpAddress();
+				}
+				return ipAddress;
 			}
 		}
 
 		public static string GetIpAddress()
 		{
-			if (HttpContext.Current != null)
-			{
-				return HttpContext.Current.Request.UserHostAddress;
-			}
-			return null;
+			return HttpContext.Current != null 
+				? HttpContext.Current.Request.UserHostAddress 
+				: null;
 		}
 
 		~HttpRequestContext()

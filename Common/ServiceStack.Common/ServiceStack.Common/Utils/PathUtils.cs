@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace ServiceStack.Common.Utils
@@ -43,7 +40,8 @@ namespace ServiceStack.Common.Utils
 			{
 				if (sb.Length > 0)
 					sb.Append("/");
-				sb.Append(path);
+				
+				sb.Append(path.TrimStart('/','\\'));
 			}
 
 			return sb.ToString();

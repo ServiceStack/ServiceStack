@@ -12,7 +12,7 @@ namespace ServiceStack.Text.Jsv
 
 		public static Func<string, object> GetParseMethod(Type type)
 		{
-			var mapInterface = type.GetTypeWithInterfaceOf(typeof(IDictionary<,>));
+			var mapInterface = type.GetTypeWithGenericInterfaceOf(typeof(IDictionary<,>));
 			if (mapInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type IDictionary<,>", type.FullName));
 

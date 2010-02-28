@@ -10,14 +10,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public class EndpointHandlerBase
 	{
-		private readonly Dictionary<byte[], byte[]> networkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
-		private readonly byte[][] networkInterfaceIpv6Addresses;
+		private static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
+		private static readonly byte[][] NetworkInterfaceIpv6Addresses;
 
-		public EndpointHandlerBase()
+		static EndpointHandlerBase()
 		{
-			IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses().ForEach((x, y) => networkInterfaceIpv4Addresses[x.GetAddressBytes()] = y.GetAddressBytes());
+			IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses().ForEach((x, y) => NetworkInterfaceIpv4Addresses[x.GetAddressBytes()] = y.GetAddressBytes());
 
-			this.networkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
+			NetworkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
 		}
 
 		protected static bool AllowRequest(HttpContext context)
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return EndpointAttributes.None;
 		}
 
-		private EndpointAttributes GetIpAddressEndpointAttributes(IPAddress ipAddress)
+		private static EndpointAttributes GetIpAddressEndpointAttributes(IPAddress ipAddress)
 		{
 			if (IPAddress.IsLoopback(ipAddress))
 				return EndpointAttributes.Localhost;
@@ -112,13 +112,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				: EndpointAttributes.External;
 		}
 
-		private bool IsInLocalSubnet(IPAddress ipAddress)
+		private static bool IsInLocalSubnet(IPAddress ipAddress)
 		{
 			var ipAddressBytes = ipAddress.GetAddressBytes();
 			switch (ipAddress.AddressFamily)
 			{
 				case AddressFamily.InterNetwork:
-					foreach (var localIpv4AddressAndMask in networkInterfaceIpv4Addresses)
+					foreach (var localIpv4AddressAndMask in NetworkInterfaceIpv4Addresses)
 					{
 						if (ipAddressBytes.IsInSameIpv4Subnet(localIpv4AddressAndMask.Key, localIpv4AddressAndMask.Value))
 						{
@@ -128,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					break;
 
 				case AddressFamily.InterNetworkV6:
-					foreach (var localIpv6Address in networkInterfaceIpv6Addresses)
+					foreach (var localIpv6Address in NetworkInterfaceIpv6Addresses)
 					{
 						if (ipAddressBytes.IsInSameIpv6Subnet(localIpv6Address))
 						{

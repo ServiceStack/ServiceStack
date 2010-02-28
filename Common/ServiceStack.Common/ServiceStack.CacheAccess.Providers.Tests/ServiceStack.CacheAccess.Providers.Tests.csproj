@@ -108,6 +108,14 @@
       <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
       <Name>ServiceStack.OrmLite</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.Redis\ServiceStack.Redis.Tests\ServiceStack.Redis.Tests.csproj">
+      <Project>{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}</Project>
+      <Name>ServiceStack.Redis.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.Redis\ServiceStack.Redis\ServiceStack.Redis.csproj">
+      <Project>{AF99F19B-4C04-4F58-81EF-B092F1FCC540}</Project>
+      <Name>ServiceStack.Redis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.CacheAccess.Memcached\ServiceStack.CacheAccess.Memcached.csproj">
       <Project>{600612F3-15B4-45B5-9D39-06FA016B81C9}</Project>
       <Name>ServiceStack.CacheAccess.Memcached</Name>

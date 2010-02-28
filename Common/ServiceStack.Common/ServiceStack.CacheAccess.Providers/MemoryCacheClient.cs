@@ -260,10 +260,7 @@ namespace ServiceStack.CacheAccess.Providers
 			foreach (var key in keys)
 			{
 				var value = Get<T>(key);
-				if (!Equals(value, default(T)))
-				{
-					valueMap[key] = value;
-				}
+				valueMap[key] = value;
 			}
 			return valueMap;
 		}
@@ -274,10 +271,7 @@ namespace ServiceStack.CacheAccess.Providers
 			foreach (var key in keys)
 			{
 				var value = Get(key);
-				if (value != null)
-				{
-					valueMap[key] = value;
-				}
+				valueMap[key] = value;
 			}
 			return valueMap;
 		}
@@ -290,11 +284,9 @@ namespace ServiceStack.CacheAccess.Providers
 			{
 				long lostModifiedValue;
 				var value = Get(key, out lostModifiedValue);
-				if (value != null)
-				{
-					valueMap[key] = value;
-					lostModifiedValues[key] = (ulong)lostModifiedValue;
-				}
+
+				valueMap[key] = value;
+				lostModifiedValues[key] = (ulong)lostModifiedValue;
 			}
 			return valueMap;
 		}

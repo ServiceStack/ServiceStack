@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Utils;
 
@@ -10,7 +12,7 @@ namespace ServiceStack.Redis.Tests
 	public class RedisCacheClientTests
 	{
 		private ICacheClient cacheClient;
-		
+
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
@@ -67,6 +69,5 @@ namespace ServiceStack.Redis.Tests
 
 			Assert.That(resultValue, Is.EquivalentTo(value));
 		}
-
 	}
 }

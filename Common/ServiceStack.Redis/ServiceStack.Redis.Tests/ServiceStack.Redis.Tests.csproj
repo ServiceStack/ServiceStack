@@ -107,6 +107,10 @@
     <Compile Include="ValueTypeExamples.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.CacheAccess.Providers\ServiceStack.CacheAccess.Providers.csproj">
+      <Project>{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}</Project>
+      <Name>ServiceStack.CacheAccess.Providers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
       <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
       <Name>ServiceStack.Common.Tests</Name>

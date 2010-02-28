@@ -101,6 +101,7 @@
     <Compile Include="Perf\PropertyAccessorPerf.cs" />
     <Compile Include="Perf\ReflectionTests.cs" />
     <Compile Include="Perf\TextSerializerComparisons.cs" />
+    <Compile Include="ReflectionExtensionsTests.cs" />
     <Compile Include="Reflection\PropertyAccessorTests.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Text\AdhocModelTests.cs" />

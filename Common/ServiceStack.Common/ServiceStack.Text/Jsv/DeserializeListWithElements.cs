@@ -157,7 +157,7 @@ namespace ServiceStack.Text.Jsv
 		{
 			var type = typeof(T);
 
-			var listInterface = type.GetTypeWithInterfaceOf(typeof (IList<>));
+			var listInterface = type.GetTypeWithGenericInterfaceOf(typeof (IList<>));
 			if (listInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type IList<>", type.FullName));
 
