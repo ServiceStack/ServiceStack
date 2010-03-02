@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>remote-info/step4.htm</string>
+	<string>remote-info/step2.htm</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -19,19 +19,19 @@
 					<key>filename</key>
 					<string>remote-info/step2.htm</string>
 					<key>lastUsed</key>
-					<date>2009-10-15T00:44:40Z</date>
+					<date>2009-11-14T09:58:55Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>remote-info/step3.htm</string>
 					<key>lastUsed</key>
-					<date>2009-10-17T01:24:55Z</date>
+					<date>2009-11-14T09:58:55Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>remote-info/step4.htm</string>
 					<key>lastUsed</key>
-					<date>2009-10-17T01:24:55Z</date>
+					<date>2009-11-14T09:58:54Z</date>
 				</dict>
 			</array>
 			<key>expanded</key>
@@ -61,6 +61,20 @@
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
+		<key>remote-info/step2.htm</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>50</integer>
+				<key>line</key>
+				<integer>76</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>40</integer>
+		</dict>
 		<key>remote-info/step3.htm</key>
 		<dict>
 			<key>caret</key>
@@ -93,6 +107,7 @@
 	<key>openDocuments</key>
 	<array>
 		<string>remote-info/step3.htm</string>
+		<string>remote-info/step2.htm</string>
 		<string>remote-info/step4.htm</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>

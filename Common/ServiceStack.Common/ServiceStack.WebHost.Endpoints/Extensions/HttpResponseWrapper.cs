@@ -24,11 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			get 
 			{
-#if MONO
-				return new NameValueCollection();
-#else
 				return response.Headers; 
-#endif
 			}
 		}
 

@@ -3,29 +3,30 @@
   <MonoDevelop.Ide.DebuggingService>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService>
-  <MonoDevelop.Ide.Workbench ActiveDocument="ServiceStack.WebHost.Endpoints/Extensions/HttpResponseWrapper.cs" ctype="Workbench">
+  <MonoDevelop.Ide.Workbench ActiveDocument="ServiceStack.CacheAccess.Providers.Tests/MemcachedClientTests.cs" ctype="Workbench">
     <Files>
-      <File FileName="ServiceStack.WebHost.Endpoints/Extensions/HttpResponseWrapper.cs" Line="22" Column="1" />
+      <File FileName="ServiceStack.WebHost.Endpoints/Extensions/HttpResponseWrapper.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.WebHost.Endpoints/EndpointHostConfig.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.WebHost.Endpoints/Extensions/HttpListenerResponseWrapper.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.WebHost.Endpoints/XmlSyncReplyHandler.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.ServiceHost.Tests/TypeFactory/HiroTypeFactory.cs" Line="15" Column="4" />
+      <File FileName="ServiceStack.WebHost.Endpoints/Support/EndpointHandlerBase.cs" Line="59" Column="28" />
+      <File FileName="ServiceStack.ServiceHost/HttpRequestContext.cs" Line="63" Column="17" />
+      <File FileName="ServiceStack.ServiceHost.Tests/UseCase/CustomerUseCase.cs" Line="112" Column="19" />
+      <File FileName="ServiceStack.Common.Tests/Text/StringSerializerTranslationTests.cs" Line="131" Column="26" />
+      <File FileName="ServiceStack.Common.Tests/Text/StringSerializerTests.cs" Line="71" Column="1" />
+      <File FileName="ServiceStack.CacheAccess.Memcached/MemcachedClientCache.cs" Line="6" Column="1" />
+      <File FileName="ServiceStack.CacheAccess.Memcached/AdapterBase.cs" Line="4" Column="1" />
+      <File FileName="ServiceStack.CacheAccess.Providers.Tests/MemcachedClientTests.cs" Line="7" Column="2" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="ServiceStack.ServiceClient.Web" expanded="True" />
-          <Node name="ServiceStack.WebHost.Endpoints" expanded="True" selected="True">
-            <Node name="Extensions" expanded="True" />
-            <Node name="Properties" expanded="True" />
-            <Node name="Support" expanded="True">
-              <Node name="Metadata" expanded="True">
-                <Node name="Controls" expanded="True" />
-              </Node>
-              <Node name="Templates" expanded="True" />
-            </Node>
-          </Node>
-        </State>
+        <State expanded="True" selected="True" />
       </Pad>
       <Pad Id="ClassPad">
         <State expanded="True" selected="True" />
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <AuthorInfo Name="Demis Bellot" Email="demis.bellot@gmail.com" Copyright="Liquidbit 2010" ctype="AuthorInformation" />
 </Properties>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using Enyim.Caching;
-using ServiceStack.Common.Support;
 using ServiceStack.Logging;
 using InnerClient = Enyim.Caching;
 

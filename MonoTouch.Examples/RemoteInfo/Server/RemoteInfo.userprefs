@@ -14,15 +14,21 @@
       <File FileName="RemoteInfo.Tests.ConsoleClient/Program.cs" Line="1" Column="1" />
       <File FileName="RemoteInfo.Host.Console/App.config" Line="1" Column="1" />
       <File FileName="RemoteInfo.ServiceModel/Operations/GetTextFile.cs" Line="1" Column="1" />
-      <File FileName="RemoteInfo.ServiceInterface/GetTextFileHandler.cs" Line="27" Column="19" />
-      <File FileName="../Client/RemoteInfoClient/ViewFileController.cs" Line="1" Column="1" />
-      <File FileName="../Client/RemoteInfoClient/RemoteFilesTableViewController.cs" Line="125" Column="5" />
+      <File FileName="RemoteInfo.ServiceInterface/GetTextFileHandler.cs" Line="1" Column="1" />
+      <File FileName="../Client/RemoteInfoClient/RemoteFilesTableViewController.cs" Line="129" Column="27" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True" selected="True">
+        <State expanded="True">
           <Node name="Clients" expanded="True">
-            <Node name="RemoteInfoClient" expanded="True" />
+            <Node name="RemoteInfo.Tests.ConsoleClient" expanded="True" />
+            <Node name="RemoteInfoClient" expanded="True">
+              <Node name="References" selected="True" />
+            </Node>
+          </Node>
+          <Node name="RemoteInfo.ServiceInterface" expanded="True" />
+          <Node name="RemoteInfo.ServiceModel" expanded="True">
+            <Node name="References" expanded="True" />
           </Node>
         </State>
       </Pad>

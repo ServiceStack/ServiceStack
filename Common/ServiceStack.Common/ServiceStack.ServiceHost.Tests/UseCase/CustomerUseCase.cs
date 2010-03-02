@@ -3,8 +3,6 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using Funq;
-using Hiro;
-using Hiro.Implementations;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.CacheAccess;
@@ -36,22 +34,8 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		[Test]
 		public void Perf_All_IOC()
 		{
-			Hiro_Perf();
 			AutoWiredFunq_Perf();
 			NativeFunq_Perf();
-		}
-
-		[Test]
-		public void Hiro_Perf()
-		{
-			var serviceController = new ServiceController();
-
-			RegisterServices(serviceController, GetHiroTypeFactory());
-
-			StoreAndGetCustomers(serviceController);
-
-			var request = new GetCustomer { CustomerId = 2 };
-			Console.WriteLine("Hiro_Perf(): {0}", Measure(() => serviceController.Execute(request), Times));
 		}
 
 		[Test]
@@ -91,17 +75,6 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 			}
 
 			return watch.ElapsedTicks;
-		}
-
-
-		[Test]
-		public void Using_Hiro()
-		{
-			var serviceController = new ServiceController();
-
-			RegisterServices(serviceController, GetHiroTypeFactory());
-
-			StoreAndGetCustomers(serviceController);
 		}
 
 		[Test]
@@ -147,27 +120,6 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 
 			var customer = ((GetCustomerResponse)response).Customer;
 			Assert.That(customer.FirstName, Is.EqualTo("Second"));
-		}
-
-		private static ITypeFactory GetHiroTypeFactory()
-		{
-			var map = new DependencyMap();
-
-			map.AddSingletonService(typeof(IDbConnection), typeof(InMemoryDbConnection));
-			map.AddSingletonService(typeof(ICacheClient), typeof(MemoryCacheClient));
-			map.AddSingletonService(typeof(CustomerUseCaseConfig), typeof(CustomerUseCaseConfig));
-
-			var injector = new PropertyInjectionCall(new TransientType(typeof(GetCustomerService), map));
-			map.AddService(new Dependency(typeof(GetCustomerService)), injector);
-			map.AddService(typeof(GetCustomerService), typeof(GetCustomerService));
-
-			injector = new PropertyInjectionCall(new TransientType(typeof(StoreCustomersService), map));
-			map.AddService(new Dependency(typeof(StoreCustomersService)), injector);
-			map.AddService(typeof(StoreCustomersService), typeof(StoreCustomersService));
-
-			var container = map.CreateContainer();
-
-			return new HiroTypeFactory(container);
 		}
 
 		private static void RegisterServices(ServiceController serviceController, ITypeFactory typeFactory)

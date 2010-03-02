@@ -1,3 +1,4 @@
+#if !MONO
 using System;
 using System.Collections.Generic;
 using Northwind.Common.ComplexModel;
@@ -135,5 +136,6 @@ namespace ServiceStack.Common.Tests.Text
 		}
 
 	}
-
 }
+
+#endif
