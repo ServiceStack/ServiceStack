@@ -71,7 +71,7 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 			else
 			{
-				var serializedResult = cacheClient.Get(cacheKeySerialized);
+				var serializedResult = cacheClient.Get<string>(cacheKeySerialized);
 				if (serializedResult != null)
 				{
 					return serializedResult;

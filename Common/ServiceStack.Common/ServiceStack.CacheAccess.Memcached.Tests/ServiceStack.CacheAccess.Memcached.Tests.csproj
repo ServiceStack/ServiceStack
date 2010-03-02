@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -55,10 +55,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Memcached, Version=1.2.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ServiceStack.Memcached.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AllCacheClientsTestBase.cs" />
@@ -78,6 +74,10 @@
   </Target>
   -->
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.CacheAccess.Memcached\ServiceStack.CacheAccess.Memcached.csproj">
+      <Project>{600612F3-15B4-45B5-9D39-06FA016B81C9}</Project>
+      <Name>ServiceStack.CacheAccess.Memcached</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.CacheAccess.Providers\ServiceStack.CacheAccess.Providers.csproj">
       <Project>{3F22FE6E-7E15-4561-8BC7-2CABF37B46CE}</Project>
       <Name>ServiceStack.CacheAccess.Providers</Name>

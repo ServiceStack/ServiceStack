@@ -2,6 +2,8 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Web;
+using ServiceStack.Redis;
+using ServiceStack.Redis.Tests;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.CacheAccess.Providers.Tests
@@ -10,7 +12,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 	public class ContentCacheManagerTests
 	{
 		const string CacheKey = "urn:cachedresponses:homepage";
-		MemoryCacheClient cacheClient;
+		ICacheClient cacheClient;
 		ModelWithIdAndName model;
 		string xmlModel;
 
@@ -18,6 +20,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		public void OnBeforeEachTest()
 		{
 			cacheClient = new MemoryCacheClient();
+			//cacheClient = new RedisCacheClient(TestConfig.SingleHost);
+			cacheClient.FlushAll();
 			model = ModelWithIdAndName.Create(1);
 			xmlModel = DataContractSerializer.Instance.Parse(model);
 		}
@@ -27,9 +31,9 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		{
 			var xmlResult = ContentCacheManager.Resolve(
 				() => model,
-				MimeTypes.Xml, 
-				null, 
-				cacheClient, 
+				MimeTypes.Xml,
+				null,
+				cacheClient,
 				CacheKey);
 
 			Assert.That(xmlResult, Is.EqualTo(xmlModel));
@@ -38,7 +42,38 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 			ModelWithIdAndName.AssertIsEqual(model, cachedResult);
 
 			var serializedCacheKey = ContentCacheManager.GetSerializedCacheKey(CacheKey, MimeTypes.Xml);
-			var serializedCachedResult = cacheClient.Get(serializedCacheKey);
+			var serializedCachedResult = cacheClient.Get<string>(serializedCacheKey);
+			Assert.That(serializedCachedResult, Is.EqualTo(xmlModel));
+
+			AssertNoCompressedResults(cacheClient, serializedCacheKey);
+		}
+
+		[Test]
+		public void Resolve_twice_with_no_CompressionType_does_not_cache_compressed_result()
+		{
+			var xmlResult = ContentCacheManager.Resolve(
+				() => model,
+				MimeTypes.Xml,
+				null,
+				cacheClient,
+				CacheKey);
+
+			Assert.That(xmlResult, Is.EqualTo(xmlModel));
+
+			xmlResult = ContentCacheManager.Resolve(
+				() => model,
+				MimeTypes.Xml,
+				null,
+				cacheClient,
+				CacheKey);
+
+			Assert.That(xmlResult, Is.EqualTo(xmlModel));
+
+			var cachedResult = cacheClient.Get<ModelWithIdAndName>(CacheKey);
+			ModelWithIdAndName.AssertIsEqual(model, cachedResult);
+
+			var serializedCacheKey = ContentCacheManager.GetSerializedCacheKey(CacheKey, MimeTypes.Xml);
+			var serializedCachedResult = cacheClient.Get<string>(serializedCacheKey);
 			Assert.That(serializedCachedResult, Is.EqualTo(xmlModel));
 
 			AssertNoCompressedResults(cacheClient, serializedCacheKey);
@@ -90,7 +125,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 			Assert.That(cachedResult, Is.Null);
 			
 			var serializedCacheKey = ContentCacheManager.GetSerializedCacheKey(CacheKey, MimeTypes.Xml);
-			var serializedCachedResult = cacheClient.Get(serializedCacheKey);
+			var serializedCachedResult = cacheClient.Get<string>(serializedCacheKey);
 			Assert.That(serializedCachedResult, Is.Null);
 
 			AssertNoCompressedResults(cacheClient, serializedCacheKey);
@@ -120,7 +155,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				var serializedCacheKey = ContentCacheManager.GetSerializedCacheKey(
 					cacheKey, mimeType);
 
-				var serializedResult = cacheClient.Get(serializedCacheKey);
+				var serializedResult = cacheClient.Get<string>(serializedCacheKey);
 				Assert.That(serializedResult, Is.Null);
 			}
 		}
@@ -133,7 +168,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				var compressedCacheKey = ContentCacheManager.GetCompressedCacheKey(
 					serializedCacheKey, compressionType);
 
-				var compressedCachedResult = cacheClient.Get(compressedCacheKey);
+				var compressedCachedResult = cacheClient.Get<byte[]>(compressedCacheKey);
 				Assert.That(compressedCachedResult, Is.Null);
 			}
 		}
