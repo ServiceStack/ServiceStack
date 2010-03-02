@@ -62,7 +62,7 @@ namespace ServiceStack.Redis
 			return DecrementBy(key, (int)amount);
 		}
 
-		public bool Add(string key, object value)
+		public bool Add<T>(string key, T value)
 		{
 			var bytesValue = value as byte[];
 			if (bytesValue != null)
@@ -74,7 +74,7 @@ namespace ServiceStack.Redis
 			return SetIfNotExists(key, valueString);
 		}
 
-		public bool Set(string key, object value)
+		public bool Set<T>(string key, T value)
 		{
 			var bytesValue = value as byte[];
 			if (bytesValue != null)
@@ -88,7 +88,7 @@ namespace ServiceStack.Redis
 			return true;
 		}
 
-		public bool Replace(string key, object value)
+		public bool Replace<T>(string key, T value)
 		{
 			var exists = ContainsKey(key);
 			if (!exists) return false;
@@ -104,7 +104,7 @@ namespace ServiceStack.Redis
 			return true;
 		}
 
-		public bool Add(string key, object value, DateTime expiresAt)
+		public bool Add<T>(string key, T value, DateTime expiresAt)
 		{
 			if (Add(key, value))
 			{
@@ -114,14 +114,14 @@ namespace ServiceStack.Redis
 			return false;
 		}
 
-		public bool Set(string key, object value, DateTime expiresAt)
+		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
 			Set(key, value);
 			ExpireKeyAt(key, expiresAt);
 			return true;
 		}
 
-		public bool Replace(string key, object value, DateTime expiresAt)
+		public bool Replace<T>(string key, T value, DateTime expiresAt)
 		{
 			if (Replace(key, value))
 			{
@@ -129,21 +129,6 @@ namespace ServiceStack.Redis
 				return true;
 			}
 			return false;
-		}
-
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
-		{
-			var keysArray = keys.ToArray();
-			var keyValues = MGet(keysArray);
-			var results = new Dictionary<string, object>();
-
-			var i = 0;
-			foreach (var keyValue in keyValues)
-			{
-				var key = keysArray[i++];
-				results[key] = keyValue;
-			}
-			return results;
 		}
 
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
@@ -177,25 +162,6 @@ namespace ServiceStack.Redis
 			return results;
 		}
 
-		public T Get<T>(string key, out ulong lastModifiedValue)
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool CheckAndSet(string key, object value, ulong lastModifiedValue)
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool CheckAndSet(string key, object value, ulong lastModifiedValue, DateTime expiresAt)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 }

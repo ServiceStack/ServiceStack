@@ -11,7 +11,7 @@ namespace ServiceStack.CacheAccess
 	/// extra functionality you can uncomment the unused methods below as they have been
 	/// implemented in DdnMemcachedClient
 	/// </summary>
-	public interface ICacheClient : IDisposable
+	public interface IMemcachedClient : IDisposable
 	{
 		/// <summary>
 		/// Removes the specified item from the cache.
@@ -31,12 +31,12 @@ namespace ServiceStack.CacheAccess
 		/// <summary>
 		/// Retrieves the specified item from the cache.
 		/// </summary>
-		/// <typeparam name="T"></typeparam>
 		/// <param name="key">The identifier for the item to retrieve.</param>
 		/// <returns>
 		/// The retrieved item, or <value>null</value> if the key was not found.
 		/// </returns>
-		T Get<T>(string key);
+		object Get(string key);
+		object Get(string key, out ulong lastModifiedValue);
 
 		/// <summary>
 		/// Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
@@ -69,9 +69,9 @@ namespace ServiceStack.CacheAccess
 		/// true if the item was successfully stored in the cache; false otherwise.
 		/// </returns>
 		/// <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
-		bool Add<T>(string key, T value);
-		bool Set<T>(string key, T value);
-		bool Replace<T>(string key, T value);
+		bool Add(string key, object value);
+		bool Set(string key, object value);
+		bool Replace(string key, object value);
 
 		/// <summary>
 		/// Inserts an item into the cache with a cache key to reference its location.
@@ -80,21 +80,28 @@ namespace ServiceStack.CacheAccess
 		/// <param name="value">The object to be inserted into the cache.</param>
 		/// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
 		/// <returns>true if the item was successfully stored in the cache; false otherwise.</returns>
-		bool Add<T>(string key, T value, DateTime expiresAt);
-		bool Set<T>(string key, T value, DateTime expiresAt);
-		bool Replace<T>(string key, T value, DateTime expiresAt);
+		bool Add(string key, object value, DateTime expiresAt);
+		bool Set(string key, object value, DateTime expiresAt);
+		bool Replace(string key, object value, DateTime expiresAt);
 
 		/// <summary>
 		/// Removes all data from the cache.
 		/// </summary>
 		void FlushAll();
 
+		/// <summary>
 		/// Retrieves multiple items from the cache.
 		/// </summary>
 		/// <param name="keys">The list of identifiers for the items to retrieve.</param>
 		/// <returns>
 		/// a Dictionary holding all items indexed by their key.
 		/// </returns>
-		IDictionary<string, T> GetAll<T>(IEnumerable<string> keys);
+		IDictionary<string, object> GetAll(IEnumerable<string> keys);
+
+		bool CheckAndSet(string key, object value, ulong lastModifiedValue);
+
+		bool CheckAndSet(string key, object value, ulong lastModifiedValue, DateTime expiresAt);
+
+		IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues);
 	}
 }

@@ -29,9 +29,8 @@ namespace ServiceStack.Common.Web
 			switch (compressionType)
 			{
 				case Deflate:
-					return ".7z";
 				case GZip:
-					return ".gz";
+					return "." + compressionType;
 				default:
 					throw new NotSupportedException(
 						"Unknown compressionType: " + compressionType);

@@ -13,8 +13,22 @@ namespace ServiceStack.CacheAccess.Memcached.Tests
 
 		protected static void AssertGetAll(ICacheClient cacheClient)
 		{
-			AssertCacheClientIntModelValuesAsKeysWithNullValues(cacheClient);
 			AssertCacheClientMissingModelValuesAsKeysWithNullValues(cacheClient);
+			AssertCacheClientIntModelValuesAsKeysWithNullValues(cacheClient);
+		}
+
+		public void AssertGetSetIntValue(ICacheClient cacheClient)
+		{
+			cacheClient.Set("test:intkey1", 1);
+			var value = cacheClient.Get<int>("test:intkey1");
+			Assert.That(value, Is.EqualTo(1));
+		}
+
+		public void AssertGetSetIntValue(IMemcachedClient cacheClient)
+		{
+			cacheClient.Set("test:intkey1", 1);
+			var value = cacheClient.Get("test:intkey1");
+			Assert.That(value, Is.EqualTo(1));
 		}
 
 		protected static void AssertCacheClientIntModelValuesAsKeysWithNullValues(

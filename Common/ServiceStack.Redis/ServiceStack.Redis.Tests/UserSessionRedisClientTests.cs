@@ -234,7 +234,7 @@ namespace ServiceStack.Redis.Tests
 		public UserSession GetUserSession(Guid userId)
 		{
 			var cacheKey = UserSession.ToCacheKey(userId);
-			var bytes = this.cacheClient.Get(cacheKey) as byte[];
+			var bytes = this.cacheClient.Get<byte[]>(cacheKey);
 			if (bytes != null)
 			{
 				var modelStr = Encoding.UTF8.GetString(bytes);

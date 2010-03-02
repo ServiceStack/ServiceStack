@@ -14,7 +14,8 @@ namespace ServiceStack.CacheAccess.Providers
 	///		- Remove(path)
 	/// 
 	/// </summary>
-	public class FileSystemXmlCacheClient : ICacheClient
+	public class FileSystemXmlCacheClient 
+		: ICacheClient
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(FileSystemXmlCacheClient));
 
@@ -62,18 +63,6 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 		}
 
-		/// <summary>
-		/// As no type is specified we can only retrieve the file contents, 
-		/// it is responsible for the callee to handle the deserialization
-		/// </summary>
-		/// <param name="relativePath">The relative path.</param>
-		/// <returns></returns>
-		public object Get(string relativePath)
-		{
-			return !File.Exists(relativePath) 
-				? null : File.ReadAllText(GetAbsolutePath(relativePath));
-		}
-
 		public T Get<T>(string relativePath)
 		{
 			var absolutePath = GetAbsolutePath(relativePath);
@@ -82,11 +71,6 @@ namespace ServiceStack.CacheAccess.Providers
 
 			var xml = File.ReadAllText(absolutePath);
 			return (T)DataContractDeserializer.Instance.Parse(xml, typeof(T));
-		}
-
-		public T Get<T>(string key, out ulong ucas)
-		{
-			throw new NotImplementedException();
 		}
 
 		public long Increment(string key, uint amount)
@@ -99,12 +83,12 @@ namespace ServiceStack.CacheAccess.Providers
 			throw new NotImplementedException();
 		}
 
-		public bool Add(string key, object value)
+		public bool Add<T>(string key, T value)
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool Set(string relativePath, object value)
+		public bool Set<T>(string relativePath, T value)
 		{
 			var absolutePath = GetAbsolutePath(relativePath);
 			
@@ -116,32 +100,22 @@ namespace ServiceStack.CacheAccess.Providers
 			return true;
 		}
 
-		public bool Replace(string key, object value)
+		public bool Replace<T>(string key, T value)
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool Add(string key, object value, DateTime expiresAt)
+		public bool Add<T>(string key, T value, DateTime expiresAt)
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool Set(string key, object value, DateTime expiresAt)
+		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool Replace(string key, object value, DateTime expiresAt)
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool CheckAndSet(string key, object value, ulong lastModifiedValue)
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool CheckAndSet(string key, object value, ulong lastModifiedValue, DateTime expiresAt)
+		public bool Replace<T>(string key, T value, DateTime expiresAt)
 		{
 			throw new NotImplementedException();
 		}
@@ -151,17 +125,7 @@ namespace ServiceStack.CacheAccess.Providers
 			throw new NotImplementedException();
 		}
 
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
-		{
-			throw new NotImplementedException();
-		}
-
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues)
 		{
 			throw new NotImplementedException();
 		}

@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using Enyim.Caching;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using InnerClient = Enyim.Caching;
 
 namespace ServiceStack.CacheAccess.Memcached
@@ -14,9 +15,11 @@ namespace ServiceStack.CacheAccess.Memcached
 	/// 
 	/// Basically delegates all calls to Enyim.Caching.MemcachedClient with added diagnostics and logging.
 	/// </summary>
-	public class MemcachedClientCache : AdapterBase, ICacheClient
+	public class MemcachedClientCache 
+		: AdapterBase, ICacheClient, IMemcachedClient
 	{
 		protected override ILog Log { get { return LogManager.GetLogger(GetType()); } }
+
 		private InnerClient.MemcachedClient client;
 
 		public MemcachedClientCache(IEnumerable<string> hosts)
@@ -90,6 +93,22 @@ namespace ServiceStack.CacheAccess.Memcached
 			return Execute(() => client.Get(key));
 		}
 
+		public object Get(string key, out ulong ucas)
+		{
+			IDictionary<string, ulong> casValues;
+			var results = GetAll(new[] { key }, out casValues);
+
+			object result;
+			if (results.TryGetValue(key, out result))
+			{
+				ucas = casValues[key];
+				return result;
+			}
+
+			ucas = default(ulong);
+			return null;
+		}
+		
 		public string GetText(string key)
 		{
 			return Execute(() => Encoding.UTF8.GetString((byte[])client.Get(key)));
@@ -129,6 +148,36 @@ namespace ServiceStack.CacheAccess.Memcached
 		public long Decrement(string key, uint amount)
 		{
 			return Execute(() => client.Decrement(key, amount));
+		}
+
+		public bool Add<T>(string key, T value)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Add, key, value));
+		}
+
+		public bool Set<T>(string key, T value)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Set, key, value));
+		}
+
+		public bool Replace<T>(string key, T value)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Replace, key, value));
+		}
+
+		public bool Add<T>(string key, T value, DateTime expiresAt)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Add, key, value, expiresAt));
+		}
+
+		public bool Set<T>(string key, T value, DateTime expiresAt)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Set, key, value, expiresAt));
+		}
+
+		public bool Replace<T>(string key, T value, DateTime expiresAt)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Replace, key, value, expiresAt));
 		}
 
 		public bool Set(string key, byte[] value)

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -72,6 +72,7 @@
     <Compile Include="Jsv\WriteDictionary.cs" />
     <Compile Include="Jsv\WriteLists.cs" />
     <Compile Include="StringExtensions.cs" />
+    <Compile Include="Support\TypePair.cs" />
     <Compile Include="TranslateListWithElements.cs" />
     <Compile Include="TypeSerializer.cs" />
     <Compile Include="Jsv\WriteType.cs" />

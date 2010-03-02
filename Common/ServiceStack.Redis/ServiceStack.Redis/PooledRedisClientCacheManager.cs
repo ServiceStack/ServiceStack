@@ -99,14 +99,6 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public object Get(string key)
-		{
-			using (var client = GetReadOnlyClientCache())
-			{
-				return client.Get(key);
-			}
-		}
-
 		public T Get<T>(string key)
 		{
 			using (var client = GetReadOnlyClientCache())
@@ -131,7 +123,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public bool Add(string key, object value)
+		public bool Add<T>(string key, T value)
 		{
 			using (var client = GetClientCache())
 			{
@@ -139,7 +131,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public bool Set(string key, object value)
+		public bool Set<T>(string key, T value)
 		{
 			using (var client = GetClientCache())
 			{
@@ -147,7 +139,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public bool Replace(string key, object value)
+		public bool Replace<T>(string key, T value)
 		{
 			using (var client = GetClientCache())
 			{
@@ -155,7 +147,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public bool Add(string key, object value, DateTime expiresAt)
+		public bool Add<T>(string key, T value, DateTime expiresAt)
 		{
 			using (var client = GetClientCache())
 			{
@@ -163,7 +155,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public bool Set(string key, object value, DateTime expiresAt)
+		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
 			using (var client = GetClientCache())
 			{
@@ -171,7 +163,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public bool Replace(string key, object value, DateTime expiresAt)
+		public bool Replace<T>(string key, T value, DateTime expiresAt)
 		{
 			using (var client = GetClientCache())
 			{
@@ -187,40 +179,12 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
-		{
-			using (var client = GetReadOnlyClientCache())
-			{
-				return client.GetAll(keys);
-			}
-		}
-
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
 		{
 			using (var client = GetReadOnlyClientCache())
 			{
 				return client.GetAll<T>(keys);
 			}
-		}
-
-		public bool CheckAndSet(string key, object value, ulong lastModifiedValue)
-		{
-			throw new NotImplementedException();
-		}
-
-		public bool CheckAndSet(string key, object value, ulong lastModifiedValue, DateTime expiresAt)
-		{
-			throw new NotImplementedException();
-		}
-
-		public T Get<T>(string key, out ulong ucas)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lastModifiedValues)
-		{
-			throw new NotImplementedException();
 		}
 
 		#endregion

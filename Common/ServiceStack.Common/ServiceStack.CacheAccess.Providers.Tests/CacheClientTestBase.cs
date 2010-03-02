@@ -13,7 +13,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 
 		public void ClearCacheIfExists(string cacheKey)
 		{
-			var cacheResult = this.cacheClient.Get(cacheKey);
+			var cacheResult = this.cacheClient.Get<CacheTest>(cacheKey);
 			if (cacheResult != null)
 			{
 				log.WarnFormat("{0} already exists, removing it.", cacheKey);
@@ -25,30 +25,26 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		{
 			ClearCacheIfExists(cacheKey);
 
-			object cacheResult = new CacheTest(1);
+			var result = new CacheTest(1);
 
-			var state = this.cacheClient.Add(cacheKey, cacheResult);
+			var state = this.cacheClient.Add(cacheKey, result);
 
 			Assert.That(state, Is.True);
 
-			cacheResult = this.cacheClient.Get(cacheKey);
-			var result = cacheResult as CacheTest;
+			var cacheResult = this.cacheClient.Get<CacheTest>(cacheKey);
 
 			Assert.That(cacheResult, Is.Not.Null);
-			Assert.That(result, Is.Not.Null);
-			Assert.That(result.Value, Is.EqualTo(1));
+			Assert.That(cacheResult.Value, Is.EqualTo(1));
 
 			result = new CacheTest(2);
-			state = this.cacheClient.Add(cacheKey, result);
+			state = this.cacheClient.Add(cacheKey, cacheResult);
 
 			Assert.That(state, Is.False);
 
-			cacheResult = this.cacheClient.Get(cacheKey);
-			result = cacheResult as CacheTest;
+			cacheResult = this.cacheClient.Get<CacheTest>(cacheKey);
 
 			Assert.That(cacheResult, Is.Not.Null);
-			Assert.That(result, Is.Not.Null);
-			Assert.That(result.Value, Is.EqualTo(1)); //should not have changed.
+			Assert.That(cacheResult.Value, Is.EqualTo(1)); //should not have changed.
 		}
 
 		public void CacheSet(string cacheKey)
@@ -61,24 +57,20 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 
 			Assert.That(state, Is.True);
 
-			var cacheResult = this.cacheClient.Get(cacheKey);
-			result = cacheResult as CacheTest;
+			var cacheResult = this.cacheClient.Get<CacheTest>(cacheKey);
 
 			Assert.That(cacheResult, Is.Not.Null);
-			Assert.That(result, Is.Not.Null);
-			Assert.That(result.Value, Is.EqualTo(1));
+			Assert.That(cacheResult.Value, Is.EqualTo(1));
 
 			result = new CacheTest(2);
 			state = this.cacheClient.Set(cacheKey, result);
 
 			Assert.That(state, Is.True);
 
-			cacheResult = this.cacheClient.Get(cacheKey);
-			result = cacheResult as CacheTest;
+			cacheResult = this.cacheClient.Get<CacheTest>(cacheKey);
 
 			Assert.That(cacheResult, Is.Not.Null);
-			Assert.That(result, Is.Not.Null);
-			Assert.That(result.Value, Is.EqualTo(2)); //should not have changed.
+			Assert.That(cacheResult.Value, Is.EqualTo(2)); //should not have changed.
 		}
 
 
@@ -117,7 +109,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 
 		public void TestGets(string cacheKey)
 		{
-			var obj = this.cacheClient.Get(cacheKey);
+			var obj = this.cacheClient.Get<CacheTest>(cacheKey);
 			log.DebugFormat("this.cacheClient.Get({0})              ===> {1}", cacheKey, obj != null);
 
 			var result = this.cacheClient.Get<CacheTest>(cacheKey);

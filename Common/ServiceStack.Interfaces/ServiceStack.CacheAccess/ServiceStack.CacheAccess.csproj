@@ -37,6 +37,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IMemcachedClient.cs" />
     <Compile Include="ICacheClearable.cs" />
     <Compile Include="ICacheClient.cs" />
     <Compile Include="ICacheHasContentType.cs" />

@@ -4,7 +4,8 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.CacheAccess.Providers
 {
-	public class MemoryCacheClient : ICacheClient
+	public class MemoryCacheClient 
+		: ICacheClient
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (MemoryCacheClient));
 
@@ -174,22 +175,6 @@ namespace ServiceStack.CacheAccess.Providers
 			return default(T);
 		}
 
-		public T Get<T>(string key, out ulong ucas)
-		{
-			IDictionary<string, ulong> casValues;
-			var results = GetAll(new[] { key }, out casValues);
-
-			object result;
-			if (results.TryGetValue(key, out result))
-			{
-				ucas = casValues[key];
-				return (T)result;
-			}
-
-			ucas = default(ulong);
-			return default(T);
-		}
-
 		private int UpdateCounter(string key, int value)
 		{
 			if (!this.counters.ContainsKey(key))
@@ -210,48 +195,39 @@ namespace ServiceStack.CacheAccess.Providers
 			return UpdateCounter(key, -1);
 		}
 
-		public bool Add(string key, object value)
+		public bool Add<T>(string key, T value)
 		{
 			return CacheAdd(key, value);
 		}
 
-		public bool Set(string key, object value)
+		public bool Set<T>(string key, T value)
 		{
 			return CacheSet(key, value);
 		}
 
-		public bool Replace(string key, object value)
+		public bool Replace<T>(string key, T value)
 		{
 			return CacheReplace(key, value);
 		}
 
-		public bool Add(string key, object value, DateTime expiresAt)
+		public bool Add<T>(string key, T value, DateTime expiresAt)
 		{
 			return CacheAdd(key, value, expiresAt);
 		}
 
-		public bool Set(string key, object value, DateTime expiresAt)
+		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
 			return CacheSet(key, value, expiresAt);
 		}
 
-		public bool Replace(string key, object value, DateTime expiresAt)
+		public bool Replace<T>(string key, T value, DateTime expiresAt)
 		{
 			return CacheReplace(key, value, expiresAt);
 		}
 
-		public bool CheckAndSet(string key, object value, ulong checkLastModified)
-		{
-			return CacheSet(key, value);
-		}
-
-		public bool CheckAndSet(string key, object value, ulong checkLastModified, DateTime expiresAt)
-		{
-			return CacheSet(key, value, expiresAt, (long)checkLastModified);
-		}
-
 		public void FlushAll()
 		{
+			this.memory = new Dictionary<string, CacheEntry>();
 		}
 
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
@@ -265,30 +241,5 @@ namespace ServiceStack.CacheAccess.Providers
 			return valueMap;
 		}
 
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
-		{
-			var valueMap = new Dictionary<string, object>();
-			foreach (var key in keys)
-			{
-				var value = Get(key);
-				valueMap[key] = value;
-			}
-			return valueMap;
-		}
-
-		public IDictionary<string, object> GetAll(IEnumerable<string> keys, out IDictionary<string, ulong> lostModifiedValues)
-		{
-			var valueMap = new Dictionary<string, object>();
-			lostModifiedValues = new Dictionary<string, ulong>();
-			foreach (var key in keys)
-			{
-				long lostModifiedValue;
-				var value = Get(key, out lostModifiedValue);
-
-				valueMap[key] = value;
-				lostModifiedValues[key] = (ulong)lostModifiedValue;
-			}
-			return valueMap;
-		}
 	}
 }

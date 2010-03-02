@@ -28,7 +28,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			var model = ModelWithIdAndName.Create(1);
 			var cacheKey = model.CreateUrn();
-			var existingModel = cacheClient.Get(cacheKey);
+			var existingModel = cacheClient.Get<ModelWithIdAndName>(cacheKey);
 			Assert.That(existingModel, Is.Null);
 		}
 
@@ -65,7 +65,7 @@ namespace ServiceStack.Redis.Tests
 			}
 
 			cacheClient.Set(key, value);
-			var resultValue = cacheClient.Get(key);
+			var resultValue = cacheClient.Get<byte[]>(key);
 
 			Assert.That(resultValue, Is.EquivalentTo(value));
 		}

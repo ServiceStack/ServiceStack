@@ -25,5 +25,25 @@ namespace ServiceStack.CacheAccess.Memcached.Tests
 			AssertGetAll(new MemcachedClientCache(TestConfig.MasterHosts));
 		}
 
+		[Test]
+		public void Memory_GetSetIntValue_returns_missing_keys()
+		{
+			AssertGetSetIntValue(new MemoryCacheClient());
+		}
+
+		[Test]
+		public void Redis_GetSetIntValue_returns_missing_keys()
+		{
+			AssertGetSetIntValue(new RedisCacheClient(TestConfig.SingleHost));
+		}
+
+		[Test]
+		public void Memcached_GetSetIntValue_returns_missing_keys()
+		{
+			var client = new MemcachedClientCache(TestConfig.MasterHosts);
+			AssertGetSetIntValue((IMemcachedClient)client);
+			AssertGetSetIntValue((ICacheClient)client);
+		}
+
 	}
 }

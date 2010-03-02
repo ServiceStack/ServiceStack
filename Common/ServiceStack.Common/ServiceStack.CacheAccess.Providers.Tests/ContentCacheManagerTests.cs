@@ -143,7 +143,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		private static void AssertNoCachedResult(
 			ICacheClient cacheClient, string cacheKey)
 		{
-			var cachedResult = cacheClient.Get(cacheKey);
+			var cachedResult = cacheClient.Get<ModelWithIdAndName>(cacheKey);
 			Assert.That(cachedResult, Is.Null);
 		}
 

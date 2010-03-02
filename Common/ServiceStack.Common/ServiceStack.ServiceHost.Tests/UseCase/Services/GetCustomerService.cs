@@ -28,7 +28,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 		{
 			if (config.UseCache)
 			{
-				var inCache = this.CacheClient.Get(CacheKey);
+				var inCache = this.CacheClient.Get<GetCustomerResponse>(CacheKey);
 				if (inCache != null) return inCache;
 			}
 

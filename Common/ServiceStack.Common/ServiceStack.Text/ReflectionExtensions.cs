@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ServiceStack.Text.Support;
 
 namespace ServiceStack.Text
 {
@@ -122,12 +123,47 @@ namespace ServiceStack.Text
 
 			for (var i = 0; i < typeBGenericArgs.Length; i++)
 			{
-				if (typeAGenericArgs[i] != typeBGenericArgs[i]) return null;
+				if (typeAGenericArgs[i] != typeBGenericArgs[i])
+				{
+					return null;
+				}
 			}
 
 			return typeAGenericArgs;
 		}
 
+		public static TypePair GetGenericArgumentsIfBothHaveConvertibleGenericDefinitionTypeAndArguments(
+			this Type assignableFromType, Type typeA, Type typeB)
+		{
+			var typeAInterface = typeA.GetTypeWithGenericInterfaceOf(assignableFromType);
+			if (typeAInterface == null) return null;
+
+			var typeBInterface = typeB.GetTypeWithGenericInterfaceOf(assignableFromType);
+			if (typeBInterface == null) return null;
+
+			var typeAGenericArgs = typeAInterface.GetGenericArguments();
+			var typeBGenericArgs = typeBInterface.GetGenericArguments();
+			if (typeAGenericArgs.Length != typeBGenericArgs.Length) return null;
+
+			for (var i = 0; i < typeBGenericArgs.Length; i++)
+			{
+				if (!AreAllStringOrValueTypes(typeAGenericArgs[i], typeBGenericArgs[i]))
+				{
+					return null;
+				}
+			}
+
+			return new TypePair(typeAGenericArgs, typeBGenericArgs);
+		}
+
+		public static bool AreAllStringOrValueTypes(params Type[] types)
+		{
+			foreach (var type in types)
+			{
+				if (!(type == typeof(string) || type.IsValueType)) return false;
+			}
+			return true;
+		}
 
 		internal delegate object CtorDelegate();
 
