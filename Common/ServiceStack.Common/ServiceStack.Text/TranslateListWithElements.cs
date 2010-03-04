@@ -32,46 +32,6 @@ namespace ServiceStack.Text
 			return translateToFn(from, toInstanceOfType);
 		}
 
-		public class ConvertibleTypeKey
-		{
-			public Type ToInstanceType { get; set; }
-			public Type FromElemenetType { get; set; }
-
-			public ConvertibleTypeKey()
-			{
-			}
-
-			public ConvertibleTypeKey(Type toInstanceType, Type fromElemenetType)
-			{
-				ToInstanceType = toInstanceType;
-				FromElemenetType = fromElemenetType;
-			}
-
-			public bool Equals(ConvertibleTypeKey other)
-			{
-				if (ReferenceEquals(null, other)) return false;
-				if (ReferenceEquals(this, other)) return true;
-				return Equals(other.ToInstanceType, ToInstanceType) && Equals(other.FromElemenetType, FromElemenetType);
-			}
-
-			public override bool Equals(object obj)
-			{
-				if (ReferenceEquals(null, obj)) return false;
-				if (ReferenceEquals(this, obj)) return true;
-				if (obj.GetType() != typeof(ConvertibleTypeKey)) return false;
-				return Equals((ConvertibleTypeKey)obj);
-			}
-
-			public override int GetHashCode()
-			{
-				unchecked
-				{
-					return ((ToInstanceType != null ? ToInstanceType.GetHashCode() : 0) * 397)
-						^ (FromElemenetType != null ? FromElemenetType.GetHashCode() : 0);
-				}
-			}
-		}
-
 		private static readonly Dictionary<ConvertibleTypeKey, Func<object, Type, object>> TranslateConvertibleICollectionCache 
 			= new Dictionary<ConvertibleTypeKey, Func<object, Type, object>>();
 
@@ -118,7 +78,7 @@ namespace ServiceStack.Text
 			if (varArgs != null)
 			{
 				return TranslateToConvertibleGenericICollectionCache(
-					fromValue, toPropertyType, varArgs.Arg2[0]);
+					fromValue, toPropertyType, varArgs.Args1[0]);
 			}
 
 			return null;
@@ -126,6 +86,45 @@ namespace ServiceStack.Text
 
 	}
 
+	public class ConvertibleTypeKey
+	{
+		public Type ToInstanceType { get; set; }
+		public Type FromElemenetType { get; set; }
+
+		public ConvertibleTypeKey()
+		{
+		}
+
+		public ConvertibleTypeKey(Type toInstanceType, Type fromElemenetType)
+		{
+			ToInstanceType = toInstanceType;
+			FromElemenetType = fromElemenetType;
+		}
+
+		public bool Equals(ConvertibleTypeKey other)
+		{
+			if (ReferenceEquals(null, other)) return false;
+			if (ReferenceEquals(this, other)) return true;
+			return Equals(other.ToInstanceType, ToInstanceType) && Equals(other.FromElemenetType, FromElemenetType);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (obj.GetType() != typeof(ConvertibleTypeKey)) return false;
+			return Equals((ConvertibleTypeKey)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				return ((ToInstanceType != null ? ToInstanceType.GetHashCode() : 0) * 397)
+					^ (FromElemenetType != null ? FromElemenetType.GetHashCode() : 0);
+			}
+		}
+	}
 
 	public class TranslateListWithElements<T>
 	{

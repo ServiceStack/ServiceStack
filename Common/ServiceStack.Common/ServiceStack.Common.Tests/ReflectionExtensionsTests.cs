@@ -77,7 +77,7 @@ namespace ServiceStack.Common.Tests
 			Assert.That(testA.FromUserFileTypes, Is.Not.Null);
 			Assert.That(testB.FromUserFileTypes, Is.Not.Null);
 			Assert.That(testA.FromUserFileTypes,
-				Is.EquivalentTo(new List<string>(testB.FromUserFileTypes)));
+				Is.EquivalentTo(testB.FromUserFileTypes.ConvertAll(x => x.ToEnum<UserFileType>())));
 		}
 	}
 }
