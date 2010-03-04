@@ -123,6 +123,8 @@ namespace ServiceStack.Redis
 
 		public bool Remove(params string[] keys)
 		{
+			if (keys.Length == 0) return false;
+
 			return Del(keys) == Success;
 		}
 
@@ -293,34 +295,49 @@ namespace ServiceStack.Redis
 
 		public HashSet<string> GetIntersectFromSets(params string[] setIds)
 		{
+			if (setIds.Length == 0)
+				return new HashSet<string>();
+
 			var multiDataList = SInter(setIds);
 			return CreateHashSet(multiDataList);
 		}
 
 		public void StoreIntersectFromSets(string intoSetId, params string[] setIds)
 		{
+			if (setIds.Length == 0) return;
+
 			SInterStore(intoSetId, setIds);
 		}
 
 		public HashSet<string> GetUnionFromSets(params string[] setIds)
 		{
+			if (setIds.Length == 0)
+				return new HashSet<string>();
+
 			var multiDataList = SUnion(setIds);
 			return CreateHashSet(multiDataList);
 		}
 
 		public void StoreUnionFromSets(string intoSetId, params string[] setIds)
 		{
+			if (setIds.Length == 0) return;
+
 			SUnionStore(intoSetId, setIds);
 		}
 
 		public HashSet<string> GetDifferencesFromSet(string fromSetId, params string[] withSetIds)
 		{
+			if (withSetIds.Length == 0)
+				return new HashSet<string>();
+
 			var multiDataList = SDiff(fromSetId, withSetIds);
 			return CreateHashSet(multiDataList);
 		}
 
 		public void StoreDifferencesFromSet(string intoSetId, string fromSetId, params string[] withSetIds)
 		{
+			if (withSetIds.Length == 0) return;
+
 			SDiffStore(intoSetId, fromSetId, withSetIds);
 		}
 

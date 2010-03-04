@@ -212,7 +212,8 @@ namespace ServiceStack.Redis
 
 		private static string SafeKey(string key)
 		{
-			return key == null ? null : key.Replace(' ', '_');
+			return key == null ? null : key.Replace(' ', '_')
+				.Replace('\t','_').Replace('\n','_');
 		}
 
 		private static string SafeKeys(params string[] keys)
@@ -831,6 +832,8 @@ namespace ServiceStack.Redis
 
 		public byte[][] SInter(params string[] setIds)
 		{
+			
+
 			if (!SendDataCommand(null, "SINTER {0}\r\n", SafeKeys(setIds)))
 				throw CreateConnectionError();
 
