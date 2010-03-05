@@ -91,6 +91,27 @@ namespace ServiceStack.CacheAccess.Providers
 			return firstResult;
 		}
 
+		public bool Add<T>(string key, T value, TimeSpan expiresIn)
+		{
+			var firstResult = default(bool);
+			cacheClients.ExecAllWithFirstOut(client => client.Add(key, value, expiresIn), ref firstResult);
+			return firstResult;
+		}
+
+		public bool Set<T>(string key, T value, TimeSpan expiresIn)
+		{
+			var firstResult = default(bool);
+			cacheClients.ExecAllWithFirstOut(client => client.Set(key, value, expiresIn), ref firstResult);
+			return firstResult;
+		}
+
+		public bool Replace<T>(string key, T value, TimeSpan expiresIn)
+		{
+			var firstResult = default(bool);
+			cacheClients.ExecAllWithFirstOut(client => client.Replace(key, value, expiresIn), ref firstResult);
+			return firstResult;
+		}
+
 		public void FlushAll()
 		{
 			cacheClients.ExecAll(client => client.FlushAll());

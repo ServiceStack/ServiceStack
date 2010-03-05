@@ -18,31 +18,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
-	public class RedisCacheClient
-		: RedisClient, ICacheClient
+	public partial class RedisClient
+		: ICacheClient
 	{
-		public RedisCacheClient(string host)
-			: base(host)
-		{
-		}
-
-		public RedisCacheClient(string host, int port)
-			: base(host, port)
-		{
-		}
-
-		public RedisCacheClient()
-		{
-		}
-
 		public void RemoveAll(IEnumerable<string> keys)
 		{
 			Remove(keys.ToArray());
-		}
-
-		public new object Get(string key)
-		{
-			return base.Get(key);
 		}
 
 		public T Get<T>(string key)
@@ -131,6 +112,33 @@ namespace ServiceStack.Redis
 			return false;
 		}
 
+		public bool Add<T>(string key, T value, TimeSpan expiresIn)
+		{
+			if (Add(key, value))
+			{
+				ExpireKeyIn(key, expiresIn);
+				return true;
+			}
+			return false;
+		}
+
+		public bool Set<T>(string key, T value, TimeSpan expiresIn)
+		{
+			Set(key, value);
+			ExpireKeyIn(key, expiresIn);
+			return true;
+		}
+
+		public bool Replace<T>(string key, T value, TimeSpan expiresIn)
+		{
+			if (Replace(key, value))
+			{
+				ExpireKeyIn(key, expiresIn);
+				return true;
+			}
+			return false;
+		}
+
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
 		{
 			var keysArray = keys.ToArray();
@@ -161,7 +169,25 @@ namespace ServiceStack.Redis
 			}
 			return results;
 		}
+	}
 
+	[Obsolete("Merged with ")]
+	public class RedisCacheClient
+		: RedisClient, ICacheClient
+	{
+		public RedisCacheClient(string host)
+			: base(host)
+		{
+		}
+
+		public RedisCacheClient(string host, int port)
+			: base(host, port)
+		{
+		}
+
+		public RedisCacheClient()
+		{
+		}
 	}
 
 }

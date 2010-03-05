@@ -137,5 +137,59 @@ namespace ServiceStack.Redis.Generic
 			set { client.SetItemInList(this, index, value); }
 		}
 
+		public List<T> GetAll()
+		{
+			return client.GetAllFromList(this);
+		}
+
+		public List<T> GetRange(int startingFrom, int endingAt)
+		{
+			return client.GetRangeFromList(this, startingFrom, endingAt);
+		}
+
+		public List<T> GetRangeFromSortedList(int startingFrom, int endingAt)
+		{
+			return client.GetRangeFromSortedList(this, startingFrom, endingAt);
+		}
+
+		public void RemoveAll()
+		{
+			client.RemoveAllFromList(this);
+		}
+
+		public void Trim(int keepStartingFrom, int keepEndingAt)
+		{
+			client.TrimList(this, keepStartingFrom, keepEndingAt);
+		}
+
+		public int RemoveValue(T value)
+		{
+			return client.RemoveValueFromList(this, value);
+		}
+
+		public int RemoveValue(T value, int noOfMatches)
+		{
+			return client.RemoveValueFromList(this, value, noOfMatches);
+		}
+
+		public void Prepend(T value)
+		{
+			client.PrependToList(this, value);
+		}
+
+		public T Dequeue()
+		{
+			return client.DequeueFromList(this);
+		}
+
+		public T Pop()
+		{
+			return client.PopFromList(this);
+		}
+
+		public T PopAndPush(IRedisList<T> toList)
+		{
+			return client.PopAndPushBetweenLists(this, toList);
+		}
 	}
 }

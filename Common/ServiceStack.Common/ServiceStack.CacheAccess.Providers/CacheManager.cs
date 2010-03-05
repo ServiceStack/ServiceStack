@@ -23,6 +23,19 @@ namespace ServiceStack.CacheAccess.Providers
 			return cacheValue;
 		}
 
+		public virtual T Resolve<T>(string cacheKey, TimeSpan expireIn, Func<T> createCacheFn)
+			where T : class
+		{
+			var result = this.CacheClient.Get<T>(cacheKey);
+			if (result != null) return result;
+
+			var cacheValue = createCacheFn();
+
+			this.CacheClient.Set(cacheKey, cacheValue, expireIn);
+
+			return cacheValue;
+		}
+
 		public virtual void Clear(IEnumerable<string> cacheKeys)
 		{
 			this.CacheClient.RemoveAll(cacheKeys);

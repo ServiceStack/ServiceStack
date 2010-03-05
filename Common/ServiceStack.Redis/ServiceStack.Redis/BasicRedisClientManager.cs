@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using ServiceStack.CacheAccess;
 using ServiceStack.Common.Web;
 
 namespace ServiceStack.Redis
@@ -7,7 +9,7 @@ namespace ServiceStack.Redis
 	/// Provides thread-safe retrievel of redis clients since each client is a new one.
 	/// Allows the configuration of different ReadWrite and ReadOnly hosts
 	/// </summary>
-	public class BasicRedisClientManager
+	public partial class BasicRedisClientManager
 		: IRedisClientsManager
 	{
 		private List<EndPoint> ReadWriteHosts { get; set; }

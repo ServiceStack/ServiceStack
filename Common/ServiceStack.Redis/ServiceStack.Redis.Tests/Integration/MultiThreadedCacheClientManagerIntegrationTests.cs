@@ -22,7 +22,7 @@ namespace ServiceStack.Redis.Tests.Integration
 		[Test]
 		public void Pool_can_support_64_threads_using_the_client_simultaneously()
 		{
-			RunSimultaneously(CreateAndStartPoolCacheManager, UseClient);
+			RunSimultaneously(CreateAndStartPoolManager, UseClient);
 		}
 
 		[Test]
@@ -39,7 +39,7 @@ namespace ServiceStack.Redis.Tests.Integration
 
 			try
 			{
-				using (var client = cacheManager.GetReadOnlyClientCache())
+				using (var client = cacheManager.GetReadOnlyCacheClient())
 				{
 					host = ((IRedisClient)client).Host;
 					Log("Client '{0}' is using '{1}'", clientNo, host);

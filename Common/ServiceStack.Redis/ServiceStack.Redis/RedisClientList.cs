@@ -19,7 +19,7 @@ namespace ServiceStack.Redis
 	/// Wrap the common redis list operations under a IList[string] interface.
 	/// </summary>
 	internal class RedisClientList
-		: IList<string>
+		: IRedisList
 	{
 		private readonly RedisClient client;
 		private readonly string listId;
@@ -29,6 +29,11 @@ namespace ServiceStack.Redis
 		{
 			this.listId = listId;
 			this.client = client;
+		}
+
+		public string Id
+		{
+			get { return listId; }
 		}
 
 		public IEnumerator<string> GetEnumerator()
@@ -130,6 +135,61 @@ namespace ServiceStack.Redis
 		{
 			get { return client.GetItemFromList(listId, index); }
 			set { client.SetItemInList(listId, index, value); }
+		}
+
+		public List<string> GetAll()
+		{
+			return client.GetAllFromList(listId);
+		}
+
+		public List<string> GetRange(int startingFrom, int endingAt)
+		{
+			return client.GetRangeFromList(listId, startingFrom, endingAt);
+		}
+
+		public List<string> GetRangeFromSortedList(int startingFrom, int endingAt)
+		{
+			return client.GetRangeFromSortedList(listId, startingFrom, endingAt);
+		}
+
+		public void RemoveAll()
+		{
+			client.RemoveAllFromList(listId);
+		}
+
+		public void Trim(int keepStartingFrom, int keepEndingAt)
+		{
+			client.TrimList(listId, keepStartingFrom, keepEndingAt);
+		}
+
+		public int RemoveValue(string value)
+		{
+			return client.RemoveValueFromList(listId, value);
+		}
+
+		public int RemoveValue(string value, int noOfMatches)
+		{
+			return client.RemoveValueFromList(listId, value, noOfMatches);
+		}
+
+		public void Prepend(string value)
+		{
+			client.PrependToList(listId, value);
+		}
+
+		public string Dequeue()
+		{
+			return client.DequeueFromList(listId);
+		}
+
+		public string Pop()
+		{
+			return client.PopFromList(listId);
+		}
+
+		public string PopAndPush(IRedisList toList)
+		{
+			return client.PopAndPushBetweenLists(listId, toList.Id);
 		}
 	}
 }

@@ -35,13 +35,13 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.Redis\ServiceStack.Redis\bin\%BUILD
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
 
-REM mergiing and copying other external servicestack components:
-REM %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.Memcached.dll ..\Lib\Enyim.Caching.dll ..\ServiceStack.CacheAccess.Memcached\bin\%BUILD%\ServiceStack.CacheAccess.Memcached.dll
 
 REM COPY ..\ServiceStack.DataAccess.Db4oProvider\bin\%BUILD%\ServiceStack.DataAccess.Db4oProvider.dll .
 REM COPY ..\ServiceStack.SpringFactory\bin\%BUILD%\ServiceStack.SpringFactory.dll .
 REM COPY ..\Lib\ServiceStack.Logging.Log4Net.dll .
 
+REM Deploy the memcached server as well
+COPY ..\ServiceStack.CacheAccess.Memcached\bin\%BUILD%\ServiceStack.CacheAccess.Memcached.dll .
 
 COPY *.dll %SERVICESTACK_DEPLOY_PATH%
 COPY *.exe %SERVICESTACK_DEPLOY_PATH%

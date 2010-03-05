@@ -120,6 +120,21 @@ namespace ServiceStack.CacheAccess.Providers
 			throw new NotImplementedException();
 		}
 
+		public bool Add<T>(string key, T value, TimeSpan expiresIn)
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Set<T>(string key, T value, TimeSpan expiresIn)
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Replace<T>(string key, T value, TimeSpan expiresIn)
+		{
+			throw new NotImplementedException();
+		}
+
 		public void FlushAll()
 		{
 			throw new NotImplementedException();

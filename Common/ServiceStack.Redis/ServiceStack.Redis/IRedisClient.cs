@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using ServiceStack.CacheAccess;
 using ServiceStack.DataAccess;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
@@ -18,7 +19,7 @@ using ServiceStack.Redis.Generic;
 namespace ServiceStack.Redis
 {
 	public interface IRedisClient
-		: IBasicPersistenceProvider
+		: IBasicPersistenceProvider, ICacheClient
 	{
 		string Host { get; }
 		int Port { get; }
@@ -30,8 +31,8 @@ namespace ServiceStack.Redis
 
 		IRedisTypedClient<T> GetTypedClient<T>();
 
-		IHasNamedList<string> Lists { get; set; }
-		IHasNamedCollection<string> Sets { get; set; }
+		IHasNamed<IRedisList> Lists { get; set; }
+		IHasNamed<IRedisClientSet> Sets { get; set; }
 
 		Dictionary<string, string> Info { get; }
 		int Db { get; set; }
@@ -45,7 +46,6 @@ namespace ServiceStack.Redis
 		string GetString(string key);
 		string GetAndSetString(string key, string value);
 		bool ContainsKey(string key);
-		bool Remove(string key);
 		bool Remove(params string[] args);
 		int Increment(string key);
 		int IncrementBy(string key, int count);
@@ -60,7 +60,6 @@ namespace ServiceStack.Redis
 		void SaveAsync();
 		void Shutdown();
 		void FlushDb();
-		void FlushAll();
 		string[] GetKeys(string pattern);
 		List<string> GetKeyValues(List<string> keys);
 		List<T> GetKeyValues<T>(List<string> keys);
@@ -93,7 +92,7 @@ namespace ServiceStack.Redis
 		void SetItemInList(string listId, int listIndex, string value);
 		string DequeueFromList(string listId);
 		string PopFromList(string listId);
-		void PopAndPushBetweenLists(string fromListId, string toListId);
+		string PopAndPushBetweenLists(string fromListId, string toListId);
 	}
 
 }

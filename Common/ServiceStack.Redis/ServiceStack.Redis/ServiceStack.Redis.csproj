@@ -70,7 +70,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BasicRedisClientManager.cs" />
-    <Compile Include="BasicRedisClientCacheManager.cs" />
+    <Compile Include="BasicRedisClientManager.ICacheClient.cs" />
+    <Compile Include="IRedisClientSet.cs" />
+    <Compile Include="IRedisList.cs" />
     <Compile Include="RedisClientFactory.cs" />
     <Compile Include="Generic\IRedisList.Generic.cs" />
     <Compile Include="Generic\IRedisSet.Generic.cs" />
@@ -82,8 +84,8 @@
     <Compile Include="IRedisClientFactory.cs" />
     <Compile Include="IRedisClientsManager.cs" />
     <Compile Include="IRedisNativeClient.cs" />
-    <Compile Include="PooledRedisClientCacheManager.cs" />
-    <Compile Include="RedisCacheClient.cs" />
+    <Compile Include="PooledRedisClientManager.ICacheClient.cs" />
+    <Compile Include="RedisClient.ICacheClient.cs" />
     <Compile Include="Generic\RedisTypedClient.cs" />
     <Compile Include="RedisCacheClientFactory.cs" />
     <Compile Include="RedisClientManagerConfig.cs" />

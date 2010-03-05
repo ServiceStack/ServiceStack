@@ -7,5 +7,8 @@ namespace ServiceStack.CacheAccess
 	{
 		T Resolve<T>(string cacheKey, Func<T> createCacheFn)
 			where T : class;
+
+		T Resolve<T>(string cacheKey, TimeSpan expireIn, Func<T> createCacheFn)
+			where T : class;
 	}
 }

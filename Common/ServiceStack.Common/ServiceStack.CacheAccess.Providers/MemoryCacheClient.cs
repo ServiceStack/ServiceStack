@@ -225,6 +225,21 @@ namespace ServiceStack.CacheAccess.Providers
 			return CacheReplace(key, value, expiresAt);
 		}
 
+		public bool Add<T>(string key, T value, TimeSpan expiresIn)
+		{
+			return CacheAdd(key, value, DateTime.Now.Add(expiresIn));
+		}
+
+		public bool Set<T>(string key, T value, TimeSpan expiresIn)
+		{
+			return CacheSet(key, value, DateTime.Now.Add(expiresIn));
+		}
+
+		public bool Replace<T>(string key, T value, TimeSpan expiresIn)
+		{
+			return CacheReplace(key, value, DateTime.Now.Add(expiresIn));
+		}
+
 		public void FlushAll()
 		{
 			this.memory = new Dictionary<string, CacheEntry>();

@@ -4,7 +4,6 @@ using System.Net;
 using System.Text;
 using Enyim.Caching;
 using ServiceStack.Logging;
-using ServiceStack.Text;
 using InnerClient = Enyim.Caching;
 
 namespace ServiceStack.CacheAccess.Memcached
@@ -178,6 +177,21 @@ namespace ServiceStack.CacheAccess.Memcached
 		public bool Replace<T>(string key, T value, DateTime expiresAt)
 		{
 			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Replace, key, value, expiresAt));
+		}
+
+		public bool Add<T>(string key, T value, TimeSpan expiresIn)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Add, key, value, expiresIn));
+		}
+
+		public bool Set<T>(string key, T value, TimeSpan expiresIn)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Set, key, value, expiresIn));
+		}
+
+		public bool Replace<T>(string key, T value, TimeSpan expiresIn)
+		{
+			return Execute(() => client.Store(InnerClient.Memcached.StoreMode.Replace, key, value, expiresIn));
 		}
 
 		public bool Set(string key, byte[] value)

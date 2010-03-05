@@ -73,16 +73,13 @@ namespace ServiceStack.CacheAccess
 		bool Set<T>(string key, T value);
 		bool Replace<T>(string key, T value);
 
-		/// <summary>
-		/// Inserts an item into the cache with a cache key to reference its location.
-		/// </summary>
-		/// <param name="key">The key used to reference the item.</param>
-		/// <param name="value">The object to be inserted into the cache.</param>
-		/// <param name="expiresAt">The time when the item is invalidated in the cache.</param>
-		/// <returns>true if the item was successfully stored in the cache; false otherwise.</returns>
 		bool Add<T>(string key, T value, DateTime expiresAt);
 		bool Set<T>(string key, T value, DateTime expiresAt);
 		bool Replace<T>(string key, T value, DateTime expiresAt);
+
+		bool Add<T>(string key, T value, TimeSpan expiresIn);
+		bool Set<T>(string key, T value, TimeSpan expiresIn);
+		bool Replace<T>(string key, T value, TimeSpan expiresIn);
 
 		/// <summary>
 		/// Removes all data from the cache.

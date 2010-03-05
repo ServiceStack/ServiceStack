@@ -29,7 +29,7 @@ namespace ServiceStack.Redis
 	/// e.g. RedisClient.Lists => IList[string]
 	///		 RedisClient.Sets => ICollection[string]
 	/// </summary>
-	public class RedisClient
+	public partial class RedisClient
 		: RedisNativeClient, IRedisClient
 	{
 		public RedisClient()
@@ -214,10 +214,10 @@ namespace ServiceStack.Redis
 
 		#region Set Methods
 
-		public IHasNamedCollection<string> Sets { get; set; }
+		public IHasNamed<IRedisClientSet> Sets { get; set; }
 
 		internal class RedisClientSets
-			: IHasNamedCollection<string>
+			: IHasNamed<IRedisClientSet>
 		{
 			private readonly RedisClient client;
 
@@ -226,7 +226,7 @@ namespace ServiceStack.Redis
 				this.client = client;
 			}
 
-			public ICollection<string> this[string setId]
+			public IRedisClientSet this[string setId]
 			{
 				get
 				{
@@ -359,10 +359,10 @@ namespace ServiceStack.Redis
 			return new RedisTypedClient<T>(this);
 		}
 
-		public IHasNamedList<string> Lists { get; set; }
+		public IHasNamed<IRedisList> Lists { get; set; }
 
 		internal class RedisClientLists
-			: IHasNamedList<string>
+			: IHasNamed<IRedisList>
 		{
 			private readonly RedisClient client;
 
@@ -371,7 +371,7 @@ namespace ServiceStack.Redis
 				this.client = client;
 			}
 
-			public IList<string> this[string listId]
+			public IRedisList this[string listId]
 			{
 				get
 				{
@@ -444,9 +444,9 @@ namespace ServiceStack.Redis
 			return LRem(listId, noOfMatches, Encoding.UTF8.GetBytes(value));
 		}
 
-		public int GetListCount(string setId)
+		public int GetListCount(string listId)
 		{
-			return LLen(setId);
+			return LLen(listId);
 		}
 
 		public string GetItemFromList(string listId, int listIndex)
@@ -469,9 +469,9 @@ namespace ServiceStack.Redis
 			return Encoding.UTF8.GetString(RPop(listId));
 		}
 
-		public void PopAndPushBetweenLists(string fromListId, string toListId)
+		public string PopAndPushBetweenLists(string fromListId, string toListId)
 		{
-			RPopLPush(fromListId, toListId);
+			return Encoding.UTF8.GetString(RPopLPush(fromListId, toListId));
 		}
 
 		#endregion

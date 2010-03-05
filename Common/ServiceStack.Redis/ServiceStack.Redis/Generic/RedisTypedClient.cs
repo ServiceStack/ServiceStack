@@ -27,7 +27,7 @@ namespace ServiceStack.Redis.Generic
 	internal class RedisTypedClient<T>
 		: IRedisTypedClient<T>
 	{
-		readonly TypeSerializer<T> Serializer = new TypeSerializer<T>();
+		readonly TypeSerializer<T> serializer = new TypeSerializer<T>();
 		private readonly RedisClient client;
 
 		internal IRedisNativeClient NativeClient
@@ -67,14 +67,14 @@ namespace ServiceStack.Redis.Generic
 
 		public byte[] ToBytes(T value)
 		{
-			var strValue = Serializer.SerializeToString(value);
+			var strValue = serializer.SerializeToString(value);
 			return Encoding.UTF8.GetBytes(strValue);
 		}
 
 		public T FromBytes(byte[] value)
 		{
 			var strValue = value != null ? Encoding.UTF8.GetString(value) : null;
-			return Serializer.DeserializeFromString(strValue);
+			return serializer.DeserializeFromString(strValue);
 		}
 
 		public void Set(string key, T value)
@@ -209,7 +209,7 @@ namespace ServiceStack.Redis.Generic
 			var keys = new T[keysCount];
 			for (var i=0; i < keysCount; i++)
 			{
-				keys[i] = Serializer.DeserializeFromString(strKeys[i]);
+				keys[i] = serializer.DeserializeFromString(strKeys[i]);
 			}
 			return keys;
 		}

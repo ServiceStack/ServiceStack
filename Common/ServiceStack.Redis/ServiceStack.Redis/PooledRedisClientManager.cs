@@ -7,10 +7,11 @@ using ServiceStack.Logging;
 namespace ServiceStack.Redis
 {
 	/// <summary>
-	/// Provides thread-safe pooling of redis clients.
-	/// Allows the configuration of different ReadWrite and ReadOnly hosts
+	/// Provides thread-safe pooling of redis client connections.
+	/// Allows load-balancing of master-write and read-slave hosts, ideal for
+	/// 1 master and multiple replicated read slaves.
 	/// </summary>
-	public class PooledRedisClientManager
+	public partial class PooledRedisClientManager
 		: IRedisClientsManager
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientManager));
@@ -21,10 +22,10 @@ namespace ServiceStack.Redis
 		private List<EndPoint> ReadOnlyHosts { get; set; }
 
 		private RedisClient[] writeClients = new RedisClient[0];
-		protected int writePoolIndex;
+		protected int WritePoolIndex;
 
 		private RedisClient[] readClients = new RedisClient[0];
-		protected int readPoolIndex;
+		protected int ReadPoolIndex;
 
 		protected RedisClientManagerConfig Config { get; set; }
 
@@ -115,7 +116,7 @@ namespace ServiceStack.Redis
 					Monitor.Wait(writeClients);
 				}
 
-				writePoolIndex++;
+				WritePoolIndex++;
 				inActiveClient.Active = true;
 
 				//Reset database to default if changed
@@ -132,7 +133,7 @@ namespace ServiceStack.Redis
 		{
 			for (var i=0; i < writeClients.Length; i++)
 			{
-				var nextIndex = (writePoolIndex + i) % writeClients.Length;
+				var nextIndex = (WritePoolIndex + i) % writeClients.Length;
 
 				//Initialize if not exists
 				var existingClient = writeClients[nextIndex];
@@ -181,7 +182,7 @@ namespace ServiceStack.Redis
 					Monitor.Wait(readClients);
 				}
 
-				readPoolIndex++;
+				ReadPoolIndex++;
 				inActiveClient.Active = true;
 
 				//Reset database to default if changed
@@ -198,7 +199,7 @@ namespace ServiceStack.Redis
 		{
 			for (var i=0; i < readClients.Length; i++)
 			{
-				var nextIndex = (readPoolIndex + i) % readClients.Length;
+				var nextIndex = (ReadPoolIndex + i) % readClients.Length;
 
 				//Initialize if not exists
 				var existingClient = readClients[nextIndex];
@@ -265,10 +266,10 @@ namespace ServiceStack.Redis
 				throw new InvalidOperationException("Pool has already been started");
 
 			writeClients = new RedisClient[Config.MaxWritePoolSize];
-			writePoolIndex = 0;
+			WritePoolIndex = 0;
 
 			readClients = new RedisClient[Config.MaxReadPoolSize];
-			readPoolIndex = 0;
+			ReadPoolIndex = 0;
 		}
 
 		private void AssertValidReadWritePool()
