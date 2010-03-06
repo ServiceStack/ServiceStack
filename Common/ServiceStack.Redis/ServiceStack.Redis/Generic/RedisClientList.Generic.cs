@@ -172,6 +172,11 @@ namespace ServiceStack.Redis.Generic
 			return client.RemoveValueFromList(this, value, noOfMatches);
 		}
 
+		public void Append(T value)
+		{
+			Add(value);
+		}
+
 		public void Prepend(T value)
 		{
 			client.PrependToList(this, value);

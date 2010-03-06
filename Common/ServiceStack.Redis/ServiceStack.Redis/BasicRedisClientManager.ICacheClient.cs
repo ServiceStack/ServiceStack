@@ -16,6 +16,7 @@ namespace ServiceStack.Redis
 	/// 1 master that replicates to multiple read slaves.
 	/// </summary>
 	public partial class BasicRedisClientManager
+		: ICacheClient
 	{
 		public const int DefaultCacheDb = 9;
 
@@ -38,7 +39,7 @@ namespace ServiceStack.Redis
 			{
 				client.Db = DefaultCacheDb;
 			}
-			return (RedisCacheClient)client;
+			return client;
 		}
 
 		#region Implementation of ICacheClient

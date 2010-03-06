@@ -18,9 +18,11 @@ namespace ServiceStack.Redis.Generic
 		int RemoveValue(T value);
 		int RemoveValue(T value, int noOfMatches);
 
+		void Append(T value);
 		void Prepend(T value);
-		T Dequeue();
+
 		T Pop();
+		T Dequeue();
 
 		T PopAndPush(IRedisList<T> toList);
 	}

@@ -172,19 +172,24 @@ namespace ServiceStack.Redis
 			return client.RemoveValueFromList(listId, value, noOfMatches);
 		}
 
+		public void Append(string value)
+		{
+			Add(value);
+		}
+
 		public void Prepend(string value)
 		{
 			client.PrependToList(listId, value);
 		}
 
-		public string Dequeue()
-		{
-			return client.DequeueFromList(listId);
-		}
-
 		public string Pop()
 		{
 			return client.PopFromList(listId);
+		}
+
+		public string Dequeue()
+		{
+			return client.DequeueFromList(listId);
 		}
 
 		public string PopAndPush(IRedisList toList)

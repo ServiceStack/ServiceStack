@@ -4,14 +4,10 @@ using System.Collections.Generic;
 namespace ServiceStack.CacheAccess
 {
 	/// <summary>
-	/// A light interface over a cache client.
-	/// This interface was inspired by Enyim.Caching.MemcachedClient
-	/// 
-	/// Only the methods that are intended to be used are required, if you require
-	/// extra functionality you can uncomment the unused methods below as they have been
-	/// implemented in DdnMemcachedClient
+	/// A common interface implementation that is implemeneted by most cache providers
 	/// </summary>
-	public interface ICacheClient : IDisposable
+	public interface ICacheClient 
+		: IDisposable
 	{
 		/// <summary>
 		/// Removes the specified item from the cache.
@@ -39,7 +35,9 @@ namespace ServiceStack.CacheAccess
 		T Get<T>(string key);
 
 		/// <summary>
-		/// Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
+		/// Increments the value of the specified key by the given amount. 
+		/// The operation is atomic and happens on the server.
+		/// A non existent value at key starts at 0
 		/// </summary>
 		/// <param name="key">The identifier for the item to increment.</param>
 		/// <param name="amount">The amount by which the client wants to increase the item.</param>
@@ -50,7 +48,9 @@ namespace ServiceStack.CacheAccess
 		long Increment(string key, uint amount);
 
 		/// <summary>
-		/// Increments the value of the specified key by the given amount. The operation is atomic and happens on the server.
+		/// Increments the value of the specified key by the given amount. 
+		/// The operation is atomic and happens on the server.
+		/// A non existent value at key starts at 0
 		/// </summary>
 		/// <param name="key">The identifier for the item to increment.</param>
 		/// <param name="amount">The amount by which the client wants to decrease the item.</param>
@@ -61,7 +61,7 @@ namespace ServiceStack.CacheAccess
 		long Decrement(string key, uint amount);
 
 		/// <summary>
-		/// Inserts an item into the cache with a cache key to reference its location.
+		/// Adds a new item into the cache at the specified cache key only if the cache is empty.
 		/// </summary>
 		/// <param name="key">The key used to reference the item.</param>
 		/// <param name="value">The object to be inserted into the cache.</param>
@@ -70,7 +70,15 @@ namespace ServiceStack.CacheAccess
 		/// </returns>
 		/// <remarks>The item does not expire unless it is removed due memory pressure.</remarks>
 		bool Add<T>(string key, T value);
+
+		/// <summary>
+		/// Sets an item into the cache at the cache key specified regardless if it already exists or not.
+		/// </summary>
 		bool Set<T>(string key, T value);
+
+		/// <summary>
+		/// Replaces the item at the cachekey specified only if an items exists at the location already. 
+		/// </summary>
 		bool Replace<T>(string key, T value);
 
 		bool Add<T>(string key, T value, DateTime expiresAt);
@@ -82,11 +90,12 @@ namespace ServiceStack.CacheAccess
 		bool Replace<T>(string key, T value, TimeSpan expiresIn);
 
 		/// <summary>
-		/// Removes all data from the cache.
+		/// Invalidates all data on the cache.
 		/// </summary>
 		void FlushAll();
 
-		/// Retrieves multiple items from the cache.
+		/// Retrieves multiple items from the cache. 
+		/// The default value of T is set for all keys that do not exist.
 		/// </summary>
 		/// <param name="keys">The list of identifiers for the items to retrieve.</param>
 		/// <returns>

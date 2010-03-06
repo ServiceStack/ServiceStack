@@ -15,8 +15,10 @@ namespace ServiceStack.Redis
 		int RemoveValue(string value, int noOfMatches);
 
 		void Prepend(string value);
-		string Dequeue();
+		void Append(string value);
+
 		string Pop();
+		string Dequeue();
 
 		string PopAndPush(IRedisList toList);
 	}

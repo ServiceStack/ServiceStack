@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -67,5 +68,22 @@ namespace ServiceStack.Common.Extensions
 				throw new ArgumentException(fieldName + " is empty");
 		}
 
+		public static void ThrowIfNullOrEmpty<T>(this ICollection<T> collection)
+		{
+			ThrowIfNullOrEmpty(collection, null);
+		}
+
+		public static void ThrowIfNullOrEmpty<T>(this ICollection<T> collection, string varName)
+		{
+			var fieldName = varName ?? "collection";
+
+			if (collection == null)
+				throw new ArgumentNullException(fieldName);
+
+			if (collection.Count == 0)
+				throw new ArgumentException(fieldName + " is empty");
+		}
+
 	}
+
 }
