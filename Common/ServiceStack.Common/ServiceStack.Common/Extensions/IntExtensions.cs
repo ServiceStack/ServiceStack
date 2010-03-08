@@ -15,10 +15,38 @@ namespace ServiceStack.Common.Extensions
 
 		public static void Times(this int times, Action<int> actionFn)
 		{
-			for (var i=0; i<times; i++)
+			for (var i=0; i < times; i++)
 			{
 				actionFn(i);
 			}
+		}
+
+		public static void Times(this int times, Action actionFn)
+		{
+			for (var i=0; i < times; i++)
+			{
+				actionFn();
+			}
+		}
+
+		public static List<T> Times<T>(this int times, Func<T> actionFn)
+		{
+			var list = new List<T>();
+			for (var i=0; i < times; i++)
+			{
+				list.Add(actionFn());
+			}
+			return list;
+		}
+
+		public static List<T> Times<T>(this int times, Func<int, T> actionFn)
+		{
+			var list = new List<T>();
+			for (var i=0; i < times; i++)
+			{
+				list.Add(actionFn(i));
+			}
+			return list;
 		}
 	}
 }

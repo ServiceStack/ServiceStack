@@ -30,8 +30,17 @@ namespace ServiceStack.Text.Jsv
 
 			if (parseMethodInfo == null) return null;
 
-			var parseDelegate = (ParseDelegate)Delegate.CreateDelegate(typeof(ParseDelegate), parseMethodInfo);
-
+			ParseDelegate parseDelegate;
+			try
+			{
+				parseDelegate = (ParseDelegate)Delegate.CreateDelegate(typeof(ParseDelegate), parseMethodInfo);
+			}
+			catch (ArgumentException bindingException)
+			{
+				//Try wrapping strongly-typed return with wrapper fn.
+				var typedParseDelegate = (Func<string,T>)Delegate.CreateDelegate(typeof(Func<string,T>), parseMethodInfo);
+				parseDelegate = x => typedParseDelegate(x);
+			}
 			if (parseDelegate != null)
 				return value => parseDelegate(value);
 
