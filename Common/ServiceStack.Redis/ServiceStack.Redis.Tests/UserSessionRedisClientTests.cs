@@ -32,12 +32,12 @@ namespace ServiceStack.Redis.Tests
 		readonly UserClientSession session = new UserClientSession(
 			Guid.NewGuid(), UserId, "192.168.0.1", UserClientKey, UserClientGlobalId1);
 
-		private RedisCacheClient redisCache;
+		private RedisClient redisCache;
 
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			redisCache = new RedisCacheClient(TestConfig.SingleHost);
+			redisCache = new RedisClient(TestConfig.SingleHost);
 			redisCache.FlushAll();
 			//master = UserMasterDataAccessModel.Instance.MasterUsers.NewDataAccessObject(true);
 		}

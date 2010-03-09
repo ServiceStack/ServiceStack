@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ServiceStack.Common.Web;
 
@@ -97,6 +98,14 @@ namespace ServiceStack.Redis
 			}
 
 			return client;
+		}
+
+		public void SetAll<T>(IDictionary<string, T> values)
+		{
+			foreach (var entry in values)
+			{
+				Set(entry.Key, entry.Value);
+			}
 		}
 
 		public void Start()

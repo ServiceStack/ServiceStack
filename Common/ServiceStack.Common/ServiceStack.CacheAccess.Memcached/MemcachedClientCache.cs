@@ -316,6 +316,14 @@ namespace ServiceStack.CacheAccess.Memcached
 			return results;
 		}
 
+		public void SetAll<T>(IDictionary<string, T> values)
+		{
+			foreach (var entry in values)
+			{
+				Set(entry.Key, entry.Value);
+			}
+		}
+
 		public IDictionary<string, object> GetAll(IEnumerable<string> keys)
 		{
 			return Execute(() => client.Get(keys));

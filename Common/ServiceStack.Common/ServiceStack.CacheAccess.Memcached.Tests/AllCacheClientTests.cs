@@ -16,7 +16,7 @@ namespace ServiceStack.CacheAccess.Memcached.Tests
 		[Test]
 		public void Redis_GetAll_returns_missing_keys()
 		{
-			AssertGetAll(new RedisCacheClient(TestConfig.SingleHost));
+			AssertGetAll(new RedisClient(TestConfig.SingleHost));
 		}
 
 		[Test]
@@ -34,7 +34,7 @@ namespace ServiceStack.CacheAccess.Memcached.Tests
 		[Test]
 		public void Redis_GetSetIntValue_returns_missing_keys()
 		{
-			AssertGetSetIntValue(new RedisCacheClient(TestConfig.SingleHost));
+			AssertGetSetIntValue(new RedisClient(TestConfig.SingleHost));
 		}
 
 		[Test]

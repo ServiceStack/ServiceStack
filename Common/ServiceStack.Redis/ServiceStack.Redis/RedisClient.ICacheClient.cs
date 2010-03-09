@@ -169,25 +169,15 @@ namespace ServiceStack.Redis
 			}
 			return results;
 		}
-	}
 
-	[Obsolete("Merged with ")]
-	public class RedisCacheClient
-		: RedisClient, ICacheClient
-	{
-		public RedisCacheClient(string host)
-			: base(host)
+		public void SetAll<T>(IDictionary<string, T> values)
 		{
-		}
-
-		public RedisCacheClient(string host, int port)
-			: base(host, port)
-		{
-		}
-
-		public RedisCacheClient()
-		{
+			foreach (var entry in values)
+			{
+				Set(entry.Key, entry.Value);
+			}
 		}
 	}
+
 
 }

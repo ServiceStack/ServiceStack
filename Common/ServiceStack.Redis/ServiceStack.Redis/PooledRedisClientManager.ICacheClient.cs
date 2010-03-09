@@ -172,6 +172,13 @@ namespace ServiceStack.Redis
 			}
 		}
 
+		public void SetAll<T>(IDictionary<string, T> values)
+		{
+			foreach (var entry in values)
+			{
+				Set(entry.Key, entry.Value);
+			}
+		}
 		#endregion
 	}
 

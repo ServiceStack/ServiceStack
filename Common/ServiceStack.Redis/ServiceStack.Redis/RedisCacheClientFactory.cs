@@ -12,12 +12,7 @@ namespace ServiceStack.Redis
 
 		public RedisClient CreateRedisClient(string host, int port)
 		{
-			return new RedisCacheClient(host, port);
-		}
-
-		public RedisCacheClient CreateRedisCacheClient(string host, int port)
-		{
-			return new RedisCacheClient(host, port);
+			return new RedisClient(host, port);
 		}
 	}
 }

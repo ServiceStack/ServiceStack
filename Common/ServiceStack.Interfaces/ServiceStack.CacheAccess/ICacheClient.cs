@@ -102,5 +102,12 @@ namespace ServiceStack.CacheAccess
 		/// a Dictionary holding all items indexed by their key.
 		/// </returns>
 		IDictionary<string, T> GetAll<T>(IEnumerable<string> keys);
+
+		/// <summary>
+		/// Sets multiple items to the cache. 
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="values">The values.</param>
+		void SetAll<T>(IDictionary<string, T> values);
 	}
 }

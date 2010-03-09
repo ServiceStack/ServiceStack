@@ -145,5 +145,14 @@ namespace ServiceStack.CacheAccess.Providers
 				this.Remove(key);
 			}
 		}
+
+		public void SetAll<T>(IDictionary<string, T> values)
+		{
+			foreach (var entry in values)
+			{
+				Set(entry.Key, entry.Value);
+			}
+		}
 	}
+
 }

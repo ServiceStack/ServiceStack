@@ -9,7 +9,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Search_Test()
 		{
-			using (var client = new RedisCacheClient(TestConfig.SingleHost))
+			using (var client = new RedisClient(TestConfig.SingleHost))
 			{
 				const string cacheKey = "urn+metadata:All:SearchProProfiles?SwanShinichi Osawa /0/8,0,0,0";
 				const long value = 1L;
