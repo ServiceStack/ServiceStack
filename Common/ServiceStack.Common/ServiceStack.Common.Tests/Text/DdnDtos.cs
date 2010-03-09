@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Platform.Text;
+using ServiceStack.DataAnnotations;
 using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Common.Tests.Text
@@ -412,5 +413,174 @@ namespace ServiceStack.Common.Tests.Text
 		public FlowPostType PostType { get; set; }
 		[TextField]
 		public Guid? OnBehalfOfUserId { get; set; }
+	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	public class Property
+	{
+		public Property()
+		{
+		}
+
+		public Property(string name, string value)
+		{
+			this.Name = name;
+			this.Value = value;
+		}
+
+		[DataMember]
+		public string Name
+		{
+			get;
+			set;
+		}
+
+		[DataMember]
+		public string Value
+		{
+			get;
+			set;
+		}
+
+		public override string ToString()
+		{
+			return this.Name + "," + this.Value;
+		}
+	}
+
+	[CollectionDataContract(Namespace = "http://schemas.ddnglobal.com/types/", ItemName = "Property")]
+	public class Properties
+		: List<Property>
+	{
+		public Properties()
+		{
+		}
+
+		public Properties(IEnumerable<Property> collection)
+			: base(collection)
+		{
+		}
+
+		public string GetPropertyValue(string name)
+		{
+			foreach (var property in this)
+			{
+				if (string.CompareOrdinal(property.Name, name) == 0)
+				{
+					return property.Value;
+				}
+			}
+
+			return null;
+		}
+
+		public Dictionary<string, string> ToDictionary()
+		{
+			var propertyDict = new Dictionary<string, string>();
+
+			foreach (var property in this)
+			{
+				propertyDict[property.Name] = property.Value;
+			}
+
+			return propertyDict;
+		}
+	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	public class ResponseStatus
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ResponseStatus"/> class.
+		/// 
+		/// A response status without an errorcode == success
+		/// </summary>
+		public ResponseStatus()
+		{
+			this.Errors = new List<ResponseError>();
+		}
+
+		[DataMember]
+		public string ErrorCode { get; set; }
+
+		[DataMember]
+		public string Message { get; set; }
+
+		[DataMember]
+		public string StackTrace { get; set; }
+
+		[DataMember]
+		public List<ResponseError> Errors { get; set; }
+
+
+		public bool IsSuccess
+		{
+			get { return this.ErrorCode == null; }
+		}
+	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	public class ResponseError
+	{
+		[DataMember]
+		public string ErrorCode { get; set; }
+		[DataMember]
+		public string FieldName { get; set; }
+		[DataMember]
+		public string Message { get; set; }
+	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	public class GetContentStatsResponse
+		: IExtensibleDataObject
+	{
+		public GetContentStatsResponse()
+		{
+			this.Version = 100;
+			this.ResponseStatus = new ResponseStatus();
+
+			this.TopRecommenders = new List<UserSearchResult>();
+			this.LatestPosts = new List<Post>();
+		}
+
+		[DataMember]
+		public DateTime CreatedDate { get; set; }
+
+		[DataMember]
+		public List<UserSearchResult> TopRecommenders { get; set; }
+
+		[DataMember]
+		public List<Post> LatestPosts { get; set; }
+
+		#region Standard Response Properties
+
+		[DataMember]
+		public int Version
+		{
+			get;
+			set;
+		}
+
+		[DataMember]
+		public Properties Properties
+		{
+			get;
+			set;
+		}
+
+		public ExtensionDataObject ExtensionData
+		{
+			get;
+			set;
+		}
+
+		[DataMember]
+		public ResponseStatus ResponseStatus
+		{
+			get;
+			set;
+		}
+
+		#endregion
 	}
 }

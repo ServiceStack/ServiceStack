@@ -63,12 +63,12 @@ namespace ServiceStack.Text.Jsv
 				this.index = index;
 			}
 
-			internal void WriteProperty(TextWriter writer, object value)
+			internal void WriteProperty(TextWriter writer, object value, ref int i)
 			{
 				var propertyValue = getterFn((T)value);
 				if (propertyValue == null) return;
 
-				if (index > 0)
+				if (i++ > 0)
 					writer.Write(TypeSerializer.ItemSeperator);
 
 				writer.Write(propertyName);
@@ -80,9 +80,10 @@ namespace ServiceStack.Text.Jsv
 		public static void WriteProperties(TextWriter writer, object value)
 		{
 			writer.Write(TypeSerializer.MapStartChar);
+			var i = 0;
 			foreach (var propertyWriter in propertyWriters)
 			{
-				propertyWriter.WriteProperty(writer, value);
+				propertyWriter.WriteProperty(writer, value, ref i);
 			}
 			writer.Write(TypeSerializer.MapEndChar);
 		}
