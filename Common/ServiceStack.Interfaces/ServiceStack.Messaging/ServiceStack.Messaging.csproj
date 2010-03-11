@@ -45,9 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IMessageError.cs" />
+    <Compile Include="IMessageFactory.cs" />
     <Compile Include="IMessageProducer.cs" />
     <Compile Include="IMessage.cs" />
     <Compile Include="IMessageService.cs" />
+    <Compile Include="MessagingException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

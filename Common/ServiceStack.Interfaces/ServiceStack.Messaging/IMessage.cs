@@ -2,11 +2,20 @@ using System;
 
 namespace ServiceStack.Messaging
 {
-	public interface IMessage<T> 
+	public interface IMessage<T>
 	{
-		int MessageId { get; }
+		Guid MessageId { get; }
+
 		DateTime CreatedDate { get; }
-		int RetryCount { get; }
+
+		long Priority { get; set; }
+
+		int RetryAttempts { get; }
+
+		string ReplyTo { get; set; }
+
+		IMessageError Error { get; }
+
 		T Body { get; }
 	}
 }
