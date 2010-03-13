@@ -20,16 +20,16 @@ namespace ServiceStack.CacheAccess.Providers
 		/// If a compressionType is set it will return a compressed version of the result.
 		/// 
 		/// If no result is found, the dto is created by the factoryFn()
-		/// The dto is set on the cacheClient[cacheKey] => factoryFn()
-		///		e.g. urn:user:1 => dto
 		/// 
-		/// The serialized dto is set on the cacheClient[cacheKey.mimeType] => serialized(factoryFn())
-		///		e.g. urn:user:1.xml => xmlDto 
+		/// The dto is set on the cacheClient[cacheKey] =&gt; factoryFn()
+		/// e.g. urn:user:1 =&gt; dto
 		/// 
-		/// Finally, if a compressionType is specified, the compressed dto is set on the 
-		/// cacheClient[cacheKey.mimeType.compressionType] => compressed(serialized(factoryFn()))
-		///		e.g. urn:user:1.xml.gzip => compressedXmlDto 
+		/// The serialized dto is set on the cacheClient[cacheKey.mimeType] =&gt; serialized(factoryFn())
+		/// e.g. urn:user:1.xml =&gt; xmlDto
 		/// 
+		/// Finally, if a compressionType is specified, the compressed dto is set on the
+		/// cacheClient[cacheKey.mimeType.compressionType] =&gt; compressed(serialized(factoryFn()))
+		/// e.g. urn:user:1.xml.gzip =&gt; compressedXmlDto
 		/// </summary>
 		/// <typeparam name="TResult">The type of the result.</typeparam>
 		/// <param name="factoryFn">The factory fn.</param>
@@ -37,13 +37,15 @@ namespace ServiceStack.CacheAccess.Providers
 		/// <param name="compressionType">Type of the compression. -optional null means no compression</param>
 		/// <param name="cacheClient">The cache client</param>
 		/// <param name="cacheKey">The base cache key</param>
+		/// <param name="expireCacheIn">How long to cache for, default is no expiration</param>
 		/// <returns></returns>
 		public static object Resolve<TResult>(
 			Func<TResult> factoryFn,
 			string mimeType,
 			string compressionType,
 			ICacheClient cacheClient,
-			string cacheKey)
+			string cacheKey, 
+			TimeSpan? expireCacheIn)
 			where TResult : class
 		{
 			factoryFn.ThrowIfNull("factoryFn");
@@ -80,18 +82,18 @@ namespace ServiceStack.CacheAccess.Providers
 
 			var dto = factoryFn();
 
-			cacheClient.Set(cacheKey, dto);
+			CacheSet(cacheClient, cacheKey, dto, expireCacheIn);
 
 			var serializedDto = ContentSerializer<TResult>.ToSerializedString(dto, mimeType);
 
-			cacheClient.Set(cacheKeySerialized, serializedDto);
+			CacheSet(cacheClient, cacheKeySerialized, serializedDto, expireCacheIn);
 
 			if (doCompression)
 			{
 				var compressedSerializedDto = ContentSerializer<TResult>.ToCompressedResult(
 					serializedDto, compressionType);
 
-				cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto);
+				CacheSet(cacheClient, cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
 				return (compressedSerializedDto != null)
 					? new CompressedResult(compressedSerializedDto, compressionType, mimeType)
@@ -99,6 +101,18 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 
 			return serializedDto;
+		}
+
+		public static void CacheSet<T>(ICacheClient cacheClient, string cacheKey, T result, TimeSpan? expireCacheIn)
+		{
+			if (expireCacheIn.HasValue)
+			{
+				cacheClient.Set(cacheKey, result, expireCacheIn.Value);
+			}
+			else
+			{
+				cacheClient.Set(cacheKey, result);
+			}
 		}
 
 		public static string GetSerializedCacheKey(string cacheKey, string mimeType)
@@ -161,7 +175,8 @@ namespace ServiceStack.CacheAccess.Providers
 				contentSerializer.MimeType,
 				contentSerializer.CompressionType,
 				cacheClient,
-				cacheKey);
+				cacheKey, 
+				null);
 		}
 	}
 }

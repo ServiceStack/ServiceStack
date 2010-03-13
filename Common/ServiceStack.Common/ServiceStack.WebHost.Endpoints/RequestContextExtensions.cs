@@ -27,13 +27,28 @@ namespace ServiceStack.WebHost.Endpoints
 		/// optimized result based on the MimeType and CompressionType from the IRequestContext.
 		/// </summary>
 		public static object ToOptimizedResultUsingCache<T>(
-			this IRequestContext requestContext, ICacheClient cacheClient, string cacheKey, 
+			this IRequestContext requestContext, ICacheClient cacheClient, string cacheKey,
 			Func<T> factoryFn)
 			where T : class
 		{
 			return ContentCacheManager.Resolve(
-				factoryFn, requestContext.MimeType, requestContext.CompressionType, 
-				cacheClient, cacheKey);
+				factoryFn, requestContext.MimeType, requestContext.CompressionType,
+				cacheClient, cacheKey, null);
+		}
+
+		/// <summary>
+		/// Overload for the <see cref="ContentCacheManager.Resolve"/> method returning the most
+		/// optimized result based on the MimeType and CompressionType from the IRequestContext.
+		/// <param name="expireCacheIn">How long to cache for, null is no expiration</param>
+		/// </summary>
+		public static object ToOptimizedResultUsingCache<T>(
+			this IRequestContext requestContext, ICacheClient cacheClient, string cacheKey,
+			TimeSpan? expireCacheIn, Func<T> factoryFn)
+			where T : class
+		{
+			return ContentCacheManager.Resolve(
+				factoryFn, requestContext.MimeType, requestContext.CompressionType,
+				cacheClient, cacheKey, expireCacheIn);
 		}
 
 		/// <summary>
@@ -49,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			return ContentCacheManager.Resolve(
 				factoryFn, requestContext.MimeType, requestContext.CompressionType, 
-				cacheClient, cacheKey);
+				cacheClient, cacheKey, null);
 		}
 
 		private static ICacheClient GetDefaultCacheClient()

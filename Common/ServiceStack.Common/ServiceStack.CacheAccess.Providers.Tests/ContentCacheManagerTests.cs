@@ -34,7 +34,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				MimeTypes.Xml,
 				null,
 				cacheClient,
-				CacheKey);
+				CacheKey, 
+				null);
 
 			Assert.That(xmlResult, Is.EqualTo(xmlModel));
 
@@ -56,7 +57,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				MimeTypes.Xml,
 				null,
 				cacheClient,
-				CacheKey);
+				CacheKey, 
+				null);
 
 			Assert.That(xmlResult, Is.EqualTo(xmlModel));
 
@@ -65,7 +67,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				MimeTypes.Xml,
 				null,
 				cacheClient,
-				CacheKey);
+				CacheKey, 
+				null);
 
 			Assert.That(xmlResult, Is.EqualTo(xmlModel));
 
@@ -87,7 +90,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				MimeTypes.Xml,
 				null,
 				cacheClient,
-				CacheKey);
+				CacheKey, 
+				null);
 
 			ContentCacheManager.Clear(cacheClient, CacheKey);
 
@@ -102,7 +106,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				MimeTypes.Xml,
 				CompressionTypes.Deflate,
 				cacheClient,
-				CacheKey);
+				CacheKey, 
+				null);
 
 			ContentCacheManager.Clear(cacheClient, CacheKey);
 
@@ -117,7 +122,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 				MimeTypes.Xml,
 				CompressionTypes.Default,
 				cacheClient,
-				CacheKey);
+				CacheKey, 
+				null);
 
 			Assert.That(xmlResult, Is.Null);
 
