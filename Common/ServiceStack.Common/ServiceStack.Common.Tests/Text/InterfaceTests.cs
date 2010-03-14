@@ -1,0 +1,37 @@
+using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Messaging;
+using ServiceStack.Text;
+
+namespace ServiceStack.Common.Tests.Text
+{
+	[TestFixture]
+	public class InterfaceTests
+	{
+		[Test]
+		public void Can_serialize_Message()
+		{
+			var message = new Message<string>
+			{
+				Body = "test"
+			};
+			var messageString = TypeSerializer.SerializeToString(message);
+
+			Assert.That(messageString, Is.EqualTo("{Id:00000000000000000000000000000000,CreatedDate:0001-01-01,Priority:0,RetryAttempts:0,Body:test}"));
+		}
+
+		[Test]
+		public void Can_serialize_IMessage()
+		{
+			var message = new Message<string>
+			{
+				Body = "test"
+			};
+			var messageString = TypeSerializer.SerializeToString((IMessage<string>)message);
+
+			Assert.That(messageString, Is.EqualTo("{Id:00000000000000000000000000000000,CreatedDate:0001-01-01,Priority:0,RetryAttempts:0,Body:test}"));
+		}
+
+	}
+
+}

@@ -1,11 +1,11 @@
 using System;
+using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Messaging
 {
 	public interface IMessage<T>
+		: IHasId<Guid>
 	{
-		Guid MessageId { get; }
-
 		DateTime CreatedDate { get; }
 
 		long Priority { get; set; }

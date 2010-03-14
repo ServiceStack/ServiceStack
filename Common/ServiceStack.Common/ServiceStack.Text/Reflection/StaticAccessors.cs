@@ -22,10 +22,11 @@ namespace ServiceStack.Text.Reflection
 
 		public static Func<T, object> GetValueGetter<T>(this PropertyInfo propertyInfo)
 		{
-			if (typeof(T) != propertyInfo.DeclaringType)
-			{
-				throw new ArgumentException();
-			}
+			//Not true for interface types
+			//if (typeof(T) != propertyInfo.DeclaringType)
+			//{
+			//    throw new ArgumentException();
+			//}
 
 			var instance = Expression.Parameter(propertyInfo.DeclaringType, "i");
 			var property = Expression.Property(instance, propertyInfo);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using ServiceStack.Text.Reflection;
 
 namespace ServiceStack.Text.Jsv
@@ -22,9 +23,9 @@ namespace ServiceStack.Text.Jsv
 		private static Action<TextWriter, object> GetWriteFn()
 		{
 			var type = typeof (T);
-			if (!type.IsClass) return null;
+			if (!type.IsClass && !type.IsInterface) return null;
 
-			var propertyInfos = type.GetProperties();
+			var propertyInfos = type.GetPublicProperties();
 			if (propertyInfos.Length == 0) return null;
 
 			var propertyNamesLength = propertyInfos.Length;

@@ -2,6 +2,10 @@ using System;
 
 namespace ServiceStack.Messaging
 {
+	/// <summary>
+	/// Basic implementation of IMessage[T]
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	public class Message<T>
 		: IMessage<T>
 	{
@@ -11,12 +15,12 @@ namespace ServiceStack.Messaging
 
 		public Message(T body)
 		{
-			this.MessageId = Guid.NewGuid();
+			this.Id = Guid.NewGuid();
 			this.CreatedDate = DateTime.UtcNow;
 			Body = body;
 		}
 
-		public Guid MessageId { get; set; }
+		public Guid Id { get; set; }
 
 		public DateTime CreatedDate { get; set; }
 

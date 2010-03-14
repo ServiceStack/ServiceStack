@@ -176,7 +176,7 @@ namespace ServiceStack.Text.Jsv
 				return WriteLists.WriteIEnumerable;
 			}
 
-			if (typeof(T).IsClass)
+			if (typeof(T).IsClass || typeof(T).IsInterface)
 			{
 				var typeToStringMethod = WriteType<T>.Write;
 				if (typeToStringMethod != null)

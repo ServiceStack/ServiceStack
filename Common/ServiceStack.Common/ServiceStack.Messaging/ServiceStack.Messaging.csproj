@@ -73,7 +73,6 @@
     <Compile Include="IMessageHandlerFactory.cs" />
     <Compile Include="InMemoryMessageQueueClient.cs" />
     <Compile Include="InMemoryMessagingService.cs" />
-    <Compile Include="Message.cs" />
     <Compile Include="MessageExtensions.cs" />
     <Compile Include="MessageHandler.cs" />
     <Compile Include="MessageHandlerFactory.cs" />
