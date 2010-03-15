@@ -33,5 +33,15 @@ namespace ServiceStack.Messaging
 		public IMessageError Error { get; set; }
 
 		public T Body { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format("CreatedDate={0}, Id={1}, Type={2}, Retry={3}",
+				this.CreatedDate, 
+				this.Id.ToString("N"), 
+				typeof(T).Name, 
+				this.RetryAttempts);
+		}
+
 	}
 }
