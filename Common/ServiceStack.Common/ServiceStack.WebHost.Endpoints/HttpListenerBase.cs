@@ -4,9 +4,7 @@ using System.Net;
 using System.Reflection;
 using Funq;
 using ServiceStack.Logging;
-using ServiceStack.LogicFacade;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.WebHost.Endpoints

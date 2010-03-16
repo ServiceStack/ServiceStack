@@ -1,8 +1,21 @@
+/*
+// $Id: IUserSessionManager.cs 13365 2010-03-08 18:59:26Z DDNGLOBAL\Demis $
+//
+// Revision      : $Revision: 13365 $
+// Modified Date : $LastChangedDate: 2010-03-08 18:59:26 +0000 (Mon, 08 Mar 2010) $
+// Modified By   : $LastChangedBy: DDNGLOBAL\Demis $
+//
+// (c) Copyright 2010 Liquidbit Ltd
+*/
+
 using System;
 using System.Collections.Generic;
 
 namespace ServiceStack.ServiceInterface.Session
 {
+	/// <summary>
+	/// Manager Interface listing all the methods required to manage a users session.
+	/// </summary>
 	public interface IUserSessionManager
 	{
 		/// <summary>
@@ -10,18 +23,29 @@ namespace ServiceStack.ServiceInterface.Session
 		/// </summary>
 		/// <param name="userId">The user global id.</param>
 		/// <param name="clientSessionIds">The client session ids.</param>
-		void RemoveClientSession(long userId, ICollection<Guid> clientSessionIds);
+		void RemoveClientSession(
+			Guid userId, 
+			ICollection<Guid> clientSessionIds);
 
 		/// <summary>
 		/// Adds a new client session.
 		/// </summary>
 		/// <param name="userId">The user global id.</param>
-		/// <param name="userName">Name of the user.</param>
+		/// <param name="userName">Title of the user.</param>
+		/// <param name="shardId">The shard id.</param>
 		/// <param name="ipAddress">The ip address.</param>
+		/// <param name="userAgent">The user agent.</param>
 		/// <param name="base64ClientModulus">The base64 client modulus.</param>
 		/// <param name="userClientGlobalId">The user client global id.</param>
 		/// <returns></returns>
-		UserClientSessionsTuple AddClientSession(long userId, string userName, string ipAddress, string base64ClientModulus, Guid userClientGlobalId);
+		UserClientSession StoreClientSession(
+			Guid userId, 
+			string userName, 
+			string shardId,
+			string ipAddress, 
+			string userAgent, 
+			string base64ClientModulus, 
+			Guid userClientGlobalId);
 
 		/// <summary>
 		/// Updates the UserSession in the cache, or removes expired ones.
@@ -30,25 +54,20 @@ namespace ServiceStack.ServiceInterface.Session
 		void UpdateUserSession(UserSession userSession);
 
 		/// <summary>
-		/// Adds the user session to the cache.
-		/// </summary>
-		/// <param name="userSession">The user session.</param>
-		void AddUserSession(UserSession userSession);
-
-		/// <summary>
 		/// Gets the user session if it exists or null.
 		/// </summary>
 		/// <param name="userId">The user global id.</param>
 		/// <returns></returns>
-		UserSession GetUserSession(long userId);
+		UserSession GetUserSession(Guid userId);
 
 		/// <summary>
 		/// Gets or create a user session if one doesn't exist.
 		/// </summary>
 		/// <param name="userId">The user global id.</param>
-		/// <param name="userName">Name of the user.</param>
+		/// <param name="userName">Title of the user.</param>
+		/// <param name="shardId"></param>
 		/// <returns></returns>
-		UserSession GetOrCreateSession(long userId, string userName);
+		UserSession GetOrCreateSession(Guid userId, string userName, string shardId);
 
 		/// <summary>
 		/// Gets the user client session identified by the id if exists otherwise null.
@@ -56,14 +75,6 @@ namespace ServiceStack.ServiceInterface.Session
 		/// <param name="userId">The user global id.</param>
 		/// <param name="clientSessionId">The client session id.</param>
 		/// <returns></returns>
-		UserClientSession GetUserClientSession(long userId, Guid clientSessionId);
-
-		/// <summary>
-		/// Gets the user secure client session if it exists, otherwise null.
-		/// </summary>
-		/// <param name="userId">The user global id.</param>
-		/// <param name="clientSessionId">The client session id.</param>
-		/// <returns></returns>
-		UserClientSession GetUserSecureClientSession(long userId, Guid clientSessionId);
+		UserClientSession GetUserClientSession(Guid userId, Guid clientSessionId);
 	}
 }

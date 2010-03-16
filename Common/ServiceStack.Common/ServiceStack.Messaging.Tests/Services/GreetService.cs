@@ -1,5 +1,5 @@
 using System.Runtime.Serialization;
-using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Messaging.Tests.Services
 {
@@ -17,12 +17,12 @@ namespace ServiceStack.Messaging.Tests.Services
 		public string Result { get; set; }
 	}
 
-	public class GreetService 
-		: IService<Greet>
+	public class GreetService
+		: AsyncServiceBase<Greet>
 	{
 		public string Result { get; set; }
 
-		public object Execute(Greet request)
+		protected override object Run(Greet request)
 		{
 			Result = "Hello, " + request.Name;
 			return new GreetResponse { Result = Result };

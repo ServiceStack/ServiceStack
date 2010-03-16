@@ -28,14 +28,8 @@ namespace ServiceStack.Messaging.Tests.Services
 			throw new NotSupportedException("This service always fails");
 		}
 
-		public void ExecuteAsync(IMessage<AlwaysFails> message)
-		{
-			Execute(message.Body);
-		}
-
 		public void ExecuteAsync(AlwaysFails request)
 		{
-			ExecuteAsync(new Message<AlwaysFails>(request));
 		}
 	}
 

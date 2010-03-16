@@ -1,0 +1,47 @@
+using System;
+using ServiceStack.Messaging;
+using ServiceStack.ServiceHost;
+
+namespace ServiceStack.ServiceInterface
+{
+	/// <summary>
+	/// Useful base functionality for IAsyncServices by serializing the request
+	/// into the message queue configured by the AppHost if one is configured. 
+	/// 
+	/// This allows the request to persist for longer than the request duration 
+	/// and can defer the execution of the async request under optimal execution.
+	/// 
+	/// If one is not configured it will Execute the request immediately as per normal.
+	/// </summary>
+	/// <typeparam name="TRequest"></typeparam>
+	public abstract class AsyncServiceBase<TRequest> 
+		: ServiceBase<TRequest>, IAsyncService<TRequest>
+	{
+		/// <summary>
+		/// Injected by the ServiceStack IOC with the registered dependency in the Funq IOC container.
+		/// </summary>
+		public IMessageFactory MessageFactory { get; set; }
+
+		/// <summary>
+		/// Persists the request into the registered message queue if configured, 
+		/// otherwise calls Execute() to handle the request immediately.
+		/// </summary>
+		/// <param name="request"></param>
+		public virtual void ExecuteAsync(TRequest request)
+		{
+			if (MessageFactory == null)
+			{
+				Execute(request);
+				return;
+			}
+
+			using (var producer = MessageFactory.CreateMessageProducer())
+			{
+				producer.Publish(new Message<TRequest>(request));
+			}
+		}
+
+	}
+
+
+}

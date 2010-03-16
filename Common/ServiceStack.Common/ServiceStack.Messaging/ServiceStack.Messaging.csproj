@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{BC383081-6CF7-4A78-8384-AE7279A9A063}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -76,6 +76,7 @@
     <Compile Include="MessageExtensions.cs" />
     <Compile Include="MessageHandler.cs" />
     <Compile Include="MessageHandlerFactory.cs" />
+    <Compile Include="MessageQueueClientFactory.cs" />
     <Compile Include="QueueNames.cs" />
     <Compile Include="MessagingServiceBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

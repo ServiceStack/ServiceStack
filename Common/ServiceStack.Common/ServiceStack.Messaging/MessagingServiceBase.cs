@@ -74,8 +74,8 @@ namespace ServiceStack.Messaging
 
 		public virtual void Stop()
 		{
-			messageHandlers = null;
 			isRunning = false;
+			messageHandlers = null;
 		}
 
 		public virtual void Dispose()

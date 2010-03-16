@@ -3,9 +3,7 @@ using System.IO;
 using System.Reflection;
 using Funq;
 using ServiceStack.Logging;
-using ServiceStack.LogicFacade;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.Endpoints
 {

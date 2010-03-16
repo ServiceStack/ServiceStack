@@ -235,11 +235,10 @@ namespace ServiceStack.Text
 						| BindingFlags.Public 
 						| BindingFlags.Instance);
 
-					var subTypePropertiesList = typeProperties
-						.Where(x => !propertyInfos.Contains(x))
-						.ToList();
+					var newPropertyInfos = typeProperties
+						.Where(x => !propertyInfos.Contains(x));
 
-					propertyInfos.InsertRange(0, subTypePropertiesList);
+					propertyInfos.InsertRange(0, newPropertyInfos);
 				}
 
 				return propertyInfos.ToArray();
@@ -248,6 +247,7 @@ namespace ServiceStack.Text
 			return type.GetProperties(BindingFlags.FlattenHierarchy
 				| BindingFlags.Public | BindingFlags.Instance);
 		}
+
 	}
 
 }
