@@ -50,6 +50,7 @@ namespace ServiceStack.Text.Jsv
 					var propertyValueString = ParseUtils.EatMapValue(strType, ref i);
 
 					var parseStringFn = parseStringFnMap[propertyName];
+					if (parseStringFn == null) continue;
 					var propertyValue = parseStringFn(propertyValueString);
 					var setterFn = setterMap[propertyName];
 

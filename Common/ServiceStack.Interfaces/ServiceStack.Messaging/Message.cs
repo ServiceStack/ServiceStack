@@ -30,7 +30,7 @@ namespace ServiceStack.Messaging
 
 		public string ReplyTo { get; set; }
 
-		public IMessageError Error { get; set; }
+		public MessageError Error { get; set; }
 
 		public T Body { get; set; }
 

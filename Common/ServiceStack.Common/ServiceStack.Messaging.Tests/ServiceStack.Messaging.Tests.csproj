@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{CA20892F-3FD7-4ACD-8506-B50C30CA4DE1}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -78,13 +78,18 @@
   <ItemGroup>
     <Compile Include="BasicServiceMessagingTests.cs" />
     <Compile Include="InMemoryMessagingHostTests.cs" />
+    <Compile Include="MessageSerializationTests.cs" />
     <Compile Include="MessagingHostTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\AlwaysFailsService.cs" />
+    <Compile Include="Services\AlwaysFailService.cs" />
     <Compile Include="Services\GreetService.cs" />
     <Compile Include="Services\MessagingServiceBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Funq\Funq.csproj">
+      <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
+      <Name>Funq</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Messaging\ServiceStack.Messaging.csproj">
       <Project>{BC383081-6CF7-4A78-8384-AE7279A9A063}</Project>
       <Name>ServiceStack.Messaging</Name>
@@ -92,6 +97,10 @@
     <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

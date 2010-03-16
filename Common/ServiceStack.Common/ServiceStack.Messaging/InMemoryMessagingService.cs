@@ -3,10 +3,10 @@ using System.Collections;
 
 namespace ServiceStack.Messaging
 {
-	public class InMemoryMessagingService 
+	public class InMemoryMessagingService
 		: MessagingServiceBase
 	{
-		private readonly MessageQueueClientFactory factory;
+		internal MessageQueueClientFactory Factory { get; set; }
 
 		public InMemoryMessagingService()
 			: this(null)
@@ -15,19 +15,19 @@ namespace ServiceStack.Messaging
 
 		public InMemoryMessagingService(MessageQueueClientFactory factory)
 		{
-			this.factory = factory ?? new MessageQueueClientFactory();
-			this.factory.MessageReceived += factory_MessageReceived;
+			this.Factory = factory ?? new MessageQueueClientFactory();
+			this.Factory.MessageReceived += factory_MessageReceived;
 		}
 
 		void factory_MessageReceived(object sender, EventArgs e)
 		{
-			//var factory = (MessageQueueClientFactory) sender;
+			//var Factory = (MessageQueueClientFactory) sender;
 			this.Start();
 		}
 
 		public override IMessageQueueClientFactory MessageFactory
 		{
-			get { return factory; }
+			get { return Factory; }
 		}
 	}
 }

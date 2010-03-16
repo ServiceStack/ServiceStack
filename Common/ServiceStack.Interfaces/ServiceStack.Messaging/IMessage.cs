@@ -14,7 +14,7 @@ namespace ServiceStack.Messaging
 
 		string ReplyTo { get; set; }
 
-		IMessageError Error { get; }
+		MessageError Error { get; }
 
 		T Body { get; }
 	}

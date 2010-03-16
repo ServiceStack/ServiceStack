@@ -2,8 +2,6 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Web;
-using ServiceStack.Redis;
-using ServiceStack.Redis.Tests;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.CacheAccess.Providers.Tests

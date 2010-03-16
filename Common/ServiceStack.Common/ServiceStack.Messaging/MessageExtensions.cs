@@ -11,7 +11,8 @@ namespace ServiceStack.Messaging
 
 		public static Message<T> ToMessage<T>(this byte[] bytes)
 		{
-			return TypeSerializer.DeserializeFromString<Message<T>>(ToString(bytes));
+			var messageText = ToString(bytes);
+			return TypeSerializer.DeserializeFromString<Message<T>>(messageText);
 		}
 
 		public static byte[] ToBytes<T>(this IMessage<T> message)

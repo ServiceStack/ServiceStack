@@ -94,6 +94,12 @@ namespace ServiceStack.Text.Jsv
 
 		public static object Parse(string value)
 		{
+			if (ReadFn == null)
+			{
+				if (typeof(T).IsInterface)
+					throw new NotSupportedException("Can not deserialize interface type: "
+						+ typeof(T).Name);
+			}
 			return value == null 
 			       	? null 
 			       	: ReadFn(value);

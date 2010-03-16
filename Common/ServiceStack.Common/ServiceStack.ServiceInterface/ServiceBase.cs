@@ -108,7 +108,7 @@ namespace ServiceStack.ServiceInterface
 				Log.Error("ServiceBase<TRequest>::Service Exception", ex);
 
 				//If Redis is configured, maintain rolling service error logs in Redis (an in-memory datastore)
-				var redisManager = AppHostBase.Instance.Container.TryResolve<IRedisClientsManager>();
+				var redisManager = TryResolve<IRedisClientsManager>();
 				if (redisManager != null)
 				{
 					try
@@ -151,6 +151,13 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
+		protected T TryResolve<T>()
+		{
+			return AppHostBase.Instance == null 
+				? default(T) 
+				: AppHostBase.Instance.Container.TryResolve<T>();
+		}
+
 		/// <summary>
 		/// Create an instance of the service response dto type and inject it with the supplied responseStatus
 		/// </summary>
@@ -185,14 +192,11 @@ namespace ServiceStack.ServiceInterface
 				// Get the ResponseStatus property
 				var responseStatusProperty = responseDtoType.GetProperty(ResponseStatusPropertyName);
 
-				if (responseStatusProperty == null)
+				if (responseStatusProperty != null)
 				{
-					// If it doesn't exist we can't support it
-					return null;
+					// Set the ResponseStatus
+					ReflectionUtils.SetProperty(responseDto, responseStatusProperty, responseStatus);
 				}
-
-				// Set the ResponseStatus
-				ReflectionUtils.SetProperty(responseDto, responseStatusProperty, responseStatus);
 			}
 
 			// Return an Error DTO with the exception populated

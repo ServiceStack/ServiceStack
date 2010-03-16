@@ -45,18 +45,28 @@ namespace ServiceStack.Messaging
 		{
 			try
 			{
-				byte[] messageBytes;
-				while ((messageBytes = mqClient.GetAsync(QueueNames<T>.Priority)) != null)
+				var hadReceivedMessages = false;
+				do
 				{
-					var message = messageBytes.ToMessage<T>();
-					ProcessMessage(mqClient, message);
-				}
+					byte[] messageBytes;
+					while ((messageBytes = mqClient.GetAsync(QueueNames<T>.Priority)) != null)
+					{
+						hadReceivedMessages = true;
 
-				while ((messageBytes = mqClient.GetAsync(QueueNames<T>.In)) != null)
-				{
-					var message = messageBytes.ToMessage<T>();
-					ProcessMessage(mqClient, message);
-				}
+						var message = messageBytes.ToMessage<T>();
+						ProcessMessage(mqClient, message);
+					}
+
+					while ((messageBytes = mqClient.GetAsync(QueueNames<T>.In)) != null)
+					{
+						hadReceivedMessages = true;
+
+						var message = messageBytes.ToMessage<T>();
+						ProcessMessage(mqClient, message);
+					}
+
+				} while (hadReceivedMessages);
+
 			}
 			catch (Exception ex)
 			{
@@ -70,10 +80,7 @@ namespace ServiceStack.Messaging
 
 			if (this.Message.RetryAttempts++ < messageService.RetryCount)
 			{
-				this.Message.Error = new MessagingException(ex.Message, ex)
-				{
-					ErrorCode = ex.GetType().Name
-				};
+				this.Message.Error = new MessagingException(ex.Message, ex).ToMessageError();
 				MqClient.Publish(QueueNames<T>.In, this.Message.ToBytes());
 			}
 			else

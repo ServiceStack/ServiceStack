@@ -8,6 +8,7 @@ namespace ServiceStack.Messaging
 		: IMessageService
 	{
 		private bool isRunning;
+		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
 		
 		public int RetryCount { get; protected set; }
 		public TimeSpan? RequestTimeOut { get; protected set; }
@@ -17,7 +18,7 @@ namespace ServiceStack.Messaging
 		public abstract IMessageQueueClientFactory MessageFactory { get; }
 
 		protected MessagingServiceBase()
-			: this(3, null)
+			: this(DefaultRetryCount, null)
 		{
 		}
 

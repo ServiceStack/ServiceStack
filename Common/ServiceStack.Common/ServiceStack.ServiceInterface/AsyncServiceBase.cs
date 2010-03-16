@@ -35,10 +35,22 @@ namespace ServiceStack.ServiceInterface
 				return;
 			}
 
+			//Capture and persist this async request on this Services 'In Queue' 
+			//for execution after this request has been completed
 			using (var producer = MessageFactory.CreateMessageProducer())
 			{
-				producer.Publish(new Message<TRequest>(request));
+				producer.Publish(request);
 			}
+		}
+
+		/// <summary>
+		/// The Deferred execution of ExecuteAsync(request)'s. 
+		/// This request is typically invoked from a messaging queue service host.
+		/// </summary>
+		/// <param name="request"></param>
+		public virtual void ExecuteAsync(IMessage<TRequest> request)
+		{
+			Run(request.Body);
 		}
 
 	}

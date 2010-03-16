@@ -1,35 +1,35 @@
 using System;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.Messaging.Tests.Services
 {
 	[DataContract]
-	public class AlwaysFails
+	public class AlwaysFail
 	{
 		[DataMember]
 		public string Name { get; set; }
 	}
 
 	[DataContract]
-	public class AlwaysFailsResponse
+	public class AlwaysFailResponse
 	{
 		[DataMember]
 		public string Result { get; set; }
 	}
 
-	public class AlwaysFailsService
-		: IService<AlwaysFails>, IAsyncService<AlwaysFails>
+	public class AlwaysFailService
+		: AsyncServiceBase<AlwaysFail>
 	{
+		public int TimesCalled { get; set; }
 		public string Result { get; set; }
 
-		public object Execute(AlwaysFails request)
+		protected override object Run(AlwaysFail request)
 		{
-			throw new NotSupportedException("This service always fails");
-		}
+			this.TimesCalled++;
 
-		public void ExecuteAsync(AlwaysFails request)
-		{
+			throw new NotSupportedException("This service always fails");
 		}
 	}
 

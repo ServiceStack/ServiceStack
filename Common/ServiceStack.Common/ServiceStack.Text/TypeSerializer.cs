@@ -49,7 +49,7 @@ namespace ServiceStack.Text
 		public static T DeserializeFromString<T>(string value)
 		{
 			if (string.IsNullOrEmpty(value)) return default(T);
-			return (T) JsvReader<T>.Parse(value);
+			return (T)JsvReader<T>.Parse(value);
 		}
 
 		public static T DeserializeFromReader<T>(TextReader reader)

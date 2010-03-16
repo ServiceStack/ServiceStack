@@ -3,25 +3,38 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Messaging
 {
+	/// <summary>
+	/// Base Exception for all ServiceStack.Messaging exceptions
+	/// </summary>
 	public class MessagingException
-		: Exception, IMessageError
+		: Exception
 	{
 		public MessagingException()
 		{
 		}
 
-		public MessagingException(string message) : base(message)
+		public MessagingException(string message)
+			: base(message)
 		{
 		}
 
-		public MessagingException(string message, Exception innerException) : base(message, innerException)
+		public MessagingException(string message, Exception innerException)
+			: base(message, innerException)
 		{
 		}
 
-		protected MessagingException(SerializationInfo info, StreamingContext context) : base(info, context)
+		protected MessagingException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
 		{
 		}
 
-		public string ErrorCode { get; set; }
+		public virtual MessageError ToMessageError()
+		{
+			return new MessageError {
+				ErrorCode = GetType().Name,
+				Message = this.Message,
+				StackTrace = this.ToString(),
+			};
+		}
 	}
 }

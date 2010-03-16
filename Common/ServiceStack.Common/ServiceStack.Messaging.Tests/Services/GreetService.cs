@@ -20,17 +20,15 @@ namespace ServiceStack.Messaging.Tests.Services
 	public class GreetService
 		: AsyncServiceBase<Greet>
 	{
+		public int TimesCalled { get; set; }
 		public string Result { get; set; }
 
 		protected override object Run(Greet request)
 		{
+			this.TimesCalled++;
+
 			Result = "Hello, " + request.Name;
 			return new GreetResponse { Result = Result };
-		}
-
-		public void ExecuteAsync(IMessage<Greet> message)
-		{
-			Execute(message.Body);
 		}
 	}
 
