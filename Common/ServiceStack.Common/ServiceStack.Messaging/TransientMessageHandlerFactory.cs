@@ -2,19 +2,19 @@ using System;
 
 namespace ServiceStack.Messaging
 {
-	internal class MessageHandlerFactory<T>
+	internal class TransientMessageHandlerFactory<T>
 		: IMessageHandlerFactory
 	{
-		private readonly MessagingServiceBase messageService;
+		private readonly MessageServiceBase messageService;
 		private readonly Action<IMessage<T>> processMessageFn;
 		private readonly Action<Exception> processExceptionFn;
 
-		public MessageHandlerFactory(MessagingServiceBase messageService, Action<IMessage<T>> processMessageFn)
+		public TransientMessageHandlerFactory(MessageServiceBase messageService, Action<IMessage<T>> processMessageFn)
 			: this(messageService, processMessageFn, null)
 		{
 		}
 
-		public MessageHandlerFactory(MessagingServiceBase messageService, Action<IMessage<T>> processMessageFn, Action<Exception> processExceptionEx)
+		public TransientMessageHandlerFactory(MessageServiceBase messageService, Action<IMessage<T>> processMessageFn, Action<Exception> processExceptionEx)
 		{
 			if (messageService == null)
 				throw new ArgumentNullException("messageService");
@@ -29,7 +29,7 @@ namespace ServiceStack.Messaging
 
 		public IMessageHandler CreateMessageHandler()
 		{
-			return new MessageHandler<T>(messageService, processMessageFn, processExceptionFn);
+			return new TransientMessageHandler<T>(messageService, processMessageFn, processExceptionFn);
 		}
 	}
 }

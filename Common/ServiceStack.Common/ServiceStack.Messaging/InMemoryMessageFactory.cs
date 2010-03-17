@@ -7,16 +7,16 @@ namespace ServiceStack.Messaging
 		: IMessageFactory
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(InMemoryMessageFactory));
-		private readonly InMemoryMessagingService  messagingService;
+		private readonly InMemoryMessageService  messageService;
 
 		public InMemoryMessageFactory()
 			: this(null)
 		{
 		}
 
-		public InMemoryMessageFactory(InMemoryMessagingService messagingService)
+		public InMemoryMessageFactory(InMemoryMessageService messageService)
 		{
-			this.messagingService = messagingService ?? new InMemoryMessagingService();
+			this.messageService = messageService ?? new InMemoryMessageService();
 		}
 
 		public IMessageProducer CreateMessageProducer()
@@ -26,7 +26,7 @@ namespace ServiceStack.Messaging
 
 		public IMessageService CreateMessageService()
 		{
-			return messagingService;
+			return messageService;
 		}
 
 		public void Dispose()
@@ -52,7 +52,7 @@ namespace ServiceStack.Messaging
 
 			public void Publish<T>(IMessage<T> message)
 			{
-				this.parent.messagingService.Factory.PublishMessage(QueueNames<T>.In, message);
+				this.parent.messageService.Factory.PublishMessage(QueueNames<T>.In, message);
 			}
 
 			public void Dispose()

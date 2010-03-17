@@ -33,7 +33,7 @@ namespace ServiceStack.Messaging
 			return new MessageError {
 				ErrorCode = GetType().Name,
 				Message = this.Message,
-				StackTrace = this.ToString(),
+				StackTrace = this.ToString(), //Also includes inner exception
 			};
 		}
 	}

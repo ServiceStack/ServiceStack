@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ServiceStack.Messaging
 {
-	public abstract class MessagingServiceBase
+	public abstract class MessageServiceBase
 		: IMessageService
 	{
 		private bool isRunning;
@@ -17,12 +17,12 @@ namespace ServiceStack.Messaging
 
 		public abstract IMessageQueueClientFactory MessageFactory { get; }
 
-		protected MessagingServiceBase()
+		protected MessageServiceBase()
 			: this(DefaultRetryCount, null)
 		{
 		}
 
-		protected MessagingServiceBase(int retryAttempts, TimeSpan? requestTimeOut)
+		protected MessageServiceBase(int retryAttempts, TimeSpan? requestTimeOut)
 		{
 			this.RetryCount = retryAttempts;
 			this.RequestTimeOut = requestTimeOut;
@@ -50,7 +50,7 @@ namespace ServiceStack.Messaging
 
 		protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Action<IMessage<T>> processMessageFn, Action<Exception> processExceptionEx)
 		{
-			return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx);
+			return new TransientMessageHandlerFactory<T>(this, processMessageFn, processExceptionEx);
 		}
 
 		public virtual void Start()

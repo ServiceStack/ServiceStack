@@ -20,5 +20,12 @@ namespace ServiceStack.Messaging
 			var serializedMessage = TypeSerializer.SerializeToString(message);
 			return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
 		}
+
+		public static string ToInQueueName<T>(this IMessage<T> message)
+		{
+			return message.Priority > 0
+		       	? QueueNames<T>.Priority
+		       	: QueueNames<T>.In;
+		}
 	}
 }

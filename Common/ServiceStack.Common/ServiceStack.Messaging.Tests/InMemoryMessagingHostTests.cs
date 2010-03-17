@@ -5,17 +5,17 @@ namespace ServiceStack.Messaging.Tests
 	public class InMemoryMessagingHostTests
 		: BasicServiceMessagingTests
 	{
-		InMemoryMessagingService messagingService;
+		InMemoryMessageService messageService;
 
 		protected override IMessageFactory CreateMessageFactory()
 		{
-			messagingService = new InMemoryMessagingService();
-			return new InMemoryMessageFactory(messagingService);
+			messageService = new InMemoryMessageService();
+			return new InMemoryMessageFactory(messageService);
 		}
 
-		protected override MessagingServiceBase CreateMessagingService()
+		protected override MessageServiceBase CreateMessagingService()
 		{
-			return messagingService;
+			return messageService;
 		}
 	}
 

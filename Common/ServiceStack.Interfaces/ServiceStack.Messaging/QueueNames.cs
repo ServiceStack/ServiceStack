@@ -2,6 +2,10 @@ using System;
 
 namespace ServiceStack.Messaging
 {
+	/// <summary>
+	/// Util static generic class to create unique queue names for types
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	public static class QueueNames<T>
 	{
 		public static string Priority
@@ -25,6 +29,9 @@ namespace ServiceStack.Messaging
 		}
 	}
 
+	/// <summary>
+	/// Util class to create unique queue names for runtime types
+	/// </summary>
 	public class QueueNames
 	{
 		private readonly Type messageType;
@@ -54,4 +61,5 @@ namespace ServiceStack.Messaging
 			get { return "mq:" + messageType.Name + ".dlq"; }
 		}
 	}
+
 }

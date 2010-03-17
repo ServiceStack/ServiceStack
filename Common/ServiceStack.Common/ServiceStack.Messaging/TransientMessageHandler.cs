@@ -3,16 +3,16 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.Messaging
 {
-	internal class MessageHandler<T>
+	internal class TransientMessageHandler<T>
 		: IMessageHandler, IDisposable
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(MessageHandler<T>));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(TransientMessageHandler<T>));
 
-		private readonly MessagingServiceBase messageService;
+		private readonly MessageServiceBase messageService;
 		private readonly Action<IMessage<T>> processMessageFn;
 		private readonly Action<Exception> processExceptionFn;
 
-		public MessageHandler(MessagingServiceBase messageService,
+		public TransientMessageHandler(MessageServiceBase messageService,
 			Action<IMessage<T>> processMessageFn)
 			: this(messageService, processMessageFn, null)
 		{
@@ -21,7 +21,7 @@ namespace ServiceStack.Messaging
 		private IMessageQueueClient MqClient { get; set; }
 		private Message<T> Message { get; set; }
 
-		public MessageHandler(MessagingServiceBase messageService,
+		public TransientMessageHandler(MessageServiceBase messageService,
 			Action<IMessage<T>> processMessageFn,
 			Action<Exception> processExceptionFn)
 		{
