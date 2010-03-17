@@ -1,17 +1,23 @@
-CALL ..\..\..\env-vars.bat
-
-PUSHD ..\..\ServiceStack.Interfaces\Build
-CALL ilmerge-all.bat 
-POPD
 
 REM SET BUILD=Debug
 SET BUILD=Release
 
+COPY ..\ServiceStack.Text\bin\%BUILD%\* ..\..\..\release\latest\ServiceStack.Text\
+
+
+
+
 REM DON'T NEED TO ILMERGE BECAUSE THERE IS ONLY 1 ASSEMBLY
 
-SET PROJ_LIBS=
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Redis\bin\%BUILD%\ServiceStack.Text.dll
+REM CALL ..\..\..\env-vars.bat
 
-%ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.Text.dll %PROJ_LIBS%
+REM PUSHD ..\..\ServiceStack.Interfaces\Build
+REM CALL ilmerge-all.bat 
+REM POPD
 
-COPY *.dll ..\..\..\release\latest\ServiceStack.Text
+REM SET PROJ_LIBS=
+REM SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Redis\bin\%BUILD%\ServiceStack.Text.dll
+
+REM %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.Text.dll %PROJ_LIBS%
+
+REM COPY *.dll ..\..\..\release\latest\ServiceStack.Text
