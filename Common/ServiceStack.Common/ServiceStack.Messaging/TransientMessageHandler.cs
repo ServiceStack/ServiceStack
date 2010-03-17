@@ -8,11 +8,11 @@ namespace ServiceStack.Messaging
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(TransientMessageHandler<T>));
 
-		private readonly MessageServiceBase messageService;
+		private readonly TransientMessageServiceBase messageService;
 		private readonly Action<IMessage<T>> processMessageFn;
 		private readonly Action<Exception> processExceptionFn;
 
-		public TransientMessageHandler(MessageServiceBase messageService,
+		public TransientMessageHandler(TransientMessageServiceBase messageService,
 			Action<IMessage<T>> processMessageFn)
 			: this(messageService, processMessageFn, null)
 		{
@@ -21,7 +21,7 @@ namespace ServiceStack.Messaging
 		private IMessageQueueClient MqClient { get; set; }
 		private Message<T> Message { get; set; }
 
-		public TransientMessageHandler(MessageServiceBase messageService,
+		public TransientMessageHandler(TransientMessageServiceBase messageService,
 			Action<IMessage<T>> processMessageFn,
 			Action<Exception> processExceptionFn)
 		{
@@ -78,15 +78,19 @@ namespace ServiceStack.Messaging
 		{
 			Log.Error("Message exception handler threw an error", ex);
 
-			if (this.Message.RetryAttempts++ < messageService.RetryCount)
+			if (!(ex is UnRetryableMessagingException))
 			{
-				this.Message.Error = new MessagingException(ex.Message, ex).ToMessageError();
-				MqClient.Publish(QueueNames<T>.In, this.Message.ToBytes());
+				if (this.Message.RetryAttempts < messageService.RetryCount)
+				{
+					this.Message.RetryAttempts++;
+
+					this.Message.Error = new MessagingException(ex.Message, ex).ToMessageError();
+					MqClient.Publish(QueueNames<T>.In, this.Message.ToBytes());
+					return;
+				}
 			}
-			else
-			{
-				MqClient.Publish(QueueNames<T>.Dlq, this.Message.ToBytes());
-			}
+
+			MqClient.Publish(QueueNames<T>.Dlq, this.Message.ToBytes());
 		}
 
 		public void ProcessMessage(IMessageQueueClient mqClient, Message<T> message)

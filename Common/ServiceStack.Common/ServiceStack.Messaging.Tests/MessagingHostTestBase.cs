@@ -9,7 +9,7 @@ namespace ServiceStack.Messaging.Tests
 	{
 		protected abstract IMessageFactory CreateMessageFactory();
 
-		protected abstract MessageServiceBase CreateMessagingService();
+		protected abstract TransientMessageServiceBase CreateMessagingService();
 
 		protected Container Container { get; set; }
 

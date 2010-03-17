@@ -82,6 +82,7 @@
     <Compile Include="MessagingHostTestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AlwaysFailService.cs" />
+    <Compile Include="Services\UnRetryableFail.cs" />
     <Compile Include="Services\GreetService.cs" />
     <Compile Include="Services\MessagingServiceBase.cs" />
   </ItemGroup>

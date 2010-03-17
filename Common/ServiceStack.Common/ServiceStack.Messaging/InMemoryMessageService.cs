@@ -4,7 +4,7 @@ using System.Collections;
 namespace ServiceStack.Messaging
 {
 	public class InMemoryMessageService
-		: MessageServiceBase
+		: TransientMessageServiceBase
 	{
 		internal MessageQueueClientFactory Factory { get; set; }
 

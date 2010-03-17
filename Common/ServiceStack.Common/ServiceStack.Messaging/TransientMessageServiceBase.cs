@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ServiceStack.Messaging
 {
-	public abstract class MessageServiceBase
+	public abstract class TransientMessageServiceBase
 		: IMessageService
 	{
 		private bool isRunning;
@@ -17,12 +17,12 @@ namespace ServiceStack.Messaging
 
 		public abstract IMessageQueueClientFactory MessageFactory { get; }
 
-		protected MessageServiceBase()
+		protected TransientMessageServiceBase()
 			: this(DefaultRetryCount, null)
 		{
 		}
 
-		protected MessageServiceBase(int retryAttempts, TimeSpan? requestTimeOut)
+		protected TransientMessageServiceBase(int retryAttempts, TimeSpan? requestTimeOut)
 		{
 			this.RetryCount = retryAttempts;
 			this.RequestTimeOut = requestTimeOut;

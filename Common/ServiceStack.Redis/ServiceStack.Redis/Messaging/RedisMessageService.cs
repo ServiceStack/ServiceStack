@@ -4,7 +4,7 @@ using ServiceStack.Messaging;
 namespace ServiceStack.Redis.Messaging
 {
 	public class RedisMessageService
-		: MessageServiceBase
+		: TransientMessageServiceBase
 	{
 		private readonly IRedisClientsManager manager;
 		private readonly RedisMessageQueueClientFactory factory;
@@ -18,8 +18,7 @@ namespace ServiceStack.Redis.Messaging
 			IRedisClientsManager clientsManager)
 			: base(retryAttempts, requestTimeOut)
 		{
-			this.manager = clientsManager
-				?? (IRedisClientsManager) new PooledRedisClientManager();
+			this.manager = clientsManager ?? new PooledRedisClientManager();
 
 			this.factory = new RedisMessageQueueClientFactory(manager);
 		}

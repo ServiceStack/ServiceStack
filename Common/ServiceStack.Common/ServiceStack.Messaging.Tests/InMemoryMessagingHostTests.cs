@@ -13,7 +13,7 @@ namespace ServiceStack.Messaging.Tests
 			return new InMemoryMessageFactory(messageService);
 		}
 
-		protected override MessageServiceBase CreateMessagingService()
+		protected override TransientMessageServiceBase CreateMessagingService()
 		{
 			return messageService;
 		}

@@ -5,7 +5,7 @@ using ServiceStack.Messaging.Tests.Services;
 
 namespace ServiceStack.Messaging.Tests
 {
-	public abstract class BasicServiceMessagingTests
+	public abstract class TransientServiceMessagingTests
 		: MessagingHostTestBase
 	{
 		public override void OnBeforeEachTest()
@@ -16,6 +16,9 @@ namespace ServiceStack.Messaging.Tests
 				MessageFactory = c.Resolve<IMessageFactory>()
 			});
 			Container.Register(c => new AlwaysFailService {
+				MessageFactory = c.Resolve<IMessageFactory>()
+			});
+			Container.Register(c => new UnRetryableFailService {
 				MessageFactory = c.Resolve<IMessageFactory>()
 			});
 		}
@@ -81,6 +84,35 @@ namespace ServiceStack.Messaging.Tests
 				{
 					var dlqMessage = client.GetAsync(QueueNames<AlwaysFail>.Dlq)
 						.ToMessage<AlwaysFail>();
+
+					Assert.That(dlqMessage, Is.Not.Null);
+					Assert.That(dlqMessage.Body.Name, Is.EqualTo(request.Name));
+				}
+			}
+		}
+
+		[Test]
+		public void UnRetryableFailService_ends_up_in_dlq_after_1_attempt()
+		{
+			var service = Container.Resolve<UnRetryableFailService>();
+			var request = new UnRetryableFail { Name = "World!" };
+			using (var serviceHost = CreateMessagingService())
+			{
+				using (var client = serviceHost.MessageFactory.CreateMessageQueueClient())
+				{
+					client.Publish(request);
+				}
+
+				serviceHost.RegisterHandler<UnRetryableFail>(service.ExecuteAsync);
+				serviceHost.Start();
+
+				Assert.That(service.Result, Is.Null);
+				Assert.That(service.TimesCalled, Is.EqualTo(1));
+
+				using (var client = serviceHost.MessageFactory.CreateMessageQueueClient())
+				{
+					var dlqMessage = client.GetAsync(QueueNames<UnRetryableFail>.Dlq)
+						.ToMessage<UnRetryableFail>();
 
 					Assert.That(dlqMessage, Is.Not.Null);
 					Assert.That(dlqMessage.Body.Name, Is.EqualTo(request.Name));
