@@ -12,16 +12,24 @@ namespace Standalone.TypeSerializer.ConsoleApp
 			public string Name { get; set; }
 
 			public int Age { get; set; }
+
+			public override string ToString()
+			{
+				return "Person.ToString(): " 
+					+ "Name=" + Name
+					+ ", Age = " + Age;
+			}
 		}
 
 		static void Main(string[] args)
 		{
-			using (var redisClient = new RedisClient("chi-dev-mem1"))
-			{
-				redisClient.Set("release-test", "works");
-				var result = redisClient.Get<string>("release-test");
-				Console.WriteLine("Result: " + result);
-			}
+			var person = new Person {Age = 30, Name = "Demis"};
+
+			var personString = ServiceStack.Text.TypeSerializer.SerializeToString(person);
+			Console.WriteLine("personString: " + personString);
+
+			var fromPersonString = ServiceStack.Text.TypeSerializer.DeserializeFromString<Person>(personString);
+			Console.WriteLine(fromPersonString);
 
 			Console.ReadKey();
 		}
