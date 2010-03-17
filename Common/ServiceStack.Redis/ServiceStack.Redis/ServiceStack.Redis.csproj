@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{AF99F19B-4C04-4F58-81EF-B092F1FCC540}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -117,7 +117,7 @@
       <Project>{BC383081-6CF7-4A78-8384-AE7279A9A063}</Project>
       <Name>ServiceStack.Messaging</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Text\ServiceStack.Text.csproj">
+    <ProjectReference Include="..\..\ServiceStack.Text\ServiceStack.Text\ServiceStack.Text.csproj">
       <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
       <Name>ServiceStack.Text</Name>
     </ProjectReference>

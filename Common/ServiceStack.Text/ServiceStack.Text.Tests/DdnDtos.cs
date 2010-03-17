@@ -5,7 +5,7 @@ using Platform.Text;
 using ServiceStack.DataAnnotations;
 using ServiceStack.DesignPatterns.Model;
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
 	public class UserPublicView
@@ -357,7 +357,6 @@ namespace ServiceStack.Common.Tests.Text
 		//public ArrayOfStringId(params string[] ids) : base(ids) { }
 	}
 
-
 	public enum FlowPostType
 	{
 		Content,
@@ -366,7 +365,7 @@ namespace ServiceStack.Common.Tests.Text
 	}
 
 	[TextRecord]
-	public class FlowPostTransient 
+	public class FlowPostTransient
 	{
 		public FlowPostTransient()
 		{

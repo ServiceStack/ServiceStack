@@ -66,9 +66,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Sqlite
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.SqlServer", "..\ServiceStack.OrmLite\ServiceStack.OrmLite.SqlServer\ServiceStack.OrmLite.SqlServer.csproj", "{1887DC99-9139-43E3-A7AA-6D74714B3A5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "ServiceStack.Text\ServiceStack.Text.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Memcached.Tests", "ServiceStack.CacheAccess.Memcached.Tests\ServiceStack.CacheAccess.Memcached.Tests.csproj", "{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "..\ServiceStack.Text\ServiceStack.Text\ServiceStack.Text.csproj", "{579B3FDB-CDAD-44E1-8417-885C38E49A0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.Tests", "..\ServiceStack.Text\ServiceStack.Text.Tests\ServiceStack.Text.Tests.csproj", "{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -230,18 +232,28 @@ Global
 		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1887DC99-9139-43E3-A7AA-6D74714B3A5D}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{579B3FDB-CDAD-44E1-8417-885C38E49A0E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

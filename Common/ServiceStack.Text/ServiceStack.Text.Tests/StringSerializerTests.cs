@@ -5,9 +5,8 @@ using Northwind.Common.ComplexModel;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.Text;
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class StringSerializerTests
@@ -68,4 +67,5 @@ namespace ServiceStack.Common.Tests.Text
 
 	}
 }
+
 #endif

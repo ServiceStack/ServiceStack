@@ -1,9 +1,10 @@
 using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Tests;
 using ServiceStack.Text.Jsv;
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class DateTimeSerializerTests
@@ -71,17 +72,17 @@ namespace ServiceStack.Common.Tests.Text
 			var longDateTimeStr = dateTime.ToString(DateTimeSerializer.XsdDateTimeFormat);
 			var shortestDateStr = DateTimeSerializer.ToShortestXsdDateTimeString(dateTime);
 
-			Log("{0} | {1} | {2}  [{3}]", 
+			Log("{0} | {1} | {2}  [{3}]",
 				shortDateStr, shortDateTimeStr, longDateTimeStr, shortestDateStr);
 
 			var shortDate = DateTimeSerializer.ParseShortestXsdDateTime(shortDateStr);
 			var shortDateTime = DateTimeSerializer.ParseShortestXsdDateTime(shortDateTimeStr);
 			var longDateTime = DateTimeSerializer.ParseShortestXsdDateTime(longDateTimeStr);
-			
+
 			Assert.That(shortDate, Is.EqualTo(dateTime.Date));
 			Assert.That(shortDateTime, Is.EqualTo(new DateTime(
-				shortDateTime.Year, shortDateTime.Month, shortDateTime.Day, 
-				shortDateTime.Hour, shortDateTime.Minute, shortDateTime.Second, 
+				shortDateTime.Year, shortDateTime.Month, shortDateTime.Day,
+				shortDateTime.Hour, shortDateTime.Minute, shortDateTime.Second,
 				shortDateTime.Millisecond)));
 			Assert.That(longDateTime, Is.EqualTo(dateTime));
 

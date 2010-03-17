@@ -5,24 +5,23 @@ using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Text;
 using System.Collections.Generic;
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class BasicStringSerializerTests
 	{
 		readonly char[] allCharsUsed = new[] {
-				TypeSerializer.QuoteChar, TypeSerializer.ItemSeperator,
-           		TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
-           		TypeSerializer.ListEndChar, TypeSerializer.ListEndChar,
-           	};
+			TypeSerializer.QuoteChar, TypeSerializer.ItemSeperator,
+			TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
+			TypeSerializer.ListEndChar, TypeSerializer.ListEndChar,
+		};
 
 		readonly string fieldWithInvalidChars = string.Format("all {0} {1} {2} {3} {4} {5} {6} invalid chars",
 			TypeSerializer.QuoteChar, TypeSerializer.ItemSeperator,
-           		TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
-           		TypeSerializer.ListEndChar, TypeSerializer.ListEndChar);
+			TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
+			TypeSerializer.ListEndChar, TypeSerializer.ListEndChar);
 
 		readonly string[] stringValues = new[] { "One", "Two", "Three", "Four", "Five" };
 		readonly string[] stringValuesWithIllegalChar = new[] { "One", ",", "Three", "Four", "Five" };
@@ -238,8 +237,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_string_dictionary()
 		{
 			var stringDictionary = new Dictionary<string, string> {
-          		{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
-			  };
+			                                                      	{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
+			                                                      };
 			var expectedString = "{One:1st,Two:2nd,Three:3rd}";
 			var stringValue = TypeSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -249,8 +248,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_parse_string_dictionary()
 		{
 			var stringDictionary = new Dictionary<string, string> {
-				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
-			};
+			                                                      	{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
+			                                                      };
 			const string mapValues = "{One:1st,Two:2nd,Three:3rd}";
 			var parsedDictionary = TypeSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
@@ -260,8 +259,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_string_dictionary_as_object()
 		{
 			var stringDictionary = new Dictionary<string, string> {
-				{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
-			};
+			                                                      	{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
+			                                                      };
 			var expectedString = "{One:1st,Two:2nd,Three:3rd}";
 			var stringValue = TypeSerializer.SerializeToString((object)stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -271,8 +270,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_string_dictionary_with_special_chars_as_object()
 		{
 			var stringDictionary = new Dictionary<string, string> {
-				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
-			};
+			                                                      	{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
+			                                                      };
 			var expectedString = "{One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\",Four:four%}";
 			var stringValue = TypeSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -282,8 +281,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_parse_string_dictionary_with_special_chars_as_object()
 		{
 			var stringDictionary = new Dictionary<string, string> {
-				{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }
-			};
+			                                                      	{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }
+			                                                      };
 			const string mapValues = "{One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\"}";
 			var parsedDictionary = TypeSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
@@ -293,8 +292,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_convert_string_list_with_special_chars_as_object()
 		{
 			var stringList = new List<string> {
-				"\"1st", "2:nd", "3r,d", "four%"
-			};
+			                                  	"\"1st", "2:nd", "3r,d", "four%"
+			                                  };
 			var expectedString = "[\"\"\"1st\",2:nd,\"3r,d\",four%]";
 			var stringValue = TypeSerializer.SerializeToString(stringList);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -304,8 +303,8 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_parse_string_list_with_special_chars_as_object()
 		{
 			var stringList = new List<string> {
-          		"\"1st", "2:nd", "3r,d", "four%"
-			  };
+			                                  	"\"1st", "2:nd", "3r,d", "four%"
+			                                  };
 			const string listValues = "[\"\"\"1st\",2:nd,\"3r,d\",four%]";
 			var parsedList = TypeSerializer.DeserializeFromString(listValues, stringList.GetType());
 			Assert.That(parsedList, Is.EquivalentTo(stringList));
@@ -366,7 +365,8 @@ namespace ServiceStack.Common.Tests.Text
 			ModelWithFieldsOfNullableTypes.AssertIsEqual(toModel, model);
 		}
 
-		[Ignore("Causing infinite recursion in TypeToString")][Test]
+		[Ignore("Causing infinite recursion in TypeToString")]
+		[Test]
 		public void Can_convert_ModelWithComplexTypes()
 		{
 			var model = ModelWithComplexTypes.Create(1);
@@ -452,5 +452,4 @@ namespace ServiceStack.Common.Tests.Text
 		}
 
 	}
-
 }

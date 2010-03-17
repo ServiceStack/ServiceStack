@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -95,6 +95,10 @@
       <Project>{AF99F19B-4C04-4F58-81EF-B092F1FCC540}</Project>
       <Name>ServiceStack.Redis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.Text\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Funq\Funq.csproj">
       <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
       <Name>Funq</Name>
@@ -114,10 +118,6 @@
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
       <Name>ServiceStack.ServiceModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Text\ServiceStack.Text.csproj">
-      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
-      <Name>ServiceStack.Text</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.Validation\ServiceStack.Validation.csproj">
       <Project>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</Project>

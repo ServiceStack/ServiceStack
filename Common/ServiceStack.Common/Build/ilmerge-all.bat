@@ -53,3 +53,6 @@ COPY ServiceStack.dll ..\..\..\ServiceStack.Examples\Lib
 COPY ServiceStack.Interfaces.dll ..\..\..\ServiceStack.Examples\Lib
 COPY ServiceStack.dll ..\..\..\MonoTouch.Examples\RemoteInfo\Server\Lib
 COPY ServiceStack.Interfaces.dll ..\..\..\MonoTouch.Examples\RemoteInfo\Server\Lib
+
+REM COPY TO RELEASE
+COPY ..\..\ServiceStack.Text\ServiceStack.Text\bin\%BUILD%\ServiceStack.Text.dll ..\..\..\release\latest\ServiceStack.Text\

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Tests.Text;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Common.Tests
 {

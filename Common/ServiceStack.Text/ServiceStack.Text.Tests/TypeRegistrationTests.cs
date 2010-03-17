@@ -4,7 +4,7 @@ using ServiceStack.Common.Tests.Models;
 using ServiceStack.Text;
 
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 
 #if AOT

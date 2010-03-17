@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.Messaging.Tests
 {
 	public class InMemoryMessagingHostTests
-		: BasicServiceMessagingTests
+		: TransientServiceMessagingTests
 	{
 		InMemoryMessageService messageService;
 

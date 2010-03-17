@@ -1,9 +1,9 @@
 using System;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using ServiceStack.Text;
+using ServiceStack.Common.Tests;
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class StringSerializerNorthwindDatabaseTests

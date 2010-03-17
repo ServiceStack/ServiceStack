@@ -1,9 +1,8 @@
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Messaging;
-using ServiceStack.Text;
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class InterfaceTests
@@ -11,8 +10,7 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_serialize_Message()
 		{
-			var message = new Message<string>
-			{
+			var message = new Message<string> {
 				Body = "test"
 			};
 			var messageString = TypeSerializer.SerializeToString(message);
@@ -23,8 +21,7 @@ namespace ServiceStack.Common.Tests.Text
 		[Test]
 		public void Can_serialize_IMessage()
 		{
-			var message = new Message<string>
-			{
+			var message = new Message<string> {
 				Body = "test"
 			};
 			var messageString = TypeSerializer.SerializeToString((IMessage<string>)message);
@@ -33,5 +30,4 @@ namespace ServiceStack.Common.Tests.Text
 		}
 
 	}
-
 }
