@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Funq;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
 {
@@ -43,7 +44,7 @@ namespace ServiceStack.ServiceHost
 			var serviceType = typeof(TService);
 
 			var propertyResolveFn = typeof(Container).GetMethod("TryResolve", new Type[0]);
-			var memberBindings = serviceType.GetProperties()
+			var memberBindings = serviceType.GetPublicProperties()
 				.Where(x => x.CanWrite)
 				.Select(x =>
 					Expression.Bind

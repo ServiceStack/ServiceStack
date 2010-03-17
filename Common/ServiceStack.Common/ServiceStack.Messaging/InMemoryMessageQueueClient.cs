@@ -37,7 +37,7 @@ namespace ServiceStack.Messaging
 			return factory.GetMessageAsync(queueName);
 		}
 
-		public byte[] Get(string queueName)
+		public byte[] Get(string queueName, TimeSpan? timeOut)
 		{
 			throw new NotImplementedException();
 		}

@@ -6,15 +6,15 @@ namespace ServiceStack.Messaging
 		: IMessageHandlerFactory
 	{
 		private readonly TransientMessageServiceBase messageService;
-		private readonly Action<IMessage<T>> processMessageFn;
+		private readonly Func<IMessage<T>, object> processMessageFn;
 		private readonly Action<Exception> processExceptionFn;
 
-		public TransientMessageHandlerFactory(TransientMessageServiceBase messageService, Action<IMessage<T>> processMessageFn)
+		public TransientMessageHandlerFactory(TransientMessageServiceBase messageService, Func<IMessage<T>, object> processMessageFn)
 			: this(messageService, processMessageFn, null)
 		{
 		}
 
-		public TransientMessageHandlerFactory(TransientMessageServiceBase messageService, Action<IMessage<T>> processMessageFn, Action<Exception> processExceptionEx)
+		public TransientMessageHandlerFactory(TransientMessageServiceBase messageService, Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
 		{
 			if (messageService == null)
 				throw new ArgumentNullException("messageService");

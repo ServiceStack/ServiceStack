@@ -33,12 +33,12 @@ namespace ServiceStack.Messaging
 
 		private IMessageHandler[] messageHandlers;
 
-		public void RegisterHandler<T>(Action<IMessage<T>> processMessageFn)
+		public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
 		{
 			RegisterHandler(processMessageFn, null);
 		}
 
-		public void RegisterHandler<T>(Action<IMessage<T>> processMessageFn, Action<Exception> processExceptionEx)
+		public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
 		{
 			if (handlerMap.ContainsKey(typeof(T)))
 			{
@@ -48,7 +48,7 @@ namespace ServiceStack.Messaging
 			handlerMap[typeof (T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
 		}
 
-		protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Action<IMessage<T>> processMessageFn, Action<Exception> processExceptionEx)
+		protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
 		{
 			return new TransientMessageHandlerFactory<T>(this, processMessageFn, processExceptionEx);
 		}

@@ -61,7 +61,7 @@ namespace ServiceStack.Redis.Messaging
 			this.ReadWriteClient.LTrim(queueName, 0, 1000);
 		}
 
-		public byte[] Get(string queueName)
+		public byte[] Get(string queueName, TimeSpan? timeOut)
 		{
 			throw new NotImplementedException();
 		}

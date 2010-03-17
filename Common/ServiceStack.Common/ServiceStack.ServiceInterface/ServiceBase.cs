@@ -167,19 +167,12 @@ namespace ServiceStack.ServiceInterface
 		protected static object CreateResponseDto(TRequest request, ResponseStatus responseStatus)
 		{
 			// Predict the Response message type name
-			var responseDtoName = request.GetType().FullName + ResponseDtoSuffix;
-
 			// Get the type
-			var responseDtoType = AssemblyUtils.FindType(responseDtoName);
+			var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
+			var responseDto = CreateResponseDto(request);
 
-			if (responseDtoType == null)
-			{
-				// We don't support creation of response messages without a predictable type name
+			if (responseDto == null) 
 				return null;
-			}
-
-			// Create an instance of the response message for this request
-			var responseDto = ReflectionUtils.CreateInstance(responseDtoType);
 
 			// For faster serialization of exceptions, services should implement IHasResponseStatus
 			var hasResponseStatus = responseDto as IHasResponseStatus;
@@ -201,6 +194,32 @@ namespace ServiceStack.ServiceInterface
 
 			// Return an Error DTO with the exception populated
 			return responseDto;
+		}
+
+		/// <summary>
+		/// Create an instance of the response dto based on the requestDto type and default naming convention
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		protected static object CreateResponseDto(TRequest request)
+		{
+			// Get the type
+			var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
+
+			if (responseDtoType == null)
+			{
+				// We don't support creation of response messages without a predictable type name
+				return null;
+			}
+
+			// Create an instance of the response message for this request
+			var responseDto = ReflectionUtils.CreateInstance(responseDtoType);
+			return responseDto;
+		}
+
+		protected static string GetResponseDtoName(TRequest request)
+		{
+			return request.GetType().FullName + ResponseDtoSuffix;
 		}
 	}
 

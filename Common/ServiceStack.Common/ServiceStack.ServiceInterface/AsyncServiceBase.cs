@@ -27,12 +27,11 @@ namespace ServiceStack.ServiceInterface
 		/// otherwise calls Execute() to handle the request immediately.
 		/// </summary>
 		/// <param name="request"></param>
-		public virtual void ExecuteAsync(TRequest request)
+		public virtual object ExecuteAsync(TRequest request)
 		{
 			if (MessageFactory == null)
 			{
-				Execute(request);
-				return;
+				return Execute(request);
 			}
 
 			//Capture and persist this async request on this Services 'In Queue' 
@@ -41,6 +40,8 @@ namespace ServiceStack.ServiceInterface
 			{
 				producer.Publish(request);
 			}
+
+			return CreateResponseDto(request);
 		}
 
 		/// <summary>
@@ -48,9 +49,9 @@ namespace ServiceStack.ServiceInterface
 		/// This request is typically invoked from a messaging queue service host.
 		/// </summary>
 		/// <param name="request"></param>
-		public virtual void ExecuteAsync(IMessage<TRequest> request)
+		public virtual object ExecuteAsync(IMessage<TRequest> request)
 		{
-			Run(request.Body);
+			return Run(request.Body);
 		}
 
 	}

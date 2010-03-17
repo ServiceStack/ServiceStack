@@ -9,11 +9,11 @@ namespace ServiceStack.Messaging
 		private static readonly ILog Log = LogManager.GetLogger(typeof(TransientMessageHandler<T>));
 
 		private readonly TransientMessageServiceBase messageService;
-		private readonly Action<IMessage<T>> processMessageFn;
+		private readonly Func<IMessage<T>, object> processMessageFn;
 		private readonly Action<Exception> processExceptionFn;
 
 		public TransientMessageHandler(TransientMessageServiceBase messageService,
-			Action<IMessage<T>> processMessageFn)
+			Func<IMessage<T>, object> processMessageFn)
 			: this(messageService, processMessageFn, null)
 		{
 		}
@@ -22,7 +22,7 @@ namespace ServiceStack.Messaging
 		private Message<T> Message { get; set; }
 
 		public TransientMessageHandler(TransientMessageServiceBase messageService,
-			Action<IMessage<T>> processMessageFn,
+			Func<IMessage<T>, object> processMessageFn,
 			Action<Exception> processExceptionFn)
 		{
 			if (messageService == null)

@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
@@ -5,10 +6,10 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
 	[DataContract]
-	public class Test { }
+	public class TestAsync { }
 
 	[DataContract]
-	public class TestResponse
+	public class TestAsyncResponse
 	{
 		[DataMember]
 		public IFoo Foo { get; set; }
@@ -20,33 +21,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		public int ExecuteAsyncTimes { get; set; }
 	}
 
-	public class TestService
-		: IService<Test> /*Removed:, IAsyncService<Test>*/
+	public class TestAsyncService 
+		: IService<TestAsync>, IAsyncService<TestAsync>
 	{
 		private readonly IFoo foo;
 
 		public static int ExecuteTimes { get; private set; }
 		public static int ExecuteAsyncTimes { get; private set; }
-
+		
 		public static void ResetStats()
 		{
 			ExecuteTimes = 0;
 			ExecuteAsyncTimes = 0;
 		}
 
-		public TestService(IFoo foo)
+		public TestAsyncService(IFoo foo)
 		{
 			this.foo = foo;
 		}
 
-		public object Execute(Test request)
+		public object Execute(TestAsync request)
 		{
-			return new TestResponse { Foo = this.foo, ExecuteTimes = ++ExecuteTimes };
+			return new TestAsyncResponse { Foo = this.foo, ExecuteTimes = ++ExecuteTimes };
 		}
 
-		public TestResponse ExecuteAsync(Test request)
+		public object ExecuteAsync(TestAsync request)
 		{
-			return new TestResponse { Foo = this.foo, ExecuteAsyncTimes = ++ExecuteAsyncTimes };
+			return new TestAsyncResponse { Foo = this.foo, ExecuteAsyncTimes = ++ExecuteAsyncTimes };
 		}
 	}
 }

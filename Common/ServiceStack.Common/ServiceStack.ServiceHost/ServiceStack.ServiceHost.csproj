@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -76,10 +76,16 @@
     <Compile Include="HttpRequestContext.cs" />
     <Compile Include="ServiceController.cs" />
     <Compile Include="ServiceControllerReflection.cs" />
+    <Compile Include="ServiceExec.cs" />
+    <Compile Include="ServiceExecOperations.cs" />
     <Compile Include="ServiceManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ServiceStack.Text\ServiceStack.Text\ServiceStack.Text.csproj">
+      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
+      <Name>ServiceStack.Text</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Funq\Funq.csproj">
       <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
       <Name>Funq</Name>

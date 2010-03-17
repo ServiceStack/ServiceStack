@@ -18,7 +18,7 @@ namespace ServiceStack.ServiceHost
 	/// <typeparam name="T"></typeparam>
 	public interface IAsyncService<T>
 	{
-		void ExecuteAsync(T request);
+		object ExecuteAsync(T request);
 	}
 
 

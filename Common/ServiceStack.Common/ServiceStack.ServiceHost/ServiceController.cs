@@ -38,17 +38,21 @@ namespace ServiceStack.ServiceHost
 
 		public string DefaultOperationsNamespace { get; set; }
 
-		public void Register<TServiceRequest>(Func<IService<TServiceRequest>> invoker)
+		public void Register<TReq>(Func<IService<TReq>> invoker)
 		{
-			var requestType = typeof(TServiceRequest);
-
+			var requestType = typeof(TReq);
 			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) => {
 				var service = invoker();
+
 				InjectRequestContext(service, requestContext);
-				return service.Execute((TServiceRequest)dto);
+
+				return ServiceExec<TReq>.Execute(
+					service, (TReq)dto,
+					requestContext != null ? requestContext.EndpointAttributes : EndpointAttributes.None);
 			};
 
 			requestExecMap.Add(requestType, handlerFn);
+
 		}
 
 		public void Register(ITypeFactory serviceFactoryFn, params Assembly[] assembliesWithServices)
@@ -127,9 +131,14 @@ namespace ServiceStack.ServiceHost
 			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) => {
 				var service = serviceFactoryFn.CreateInstance(serviceType);
 				InjectRequestContext(service, requestContext);
-				return typeFactoryFn(dto, service);
+				
+				var endpointAttrs = requestContext != null
+					? requestContext.EndpointAttributes
+					: EndpointAttributes.None;
+
+				return typeFactoryFn(dto, service, endpointAttrs);
 			};
-			
+
 			try
 			{
 				requestExecMap.Add(requestType, handlerFn);
@@ -137,7 +146,7 @@ namespace ServiceStack.ServiceHost
 			catch (ArgumentException)
 			{
 				throw new AmbiguousMatchException(
-					string.Format("Could not register the service '{0}' as another service with the definition of type 'IService<{1}>' already exists.", 
+					string.Format("Could not register the service '{0}' as another service with the definition of type 'IService<{1}>' already exists.",
 					serviceType.FullName, requestType.Name));
 			}
 
@@ -159,7 +168,8 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		private static Func<object, object, object> CallServiceExecuteGeneric(Type requestType, Type serviceType)
+		private static Func<object, object, EndpointAttributes, object> CallServiceExecuteGeneric(
+			Type requestType, Type serviceType)
 		{
 			var requestDtoParam = Expression.Parameter(typeof(object), "requestDto");
 			var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
@@ -167,12 +177,15 @@ namespace ServiceStack.ServiceHost
 			var serviceParam = Expression.Parameter(typeof(object), "serviceObj");
 			var serviceStrong = Expression.Convert(serviceParam, serviceType);
 
-			var mi = serviceType.GetMethod("Execute", new[] { requestType });
+			var attrsParam = Expression.Parameter(typeof(EndpointAttributes), "attrs");
 
-			Expression callExecute = Expression.Call(serviceStrong, mi, new[] { requestDtoStrong });
+			var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
 
-			var executeFunc = Expression.Lambda<Func<object, object, object>>
-				(callExecute, requestDtoParam, serviceParam).Compile();
+			Expression callExecute = Expression.Call(
+				serviceStrong, mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
+
+			var executeFunc = Expression.Lambda<Func<object, object, EndpointAttributes, object>>
+				(callExecute, requestDtoParam, serviceParam, attrsParam).Compile();
 
 			return executeFunc;
 		}
@@ -223,7 +236,7 @@ namespace ServiceStack.ServiceHost
 			{
 				return;
 			}
-			
+
 			var failedScenarios = new StringBuilder();
 			foreach (var requiredScenario in serviceAttr.RestrictAccessToScenarios)
 			{
@@ -241,7 +254,7 @@ namespace ServiceStack.ServiceHost
 
 			string internalDebugMsg = (EndpointAttributes.InternalNetworkAccess & actualAttributes) != 0
 				? "\n Unauthorized call was made from: " + actualAttributes
-				: "";			
+				: "";
 
 			throw new UnauthorizedAccessException(
 				string.Format("Could not execute service '{0}', The following restrictions were not met: '{1}'" + internalDebugMsg,

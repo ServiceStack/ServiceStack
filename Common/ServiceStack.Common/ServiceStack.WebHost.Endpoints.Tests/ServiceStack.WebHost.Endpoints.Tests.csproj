@@ -90,6 +90,7 @@
     <Compile Include="ServiceHostTestBase.cs" />
     <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
     <Compile Include="Support\Operations\RequestOfComplexTypes.cs" />
+    <Compile Include="Support\Services\TestAsyncService.cs" />
     <Compile Include="Support\Services\InSecureLiveEnvironmentRestriction.cs" />
     <Compile Include="Support\Services\SecureLiveEnvironmentRestriction.cs" />
     <Compile Include="Support\Services\SecureDevEnvironmentRestrictionService.cs" />
