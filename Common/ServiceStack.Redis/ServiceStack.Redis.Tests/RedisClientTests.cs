@@ -58,5 +58,30 @@ namespace ServiceStack.Redis.Tests
 			}
 		}
 
+		[Test]
+		public void GetKeys_returns_matching_collection()
+		{
+			using (var redis = new RedisClient(TestConfig.SingleHost))
+			{
+				redis.Set("a1", "One");
+				redis.Set("a2", "One");
+				redis.Set("b3", "One");
+
+				var matchingKeys = redis.GetKeys("a*");
+
+				Assert.That(matchingKeys.Length, Is.EqualTo(2));
+			}
+		}
+
+		[Test]
+		public void GetKeys_on_non_existent_keys_returns_empty_collection()
+		{
+			using (var redis = new RedisClient(TestConfig.SingleHost))
+			{
+				var matchingKeys = redis.GetKeys("NOTEXISTS");
+
+				Assert.That(matchingKeys.Length, Is.EqualTo(0));
+			}
+		}
 	}
 }

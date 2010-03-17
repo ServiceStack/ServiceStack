@@ -170,7 +170,10 @@ namespace ServiceStack.Redis
 
 		public string[] GetKeys(string pattern)
 		{
-			return Encoding.UTF8.GetString(Keys(pattern)).Split(' ');
+			var spaceDelimitedKeys = Encoding.UTF8.GetString(Keys(pattern));
+			return spaceDelimitedKeys.IsNullOrEmpty() 
+				? new string[0] 
+				: spaceDelimitedKeys.Split(' ');
 		}
 
 		public List<string> GetKeyValues(List<string> keys)
