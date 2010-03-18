@@ -63,11 +63,11 @@ namespace ServiceStack.Redis.Tests
 		{
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				redis.Set("a1", "One");
-				redis.Set("a2", "One");
-				redis.Set("b3", "One");
+				redis.Set("ss-tests:a1", "One");
+				redis.Set("ss-tests:a2", "One");
+				redis.Set("ss-tests:b3", "One");
 
-				var matchingKeys = redis.GetKeys("a*");
+				var matchingKeys = redis.GetKeys("ss-tests:a*");
 
 				Assert.That(matchingKeys.Length, Is.EqualTo(2));
 			}
@@ -78,7 +78,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				var matchingKeys = redis.GetKeys("NOTEXISTS");
+				var matchingKeys = redis.GetKeys("ss-tests:NOTEXISTS");
 
 				Assert.That(matchingKeys.Length, Is.EqualTo(0));
 			}
