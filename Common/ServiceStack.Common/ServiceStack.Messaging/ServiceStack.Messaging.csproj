@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{BC383081-6CF7-4A78-8384-AE7279A9A063}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -71,9 +71,9 @@
   <ItemGroup>
     <Compile Include="IMessageHandler.cs" />
     <Compile Include="IMessageHandlerFactory.cs" />
-    <Compile Include="InMemoryMessageFactory.cs" />
+    <Compile Include="InMemoryTransientMessageFactory.cs" />
     <Compile Include="InMemoryMessageQueueClient.cs" />
-    <Compile Include="InMemoryMessageService.cs" />
+    <Compile Include="InMemoryTransientMessageService.cs" />
     <Compile Include="MessageExtensions.cs" />
     <Compile Include="TransientMessageHandler.cs" />
     <Compile Include="TransientMessageHandlerFactory.cs" />

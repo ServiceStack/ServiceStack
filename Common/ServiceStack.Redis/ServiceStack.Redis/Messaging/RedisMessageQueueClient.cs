@@ -6,10 +6,13 @@ namespace ServiceStack.Redis.Messaging
 	public class RedisMessageQueueClient
 		: IMessageQueueClient
 	{
+		private readonly Action onPublishedCallback;
 		private readonly IRedisClientsManager clientsManager;
 
-		public RedisMessageQueueClient(IRedisClientsManager clientsManager)
+		public RedisMessageQueueClient(
+			IRedisClientsManager clientsManager, Action onPublishedCallback)
 		{
+			this.onPublishedCallback = onPublishedCallback;
 			this.clientsManager = clientsManager;
 		}
 
@@ -53,6 +56,11 @@ namespace ServiceStack.Redis.Messaging
 		public void Publish(string queueName, byte[] messageBytes)
 		{
 			this.ReadWriteClient.LPush(queueName, messageBytes);
+			
+			if (onPublishedCallback != null)
+			{
+				onPublishedCallback();
+			}
 		}
 
 		public void Notify(string queueName, byte[] messageBytes)

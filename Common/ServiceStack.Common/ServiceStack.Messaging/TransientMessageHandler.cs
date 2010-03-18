@@ -45,9 +45,11 @@ namespace ServiceStack.Messaging
 		{
 			try
 			{
-				var hadReceivedMessages = false;
+				bool hadReceivedMessages;
 				do
 				{
+					hadReceivedMessages = false;
+
 					byte[] messageBytes;
 					while ((messageBytes = mqClient.GetAsync(QueueNames<T>.Priority)) != null)
 					{

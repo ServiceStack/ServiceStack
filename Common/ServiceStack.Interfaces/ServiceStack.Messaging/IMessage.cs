@@ -3,7 +3,7 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Messaging
 {
-	public interface IMessage<T>
+	public interface IMessage
 		: IHasId<Guid>
 	{
 		DateTime CreatedDate { get; }
@@ -15,7 +15,11 @@ namespace ServiceStack.Messaging
 		string ReplyTo { get; set; }
 
 		MessageError Error { get; }
+	}
 
+	public interface IMessage<T>
+		: IMessage
+	{
 		T Body { get; }
 	}
 }

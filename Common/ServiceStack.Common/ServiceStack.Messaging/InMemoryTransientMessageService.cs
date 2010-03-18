@@ -3,17 +3,17 @@ using System.Collections;
 
 namespace ServiceStack.Messaging
 {
-	public class InMemoryMessageService
+	public class InMemoryTransientMessageService
 		: TransientMessageServiceBase
 	{
 		internal MessageQueueClientFactory Factory { get; set; }
 
-		public InMemoryMessageService()
+		public InMemoryTransientMessageService()
 			: this(null)
 		{
 		}
 
-		public InMemoryMessageService(MessageQueueClientFactory factory)
+		public InMemoryTransientMessageService(MessageQueueClientFactory factory)
 		{
 			this.Factory = factory ?? new MessageQueueClientFactory();
 			this.Factory.MessageReceived += factory_MessageReceived;

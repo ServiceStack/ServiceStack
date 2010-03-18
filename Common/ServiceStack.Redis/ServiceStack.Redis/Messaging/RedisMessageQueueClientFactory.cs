@@ -6,16 +6,20 @@ namespace ServiceStack.Redis.Messaging
 	public class RedisMessageQueueClientFactory
 		: IMessageQueueClientFactory
 	{
-		private readonly IRedisClientsManager manager;
+		private readonly Action onPublishedCallback;
+		private readonly IRedisClientsManager clientsManager;
 
-		public RedisMessageQueueClientFactory(IRedisClientsManager manager)
+		public RedisMessageQueueClientFactory(
+			IRedisClientsManager clientsManager, Action onPublishedCallback)
 		{
-			this.manager = manager;
+			this.onPublishedCallback = onPublishedCallback;
+			this.clientsManager = clientsManager;
 		}
 
 		public IMessageQueueClient CreateMessageQueueClient()
 		{
-			return new RedisMessageQueueClient(this.manager);
+			return new RedisMessageQueueClient(
+				this.clientsManager, this.onPublishedCallback);
 		}
 
 		public void Dispose()

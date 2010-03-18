@@ -2,15 +2,15 @@ using System;
 
 namespace ServiceStack.Messaging.Tests
 {
-	public class InMemoryMessagingHostTests
+	public class InMemoryTransientMessagingHostTests
 		: TransientServiceMessagingTests
 	{
-		InMemoryMessageService messageService;
+		InMemoryTransientMessageService messageService;
 
 		protected override IMessageFactory CreateMessageFactory()
 		{
-			messageService = new InMemoryMessageService();
-			return new InMemoryMessageFactory(messageService);
+			messageService = new InMemoryTransientMessageService();
+			return new InMemoryTransientMessageFactory(messageService);
 		}
 
 		protected override TransientMessageServiceBase CreateMessagingService()
@@ -18,5 +18,4 @@ namespace ServiceStack.Messaging.Tests
 			return messageService;
 		}
 	}
-
 }
