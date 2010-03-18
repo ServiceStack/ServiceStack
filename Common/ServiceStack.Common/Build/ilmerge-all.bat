@@ -23,7 +23,6 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceHost\bin\%BUILD%\ServiceStack.S
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceClient.Web\bin\%BUILD%\ServiceStack.ServiceClient.Web.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.CacheAccess.Providers\bin\%BUILD%\ServiceStack.CacheAccess.Providers.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Compression\bin\%BUILD%\ServiceStack.Compression.dll
-SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Text\bin\%BUILD%\ServiceStack.Text.dll
 
 REM External ServiceStack components
 SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\bin\%BUILD%\ServiceStack.OrmLite.dll
@@ -31,6 +30,7 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.OrmLite\ServiceStack.OrmLite.Sqlite
 SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.OrmLite\ServiceStack.OrmLite.SqlServer\bin\%BUILD%\ServiceStack.OrmLite.SqlServer.dll
 
 SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.Redis\ServiceStack.Redis\bin\%BUILD%\ServiceStack.Redis.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\..\ServiceStack.Text\ServiceStack.Text\bin\%BUILD%\ServiceStack.Text.dll
 
 
 %ILMERGE_UTIL% /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
