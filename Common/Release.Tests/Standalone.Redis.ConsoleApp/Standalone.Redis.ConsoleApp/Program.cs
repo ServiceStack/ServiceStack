@@ -10,7 +10,7 @@ namespace Standalone.Redis.ConsoleApp
 	{
 		static void Main(string[] args)
 		{
-			using (var redisClient = new RedisClient("chi-dev-mem1"))
+			using (var redisClient = new RedisClient("localhost"))
 			{
 				redisClient.Set("release-test", "works");
 				var result = redisClient.Get<string>("release-test");
