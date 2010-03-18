@@ -45,6 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IAsyncService.cs" />
+    <Compile Include="IRestDeleteService.cs" />
+    <Compile Include="IRestGetService.cs" />
+    <Compile Include="IRestPostService.cs" />
+    <Compile Include="IRestPutService.cs" />
+    <Compile Include="IRestService.cs" />
     <Compile Include="ServiceAttribute.cs" />
     <Compile Include="EndpointAttributes.cs" />
     <Compile Include="IRequestContext.cs" />
