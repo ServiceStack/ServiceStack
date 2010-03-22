@@ -45,7 +45,7 @@ namespace ServiceStack.Redis
 			List<string> pageResults;
 			do
 			{
-				pageResults = client.GetRangeFromSortedSet(setId, skip, PageLimit);
+				pageResults = client.GetSortedRange(setId, skip, PageLimit);
 				foreach (var result in pageResults)
 				{
 					yield return result;
@@ -103,7 +103,7 @@ namespace ServiceStack.Redis
 
 		public List<string> GetRangeFromSortedSet(int startingFrom, int endingAt)
 		{
-			return client.GetRangeFromSortedSet(setId, startingFrom, endingAt);
+			return client.GetSortedRange(setId, startingFrom, endingAt);
 		}
 
 		public HashSet<string> GetAll()

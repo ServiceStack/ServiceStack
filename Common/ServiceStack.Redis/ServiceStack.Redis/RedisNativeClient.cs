@@ -348,6 +348,14 @@ namespace ServiceStack.Redis
 			return ReadInt();
 		}
 
+		protected double SendExpectDouble(string cmd, params object[] args)
+		{
+			if (!SendCommand(cmd, args))
+				throw CreateConnectionError();
+
+			return ReadDouble();
+		}
+
 		protected byte[] SendExpectData(byte[] data, string cmd, params object[] args)
 		{
 			if (!SendDataCommand(data, cmd, args))
@@ -363,19 +371,41 @@ namespace ServiceStack.Redis
 				throw CreateResponseError("No more data");
 
 			var s = ReadLine();
-			
+
 			Log("R: " + s);
-			
+
 			if (c == '-')
 				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
-			
+
 			if (c == ':')
 			{
 				int i;
 				if (int.TryParse(s, out i))
 					return i;
 			}
-			throw CreateResponseError("Unknown reply on integer request: " + c + s);
+			throw CreateResponseError("Unknown reply on double integer response: " + c + s);
+		}
+
+		private double ReadDouble()
+		{
+			int c = SafeReadByte();
+			if (c == -1)
+				throw CreateResponseError("No more data");
+
+			var s = ReadLine();
+
+			Log("R: " + s);
+
+			if (c == '-')
+				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+
+			if (c == ':')
+			{
+				double i;
+				if (double.TryParse(s, out i))
+					return i;
+			}
+			throw CreateResponseError("Unknown reply on expected double response: " + c + s);
 		}
 
 		private byte[] ReadData()
@@ -1010,8 +1040,288 @@ namespace ServiceStack.Redis
 
 			return ReadData();
 		}
+
 		#endregion
 
+		#region Sorted Set Operations
+
+		private static void AssertSetIdAndValue(string setId, byte[] value)
+		{
+			if (setId == null)
+				throw new ArgumentNullException("setId");
+			if (value == null)
+				throw new ArgumentNullException("value");
+		}
+
+		public int ZAdd(string setId, double score, byte[] value)
+		{
+			AssertSetIdAndValue(setId, value);
+
+			if (!SendDataCommand(value, "ZADD {0} {1} {2}\r\n", 
+				SafeKey(setId), score, value.Length))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public int ZRem(string setId, byte[] value)
+		{
+			AssertSetIdAndValue(setId, value);
+
+			if (!SendDataCommand(value, "ZREM {0} {1}\r\n", SafeKey(setId), value.Length))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public double ZIncrBy(string setId, double incrBy, byte[] value)
+		{
+			AssertSetIdAndValue(setId, value);
+
+			if (!SendDataCommand(value, "ZADD {0} {1} {2}\r\n",
+				SafeKey(setId), incrBy, value.Length))
+				throw CreateConnectionError();
+
+			return ReadDouble();
+		}
+
+		public int ZRank(string setId, byte[] value)
+		{
+			AssertSetIdAndValue(setId, value);
+
+			if (!SendDataCommand(value, "ZRANK {0} {1}\r\n", SafeKey(setId), value.Length))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public int ZRevRank(string setId, byte[] value)
+		{
+			AssertSetIdAndValue(setId, value);
+
+			if (!SendDataCommand(value, "ZRANK {0} {1}\r\n", SafeKey(setId), value.Length))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		private byte[][] GetRange(string commandText, string setId, int min, int max, bool withScores)
+		{
+			if (string.IsNullOrEmpty(setId))
+				throw new ArgumentNullException("setId");
+
+			var withScoresString = withScores ? " WITHSCORES" : "";
+			if (!SendDataCommand(null, "{0} {1} {2} {3}{4}\r\n",
+				commandText, SafeKey(setId), min, max, withScoresString))
+				throw CreateConnectionError();
+
+			return ReadMultiData();
+		}
+
+		public byte[][] ZRange(string setId, int min, int max)
+		{
+			return GetRange("ZRANGE", setId, min, max, false);
+		}
+
+		public byte[][] ZRangeWithScores(string setId, int min, int max)
+		{
+			return GetRange("ZRANGE", setId, min, max, true);
+		}
+
+		public byte[][] ZRevRange(string setId, int min, int max)
+		{
+			return GetRange("ZREVRANGE", setId, min, max, false);
+		}
+
+		public byte[][] ZRevRangeWithScores(string setId, int min, int max)
+		{
+			return GetRange("ZREVRANGE", setId, min, max, true);
+		}
+
+		private byte[][] GetRangeByScore(string commandText,
+			string setId, double min, double max, int? skip, int? take, bool withScores)
+		{
+			if (setId == null)
+				throw new ArgumentNullException("setId");
+
+			var limitString = skip.HasValue || take.HasValue
+				? " LIMIT " + skip.GetValueOrDefault(0) + " " + take.GetValueOrDefault(0)
+				: "";
+
+			var withScoresString = withScores ? " WITHSCORES" : "";
+
+			if (!SendDataCommand(null, "{0} {1} {2} {3}{4}{5}\r\n",
+								 commandText, SafeKey(setId), min, max, 
+								 limitString, withScoresString))
+				throw CreateConnectionError();
+
+			return ReadMultiData();
+		}
+
+		public byte[][] ZRangeByScore(string setId, double min, double max, int? skip, int? take)
+		{
+			return GetRangeByScore("ZRANGEBYSCORE", setId, min, max, skip, take, false);
+		}
+
+		public byte[][] ZRangeByScoreWithScores(string setId, double min, double max, int? skip, int? take)
+		{
+			return GetRangeByScore("ZRANGEBYSCORE", setId, min, max, skip, take, true);
+		}
+
+		public byte[][] ZRevRangeByScore(string setId, double min, double max, int? skip, int? take)
+		{
+			return GetRangeByScore("ZREVRANGEBYSCORE", setId, min, max, skip, take, false);
+		}
+
+		public byte[][] ZRevRangeByScoreWithScores(string setId, double min, double max, int? skip, int? take)
+		{
+			return GetRangeByScore("ZREVRANGEBYSCORE", setId, min, max, skip, take, true);
+		}
+
+		public int ZRemRangeByRank(string setId, int min, int max)
+		{
+			if (setId == null)
+				throw new ArgumentNullException("setId");
+
+			if (!SendDataCommand(null, "ZREMRANGEBYRANK {0} {1} {2}\r\n", 
+				SafeKey(setId), min, max))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public int ZCard(string setId)
+		{
+			if (setId == null)
+				throw new ArgumentNullException("setId");
+
+			return SendExpectInt("ZCARD {0}\r\n", SafeKey(setId));
+		}
+
+		public double ZScore(string setId, byte[] value)
+		{
+			if (setId == null)
+				throw new ArgumentNullException("setId");
+
+			return SendExpectDouble("ZSCORE {0}\r\n", SafeKey(setId));
+		}
+
+		public int ZUnion(string intoSetId, params string[] setIds)
+		{
+			if (!SendDataCommand(null, "ZUNION {0} {1}\r\n", 
+				SafeKey(intoSetId), SafeKeys(setIds)))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public int ZInter(string intoSetId, params string[] setIds)
+		{
+			if (!SendDataCommand(null, "ZINTER {0} {1}\r\n",
+				SafeKey(intoSetId), SafeKeys(setIds)))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		#endregion
+
+		#region Hash Operations
+
+		private static void AssertHashIdAndKey(string hashId, string key)
+		{
+			if (hashId == null)
+				throw new ArgumentNullException("hashId");
+			if (key == null)
+				throw new ArgumentNullException("key");
+		}
+
+		public int HSet(string hashId, string key, byte[] value)
+		{
+			AssertHashIdAndKey(hashId, key);
+
+			if (!SendDataCommand(value, "HSET {0} {1} {2}\r\n",
+				SafeKey(hashId), SafeKeys(key), value.Length))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public byte[] HGet(string hashId, string key)
+		{
+			AssertHashIdAndKey(hashId, key);
+
+			if (!SendDataCommand(null, "HGET {0} {1}\r\n",
+				SafeKey(hashId), SafeKeys(key)))
+				throw CreateConnectionError();
+
+			return ReadData();
+		}
+
+		public int HDel(string hashId, string key)
+		{
+			AssertHashIdAndKey(hashId, key);
+
+			if (!SendDataCommand(null, "HDEL {0} {1}\r\n",
+				SafeKey(hashId), SafeKeys(key)))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public bool HExists(string hashId, string key)
+		{
+			AssertHashIdAndKey(hashId, key);
+
+			if (!SendDataCommand(null, "HDEL {0} {1}\r\n",
+				SafeKey(hashId), SafeKeys(key)))
+				throw CreateConnectionError();
+
+			return ReadInt() == Success;
+		}
+
+		public int HLen(string hashId)
+		{
+			if (string.IsNullOrEmpty(hashId))
+				throw new ArgumentNullException("hashId");
+
+			return SendExpectInt("HLEN {0}\r\n", SafeKey(hashId));
+		}
+
+		public byte[][] HKeys(string hashId)
+		{
+			if (hashId == null)
+				throw new ArgumentNullException("hashId");
+
+			if (!SendDataCommand(null, "HKEYS {0}\r\n", SafeKeys(hashId)))
+				throw CreateConnectionError();
+
+			return ReadMultiData();
+		}
+
+		public byte[][] HValues(string hashId)
+		{
+			if (hashId == null)
+				throw new ArgumentNullException("hashId");
+
+			if (!SendDataCommand(null, "HVALUES {0}\r\n", SafeKeys(hashId)))
+				throw CreateConnectionError();
+
+			return ReadMultiData();
+		}
+
+		public byte[][] HGetAll(string hashId)
+		{
+			if (hashId == null)
+				throw new ArgumentNullException("hashId");
+
+			if (!SendDataCommand(null, "HGETALL {0}\r\n", SafeKeys(hashId)))
+				throw CreateConnectionError();
+
+			return ReadMultiData();
+		}
+
+		#endregion
 
 		public void Dispose()
 		{

@@ -18,6 +18,7 @@ using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Generic;
+using ServiceStack.Redis.Support;
 using ServiceStack.Text;
 
 namespace ServiceStack.Redis
@@ -37,7 +38,8 @@ namespace ServiceStack.Redis
 			Init();
 		}
 
-		public RedisClient(string host) : base(host)
+		public RedisClient(string host)
+			: base(host)
 		{
 			Init();
 		}
@@ -77,14 +79,14 @@ namespace ServiceStack.Redis
 		{
 			get
 			{
-				return Encoding.UTF8.GetString(Keys("*")).Split(' ');
+				return ToString(Keys("*")).Split(' ');
 			}
 		}
 
 		public void SetString(string key, string value)
 		{
 			var bytesValue = value != null
-				? Encoding.UTF8.GetBytes(value)
+				? ToBytes(value)
 				: null;
 
 			Set(key, bytesValue);
@@ -95,7 +97,7 @@ namespace ServiceStack.Redis
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			return SetNX(key, Encoding.UTF8.GetBytes(value)) == Success;
+			return SetNX(key, ToBytes(value)) == Success;
 		}
 
 		public string GetString(string key)
@@ -103,12 +105,12 @@ namespace ServiceStack.Redis
 			var bytes = Get(key);
 			return bytes == null
 				? null
-				: Encoding.UTF8.GetString(bytes);
+				: ToString(bytes);
 		}
 
 		public string GetAndSetString(string key, string value)
 		{
-			return Encoding.UTF8.GetString(GetSet(key, Encoding.UTF8.GetBytes(value)));
+			return ToString(GetSet(key, ToBytes(value)));
 		}
 
 		public bool ContainsKey(string key)
@@ -170,9 +172,9 @@ namespace ServiceStack.Redis
 
 		public string[] GetKeys(string pattern)
 		{
-			var spaceDelimitedKeys = Encoding.UTF8.GetString(Keys(pattern));
-			return spaceDelimitedKeys.IsNullOrEmpty() 
-				? new string[0] 
+			var spaceDelimitedKeys = ToString(Keys(pattern));
+			return spaceDelimitedKeys.IsNullOrEmpty()
+				? new string[0]
 				: spaceDelimitedKeys.Split(' ');
 		}
 
@@ -185,7 +187,7 @@ namespace ServiceStack.Redis
 			{
 				if (resultBytes == null) continue;
 
-				var resultString = Encoding.UTF8.GetString(resultBytes);
+				var resultString = ToString(resultBytes);
 				results.Add(resultString);
 			}
 
@@ -204,7 +206,7 @@ namespace ServiceStack.Redis
 			{
 				if (resultBytes == null) continue;
 
-				var resultString = Encoding.UTF8.GetString(resultBytes);
+				var resultString = ToString(resultBytes);
 				var result = TypeSerializer.DeserializeFromString<T>(resultString);
 				results.Add(result);
 			}
@@ -249,12 +251,12 @@ namespace ServiceStack.Redis
 			var results = new HashSet<string>();
 			foreach (var multiData in multiDataList)
 			{
-				results.Add(Encoding.UTF8.GetString(multiData));
+				results.Add(ToString(multiData));
 			}
 			return results;
 		}
 
-		public List<string> GetRangeFromSortedSet(string setId, int startingFrom, int endingAt)
+		public List<string> GetSortedRange(string setId, int startingFrom, int endingAt)
 		{
 			var multiDataList = Sort(setId, startingFrom, endingAt, true, false);
 			return CreateList(multiDataList);
@@ -268,22 +270,22 @@ namespace ServiceStack.Redis
 
 		public void AddToSet(string setId, string value)
 		{
-			SAdd(setId, Encoding.UTF8.GetBytes(value));
+			SAdd(setId, ToBytes(value));
 		}
 
 		public void RemoveFromSet(string setId, string value)
 		{
-			SRem(setId, Encoding.UTF8.GetBytes(value));
+			SRem(setId, ToBytes(value));
 		}
 
 		public string PopFromSet(string setId)
 		{
-			return Encoding.UTF8.GetString(SPop(setId));
+			return ToString(SPop(setId));
 		}
 
 		public void MoveBetweenSets(string fromSetId, string toSetId, string value)
 		{
-			SMove(fromSetId, toSetId, Encoding.UTF8.GetBytes(value));
+			SMove(fromSetId, toSetId, ToBytes(value));
 		}
 
 		public int GetSetCount(string setId)
@@ -293,7 +295,7 @@ namespace ServiceStack.Redis
 
 		public bool SetContainsValue(string setId, string value)
 		{
-			return SIsMember(setId, Encoding.UTF8.GetBytes(value)) == 1;
+			return SIsMember(setId, ToBytes(value)) == 1;
 		}
 
 		public HashSet<string> GetIntersectFromSets(params string[] setIds)
@@ -346,7 +348,7 @@ namespace ServiceStack.Redis
 
 		public string GetRandomEntryFromSet(string setId)
 		{
-			return Encoding.UTF8.GetString(SRandMember(setId));
+			return ToString(SRandMember(setId));
 		}
 
 		#endregion
@@ -394,7 +396,7 @@ namespace ServiceStack.Redis
 			var results = new List<string>();
 			foreach (var multiData in multiDataList)
 			{
-				results.Add(Encoding.UTF8.GetString(multiData));
+				results.Add(ToString(multiData));
 			}
 			return results;
 		}
@@ -419,12 +421,12 @@ namespace ServiceStack.Redis
 
 		public void AddToList(string listId, string value)
 		{
-			RPush(listId, Encoding.UTF8.GetBytes(value));
+			RPush(listId, ToBytes(value));
 		}
 
 		public void PrependToList(string listId, string value)
 		{
-			LPush(listId, Encoding.UTF8.GetBytes(value));
+			LPush(listId, ToBytes(value));
 		}
 
 		public void RemoveAllFromList(string listId)
@@ -439,12 +441,12 @@ namespace ServiceStack.Redis
 
 		public int RemoveValueFromList(string listId, string value)
 		{
-			return LRem(listId, 0, Encoding.UTF8.GetBytes(value));
+			return LRem(listId, 0, ToBytes(value));
 		}
 
 		public int RemoveValueFromList(string listId, string value, int noOfMatches)
 		{
-			return LRem(listId, noOfMatches, Encoding.UTF8.GetBytes(value));
+			return LRem(listId, noOfMatches, ToBytes(value));
 		}
 
 		public int GetListCount(string listId)
@@ -454,27 +456,256 @@ namespace ServiceStack.Redis
 
 		public string GetItemFromList(string listId, int listIndex)
 		{
-			return Encoding.UTF8.GetString(LIndex(listId, listIndex));
+			return ToString(LIndex(listId, listIndex));
 		}
 
 		public void SetItemInList(string listId, int listIndex, string value)
 		{
-			LSet(listId, listIndex, Encoding.UTF8.GetBytes(value));
+			LSet(listId, listIndex, ToBytes(value));
 		}
 
 		public string DequeueFromList(string listId)
 		{
-			return Encoding.UTF8.GetString(LPop(listId));
+			return ToString(LPop(listId));
 		}
 
 		public string PopFromList(string listId)
 		{
-			return Encoding.UTF8.GetString(RPop(listId));
+			return ToString(RPop(listId));
 		}
 
 		public string PopAndPushBetweenLists(string fromListId, string toListId)
 		{
-			return Encoding.UTF8.GetString(RPopLPush(fromListId, toListId));
+			return ToString(RPopLPush(fromListId, toListId));
+		}
+
+
+		private static double GetLexicalScore(string value)
+		{
+			if (string.IsNullOrEmpty(value))
+				return 0;
+
+			var lexicalValue = 0;
+			if (value.Length >= 1)
+				lexicalValue += value[0] * (int)Math.Pow(256, 3);
+
+			if (value.Length >= 2)
+				lexicalValue += value[1] * (int)Math.Pow(256, 2);
+
+			if (value.Length >= 3)
+				lexicalValue += value[2] * (int)Math.Pow(256, 1);
+
+			if (value.Length >= 4)
+				lexicalValue += value[3];
+
+			return lexicalValue;
+		}
+
+		public bool AddToSortedSet(string setId, string value)
+		{
+			return AddToSortedSet(setId, value, GetLexicalScore(value));
+		}
+
+		public bool AddToSortedSet(string setId, string value, double score)
+		{
+			return base.ZAdd(setId, score, ToBytes(value)) == Success;
+		}
+
+		public double RemoveFromSortedSet(string setId, string value)
+		{
+			return base.ZRem(setId, ToBytes(value));
+		}
+
+		public string PopFromSortedSet(string setId)
+		{
+			//TODO: this should be atomic
+			var topScoreItemBytes = base.ZRevRange(setId, FirstElement, 1);
+			if (topScoreItemBytes.Length == 0) return null;
+
+			base.ZRem(setId, topScoreItemBytes[0]);
+			return ToString(topScoreItemBytes[0]);
+		}
+
+		public bool SortedSetContainsValue(string setId, string value)
+		{
+			return base.ZRank(setId, ToBytes(value)) != -1;
+		}
+
+		public double IncrementItemInSortedSet(string setId, double incrementBy, string value)
+		{
+			return base.ZIncrBy(setId, incrementBy, ToBytes(value));
+		}
+
+		public int GetItemRankInSortedSet(string setId, string value)
+		{
+			return base.ZRank(setId, ToBytes(value));
+		}
+
+		public int GetItemRankInSortedSetDesc(string setId, string value)
+		{
+			return base.ZRevRank(setId, ToBytes(value));
+		}
+
+		public List<string> GetAllFromSortedSet(string setId)
+		{
+			var multiDataList = base.ZRange(setId, FirstElement, LastElement);
+			return CreateList(multiDataList);
+		}
+
+		public List<string> GetAllFromSortedSetDesc(string setId)
+		{
+			var multiDataList = base.ZRevRange(setId, FirstElement, LastElement);
+			return CreateList(multiDataList);
+		}
+
+		public List<string> GetRangeFromSortedSet(string setId, int startingFrom, int endingAt)
+		{
+			var multiDataList = base.ZRange(setId, startingFrom, endingAt);
+			return CreateList(multiDataList);
+		}
+
+		public IDictionary<string, double> GetRangeFromSortedSetWithScores(string setId, int startingFrom, int endingAt)
+		{
+			var multiDataList = base.ZRangeWithScores(setId, startingFrom, endingAt);
+			return CreateSortedScoreMap(multiDataList);
+			
+		}
+
+		public List<string> GetRangeFromSortedSetDesc(string setId, int startingFrom, int endingAt)
+		{
+			var multiDataList = base.ZRange(setId, startingFrom, endingAt);
+			return CreateList(multiDataList);
+		}
+
+		public IDictionary<string, double> GetRangeFromSortedSetWithScoresDesc(string setId, int startingFrom, int endingAt)
+		{
+			var multiDataList = base.ZRevRangeWithScores(setId, startingFrom, endingAt);
+			return CreateSortedScoreMap(multiDataList);
+		}
+
+		public List<string> GetRangeFromSortedSetByScore(string setId, double startingFrom, double endingAt, int? skip, int? take)
+		{
+			var multiDataList = base.ZRangeByScore(setId, startingFrom, endingAt, skip, take);
+			return CreateList(multiDataList);
+		}
+
+		private static IDictionary<string, double> CreateSortedScoreMap(byte[][] multiDataList)
+		{
+			var map = new OrderedDictionary<string, double>();
+
+			for (var i = 0; i < multiDataList.Length; i += 2)
+			{
+				var key = ToString(multiDataList[i]);
+				double value;
+				double.TryParse(ToString(multiDataList[i + 1]), out value);
+				map[key] = value;
+			}
+
+			return map;
+		}
+
+		public IDictionary<string, double> GetRangeFromSortedSetByScoreWithScores(string setId, double fromScore, double toScore, int? skip, int? take)
+		{
+			var multiDataList = base.ZRangeByScoreWithScores(setId, fromScore, toScore, skip, take);
+			return CreateSortedScoreMap(multiDataList);
+		}
+
+		public List<string> GetRangeFromSortedSetByScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take)
+		{
+			var fromScore = GetLexicalScore(fromStringScore);
+			var toScore = GetLexicalScore(toStringScore);
+			return GetRangeFromSortedSetByScore(setId, fromScore, toScore, skip, take);
+		}
+
+		public IDictionary<string, double> GetRangeFromSortedSetByScoreWithScores(string setId, string fromStringScore, string toStringScore, int? skip, int? take)
+		{
+			var fromScore = GetLexicalScore(fromStringScore);
+			var toScore = GetLexicalScore(toStringScore);
+			return GetRangeFromSortedSetByScoreWithScores(setId, fromScore, toScore, skip, take);
+		}
+
+		public List<string> GetRangeFromSortedSetByScoreDesc(string setId, double fromScore, double toScore, int? skip, int? take)
+		{
+			var multiDataList = base.ZRevRangeByScore(setId, fromScore, toScore, skip, take);
+			return CreateList(multiDataList);
+		}
+
+		public IDictionary<string, double> GetRangeFromSortedSetByScoreWithScoresDesc(string setId, double fromScore, double toScore, int? skip, int? take)
+		{
+			var multiDataList = base.ZRevRangeByScoreWithScores(setId, fromScore, toScore, skip, take);
+			return CreateSortedScoreMap(multiDataList);
+		}
+
+		public int RemoveRangeFromSortedSetByRank(string setId, int minRank, int maxRank)
+		{
+			return base.ZRemRangeByRank(setId, maxRank, maxRank);
+		}
+
+		public int GetSortedSetCount(string setId)
+		{
+			return base.ZCard(setId);
+		}
+
+		public double GetItemScoreInSortedSet(string setId, string value)
+		{
+			return base.ZScore(setId, ToBytes(value));
+		}
+
+		public int StoreIntersectFromSortedSets(string intoSetId, params string[] setIds)
+		{
+			return base.ZInter(intoSetId, setIds);
+		}
+
+		public int StoreUnionFromSortedSets(string intoSetId, params string[] setIds)
+		{
+			return base.ZUnion(intoSetId, setIds);
+		}
+
+
+		public bool SetItemInHash(string hashId, string key, string value)
+		{
+			return base.HSet(hashId, key, ToBytes(value)) == Success;
+		}
+
+		public string GetItemFromHash(string hashId, string key)
+		{
+			return ToString(base.HGet(hashId, key));
+		}
+
+		public bool DeleteItemInHash(string hashId, string key)
+		{
+			return base.HDel(hashId, key) == Success;
+		}
+
+		public int GetHashCount(string hashId)
+		{
+			return base.HLen(hashId);
+		}
+
+		public List<string> GetHashKeys(string hashId)
+		{
+			var multiDataList = base.HKeys(hashId);
+			return CreateList(multiDataList);
+		}
+
+		public List<string> GetHashValues(string hashId)
+		{
+			var multiDataList = base.HValues(hashId);
+			return CreateList(multiDataList);
+		}
+
+		public Dictionary<string, string> GetAllFromHash(string hashId)
+		{
+			var multiDataList = base.HGetAll(hashId);
+			var map = new Dictionary<string, string>();
+
+			for (var i = 0; i < multiDataList.Length; i += 2)
+			{
+				var key = ToString(multiDataList[i]);
+				map[key] = ToString(multiDataList[i + 1]);
+			}
+
+			return map;
 		}
 
 		#endregion
@@ -582,5 +813,15 @@ namespace ServiceStack.Redis
 
 		#endregion
 
+
+		public static string ToString(byte[] bytes)
+		{
+			return Encoding.UTF8.GetString(bytes);
+		}
+
+		public static byte[] ToBytes(string value)
+		{
+			return Encoding.UTF8.GetBytes(value);
+		}
 	}
 }

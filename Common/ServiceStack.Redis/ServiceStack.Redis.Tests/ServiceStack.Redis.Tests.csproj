@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdhocClientTests.cs" />
+    <Compile Include="RedisClientSortedSetTests.cs" />
     <Compile Include="Generic\RedisClientSetTestsModels.cs" />
     <Compile Include="Generic\RedisClientListTestsBase.cs" />
     <Compile Include="Generic\RedisClientListTestsModels.cs" />
