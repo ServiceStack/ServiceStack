@@ -170,7 +170,6 @@ namespace ServiceStack.OrmLite
 				}
 				throw;
 			}
-
 		}
 
 		private static void ExecuteSql(this IDbCommand dbCommand, string sql)

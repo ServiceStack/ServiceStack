@@ -62,6 +62,7 @@ namespace ServiceStack.Redis
 		void Shutdown();
 		void FlushDb();
 
+		IRedisAtomicCommand CreateAtomicCommand();
 
 		#region List operations
 
@@ -151,5 +152,4 @@ namespace ServiceStack.Redis
 		
 		#endregion
 	}
-
 }

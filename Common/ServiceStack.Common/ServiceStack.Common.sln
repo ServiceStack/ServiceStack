@@ -72,6 +72,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text", "..\Ser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.Tests", "..\ServiceStack.Text\ServiceStack.Text.Tests\ServiceStack.Text.Tests.csproj", "{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.Tests", "..\ServiceStack.OrmLite\ServiceStack.OrmLite.Tests\ServiceStack.OrmLite.Tests.csproj", "{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -254,6 +256,14 @@ Global
 		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
 		{9770BD40-AA3B-4785-B5E0-F4C470F9F14E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{9B64F4A7-C008-46A8-AD6F-99626DCFEFBD}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -71,9 +71,14 @@ namespace ServiceStack.OrmLite
 		 */
 		#endregion
 
+		public string StringLengthNonUnicodeColumnDefinitionFormat = "VARCHAR({0})";
+		public string StringLengthUnicodeColumnDefinitionFormat = "NVARCHAR({0})";
+
+		//Set by Constructor and UpdateStringColumnDefinitions()
+		public string StringColumnDefinition;
+		public string StringLengthColumnDefinitionFormat;
+
 		public string AutoIncrementDefinition = "AUTOINCREMENT"; //SqlServer express limit
-		public string StringColumnDefinition = "VARCHAR(8000)"; //SqlServer express limit
-		public string StringLengthColumnDefinitionFormat = "VARCHAR({0})";
 		public string IntColumnDefinition = "INTEGER";
 		public string LongColumnDefinition = "BIGINT";
 		public string GuidColumnDefinition = "GUID";
@@ -85,23 +90,48 @@ namespace ServiceStack.OrmLite
 
 		protected Dictionary<Type, string> ColumnTypeMap;
 
-		public virtual bool UseUnicode
-		{
-			set
-			{
-				this.StringColumnDefinition = value
-					? "NVARCHAR(8000)"
-					: "VARCHAR(8000)";
-
-				this.StringLengthColumnDefinitionFormat = value
-					? "NVARCHAR({0})"
-					: "VARCHAR({0})";
-			}
-		}
-
 		protected OrmLiteDialectProviderBase()
 		{
 			InitColumnTypeMap();
+			UpdateStringColumnDefinitions();
+		}
+
+		private int defaultStringLength = 8000; //SqlServer express limit
+		public int DefaultStringLength
+		{
+			get
+			{
+				return defaultStringLength;
+			}
+			set
+			{
+				defaultStringLength = value;
+				UpdateStringColumnDefinitions();
+			}
+		}
+
+		private bool useUnicode;
+		public virtual bool UseUnicode
+		{
+			get
+			{
+				return useUnicode;
+			}
+			set
+			{
+				useUnicode = value;
+				UpdateStringColumnDefinitions();
+			}
+		}
+
+		private void UpdateStringColumnDefinitions()
+		{
+			this.StringLengthColumnDefinitionFormat = useUnicode
+				? StringLengthUnicodeColumnDefinitionFormat
+      			: StringLengthNonUnicodeColumnDefinitionFormat;
+
+			this.StringColumnDefinition = string.Format(
+				this.StringLengthColumnDefinitionFormat, DefaultStringLength);
 		}
 
 		protected void InitColumnTypeMap()
@@ -208,9 +238,9 @@ namespace ServiceStack.OrmLite
 		{
 			string fieldDefinition;
 
-			if (fieldType == typeof(string) && fieldLength.HasValue)
+			if (fieldType == typeof(string))
 			{
-				fieldDefinition = string.Format(StringLengthColumnDefinitionFormat, fieldLength.Value);
+				fieldDefinition = string.Format(StringLengthColumnDefinitionFormat, fieldLength.GetValueOrDefault(DefaultStringLength));
 			}
 			else
 			{

@@ -11,7 +11,7 @@ namespace ServiceStack.OrmLite.Sqlite
 	public class SqliteOrmLiteDialectProvider 
 		: OrmLiteDialectProviderBase
 	{
-		public static IOrmLiteDialectProvider Instance = new SqliteOrmLiteDialectProvider();
+		public static SqliteOrmLiteDialectProvider Instance = new SqliteOrmLiteDialectProvider();
 
 		public SqliteOrmLiteDialectProvider()
 		{

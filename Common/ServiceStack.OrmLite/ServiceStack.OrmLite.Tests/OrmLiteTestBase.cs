@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
+using ServiceStack.Logging;
+using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.OrmLite.SqlServer;
 
@@ -29,11 +31,13 @@ namespace ServiceStack.OrmLite.Tests
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
+			LogManager.LogFactory = new ConsoleLogFactory();
+
 			OrmLiteConfig.DialectProvider = SqliteOrmLiteDialectProvider.Instance;
 			ConnectionString = ":memory:";
 			//ConnectionString = GetFileConnectionString();
 
-			//OrmLiteWriteExtensions.DialectProvider = new SqlServerOrmLiteDialectProvider();
+			//OrmLiteConfig.DialectProvider = SqlServerOrmLiteDialectProvider.Instance;
 			//ConnectionString = "~/App_Data/Database1.mdf".MapAbsolutePath();			
 		}
 

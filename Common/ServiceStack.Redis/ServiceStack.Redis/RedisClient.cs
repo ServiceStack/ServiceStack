@@ -170,6 +170,11 @@ namespace ServiceStack.Redis
 			return TimeSpan.FromSeconds(Ttl(key));
 		}
 
+		public IRedisAtomicCommand CreateAtomicCommand()
+		{
+			return new RedisAtomicCommand(this);
+		}
+
 		public string[] GetKeys(string pattern)
 		{
 			var spaceDelimitedKeys = ToString(Keys(pattern));

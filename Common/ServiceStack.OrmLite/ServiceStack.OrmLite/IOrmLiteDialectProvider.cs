@@ -17,6 +17,10 @@ namespace ServiceStack.OrmLite
 {
 	public interface IOrmLiteDialectProvider
 	{
+		int DefaultStringLength { get; set; }
+		
+		bool UseUnicode { get; set; }
+
 		string EscapeParam(object paramValue);
 
 		object ConvertDbValue(object value, Type type);

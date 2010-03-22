@@ -788,6 +788,27 @@ namespace ServiceStack.Redis
 	}
 #endif
 
+		internal void Multi()
+		{
+			if (!SendDataCommand(null, "MULTI\r\n"))
+				throw CreateConnectionError();
+			ReadData();
+		}
+
+		internal void Exec()
+		{
+			if (!SendDataCommand(null, "EXEC\r\n"))
+				throw CreateConnectionError();
+			ReadData();
+		}
+
+		internal void Discard()
+		{
+			if (!SendDataCommand(null, "DISCARD\r\n"))
+				throw CreateConnectionError();
+			ReadData();
+		}
+
 		#endregion
 
 
@@ -1043,6 +1064,7 @@ namespace ServiceStack.Redis
 
 		#endregion
 
+
 		#region Sorted Set Operations
 
 		private static void AssertSetIdAndValue(string setId, byte[] value)
@@ -1226,6 +1248,7 @@ namespace ServiceStack.Redis
 
 		#endregion
 
+
 		#region Hash Operations
 
 		private static void AssertHashIdAndKey(string hashId, string key)
@@ -1322,6 +1345,7 @@ namespace ServiceStack.Redis
 		}
 
 		#endregion
+
 
 		public void Dispose()
 		{
