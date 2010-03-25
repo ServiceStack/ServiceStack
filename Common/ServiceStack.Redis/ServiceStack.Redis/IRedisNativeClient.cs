@@ -17,8 +17,17 @@ namespace ServiceStack.Redis
 	public interface IRedisNativeClient 
 		: IDisposable
 	{
+		//Redis utility operations
 		Dictionary<string, string> Info { get; }
 		int Db { get; set; }
+		string Save();
+		void BgSave();
+		void Shutdown();
+		void Quit();
+		void FlushDb();
+		void FlushAll();
+
+		//Common key-value Redis operations
 		void Set(string key, byte[] value);
 		int SetNX(string key, byte[] value);
 		byte[] Get(string key);
@@ -34,16 +43,25 @@ namespace ServiceStack.Redis
 		int ExpireAt(string key, long unixTime);
 		int Ttl(string key);
 
-		string Save();
-		void BgSave();
-		void Shutdown();
-		void Quit();
-		void FlushDb();
-		void FlushAll();
-
+		//Redis Sort operation (works on lists and sets)
 		byte[][] Sort(string listOrSetId, int startingFrom, int endingAt, bool sortAlpha, bool sortDesc);
 
 
+		//Redis List operations
+		byte[][] LRange(string listId, int startingFrom, int endingAt);
+		void RPush(string listId, byte[] value);
+		void LPush(string listId, byte[] value);
+		void LTrim(string listId, int keepStartingFrom, int keepEndingAt);
+		int LRem(string listId, int removeNoOfMatches, byte[] value);
+		int LLen(string listId);
+		byte[] LIndex(string listId, int listIndex);
+		void LSet(string listId, int listIndex, byte[] value);
+		byte[] LPop(string listId);
+		byte[] RPop(string listId);
+		byte[] RPopLPush(string fromListId, string toListId);
+
+
+		//Redis Set operations
 		byte[][] SMembers(string setId);
 		void SAdd(string setId, byte[] value);
 		void SRem(string setId, byte[] value);
@@ -59,20 +77,8 @@ namespace ServiceStack.Redis
 		void SDiffStore(string intoSetId, string fromSetId, params string[] withSetIds);
 		byte[] SRandMember(string setId);
 
-	
-		byte[][] LRange(string listId, int startingFrom, int endingAt);		
-		void RPush(string listId, byte[] value);
-		void LPush(string listId, byte[] value);
-		void LTrim(string listId, int keepStartingFrom, int keepEndingAt);
-		int LRem(string listId, int removeNoOfMatches, byte[] value);
-		int LLen(string listId);
-		byte[] LIndex(string listId, int listIndex);
-		void LSet(string listId, int listIndex, byte[] value);
-		byte[] LPop(string listId);
-		byte[] RPop(string listId);
-		byte[] RPopLPush(string fromListId, string toListId);
 
-
+		//Redis Sorted Set operations
 		int ZAdd(string setId, double score, byte[] value);
 		int ZRem(string setId, byte[] value);
 		double ZIncrBy(string setId, double incrBy, byte[] value);
@@ -87,11 +93,13 @@ namespace ServiceStack.Redis
 		byte[][] ZRevRangeByScore(string setId, double min, double max, int? skip, int? take);
 		byte[][] ZRevRangeByScoreWithScores(string setId, double min, double max, int? skip, int? take);
 		int ZRemRangeByRank(string setId, int min, int max);
+		int ZRemRangeByScore(string setId, double fromScore, double toScore);
 		int ZCard(string setId);
 		double ZScore(string setId, byte[] value);
 		int ZUnion(string intoSetId, params string[] setIds);
 		int ZInter(string intoSetId, params string[] setIds);
 
+		//Redis Hash operations
 		int HSet(string hashId, string key, byte[] value);
 		byte[] HGet(string hashId, string key);
 		int HDel(string hashId, string key);

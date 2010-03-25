@@ -364,6 +364,14 @@ namespace ServiceStack.Redis
 			return ReadData();
 		}
 
+		protected byte[][] SendExpectMultiData(byte[] data, string cmd, params object[] args)
+		{
+			if (!SendDataCommand(data, cmd, args))
+				throw CreateConnectionError();
+
+			return ReadMultiData();
+		}
+
 		private int ReadInt()
 		{
 			int c = SafeReadByte();
@@ -377,13 +385,13 @@ namespace ServiceStack.Redis
 			if (c == '-')
 				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
 
-			if (c == ':')
+			if (c == ':' || c == '$')
 			{
 				int i;
 				if (int.TryParse(s, out i))
 					return i;
-			}
-			throw CreateResponseError("Unknown reply on double integer response: " + c + s);
+			}			
+			throw CreateResponseError("Unknown reply on integer response: " + c + s);
 		}
 
 		private double ReadDouble()
@@ -746,12 +754,21 @@ namespace ServiceStack.Redis
 			SendExpectSuccess("FLUSHALL\r\n");
 		}
 
-		public byte[] Keys(string pattern)
+		//Old behaviour pre 1.3.7
+		public byte[] KeysV125(string pattern)
 		{
 			if (pattern == null)
 				throw new ArgumentNullException("pattern");
 
 			return SendExpectData(null, "KEYS {0}\r\n", pattern);
+		}
+
+		public byte[][] Keys(string pattern)
+		{
+			if (pattern == null)
+				throw new ArgumentNullException("pattern");
+
+			return SendExpectMultiData(null, "KEYS {0}\r\n", pattern);
 		}
 
 		public byte[][] MGet(params string[] keys)
@@ -1114,7 +1131,8 @@ namespace ServiceStack.Redis
 			if (!SendDataCommand(value, "ZRANK {0} {1}\r\n", SafeKey(setId), value.Length))
 				throw CreateConnectionError();
 
-			return ReadInt();
+			var result = ReadInt();
+			return result;
 		}
 
 		public int ZRevRank(string setId, byte[] value)
@@ -1205,8 +1223,20 @@ namespace ServiceStack.Redis
 			if (setId == null)
 				throw new ArgumentNullException("setId");
 
-			if (!SendDataCommand(null, "ZREMRANGEBYRANK {0} {1} {2}\r\n", 
+			if (!SendDataCommand(null, "ZREMRANGEBYRANK {0} {1} {2}\r\n",
 				SafeKey(setId), min, max))
+				throw CreateConnectionError();
+
+			return ReadInt();
+		}
+
+		public int ZRemRangeByScore(string setId, double fromScore, double toScore)
+		{
+			if (setId == null)
+				throw new ArgumentNullException("setId");
+
+			if (!SendDataCommand(null, "ZREMRANGEBYSCORE {0} {1} {2}\r\n",
+				SafeKey(setId), fromScore, toScore))
 				throw CreateConnectionError();
 
 			return ReadInt();
@@ -1230,8 +1260,8 @@ namespace ServiceStack.Redis
 
 		public int ZUnion(string intoSetId, params string[] setIds)
 		{
-			if (!SendDataCommand(null, "ZUNION {0} {1}\r\n", 
-				SafeKey(intoSetId), SafeKeys(setIds)))
+			if (!SendDataCommand(null, "ZUNION {0} {1} {2}\r\n",
+				SafeKey(intoSetId), setIds.Length, SafeKeys(setIds)))
 				throw CreateConnectionError();
 
 			return ReadInt();
@@ -1239,8 +1269,8 @@ namespace ServiceStack.Redis
 
 		public int ZInter(string intoSetId, params string[] setIds)
 		{
-			if (!SendDataCommand(null, "ZINTER {0} {1}\r\n",
-				SafeKey(intoSetId), SafeKeys(setIds)))
+			if (!SendDataCommand(null, "ZINTER {0} {1} {2}\r\n",
+				SafeKey(intoSetId), setIds.Length, SafeKeys(setIds)))
 				throw CreateConnectionError();
 
 			return ReadInt();

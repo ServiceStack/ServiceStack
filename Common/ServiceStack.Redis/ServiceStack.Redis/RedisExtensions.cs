@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using ServiceStack.Common.Web;
+using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis
 {
@@ -37,6 +38,17 @@ namespace ServiceStack.Redis
 				return !(socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
 			}
 			catch (SocketException) { return false; }
+		}
+
+
+		public static string[] GetIds(this IHasStringId[] itemsWithId)
+		{
+			var ids = new string[itemsWithId.Length];
+			for (var i = 0; i < itemsWithId.Length; i++)
+			{
+				ids[i] = itemsWithId[i].Id;
+			}
+			return ids;
 		}
 	}
 

@@ -49,7 +49,7 @@ namespace ServiceStack.Redis
 			List<string> pageResults;
 			do
 			{
-				pageResults = client.GetRangeFromList(listId, skip, PageLimit);
+				pageResults = client.GetRangeFromList(listId, skip, skip + PageLimit - 1);
 				foreach (var result in pageResults)
 				{
 					yield return result;

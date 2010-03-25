@@ -24,7 +24,7 @@ namespace ServiceStack.Redis.Generic
 	/// Allows you to get Redis value operations to operate against POCO types.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	internal class RedisTypedClient<T>
+	internal partial class RedisTypedClient<T>
 		: IRedisTypedClient<T>
 	{
 		readonly TypeSerializer<T> serializer = new TypeSerializer<T>();
@@ -51,11 +51,11 @@ namespace ServiceStack.Redis.Generic
 
 		public string TypeIdsSetKey { get; set; }
 
-		public string[] AllKeys
+		public List<string> AllKeys
 		{
 			get
 			{
-				return Encoding.UTF8.GetString(client.Keys("*")).Split(' ');
+				return client.AllKeys;
 			}
 		}
 
@@ -203,8 +203,8 @@ namespace ServiceStack.Redis.Generic
 
 		public T[] GetKeys(string pattern)
 		{
-			var strKeys = Encoding.UTF8.GetString(client.Keys(pattern)).Split(' ');
-			var keysCount = strKeys.Length;
+			var strKeys = client.GetKeys(pattern);
+			var keysCount = strKeys.Count;
 
 			var keys = new T[keysCount];
 			for (var i=0; i < keysCount; i++)
@@ -232,249 +232,7 @@ namespace ServiceStack.Redis.Generic
 
 
 
-		public IHasNamed<IRedisSet<T>> Sets { get; set; }
 
-		public int Db
-		{
-			get { return client.Db; }
-			set { client.Db = value; }
-		}
-
-		internal class RedisClientSets
-			: IHasNamed<IRedisSet<T>>
-		{
-			private readonly RedisTypedClient<T> client;
-
-			public RedisClientSets(RedisTypedClient<T> client)
-			{
-				this.client = client;
-			}
-
-			public IRedisSet<T> this[string setId]
-			{
-				get
-				{
-					return new RedisClientSet<T>(client, setId);
-				}
-				set
-				{
-					var col = this[setId];
-					col.Clear();
-					col.CopyTo(value.ToArray(), 0);
-				}
-			}
-		}
-
-		private HashSet<T> CreateHashSet(byte[][] multiDataList)
-		{
-			var results = new HashSet<T>();
-			foreach (var multiData in multiDataList)
-			{
-				results.Add(FromBytes(multiData));
-			}
-			return results;
-		}
-
-		public List<T> GetRangeFromSortedSet(IRedisSet<T> fromSet, int startingFrom, int endingAt)
-		{
-			var multiDataList = client.Sort(fromSet.Id, startingFrom, endingAt, true, false);
-			return CreateList(multiDataList);
-		}
-
-		public HashSet<T> GetAllFromSet(IRedisSet<T> fromSet)
-		{
-			var multiDataList = client.SMembers(fromSet.Id);
-			return CreateHashSet(multiDataList);
-		}
-
-		public void AddToSet(IRedisSet<T> toSet, T value)
-		{
-			client.SAdd(toSet.Id, ToBytes(value));
-		}
-
-		public void RemoveFromSet(IRedisSet<T> fromSet, T value)
-		{
-			client.SRem(fromSet.Id, ToBytes(value));
-		}
-
-		public T PopFromSet(IRedisSet<T> fromSet)
-		{
-			return FromBytes(client.SPop(fromSet.Id));
-		}
-
-		public void MoveBetweenSets(IRedisSet<T> fromSet, IRedisSet<T> toSet, T value)
-		{
-			client.SMove(fromSet.Id, toSet.Id, ToBytes(value));
-		}
-
-		public int GetSetCount(IRedisSet<T> set)
-		{
-			return client.SCard(set.Id);
-		}
-
-		public bool SetContainsValue(IRedisSet<T> set, T value)
-		{
-			return client.SIsMember(set.Id, ToBytes(value)) == 1;
-		}
-
-		public HashSet<T> GetIntersectFromSets(params IRedisSet<T>[] sets)
-		{
-			var multiDataList = client.SInter(sets.ConvertAll(x => x.Id).ToArray());
-			return CreateHashSet(multiDataList);
-		}
-
-		public void StoreIntersectFromSets(IRedisSet<T> intoSet, params IRedisSet<T>[] sets)
-		{
-			client.SInterStore(intoSet.Id, sets.ConvertAll(x => x.Id).ToArray());
-		}
-
-		public HashSet<T> GetUnionFromSets(params IRedisSet<T>[] sets)
-		{
-			var multiDataList = client.SUnion(sets.ConvertAll(x => x.Id).ToArray());
-			return CreateHashSet(multiDataList);
-		}
-
-		public void StoreUnionFromSets(IRedisSet<T> intoSet, params IRedisSet<T>[] sets)
-		{
-			client.SUnionStore(intoSet.Id, sets.ConvertAll(x => x.Id).ToArray());
-		}
-
-		public HashSet<T> GetDifferencesFromSet(IRedisSet<T> fromSet, params IRedisSet<T>[] withSets)
-		{
-			var multiDataList = client.SDiff(fromSet.Id, withSets.ConvertAll(x => x.Id).ToArray());
-			return CreateHashSet(multiDataList);
-		}
-
-		public void StoreDifferencesFromSet(IRedisSet<T> intoSet, IRedisSet<T> fromSet, params IRedisSet<T>[] withSets)
-		{
-			client.SDiffStore(intoSet.Id, fromSet.Id, withSets.ConvertAll(x => x.Id).ToArray());
-		}
-
-		public T GetRandomEntryFromSet(IRedisSet<T> fromSet)
-		{
-			return FromBytes(client.SRandMember(fromSet.Id));
-		}
-
-
-
-		const int FirstElement = 0;
-		const int LastElement = -1;
-
-		public IHasNamed<IRedisList<T>> Lists { get; set; }
-
-		internal class RedisClientLists
-			: IHasNamed<IRedisList<T>>
-		{
-			private readonly RedisTypedClient<T> client;
-
-			public RedisClientLists(RedisTypedClient<T> client)
-			{
-				this.client = client;
-			}
-
-			public IRedisList<T> this[string listId]
-			{
-				get
-				{
-					return new RedisClientList<T>(client, listId);
-				}
-				set
-				{
-					var list = this[listId];
-					list.Clear();
-					list.CopyTo(value.ToArray(), 0);
-				}
-			}
-		}
-
-		private List<T> CreateList(byte[][] multiDataList)
-		{
-			var results = new List<T>();
-			foreach (var multiData in multiDataList)
-			{
-				results.Add(FromBytes(multiData));
-			}
-			return results;
-		}
-
-		public List<T> GetAllFromList(IRedisList<T> fromList)
-		{
-			var multiDataList = client.LRange(fromList.Id, FirstElement, LastElement);
-			return CreateList(multiDataList);
-		}
-
-		public List<T> GetRangeFromList(IRedisList<T> fromList, int startingFrom, int endingAt)
-		{
-			var multiDataList = client.LRange(fromList.Id, startingFrom, endingAt);
-			return CreateList(multiDataList);
-		}
-
-		public List<T> GetRangeFromSortedList(IRedisList<T> fromList, int startingFrom, int endingAt)
-		{
-			var multiDataList = client.Sort(fromList.Id, startingFrom, endingAt, true, false);
-			return CreateList(multiDataList);
-		}
-
-		public void AddToList(IRedisList<T> fromList, T value)
-		{
-			client.RPush(fromList.Id, ToBytes(value));
-		}
-
-		public void PrependToList(IRedisList<T> fromList, T value)
-		{
-			client.LPush(fromList.Id, ToBytes(value));
-		}
-
-		public void RemoveAllFromList(IRedisList<T> fromList)
-		{
-			client.LTrim(fromList.Id, LastElement, FirstElement);
-		}
-
-		public void TrimList(IRedisList<T> fromList, int keepStartingFrom, int keepEndingAt)
-		{
-			client.LTrim(fromList.Id, keepStartingFrom, keepEndingAt);
-		}
-
-		public int RemoveValueFromList(IRedisList<T> fromList, T value)
-		{
-			const int removeAll = 0;
-			return client.LRem(fromList.Id, removeAll, ToBytes(value));
-		}
-
-		public int RemoveValueFromList(IRedisList<T> fromList, T value, int noOfMatches)
-		{
-			return client.LRem(fromList.Id, noOfMatches, ToBytes(value));
-		}
-
-		public int GetListCount(IRedisList<T> fromList)
-		{
-			return client.LLen(fromList.Id);
-		}
-
-		public T GetItemFromList(IRedisList<T> fromList, int listIndex)
-		{
-			return FromBytes(client.LIndex(fromList.Id, listIndex));
-		}
-
-		public void SetItemInList(IRedisList<T> toList, int listIndex, T value)
-		{
-			client.LSet(toList.Id, listIndex, ToBytes(value));
-		}
-
-		public T DequeueFromList(IRedisList<T> fromList)
-		{
-			return FromBytes(client.LPop(fromList.Id));
-		}
-
-		public T PopFromList(IRedisList<T> fromList)
-		{
-			return FromBytes(client.RPop(fromList.Id));
-		}
-
-		public T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList)
-		{
-			return FromBytes(client.RPopLPush(fromList.Id, toList.Id));
-		}
 
 		#region Implementation of IBasicPersistenceProvider<T>
 

@@ -23,7 +23,7 @@ namespace ServiceStack.Redis.Generic
 		IHasNamed<IRedisSet<T>> Sets { get; set; }
 
 		int Db { get; set; }
-		string[] AllKeys { get; }
+		List<string> AllKeys { get; }
 
 		T this[string key] { get; set; }
 

@@ -67,7 +67,7 @@ namespace ServiceStack.Redis.Tests
 
 				var matchingKeys = redis.GetKeys("ss-tests:a*");
 
-				Assert.That(matchingKeys.Length, Is.EqualTo(2));
+				Assert.That(matchingKeys.Count, Is.EqualTo(2));
 			}
 		}
 
@@ -78,7 +78,7 @@ namespace ServiceStack.Redis.Tests
 			{
 				var matchingKeys = redis.GetKeys("ss-tests:NOTEXISTS");
 
-				Assert.That(matchingKeys.Length, Is.EqualTo(0));
+				Assert.That(matchingKeys.Count, Is.EqualTo(0));
 			}
 		}
 	}

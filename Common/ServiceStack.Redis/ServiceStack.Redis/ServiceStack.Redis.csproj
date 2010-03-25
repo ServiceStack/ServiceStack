@@ -71,6 +71,11 @@
   <ItemGroup>
     <Compile Include="BasicRedisClientManager.cs" />
     <Compile Include="BasicRedisClientManager.ICacheClient.cs" />
+    <Compile Include="Generic\IRedisSortedSet.Generic.cs" />
+    <Compile Include="Generic\RedisTypedClient_Set.cs" />
+    <Compile Include="Generic\RedisTypedClient_List.cs" />
+    <Compile Include="RedisClientSortedSet.cs" />
+    <Compile Include="IRedisClientSortedSet.cs" />
     <Compile Include="IRedisAtomicCommand.cs" />
     <Compile Include="IRedisClientSet.cs" />
     <Compile Include="IRedisList.cs" />
@@ -97,6 +102,10 @@
     <Compile Include="RedisClientManagerConfig.cs" />
     <Compile Include="RedisClientSet.cs" />
     <Compile Include="RedisClient.cs" />
+    <Compile Include="RedisClient_Hash.cs" />
+    <Compile Include="RedisClient_List.cs" />
+    <Compile Include="RedisClient_Set.cs" />
+    <Compile Include="RedisClient_SortedSet.cs" />
     <Compile Include="RedisKeyType.cs" />
     <Compile Include="RedisNativeClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

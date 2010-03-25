@@ -45,7 +45,7 @@ namespace ServiceStack.Redis
 			List<string> pageResults;
 			do
 			{
-				pageResults = client.GetSortedRange(setId, skip, PageLimit);
+				pageResults = client.GetSortedRange(setId, skip, skip + PageLimit - 1);
 				foreach (var result in pageResults)
 				{
 					yield return result;

@@ -94,7 +94,7 @@ namespace ServiceStack.Redis.Tests
 			{
 				storeMembers.ForEach(x => redis.AddToSortedSet(SetId, x, i++));
 
-				var member = redis.PopFromSortedSet(SetId);
+				var member = redis.PopFromSortedSetItemWithHighestScore(SetId);
 
 				Assert.That(member, Is.EqualTo("four"));
 			}
@@ -185,10 +185,10 @@ namespace ServiceStack.Redis.Tests
 
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				storeMembers.ForEach(x => redis.AddToSet(SetId, x));
+				storeMembers.ForEach(x => redis.AddToSortedSet(SetId, x));
 
 				var members = new List<string>();
-				foreach (var item in redis.Sets[SetId])
+				foreach (var item in redis.SortedSets[SetId])
 				{
 					members.Add(item);
 				}
@@ -209,12 +209,12 @@ namespace ServiceStack.Redis.Tests
 			{
 				var storeMembers = new List<string>();
 				setSize.Times(x => {
-					redis.AddToSet(SetId, x.ToString());
+					redis.AddToSortedSet(SetId, x.ToString());
 					storeMembers.Add(x.ToString());
 				});
 
 				var members = new List<string>();
-				foreach (var item in redis.Sets[SetId])
+				foreach (var item in redis.SortedSets[SetId])
 				{
 					members.Add(item);
 				}
@@ -231,7 +231,7 @@ namespace ServiceStack.Redis.Tests
 
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				var list = redis.Sets[SetId];
+				var list = redis.SortedSets[SetId];
 				storeMembers.ForEach(list.Add);
 
 				var members = list.ToList<string>();
@@ -246,7 +246,7 @@ namespace ServiceStack.Redis.Tests
 
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				var list = redis.Sets[SetId];
+				var list = redis.SortedSets[SetId];
 				storeMembers.ForEach(list.Add);
 
 				Assert.That(list.Count, Is.EqualTo(storeMembers.Count));
@@ -264,7 +264,7 @@ namespace ServiceStack.Redis.Tests
 
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				var list = redis.Sets[SetId];
+				var list = redis.SortedSets[SetId];
 				storeMembers.ForEach(list.Add);
 
 				Assert.That(list.Contains("two"), Is.True);
@@ -279,7 +279,7 @@ namespace ServiceStack.Redis.Tests
 
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				var list = redis.Sets[SetId];
+				var list = redis.SortedSets[SetId];
 				storeMembers.ForEach(list.Add);
 
 				storeMembers.Remove("two");

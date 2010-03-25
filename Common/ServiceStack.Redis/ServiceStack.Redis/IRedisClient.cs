@@ -21,6 +21,11 @@ namespace ServiceStack.Redis
 	public interface IRedisClient
 		: IBasicPersistenceProvider, ICacheClient
 	{
+		//Basic Redis Connection operations
+		int Db { get; set; }
+		int DbSize { get; }
+		Dictionary<string, string> Info { get; }
+		DateTime LastSave { get; }
 		string Host { get; }
 		int Port { get; }
 		int RetryTimeout { get; set; }
@@ -29,18 +34,14 @@ namespace ServiceStack.Redis
 		string Password { get; set; }
 		bool HadExceptions { get; }
 
-		IRedisTypedClient<T> GetTypedClient<T>();
+		string Save();
+		void SaveAsync();
+		void Shutdown();
+		void FlushDb();
 
-		IHasNamed<IRedisList> Lists { get; set; }
-		IHasNamed<IRedisClientSet> Sets { get; set; }
-
-		Dictionary<string, string> Info { get; }
-		int Db { get; set; }
-		int DbSize { get; }
-		DateTime LastSave { get; }
-		string[] AllKeys { get; }
-
+		//Basic Redis Connection Info
 		string this[string key] { get; set; }
+		List<string> AllKeys { get; }
 		void SetString(string key, string value);
 		bool SetIfNotExists(string key, string value);
 		string GetString(string key);
@@ -57,16 +58,18 @@ namespace ServiceStack.Redis
 		bool ExpireKeyAt(string key, DateTime dateTime);
 		TimeSpan GetTimeToLive(string key);
 
-		string Save();
-		void SaveAsync();
-		void Shutdown();
-		void FlushDb();
+		//Useful high-level abstractions
+		IRedisTypedClient<T> GetTypedClient<T>();
+
+		IHasNamed<IRedisList> Lists { get; set; }
+		IHasNamed<IRedisClientSet> Sets { get; set; }
+		IHasNamed<IRedisClientSortedSet> SortedSets { get; set; }
 
 		IRedisAtomicCommand CreateAtomicCommand();
 
 		#region List operations
 
-		string[] GetKeys(string pattern);
+		List<string> GetKeys(string pattern);
 		List<string> GetKeyValues(List<string> keys);
 		List<T> GetKeyValues<T>(List<string> keys);
 		List<string> GetSortedRange(string setId, int startingFrom, int endingAt);
@@ -114,10 +117,11 @@ namespace ServiceStack.Redis
 		bool AddToSortedSet(string setId, string value);
 		bool AddToSortedSet(string setId, string value, double score);
 		double RemoveFromSortedSet(string setId, string value);
-		string PopFromSortedSet(string setId);
+		string PopFromSortedSetItemWithLowestScore(string setId);
+		string PopFromSortedSetItemWithHighestScore(string setId);
 		bool SortedSetContainsValue(string setId, string value);
 		double IncrementItemInSortedSet(string setId, double incrementBy, string value);
-		int GetItemRankInSortedSet(string setId, string value);
+		int GetItemIndexInSortedSet(string setId, string value);
 		int GetItemRankInSortedSetDesc(string setId, string value);
 		List<string> GetAllFromSortedSet(string setId);
 		List<string> GetAllFromSortedSetDesc(string setId);
@@ -125,13 +129,13 @@ namespace ServiceStack.Redis
 		IDictionary<string, double> GetRangeFromSortedSetWithScores(string setId, int startingFrom, int endingAt);
 		List<string> GetRangeFromSortedSetDesc(string setId, int startingFrom, int endingAt);
 		IDictionary<string, double> GetRangeFromSortedSetWithScoresDesc(string setId, int startingFrom, int endingAt);
-		List<string> GetRangeFromSortedSetByScore(string setId, double fromScore, double toScore, int? skip, int? take);
-		IDictionary<string, double> GetRangeFromSortedSetByScoreWithScores(string setId, double fromScoreScore, double toScore, int? skip, int? take);
-		List<string> GetRangeFromSortedSetByScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take);
-		IDictionary<string, double> GetRangeFromSortedSetByScoreWithScores(string setId, string fromStringScore, string toStringScore, int? skip, int? take);
-		List<string> GetRangeFromSortedSetByScoreDesc(string setId, double fromScoreScore, double toScore, int? skip, int? take);
-		IDictionary<string, double> GetRangeFromSortedSetByScoreWithScoresDesc(string setId, double fromScoreScore, double toScore, int? skip, int? take);
-		int RemoveRangeFromSortedSetByRank(string setId, int minRank, int maxRank);
+		List<string> GetRangeFromSortedSetByLowestScore(string setId, double fromScore, double toScore, int? skip, int? take);
+		IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, double fromScoreScore, double toScore, int? skip, int? take);
+		List<string> GetRangeFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take);
+		IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take);
+		List<string> GetRangeFromSortedSetByHighestScore(string setId, double fromScoreScore, double toScore, int? skip, int? take);
+		IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, double fromScoreScore, double toScore, int? skip, int? take);
+		int RemoveRangeFromSortedSet(string setId, int minRank, int maxRank);
 		int GetSortedSetCount(string setId);
 		double GetItemScoreInSortedSet(string setId, string value);
 		int StoreIntersectFromSortedSets(string intoSetId, params string[] setIds);
