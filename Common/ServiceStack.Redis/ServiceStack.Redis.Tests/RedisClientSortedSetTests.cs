@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
@@ -130,6 +131,27 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_GetItemIndexInSortedSet_in_Asc_and_Desc()
+		{
+			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			using (var redis = new RedisClient(TestConfig.SingleHost))
+			{
+				var i = 10;
+				storeMembers.ForEach(x => redis.AddToSortedSet(SetId, x, i++));
+
+				Assert.That(redis.GetItemIndexInSortedSet(SetId, "one"), Is.EqualTo(0));
+				Assert.That(redis.GetItemIndexInSortedSet(SetId, "two"), Is.EqualTo(1));
+				Assert.That(redis.GetItemIndexInSortedSet(SetId, "three"), Is.EqualTo(2));
+				Assert.That(redis.GetItemIndexInSortedSet(SetId, "four"), Is.EqualTo(3));
+
+				Assert.That(redis.GetItemIndexInSortedSetDesc(SetId, "one"), Is.EqualTo(3));
+				Assert.That(redis.GetItemIndexInSortedSetDesc(SetId, "two"), Is.EqualTo(2));
+				Assert.That(redis.GetItemIndexInSortedSetDesc(SetId, "three"), Is.EqualTo(1));
+				Assert.That(redis.GetItemIndexInSortedSetDesc(SetId, "four"), Is.EqualTo(0));
+			}
+		}
+
+		[Test]
 		public void Can_Store_IntersectBetweenSets()
 		{
 			const string set1Name = "testintersectset1";
@@ -174,9 +196,76 @@ namespace ServiceStack.Redis.Tests
 			}
 		}
 
-		/// <summary>
-		/// TODO: Add ICollection interfaces for Sorted Sets
-		/// </summary>
+		[Test]
+		public void Can_pop_items_with_lowest_and_highest_scores_from_sorted_set()
+		{
+			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			using (var redis = new RedisClient(TestConfig.SingleHost))
+			{
+				storeMembers.ForEach(x => redis.AddToSortedSet(SetId, x));
+
+				storeMembers.Sort((x, y) => x.CompareTo(y));
+
+				var lowestScore = redis.PopFromSortedSetItemWithLowestScore(SetId);
+				Assert.That(lowestScore, Is.EqualTo(storeMembers.First()));
+
+				var highestScore = redis.PopFromSortedSetItemWithHighestScore(SetId);
+				Assert.That(highestScore, Is.EqualTo(storeMembers[storeMembers.Count - 1]));
+			}
+		}
+
+		[Test]
+		public void Can_GetRangeFromSortedSetByLowestScore_from_sorted_set()
+		{
+			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			using (var redis = new RedisClient(TestConfig.SingleHost))
+			{
+				storeMembers.ForEach(x => redis.AddToSortedSet(SetId, x));
+
+				storeMembers.Sort((x, y) => x.CompareTo(y));
+				var memberRage = storeMembers.Where(x =>
+					x.CompareTo("four") >= 0 && x.CompareTo("three") <= 0).ToList();
+
+				var range = redis.GetRangeFromSortedSetByLowestScore(SetId, "four", "three");
+				Assert.That(range.EquivalentTo(memberRage));
+			}
+		}
+
+		[Ignore("Not implemented yet")]
+		[Test]
+		public void Can_GetRangeFromSortedSetByHighestScore_from_sorted_set()
+		{
+			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			using (var redis = new RedisClient(TestConfig.SingleHost))
+			{
+				storeMembers.ForEach(x => redis.AddToSortedSet(SetId, x));
+
+				storeMembers.Sort((x, y) => y.CompareTo(x));
+				var memberRage = storeMembers.Where(x =>
+					x.CompareTo("four") >= 0 && x.CompareTo("three") <= 0).ToList();
+
+				var range = redis.GetRangeFromSortedSetByHighestScore(SetId, "four", "three");
+				Assert.That(range.EquivalentTo(memberRage));
+			}
+		}
+
+		[Test]
+		public void Can_get_index_and_score_from_SortedSet()
+		{
+			var storeMembers = new List<string> { "a", "b", "c", "d" };
+			using (var redis = new RedisClient(TestConfig.SingleHost))
+			{
+				const double initialScore = 10d;
+				var i = initialScore;
+				storeMembers.ForEach(x => redis.AddToSortedSet(SetId, x, i++));
+
+				Assert.That(redis.GetItemIndexInSortedSet(SetId, "a"), Is.EqualTo(0));
+				Assert.That(redis.GetItemIndexInSortedSetDesc(SetId, "a"), Is.EqualTo(storeMembers.Count - 1));
+
+				Assert.That(redis.GetItemScoreInSortedSet(SetId, "a"), Is.EqualTo(initialScore));
+				Assert.That(redis.GetItemScoreInSortedSet(SetId, "d"), Is.EqualTo(initialScore + storeMembers.Count - 1));
+			}
+		}
 
 		[Test]
 		public void Can_enumerate_small_ICollection_Set()
@@ -208,7 +297,8 @@ namespace ServiceStack.Redis.Tests
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
 				var storeMembers = new List<string>();
-				setSize.Times(x => {
+				setSize.Times(x =>
+				{
 					redis.AddToSortedSet(SetId, x.ToString());
 					storeMembers.Add(x.ToString());
 				});

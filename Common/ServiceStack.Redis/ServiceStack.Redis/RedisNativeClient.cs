@@ -28,7 +28,7 @@ namespace ServiceStack.Redis
 	/// 
 	/// Not threadsafe use a pooled manager
 	/// </summary>
-	public class RedisNativeClient
+	public partial class RedisNativeClient
 		: IRedisNativeClient
 	{
 		private static readonly ILog log = LogManager.GetLogger(typeof(RedisNativeClient));
@@ -86,411 +86,6 @@ namespace ServiceStack.Redis
 		}
 
 
-		#region Protocol helper methods
-		private void Connect()
-		{
-			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
-				SendTimeout = SendTimeout
-			};
-			try
-			{
-				socket.Connect(Host, Port);
-
-				if (!socket.Connected)
-				{
-					socket.Close();
-					socket = null;
-					return;
-				}
-				bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
-
-				if (Password != null)
-					SendExpectSuccess("AUTH {0}\r\n", Password);
-
-				db = 0;
-				var ipEndpoint = socket.LocalEndPoint as IPEndPoint;
-				clientPort = ipEndpoint != null ? ipEndpoint.Port : -1;
-				lastCommand = null;
-				lastSocketException = null;
-				lastConnectedAtTimestamp = Stopwatch.GetTimestamp();
-			}
-			catch (SocketException ex)
-			{
-				HadExceptions = true;
-				var throwEx = new InvalidOperationException("could not connect to redis Instance at " + Host + ":" + Port, ex);
-				log.Error(throwEx.Message, ex);
-				throw throwEx;
-			}
-		}
-
-		protected string ReadLine()
-		{
-			var sb = new StringBuilder();
-
-			int c;
-			while ((c = bstream.ReadByte()) != -1)
-			{
-				if (c == '\r')
-					continue;
-				if (c == '\n')
-					break;
-				sb.Append((char)c);
-			}
-			return sb.ToString();
-		}
-
-		private bool AssertConnectedSocket()
-		{
-			if (lastConnectedAtTimestamp > 0)
-			{
-				var now = Stopwatch.GetTimestamp();
-				var elapsedSecs = (now - lastConnectedAtTimestamp) / Stopwatch.Frequency;
-
-				if (elapsedSecs > IdleTimeOutSecs && !socket.IsConnected())
-				{
-					return Reconnect();
-				}
-				lastConnectedAtTimestamp = now;
-			}
-
-			if (socket == null)
-				Connect();
-
-			var isConnected = socket != null;
-			
-			return isConnected;
-		}
-
-		private bool Reconnect()
-		{
-			var previousDb = db;
-	
-			SafeConnectionClose();
-			Connect(); //sets db to 0
-
-			if (previousDb != DefaultDb)
-			{
-				this.Db = previousDb;
-			}
-
-			return socket != null;
-		}
-
-		private bool HandleSocketException(SocketException ex)
-		{
-			HadExceptions = true;
-			log.Error("SocketException: ", ex);
-
-			lastSocketException = ex;
-
-			// timeout?
-			socket.Close();
-			socket = null;
-
-			return false;
-		}
-
-		private RedisResponseException CreateResponseError(string error)
-		{
-			HadExceptions = true;
-			var throwEx = new RedisResponseException(
-				string.Format("{0}, sPort: {1}, LastCommand: {2}",
-					error, clientPort, lastCommand));
-			log.Error(throwEx.Message);
-			throw throwEx;
-		}
-
-		private Exception CreateConnectionError()
-		{
-			HadExceptions = true;
-			var throwEx = new Exception(
-				string.Format("Unable to Connect: sPort: {0}", 
-					clientPort), lastSocketException);
-			log.Error(throwEx.Message);
-			throw throwEx;
-		}
-
-		private static string SafeKey(string key)
-		{
-			return key == null ? null : key.Replace(' ', '_')
-				.Replace('\t','_').Replace('\n','_');
-		}
-
-		private static string SafeKeys(params string[] keys)
-		{
-			var sb = new StringBuilder();
-			foreach (var key in keys)
-			{
-				if (sb.Length > 0)
-					sb.Append(" ");
-
-				sb.Append(SafeKey(key));
-			}
-
-			return sb.ToString();
-		}
-
-		protected bool SendDataCommand(byte[] data, string cmd, params object[] args)
-		{
-			if (!AssertConnectedSocket()) return false;
-
-			var s = args.Length > 0 ? String.Format(cmd, args) : cmd;
-			this.lastCommand = s;
-
-			byte [] r = Encoding.UTF8.GetBytes(s);
-			try
-			{
-				Log("S: " + String.Format(cmd, args));
-	
-				socket.Send(r);
-
-				if (data != null)
-				{
-					socket.Send(data);
-					socket.Send(endData);
-				}
-			}
-			catch (SocketException ex)
-			{
-				return HandleSocketException(ex);
-			}
-			return true;
-		}
-
-		protected bool SendCommand(string cmd, params object[] args)
-		{
-			if (!AssertConnectedSocket()) return false;
-
-			var s = args != null && args.Length > 0 ? String.Format(cmd, args) : cmd;
-			this.lastCommand = s;
-
-			byte [] r = Encoding.UTF8.GetBytes(s);
-			try
-			{
-				Log("S: " + String.Format(cmd, args));
-				socket.Send(r);
-			}
-			catch (SocketException ex)
-			{
-				return HandleSocketException(ex);
-			}
-			return true;
-		}
-
-		protected string SendExpectString(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			var c = SafeReadByte();
-			if (c == -1)
-				throw CreateResponseError("No more data");
-
-			var s = ReadLine();
-			
-			Log("R: " + s);
-			
-			if (c == '-')
-				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
-			
-			if (c == '+')
-				return s;
-
-			throw CreateResponseError("Unknown reply on integer request: " + c + s);
-		}
-
-		private int SafeReadByte()
-		{
-			return bstream.ReadByte();
-		}
-
-		protected string SendGetString(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			return ReadLine();
-		}
-
-		[Conditional("DEBUG")]
-		protected void Log(string fmt, params object[] args)
-		{
-			log.DebugFormat("{0}", string.Format(fmt, args).Trim());
-		}
-
-		protected void ExpectSuccess()
-		{
-			int c = SafeReadByte();
-			if (c == -1)
-				throw CreateResponseError("No more data");
-
-			var s = ReadLine();
-	
-			Log((char)c + s);
-
-			if (c == '-')
-				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
-		}
-
-		protected void SendExpectSuccess(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			ExpectSuccess();
-		}
-
-		protected int SendExpectInt(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			return ReadInt();
-		}
-
-		protected double SendExpectDouble(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			return ReadDouble();
-		}
-
-		protected byte[] SendExpectData(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw CreateConnectionError();
-
-			return ReadData();
-		}
-
-		protected byte[][] SendExpectMultiData(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
-		}
-
-		private int ReadInt()
-		{
-			int c = SafeReadByte();
-			if (c == -1)
-				throw CreateResponseError("No more data");
-
-			var s = ReadLine();
-
-			Log("R: " + s);
-
-			if (c == '-')
-				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
-
-			if (c == ':' || c == '$')
-			{
-				int i;
-				if (int.TryParse(s, out i))
-					return i;
-			}			
-			throw CreateResponseError("Unknown reply on integer response: " + c + s);
-		}
-
-		private double ReadDouble()
-		{
-			int c = SafeReadByte();
-			if (c == -1)
-				throw CreateResponseError("No more data");
-
-			var s = ReadLine();
-
-			Log("R: " + s);
-
-			if (c == '-')
-				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
-
-			if (c == ':')
-			{
-				double i;
-				if (double.TryParse(s, out i))
-					return i;
-			}
-			throw CreateResponseError("Unknown reply on expected double response: " + c + s);
-		}
-
-		private byte[] ReadData()
-		{
-			string r = ReadLine();
-			Log("R: {0}", r);
-			if (r.Length == 0)
-				throw CreateResponseError("Zero length respose");
-
-			char c = r[0];
-			if (c == '-')
-				throw CreateResponseError(r.StartsWith("-ERR") ? r.Substring(5) : r.Substring(1));
-
-			if (c == '$')
-			{
-				if (r == "$-1")
-					return null;
-				int count;
-
-				if (Int32.TryParse(r.Substring(1), out count))
-				{
-					var retbuf = new byte[count];
-
-					var offset = 0;
-					while (count > 0)
-					{
-						var readCount = bstream.Read(retbuf, offset, count);
-						if (readCount <= 0)
-							throw CreateResponseError("Unexpected end of Stream");
-
-						offset += readCount;
-						count -= readCount;
-					}
-					
-					if (bstream.ReadByte() != '\r' || bstream.ReadByte() != '\n')
-						throw CreateResponseError("Invalid termination");
-
-					return retbuf;
-				}
-				throw CreateResponseError("Invalid length");
-			}
-			throw CreateResponseError("Unexpected reply: " + r);
-		}
-
-		private byte[][] ReadMultiData()
-		{
-			int c = SafeReadByte();
-			if (c == -1)
-				throw CreateResponseError("No more data");
-
-			var s = ReadLine();
-			Log("R: " + s);
-			if (c == '-')
-				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
-			if (c == '*')
-			{
-				int count;
-				if (int.TryParse(s, out count))
-				{
-					if (count == -1)
-					{
-						//redis is in an invalid state
-						return new byte[0][];
-					}
-
-					var result = new byte[count][];
-
-					for (int i = 0; i < count; i++)
-						result[i] = ReadData();
-
-					return result;
-				}
-			}
-			throw CreateResponseError("Unknown reply on multi-request: " + c + s);
-		}
-		#endregion
-
 
 		#region Common Operations
 
@@ -530,15 +125,15 @@ namespace ServiceStack.Redis
 		{
 			get
 			{
-				byte [] r = SendExpectData(null, "INFO\r\n");
+				byte [] r = SendExpectData("INFO\r\n");
 				var dict = new Dictionary<string, string>();
 
 				foreach (var line in Encoding.UTF8.GetString(r)
 					.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries))
 				{
-					int p = line.IndexOf(':');
-					if (p == -1)
-						continue;
+					var p = line.IndexOf(':');
+					if (p == -1) continue;
+
 					dict.Add(line.Substring(0, p), line.Substring(p + 1));
 				}
 				return dict;
@@ -588,9 +183,7 @@ namespace ServiceStack.Redis
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
-			if (!SendDataCommand(value, "SET {0} {1}\r\n", SafeKey(key), value.Length))
-				throw CreateConnectionError();
-			ExpectSuccess();
+			SendDataExpectSuccess(value, "SET {0} {1}\r\n", SafeKey(key), value.Length);
 		}
 
 		public int SetNX(string key, byte[] value)
@@ -602,9 +195,7 @@ namespace ServiceStack.Redis
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
-			if (!SendDataCommand(value, "SETNX {0} {1}\r\n", SafeKey(key), value.Length))
-				throw CreateConnectionError();
-			return ReadInt();
+			return SendDataExpectInt(value, "SETNX {0} {1}\r\n", SafeKey(key), value.Length);
 		}
 
 		public byte[] Get(string key)
@@ -616,28 +207,28 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
-			return SendExpectData(null, "GET " + SafeKey(key) + "\r\n");
+
+			return SendExpectData("GET " + SafeKey(key) + "\r\n");
 		}
 
 		public byte[] GetSet(string key, byte[] value)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			value = value ?? new byte[0];
 
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
 
-			if (!SendDataCommand(value, "GETSET {0} {1}\r\n", SafeKey(key), value.Length))
-				throw CreateConnectionError();
-
-			return ReadData();
+			return SendDataExpectData(value, "GETSET {0} {1}\r\n", SafeKey(key), value.Length);
 		}
 
 		public int Exists(string key)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("EXISTS " + SafeKey(key) + "\r\n");
 		}
 
@@ -645,6 +236,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("DEL " + SafeKey(key) + "\r\n", key);
 		}
 
@@ -660,6 +252,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("INCR " + SafeKey(key) + "\r\n");
 		}
 
@@ -667,6 +260,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("INCRBY {0} {1}\r\n", SafeKey(key), count);
 		}
 
@@ -674,6 +268,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("DECR " + SafeKey(key) + "\r\n");
 		}
 
@@ -681,6 +276,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("DECRBY {0} {1}\r\n", SafeKey(key), count);
 		}
 
@@ -695,6 +291,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("oldKeyname");
 			if (newKeyname == null)
 				throw new ArgumentNullException("newKeyname");
+
 			return SendGetString("RENAME {0} {1}\r\n", SafeKey(oldKeyname), SafeKey(newKeyname))[0] == '+';
 		}
 
@@ -702,6 +299,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("EXPIRE {0} {1}\r\n", SafeKey(key), seconds);
 		}
 
@@ -709,6 +307,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("EXPIREAT {0} {1}\r\n", SafeKey(key), unixTime);
 		}
 
@@ -716,6 +315,7 @@ namespace ServiceStack.Redis
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
+
 			return SendExpectInt("TTL {0}\r\n", SafeKey(key));
 		}
 
@@ -760,7 +360,7 @@ namespace ServiceStack.Redis
 			if (pattern == null)
 				throw new ArgumentNullException("pattern");
 
-			return SendExpectData(null, "KEYS {0}\r\n", pattern);
+			return SendExpectData("KEYS {0}\r\n", pattern);
 		}
 
 		public byte[][] Keys(string pattern)
@@ -768,7 +368,7 @@ namespace ServiceStack.Redis
 			if (pattern == null)
 				throw new ArgumentNullException("pattern");
 
-			return SendExpectMultiData(null, "KEYS {0}\r\n", pattern);
+			return SendExpectMultiData("KEYS {0}\r\n", pattern);
 		}
 
 		public byte[][] MGet(params string[] keys)
@@ -778,9 +378,7 @@ namespace ServiceStack.Redis
 			if (keys.Length == 0)
 				throw new ArgumentException("keys");
 
-			if (!SendDataCommand(null, "MGET {0}\r\n", SafeKeys(keys)))
-				throw CreateConnectionError();
-			return ReadMultiData();
+			return SendExpectMultiData("MGET {0}\r\n", SafeKeys(keys));
 		}
 
 #if false
@@ -807,23 +405,17 @@ namespace ServiceStack.Redis
 
 		internal void Multi()
 		{
-			if (!SendDataCommand(null, "MULTI\r\n"))
-				throw CreateConnectionError();
-			ReadData();
+			SendExpectData("MULTI\r\n");
 		}
 
 		internal void Exec()
 		{
-			if (!SendDataCommand(null, "EXEC\r\n"))
-				throw CreateConnectionError();
-			ReadData();
+			SendExpectData("EXEC\r\n");
 		}
 
 		internal void Discard()
 		{
-			if (!SendDataCommand(null, "DISCARD\r\n"))
-				throw CreateConnectionError();
-			ReadData();
+			SendExpectData("DISCARD\r\n");
 		}
 
 		#endregion
@@ -833,38 +425,29 @@ namespace ServiceStack.Redis
 
 		public byte[][] SMembers(string setId)
 		{
-			if (!SendDataCommand(null, "SMEMBERS {0}\r\n", setId))
-				throw CreateConnectionError();
-			return ReadMultiData();
+			return SendExpectMultiData("SMEMBERS {0}\r\n", setId);
 		}
 
 		public void SAdd(string setId, byte[] value)
 		{
-			if (setId == null)
-				throw new ArgumentNullException("setId");
-			if (value == null)
-				throw new ArgumentNullException("value");
+			AssertSetIdAndValue(setId, value);
 
-			if (!SendDataCommand(value, "SADD {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw CreateConnectionError();
-			ExpectSuccess();
+			SendDataExpectSuccess(value, "SADD {0} {1}\r\n", SafeKey(setId), value.Length);
 		}
 
 		public void SRem(string setId, byte[] value)
 		{
-			if (setId == null)
-				throw new ArgumentNullException("setId");
-			if (!SendDataCommand(value, "SREM {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw CreateConnectionError();
+			AssertSetIdAndValue(setId, value);
 
-			ExpectSuccess();
+			SendDataExpectSuccess(value, "SREM {0} {1}\r\n", SafeKey(setId), value.Length);
 		}
 
 		public byte[] SPop(string setId)
 		{
-			if (!SendDataCommand(null, "SPOP {0}\r\n", SafeKey(setId)))
-				throw CreateConnectionError();
-			return ReadData();
+			if (setId == null)
+				throw new ArgumentNullException("setId");
+
+			return SendExpectData("SPOP {0}\r\n", SafeKey(setId));
 		}
 
 		public void SMove(string fromSetId, string toSetId, byte[] value)
@@ -874,10 +457,7 @@ namespace ServiceStack.Redis
 			if (toSetId == null)
 				throw new ArgumentNullException("toSetId");
 
-			if (!SendDataCommand(value, "SMOVE {0} {1} {2}\r\n", SafeKey(fromSetId), SafeKey(toSetId), value.Length))
-				throw CreateConnectionError();
-
-			ExpectSuccess();
+			SendDataExpectSuccess(value, "SMOVE {0} {1} {2}\r\n", SafeKey(fromSetId), SafeKey(toSetId), value.Length);
 		}
 
 		public int SCard(string setId)
@@ -892,68 +472,45 @@ namespace ServiceStack.Redis
 		{
 			if (setId == null)
 				throw new ArgumentNullException("setId");
-			if (!SendDataCommand(value, "SISMEMBER {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw CreateConnectionError();
 
-			return ReadInt();
+			return SendDataExpectInt(value, "SISMEMBER {0} {1}\r\n", SafeKey(setId), value.Length);
 		}
 
 		public byte[][] SInter(params string[] setIds)
 		{
-			
-
-			if (!SendDataCommand(null, "SINTER {0}\r\n", SafeKeys(setIds)))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("SINTER {0}\r\n", SafeKeys(setIds));
 		}
 
 		public void SInterStore(string intoSetId, params string[] setIds)
 		{
-			if (!SendDataCommand(null, "SINTERSTORE {0} {1}\r\n", SafeKey(intoSetId), SafeKeys(setIds)))
-				throw CreateConnectionError();
-
-			ExpectSuccess();
+			SendExpectSuccess("SINTERSTORE {0} {1}\r\n", SafeKey(intoSetId), SafeKeys(setIds));
 		}
 
 		public byte[][] SUnion(params string[] setIds)
 		{
-			if (!SendDataCommand(null, "SUNION {0}\r\n", SafeKeys(setIds)))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("SUNION {0}\r\n", SafeKeys(setIds));
 		}
 
 		public void SUnionStore(string intoSetId, params string[] setIds)
 		{
-			if (!SendDataCommand(null, "SUNIONSTORE {0} {1}\r\n", SafeKey(intoSetId), SafeKeys(setIds)))
-				throw CreateConnectionError();
-
-			ExpectSuccess();
+			SendExpectSuccess("SUNIONSTORE {0} {1}\r\n", SafeKey(intoSetId), SafeKeys(setIds));
 		}
 
 		public byte[][] SDiff(string fromSetId, params string[] withSetIds)
 		{
-			if (!SendDataCommand(null, "SDIFF {0} {1}\r\n", SafeKey(fromSetId), SafeKeys(withSetIds)))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("SDIFF {0} {1}\r\n", SafeKey(fromSetId), SafeKeys(withSetIds));
 		}
 
 		public void SDiffStore(string intoSetId, string fromSetId, params string[] withSetIds)
 		{
-			if (!SendDataCommand(null, "SDIFFSTORE {0} {1} {2}\r\n", SafeKey(intoSetId), SafeKey(fromSetId), SafeKeys(withSetIds)))
-				throw CreateConnectionError();
-
-			ExpectSuccess();
+			SendExpectSuccess("SDIFFSTORE {0} {1} {2}\r\n", SafeKey(intoSetId), SafeKey(fromSetId), SafeKeys(withSetIds));
 		}
 
 		public byte[] SRandMember(string setId)
 		{
-			if (!SendDataCommand(null, "SRANDMEMBER {0}\r\n", SafeKey(setId)))
-				throw CreateConnectionError();
-			return ReadData();
+			return SendExpectData("SRANDMEMBER {0}\r\n", SafeKey(setId));
 		}
+
 		#endregion
 
 
@@ -961,10 +518,7 @@ namespace ServiceStack.Redis
 
 		public byte[][] LRange(string listId, int startingFrom, int endingAt)
 		{
-			if (!SendDataCommand(null, "LRANGE {0} {1} {2}\r\n", SafeKey(listId), startingFrom, endingAt))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("LRANGE {0} {1} {2}\r\n", SafeKey(listId), startingFrom, endingAt);
 		}
 
 		public byte[][] Sort(string listOrSetId, int startingFrom, int endingAt, bool sortAlpha, bool sortDesc)
@@ -972,51 +526,38 @@ namespace ServiceStack.Redis
 			var sortAlphaOption = sortAlpha ? " ALPHA" : "";
 			var sortDescOption = sortDesc ? " DESC" : "";
 
-			if (!SendDataCommand(null, "SORT {0} LIMIT {1} {2}{3}{4}\r\n", 
-				SafeKey(listOrSetId), startingFrom, endingAt, sortAlphaOption, sortDescOption))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("SORT {0} LIMIT {1} {2}{3}{4}\r\n",
+				SafeKey(listOrSetId), startingFrom, endingAt, sortAlphaOption, sortDescOption);
 		}
 
 		public void RPush(string listId, byte[] value)
 		{
-			if (listId == null)
-				throw new ArgumentNullException("listId");
-			if (value == null)
-				throw new ArgumentNullException("value");
+			AssertListIdAndValue(listId, value);
 
-			if (!SendDataCommand(value, "RPUSH {0} {1}\r\n", SafeKey(listId), value.Length))
-				throw CreateConnectionError();
-			ExpectSuccess();
+			SendDataExpectSuccess(value, "RPUSH {0} {1}\r\n", SafeKey(listId), value.Length);
 		}
 
 		public void LPush(string listId, byte[] value)
 		{
-			if (listId == null)
-				throw new ArgumentNullException("listId");
-			if (value == null)
-				throw new ArgumentNullException("value");
+			AssertListIdAndValue(listId, value);
 
-			if (!SendDataCommand(value, "LPUSH {0} {1}\r\n", SafeKey(listId), value.Length))
-				throw CreateConnectionError();
-			ExpectSuccess();
+			SendDataExpectSuccess(value, "LPUSH {0} {1}\r\n", SafeKey(listId), value.Length);
 		}
 
 		public void LTrim(string listId, int keepStartingFrom, int keepEndingAt)
 		{
-			if (!SendCommand("LTRIM {0} {1} {2}\r\n", SafeKey(listId), keepStartingFrom, keepEndingAt))
-				throw CreateConnectionError();
+			if (listId == null)
+				throw new ArgumentNullException("listId");
 
-			ExpectSuccess();
+			SendExpectSuccess("LTRIM {0} {1} {2}\r\n", SafeKey(listId), keepStartingFrom, keepEndingAt);
 		}
 
 		public int LRem(string listId, int removeNoOfMatches, byte[] value)
 		{
-			if (!SendDataCommand(value, "LREM {0} {1} {2}\r\n", SafeKey(listId), removeNoOfMatches, value.Length))
-				throw CreateConnectionError();
+			if (listId == null)
+				throw new ArgumentNullException("listId");
 
-			return ReadInt();
+			return SendDataExpectInt(value, "LREM {0} {1} {2}\r\n", SafeKey(listId), removeNoOfMatches, value.Length);
 		}
 
 		public int LLen(string listId)
@@ -1029,31 +570,34 @@ namespace ServiceStack.Redis
 
 		public byte[] LIndex(string listId, int listIndex)
 		{
-			if (!SendCommand("LINDEX {0} {1}\r\n", SafeKey(listId), listIndex))
-				throw CreateConnectionError();
-			return ReadData();
+			if (listId == null)
+				throw new ArgumentNullException("listId");
+
+			return SendExpectData("LINDEX {0} {1}\r\n", SafeKey(listId), listIndex);
 		}
 
 		public void LSet(string listId, int listIndex, byte[] value)
 		{
-			if (!SendDataCommand(value, "LSET {0} {1} {2}\r\n", SafeKey(listId), listIndex, value.Length))
-				throw CreateConnectionError();
+			if (listId == null)
+				throw new ArgumentNullException("listId");
 
-			ExpectSuccess();
+			SendDataExpectSuccess(value, "LSET {0} {1} {2}\r\n", SafeKey(listId), listIndex, value.Length);
 		}
 
 		public byte[] LPop(string listId)
 		{
-			if (!SendCommand("LPOP {0}\r\n", SafeKey(listId)))
-				throw CreateConnectionError();
-			return ReadData();
+			if (listId == null)
+				throw new ArgumentNullException("listId");
+
+			return SendExpectData("LPOP {0}\r\n", SafeKey(listId));
 		}
 
 		public byte[] RPop(string listId)
 		{
-			if (!SendCommand("RPOP {0}\r\n", SafeKey(listId)))
-				throw CreateConnectionError();
-			return ReadData();
+			if (listId == null)
+				throw new ArgumentNullException("listId");
+
+			return SendExpectData("RPOP {0}\r\n", SafeKey(listId));
 		}
 
 		public byte[] RPopLPush(string fromListId, string toListId)
@@ -1067,16 +611,10 @@ namespace ServiceStack.Redis
 			if (hasBug)
 			{
 				var value = Encoding.UTF8.GetBytes(toListId);
-				if (!SendDataCommand(value, "RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), value.Length))
-					throw CreateConnectionError();
-
-				return ReadData();
+				return SendDataExpectData(value, "RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), value.Length);
 			}
 
-			if (!SendCommand("RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), SafeKey(toListId)))
-				throw CreateConnectionError();
-
-			return ReadData();
+			return SendExpectData("RPOPLPUSH {0} {1}\r\n", SafeKey(fromListId), SafeKey(toListId));
 		}
 
 		#endregion
@@ -1096,53 +634,35 @@ namespace ServiceStack.Redis
 		{
 			AssertSetIdAndValue(setId, value);
 
-			if (!SendDataCommand(value, "ZADD {0} {1} {2}\r\n", 
-				SafeKey(setId), score, value.Length))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendDataExpectInt(value, "ZADD {0} {1} {2}\r\n", SafeKey(setId), score, value.Length);
 		}
 
 		public int ZRem(string setId, byte[] value)
 		{
 			AssertSetIdAndValue(setId, value);
 
-			if (!SendDataCommand(value, "ZREM {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendDataExpectInt(value, "ZREM {0} {1}\r\n", SafeKey(setId), value.Length);
 		}
 
 		public double ZIncrBy(string setId, double incrBy, byte[] value)
 		{
 			AssertSetIdAndValue(setId, value);
 
-			if (!SendDataCommand(value, "ZADD {0} {1} {2}\r\n",
-				SafeKey(setId), incrBy, value.Length))
-				throw CreateConnectionError();
-
-			return ReadDouble();
+			return SendDataExpectDataAsDouble(value, "ZADD {0} {1} {2}\r\n", SafeKey(setId), incrBy, value.Length);
 		}
 
 		public int ZRank(string setId, byte[] value)
 		{
 			AssertSetIdAndValue(setId, value);
 
-			if (!SendDataCommand(value, "ZRANK {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw CreateConnectionError();
-
-			var result = ReadInt();
-			return result;
+			return SendDataExpectInt(value, "ZRANK {0} {1}\r\n", SafeKey(setId), value.Length);
 		}
 
 		public int ZRevRank(string setId, byte[] value)
 		{
 			AssertSetIdAndValue(setId, value);
 
-			if (!SendDataCommand(value, "ZRANK {0} {1}\r\n", SafeKey(setId), value.Length))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendDataExpectInt(value, "ZREVRANK {0} {1}\r\n", SafeKey(setId), value.Length);
 		}
 
 		private byte[][] GetRange(string commandText, string setId, int min, int max, bool withScores)
@@ -1151,11 +671,7 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("setId");
 
 			var withScoresString = withScores ? " WITHSCORES" : "";
-			if (!SendDataCommand(null, "{0} {1} {2} {3}{4}\r\n",
-				commandText, SafeKey(setId), min, max, withScoresString))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("{0} {1} {2} {3}{4}\r\n", commandText, SafeKey(setId), min, max, withScoresString);
 		}
 
 		public byte[][] ZRange(string setId, int min, int max)
@@ -1189,13 +705,8 @@ namespace ServiceStack.Redis
 				: "";
 
 			var withScoresString = withScores ? " WITHSCORES" : "";
-
-			if (!SendDataCommand(null, "{0} {1} {2} {3}{4}{5}\r\n",
-								 commandText, SafeKey(setId), min, max, 
-								 limitString, withScoresString))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("{0} {1} {2} {3}{4}{5}\r\n",
+				commandText, SafeKey(setId), min, max, limitString, withScoresString);
 		}
 
 		public byte[][] ZRangeByScore(string setId, double min, double max, int? skip, int? take)
@@ -1223,11 +734,7 @@ namespace ServiceStack.Redis
 			if (setId == null)
 				throw new ArgumentNullException("setId");
 
-			if (!SendDataCommand(null, "ZREMRANGEBYRANK {0} {1} {2}\r\n",
-				SafeKey(setId), min, max))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendExpectInt("ZREMRANGEBYRANK {0} {1} {2}\r\n", SafeKey(setId), min, max);
 		}
 
 		public int ZRemRangeByScore(string setId, double fromScore, double toScore)
@@ -1235,11 +742,7 @@ namespace ServiceStack.Redis
 			if (setId == null)
 				throw new ArgumentNullException("setId");
 
-			if (!SendDataCommand(null, "ZREMRANGEBYSCORE {0} {1} {2}\r\n",
-				SafeKey(setId), fromScore, toScore))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendExpectInt("ZREMRANGEBYSCORE {0} {1} {2}\r\n", SafeKey(setId), fromScore, toScore);
 		}
 
 		public int ZCard(string setId)
@@ -1255,25 +758,17 @@ namespace ServiceStack.Redis
 			if (setId == null)
 				throw new ArgumentNullException("setId");
 
-			return SendExpectDouble("ZSCORE {0}\r\n", SafeKey(setId));
+			return SendDataExpectDouble(value, "ZSCORE {0} {1}\r\n", SafeKey(setId), value.Length);
 		}
 
 		public int ZUnion(string intoSetId, params string[] setIds)
 		{
-			if (!SendDataCommand(null, "ZUNION {0} {1} {2}\r\n",
-				SafeKey(intoSetId), setIds.Length, SafeKeys(setIds)))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendExpectInt("ZUNION {0} {1} {2}\r\n", SafeKey(intoSetId), setIds.Length, SafeKeys(setIds));
 		}
 
 		public int ZInter(string intoSetId, params string[] setIds)
 		{
-			if (!SendDataCommand(null, "ZINTER {0} {1} {2}\r\n",
-				SafeKey(intoSetId), setIds.Length, SafeKeys(setIds)))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendExpectInt("ZINTER {0} {1} {2}\r\n", SafeKey(intoSetId), setIds.Length, SafeKeys(setIds));
 		}
 
 		#endregion
@@ -1293,44 +788,28 @@ namespace ServiceStack.Redis
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			if (!SendDataCommand(value, "HSET {0} {1} {2}\r\n",
-				SafeKey(hashId), SafeKeys(key), value.Length))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendDataExpectInt(value, "HSET {0} {1} {2}\r\n", SafeKey(hashId), SafeKeys(key), value.Length);
 		}
 
 		public byte[] HGet(string hashId, string key)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			if (!SendDataCommand(null, "HGET {0} {1}\r\n",
-				SafeKey(hashId), SafeKeys(key)))
-				throw CreateConnectionError();
-
-			return ReadData();
+			return SendExpectData("HGET {0} {1}\r\n", SafeKey(hashId), SafeKeys(key));
 		}
 
 		public int HDel(string hashId, string key)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			if (!SendDataCommand(null, "HDEL {0} {1}\r\n",
-				SafeKey(hashId), SafeKeys(key)))
-				throw CreateConnectionError();
-
-			return ReadInt();
+			return SendExpectInt("HDEL {0} {1}\r\n", SafeKey(hashId), SafeKeys(key));
 		}
 
 		public bool HExists(string hashId, string key)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			if (!SendDataCommand(null, "HDEL {0} {1}\r\n",
-				SafeKey(hashId), SafeKeys(key)))
-				throw CreateConnectionError();
-
-			return ReadInt() == Success;
+			return SendExpectInt("HDEL {0} {1}\r\n", SafeKey(hashId), SafeKeys(key)) == Success;
 		}
 
 		public int HLen(string hashId)
@@ -1346,10 +825,7 @@ namespace ServiceStack.Redis
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
 
-			if (!SendDataCommand(null, "HKEYS {0}\r\n", SafeKeys(hashId)))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("HKEYS {0}\r\n", SafeKeys(hashId));
 		}
 
 		public byte[][] HValues(string hashId)
@@ -1357,10 +833,7 @@ namespace ServiceStack.Redis
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
 
-			if (!SendDataCommand(null, "HVALUES {0}\r\n", SafeKeys(hashId)))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("HVALUES {0}\r\n", SafeKeys(hashId));
 		}
 
 		public byte[][] HGetAll(string hashId)
@@ -1368,10 +841,7 @@ namespace ServiceStack.Redis
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
 
-			if (!SendDataCommand(null, "HGETALL {0}\r\n", SafeKeys(hashId)))
-				throw CreateConnectionError();
-
-			return ReadMultiData();
+			return SendExpectMultiData("HGETALL {0}\r\n", SafeKeys(hashId));
 		}
 
 		#endregion
@@ -1438,5 +908,4 @@ namespace ServiceStack.Redis
 			socket = null;
 		}
 	}
-
 }

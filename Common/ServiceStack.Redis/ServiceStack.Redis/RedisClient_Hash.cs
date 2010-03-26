@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Redis
 {
-	public partial class RedisClient
+	public partial class RedisClient 
+		: IRedisClient
 	{
 		public bool SetItemInHash(string hashId, string key, string value)
 		{

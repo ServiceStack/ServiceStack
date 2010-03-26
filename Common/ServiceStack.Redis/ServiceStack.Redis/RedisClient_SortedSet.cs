@@ -6,7 +6,7 @@ using ServiceStack.Redis.Support;
 
 namespace ServiceStack.Redis
 {
-	public partial class RedisClient
+	public partial class RedisClient : IRedisClient
 	{
 		public IHasNamed<IRedisClientSortedSet> SortedSets { get; set; }
 
@@ -106,7 +106,7 @@ namespace ServiceStack.Redis
 			return base.ZRank(setId, ToBytes(value));
 		}
 
-		public int GetItemRankInSortedSetDesc(string setId, string value)
+		public int GetItemIndexInSortedSetDesc(string setId, string value)
 		{
 			return base.ZRevRank(setId, ToBytes(value));
 		}
@@ -123,35 +123,29 @@ namespace ServiceStack.Redis
 			return CreateList(multiDataList);
 		}
 
-		public List<string> GetRangeFromSortedSet(string setId, int startingFrom, int endingAt)
+		public List<string> GetRangeFromSortedSet(string setId, int fromRank, int toRank)
 		{
-			var multiDataList = base.ZRange(setId, startingFrom, endingAt);
+			var multiDataList = base.ZRange(setId, fromRank, toRank);
 			return CreateList(multiDataList);
 		}
 
-		public IDictionary<string, double> GetRangeFromSortedSetWithScores(string setId, int startingFrom, int endingAt)
+		public List<string> GetRangeFromSortedSetDesc(string setId, int fromRank, int toRank)
 		{
-			var multiDataList = base.ZRangeWithScores(setId, startingFrom, endingAt);
+			var multiDataList = base.ZRange(setId, fromRank, toRank);
+			return CreateList(multiDataList);
+		}
+
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSet(string setId, int fromRank, int toRank)
+		{
+			var multiDataList = base.ZRangeWithScores(setId, fromRank, toRank);
 			return CreateSortedScoreMap(multiDataList);
 
 		}
 
-		public List<string> GetRangeFromSortedSetDesc(string setId, int startingFrom, int endingAt)
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSetDesc(string setId, int fromRank, int toRank)
 		{
-			var multiDataList = base.ZRange(setId, startingFrom, endingAt);
-			return CreateList(multiDataList);
-		}
-
-		public IDictionary<string, double> GetRangeFromSortedSetWithScoresDesc(string setId, int startingFrom, int endingAt)
-		{
-			var multiDataList = base.ZRevRangeWithScores(setId, startingFrom, endingAt);
+			var multiDataList = base.ZRevRangeWithScores(setId, fromRank, toRank);
 			return CreateSortedScoreMap(multiDataList);
-		}
-
-		public List<string> GetRangeFromSortedSetByLowestScore(string setId, double startingFrom, double endingAt, int? skip, int? take)
-		{
-			var multiDataList = base.ZRangeByScore(setId, startingFrom, endingAt, skip, take);
-			return CreateList(multiDataList);
 		}
 
 		private static IDictionary<string, double> CreateSortedScoreMap(byte[][] multiDataList)
@@ -169,10 +163,10 @@ namespace ServiceStack.Redis
 			return map;
 		}
 
-		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, double fromScore, double toScore, int? skip, int? take)
+
+		public List<string> GetRangeFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore)
 		{
-			var multiDataList = base.ZRangeByScoreWithScores(setId, fromScore, toScore, skip, take);
-			return CreateSortedScoreMap(multiDataList);
+			return GetRangeFromSortedSetByLowestScore(setId, fromStringScore, toStringScore, null, null);
 		}
 
 		public List<string> GetRangeFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take)
@@ -182,11 +176,56 @@ namespace ServiceStack.Redis
 			return GetRangeFromSortedSetByLowestScore(setId, fromScore, toScore, skip, take);
 		}
 
+		public List<string> GetRangeFromSortedSetByLowestScore(string setId, double fromScore, double toScore)
+		{
+			return GetRangeFromSortedSetByLowestScore(setId, fromScore, toScore, null, null);
+		}
+
+		public List<string> GetRangeFromSortedSetByLowestScore(string setId, double fromScore, double toScore, int? skip, int? take)
+		{
+			var multiDataList = base.ZRangeByScore(setId, fromScore, toScore, skip, take);
+			return CreateList(multiDataList);
+		}
+
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore)
+		{
+			return GetRangeWithScoresFromSortedSetByLowestScore(setId, fromStringScore, toStringScore, null, null);
+		}
+
 		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take)
 		{
 			var fromScore = GetLexicalScore(fromStringScore);
 			var toScore = GetLexicalScore(toStringScore);
 			return GetRangeWithScoresFromSortedSetByLowestScore(setId, fromScore, toScore, skip, take);
+		}
+
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, double fromScore, double toScore)
+		{
+			return GetRangeWithScoresFromSortedSetByLowestScore(setId, fromScore, toScore, null, null);
+		}
+
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, double fromScore, double toScore, int? skip, int? take)
+		{
+			var multiDataList = base.ZRangeByScoreWithScores(setId, fromScore, toScore, skip, take);
+			return CreateSortedScoreMap(multiDataList);
+		}
+
+
+		public List<string> GetRangeFromSortedSetByHighestScore(string setId, string fromStringScore, string toStringScore)
+		{
+			return GetRangeFromSortedSetByHighestScore(setId, fromStringScore, toStringScore, null, null);
+		}
+
+		public List<string> GetRangeFromSortedSetByHighestScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take)
+		{
+			var fromScore = GetLexicalScore(fromStringScore);
+			var toScore = GetLexicalScore(toStringScore);
+			return GetRangeFromSortedSetByHighestScore(setId, fromScore, toScore, skip, take);
+		}
+
+		public List<string> GetRangeFromSortedSetByHighestScore(string setId, double fromScore, double toScore)
+		{
+			return GetRangeFromSortedSetByHighestScore(setId, fromScore, toScore, null, null);
 		}
 
 		public List<string> GetRangeFromSortedSetByHighestScore(string setId, double fromScore, double toScore, int? skip, int? take)
@@ -195,11 +234,30 @@ namespace ServiceStack.Redis
 			return CreateList(multiDataList);
 		}
 
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, string fromStringScore, string toStringScore)
+		{
+			return GetRangeWithScoresFromSortedSetByHighestScore(setId, fromStringScore, toStringScore, null, null);
+		}
+
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, string fromStringScore, string toStringScore, int? skip, int? take)
+		{
+			var fromScore = GetLexicalScore(fromStringScore);
+			var toScore = GetLexicalScore(toStringScore);
+			return GetRangeWithScoresFromSortedSetByHighestScore(setId, fromScore, toScore, skip, take);
+		}
+
+		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, double fromScore, double toScore)
+		{
+			return GetRangeWithScoresFromSortedSetByHighestScore(setId, fromScore, toScore, null, null);
+		}
+
 		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, double fromScore, double toScore, int? skip, int? take)
 		{
 			var multiDataList = base.ZRevRangeByScoreWithScores(setId, fromScore, toScore, skip, take);
 			return CreateSortedScoreMap(multiDataList);
 		}
+
+
 
 		public int RemoveRangeFromSortedSet(string setId, int minRank, int maxRank)
 		{

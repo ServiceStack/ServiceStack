@@ -4,7 +4,8 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis
 {
-	public partial class RedisClient
+	public partial class RedisClient 
+		: IRedisClient
 	{
 		public IHasNamed<IRedisClientSet> Sets { get; set; }
 

@@ -4,7 +4,8 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis
 {
-	public partial class RedisClient
+	public partial class RedisClient 
+		: IRedisClient
 	{
 		const int FirstElement = 0;
 		const int LastElement = -1;
