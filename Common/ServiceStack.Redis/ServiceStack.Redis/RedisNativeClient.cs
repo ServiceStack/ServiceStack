@@ -170,6 +170,10 @@ namespace ServiceStack.Redis
 					return RedisKeyType.Set;
 				case "list":
 					return RedisKeyType.List;
+				case "sortedset":
+					return RedisKeyType.SortedSet;
+				case "hash":
+					return RedisKeyType.Hash;
 			}
 			throw CreateResponseError("Invalid value");
 		}
