@@ -5,6 +5,8 @@ namespace ServiceStack.Redis
 		None, 
 		String, 
 		List, 
-		Set
+		Set,
+		SortedSet,
+		Hash
 	}
 }

@@ -170,6 +170,7 @@ namespace ServiceStack.Redis
 			if (!AssertConnectedSocket()) return false;
 
 			var s = args.Length > 0 ? String.Format(cmd, args) : cmd;
+			s += "\r\n";
 			this.lastCommand = s;
 
 			byte[] r = Encoding.UTF8.GetBytes(s);
@@ -197,6 +198,7 @@ namespace ServiceStack.Redis
 			if (!AssertConnectedSocket()) return false;
 
 			var s = args != null && args.Length > 0 ? String.Format(cmd, args) : cmd;
+			s += "\r\n";
 			this.lastCommand = s;
 
 			byte[] r = Encoding.UTF8.GetBytes(s);
@@ -463,7 +465,7 @@ namespace ServiceStack.Redis
 			throw CreateResponseError("Unknown reply on multi-request: " + c + s);
 		}
 
-		private void AssertListIdAndValue(string listId, byte[] value)
+		private static void AssertListIdAndValue(string listId, byte[] value)
 		{
 			if (listId == null)
 				throw new ArgumentNullException("listId");
