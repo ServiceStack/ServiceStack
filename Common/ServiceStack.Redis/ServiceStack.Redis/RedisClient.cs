@@ -1,4 +1,5 @@
 //
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
@@ -6,7 +7,7 @@
 //
 // Copyright 2010 Liquidbit Ltd.
 //
-// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
 using System;
@@ -53,8 +54,8 @@ namespace ServiceStack.Redis
 			this.Lists = new RedisClientLists(this);
 			this.Sets = new RedisClientSets(this);
 			this.SortedSets = new RedisClientSortedSets(this);
+			this.Hashes = new RedisClientHashes(this);
 		}
-
 
 		public string this[string key]
 		{
@@ -83,7 +84,7 @@ namespace ServiceStack.Redis
 		public void SetString(string key, string value)
 		{
 			var bytesValue = value != null
-				? ToBytes(value)
+				? value.ToUtf8Bytes()
 				: null;
 
 			Set(key, bytesValue);
@@ -94,7 +95,7 @@ namespace ServiceStack.Redis
 			if (value == null)
 				throw new ArgumentNullException("value");
 
-			return SetNX(key, ToBytes(value)) == Success;
+			return SetNX(key, value.ToUtf8Bytes()) == Success;
 		}
 
 		public string GetString(string key)
@@ -102,12 +103,12 @@ namespace ServiceStack.Redis
 			var bytes = Get(key);
 			return bytes == null
 				? null
-				: ToString(bytes);
+				: bytes.FromUtf8Bytes();
 		}
 
 		public string GetAndSetString(string key, string value)
 		{
-			return ToString(GetSet(key, ToBytes(value)));
+			return GetSet(key, value.ToUtf8Bytes()).FromUtf8Bytes();
 		}
 
 		public bool ContainsKey(string key)
@@ -172,9 +173,9 @@ namespace ServiceStack.Redis
 			return new RedisTypedClient<T>(this);
 		}
 
-		public IRedisAtomicCommand CreateAtomicCommand()
+		public IRedisTransaction CreateTransaction()
 		{
-			return new RedisAtomicCommand(this);
+			return new RedisTransaction(this);
 		}
 
 		public List<string> GetKeys(string pattern)
@@ -182,14 +183,14 @@ namespace ServiceStack.Redis
 			var hasBug = this.ServerVersion.CompareTo("1.2.5") <= 0;
 			if (hasBug)
 			{
-				var spaceDelimitedKeys = ToString(KeysV125(pattern));
+				var spaceDelimitedKeys = KeysV125(pattern).FromUtf8Bytes();
 				return spaceDelimitedKeys.IsNullOrEmpty()
 					? new List<string>()
 					: new List<string>(spaceDelimitedKeys.Split(' '));
 			}
 
 			var multiDataList = Keys(pattern);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public List<string> GetKeyValues(List<string> keys)
@@ -201,7 +202,7 @@ namespace ServiceStack.Redis
 			{
 				if (resultBytes == null) continue;
 
-				var resultString = ToString(resultBytes);
+				var resultString = resultBytes.FromUtf8Bytes();
 				results.Add(resultString);
 			}
 
@@ -220,7 +221,7 @@ namespace ServiceStack.Redis
 			{
 				if (resultBytes == null) continue;
 
-				var resultString = ToString(resultBytes);
+				var resultString = resultBytes.FromUtf8Bytes();
 				var result = TypeSerializer.DeserializeFromString<T>(resultString);
 				results.Add(result);
 			}
@@ -331,17 +332,6 @@ namespace ServiceStack.Redis
 		}
 
 		#endregion
-
-
-		public static string ToString(byte[] bytes)
-		{
-			return Encoding.UTF8.GetString(bytes);
-		}
-
-		public static byte[] ToBytes(string value)
-		{
-			return Encoding.UTF8.GetBytes(value);
-		}
 	}
 
 }

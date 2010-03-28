@@ -71,19 +71,21 @@
   <ItemGroup>
     <Compile Include="BasicRedisClientManager.cs" />
     <Compile Include="BasicRedisClientManager.ICacheClient.cs" />
+    <Compile Include="RedisClientHash.cs" />
     <Compile Include="Generic\IRedisSortedSet.Generic.cs" />
     <Compile Include="Generic\RedisTypedClient_Set.cs" />
     <Compile Include="Generic\RedisTypedClient_List.cs" />
+    <Compile Include="IRedisHash.cs" />
     <Compile Include="RedisClientSortedSet.cs" />
-    <Compile Include="IRedisClientSortedSet.cs" />
-    <Compile Include="IRedisAtomicCommand.cs" />
-    <Compile Include="IRedisClientSet.cs" />
+    <Compile Include="IRedisSortedSet.cs" />
+    <Compile Include="IRedisTransaction.cs" />
+    <Compile Include="IRedisSet.cs" />
     <Compile Include="IRedisList.cs" />
     <Compile Include="Messaging\RedisTransientMessageFactory.cs" />
     <Compile Include="Messaging\RedisMessageProducer.cs" />
     <Compile Include="Messaging\RedisMessageQueueClient.cs" />
     <Compile Include="Messaging\RedisTransientMessageService.cs" />
-    <Compile Include="RedisAtomicCommand.cs" />
+    <Compile Include="RedisTransaction.cs" />
     <Compile Include="RedisClientFactory.cs" />
     <Compile Include="Generic\IRedisList.Generic.cs" />
     <Compile Include="Generic\IRedisSet.Generic.cs" />

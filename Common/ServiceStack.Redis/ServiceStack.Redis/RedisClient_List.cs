@@ -1,3 +1,15 @@
+//
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
+// ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
+//
+
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
@@ -37,42 +49,32 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		private static List<string> CreateList(byte[][] multiDataList)
-		{
-			var results = new List<string>();
-			foreach (var multiData in multiDataList)
-			{
-				results.Add(ToString(multiData));
-			}
-			return results;
-		}
-
 		public List<string> GetAllFromList(string listId)
 		{
 			var multiDataList = LRange(listId, FirstElement, LastElement);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public List<string> GetRangeFromList(string listId, int startingFrom, int endingAt)
 		{
 			var multiDataList = LRange(listId, startingFrom, endingAt);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public List<string> GetRangeFromSortedList(string listId, int startingFrom, int endingAt)
 		{
 			var multiDataList = Sort(listId, startingFrom, endingAt, true, false);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public void AddToList(string listId, string value)
 		{
-			RPush(listId, ToBytes(value));
+			RPush(listId, value.ToUtf8Bytes());
 		}
 
 		public void PrependToList(string listId, string value)
 		{
-			LPush(listId, ToBytes(value));
+			LPush(listId, value.ToUtf8Bytes());
 		}
 
 		public void RemoveAllFromList(string listId)
@@ -87,12 +89,12 @@ namespace ServiceStack.Redis
 
 		public int RemoveValueFromList(string listId, string value)
 		{
-			return LRem(listId, 0, ToBytes(value));
+			return LRem(listId, 0, value.ToUtf8Bytes());
 		}
 
 		public int RemoveValueFromList(string listId, string value, int noOfMatches)
 		{
-			return LRem(listId, noOfMatches, ToBytes(value));
+			return LRem(listId, noOfMatches, value.ToUtf8Bytes());
 		}
 
 		public int GetListCount(string listId)
@@ -102,27 +104,27 @@ namespace ServiceStack.Redis
 
 		public string GetItemFromList(string listId, int listIndex)
 		{
-			return ToString(LIndex(listId, listIndex));
+			return LIndex(listId, listIndex).FromUtf8Bytes();
 		}
 
 		public void SetItemInList(string listId, int listIndex, string value)
 		{
-			LSet(listId, listIndex, ToBytes(value));
+			LSet(listId, listIndex, value.ToUtf8Bytes());
 		}
 
 		public string DequeueFromList(string listId)
 		{
-			return ToString(LPop(listId));
+			return LPop(listId).FromUtf8Bytes();
 		}
 
 		public string PopFromList(string listId)
 		{
-			return ToString(RPop(listId));
+			return RPop(listId).FromUtf8Bytes();
 		}
 
 		public string PopAndPushBetweenLists(string fromListId, string toListId)
 		{
-			return ToString(RPopLPush(fromListId, toListId));
+			return RPopLPush(fromListId, toListId).FromUtf8Bytes();
 		}
 	}
 }

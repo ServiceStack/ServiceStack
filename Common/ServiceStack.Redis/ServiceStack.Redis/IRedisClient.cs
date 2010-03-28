@@ -1,4 +1,5 @@
 //
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
@@ -6,7 +7,7 @@
 //
 // Copyright 2010 Liquidbit Ltd.
 //
-// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
 using System;
@@ -62,10 +63,11 @@ namespace ServiceStack.Redis
 		IRedisTypedClient<T> GetTypedClient<T>();
 
 		IHasNamed<IRedisList> Lists { get; set; }
-		IHasNamed<IRedisClientSet> Sets { get; set; }
-		IHasNamed<IRedisClientSortedSet> SortedSets { get; set; }
+		IHasNamed<IRedisSet> Sets { get; set; }
+		IHasNamed<IRedisSortedSet> SortedSets { get; set; }
+		IHasNamed<IRedisHash> Hashes { get; set; }
 
-		IRedisAtomicCommand CreateAtomicCommand();
+		IRedisTransaction CreateTransaction();
 
 		#region List operations
 
@@ -159,7 +161,7 @@ namespace ServiceStack.Redis
 
 		bool SetItemInHash(string hashId, string key, string value);
 		string GetItemFromHash(string hashId, string key);
-		bool DeleteItemInHash(string hashId, string key);
+		bool RemoveFromHash(string hashId, string key);
 		int GetHashCount(string hashId);
 		List<string> GetHashKeys(string hashId);
 		List<string> GetHashValues(string hashId);

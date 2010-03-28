@@ -1,4 +1,5 @@
 //
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
@@ -6,7 +7,7 @@
 //
 // Copyright 2010 Liquidbit Ltd.
 //
-// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
 using System;
@@ -20,7 +21,7 @@ namespace ServiceStack.Redis
 	/// Wrap the common redis set operations under a ICollection[string] interface.
 	/// </summary>
 	internal class RedisClientSet
-		: IRedisClientSet
+		: IRedisSet
 	{
 		private readonly RedisClient client;
 		private readonly string setId;
@@ -116,49 +117,49 @@ namespace ServiceStack.Redis
 			return client.PopFromSet(setId);
 		}
 
-		public void Move(string value, IRedisClientSet toSet)
+		public void Move(string value, IRedisSet toSet)
 		{
 			client.MoveBetweenSets(setId, toSet.Id, value);
 		}
 
-		private List<string> MergeSetIds(IRedisClientSet[] withSets)
+		private List<string> MergeSetIds(IRedisSet[] withSets)
 		{
 			var allSetIds = new List<string> { setId };
 			allSetIds.AddRange(withSets.ToList().ConvertAll(x => x.Id));
 			return allSetIds;
 		}
 
-		public HashSet<string> Intersect(params IRedisClientSet[] withSets)
+		public HashSet<string> Intersect(params IRedisSet[] withSets)
 		{
 			var allSetIds = MergeSetIds(withSets);
 			return client.GetIntersectFromSets(allSetIds.ToArray());
 		}
 
-		public void StoreIntersect(params IRedisClientSet[] withSets)
+		public void StoreIntersect(params IRedisSet[] withSets)
 		{
 			var withSetIds = withSets.ToList().ConvertAll(x => x.Id).ToArray();
 			client.StoreIntersectFromSets(setId, withSetIds);
 		}
 
-		public HashSet<string> Union(params IRedisClientSet[] withSets)
+		public HashSet<string> Union(params IRedisSet[] withSets)
 		{
 			var allSetIds = MergeSetIds(withSets);
 			return client.GetUnionFromSets(allSetIds.ToArray());
 		}
 
-		public void StoreUnion(params IRedisClientSet[] withSets)
+		public void StoreUnion(params IRedisSet[] withSets)
 		{
 			var withSetIds = withSets.ToList().ConvertAll(x => x.Id).ToArray();
 			client.StoreUnionFromSets(setId, withSetIds);
 		}
 
-		public HashSet<string> Diff(IRedisClientSet[] withSets)
+		public HashSet<string> Diff(IRedisSet[] withSets)
 		{
 			var withSetIds = withSets.ToList().ConvertAll(x => x.Id).ToArray();
 			return client.GetDifferencesFromSet(setId, withSetIds);
 		}
 
-		public void StoreDiff(IRedisClientSet fromSet, params IRedisClientSet[] withSets)
+		public void StoreDiff(IRedisSet fromSet, params IRedisSet[] withSets)
 		{
 			var withSetIds = withSets.ToList().ConvertAll(x => x.Id).ToArray();
 			client.StoreDifferencesFromSet(setId, fromSet.Id, withSetIds);

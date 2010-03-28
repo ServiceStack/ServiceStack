@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{951D28EE-5D22-4C62-AC0F-1661A8CEEC5A}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdhocClientTests.cs" />
+    <Compile Include="RedisClientHashTests.cs" />
     <Compile Include="RedisClientSortedSetTests.cs" />
     <Compile Include="Generic\RedisClientSetTestsModels.cs" />
     <Compile Include="Generic\RedisClientListTestsBase.cs" />
@@ -106,6 +107,9 @@
     <Compile Include="RedisClientSetTests.cs" />
     <Compile Include="RedisClientTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RedisClientTestsBase.cs" />
+    <Compile Include="RedisTransactionCommonTests.cs" />
+    <Compile Include="RedisTransactionTests.cs" />
     <Compile Include="Support\TcpClientWithTimeout.cs" />
     <Compile Include="TestConfig.cs" />
     <Compile Include="RedisPersistenceProviderTests.cs" />

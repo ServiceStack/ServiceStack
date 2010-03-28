@@ -6,7 +6,7 @@
 //
 // Copyright 2010 Novell, Inc.
 //
-// Licensed under the same terms of reddis: new BSD license.
+// Licensed under the same terms of Redis: new BSD license.
 //
 
 using System;
@@ -214,6 +214,11 @@ namespace ServiceStack.Redis
 			return true;
 		}
 
+		private int SafeReadByte()
+		{
+			return bstream.ReadByte();
+		}
+
 		protected string SendExpectString(string cmd, params object[] args)
 		{
 			if (!SendCommand(cmd, args))
@@ -249,8 +254,13 @@ namespace ServiceStack.Redis
 			if (!SendDataCommand(data, cmd, args))
 				throw CreateConnectionError();
 
-			var result = ReadInt();
-			return result;
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
+				ExpectQueued();
+				return default(int);
+			}
+			return ReadInt();
 		}
 
 		private void SendDataExpectSuccess(byte[] data, string cmd, params object[] args)
@@ -258,12 +268,13 @@ namespace ServiceStack.Redis
 			if (!SendDataCommand(data, cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteVoidQueuedCommand(ExpectSuccess);
+				ExpectQueued();
+				return;
+			}
 			ExpectSuccess();
-		}
-
-		private int SafeReadByte()
-		{
-			return bstream.ReadByte();
 		}
 
 		protected string SendGetString(string cmd, params object[] args)
@@ -271,6 +282,12 @@ namespace ServiceStack.Redis
 			if (!SendCommand(cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteStringQueuedCommand(ReadLine);
+				ExpectQueued();
+				return null;
+			}
 			return ReadLine();
 		}
 
@@ -294,11 +311,44 @@ namespace ServiceStack.Redis
 				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
 		}
 
+		private void ExpectWord(string word)
+		{
+			int c = SafeReadByte();
+			if (c == -1)
+				throw CreateResponseError("No more data");
+
+			var s = ReadLine();
+
+			Log((char)c + s);
+
+			if (c == '-')
+				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+
+			if (s != word)
+				throw CreateResponseError(string.Format("Expected '{0}' got '{1}'", word, s));
+		}
+
+		protected void ExpectOk()
+		{
+			ExpectWord("OK");
+		}
+
+		protected void ExpectQueued()
+		{
+			ExpectWord("QUEUED");
+		}
+
 		protected void SendExpectSuccess(string cmd, params object[] args)
 		{
 			if (!SendCommand(cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteVoidQueuedCommand(ExpectSuccess);
+				ExpectQueued();
+				return;
+			}
 			ExpectSuccess();
 		}
 
@@ -307,6 +357,12 @@ namespace ServiceStack.Redis
 			if (!SendCommand(cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
+				ExpectQueued();
+				return default(int);
+			}
 			return ReadInt();
 		}
 
@@ -315,6 +371,12 @@ namespace ServiceStack.Redis
 			if (!SendCommand(cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteDoubleQueuedCommand(ReadDataAsDouble);
+				ExpectQueued();
+				return default(double);
+			}
 			return ReadDataAsDouble();
 		}
 
@@ -323,7 +385,21 @@ namespace ServiceStack.Redis
 			if (!SendDataCommand(data, cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteDoubleQueuedCommand(ReadDataAsDouble);
+				ExpectQueued();
+				return default(double);
+			}
 			return ReadDataAsDouble();
+		}
+
+		protected void SendExpectOk(string cmd, params object[] args)
+		{
+			if (!SendCommand(cmd, args))
+				throw CreateConnectionError();
+
+			ExpectOk();
 		}
 
 		protected byte[] SendExpectData(string cmd, params object[] args)
@@ -331,6 +407,12 @@ namespace ServiceStack.Redis
 			if (!SendCommand(cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
+				ExpectQueued();
+				return null;
+			}
 			return ReadData();
 		}
 
@@ -339,6 +421,12 @@ namespace ServiceStack.Redis
 			if (!SendDataCommand(data, cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
+				ExpectQueued();
+				return null;
+			}
 			return ReadData();
 		}
 
@@ -347,6 +435,12 @@ namespace ServiceStack.Redis
 			if (!SendCommand(cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
+				ExpectQueued();
+				return null;
+			}
 			return ReadMultiData();
 		}
 
@@ -355,6 +449,12 @@ namespace ServiceStack.Redis
 			if (!SendDataCommand(data, cmd, args))
 				throw CreateConnectionError();
 
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
+				ExpectQueued();
+				return null;
+			}
 			return ReadMultiData();
 		}
 
@@ -460,6 +560,27 @@ namespace ServiceStack.Redis
 						result[i] = ReadData();
 
 					return result;
+				}
+			}
+			throw CreateResponseError("Unknown reply on multi-request: " + c + s);
+		}
+
+		private int ReadMultiDataResultCount()
+		{
+			int c = SafeReadByte();
+			if (c == -1)
+				throw CreateResponseError("No more data");
+
+			var s = ReadLine();
+			Log("R: " + s);
+			if (c == '-')
+				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+			if (c == '*')
+			{
+				int count;
+				if (int.TryParse(s, out count))
+				{
+					return count;
 				}
 			}
 			throw CreateResponseError("Unknown reply on multi-request: " + c + s);

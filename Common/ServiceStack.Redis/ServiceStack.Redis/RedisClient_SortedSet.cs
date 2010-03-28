@@ -1,3 +1,15 @@
+//
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
+// ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
+//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +20,10 @@ namespace ServiceStack.Redis
 {
 	public partial class RedisClient : IRedisClient
 	{
-		public IHasNamed<IRedisClientSortedSet> SortedSets { get; set; }
+		public IHasNamed<IRedisSortedSet> SortedSets { get; set; }
 
 		internal class RedisClientSortedSets
-			: IHasNamed<IRedisClientSortedSet>
+			: IHasNamed<IRedisSortedSet>
 		{
 			private readonly RedisClient client;
 
@@ -20,7 +32,7 @@ namespace ServiceStack.Redis
 				this.client = client;
 			}
 
-			public IRedisClientSortedSet this[string setId]
+			public IRedisSortedSet this[string setId]
 			{
 				get
 				{
@@ -63,12 +75,12 @@ namespace ServiceStack.Redis
 
 		public bool AddToSortedSet(string setId, string value, double score)
 		{
-			return base.ZAdd(setId, score, ToBytes(value)) == Success;
+			return base.ZAdd(setId, score, value.ToUtf8Bytes()) == Success;
 		}
 
 		public double RemoveFromSortedSet(string setId, string value)
 		{
-			return base.ZRem(setId, ToBytes(value));
+			return base.ZRem(setId, value.ToUtf8Bytes());
 		}
 
 		public string PopFromSortedSetItemWithLowestScore(string setId)
@@ -78,7 +90,7 @@ namespace ServiceStack.Redis
 			if (topScoreItemBytes.Length == 0) return null;
 
 			base.ZRem(setId, topScoreItemBytes[0]);
-			return ToString(topScoreItemBytes[0]);
+			return topScoreItemBytes[0].FromUtf8Bytes();
 		}
 
 		public string PopFromSortedSetItemWithHighestScore(string setId)
@@ -88,51 +100,51 @@ namespace ServiceStack.Redis
 			if (topScoreItemBytes.Length == 0) return null;
 
 			base.ZRem(setId, topScoreItemBytes[0]);
-			return ToString(topScoreItemBytes[0]);
+			return topScoreItemBytes[0].FromUtf8Bytes();
 		}
 
 		public bool SortedSetContainsValue(string setId, string value)
 		{
-			return base.ZRank(setId, ToBytes(value)) != -1;
+			return base.ZRank(setId, value.ToUtf8Bytes()) != -1;
 		}
 
 		public double IncrementItemInSortedSet(string setId, double incrementBy, string value)
 		{
-			return base.ZIncrBy(setId, incrementBy, ToBytes(value));
+			return base.ZIncrBy(setId, incrementBy, value.ToUtf8Bytes());
 		}
 
 		public int GetItemIndexInSortedSet(string setId, string value)
 		{
-			return base.ZRank(setId, ToBytes(value));
+			return base.ZRank(setId, value.ToUtf8Bytes());
 		}
 
 		public int GetItemIndexInSortedSetDesc(string setId, string value)
 		{
-			return base.ZRevRank(setId, ToBytes(value));
+			return base.ZRevRank(setId, value.ToUtf8Bytes());
 		}
 
 		public List<string> GetAllFromSortedSet(string setId)
 		{
 			var multiDataList = base.ZRange(setId, FirstElement, LastElement);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public List<string> GetAllFromSortedSetDesc(string setId)
 		{
 			var multiDataList = base.ZRevRange(setId, FirstElement, LastElement);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public List<string> GetRangeFromSortedSet(string setId, int fromRank, int toRank)
 		{
 			var multiDataList = base.ZRange(setId, fromRank, toRank);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public List<string> GetRangeFromSortedSetDesc(string setId, int fromRank, int toRank)
 		{
 			var multiDataList = base.ZRange(setId, fromRank, toRank);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public IDictionary<string, double> GetRangeWithScoresFromSortedSet(string setId, int fromRank, int toRank)
@@ -154,9 +166,9 @@ namespace ServiceStack.Redis
 
 			for (var i = 0; i < multiDataList.Length; i += 2)
 			{
-				var key = ToString(multiDataList[i]);
+				var key = multiDataList[i].FromUtf8Bytes();
 				double value;
-				double.TryParse(ToString(multiDataList[i + 1]), out value);
+				double.TryParse(multiDataList[i + 1].FromUtf8Bytes(), out value);
 				map[key] = value;
 			}
 
@@ -184,7 +196,7 @@ namespace ServiceStack.Redis
 		public List<string> GetRangeFromSortedSetByLowestScore(string setId, double fromScore, double toScore, int? skip, int? take)
 		{
 			var multiDataList = base.ZRangeByScore(setId, fromScore, toScore, skip, take);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore)
@@ -231,7 +243,7 @@ namespace ServiceStack.Redis
 		public List<string> GetRangeFromSortedSetByHighestScore(string setId, double fromScore, double toScore, int? skip, int? take)
 		{
 			var multiDataList = base.ZRevRangeByScore(setId, fromScore, toScore, skip, take);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public IDictionary<string, double> GetRangeWithScoresFromSortedSetByHighestScore(string setId, string fromStringScore, string toStringScore)
@@ -276,7 +288,7 @@ namespace ServiceStack.Redis
 
 		public double GetItemScoreInSortedSet(string setId, string value)
 		{
-			return base.ZScore(setId, ToBytes(value));
+			return base.ZScore(setId, value.ToUtf8Bytes());
 		}
 
 		public int StoreIntersectFromSortedSets(string intoSetId, params string[] setIds)

@@ -1,4 +1,5 @@
 //
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
@@ -6,7 +7,7 @@
 //
 // Copyright 2010 Liquidbit Ltd.
 //
-// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
 using System;

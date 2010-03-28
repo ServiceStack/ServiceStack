@@ -1,3 +1,15 @@
+//
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
+// ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
+//
+
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
@@ -7,10 +19,10 @@ namespace ServiceStack.Redis
 	public partial class RedisClient 
 		: IRedisClient
 	{
-		public IHasNamed<IRedisClientSet> Sets { get; set; }
+		public IHasNamed<IRedisSet> Sets { get; set; }
 
 		internal class RedisClientSets
-			: IHasNamed<IRedisClientSet>
+			: IHasNamed<IRedisSet>
 		{
 			private readonly RedisClient client;
 
@@ -19,7 +31,7 @@ namespace ServiceStack.Redis
 				this.client = client;
 			}
 
-			public IRedisClientSet this[string setId]
+			public IRedisSet this[string setId]
 			{
 				get
 				{
@@ -39,7 +51,7 @@ namespace ServiceStack.Redis
 			var results = new HashSet<string>();
 			foreach (var multiData in multiDataList)
 			{
-				results.Add(ToString(multiData));
+				results.Add(multiData.FromUtf8Bytes());
 			}
 			return results;
 		}
@@ -47,7 +59,7 @@ namespace ServiceStack.Redis
 		public List<string> GetSortedRange(string setId, int startingFrom, int endingAt)
 		{
 			var multiDataList = Sort(setId, startingFrom, endingAt, true, false);
-			return CreateList(multiDataList);
+			return multiDataList.ToStringList();
 		}
 
 		public HashSet<string> GetAllFromSet(string setId)
@@ -58,22 +70,22 @@ namespace ServiceStack.Redis
 
 		public void AddToSet(string setId, string value)
 		{
-			SAdd(setId, ToBytes(value));
+			SAdd(setId, value.ToUtf8Bytes());
 		}
 
 		public void RemoveFromSet(string setId, string value)
 		{
-			SRem(setId, ToBytes(value));
+			SRem(setId, value.ToUtf8Bytes());
 		}
 
 		public string PopFromSet(string setId)
 		{
-			return ToString(SPop(setId));
+			return SPop(setId).FromUtf8Bytes();
 		}
 
 		public void MoveBetweenSets(string fromSetId, string toSetId, string value)
 		{
-			SMove(fromSetId, toSetId, ToBytes(value));
+			SMove(fromSetId, toSetId, value.ToUtf8Bytes());
 		}
 
 		public int GetSetCount(string setId)
@@ -83,7 +95,7 @@ namespace ServiceStack.Redis
 
 		public bool SetContainsValue(string setId, string value)
 		{
-			return SIsMember(setId, ToBytes(value)) == 1;
+			return SIsMember(setId, value.ToUtf8Bytes()) == 1;
 		}
 
 		public HashSet<string> GetIntersectFromSets(params string[] setIds)
@@ -136,7 +148,7 @@ namespace ServiceStack.Redis
 
 		public string GetRandomEntryFromSet(string setId)
 		{
-			return ToString(SRandMember(setId));
+			return SRandMember(setId).FromUtf8Bytes();
 		}
 	}
 }

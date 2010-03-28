@@ -6,16 +6,17 @@ namespace ServiceStack.Redis.Tests
 {
 	[TestFixture]
 	public class RedisClientTests
+		: RedisClientTestsBase
 	{
 		[Test]
 		public void Can_Set_and_Get_string()
 		{
 			const string value = "value";
-			using (var redis = new RedisClient(TestConfig.SingleHost))
+			using (var redis = GetRedisClient())
 			{
 				redis.SetString("key", value);
 				var valueBytes = redis.Get("key");
-				var valueString = Encoding.UTF8.GetString(valueBytes);
+				var valueString = GetString(valueBytes);
 
 				Assert.That(valueString, Is.EqualTo(value));
 			}
@@ -26,11 +27,11 @@ namespace ServiceStack.Redis.Tests
 		{
 			const string key = "key with spaces";
 			const string value = "value";
-			using (var redis = new RedisClient(TestConfig.SingleHost))
+			using (var redis = GetRedisClient())
 			{
 				redis.SetString(key, value);
 				var valueBytes = redis.Get(key);
-				var valueString = Encoding.UTF8.GetString(valueBytes);
+				var valueString = GetString(valueBytes);
 
 				Assert.That(valueString, Is.EqualTo(value));
 			}
@@ -47,7 +48,7 @@ namespace ServiceStack.Redis.Tests
 				value[i] = (byte) i;
 			}
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
+			using (var redis = GetRedisClient())
 			{
 				redis.Set(key, value);
 				var resultValue = redis.Get(key);
@@ -59,7 +60,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void GetKeys_returns_matching_collection()
 		{
-			using (var redis = new RedisClient(TestConfig.SingleHost))
+			using (var redis = GetRedisClient())
 			{
 				redis.Set("ss-tests:a1", "One");
 				redis.Set("ss-tests:a2", "One");
@@ -74,7 +75,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void GetKeys_on_non_existent_keys_returns_empty_collection()
 		{
-			using (var redis = new RedisClient(TestConfig.SingleHost))
+			using (var redis = GetRedisClient())
 			{
 				var matchingKeys = redis.GetKeys("ss-tests:NOTEXISTS");
 

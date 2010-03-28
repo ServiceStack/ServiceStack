@@ -6,7 +6,7 @@
 //
 // Copyright 2010 Novell, Inc.
 //
-// Licensed under the same terms of reddis: new BSD license.
+// Licensed under the same terms of Redis: new BSD license.
 //
 //#define DEBUG
 
@@ -62,6 +62,8 @@ namespace ServiceStack.Redis
 		public int RetryCount { get; set; }
 		public int SendTimeout { get; set; }
 		public string Password { get; set; }
+
+		internal RedisTransaction CurrentTransaction { get; set; }
 
 		public RedisNativeClient(string host)
 			: this(host, DefaultPort)
@@ -407,17 +409,24 @@ namespace ServiceStack.Redis
 
 		internal void Multi()
 		{
-			SendExpectData("MULTI");
+			SendExpectOk("MULTI");
 		}
 
-		internal void Exec()
+		/// <summary>
+		/// Requires custom result parsing
+		/// </summary>
+		/// <returns>Number of results</returns>
+		internal int Exec()
 		{
-			SendExpectData("EXEC");
+			if (!SendCommand("EXEC"))
+				throw CreateConnectionError();
+
+			return this.ReadMultiDataResultCount();
 		}
 
 		internal void Discard()
 		{
-			SendExpectData("DISCARD");
+			SendExpectSuccess("DISCARD");
 		}
 
 		#endregion
@@ -804,14 +813,16 @@ namespace ServiceStack.Redis
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			return SendExpectInt("HDEL {0} {1}", SafeKey(hashId), SafeKeys(key));
+			var keyBytes = key.ToUtf8Bytes();
+			return SendDataExpectInt(keyBytes, "HDEL {0} {1}", SafeKey(hashId), keyBytes.Length);
 		}
 
 		public bool HExists(string hashId, string key)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			return SendExpectInt("HDEL {0} {1}", SafeKey(hashId), SafeKeys(key)) == Success;
+			var keyBytes = key.ToUtf8Bytes();
+			return SendDataExpectInt(keyBytes, "HEXISTS {0} {1}", SafeKey(hashId), keyBytes.Length) == Success;
 		}
 
 		public int HLen(string hashId)

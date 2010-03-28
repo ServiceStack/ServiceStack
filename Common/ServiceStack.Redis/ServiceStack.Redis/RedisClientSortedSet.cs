@@ -1,4 +1,5 @@
 //
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
 // ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
 //
 // Authors:
@@ -6,7 +7,7 @@
 //
 // Copyright 2010 Liquidbit Ltd.
 //
-// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
 using System;
@@ -20,7 +21,7 @@ namespace ServiceStack.Redis
 	/// Wrap the common redis set operations under a ICollection[string] interface.
 	/// </summary>
 	internal class RedisClientSortedSet
-		: IRedisClientSortedSet
+		: IRedisSortedSet
 	{
 		private readonly RedisClient client;
 		private readonly string setId;
@@ -111,14 +112,24 @@ namespace ServiceStack.Redis
 			return client.GetRangeFromSortedSet(setId, startingRank, endingRank);
 		}
 
-		public List<string> GetRangeByScore(double startingFrom, double toScore)
+		public List<string> GetRangeByScore(string fromStringScore, string toStringScore)
 		{
-			return GetRangeByScore(startingFrom, toScore, null, null);
+			return GetRangeByScore(fromStringScore, toStringScore, null, null);
 		}
 
-		public List<string> GetRangeByScore(double startingFrom, double toScore, int? skip, int? take)
+		public List<string> GetRangeByScore(string fromStringScore, string toStringScore, int? skip, int? take)
 		{
-			return client.GetRangeFromSortedSetByLowestScore(setId, startingFrom, toScore, skip, take);
+			return client.GetRangeFromSortedSetByLowestScore(setId, fromStringScore, toStringScore, skip, take);
+		}
+
+		public List<string> GetRangeByScore(double fromScore, double toScore)
+		{
+			return GetRangeByScore(fromScore, toScore, null, null);
+		}
+
+		public List<string> GetRangeByScore(double fromScore, double toScore, int? skip, int? take)
+		{
+			return client.GetRangeFromSortedSetByLowestScore(setId, fromScore, toScore, skip, take);
 		}
 
 		public void RemoveRange(int startingFrom, int toRank)
@@ -131,12 +142,12 @@ namespace ServiceStack.Redis
 			client.RemoveRangeFromSortedSetByScore(setId, fromScore, toScore);
 		}
 
-		public void StoreFromIntersect(params IRedisClientSortedSet[] ofSets)
+		public void StoreFromIntersect(params IRedisSortedSet[] ofSets)
 		{
 			client.StoreIntersectFromSets(setId, ofSets.GetIds());
 		}
 
-		public void StoreFromUnion(params IRedisClientSortedSet[] ofSets)
+		public void StoreFromUnion(params IRedisSortedSet[] ofSets)
 		{
 			client.StoreUnionFromSets(setId, ofSets.GetIds());
 		}

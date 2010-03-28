@@ -7,65 +7,50 @@ namespace ServiceStack.Redis.Tests
 {
 	[TestFixture]
 	public class RedisClientSetTests
+		: RedisClientTestsBase
 	{
 		private const string SetId = "testset";
+		private List<string> storeMembers;
 
 		[SetUp]
-		public void SetUp()
+		public override void  OnBeforeEachTest()
 		{
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				redis.FlushAll();
-			}
+ 			 base.OnBeforeEachTest();
+			 storeMembers = new List<string> { "one", "two", "three", "four" };
 		}
 
 		[Test]
 		public void Can_AddToSet_and_GetAllFromSet()
 		{
-			const string setId = "testset";
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				storeMembers.ForEach(x => redis.AddToSet(setId, x));
+			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
 
-				var members = redis.GetAllFromSet(setId);
-				Assert.That(members, Is.EquivalentTo(storeMembers));
-			}
+			var members = Redis.GetAllFromSet(SetId);
+			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 		[Test]
 		public void Can_RemoveFromSet()
 		{
-			const string setId = "testremset";
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
 			const string removeMember = "two";
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				storeMembers.ForEach(x => redis.AddToSet(setId, x));
+			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
 
-				redis.RemoveFromSet(setId, removeMember);
+			Redis.RemoveFromSet(SetId, removeMember);
 
-				storeMembers.Remove(removeMember);
+			storeMembers.Remove(removeMember);
 
-				var members = redis.GetAllFromSet(setId);
-				Assert.That(members, Is.EquivalentTo(storeMembers));
-			}
+			var members = Redis.GetAllFromSet(SetId);
+			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 		[Test]
 		public void Can_PopFromSet()
 		{
-			const string setId = "testpopset";
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				storeMembers.ForEach(x => redis.AddToSet(setId, x));
+			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
 
-				var member = redis.PopFromSet(setId);
+			var member = Redis.PopFromSet(SetId);
 
-				Assert.That(storeMembers.Contains(member), Is.True);
-			}
+			Assert.That(storeMembers.Contains(member), Is.True);
 		}
 
 		[Test]
@@ -77,53 +62,41 @@ namespace ServiceStack.Redis.Tests
 			var fromSetIdMembers = new List<string> { "one", "two", "three", "four" };
 			var toSetIdMembers = new List<string> { "five", "six", "seven" };
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				fromSetIdMembers.ForEach(x => redis.AddToSet(fromSetId, x));
-				toSetIdMembers.ForEach(x => redis.AddToSet(toSetId, x));
+			fromSetIdMembers.ForEach(x => Redis.AddToSet(fromSetId, x));
+			toSetIdMembers.ForEach(x => Redis.AddToSet(toSetId, x));
 
-				redis.MoveBetweenSets(fromSetId, toSetId, moveMember);
+			Redis.MoveBetweenSets(fromSetId, toSetId, moveMember);
 
-				fromSetIdMembers.Remove(moveMember);
-				toSetIdMembers.Add(moveMember);
+			fromSetIdMembers.Remove(moveMember);
+			toSetIdMembers.Add(moveMember);
 
-				var readFromSetId = redis.GetAllFromSet(fromSetId);
-				var readToSetId = redis.GetAllFromSet(toSetId);
+			var readFromSetId = Redis.GetAllFromSet(fromSetId);
+			var readToSetId = Redis.GetAllFromSet(toSetId);
 
-				Assert.That(readFromSetId, Is.EquivalentTo(fromSetIdMembers));
-				Assert.That(readToSetId, Is.EquivalentTo(toSetIdMembers));
-			}
+			Assert.That(readFromSetId, Is.EquivalentTo(fromSetIdMembers));
+			Assert.That(readToSetId, Is.EquivalentTo(toSetIdMembers));
 		}
 
 		[Test]
 		public void Can_GetSetCount()
 		{
-			const string setId = "testsetcount";
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				storeMembers.ForEach(x => redis.AddToSet(setId, x));
+			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
 
-				var setCount = redis.GetSetCount(setId);
+			var setCount = Redis.GetSetCount(SetId);
 
-				Assert.That(setCount, Is.EqualTo(storeMembers.Count));
-			}
+			Assert.That(setCount, Is.EqualTo(storeMembers.Count));
 		}
 
 		[Test]
 		public void Does_SetContainsValue()
 		{
-			const string setId = "testsetsismember";
 			const string existingMember = "two";
 			const string nonExistingMember = "five";
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				storeMembers.ForEach(x => redis.AddToSet(setId, x));
 
-				Assert.That(redis.SetContainsValue(setId, existingMember), Is.True);
-				Assert.That(redis.SetContainsValue(setId, nonExistingMember), Is.False);
-			}
+			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+
+			Assert.That(Redis.SetContainsValue(SetId, existingMember), Is.True);
+			Assert.That(Redis.SetContainsValue(SetId, nonExistingMember), Is.False);
 		}
 
 		[Test]
@@ -134,15 +107,12 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				set1Members.ForEach(x => redis.AddToSet(set1Name, x));
-				set2Members.ForEach(x => redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
 
-				var intersectingMembers = redis.GetIntersectFromSets(set1Name, set2Name);
+			var intersectingMembers = Redis.GetIntersectFromSets(set1Name, set2Name);
 
-				Assert.That(intersectingMembers, Is.EquivalentTo(new List<string> { "four", "five" }));
-			}
+			Assert.That(intersectingMembers, Is.EquivalentTo(new List<string> { "four", "five" }));
 		}
 
 		[Test]
@@ -154,17 +124,14 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				set1Members.ForEach(x => redis.AddToSet(set1Name, x));
-				set2Members.ForEach(x => redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
 
-				redis.StoreIntersectFromSets(storeSetName, set1Name, set2Name);
+			Redis.StoreIntersectFromSets(storeSetName, set1Name, set2Name);
 
-				var intersectingMembers = redis.GetAllFromSet(storeSetName);
+			var intersectingMembers = Redis.GetAllFromSet(storeSetName);
 
-				Assert.That(intersectingMembers, Is.EquivalentTo(new List<string> { "four", "five" }));
-			}
+			Assert.That(intersectingMembers, Is.EquivalentTo(new List<string> { "four", "five" }));
 		}
 
 		[Test]
@@ -175,16 +142,13 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				set1Members.ForEach(x => redis.AddToSet(set1Name, x));
-				set2Members.ForEach(x => redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
 
-				var unionMembers = redis.GetUnionFromSets(set1Name, set2Name);
+			var unionMembers = Redis.GetUnionFromSets(set1Name, set2Name);
 
-				Assert.That(unionMembers, Is.EquivalentTo(
-											new List<string> { "one", "two", "three", "four", "five", "six", "seven" }));
-			}
+			Assert.That(unionMembers, Is.EquivalentTo(
+				new List<string> { "one", "two", "three", "four", "five", "six", "seven" }));
 		}
 
 		[Test]
@@ -196,18 +160,15 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				set1Members.ForEach(x => redis.AddToSet(set1Name, x));
-				set2Members.ForEach(x => redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
 
-				redis.StoreUnionFromSets(storeSetName, set1Name, set2Name);
+			Redis.StoreUnionFromSets(storeSetName, set1Name, set2Name);
 
-				var unionMembers = redis.GetAllFromSet(storeSetName);
+			var unionMembers = Redis.GetAllFromSet(storeSetName);
 
-				Assert.That(unionMembers, Is.EquivalentTo(
-											new List<string> { "one", "two", "three", "four", "five", "six", "seven" }));
-			}
+			Assert.That(unionMembers, Is.EquivalentTo(
+				new List<string> { "one", "two", "three", "four", "five", "six", "seven" }));
 		}
 
 		[Test]
@@ -220,17 +181,14 @@ namespace ServiceStack.Redis.Tests
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 			var set3Members = new List<string> { "one", "five", "seven", "eleven" };
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				set1Members.ForEach(x => redis.AddToSet(set1Name, x));
-				set2Members.ForEach(x => redis.AddToSet(set2Name, x));
-				set3Members.ForEach(x => redis.AddToSet(set3Name, x));
+			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
+			set3Members.ForEach(x => Redis.AddToSet(set3Name, x));
 
-				var diffMembers = redis.GetDifferencesFromSet(set1Name, set2Name, set3Name);
+			var diffMembers = Redis.GetDifferencesFromSet(set1Name, set2Name, set3Name);
 
-				Assert.That(diffMembers, Is.EquivalentTo(
-											new List<string> { "two", "three" }));
-			}
+			Assert.That(diffMembers, Is.EquivalentTo(
+				new List<string> { "two", "three" }));
 		}
 
 		[Test]
@@ -244,54 +202,42 @@ namespace ServiceStack.Redis.Tests
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 			var set3Members = new List<string> { "one", "five", "seven", "eleven" };
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				set1Members.ForEach(x => redis.AddToSet(set1Name, x));
-				set2Members.ForEach(x => redis.AddToSet(set2Name, x));
-				set3Members.ForEach(x => redis.AddToSet(set3Name, x));
+			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
+			set3Members.ForEach(x => Redis.AddToSet(set3Name, x));
 
-				redis.StoreDifferencesFromSet(storeSetName, set1Name, set2Name, set3Name);
+			Redis.StoreDifferencesFromSet(storeSetName, set1Name, set2Name, set3Name);
 
-				var diffMembers = redis.GetAllFromSet(storeSetName);
+			var diffMembers = Redis.GetAllFromSet(storeSetName);
 
-				Assert.That(diffMembers, Is.EquivalentTo(
-											new List<string> { "two", "three" }));
-			}
+			Assert.That(diffMembers, Is.EquivalentTo(
+				new List<string> { "two", "three" }));
 		}
 
 		[Test]
 		public void Can_GetRandomEntryFromSet()
 		{
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				storeMembers.ForEach(x => redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
 
-				var randomEntry = redis.GetRandomEntryFromSet(SetId);
+			var randomEntry = Redis.GetRandomEntryFromSet(SetId);
 
-				Assert.That(storeMembers.Contains(randomEntry), Is.True);
-			}
+			Assert.That(storeMembers.Contains(randomEntry), Is.True);
 		}
 
 
 		[Test]
 		public void Can_enumerate_small_ICollection_Set()
 		{
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
+			var members = new List<string>();
+			foreach (var item in Redis.Sets[SetId])
 			{
-				storeMembers.ForEach(x => redis.AddToSet(SetId, x));
-
-				var members = new List<string>();
-				foreach (var item in redis.Sets[SetId])
-				{
-					members.Add(item);
-				}
-				members.Sort();
-				Assert.That(members.Count, Is.EqualTo(storeMembers.Count));
-				Assert.That(members, Is.EquivalentTo(storeMembers));
+				members.Add(item);
 			}
+			members.Sort();
+			Assert.That(members.Count, Is.EqualTo(storeMembers.Count));
+			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 		[Test]
@@ -301,90 +247,68 @@ namespace ServiceStack.Redis.Tests
 
 			const int setSize = 2500;
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
+			storeMembers = new List<string>();
+			setSize.Times(x =>
 			{
-				var storeMembers = new List<string>();
-				setSize.Times(x => {
-					redis.AddToSet(SetId, x.ToString());
-					storeMembers.Add(x.ToString());
-				});
+				Redis.AddToSet(SetId, x.ToString());
+				storeMembers.Add(x.ToString());
+			});
 
-				var members = new List<string>();
-				foreach (var item in redis.Sets[SetId])
-				{
-					members.Add(item);
-				}
-				members.Sort((x, y) => int.Parse(x).CompareTo(int.Parse(y)));
-				Assert.That(members.Count, Is.EqualTo(storeMembers.Count));
-				Assert.That(members, Is.EquivalentTo(storeMembers));
+			var members = new List<string>();
+			foreach (var item in Redis.Sets[SetId])
+			{
+				members.Add(item);
 			}
+			members.Sort((x, y) => int.Parse(x).CompareTo(int.Parse(y)));
+			Assert.That(members.Count, Is.EqualTo(storeMembers.Count));
+			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 		[Test]
 		public void Can_Add_to_ICollection_Set()
 		{
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			var list = Redis.Sets[SetId];
+			storeMembers.ForEach(list.Add);
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				var list = redis.Sets[SetId];
-				storeMembers.ForEach(list.Add);
-
-				var members = list.ToList<string>();
-				Assert.That(members, Is.EquivalentTo(storeMembers));
-			}
+			var members = list.ToList<string>();
+			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 		[Test]
 		public void Can_Clear_ICollection_Set()
 		{
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			var list = Redis.Sets[SetId];
+			storeMembers.ForEach(list.Add);
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				var list = redis.Sets[SetId];
-				storeMembers.ForEach(list.Add);
+			Assert.That(list.Count, Is.EqualTo(storeMembers.Count));
 
-				Assert.That(list.Count, Is.EqualTo(storeMembers.Count));
+			list.Clear();
 
-				list.Clear();
-
-				Assert.That(list.Count, Is.EqualTo(0));
-			}
+			Assert.That(list.Count, Is.EqualTo(0));
 		}
 
 		[Test]
 		public void Can_Test_Contains_in_ICollection_Set()
 		{
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			var list = Redis.Sets[SetId];
+			storeMembers.ForEach(list.Add);
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				var list = redis.Sets[SetId];
-				storeMembers.ForEach(list.Add);
-
-				Assert.That(list.Contains("two"), Is.True);
-				Assert.That(list.Contains("five"), Is.False);
-			}
+			Assert.That(list.Contains("two"), Is.True);
+			Assert.That(list.Contains("five"), Is.False);
 		}
 
 		[Test]
 		public void Can_Remove_value_from_ICollection_Set()
 		{
-			var storeMembers = new List<string> { "one", "two", "three", "four" };
+			var list = Redis.Sets[SetId];
+			storeMembers.ForEach(list.Add);
 
-			using (var redis = new RedisClient(TestConfig.SingleHost))
-			{
-				var list = redis.Sets[SetId];
-				storeMembers.ForEach(list.Add);
+			storeMembers.Remove("two");
+			list.Remove("two");
 
-				storeMembers.Remove("two");
-				list.Remove("two");
+			var members = list.ToList<string>();
 
-				var members = list.ToList<string>();
-
-				Assert.That(members, Is.EquivalentTo(storeMembers));
-			}
+			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 	}

@@ -1,6 +1,19 @@
+//
+// http://code.google.com/p/servicestack/wiki/ServiceStackRedis
+// ServiceStack.Redis: ECMA CLI Binding to the Redis key-value storage system
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of Redis and ServiceStack: new BSD license.
+//
+
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.DesignPatterns.Model;
 
@@ -49,6 +62,30 @@ namespace ServiceStack.Redis
 				ids[i] = itemsWithId[i].Id;
 			}
 			return ids;
+		}
+
+		public static List<string> ToStringList(this byte[][] multiDataList)
+		{
+			if (multiDataList == null)
+				return new List<string>();
+
+			var results = new List<string>();
+			foreach (var multiData in multiDataList)
+			{
+				results.Add(FromUtf8Bytes(multiData));
+			}
+			return results;
+		}
+
+		public static string FromUtf8Bytes(this byte[] bytes)
+		{
+			return bytes == null ? null
+				: Encoding.UTF8.GetString(bytes);
+		}
+
+		public static byte[] ToUtf8Bytes(this string value)
+		{
+			return Encoding.UTF8.GetBytes(value);
 		}
 	}
 
