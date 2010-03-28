@@ -18,14 +18,14 @@ namespace ServiceStack.Redis.Tests
 			var oneSec = TimeSpan.FromSeconds(1);
 
 			Assert.That(Redis.GetString(Key), Is.Null);
-			using (var trans = Redis.CreateTransaction())				//Calls 'MULTI'
+			using (var trans = Redis.CreateTransaction())            //Calls 'MULTI'
 			{
-				trans.QueueCommand(r => r.SetString(Key, "a"));			//Queues 'SET a'
-				trans.QueueCommand(r => r.ExpireKeyIn(Key, oneSec));	//Queues 'EXPIRESIN a 1'
+				trans.QueueCommand(r => r.SetString(Key, "a"));      //Queues 'SET a'
+				trans.QueueCommand(r => r.ExpireKeyIn(Key, oneSec)); //Queues 'EXPIRESIN a 1'
 
-				trans.Commit();											//Calls 'EXEC'
+				trans.Commit();                                      //Calls 'EXEC'
 
-			}															//Calls 'DISCARD' if 'EXEC' wasn't called
+			}                                                        //Calls 'DISCARD' if 'EXEC' wasn't called
 
 			Assert.That(Redis.GetString(Key), Is.EqualTo("a"));
 			Thread.Sleep(TimeSpan.FromSeconds(2));
