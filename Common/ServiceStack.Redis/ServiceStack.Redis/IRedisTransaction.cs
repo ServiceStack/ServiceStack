@@ -22,13 +22,17 @@ namespace ServiceStack.Redis
 		void QueueCommand(Action<IRedisClient> command, Action onSuccessCallback);
 		void QueueCommand(Action<IRedisClient> command, Action onSuccessCallback, Action<Exception> onErrorCallback);
 
-		void QueueCommand(Func<IRedisClient, double> command);
-		void QueueCommand(Func<IRedisClient, double> command, Action<double> onSuccessCallback);
-		void QueueCommand(Func<IRedisClient, double> command, Action<double> onSuccessCallback, Action<Exception> onErrorCallback);
-
 		void QueueCommand(Func<IRedisClient, int> command);
 		void QueueCommand(Func<IRedisClient, int> command, Action<int> onSuccessCallback);
 		void QueueCommand(Func<IRedisClient, int> command, Action<int> onSuccessCallback, Action<Exception> onErrorCallback);
+
+		void QueueCommand(Func<IRedisClient, bool> command);
+		void QueueCommand(Func<IRedisClient, bool> command, Action<bool> onSuccessCallback);
+		void QueueCommand(Func<IRedisClient, bool> command, Action<bool> onSuccessCallback, Action<Exception> onErrorCallback);
+
+		void QueueCommand(Func<IRedisClient, double> command);
+		void QueueCommand(Func<IRedisClient, double> command, Action<double> onSuccessCallback);
+		void QueueCommand(Func<IRedisClient, double> command, Action<double> onSuccessCallback, Action<Exception> onErrorCallback);
 
 		void QueueCommand(Func<IRedisClient, byte[]> command);
 		void QueueCommand(Func<IRedisClient, byte[]> command, Action<byte[]> onSuccessCallback);

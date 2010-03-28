@@ -92,10 +92,11 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
-		public void Can_have_different_operation_types_in_transaction()
+		public void Supports_different_operation_types_in_same_transaction()
 		{
 			var incrementResults = new List<int>();
 			var collectionCounts = new List<int>();
+			var containsItem = false;
 
 			Assert.That(Redis.GetString(Key), Is.Null);
 			using (var trans = Redis.CreateTransaction())
@@ -104,6 +105,7 @@ namespace ServiceStack.Redis.Tests
 				trans.QueueCommand(r => r.AddToList(ListKey, "listitem1"));
 				trans.QueueCommand(r => r.AddToList(ListKey, "listitem2"));
 				trans.QueueCommand(r => r.AddToSet(SetKey, "setitem"));
+				trans.QueueCommand(r => r.SetContainsValue(SetKey, "setitem"), b => containsItem = b);
 				trans.QueueCommand(r => r.AddToSortedSet(SortedSetKey, "sortedsetitem1"));
 				trans.QueueCommand(r => r.AddToSortedSet(SortedSetKey, "sortedsetitem2"));
 				trans.QueueCommand(r => r.AddToSortedSet(SortedSetKey, "sortedsetitem3"));
@@ -115,6 +117,7 @@ namespace ServiceStack.Redis.Tests
 				trans.Commit();
 			}
 
+			Assert.That(containsItem, Is.True);
 			Assert.That(Redis.GetString(Key), Is.EqualTo("2"));
 			Assert.That(incrementResults, Is.EquivalentTo(new List<int> { 1, 2 }));
 			Assert.That(collectionCounts, Is.EquivalentTo(new List<int> { 2, 1, 3 }));

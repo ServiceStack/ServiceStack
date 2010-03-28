@@ -18,7 +18,7 @@ using ServiceStack.Logging;
 namespace ServiceStack.Redis
 {
 	/// <summary>
-	/// Experimental support, has not been tested.
+	/// Adds support for Redis Transactions (i.e. MULTI/EXEC/DISCARD operations).
 	/// </summary>
 	public class RedisTransaction
 		: IRedisTransaction
@@ -152,6 +152,27 @@ namespace ServiceStack.Redis
 			BeginQueuedCommand(new QueuedRedisOperation
 			{
 				OnSuccessIntCallback = onSuccessCallback,
+				OnErrorCallback = onErrorCallback
+			});
+			command(redisClient);
+		}
+
+
+		public void QueueCommand(Func<IRedisClient, bool> command)
+		{
+			QueueCommand(command, null, null);
+		}
+
+		public void QueueCommand(Func<IRedisClient, bool> command, Action<bool> onSuccessCallback)
+		{
+			QueueCommand(command, onSuccessCallback, null);
+		}
+
+		public void QueueCommand(Func<IRedisClient, bool> command, Action<bool> onSuccessCallback, Action<Exception> onErrorCallback)
+		{
+			BeginQueuedCommand(new QueuedRedisOperation
+			{
+				OnSuccessBoolCallback = onSuccessCallback,
 				OnErrorCallback = onErrorCallback
 			});
 			command(redisClient);
@@ -308,6 +329,7 @@ namespace ServiceStack.Redis
 
 		public Action VoidReadCommand { get; set; }
 		public Func<int> IntReadCommand { get; set; }
+		public Func<bool> BoolReadCommand { get; set; }
 		public Func<byte[]> BytesReadCommand { get; set; }
 		public Func<byte[][]> MultiBytesReadCommand { get; set; }
 		public Func<string> StringReadCommand { get; set; }
@@ -316,6 +338,7 @@ namespace ServiceStack.Redis
 
 		public Action OnSuccessVoidCallback { get; set; }
 		public Action<int> OnSuccessIntCallback { get; set; }
+		public Action<bool> OnSuccessBoolCallback { get; set; }
 		public Action<byte[]> OnSuccessBytesCallback { get; set; }
 		public Action<byte[][]> OnSuccessMultiBytesCallback { get; set; }
 		public Action<string> OnSuccessStringCallback { get; set; }
@@ -342,6 +365,11 @@ namespace ServiceStack.Redis
 					if (OnSuccessIntCallback != null)
 					{
 						OnSuccessIntCallback(result);
+					}
+					if (OnSuccessBoolCallback != null)
+					{
+						var success = result == RedisNativeClient.Success;
+						OnSuccessBoolCallback(success);
 					}
 				}
 				else if (DoubleReadCommand != null)
