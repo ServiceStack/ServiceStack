@@ -41,6 +41,11 @@ namespace ServiceStack.Common.Extensions
 			return string.IsNullOrEmpty(value);
 		}
 
+		public static bool EqualsIgnoreCase(this string value, string other)
+		{
+			return string.Equals(value, other, StringComparison.CurrentCultureIgnoreCase);
+		}
+
 		public static string ReplaceFirst(this string haystack, string needle, string replacement)
 		{
 			var pos = haystack.IndexOf(needle);

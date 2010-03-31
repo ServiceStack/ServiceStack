@@ -27,16 +27,7 @@ namespace ServiceStack.Text.Jsv
 
 		public static string EatTypeValue(string value, ref int i)
 		{
-			var tokenStartPos = i;
-			var typeEndsToEat = 1;
-			while (++i < value.Length && typeEndsToEat > 0)
-			{
-				if (value[i] == TypeSerializer.MapStartChar)
-					typeEndsToEat++;
-				if (value[i] == TypeSerializer.MapEndChar)
-					typeEndsToEat--;
-			}
-			return value.Substring(tokenStartPos, i - tokenStartPos);
+			return EatMapValue(value, ref i);
 		}
 
 		public static string EatElementValue(string value, ref int i)

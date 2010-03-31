@@ -389,8 +389,26 @@ namespace ServiceStack.Text.Tests
 		{
 			var model = new ModelWithIdAndName { Id = 1, Name = "in [ valid" };
 			var toModel = Serialize(model);
-
 			ModelWithIdAndName.AssertIsEqual(toModel, model);
+
+			var model2 = new ModelWithIdAndName { Id = 1, Name = "in valid]" };
+			var toModel2 = Serialize(model2);
+			ModelWithIdAndName.AssertIsEqual(toModel2, model2);
+		}
+
+		[Test]
+		public void Can_convert_ModelWithMapAndList_with_ListChar()
+		{
+			var model = new ModelWithMapAndList<ModelWithIdAndName> {
+				Id = 1,
+				Name = "in [ valid",
+				List = new List<ModelWithIdAndName> {
+					new ModelWithIdAndName{Id = 1, Name = "field [in valid] has stuff"},
+					new ModelWithIdAndName{Id = 1, Name = "field [in valid] has stuff"},
+				},
+			};
+			var toModel = Serialize(model);
+			//ModelWithMapAndList.AssertIsEqual(toModel, model);
 		}
 
 		[Test]

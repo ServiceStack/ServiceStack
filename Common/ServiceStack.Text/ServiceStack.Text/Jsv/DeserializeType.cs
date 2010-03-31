@@ -27,15 +27,18 @@ namespace ServiceStack.Text.Jsv
 			}
 
 			var ctorFn = ReflectionExtensions.GetConstructorMethodToCache(type);
-			return value => StringToType(value, ctorFn, setterMap, map);
+			return value => StringToType(type, value, ctorFn, setterMap, map);
 		}
 
-		private static object StringToType(string strType, Func<object> ctorFn,
-		                                   IDictionary<string, Action<object, object>> setterMap, IDictionary<string, Func<string, object>> parseStringFnMap)
+		private static object StringToType(Type type, string strType, 
+			Func<object> ctorFn,
+			IDictionary<string, Action<object, object>> setterMap, 
+			IDictionary<string, Func<string, object>> parseStringFnMap)
 		{
 			if (strType[0] != TypeSerializer.MapStartChar)
 				throw new SerializationException(string.Format(
-					"Type definitions should start with a '{0}'", TypeSerializer.MapStartChar));
+					"Type definitions should start with a '{0}', expecting serialized type '{1}', got string starting with: {2}", 
+					TypeSerializer.MapStartChar, type.Name, strType.Substring(0, strType.Length < 50 ? strType.Length : 50)));
 
 			var instance = ctorFn();
 			string propertyName;
@@ -49,15 +52,17 @@ namespace ServiceStack.Text.Jsv
 					i++;
 					var propertyValueString = ParseUtils.EatMapValue(strType, ref i);
 
-					var parseStringFn = parseStringFnMap[propertyName];
+					Func<string, object> parseStringFn;
+					parseStringFnMap.TryGetValue(propertyName, out parseStringFn);
 					if (parseStringFn == null) continue;
-					var propertyValue = parseStringFn(propertyValueString);
-					var setterFn = setterMap[propertyName];
 
-					if (setterFn != null)
-					{
-						setterFn(instance, propertyValue);
-					}
+					var propertyValue = parseStringFn(propertyValueString);
+
+					Action<object, object> setterFn;
+					setterMap.TryGetValue(propertyName, out setterFn);
+					if (setterFn == null) continue;
+
+					setterFn(instance, propertyValue);
 				}
 			}
 			catch (Exception ex)

@@ -72,6 +72,7 @@
     <Compile Include="CsvStreamTests.cs" />
     <Compile Include="CustomStructTests.cs" />
     <Compile Include="DateTimeSerializerTests.cs" />
+    <Compile Include="DdnContentIngestTests.cs" />
     <Compile Include="DdnDtos.cs" />
     <Compile Include="DdnDtoTests.cs" />
     <Compile Include="InterfaceTests.cs" />

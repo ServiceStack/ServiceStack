@@ -83,7 +83,7 @@ namespace ServiceStack.Common.Tests.Models
 			catch (Exception ex)
 			{
 				Log.Error("Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
-				Assert.That(actual.NDateTime.Value.RoundToSecond(), Is.EqualTo(expected.NDateTime.Value.RoundToSecond()));
+				Assert.That(actual.NDateTime.Value.ToUniversalTime().RoundToSecond(), Is.EqualTo(expected.NDateTime.Value.ToUniversalTime().RoundToSecond()));
 			}
 
 			try

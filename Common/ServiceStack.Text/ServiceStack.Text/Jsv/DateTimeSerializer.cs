@@ -23,7 +23,7 @@ namespace ServiceStack.Text.Jsv
 
 		public static string ToXsdDateTimeString(DateTime dateTime)
 		{
-			return XmlConvert.ToString(dateTime, XmlDateTimeSerializationMode.Utc);
+			return XmlConvert.ToString(dateTime.ToUniversalTime(), XmlDateTimeSerializationMode.Utc);
 		}
 
 		public static DateTime ParseXsdDateTime(string dateTimeStr)
@@ -39,7 +39,7 @@ namespace ServiceStack.Text.Jsv
 				return dateTime.ToString(ShortDateTimeFormat);
 
 			if (timeOfDay.Milliseconds == 0)
-				return dateTime.ToString(XsdDateTimeFormatSeconds);
+				return dateTime.ToUniversalTime().ToString(XsdDateTimeFormatSeconds);
 
 			return ToXsdDateTimeString(dateTime);
 		}
@@ -51,7 +51,7 @@ namespace ServiceStack.Text.Jsv
 
 			if (dateTimeStr.Length <= XsdDateTimeFormat.Length
 			    || dateTimeStr.Length >= XsdDateTimeFormat3F.Length)
-				return XmlConvert.ToDateTime(dateTimeStr, XmlDateTimeSerializationMode.Utc);
+				return XmlConvert.ToDateTime(dateTimeStr, XmlDateTimeSerializationMode.Local);
 
 			if (dateTimeStr.Length == XsdDateTimeFormatSeconds.Length)
 				return DateTime.ParseExact(dateTimeStr, XsdDateTimeFormatSeconds, null,
@@ -62,7 +62,7 @@ namespace ServiceStack.Text.Jsv
 				int.Parse(dateTimeStr.Substring(5, 2)),
 				int.Parse(dateTimeStr.Substring(8, 2)),
 				0, 0, 0,
-				DateTimeKind.Utc);
+				DateTimeKind.Local);
 		}
 		
 	}

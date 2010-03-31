@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ServiceStack.Text
@@ -40,6 +42,22 @@ namespace ServiceStack.Text
 				to[item.Key.DeserializeFromString<TKey>()] = item.Value.DeserializeFromString<TValue>();
 			}
 			return to;
+		}
+
+		public static bool IsNullOrEmpty<T>(this List<T> list)
+		{
+			return list == null || list.Count == 0;
+		}
+
+		//TODO: make it work
+		public static IEnumerable<TFrom> SafeWhere<TFrom>(this List<TFrom> list, Func<TFrom, bool> predicate)
+		{
+			return list.Where(predicate);
+		}
+
+		public static int NullableCount<T>(this List<T> list)
+		{
+			return list == null ? 0 : list.Count;
 		}
 	}
 }
