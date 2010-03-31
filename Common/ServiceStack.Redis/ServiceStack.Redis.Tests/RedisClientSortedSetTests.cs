@@ -71,7 +71,7 @@ namespace ServiceStack.Redis.Tests
 			var i = 0;
 			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x, i++));
 
-			var member = Redis.PopFromSortedSetItemWithHighestScore(SetId);
+			var member = Redis.PopItemWithHighestScoreFromSortedSet(SetId);
 
 			Assert.That(member, Is.EqualTo("four"));
 		}
@@ -161,10 +161,10 @@ namespace ServiceStack.Redis.Tests
 
 			storeMembers.Sort((x, y) => x.CompareTo(y));
 
-			var lowestScore = Redis.PopFromSortedSetItemWithLowestScore(SetId);
+			var lowestScore = Redis.PopItemWithLowestScoreFromSortedSet(SetId);
 			Assert.That(lowestScore, Is.EqualTo(storeMembers.First()));
 
-			var highestScore = Redis.PopFromSortedSetItemWithHighestScore(SetId);
+			var highestScore = Redis.PopItemWithHighestScoreFromSortedSet(SetId);
 			Assert.That(highestScore, Is.EqualTo(storeMembers[storeMembers.Count - 1]));
 		}
 

@@ -83,7 +83,7 @@ namespace ServiceStack.Redis
 			return base.ZRem(setId, value.ToUtf8Bytes());
 		}
 
-		public string PopFromSortedSetItemWithLowestScore(string setId)
+		public string PopItemWithLowestScoreFromSortedSet(string setId)
 		{
 			//TODO: this should be atomic
 			var topScoreItemBytes = base.ZRange(setId, FirstElement, 1);
@@ -93,7 +93,7 @@ namespace ServiceStack.Redis
 			return topScoreItemBytes[0].FromUtf8Bytes();
 		}
 
-		public string PopFromSortedSetItemWithHighestScore(string setId)
+		public string PopItemWithHighestScoreFromSortedSet(string setId)
 		{
 			//TODO: this should be atomic
 			var topScoreItemBytes = base.ZRevRange(setId, FirstElement, 1);
@@ -108,7 +108,7 @@ namespace ServiceStack.Redis
 			return base.ZRank(setId, value.ToUtf8Bytes()) != -1;
 		}
 
-		public double IncrementItemInSortedSet(string setId, double incrementBy, string value)
+		public double IncrementItemInSortedSet(string setId, string value, double incrementBy)
 		{
 			return base.ZIncrBy(setId, incrementBy, value.ToUtf8Bytes());
 		}

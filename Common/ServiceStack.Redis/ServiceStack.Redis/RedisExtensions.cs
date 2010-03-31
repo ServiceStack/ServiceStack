@@ -14,8 +14,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {

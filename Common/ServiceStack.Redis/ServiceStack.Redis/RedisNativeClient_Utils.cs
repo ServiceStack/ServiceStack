@@ -165,6 +165,51 @@ namespace ServiceStack.Redis
 			return sb.ToString();
 		}
 
+		private static byte[] GetBytes(char cmdPrefix, int noOfLines, string cmdSuffix)
+		{
+			var cmd = cmdPrefix.ToString() + noOfLines.ToString() + cmdSuffix;
+			return cmd.ToUtf8Bytes();
+		}
+
+		/// <summary>
+		/// Command to set multuple binary safe arguments
+		/// </summary>
+		/// <param name="cmd"></param>
+		/// <param name="safeBinaryValues"></param>
+		/// <returns></returns>
+		protected bool SendMultiDataCommand(string cmd, params byte[][] safeBinaryValues)
+		{
+			if (!AssertConnectedSocket()) return false;
+
+			var cmdBytes = Encoding.UTF8.GetBytes(cmd);
+			this.lastCommand = cmd;
+
+			try
+			{
+				Log("S: " + cmd);
+
+				//Total command lines count
+				socket.Send(GetBytes('*', safeBinaryValues.Length + 1, "\r\n"));
+
+				//Size of command, then command
+				socket.Send(GetBytes('$', cmdBytes.Length, "\r\n"));
+				socket.Send(cmdBytes);
+				socket.Send(endData);
+
+				foreach (var safeBinaryValue in safeBinaryValues)
+				{					
+					socket.Send(GetBytes('$', safeBinaryValue.Length, "\r\n"));
+					socket.Send(safeBinaryValue);
+					socket.Send(endData);
+				}
+			}
+			catch (SocketException ex)
+			{
+				return HandleSocketException(ex);
+			}
+			return true;
+		}
+
 		protected bool SendDataCommand(byte[] data, string cmd, params object[] args)
 		{
 			if (!AssertConnectedSocket()) return false;
@@ -247,6 +292,48 @@ namespace ServiceStack.Redis
 				throw CreateConnectionError();
 
 			return ReadDataAsDouble();
+		}
+
+		private int SendMultiDataExpectInt(string cmd, params byte[][] safeBinaryLines)
+		{
+			if (!SendMultiDataCommand(cmd, safeBinaryLines))
+				throw CreateConnectionError();
+
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
+				ExpectQueued();
+				return default(int);
+			}
+			return ReadInt();
+		}
+
+		private byte[] SendMultiDataExpectData(string cmd, params byte[][] safeBinaryLines)
+		{
+			if (!SendMultiDataCommand(cmd, safeBinaryLines))
+				throw CreateConnectionError();
+
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
+				ExpectQueued();
+				return null;
+			}
+			return ReadData();
+		}
+
+		private byte[][] SendMultiDataExpectMultiData(string cmd, params byte[][] safeBinaryLines)
+		{
+			if (!SendMultiDataCommand(cmd, safeBinaryLines))
+				throw CreateConnectionError();
+
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
+				ExpectQueued();
+				return null;
+			}
+			return ReadMultiData();
 		}
 
 		private int SendDataExpectInt(byte[] data, string cmd, params object[] args)

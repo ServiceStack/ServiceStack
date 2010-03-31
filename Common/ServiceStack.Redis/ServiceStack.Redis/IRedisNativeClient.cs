@@ -39,7 +39,7 @@ namespace ServiceStack.Redis
 		int Decr(string key);
 		int DecrBy(string key, int count);
 		string RandomKey();
-		bool Rename(string oldKeyname, string newKeyname);
+		int Rename(string oldKeyname, string newKeyname);
 		int Expire(string key, int seconds);
 		int ExpireAt(string key, long unixTime);
 		int Ttl(string key);
@@ -101,10 +101,10 @@ namespace ServiceStack.Redis
 		int ZInter(string intoSetId, params string[] setIds);
 
 		//Redis Hash operations
-		int HSet(string hashId, string key, byte[] value);
-		byte[] HGet(string hashId, string key);
-		int HDel(string hashId, string key);
-		bool HExists(string hashId, string key);
+		int HSet(string hashId, byte[] key, byte[] value);
+		byte[] HGet(string hashId, byte[] key);
+		int HDel(string hashId, byte[] key);
+		int HExists(string hashId, byte[] key);
 		int HLen(string hashId);
 		byte[][] HKeys(string hashId);
 		byte[][] HValues(string hashId);

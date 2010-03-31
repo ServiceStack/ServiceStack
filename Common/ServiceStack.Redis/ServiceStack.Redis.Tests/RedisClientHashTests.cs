@@ -46,6 +46,16 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_GetItemFromHash()
+		{
+			storeMembers.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+
+			var hashValue = Redis.GetItemFromHash(HashId, "two");
+
+			Assert.That(hashValue, Is.EqualTo(storeMembers["two"]));
+		}
+
+		[Test]
 		public void Can_GetHashCount()
 		{
 			storeMembers.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));

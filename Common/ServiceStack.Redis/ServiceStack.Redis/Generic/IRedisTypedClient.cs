@@ -17,11 +17,13 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis.Generic
 {
-	public interface IRedisTypedClient<T> 
+	public interface IRedisTypedClient<T>
 		: IBasicPersistenceProvider<T>
 	{
 		IHasNamed<IRedisList<T>> Lists { get; set; }
 		IHasNamed<IRedisSet<T>> Sets { get; set; }
+		IHasNamed<IRedisSortedSet<T>> SortedSets { get; set; }
+		IRedisHash<TKey, T> GetHash<TKey>(string hashId);
 
 		int Db { get; set; }
 		List<string> AllKeys { get; }
@@ -55,8 +57,8 @@ namespace ServiceStack.Redis.Generic
 		void FlushAll();
 		T[] GetKeys(string pattern);
 		List<T> GetKeyValues(List<string> keys);
-		
-		List<T> GetRangeFromSortedSet(IRedisSet<T> fromSet, int startingFrom, int endingAt);
+
+		List<T> SortSet(IRedisSet<T> fromSet, int startingFrom, int endingAt);
 		HashSet<T> GetAllFromSet(IRedisSet<T> fromSet);
 		void AddToSet(IRedisSet<T> toSet, T value);
 		void RemoveFromSet(IRedisSet<T> fromSet, T value);
@@ -71,10 +73,10 @@ namespace ServiceStack.Redis.Generic
 		HashSet<T> GetDifferencesFromSet(IRedisSet<T> fromSet, params IRedisSet<T>[] withSets);
 		void StoreDifferencesFromSet(IRedisSet<T> intoSet, IRedisSet<T> fromSet, params IRedisSet<T>[] withSets);
 		T GetRandomEntryFromSet(IRedisSet<T> fromSet);
-		
+
 		List<T> GetAllFromList(IRedisList<T> fromList);
 		List<T> GetRangeFromList(IRedisList<T> fromList, int startingFrom, int endingAt);
-		List<T> GetRangeFromSortedList(IRedisList<T> fromList, int startingFrom, int endingAt);
+		List<T> SortList(IRedisList<T> fromList, int startingFrom, int endingAt);
 		void AddToList(IRedisList<T> fromList, T value);
 		void PrependToList(IRedisList<T> fromList, T value);
 		void RemoveAllFromList(IRedisList<T> fromList);
@@ -87,5 +89,53 @@ namespace ServiceStack.Redis.Generic
 		T DequeueFromList(IRedisList<T> fromList);
 		T PopFromList(IRedisList<T> fromList);
 		T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList);
+
+		void AddToSortedSet(IRedisSortedSet<T> toSet, T value);
+		void AddToSortedSet(IRedisSortedSet<T> toSet, T value, double score);
+		void RemoveFromSortedSet(IRedisSortedSet<T> fromSet, T value);
+		T PopItemWithLowestScoreFromSortedSet(IRedisSortedSet<T> fromSet);
+		T PopItemWithHighestScoreFromSortedSet(IRedisSortedSet<T> fromSet);
+		bool SortedSetContainsValue(IRedisSortedSet<T> set, T value);
+		double IncrementItemInSortedSet(IRedisSortedSet<T> set, T value, double incrementBy);
+		int GetItemIndexInSortedSet(IRedisSortedSet<T> set, T value);
+		int GetItemIndexInSortedSetDesc(IRedisSortedSet<T> set, T value);
+		List<T> GetAllFromSortedSet(IRedisSortedSet<T> set);
+		List<T> GetAllFromSortedSetDesc(IRedisSortedSet<T> set);
+		List<T> GetRangeFromSortedSet(IRedisSortedSet<T> set, int fromRank, int toRank);
+		List<T> GetRangeFromSortedSetDesc(IRedisSortedSet<T> set, int fromRank, int toRank);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSet(IRedisSortedSet<T> set, int fromRank, int toRank);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetDesc(IRedisSortedSet<T> set, int fromRank, int toRank);
+		List<T> GetRangeFromSortedSetByLowestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore);
+		List<T> GetRangeFromSortedSetByLowestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore, int? skip, int? take);
+		List<T> GetRangeFromSortedSetByLowestScore(IRedisSortedSet<T> set, double fromScore, double toScore);
+		List<T> GetRangeFromSortedSetByLowestScore(IRedisSortedSet<T> set, double fromScore, double toScore, int? skip, int? take);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByLowestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByLowestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore, int? skip, int? take);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByLowestScore(IRedisSortedSet<T> set, double fromScore, double toScore);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByLowestScore(IRedisSortedSet<T> set, double fromScore, double toScore, int? skip, int? take);
+		List<T> GetRangeFromSortedSetByHighestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore);
+		List<T> GetRangeFromSortedSetByHighestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore, int? skip, int? take);
+		List<T> GetRangeFromSortedSetByHighestScore(IRedisSortedSet<T> set, double fromScore, double toScore);
+		List<T> GetRangeFromSortedSetByHighestScore(IRedisSortedSet<T> set, double fromScore, double toScore, int? skip, int? take);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByHighestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByHighestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore, int? skip, int? take);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByHighestScore(IRedisSortedSet<T> set, double fromScore, double toScore);
+		IDictionary<T, double> GetRangeWithScoresFromSortedSetByHighestScore(IRedisSortedSet<T> set, double fromScore, double toScore, int? skip, int? take);
+		int RemoveRangeFromSortedSet(IRedisSortedSet<T> set, int minRank, int maxRank);
+		int RemoveRangeFromSortedSetByScore(IRedisSortedSet<T> set, double fromScore, double toScore);
+		int GetSortedSetCount(IRedisSortedSet<T> set);
+		double GetItemScoreInSortedSet(IRedisSortedSet<T> set, T value);
+		int StoreIntersectFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
+		int StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
+
+		bool HashContainsKey<TKey>(IRedisHash<TKey, T> hash, TKey key);
+		bool SetItemInHash<TKey>(IRedisHash<TKey, T> hash, TKey key, T value);
+		T GetItemFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
+		bool RemoveFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
+		int GetHashCount<TKey>(IRedisHash<TKey, T> hash);
+		List<TKey> GetHashKeys<TKey>(IRedisHash<TKey, T> hash);
+		List<T> GetHashValues<TKey>(IRedisHash<TKey, T> hash);
+		Dictionary<TKey, T> GetAllFromHash<TKey>(IRedisHash<TKey, T> hash);
 	}
+
 }

@@ -48,22 +48,22 @@ namespace ServiceStack.Redis
 
 		public bool SetItemInHash(string hashId, string key, string value)
 		{
-			return base.HSet(hashId, key, value.ToUtf8Bytes()) == Success;
+			return base.HSet(hashId, key.ToUtf8Bytes(), value.ToUtf8Bytes()) == Success;
 		}
 
 		public string GetItemFromHash(string hashId, string key)
 		{
-			return base.HGet(hashId, key).FromUtf8Bytes();
+			return base.HGet(hashId, key.ToUtf8Bytes()).FromUtf8Bytes();
 		}
 
 		public bool HashContainsKey(string hashId, string key)
 		{
-			return base.HExists(hashId, key);
+			return base.HExists(hashId, key.ToUtf8Bytes()) == Success;
 		}
 
 		public bool RemoveFromHash(string hashId, string key)
 		{
-			return base.HDel(hashId, key) == Success;
+			return base.HDel(hashId, key.ToUtf8Bytes()) == Success;
 		}
 
 		public int GetHashCount(string hashId)

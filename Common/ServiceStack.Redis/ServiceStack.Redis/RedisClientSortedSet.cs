@@ -164,17 +164,17 @@ namespace ServiceStack.Redis
 
 		public string PopItemWithLowestScore()
 		{
-			return client.PopFromSortedSetItemWithLowestScore(setId);
+			return client.PopItemWithLowestScoreFromSortedSet(setId);
 		}
 
 		public string PopItemWithHighestScore()
 		{
-			return client.PopFromSortedSetItemWithHighestScore(setId);
+			return client.PopItemWithHighestScoreFromSortedSet(setId);
 		}
 
 		public void IncrementItemScore(string value, double incrementByScore)
 		{
-			client.IncrementItemInSortedSet(setId, incrementByScore, value);
+			client.IncrementItemInSortedSet(setId, value, incrementByScore);
 		}
 
 	}

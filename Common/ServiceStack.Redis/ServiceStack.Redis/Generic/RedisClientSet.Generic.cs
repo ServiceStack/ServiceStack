@@ -50,7 +50,7 @@ namespace ServiceStack.Redis.Generic
 			List<T> pageResults;
 			do
 			{
-				pageResults = client.GetRangeFromSortedSet(this, skip, PageLimit);
+				pageResults = client.SortSet(this, skip, skip + PageLimit - 1);
 				foreach (var result in pageResults)
 				{
 					yield return result;
@@ -101,5 +101,50 @@ namespace ServiceStack.Redis.Generic
 		}
 
 		public bool IsReadOnly { get { return false; } }
+
+		public List<T> Sort(int startingFrom, int endingAt)
+		{
+			return client.SortSet(this, startingFrom, endingAt);
+		}
+
+		public HashSet<T> GetAll()
+		{
+			return client.GetAllFromSet(this);
+		}
+
+		public T PopRandomItem()
+		{
+			return client.PopFromSet(this);
+		}
+
+		public T GetRandomItem()
+		{
+			return client.GetRandomEntryFromSet(this);
+		}
+
+		public void MoveTo(T item, IRedisSet<T> toSet)
+		{
+			client.MoveBetweenSets(this, toSet, item);
+		}
+
+		public void PopulateWithIntersectOf(params IRedisSet<T>[] sets)
+		{
+			client.StoreIntersectFromSets(this, sets);
+		}
+
+		public void PopulateWithUnionOf(params IRedisSet<T>[] sets)
+		{
+			client.StoreUnionFromSets(this, sets);
+		}
+
+		public void GetDifferences(params IRedisSet<T>[] withSets)
+		{
+			client.StoreUnionFromSets(this, withSets);
+		}
+
+		public void PopulateWithDifferencesOf(IRedisSet<T> fromSet, params IRedisSet<T>[] withSets)
+		{
+			client.StoreDifferencesFromSet(this, fromSet, withSets);
+		}
 	}
 }

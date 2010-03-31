@@ -289,14 +289,14 @@ namespace ServiceStack.Redis
 			return SendExpectString("RANDOMKEY");
 		}
 
-		public bool Rename(string oldKeyname, string newKeyname)
+		public int Rename(string oldKeyname, string newKeyname)
 		{
 			if (oldKeyname == null)
 				throw new ArgumentNullException("oldKeyname");
 			if (newKeyname == null)
 				throw new ArgumentNullException("newKeyname");
 
-			return SendGetString("RENAME {0} {1}", SafeKey(oldKeyname), SafeKey(newKeyname))[0] == '+';
+			return SendExpectInt("RENAME {0} {1}", SafeKey(oldKeyname), SafeKey(newKeyname));
 		}
 
 		public int Expire(string key, int seconds)
@@ -787,7 +787,7 @@ namespace ServiceStack.Redis
 
 		#region Hash Operations
 
-		private static void AssertHashIdAndKey(string hashId, string key)
+		private static void AssertHashIdAndKey(string hashId, byte[] key)
 		{
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
@@ -795,34 +795,32 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("key");
 		}
 
-		public int HSet(string hashId, string key, byte[] value)
+		public int HSet(string hashId, byte[] key, byte[] value)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			return SendDataExpectInt(value, "HSET {0} {1} {2}", SafeKey(hashId), SafeKeys(key), value.Length);
+			return SendMultiDataExpectInt("HSET", hashId.ToUtf8Bytes(), key, value);
 		}
 
-		public byte[] HGet(string hashId, string key)
+		public byte[] HGet(string hashId, byte[] key)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			return SendExpectData("HGET {0} {1}", SafeKey(hashId), SafeKeys(key));
+			return SendMultiDataExpectData("HGET", hashId.ToUtf8Bytes(), key);
 		}
 
-		public int HDel(string hashId, string key)
+		public int HDel(string hashId, byte[] key)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			var keyBytes = key.ToUtf8Bytes();
-			return SendDataExpectInt(keyBytes, "HDEL {0} {1}", SafeKey(hashId), keyBytes.Length);
+			return SendMultiDataExpectInt("HDEL", hashId.ToUtf8Bytes(), key);
 		}
 
-		public bool HExists(string hashId, string key)
+		public int HExists(string hashId, byte[] key)
 		{
 			AssertHashIdAndKey(hashId, key);
 
-			var keyBytes = key.ToUtf8Bytes();
-			return SendDataExpectInt(keyBytes, "HEXISTS {0} {1}", SafeKey(hashId), keyBytes.Length) == Success;
+			return SendMultiDataExpectInt("HEXISTS", hashId.ToUtf8Bytes(), key);
 		}
 
 		public int HLen(string hashId)
@@ -830,7 +828,7 @@ namespace ServiceStack.Redis
 			if (string.IsNullOrEmpty(hashId))
 				throw new ArgumentNullException("hashId");
 
-			return SendExpectInt("HLEN {0}", SafeKey(hashId));
+			return SendMultiDataExpectInt("HLEN", hashId.ToUtf8Bytes());
 		}
 
 		public byte[][] HKeys(string hashId)
@@ -838,7 +836,7 @@ namespace ServiceStack.Redis
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
 
-			return SendExpectMultiData("HKEYS {0}", SafeKeys(hashId));
+			return SendMultiDataExpectMultiData("HKEYS", hashId.ToUtf8Bytes());
 		}
 
 		public byte[][] HValues(string hashId)
@@ -846,7 +844,7 @@ namespace ServiceStack.Redis
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
 
-			return SendExpectMultiData("HVALUES {0}", SafeKeys(hashId));
+			return SendMultiDataExpectMultiData("HVALUES", hashId.ToUtf8Bytes());
 		}
 
 		public byte[][] HGetAll(string hashId)
@@ -854,7 +852,7 @@ namespace ServiceStack.Redis
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
 
-			return SendExpectMultiData("HGETALL {0}", SafeKeys(hashId));
+			return SendMultiDataExpectMultiData("HGETALL", hashId.ToUtf8Bytes());
 		}
 
 		#endregion

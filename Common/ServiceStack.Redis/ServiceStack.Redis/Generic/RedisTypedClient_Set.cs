@@ -62,7 +62,7 @@ namespace ServiceStack.Redis.Generic
 			return results;
 		}
 
-		public List<T> GetRangeFromSortedSet(IRedisSet<T> fromSet, int startingFrom, int endingAt)
+		public List<T> SortSet(IRedisSet<T> fromSet, int startingFrom, int endingAt)
 		{
 			var multiDataList = client.Sort(fromSet.Id, startingFrom, endingAt, true, false);
 			return CreateList(multiDataList);

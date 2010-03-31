@@ -119,10 +119,10 @@ namespace ServiceStack.Redis
 		bool AddToSortedSet(string setId, string value);
 		bool AddToSortedSet(string setId, string value, double score);
 		double RemoveFromSortedSet(string setId, string value);
-		string PopFromSortedSetItemWithLowestScore(string setId);
-		string PopFromSortedSetItemWithHighestScore(string setId);
+		string PopItemWithLowestScoreFromSortedSet(string setId);
+		string PopItemWithHighestScoreFromSortedSet(string setId);
 		bool SortedSetContainsValue(string setId, string value);
-		double IncrementItemInSortedSet(string setId, double incrementBy, string value);
+		double IncrementItemInSortedSet(string setId, string value, double incrementBy);
 		int GetItemIndexInSortedSet(string setId, string value);
 		int GetItemIndexInSortedSetDesc(string setId, string value);
 		List<string> GetAllFromSortedSet(string setId);
@@ -159,6 +159,7 @@ namespace ServiceStack.Redis
 
 		#region Hash operations
 
+		bool HashContainsKey(string hashId, string key);
 		bool SetItemInHash(string hashId, string key, string value);
 		string GetItemFromHash(string hashId, string key);
 		bool RemoveFromHash(string hashId, string key);

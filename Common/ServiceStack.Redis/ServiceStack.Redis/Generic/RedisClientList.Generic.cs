@@ -150,7 +150,7 @@ namespace ServiceStack.Redis.Generic
 
 		public List<T> GetRangeFromSortedList(int startingFrom, int endingAt)
 		{
-			return client.GetRangeFromSortedList(this, startingFrom, endingAt);
+			return client.SortList(this, startingFrom, endingAt);
 		}
 
 		public void RemoveAll()

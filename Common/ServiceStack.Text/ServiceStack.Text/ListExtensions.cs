@@ -21,5 +21,25 @@ namespace ServiceStack.Text
 			}
 			return sb.ToString();
 		}
+
+		public static List<T> ConvertEachTo<T>(this IEnumerable<string> list)
+		{
+			var to = new List<T>();
+			foreach (var item in list)
+			{
+				to.Add(TypeSerializer.DeserializeFromString<T>(item));
+			}
+			return to;
+		}
+
+		public static Dictionary<TKey, TValue> ConvertEachTo<TKey, TValue>(this IDictionary<string, string> map)
+		{
+			var to = new Dictionary<TKey, TValue>();
+			foreach (var item in map)
+			{
+				to[item.Key.DeserializeFromString<TKey>()] = item.Value.DeserializeFromString<TValue>();
+			}
+			return to;
+		}
 	}
 }

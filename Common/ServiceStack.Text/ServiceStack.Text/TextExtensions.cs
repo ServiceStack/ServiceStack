@@ -47,5 +47,15 @@ namespace ServiceStack.Text
 			}
 			return safeTexts;
 		}
+
+		public static string SerializeToString<T>(this T value)
+		{
+			return TypeSerializer.SerializeToString(value);
+		}
+
+		public static T DeserializeFromString<T>(this string serializedObj)
+		{
+			return TypeSerializer.DeserializeFromString<T>(serializedObj);
+		}
 	}
 }

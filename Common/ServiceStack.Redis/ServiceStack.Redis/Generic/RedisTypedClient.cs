@@ -232,9 +232,6 @@ namespace ServiceStack.Redis.Generic
 		}
 
 
-
-
-
 		#region Implementation of IBasicPersistenceProvider<T>
 
 		public T GetById(string id)
