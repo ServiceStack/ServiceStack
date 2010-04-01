@@ -582,4 +582,201 @@ namespace ServiceStack.Text.Tests
 
 		#endregion
 	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	public class ProUserPublicProfile
+	{
+		public ProUserPublicProfile()
+		{
+			this.SocialLinks = new List<SocialLinkUrl>();
+
+			this.ArtistImages = new List<ImageAsset>();
+			this.Genres = new List<string>();
+
+			this.Posts = new ArrayOfPost();
+			this.FollowerUsers = new List<UserSearchResult>();
+			this.FollowingUsers = new List<UserSearchResult>();
+		}
+
+		[DataMember]
+		public Guid Id { get; set; }
+
+		[DataMember]
+		public string Alias { get; set; }
+
+		[DataMember]
+		public string RefUrn { get; set; }
+
+		[DataMember]
+		public string ProUserType { get; set; }
+
+		[DataMember]
+		public string ProUserSalesType { get; set; }
+
+		#region Header
+
+		[DataMember]
+		public TextLink ProUserLink { get; set; }
+
+		/// <summary>
+		/// Same as above but in an [A] HTML link
+		/// </summary>
+		[DataMember]
+		public string ProUserLinkHtml { get; set; }
+
+		/// <summary>
+		/// For the twitter and facebook icons
+		/// </summary>
+		[DataMember]
+		public List<SocialLinkUrl> SocialLinks { get; set; }
+
+		#endregion
+
+		#region Theme
+		[DataMember]
+		public ImageAsset BannerImage { get; set; }
+
+		[DataMember]
+		public string BannerImageBackgroundColor { get; set; }
+
+		[DataMember]
+		public List<string> UserFileTypes { get; set; }
+
+		[DataMember]
+		public string OriginalProfileBase64Hash { get; set; }
+		#endregion
+
+		#region Music
+
+		[DataMember]
+		public List<ImageAsset> ArtistImages { get; set; }
+
+		[DataMember]
+		public List<string> Genres { get; set; }
+
+		#endregion
+
+
+		#region Biography
+
+		[DataMember]
+		public string BiographyPageHtml { get; set; }
+
+		#endregion
+
+
+		#region Outbox
+
+		[DataMember]
+		public ArrayOfPost Posts { get; set; }
+
+		[DataMember]
+		public List<UserSearchResult> FollowerUsers { get; set; }
+
+		[DataMember]
+		public int FollowerUsersCount { get; set; }
+
+		[DataMember]
+		public List<UserSearchResult> FollowingUsers { get; set; }
+
+		[DataMember]
+		public int FollowingUsersCount { get; set; }
+
+		#endregion
+
+	}
+
+	public enum SocialLink
+	{
+		iTunes = 0,
+		Bebo = 1,
+		Blogger = 2,
+		Delicious = 3,
+		Digg = 4,
+		Email = 5,
+		EverNote = 6,
+		Facebook = 7,
+		Flickr = 8,
+		FriendFeed = 9,
+		GoogleWave = 10,
+		GroveShark = 11,
+		iLike = 12,
+		LastFm = 13,
+		Mix = 14,
+		MySpace = 15,
+		Posterous = 16,
+		Reddit = 17,
+		Rss = 18,
+		StumbleUpon = 19,
+		Twitter = 20,
+		Vimeo = 21,
+		Wikipedia = 22,
+		WordPress = 23,
+		Yahoo = 24,
+		YahooBuzz = 25,
+		YouTube = 26,
+	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	public class SocialLinkUrl
+	{
+		[References(typeof(SocialLink))]
+		[DataMember(EmitDefaultValue = false)]
+		public string Name
+		{
+			get;
+			set;
+		}
+
+		[DataMember]
+		public string LinkUrl
+		{
+			get;
+			set;
+		}
+	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	[Serializable]
+	public class ImageAsset
+	{
+		[DataMember(EmitDefaultValue = false)]
+		public string RelativePath { get; set; }
+
+		[DataMember(EmitDefaultValue = false)]
+		public string AbsoluteUrl { get; set; }
+
+		[DataMember(EmitDefaultValue = false)]
+		public string Hash { get; set; }
+
+		[DataMember(EmitDefaultValue = false)]
+		public long? SizeBytes { get; set; }
+
+		[DataMember(EmitDefaultValue = false)]
+		public int? Width { get; set; }
+
+		[DataMember(EmitDefaultValue = false)]
+		public int? Height { get; set; }
+
+		[DataMember(EmitDefaultValue = false)]
+		public string BackgroundColorHex { get; set; }
+	}
+
+	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
+	public class TextLink
+	{
+		[DataMember(EmitDefaultValue = false)]
+		public string Label
+		{
+			get;
+			set;
+		}
+
+		[DataMember]
+		public string LinkUrl
+		{
+			get;
+			set;
+		}
+	}
 }

@@ -1,9 +1,20 @@
+//
+// http://code.google.com/p/servicestack/wiki/TypeSerializer
+// ServiceStack.Text: .NET C# POCO Type Text Serializer.
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of ServiceStack: new BSD license.
+//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServiceStack.Text;
 
-namespace ServiceStack.Common
+namespace ServiceStack.Text.Controller
 {
 	/// <summary>
 	/// Class to hold  
@@ -58,8 +69,8 @@ namespace ServiceStack.Common
 		{
 			var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
 			var controllerName = actionParts.Length == 2
-				? actionParts[0]
-				: null;
+			                     	? actionParts[0]
+			                     	: null;
 
 			var pathInfo = actionParts[actionParts.Length - 1];
 
@@ -74,8 +85,8 @@ namespace ServiceStack.Common
 					var keyValuePair = option.Split('=');
 
 					optionMap[keyValuePair[0]] = keyValuePair.Length == 1
-						? true.ToString()
-						: keyValuePair[1].UrlDecode();
+					                             	? true.ToString()
+					                             	: keyValuePair[1].UrlDecode();
 				}
 				pathInfo = pathInfo.Substring(0, optionsPos);
 			}
@@ -84,8 +95,8 @@ namespace ServiceStack.Common
 			var pageName = args[0];
 
 			return new PathInfo(pageName, args.Skip(1).ToList(), optionMap) {
-				ControllerName = controllerName
-			};
+			                                                                	ControllerName = controllerName
+			                                                                };
 		}
 	}
 }

@@ -50,6 +50,7 @@
     <Compile Include="CsvStreamExtensions.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="ITypeSerializer.Generic.cs" />
+    <Compile Include="JsvFormatter.cs" />
     <Compile Include="Jsv\DateTimeSerializer.cs" />
     <Compile Include="Jsv\JsvReader.Generic.cs" />
     <Compile Include="Jsv\JsvSerializer.Generic.cs" />

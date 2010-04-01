@@ -47,20 +47,73 @@ namespace ServiceStack.Text.Tests
 			var dto = new GetContentStatsResponse {
 				CreatedDate = DateTime.UtcNow,
 				TopRecommenders = new List<UserSearchResult>
-			                                      	                  	{
-			                                      	                  		CreateUserSearchResult(1),
-			                                      	                  		CreateUserSearchResult(2),
-			                                      	                  	},
+              	{
+              		CreateUserSearchResult(1),
+              		CreateUserSearchResult(2),
+              	},
 				LatestPosts = new List<Post> {
-			                                      	                             	CreatePost(1),
-			                                      	                             	CreatePost(2)
-			                                      	                             },
+                 	CreatePost(1),
+                 	CreatePost(2)
+                 },
 			};
 			var dtoString = TypeSerializer.SerializeToString(dto);
 
 			var fromDto = TypeSerializer.DeserializeFromString<GetContentStatsResponse>(dtoString);
 
 			Assert.That(fromDto, Is.Not.Null);
+		}
+
+		[Test]
+		public void Can_serialize_ProUserPublicProfile()
+		{
+			var dtoString =
+				@"{Id:81ae7b3ae5404f5f827d0303949fcb2f,Alias:Mike Halliday,ProUserType:Celebrity,ProUserSalesType:OthersMusic,ProUserLink:{},ProUserLinkHtml:""<a href=""""""""></a>"",SocialLinks:[],BannerImageBackgroundColor:#000000,ArtistImages:[],Genres:[],BiographyPageHtml:""<style type=""""text/css"""">
+#prouser-biography H1
+{
+        font: normal 20px arial;
+        color: #fff;
+}
+#prouser-biography STRONG
+,#prouser-biography B
+,#prouser-biography A
+{
+        color: #fff;
+        font-weight: bold;
+        text-decoration: none;
+}
+</style>
+<table id=""""prouser-biography"""" cellspacing=""""0"""" cellpadding=""""0"""" width=""""860""""
+       style=""""font: 12px arial; color: #cdcdcd; margin-top: 10px;"""">
+<tr>
+    <td id=""""prouser-bio-content"""" style=""""vertical-align: top;"""">
+        
+        <table id=""""prouser-bio-content-table"""" cellpadding=""""10"""">
+            <tr>
+                <td id=""""prouser-bio-html""""></td>
+            </tr>
+        </table>
+    </td>
+    <td id=""""prouser-bio-info"""" width=""""220"""" style=""""vertical-align: top;"""">
+        
+        <table id=""""prouser-bio-info-table"""" style=""""background:#475762;"""" cellspacing=""""1"""" cellpadding=""""0"""">
+            <tr>
+                <td style=""""background:#192E3B;"""">
+                    <table cellpadding=""""5"""">
+                        <tr>
+                            <td id=""""prouser-bio-info-html""""></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            
+        </table>
+        
+    </td>
+</tr>
+</table>"",Posts:[],FollowerUsers:[],FollowerUsersCount:0,FollowingUsers:[{Id:89b82c7cb6b042a6b1e8ab80cdb6b387,UserType:Mflow,UserName:mflow,LanguageCode:en,FlowPostCount:1372,ClientTracksCount:0,FollowingCount:0,FollowersCount:8457,ViewCount:1627,ActivationDate:2009-11-05T20:52:11.6156Z,UserImage:{RelativePath:89/b8/89b82c7cb6b042a6b1e8ab80cdb6b387/Profile75X75.jpg,Hash:GoLberqSAvzBc7L1298Ekw==,Width:75,Height:75}},{Id:b7c07996891941b399444733fd32810c,UserType:Channel,UserName:mflowalternative,FullName:mflow channel,FirstName:mflow,LastName:channel,LanguageCode:en,FlowPostCount:419,ClientTracksCount:0,FollowingCount:6,FollowersCount:6944,ViewCount:2167,ActivationDate:2009-11-05T20:52:11.7248Z,UserImage:{RelativePath:b7/c0/b7c07996891941b399444733fd32810c/Profile75X75.jpg,Hash:2N9IkhxXWV3TBdzmkI9tKA==,Width:75,Height:75}},{Id:7039f393fc8d45479c11636d90979adc,UserType:Channel,UserName:mflowfrontline,FullName:mflow channel,FirstName:mflow,LastName:channel,LanguageCode:en,FlowPostCount:115,ClientTracksCount:0,FollowingCount:5,FollowersCount:6883,ViewCount:559,ActivationDate:2009-11-05T20:52:11.834Z,UserImage:{RelativePath:70/39/7039f393fc8d45479c11636d90979adc/Profile75X75.jpg,Hash:LQq2I3aykfHW4OsoMQM8Jw==,Width:75,Height:75}},{Id:a2ba8e58e4494ee388499abe506abb06,UserType:ProUser,UserName:mojo,FullName:mojo,LanguageCode:en,FlowPostCount:0,ClientTracksCount:0,FollowingCount:0,FollowersCount:157,ViewCount:9,ActivationDate:2010-03-05T15:26:20.819008Z,UserImage:{RelativePath:a2/ba/a2ba8e58e4494ee388499abe506abb06/Profile75X75.jpg,Hash:TZ7Y5gs3fnbxT4ZtC8zkGg==,Width:75,Height:75}},{Id:106c3757c6424007a45bc00708c572bc,UserType:ProUser,UserName:islandrecords,FullName:Island Records,FirstName:Island,LastName:Records,LanguageCode:en,FlowPostCount:1,ClientTracksCount:0,FollowingCount:0,FollowersCount:147,ViewCount:60,ActivationDate:2010-03-16T19:50:46.691695Z,UserImage:{RelativePath:10/6c/106c3757c6424007a45bc00708c572bc/Profile75X75.jpg,Hash:46bc2QtzsWPlonljLaaPng==,Width:75,Height:75}}],FollowingUsersCount:5}";
+
+			var dto = dtoString.DeserializeFromString<ProUserPublicProfile>();
+			var toDtoString = dto.SerializeToString();
 		}
 
 		public UserSearchResult CreateUserSearchResult(int i)
@@ -102,5 +155,6 @@ namespace ServiceStack.Text.Tests
 				Urn = "Urn" + i,
 			};
 		}
+
 	}
 }

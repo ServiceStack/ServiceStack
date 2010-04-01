@@ -1,4 +1,16 @@
-﻿using System;
+﻿//
+// http://code.google.com/p/servicestack/wiki/TypeSerializer
+// ServiceStack.Text: .NET C# POCO Type Text Serializer.
+//
+// Authors:
+//   Demis Bellot (demis.bellot@gmail.com)
+//
+// Copyright 2010 Liquidbit Ltd.
+//
+// Licensed under the same terms of ServiceStack: new BSD license.
+//
+
+using System;
 using System.IO;
 using System.Reflection;
 using ServiceStack.Text.Reflection;
