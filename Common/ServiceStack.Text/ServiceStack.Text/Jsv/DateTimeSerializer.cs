@@ -25,7 +25,7 @@ namespace ServiceStack.Text.Jsv
 
 		public static string ToDateTimeString(DateTime dateTime)
 		{
-			return dateTime.ToString(XsdDateTimeFormat);
+			return dateTime.ToUniversalTime().ToString(XsdDateTimeFormat);
 		}
 
 		public static DateTime ParseDateTime(string dateTimeStr)

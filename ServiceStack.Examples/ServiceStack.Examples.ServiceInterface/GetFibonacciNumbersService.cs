@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ServiceStack.Configuration;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceInterface
 {

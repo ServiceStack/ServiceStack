@@ -1,3 +1,4 @@
+using System;
 using System.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -17,13 +18,20 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var request = CreateRequest(context.Request, operationName);
 
-			var endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Jsv 
+			var endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Jsv
 				| GetEndpointAttributes(context.Request);
-			
+
 			var result = ExecuteService(request, endpointAttributes);
 
 			var response = new HttpResponseWrapper(context.Response);
-			response.WriteToResponse(result, TypeSerializer.SerializeToString, ContentType.JsvText);
+
+			var isDebugRequest = context.Request.RawUrl.ToLower().Contains("debug");
+			var writeFn = isDebugRequest
+				? (Func<object, string>)JsvFormatter.SerializeAndFormat
+				: TypeSerializer.SerializeToString;
+			var contentType = isDebugRequest ? ContentType.PlainText : ContentType.JsvText;
+
+			response.WriteToResponse(result, writeFn, contentType);
 		}
 
 	}

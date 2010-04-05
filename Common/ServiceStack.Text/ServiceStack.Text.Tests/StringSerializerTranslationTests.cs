@@ -66,15 +66,15 @@ namespace ServiceStack.Text.Tests
 		public void Can_convert_string_Dictionary_to_ModelWithFieldsOfDifferentTypes()
 		{
 			var model = new Dictionary<string, string>
-			            	{
-			            		{ "Id", "1" }, 
-			            		{ "Name", "Name1" },
-			            		{ "Bool", "False" },
-			            		{ "DateTime", "2008-01-10" },
-			            		{ "Double", "1.11" },
-			            		{ "Guid", "99161EEC-2857-4031-8CED-EAE21F954496" },
-			            		{ "LongId", "999" },
-			            	};
+        	{
+        		{ "Id", "1" }, 
+        		{ "Name", "Name1" },
+        		{ "Bool", "False" },
+        		{ "DateTime", "2008-01-10" },
+        		{ "Double", "1.11" },
+        		{ "Guid", "99161EEC-2857-4031-8CED-EAE21F954496" },
+        		{ "LongId", "999" },
+        	};
 
 			var modelString = TypeSerializer.SerializeToString(model);
 			var translateToModel = TypeSerializer.DeserializeFromString<ModelWithFieldsOfDifferentTypes>(modelString);
@@ -114,7 +114,7 @@ namespace ServiceStack.Text.Tests
 			Assert.That(translateToModel.Id, Is.EqualTo(int.Parse(model["Id"])));
 			Assert.That(translateToModel.Name, Is.EqualTo(model["Name"]));
 		}
-        
+
 		public class MultiCustomerDictionaries
 		{
 			public Dictionary<string, string> Customer1 { get; set; }

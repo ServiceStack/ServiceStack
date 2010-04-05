@@ -108,6 +108,9 @@
 			<add name="Json.Metadata" path="Public/Json/Metadata" type="ServiceStack.WebHost.Endpoints.Metadata.JsonMetadataHandler, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified"/>
 			<add name="Json.AsyncOneWay" path="Public/Json/AsyncOneWay" type="ServiceStack.WebHost.Endpoints.JsonAsyncOneWayHandler, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified"/>
 			<add name="Json.SyncReply" path="Public/Json/SyncReply" type="ServiceStack.WebHost.Endpoints.JsonSyncReplyHandler, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified"/>
+			<add name="Jsv.Metadata" path="Public/Jsv/Metadata" type="ServiceStack.WebHost.Endpoints.Metadata.JsvMetadataHandler, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified"/>
+			<add name="Jsv.AsyncOneWay" path="Public/Jsv/AsyncOneWay" type="ServiceStack.WebHost.Endpoints.JsvAsyncOneWayHandler, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified"/>
+			<add name="Jsv.SyncReply" path="Public/Jsv/SyncReply" type="ServiceStack.WebHost.Endpoints.JsvSyncReplyHandler, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified"/>
 		</handlers>
 	</system.webServer>
 

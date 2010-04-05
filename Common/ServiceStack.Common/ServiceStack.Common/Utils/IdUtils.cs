@@ -8,7 +8,7 @@ namespace ServiceStack.Common.Utils
 {
 	public static class IdUtils<T>
 	{
-		private static readonly Func<T,object> CanGetId;
+		private static readonly Func<T, object> CanGetId;
 
 		static IdUtils()
 		{
@@ -111,7 +111,7 @@ namespace ServiceStack.Common.Utils
 		}
 
 		public static string CreateUrn<T>(this T entity)
-//			where T : class
+		//			where T : class
 		{
 			var id = GetId(entity);
 			return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);

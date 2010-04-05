@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
@@ -8,7 +9,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// This purpose of this example is how you would implement a more advanced
 	/// web service returning a slightly more 'complex object'.
 	/// </summary>
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+	[DataContract]
 	public class GetFibonacciNumbers
 	{
 		[DataMember]
@@ -18,7 +19,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		public long? Take { get; set; }
 	}
 
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+	[DataContract]
 	public class GetFibonacciNumbersResponse
 	{
 		[DataMember]

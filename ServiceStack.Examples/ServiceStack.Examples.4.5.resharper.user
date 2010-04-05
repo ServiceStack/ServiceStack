@@ -30,7 +30,6 @@
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="491" fromTop="18" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="476" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="522" fromTop="16" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="875" fromTop="19" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="1141" fromTop="33" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="726" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="609" fromTop="19" />
@@ -38,6 +37,7 @@
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="0" fromTop="0" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1022" fromTop="23" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="0" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1205" fromTop="28" />
     </RecentFiles>
     <RecentEdits>
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1412" fromTop="18" />

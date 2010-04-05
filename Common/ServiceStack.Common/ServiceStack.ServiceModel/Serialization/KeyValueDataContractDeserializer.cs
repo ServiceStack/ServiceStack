@@ -11,8 +11,16 @@ namespace ServiceStack.ServiceModel.Serialization
 		public object Parse(NameValueCollection nameValues, Type returnType)
 		{
 			var map = new Dictionary<string, string>();
+
 			foreach (var key in nameValues.AllKeys)
 			{
+				if (key == null)
+				{
+					//occurs when no value is specified, e.g. 'path/to/page?debug'
+					//throw new ArgumentNullException("key", "nameValues: " + nameValues);
+					continue;
+				}
+
 				var values = nameValues.GetValues(key);
 				if (values != null && values.Length > 0)
 				{
@@ -22,7 +30,7 @@ namespace ServiceStack.ServiceModel.Serialization
 			return Parse(map, returnType);
 		}
 
-		readonly Dictionary<Type, StringMapTypeDeserializer> typeStringMapSerializerMap 
+		readonly Dictionary<Type, StringMapTypeDeserializer> typeStringMapSerializerMap
 			= new Dictionary<Type, StringMapTypeDeserializer>();
 
 		public object Parse(IDictionary<string, string> keyValuePairs, Type returnType)
@@ -34,7 +42,7 @@ namespace ServiceStack.ServiceModel.Serialization
 				{
 					stringMapTypeDeserializer = new StringMapTypeDeserializer(returnType);
 					typeStringMapSerializerMap.Add(returnType, stringMapTypeDeserializer);
-				}				
+				}
 			}
 
 			return stringMapTypeDeserializer.CreateFromMap(keyValuePairs);

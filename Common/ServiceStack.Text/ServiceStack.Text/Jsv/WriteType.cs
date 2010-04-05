@@ -37,7 +37,7 @@ namespace ServiceStack.Text.Jsv
 			var type = typeof (T);
 			if (!type.IsClass && !type.IsInterface) return null;
 
-			var propertyInfos = type.GetPublicProperties();
+			var propertyInfos = type.GetSerializableProperties();
 			if (propertyInfos.Length == 0) return null;
 
 			var propertyNamesLength = propertyInfos.Length;
@@ -100,29 +100,6 @@ namespace ServiceStack.Text.Jsv
 			}
 			writer.Write(TypeSerializer.MapEndChar);
 		}
-
-		//public static void TypeToString(TextWriter writer, object value)
-		//{
-		//    writer.Write(TypeSerializer.MapStartChar);
-
-		//    var ranOnce = false;
-
-		//    for (var i = 0; i < propertyNamesLength; i++)
-		//    {
-		//        var propertyName = propertyNames[i];
-
-		//        var propertyValue = propertyWriters[i]((T) value);
-		//        if (propertyValue == null) continue;
-
-		//        WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
-
-		//        writer.Write(propertyName);
-		//        writer.Write(TypeSerializer.MapKeySeperator);
-		//        writeFns[i](writer, propertyValue);
-		//    }
-
-		//    writer.Write(TypeSerializer.MapEndChar);
-		//}
 
 	}
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using Funq;
+using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.DataAccess;
@@ -9,6 +11,7 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Redis;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Examples.Host.Web
@@ -41,6 +44,15 @@ namespace ServiceStack.Examples.Host.Web
 					SqliteOrmLiteDialectProvider.Instance));
 
 			ConfigureDatabase.Init(container.Resolve<IDbConnectionFactory>());
+
+
+			//register different cache implementations depending on availability
+			const bool hasRedis = false;
+			if (hasRedis)
+				container.Register<ICacheClient>(c => new BasicRedisClientManager());
+			else
+				container.Register<ICacheClient>(c => new MemoryCacheClient());
+
 
 			log.InfoFormat("AppHost Configured: " + DateTime.Now);
 		}

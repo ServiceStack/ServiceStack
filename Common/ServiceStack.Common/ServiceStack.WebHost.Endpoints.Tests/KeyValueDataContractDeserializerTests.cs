@@ -83,7 +83,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(request.Equals(toRequest), Is.True);
 		}
 
-
 	}
 
 }

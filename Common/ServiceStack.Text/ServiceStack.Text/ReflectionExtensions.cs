@@ -260,6 +260,26 @@ namespace ServiceStack.Text
 				| BindingFlags.Public | BindingFlags.Instance);
 		}
 
+		public static PropertyInfo[] GetSerializableProperties(this Type type)
+		{
+			const string dataContract = "DataContractAttribute";
+			const string dataMember = "DataMemberAttribute";
+
+			var publicProperties = GetPublicProperties(type);
+
+			//If it is a 'DataContract' only return 'DataMember' properties.
+			//checking for "DataContract" using strings to avoid dependency on System.Runtime.Serialization
+			var isDataContract = type.GetCustomAttributes(true).Any(x => x.GetType().Name == dataContract);
+			if (isDataContract)
+			{
+				return publicProperties.Where(attr =>
+					attr.GetCustomAttributes(false).Any(x => x.GetType().Name == dataMember))
+					.ToArray();
+			}
+			
+			return publicProperties;
+		}
+
 	}
 
 }

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Moq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
-using ServiceStack.DataAccess;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;

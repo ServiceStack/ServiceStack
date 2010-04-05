@@ -1,9 +1,10 @@
+using System;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+	[DataContract]
 	public class User
 	{
 		[AutoIncrement]
@@ -18,5 +19,11 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 
 		[DataMember]
 		public string Password { get; set; }
+
+		[DataMember]
+		public Guid GlobalId { get; set; }
+
+		[DataMember]
+		public DateTime CreatedDate { get; set; }
 	}
 }

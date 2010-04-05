@@ -18,26 +18,42 @@ namespace ServiceStack.Text
 {
 	public static class JsvFormatter
 	{
-		public static string ToPrettyFormat<T>(this T poco)
+		public static string Dump<T>(this T instance)
 		{
-			var pocoStr = TypeSerializer.SerializeToString(poco);
-			return Format(pocoStr);
+			return SerializeAndFormat(instance);
+		}
+
+		public static string SerializeAndFormat<T>(this T instance)
+		{
+			var dtoStr = TypeSerializer.SerializeToString(instance);
+			var formatStr = Format(dtoStr);
+			return formatStr;
 		}
 
 		public static string Format(string serializedText)
 		{
+			if (string.IsNullOrEmpty(serializedText)) return null;
+
 			var tabCount = 0;
 			var sb = new StringBuilder();
 
 			for (var i = 0; i < serializedText.Length; i++)
 			{
 				var current = serializedText[i];
+				var previous = i - 1 >= 0 ? serializedText[i - 1] : 0;
+				var next = i < serializedText.Length - 1 ? serializedText[i + 1] : 0;
 
 				if (current == TypeSerializer.MapStartChar || current == TypeSerializer.ListStartChar)
 				{
-					var previous = i - 1 >= 0 ? serializedText[i - 1] : 'a';
 					if (previous == TypeSerializer.MapKeySeperator)
 					{
+						if (next == TypeSerializer.MapEndChar || next == TypeSerializer.ListEndChar)
+						{
+							sb.Append(current);
+							sb.Append(serializedText[++i]); //eat next
+							continue;
+						}
+
 						AppendTabLine(sb, tabCount);
 					}
 
@@ -72,7 +88,7 @@ namespace ServiceStack.Text
 
 			if (tabCount > 0)
 			{
-				sb.Append(new String('\t', tabCount));
+				sb.Append(new string('\t', tabCount));
 			}
 		}
 	}

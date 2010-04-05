@@ -8,14 +8,14 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// The purpose of this example is to show the minimum number and detail of classes 
 	/// required in order to implement a simple service.
 	/// </summary>
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+	[DataContract]
 	public class GetFactorial
 	{
 		[DataMember]
 		public long ForNumber { get; set; }
 	}
 
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+	[DataContract]
 	public class GetFactorialResponse
 	{
 		[DataMember]

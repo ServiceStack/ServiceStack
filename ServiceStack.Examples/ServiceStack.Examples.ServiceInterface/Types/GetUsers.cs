@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
@@ -10,7 +11,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// This example shows a simple introduction into SOA-like webservices. 
 	/// i.e. group similar operations into a single 'document-centric like' service request.
 	/// </summary>
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+	[DataContract]
 	public class GetUsers
 	{
 		[DataMember]
@@ -20,7 +21,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		public List<string> UserNames { get; set; }
 	}
 
-	[DataContract(Namespace = "http://schemas.sericestack.net/examples/types")]
+	[DataContract]
 	public class GetUsersResponse
 	{
 		public GetUsersResponse()

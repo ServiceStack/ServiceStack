@@ -1,7 +1,9 @@
+using System;
 using System.Linq;
 using ServiceStack.Examples.ServiceInterface.Types;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceInterface
 {
@@ -29,12 +31,20 @@ namespace ServiceStack.Examples.ServiceInterface
 
 				if (existingUsers.Count > 0)
 				{
-					return new StoreNewUserResponse {
+					return new StoreNewUserResponse
+					{
 						ResponseStatus = new ResponseStatus { ErrorCode = "UserNameMustBeUnique" }
 					};
 				}
 
-				var newUser = new User { UserName = request.UserName, Email = request.Email, Password = request.Password };
+				var newUser = new User
+				{
+					UserName = request.UserName,
+					Email = request.Email,
+					Password = request.Password,
+					GlobalId = Guid.NewGuid(),
+					CreatedDate = DateTime.UtcNow,
+				};
 
 				dbCmd.Insert(newUser);
 

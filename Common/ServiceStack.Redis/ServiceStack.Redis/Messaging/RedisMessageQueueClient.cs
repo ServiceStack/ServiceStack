@@ -77,8 +77,9 @@ namespace ServiceStack.Redis.Messaging
 
 		public void Notify(string queueName, byte[] messageBytes)
 		{
+			const int maxSuccessQueueSize = 1000;
 			this.ReadWriteClient.LPush(queueName, messageBytes);
-			this.ReadWriteClient.LTrim(queueName, 0, 1000);
+			this.ReadWriteClient.LTrim(queueName, 0, maxSuccessQueueSize);
 		}
 
 		public byte[] Get(string queueName, TimeSpan? timeOut)

@@ -127,7 +127,7 @@
     <Compile Include="Perf\ToStringPerf.cs" />
     <Compile Include="PerfTestBase.cs" />
     <Compile Include="Perf\StringParsePerf.cs" />
-    <Compile Include="StreamExtensions.cs" />
+    <Compile Include="StreamExtensionsTests.cs" />
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

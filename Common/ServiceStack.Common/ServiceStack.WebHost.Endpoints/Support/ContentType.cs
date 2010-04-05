@@ -1,3 +1,5 @@
+using System;
+
 namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public class ContentType
@@ -15,5 +17,32 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public const string JsvText = "text/jsv";
 
 		public const string Json = "application/json";
+
+		public const string PlainText = "text/plain";
+
+		public const string ProtoBuf = "application/x-protobuf";
+
+		public static string GetContentType(EndpointType endpointType)
+		{
+			switch (endpointType)
+			{
+				case EndpointType.Soap11:
+				case EndpointType.Soap12:
+				case EndpointType.Xml:
+					return Xml;
+
+				case EndpointType.Json:
+					return Json;
+
+				case EndpointType.Jsv:
+					return JsvText;
+
+				case EndpointType.ProtoBuf:
+					return ProtoBuf;
+				
+				default:
+					throw new NotSupportedException(endpointType.ToString());
+			}
+		}
 	}
 }

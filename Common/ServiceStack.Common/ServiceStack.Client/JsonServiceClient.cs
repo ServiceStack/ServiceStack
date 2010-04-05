@@ -7,6 +7,8 @@ namespace ServiceStack.Client
 {
 	public class JsonServiceClient : IServiceClient
 	{
+		private const string ContentType = "application/json";
+
 		public JsonServiceClient(string baseUri)
 		{
 			this.BaseUri = baseUri;
@@ -18,7 +20,7 @@ namespace ServiceStack.Client
 
 		public T Send<T>(object request)
 		{
-			var xmlRequest = JsonDataContractSerializer.Instance.Parse(request);
+			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
@@ -29,10 +31,10 @@ namespace ServiceStack.Client
 				}
 
 				client.Method = "POST";
-				client.ContentType = "application/json";
+				client.ContentType = ContentType;
 				using (var writer = new StreamWriter(client.GetRequestStream()))
 				{
-					writer.Write(xmlRequest);
+					writer.Write(jsonRequest);
 				}
 			}
 			catch (AuthenticationException ex)
@@ -58,7 +60,7 @@ namespace ServiceStack.Client
 				}
 
 				client.Method = "POST";
-				client.ContentType = "application/json";
+				client.ContentType = ContentType;
 				using (var writer = new StreamWriter(client.GetRequestStream()))
 				{
 					writer.Write(xmlRequest);

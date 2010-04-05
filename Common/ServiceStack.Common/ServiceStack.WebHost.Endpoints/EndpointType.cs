@@ -4,6 +4,8 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		Xml,
 		Json,
+		Jsv,
+		ProtoBuf,
 		Soap11,
 		Soap12,
 	}

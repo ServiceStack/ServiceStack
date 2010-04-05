@@ -3,27 +3,34 @@ using System.IO;
 using System.Net;
 using System.Security.Authentication;
 using ServiceStack.Service;
-using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-	public class JsonServiceClient : IServiceClient
+	public class JsvServiceClient 
+		: IServiceClient
 	{
-		private const string ContentType = "application/json";
+		private const string ContentType = "text/jsv";
 
-		public JsonServiceClient(string baseUri)
+		public JsvServiceClient(string baseUri)
+			: this(baseUri + "Jsv/SyncReply", baseUri + "Jsv/AsyncOneWay")
 		{
-			this.BaseUri = baseUri;
 		}
 
-		public string BaseUri { get; set; }
+		public JsvServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri)
+		{
+			this.SyncReplyBaseUri = syncReplyBaseUri;
+			this.AsyncOneWayBaseUri = asyncOneWayBaseUri;
+		}
+
+		public string SyncReplyBaseUri { get; set; }
+		public string AsyncOneWayBaseUri { get; set; }
 
 		public TimeSpan? Timeout { get; set; }
 
 		public T Send<T>(object request)
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
-			var requestUri = this.BaseUri + "/" + request.GetType().Name;
+			var requestUri = this.SyncReplyBaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
 			{
@@ -34,9 +41,10 @@ namespace ServiceStack.ServiceClient.Web
 
 				client.Method = "POST";
 				client.ContentType = ContentType;
+
 				using (var writer = new StreamWriter(client.GetRequestStream()))
 				{
-					writer.Write(jsonRequest);
+					TypeSerializer.SerializeToWriter(request, writer);
 				}
 			}
 			catch (AuthenticationException ex)
@@ -44,15 +52,17 @@ namespace ServiceStack.ServiceClient.Web
 				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
 			}
 
-			var json = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-			var response = (T)JsonDataContractDeserializer.Instance.Parse(json, typeof(T));
-			return response;
+			using (var responseStream = client.GetResponse().GetResponseStream())
+			using (var reader = new StreamReader(responseStream))
+			{
+				var response = TypeSerializer.DeserializeFromReader<T>(reader);
+				return response;
+			}
 		}
 
 		public void SendOneWay(object request)
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
-			var requestUri = this.BaseUri + "/" + request.GetType().Name;
+			var requestUri = this.AsyncOneWayBaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
 			{
@@ -63,9 +73,11 @@ namespace ServiceStack.ServiceClient.Web
 
 				client.Method = "POST";
 				client.ContentType = ContentType;
-				using (var writer = new StreamWriter(client.GetRequestStream()))
+
+				using (var requestStream = client.GetRequestStream())
+				using (var writer = new StreamWriter(requestStream))
 				{
-					writer.Write(jsonRequest);
+					TypeSerializer.SerializeToWriter(request, writer);
 				}
 			}
 			catch (AuthenticationException ex)
@@ -74,6 +86,6 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
-		public void Dispose() {}
+		public void Dispose() { }
 	}
 }

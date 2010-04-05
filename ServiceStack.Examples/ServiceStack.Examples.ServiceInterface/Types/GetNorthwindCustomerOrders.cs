@@ -1,30 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-	/// <summary>
-	/// Use Plain old DataContract's Define your 'Service Interface'
-	/// </summary>
 	[DataContract]
-	public class DeleteAllUsers
+	public class GetNorthwindCustomerOrders
 	{
+		[DataMember]
+		public string CustomerId { get; set; }
 	}
 
 	[DataContract]
-	public class DeleteAllUsersResponse
+	public class GetNorthwindCustomerOrdersResponse
 	{
-		public DeleteAllUsersResponse()
+		public GetNorthwindCustomerOrdersResponse()
 		{
 			this.ResponseStatus = new ResponseStatus();
 		}
 
 		[DataMember]
-		public long UserId { get; set; }
+		public CustomerOrders CustomerOrders { get; set; }
 
 		[DataMember]
 		public ResponseStatus ResponseStatus { get; set; }

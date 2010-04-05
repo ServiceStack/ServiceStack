@@ -13,7 +13,7 @@ namespace ServiceStack.ServiceInterface.Session
 {
 	/// <summary>
 	/// Holds a 'Secure' and 'Unsecure' client session for the user.
-	/// The secure client session should only be transported on a secure channel.
+	/// The secure client session should only be transported over a secure channel.
 	/// </summary>
 	public class PublicAndPrivateClientSessions
 	{

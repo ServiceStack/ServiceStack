@@ -24,8 +24,8 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			//StreamExtensions.DeflateProvider = new ICSharpDeflateProvider();
-			//StreamExtensions.GZipProvider = new ICSharpGZipProvider();
+			//StreamExtensionsTests.DeflateProvider = new ICSharpDeflateProvider();
+			//StreamExtensionsTests.GZipProvider = new ICSharpGZipProvider();
 
 			this.cacheClient = new MemoryCacheClient();
 			this.cacheTextManager = new XmlCacheManager(this.cacheClient);

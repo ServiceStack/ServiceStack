@@ -25,8 +25,14 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 		public void Render(HtmlTextWriter output)
 		{
-			var renderedTemplate = string.Format(PAGE_TEMPLATE, Title, MetadataConfig.DefaultMetadataUri, EndpointType, OperationName,
-				HttpRequestTemplate, ResponseTemplate);
+			var renderedTemplate = string.Format(PAGE_TEMPLATE, 
+				Title, 
+				MetadataConfig.DefaultMetadataUri, 
+				EndpointType, 
+				OperationName,
+				HttpRequestTemplate, 
+				ResponseTemplate);
+
 			output.Write(renderedTemplate);
 		}
 
@@ -133,10 +139,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 				return string.Format(
 @"POST {0} HTTP/1.1 
 Host: {1} 
-Content-Type: application/{2}; charset=utf-8
+Content-Type: {2}
 Content-Length: <span class=""value"">length</span>
 
-{3}", RequestUri, HostName, EndpointType.ToString().ToLower(), HttpUtility.HtmlEncode(RequestMessage));
+{3}", RequestUri, HostName, ContentType.GetContentType(EndpointType), HttpUtility.HtmlEncode(RequestMessage));
 			}
 		}
 
@@ -162,10 +168,10 @@ Content-Length: <span class=""value"">length</span>
 				if (string.IsNullOrEmpty(ResponseMessage)) return null;
 				return string.Format(
 @"HTTP/1.1 200 OK
-Content-Type: application/{0}; charset=utf-8
+Content-Type: {0}
 Content-Length: length
 
-{1}", EndpointType.ToString().ToLower(), HttpUtility.HtmlEncode(ResponseMessage));
+{1}", ContentType.GetContentType(EndpointType), HttpUtility.HtmlEncode(ResponseMessage));
 			}
 		}
 

@@ -124,6 +124,7 @@ namespace Northwind.Benchmarks.Serialization
 		public void Deserialize_CustomerOrderListDto()
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
+			Console.WriteLine(dto.Dump());
 
 			var dtoXml = DataContractSerializer.Instance.Parse(dto);
 			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);

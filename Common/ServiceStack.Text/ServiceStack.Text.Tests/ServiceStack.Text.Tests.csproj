@@ -71,11 +71,13 @@
     <Compile Include="BasicStringSerializerTests.cs" />
     <Compile Include="CsvStreamTests.cs" />
     <Compile Include="CustomStructTests.cs" />
+    <Compile Include="DataContractTests.cs" />
     <Compile Include="DateTimeSerializerTests.cs" />
     <Compile Include="DdnContentIngestTests.cs" />
     <Compile Include="DdnDtos.cs" />
     <Compile Include="DdnDtoTests.cs" />
     <Compile Include="InterfaceTests.cs" />
+    <Compile Include="JsvFormatterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringSerializerNorthwindDatabaseTests.cs" />
     <Compile Include="StringSerializerTests.cs" />
