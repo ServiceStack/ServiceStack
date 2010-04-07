@@ -46,7 +46,7 @@ namespace ServiceStack.Examples.ServiceInterface
 			return RequestContext.ToOptimizedResultUsingCache(this.CacheClient, cacheKey, () =>
 				new GetNorthwindCustomerOrdersCachedResponse
 				{					
-					CreatedDate = DateTime.UtcNow, //The DateTime when this cached result was created
+					CreatedDate = DateTime.UtcNow, //To determine when this cached result was created
 					CustomerOrders = GetNorthwindCustomerOrdersService.GetCustomerOrders(request.CustomerId)
 				});
 		}

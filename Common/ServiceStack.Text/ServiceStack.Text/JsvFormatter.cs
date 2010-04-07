@@ -3,8 +3,8 @@
 // ServiceStack.Text: .NET C# POCO Type Text Serializer.
 //
 // Authors:
-//   Demis Bellot (demis.bellot@gmail.com)
 //	 Peter Townsend (townsend.pete@gmail.com)
+//   Demis Bellot (demis.bellot@gmail.com)
 //
 // Copyright 2010 Liquidbit Ltd.
 //
@@ -36,6 +36,7 @@ namespace ServiceStack.Text
 
 			var tabCount = 0;
 			var sb = new StringBuilder();
+			var firstKeySeparator = true;
 
 			for (var i = 0; i < serializedText.Length; i++)
 			{
@@ -59,6 +60,7 @@ namespace ServiceStack.Text
 
 					sb.Append(current);
 					AppendTabLine(sb, ++tabCount);
+					firstKeySeparator = true;
 					continue;
 				}
 
@@ -66,6 +68,7 @@ namespace ServiceStack.Text
 				{
 					AppendTabLine(sb, --tabCount);
 					sb.Append(current);
+					firstKeySeparator = true;
 					continue;
 				}
 
@@ -73,10 +76,17 @@ namespace ServiceStack.Text
 				{
 					sb.Append(current);
 					AppendTabLine(sb, tabCount);
+					firstKeySeparator = true;
 					continue;
 				}
 
 				sb.Append(current);
+
+				if (current == TypeSerializer.MapKeySeperator && firstKeySeparator)
+				{
+					sb.Append(" ");
+					firstKeySeparator = false;
+				}
 			}
 
 			return sb.ToString();

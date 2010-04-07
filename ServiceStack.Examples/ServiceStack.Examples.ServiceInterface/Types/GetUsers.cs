@@ -8,8 +8,8 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// <summary>
 	/// Use Plain old DataContract's Define your 'Service Interface'
 	/// 
-	/// This example shows a simple introduction into SOA-like webservices. 
-	/// i.e. group similar operations into a single 'document-centric like' service request.
+	/// This example shows the flavour of SOA-style webservices. 
+	/// i.e. group similar operations into a single batch-full service request.
 	/// </summary>
 	[DataContract]
 	public class GetUsers

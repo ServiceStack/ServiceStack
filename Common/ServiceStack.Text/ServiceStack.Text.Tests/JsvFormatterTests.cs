@@ -18,7 +18,7 @@ namespace ServiceStack.Text.Tests
 			var model = new ModelWithIdAndName { Id = 1, Name = "Name" };
 			var modelStr = model.Dump();
 
-			Assert.That(modelStr, Is.EqualTo("{\r\n\tId:1,\r\n\tName:Name\r\n}"));
+			Assert.That(modelStr, Is.EqualTo("{\r\n\tId: 1,\r\n\tName: Name\r\n}"));
 		}
 
 		[Test]
@@ -27,7 +27,7 @@ namespace ServiceStack.Text.Tests
 			object model = new ModelWithIdAndName { Id = 1, Name = "Name" };
 			var modelStr = model.Dump();
 
-			Assert.That(modelStr, Is.EqualTo("{\r\n\tId:1,\r\n\tName:Name\r\n}"));
+			Assert.That(modelStr, Is.EqualTo("{\r\n\tId: 1,\r\n\tName: Name\r\n}"));
 		}
 
 		internal class DumpModel
@@ -39,10 +39,12 @@ namespace ServiceStack.Text.Tests
 				this.EmptyIntList = new List<int>();
 				this.IntList = new List<int> { 1, 2, 3 };
 				this.StringList = new List<string> { "one", "two", "three" };
+				this.DateTime = DateTime.UtcNow;
 			}
 
 			public int Int { get; set; }
 			public string String { get; set; }
+			public DateTime DateTime { get; set; }
 			public List<int> EmptyIntList { get; set; }
 			public List<int> IntList { get; set; }
 			public List<string> StringList { get; set; }
