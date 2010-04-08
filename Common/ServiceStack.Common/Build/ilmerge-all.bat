@@ -14,6 +14,7 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Common\bin\%BUILD%\ServiceStack.Common
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.ServiceModel\bin\%BUILD%\ServiceStack.ServiceModel.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Configuration\bin\%BUILD%\ServiceStack.Configuration.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Validation\bin\%BUILD%\ServiceStack.Validation.dll
+SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.Messaging\bin\%BUILD%\ServiceStack.Messaging.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\ServiceStack.WebHost.Endpoints\bin\%BUILD%\ServiceStack.WebHost.Endpoints.dll
 
 SET PROJ_LIBS=%PROJ_LIBS% ..\Funq\bin\%BUILD%\Funq.dll

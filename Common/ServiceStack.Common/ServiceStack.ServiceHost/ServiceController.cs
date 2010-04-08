@@ -22,10 +22,10 @@ namespace ServiceStack.ServiceHost
 			this.ServiceTypes = new HashSet<Type>();
 		}
 
-		readonly Dictionary<Type, Func<IRequestContext, object, object>> requestExecMap 
+		readonly Dictionary<Type, Func<IRequestContext, object, object>> requestExecMap
 			= new Dictionary<Type, Func<IRequestContext, object, object>>();
 
-		readonly Dictionary<Type, ServiceAttribute> requestServiceAttrs 
+		readonly Dictionary<Type, ServiceAttribute> requestServiceAttrs
 			= new Dictionary<Type, ServiceAttribute>();
 
 		public bool EnableAccessRestrictions { get; set; }
@@ -41,7 +41,8 @@ namespace ServiceStack.ServiceHost
 		public void Register<TReq>(Func<IService<TReq>> invoker)
 		{
 			var requestType = typeof(TReq);
-			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) => {
+			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) =>
+			{
 				var service = invoker();
 
 				InjectRequestContext(service, requestContext);
@@ -128,10 +129,11 @@ namespace ServiceStack.ServiceHost
 		{
 			var typeFactoryFn = CallServiceExecuteGeneric(requestType, serviceType);
 
-			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) => {
+			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) =>
+			{
 				var service = serviceFactoryFn.CreateInstance(serviceType);
 				InjectRequestContext(service, requestContext);
-				
+
 				var endpointAttrs = requestContext != null
 					? requestContext.EndpointAttributes
 					: EndpointAttributes.None;
@@ -171,23 +173,36 @@ namespace ServiceStack.ServiceHost
 		private static Func<object, object, EndpointAttributes, object> CallServiceExecuteGeneric(
 			Type requestType, Type serviceType)
 		{
-			var requestDtoParam = Expression.Parameter(typeof(object), "requestDto");
-			var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
+			try
+			{
+				var requestDtoParam = Expression.Parameter(typeof(object), "requestDto");
+				var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
 
-			var serviceParam = Expression.Parameter(typeof(object), "serviceObj");
-			var serviceStrong = Expression.Convert(serviceParam, serviceType);
+				var serviceParam = Expression.Parameter(typeof(object), "serviceObj");
+				var serviceStrong = Expression.Convert(serviceParam, serviceType);
 
-			var attrsParam = Expression.Parameter(typeof(EndpointAttributes), "attrs");
+				var attrsParam = Expression.Parameter(typeof(EndpointAttributes), "attrs");
 
-			var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
+				var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
 
-			Expression callExecute = Expression.Call(
-				serviceStrong, mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
+				Expression callExecute = Expression.Call(
+					serviceStrong, mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
 
-			var executeFunc = Expression.Lambda<Func<object, object, EndpointAttributes, object>>
-				(callExecute, requestDtoParam, serviceParam, attrsParam).Compile();
+				var executeFunc = Expression.Lambda<Func<object, object, EndpointAttributes, object>>
+					(callExecute, requestDtoParam, serviceParam, attrsParam).Compile();
 
-			return executeFunc;
+				return executeFunc;
+
+			}
+			catch (Exception ex)
+			{
+				//problems with MONO, using reflection for temp fix
+				return delegate(object request, object service, EndpointAttributes attrs)
+				{
+					var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
+					return mi.Invoke(service, new[] { request });
+				};
+			}
 		}
 
 		public object Execute(object dto)
