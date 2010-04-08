@@ -200,7 +200,7 @@ namespace ServiceStack.ServiceHost
 				return delegate(object request, object service, EndpointAttributes attrs)
 				{
 					var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
-					return mi.Invoke(service, new[] { request });
+					return mi.Invoke(null, new[] { service, request, attrs });
 				};
 			}
 		}
