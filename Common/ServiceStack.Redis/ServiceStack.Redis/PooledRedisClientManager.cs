@@ -28,7 +28,7 @@ namespace ServiceStack.Redis
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(PooledRedisClientManager));
 
-		protected const int PoolSizeMultiplier = 4;
+		protected const int PoolSizeMultiplier = 10;
 
 		private List<EndPoint> ReadWriteHosts { get; set; }
 		private List<EndPoint> ReadOnlyHosts { get; set; }
