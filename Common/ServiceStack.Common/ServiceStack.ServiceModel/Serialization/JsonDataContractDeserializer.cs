@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceModel.Serialization
 			{
 				using (var ms = new MemoryStream())
 				{
-					var bytes = Encoding.Unicode.GetBytes(json);
+					var bytes = Encoding.UTF8.GetBytes(json);
 					ms.Write(bytes, 0, bytes.Length);
 					ms.Position = 0;
 					var serializer = new DataContractJsonSerializer(returnType);
