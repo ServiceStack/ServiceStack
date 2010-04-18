@@ -9,14 +9,15 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Server;
 
 namespace ServiceStack.Examples.Host.Console
 {
 	/// <summary>
 	/// An example of a AppHost to have your services running inside a webserver.
 	/// </summary>
-	public class AppHost : XmlSyncReplyHttpListener
+	public class AppHost
+		: AppHostHttpListenerBase
 	{
 		private static ILog log;
 
@@ -40,12 +41,6 @@ namespace ServiceStack.Examples.Host.Console
 				new OrmLiteConnectionFactory(
 					appConfig.ConnectionString.MapAbsolutePath(), 
 					SqliteOrmLiteDialectProvider.Instance));
-
-			var listeningOn = appSettings.GetString("ListenBaseUrl");
-			this.Start(listeningOn);
-
-			log.InfoFormat("AppHost Created at {0}, listening on {1}, saving to db at {2}",
-				DateTime.Now, listeningOn, appConfig.ConnectionString);
 
 			if (appSettings.Get("PerformTestsOnInit", false))
 			{

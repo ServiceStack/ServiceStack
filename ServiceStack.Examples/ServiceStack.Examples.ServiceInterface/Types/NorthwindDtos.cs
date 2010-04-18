@@ -6,7 +6,6 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-
 	[DataContract]
 	public class CustomerOrders
 	{
