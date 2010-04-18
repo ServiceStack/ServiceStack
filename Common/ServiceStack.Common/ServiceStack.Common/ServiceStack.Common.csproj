@@ -63,7 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Environment.cs" />
+    <Compile Include="Env.cs" />
     <Compile Include="Expressions\DelegateFactory.cs" />
     <Compile Include="Extensions\ActionExecExtensions.cs" />
     <Compile Include="Extensions\AssertExtensions.cs" />
@@ -77,6 +77,7 @@
     <Compile Include="Extensions\CollectionExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\IntExtensions.cs" />
+    <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />
     <Compile Include="Support\InMemoryLogFactory.cs" />
@@ -85,7 +86,6 @@
     <Compile Include="Extensions\ITranslatorExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\ReflectionExtensions.cs" />
-    <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Support\ActionExecHandler.cs" />
     <Compile Include="Support\AdapterBase.cs" />

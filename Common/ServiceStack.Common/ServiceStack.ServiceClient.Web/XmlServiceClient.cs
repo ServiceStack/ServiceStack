@@ -1,78 +1,43 @@
-using System;
 using System.IO;
-using System.Net;
-using System.Security.Authentication;
-using System.Threading;
-using ServiceStack.Service;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-	public class XmlServiceClient : IServiceClient
+	public class XmlServiceClient
+		: ServiceClientBase
 	{
-		public XmlServiceClient(string baseUri)
+		public XmlServiceClient()
 		{
-			this.BaseUri = baseUri;
 		}
 
-		public string BaseUri { get; set; }
-
-		public TimeSpan? Timeout { get; set; }
-
-		public T Send<T>(object request)
+		/// <summary>
+		/// Base Url of Service Stack's Web Service endpoints, i.e. http://localhost/Public/
+		/// </summary>
+		/// <param name="baseUri"></param>
+		public XmlServiceClient(string baseUri) 
 		{
-			var xmlRequest = DataContractSerializer.Instance.Parse(request);
-			var requestUri = this.BaseUri + "/" + request.GetType().Name;
-			var client = WebRequest.Create(requestUri);
-			try
-			{
-				client.Method = "POST";
-				if (this.Timeout.HasValue)
-				{
-					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-				}
-
-				client.ContentType = "application/xml";
-				using (var writer = new StreamWriter(client.GetRequestStream()))
-				{
-					writer.Write(xmlRequest);
-				}
-			}
-			catch (AuthenticationException ex)
-			{
-				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-			}
-			var xml = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-			var response = (T)DataContractDeserializer.Instance.Parse(xml, typeof(T));
-			return response;
+			this.BaseUri = baseUri.WithTrailingSlash() + "Xml/";
 		}
 
-		public void SendOneWay(object request)
+		public XmlServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
+			: base(syncReplyBaseUri, asyncOneWayBaseUri)
 		{
-			var xmlRequest = DataContractSerializer.Instance.Parse(request);
-			var requestUri = this.BaseUri + "/" + request.GetType().Name;
-			var client = WebRequest.Create(requestUri);
-			try
-			{
-				if (this.Timeout.HasValue)
-				{
-					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-				}
-
-				client.Method = "POST";
-				client.ContentType = "application/xml";
-				using (var writer = new StreamWriter(client.GetRequestStream()))
-				{
-					writer.Write(xmlRequest);
-				}
-			}
-			catch (AuthenticationException ex)
-			{
-				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-			}
 		}
 
-		public void Dispose() { }
+		public override string ContentType
+		{
+			get { return "application/xml"; }
+		}
+
+		public override void SerializeToStream(object request, Stream stream)
+		{
+			DataContractSerializer.Instance.SerializeToStream(request, stream);
+		}
+
+		public override T DeserializeFromStream<T>(Stream stream)
+		{
+			return DataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+		}
 	}
-
 }

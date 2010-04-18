@@ -16,6 +16,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// server, for start and stop management and event routing of the actual
 	/// inbound requests.
 	/// </summary>
+	[Obsolete("Use AppHostHttpListenerBase")]
 	public abstract class HttpListenerBase : IDisposable
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));

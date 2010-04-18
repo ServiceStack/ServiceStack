@@ -31,5 +31,11 @@ namespace ServiceStack.ServiceModel.Serialization
 				throw new SerializationException("JsonDataContractSerializer: Error converting type: " + ex.Message, ex);
 			}
 		}
+
+		public void SerializeToStream(object obj, Stream stream)
+		{
+			var serializer = new DataContractJsonSerializer(obj.GetType());
+			serializer.WriteObject(stream, obj);
+		}
 	}
 }

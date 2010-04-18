@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
 
-				response.WriteErrorToResponse(operationName, errorMessage, ex);
+				response.WriteXmlErrorToResponse(operationName, errorMessage, ex);
 			}
 		}
 	}

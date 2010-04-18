@@ -2,14 +2,17 @@ using System;
 using System.IO;
 using System.Net;
 using System.Security.Authentication;
+using System.Threading;
+using ServiceStack.Service;
+using ServiceStack.ServiceModel.Serialization;
 
-namespace ServiceStack.Client
+namespace ServiceStack.ServiceClient.Web.Obsolete
 {
-	public class JsonServiceClient : IServiceClient
+	[Obsolete]
+	public class XmlServiceClient 
+		: IServiceClient
 	{
-		private const string ContentType = "application/json";
-
-		public JsonServiceClient(string baseUri)
+		public XmlServiceClient(string baseUri)
 		{
 			this.BaseUri = baseUri;
 		}
@@ -20,42 +23,35 @@ namespace ServiceStack.Client
 
 		public T Send<T>(object request)
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
+			var xmlRequest = DataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
 			{
+				client.Method = "POST";
 				if (this.Timeout.HasValue)
 				{
 					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
 				}
 
-				client.Method = "POST";
-				client.ContentType = ContentType;
-
-				using (var requestStream = client.GetRequestStream())
-				using (var writer = new StreamWriter(requestStream))
+				client.ContentType = "application/xml";
+				using (var writer = new StreamWriter(client.GetRequestStream()))
 				{
-					writer.Write(jsonRequest);
+					writer.Write(xmlRequest);
 				}
 			}
 			catch (AuthenticationException ex)
 			{
 				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
 			}
-
-			using (var responseStream = client.GetResponse().GetResponseStream())
-			using (var reader = new StreamReader(responseStream))
-			{
-				var json = reader.ReadToEnd();
-				var response = (T)JsonDataContractDeserializer.Instance.Parse(json, typeof(T));
-				return response;
-			}
+			var xml = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
+			var response = (T)DataContractDeserializer.Instance.Parse(xml, typeof(T));
+			return response;
 		}
 
 		public void SendOneWay(object request)
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
+			var xmlRequest = DataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
@@ -66,10 +62,10 @@ namespace ServiceStack.Client
 				}
 
 				client.Method = "POST";
-				client.ContentType = ContentType;
+				client.ContentType = "application/xml";
 				using (var writer = new StreamWriter(client.GetRequestStream()))
 				{
-					writer.Write(jsonRequest);
+					writer.Write(xmlRequest);
 				}
 			}
 			catch (AuthenticationException ex)
@@ -78,6 +74,6 @@ namespace ServiceStack.Client
 			}
 		}
 
-		public void Dispose() {}
+		public void Dispose() { }
 	}
 }

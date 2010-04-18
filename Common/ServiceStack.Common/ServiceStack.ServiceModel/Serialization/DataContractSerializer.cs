@@ -42,6 +42,11 @@ namespace ServiceStack.ServiceModel.Serialization
 			}
 		}
 
+		public string Parse<XmlDto>(XmlDto from)
+		{
+			return Parse(from, false);
+		}
+
 		public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
 		{
 			using (var deflateStream = new DeflateStream(stream, CompressionMode.Compress))
@@ -53,6 +58,15 @@ namespace ServiceStack.ServiceModel.Serialization
 			}
 		}
 
+		public void SerializeToStream(object obj, Stream stream)
+		{
+			using (var xw = new XmlTextWriter(stream, Encoding.UTF8))
+			{
+				var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
+				serializer.WriteObject(xw, obj);
+			}
+		}
+
 		public byte[] Compress<XmlDto>(XmlDto from)
 		{
 			using (var ms = new MemoryStream())
@@ -61,11 +75,6 @@ namespace ServiceStack.ServiceModel.Serialization
 				
 				return ms.ToArray();
 			}
-		}
-
-		public string Parse<XmlDto>(XmlDto from)
-		{
-			return Parse(from, false);
 		}
 	}
 }

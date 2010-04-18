@@ -1,79 +1,39 @@
-using System;
 using System.IO;
-using System.Net;
-using System.Security.Authentication;
-using ServiceStack.Service;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-	public class JsonServiceClient : IServiceClient
+	public class JsonServiceClient
+		: ServiceClientBase
 	{
-		private const string ContentType = "application/json";
-
-		public JsonServiceClient(string baseUri)
+		public JsonServiceClient()
 		{
-			this.BaseUri = baseUri;
 		}
 
-		public string BaseUri { get; set; }
-
-		public TimeSpan? Timeout { get; set; }
-
-		public T Send<T>(object request)
+		public JsonServiceClient(string baseUri) 
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
-			var requestUri = this.BaseUri + "/" + request.GetType().Name;
-			var client = WebRequest.Create(requestUri);
-			try
-			{
-				if (this.Timeout.HasValue)
-				{
-					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-				}
-
-				client.Method = "POST";
-				client.ContentType = ContentType;
-				using (var writer = new StreamWriter(client.GetRequestStream()))
-				{
-					writer.Write(jsonRequest);
-				}
-			}
-			catch (AuthenticationException ex)
-			{
-				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-			}
-
-			var json = new StreamReader(client.GetResponse().GetResponseStream()).ReadToEnd();
-			var response = (T)JsonDataContractDeserializer.Instance.Parse(json, typeof(T));
-			return response;
+			this.BaseUri = baseUri.WithTrailingSlash() + "Json/";
 		}
 
-		public void SendOneWay(object request)
+		public JsonServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
+			: base(syncReplyBaseUri, asyncOneWayBaseUri)
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
-			var requestUri = this.BaseUri + "/" + request.GetType().Name;
-			var client = WebRequest.Create(requestUri);
-			try
-			{
-				if (this.Timeout.HasValue)
-				{
-					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-				}
-
-				client.Method = "POST";
-				client.ContentType = ContentType;
-				using (var writer = new StreamWriter(client.GetRequestStream()))
-				{
-					writer.Write(jsonRequest);
-				}
-			}
-			catch (AuthenticationException ex)
-			{
-				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-			}
 		}
 
-		public void Dispose() {}
+		public override string ContentType
+		{
+			get { return "application/json"; }
+		}
+
+		public override void SerializeToStream(object request, Stream stream)
+		{
+			JsonDataContractSerializer.Instance.SerializeToStream(request, stream);
+		}
+
+		public override T DeserializeFromStream<T>(Stream stream)
+		{
+			return JsonDataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+		}
 	}
 }

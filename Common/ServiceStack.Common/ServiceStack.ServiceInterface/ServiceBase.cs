@@ -59,7 +59,7 @@ namespace ServiceStack.ServiceInterface
 		protected TRequest CurrentRequestDto;
 
 		/// <summary>
-		/// Override to provide additional context about the Service Exception. 
+		/// Override to provide additional/less context about the Service Exception. 
 		/// By default the request is serialized and appended to the ResponseStatus StackTrace.
 		/// </summary>
 		public virtual string GetRequestErrorBody()

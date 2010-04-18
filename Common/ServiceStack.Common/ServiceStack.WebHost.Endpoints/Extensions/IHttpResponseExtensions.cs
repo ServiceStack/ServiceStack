@@ -120,7 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					? result.GetType().Name.Replace("Response", "")
 					: "OperationName";
 
-				response.WriteErrorToResponse(operationName, errorMessage, ex);
+				response.WriteXmlErrorToResponse(operationName, errorMessage, ex);
 				return true;
 			}
 			finally
@@ -131,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
-		public static void WriteTextToResponse(IHttpResponse response, string text, string defaultContentType)
+		public static void WriteTextToResponse(this IHttpResponse response, string text, string defaultContentType)
 		{
 			try
 			{
@@ -150,11 +150,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
-		public static void WriteErrorToResponse(this IHttpResponse response,
+		public static void WriteXmlErrorToResponse(this IHttpResponse response,
 			string operationName, string errorMessage, Exception ex)
 		{
 			var sb = new StringBuilder();
-			sb.AppendFormat("<{0}Response xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"{1}\">\n", 
+			sb.AppendFormat("<{0}Response xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"{1}\">\n",
 				operationName, EndpointHost.Config.DefaultOperationNamespace);
 			sb.AppendLine("<ResponseStatus>");
 			sb.AppendFormat("<ErrorCode>{0}</ErrorCode>\n", ex.GetType().Name);
@@ -163,7 +163,37 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("</ResponseStatus>");
 			sb.AppendFormat("</{0}Response>", operationName);
 
-			WriteTextToResponse(response, sb.ToString(), ContentType.XmlText);
+			WriteTextToResponse(response, sb.ToString(), ContentType.Xml);
+		}
+
+		public static void WriteJsonErrorToResponse(this IHttpResponse response,
+			string operationName, string errorMessage, Exception ex)
+		{
+			var sb = new StringBuilder();
+			sb.AppendLine("{");
+			sb.AppendLine("\"ResponseStatus\":{");
+			sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name);
+			sb.AppendFormat(" \"ErrorMessage\":{0},\n", ex.Message.EncodeJson());
+			sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
+			sb.AppendLine("}");
+			sb.AppendLine("}");
+
+			WriteTextToResponse(response, sb.ToString(), ContentType.Json);
+		}
+
+		public static void WriteJsvErrorToResponse(this IHttpResponse response,
+			string operationName, string errorMessage, Exception ex)
+		{
+			var sb = new StringBuilder();
+			sb.Append("{");
+			sb.Append("ResponseStatus:{");
+			sb.AppendFormat("ErrorCode:{0},", ex.GetType().Name);
+			sb.AppendFormat("ErrorMessage:{0},", ex.Message.EncodeJsv());
+			sb.AppendFormat("StackTrace:{0}", ex.StackTrace.EncodeJsv());
+			sb.Append("}");
+			sb.Append("}");
+
+			WriteTextToResponse(response, sb.ToString(), ContentType.Json);
 		}
 
 	}

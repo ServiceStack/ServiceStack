@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using System.Reflection;
 using ServiceStack.ServiceHost;
@@ -7,6 +8,7 @@ using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
+	[Obsolete("Use AppHostHttpListenerBase")]
 	public abstract class XmlSyncReplyHttpListener 
 		: HttpListenerBase
 	{

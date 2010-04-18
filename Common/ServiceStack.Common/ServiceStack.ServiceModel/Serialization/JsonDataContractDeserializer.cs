@@ -29,9 +29,15 @@ namespace ServiceStack.ServiceModel.Serialization
 			}
 		}
 		
-		public To Parse<To>(string json)
+		public T Parse<T>(string json)
 		{
-			return (To)Parse(json, typeof(To));
+			return (T)Parse(json, typeof(T));
+		}
+
+		public T DeserializeFromStream<T>(Stream stream)
+		{
+			var serializer = new DataContractJsonSerializer(typeof(T));
+			return (T)serializer.ReadObject(stream);
 		}
 	}
 }

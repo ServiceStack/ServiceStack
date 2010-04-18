@@ -77,6 +77,8 @@
     <Compile Include="Extensions\HttpResponseWrapper.cs" />
     <Compile Include="Extensions\IHttpResponse.cs" />
     <Compile Include="MetadataConfig.cs" />
+    <Compile Include="Server\HttpListenerBase.cs" />
+    <Compile Include="Server\AppHostHttpListenerBase.cs" />
     <Compile Include="Support\ContentType.cs" />
     <Compile Include="Support\JsvHandlerBase.cs" />
     <Compile Include="Support\GzipOptimizationTest.cs" />

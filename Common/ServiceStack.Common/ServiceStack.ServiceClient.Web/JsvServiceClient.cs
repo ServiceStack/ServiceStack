@@ -1,91 +1,50 @@
 using System;
 using System.IO;
-using System.Net;
-using System.Security.Authentication;
-using ServiceStack.Service;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-	public class JsvServiceClient 
-		: IServiceClient
+	public class JsvServiceClient
+		: ServiceClientBase
 	{
-		private const string ContentType = "text/jsv";
-
-		public JsvServiceClient(string baseUri)
-			: this(baseUri + "Jsv/SyncReply", baseUri + "Jsv/AsyncOneWay")
+		public JsvServiceClient()
 		{
 		}
 
-		public JsvServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri)
+		/// <summary>
+		/// Base Url of Service Stack's Web Service endpoints, i.e. http://localhost/Public/
+		/// </summary>
+		/// <param name="baseUri"></param>
+		public JsvServiceClient(string baseUri) 
 		{
-			this.SyncReplyBaseUri = syncReplyBaseUri;
-			this.AsyncOneWayBaseUri = asyncOneWayBaseUri;
+			this.BaseUri = baseUri.WithTrailingSlash() + "Jsv/";
 		}
 
-		public string SyncReplyBaseUri { get; set; }
-		public string AsyncOneWayBaseUri { get; set; }
-
-		public TimeSpan? Timeout { get; set; }
-
-		public T Send<T>(object request)
+		public JsvServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
+			: base(syncReplyBaseUri, asyncOneWayBaseUri)
 		{
-			var requestUri = this.SyncReplyBaseUri + "/" + request.GetType().Name;
-			var client = WebRequest.Create(requestUri);
-			try
-			{
-				if (this.Timeout.HasValue)
-				{
-					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-				}
+		}
 
-				client.Method = "POST";
-				client.ContentType = ContentType;
+		public override string ContentType
+		{
+			get { return "text/jsv"; }
+		}
 
-				using (var writer = new StreamWriter(client.GetRequestStream()))
-				{
-					TypeSerializer.SerializeToWriter(request, writer);
-				}
-			}
-			catch (AuthenticationException ex)
+		public override void SerializeToStream(object request, Stream stream)
+		{
+			using (var writer = new StreamWriter(stream))
 			{
-				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-			}
-
-			using (var responseStream = client.GetResponse().GetResponseStream())
-			using (var reader = new StreamReader(responseStream))
-			{
-				var response = TypeSerializer.DeserializeFromReader<T>(reader);
-				return response;
+				TypeSerializer.SerializeToWriter(request, writer);
 			}
 		}
 
-		public void SendOneWay(object request)
+		public override T DeserializeFromStream<T>(Stream stream)
 		{
-			var requestUri = this.AsyncOneWayBaseUri + "/" + request.GetType().Name;
-			var client = WebRequest.Create(requestUri);
-			try
+			using (var reader = new StreamReader(stream))
 			{
-				if (this.Timeout.HasValue)
-				{
-					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-				}
-
-				client.Method = "POST";
-				client.ContentType = ContentType;
-
-				using (var requestStream = client.GetRequestStream())
-				using (var writer = new StreamWriter(requestStream))
-				{
-					TypeSerializer.SerializeToWriter(request, writer);
-				}
-			}
-			catch (AuthenticationException ex)
-			{
-				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
+				return TypeSerializer.DeserializeFromReader<T>(reader);
 			}
 		}
 
-		public void Dispose() { }
 	}
 }

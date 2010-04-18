@@ -51,6 +51,14 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -70,10 +78,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncServiceBase.cs" />
@@ -89,44 +93,6 @@
     <Compile Include="Session\UserClientSession.cs" />
     <Compile Include="Session\PublicAndPrivateClientSessions.cs" />
     <Compile Include="Session\UserSession.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\ServiceStack.Redis\ServiceStack.Redis\ServiceStack.Redis.csproj">
-      <Project>{AF99F19B-4C04-4F58-81EF-B092F1FCC540}</Project>
-      <Name>ServiceStack.Redis</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ServiceStack.Text\ServiceStack.Text\ServiceStack.Text.csproj">
-      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
-      <Name>ServiceStack.Text</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Funq\Funq.csproj">
-      <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
-      <Name>Funq</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
-      <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
-      <Name>ServiceStack.Configuration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
-      <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>
-      <Name>ServiceStack.ServiceHost</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
-      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
-      <Name>ServiceStack.ServiceModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Validation\ServiceStack.Validation.csproj">
-      <Project>{28EA1E67-C867-4D73-81A8-D849C811BE4F}</Project>
-      <Name>ServiceStack.Validation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.WebHost.Endpoints\ServiceStack.WebHost.Endpoints.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack.WebHost.Endpoints</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

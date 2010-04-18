@@ -7,6 +7,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 	[DataContract]
 	public class GetCustomers
 	{
+		public GetCustomers()
+		{
+			this.CustomerIds = new List<long>();
+		}
+
 		[DataMember]
 		public List<long> CustomerIds { get; set; }
 	}

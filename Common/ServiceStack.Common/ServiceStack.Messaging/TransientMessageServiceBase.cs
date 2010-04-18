@@ -9,7 +9,7 @@ namespace ServiceStack.Messaging
 	{
 		private bool isRunning;
 		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
-		
+
 		public int RetryCount { get; protected set; }
 		public TimeSpan? RequestTimeOut { get; protected set; }
 
@@ -28,7 +28,7 @@ namespace ServiceStack.Messaging
 			this.RequestTimeOut = requestTimeOut;
 		}
 
-		private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap 
+		private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
 			= new Dictionary<Type, IMessageHandlerFactory>();
 
 		private IMessageHandler[] messageHandlers;
@@ -45,7 +45,7 @@ namespace ServiceStack.Messaging
 				throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).Name);
 			}
 
-			handlerMap[typeof (T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
+			handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
 		}
 
 		protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
@@ -56,7 +56,6 @@ namespace ServiceStack.Messaging
 		public virtual void Start()
 		{
 			if (isRunning) return;
-			
 			isRunning = true;
 
 			this.messageHandlers = this.handlerMap.Values.ToList().ConvertAll(
@@ -97,7 +96,7 @@ namespace ServiceStack.Messaging
 					{
 						messageHandlers[i] = null;
 					}
-					allHandlersAreDisposed = allHandlersAreDisposed 
+					allHandlersAreDisposed = allHandlersAreDisposed
 						&& messageHandlers[i] == null;
 				}
 

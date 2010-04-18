@@ -88,8 +88,12 @@
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
+    <Compile Include="ServiceModel\ServiceClientTestBase.cs" />
+    <Compile Include="ServiceModel\ServiceClientTests.cs" />
+    <Compile Include="Support\Host\TestAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
     <Compile Include="Support\Operations\RequestOfComplexTypes.cs" />
+    <Compile Include="Support\Services\GetCustomerService.cs" />
     <Compile Include="Support\Services\TestAsyncService.cs" />
     <Compile Include="Support\Services\InSecureLiveEnvironmentRestriction.cs" />
     <Compile Include="Support\Services\SecureLiveEnvironmentRestriction.cs" />
@@ -128,6 +132,10 @@
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
+      <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
+      <Name>ServiceStack.ServiceClient.Web</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>

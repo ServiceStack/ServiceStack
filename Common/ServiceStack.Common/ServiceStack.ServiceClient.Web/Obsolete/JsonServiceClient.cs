@@ -2,10 +2,14 @@ using System;
 using System.IO;
 using System.Net;
 using System.Security.Authentication;
+using ServiceStack.Service;
+using ServiceStack.ServiceModel.Serialization;
 
-namespace ServiceStack.Client
+namespace ServiceStack.ServiceClient.Web.Obsolete
 {
-	public class JsonServiceClient : IServiceClient
+	[Obsolete]
+	public class JsonServiceClient 
+		: IServiceClient
 	{
 		private const string ContentType = "application/json";
 
@@ -32,7 +36,7 @@ namespace ServiceStack.Client
 
 				client.Method = "POST";
 				client.ContentType = ContentType;
-
+				
 				using (var requestStream = client.GetRequestStream())
 				using (var writer = new StreamWriter(requestStream))
 				{
