@@ -180,10 +180,10 @@ namespace ServiceStack.Redis
 
 		public List<string> GetKeys(string pattern)
 		{
-			var hasBug = this.ServerVersion.CompareTo("1.2.5") <= 0;
+			var hasBug = this.ServerVersion.CompareTo("1.2.6") <= 0;
 			if (hasBug)
 			{
-				var spaceDelimitedKeys = KeysV125(pattern).FromUtf8Bytes();
+				var spaceDelimitedKeys = KeysV126(pattern).FromUtf8Bytes();
 				return spaceDelimitedKeys.IsNullOrEmpty()
 					? new List<string>()
 					: new List<string>(spaceDelimitedKeys.Split(' '));

@@ -45,12 +45,82 @@ namespace ServiceStack.Redis.Generic
 			this.client = client;
 			this.Lists = new RedisClientLists(this);
 			this.Sets = new RedisClientSets(this);
+			this.SortedSets = new RedisClientSortedSets(this);
 
 			this.SequenceKey = client.GetTypeSequenceKey<T>();
 			this.TypeIdsSetKey = client.GetTypeIdsSetKey<T>(); 
 		}
 
 		public string TypeIdsSetKey { get; set; }
+
+		public IRedisTypedTransaction<T> CreateTransaction()
+		{
+			return new RedisTypedTransaction<T>(this);
+		}
+
+		public IRedisQueableTransaction CurrentTransaction
+		{
+			get
+			{
+				return client.CurrentTransaction;
+			}
+			set
+			{
+				client.CurrentTransaction = value;
+			}
+		}
+
+		public void Multi()
+		{
+			this.client.Multi();
+		}
+
+		public void Discard()
+		{
+			this.client.Discard();
+		}
+
+		public int Exec()
+		{
+			return this.client.Exec();
+		}
+
+		readonly HashSet<string> registeredTypeIdsWithinTransaction = new HashSet<string>();
+		
+		private void RegisterTypeId(T value)
+		{
+			if (client.CurrentTransaction != null)
+			{
+				registeredTypeIdsWithinTransaction.Add(value.GetId().ToString());
+			}
+			else
+			{
+				client.AddToSet(this.TypeIdsSetKey, value.GetId().ToString());
+			}
+		}
+
+		private void RemoveTypeIds(params string[] ids)
+		{
+			if (client.CurrentTransaction != null)
+			{
+				ids.ForEach(x => registeredTypeIdsWithinTransaction.Remove(x));
+			}
+			else
+			{
+				ids.ForEach(x => client.RemoveFromSet(this.TypeIdsSetKey, x));
+			}
+		}
+
+		internal void AddTypeIdsRegisteredDuringTransaction()
+		{
+			registeredTypeIdsWithinTransaction.ForEach(x => client.AddToSet(this.TypeIdsSetKey, x));
+			registeredTypeIdsWithinTransaction.Clear();
+		}
+
+		internal void ClearTypeIdsRegisteredDuringTransaction()
+		{
+			registeredTypeIdsWithinTransaction.Clear();
+		}
 
 		public List<string> AllKeys
 		{
@@ -83,13 +153,13 @@ namespace ServiceStack.Redis.Generic
 			if (key == null)
 				throw new ArgumentNullException("key");
 
-			client.AddToSet(this.TypeIdsSetKey, value.GetId().ToString());
+			RegisterTypeId(value);
 			client.Set(key, ToBytes(value));
 		}
 
 		public bool SetIfNotExists(string key, T value)
 		{
-			client.AddToSet(this.TypeIdsSetKey, value.GetId().ToString());
+			RegisterTypeId(value);
 			return client.SetNX(key, ToBytes(value)) == RedisNativeClient.Success;
 		}
 
@@ -121,7 +191,7 @@ namespace ServiceStack.Redis.Generic
 		public bool Remove(params IHasStringId[] entities)
 		{
 			var ids = entities.ConvertAll(x => x.Id);
-			ids.ForEach(x => client.RemoveFromSet(this.TypeIdsSetKey, x));
+			RemoveTypeIds(ids.ToArray());
 			return client.Del(ids.ToArray()) == RedisNativeClient.Success;
 		}
 
@@ -279,7 +349,7 @@ namespace ServiceStack.Redis.Generic
 		public void Delete(T entity)
 		{
 			var urnKey = entity.CreateUrn();
-			client.RemoveFromSet(this.TypeIdsSetKey, urnKey);
+			RemoveTypeIds(urnKey);
 			this.Remove(urnKey);
 		}
 
@@ -287,7 +357,7 @@ namespace ServiceStack.Redis.Generic
 		{
 			var urnKey = IdUtils.CreateUrn<T>(id);
 
-			client.RemoveFromSet(this.TypeIdsSetKey, urnKey);
+			RemoveTypeIds(urnKey);
 			this.Remove(urnKey);
 		}
 

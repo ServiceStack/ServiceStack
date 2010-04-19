@@ -93,6 +93,16 @@ namespace ServiceStack.Text
 			return value.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
 		}
 
+		public static string EncodeJson(this string value)
+		{
+			return value.Replace("\"", "\\\"");
+		}
+
+		public static string EncodeJsv(this string value)
+		{
+			return value.ToCsvField();
+		}
+
 		public static string UrlEncode(this string text)
 		{
 			if (string.IsNullOrEmpty(text)) return text;
@@ -226,5 +236,18 @@ namespace ServiceStack.Text
 			}
 			return new string(array);
 		}
+
+		public static string WithTrailingSlash(this string path)
+		{
+			if (string.IsNullOrEmpty(path))
+				throw new ArgumentNullException("path");
+
+			if (path[path.Length -1] != '/')
+			{
+				return path + "/";
+			}
+			return path;
+		}
+
 	}
 }

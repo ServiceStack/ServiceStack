@@ -47,7 +47,7 @@ namespace ServiceStack.Redis
 				clientPort = ipEndpoint != null ? ipEndpoint.Port : -1;
 				lastCommand = null;
 				lastSocketException = null;
-				lastConnectedAtTimestamp = Stopwatch.GetTimestamp();
+				LastConnectedAtTimestamp = Stopwatch.GetTimestamp();
 			}
 			catch (SocketException ex)
 			{
@@ -76,16 +76,16 @@ namespace ServiceStack.Redis
 
 		private bool AssertConnectedSocket()
 		{
-			if (lastConnectedAtTimestamp > 0)
+			if (LastConnectedAtTimestamp > 0)
 			{
 				var now = Stopwatch.GetTimestamp();
-				var elapsedSecs = (now - lastConnectedAtTimestamp) / Stopwatch.Frequency;
+				var elapsedSecs = (now - LastConnectedAtTimestamp) / Stopwatch.Frequency;
 
 				if (elapsedSecs > IdleTimeOutSecs && !socket.IsConnected())
 				{
 					return Reconnect();
 				}
-				lastConnectedAtTimestamp = now;
+				LastConnectedAtTimestamp = now;
 			}
 
 			if (socket == null)

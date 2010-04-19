@@ -71,11 +71,15 @@
   <ItemGroup>
     <Compile Include="BasicRedisClientManager.cs" />
     <Compile Include="BasicRedisClientManager.ICacheClient.cs" />
+    <Compile Include="Generic\IRedisTransaction.cs" />
     <Compile Include="Generic\RedisClientHash.Generic.cs" />
+    <Compile Include="Generic\RedisTypedTransaction.cs" />
     <Compile Include="Generic\RedisTypedClient_Hash.cs" />
     <Compile Include="Generic\IRedisHash.Generic.cs" />
     <Compile Include="Generic\RedisTypedClient_SortedSet.cs" />
     <Compile Include="Generic\RedisClientSortedSet.Generic.cs" />
+    <Compile Include="IRedisQueableTransaction.cs" />
+    <Compile Include="QueuedRedisOperation.cs" />
     <Compile Include="RedisClientHash.cs" />
     <Compile Include="Generic\IRedisSortedSet.Generic.cs" />
     <Compile Include="Generic\RedisTypedClient_Set.cs" />

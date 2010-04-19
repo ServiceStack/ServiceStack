@@ -25,6 +25,8 @@ namespace ServiceStack.Redis.Generic
 		IHasNamed<IRedisSortedSet<T>> SortedSets { get; set; }
 		IRedisHash<TKey, T> GetHash<TKey>(string hashId);
 
+		IRedisTypedTransaction<T> CreateTransaction();
+
 		int Db { get; set; }
 		List<string> AllKeys { get; }
 

@@ -54,7 +54,7 @@ namespace ServiceStack.Redis
 		internal PooledRedisClientManager ClientManager { get; set; }
 		
 		internal int IdleTimeOutSecs = 240; //default on redis is 300
-		internal long lastConnectedAtTimestamp;
+		internal long LastConnectedAtTimestamp;
 
 		public string Host { get; private set; }
 		public int Port { get; private set; }
@@ -63,7 +63,7 @@ namespace ServiceStack.Redis
 		public int SendTimeout { get; set; }
 		public string Password { get; set; }
 
-		internal RedisTransaction CurrentTransaction { get; set; }
+		internal IRedisQueableTransaction CurrentTransaction { get; set; }
 
 		public RedisNativeClient(string host)
 			: this(host, DefaultPort)
@@ -359,7 +359,7 @@ namespace ServiceStack.Redis
 		}
 
 		//Old behaviour pre 1.3.7
-		public byte[] KeysV125(string pattern)
+		public byte[] KeysV126(string pattern)
 		{
 			if (pattern == null)
 				throw new ArgumentNullException("pattern");

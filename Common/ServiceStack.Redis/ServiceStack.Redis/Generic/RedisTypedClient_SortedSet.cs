@@ -12,6 +12,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.Common.Utils;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Support;
 using ServiceStack.Text;

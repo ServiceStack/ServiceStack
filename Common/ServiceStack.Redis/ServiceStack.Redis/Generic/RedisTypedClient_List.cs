@@ -50,6 +50,8 @@ namespace ServiceStack.Redis.Generic
 
 		private List<T> CreateList(byte[][] multiDataList)
 		{
+			if (multiDataList == null) return new List<T>();
+
 			var results = new List<T>();
 			foreach (var multiData in multiDataList)
 			{
