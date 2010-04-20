@@ -102,6 +102,9 @@ namespace ServiceStack.Redis
 
 		//Redis Hash operations
 		int HSet(string hashId, byte[] key, byte[] value);
+		int HSetNX(string hashId, byte[] key, byte[] value);
+		void HMSet(string hashId, byte[][] keys, byte[][] values);
+		int HIncrby(string hashId, byte[] key, int incrementBy);
 		byte[] HGet(string hashId, byte[] key);
 		int HDel(string hashId, byte[] key);
 		int HExists(string hashId, byte[] key);

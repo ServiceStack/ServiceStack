@@ -13,6 +13,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using ServiceStack.Common.Extensions;
@@ -37,7 +38,7 @@ namespace ServiceStack.Redis
 
 		internal const int Success = 1;
 		internal const int OneGb = 1073741824;
-		private readonly byte [] endData = new[] { (byte)'\r', (byte)'\n' };
+		private readonly byte[] endData = new[] { (byte)'\r', (byte)'\n' };
 
 		private int clientPort;
 		private string lastCommand;
@@ -52,7 +53,7 @@ namespace ServiceStack.Redis
 		/// </summary>
 		internal bool Active { get; set; }
 		internal PooledRedisClientManager ClientManager { get; set; }
-		
+
 		internal int IdleTimeOutSecs = 240; //default on redis is 300
 		internal long LastConnectedAtTimestamp;
 
@@ -125,7 +126,7 @@ namespace ServiceStack.Redis
 		{
 			get
 			{
-				byte [] r = SendExpectData("INFO");
+				byte[] r = SendExpectData("INFO");
 				var dict = new Dictionary<string, string>();
 
 				foreach (var line in Encoding.UTF8.GetString(r)
@@ -802,6 +803,46 @@ namespace ServiceStack.Redis
 			return SendMultiDataExpectInt("HSET", hashId.ToUtf8Bytes(), key, value);
 		}
 
+		public int HSetNX(string hashId, byte[] key, byte[] value)
+		{
+			AssertHashIdAndKey(hashId, key);
+
+			return SendMultiDataExpectInt("HSETNX", hashId.ToUtf8Bytes(), key, value);
+		}
+
+		public void HMSet(string hashId, byte[][] keys, byte[][] values)
+		{
+			if (hashId == null)
+				throw new ArgumentNullException("hashId");
+			if (keys == null || keys.Length == 0)
+				throw new ArgumentNullException("keys");
+			if (values == null || values.Length == 0)
+				throw new ArgumentNullException("values");
+			if (keys.Length != values.Length)
+				throw new ArgumentException("The number of values must be equal to the number of keys");
+
+			var keysAndValuesLength = keys.Length * 2 + 1;
+			var keysAndValues = new byte[keysAndValuesLength][];
+			
+			keysAndValues[0] = hashId.ToUtf8Bytes();
+			var j = 0;
+			for (var i = 1; i < keysAndValuesLength; i += 2)
+			{
+				keysAndValues[i] = keys[j];
+				keysAndValues[i + 1] = values[j];
+				j++;
+			}
+
+			SendMultiDataExpectSuccess("HMSET", keysAndValues);
+		}
+
+		public int HIncrby(string hashId, byte[] key, int incrementBy)
+		{
+			AssertHashIdAndKey(hashId, key);
+
+			return SendMultiDataExpectInt("HINCRBY", hashId.ToUtf8Bytes(), key, incrementBy.ToString().ToUtf8Bytes());
+		}
+
 		public byte[] HGet(string hashId, byte[] key)
 		{
 			AssertHashIdAndKey(hashId, key);
@@ -905,12 +946,15 @@ namespace ServiceStack.Redis
 
 		private void SafeConnectionClose()
 		{
-			try {
+			try
+			{
 				// workaround for a .net bug: http://support.microsoft.com/kb/821625
 				if (bstream != null)
 					bstream.Close();
-			} catch { }
-			try {
+			}
+			catch { }
+			try
+			{
 				if (socket != null)
 					socket.Close();
 			}

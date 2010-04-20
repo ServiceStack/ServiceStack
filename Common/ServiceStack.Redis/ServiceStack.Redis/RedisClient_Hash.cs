@@ -10,13 +10,14 @@
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Redis
 {
-	public partial class RedisClient 
+	public partial class RedisClient
 		: IRedisClient
 	{
 		public IHasNamed<IRedisHash> Hashes { get; set; }
@@ -49,6 +50,32 @@ namespace ServiceStack.Redis
 		public bool SetItemInHash(string hashId, string key, string value)
 		{
 			return base.HSet(hashId, key.ToUtf8Bytes(), value.ToUtf8Bytes()) == Success;
+		}
+
+		public bool SetItemInHashIfNotExists(string hashId, string key, string value)
+		{
+			return base.HSetNX(hashId, key.ToUtf8Bytes(), value.ToUtf8Bytes()) == Success;
+		}
+
+		public void SetRangeInHash(string hashId, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+		{
+			var keyValuePairsList = keyValuePairs.ToList();
+			var keys = new byte[keyValuePairsList.Count][];
+			var values = new byte[keyValuePairsList.Count][];
+
+			for (var i = 0; i < keyValuePairsList.Count; i++)
+			{
+				var kvp = keyValuePairsList[i];
+				keys[i] = kvp.Key.ToUtf8Bytes();
+				values[i] = kvp.Value.ToUtf8Bytes();
+			}
+
+			base.HMSet(hashId, keys, values);
+		}
+
+		public int IncrementItemInHash(string hashId, string key, int incrementBy)
+		{
+			return base.HIncrby(hashId, key.ToUtf8Bytes(), incrementBy);
 		}
 
 		public string GetItemFromHash(string hashId, string key)

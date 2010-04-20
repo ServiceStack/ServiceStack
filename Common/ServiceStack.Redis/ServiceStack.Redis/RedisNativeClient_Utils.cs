@@ -294,6 +294,20 @@ namespace ServiceStack.Redis
 			return ReadDataAsDouble();
 		}
 
+		private void SendMultiDataExpectSuccess(string cmd, params byte[][] safeBinaryLines)
+		{
+			if (!SendMultiDataCommand(cmd, safeBinaryLines))
+				throw CreateConnectionError();
+
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
+				ExpectQueued();
+				return;
+			}
+			ExpectSuccess();
+		}
+
 		private int SendMultiDataExpectInt(string cmd, params byte[][] safeBinaryLines)
 		{
 			if (!SendMultiDataCommand(cmd, safeBinaryLines))

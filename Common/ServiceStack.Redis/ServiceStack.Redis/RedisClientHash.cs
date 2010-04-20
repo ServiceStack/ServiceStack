@@ -47,6 +47,21 @@ namespace ServiceStack.Redis
 			client.SetItemInHash(hashId, item.Key, item.Value);
 		}
 
+		public bool AddIfNotExists(KeyValuePair<string, string> item)
+		{
+			return client.SetItemInHashIfNotExists(hashId, item.Key, item.Value);
+		}
+
+		public void AddRange(IEnumerable<KeyValuePair<string, string>> items)
+		{
+			client.SetRangeInHash(hashId, items);
+		}
+
+		public int IncrementValue(string key, int incrementBy)
+		{
+			return client.IncrementItemInHash(hashId, key, incrementBy);
+		}
+
 		public void Clear()
 		{
 			client.Remove(hashId);

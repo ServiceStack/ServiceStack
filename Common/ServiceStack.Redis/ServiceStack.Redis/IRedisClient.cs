@@ -161,13 +161,16 @@ namespace ServiceStack.Redis
 
 		bool HashContainsKey(string hashId, string key);
 		bool SetItemInHash(string hashId, string key, string value);
+		bool SetItemInHashIfNotExists(string hashId, string key, string value);
+		void SetRangeInHash(string hashId, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
+		int IncrementItemInHash(string hashId, string key, int incrementBy);
 		string GetItemFromHash(string hashId, string key);
 		bool RemoveFromHash(string hashId, string key);
 		int GetHashCount(string hashId);
 		List<string> GetHashKeys(string hashId);
 		List<string> GetHashValues(string hashId);
 		Dictionary<string, string> GetAllFromHash(string hashId);
-		
+
 		#endregion
 	}
 }
