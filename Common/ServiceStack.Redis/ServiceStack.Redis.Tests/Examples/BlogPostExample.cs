@@ -9,42 +9,6 @@ namespace ServiceStack.Redis.Tests.Examples
 	[TestFixture]
 	public class BlogPostExample
 	{
-		/*
-
-		//All Users
-
-		//User Ayende's blog posts urns:
-		user:User:1001:BlogIds = [1,2]
-
-		//All Blogs (Automatically maintained by NoSql client)
-		ids:Blog = [urn:Blog:1,urn:Blog:2,urn:Blog:3]
-
-		//Single blog post
-		urn:Blog:1 => 
-		{
-			UserId:1001, 
-			UserName:Ayende,
-			Tags: [Architecture,.NET,Databases],
-			BlogPostIds: [101,102,103] 
-		}
-
-		/All Blog Posts (Automatically maintained by NoSql client)
-		ids:BlogPost = [urn:BlogPost:101,urn:BlogPost:102,urn:BlogPost:103]
-
-		urn:BlogPost:101 => 
-		{
-			Id: 101,
-			BlogId: 1,
-			Title: RavenDB,
-			Content: "... content ...",
-			Categories: [Raven, NoSQL],
-			Tags: [RavenDB, Announcements],
-			Comments: [
-				{ Content: Great News, CreatedDate:2010-04-20 }
-			]
-		}
-		 
-		 */
 
 		public class User
 		{
