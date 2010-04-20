@@ -88,7 +88,7 @@ namespace ServiceStack.Redis.Tests.Examples
 						Tags = new List<string> { "Architecture", ".NET", "Databases" },
 					};
 
-				var demisBlog = new Blog
+				var mythzBlog = new Blog
 					{
 						Id = redisBlogs.GetNextSequence(),
 						UserId = demis.Id,
@@ -114,7 +114,7 @@ namespace ServiceStack.Redis.Tests.Examples
 					new BlogPost
 					{
 						Id = redisBlogPosts.GetNextSequence(),
-						BlogId = demisBlog.Id,
+						BlogId = mythzBlog.Id,
 						Title = "Redis",
 						Categories = new List<string> { "NoSQL", "Cache" },
 						Tags = new List<string> {"Redis", "NoSQL", "Scalability", "Performance"},
@@ -138,7 +138,7 @@ namespace ServiceStack.Redis.Tests.Examples
 					new BlogPost
 					{
 						Id = redisBlogPosts.GetNextSequence(),
-						BlogId = demisBlog.Id,
+						BlogId = mythzBlog.Id,
 						Title = "Couch Db",
 						Categories = new List<string> { "NoSQL", "DocumentDB" },
 						Tags = new List<string> {"CouchDb", "NoSQL", "JSON"},
@@ -150,11 +150,11 @@ namespace ServiceStack.Redis.Tests.Examples
 				};
 
 				ayendeBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == ayendeBlog.Id).ConvertAll(x => x.Id));
-				demisBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == demisBlog.Id).ConvertAll(x => x.Id));
+				mythzBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == mythzBlog.Id).ConvertAll(x => x.Id));
 
 				redisUsers.Store(ayende);
 				redisUsers.Store(demis);
-				redisBlogs.StoreAll(new[] { ayendeBlog, demisBlog });
+				redisBlogs.StoreAll(new[] { ayendeBlog, mythzBlog });
 				redisBlogPosts.StoreAll(blogPosts);
 			}
 		}
