@@ -7,6 +7,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Tests.Examples
 {
+
+	/// <summary>
+	/// A complete, self-contained example showing how to create a basic blog using Redis.
+	/// </summary>
 	[TestFixture]
 	public class BlogPostExample
 	{
