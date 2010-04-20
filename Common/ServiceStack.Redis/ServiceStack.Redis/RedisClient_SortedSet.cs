@@ -143,7 +143,7 @@ namespace ServiceStack.Redis
 
 		public List<string> GetRangeFromSortedSetDesc(string setId, int fromRank, int toRank)
 		{
-			var multiDataList = base.ZRange(setId, fromRank, toRank);
+			var multiDataList = base.ZRevRange(setId, fromRank, toRank);
 			return multiDataList.ToStringList();
 		}
 

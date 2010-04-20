@@ -137,7 +137,7 @@ namespace ServiceStack.Redis.Support
 		{
 			get
 			{
-				if (null == List)
+				if (null == list)
 				{
 					list = new List<KeyValuePair<TKey, TValue>>(initialCapacity);
 				}

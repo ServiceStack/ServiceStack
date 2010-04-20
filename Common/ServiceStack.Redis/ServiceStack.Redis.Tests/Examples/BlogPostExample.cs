@@ -95,10 +95,11 @@ namespace ServiceStack.Redis.Tests.Examples
             	{
             		new BlogPost
             			{
-            				Id = redisBlogs.GetNextSequence(),
+            				Id = redisBlogPosts.GetNextSequence(),
             				BlogId = ayendeBlog.Id,
             				Title = "RavenDB",
-            				Categories = new List<string> {"Raven", "NoSQL"},
+							Categories = new List<string> { "NoSQL", "DocumentDB" },
+            				Tags = new List<string> {"Raven", "NoSQL", "JSON", ".NET"} ,
             				Comments = new List<BlogPostComment>
 				           	{
 				           		new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,},
@@ -107,10 +108,11 @@ namespace ServiceStack.Redis.Tests.Examples
             			},
             		new BlogPost
             			{
-            				Id = redisBlogs.GetNextSequence(),
+            				Id = redisBlogPosts.GetNextSequence(),
             				BlogId = demisBlog.Id,
             				Title = "Redis",
-            				Categories = new List<string> {"Redis", "NoSQL"},
+							Categories = new List<string> { "NoSQL", "Cache" },
+            				Tags = new List<string> {"Redis", "NoSQL", "Scalability", "Performance"},
             				Comments = new List<BlogPostComment>
 				           	{
 				           		new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
@@ -118,10 +120,11 @@ namespace ServiceStack.Redis.Tests.Examples
             			},
             		new BlogPost
             			{
-            				Id = redisBlogs.GetNextSequence(),
+            				Id = redisBlogPosts.GetNextSequence(),
             				BlogId = ayendeBlog.Id,
             				Title = "Cassandra",
-            				Categories = new List<string> {"Cassandra", "NoSQL"},
+							Categories = new List<string> { "NoSQL", "Cluster" },
+            				Tags = new List<string> {"Cassandra", "NoSQL", "Scalability", "Hashing"},
             				Comments = new List<BlogPostComment>
 				           	{
 				           		new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
@@ -129,10 +132,11 @@ namespace ServiceStack.Redis.Tests.Examples
             			},
             		new BlogPost
             			{
-            				Id = redisBlogs.GetNextSequence(),
+            				Id = redisBlogPosts.GetNextSequence(),
             				BlogId = demisBlog.Id,
             				Title = "Couch Db",
-            				Categories = new List<string> {"CouchDb", "NoSQL"},
+							Categories = new List<string> { "NoSQL", "DocumentDB" },
+            				Tags = new List<string> {"CouchDb", "NoSQL", "JSON"},
             				Comments = new List<BlogPostComment>
 				           	{
 				           		new BlogPostComment {Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
@@ -201,75 +205,98 @@ namespace ServiceStack.Redis.Tests.Examples
 
 				var recentPosts = redisBlogPosts.Lists["urn:BlogPosts:RecentPosts"];
 				var recentComments = redisComments.Lists["urn:BlogPostComment:RecentComments"];
+
 				foreach (var blogPost in blogPosts)
 				{
 					recentPosts.Prepend(blogPost);
+
 					blogPost.Comments.ForEach(recentComments.Prepend);
 				}
 				//Rolling list only keep the last 3
 				recentPosts.Trim(0, 2);
-				recentComments.Trim(0, 2); 
-				
+				recentComments.Trim(0, 2);
+
 				//Print out the last 3 posts:
-				//Console.WriteLine(recentPosts.GetAll().Dump());
+				Console.WriteLine(recentPosts.GetAll().Dump());
 				/* Output: 
-					[
-						{
-							Id: 6,
-							BlogId: 2,
-							Title: Couch Db,
-							Categories: 
-							[
-								CouchDb,
-								NoSQL
-							],
-							Tags: [],
-							Comments: 
-							[
-								{
-									Content: First Comment!,
-									CreatedDate: 2010-04-20T20:26:28.0676909Z
-								}
-							]
-						},
-						{
-							Id: 5,
-							BlogId: 1,
-							Title: Cassandra,
-							Categories: 
-							[
-								Cassandra,
-								NoSQL
-							],
-							Tags: [],
-							Comments: 
-							[
-								{
-									Content: First Comment!,
-									CreatedDate: 2010-04-20T20:26:28.0666909Z
-								}
-							]
-						},
-						{
-							Id: 4,
-							BlogId: 2,
-							Title: Redis,
-							Categories: 
-							[
-								Redis,
-								NoSQL
-							],
-							Tags: [],
-							Comments: 
-							[
-								{
-									Content: First Comment!,
-									CreatedDate: 2010-04-20T20:26:28.0666909Z
-								}
-							]
-						}
-					]
-				 */
+				[
+					{
+						Id: 2,
+						BlogId: 2,
+						Title: Redis,
+						Categories: 
+						[
+							NoSQL,
+							Cache
+						],
+						Tags: 
+						[
+							Redis,
+							NoSQL,
+							Scalability,
+							Performance
+						],
+						Comments: 
+						[
+							{
+								Content: First Comment!,
+								CreatedDate: 2010-04-20T21:24:02.8832951Z
+							}
+						]
+					},
+					{
+						Id: 1,
+						BlogId: 1,
+						Title: RavenDB,
+						Categories: 
+						[
+							NoSQL,
+							DocumentDB
+						],
+						Tags: 
+						[
+							Raven,
+							NoSQL,
+							JSON,
+							.NET
+						],
+						Comments: 
+						[
+							{
+								Content: First Comment!,
+								CreatedDate: 2010-04-20T21:24:02.8832951Z
+							},
+							{
+								Content: Second Comment!,
+								CreatedDate: 2010-04-20T21:24:02.8832951Z
+							}
+						]
+					},
+					{
+						Id: 4,
+						BlogId: 2,
+						Title: Couch Db,
+						Categories: 
+						[
+							NoSQL,
+							DocumentDB
+						],
+						Tags: 
+						[
+							CouchDb,
+							NoSQL,
+							JSON
+						],
+						Comments: 
+						[
+							{
+								Content: First Comment!,
+								CreatedDate: 2010-04-20T21:24:02.8832951Z
+							}
+						]
+					}
+				]
+				*/
 
 				Console.WriteLine(recentComments.GetAll().Dump());
 				/* Output:
@@ -290,7 +317,246 @@ namespace ServiceStack.Redis.Tests.Examples
 				 */
 			}
 		}
-		
+
+		[Test]
+		public void Show_a_TagCloud()
+		{
+			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
+			{
+				var blogPosts = redisBlogPosts.GetAll();
+
+				foreach (var blogPost in blogPosts)
+				{
+					blogPost.Tags.ForEach(x =>
+						redisClient.IncrementItemInSortedSet("urn:TagCloud", x, 1));
+				}
+
+				//Show top 5 most popular tags with their scores
+				var tagCloud = redisClient.GetRangeWithScoresFromSortedSetDesc("urn:TagCloud", 0, 5);
+				Console.WriteLine(tagCloud.Dump());
+				/* Output:
+				[
+					[
+						NoSQL,
+						 4
+					],
+					[
+						Scalability,
+						 2
+					],
+					[
+						JSON,
+						 2
+					],
+					[
+						Redis,
+						 1
+					],
+					[
+						Raven,
+						 1
+					],
+					[
+						Performance,
+						 1
+					]
+				]
+				 */
+			}
+		}
+
+		[Test]
+		public void Show_all_Categories()
+		{
+			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
+			{
+				var blogPosts = redisBlogPosts.GetAll();
+
+				foreach (var blogPost in blogPosts)
+				{
+					blogPost.Categories.ForEach(x =>
+	                      redisClient.AddToSet("urn:Categories", x));
+				}
+
+				var uniqueCategories = redisClient.GetAllFromSet("urn:Categories");
+				Console.WriteLine(uniqueCategories.Dump());
+				/* Output:
+				[
+					DocumentDB,
+					NoSQL,
+					Cluster,
+					Cache
+				]
+				 */
+			}
+		}
+
+		[Test]
+		public void Show_post_and_all_comments()
+		{
+			var postId = 1;
+			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
+			{
+				var blogPost = redisBlogPosts.GetById(postId.ToString());
+				
+				Console.WriteLine(blogPost.Dump());
+				/* Output:
+				{
+					Id: 1,
+					BlogId: 1,
+					Title: RavenDB,
+					Categories: 
+					[
+						NoSQL,
+						DocumentDB
+					],
+					Tags: 
+					[
+						Raven,
+						NoSQL,
+						JSON,
+						.NET
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-20T21:26:31.9918236Z
+						},
+						{
+							Content: Second Comment!,
+							CreatedDate: 2010-04-20T21:26:31.9918236Z
+						}
+					]
+				}
+				*/
+			}
+		}
+
+		[Test]
+		public void Add_comment_to_existing_post()
+		{
+			var postId = 1;
+			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
+			{
+				var blogPost = redisBlogPosts.GetById(postId.ToString());
+				blogPost.Comments.Add(
+					new BlogPostComment { Content = "Third Post!" , CreatedDate = DateTime.UtcNow});
+				redisBlogPosts.Store(blogPost);
+
+				var refreshBlogPost = redisBlogPosts.GetById(postId.ToString());
+				Console.WriteLine(refreshBlogPost.Dump());
+				/* Output:
+				{
+					Id: 1,
+					BlogId: 1,
+					Title: RavenDB,
+					Categories: 
+					[
+						NoSQL,
+						DocumentDB
+					],
+					Tags: 
+					[
+						Raven,
+						NoSQL,
+						JSON,
+						.NET
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-20T21:32:39.9688707Z
+						},
+						{
+							Content: Second Comment!,
+							CreatedDate: 2010-04-20T21:32:39.9688707Z
+						},
+						{
+							Content: Third Post!,
+							CreatedDate: 2010-04-20T21:32:40.2688879Z
+						}
+					]
+				}
+				*/
+			}
+		}
+
+		[Test]
+		public void Show_all_Posts_for_a_Category()
+		{
+			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
+			{
+				var blogPosts = redisBlogPosts.GetAll();
+
+				foreach (var blogPost in blogPosts)
+				{
+					blogPost.Categories.ForEach(x =>
+						  redisClient.AddToSet("urn:Category:" + x, blogPost.Id.ToString()));
+				}
+				var documentDbPostIds = redisClient.GetAllFromSet("urn:Category:DocumentDB");
+
+				var documentDbPosts = redisBlogPosts.GetByIds(documentDbPostIds);
+
+				Console.WriteLine(documentDbPosts.Dump());
+				/* Output:
+				[
+					{
+						Id: 4,
+						BlogId: 2,
+						Title: Couch Db,
+						Categories: 
+						[
+							NoSQL,
+							DocumentDB
+						],
+						Tags: 
+						[
+							CouchDb,
+							NoSQL,
+							JSON
+						],
+						Comments: 
+						[
+							{
+								Content: First Comment!,
+								CreatedDate: 2010-04-20T21:38:24.6305842Z
+							}
+						]
+					},
+					{
+						Id: 1,
+						BlogId: 1,
+						Title: RavenDB,
+						Categories: 
+						[
+							NoSQL,
+							DocumentDB
+						],
+						Tags: 
+						[
+							Raven,
+							NoSQL,
+							JSON,
+							.NET
+						],
+						Comments: 
+						[
+							{
+								Content: First Comment!,
+								CreatedDate: 2010-04-20T21:38:24.6295842Z
+							},
+							{
+								Content: Second Comment!,
+								CreatedDate: 2010-04-20T21:38:24.6295842Z
+							}
+						]
+					}
+				]
+				 */
+			}
+		}
 
 	}
 }

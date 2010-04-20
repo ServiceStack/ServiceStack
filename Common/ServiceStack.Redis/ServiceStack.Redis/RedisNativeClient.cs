@@ -660,7 +660,7 @@ namespace ServiceStack.Redis
 		{
 			AssertSetIdAndValue(setId, value);
 
-			return SendDataExpectDataAsDouble(value, "ZADD {0} {1} {2}", SafeKey(setId), incrBy, value.Length);
+			return SendDataExpectDataAsDouble(value, "ZINCRBY {0} {1} {2}", SafeKey(setId), incrBy, value.Length);
 		}
 
 		public int ZRank(string setId, byte[] value)
