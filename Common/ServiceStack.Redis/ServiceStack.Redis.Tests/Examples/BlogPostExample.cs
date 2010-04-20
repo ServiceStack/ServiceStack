@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Tests.Examples
@@ -144,7 +145,8 @@ namespace ServiceStack.Redis.Tests.Examples
             			},
             	};
 
-				ayendeBlog.BlogPostIds.AddRange(blogPosts.ConvertAll(x => x.Id));
+				ayendeBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == ayendeBlog.Id).ConvertAll(x => x.Id));
+				demisBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == demisBlog.Id).ConvertAll(x => x.Id));
 
 				redisUsers.Store(ayende);
 				redisUsers.Store(demis);
@@ -174,8 +176,8 @@ namespace ServiceStack.Redis.Tests.Examples
 						],
 						BlogPostIds: 
 						[
-							3,
-							4
+							1,
+							3
 						]
 					},
 					{
@@ -188,7 +190,11 @@ namespace ServiceStack.Redis.Tests.Examples
 							.NET,
 							Databases
 						],
-						BlogPostIds: []
+						BlogPostIds: 
+						[
+							2,
+							4
+						]
 					}
 				]
 				 */
@@ -240,7 +246,7 @@ namespace ServiceStack.Redis.Tests.Examples
 						[
 							{
 								Content: First Comment!,
-								CreatedDate: 2010-04-20T21:24:02.8832951Z
+								CreatedDate: 2010-04-20T22:14:02.755878Z
 							}
 						]
 					},
@@ -264,11 +270,11 @@ namespace ServiceStack.Redis.Tests.Examples
 						[
 							{
 								Content: First Comment!,
-								CreatedDate: 2010-04-20T21:24:02.8832951Z
+								CreatedDate: 2010-04-20T22:14:02.755878Z
 							},
 							{
 								Content: Second Comment!,
-								CreatedDate: 2010-04-20T21:24:02.8832951Z
+								CreatedDate: 2010-04-20T22:14:02.755878Z
 							}
 						]
 					},
@@ -291,7 +297,7 @@ namespace ServiceStack.Redis.Tests.Examples
 						[
 							{
 								Content: First Comment!,
-								CreatedDate: 2010-04-20T21:24:02.8832951Z
+								CreatedDate: 2010-04-20T22:14:02.755878Z
 							}
 						]
 					}
@@ -375,7 +381,7 @@ namespace ServiceStack.Redis.Tests.Examples
 				foreach (var blogPost in blogPosts)
 				{
 					blogPost.Categories.ForEach(x =>
-	                      redisClient.AddToSet("urn:Categories", x));
+						  redisClient.AddToSet("urn:Categories", x));
 				}
 
 				var uniqueCategories = redisClient.GetAllFromSet("urn:Categories");
@@ -398,7 +404,7 @@ namespace ServiceStack.Redis.Tests.Examples
 			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
 			{
 				var blogPost = redisBlogPosts.GetById(postId.ToString());
-				
+
 				Console.WriteLine(blogPost.Dump());
 				/* Output:
 				{
@@ -441,7 +447,7 @@ namespace ServiceStack.Redis.Tests.Examples
 			{
 				var blogPost = redisBlogPosts.GetById(postId.ToString());
 				blogPost.Comments.Add(
-					new BlogPostComment { Content = "Third Post!" , CreatedDate = DateTime.UtcNow});
+					new BlogPostComment { Content = "Third Post!", CreatedDate = DateTime.UtcNow });
 				redisBlogPosts.Store(blogPost);
 
 				var refreshBlogPost = redisBlogPosts.GetById(postId.ToString());
