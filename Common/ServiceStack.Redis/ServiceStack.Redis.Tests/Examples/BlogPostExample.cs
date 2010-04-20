@@ -93,57 +93,57 @@ namespace ServiceStack.Redis.Tests.Examples
 					};
 
 				var blogPosts = new List<BlogPost>
-            	{
-            		new BlogPost
-            			{
-            				Id = redisBlogPosts.GetNextSequence(),
-            				BlogId = ayendeBlog.Id,
-            				Title = "RavenDB",
-							Categories = new List<string> { "NoSQL", "DocumentDB" },
-            				Tags = new List<string> {"Raven", "NoSQL", "JSON", ".NET"} ,
-            				Comments = new List<BlogPostComment>
-				           	{
-				           		new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,},
-				           		new BlogPostComment { Content = "Second Comment!", CreatedDate = DateTime.UtcNow,},
-				           	}
-            			},
-            		new BlogPost
-            			{
-            				Id = redisBlogPosts.GetNextSequence(),
-            				BlogId = demisBlog.Id,
-            				Title = "Redis",
-							Categories = new List<string> { "NoSQL", "Cache" },
-            				Tags = new List<string> {"Redis", "NoSQL", "Scalability", "Performance"},
-            				Comments = new List<BlogPostComment>
-				           	{
-				           		new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
-				           	}
-            			},
-            		new BlogPost
-            			{
-            				Id = redisBlogPosts.GetNextSequence(),
-            				BlogId = ayendeBlog.Id,
-            				Title = "Cassandra",
-							Categories = new List<string> { "NoSQL", "Cluster" },
-            				Tags = new List<string> {"Cassandra", "NoSQL", "Scalability", "Hashing"},
-            				Comments = new List<BlogPostComment>
-				           	{
-				           		new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
-				           	}
-            			},
-            		new BlogPost
-            			{
-            				Id = redisBlogPosts.GetNextSequence(),
-            				BlogId = demisBlog.Id,
-            				Title = "Couch Db",
-							Categories = new List<string> { "NoSQL", "DocumentDB" },
-            				Tags = new List<string> {"CouchDb", "NoSQL", "JSON"},
-            				Comments = new List<BlogPostComment>
-				           	{
-				           		new BlogPostComment {Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
-				           	}
-            			},
-            	};
+				{
+					new BlogPost
+					{
+						Id = redisBlogPosts.GetNextSequence(),
+						BlogId = ayendeBlog.Id,
+						Title = "RavenDB",
+						Categories = new List<string> { "NoSQL", "DocumentDB" },
+						Tags = new List<string> {"Raven", "NoSQL", "JSON", ".NET"} ,
+						Comments = new List<BlogPostComment>
+						{
+							new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,},
+							new BlogPostComment { Content = "Second Comment!", CreatedDate = DateTime.UtcNow,},
+						}
+					},
+					new BlogPost
+					{
+						Id = redisBlogPosts.GetNextSequence(),
+						BlogId = demisBlog.Id,
+						Title = "Redis",
+						Categories = new List<string> { "NoSQL", "Cache" },
+						Tags = new List<string> {"Redis", "NoSQL", "Scalability", "Performance"},
+						Comments = new List<BlogPostComment>
+						{
+							new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
+						}
+					},
+					new BlogPost
+					{
+						Id = redisBlogPosts.GetNextSequence(),
+						BlogId = ayendeBlog.Id,
+						Title = "Cassandra",
+						Categories = new List<string> { "NoSQL", "Cluster" },
+						Tags = new List<string> {"Cassandra", "NoSQL", "Scalability", "Hashing"},
+						Comments = new List<BlogPostComment>
+						{
+							new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
+						}
+					},
+					new BlogPost
+					{
+						Id = redisBlogPosts.GetNextSequence(),
+						BlogId = demisBlog.Id,
+						Title = "Couch Db",
+						Categories = new List<string> { "NoSQL", "DocumentDB" },
+						Tags = new List<string> {"CouchDb", "NoSQL", "JSON"},
+						Comments = new List<BlogPostComment>
+						{
+							new BlogPostComment {Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
+						}
+					},
+				};
 
 				ayendeBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == ayendeBlog.Id).ConvertAll(x => x.Id));
 				demisBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == demisBlog.Id).ConvertAll(x => x.Id));
