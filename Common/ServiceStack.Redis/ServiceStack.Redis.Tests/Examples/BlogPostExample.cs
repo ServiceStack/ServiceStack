@@ -9,58 +9,63 @@ namespace ServiceStack.Redis.Tests.Examples
 {
 
 	/// <summary>
-	/// A complete, self-contained example showing how to create a basic blog using Redis.
+	/// A complete, self-contained example showing how to create a basic blog application using Redis.
 	/// </summary>
+
+	public class User
+	{
+		public User()
+		{
+			this.BlogIds = new List<int>();
+		}
+
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public List<int> BlogIds { get; set; }
+	}
+
+	public class Blog
+	{
+		public Blog()
+		{
+			this.Tags = new List<string>();
+			this.BlogPostIds = new List<int>();
+		}
+
+		public int Id { get; set; }
+		public int UserId { get; set; }
+		public string UserName { get; set; }
+		public List<string> Tags { get; set; }
+		public List<int> BlogPostIds { get; set; }
+	}
+
+	public class BlogPost
+	{
+		public BlogPost()
+		{
+			this.Categories = new List<string>();
+			this.Tags = new List<string>();
+			this.Comments = new List<BlogPostComment>();
+		}
+
+		public int Id { get; set; }
+		public int BlogId { get; set; }
+		public string Title { get; set; }
+		public string Content { get; set; }
+		public List<string> Categories { get; set; }
+		public List<string> Tags { get; set; }
+		public List<BlogPostComment> Comments { get; set; }
+	}
+
+	public class BlogPostComment
+	{
+		public string Content { get; set; }
+		public DateTime CreatedDate { get; set; }
+	}
+
 	[TestFixture]
 	public class BlogPostExample
 	{
-
-		public class User
-		{
-			public int Id { get; set; }
-			public string Name { get; set; }
-		}
-
-		public class Blog
-		{
-			public Blog()
-			{
-				this.Tags = new List<string>();
-				this.BlogPostIds = new List<int>();
-			}
-
-			public int Id { get; set; }
-			public int UserId { get; set; }
-			public string UserName { get; set; }
-			public List<string> Tags { get; set; }
-			public List<int> BlogPostIds { get; set; }
-		}
-
-		public class BlogPost
-		{
-			public BlogPost()
-			{
-				this.Categories = new List<string>();
-				this.Tags = new List<string>();
-				this.Comments = new List<BlogPostComment>();
-			}
-
-			public int Id { get; set; }
-			public int BlogId { get; set; }
-			public string Title { get; set; }
-			public string Content { get; set; }
-			public List<string> Categories { get; set; }
-			public List<string> Tags { get; set; }
-			public List<BlogPostComment> Comments { get; set; }
-		}
-
-		public class BlogPostComment
-		{
-			public string Content { get; set; }
-			public DateTime CreatedDate { get; set; }
-		}
-
-
 		readonly RedisClient redisClient = new RedisClient(TestConfig.SingleHost);
 
 		[SetUp]
@@ -77,8 +82,8 @@ namespace ServiceStack.Redis.Tests.Examples
 			using (var redisBlogs = redisClient.GetTypedClient<Blog>())
 			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
 			{
-				var ayende = new User { Id = redisUsers.GetNextSequence(), Name = "Ayende" };
-				var demis = new User { Id = redisUsers.GetNextSequence(), Name = "Demis" };
+				var ayende = new User { Id = redisUsers.GetNextSequence(), Name = "Oren Eini" };
+				var mythz = new User { Id = redisUsers.GetNextSequence(), Name = "Demis Bellot" };
 
 				var ayendeBlog = new Blog
 					{
@@ -91,8 +96,8 @@ namespace ServiceStack.Redis.Tests.Examples
 				var mythzBlog = new Blog
 					{
 						Id = redisBlogs.GetNextSequence(),
-						UserId = demis.Id,
-						UserName = demis.Name,
+						UserId = mythz.Id,
+						UserName = mythz.Name,
 						Tags = new List<string> { "Architecture", ".NET", "Databases" },
 					};
 
@@ -149,11 +154,14 @@ namespace ServiceStack.Redis.Tests.Examples
 					},
 				};
 
+				ayende.BlogIds.Add(ayendeBlog.Id);
 				ayendeBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == ayendeBlog.Id).ConvertAll(x => x.Id));
+
+				mythz.BlogIds.Add(mythzBlog.Id);
 				mythzBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == mythzBlog.Id).ConvertAll(x => x.Id));
 
 				redisUsers.Store(ayende);
-				redisUsers.Store(demis);
+				redisUsers.Store(mythz);
 				redisBlogs.StoreAll(new[] { ayendeBlog, mythzBlog });
 				redisBlogPosts.StoreAll(blogPosts);
 			}
