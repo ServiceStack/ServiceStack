@@ -342,7 +342,7 @@ namespace ServiceStack.Redis.Tests.Examples
 				}
 
 				//Show top 5 most popular tags with their scores
-				var tagCloud = redisClient.GetRangeWithScoresFromSortedSetDesc("urn:TagCloud", 0, 5);
+				var tagCloud = redisClient.GetRangeWithScoresFromSortedSetDesc("urn:TagCloud", 0, 4);
 				Console.WriteLine(tagCloud.Dump());
 				/* Output:
 				[
@@ -366,10 +366,6 @@ namespace ServiceStack.Redis.Tests.Examples
 						Raven,
 						 1
 					],
-					[
-						Performance,
-						 1
-					]
 				]
 				 */
 			}
