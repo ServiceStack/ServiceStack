@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Text;
 
-namespace ServiceStack.Redis.Tests.Examples
+namespace ServiceStack.Redis.Tests.Examples.BestPractice
 {
 
 	/// <summary>
@@ -13,18 +13,37 @@ namespace ServiceStack.Redis.Tests.Examples
 	/// </summary>
 
 	public class User
+		: IHasBlogRepository
 	{
 		public User()
 		{
 			this.BlogIds = new List<int>();
 		}
 
+		public IBlogRepository Repository { private get; set; }
+
 		public int Id { get; set; }
 		public string Name { get; set; }
 		public List<int> BlogIds { get; set; }
+
+		public List<Blog> GetBlogs()
+		{
+			return this.Repository.GetBlogs(this.BlogIds);
+		}
+
+		public Blog CreateNewBlog(IEnumerable<string> tags)
+		{
+			var newBlog = new Blog { UserId = this.Id, UserName = this.Name, Tags = tags.ToList() };
+			this.Repository.StoreBlogs(newBlog);
+			this.BlogIds.Add(newBlog.Id);
+			this.Repository.StoreUsers(this);
+
+			return newBlog;
+		}
 	}
 
 	public class Blog
+		: IHasBlogRepository
 	{
 		public Blog()
 		{
@@ -32,11 +51,31 @@ namespace ServiceStack.Redis.Tests.Examples
 			this.BlogPostIds = new List<int>();
 		}
 
+		public IBlogRepository Repository { private get; set; }
+
 		public int Id { get; set; }
 		public int UserId { get; set; }
 		public string UserName { get; set; }
 		public List<string> Tags { get; set; }
 		public List<int> BlogPostIds { get; set; }
+
+		public List<BlogPost> GetBlogPosts()
+		{
+			return this.Repository.GetBlogPosts(this.BlogPostIds);
+		}
+
+		public BlogPost CreateNewBlogPost(BlogPost newPost)
+		{
+			newPost.BlogId = this.Id;
+
+			this.Repository.StoreBlogPosts(newPost);
+
+			this.BlogPostIds.Add(newPost.Id);
+			this.Repository.StoreBlogPosts(newPost);
+			this.Repository.StoreBlogs(this);
+
+			return newPost;
+		}
 	}
 
 	public class BlogPost
@@ -63,107 +102,185 @@ namespace ServiceStack.Redis.Tests.Examples
 		public DateTime CreatedDate { get; set; }
 	}
 
+	public interface IHasBlogRepository
+	{
+		IBlogRepository Repository { set; }
+	}
+
+	public interface IBlogRepository
+	{
+		void StoreUsers(params User[] users);
+		List<User> GetAllUsers();
+
+		void StoreBlogs(params Blog[] users);
+		List<Blog> GetBlogs(IEnumerable<int> blogIds);
+
+		List<BlogPost> GetBlogPosts(IEnumerable<int> blogPostIds);
+		void StoreBlogPosts(params BlogPost[] blogPosts);
+	}
+
+	public class BlogRepository
+		: IBlogRepository
+	{
+		public BlogRepository(IRedisClient client)
+		{
+			this.client = client;
+		}
+
+		private readonly IRedisClient client;
+
+		public void StoreUsers(params User[] users)
+		{
+			using (var userClient = client.GetTypedClient<User>())
+			{
+				Inject(users);
+				users.Where(x => x.Id == default(int))
+					.ForEach(x => x.Id = userClient.GetNextSequence());
+
+				userClient.StoreAll(users);
+			}
+		}
+
+		public List<User> GetAllUsers()
+		{
+			using (var userClient = client.GetTypedClient<User>())
+			{
+				return Inject(userClient.GetAll());
+			}
+		}
+
+		public void StoreBlogs(params Blog[] blogs)
+		{
+			using (var blogsClient = client.GetTypedClient<Blog>())
+			{
+				Inject(blogs);
+				blogs.Where(x => x.Id == default(int))
+					.ForEach(x => x.Id = blogsClient.GetNextSequence());
+
+				blogsClient.StoreAll(blogs);
+			}
+		}
+
+		public List<Blog> GetBlogs(IEnumerable<int> blogIds)
+		{
+			using (var blogClient = client.GetTypedClient<Blog>())
+			{
+				return Inject(
+					blogClient.GetByIds(blogIds.ConvertAll(x => x.ToString())));
+			}
+		}
+
+		public List<BlogPost> GetBlogPosts(IEnumerable<int> blogPostIds)
+		{
+			using (var blogPostClient = client.GetTypedClient<BlogPost>())
+			{
+				return blogPostClient.GetByIds(blogPostIds.ConvertAll(x => x.ToString())).ToList();
+			}
+		}
+
+		public void StoreBlogPosts(params BlogPost[] blogPosts)
+		{
+			using (var blogPostsClient = client.GetTypedClient<BlogPost>())
+			{
+				blogPosts.Where(x => x.Id == default(int))
+					.ForEach(x => x.Id = blogPostsClient.GetNextSequence());
+
+				blogPostsClient.StoreAll(blogPosts);
+			}
+		}
+
+		public List<T> Inject<T>(IEnumerable<T> entities)
+			where T : IHasBlogRepository
+		{
+			var entitiesList = entities.ToList();
+			entitiesList.ForEach(x => x.Repository = this);
+			return entitiesList;
+		}
+
+	}
+
 	[TestFixture]
 	public class BlogPostExample
 	{
 		readonly RedisClient redisClient = new RedisClient(TestConfig.SingleHost);
+		private IBlogRepository repository;
 
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
 			redisClient.FlushAll();
+			repository = new BlogRepository(redisClient);
+
 			InsertTestData();
 		}
 
 		public void InsertTestData()
 		{
-			using (var redisUsers = redisClient.GetTypedClient<User>())
-			using (var redisBlogs = redisClient.GetTypedClient<Blog>())
-			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
-			{
-				var ayende = new User { Id = redisUsers.GetNextSequence(), Name = "Oren Eini" };
-				var mythz = new User { Id = redisUsers.GetNextSequence(), Name = "Demis Bellot" };
+			var ayende = new User { Name = "Oren Eini" };
+			var mythz = new User { Name = "Demis Bellot" };
 
-				var ayendeBlog = new Blog
-					{
-						Id = redisBlogs.GetNextSequence(),
-						UserId = ayende.Id,
-						UserName = ayende.Name,
-						Tags = new List<string> { "Architecture", ".NET", "Databases" },
-					};
+			repository.StoreUsers(ayende, mythz);
 
-				var mythzBlog = new Blog
-					{
-						Id = redisBlogs.GetNextSequence(),
-						UserId = mythz.Id,
-						UserName = mythz.Name,
-						Tags = new List<string> { "Architecture", ".NET", "Databases" },
-					};
+			var ayendeBlog = ayende.CreateNewBlog(new[] { "Architecture", ".NET", "Databases" });
 
-				var blogPosts = new List<BlogPost>
+			var mythzBlog = mythz.CreateNewBlog(new[] { "Architecture", ".NET", "Databases" });
+
+			ayendeBlog.CreateNewBlogPost(new BlogPost
 				{
-					new BlogPost
+					Title = "RavenDB",
+					Categories = new List<string> { "NoSQL", "DocumentDB" },
+					Tags = new List<string> { "Raven", "NoSQL", "JSON", ".NET" },
+					Comments = new List<BlogPostComment>
 					{
-						Id = redisBlogPosts.GetNextSequence(),
-						BlogId = ayendeBlog.Id,
-						Title = "RavenDB",
-						Categories = new List<string> { "NoSQL", "DocumentDB" },
-						Tags = new List<string> {"Raven", "NoSQL", "JSON", ".NET"} ,
-						Comments = new List<BlogPostComment>
-						{
-							new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,},
-							new BlogPostComment { Content = "Second Comment!", CreatedDate = DateTime.UtcNow,},
-						}
-					},
-					new BlogPost
-					{
-						Id = redisBlogPosts.GetNextSequence(),
-						BlogId = mythzBlog.Id,
-						Title = "Redis",
-						Categories = new List<string> { "NoSQL", "Cache" },
-						Tags = new List<string> {"Redis", "NoSQL", "Scalability", "Performance"},
-						Comments = new List<BlogPostComment>
-						{
-							new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
-						}
-					},
-					new BlogPost
-					{
-						Id = redisBlogPosts.GetNextSequence(),
-						BlogId = ayendeBlog.Id,
-						Title = "Cassandra",
-						Categories = new List<string> { "NoSQL", "Cluster" },
-						Tags = new List<string> {"Cassandra", "NoSQL", "Scalability", "Hashing"},
-						Comments = new List<BlogPostComment>
-						{
-							new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
-						}
-					},
-					new BlogPost
-					{
-						Id = redisBlogPosts.GetNextSequence(),
-						BlogId = mythzBlog.Id,
-						Title = "Couch Db",
-						Categories = new List<string> { "NoSQL", "DocumentDB" },
-						Tags = new List<string> {"CouchDb", "NoSQL", "JSON"},
-						Comments = new List<BlogPostComment>
-						{
-							new BlogPostComment {Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
-						}
-					},
-				};
+						new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,},
+						new BlogPostComment { Content = "Second Comment!", CreatedDate = DateTime.UtcNow,},
+					}
+				});
 
-				ayende.BlogIds.Add(ayendeBlog.Id);
-				ayendeBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == ayendeBlog.Id).ConvertAll(x => x.Id));
+			mythzBlog.CreateNewBlogPost(new BlogPost
+				{
+					Title = "Redis",
+					Categories = new List<string> { "NoSQL", "Cache" },
+					Tags = new List<string> { "Redis", "NoSQL", "Scalability", "Performance" },
+					Comments = new List<BlogPostComment>
+					{
+						new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
+					}
+				});
 
-				mythz.BlogIds.Add(mythzBlog.Id);
-				mythzBlog.BlogPostIds.AddRange(blogPosts.Where(x => x.BlogId == mythzBlog.Id).ConvertAll(x => x.Id));
+			ayendeBlog.CreateNewBlogPost(new BlogPost
+				{
+					BlogId = ayendeBlog.Id,
+					Title = "Cassandra",
+					Categories = new List<string> { "NoSQL", "Cluster" },
+					Tags = new List<string> { "Cassandra", "NoSQL", "Scalability", "Hashing" },
+					Comments = new List<BlogPostComment>
+					{
+						new BlogPostComment { Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
+					}
+				});
 
-				redisUsers.Store(ayende);
-				redisUsers.Store(mythz);
-				redisBlogs.StoreAll(new[] { ayendeBlog, mythzBlog });
-				redisBlogPosts.StoreAll(blogPosts);
-			}
+			mythzBlog.CreateNewBlogPost(new BlogPost
+				{
+					Title = "Couch Db",
+					Categories = new List<string> { "NoSQL", "DocumentDB" },
+					Tags = new List<string> { "CouchDb", "NoSQL", "JSON" },
+					Comments = new List<BlogPostComment>
+					{
+						new BlogPostComment {Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
+					}
+				});
+
+		}
+
+		[Test]
+		public void View_test_data()
+		{
+			var ayende = repository.GetAllUsers().First(x => x.Name == "Oren Eini");
+			var ayendeBlogPostIds = ayende.GetBlogs().SelectMany(x => x.BlogPostIds);
+			var ayendeBlogPosts = repository.GetBlogPosts(ayendeBlogPostIds);
+			
+			Console.WriteLine(ayendeBlogPosts.Dump());			
 		}
 
 		[Test]
