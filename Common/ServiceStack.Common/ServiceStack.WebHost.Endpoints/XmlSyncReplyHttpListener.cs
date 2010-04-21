@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	[Obsolete("Use AppHostHttpListenerBase")]
 	public abstract class XmlSyncReplyHttpListener 
-		: HttpListenerBase
+		: XmlSyncReplyHttpListenerBase
 	{
 		protected XmlSyncReplyHttpListener()
 		{

@@ -7,6 +7,10 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
 {
+	/// <summary>
+	/// Inherit from this class if you want to host your web services inside an
+	/// ASP.NET application.
+	/// </summary>
 	public abstract class AppHostBase
 		: IFunqlet, IDisposable
 	{
@@ -81,6 +85,12 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public void SetConfig(EndpointHostConfig config)
 		{
+			if (config.ServiceName == null)
+				config.ServiceName = EndpointHost.Config.ServiceName;
+
+			if (config.ServiceController == null)
+				config.ServiceController = EndpointHost.Config.ServiceController;
+
 			EndpointHost.Config = config;
 			this.serviceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 		}

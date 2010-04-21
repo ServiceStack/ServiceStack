@@ -15,6 +15,10 @@ namespace ServiceStack.Common
 			IsMonoTouch = Type.GetType("MonoTouch.Foundation.NSObject") != null;
 
 			SupportsExpressions = SupportsEmit = !IsMonoTouch;
+
+			UserAgent = Environment.OSVersion.Platform
+				+ (IsMono ? "/Mono" : "/.NET") 
+				+ (IsMonoTouch ? " MonoTouch" : "");			
 		}
 
 		public static bool IsUnix { get; set; }
@@ -26,5 +30,7 @@ namespace ServiceStack.Common
 		public static bool SupportsExpressions { get; set; }
 
 		public static bool SupportsEmit { get; set; }
+
+		public static string UserAgent { get; set; }
 	}
 }

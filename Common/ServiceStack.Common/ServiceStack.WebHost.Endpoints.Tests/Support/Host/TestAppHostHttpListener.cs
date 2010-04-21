@@ -1,5 +1,4 @@
 using Funq;
-using ServiceStack.WebHost.Endpoints.Server;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host

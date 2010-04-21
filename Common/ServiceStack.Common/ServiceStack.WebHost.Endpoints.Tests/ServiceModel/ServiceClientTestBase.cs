@@ -1,7 +1,6 @@
 using System;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.WebHost.Endpoints.Server;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ServiceModel
 {

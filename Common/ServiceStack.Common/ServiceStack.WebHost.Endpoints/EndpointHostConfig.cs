@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Runtime.Serialization;
+using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.ServiceHost;
@@ -23,6 +25,9 @@ namespace ServiceStack.WebHost.Endpoints
 			};
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
+
+			this.GlobalResponseHeaders = new Dictionary<string, string> 
+				{ { "X-Powered-By", "ServiceStack/1.15 " + Env.UserAgent } };
 		}
 
 		public IServiceController ServiceController { get; set; }
@@ -31,6 +36,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
 		public bool EnableAccessRestrictions { get; set; }
+		public Dictionary<string, string> GlobalResponseHeaders { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace
@@ -51,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private string GetDefaultNamespace()
 		{
-			if (!string.IsNullOrEmpty(this.defaultOperationNamespace) 
+			if (!string.IsNullOrEmpty(this.defaultOperationNamespace)
 				|| this.ServiceController == null) return null;
 
 			foreach (var operationType in this.ServiceController.OperationTypes)

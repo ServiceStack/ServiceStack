@@ -66,6 +66,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					return true;
 				}
 
+				foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+				{
+					response.Headers[globalResponseHeader.Key] = globalResponseHeader.Value;
+				}
+
 				/* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
 				var responseOptions = result as IHasOptions;
 				if (responseOptions != null)
