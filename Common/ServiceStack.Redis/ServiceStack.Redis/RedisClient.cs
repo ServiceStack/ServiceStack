@@ -232,6 +232,100 @@ namespace ServiceStack.Redis
 
 		#region IBasicPersistenceProvider
 
+
+		Dictionary<string, HashSet<string>> registeredTypeIdsWithinTransactionMap = new Dictionary<string, HashSet<string>>();
+
+		internal HashSet<string> GetRegisteredTypeIdsWithinTransaction(string typeIdsSet)
+		{
+			HashSet<string> registeredTypeIdsWithinTransaction;
+			if (!registeredTypeIdsWithinTransactionMap.TryGetValue(typeIdsSet, out registeredTypeIdsWithinTransaction))
+			{
+				registeredTypeIdsWithinTransaction = new HashSet<string>();
+				registeredTypeIdsWithinTransactionMap[typeIdsSet] = registeredTypeIdsWithinTransaction;
+			}
+			return registeredTypeIdsWithinTransaction;
+		}
+
+		internal void RegisterTypeId<T>(T value)
+		{
+			var typeIdsSetKey = GetTypeIdsSetKey<T>();
+			var id = value.GetId().ToString();
+
+			if (this.CurrentTransaction != null)
+			{
+				var registeredTypeIdsWithinTransaction = GetRegisteredTypeIdsWithinTransaction(typeIdsSetKey);
+				registeredTypeIdsWithinTransaction.Add(id);
+			}
+			else
+			{
+				this.AddToSet(typeIdsSetKey, id);
+			}
+		}
+
+		internal void RegisterTypeIds<T>(IEnumerable<T> values)
+		{
+			var typeIdsSetKey = GetTypeIdsSetKey<T>();
+			var ids = values.ConvertAll(x => x.GetId().ToString());
+
+			if (this.CurrentTransaction != null)
+			{
+				var registeredTypeIdsWithinTransaction = GetRegisteredTypeIdsWithinTransaction(typeIdsSetKey);
+				ids.ForEach(x => registeredTypeIdsWithinTransaction.Add(x));
+			}
+			else
+			{
+				ids.ForEach(x => this.AddToSet(typeIdsSetKey, x));
+			}
+		}
+
+		internal void RemoveTypeIds<T>(params string[] ids)
+		{
+			var typeIdsSetKey = GetTypeIdsSetKey<T>();
+			if (this.CurrentTransaction != null)
+			{
+				var registeredTypeIdsWithinTransaction = GetRegisteredTypeIdsWithinTransaction(typeIdsSetKey);
+				ids.ForEach(x => registeredTypeIdsWithinTransaction.Remove(x));
+			}
+			else
+			{
+				ids.ForEach(x => this.RemoveFromSet(typeIdsSetKey, x));
+			}
+		}
+
+		internal void RemoveTypeIds<T>(params T[] values)
+		{
+			var typeIdsSetKey = GetTypeIdsSetKey<T>();
+			if (this.CurrentTransaction != null)
+			{
+				var registeredTypeIdsWithinTransaction = GetRegisteredTypeIdsWithinTransaction(typeIdsSetKey);
+				values.ForEach(x => registeredTypeIdsWithinTransaction.Remove(x.GetId().ToString()));
+			}
+			else
+			{
+				values.ForEach(x => this.RemoveFromSet(typeIdsSetKey, x.GetId().ToString()));
+			}
+		}
+
+		internal void AddTypeIdsRegisteredDuringTransaction()
+		{
+			foreach (var entry in registeredTypeIdsWithinTransactionMap)
+			{
+				var typeIdsSetKey = entry.Key;
+				foreach (var id in entry.Value)
+				{
+					var registeredTypeIdsWithinTransaction = GetRegisteredTypeIdsWithinTransaction(typeIdsSetKey);
+					registeredTypeIdsWithinTransaction.ForEach(x => this.AddToSet(typeIdsSetKey, id));
+				}
+			}
+			registeredTypeIdsWithinTransactionMap = new Dictionary<string, HashSet<string>>();
+		}
+
+		internal void ClearTypeIdsRegisteredDuringTransaction()
+		{
+			registeredTypeIdsWithinTransactionMap = new Dictionary<string, HashSet<string>>();
+		}
+
+
 		public T GetById<T>(object id) where T : class, new()
 		{
 			var key = IdUtils.CreateUrn<T>(id);
@@ -243,22 +337,20 @@ namespace ServiceStack.Redis
 		public IList<T> GetByIds<T>(ICollection ids)
 			where T : class, new()
 		{
-			var keys = new List<string>();
-			foreach (var id in ids)
-			{
-				var key = IdUtils.CreateUrn<T>(id);
-				keys.Add(key);
-			}
+			if (ids == null || ids.Count == 0)
+				return new List<T>();
 
-			return GetKeyValues<T>(keys);
+			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
+			return GetKeyValues<T>(urnKeys);
 		}
 
 		public IList<T> GetAll<T>()
 			where T : class, new()
 		{
 			var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
-			var allKeys = this.GetAllFromSet(typeIdsSetKy);
-			return GetKeyValues<T>(allKeys.ToList());
+			var allTypeIds = this.GetAllFromSet(typeIdsSetKy);
+			var urnKeys = allTypeIds.ConvertAll(x => IdUtils.CreateUrn<T>(x));
+			return GetKeyValues<T>(urnKeys);
 		}
 
 		public T Store<T>(T entity)
@@ -267,10 +359,8 @@ namespace ServiceStack.Redis
 			var urnKey = entity.CreateUrn();
 			var valueString = TypeSerializer.SerializeToString(entity);
 
-			var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
-			this.AddToSet(typeIdsSetKy, urnKey);
-
 			this.SetString(urnKey, valueString);
+			RegisterTypeId(entity);
 
 			return entity;
 		}
@@ -280,10 +370,20 @@ namespace ServiceStack.Redis
 		{
 			if (entities == null) return;
 
-			foreach (var entity in entities)
+			var entitiesList = entities.ToList();
+			var len = entitiesList.Count;
+
+			var keys = new byte[len][];
+			var values = new byte[len][];
+
+			for (var i = 0; i < len; i++)
 			{
-				Store(entity);
+				keys[i] = entitiesList[i].CreateUrn().ToUtf8Bytes();
+				values[i] = entitiesList[i].SerializeToUtf8Bytes();
 			}
+
+			base.MSet(keys, values);
+			RegisterTypeIds(entitiesList);
 		}
 
 		public void Delete<T>(T entity)
@@ -291,42 +391,30 @@ namespace ServiceStack.Redis
 		{
 			var urnKey = entity.CreateUrn();
 			this.Remove(urnKey);
+			this.RemoveTypeIds(entity);
 		}
 
 		public void DeleteById<T>(object id) where T : class, new()
 		{
 			var urnKey = IdUtils.CreateUrn<T>(id);
-
-			var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
-			this.RemoveFromSet(typeIdsSetKy, urnKey);
-
 			this.Remove(urnKey);
+			this.RemoveTypeIds<T>(id.ToString());
 		}
 
 		public void DeleteByIds<T>(ICollection ids) where T : class, new()
 		{
 			if (ids == null) return;
 
-			var keysLength = ids.Count;
-			var keys = new string[keysLength];
-
-			var i = 0;
-			foreach (var id in ids)
-			{
-				var urnKey = IdUtils.CreateUrn<T>(id);
-				keys[i++] = urnKey;
-
-				var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
-				this.RemoveFromSet(typeIdsSetKy, urnKey);
-			}
-
-			this.Remove(keys);
+			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
+			this.Remove(urnKeys.ToArray());
+			this.RemoveTypeIds<T>(ids.ConvertAll(x => x.ToString()).ToArray());
 		}
 
 		public void DeleteAll<T>() where T : class, new()
 		{
 			var typeIdsSetKey = this.GetTypeIdsSetKey<T>();
-			var urnKeys = this.GetAllFromSet(typeIdsSetKey);
+			var ids = this.GetAllFromSet(typeIdsSetKey);
+			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
 			this.Remove(urnKeys.ToArray());
 			this.Remove(typeIdsSetKey);
 		}

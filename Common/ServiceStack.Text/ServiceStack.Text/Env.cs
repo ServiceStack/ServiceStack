@@ -1,7 +1,7 @@
 
 using System;
 
-namespace ServiceStack.Common
+namespace ServiceStack.Text
 {
 	public static class Env
 	{
@@ -10,15 +10,15 @@ namespace ServiceStack.Common
 			var platform = (int)Environment.OSVersion.Platform;
 			IsUnix = (platform == 4) || (platform == 6) || (platform == 128);
 
-			IsMono = Type.GetType ("Mono.Runtime") != null;
-			
+			IsMono = Type.GetType("Mono.Runtime") != null;
+
 			IsMonoTouch = Type.GetType("MonoTouch.Foundation.NSObject") != null;
 
 			SupportsExpressions = SupportsEmit = !IsMonoTouch;
 
 			UserAgent = Environment.OSVersion.Platform
-				+ (IsMono ? "/Mono" : "/.NET") 
-				+ (IsMonoTouch ? " MonoTouch" : "");			
+						+ (IsMono ? "/Mono" : "/.NET")
+						+ (IsMonoTouch ? " MonoTouch" : "");
 		}
 
 		public static bool IsUnix { get; set; }

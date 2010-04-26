@@ -301,6 +301,7 @@ namespace ServiceStack.Redis
 			finally
 			{
 				redisClient.CurrentTransaction = null;
+				redisClient.AddTypeIdsRegisteredDuringTransaction();
 			}
 		}
 
@@ -310,6 +311,7 @@ namespace ServiceStack.Redis
 				throw new InvalidOperationException("There is no current transaction to Rollback");
 
 			redisClient.CurrentTransaction = null;
+			redisClient.ClearTypeIdsRegisteredDuringTransaction();
 			redisClient.Discard();
 		}
 

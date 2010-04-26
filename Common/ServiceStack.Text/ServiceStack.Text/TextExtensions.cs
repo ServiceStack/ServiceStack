@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ServiceStack.Text
 {
@@ -65,8 +66,19 @@ namespace ServiceStack.Text
 			return TypeSerializer.SerializeToString(value);
 		}
 
+		public static byte[] SerializeToUtf8Bytes<T>(this T value)
+		{
+			return Encoding.UTF8.GetBytes(TypeSerializer.SerializeToString(value));
+		}
+
 		public static T DeserializeFromString<T>(this string serializedObj)
 		{
+			return TypeSerializer.DeserializeFromString<T>(serializedObj);
+		}
+
+		public static T DeserializeFromUtf8Bytes<T>(this byte[] serializedbytes)
+		{
+			var serializedObj = Encoding.UTF8.GetString(serializedbytes);
 			return TypeSerializer.DeserializeFromString<T>(serializedObj);
 		}
 	}

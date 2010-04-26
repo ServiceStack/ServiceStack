@@ -694,5 +694,37 @@ namespace ServiceStack.Redis
 			if (value == null)
 				throw new ArgumentNullException("value");
 		}
+
+		private byte[][] MergeKeysAndValues(byte[][] keys, byte[][] values)
+		{
+			return MergeKeysAndValues(keys, values, null);
+		}
+
+		private byte[][] MergeKeysAndValues(byte[][] keys, byte[][] values, string firstParam)
+		{
+			if (keys == null || keys.Length == 0)
+				throw new ArgumentNullException("keys");
+			if (values == null || values.Length == 0)
+				throw new ArgumentNullException("values");
+			if (keys.Length != values.Length)
+				throw new ArgumentException("The number of values must be equal to the number of keys");
+
+			var keyValueStartIndex = (firstParam != null) ? 1 : 0;
+
+			var keysAndValuesLength = keys.Length * 2 + keyValueStartIndex;
+			var keysAndValues = new byte[keysAndValuesLength][];
+
+			if (keyValueStartIndex > 0)
+				keysAndValues[0] = firstParam.ToUtf8Bytes();
+
+			var j = 0;
+			for (var i = keyValueStartIndex; i < keysAndValuesLength; i += 2)
+			{
+				keysAndValues[i] = keys[j];
+				keysAndValues[i + 1] = values[j];
+				j++;
+			}
+			return keysAndValues;
+		}
 	}
 }

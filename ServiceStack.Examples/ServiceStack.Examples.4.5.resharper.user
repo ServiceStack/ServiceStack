@@ -14,7 +14,6 @@
     <RecentFiles>
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GreetService.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersService.cs" caret="352" fromTop="11" />
@@ -23,30 +22,26 @@
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="218" fromTop="8" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="491" fromTop="18" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="476" fromTop="20" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="522" fromTop="16" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="1141" fromTop="33" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="726" fromTop="20" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1205" fromTop="28" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="202" fromTop="6" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="291" fromTop="12" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="0" fromTop="0" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="554" fromTop="19" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="470" fromTop="12" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="0" fromTop="0" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestHostBase.cs" caret="0" fromTop="0" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="0" fromTop="0" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="389" fromTop="0" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="640" fromTop="17" />
-      <File id="d:&amp;/f:IntegrationTests.cs/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Tests.Integration?IntegrationTests.cs" caret="614" fromTop="23" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="76" fromTop="4" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="408" fromTop="17" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1419" fromTop="22" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="0" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="663" fromTop="25" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="244" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersService.cs" caret="1702" fromTop="29" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="0" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersCachedService.cs" caret="1785" fromTop="26" />
     </RecentFiles>
     <RecentEdits>
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1421" fromTop="18" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1968" fromTop="33" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="485" fromTop="21" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="306" fromTop="11" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="129" fromTop="4" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="284" fromTop="10" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="603" fromTop="17" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="883" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="653" fromTop="18" />
@@ -56,15 +51,12 @@
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="210" fromTop="8" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="651" fromTop="15" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="389" fromTop="0" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="233" fromTop="9" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="1230" fromTop="43" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="719" fromTop="24" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="549" fromTop="14" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="449" fromTop="8" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="252" fromTop="1" />
-      <File id="d:&amp;/f:IntegrationTests.cs/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Tests.Integration?IntegrationTests.cs" caret="313" fromTop="14" />
-      <File id="d:&amp;/f:IntegrationTests.cs/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Tests.Integration?IntegrationTests.cs" caret="610" fromTop="23" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:Class1.cs" caret="683" fromTop="26" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1419" fromTop="22" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="268" fromTop="11" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="76" fromTop="4" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="173" fromTop="8" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="296" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersService.cs" caret="992" fromTop="17" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -89,10 +81,10 @@
       <Item value="var" priority="50" />
       <Item value="context" priority="2" />
       <Item value="return" priority="8" />
-      <Item value="new" priority="63" />
+      <Item value="new" priority="64" />
       <Item value="GetFactorialsResponse" priority="0" />
       <Item value="Result" priority="0" />
-      <Item value="request" priority="25" />
+      <Item value="request" priority="26" />
       <Item value="base" priority="1" />
       <Item value="ApplicationContext" priority="4" />
       <Item value="BasicOperationContext" priority="0" />
@@ -106,10 +98,10 @@
       <Item value="if" priority="11" />
       <Item value="Instance" priority="1" />
       <Item value="null" priority="9" />
-      <Item value="long" priority="7" />
+      <Item value="long" priority="8" />
       <Item value="defaultLimit" priority="0" />
-      <Item value="List" priority="1" />
-      <Item value="int" priority="1" />
+      <Item value="List" priority="2" />
+      <Item value="int" priority="2" />
       <Item value="foreach" priority="1" />
       <Item value="i" priority="0" />
       <Item value="skip" priority="0" />
@@ -128,7 +120,7 @@
       <Item value="ResponseStatus" priority="3" />
       <Item value="DataContract" priority="1" />
       <Item value="this" priority="5" />
-      <Item value="string" priority="18" />
+      <Item value="string" priority="19" />
       <Item value="persistenceProvider" priority="7" />
       <Item value="IQueryablePersistenceProvider" priority="1" />
       <Item value="delegate" priority="2" />
@@ -166,8 +158,8 @@
       <Item value="response" priority="4" />
       <Item value="GetFactorialResponse" priority="0" />
       <Item value="IServiceProvider" priority="1" />
-      <Item value="Skip" priority="0" />
-      <Item value="Take" priority="0" />
+      <Item value="Skip" priority="1" />
+      <Item value="Take" priority="1" />
       <Item value="ToList" priority="0" />
       <Item value="default" priority="0" />
       <Item value="mockPersistence" priority="3" />
@@ -183,14 +175,14 @@
       <Item value="Id" priority="1" />
       <Item value="static" priority="7" />
       <Item value="class" priority="3" />
-      <Item value="const" priority="2" />
+      <Item value="const" priority="3" />
       <Item value="Config" priority="2" />
       <Item value="AppContext" priority="2" />
       <Item value="private" priority="1" />
       <Item value="DeleteAllUsersResponse" priority="1" />
       <Item value="StoreNewUserResponse" priority="0" />
       <Item value="MainPage" priority="0" />
-      <Item value="ex" priority="0" />
+      <Item value="ex" priority="1" />
       <Item value="e" priority="1" />
       <Item value="MessageBox" priority="0" />
       <Item value="UriIdnScope" priority="0" />
@@ -204,7 +196,7 @@
       <Item value="App" priority="0" />
       <Item value="GetUsersResponse" priority="1" />
       <Item value="dataContract" priority="4" />
-      <Item value="Console" priority="11" />
+      <Item value="Console" priority="12" />
       <Item value="true" priority="1" />
       <Item value="xml" priority="1" />
       <Item value="DataContractDeserializer" priority="0" />
@@ -255,9 +247,9 @@
       <Item value="DatabaseTest" priority="0" />
       <Item value="DeleteAllUsers" priority="0" />
       <Item value="StoreNewUser" priority="0" />
-      <Item value="GetFibonacciNumbers" priority="0" />
+      <Item value="GetFibonacciNumbers" priority="1" />
       <Item value="Logging" priority="0" />
-      <Item value="appHost" priority="1" />
+      <Item value="appHost" priority="2" />
       <Item value="ILog" priority="1" />
       <Item value="typeof" priority="1" />
       <Item value="DebugLogFactory" priority="0" />
@@ -463,7 +455,7 @@
       <Item value="Show" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Exception">
-      <Item value="Message" priority="0" />
+      <Item value="Message" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.Clients.Silverlight.ExampleContext">
       <Item value="DeleteAllUsers" priority="0" />
@@ -496,7 +488,7 @@
       <Item value="Parse" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Console">
-      <Item value="WriteLine" priority="8" />
+      <Item value="WriteLine" priority="9" />
       <Item value="ReadKey" priority="0" />
       <Item value="ReadLine" priority="0" />
     </ItemStatistics>
@@ -615,6 +607,21 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetFactorialResponse">
       <Item value="Result" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetFibonacciNumbersResponse">
+      <Item value="Results" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetNorthwindCustomerOrdersResponse">
+      <Item value="CustomerOrders" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.CustomerOrders">
+      <Item value="Customer" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.Customer">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetNorthwindCustomerOrders">
+      <Item value="CustomerId" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

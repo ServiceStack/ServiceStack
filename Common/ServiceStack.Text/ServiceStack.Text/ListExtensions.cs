@@ -71,5 +71,11 @@ namespace ServiceStack.Text
 		{
 			return list == null ? 0 : list.Count;
 		}
+
+		public static void AddIfNotExists<T>(this List<T> list, T item)
+		{
+			if (!list.Contains(item))
+				list.Add(item);
+		}
 	}
 }

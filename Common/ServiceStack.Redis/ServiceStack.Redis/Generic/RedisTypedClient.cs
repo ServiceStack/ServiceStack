@@ -85,41 +85,14 @@ namespace ServiceStack.Redis.Generic
 			return this.client.Exec();
 		}
 
-		readonly HashSet<string> registeredTypeIdsWithinTransaction = new HashSet<string>();
-		
-		private void RegisterTypeId(T value)
-		{
-			if (client.CurrentTransaction != null)
-			{
-				registeredTypeIdsWithinTransaction.Add(value.GetId().ToString());
-			}
-			else
-			{
-				client.AddToSet(this.TypeIdsSetKey, value.GetId().ToString());
-			}
-		}
-
-		private void RemoveTypeIds(params string[] ids)
-		{
-			if (client.CurrentTransaction != null)
-			{
-				ids.ForEach(x => registeredTypeIdsWithinTransaction.Remove(x));
-			}
-			else
-			{
-				ids.ForEach(x => client.RemoveFromSet(this.TypeIdsSetKey, x));
-			}
-		}
-
 		internal void AddTypeIdsRegisteredDuringTransaction()
 		{
-			registeredTypeIdsWithinTransaction.ForEach(x => client.AddToSet(this.TypeIdsSetKey, x));
-			registeredTypeIdsWithinTransaction.Clear();
+			client.AddTypeIdsRegisteredDuringTransaction();
 		}
 
 		internal void ClearTypeIdsRegisteredDuringTransaction()
 		{
-			registeredTypeIdsWithinTransaction.Clear();
+			client.ClearTypeIdsRegisteredDuringTransaction();
 		}
 
 		public List<string> AllKeys
@@ -153,14 +126,15 @@ namespace ServiceStack.Redis.Generic
 			if (key == null)
 				throw new ArgumentNullException("key");
 
-			RegisterTypeId(value);
 			client.Set(key, ToBytes(value));
+			client.RegisterTypeId(value);
 		}
 
 		public bool SetIfNotExists(string key, T value)
 		{
-			RegisterTypeId(value);
-			return client.SetNX(key, ToBytes(value)) == RedisNativeClient.Success;
+			var success = client.SetNX(key, ToBytes(value)) == RedisNativeClient.Success;
+			if (success) client.RegisterTypeId(value);
+			return success;
 		}
 
 		public T Get(string key)
@@ -191,8 +165,9 @@ namespace ServiceStack.Redis.Generic
 		public bool Remove(params IHasStringId[] entities)
 		{
 			var ids = entities.ConvertAll(x => x.Id);
-			RemoveTypeIds(ids.ToArray());
-			return client.Del(ids.ToArray()) == RedisNativeClient.Success;
+			var success = client.Del(ids.ToArray()) == RedisNativeClient.Success;
+			if (success) client.RemoveTypeIds(ids.ToArray());
+			return success;
 		}
 
 		public int Increment(string key)
@@ -312,14 +287,11 @@ namespace ServiceStack.Redis.Generic
 
 		public IList<T> GetByIds(ICollection<string> ids)
 		{
-			var keys = new List<string>();
-			foreach (var id in ids)
-			{
-				var key = IdUtils.CreateUrn<T>(id);
-				keys.Add(key);
-			}
+			if (ids == null || ids.Count == 0)
+				return new List<T>();
 
-			return GetKeyValues(keys);
+			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
+			return GetKeyValues(urnKeys);
 		}
 
 		public IList<T> GetAll()
@@ -349,35 +321,25 @@ namespace ServiceStack.Redis.Generic
 		public void Delete(T entity)
 		{
 			var urnKey = entity.CreateUrn();
-			RemoveTypeIds(urnKey);
 			this.Remove(urnKey);
+			client.RemoveTypeIds(entity);
 		}
 
 		public void DeleteById(string id)
 		{
 			var urnKey = IdUtils.CreateUrn<T>(id);
 
-			RemoveTypeIds(urnKey);
 			this.Remove(urnKey);
+			client.RemoveTypeIds<T>(id);
 		}
 
 		public void DeleteByIds(ICollection<string> ids)
 		{
 			if (ids == null) return;
 
-			var urnKeysLength = ids.Count;
-			var urnKeys = new string[urnKeysLength];
-
-			var i = 0;
-			foreach (var id in ids)
-			{
-				var urnKey = IdUtils.CreateUrn<T>(id);
-				urnKeys[i++] = urnKey;
-
-				client.RemoveFromSet(this.TypeIdsSetKey, urnKey);
-			}
-
-			this.Remove(urnKeys);
+			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
+			this.Remove(urnKeys.ToArray());
+			client.RemoveTypeIds<T>(ids.ToArray());
 		}
 
 		public void DeleteAll()

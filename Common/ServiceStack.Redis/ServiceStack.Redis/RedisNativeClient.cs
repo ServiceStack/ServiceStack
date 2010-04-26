@@ -203,6 +203,13 @@ namespace ServiceStack.Redis
 			return SendDataExpectInt(value, "SETNX {0} {1}", SafeKey(key), value.Length);
 		}
 
+		public void MSet(byte[][] keys, byte[][] values)
+		{
+			var keysAndValues = MergeKeysAndValues(keys, values);
+
+			SendMultiDataExpectSuccess("MSET", keysAndValues);
+		}
+
 		public byte[] Get(string key)
 		{
 			return GetBytes(key);
@@ -814,24 +821,8 @@ namespace ServiceStack.Redis
 		{
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
-			if (keys == null || keys.Length == 0)
-				throw new ArgumentNullException("keys");
-			if (values == null || values.Length == 0)
-				throw new ArgumentNullException("values");
-			if (keys.Length != values.Length)
-				throw new ArgumentException("The number of values must be equal to the number of keys");
-
-			var keysAndValuesLength = keys.Length * 2 + 1;
-			var keysAndValues = new byte[keysAndValuesLength][];
 			
-			keysAndValues[0] = hashId.ToUtf8Bytes();
-			var j = 0;
-			for (var i = 1; i < keysAndValuesLength; i += 2)
-			{
-				keysAndValues[i] = keys[j];
-				keysAndValues[i + 1] = values[j];
-				j++;
-			}
+			var keysAndValues = MergeKeysAndValues(keys, values, hashId);
 
 			SendMultiDataExpectSuccess("HMSET", keysAndValues);
 		}

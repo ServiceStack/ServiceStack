@@ -178,7 +178,6 @@ namespace ServiceStack.Redis
 				Set(entry.Key, entry.Value);
 			}
 		}
-
 	}
 
 

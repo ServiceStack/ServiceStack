@@ -11,7 +11,6 @@ namespace ServiceStack.Redis.Tests.Examples
 	/// <summary>
 	/// A complete, self-contained example showing how to create a basic blog application using Redis.
 	/// </summary>
-
 	public class User
 	{
 		public User()
@@ -62,6 +61,7 @@ namespace ServiceStack.Redis.Tests.Examples
 		public string Content { get; set; }
 		public DateTime CreatedDate { get; set; }
 	}
+
 
 	[TestFixture]
 	public class BlogPostExample
@@ -173,63 +173,69 @@ namespace ServiceStack.Redis.Tests.Examples
 			{
 				var blogs = redisBlogs.GetAll();
 				Console.WriteLine(blogs.Dump());
-				/* Output: 
-				[
-					{
-						Id: 1,
-						UserId: 1,
-						UserName: Ayende,
-						Tags: 
-						[
-							Architecture,
-							.NET,
-							Databases
-						],
-						BlogPostIds: 
-						[
-							1,
-							3
-						]
-					},
-					{
-						Id: 2,
-						UserId: 2,
-						UserName: Demis,
-						Tags: 
-						[
-							Architecture,
-							.NET,
-							Databases
-						],
-						BlogPostIds: 
-						[
-							2,
-							4
-						]
-					}
-				]
-				 */
 			}
+			/* Output: 
+			[
+				{
+					Id: 1,
+					UserId: 1,
+					UserName: Ayende,
+					Tags: 
+					[
+						Architecture,
+						.NET,
+						Databases
+					],
+					BlogPostIds: 
+					[
+						1,
+						3
+					]
+				},
+				{
+					Id: 2,
+					UserId: 2,
+					UserName: Demis,
+					Tags: 
+					[
+						Architecture,
+						.NET,
+						Databases
+					],
+					BlogPostIds: 
+					[
+						2,
+						4
+					]
+				}
+			]
+			 */
 		}
 
 		[Test]
 		public void Show_a_list_of_recent_posts_and_comments()
 		{
+			//Get strongly-typed clients
 			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
 			using (var redisComments = redisClient.GetTypedClient<BlogPostComment>())
 			{
-				var blogPosts = redisBlogPosts.GetAll();
+				//To keep this example let's pretend this is a new list of blog posts
+				var newIncomingBlogPosts = redisBlogPosts.GetAll();
 
-				var recentPosts = redisBlogPosts.Lists["urn:BlogPosts:RecentPosts"];
+				//Let's get back an IList<BlogPost> wrapper around a Redis server-side List.
+				var recentPosts = redisBlogPosts.Lists["urn:BlogPost:RecentPosts"];
 				var recentComments = redisComments.Lists["urn:BlogPostComment:RecentComments"];
 
-				foreach (var blogPost in blogPosts)
+				foreach (var newBlogPost in newIncomingBlogPosts)
 				{
-					recentPosts.Prepend(blogPost);
+					//Prepend the new blog posts to the start of the 'RecentPosts' list
+					recentPosts.Prepend(newBlogPost);
 
-					blogPost.Comments.ForEach(recentComments.Prepend);
+					//Prepend all the new blog post comments to the start of the 'RecentComments' list
+					newBlogPost.Comments.ForEach(recentComments.Prepend);
 				}
-				//Rolling list only keep the last 3
+
+				//Make this a Rolling list by only keep the latest 3 posts and comments
 				recentPosts.Trim(0, 2);
 				recentComments.Trim(0, 2);
 
@@ -338,44 +344,46 @@ namespace ServiceStack.Redis.Tests.Examples
 		[Test]
 		public void Show_a_TagCloud()
 		{
+			//Get strongly-typed clients
 			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
 			{
-				var blogPosts = redisBlogPosts.GetAll();
+				var newIncomingBlogPosts = redisBlogPosts.GetAll();
 
-				foreach (var blogPost in blogPosts)
+				foreach (var newBlogPost in newIncomingBlogPosts)
 				{
-					blogPost.Tags.ForEach(x =>
+					//For every tag in each new blog post, increment the number of times each Tag has occurred 
+					newBlogPost.Tags.ForEach(x =>
 						redisClient.IncrementItemInSortedSet("urn:TagCloud", x, 1));
 				}
 
 				//Show top 5 most popular tags with their scores
 				var tagCloud = redisClient.GetRangeWithScoresFromSortedSetDesc("urn:TagCloud", 0, 4);
 				Console.WriteLine(tagCloud.Dump());
-				/* Output:
-				[
-					[
-						NoSQL,
-						 4
-					],
-					[
-						Scalability,
-						 2
-					],
-					[
-						JSON,
-						 2
-					],
-					[
-						Redis,
-						 1
-					],
-					[
-						Raven,
-						 1
-					],
-				]
-				 */
 			}
+			/* Output:
+			[
+				[
+					NoSQL,
+					 4
+				],
+				[
+					Scalability,
+					 2
+				],
+				[
+					JSON,
+					 2
+				],
+				[
+					Redis,
+					 1
+				],
+				[
+					Raven,
+					 1
+				],
+			]
+			*/
 		}
 
 		[Test]
@@ -407,12 +415,14 @@ namespace ServiceStack.Redis.Tests.Examples
 		[Test]
 		public void Show_post_and_all_comments()
 		{
+			//There is nothing special required here as since comments are Key Value Objects 
+			//they are stored and retrieved with the post
 			var postId = 1;
 			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
 			{
-				var blogPost = redisBlogPosts.GetById(postId.ToString());
+				var selectedBlogPost = redisBlogPosts.GetById(postId.ToString());
 
-				Console.WriteLine(blogPost.Dump());
+				Console.WriteLine(selectedBlogPost.Dump());
 				/* Output:
 				{
 					Id: 1,
@@ -497,19 +507,24 @@ namespace ServiceStack.Redis.Tests.Examples
 		}
 
 		[Test]
-		public void Show_all_Posts_for_a_Category()
+		public void Show_all_Posts_for_the_DocumentDB_Category()
 		{
 			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
 			{
-				var blogPosts = redisBlogPosts.GetAll();
+				var newIncomingBlogPosts = redisBlogPosts.GetAll();
 
-				foreach (var blogPost in blogPosts)
+				foreach (var newBlogPost in newIncomingBlogPosts)
 				{
-					blogPost.Categories.ForEach(x =>
-						  redisClient.AddToSet("urn:Category:" + x, blogPost.Id.ToString()));
+					//For each post add it's Id into each of it's 'Cateogry > Posts' index
+					newBlogPost.Categories.ForEach(x =>
+						  redisClient.AddToSet("urn:Category:" + x, newBlogPost.Id.ToString()));
 				}
+
+				//Retrieve all the post ids for the category you want to view
 				var documentDbPostIds = redisClient.GetAllFromSet("urn:Category:DocumentDB");
 
+				//Make a batch call to retrieve all the posts containing the matching ids 
+				//(i.e. the DocumentDB Category posts)
 				var documentDbPosts = redisBlogPosts.GetByIds(documentDbPostIds);
 
 				Console.WriteLine(documentDbPosts.Dump());
