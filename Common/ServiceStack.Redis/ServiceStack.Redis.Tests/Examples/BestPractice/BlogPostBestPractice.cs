@@ -33,7 +33,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 			return this.Repository.GetBlogs(this.BlogIds);
 		}
 
-		public Blog StoreBlog(Blog blog)
+		public Blog CreateNewBlog(Blog blog)
 		{
 			this.Repository.StoreBlogs(this, blog);
 
@@ -311,9 +311,9 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 
 			repository.StoreUsers(ayende, mythz);
 
-			var ayendeBlog = ayende.StoreBlog(new Blog { Tags = { "Architecture", ".NET", "Databases" } });
+			var ayendeBlog = ayende.CreateNewBlog(new Blog { Tags = { "Architecture", ".NET", "Databases" } });
 
-			var mythzBlog = mythz.StoreBlog(new Blog { Tags = { "Architecture", ".NET", "Databases" }});
+			var mythzBlog = mythz.CreateNewBlog(new Blog { Tags = { "Architecture", ".NET", "Databases" }});
 
 			ayendeBlog.StoreNewBlogPosts(new BlogPost
 				{
