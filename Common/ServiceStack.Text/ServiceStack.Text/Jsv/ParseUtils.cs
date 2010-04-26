@@ -82,11 +82,12 @@ namespace ServiceStack.Text.Jsv
 		{
 			var tokenStartPos = i;
 			var valueLength = value.Length;
+			if (i == valueLength) return null;
+
 			var valueChar = value[i];
 
 			//If we are at the end, return.
-			if (i == valueLength
-				|| valueChar == TypeSerializer.ItemSeperator
+			if (valueChar == TypeSerializer.ItemSeperator
 				|| valueChar == TypeSerializer.MapEndChar)
 			{
 				return null;
