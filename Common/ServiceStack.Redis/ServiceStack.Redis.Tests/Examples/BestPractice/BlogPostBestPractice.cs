@@ -365,11 +365,62 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 		[Test]
 		public void View_test_data()
 		{
-			var ayende = repository.GetAllUsers().First(x => x.Name == "ayende");
-			var ayendeBlogPostIds = ayende.GetBlogs().SelectMany(x => x.BlogPostIds);
-			var ayendeBlogPosts = repository.GetBlogPosts(ayendeBlogPostIds);
+			var mythz = repository.GetAllUsers().First(x => x.Name == "mythz");
+			var mythzBlogPostIds = mythz.GetBlogs().SelectMany(x => x.BlogPostIds);
+			var mythzBlogPosts = repository.GetBlogPosts(mythzBlogPostIds);
 
-			Console.WriteLine(ayendeBlogPosts.Dump());
+			Console.WriteLine(mythzBlogPosts.Dump());
+			/* Output:
+			[
+				{
+					Id: 3,
+					BlogId: 2,
+					Title: Redis,
+					Categories: 
+					[
+						NoSQL,
+						Cache
+					],
+					Tags: 
+					[
+						Redis,
+						NoSQL,
+						Scalability,
+						Performance
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-26T02:24:47.516949Z
+						}
+					]
+				},
+				{
+					Id: 4,
+					BlogId: 2,
+					Title: Couch Db,
+					Categories: 
+					[
+						NoSQL,
+						DocumentDB
+					],
+					Tags: 
+					[
+						CouchDb,
+						NoSQL,
+						JSON
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-26T02:24:47.516949Z
+						}
+					]
+				}
+			]			 
+			*/
 		}
 
 		[Test]
@@ -378,8 +429,8 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 			using (var redisBlogs = redisClient.GetTypedClient<Blog>())
 			{
 				var blogs = redisBlogs.GetAll();
-				Console.WriteLine(blogs.Dump());
 				Assert.That(blogs.Count, Is.EqualTo(2));
+				Console.WriteLine(blogs.Dump());
 
 				/* Output: 
 				[
@@ -429,6 +480,135 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 
 			Console.WriteLine("Recent Posts:\n" + recentPosts.Dump());
 			Console.WriteLine("Recent Comments:\n" + recentComments.Dump());
+			/* 
+			Recent Posts:
+			[
+				{
+					Id: 4,
+					BlogId: 2,
+					Title: Couch Db,
+					Categories: 
+					[
+						NoSQL,
+						DocumentDB
+					],
+					Tags: 
+					[
+						CouchDb,
+						NoSQL,
+						JSON
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-26T02:25:39.7419361Z
+						}
+					]
+				},
+				{
+					Id: 3,
+					BlogId: 2,
+					Title: Redis,
+					Categories: 
+					[
+						NoSQL,
+						Cache
+					],
+					Tags: 
+					[
+						Redis,
+						NoSQL,
+						Scalability,
+						Performance
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-26T02:25:39.7419361Z
+						}
+					]
+				},
+				{
+					Id: 2,
+					BlogId: 1,
+					Title: Cassandra,
+					Categories: 
+					[
+						NoSQL,
+						Cluster
+					],
+					Tags: 
+					[
+						Cassandra,
+						NoSQL,
+						Scalability,
+						Hashing
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-26T02:25:39.7039339Z
+						}
+					]
+				},
+				{
+					Id: 1,
+					BlogId: 1,
+					Title: RavenDB,
+					Categories: 
+					[
+						NoSQL,
+						DocumentDB
+					],
+					Tags: 
+					[
+						Raven,
+						NoSQL,
+						JSON,
+						.NET
+					],
+					Comments: 
+					[
+						{
+							Content: First Comment!,
+							CreatedDate: 2010-04-26T02:25:39.7039339Z
+						},
+						{
+							Content: Second Comment!,
+							CreatedDate: 2010-04-26T02:25:39.7039339Z
+						}
+					]
+				}
+			]
+
+			Recent Comments:
+			[
+				{
+					Content: First Comment!,
+					CreatedDate: 2010-04-26T02:25:39.7419361Z
+				},
+				{
+					Content: First Comment!,
+					CreatedDate: 2010-04-26T02:25:39.7419361Z
+				},
+				{
+					Content: First Comment!,
+					CreatedDate: 2010-04-26T02:25:39.7039339Z
+				},
+				{
+					Content: Second Comment!,
+					CreatedDate: 2010-04-26T02:25:39.7039339Z
+				},
+				{
+					Content: First Comment!,
+					CreatedDate: 2010-04-26T02:25:39.7039339Z
+				}
+			]
+			 
+			 */
 		}
 
 		[Test]
@@ -437,7 +617,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 			//Tags are maintained in the repository
 			var tagCloud = repository.GetTopTags(5);
 			Console.WriteLine(tagCloud.Dump());
-			/*
+			/* Output:
 			[
 				[
 					NoSQL,
@@ -485,7 +665,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 			var postId = 1;
 			var blogPost = repository.GetBlogPost(postId);
 			Console.WriteLine(blogPost.Dump());
-			/*
+			/* Output:
 			{
 				Id: 1,
 				BlogId: 1,
@@ -530,7 +710,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 
 			var refreshBlogPost = repository.GetBlogPost(postId);
 			Console.WriteLine(refreshBlogPost.Dump());
-			/*
+			/* Output:
 			{
 				Id: 1,
 				BlogId: 1,
@@ -571,7 +751,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 		{
 			var documentDbPosts = repository.GetBlogPostsByCategory("DocumentDB");
 			Console.WriteLine(documentDbPosts.Dump());
-			/*
+			/* Output:
 			[
 				{
 					Id: 4,
