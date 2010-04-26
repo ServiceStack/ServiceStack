@@ -105,6 +105,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 
 		void StoreBlogs(User user, params Blog[] users);
 		List<Blog> GetBlogs(IEnumerable<int> blogIds);
+		List<Blog> GetAllBlogs();
 
 		List<BlogPost> GetBlogPosts(IEnumerable<int> blogPostIds);
 		void StoreNewBlogPosts(Blog blog, params BlogPost[] blogPosts);
@@ -186,6 +187,14 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 			{
 				return Inject(
 					redisBlogs.GetByIds(blogIds.ConvertAll(x => x.ToString())));
+			}
+		}
+
+		public List<Blog> GetAllBlogs()
+		{
+			using (var redisBlogs = redisClient.GetTypedClient<Blog>())
+			{
+				return Inject(redisBlogs.GetAll());
 			}
 		}
 
@@ -426,49 +435,44 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 		[Test]
 		public void Show_a_list_of_blogs()
 		{
-			using (var redisBlogs = redisClient.GetTypedClient<Blog>())
-			{
-				var blogs = redisBlogs.GetAll();
-				Assert.That(blogs.Count, Is.EqualTo(2));
-				Console.WriteLine(blogs.Dump());
-
-				/* Output: 
-				[
-					{
-						Id: 1,
-						UserId: 1,
-						UserName: ayende,
-						Tags: 
-						[
-							Architecture,
-							.NET,
-							Databases
-						],
-						BlogPostIds: 
-						[
-							1,
-							2
-						]
-					},
-					{
-						Id: 2,
-						UserId: 2,
-						UserName: mythz,
-						Tags: 
-						[
-							Architecture,
-							.NET,
-							Databases
-						],
-						BlogPostIds: 
-						[
-							3,
-							4
-						]
-					}
-				]
-				 */
-			}
+			var blogs = repository.GetAllBlogs();
+			Console.WriteLine(blogs.Dump());
+			/* Output: 
+			[
+				{
+					Id: 1,
+					UserId: 1,
+					UserName: ayende,
+					Tags: 
+					[
+						Architecture,
+						.NET,
+						Databases
+					],
+					BlogPostIds: 
+					[
+						1,
+						2
+					]
+				},
+				{
+					Id: 2,
+					UserId: 2,
+					UserName: mythz,
+					Tags: 
+					[
+						Architecture,
+						.NET,
+						Databases
+					],
+					BlogPostIds: 
+					[
+						3,
+						4
+					]
+				}
+			]
+			 */
 		}
 
 		[Test]
