@@ -4,7 +4,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetNorthwindCustomerOrdersCached
 	{
 		[DataMember]
@@ -14,7 +14,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		public string CustomerId { get; set; }
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetNorthwindCustomerOrdersCachedResponse
 	{
 		public GetNorthwindCustomerOrdersCachedResponse()

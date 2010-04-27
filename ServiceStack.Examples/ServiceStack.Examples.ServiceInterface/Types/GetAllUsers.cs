@@ -9,12 +9,12 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// This example shows a simple introduction into SOA-like webservices. 
 	/// i.e. group similar operations into a single 'document-centric like' service request.
 	/// </summary>
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetAllUsers
 	{
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetAllUsersResponse
 	{
 		public GetAllUsersResponse()

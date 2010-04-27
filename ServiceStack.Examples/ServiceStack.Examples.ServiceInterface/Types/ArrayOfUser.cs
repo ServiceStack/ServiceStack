@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-	[CollectionDataContract(ItemName = "User")]
+	[CollectionDataContract(Namespace = ExampleConfig.DefaultNamespace, ItemName = "User")]
 	public class ArrayOfUser : List<User>
 	{
 		public ArrayOfUser() { }

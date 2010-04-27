@@ -6,7 +6,7 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class CustomerOrders
 	{
 		public CustomerOrders()
@@ -31,7 +31,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		}
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class Customer
 		: IHasStringId
 	{

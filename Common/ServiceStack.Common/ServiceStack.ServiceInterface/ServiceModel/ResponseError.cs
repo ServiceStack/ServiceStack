@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 	/// Error information pertaining to a particular named field.
 	/// Used for returning multiple field validation errors.s
 	/// </summary>
-	[DataContract]
+	[DataContract(Namespace = Config.DefaultNamespace)]
 	public class ResponseError
 	{
 		[DataMember]

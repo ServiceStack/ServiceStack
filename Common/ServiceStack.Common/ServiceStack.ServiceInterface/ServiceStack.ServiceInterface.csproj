@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncServiceBase.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="ServiceBase.cs" />
     <Compile Include="ServiceModel\CollectionTypes.cs" />
     <Compile Include="ServiceModel\IHasResponseStatus.cs" />

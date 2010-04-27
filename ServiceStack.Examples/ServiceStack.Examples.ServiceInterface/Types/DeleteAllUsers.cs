@@ -10,12 +10,12 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// <summary>
 	/// Use Plain old DataContract's Define your 'Service Interface'
 	/// </summary>
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class DeleteAllUsers
 	{
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class DeleteAllUsersResponse
 	{
 		public DeleteAllUsersResponse()

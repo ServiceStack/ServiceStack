@@ -10,7 +10,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// your service client can use to assert that the request was successful.
 	/// The ResponseStatus DTO also enables you to serialize an exception in your service.
 	/// </summary>
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class StoreNewUser
 	{
 		[DataMember]
@@ -23,7 +23,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		public string Password { get; set; }
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class StoreNewUserResponse
 	{
 		public StoreNewUserResponse()

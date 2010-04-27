@@ -5,7 +5,12 @@ namespace ServiceStack.Examples.ServiceInterface
 {
 	public class ExampleConfig
 	{
-		public ExampleConfig() {}
+		/// <summary>
+		/// Would've preferred to use [assembly: ContractNamespace] attribute but it is not supported in Mono
+		/// </summary>
+		public const string DefaultNamespace = "http://schemas.sericestack.net/examples/types";
+
+		public ExampleConfig() { }
 
 		public ExampleConfig(IResourceManager appConfig)
 		{
@@ -15,5 +20,6 @@ namespace ServiceStack.Examples.ServiceInterface
 
 		public string ConnectionString { get; set; }
 		public int DefaultFibonacciLimit { get; set; }
+
 	}
 }

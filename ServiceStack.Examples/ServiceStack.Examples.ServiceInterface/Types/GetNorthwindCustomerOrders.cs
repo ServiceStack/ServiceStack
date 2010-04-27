@@ -3,14 +3,14 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetNorthwindCustomerOrders
 	{
 		[DataMember]
 		public string CustomerId { get; set; }
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetNorthwindCustomerOrdersResponse
 	{
 		public GetNorthwindCustomerOrdersResponse()

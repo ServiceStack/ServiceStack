@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 	 * <Ids>
 	 */
 
-	[CollectionDataContract(ItemName = "String")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "String")]
 	public partial class ArrayOfString : List<string>
 	{
 		public ArrayOfString()
@@ -28,7 +28,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ArrayOfString(params string[] args) : base(args) { }
 	}
 
-	[CollectionDataContract(ItemName = "Id")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "Id")]
 	public partial class ArrayOfStringId : List<string>
 	{
 		public ArrayOfStringId()
@@ -39,7 +39,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ArrayOfStringId(params string[] args) : base(args) { }
 	}
 
-	[CollectionDataContract(ItemName = "Guid")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "Guid")]
 	public partial class ArrayOfGuid : List<Guid>
 	{
 		public ArrayOfGuid()
@@ -50,7 +50,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ArrayOfGuid(params Guid[] args) : base(args) { }
 	}
 
-	[CollectionDataContract(ItemName = "Id")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "Id")]
 	public partial class ArrayOfGuidId : List<Guid>
 	{
 		public ArrayOfGuidId()
@@ -61,7 +61,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ArrayOfGuidId(params Guid[] args) : base(args) { }
 	}
 
-	[CollectionDataContract(ItemName = "Long")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "Long")]
 	public partial class ArrayOfLong : List<long>
 	{
 		public ArrayOfLong()
@@ -72,7 +72,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ArrayOfLong(params long[] args) : base(args) { }
 	}
 
-	[CollectionDataContract(ItemName = "Id")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "Id")]
 	public partial class ArrayOfLongId : List<long>
 	{
 		public ArrayOfLongId()
@@ -83,7 +83,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ArrayOfLongId(params long[] args) : base(args) { }
 	}
 
-	[CollectionDataContract(ItemName = "Int")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "Int")]
 	public partial class ArrayOfInt : List<int>
 	{
 		public ArrayOfInt()
@@ -94,7 +94,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ArrayOfInt(params int[] args) : base(args) { }
 	}
 
-	[CollectionDataContract(ItemName = "Id")]
+	[CollectionDataContract(Namespace = Config.DefaultNamespace, ItemName = "Id")]
 	public partial class ArrayOfIntId : List<int>
 	{
 		public ArrayOfIntId ()

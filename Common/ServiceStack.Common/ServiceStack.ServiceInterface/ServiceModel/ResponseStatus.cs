@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 	/// <summary>
 	/// Common ResponseStatus class that should be present on all response DTO's
 	/// </summary>
-	[DataContract]
+	[DataContract(Namespace = Config.DefaultNamespace)]
 	public class ResponseStatus
 	{
 		/// <summary>

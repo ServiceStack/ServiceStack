@@ -11,7 +11,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// This example shows the flavour of SOA-style webservices. 
 	/// i.e. group similar operations into a single batch-full service request.
 	/// </summary>
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetUsers
 	{
 		[DataMember]
@@ -21,7 +21,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		public List<string> UserNames { get; set; }
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetUsersResponse
 	{
 		public GetUsersResponse()

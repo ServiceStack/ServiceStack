@@ -9,7 +9,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	/// This purpose of this example is how you would implement a more advanced
 	/// web service returning a slightly more 'complex object'.
 	/// </summary>
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetFibonacciNumbers
 	{
 		[DataMember]
@@ -19,7 +19,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		public long? Take { get; set; }
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class GetFibonacciNumbersResponse
 	{
 		[DataMember]

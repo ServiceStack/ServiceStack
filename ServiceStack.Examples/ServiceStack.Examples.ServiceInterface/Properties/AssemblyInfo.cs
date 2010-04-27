@@ -36,6 +36,8 @@ using System.Runtime.Serialization;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-
+/* Setting the default DataContract namespace using the attributes below is not supported in Mono */
+[assembly: ContractNamespace("http://schemas.servicestack.net/types",
+	ClrNamespace = "ServiceStack.Examples.ServiceInterface")]
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
 	ClrNamespace = "ServiceStack.Examples.ServiceInterface.Types")]

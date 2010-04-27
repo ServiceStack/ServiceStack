@@ -9,7 +9,7 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
-using ServiceStack.WebHost.Endpoints.Server;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Examples.Host.Console
 {

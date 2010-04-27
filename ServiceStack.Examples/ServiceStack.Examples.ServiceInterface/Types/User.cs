@@ -4,7 +4,7 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Examples.ServiceInterface.Types
 {
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class User
 	{
 		[AutoIncrement]
@@ -22,8 +22,5 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 
 		[DataMember]
 		public Guid GlobalId { get; set; }
-
-		[DataMember]
-		public DateTime CreatedDate { get; set; }
 	}
 }

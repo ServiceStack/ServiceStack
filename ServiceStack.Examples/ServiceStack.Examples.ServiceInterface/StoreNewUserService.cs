@@ -43,7 +43,6 @@ namespace ServiceStack.Examples.ServiceInterface
 					Email = request.Email,
 					Password = request.Password,
 					GlobalId = Guid.NewGuid(),
-					CreatedDate = DateTime.UtcNow,
 				};
 
 				dbCmd.Insert(newUser);

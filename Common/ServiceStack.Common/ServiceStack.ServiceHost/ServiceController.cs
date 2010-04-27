@@ -138,7 +138,15 @@ namespace ServiceStack.ServiceHost
 					? requestContext.EndpointAttributes
 					: EndpointAttributes.None;
 
-				return typeFactoryFn(dto, service, endpointAttrs);
+				try
+				{
+					return typeFactoryFn(dto, service, endpointAttrs);
+				}
+				catch (TargetInvocationException tex)
+				{
+					//Mono invokes using reflection
+					throw tex.InnerException ?? tex;
+				}
 			};
 
 			try
