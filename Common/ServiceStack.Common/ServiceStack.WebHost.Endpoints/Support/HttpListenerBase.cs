@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		/// Note: the trailing backslash is required! For more info see the
 		/// HttpListener.Prefixes property on MSDN.
 		/// </param>
-		public void Start(string urlBase)
+		public virtual void Start(string urlBase)
 		{
 			// *** Already running - just leave it in place
 			if (this.IsStarted)
@@ -110,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		/// <summary>
 		/// Shut down the Web Service
 		/// </summary>
-		public void Stop()
+		public virtual void Stop()
 		{
 			if (Listener == null) return;
 
@@ -186,6 +186,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public virtual void Dispose()
 		{
 			this.Stop();
+
+			if (serviceManager != null)
+			{
+				serviceManager.Dispose();
+			}
 		}
 	}
 }
