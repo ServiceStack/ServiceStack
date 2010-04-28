@@ -14,6 +14,8 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 	/// A complete, self-contained example showing how to create a basic blog application using Redis.
 	/// </summary>
 
+	#region Blog Models	
+
 	public class User
 		: IHasBlogRepository
 	{
@@ -92,7 +94,10 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 		public string Content { get; set; }
 		public DateTime CreatedDate { get; set; }
 	}
+	#endregion
 
+
+	#region Blog Repository
 	public interface IHasBlogRepository
 	{
 		IBlogRepository Repository { set; }
@@ -297,9 +302,11 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 		}
 
 	}
+	#endregion
+
 
 	[TestFixture]
-	public class BlogPostExample
+	public class BlogPostBestPractice
 	{
 		readonly RedisClient redisClient = new RedisClient(TestConfig.SingleHost);
 		private IBlogRepository repository;
@@ -310,10 +317,10 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 			redisClient.FlushAll();
 			repository = new BlogRepository(redisClient);
 
-			InsertTestData();
+			InsertTestData(repository);
 		}
 
-		public void InsertTestData()
+		public static void InsertTestData(IBlogRepository repository)
 		{
 			var ayende = new User { Name = "ayende" };
 			var mythz = new User { Name = "mythz" };
