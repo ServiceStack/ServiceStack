@@ -82,6 +82,28 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_GetHashKeys()
+		{
+			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			var expectedKeys = stringMap.ConvertAll(x => x.Key);
+
+			var hashKeys = Redis.GetHashKeys(HashId);
+
+			Assert.That(hashKeys, Is.EquivalentTo(expectedKeys));
+		}
+
+		[Test]
+		public void Can_GetHashValues()
+		{
+			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			var expectedValues = stringMap.ConvertAll(x => x.Value);
+
+			var hashValues = Redis.GetHashValues(HashId);
+
+			Assert.That(hashValues, Is.EquivalentTo(expectedValues));
+		}
+
+		[Test]
 		public void Can_enumerate_small_IDictionary_Hash()
 		{
 			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));

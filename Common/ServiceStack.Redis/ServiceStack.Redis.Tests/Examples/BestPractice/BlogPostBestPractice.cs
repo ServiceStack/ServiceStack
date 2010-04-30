@@ -479,7 +479,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 					]
 				}
 			]
-			 */
+			*/
 		}
 
 		[Test]

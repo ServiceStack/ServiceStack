@@ -871,12 +871,12 @@ namespace ServiceStack.Redis
 			return SendMultiDataExpectMultiData("HKEYS", hashId.ToUtf8Bytes());
 		}
 
-		public byte[][] HValues(string hashId)
+		public byte[][] HVals(string hashId)
 		{
 			if (hashId == null)
 				throw new ArgumentNullException("hashId");
 
-			return SendMultiDataExpectMultiData("HVALUES", hashId.ToUtf8Bytes());
+			return SendMultiDataExpectMultiData("HVALS", hashId.ToUtf8Bytes());
 		}
 
 		public byte[][] HGetAll(string hashId)

@@ -106,7 +106,7 @@ namespace ServiceStack.Redis
 
 		public List<string> GetHashValues(string hashId)
 		{
-			var multiDataList = base.HValues(hashId);
+			var multiDataList = base.HVals(hashId);
 			return multiDataList.ToStringList();
 		}
 

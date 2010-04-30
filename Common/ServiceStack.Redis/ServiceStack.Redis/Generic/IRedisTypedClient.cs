@@ -132,6 +132,8 @@ namespace ServiceStack.Redis.Generic
 
 		bool HashContainsKey<TKey>(IRedisHash<TKey, T> hash, TKey key);
 		bool SetItemInHash<TKey>(IRedisHash<TKey, T> hash, TKey key, T value);
+		bool SetItemInHashIfNotExists<TKey>(IRedisHash<TKey, T> hash, TKey key, T value);
+		void SetRangeInHash<TKey>(IRedisHash<TKey, T> hash, IEnumerable<KeyValuePair<TKey, T>> keyValuePairs);
 		T GetItemFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
 		bool RemoveFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
 		int GetHashCount<TKey>(IRedisHash<TKey, T> hash);

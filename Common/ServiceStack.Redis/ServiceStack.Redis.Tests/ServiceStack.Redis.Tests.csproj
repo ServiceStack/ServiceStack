@@ -82,16 +82,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdhocClientTests.cs" />
+    <Compile Include="RedisBasicPersistenceProviderTests.cs" />
+    <Compile Include="Examples\BestPractice\BlogPostMigrations.cs" />
     <Compile Include="Examples\BlogPostExample.cs" />
     <Compile Include="Examples\BestPractice\BlogPostBestPractice.cs" />
     <Compile Include="Examples\SimpleExamples.cs" />
+    <Compile Include="Generic\RedisClientHashTestsModels.cs" />
+    <Compile Include="Generic\RedisClientHashTestsBase.cs" />
     <Compile Include="Generic\RedisTypedTransactionTests.cs" />
     <Compile Include="RedisClientHashTests.cs" />
     <Compile Include="RedisClientSortedSetTests.cs" />
     <Compile Include="Generic\RedisClientSetTestsModels.cs" />
     <Compile Include="Generic\RedisClientListTestsBase.cs" />
     <Compile Include="Generic\RedisClientListTestsModels.cs" />
-    <Compile Include="Generic\RedisClientSetTests.cs" />
+    <Compile Include="Generic\RedisClientSetTestsBase.cs" />
     <Compile Include="Generic\RedisClientTests.cs" />
     <Compile Include="Generic\RedisClientTestsBase.cs" />
     <Compile Include="Generic\RedisPersistenceProviderTestsBase.cs" />

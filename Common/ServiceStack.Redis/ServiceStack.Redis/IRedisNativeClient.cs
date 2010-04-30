@@ -110,7 +110,7 @@ namespace ServiceStack.Redis
 		int HExists(string hashId, byte[] key);
 		int HLen(string hashId);
 		byte[][] HKeys(string hashId);
-		byte[][] HValues(string hashId);
+		byte[][] HVals(string hashId);
 		byte[][] HGetAll(string hashId);
 	}
 }

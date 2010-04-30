@@ -10,7 +10,9 @@
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Generic
@@ -30,6 +32,19 @@ namespace ServiceStack.Redis.Generic
 		public bool SetItemInHash<TKey>(IRedisHash<TKey, T> hash, TKey key, T value)
 		{
 			return client.SetItemInHash(hash.Id, key.SerializeToString(), value.SerializeToString());
+		}
+
+		public bool SetItemInHashIfNotExists<TKey>(IRedisHash<TKey, T> hash, TKey key, T value)
+		{
+			return client.SetItemInHashIfNotExists(hash.Id, key.SerializeToString(), value.SerializeToString());
+		}
+
+		public void SetRangeInHash<TKey>(IRedisHash<TKey, T> hash, IEnumerable<KeyValuePair<TKey, T>> keyValuePairs)
+		{
+			var stringKeyValuePairs = keyValuePairs.ToList().ConvertAll(
+				x => new KeyValuePair<string, string>(x.Key.SerializeToString(), x.Value.SerializeToString()));
+
+			client.SetRangeInHash(hash.Id, stringKeyValuePairs);
 		}
 
 		public T GetItemFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key)
