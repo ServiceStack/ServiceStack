@@ -85,7 +85,7 @@ namespace ServiceStack.Redis.Tests.Support
 			byte[] toSend = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xa };
 			stream.Write(toSend, 0, toSend.Length);
 
-			// Receive 10 bytes
+			// ReceiveMessages 10 bytes
 			var readbuf = new byte[10]; // you must allocate space first
 			stream.ReadTimeout = 10000; // 10 second timeout on the read
 			stream.Read(readbuf, 0, 10); // read

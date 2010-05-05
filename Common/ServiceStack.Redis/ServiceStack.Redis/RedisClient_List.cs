@@ -13,6 +13,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
@@ -63,7 +64,8 @@ namespace ServiceStack.Redis
 
 		public List<string> GetRangeFromSortedList(string listId, int startingFrom, int endingAt)
 		{
-			var multiDataList = Sort(listId, startingFrom, endingAt, true, false);
+			var sortOptions = new SortOptions { Skip = startingFrom, Take = endingAt, };
+			var multiDataList = Sort(listId, sortOptions);
 			return multiDataList.ToStringList();
 		}
 

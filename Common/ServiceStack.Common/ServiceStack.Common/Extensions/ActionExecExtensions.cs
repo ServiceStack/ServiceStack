@@ -47,6 +47,12 @@ namespace ServiceStack.Common.Extensions
 		{
 			return WaitAll(waitHandles.ToArray(), (int)timeout.TotalMilliseconds);
 		}
+
+		public static bool WaitAll(this List<IAsyncResult> asyncResults, TimeSpan timeout)
+		{
+			var waitHandles = asyncResults.ConvertAll(x => x.AsyncWaitHandle);
+			return WaitAll(waitHandles.ToArray(), (int)timeout.TotalMilliseconds);
+		}
 		
 		public static bool WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
 		{

@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Redis.Support;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
@@ -147,11 +148,16 @@ namespace ServiceStack.Redis
 			return multiDataList.ToStringList();
 		}
 
+		public IDictionary<string, double> GetAllWithScoresFromSortedSet(string setId)
+		{
+			var multiDataList = base.ZRangeWithScores(setId, FirstElement, LastElement);
+			return CreateSortedScoreMap(multiDataList);
+		}
+
 		public IDictionary<string, double> GetRangeWithScoresFromSortedSet(string setId, int fromRank, int toRank)
 		{
 			var multiDataList = base.ZRangeWithScores(setId, fromRank, toRank);
 			return CreateSortedScoreMap(multiDataList);
-
 		}
 
 		public IDictionary<string, double> GetRangeWithScoresFromSortedSetDesc(string setId, int fromRank, int toRank)

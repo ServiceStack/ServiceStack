@@ -12,51 +12,68 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GreetService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersService.cs" caret="352" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersService.cs" caret="837" fromTop="29" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="826" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="218" fromTop="8" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="491" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="476" fromTop="20" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="1141" fromTop="33" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="726" fromTop="20" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1205" fromTop="28" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="202" fromTop="6" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="291" fromTop="12" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="554" fromTop="19" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="470" fromTop="12" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="0" fromTop="0" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestHostBase.cs" caret="0" fromTop="0" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="76" fromTop="4" />
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="408" fromTop="17" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1419" fromTop="22" />
       <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="663" fromTop="25" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="244" fromTop="9" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersService.cs" caret="1702" fromTop="29" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersCachedService.cs" caret="1785" fromTop="26" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersCachedService.cs" caret="982" fromTop="27" />
+      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:IntegrationTests.cs" caret="795" fromTop="26" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1160" fromTop="36" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfUser.cs" caret="133" fromTop="5" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="545" fromTop="18" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="625" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="409" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="606" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="425" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="506" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Greet.cs" caret="344" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="825" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Properties/f:AssemblyInfo.cs" caret="1671" fromTop="39" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersService.cs" caret="0" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="727" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="733" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="0" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="829" fromTop="26" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="533" fromTop="25" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1271" fromTop="25" />
     </RecentFiles>
     <RecentEdits>
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="603" fromTop="17" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="883" fromTop="20" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="653" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="1150" fromTop="34" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="33" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="629" fromTop="19" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="210" fromTop="8" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="651" fromTop="15" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="389" fromTop="0" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1419" fromTop="22" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="268" fromTop="11" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="76" fromTop="4" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="173" fromTop="8" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="296" fromTop="13" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersService.cs" caret="992" fromTop="17" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="644" fromTop="20" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="430" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Properties/f:AssemblyInfo.cs" caret="1639" fromTop="38" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="722" fromTop="18" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="391" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="559" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="409" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfUser.cs" caret="133" fromTop="5" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="400" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="501" fromTop="18" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="483" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="581" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="457" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="667" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="210" fromTop="6" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="381" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="225" fromTop="7" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="462" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="514" fromTop="14" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="733" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Greet.cs" caret="159" fromTop="5" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Greet.cs" caret="300" fromTop="11" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="271" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="825" fromTop="34" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="561" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="829" fromTop="26" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="211" fromTop="7" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="384" fromTop="10" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="528" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1627" fromTop="40" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -73,7 +90,7 @@
       <Item value="ConfigurationResourceManager" priority="2" />
       <Item value="IApplicationContext" priority="0" />
       <Item value="IRequestContext" priority="1" />
-      <Item value="Namespace" priority="2" />
+      <Item value="Namespace" priority="3" />
       <Item value="public" priority="24" />
       <Item value="GetFactorials" priority="2" />
       <Item value="DataMember" priority="2" />
@@ -120,7 +137,7 @@
       <Item value="ResponseStatus" priority="3" />
       <Item value="DataContract" priority="1" />
       <Item value="this" priority="5" />
-      <Item value="string" priority="19" />
+      <Item value="string" priority="20" />
       <Item value="persistenceProvider" priority="7" />
       <Item value="IQueryablePersistenceProvider" priority="1" />
       <Item value="delegate" priority="2" />
@@ -175,7 +192,7 @@
       <Item value="Id" priority="1" />
       <Item value="static" priority="7" />
       <Item value="class" priority="3" />
-      <Item value="const" priority="3" />
+      <Item value="const" priority="4" />
       <Item value="Config" priority="2" />
       <Item value="AppContext" priority="2" />
       <Item value="private" priority="1" />
@@ -510,7 +527,8 @@
       <Item value="Empty" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.DateTime">
-      <Item value="Now" priority="1" />
+      <Item value="Now" priority="2" />
+      <Item value="UtcNow" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.DataContractTests.ArrayOfString">
       <Item value="Add" priority="1" />
@@ -526,6 +544,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.DateTime">
       <Item value="Now" priority="0" />
+      <Item value="Date" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.StoreNewUserHandler">
       <Item value="Execute" priority="1" />
@@ -622,6 +641,9 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetNorthwindCustomerOrders">
       <Item value="CustomerId" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Examples.ServiceInterface.ExampleConfig">
+      <Item value="DefaultNamespace" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

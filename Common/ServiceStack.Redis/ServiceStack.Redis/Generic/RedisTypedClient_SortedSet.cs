@@ -131,6 +131,12 @@ namespace ServiceStack.Redis.Generic
 			return list.ConvertEachTo<T>();
 		}
 
+		public IDictionary<T, double> GetAllWithScoresFromSortedSet(IRedisSortedSet<T> set)
+		{
+			var map = client.GetRangeWithScoresFromSortedSet(set.Id, FirstElement, LastElement);
+			return CreateGenericMap(map);
+		}
+
 		public IDictionary<T, double> GetRangeWithScoresFromSortedSet(IRedisSortedSet<T> set, int fromRank, int toRank)
 		{
 			var map = client.GetRangeWithScoresFromSortedSet(set.Id, fromRank, toRank);

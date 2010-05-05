@@ -16,6 +16,7 @@ using System.Net.Sockets;
 using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
@@ -72,20 +73,9 @@ namespace ServiceStack.Redis
 			var results = new List<string>();
 			foreach (var multiData in multiDataList)
 			{
-				results.Add(FromUtf8Bytes(multiData));
+				results.Add(multiData.FromUtf8Bytes());
 			}
 			return results;
-		}
-
-		public static string FromUtf8Bytes(this byte[] bytes)
-		{
-			return bytes == null ? null
-				: Encoding.UTF8.GetString(bytes);
-		}
-
-		public static byte[] ToUtf8Bytes(this string value)
-		{
-			return Encoding.UTF8.GetBytes(value);
 		}
 	}
 

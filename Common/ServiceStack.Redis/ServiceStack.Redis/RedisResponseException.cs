@@ -10,12 +10,10 @@
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
-using System;
-
 namespace ServiceStack.Redis
 {
-	public class RedisResponseException 
-		: Exception
+	public class RedisResponseException
+		: RedisException
 	{
 		public RedisResponseException(string message)
 			: base(message)

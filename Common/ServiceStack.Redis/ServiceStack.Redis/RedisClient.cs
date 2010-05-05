@@ -90,6 +90,15 @@ namespace ServiceStack.Redis
 			Set(key, bytesValue);
 		}
 
+		public void SetString(string key, string value, TimeSpan expireIn)
+		{
+			var bytesValue = value != null
+				? value.ToUtf8Bytes()
+				: null;
+
+			SetEx(key, (int)expireIn.TotalSeconds, bytesValue);
+		}
+
 		public bool SetIfNotExists(string key, string value)
 		{
 			if (value == null)
@@ -148,6 +157,16 @@ namespace ServiceStack.Redis
 			return DecrBy(key, count);
 		}
 
+		public int Append(string key, string value)
+		{
+			return base.Append(key, value.ToUtf8Bytes());
+		}
+
+		public string Substring(string key, int fromIndex, int toIndex)
+		{
+			return base.Substr(key, fromIndex, toIndex).FromUtf8Bytes();
+		}
+
 		public string NewRandomKey()
 		{
 			return RandomKey();
@@ -176,6 +195,16 @@ namespace ServiceStack.Redis
 		public IRedisTransaction CreateTransaction()
 		{
 			return new RedisTransaction(this);
+		}
+
+		public IDisposable AcquireLock(string key)
+		{
+			return new RedisLock(this, key, null);
+		}
+
+		public IDisposable AcquireLock(string key, TimeSpan timeOut)
+		{
+			return new RedisLock(this, key, timeOut);
 		}
 
 		public List<string> GetKeys(string pattern)
@@ -229,6 +258,15 @@ namespace ServiceStack.Redis
 			return results;
 		}
 
+		public IRedisSubscription CreateSubscription()
+		{
+			return new RedisSubscription(this);
+		}
+
+		public void PublishMessage(string toChannel, string message)
+		{
+			base.Publish(toChannel, message.ToUtf8Bytes());
+		}
 
 		#region IBasicPersistenceProvider
 

@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="BasicRedisClientManager.cs" />
     <Compile Include="BasicRedisClientManager.ICacheClient.cs" />
+    <Compile Include="Commands.cs" />
     <Compile Include="Generic\IRedisTransaction.cs" />
     <Compile Include="Generic\RedisClientHash.Generic.cs" />
     <Compile Include="Generic\RedisTypedTransaction.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="Generic\RedisTypedClient_SortedSet.cs" />
     <Compile Include="Generic\RedisClientSortedSet.Generic.cs" />
     <Compile Include="IRedisQueableTransaction.cs" />
+    <Compile Include="IRedisSubscription.cs" />
     <Compile Include="QueuedRedisOperation.cs" />
     <Compile Include="RedisClientHash.cs" />
     <Compile Include="Generic\IRedisSortedSet.Generic.cs" />
@@ -94,6 +96,9 @@
     <Compile Include="Messaging\RedisMessageProducer.cs" />
     <Compile Include="Messaging\RedisMessageQueueClient.cs" />
     <Compile Include="Messaging\RedisTransientMessageService.cs" />
+    <Compile Include="RedisException.cs" />
+    <Compile Include="RedisLock.cs" />
+    <Compile Include="RedisSubscription.cs" />
     <Compile Include="RedisTransaction.cs" />
     <Compile Include="RedisClientFactory.cs" />
     <Compile Include="Generic\IRedisList.Generic.cs" />
@@ -126,6 +131,7 @@
     <Compile Include="RedisResponseException.cs" />
     <Compile Include="RedisExtensions.cs" />
     <Compile Include="Messaging\RedisMessageQueueClientFactory.cs" />
+    <Compile Include="SortOptions.cs" />
     <Compile Include="Support\IOrderedDictionary.cs">
       <SubType>Code</SubType>
     </Compile>

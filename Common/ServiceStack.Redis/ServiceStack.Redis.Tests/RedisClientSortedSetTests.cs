@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Tests
 {
@@ -12,10 +14,17 @@ namespace ServiceStack.Redis.Tests
 	{
 		private const string SetId = "testzset";
 		private List<string> storeMembers;
+
+		Dictionary<string, double> stringDoubleMap;
+
 		public override void OnBeforeEachTest()
 		{
 			base.OnBeforeEachTest();
 			storeMembers = new List<string> { "one", "two", "three", "four" };
+
+			stringDoubleMap = new Dictionary<string, double> {
+     			{"one",1}, {"two",2}, {"three",3}, {"four",4}
+     		};
 		}
 
 		[Test]
@@ -179,6 +188,25 @@ namespace ServiceStack.Redis.Tests
 
 			var range = Redis.GetRangeFromSortedSetByLowestScore(SetId, "four", "three");
 			Assert.That(range.EquivalentTo(memberRage));
+		}
+
+		[Test]
+		public void Can_IncrementItemInSortedSet()
+		{
+			stringDoubleMap.ForEach(x => Redis.AddToSortedSet(SetId, x.Key, x.Value));
+
+			var currentScore = Redis.IncrementItemInSortedSet(SetId, "one", 2);
+			stringDoubleMap["one"] = stringDoubleMap["one"] + 2;
+			Assert.That(currentScore, Is.EqualTo(stringDoubleMap["one"]));
+
+			currentScore = Redis.IncrementItemInSortedSet(SetId, "four", -2);
+			stringDoubleMap["four"] = stringDoubleMap["four"] - 2;
+			Assert.That(currentScore, Is.EqualTo(stringDoubleMap["four"]));
+
+			var map = Redis.GetAllWithScoresFromSortedSet(SetId);
+
+			Assert.That(stringDoubleMap.EquivalentTo(map));
+			Console.WriteLine(map.Dump());
 		}
 
 		[Ignore("Not implemented yet")]

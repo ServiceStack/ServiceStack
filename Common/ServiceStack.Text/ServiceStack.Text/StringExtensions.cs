@@ -249,5 +249,44 @@ namespace ServiceStack.Text
 			return path;
 		}
 
+		public static string FromUtf8Bytes(this byte[] bytes)
+		{
+			return bytes == null ? null
+				: Encoding.UTF8.GetString(bytes);
+		}
+
+		public static byte[] ToUtf8Bytes(this string value)
+		{
+			return Encoding.UTF8.GetBytes(value);
+		}
+
+		public static byte[] ToUtf8Bytes(this int intVal)
+		{
+			return FastToUtf8Bytes(intVal.ToString());
+		}
+
+		public static byte[] ToUtf8Bytes(this long longVal)
+		{
+			return FastToUtf8Bytes(longVal.ToString());
+		}
+
+		public static byte[] ToUtf8Bytes(this double doubleVal)
+		{
+			return FastToUtf8Bytes(doubleVal.ToString());
+		}
+
+		/// <summary>
+		/// Skip the encoding process for 'safe strings' 
+		/// </summary>
+		/// <param name="strVal"></param>
+		/// <returns></returns>
+		private static byte[] FastToUtf8Bytes(string strVal)
+		{
+			var bytes = new byte[strVal.Length];
+			for (var i = 0; i < strVal.Length; i++)
+				bytes[i] = (byte)strVal[i];
+			
+			return bytes;
+		}
 	}
 }

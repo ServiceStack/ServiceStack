@@ -15,35 +15,35 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
 	public partial class RedisNativeClient
 	{
-
 		private void Connect()
 		{
-			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
 			{
 				SendTimeout = SendTimeout
 			};
 			try
 			{
-				socket.Connect(Host, Port);
+				Socket.Connect(Host, Port);
 
-				if (!socket.Connected)
+				if (!Socket.Connected)
 				{
-					socket.Close();
-					socket = null;
+					Socket.Close();
+					Socket = null;
 					return;
 				}
-				bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
+				Bstream = new BufferedStream(new NetworkStream(Socket), 16 * 1024);
 
 				if (Password != null)
-					SendExpectSuccess("AUTH {0}\r\n", Password);
+					SendExpectSuccess(Commands.Auth, Password.ToUtf8Bytes());
 
 				db = 0;
-				var ipEndpoint = socket.LocalEndPoint as IPEndPoint;
+				var ipEndpoint = Socket.LocalEndPoint as IPEndPoint;
 				clientPort = ipEndpoint != null ? ipEndpoint.Port : -1;
 				lastCommand = null;
 				lastSocketException = null;
@@ -63,7 +63,7 @@ namespace ServiceStack.Redis
 			var sb = new StringBuilder();
 
 			int c;
-			while ((c = bstream.ReadByte()) != -1)
+			while ((c = Bstream.ReadByte()) != -1)
 			{
 				if (c == '\r')
 					continue;
@@ -81,17 +81,17 @@ namespace ServiceStack.Redis
 				var now = Stopwatch.GetTimestamp();
 				var elapsedSecs = (now - LastConnectedAtTimestamp) / Stopwatch.Frequency;
 
-				if (elapsedSecs > IdleTimeOutSecs && !socket.IsConnected())
+				if (elapsedSecs > IdleTimeOutSecs && !Socket.IsConnected())
 				{
 					return Reconnect();
 				}
 				LastConnectedAtTimestamp = now;
 			}
 
-			if (socket == null)
+			if (Socket == null)
 				Connect();
 
-			var isConnected = socket != null;
+			var isConnected = Socket != null;
 
 			return isConnected;
 		}
@@ -108,7 +108,7 @@ namespace ServiceStack.Redis
 				this.Db = previousDb;
 			}
 
-			return socket != null;
+			return Socket != null;
 		}
 
 		private bool HandleSocketException(SocketException ex)
@@ -119,8 +119,8 @@ namespace ServiceStack.Redis
 			lastSocketException = ex;
 
 			// timeout?
-			socket.Close();
-			socket = null;
+			Socket.Close();
+			Socket = null;
 
 			return false;
 		}
@@ -145,112 +145,46 @@ namespace ServiceStack.Redis
 			throw throwEx;
 		}
 
-		private static string SafeKey(string key)
+		private static byte[] GetCmdBytes(char cmdPrefix, int noOfLines)
 		{
-			return key == null ? null : key.Replace(' ', '_')
-				.Replace('\t', '_').Replace('\n', '_');
+			var strLines = noOfLines.ToString();
+			var strLinesLength = strLines.Length;
+
+			var cmdBytes = new byte[1 + strLinesLength + 2];
+			cmdBytes[0] = (byte)cmdPrefix;
+
+			for (var i = 0; i < strLinesLength; i++)
+				cmdBytes[i + 1] = (byte)strLines[i];
+
+			cmdBytes[1 + strLinesLength] = 0x0D; // \r
+			cmdBytes[2 + strLinesLength] = 0x0A; // \n
+
+			return cmdBytes;
 		}
 
-		private static string SafeKeys(params string[] keys)
-		{
-			var sb = new StringBuilder();
-			foreach (var key in keys)
-			{
-				if (sb.Length > 0)
-					sb.Append(" ");
-
-				sb.Append(SafeKey(key));
-			}
-
-			return sb.ToString();
-		}
-
-		private static byte[] GetBytes(char cmdPrefix, int noOfLines, string cmdSuffix)
-		{
-			var cmd = cmdPrefix.ToString() + noOfLines.ToString() + cmdSuffix;
-			return cmd.ToUtf8Bytes();
-		}
 
 		/// <summary>
 		/// Command to set multuple binary safe arguments
 		/// </summary>
-		/// <param name="cmd"></param>
-		/// <param name="safeBinaryValues"></param>
+		/// <param name="cmdWithBinaryArgs"></param>
 		/// <returns></returns>
-		protected bool SendMultiDataCommand(string cmd, params byte[][] safeBinaryValues)
+		protected bool SendCommand(params byte[][] cmdWithBinaryArgs)
 		{
 			if (!AssertConnectedSocket()) return false;
 
-			var cmdBytes = Encoding.UTF8.GetBytes(cmd);
-			this.lastCommand = cmd;
-
 			try
 			{
-				Log("S: " + cmd);
+				CmdLog(cmdWithBinaryArgs);
 
 				//Total command lines count
-				socket.Send(GetBytes('*', safeBinaryValues.Length + 1, "\r\n"));
+				Socket.Send(GetCmdBytes('*', cmdWithBinaryArgs.Length));
 
-				//Size of command, then command
-				socket.Send(GetBytes('$', cmdBytes.Length, "\r\n"));
-				socket.Send(cmdBytes);
-				socket.Send(endData);
-
-				foreach (var safeBinaryValue in safeBinaryValues)
-				{					
-					socket.Send(GetBytes('$', safeBinaryValue.Length, "\r\n"));
-					socket.Send(safeBinaryValue);
-					socket.Send(endData);
-				}
-			}
-			catch (SocketException ex)
-			{
-				return HandleSocketException(ex);
-			}
-			return true;
-		}
-
-		protected bool SendDataCommand(byte[] data, string cmd, params object[] args)
-		{
-			if (!AssertConnectedSocket()) return false;
-
-			var s = args.Length > 0 ? String.Format(cmd, args) : cmd;
-			s += "\r\n";
-			this.lastCommand = s;
-
-			byte[] r = Encoding.UTF8.GetBytes(s);
-			try
-			{
-				Log("S: " + String.Format(cmd, args));
-
-				socket.Send(r);
-
-				if (data != null)
+				foreach (var safeBinaryValue in cmdWithBinaryArgs)
 				{
-					socket.Send(data);
-					socket.Send(endData);
+					Socket.Send(GetCmdBytes('$', safeBinaryValue.Length));
+					Socket.Send(safeBinaryValue);
+					Socket.Send(endData);
 				}
-			}
-			catch (SocketException ex)
-			{
-				return HandleSocketException(ex);
-			}
-			return true;
-		}
-
-		protected bool SendCommand(string cmd, params object[] args)
-		{
-			if (!AssertConnectedSocket()) return false;
-
-			var s = args != null && args.Length > 0 ? String.Format(cmd, args) : cmd;
-			s += "\r\n";
-			this.lastCommand = s;
-
-			byte[] r = Encoding.UTF8.GetBytes(s);
-			try
-			{
-				Log("S: " + String.Format(cmd, args));
-				socket.Send(r);
 			}
 			catch (SocketException ex)
 			{
@@ -261,112 +195,12 @@ namespace ServiceStack.Redis
 
 		private int SafeReadByte()
 		{
-			return bstream.ReadByte();
+			return Bstream.ReadByte();
 		}
 
-		protected string SendExpectString(string cmd, params object[] args)
+		private void SendExpectSuccess(params byte[][] cmdWithBinaryArgs)
 		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			var c = SafeReadByte();
-			if (c == -1)
-				throw CreateResponseError("No more data");
-
-			var s = ReadLine();
-
-			Log("R: " + s);
-
-			if (c == '-')
-				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
-
-			if (c == '+')
-				return s;
-
-			throw CreateResponseError("Unknown reply on integer request: " + c + s);
-		}
-
-		private double SendDataExpectDataAsDouble(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw CreateConnectionError();
-
-			return ReadDataAsDouble();
-		}
-
-		private void SendMultiDataExpectSuccess(string cmd, params byte[][] safeBinaryLines)
-		{
-			if (!SendMultiDataCommand(cmd, safeBinaryLines))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
-				ExpectQueued();
-				return;
-			}
-			ExpectSuccess();
-		}
-
-		private int SendMultiDataExpectInt(string cmd, params byte[][] safeBinaryLines)
-		{
-			if (!SendMultiDataCommand(cmd, safeBinaryLines))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
-				ExpectQueued();
-				return default(int);
-			}
-			return ReadInt();
-		}
-
-		private byte[] SendMultiDataExpectData(string cmd, params byte[][] safeBinaryLines)
-		{
-			if (!SendMultiDataCommand(cmd, safeBinaryLines))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
-				ExpectQueued();
-				return null;
-			}
-			return ReadData();
-		}
-
-		private byte[][] SendMultiDataExpectMultiData(string cmd, params byte[][] safeBinaryLines)
-		{
-			if (!SendMultiDataCommand(cmd, safeBinaryLines))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
-				ExpectQueued();
-				return null;
-			}
-			return ReadMultiData();
-		}
-
-		private int SendDataExpectInt(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
-				ExpectQueued();
-				return default(int);
-			}
-			return ReadInt();
-		}
-
-		private void SendDataExpectSuccess(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
+			if (!SendCommand(cmdWithBinaryArgs))
 				throw CreateConnectionError();
 
 			if (this.CurrentTransaction != null)
@@ -378,24 +212,104 @@ namespace ServiceStack.Redis
 			ExpectSuccess();
 		}
 
-		protected string SendGetString(string cmd, params object[] args)
+		private int SendExpectInt(params byte[][] cmdWithBinaryArgs)
 		{
-			if (!SendCommand(cmd, args))
+			if (!SendCommand(cmdWithBinaryArgs))
 				throw CreateConnectionError();
 
 			if (this.CurrentTransaction != null)
 			{
-				this.CurrentTransaction.CompleteStringQueuedCommand(ReadLine);
+				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
+				ExpectQueued();
+				return default(int);
+			}
+			return ReadInt();
+		}
+
+		private byte[] SendExpectData(params byte[][] cmdWithBinaryArgs)
+		{
+			if (!SendCommand(cmdWithBinaryArgs))
+				throw CreateConnectionError();
+
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
 				ExpectQueued();
 				return null;
 			}
-			return ReadLine();
+			return ReadData();
+		}
+
+		private string SendExpectString(params byte[][] cmdWithBinaryArgs)
+		{
+			var bytes = SendExpectData(cmdWithBinaryArgs);
+			return bytes.FromUtf8Bytes();
+		}
+
+		private double SendExpectDouble(params byte[][] cmdWithBinaryArgs)
+		{
+			var doubleBytes = SendExpectData(cmdWithBinaryArgs);
+			var doubleString = Encoding.UTF8.GetString(doubleBytes);
+
+			double d;
+			double.TryParse(doubleString, out d);
+
+			return d;
+		}
+
+		private string SendExpectCode(params byte[][] cmdWithBinaryArgs)
+		{
+			if (!SendCommand(cmdWithBinaryArgs))
+				throw CreateConnectionError();
+
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
+				ExpectQueued();
+				return null;
+			}
+
+			return ExpectCode();
+		}
+
+		private byte[][] SendExpectMultiData(params byte[][] cmdWithBinaryArgs)
+		{
+			if (!SendCommand(cmdWithBinaryArgs))
+				throw CreateConnectionError();
+
+			if (this.CurrentTransaction != null)
+			{
+				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
+				ExpectQueued();
+				return null;
+			}
+			return ReadMultiData();
 		}
 
 		[Conditional("DEBUG")]
 		protected void Log(string fmt, params object[] args)
 		{
 			log.DebugFormat("{0}", string.Format(fmt, args).Trim());
+		}
+
+		[Conditional("DEBUG")]
+		protected void CmdLog(byte[][] args)
+		{
+			var sb = new StringBuilder();
+			foreach (var arg in args)
+			{
+				if (sb.Length > 0)
+					sb.Append(" ");
+
+				sb.Append(arg.FromUtf8Bytes());
+			}
+			this.lastCommand = sb.ToString();
+			if (this.lastCommand.Length > 100)
+			{
+				this.lastCommand = this.lastCommand.Substring(0, 100) + "...";
+			}
+
+			log.Debug("S: " + this.lastCommand);
 		}
 
 		protected void ExpectSuccess()
@@ -429,6 +343,22 @@ namespace ServiceStack.Redis
 				throw CreateResponseError(string.Format("Expected '{0}' got '{1}'", word, s));
 		}
 
+		private string ExpectCode()
+		{
+			int c = SafeReadByte();
+			if (c == -1)
+				throw CreateResponseError("No more data");
+
+			var s = ReadLine();
+
+			Log((char)c + s);
+
+			if (c == '-')
+				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+
+			return s;
+		}
+
 		protected void ExpectOk()
 		{
 			ExpectWord("OK");
@@ -437,126 +367,6 @@ namespace ServiceStack.Redis
 		protected void ExpectQueued()
 		{
 			ExpectWord("QUEUED");
-		}
-
-		protected void SendExpectSuccess(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteVoidQueuedCommand(ExpectSuccess);
-				ExpectQueued();
-				return;
-			}
-			ExpectSuccess();
-		}
-
-		protected int SendExpectInt(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteIntQueuedCommand(ReadInt);
-				ExpectQueued();
-				return default(int);
-			}
-			return ReadInt();
-		}
-
-		protected double SendExpectDouble(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteDoubleQueuedCommand(ReadDataAsDouble);
-				ExpectQueued();
-				return default(double);
-			}
-			return ReadDataAsDouble();
-		}
-
-		protected double SendDataExpectDouble(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteDoubleQueuedCommand(ReadDataAsDouble);
-				ExpectQueued();
-				return default(double);
-			}
-			return ReadDataAsDouble();
-		}
-
-		protected void SendExpectOk(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			ExpectOk();
-		}
-
-		protected byte[] SendExpectData(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
-				ExpectQueued();
-				return null;
-			}
-			return ReadData();
-		}
-
-		protected byte[] SendDataExpectData(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteBytesQueuedCommand(ReadData);
-				ExpectQueued();
-				return null;
-			}
-			return ReadData();
-		}
-
-		protected byte[][] SendExpectMultiData(string cmd, params object[] args)
-		{
-			if (!SendCommand(cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
-				ExpectQueued();
-				return null;
-			}
-			return ReadMultiData();
-		}
-
-		protected byte[][] SendDataExpectMultiData(byte[] data, string cmd, params object[] args)
-		{
-			if (!SendDataCommand(data, cmd, args))
-				throw CreateConnectionError();
-
-			if (this.CurrentTransaction != null)
-			{
-				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
-				ExpectQueued();
-				return null;
-			}
-			return ReadMultiData();
 		}
 
 		private int ReadInt()
@@ -581,20 +391,10 @@ namespace ServiceStack.Redis
 			throw CreateResponseError("Unknown reply on integer response: " + c + s);
 		}
 
-		private double ReadDataAsDouble()
-		{
-			var doubleBytes = ReadData();
-			var doubleString = Encoding.UTF8.GetString(doubleBytes);
-
-			double d;
-			double.TryParse(doubleString, out d);
-
-			return d;
-		}
-
 		private byte[] ReadData()
 		{
 			string r = ReadLine();
+			
 			Log("R: {0}", r);
 			if (r.Length == 0)
 				throw CreateResponseError("Zero length respose");
@@ -616,7 +416,7 @@ namespace ServiceStack.Redis
 					var offset = 0;
 					while (count > 0)
 					{
-						var readCount = bstream.Read(retbuf, offset, count);
+						var readCount = Bstream.Read(retbuf, offset, count);
 						if (readCount <= 0)
 							throw CreateResponseError("Unexpected end of Stream");
 
@@ -624,12 +424,18 @@ namespace ServiceStack.Redis
 						count -= readCount;
 					}
 
-					if (bstream.ReadByte() != '\r' || bstream.ReadByte() != '\n')
+					if (Bstream.ReadByte() != '\r' || Bstream.ReadByte() != '\n')
 						throw CreateResponseError("Invalid termination");
 
 					return retbuf;
 				}
 				throw CreateResponseError("Invalid length");
+			}
+
+			if (c == ':')
+			{
+				//match the return value
+				return r.Substring(1).ToUtf8Bytes();
 			}
 			throw CreateResponseError("Unexpected reply: " + r);
 		}
@@ -695,12 +501,20 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("value");
 		}
 
-		private byte[][] MergeKeysAndValues(byte[][] keys, byte[][] values)
+		private static byte[][] MergeCommandWithKeysAndValues(byte[] cmd, byte[][] keys, byte[][] values)
 		{
-			return MergeKeysAndValues(keys, values, null);
+			var firstParams = new[] { cmd };
+			return MergeCommandWithKeysAndValues(firstParams, keys, values);
 		}
 
-		private byte[][] MergeKeysAndValues(byte[][] keys, byte[][] values, string firstParam)
+		private static byte[][] MergeCommandWithKeysAndValues(byte[] cmd, byte[] firstArg, byte[][] keys, byte[][] values)
+		{
+			var firstParams = new[] { cmd, firstArg };
+			return MergeCommandWithKeysAndValues(firstParams, keys, values);
+		}
+
+		private static byte[][] MergeCommandWithKeysAndValues(byte[][] firstParams,
+			byte[][] keys, byte[][] values)
 		{
 			if (keys == null || keys.Length == 0)
 				throw new ArgumentNullException("keys");
@@ -709,13 +523,15 @@ namespace ServiceStack.Redis
 			if (keys.Length != values.Length)
 				throw new ArgumentException("The number of values must be equal to the number of keys");
 
-			var keyValueStartIndex = (firstParam != null) ? 1 : 0;
+			var keyValueStartIndex = (firstParams != null) ? firstParams.Length : 0;
 
 			var keysAndValuesLength = keys.Length * 2 + keyValueStartIndex;
 			var keysAndValues = new byte[keysAndValuesLength][];
 
-			if (keyValueStartIndex > 0)
-				keysAndValues[0] = firstParam.ToUtf8Bytes();
+			for (var i = 0; i < keyValueStartIndex; i++)
+			{
+				keysAndValues[i] = firstParams[i];
+			}
 
 			var j = 0;
 			for (var i = keyValueStartIndex; i < keysAndValuesLength; i += 2)
@@ -726,5 +542,17 @@ namespace ServiceStack.Redis
 			}
 			return keysAndValues;
 		}
+
+		private static byte[][] MergeCommandWithArgs(byte[] cmd, params string[] args)
+		{
+			var mergedBytes = new byte[1 + args.Length][];
+			mergedBytes[0] = cmd;
+			for (var i = 0; i < args.Length; i++)
+			{
+				mergedBytes[i + 1] = args[i].ToUtf8Bytes();
+			}
+			return mergedBytes;
+		}
+
 	}
 }

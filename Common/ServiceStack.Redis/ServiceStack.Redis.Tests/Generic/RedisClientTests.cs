@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Redis.Tests.Generic
@@ -56,7 +58,6 @@ namespace ServiceStack.Redis.Tests.Generic
 			}
 		}
 
-
 		public List<T> Sort<T>(IEnumerable<T> list)
 		{
 			var sortedList = list.ToList();
@@ -75,7 +76,6 @@ namespace ServiceStack.Redis.Tests.Generic
 
 			Assert.That(actualMap, Is.EquivalentTo(expectedMap));
 		}
-		
 
 		[Test]
 		public void Can_StoreAll_and_GetAll_from_Northwind()

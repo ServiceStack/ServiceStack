@@ -96,6 +96,20 @@ namespace ServiceStack.Redis
 			return false;
 		}
 
+		public bool Set<T>(string key, T value, TimeSpan expiresIn)
+		{
+			var bytesValue = value as byte[];
+			if (bytesValue != null)
+			{
+				base.SetEx(key, (int)expiresIn.TotalSeconds, bytesValue);
+				return true;
+			}
+
+			var valueString = TypeSerializer.SerializeToString(value);
+			SetString(key, valueString, expiresIn);
+			return true;
+		}
+
 		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
 			Set(key, value);
@@ -121,13 +135,6 @@ namespace ServiceStack.Redis
 				return true;
 			}
 			return false;
-		}
-
-		public bool Set<T>(string key, T value, TimeSpan expiresIn)
-		{
-			Set(key, value);
-			ExpireKeyIn(key, expiresIn);
-			return true;
 		}
 
 		public bool Replace<T>(string key, T value, TimeSpan expiresIn)

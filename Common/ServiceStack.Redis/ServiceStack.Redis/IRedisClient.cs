@@ -35,7 +35,7 @@ namespace ServiceStack.Redis
 		string Password { get; set; }
 		bool HadExceptions { get; }
 
-		string Save();
+		void Save();
 		void SaveAsync();
 		void Shutdown();
 		void FlushDb();
@@ -44,6 +44,7 @@ namespace ServiceStack.Redis
 		string this[string key] { get; set; }
 		List<string> AllKeys { get; }
 		void SetString(string key, string value);
+		void SetString(string key, string value, TimeSpan expireIn);
 		bool SetIfNotExists(string key, string value);
 		string GetString(string key);
 		string GetAndSetString(string key, string value);
@@ -53,6 +54,9 @@ namespace ServiceStack.Redis
 		int IncrementBy(string key, int count);
 		int Decrement(string key);
 		int DecrementBy(string key, int count);
+		int Append(string key, string value);
+		string Substring(string key, int fromIndex, int toIndex);
+
 		RedisKeyType GetKeyType(string key);
 		string NewRandomKey();
 		bool ExpireKeyIn(string key, TimeSpan expiresAt);
@@ -68,6 +72,9 @@ namespace ServiceStack.Redis
 		IHasNamed<IRedisHash> Hashes { get; set; }
 
 		IRedisTransaction CreateTransaction();
+
+		IDisposable AcquireLock(string key);
+		IDisposable AcquireLock(string key, TimeSpan timeOut);
 
 		#region List operations
 
@@ -129,6 +136,7 @@ namespace ServiceStack.Redis
 		List<string> GetAllFromSortedSetDesc(string setId);
 		List<string> GetRangeFromSortedSet(string setId, int fromRank, int toRank);
 		List<string> GetRangeFromSortedSetDesc(string setId, int fromRank, int toRank);
+		IDictionary<string, double> GetAllWithScoresFromSortedSet(string setId);
 		IDictionary<string, double> GetRangeWithScoresFromSortedSet(string setId, int fromRank, int toRank);
 		IDictionary<string, double> GetRangeWithScoresFromSortedSetDesc(string setId, int fromRank, int toRank);
 		List<string> GetRangeFromSortedSetByLowestScore(string setId, string fromStringScore, string toStringScore);
@@ -172,5 +180,14 @@ namespace ServiceStack.Redis
 		Dictionary<string, string> GetAllFromHash(string hashId);
 
 		#endregion
+
+
+		#region Redis pubsub
+
+		IRedisSubscription CreateSubscription();
+		void PublishMessage(string toChannel, string message);
+	
+		#endregion
+
 	}
 }

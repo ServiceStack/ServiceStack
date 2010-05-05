@@ -4,6 +4,7 @@ using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Models
 {

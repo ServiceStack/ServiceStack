@@ -48,14 +48,26 @@ namespace ServiceStack.Redis.Generic
 			this.SortedSets = new RedisClientSortedSets(this);
 
 			this.SequenceKey = client.GetTypeSequenceKey<T>();
-			this.TypeIdsSetKey = client.GetTypeIdsSetKey<T>(); 
+			this.TypeIdsSetKey = client.GetTypeIdsSetKey<T>();
+			this.TypeLockKey = "lock:" + typeof(T).Name; 
 		}
 
 		public string TypeIdsSetKey { get; set; }
+		public string TypeLockKey { get; set; }
 
 		public IRedisTypedTransaction<T> CreateTransaction()
 		{
 			return new RedisTypedTransaction<T>(this);
+		}
+
+		public IDisposable AcquireLock()
+		{
+			return client.AcquireLock(this.TypeLockKey);
+		}
+
+		public IDisposable AcquireLock(TimeSpan timeOut)
+		{
+			return client.AcquireLock(this.TypeLockKey, timeOut);
 		}
 
 		public IRedisQueableTransaction CurrentTransaction
@@ -109,13 +121,13 @@ namespace ServiceStack.Redis.Generic
 			set { Set(key, value); }
 		}
 
-		public byte[] ToBytes(T value)
+		public byte[] SerializeValue(T value)
 		{
 			var strValue = serializer.SerializeToString(value);
 			return Encoding.UTF8.GetBytes(strValue);
 		}
 
-		public T FromBytes(byte[] value)
+		public T DeserializeValue(byte[] value)
 		{
 			var strValue = value != null ? Encoding.UTF8.GetString(value) : null;
 			return serializer.DeserializeFromString(strValue);
@@ -126,25 +138,34 @@ namespace ServiceStack.Redis.Generic
 			if (key == null)
 				throw new ArgumentNullException("key");
 
-			client.Set(key, ToBytes(value));
+			client.Set(key, SerializeValue(value));
+			client.RegisterTypeId(value);
+		}
+
+		public void Set(string key, T value, TimeSpan expireIn)
+		{
+			if (key == null)
+				throw new ArgumentNullException("key");
+
+			client.Set(key, SerializeValue(value), expireIn);
 			client.RegisterTypeId(value);
 		}
 
 		public bool SetIfNotExists(string key, T value)
 		{
-			var success = client.SetNX(key, ToBytes(value)) == RedisNativeClient.Success;
+			var success = client.SetNX(key, SerializeValue(value)) == RedisNativeClient.Success;
 			if (success) client.RegisterTypeId(value);
 			return success;
 		}
 
 		public T Get(string key)
 		{
-			return FromBytes(client.Get(key));
+			return DeserializeValue(client.Get(key));
 		}
 
 		public T GetAndSet(string key, T value)
 		{
-			return FromBytes(client.GetSet(key, ToBytes(value)));
+			return DeserializeValue(client.GetSet(key, SerializeValue(value)));
 		}
 
 		public bool ContainsKey(string key)
@@ -227,9 +248,9 @@ namespace ServiceStack.Redis.Generic
 			return TimeSpan.FromSeconds(client.Ttl(key));
 		}
 
-		public string Save()
+		public void Save()
 		{
-			return client.Save();
+			client.Save();
 		}
 
 		public void SaveAsync()
@@ -269,7 +290,7 @@ namespace ServiceStack.Redis.Generic
 			{
 				if (resultBytes == null) continue;
 
-				var result = FromBytes(resultBytes);
+				var result = DeserializeValue(resultBytes);
 				results.Add(result);
 			}
 

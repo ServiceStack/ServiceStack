@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.EnableAccessRestrictions = true;
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> 
-				{ { "X-Powered-By", "ServiceStack/1.15 " + Env.UserAgent } };
+				{ { "X-Powered-By", Env.ServerUserAgent } };
 		}
 
 		public IServiceController ServiceController { get; set; }

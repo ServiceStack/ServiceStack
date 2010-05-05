@@ -3,6 +3,7 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Models
 {

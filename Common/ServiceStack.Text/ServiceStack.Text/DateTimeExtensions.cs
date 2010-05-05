@@ -20,6 +20,25 @@ namespace ServiceStack.Text
 	/// </summary>
 	public static class DateTimeExtensions
 	{
+		public const long UnixEpoch = 621355968000000000L;
+		private static readonly DateTime UnixEpochDateTime = new DateTime(UnixEpoch);
+
+		public static long ToUnixTime(this DateTime dateTime)
+		{
+			var epoch = (dateTime.ToUniversalTime().Ticks - UnixEpoch) / TimeSpan.TicksPerSecond;
+			return epoch;
+		}
+
+		public static DateTime FromUnixTime(this double unixTime)
+		{
+			return UnixEpochDateTime + TimeSpan.FromSeconds(unixTime);
+		}
+
+		public static DateTime RoundToSecond(this DateTime dateTime)
+		{
+			return new DateTime(((dateTime.Ticks) / 10000000) * 10000000);
+		}
+
 		public static string ToShortestXsdDateTimeString(this DateTime dateTime)
 		{
 			return DateTimeSerializer.ToShortestXsdDateTimeString(dateTime);

@@ -13,10 +13,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
+using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
-	public partial class RedisClient 
+	public partial class RedisClient
 		: IRedisClient
 	{
 		public IHasNamed<IRedisSet> Sets { get; set; }
@@ -58,7 +59,8 @@ namespace ServiceStack.Redis
 
 		public List<string> GetSortedRange(string setId, int startingFrom, int endingAt)
 		{
-			var multiDataList = Sort(setId, startingFrom, endingAt, true, false);
+			var sortOptions = new SortOptions { Skip = startingFrom, Take = endingAt, };
+			var multiDataList = Sort(setId, sortOptions);
 			return multiDataList.ToStringList();
 		}
 

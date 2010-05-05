@@ -68,7 +68,6 @@
     <Compile Include="Extensions\AssertExtensions.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="Extensions\IPAddressExtensions.cs" />
-    <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ExecExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DisposableExtensions.cs" />
@@ -100,6 +99,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\PathUtils.cs" />
     <Compile Include="Reflection\PropertyAccessor.cs" />
+    <Compile Include="Utils\PerfUtils.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
     <Compile Include="Support\CommandExecsHandler.cs" />
     <Compile Include="Support\CommandResultsHandler.cs" />

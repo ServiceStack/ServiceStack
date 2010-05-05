@@ -15,7 +15,7 @@ namespace ServiceStack.Common.Extensions
 
 		public static void Times(this int times, Action<int> actionFn)
 		{
-			for (var i=0; i < times; i++)
+			for (var i = 0; i < times; i++)
 			{
 				actionFn(i);
 			}
@@ -23,10 +23,30 @@ namespace ServiceStack.Common.Extensions
 
 		public static void Times(this int times, Action actionFn)
 		{
-			for (var i=0; i < times; i++)
+			for (var i = 0; i < times; i++)
 			{
 				actionFn();
 			}
+		}
+
+		public static List<IAsyncResult> TimesAsync(this int times, Action<int> actionFn)
+		{
+			var asyncResults = new List<IAsyncResult>(times);
+			for (var i = 0; i < times; i++)
+			{
+				asyncResults.Add(actionFn.BeginInvoke(i, null, null));				
+			}
+			return asyncResults;
+		}
+
+		public static List<IAsyncResult> TimesAsync(this int times, Action actionFn)
+		{
+			var asyncResults = new List<IAsyncResult>(times);
+			for (var i = 0; i < times; i++)
+			{
+				asyncResults.Add(actionFn.BeginInvoke(null, null));
+			}
+			return asyncResults;
 		}
 
 		public static List<T> Times<T>(this int times, Func<T> actionFn)

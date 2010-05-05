@@ -12,16 +12,17 @@
 
 using System;
 using System.Collections.Generic;
+using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.Redis
 {
-	public interface IRedisNativeClient 
+	public interface IRedisNativeClient
 		: IDisposable
 	{
 		//Redis utility operations
 		Dictionary<string, string> Info { get; }
 		int Db { get; set; }
-		string Save();
+		void Save();
 		void BgSave();
 		void Shutdown();
 		void Quit();
@@ -30,6 +31,7 @@ namespace ServiceStack.Redis
 
 		//Common key-value Redis operations
 		void Set(string key, byte[] value);
+		void SetEx(string key, int expireInSeconds, byte[] value);
 		int SetNX(string key, byte[] value);
 		byte[] Get(string key);
 		byte[] GetSet(string key, byte[] value);
@@ -38,15 +40,17 @@ namespace ServiceStack.Redis
 		int IncrBy(string key, int count);
 		int Decr(string key);
 		int DecrBy(string key, int count);
+		int Append(string key, byte[] value);
+		byte[] Substr(string key, int fromIndex, int toIndex);
+
 		string RandomKey();
-		int Rename(string oldKeyname, string newKeyname);
+		void Rename(string oldKeyname, string newKeyname);
 		int Expire(string key, int seconds);
 		int ExpireAt(string key, long unixTime);
 		int Ttl(string key);
 
-		//Redis Sort operation (works on lists and sets)
-		byte[][] Sort(string listOrSetId, int startingFrom, int endingAt, bool sortAlpha, bool sortDesc);
-
+		//Redis Sort operation (works on lists, sets or hashes)
+		byte[][] Sort(string listOrSetId, SortOptions sortOptions);
 
 		//Redis List operations
 		byte[][] LRange(string listId, int startingFrom, int endingAt);
@@ -112,5 +116,12 @@ namespace ServiceStack.Redis
 		byte[][] HKeys(string hashId);
 		byte[][] HVals(string hashId);
 		byte[][] HGetAll(string hashId);
+
+		//Redis Pub/Sub operations
+		void Publish(string toChannel, byte[] message);
+		byte[][] Subscribe(params string[] toChannels);
+		byte[][] UnSubscribe(params string[] toChannels);
+		byte[][] PSubscribe(params string[] toChannelsMatchingPatterns);
+		byte[][] PUnSubscribe(params string[] toChannelsMatchingPatterns);
 	}
 }

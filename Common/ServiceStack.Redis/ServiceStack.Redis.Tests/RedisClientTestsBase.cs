@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using NUnit.Framework;
 
@@ -7,6 +8,11 @@ namespace ServiceStack.Redis.Tests
 	public class RedisClientTestsBase
 	{
 		protected RedisClient Redis;
+
+		protected void Log(string fmt, params object[] args)
+		{
+			Console.WriteLine("{0}", string.Format(fmt, args).Trim());
+		}
 
 		[SetUp]
 		public virtual void OnBeforeEachTest()
@@ -20,6 +26,12 @@ namespace ServiceStack.Redis.Tests
 		{
 			var client = new RedisClient(TestConfig.SingleHost);
 			client.FlushDb();
+			return client;
+		}
+
+		public RedisClient CreateRedisClient()
+		{
+			var client = new RedisClient(TestConfig.SingleHost);
 			return client;
 		}
 

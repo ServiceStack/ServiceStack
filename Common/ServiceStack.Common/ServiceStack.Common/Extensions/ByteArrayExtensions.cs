@@ -2,16 +2,19 @@ namespace ServiceStack.Common.Extensions
 {
 	public static class ByteArrayExtensions
 	{
-		public static bool AreEqual(this byte[] a1, byte[] a2)
+		public static bool AreEqual(this byte[] b1, byte[] b2)
 		{
-			if (a1.Length != a2.Length)
-				return false;
+			if (b1 == b2) return true;
+			if (b1 == null || b2 == null) return false;
+			if (b1.Length != b2.Length) return false;
 
-			for (var i=0; i < a1.Length; i++)
-				if (a1[i] != a2[i])
-					return false;
+			for (var i = 0; i < b1.Length; i++)
+			{
+				if (b1[i] != b2[i]) return false;
+			}
 
 			return true;
 		}
+
 	}
 }

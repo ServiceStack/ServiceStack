@@ -57,14 +57,15 @@ namespace ServiceStack.Redis.Generic
 			var results = new HashSet<T>();
 			foreach (var multiData in multiDataList)
 			{
-				results.Add(FromBytes(multiData));
+				results.Add(DeserializeValue(multiData));
 			}
 			return results;
 		}
 
 		public List<T> SortSet(IRedisSet<T> fromSet, int startingFrom, int endingAt)
 		{
-			var multiDataList = client.Sort(fromSet.Id, startingFrom, endingAt, true, false);
+			var sortOptions = new SortOptions { Skip = startingFrom, Take = endingAt, };
+			var multiDataList = client.Sort(fromSet.Id, sortOptions);
 			return CreateList(multiDataList);
 		}
 
@@ -76,22 +77,22 @@ namespace ServiceStack.Redis.Generic
 
 		public void AddToSet(IRedisSet<T> toSet, T value)
 		{
-			client.SAdd(toSet.Id, ToBytes(value));
+			client.SAdd(toSet.Id, SerializeValue(value));
 		}
 
 		public void RemoveFromSet(IRedisSet<T> fromSet, T value)
 		{
-			client.SRem(fromSet.Id, ToBytes(value));
+			client.SRem(fromSet.Id, SerializeValue(value));
 		}
 
 		public T PopFromSet(IRedisSet<T> fromSet)
 		{
-			return FromBytes(client.SPop(fromSet.Id));
+			return DeserializeValue(client.SPop(fromSet.Id));
 		}
 
 		public void MoveBetweenSets(IRedisSet<T> fromSet, IRedisSet<T> toSet, T value)
 		{
-			client.SMove(fromSet.Id, toSet.Id, ToBytes(value));
+			client.SMove(fromSet.Id, toSet.Id, SerializeValue(value));
 		}
 
 		public int GetSetCount(IRedisSet<T> set)
@@ -101,7 +102,7 @@ namespace ServiceStack.Redis.Generic
 
 		public bool SetContainsValue(IRedisSet<T> set, T value)
 		{
-			return client.SIsMember(set.Id, ToBytes(value)) == 1;
+			return client.SIsMember(set.Id, SerializeValue(value)) == 1;
 		}
 
 		public HashSet<T> GetIntersectFromSets(params IRedisSet<T>[] sets)
@@ -139,7 +140,7 @@ namespace ServiceStack.Redis.Generic
 
 		public T GetRandomEntryFromSet(IRedisSet<T> fromSet)
 		{
-			return FromBytes(client.SRandMember(fromSet.Id));
+			return DeserializeValue(client.SRandMember(fromSet.Id));
 		}
 		
 	}

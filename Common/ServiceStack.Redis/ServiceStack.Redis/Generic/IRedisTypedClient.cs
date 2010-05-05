@@ -26,6 +26,9 @@ namespace ServiceStack.Redis.Generic
 		IRedisHash<TKey, T> GetHash<TKey>(string hashId);
 
 		IRedisTypedTransaction<T> CreateTransaction();
+		
+		IDisposable AcquireLock();
+		IDisposable AcquireLock(TimeSpan timeOut);
 
 		int Db { get; set; }
 		List<string> AllKeys { get; }
@@ -39,6 +42,7 @@ namespace ServiceStack.Redis.Generic
 		string NewRandomKey();
 
 		void Set(string key, T value);
+		void Set(string key, T value, TimeSpan expireIn);
 		bool SetIfNotExists(string key, T value);
 		T Get(string key);
 		T GetAndSet(string key, T value);
@@ -53,7 +57,7 @@ namespace ServiceStack.Redis.Generic
 		bool ExpireKeyIn(string key, TimeSpan expiresAt);
 		bool ExpireKeyAt(string key, DateTime dateTime);
 		TimeSpan GetTimeToLive(string key);
-		string Save();
+		void Save();
 		void SaveAsync();
 		void FlushDb();
 		void FlushAll();
@@ -105,6 +109,7 @@ namespace ServiceStack.Redis.Generic
 		List<T> GetAllFromSortedSetDesc(IRedisSortedSet<T> set);
 		List<T> GetRangeFromSortedSet(IRedisSortedSet<T> set, int fromRank, int toRank);
 		List<T> GetRangeFromSortedSetDesc(IRedisSortedSet<T> set, int fromRank, int toRank);
+		IDictionary<T, double> GetAllWithScoresFromSortedSet(IRedisSortedSet<T> set);
 		IDictionary<T, double> GetRangeWithScoresFromSortedSet(IRedisSortedSet<T> set, int fromRank, int toRank);
 		IDictionary<T, double> GetRangeWithScoresFromSortedSetDesc(IRedisSortedSet<T> set, int fromRank, int toRank);
 		List<T> GetRangeFromSortedSetByLowestScore(IRedisSortedSet<T> set, string fromStringScore, string toStringScore);
