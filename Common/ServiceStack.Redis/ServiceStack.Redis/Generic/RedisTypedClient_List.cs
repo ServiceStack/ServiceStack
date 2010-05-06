@@ -10,6 +10,7 @@
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
@@ -89,6 +90,21 @@ namespace ServiceStack.Redis.Generic
 			client.LPush(fromList.Id, SerializeValue(value));
 		}
 
+		public T RemoveStartFromList(IRedisList<T> fromList)
+		{
+			return DeserializeValue(client.LPop(fromList.Id));
+		}
+
+		public T BlockingRemoveStartFromList(IRedisList<T> fromList, TimeSpan? timeOut)
+		{
+			return DeserializeValue(client.BLPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds));
+		}
+
+		public T RemoveEndFromList(IRedisList<T> fromList)
+		{
+			return DeserializeValue(client.RPop(fromList.Id));
+		}
+
 		public void RemoveAllFromList(IRedisList<T> fromList)
 		{
 			client.LTrim(fromList.Id, LastElement, FirstElement);
@@ -125,14 +141,34 @@ namespace ServiceStack.Redis.Generic
 			client.LSet(toList.Id, listIndex, SerializeValue(value));
 		}
 
+		public void EnqueueOnList(IRedisList<T> fromList, T item)
+		{
+			client.LPush(fromList.Id, SerializeValue(item));
+		}
+
 		public T DequeueFromList(IRedisList<T> fromList)
 		{
 			return DeserializeValue(client.LPop(fromList.Id));
 		}
 
+		public T BlockingDequeueFromList(IRedisList<T> fromList, TimeSpan? timeOut)
+		{
+			return DeserializeValue(client.BRPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds));
+		}
+
+		public void PushToList(IRedisList<T> fromList, T item)
+		{
+			client.RPush(fromList.Id, SerializeValue(item));
+		}
+
 		public T PopFromList(IRedisList<T> fromList)
 		{
 			return DeserializeValue(client.RPop(fromList.Id));
+		}
+
+		public T BlockingPopFromList(IRedisList<T> fromList, TimeSpan? timeOut)
+		{
+			return DeserializeValue(client.BRPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds));
 		}
 
 		public T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList)

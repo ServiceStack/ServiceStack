@@ -38,6 +38,7 @@ namespace ServiceStack.Redis
 		void Save();
 		void SaveAsync();
 		void Shutdown();
+		void RewriteAppendOnlyFileAsync();
 		void FlushDb();
 
 		//Basic Redis Connection Info
@@ -76,7 +77,7 @@ namespace ServiceStack.Redis
 		IDisposable AcquireLock(string key);
 		IDisposable AcquireLock(string key, TimeSpan timeOut);
 
-		#region List operations
+		#region Set operations
 
 		List<string> GetKeys(string pattern);
 		List<string> GetKeyValues(List<string> keys);
@@ -100,7 +101,7 @@ namespace ServiceStack.Redis
 		#endregion
 
 
-		#region Set operations
+		#region List operations
 
 		List<string> GetAllFromList(string listId);
 		List<string> GetRangeFromList(string listId, int startingFrom, int endingAt);
@@ -108,14 +109,25 @@ namespace ServiceStack.Redis
 		void AddToList(string listId, string value);
 		void PrependToList(string listId, string value);
 		void RemoveAllFromList(string listId);
+		string RemoveStartFromList(string listId);
+		string BlockingRemoveStartFromList(string listId, TimeSpan? timeOut);
+		string RemoveEndFromList(string listId);
 		void TrimList(string listId, int keepStartingFrom, int keepEndingAt);
 		int RemoveValueFromList(string listId, string value);
 		int RemoveValueFromList(string listId, string value, int noOfMatches);
-		int GetListCount(string setId);
+		int GetListCount(string listId);
 		string GetItemFromList(string listId, int listIndex);
 		void SetItemInList(string listId, int listIndex, string value);
+
+		//Queue operations
+		void EnqueueOnList(string listId, string value);
 		string DequeueFromList(string listId);
+		string BlockingDequeueFromList(string listId, TimeSpan? timeOut);
+
+		//Stack operations
+		void PushToList(string listId, string value);
 		string PopFromList(string listId);
+		string BlockingPopFromList(string listId, TimeSpan? timeOut);
 		string PopAndPushBetweenLists(string fromListId, string toListId);
 
 		#endregion

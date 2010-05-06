@@ -10,6 +10,7 @@
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
+using System;
 using System.Collections.Generic;
 using ServiceStack.DesignPatterns.Model;
 
@@ -32,10 +33,17 @@ namespace ServiceStack.Redis.Generic
 
 		void Append(T value);
 		void Prepend(T value);
+		T RemoveStart();
+		T BlockingRemoveStart(TimeSpan? timeOut);
+		T RemoveEnd();
 
-		T Pop();
+		void Enqueue(T value);
 		T Dequeue();
+		T BlockingDequeue(TimeSpan? timeOut);
 
+		void Push(T value);
+		T Pop();
+		T BlockingPop(TimeSpan? timeOut);
 		T PopAndPush(IRedisList<T> toList);
 	}
 }

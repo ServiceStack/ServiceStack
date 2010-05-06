@@ -68,7 +68,7 @@ namespace ServiceStack.Redis.Messaging
 		public void Publish(string queueName, byte[] messageBytes)
 		{
 			this.ReadWriteClient.LPush(queueName, messageBytes);
-			
+
 			if (onPublishedCallback != null)
 			{
 				onPublishedCallback();
@@ -84,7 +84,7 @@ namespace ServiceStack.Redis.Messaging
 
 		public byte[] Get(string queueName, TimeSpan? timeOut)
 		{
-			throw new NotImplementedException();
+			return this.ReadOnlyClient.BRPop(queueName, (int)timeOut.GetValueOrDefault().TotalSeconds);
 		}
 
 		public byte[] GetAsync(string queueName)

@@ -183,14 +183,49 @@ namespace ServiceStack.Redis.Generic
 			client.PrependToList(this, value);
 		}
 
+		public T RemoveStart()
+		{
+			return client.RemoveStartFromList(this);
+		}
+
+		public T BlockingRemoveStart(TimeSpan? timeOut)
+		{
+			return client.BlockingRemoveStartFromList(this, timeOut);
+		}
+
+		public T RemoveEnd()
+		{
+			return client.RemoveEndFromList(this);
+		}
+
+		public void Enqueue(T value)
+		{
+			client.EnqueueOnList(this, value);
+		}
+
 		public T Dequeue()
 		{
 			return client.DequeueFromList(this);
 		}
 
+		public T BlockingDequeue(TimeSpan? timeOut)
+		{
+			return client.BlockingDequeueFromList(this, timeOut);
+		}
+
+		public void Push(T value)
+		{
+			client.PushToList(this, value);
+		}
+
 		public T Pop()
 		{
 			return client.PopFromList(this);
+		}
+
+		public T BlockingPop(TimeSpan? timeOut)
+		{
+			return client.BlockingPopFromList(this, timeOut);
 		}
 
 		public T PopAndPush(IRedisList<T> toList)

@@ -379,6 +379,11 @@ namespace ServiceStack.Redis
 			SendExpectSuccess(Commands.Shutdown);
 		}
 
+		public void BgRewriteAof()
+		{
+			SendExpectSuccess(Commands.BgRewriteAof);
+		}
+
 		public void Quit()
 		{
 			SendCommand(Commands.Quit);
@@ -686,6 +691,22 @@ namespace ServiceStack.Redis
 				throw new ArgumentNullException("listId");
 
 			return SendExpectData(Commands.RPop, listId.ToUtf8Bytes());
+		}
+
+		public byte[] BLPop(string listId, int timeOutSecs)
+		{
+			if (listId == null)
+				throw new ArgumentNullException("listId");
+
+			return SendExpectData(Commands.BLPop, listId.ToUtf8Bytes(), timeOutSecs.ToUtf8Bytes());
+		}
+
+		public byte[] BRPop(string listId, int timeOutSecs)
+		{
+			if (listId == null)
+				throw new ArgumentNullException("listId");
+
+			return SendExpectData(Commands.BRPop, listId.ToUtf8Bytes(), timeOutSecs.ToUtf8Bytes());
 		}
 
 		public byte[] RPopLPush(string fromListId, string toListId)

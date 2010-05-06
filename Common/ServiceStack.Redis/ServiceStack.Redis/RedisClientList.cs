@@ -178,9 +178,34 @@ namespace ServiceStack.Redis
 			Add(value);
 		}
 
+		public string RemoveStart()
+		{
+			return client.RemoveStartFromList(listId);
+		}
+
+		public string BlockingRemoveStart(TimeSpan? timeOut)
+		{
+			return client.BlockingRemoveStartFromList(listId, timeOut);
+		}
+
+		public string RemoveEnd()
+		{
+			return client.RemoveEndFromList(listId);
+		}
+
+		public void Enqueue(string value)
+		{
+			client.EnqueueOnList(listId, value);
+		}
+
 		public void Prepend(string value)
 		{
 			client.PrependToList(listId, value);
+		}
+
+		public void Push(string value)
+		{
+			client.PushToList(listId, value);
 		}
 
 		public string Pop()
@@ -188,9 +213,19 @@ namespace ServiceStack.Redis
 			return client.PopFromList(listId);
 		}
 
+		public string BlockingPop(TimeSpan? timeOut)
+		{
+			return client.BlockingPopFromList(listId, timeOut);
+		}
+
 		public string Dequeue()
 		{
 			return client.DequeueFromList(listId);
+		}
+
+		public string BlockingDequeue(TimeSpan? timeOut)
+		{
+			return client.BlockingDequeueFromList(listId, timeOut);
 		}
 
 		public string PopAndPush(IRedisList toList)

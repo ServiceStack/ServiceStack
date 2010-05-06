@@ -73,6 +73,11 @@ namespace ServiceStack.Redis
 			return "ids:" + typeof(T).Name;
 		}
 
+		public void RewriteAppendOnlyFileAsync()
+		{
+			base.BgRewriteAof();
+		}
+
 		public List<string> AllKeys
 		{
 			get

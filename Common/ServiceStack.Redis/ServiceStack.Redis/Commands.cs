@@ -21,6 +21,21 @@ namespace ServiceStack.Redis
 		public readonly static byte[] Move = "MOVE".ToUtf8Bytes();
 		public readonly static byte[] FlushDb = "FLUSHDB".ToUtf8Bytes();
 		public readonly static byte[] FlushAll = "FLUSHALL".ToUtf8Bytes();
+		public readonly static byte[] Ping = "PING".ToUtf8Bytes();				//missing
+		public readonly static byte[] Echo = "ECHO".ToUtf8Bytes();				//missing
+
+		public readonly static byte[] Save = "SAVE".ToUtf8Bytes();
+		public readonly static byte[] BgSave = "BGSAVE".ToUtf8Bytes();
+		public readonly static byte[] LastSave = "LASTSAVE".ToUtf8Bytes();
+		public readonly static byte[] Shutdown = "SHUTDOWN".ToUtf8Bytes();
+		public readonly static byte[] BgRewriteAof = "BGREWRITEAOF".ToUtf8Bytes();
+
+		public readonly static byte[] Info = "INFO".ToUtf8Bytes();
+		public readonly static byte[] Monitor = "MONITOR".ToUtf8Bytes();		//missing
+		public readonly static byte[] SlaveOf = "SLAVEOF".ToUtf8Bytes();		//missing
+		public readonly static byte[] Debug = "DEBUG".ToUtf8Bytes();			//missing
+		public readonly static byte[] Config = "CONFIG".ToUtf8Bytes();			//missing
+
 
 		public readonly static byte[] Set = "SET".ToUtf8Bytes();
 		public readonly static byte[] Get = "GET".ToUtf8Bytes();
@@ -86,6 +101,7 @@ namespace ServiceStack.Redis
 		public readonly static byte[] HSetNx = "HSETNX".ToUtf8Bytes();
 		public readonly static byte[] HGet = "HGET".ToUtf8Bytes();
 		public readonly static byte[] HMSet = "HMSET".ToUtf8Bytes();
+		public readonly static byte[] HMGet = "HMGET".ToUtf8Bytes();		//missing
 		public readonly static byte[] HIncrBy = "HINCRBY".ToUtf8Bytes();
 		public readonly static byte[] HExists = "HEXISTS".ToUtf8Bytes();
 		public readonly static byte[] HDel = "HDEL".ToUtf8Bytes();
@@ -105,16 +121,6 @@ namespace ServiceStack.Redis
 		public readonly static byte[] PSubscribe = "PSUBSCRIBE".ToUtf8Bytes();
 		public readonly static byte[] PUnSubscribe = "PUNSUBSCRIBE".ToUtf8Bytes();
 		public readonly static byte[] Publish = "PUBLISH".ToUtf8Bytes();
-
-		public readonly static byte[] Save = "SAVE".ToUtf8Bytes();
-		public readonly static byte[] BgSave = "BGSAVE".ToUtf8Bytes();
-		public readonly static byte[] LastSave = "LASTSAVE".ToUtf8Bytes();
-		public readonly static byte[] Shutdown = "SHUTDOWN".ToUtf8Bytes();
-		public readonly static byte[] BgRewriteAof = "BGREWRITEAOF".ToUtf8Bytes();
-
-		public readonly static byte[] Info = "INFO".ToUtf8Bytes();
-		public readonly static byte[] Monitor = "MONITOR".ToUtf8Bytes();
-		public readonly static byte[] SlaveOf = "SLAVEOF".ToUtf8Bytes();
 
 
 		public readonly static byte[] WithScores = "WITHSCORES".ToUtf8Bytes();

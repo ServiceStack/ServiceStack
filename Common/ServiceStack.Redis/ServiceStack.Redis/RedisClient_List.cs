@@ -10,6 +10,7 @@
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
@@ -84,6 +85,21 @@ namespace ServiceStack.Redis
 			LTrim(listId, LastElement, FirstElement);
 		}
 
+		public string RemoveStartFromList(string listId)
+		{
+			return base.LPop(listId).FromUtf8Bytes();
+		}
+
+		public string BlockingRemoveStartFromList(string listId, TimeSpan? timeOut)
+		{
+			return base.BLPop(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
+		}
+
+		public string RemoveEndFromList(string listId)
+		{
+			return base.RPop(listId).FromUtf8Bytes();
+		}
+
 		public void TrimList(string listId, int keepStartingFrom, int keepEndingAt)
 		{
 			LTrim(listId, keepStartingFrom, keepEndingAt);
@@ -114,14 +130,34 @@ namespace ServiceStack.Redis
 			LSet(listId, listIndex, value.ToUtf8Bytes());
 		}
 
+		public void EnqueueOnList(string listId, string value)
+		{
+			LPush(listId, value.ToUtf8Bytes());
+		}
+
 		public string DequeueFromList(string listId)
 		{
 			return LPop(listId).FromUtf8Bytes();
 		}
 
+		public string BlockingDequeueFromList(string listId, TimeSpan? timeOut)
+		{
+			return BRPop(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
+		}
+
+		public void PushToList(string listId, string value)
+		{
+			RPush(listId, value.ToUtf8Bytes());
+		}
+
 		public string PopFromList(string listId)
 		{
 			return RPop(listId).FromUtf8Bytes();
+		}
+
+		public string BlockingPopFromList(string listId, TimeSpan? timeOut)
+		{
+			return BRPop(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
 		}
 
 		public string PopAndPushBetweenLists(string fromListId, string toListId)

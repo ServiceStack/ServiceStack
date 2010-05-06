@@ -85,6 +85,9 @@ namespace ServiceStack.Redis.Generic
 		List<T> SortList(IRedisList<T> fromList, int startingFrom, int endingAt);
 		void AddToList(IRedisList<T> fromList, T value);
 		void PrependToList(IRedisList<T> fromList, T value);
+		T RemoveStartFromList(IRedisList<T> fromList);
+		T BlockingRemoveStartFromList(IRedisList<T> fromList, TimeSpan? timeOut);
+		T RemoveEndFromList(IRedisList<T> fromList);
 		void RemoveAllFromList(IRedisList<T> fromList);
 		void TrimList(IRedisList<T> fromList, int keepStartingFrom, int keepEndingAt);
 		int RemoveValueFromList(IRedisList<T> fromList, T value);
@@ -92,8 +95,16 @@ namespace ServiceStack.Redis.Generic
 		int GetListCount(IRedisList<T> fromList);
 		T GetItemFromList(IRedisList<T> fromList, int listIndex);
 		void SetItemInList(IRedisList<T> toList, int listIndex, T value);
+
+		//Queue operations
+		void EnqueueOnList(IRedisList<T> fromList, T item);
 		T DequeueFromList(IRedisList<T> fromList);
+		T BlockingDequeueFromList(IRedisList<T> fromList, TimeSpan? timeOut);
+		
+		//Stack operations
+		void PushToList(IRedisList<T> fromList, T item);
 		T PopFromList(IRedisList<T> fromList);
+		T BlockingPopFromList(IRedisList<T> fromList, TimeSpan? timeOut);
 		T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList);
 
 		void AddToSortedSet(IRedisSortedSet<T> toSet, T value);
