@@ -207,6 +207,12 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_BgRewriteAof()
+		{
+			Redis.BgRewriteAof();
+		}
+
+		[Test]
 		[Ignore("Works too well and shutdown the server")]
 		public void Can_Shutdown()
 		{

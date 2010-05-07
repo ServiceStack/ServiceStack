@@ -97,7 +97,8 @@ namespace ServiceStack.Redis.Generic
 
 		public T BlockingRemoveStartFromList(IRedisList<T> fromList, TimeSpan? timeOut)
 		{
-			return DeserializeValue(client.BLPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds));
+			var unblockingKeyAndValue = client.BLPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds);
+			return DeserializeValue(unblockingKeyAndValue[1]);
 		}
 
 		public T RemoveEndFromList(IRedisList<T> fromList)
@@ -153,7 +154,8 @@ namespace ServiceStack.Redis.Generic
 
 		public T BlockingDequeueFromList(IRedisList<T> fromList, TimeSpan? timeOut)
 		{
-			return DeserializeValue(client.BRPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds));
+			var unblockingKeyAndValue = client.BLPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds);
+			return DeserializeValue(unblockingKeyAndValue[1]);
 		}
 
 		public void PushToList(IRedisList<T> fromList, T item)
@@ -168,7 +170,8 @@ namespace ServiceStack.Redis.Generic
 
 		public T BlockingPopFromList(IRedisList<T> fromList, TimeSpan? timeOut)
 		{
-			return DeserializeValue(client.BRPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds));
+			var unblockingKeyAndValue = client.BRPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds);
+			return DeserializeValue(unblockingKeyAndValue[1]);
 		}
 
 		public T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList)

@@ -14,7 +14,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice.New
 		public BlogPost()
 		{
 			this.Labels = new List<string>();
-			this.Tags = new List<string>();
+			this.Tags = new HashSet<string>();
 			this.Comments = new List<Dictionary<string, string>>();
 		}
 
@@ -31,11 +31,13 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice.New
 		//Renamed from 'Categories' to 'Labels'
 		public List<string> Labels { get; set; }
 
-		public List<string> Tags { get; set; }
+		//Changed from List to a HashSet
+		public HashSet<string> Tags { get; set; }
 
 		//Changed from List of strongly-typed 'BlogPostComment' to loosely-typed string map
 		public List<Dictionary<string, string>> Comments { get; set; }
 
+		//Added pointless calculated field
 		public int? NoOfComments { get; set; }
 	}
 
@@ -196,7 +198,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 					Content = old.Content,
 					Labels = old.Categories, //populate with data from renamed field
 					PostType = New.BlogPostType.Article, //select non-default enum value
-					Tags = old.Tags,
+					Tags = new HashSet<string>(old.Tags),
 					Comments = old.Comments.ConvertAll(x => new Dictionary<string, string> 
 						{ { "Content", x.Content }, { "CreatedDate", x.CreatedDate.ToString() }, }),
 					NoOfComments = old.Comments.Count, //populate using logic from old data

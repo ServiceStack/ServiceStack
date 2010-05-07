@@ -92,7 +92,7 @@ namespace ServiceStack.Redis
 
 		public string BlockingRemoveStartFromList(string listId, TimeSpan? timeOut)
 		{
-			return base.BLPop(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
+			return base.BLPopValue(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
 		}
 
 		public string RemoveEndFromList(string listId)
@@ -132,7 +132,7 @@ namespace ServiceStack.Redis
 
 		public void EnqueueOnList(string listId, string value)
 		{
-			LPush(listId, value.ToUtf8Bytes());
+			RPush(listId, value.ToUtf8Bytes());
 		}
 
 		public string DequeueFromList(string listId)
@@ -142,7 +142,7 @@ namespace ServiceStack.Redis
 
 		public string BlockingDequeueFromList(string listId, TimeSpan? timeOut)
 		{
-			return BRPop(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
+			return BLPopValue(listId, (int) timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
 		}
 
 		public void PushToList(string listId, string value)
@@ -157,7 +157,7 @@ namespace ServiceStack.Redis
 
 		public string BlockingPopFromList(string listId, TimeSpan? timeOut)
 		{
-			return BRPop(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
+			return BRPopValue(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
 		}
 
 		public string PopAndPushBetweenLists(string fromListId, string toListId)

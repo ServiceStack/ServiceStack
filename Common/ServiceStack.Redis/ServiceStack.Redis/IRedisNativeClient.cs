@@ -64,8 +64,8 @@ namespace ServiceStack.Redis
 		void LSet(string listId, int listIndex, byte[] value);
 		byte[] LPop(string listId);
 		byte[] RPop(string listId);
-		byte[] BLPop(string listId, int timeOutSecs);
-		byte[] BRPop(string listId, int timeOutSecs);
+		byte[][] BLPop(string listId, int timeOutSecs);
+		byte[][] BRPop(string listId, int timeOutSecs);
 		byte[] RPopLPush(string fromListId, string toListId);
 
 

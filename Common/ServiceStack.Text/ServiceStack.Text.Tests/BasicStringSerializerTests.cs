@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Northwind.Common.ComplexModel;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Tests.Models;
 using System.Collections.Generic;
 
@@ -23,6 +25,8 @@ namespace ServiceStack.Text.Tests
 			TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
 			TypeSerializer.ListEndChar, TypeSerializer.ListEndChar);
 
+		readonly int[] intValues = new[] { 1, 2, 3, 4, 5 };
+		readonly double[] doubleValues = new[] { 1.0d, 2.0d, 3.0d, 4.0d, 5.0d };
 		readonly string[] stringValues = new[] { "One", "Two", "Three", "Four", "Five" };
 		readonly string[] stringValuesWithIllegalChar = new[] { "One", ",", "Three", "Four", "Five" };
 
@@ -330,6 +334,42 @@ namespace ServiceStack.Text.Tests
 			Assert.That(actualValue, Is.EqualTo(byteArrayValue));
 		}
 
+		[Test]
+		public void Can_convert_string_to_List()
+		{
+			var fromHashSet = stringValues;
+			var toHashSet = Serialize(fromHashSet);
+
+			Assert.That(toHashSet.EquivalentTo(fromHashSet), Is.True);
+		}
+
+		[Test]
+		public void Can_convert_string_to_string_HashSet()
+		{
+			var fromHashSet = new HashSet<string>(stringValues);
+			var toHashSet = Serialize(fromHashSet);
+
+			Assert.That(toHashSet.EquivalentTo(fromHashSet), Is.True);
+		}
+
+		[Test]
+		public void Can_convert_string_to_int_HashSet()
+		{
+			var fromHashSet = new HashSet<int>(intValues);
+			var toHashSet = Serialize(fromHashSet);
+
+			Assert.That(toHashSet.EquivalentTo(fromHashSet), Is.True);
+		}
+
+		[Test]
+		public void Can_convert_string_to_double_HashSet()
+		{
+			var fromHashSet = new HashSet<double>(doubleValues);
+			var toHashSet = Serialize(fromHashSet);
+
+			Assert.That(toHashSet.EquivalentTo(fromHashSet), Is.True);
+		}
+
 		public T Serialize<T>(T model)
 		{
 			var strModel = TypeSerializer.SerializeToString(model);
@@ -399,7 +439,8 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_convert_ModelWithMapAndList_with_ListChar()
 		{
-			var model = new ModelWithMapAndList<ModelWithIdAndName> {
+			var model = new ModelWithMapAndList<ModelWithIdAndName>
+			{
 				Id = 1,
 				Name = "in [ valid",
 				List = new List<ModelWithIdAndName> {
@@ -423,7 +464,8 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_convert_Field_Map_or_List_with_invalid_chars()
 		{
-			var instance = new ModelWithMapAndList<string> {
+			var instance = new ModelWithMapAndList<string>
+			{
 				Id = 1,
 				Name = fieldWithInvalidChars,
 				List = new List<string> { fieldWithInvalidChars, fieldWithInvalidChars },
@@ -440,7 +482,8 @@ namespace ServiceStack.Text.Tests
 			{
 				var singleInvalidChar = string.Format("a {0} b", invalidChar);
 
-				var instance = new ModelWithMapAndList<string> {
+				var instance = new ModelWithMapAndList<string>
+				{
 					Id = 1,
 					Name = singleInvalidChar,
 					List = new List<string> { singleInvalidChar, singleInvalidChar },

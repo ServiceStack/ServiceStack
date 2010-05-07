@@ -47,23 +47,41 @@ namespace ServiceStack.Text.Jsv
 
 		public static ICollection<string> ParseStringCollection(string value, Type createType)
 		{
-			var collection = (ICollection<string>)ReflectionExtensions.CreateInstance(createType ?? typeof(List<string>));
-			collection.CopyTo(DeserializeArrayWithElements<string>.ParseGenericArray(value, ParseUtils.ParseString), 0);
-			return collection;
+			var items = DeserializeArrayWithElements<string>.ParseGenericArray(value, ParseUtils.ParseString);
+			return CreateAndPopulate(createType, items);
 		}
 
 		public static ICollection<int> ParseIntCollection(string value, Type createType)
 		{
-			var collection = (ICollection<int>)ReflectionExtensions.CreateInstance(createType ?? typeof(List<int>));
-			collection.CopyTo(DeserializeArrayWithElements<int>.ParseGenericArray(value, x => int.Parse(x)), 0);
-			return collection;
+			var items = DeserializeArrayWithElements<int>.ParseGenericArray(value, x => int.Parse(x));
+			return CreateAndPopulate(createType, items);
 		}
 
 		public static ICollection<T> ParseCollection<T>(string value, Type createType, Func<string, object> parseFn)
 		{
 			if (value == null) return null;
-			var collection = (ICollection<T>)ReflectionExtensions.CreateInstance(createType ?? typeof(List<T>));
-			collection.CopyTo(DeserializeArrayWithElements<T>.ParseGenericArray(value, parseFn), 0);
+
+			var items = DeserializeArrayWithElements<T>.ParseGenericArray(value, parseFn);
+			return CreateAndPopulate(createType, items);
+
+			
+		}
+
+		private static ICollection<T> CreateAndPopulate<T>(Type ofCollectionType, T[] withItems)
+		{
+			if (ofCollectionType == null) return new List<T>(withItems);
+
+			var genericTypeDefinition = ofCollectionType.GetGenericTypeDefinition();
+			if (genericTypeDefinition == typeof(HashSet<T>))
+				return new HashSet<T>(withItems);
+			if (genericTypeDefinition == typeof(LinkedList<T>))
+				return new LinkedList<T>(withItems);
+
+			var collection = (ICollection<T>)ReflectionExtensions.CreateInstance(ofCollectionType);
+			foreach (var item in withItems)
+			{
+				collection.Add(item);
+			}
 			return collection;
 		}
 

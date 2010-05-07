@@ -693,20 +693,36 @@ namespace ServiceStack.Redis
 			return SendExpectData(Commands.RPop, listId.ToUtf8Bytes());
 		}
 
-		public byte[] BLPop(string listId, int timeOutSecs)
+		public byte[][] BLPop(string listId, int timeOutSecs)
 		{
 			if (listId == null)
 				throw new ArgumentNullException("listId");
 
-			return SendExpectData(Commands.BLPop, listId.ToUtf8Bytes(), timeOutSecs.ToUtf8Bytes());
+			return SendExpectMultiData(Commands.BLPop, listId.ToUtf8Bytes(), timeOutSecs.ToUtf8Bytes());
 		}
 
-		public byte[] BRPop(string listId, int timeOutSecs)
+		public byte[] BLPopValue(string listId, int timeOutSecs)
+		{
+			var blockingResponse = BLPop(listId, timeOutSecs);
+			return blockingResponse.Length == 0
+				? null
+				: blockingResponse[1];
+		}
+
+		public byte[][] BRPop(string listId, int timeOutSecs)
 		{
 			if (listId == null)
 				throw new ArgumentNullException("listId");
 
-			return SendExpectData(Commands.BRPop, listId.ToUtf8Bytes(), timeOutSecs.ToUtf8Bytes());
+			return SendExpectMultiData(Commands.BRPop, listId.ToUtf8Bytes(), timeOutSecs.ToUtf8Bytes());
+		}
+
+		public byte[] BRPopValue(string listId, int timeOutSecs)
+		{
+			var blockingResponse = BRPop(listId, timeOutSecs);
+			return blockingResponse.Length == 0
+				? null
+				: blockingResponse[1];
 		}
 
 		public byte[] RPopLPush(string fromListId, string toListId)
