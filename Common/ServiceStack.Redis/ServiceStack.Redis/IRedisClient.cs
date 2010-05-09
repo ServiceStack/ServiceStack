@@ -185,6 +185,7 @@ namespace ServiceStack.Redis
 		void SetRangeInHash(string hashId, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
 		int IncrementItemInHash(string hashId, string key, int incrementBy);
 		string GetItemFromHash(string hashId, string key);
+		List<string> GetItemsFromHash(string hashId, params string[] keys);
 		bool RemoveFromHash(string hashId, string key);
 		int GetHashCount(string hashId);
 		List<string> GetHashKeys(string hashId);

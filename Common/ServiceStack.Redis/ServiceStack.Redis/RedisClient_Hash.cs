@@ -124,5 +124,12 @@ namespace ServiceStack.Redis
 
 			return map;
 		}
+
+		public List<string> GetItemsFromHash(string hashId, params string[] keys)
+		{
+			var keyBytes = ConvertToBytes(keys);
+			var multiDataList = base.HMGet(hashId, keyBytes);
+			return multiDataList.ToStringList();
+		}
 	}
 }

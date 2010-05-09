@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
@@ -214,6 +215,19 @@ namespace ServiceStack.Redis.Tests
 			var members = Redis.GetAllFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
+
+
+		[Test]
+		public void Can_GetItemsFromHash()
+		{
+			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+
+			var expectedValues = new List<string> { stringMap["one"], stringMap["two"], null };
+			var hashValues = Redis.GetItemsFromHash(HashId, "one", "two", "not-exists");
+
+			Assert.That(hashValues.EquivalentTo(expectedValues), Is.True);
+		}
+
 	}
 
 }

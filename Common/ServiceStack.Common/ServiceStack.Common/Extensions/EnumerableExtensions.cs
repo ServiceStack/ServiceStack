@@ -101,6 +101,14 @@ namespace ServiceStack.Common.Extensions
 			foreach (var item in thisList)
 			{
 				if (!otherEnum.MoveNext()) return false;
+				
+				var thisIsDefault = Equals(item, default(T));
+				var otherIsDefault = Equals(item, default(T));
+				if (thisIsDefault || otherIsDefault)
+				{
+					return thisIsDefault && otherIsDefault;
+				}
+				
 				if (!item.Equals(otherEnum.Current)) return false;
 			}
 			var hasNoMoreLeftAsWell = !otherEnum.MoveNext();

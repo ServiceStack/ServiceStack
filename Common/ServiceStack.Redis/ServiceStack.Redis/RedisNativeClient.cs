@@ -972,6 +972,18 @@ namespace ServiceStack.Redis
 			return SendExpectData(Commands.HGet, hashId.ToUtf8Bytes(), key);
 		}
 
+		public byte[][] HMGet(string hashId, params byte[][] keys)
+		{
+			if (hashId == null)
+				throw new ArgumentNullException("hashId");
+			if (keys.Length == 0)
+				throw new ArgumentNullException("keys");
+
+			var cmdArgs = MergeCommandWithArgs(Commands.HMGet, hashId.ToUtf8Bytes(), keys);
+
+			return SendExpectMultiData(cmdArgs);
+		}
+
 		public int HDel(string hashId, byte[] key)
 		{
 			AssertHashIdAndKey(hashId, key);
@@ -1074,18 +1086,17 @@ namespace ServiceStack.Redis
 
 		protected virtual void Dispose(bool disposing)
 		{
-			if (disposing)
-			{
-				//dispose managed resources
-			}
-
 			if (ClientManager != null)
 			{
 				ClientManager.DisposeClient(this);
 				return;
 			}
 
-			DisposeConnection();
+			if (disposing)
+			{
+				//dispose un managed resources
+				DisposeConnection();
+			}
 		}
 
 		internal void DisposeConnection()
