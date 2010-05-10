@@ -101,7 +101,7 @@ namespace ServiceStack.Redis
 		public readonly static byte[] HSetNx = "HSETNX".ToUtf8Bytes();
 		public readonly static byte[] HGet = "HGET".ToUtf8Bytes();
 		public readonly static byte[] HMSet = "HMSET".ToUtf8Bytes();
-		public readonly static byte[] HMGet = "HMGET".ToUtf8Bytes();		//missing
+		public readonly static byte[] HMGet = "HMGET".ToUtf8Bytes();
 		public readonly static byte[] HIncrBy = "HINCRBY".ToUtf8Bytes();
 		public readonly static byte[] HExists = "HEXISTS".ToUtf8Bytes();
 		public readonly static byte[] HDel = "HDEL".ToUtf8Bytes();

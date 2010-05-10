@@ -198,6 +198,14 @@ namespace ServiceStack.Redis
 
 			if (value.Length > OneGb)
 				throw new ArgumentException("value exceeds 1G", "value");
+			
+			var doesNotSupportSetEx = this.ServerVersion.CompareTo("1.3.9") <= 0;
+			if (doesNotSupportSetEx)
+			{
+				SendExpectSuccess(Commands.Set, key.ToUtf8Bytes(), value);
+				SendExpectSuccess(Commands.Expire, key.ToUtf8Bytes(), expireInSeconds.ToUtf8Bytes());
+				return;
+			}
 
 			SendExpectSuccess(Commands.SetEx, key.ToUtf8Bytes(), expireInSeconds.ToUtf8Bytes(), value);
 		}
