@@ -29,6 +29,10 @@ namespace ServiceStack.Redis
 		void Quit();
 		void FlushDb();
 		void FlushAll();
+		bool Ping();
+		string Echo(string text);
+		void SlaveOf(string hostname, int port);
+		void SlaveOfNoOne();
 
 		//Common key-value Redis operations
 		void Set(string key, byte[] value);

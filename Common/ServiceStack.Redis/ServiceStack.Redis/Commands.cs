@@ -21,8 +21,8 @@ namespace ServiceStack.Redis
 		public readonly static byte[] Move = "MOVE".ToUtf8Bytes();
 		public readonly static byte[] FlushDb = "FLUSHDB".ToUtf8Bytes();
 		public readonly static byte[] FlushAll = "FLUSHALL".ToUtf8Bytes();
-		public readonly static byte[] Ping = "PING".ToUtf8Bytes();				//missing
-		public readonly static byte[] Echo = "ECHO".ToUtf8Bytes();				//missing
+		public readonly static byte[] Ping = "PING".ToUtf8Bytes();				
+		public readonly static byte[] Echo = "ECHO".ToUtf8Bytes();				
 
 		public readonly static byte[] Save = "SAVE".ToUtf8Bytes();
 		public readonly static byte[] BgSave = "BGSAVE".ToUtf8Bytes();
@@ -31,8 +31,8 @@ namespace ServiceStack.Redis
 		public readonly static byte[] BgRewriteAof = "BGREWRITEAOF".ToUtf8Bytes();
 
 		public readonly static byte[] Info = "INFO".ToUtf8Bytes();
+		public readonly static byte[] SlaveOf = "SLAVEOF".ToUtf8Bytes();
 		public readonly static byte[] Monitor = "MONITOR".ToUtf8Bytes();		//missing
-		public readonly static byte[] SlaveOf = "SLAVEOF".ToUtf8Bytes();		//missing
 		public readonly static byte[] Debug = "DEBUG".ToUtf8Bytes();			//missing
 		public readonly static byte[] Config = "CONFIG".ToUtf8Bytes();			//missing
 
@@ -130,5 +130,9 @@ namespace ServiceStack.Redis
 		public readonly static byte[] Desc = "DESC".ToUtf8Bytes();
 		public readonly static byte[] Alpha = "ALPHA".ToUtf8Bytes();
 		public readonly static byte[] Store = "STORE".ToUtf8Bytes();
+
+		//SLAVEOF NO ONE
+		public readonly static byte[] No = "no".ToUtf8Bytes();
+		public readonly static byte[] One = "one".ToUtf8Bytes();
 	}
 }

@@ -189,6 +189,24 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_Ping()
+		{
+			Assert.That(Redis.Ping(), Is.True);
+		}
+
+		[Test]
+		public void Can_Echo()
+		{
+			Assert.That(Redis.Echo("Hello"), Is.EqualTo("Hello"));
+		}
+
+		[Test]
+		public void Can_SlaveOfNoOne()
+		{
+			Redis.SlaveOfNoOne();			
+		}
+
+		[Test]
 		public void Can_Save()
 		{
 			Redis.Save();
@@ -292,7 +310,7 @@ namespace ServiceStack.Redis.Tests
 				{
 					using (client.AcquireLock("testlock", waitFor))
 					{
-						Redis.Increment("key"); //1
+						Redis.Increment("key"); //2
 					}
 				}
 			}

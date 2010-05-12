@@ -216,7 +216,6 @@ namespace ServiceStack.Redis.Tests
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
 
-
 		[Test]
 		public void Can_GetItemsFromHash()
 		{

@@ -150,6 +150,26 @@ namespace ServiceStack.Redis
 			}
 		}
 
+		public bool Ping()
+		{
+			return SendExpectCode(Commands.Ping) == "PONG";
+		}
+
+		public string Echo(string text)
+		{
+			return SendExpectData(Commands.Echo, text.ToUtf8Bytes()).FromUtf8Bytes();
+		}
+
+		public void SlaveOf(string hostname, int port)
+		{
+			SendExpectSuccess(Commands.SlaveOf, hostname.ToUtf8Bytes(), port.ToUtf8Bytes());
+		}
+
+		public void SlaveOfNoOne()
+		{
+			SendExpectSuccess(Commands.SlaveOf, Commands.No, Commands.One);
+		}
+
 		public string Type(string key)
 		{
 			if (key == null)
