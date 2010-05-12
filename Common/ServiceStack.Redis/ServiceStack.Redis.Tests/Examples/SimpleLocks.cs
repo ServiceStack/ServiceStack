@@ -46,7 +46,7 @@ namespace ServiceStack.Redis.Tests.Examples
 					}
 				};
 
-				//Asynchronously invoke the above delegate
+				//Asynchronously invoke the above delegate in a background thread
 				asyncResults.Add(actionFn.BeginInvoke(null, null));
 			}
 
