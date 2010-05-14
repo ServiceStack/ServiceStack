@@ -19,6 +19,7 @@ namespace ServiceStack.Text.Jsv
 	public static class DateTimeSerializer
 	{
 		public const string ShortDateTimeFormat = "yyyy-MM-dd";
+		public const string DefaultDateTimeFormat = "dd/MM/yyyy HH:mm:ss";
 		public const string XsdDateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffffffZ";
 		public const string XsdDateTimeFormat3F = "yyyy-MM-ddTHH:mm:ss.fffZ";
 		public const string XsdDateTimeFormatSeconds = "yyyy-MM-ddTHH:mm:ssZ";
@@ -60,6 +61,9 @@ namespace ServiceStack.Text.Jsv
 		{
 			if (string.IsNullOrEmpty(dateTimeStr)) 
 				return DateTime.MinValue;
+
+			if (dateTimeStr.Length == DefaultDateTimeFormat.Length)
+				return DateTime.Parse(dateTimeStr);
 
 			if (dateTimeStr.Length <= XsdDateTimeFormat.Length
 			    || dateTimeStr.Length >= XsdDateTimeFormat3F.Length)

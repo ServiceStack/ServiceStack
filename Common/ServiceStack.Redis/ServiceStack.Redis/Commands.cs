@@ -132,7 +132,7 @@ namespace ServiceStack.Redis
 		public readonly static byte[] Store = "STORE".ToUtf8Bytes();
 
 		//SLAVEOF NO ONE
-		public readonly static byte[] No = "no".ToUtf8Bytes();
-		public readonly static byte[] One = "one".ToUtf8Bytes();
+		public readonly static byte[] No = "NO".ToUtf8Bytes();
+		public readonly static byte[] One = "ONE".ToUtf8Bytes();
 	}
 }
