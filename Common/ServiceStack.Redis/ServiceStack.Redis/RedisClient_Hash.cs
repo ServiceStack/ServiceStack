@@ -48,12 +48,12 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public bool SetItemInHash(string hashId, string key, string value)
+		public bool SetEntryInHash(string hashId, string key, string value)
 		{
 			return base.HSet(hashId, key.ToUtf8Bytes(), value.ToUtf8Bytes()) == Success;
 		}
 
-		public bool SetItemInHashIfNotExists(string hashId, string key, string value)
+		public bool SetEntryInHashIfNotExists(string hashId, string key, string value)
 		{
 			return base.HSetNX(hashId, key.ToUtf8Bytes(), value.ToUtf8Bytes()) == Success;
 		}
@@ -74,22 +74,22 @@ namespace ServiceStack.Redis
 			base.HMSet(hashId, keys, values);
 		}
 
-		public int IncrementItemInHash(string hashId, string key, int incrementBy)
+		public int IncrementValueInHash(string hashId, string key, int incrementBy)
 		{
 			return base.HIncrby(hashId, key.ToUtf8Bytes(), incrementBy);
 		}
 
-		public string GetItemFromHash(string hashId, string key)
+		public string GetValueFromHash(string hashId, string key)
 		{
 			return base.HGet(hashId, key.ToUtf8Bytes()).FromUtf8Bytes();
 		}
 
-		public bool HashContainsKey(string hashId, string key)
+		public bool HashContainsEntry(string hashId, string key)
 		{
 			return base.HExists(hashId, key.ToUtf8Bytes()) == Success;
 		}
 
-		public bool RemoveFromHash(string hashId, string key)
+		public bool RemoveEntryFromHash(string hashId, string key)
 		{
 			return base.HDel(hashId, key.ToUtf8Bytes()) == Success;
 		}
@@ -111,7 +111,7 @@ namespace ServiceStack.Redis
 			return multiDataList.ToStringList();
 		}
 
-		public Dictionary<string, string> GetAllFromHash(string hashId)
+		public Dictionary<string, string> GetAllEntriesFromHash(string hashId)
 		{
 			var multiDataList = base.HGetAll(hashId);
 			var map = new Dictionary<string, string>();
@@ -125,7 +125,7 @@ namespace ServiceStack.Redis
 			return map;
 		}
 
-		public List<string> GetItemsFromHash(string hashId, params string[] keys)
+		public List<string> GetValuesFromHash(string hashId, params string[] keys)
 		{
 			var keyBytes = ConvertToBytes(keys);
 			var multiDataList = base.HMGet(hashId, keyBytes);

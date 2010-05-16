@@ -34,7 +34,7 @@ namespace ServiceStack.Redis
 
 		public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
 		{
-			return client.GetAllFromHash(hashId).GetEnumerator();
+			return client.GetAllEntriesFromHash(hashId).GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
@@ -44,12 +44,12 @@ namespace ServiceStack.Redis
 
 		public void Add(KeyValuePair<string, string> item)
 		{
-			client.SetItemInHash(hashId, item.Key, item.Value);
+			client.SetEntryInHash(hashId, item.Key, item.Value);
 		}
 
 		public bool AddIfNotExists(KeyValuePair<string, string> item)
 		{
-			return client.SetItemInHashIfNotExists(hashId, item.Key, item.Value);
+			return client.SetEntryInHashIfNotExists(hashId, item.Key, item.Value);
 		}
 
 		public void AddRange(IEnumerable<KeyValuePair<string, string>> items)
@@ -59,7 +59,7 @@ namespace ServiceStack.Redis
 
 		public int IncrementValue(string key, int incrementBy)
 		{
-			return client.IncrementItemInHash(hashId, key, incrementBy);
+			return client.IncrementValueInHash(hashId, key, incrementBy);
 		}
 
 		public void Clear()
@@ -69,13 +69,13 @@ namespace ServiceStack.Redis
 
 		public bool Contains(KeyValuePair<string, string> item)
 		{
-			var itemValue = client.GetItemFromHash(hashId, item.Key);
+			var itemValue = client.GetValueFromHash(hashId, item.Key);
 			return itemValue == item.Value;
 		}
 
 		public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
 		{
-			var allItemsInHash = client.GetAllFromHash(hashId);
+			var allItemsInHash = client.GetAllEntriesFromHash(hashId);
 			
 			var i = arrayIndex;
 			foreach (var item in allItemsInHash)
@@ -89,7 +89,7 @@ namespace ServiceStack.Redis
 		{
 			if (Contains(item))
 			{
-				client.RemoveFromHash(hashId, item.Key);
+				client.RemoveEntryFromHash(hashId, item.Key);
 				return true;
 			}
 			return false;
@@ -107,22 +107,22 @@ namespace ServiceStack.Redis
 
 		public bool ContainsKey(string key)
 		{
-			return client.HashContainsKey(hashId, key);
+			return client.HashContainsEntry(hashId, key);
 		}
 
 		public void Add(string key, string value)
 		{
-			client.SetItemInHash(hashId, key, value);
+			client.SetEntryInHash(hashId, key, value);
 		}
 
 		public bool Remove(string key)
 		{
-			return client.RemoveFromHash(hashId, key);
+			return client.RemoveEntryFromHash(hashId, key);
 		}
 
 		public bool TryGetValue(string key, out string value)
 		{
-			value = client.GetItemFromHash(hashId, key);
+			value = client.GetValueFromHash(hashId, key);
 			return value != null;
 		}
 
@@ -130,11 +130,11 @@ namespace ServiceStack.Redis
 		{
 			get
 			{
-				return client.GetItemFromHash(hashId, key);
+				return client.GetValueFromHash(hashId, key);
 			}
 			set
 			{
-				client.SetItemInHash(hashId, key, value);
+				client.SetEntryInHash(hashId, key, value);
 			}
 		}
 

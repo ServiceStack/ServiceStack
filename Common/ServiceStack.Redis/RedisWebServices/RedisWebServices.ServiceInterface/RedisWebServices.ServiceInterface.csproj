@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{519A7B72-D144-436D-AAC3-7BAAEAD3FF52}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RedisWebServices.ServiceInterface</RootNamespace>
+    <AssemblyName>RedisWebServices.ServiceInterface</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\release\latest\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\release\latest\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.ServiceInterface, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\release\latest\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Admin\FlushDbService.cs" />
+    <Compile Include="Admin\SlaveOfService.cs" />
+    <Compile Include="Admin\Shutdown.cs" />
+    <Compile Include="Admin\Save.cs" />
+    <Compile Include="Admin\RewriteAppendOnlyFileAsyncService.cs" />
+    <Compile Include="Admin\FlushAllService.cs" />
+    <Compile Include="AppConfig.cs" />
+    <Compile Include="Common\AppendToValueService.cs" />
+    <Compile Include="Common\ContainsKey.cs" />
+    <Compile Include="Common\SetEntryIfNotExistsService.cs" />
+    <Compile Include="Common\GetTimeToLiveService.cs" />
+    <Compile Include="Common\GetValueService.cs" />
+    <Compile Include="Common\GetValuesService.cs" />
+    <Compile Include="Common\IncrementValueService.cs" />
+    <Compile Include="Common\RemoveEntry.cs" />
+    <Compile Include="Common\SetEntryService.cs" />
+    <Compile Include="Common\DecrementValueService.cs" />
+    <Compile Include="Common\ExpireEntryService.cs" />
+    <Compile Include="Common\GetAllKeysService.cs" />
+    <Compile Include="Common\GetAndSetEntryService.cs" />
+    <Compile Include="Common\GetEntryTypeService.cs" />
+    <Compile Include="Common\GetRandomKeyService.cs" />
+    <Compile Include="Common\GetSortedEntryValuesService.cs" />
+    <Compile Include="Common\GetSubstringService.cs" />
+    <Compile Include="Admin\PingService.cs" />
+    <Compile Include="Common\SearchKeysService.cs" />
+    <Compile Include="DtoExtensions.cs" />
+    <Compile Include="Hash\SetEntryInHashService.cs" />
+    <Compile Include="Hash\GetAllEntriesFromHashService.cs" />
+    <Compile Include="Hash\GetHashCountService.cs" />
+    <Compile Include="Hash\GetHashKeysService.cs" />
+    <Compile Include="Hash\GetHashValuesService.cs" />
+    <Compile Include="Hash\SetRangeInHashService.cs" />
+    <Compile Include="Hash\SetEntryInHashIfNotExistsService.cs" />
+    <Compile Include="Hash\RemoveEntryFromHashService.cs" />
+    <Compile Include="Hash\IncrementValueInHashService.cs" />
+    <Compile Include="Hash\GetValuesFromHashService.cs" />
+    <Compile Include="Hash\HashContainsEntryService.cs" />
+    <Compile Include="Hash\GetValueFromHashService.cs" />
+    <Compile Include="List\AddItemToListService.cs" />
+    <Compile Include="List\BlockingDequeueItemFromListService.cs" />
+    <Compile Include="List\BlockingPopItemFromListService.cs" />
+    <Compile Include="List\BlockingRemoveStartFromListService.cs" />
+    <Compile Include="List\TrimListService.cs" />
+    <Compile Include="List\EnqueueItemOnListService.cs" />
+    <Compile Include="List\GetAllItemsFromListService.cs" />
+    <Compile Include="List\GetItemFromListService.cs" />
+    <Compile Include="List\GetListCountService.cs" />
+    <Compile Include="List\GetRangeFromListService.cs" />
+    <Compile Include="List\GetRangeFromSortedListService.cs" />
+    <Compile Include="List\PopItemFromListService.cs" />
+    <Compile Include="List\PrependItemToList.cs" />
+    <Compile Include="List\RemoveAllFromListService.cs" />
+    <Compile Include="List\RemoveEndFromListService.cs" />
+    <Compile Include="List\RemoveItemFromListService.cs" />
+    <Compile Include="List\RemoveStartFromListService.cs" />
+    <Compile Include="List\SetItemInListService.cs" />
+    <Compile Include="List\PushItemToListService.cs" />
+    <Compile Include="List\PopAndPushItemBetweenLists.cs" />
+    <Compile Include="List\DequeueItemFromListService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Messaging\CreateSubscriptionService.cs" />
+    <Compile Include="Messaging\PublishMessageService.cs" />
+    <Compile Include="RedisWebServicesBase.cs" />
+    <Compile Include="Set\AddItemToSetService.cs" />
+    <Compile Include="Set\SetContainsItemService.cs" />
+    <Compile Include="Set\StoreDifferencesFromSetService.cs" />
+    <Compile Include="Set\StoreUnionFromSetsService.cs" />
+    <Compile Include="Set\GetDifferencesFromSetService.cs" />
+    <Compile Include="Set\GetIntersectFromSetsService.cs" />
+    <Compile Include="Set\GetRandomItemFromSetService.cs" />
+    <Compile Include="Set\GetSetCountService.cs" />
+    <Compile Include="Set\GetUnionFromSetsService.cs" />
+    <Compile Include="Set\MoveBetweenSetsService.cs" />
+    <Compile Include="Set\PopItemFromSetService.cs" />
+    <Compile Include="Set\RemoveItemFromSetService.cs" />
+    <Compile Include="Set\StoreIntersectFromSetsService.cs" />
+    <Compile Include="Set\GetAllItemsFromSetService.cs" />
+    <Compile Include="SortedSet\AddItemToSetService.cs" />
+    <Compile Include="SortedSet\GetRangeWithScoresFromSortedSetByLowestScoreService.cs" />
+    <Compile Include="SortedSet\GetRangeWithScoresFromSortedSetByHighestScoreService.cs" />
+    <Compile Include="SortedSet\GetRangeFromSortedSetByLowestScoreService.cs" />
+    <Compile Include="SortedSet\GetItemScoreInSortedSetService.cs" />
+    <Compile Include="SortedSet\GetRangeFromSortedSetService.cs" />
+    <Compile Include="SortedSet\GetRangeFromSortedSetByHighestScoreService.cs" />
+    <Compile Include="SortedSet\GetRangeWithScoresFromSortedSetService.cs" />
+    <Compile Include="SortedSet\GetSortedSetCountService.cs" />
+    <Compile Include="SortedSet\IncrementItemInSortedSetService.cs" />
+    <Compile Include="SortedSet\PopItemWithHighestScoreFromSortedSetService.cs" />
+    <Compile Include="SortedSet\PopItemWithLowestScoreFromSortedSetService.cs" />
+    <Compile Include="SortedSet\RemoveItemFromSortedSetService.cs" />
+    <Compile Include="SortedSet\RemoveRangeFromSortedSetService.cs" />
+    <Compile Include="SortedSet\RemoveRangeFromSortedSetByScoreService.cs" />
+    <Compile Include="SortedSet\SortedSetContainsItemService.cs" />
+    <Compile Include="SortedSet\StoreIntersectFromSortedSetsService.cs" />
+    <Compile Include="SortedSet\StoreUnionFromSortedSetsService.cs" />
+    <Compile Include="SortedSet\GetItemIndexInSortedSetService.cs" />
+    <Compile Include="SortedSet\GetAllItemsFromSortedSetService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RedisWebServices.ServiceModel\RedisWebServices.ServiceModel.csproj">
+      <Project>{900F6D5C-8955-40B0-9B0B-888904E42BC3}</Project>
+      <Name>RedisWebServices.ServiceModel</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

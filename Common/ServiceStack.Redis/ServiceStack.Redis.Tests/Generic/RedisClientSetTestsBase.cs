@@ -46,9 +46,9 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_AddToSet_and_GetAllFromSet()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
-			var members = redis.GetAllFromSet(Set);
+			var members = redis.GetAllItemsFromSet(Set);
 			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
@@ -57,13 +57,13 @@ namespace ServiceStack.Redis.Tests.Generic
 		{
 			var storeMembers = Factory.CreateList();
 
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
-			redis.RemoveFromSet(Set, Factory.ExistingValue);
+			redis.RemoveItemFromSet(Set, Factory.ExistingValue);
 
 			storeMembers.Remove(Factory.ExistingValue);
 
-			var members = redis.GetAllFromSet(Set);
+			var members = redis.GetAllItemsFromSet(Set);
 			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
@@ -71,9 +71,9 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_PopFromSet()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
-			var member = redis.PopFromSet(Set);
+			var member = redis.PopItemFromSet(Set);
 
 			Assert.That(storeMembers.Contains(member), Is.True);
 		}
@@ -84,16 +84,16 @@ namespace ServiceStack.Redis.Tests.Generic
 			var fromSetMembers = Factory.CreateList();
 			var toSetMembers = Factory.CreateList2();
 
-			fromSetMembers.ForEach(x => redis.AddToSet(Set, x));
-			toSetMembers.ForEach(x => redis.AddToSet(Set2, x));
+			fromSetMembers.ForEach(x => redis.AddItemToSet(Set, x));
+			toSetMembers.ForEach(x => redis.AddItemToSet(Set2, x));
 
 			redis.MoveBetweenSets(Set, Set2, Factory.ExistingValue);
 
 			fromSetMembers.Remove(Factory.ExistingValue);
 			toSetMembers.Add(Factory.ExistingValue);
 
-			var readFromSetId = redis.GetAllFromSet(Set);
-			var readToSetId = redis.GetAllFromSet(Set2);
+			var readFromSetId = redis.GetAllItemsFromSet(Set);
+			var readToSetId = redis.GetAllItemsFromSet(Set2);
 
 			Assert.That(readFromSetId, Is.EquivalentTo(fromSetMembers));
 			Assert.That(readToSetId, Is.EquivalentTo(toSetMembers));
@@ -103,7 +103,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_GetSetCount()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
 			var setCount = redis.GetSetCount(Set);
 
@@ -114,10 +114,10 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Does_SetContainsValue()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
-			Assert.That(redis.SetContainsValue(Set, Factory.ExistingValue), Is.True);
-			Assert.That(redis.SetContainsValue(Set, Factory.NonExistingValue), Is.False);
+			Assert.That(redis.SetContainsItem(Set, Factory.ExistingValue), Is.True);
+			Assert.That(redis.SetContainsItem(Set, Factory.NonExistingValue), Is.False);
 		}
 
 		[Test]
@@ -129,8 +129,8 @@ namespace ServiceStack.Redis.Tests.Generic
 			storeMembers.Add(storeMembers2.First());
 			storeMembers2.Add(storeMembers.First());
 
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
-			storeMembers2.ForEach(x => redis.AddToSet(Set2, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
+			storeMembers2.ForEach(x => redis.AddItemToSet(Set2, x));
 
 			var intersectingMembers = redis.GetIntersectFromSets(Set, Set2);
 
@@ -145,8 +145,8 @@ namespace ServiceStack.Redis.Tests.Generic
 			var storeMembers = Factory.CreateList();
 			var storeMembers2 = Factory.CreateList2();
 
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
-			storeMembers2.ForEach(x => redis.AddToSet(Set2, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
+			storeMembers2.ForEach(x => redis.AddItemToSet(Set2, x));
 
 			redis.StoreIntersectFromSets(Set3, Set, Set2);
 
@@ -161,8 +161,8 @@ namespace ServiceStack.Redis.Tests.Generic
 			var storeMembers = Factory.CreateList();
 			var storeMembers2 = Factory.CreateList2();
 
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
-			storeMembers2.ForEach(x => redis.AddToSet(Set2, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
+			storeMembers2.ForEach(x => redis.AddItemToSet(Set2, x));
 
 			var unionMembers = redis.GetUnionFromSets(Set, Set2);
 
@@ -177,8 +177,8 @@ namespace ServiceStack.Redis.Tests.Generic
 			var storeMembers = Factory.CreateList();
 			var storeMembers2 = Factory.CreateList2();
 
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
-			storeMembers2.ForEach(x => redis.AddToSet(Set2, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
+			storeMembers2.ForEach(x => redis.AddItemToSet(Set2, x));
 
 			redis.StoreUnionFromSets(Set3, Set, Set2);
 
@@ -203,9 +203,9 @@ namespace ServiceStack.Redis.Tests.Generic
 				Factory.CreateInstance(11),
 			};
 
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
-			storeMembers2.ForEach(x => redis.AddToSet(Set2, x));
-			storeMembers3.ForEach(x => redis.AddToSet(Set3, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
+			storeMembers2.ForEach(x => redis.AddItemToSet(Set2, x));
+			storeMembers3.ForEach(x => redis.AddItemToSet(Set3, x));
 
 			var diffMembers = redis.GetDifferencesFromSet(Set, Set2, Set3);
 
@@ -229,9 +229,9 @@ namespace ServiceStack.Redis.Tests.Generic
 				Factory.CreateInstance(11),
 			};
 
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
-			storeMembers2.ForEach(x => redis.AddToSet(Set2, x));
-			storeMembers3.ForEach(x => redis.AddToSet(Set3, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
+			storeMembers2.ForEach(x => redis.AddItemToSet(Set2, x));
+			storeMembers3.ForEach(x => redis.AddItemToSet(Set3, x));
 
 			var storeSet = redis.Sets["testdiffsetstore"];
 
@@ -246,9 +246,9 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_GetRandomEntryFromSet()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
-			var randomEntry = redis.GetRandomEntryFromSet(Set);
+			var randomEntry = redis.GetRandomItemFromSet(Set);
 
 			Assert.That(storeMembers.Contains(randomEntry), Is.True);
 		}
@@ -258,7 +258,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_enumerate_small_ICollection_Set()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
 			var members = new List<T>();
 			foreach (var item in Set)
@@ -279,7 +279,7 @@ namespace ServiceStack.Redis.Tests.Generic
 
 			var storeMembers = new List<T>();
 			setSize.Times(x => {
-				redis.AddToSet(Set, Factory.CreateInstance(x));
+				redis.AddItemToSet(Set, Factory.CreateInstance(x));
 				storeMembers.Add(Factory.CreateInstance(x));
 			});
 
@@ -297,7 +297,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_Add_to_ICollection_Set()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
 			var members = Set.ToList();
 			Assert.That(members, Is.EquivalentTo(storeMembers));
@@ -307,7 +307,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_Clear_ICollection_Set()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
 			Assert.That(Set.Count, Is.EqualTo(storeMembers.Count));
 
@@ -320,7 +320,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_Test_Contains_in_ICollection_Set()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
 			Assert.That(Set.Contains(Factory.ExistingValue), Is.True);
 			Assert.That(Set.Contains(Factory.NonExistingValue), Is.False);
@@ -330,7 +330,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_Remove_value_from_ICollection_Set()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToSet(Set, x));
+			storeMembers.ForEach(x => redis.AddItemToSet(Set, x));
 
 			storeMembers.Remove(Factory.ExistingValue);
 			Set.Remove(Factory.ExistingValue);

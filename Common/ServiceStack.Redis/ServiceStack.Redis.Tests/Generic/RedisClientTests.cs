@@ -29,8 +29,8 @@ namespace ServiceStack.Redis.Tests.Generic
 			const string value = "value";
 			using (var redis = new RedisClient(TestConfig.SingleHost))
 			{
-				redis.SetString("key", value);
-				var valueString = redis.GetString("key");
+				redis.SetEntry("key", value);
+				var valueString = redis.GetValue("key");
 
 				Assert.That(valueString, Is.EqualTo(value));
 			}
@@ -51,8 +51,8 @@ namespace ServiceStack.Redis.Tests.Generic
 			{
 				var redis = redisClient.GetTypedClient<byte[]>();
 
-				redis.Set(key, value);
-				var resultValue = redis.Get(key);
+				redis.SetEntry(key, value);
+				var resultValue = redis.GetValue(key);
 
 				Assert.That(resultValue, Is.EquivalentTo(value));
 			}

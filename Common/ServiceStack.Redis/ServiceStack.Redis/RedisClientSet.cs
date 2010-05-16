@@ -36,7 +36,7 @@ namespace ServiceStack.Redis
 		public IEnumerator<string> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-				? client.GetAllFromSet(setId).GetEnumerator()
+				? client.GetAllItemsFromSet(setId).GetEnumerator()
 				: GetPagingEnumerator();
 		}
 
@@ -46,7 +46,7 @@ namespace ServiceStack.Redis
 			List<string> pageResults;
 			do
 			{
-				pageResults = client.GetSortedRange(setId, skip, skip + PageLimit - 1);
+				pageResults = client.GetSortedEntryValues(setId, skip, skip + PageLimit - 1);
 				foreach (var result in pageResults)
 				{
 					yield return result;
@@ -62,7 +62,7 @@ namespace ServiceStack.Redis
 
 		public void Add(string item)
 		{
-			client.AddToSet(setId, item);
+			client.AddItemToSet(setId, item);
 		}
 
 		public void Clear()
@@ -72,18 +72,18 @@ namespace ServiceStack.Redis
 
 		public bool Contains(string item)
 		{
-			return client.SetContainsValue(setId, item);
+			return client.SetContainsItem(setId, item);
 		}
 
 		public void CopyTo(string[] array, int arrayIndex)
 		{
-			var allItemsInSet = client.GetAllFromSet(setId);
+			var allItemsInSet = client.GetAllItemsFromSet(setId);
 			allItemsInSet.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(string item)
 		{
-			client.RemoveFromSet(setId, item);
+			client.RemoveItemFromSet(setId, item);
 			return true;
 		}
 
@@ -104,17 +104,17 @@ namespace ServiceStack.Redis
 
 		public List<string> GetRangeFromSortedSet(int startingFrom, int endingAt)
 		{
-			return client.GetSortedRange(setId, startingFrom, endingAt);
+			return client.GetSortedEntryValues(setId, startingFrom, endingAt);
 		}
 
 		public HashSet<string> GetAll()
 		{
-			return client.GetAllFromSet(setId);
+			return client.GetAllItemsFromSet(setId);
 		}
 
 		public string Pop()
 		{
-			return client.PopFromSet(setId);
+			return client.PopItemFromSet(setId);
 		}
 
 		public void Move(string value, IRedisSet toSet)
@@ -167,7 +167,7 @@ namespace ServiceStack.Redis
 
 		public string GetRandomEntry()
 		{
-			return client.GetRandomEntryFromSet(setId);
+			return client.GetRandomItemFromSet(setId);
 		}
 	}
 }

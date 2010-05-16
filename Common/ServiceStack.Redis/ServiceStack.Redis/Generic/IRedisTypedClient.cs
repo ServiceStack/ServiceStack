@@ -31,93 +31,93 @@ namespace ServiceStack.Redis.Generic
 		IDisposable AcquireLock(TimeSpan timeOut);
 
 		int Db { get; set; }
-		List<string> AllKeys { get; }
+		List<string> GetAllKeys();
 
 		T this[string key] { get; set; }
 
 		string SequenceKey { get; set; }
 		void SetSequence(int value);
 		int GetNextSequence();
-		RedisKeyType GetKeyType(string key);
-		string NewRandomKey();
+		RedisKeyType GetEntryType(string key);
+		string GetRandomKey();
 
-		void Set(string key, T value);
-		void Set(string key, T value, TimeSpan expireIn);
-		bool SetIfNotExists(string key, T value);
-		T Get(string key);
-		T GetAndSet(string key, T value);
+		void SetEntry(string key, T value);
+		void SetEntry(string key, T value, TimeSpan expireIn);
+		bool SetEntryIfNotExists(string key, T value);
+		T GetValue(string key);
+		T GetAndSetValue(string key, T value);
 		bool ContainsKey(string key);
-		bool Remove(string key);
-		bool Remove(params string[] args);
-		bool Remove(params IHasStringId[] entities);
-		int Increment(string key);
-		int IncrementBy(string key, int count);
-		int Decrement(string key);
-		int DecrementBy(string key, int count);
-		bool ExpireKeyIn(string key, TimeSpan expiresAt);
-		bool ExpireKeyAt(string key, DateTime dateTime);
+		bool RemoveEntry(string key);
+		bool RemoveEntry(params string[] args);
+		bool RemoveEntry(params IHasStringId[] entities);
+		int IncrementValue(string key);
+		int IncrementValueBy(string key, int count);
+		int DecrementValue(string key);
+		int DecrementValueBy(string key, int count);
+		bool ExpireEntryIn(string key, TimeSpan expiresAt);
+		bool ExpireEntryAt(string key, DateTime dateTime);
 		TimeSpan GetTimeToLive(string key);
 		void Save();
 		void SaveAsync();
 		void FlushDb();
 		void FlushAll();
-		T[] GetKeys(string pattern);
-		List<T> GetKeyValues(List<string> keys);
+		T[] SearchKeys(string pattern);
+		List<T> GetValues(List<string> keys);
+		List<T> GetSortedEntryValues(IRedisSet<T> fromSet, int startingFrom, int endingAt);
 
-		List<T> SortSet(IRedisSet<T> fromSet, int startingFrom, int endingAt);
-		HashSet<T> GetAllFromSet(IRedisSet<T> fromSet);
-		void AddToSet(IRedisSet<T> toSet, T value);
-		void RemoveFromSet(IRedisSet<T> fromSet, T value);
-		T PopFromSet(IRedisSet<T> fromSet);
-		void MoveBetweenSets(IRedisSet<T> fromSet, IRedisSet<T> toSet, T value);
+		HashSet<T> GetAllItemsFromSet(IRedisSet<T> fromSet);
+		void AddItemToSet(IRedisSet<T> toSet, T item);
+		void RemoveItemFromSet(IRedisSet<T> fromSet, T item);
+		T PopItemFromSet(IRedisSet<T> fromSet);
+		void MoveBetweenSets(IRedisSet<T> fromSet, IRedisSet<T> toSet, T item);
 		int GetSetCount(IRedisSet<T> set);
-		bool SetContainsValue(IRedisSet<T> set, T value);
+		bool SetContainsItem(IRedisSet<T> set, T item);
 		HashSet<T> GetIntersectFromSets(params IRedisSet<T>[] sets);
 		void StoreIntersectFromSets(IRedisSet<T> intoSet, params IRedisSet<T>[] sets);
 		HashSet<T> GetUnionFromSets(params IRedisSet<T>[] sets);
 		void StoreUnionFromSets(IRedisSet<T> intoSet, params IRedisSet<T>[] sets);
 		HashSet<T> GetDifferencesFromSet(IRedisSet<T> fromSet, params IRedisSet<T>[] withSets);
 		void StoreDifferencesFromSet(IRedisSet<T> intoSet, IRedisSet<T> fromSet, params IRedisSet<T>[] withSets);
-		T GetRandomEntryFromSet(IRedisSet<T> fromSet);
+		T GetRandomItemFromSet(IRedisSet<T> fromSet);
 
-		List<T> GetAllFromList(IRedisList<T> fromList);
+		List<T> GetAllItemsFromList(IRedisList<T> fromList);
 		List<T> GetRangeFromList(IRedisList<T> fromList, int startingFrom, int endingAt);
 		List<T> SortList(IRedisList<T> fromList, int startingFrom, int endingAt);
-		void AddToList(IRedisList<T> fromList, T value);
-		void PrependToList(IRedisList<T> fromList, T value);
+		void AddItemToList(IRedisList<T> fromList, T value);
+		void PrependItemToList(IRedisList<T> fromList, T value);
 		T RemoveStartFromList(IRedisList<T> fromList);
 		T BlockingRemoveStartFromList(IRedisList<T> fromList, TimeSpan? timeOut);
 		T RemoveEndFromList(IRedisList<T> fromList);
 		void RemoveAllFromList(IRedisList<T> fromList);
 		void TrimList(IRedisList<T> fromList, int keepStartingFrom, int keepEndingAt);
-		int RemoveValueFromList(IRedisList<T> fromList, T value);
-		int RemoveValueFromList(IRedisList<T> fromList, T value, int noOfMatches);
+		int RemoveItemFromList(IRedisList<T> fromList, T value);
+		int RemoveItemFromList(IRedisList<T> fromList, T value, int noOfMatches);
 		int GetListCount(IRedisList<T> fromList);
 		T GetItemFromList(IRedisList<T> fromList, int listIndex);
 		void SetItemInList(IRedisList<T> toList, int listIndex, T value);
 
 		//Queue operations
-		void EnqueueOnList(IRedisList<T> fromList, T item);
-		T DequeueFromList(IRedisList<T> fromList);
-		T BlockingDequeueFromList(IRedisList<T> fromList, TimeSpan? timeOut);
+		void EnqueueItemOnList(IRedisList<T> fromList, T item);
+		T DequeueItemFromList(IRedisList<T> fromList);
+		T BlockingDequeueItemFromList(IRedisList<T> fromList, TimeSpan? timeOut);
 		
 		//Stack operations
-		void PushToList(IRedisList<T> fromList, T item);
-		T PopFromList(IRedisList<T> fromList);
-		T BlockingPopFromList(IRedisList<T> fromList, TimeSpan? timeOut);
-		T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList);
+		void PushItemToList(IRedisList<T> fromList, T item);
+		T PopItemFromList(IRedisList<T> fromList);
+		T BlockingPopItemFromList(IRedisList<T> fromList, TimeSpan? timeOut);
+		T PopAndPushItemBetweenLists(IRedisList<T> fromList, IRedisList<T> toList);
 
-		void AddToSortedSet(IRedisSortedSet<T> toSet, T value);
-		void AddToSortedSet(IRedisSortedSet<T> toSet, T value, double score);
-		void RemoveFromSortedSet(IRedisSortedSet<T> fromSet, T value);
+		void AddItemToSortedSet(IRedisSortedSet<T> toSet, T value);
+		void AddItemToSortedSet(IRedisSortedSet<T> toSet, T value, double score);
+		bool RemoveItemFromSortedSet(IRedisSortedSet<T> fromSet, T value);
 		T PopItemWithLowestScoreFromSortedSet(IRedisSortedSet<T> fromSet);
 		T PopItemWithHighestScoreFromSortedSet(IRedisSortedSet<T> fromSet);
-		bool SortedSetContainsValue(IRedisSortedSet<T> set, T value);
+		bool SortedSetContainsItem(IRedisSortedSet<T> set, T value);
 		double IncrementItemInSortedSet(IRedisSortedSet<T> set, T value, double incrementBy);
 		int GetItemIndexInSortedSet(IRedisSortedSet<T> set, T value);
 		int GetItemIndexInSortedSetDesc(IRedisSortedSet<T> set, T value);
-		List<T> GetAllFromSortedSet(IRedisSortedSet<T> set);
-		List<T> GetAllFromSortedSetDesc(IRedisSortedSet<T> set);
+		List<T> GetAllItemsFromSortedSet(IRedisSortedSet<T> set);
+		List<T> GetAllItemsFromSortedSetDesc(IRedisSortedSet<T> set);
 		List<T> GetRangeFromSortedSet(IRedisSortedSet<T> set, int fromRank, int toRank);
 		List<T> GetRangeFromSortedSetDesc(IRedisSortedSet<T> set, int fromRank, int toRank);
 		IDictionary<T, double> GetAllWithScoresFromSortedSet(IRedisSortedSet<T> set);
@@ -146,16 +146,16 @@ namespace ServiceStack.Redis.Generic
 		int StoreIntersectFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
 		int StoreUnionFromSortedSets(IRedisSortedSet<T> intoSetId, params IRedisSortedSet<T>[] setIds);
 
-		bool HashContainsKey<TKey>(IRedisHash<TKey, T> hash, TKey key);
-		bool SetItemInHash<TKey>(IRedisHash<TKey, T> hash, TKey key, T value);
-		bool SetItemInHashIfNotExists<TKey>(IRedisHash<TKey, T> hash, TKey key, T value);
+		bool HashContainsEntry<TKey>(IRedisHash<TKey, T> hash, TKey key);
+		bool SetEntryInHash<TKey>(IRedisHash<TKey, T> hash, TKey key, T value);
+		bool SetEntryInHashIfNotExists<TKey>(IRedisHash<TKey, T> hash, TKey key, T value);
 		void SetRangeInHash<TKey>(IRedisHash<TKey, T> hash, IEnumerable<KeyValuePair<TKey, T>> keyValuePairs);
-		T GetItemFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
-		bool RemoveFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
+		T GetValueFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
+		bool RemoveEntryFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key);
 		int GetHashCount<TKey>(IRedisHash<TKey, T> hash);
 		List<TKey> GetHashKeys<TKey>(IRedisHash<TKey, T> hash);
 		List<T> GetHashValues<TKey>(IRedisHash<TKey, T> hash);
-		Dictionary<TKey, T> GetAllFromHash<TKey>(IRedisHash<TKey, T> hash);
+		Dictionary<TKey, T> GetAllEntriesFromHash<TKey>(IRedisHash<TKey, T> hash);
 	}
 
 }

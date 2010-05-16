@@ -55,9 +55,9 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_SetItemInHash_and_GetAllFromHash()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
-			var members = redis.GetAllFromHash(Hash);
+			var members = redis.GetAllEntriesFromHash(Hash);
 			Assert.That(members, Is.EquivalentTo(mapValues));
 		}
 
@@ -65,15 +65,15 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_RemoveFromHash()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var firstKey = mapValues.First().Key;
 
-			redis.RemoveFromHash(Hash, firstKey);
+			redis.RemoveEntryFromHash(Hash, firstKey);
 
 			mapValues.Remove(firstKey);
 
-			var members = redis.GetAllFromHash(Hash);
+			var members = redis.GetAllEntriesFromHash(Hash);
 			Assert.That(members, Is.EquivalentTo(mapValues));
 		}
 
@@ -81,11 +81,11 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_GetItemFromHash()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var firstKey = mapValues.First().Key;
 
-			var hashValue = redis.GetItemFromHash(Hash, firstKey);
+			var hashValue = redis.GetValueFromHash(Hash, firstKey);
 
 			Assert.That(hashValue, Is.EqualTo(mapValues[firstKey]));
 		}
@@ -94,7 +94,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_GetHashCount()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var hashCount = redis.GetHashCount(Hash);
 
@@ -105,20 +105,20 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Does_HashContainsKey()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var existingMember = mapValues.First().Key;
 			var nonExistingMember = existingMember + "notexists";
 
-			Assert.That(redis.HashContainsKey(Hash, existingMember), Is.True);
-			Assert.That(redis.HashContainsKey(Hash, nonExistingMember), Is.False);
+			Assert.That(redis.HashContainsEntry(Hash, existingMember), Is.True);
+			Assert.That(redis.HashContainsEntry(Hash, nonExistingMember), Is.False);
 		}
 
 		[Test]
 		public void Can_GetHashKeys()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var expectedKeys = mapValues.ConvertAll(x => x.Key);
 
@@ -131,7 +131,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_GetHashValues()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var expectedValues = mapValues.ConvertAll(x => x.Value);
 
@@ -144,7 +144,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_enumerate_small_IDictionary_Hash()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var members = new List<string>();
 			foreach (var item in redis.GetHash<string>(HashId))
@@ -162,7 +162,7 @@ namespace ServiceStack.Redis.Tests.Generic
 			var mapValues = CreateMap();
 			mapValues.ForEach((k,v) => hash.Add(k, v));
 
-			var members = redis.GetAllFromHash(Hash);
+			var members = redis.GetAllEntriesFromHash(Hash);
 			Assert.That(members, Is.EquivalentTo(mapValues));
 		}
 
@@ -205,7 +205,7 @@ namespace ServiceStack.Redis.Tests.Generic
 			mapValues.Remove(firstKey);
 			hash.Remove(firstKey);
 
-			var members = redis.GetAllFromHash(Hash);
+			var members = redis.GetAllEntriesFromHash(Hash);
 			Assert.That(members, Is.EquivalentTo(mapValues));
 		}
 
@@ -223,19 +223,19 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_SetItemInHashIfNotExists()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var existingMember = mapValues.First().Key;
 			var nonExistingMember = existingMember + "notexists";
 
 			var lastValue = mapValues.Last().Value;
 
-			redis.SetItemInHashIfNotExists(Hash, existingMember, lastValue);
-			redis.SetItemInHashIfNotExists(Hash, nonExistingMember, lastValue);
+			redis.SetEntryInHashIfNotExists(Hash, existingMember, lastValue);
+			redis.SetEntryInHashIfNotExists(Hash, nonExistingMember, lastValue);
 			
 			mapValues[nonExistingMember] = lastValue;
 
-			var members = redis.GetAllFromHash(Hash);
+			var members = redis.GetAllEntriesFromHash(Hash);
 			Assert.That(members, Is.EquivalentTo(mapValues));
 		}
 
@@ -243,7 +243,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_SetRangeInHash()
 		{
 			var mapValues = CreateMap();
-			mapValues.ForEach((k,v) => redis.SetItemInHash(Hash, k, v));
+			mapValues.ForEach((k,v) => redis.SetEntryInHash(Hash, k, v));
 
 			var newMapValues = CreateMap2();
 
@@ -251,7 +251,7 @@ namespace ServiceStack.Redis.Tests.Generic
 
 			newMapValues.ForEach(x => mapValues[x.Key] = x.Value);
 
-			var members = redis.GetAllFromHash(Hash);
+			var members = redis.GetAllEntriesFromHash(Hash);
 			Assert.That(members, Is.EquivalentTo(mapValues));
 		}
 	}

@@ -60,19 +60,19 @@ namespace ServiceStack.Redis.Generic
 			return genericMap;
 		}
 
-		public void AddToSortedSet(IRedisSortedSet<T> toSet, T value)
+		public void AddItemToSortedSet(IRedisSortedSet<T> toSet, T value)
 		{
-			client.AddToSortedSet(toSet.Id, value.SerializeToString());
+			client.AddItemToSortedSet(toSet.Id, value.SerializeToString());
 		}
 
-		public void AddToSortedSet(IRedisSortedSet<T> toSet, T value, double score)
+		public void AddItemToSortedSet(IRedisSortedSet<T> toSet, T value, double score)
 		{
-			client.AddToSortedSet(toSet.Id, value.SerializeToString(), score);
+			client.AddItemToSortedSet(toSet.Id, value.SerializeToString(), score);
 		}
 
-		public void RemoveFromSortedSet(IRedisSortedSet<T> fromSet, T value)
+		public bool RemoveItemFromSortedSet(IRedisSortedSet<T> fromSet, T value)
 		{
-			client.RemoveFromSortedSet(fromSet.Id, value.SerializeToString());
+			return client.RemoveItemFromSortedSet(fromSet.Id, value.SerializeToString());
 		}
 
 		public T PopItemWithLowestScoreFromSortedSet(IRedisSortedSet<T> fromSet)
@@ -87,9 +87,9 @@ namespace ServiceStack.Redis.Generic
 				.DeserializeFromString<T>();
 		}
 
-		public bool SortedSetContainsValue(IRedisSortedSet<T> set, T value)
+		public bool SortedSetContainsItem(IRedisSortedSet<T> set, T value)
 		{
-			return client.SortedSetContainsValue(set.Id, value.SerializeToString());
+			return client.SortedSetContainsItem(set.Id, value.SerializeToString());
 		}
 
 		public double IncrementItemInSortedSet(IRedisSortedSet<T> set, T value, double incrementBy)
@@ -107,15 +107,15 @@ namespace ServiceStack.Redis.Generic
 			return client.GetItemIndexInSortedSetDesc(set.Id, value.SerializeToString());
 		}
 
-		public List<T> GetAllFromSortedSet(IRedisSortedSet<T> set)
+		public List<T> GetAllItemsFromSortedSet(IRedisSortedSet<T> set)
 		{
-			var list = client.GetAllFromSortedSet(set.Id);
+			var list = client.GetAllItemsFromSortedSet(set.Id);
 			return list.ConvertEachTo<T>();
 		}
 
-		public List<T> GetAllFromSortedSetDesc(IRedisSortedSet<T> set)
+		public List<T> GetAllItemsFromSortedSetDesc(IRedisSortedSet<T> set)
 		{
-			var list = client.GetAllFromSortedSetDesc(set.Id);
+			var list = client.GetAllItemsFromSortedSetDesc(set.Id);
 			return list.ConvertEachTo<T>();
 		}
 

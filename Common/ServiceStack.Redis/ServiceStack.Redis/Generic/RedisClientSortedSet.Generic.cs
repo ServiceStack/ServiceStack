@@ -40,7 +40,7 @@ namespace ServiceStack.Redis.Generic
 		public IEnumerator<T> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-					? client.GetAllFromSortedSet(this).GetEnumerator()
+					? client.GetAllItemsFromSortedSet(this).GetEnumerator()
 					: GetPagingEnumerator();
 		}
 
@@ -66,33 +66,33 @@ namespace ServiceStack.Redis.Generic
 
 		public void Add(T item)
 		{
-			client.AddToSortedSet(this, item);
+			client.AddItemToSortedSet(this, item);
 		}
 
 		public void Add(T item, double score)
 		{
-			client.AddToSortedSet(this, item, score);
+			client.AddItemToSortedSet(this, item, score);
 		}
 
 		public void Clear()
 		{
-			client.Remove(setId);
+			client.RemoveEntry(setId);
 		}
 
 		public bool Contains(T item)
 		{
-			return client.SortedSetContainsValue(this, item);
+			return client.SortedSetContainsItem(this, item);
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			var allItemsInSet = client.GetAllFromSortedSet(this);
+			var allItemsInSet = client.GetAllItemsFromSortedSet(this);
 			allItemsInSet.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(T item)
 		{
-			client.RemoveFromSortedSet(this, item);
+			client.RemoveItemFromSortedSet(this, item);
 			return true;
 		}
 
@@ -134,12 +134,12 @@ namespace ServiceStack.Redis.Generic
 
 		public List<T> GetAll()
 		{
-			return client.GetAllFromSortedSet(this);
+			return client.GetAllItemsFromSortedSet(this);
 		}
 
 		public List<T> GetAllDescending()
 		{
-			return client.GetAllFromSortedSetDesc(this);
+			return client.GetAllItemsFromSortedSetDesc(this);
 		}
 
 		public List<T> GetRange(int fromRank, int toRank)

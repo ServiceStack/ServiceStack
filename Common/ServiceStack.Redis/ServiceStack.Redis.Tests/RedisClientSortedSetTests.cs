@@ -31,18 +31,18 @@ namespace ServiceStack.Redis.Tests
 		public void Can_AddToSet_and_GetAllFromSet()
 		{
 			var i = 0;
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x, i++));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x, i++));
 
-			var members = Redis.GetAllFromSortedSet(SetId);
+			var members = Redis.GetAllItemsFromSortedSet(SetId);
 			Assert.That(members.EquivalentTo(storeMembers), Is.True);
 		}
 
 		[Test]
 		public void AddToSet_without_score_adds_an_implicit_lexical_order_score()
 		{
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
-			var members = Redis.GetAllFromSortedSet(SetId);
+			var members = Redis.GetAllItemsFromSortedSet(SetId);
 
 			storeMembers.Sort((x, y) => x.CompareTo(y));
 			Assert.That(members.EquivalentTo(storeMembers), Is.True);
@@ -51,9 +51,9 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void AddToSet_with_same_score_is_still_returned_in_lexical_order_score()
 		{
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x, 1));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x, 1));
 
-			var members = Redis.GetAllFromSortedSet(SetId);
+			var members = Redis.GetAllItemsFromSortedSet(SetId);
 
 			storeMembers.Sort((x, y) => x.CompareTo(y));
 			Assert.That(members.EquivalentTo(storeMembers), Is.True);
@@ -64,13 +64,13 @@ namespace ServiceStack.Redis.Tests
 		{
 			const string removeMember = "two";
 
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
-			Redis.RemoveFromSortedSet(SetId, removeMember);
+			Redis.RemoveItemFromSortedSet(SetId, removeMember);
 
 			storeMembers.Remove(removeMember);
 
-			var members = Redis.GetAllFromSortedSet(SetId);
+			var members = Redis.GetAllItemsFromSortedSet(SetId);
 			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
@@ -78,7 +78,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_PopFromSet()
 		{
 			var i = 0;
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x, i++));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x, i++));
 
 			var member = Redis.PopItemWithHighestScoreFromSortedSet(SetId);
 
@@ -88,7 +88,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetSetCount()
 		{
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
 			var setCount = Redis.GetSortedSetCount(SetId);
 
@@ -101,17 +101,17 @@ namespace ServiceStack.Redis.Tests
 			const string existingMember = "two";
 			const string nonExistingMember = "five";
 
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
-			Assert.That(Redis.SortedSetContainsValue(SetId, existingMember), Is.True);
-			Assert.That(Redis.SortedSetContainsValue(SetId, nonExistingMember), Is.False);
+			Assert.That(Redis.SortedSetContainsItem(SetId, existingMember), Is.True);
+			Assert.That(Redis.SortedSetContainsItem(SetId, nonExistingMember), Is.False);
 		}
 
 		[Test]
 		public void Can_GetItemIndexInSortedSet_in_Asc_and_Desc()
 		{
 			var i = 10;
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x, i++));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x, i++));
 
 			Assert.That(Redis.GetItemIndexInSortedSet(SetId, "one"), Is.EqualTo(0));
 			Assert.That(Redis.GetItemIndexInSortedSet(SetId, "two"), Is.EqualTo(1));
@@ -133,12 +133,12 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			set1Members.ForEach(x => Redis.AddToSortedSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSortedSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSortedSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSortedSet(set2Name, x));
 
 			Redis.StoreIntersectFromSortedSets(storeSetName, set1Name, set2Name);
 
-			var intersectingMembers = Redis.GetAllFromSortedSet(storeSetName);
+			var intersectingMembers = Redis.GetAllItemsFromSortedSet(storeSetName);
 
 			Assert.That(intersectingMembers, Is.EquivalentTo(new List<string> { "four", "five" }));
 		}
@@ -152,12 +152,12 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			set1Members.ForEach(x => Redis.AddToSortedSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSortedSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSortedSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSortedSet(set2Name, x));
 
 			Redis.StoreUnionFromSortedSets(storeSetName, set1Name, set2Name);
 
-			var unionMembers = Redis.GetAllFromSortedSet(storeSetName);
+			var unionMembers = Redis.GetAllItemsFromSortedSet(storeSetName);
 
 			Assert.That(unionMembers, Is.EquivalentTo(
 				new List<string> { "one", "two", "three", "four", "five", "six", "seven" }));
@@ -166,7 +166,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_pop_items_with_lowest_and_highest_scores_from_sorted_set()
 		{
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
 			storeMembers.Sort((x, y) => x.CompareTo(y));
 
@@ -180,7 +180,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetRangeFromSortedSetByLowestScore_from_sorted_set()
 		{
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
 			storeMembers.Sort((x, y) => x.CompareTo(y));
 			var memberRage = storeMembers.Where(x =>
@@ -193,7 +193,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_IncrementItemInSortedSet()
 		{
-			stringDoubleMap.ForEach(x => Redis.AddToSortedSet(SetId, x.Key, x.Value));
+			stringDoubleMap.ForEach(x => Redis.AddItemToSortedSet(SetId, x.Key, x.Value));
 
 			var currentScore = Redis.IncrementItemInSortedSet(SetId, "one", 2);
 			stringDoubleMap["one"] = stringDoubleMap["one"] + 2;
@@ -213,7 +213,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetRangeFromSortedSetByHighestScore_from_sorted_set()
 		{
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
 			storeMembers.Sort((x, y) => y.CompareTo(x));
 			var memberRage = storeMembers.Where(x =>
@@ -229,7 +229,7 @@ namespace ServiceStack.Redis.Tests
 			storeMembers = new List<string> { "a", "b", "c", "d" };
 			const double initialScore = 10d;
 			var i = initialScore;
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x, i++));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x, i++));
 
 			Assert.That(Redis.GetItemIndexInSortedSet(SetId, "a"), Is.EqualTo(0));
 			Assert.That(Redis.GetItemIndexInSortedSetDesc(SetId, "a"), Is.EqualTo(storeMembers.Count - 1));
@@ -241,7 +241,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_enumerate_small_ICollection_Set()
 		{
-			storeMembers.ForEach(x => Redis.AddToSortedSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x));
 
 			var members = new List<string>();
 			foreach (var item in Redis.SortedSets[SetId])
@@ -263,7 +263,7 @@ namespace ServiceStack.Redis.Tests
 			storeMembers = new List<string>();
 			setSize.Times(x =>
 			{
-				Redis.AddToSortedSet(SetId, x.ToString());
+				Redis.AddItemToSortedSet(SetId, x.ToString());
 				storeMembers.Add(x.ToString());
 			});
 

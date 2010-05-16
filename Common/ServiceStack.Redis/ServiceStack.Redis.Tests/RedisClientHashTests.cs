@@ -29,9 +29,9 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_SetItemInHash_and_GetAllFromHash()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
-			var members = Redis.GetAllFromHash(HashId);
+			var members = Redis.GetAllEntriesFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
 
@@ -40,22 +40,22 @@ namespace ServiceStack.Redis.Tests
 		{
 			const string removeMember = "two";
 
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
-			Redis.RemoveFromHash(HashId, removeMember);
+			Redis.RemoveEntryFromHash(HashId, removeMember);
 
 			stringMap.Remove(removeMember);
 
-			var members = Redis.GetAllFromHash(HashId);
+			var members = Redis.GetAllEntriesFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
 
 		[Test]
 		public void Can_GetItemFromHash()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
-			var hashValue = Redis.GetItemFromHash(HashId, "two");
+			var hashValue = Redis.GetValueFromHash(HashId, "two");
 
 			Assert.That(hashValue, Is.EqualTo(stringMap["two"]));
 		}
@@ -63,7 +63,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetHashCount()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
 			var hashCount = Redis.GetHashCount(HashId);
 
@@ -76,16 +76,16 @@ namespace ServiceStack.Redis.Tests
 			const string existingMember = "two";
 			const string nonExistingMember = "five";
 
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
-			Assert.That(Redis.HashContainsKey(HashId, existingMember), Is.True);
-			Assert.That(Redis.HashContainsKey(HashId, nonExistingMember), Is.False);
+			Assert.That(Redis.HashContainsEntry(HashId, existingMember), Is.True);
+			Assert.That(Redis.HashContainsEntry(HashId, nonExistingMember), Is.False);
 		}
 
 		[Test]
 		public void Can_GetHashKeys()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 			var expectedKeys = stringMap.ConvertAll(x => x.Key);
 
 			var hashKeys = Redis.GetHashKeys(HashId);
@@ -96,7 +96,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetHashValues()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 			var expectedValues = stringMap.ConvertAll(x => x.Value);
 
 			var hashValues = Redis.GetHashValues(HashId);
@@ -107,7 +107,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_enumerate_small_IDictionary_Hash()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
 			var members = new List<string>();
 			foreach (var item in Redis.Hashes[HashId])
@@ -124,7 +124,7 @@ namespace ServiceStack.Redis.Tests
 			var hash = Redis.Hashes[HashId];
 			stringMap.ForEach(x => hash.Add(x));
 
-			var members = Redis.GetAllFromHash(HashId);
+			var members = Redis.GetAllEntriesFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
 
@@ -160,7 +160,7 @@ namespace ServiceStack.Redis.Tests
 			stringMap.Remove("two");
 			hash.Remove("two");
 
-			var members = Redis.GetAllFromHash(HashId);
+			var members = Redis.GetAllEntriesFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
 
@@ -181,22 +181,22 @@ namespace ServiceStack.Redis.Tests
 			stringIntMap.ForEach(x => hash.Add(x.Key, x.Value.ToString()));
 
 			stringIntMap["two"] += 10;
-			Redis.IncrementItemInHash(HashId, "two", 10);
+			Redis.IncrementValueInHash(HashId, "two", 10);
 
-			var members = Redis.GetAllFromHash(HashId);
+			var members = Redis.GetAllEntriesFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(ToStringMap(stringIntMap)));
 		}
 
 		[Test]
 		public void Can_SetItemInHashIfNotExists()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
-			Redis.SetItemInHashIfNotExists(HashId, "two", "did not change existing item");
-			Redis.SetItemInHashIfNotExists(HashId, "five", "changed non existing item");
+			Redis.SetEntryInHashIfNotExists(HashId, "two", "did not change existing item");
+			Redis.SetEntryInHashIfNotExists(HashId, "five", "changed non existing item");
 			stringMap["five"] = "changed non existing item";
 
-			var members = Redis.GetAllFromHash(HashId);
+			var members = Redis.GetAllEntriesFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
 
@@ -206,23 +206,23 @@ namespace ServiceStack.Redis.Tests
 			var newStringMap = new Dictionary<string, string> {
      			{"five","e"}, {"six","f"}, {"seven","g"}
      		};
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
 			Redis.SetRangeInHash(HashId, newStringMap);
 
 			newStringMap.ForEach(x => stringMap.Add(x.Key, x.Value));
 
-			var members = Redis.GetAllFromHash(HashId);
+			var members = Redis.GetAllEntriesFromHash(HashId);
 			Assert.That(members, Is.EquivalentTo(stringMap));
 		}
 
 		[Test]
 		public void Can_GetItemsFromHash()
 		{
-			stringMap.ForEach(x => Redis.SetItemInHash(HashId, x.Key, x.Value));
+			stringMap.ForEach(x => Redis.SetEntryInHash(HashId, x.Key, x.Value));
 
 			var expectedValues = new List<string> { stringMap["one"], stringMap["two"], null };
-			var hashValues = Redis.GetItemsFromHash(HashId, "one", "two", "not-exists");
+			var hashValues = Redis.GetValuesFromHash(HashId, "one", "two", "not-exists");
 
 			Assert.That(hashValues.EquivalentTo(expectedValues), Is.True);
 		}

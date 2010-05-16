@@ -57,37 +57,37 @@ namespace ServiceStack.Redis
 			return results;
 		}
 
-		public List<string> GetSortedRange(string setId, int startingFrom, int endingAt)
+		public List<string> GetSortedEntryValues(string setId, int startingFrom, int endingAt)
 		{
 			var sortOptions = new SortOptions { Skip = startingFrom, Take = endingAt, };
 			var multiDataList = Sort(setId, sortOptions);
 			return multiDataList.ToStringList();
 		}
 
-		public HashSet<string> GetAllFromSet(string setId)
+		public HashSet<string> GetAllItemsFromSet(string setId)
 		{
 			var multiDataList = SMembers(setId);
 			return CreateHashSet(multiDataList);
 		}
 
-		public void AddToSet(string setId, string value)
+		public void AddItemToSet(string setId, string item)
 		{
-			SAdd(setId, value.ToUtf8Bytes());
+			SAdd(setId, item.ToUtf8Bytes());
 		}
 
-		public void RemoveFromSet(string setId, string value)
+		public void RemoveItemFromSet(string setId, string item)
 		{
-			SRem(setId, value.ToUtf8Bytes());
+			SRem(setId, item.ToUtf8Bytes());
 		}
 
-		public string PopFromSet(string setId)
+		public string PopItemFromSet(string setId)
 		{
 			return SPop(setId).FromUtf8Bytes();
 		}
 
-		public void MoveBetweenSets(string fromSetId, string toSetId, string value)
+		public void MoveBetweenSets(string fromSetId, string toSetId, string item)
 		{
-			SMove(fromSetId, toSetId, value.ToUtf8Bytes());
+			SMove(fromSetId, toSetId, item.ToUtf8Bytes());
 		}
 
 		public int GetSetCount(string setId)
@@ -95,9 +95,9 @@ namespace ServiceStack.Redis
 			return SCard(setId);
 		}
 
-		public bool SetContainsValue(string setId, string value)
+		public bool SetContainsItem(string setId, string item)
 		{
-			return SIsMember(setId, value.ToUtf8Bytes()) == 1;
+			return SIsMember(setId, item.ToUtf8Bytes()) == 1;
 		}
 
 		public HashSet<string> GetIntersectFromSets(params string[] setIds)
@@ -148,7 +148,7 @@ namespace ServiceStack.Redis
 			SDiffStore(intoSetId, fromSetId, withSetIds);
 		}
 
-		public string GetRandomEntryFromSet(string setId)
+		public string GetRandomItemFromSet(string setId)
 		{
 			return SRandMember(setId).FromUtf8Bytes();
 		}

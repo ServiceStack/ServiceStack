@@ -38,9 +38,9 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_AddToList_and_GetAllFromList()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
-			var members = Redis.GetAllFromList(ListId);
+			var members = Redis.GetAllItemsFromList(ListId);
 
 			AssertAreEqual(members, storeMembers);
 		}
@@ -48,7 +48,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetListCount()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
 			var listCount = Redis.GetListCount(ListId);
 
@@ -58,7 +58,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetItemFromList()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
 			var storeMember3 = storeMembers[2];
 			var item3 = Redis.GetItemFromList(ListId, 2);
@@ -69,21 +69,21 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_SetItemInList()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
 			storeMembers[2] = "five";
 			Redis.SetItemInList(ListId, 2, "five");
 
-			var members = Redis.GetAllFromList(ListId);
+			var members = Redis.GetAllItemsFromList(ListId);
 			AssertAreEqual(members, storeMembers);
 		}
 
 		[Test]
 		public void Can_PopFromList()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
-			var item4 = Redis.PopFromList(ListId);
+			var item4 = Redis.PopItemFromList(ListId);
 
 			Assert.That(item4, Is.EqualTo("four"));
 		}
@@ -93,11 +93,11 @@ namespace ServiceStack.Redis.Tests
 		{
 			var queue = new Queue<string>();
 			storeMembers.ForEach(queue.Enqueue);
-			storeMembers.ForEach(x => Redis.EnqueueOnList(ListId, x));
+			storeMembers.ForEach(x => Redis.EnqueueItemOnList(ListId, x));
 
 			while (queue.Count > 0)
 			{
-				var actual = Redis.DequeueFromList(ListId);
+				var actual = Redis.DequeueItemFromList(ListId);
 				Assert.That(actual, Is.EqualTo(queue.Dequeue()));
 			}
 		}
@@ -107,9 +107,9 @@ namespace ServiceStack.Redis.Tests
 		{
 			var queue = new Queue<string>();
 			storeMembers.ForEach(queue.Enqueue);
-			storeMembers.ForEach(x => Redis.EnqueueOnList(ListId, x));
+			storeMembers.ForEach(x => Redis.EnqueueItemOnList(ListId, x));
 
-			var item1 = Redis.DequeueFromList(ListId);
+			var item1 = Redis.DequeueItemFromList(ListId);
 
 			Assert.That(item1, Is.EqualTo(queue.Dequeue()));
 		}
@@ -119,9 +119,9 @@ namespace ServiceStack.Redis.Tests
 		{
 			var queue = new Queue<string>();
 			storeMembers.ForEach(queue.Enqueue);
-			storeMembers.ForEach(x => Redis.EnqueueOnList(ListId, x));
+			storeMembers.ForEach(x => Redis.EnqueueItemOnList(ListId, x));
 
-			var item1 = Redis.BlockingDequeueFromList(ListId, null);
+			var item1 = Redis.BlockingDequeueItemFromList(ListId, null);
 
 			Assert.That(item1, Is.EqualTo(queue.Dequeue()));
 		}
@@ -129,7 +129,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void BlockingDequeueFromList_Can_TimeOut()
 		{
-			var item1 = Redis.BlockingDequeueFromList(ListId, TimeSpan.FromSeconds(1));
+			var item1 = Redis.BlockingDequeueItemFromList(ListId, TimeSpan.FromSeconds(1));
 			Assert.That(item1, Is.Null);
 		}
 
@@ -138,11 +138,11 @@ namespace ServiceStack.Redis.Tests
 		{
 			var stack = new Stack<string>();
 			storeMembers.ForEach(stack.Push);
-			storeMembers.ForEach(x => Redis.PushToList(ListId, x));
+			storeMembers.ForEach(x => Redis.PushItemToList(ListId, x));
 
 			while (stack.Count > 0)
 			{
-				var actual = Redis.PopFromList(ListId);
+				var actual = Redis.PopItemFromList(ListId);
 				Assert.That(actual, Is.EqualTo(stack.Pop()));
 			}
 		}
@@ -152,9 +152,9 @@ namespace ServiceStack.Redis.Tests
 		{
 			var stack = new Stack<string>();
 			storeMembers.ForEach(stack.Push);
-			storeMembers.ForEach(x => Redis.PushToList(ListId, x));
+			storeMembers.ForEach(x => Redis.PushItemToList(ListId, x));
 
-			var item1 = Redis.BlockingPopFromList(ListId, null);
+			var item1 = Redis.BlockingPopItemFromList(ListId, null);
 
 			Assert.That(item1, Is.EqualTo(stack.Pop()));
 		}
@@ -162,14 +162,14 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void BlockingPopFromList_Can_TimeOut()
 		{
-			var item1 = Redis.BlockingPopFromList(ListId, TimeSpan.FromSeconds(1));
+			var item1 = Redis.BlockingPopItemFromList(ListId, TimeSpan.FromSeconds(1));
 			Assert.That(item1, Is.Null);
 		}
 
 		[Test]
 		public void Can_RemoveStartFromList()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
 			var item1 = Redis.RemoveStartFromList(ListId);
 
@@ -179,7 +179,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_RemoveEndFromList()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
 			var item1 = Redis.RemoveEndFromList(ListId);
 
@@ -189,7 +189,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_BlockingRemoveStartFromList()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
 			var item1 = Redis.BlockingRemoveStartFromList(ListId, null);
 
@@ -203,15 +203,15 @@ namespace ServiceStack.Redis.Tests
 			var list2Members = new List<string> { "five", "six", "seven" };
 			const string item4 = "four";
 
-			list1Members.ForEach(x => Redis.AddToList(ListId, x));
-			list2Members.ForEach(x => Redis.AddToList(ListId2, x));
+			list1Members.ForEach(x => Redis.AddItemToList(ListId, x));
+			list2Members.ForEach(x => Redis.AddItemToList(ListId2, x));
 
 			list1Members.Remove(item4);
 			list2Members.Insert(0, item4);
-			Redis.PopAndPushBetweenLists(ListId, ListId2);
+			Redis.PopAndPushItemBetweenLists(ListId, ListId2);
 
-			var readList1 = Redis.GetAllFromList(ListId);
-			var readList2 = Redis.GetAllFromList(ListId2);
+			var readList1 = Redis.GetAllItemsFromList(ListId);
+			var readList2 = Redis.GetAllItemsFromList(ListId2);
 
 			AssertAreEqual(readList1, list1Members);
 			AssertAreEqual(readList2, list2Members);
@@ -221,7 +221,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_enumerate_small_list()
 		{
-			storeMembers.ForEach(x => Redis.AddToList(ListId, x));
+			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));
 
 			var readMembers = new List<string>();
 			foreach (var item in Redis.Lists[ListId])
@@ -241,7 +241,7 @@ namespace ServiceStack.Redis.Tests
 			storeMembers = new List<string>();
 			listSize.Times(x =>
 			{
-				Redis.AddToList(ListId, x.ToString());
+				Redis.AddItemToList(ListId, x.ToString());
 				storeMembers.Add(x.ToString());
 			});
 

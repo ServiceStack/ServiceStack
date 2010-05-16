@@ -121,7 +121,7 @@ namespace ServiceStack.Redis.Tests
 			Assert.That(allModels, Is.EquivalentTo(testModels));
 
 			//Test internal TestModelIdsSetKey state
-			var idsRemaining = Redis.GetAllFromSet(TestModelIdsSetKey)
+			var idsRemaining = Redis.GetAllItemsFromSet(TestModelIdsSetKey)
 				.OrderBy(x => x).ConvertAll(x => new Guid(x));
 
 			var testModelIds = testModels.OrderBy(x => x.Id).ConvertAll(x => x.Id);
@@ -141,7 +141,7 @@ namespace ServiceStack.Redis.Tests
 			Assert.That(allModels, Is.Empty);
 
 			//Test internal TestModelIdsSetKey state
-			var idsRemaining = Redis.GetAllFromSet(TestModelIdsSetKey);
+			var idsRemaining = Redis.GetAllItemsFromSet(TestModelIdsSetKey);
 			Assert.That(idsRemaining, Is.Empty);
 		}
 
@@ -164,7 +164,7 @@ namespace ServiceStack.Redis.Tests
 
 
 			//Test internal TestModelIdsSetKey state
-			var idsRemaining = Redis.GetAllFromSet(TestModelIdsSetKey)
+			var idsRemaining = Redis.GetAllItemsFromSet(TestModelIdsSetKey)
 				.OrderBy(x => x).ConvertAll(x => new Guid(x));
 
 			var testModelIds = testModels.OrderBy(x => x.Id).ConvertAll(x => x.Id);

@@ -83,8 +83,8 @@ namespace ServiceStack.Redis.Tests.Integration
 				Log("Client '{0}' is using '{1}'", clientNo, client.Host);
 
 				var testClientKey = "test:" + host + ":" + clientNo;
-				client.SetString(testClientKey, testData);
-				var result = client.GetString(testClientKey) ?? "";
+				client.SetEntry(testClientKey, testData);
+				var result = client.GetValue(testClientKey) ?? "";
 
 				Log("\t{0} => {1} len {2} {3} len", testClientKey,
 					testData.Length, testData.Length == result.Length ? "==" : "!=", result.Length);

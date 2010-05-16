@@ -18,7 +18,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_Set_and_Get_string()
 		{
-			Redis.SetString("key", Value);
+			Redis.SetEntry("key", Value);
 			var valueBytes = Redis.Get("key");
 			var valueString = GetString(valueBytes);
 
@@ -28,7 +28,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_Set_and_Get_key_with_space()
 		{
-			Redis.SetString("key with space", Value);
+			Redis.SetEntry("key with space", Value);
 			var valueBytes = Redis.Get("key with space");
 			var valueString = GetString(valueBytes);
 
@@ -40,7 +40,7 @@ namespace ServiceStack.Redis.Tests
 		{
 			const string key = "key with spaces";
 
-			Redis.SetString(key, Value);
+			Redis.SetEntry(key, Value);
 			var valueBytes = Redis.Get(key);
 			var valueString = GetString(valueBytes);
 
@@ -71,7 +71,7 @@ namespace ServiceStack.Redis.Tests
 			Redis.Set("ss-tests:a2", "One");
 			Redis.Set("ss-tests:b3", "One");
 
-			var matchingKeys = Redis.GetKeys("ss-tests:a*");
+			var matchingKeys = Redis.SearchKeys("ss-tests:a*");
 
 			Assert.That(matchingKeys.Count, Is.EqualTo(2));
 		}
@@ -79,7 +79,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void GetKeys_on_non_existent_keys_returns_empty_collection()
 		{
-			var matchingKeys = Redis.GetKeys("ss-tests:NOTEXISTS");
+			var matchingKeys = Redis.SearchKeys("ss-tests:NOTEXISTS");
 
 			Assert.That(matchingKeys.Count, Is.EqualTo(0));
 		}
@@ -87,24 +87,24 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_get_Types()
 		{
-			Redis.SetString("string", "string");
-			Redis.AddToList("list", "list");
-			Redis.AddToSet("set", "set");
-			Redis.AddToSortedSet("sortedset", "sortedset");
-			Redis.SetItemInHash("hash", "key", "val");
+			Redis.SetEntry("string", "string");
+			Redis.AddItemToList("list", "list");
+			Redis.AddItemToSet("set", "set");
+			Redis.AddItemToSortedSet("sortedset", "sortedset");
+			Redis.SetEntryInHash("hash", "key", "val");
 
-			Assert.That(Redis.GetKeyType("nokey"), Is.EqualTo(RedisKeyType.None));
-			Assert.That(Redis.GetKeyType("string"), Is.EqualTo(RedisKeyType.String));
-			Assert.That(Redis.GetKeyType("list"), Is.EqualTo(RedisKeyType.List));
-			Assert.That(Redis.GetKeyType("set"), Is.EqualTo(RedisKeyType.Set));
-			Assert.That(Redis.GetKeyType("sortedset"), Is.EqualTo(RedisKeyType.SortedSet));
-			Assert.That(Redis.GetKeyType("hash"), Is.EqualTo(RedisKeyType.Hash));
+			Assert.That(Redis.GetEntryType("nokey"), Is.EqualTo(RedisKeyType.None));
+			Assert.That(Redis.GetEntryType("string"), Is.EqualTo(RedisKeyType.String));
+			Assert.That(Redis.GetEntryType("list"), Is.EqualTo(RedisKeyType.List));
+			Assert.That(Redis.GetEntryType("set"), Is.EqualTo(RedisKeyType.Set));
+			Assert.That(Redis.GetEntryType("sortedset"), Is.EqualTo(RedisKeyType.SortedSet));
+			Assert.That(Redis.GetEntryType("hash"), Is.EqualTo(RedisKeyType.Hash));
 		}
 
 		[Test]
 		public void Can_delete_keys()
 		{
-			Redis.SetString("key", "val");
+			Redis.SetEntry("key", "val");
 
 			Assert.That(Redis.ContainsKey("key"), Is.True);
 
@@ -142,7 +142,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_RenameKey()
 		{
-			Redis.SetString("oldkey", "val");
+			Redis.SetEntry("oldkey", "val");
 			Redis.Rename("oldkey", "newkey");
 
 			Assert.That(Redis.ContainsKey("oldkey"), Is.False);
@@ -152,7 +152,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_Expire()
 		{
-			Redis.SetString("key", "val");
+			Redis.SetEntry("key", "val");
 			Redis.Expire("key", 1);
 			Assert.That(Redis.ContainsKey("key"), Is.True);
 			Thread.Sleep(2000);
@@ -162,7 +162,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_ExpireAt()
 		{
-			Redis.SetString("key", "val");
+			Redis.SetEntry("key", "val");
 
 			var unixNow = DateTime.Now.ToUnixTime();
 			var in1Sec = unixNow + 1;
@@ -177,7 +177,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetTimeToLive()
 		{
-			Redis.SetString("key", "val");
+			Redis.SetEntry("key", "val");
 			Redis.Expire("key", 10);
 
 			var ttl = Redis.GetTimeToLive("key");
@@ -240,8 +240,8 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_get_Keys_with_pattern()
 		{
-			5.Times(i => Redis.SetString("k1:" + i, "val"));
-			5.Times(i => Redis.SetString("k2:" + i, "val"));
+			5.Times(i => Redis.SetEntry("k1:" + i, "val"));
+			5.Times(i => Redis.SetEntry("k2:" + i, "val"));
 
 			var keys = Redis.Keys("k1:*");
 			Assert.That(keys.Length, Is.EqualTo(5));
@@ -257,7 +257,7 @@ namespace ServiceStack.Redis.Tests
 			Redis.SetAll(keysMap);
 
 			var map = Redis.GetAll<string>(keysMap.Keys);
-			var mapKeys = Redis.GetKeyValues(keysMap.Keys.ToList<string>());
+			var mapKeys = Redis.GetValues(keysMap.Keys.ToList<string>());
 
 			foreach (var entry in keysMap)
 			{
@@ -269,7 +269,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_AcquireLock()
 		{
-			Redis.Increment("key"); //1
+			Redis.IncrementValue("key"); //1
 
 			var asyncResults = 5.TimesAsync(i =>
 				IncrementKeyInsideLock(i, new RedisClient(TestConfig.SingleHost)));
@@ -299,7 +299,7 @@ namespace ServiceStack.Redis.Tests
 		public void Can_AcquireLock_TimeOut()
 		{
 
-			Redis.Increment("key"); //1
+			Redis.IncrementValue("key"); //1
 			var acquiredLock = Redis.AcquireLock("testlock");
 			var waitFor = TimeSpan.FromMilliseconds(1000);
 			var now = DateTime.Now;
@@ -310,7 +310,7 @@ namespace ServiceStack.Redis.Tests
 				{
 					using (client.AcquireLock("testlock", waitFor))
 					{
-						Redis.Increment("key"); //2
+						Redis.IncrementValue("key"); //2
 					}
 				}
 			}
@@ -331,12 +331,12 @@ namespace ServiceStack.Redis.Tests
 		public void Can_Append()
 		{
 			const string expectedString = "Hello, " + "World!";
-			Redis.SetString("key", "Hello, ");
-			var currentLength = Redis.Append("key", "World!");
+			Redis.SetEntry("key", "Hello, ");
+			var currentLength = Redis.AppendToValue("key", "World!");
 
 			Assert.That(currentLength, Is.EqualTo(expectedString.Length));
 
-			var val = Redis.GetString("key");
+			var val = Redis.GetValue("key");
 			Assert.That(val, Is.EqualTo(expectedString));
 		}
 
@@ -344,13 +344,13 @@ namespace ServiceStack.Redis.Tests
 		public void Can_Substring()
 		{
 			const string helloWorld = "Hello, World!";
-			Redis.SetString("key", helloWorld);
+			Redis.SetEntry("key", helloWorld);
 
 			var fromIndex = "Hello, ".Length;
 			var toIndex = "Hello, World".Length - 1;
 
 			var expectedString = helloWorld.Substring(fromIndex, toIndex - fromIndex + 1);
-			var world = Redis.Substring("key", fromIndex, toIndex);
+			var world = Redis.GetSubstring("key", fromIndex, toIndex);
 
 			Assert.That(world.Length, Is.EqualTo(expectedString.Length));
 		}

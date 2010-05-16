@@ -41,9 +41,9 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_AddToList_and_GetAllFromList()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToList(List, x));
+			storeMembers.ForEach(x => redis.AddItemToList(List, x));
 
-			var members = redis.GetAllFromList(List);
+			var members = redis.GetAllItemsFromList(List);
 
 			Factory.AssertListsAreEqual(members, storeMembers);
 		}
@@ -52,7 +52,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_GetListCount()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToList(List, x));
+			storeMembers.ForEach(x => redis.AddItemToList(List, x));
 
 			var listCount = redis.GetListCount(List);
 
@@ -63,7 +63,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_GetItemFromList()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToList(List, x));
+			storeMembers.ForEach(x => redis.AddItemToList(List, x));
 
 			var storeMember3 = storeMembers[2];
 			var item3 = redis.GetItemFromList(List, 2);
@@ -75,12 +75,12 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_SetItemInList()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToList(List, x));
+			storeMembers.ForEach(x => redis.AddItemToList(List, x));
 
 			storeMembers[2] = Factory.NonExistingValue;
 			redis.SetItemInList(List, 2, Factory.NonExistingValue);
 
-			var members = redis.GetAllFromList(List);
+			var members = redis.GetAllItemsFromList(List);
 
 			Factory.AssertListsAreEqual(members, storeMembers);
 		}
@@ -89,9 +89,9 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_PopFromList()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToList(List, x));
+			storeMembers.ForEach(x => redis.AddItemToList(List, x));
 
-			var lastValue = redis.PopFromList(List);
+			var lastValue = redis.PopItemFromList(List);
 
 			Factory.AssertIsEqual(lastValue, storeMembers[storeMembers.Count - 1]);
 		}
@@ -100,9 +100,9 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_DequeueFromList()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToList(List, x));
+			storeMembers.ForEach(x => redis.AddItemToList(List, x));
 
-			var item1 = redis.DequeueFromList(List);
+			var item1 = redis.DequeueItemFromList(List);
 
 			Factory.AssertIsEqual(item1, (T)storeMembers.First());
 		}
@@ -114,15 +114,15 @@ namespace ServiceStack.Redis.Tests.Generic
 			var list2Members = Factory.CreateList2();
 			var lastItem = list1Members[list1Members.Count - 1];
 
-			list1Members.ForEach(x => redis.AddToList(List, x));
-			list2Members.ForEach(x => redis.AddToList(List2, x));
+			list1Members.ForEach(x => redis.AddItemToList(List, x));
+			list2Members.ForEach(x => redis.AddItemToList(List2, x));
 
 			list1Members.Remove(lastItem);
 			list2Members.Insert(0, lastItem);
-			redis.PopAndPushBetweenLists(List, List2);
+			redis.PopAndPushItemBetweenLists(List, List2);
 
-			var readList1 = redis.GetAllFromList(List);
-			var readList2 = redis.GetAllFromList(List2);
+			var readList1 = redis.GetAllItemsFromList(List);
+			var readList2 = redis.GetAllItemsFromList(List2);
 
 			Factory.AssertListsAreEqual(readList1, list1Members);
 			Factory.AssertListsAreEqual(readList2, list2Members);
@@ -133,7 +133,7 @@ namespace ServiceStack.Redis.Tests.Generic
 		public void Can_enumerate_small_list()
 		{
 			var storeMembers = Factory.CreateList();
-			storeMembers.ForEach(x => redis.AddToList(List, x));
+			storeMembers.ForEach(x => redis.AddItemToList(List, x));
 
 			var readMembers = new List<T>();
 			foreach (var item in redis.Lists[ListId])
@@ -150,7 +150,7 @@ namespace ServiceStack.Redis.Tests.Generic
 
 			const int listSize = 2500;
 
-			listSize.Times(x => redis.AddToList(List, Factory.CreateInstance(x)));
+			listSize.Times(x => redis.AddItemToList(List, Factory.CreateInstance(x)));
 
 			var i = 0;
 			foreach (var item in List)

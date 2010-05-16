@@ -62,37 +62,37 @@ namespace ServiceStack.Redis.Generic
 			return results;
 		}
 
-		public List<T> SortSet(IRedisSet<T> fromSet, int startingFrom, int endingAt)
+		public List<T> GetSortedEntryValues(IRedisSet<T> fromSet, int startingFrom, int endingAt)
 		{
 			var sortOptions = new SortOptions { Skip = startingFrom, Take = endingAt, };
 			var multiDataList = client.Sort(fromSet.Id, sortOptions);
 			return CreateList(multiDataList);
 		}
 
-		public HashSet<T> GetAllFromSet(IRedisSet<T> fromSet)
+		public HashSet<T> GetAllItemsFromSet(IRedisSet<T> fromSet)
 		{
 			var multiDataList = client.SMembers(fromSet.Id);
 			return CreateHashSet(multiDataList);
 		}
 
-		public void AddToSet(IRedisSet<T> toSet, T value)
+		public void AddItemToSet(IRedisSet<T> toSet, T item)
 		{
-			client.SAdd(toSet.Id, SerializeValue(value));
+			client.SAdd(toSet.Id, SerializeValue(item));
 		}
 
-		public void RemoveFromSet(IRedisSet<T> fromSet, T value)
+		public void RemoveItemFromSet(IRedisSet<T> fromSet, T item)
 		{
-			client.SRem(fromSet.Id, SerializeValue(value));
+			client.SRem(fromSet.Id, SerializeValue(item));
 		}
 
-		public T PopFromSet(IRedisSet<T> fromSet)
+		public T PopItemFromSet(IRedisSet<T> fromSet)
 		{
 			return DeserializeValue(client.SPop(fromSet.Id));
 		}
 
-		public void MoveBetweenSets(IRedisSet<T> fromSet, IRedisSet<T> toSet, T value)
+		public void MoveBetweenSets(IRedisSet<T> fromSet, IRedisSet<T> toSet, T item)
 		{
-			client.SMove(fromSet.Id, toSet.Id, SerializeValue(value));
+			client.SMove(fromSet.Id, toSet.Id, SerializeValue(item));
 		}
 
 		public int GetSetCount(IRedisSet<T> set)
@@ -100,9 +100,9 @@ namespace ServiceStack.Redis.Generic
 			return client.SCard(set.Id);
 		}
 
-		public bool SetContainsValue(IRedisSet<T> set, T value)
+		public bool SetContainsItem(IRedisSet<T> set, T item)
 		{
-			return client.SIsMember(set.Id, SerializeValue(value)) == 1;
+			return client.SIsMember(set.Id, SerializeValue(item)) == 1;
 		}
 
 		public HashSet<T> GetIntersectFromSets(params IRedisSet<T>[] sets)
@@ -138,7 +138,7 @@ namespace ServiceStack.Redis.Generic
 			client.SDiffStore(intoSet.Id, fromSet.Id, withSets.ConvertAll(x => x.Id).ToArray());
 		}
 
-		public T GetRandomEntryFromSet(IRedisSet<T> fromSet)
+		public T GetRandomItemFromSet(IRedisSet<T> fromSet)
 		{
 			return DeserializeValue(client.SRandMember(fromSet.Id));
 		}

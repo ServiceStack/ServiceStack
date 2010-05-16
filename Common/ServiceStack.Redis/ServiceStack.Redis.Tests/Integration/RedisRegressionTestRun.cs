@@ -93,18 +93,18 @@ namespace ServiceStack.Redis.Tests.Integration
 					client.Db = db;
 
 					var testClientKey = "test:" + host + ":" + clientNo;
-					client.SetString(testClientKey, testData);
-					var result = client.GetString(testClientKey) ?? "";
+					client.SetEntry(testClientKey, testData);
+					var result = client.GetValue(testClientKey) ?? "";
 					LogResult(db, testClientKey, result);
 
 					var testClientSetKey = "test+set:" + host + ":" + clientNo;
-					client.AddToSet(testClientSetKey, testData);
-					var resultSet = client.GetAllFromSet(testClientSetKey);
+					client.AddItemToSet(testClientSetKey, testData);
+					var resultSet = client.GetAllItemsFromSet(testClientSetKey);
 					LogResult(db, testClientKey, resultSet.ToList().FirstOrDefault());
 
 					var testClientListKey = "test+list:" + host + ":" + clientNo;
-					client.AddToList(testClientListKey, testData);
-					var resultList = client.GetAllFromList(testClientListKey);
+					client.AddItemToList(testClientListKey, testData);
+					var resultList = client.GetAllItemsFromList(testClientListKey);
 					LogResult(db, testClientKey, resultList.FirstOrDefault());
 
 				}

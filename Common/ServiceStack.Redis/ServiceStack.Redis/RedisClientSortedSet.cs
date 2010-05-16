@@ -36,7 +36,7 @@ namespace ServiceStack.Redis
 		public IEnumerator<string> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-				? client.GetAllFromSortedSet(setId).GetEnumerator()
+				? client.GetAllItemsFromSortedSet(setId).GetEnumerator()
 				: GetPagingEnumerator();
 		}
 
@@ -62,7 +62,7 @@ namespace ServiceStack.Redis
 
 		public void Add(string item)
 		{
-			client.AddToSortedSet(setId, item);
+			client.AddItemToSortedSet(setId, item);
 		}
 
 		public void Clear()
@@ -72,18 +72,18 @@ namespace ServiceStack.Redis
 
 		public bool Contains(string item)
 		{
-			return client.SortedSetContainsValue(setId, item);
+			return client.SortedSetContainsItem(setId, item);
 		}
 
 		public void CopyTo(string[] array, int arrayIndex)
 		{
-			var allItemsInSet = client.GetAllFromSortedSet(setId);
+			var allItemsInSet = client.GetAllItemsFromSortedSet(setId);
 			allItemsInSet.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(string item)
 		{
-			client.RemoveFromSortedSet(setId, item);
+			client.RemoveItemFromSortedSet(setId, item);
 			return true;
 		}
 
@@ -104,7 +104,7 @@ namespace ServiceStack.Redis
 
 		public List<string> GetAll()
 		{
-			return client.GetAllFromSortedSet(setId);
+			return client.GetAllItemsFromSortedSet(setId);
 		}
 
 		public List<string> GetRange(int startingRank, int endingRank)

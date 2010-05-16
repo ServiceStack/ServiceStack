@@ -40,7 +40,7 @@ namespace ServiceStack.Redis.Generic
 		public IEnumerator<T> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-					? client.GetAllFromSet(this).GetEnumerator()
+					? client.GetAllItemsFromSet(this).GetEnumerator()
 					: GetPagingEnumerator();
 		}
 
@@ -50,7 +50,7 @@ namespace ServiceStack.Redis.Generic
 			List<T> pageResults;
 			do
 			{
-				pageResults = client.SortSet(this, skip, skip + PageLimit - 1);
+				pageResults = client.GetSortedEntryValues(this, skip, skip + PageLimit - 1);
 				foreach (var result in pageResults)
 				{
 					yield return result;
@@ -66,28 +66,28 @@ namespace ServiceStack.Redis.Generic
 
 		public void Add(T item)
 		{
-			client.AddToSet(this, item);
+			client.AddItemToSet(this, item);
 		}
 
 		public void Clear()
 		{
-			client.Remove(setId);
+			client.RemoveEntry(setId);
 		}
 
 		public bool Contains(T item)
 		{
-			return client.SetContainsValue(this, item);
+			return client.SetContainsItem(this, item);
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			var allItemsInSet = client.GetAllFromSet(this);
+			var allItemsInSet = client.GetAllItemsFromSet(this);
 			allItemsInSet.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(T item)
 		{
-			client.RemoveFromSet(this, item);
+			client.RemoveItemFromSet(this, item);
 			return true;
 		}
 
@@ -104,22 +104,22 @@ namespace ServiceStack.Redis.Generic
 
 		public List<T> Sort(int startingFrom, int endingAt)
 		{
-			return client.SortSet(this, startingFrom, endingAt);
+			return client.GetSortedEntryValues(this, startingFrom, endingAt);
 		}
 
 		public HashSet<T> GetAll()
 		{
-			return client.GetAllFromSet(this);
+			return client.GetAllItemsFromSet(this);
 		}
 
 		public T PopRandomItem()
 		{
-			return client.PopFromSet(this);
+			return client.PopItemFromSet(this);
 		}
 
 		public T GetRandomItem()
 		{
-			return client.GetRandomEntryFromSet(this);
+			return client.GetRandomItemFromSet(this);
 		}
 
 		public void MoveTo(T item, IRedisSet<T> toSet)

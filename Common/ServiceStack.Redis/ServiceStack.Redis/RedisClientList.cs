@@ -40,7 +40,7 @@ namespace ServiceStack.Redis
 		public IEnumerator<string> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-				? client.GetAllFromList(listId).GetEnumerator()
+				? client.GetAllItemsFromList(listId).GetEnumerator()
 				: GetPagingEnumerator();
 		}
 
@@ -66,7 +66,7 @@ namespace ServiceStack.Redis
 
 		public void Add(string item)
 		{
-			client.AddToList(listId, item);
+			client.AddItemToList(listId, item);
 		}
 
 		public void Clear()
@@ -86,13 +86,13 @@ namespace ServiceStack.Redis
 
 		public void CopyTo(string[] array, int arrayIndex)
 		{
-			var allItemsInList = client.GetAllFromList(listId);
+			var allItemsInList = client.GetAllItemsFromList(listId);
 			allItemsInList.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(string item)
 		{
-			return client.RemoveValueFromList(listId, item) > 0;
+			return client.RemoveItemFromList(listId, item) > 0;
 		}
 
 		public int Count
@@ -129,7 +129,7 @@ namespace ServiceStack.Redis
 			//TODO: replace with native implementation when one exists
 			var markForDelete = Guid.NewGuid().ToString();
 			client.SetItemInList(listId, index, markForDelete);
-			client.RemoveValueFromList(listId, markForDelete);
+			client.RemoveItemFromList(listId, markForDelete);
 		}
 
 		public string this[int index]
@@ -140,7 +140,7 @@ namespace ServiceStack.Redis
 
 		public List<string> GetAll()
 		{
-			return client.GetAllFromList(listId);
+			return client.GetAllItemsFromList(listId);
 		}
 
 		public List<string> GetRange(int startingFrom, int endingAt)
@@ -165,12 +165,12 @@ namespace ServiceStack.Redis
 
 		public int RemoveValue(string value)
 		{
-			return client.RemoveValueFromList(listId, value);
+			return client.RemoveItemFromList(listId, value);
 		}
 
 		public int RemoveValue(string value, int noOfMatches)
 		{
-			return client.RemoveValueFromList(listId, value, noOfMatches);
+			return client.RemoveItemFromList(listId, value, noOfMatches);
 		}
 
 		public void Append(string value)
@@ -195,42 +195,42 @@ namespace ServiceStack.Redis
 
 		public void Enqueue(string value)
 		{
-			client.EnqueueOnList(listId, value);
+			client.EnqueueItemOnList(listId, value);
 		}
 
 		public void Prepend(string value)
 		{
-			client.PrependToList(listId, value);
+			client.PrependItemToList(listId, value);
 		}
 
 		public void Push(string value)
 		{
-			client.PushToList(listId, value);
+			client.PushItemToList(listId, value);
 		}
 
 		public string Pop()
 		{
-			return client.PopFromList(listId);
+			return client.PopItemFromList(listId);
 		}
 
 		public string BlockingPop(TimeSpan? timeOut)
 		{
-			return client.BlockingPopFromList(listId, timeOut);
+			return client.BlockingPopItemFromList(listId, timeOut);
 		}
 
 		public string Dequeue()
 		{
-			return client.DequeueFromList(listId);
+			return client.DequeueItemFromList(listId);
 		}
 
 		public string BlockingDequeue(TimeSpan? timeOut)
 		{
-			return client.BlockingDequeueFromList(listId, timeOut);
+			return client.BlockingDequeueItemFromList(listId, timeOut);
 		}
 
 		public string PopAndPush(IRedisList toList)
 		{
-			return client.PopAndPushBetweenLists(listId, toList.Id);
+			return client.PopAndPushItemBetweenLists(listId, toList.Id);
 		}
 	}
 }

@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{900F6D5C-8955-40B0-9B0B-888904E42BC3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RedisWebServices.ServiceModel</RootNamespace>
+    <AssemblyName>RedisWebServices.ServiceModel</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\release\latest\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\release\latest\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.ServiceInterface, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\release\latest\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Operations\Admin\SlaveOf.cs" />
+    <Compile Include="Operations\Admin\Shutdown.cs" />
+    <Compile Include="Operations\Admin\FlushAll.cs" />
+    <Compile Include="Operations\Admin\FlushDb.cs" />
+    <Compile Include="Operations\Admin\RewriteAppendOnlyFileAsync.cs" />
+    <Compile Include="Operations\Admin\Save.cs" />
+    <Compile Include="Operations\Messaging\CreateSubscription.cs" />
+    <Compile Include="Operations\Hash\GetValuesFromHash.cs" />
+    <Compile Include="Operations\Messaging\PublishMessage.cs" />
+    <Compile Include="Operations\Hash\GetAllEntriesFromHash.cs" />
+    <Compile Include="Operations\Hash\GetHashValues.cs" />
+    <Compile Include="Operations\Hash\GetHashKeys.cs" />
+    <Compile Include="Operations\Hash\GetHashCount.cs" />
+    <Compile Include="Operations\Hash\RemoveEntryFromHash.cs" />
+    <Compile Include="Operations\List\BlockingDequeueItemFromList.cs" />
+    <Compile Include="Operations\Hash\GetValueFromHash.cs" />
+    <Compile Include="Operations\Hash\IncrementValueInHash.cs" />
+    <Compile Include="Operations\Hash\SetRangeInHash.cs" />
+    <Compile Include="Operations\Hash\SetEntryInHashIfNotExists.cs" />
+    <Compile Include="Operations\Hash\SetEntryInHash.cs" />
+    <Compile Include="Operations\Hash\HashContainsEntry.cs" />
+    <Compile Include="Operations\SortedSet\SortedSetContainsItem.cs" />
+    <Compile Include="Operations\SortedSet\StoreUnionFromSortedSets.cs" />
+    <Compile Include="Operations\SortedSet\StoreIntersectFromSortedSets.cs" />
+    <Compile Include="Operations\SortedSet\GetItemScoreInSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\GetSortedSetCount.cs" />
+    <Compile Include="Operations\SortedSet\RemoveRangeFromSortedSetByScore.cs" />
+    <Compile Include="Operations\SortedSet\RemoveRangeFromSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\GetRangeWithScoresFromSortedSetByHighestScore.cs" />
+    <Compile Include="Operations\SortedSet\GetRangeWithScoresFromSortedSetByLowestScore.cs" />
+    <Compile Include="Operations\SortedSet\GetRangeFromSortedSetByHighestScore.cs" />
+    <Compile Include="Operations\SortedSet\GetRangeFromSortedSetByLowestScore.cs" />
+    <Compile Include="Operations\SortedSet\GetRangeWithScoresFromSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\GetRangeFromSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\GetAllItemsFromSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\GetItemIndexInSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\IncrementItemInSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\PopItemWithHighestScoreFromSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\PopItemWithLowestScoreFromSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\RemoveItemFromSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\AddItemToSortedSet.cs" />
+    <Compile Include="Operations\List\PopAndPushItemBetweenLists.cs" />
+    <Compile Include="Operations\List\BlockingPopItemFromList.cs" />
+    <Compile Include="Operations\List\PopItemFromList.cs" />
+    <Compile Include="Operations\List\PushItemToList.cs" />
+    <Compile Include="Operations\List\DequeueItemFromList.cs" />
+    <Compile Include="Operations\List\EnqueueItemOnList.cs" />
+    <Compile Include="Operations\List\SetItemInList.cs" />
+    <Compile Include="Operations\List\GetItemFromList.cs" />
+    <Compile Include="Operations\List\GetListCount.cs" />
+    <Compile Include="Operations\List\RemoveItemFromList.cs" />
+    <Compile Include="Operations\List\TrimList.cs" />
+    <Compile Include="Operations\List\RemoveEndFromList.cs" />
+    <Compile Include="Operations\List\BlockingRemoveStartFromList.cs" />
+    <Compile Include="Operations\List\RemoveStartFromList.cs" />
+    <Compile Include="Operations\List\RemoveAllFromList.cs" />
+    <Compile Include="Operations\List\PrependItemToList.cs" />
+    <Compile Include="Operations\List\AddItemToList.cs" />
+    <Compile Include="Operations\List\GetRangeFromSortedList.cs" />
+    <Compile Include="Operations\List\GetRangeFromList.cs" />
+    <Compile Include="Operations\List\GetAllItemsFromList.cs" />
+    <Compile Include="Operations\Set\GetRandomItemFromSet.cs" />
+    <Compile Include="Operations\Set\StoreDifferencesFromSet.cs" />
+    <Compile Include="Operations\Set\GetDifferencesFromSet.cs" />
+    <Compile Include="Operations\Set\StoreUnionFromSets.cs" />
+    <Compile Include="Operations\Set\GetUnionFromSets.cs" />
+    <Compile Include="Operations\Set\StoreIntersectFromSets.cs" />
+    <Compile Include="Operations\Set\GetIntersectFromSets.cs" />
+    <Compile Include="Operations\Set\GetSetCount.cs" />
+    <Compile Include="Operations\Set\MoveBetweenSets.cs" />
+    <Compile Include="Operations\Set\PopItemFromSet.cs" />
+    <Compile Include="Operations\Set\RemoveItemFromSet.cs" />
+    <Compile Include="Operations\Set\AddItemToSet.cs" />
+    <Compile Include="Operations\Set\GetAllItemsFromSet.cs" />
+    <Compile Include="Operations\Common\GetSortedEntryValues.cs" />
+    <Compile Include="Operations\Common\GetValues.cs" />
+    <Compile Include="Operations\Common\GetTimeToLive.cs" />
+    <Compile Include="Operations\Common\GetAllKeys.cs" />
+    <Compile Include="Operations\Set\SetContainsItem.cs" />
+    <Compile Include="Operations\Common\ExpireEntry.cs" />
+    <Compile Include="Operations\Common\GetRandomKey.cs" />
+    <Compile Include="Operations\Common\GetEntryType.cs" />
+    <Compile Include="Operations\Common\GetSubstring.cs" />
+    <Compile Include="Operations\Common\AppendToValue.cs" />
+    <Compile Include="Operations\Common\DecrementValue.cs" />
+    <Compile Include="Operations\Common\IncrementValue.cs" />
+    <Compile Include="Operations\Common\RemoveEntry.cs" />
+    <Compile Include="Operations\Common\ContainsKey.cs" />
+    <Compile Include="Operations\Common\GetAndSetEntry.cs" />
+    <Compile Include="Operations\Common\SetEntryIfNotExists.cs" />
+    <Compile Include="Operations\Common\SetEntry.cs" />
+    <Compile Include="Operations\Common\GetValue.cs" />
+    <Compile Include="Operations\Common\SearchKeys.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Operations\Common\Ping.cs" />
+    <Compile Include="Types\ArrayOfItemWithScore.cs" />
+    <Compile Include="Types\ArrayOfKeyValuePair.cs" />
+    <Compile Include="Types\KeyValuePair.cs" />
+    <Compile Include="Types\ItemWithScore.cs" />
+    <Compile Include="Types\KeyType.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

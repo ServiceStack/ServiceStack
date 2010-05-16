@@ -67,7 +67,7 @@ namespace ServiceStack.Redis.Tests.Examples
 			var redisClient = new RedisClient(TestConfig.SingleHost);
 
 			//Initialize and set counter to '1'
-			redisClient.Increment("atomic-counter"); 
+			redisClient.IncrementValue("atomic-counter"); 
 			
 			//Acquire lock and never release it
 			redisClient.AcquireLock("testlock");
@@ -83,7 +83,7 @@ namespace ServiceStack.Redis.Tests.Examples
 					using (newClient.AcquireLock("testlock", waitFor))
 					{
 						//If lock was acquired this would be incremented to '2'
-						redisClient.Increment("atomic-counter"); 
+						redisClient.IncrementValue("atomic-counter"); 
 					}
 				}
 			}

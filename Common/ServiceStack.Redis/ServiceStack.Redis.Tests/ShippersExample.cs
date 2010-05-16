@@ -92,18 +92,18 @@ namespace ServiceStack.Redis.Tests
 
 				Dump("ADDED A PROSPECTIVE SHIPPER:", prospectiveShippers);
 
-				redis.PopAndPushBetweenLists(prospectiveShippers, currentShippers);
+				redis.PopAndPushItemBetweenLists(prospectiveShippers, currentShippers);
 
 				Dump("CURRENT SHIPPERS AFTER POP n' PUSH:", currentShippers);
 				Dump("PROSPECTIVE SHIPPERS AFTER POP n' PUSH:", prospectiveShippers);
 
-				var poppedShipper = redis.PopFromList(currentShippers);
+				var poppedShipper = redis.PopItemFromList(currentShippers);
 				Dump("POPPED a SHIPPER:", poppedShipper);
 				Dump("CURRENT SHIPPERS AFTER POP:", currentShippers);
 
 				//reset sequence and delete all lists
 				redis.SetSequence(0);
-				redis.Remove(currentShippers, prospectiveShippers);
+				redis.RemoveEntry(currentShippers, prospectiveShippers);
 				Dump("DELETING CURRENT AND PROSPECTIVE SHIPPERS:", currentShippers);
 			}
 

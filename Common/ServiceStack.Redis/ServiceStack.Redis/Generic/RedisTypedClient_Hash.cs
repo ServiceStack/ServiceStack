@@ -24,19 +24,19 @@ namespace ServiceStack.Redis.Generic
 			return new RedisClientHash<TKey, T>(this, hashId);
 		}
 
-		public bool HashContainsKey<TKey>(IRedisHash<TKey, T> hash, TKey key)
+		public bool HashContainsEntry<TKey>(IRedisHash<TKey, T> hash, TKey key)
 		{
-			return client.HashContainsKey(hash.Id, key.SerializeToString());
+			return client.HashContainsEntry(hash.Id, key.SerializeToString());
 		}
 
-		public bool SetItemInHash<TKey>(IRedisHash<TKey, T> hash, TKey key, T value)
+		public bool SetEntryInHash<TKey>(IRedisHash<TKey, T> hash, TKey key, T value)
 		{
-			return client.SetItemInHash(hash.Id, key.SerializeToString(), value.SerializeToString());
+			return client.SetEntryInHash(hash.Id, key.SerializeToString(), value.SerializeToString());
 		}
 
-		public bool SetItemInHashIfNotExists<TKey>(IRedisHash<TKey, T> hash, TKey key, T value)
+		public bool SetEntryInHashIfNotExists<TKey>(IRedisHash<TKey, T> hash, TKey key, T value)
 		{
-			return client.SetItemInHashIfNotExists(hash.Id, key.SerializeToString(), value.SerializeToString());
+			return client.SetEntryInHashIfNotExists(hash.Id, key.SerializeToString(), value.SerializeToString());
 		}
 
 		public void SetRangeInHash<TKey>(IRedisHash<TKey, T> hash, IEnumerable<KeyValuePair<TKey, T>> keyValuePairs)
@@ -47,15 +47,15 @@ namespace ServiceStack.Redis.Generic
 			client.SetRangeInHash(hash.Id, stringKeyValuePairs);
 		}
 
-		public T GetItemFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key)
+		public T GetValueFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key)
 		{
-			return client.GetItemFromHash(hash.Id, key.SerializeToString())
+			return client.GetValueFromHash(hash.Id, key.SerializeToString())
 				.DeserializeFromString<T>();
 		}
 
-		public bool RemoveFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key)
+		public bool RemoveEntryFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key)
 		{
-			return client.RemoveFromHash(hash.Id, key.SerializeToString());
+			return client.RemoveEntryFromHash(hash.Id, key.SerializeToString());
 		}
 
 		public int GetHashCount<TKey>(IRedisHash<TKey, T> hash)
@@ -73,9 +73,9 @@ namespace ServiceStack.Redis.Generic
 			return client.GetHashValues(hash.Id).ConvertEachTo<T>();
 		}
 
-		public Dictionary<TKey, T> GetAllFromHash<TKey>(IRedisHash<TKey, T> hash)
+		public Dictionary<TKey, T> GetAllEntriesFromHash<TKey>(IRedisHash<TKey, T> hash)
 		{
-			return client.GetAllFromHash(hash.Id).ConvertEachTo<TKey, T>();
+			return client.GetAllEntriesFromHash(hash.Id).ConvertEachTo<TKey, T>();
 		}
 
 	}

@@ -59,8 +59,8 @@ namespace ServiceStack.Redis
 
 		public string this[string key]
 		{
-			get { return GetString(key); }
-			set { SetString(key, value); }
+			get { return GetValue(key); }
+			set { SetEntry(key, value); }
 		}
 
 		public string GetTypeSequenceKey<T>()
@@ -78,15 +78,12 @@ namespace ServiceStack.Redis
 			base.BgRewriteAof();
 		}
 
-		public List<string> AllKeys
+		public List<string> GetAllKeys()
 		{
-			get
-			{
-				return GetKeys("*");
-			}
+			return SearchKeys("*");
 		}
 
-		public void SetString(string key, string value)
+		public void SetEntry(string key, string value)
 		{
 			var bytesValue = value != null
 				? value.ToUtf8Bytes()
@@ -95,7 +92,7 @@ namespace ServiceStack.Redis
 			Set(key, bytesValue);
 		}
 
-		public void SetString(string key, string value, TimeSpan expireIn)
+		public void SetEntry(string key, string value, TimeSpan expireIn)
 		{
 			var bytesValue = value != null
 				? value.ToUtf8Bytes()
@@ -104,7 +101,7 @@ namespace ServiceStack.Redis
 			SetEx(key, (int)expireIn.TotalSeconds, bytesValue);
 		}
 
-		public bool SetIfNotExists(string key, string value)
+		public bool SetEntryIfNotExists(string key, string value)
 		{
 			if (value == null)
 				throw new ArgumentNullException("value");
@@ -112,7 +109,7 @@ namespace ServiceStack.Redis
 			return SetNX(key, value.ToUtf8Bytes()) == Success;
 		}
 
-		public string GetString(string key)
+		public string GetValue(string key)
 		{
 			var bytes = Get(key);
 			return bytes == null
@@ -120,7 +117,7 @@ namespace ServiceStack.Redis
 				: bytes.FromUtf8Bytes();
 		}
 
-		public string GetAndSetString(string key, string value)
+		public string GetAndSetEntry(string key, string value)
 		{
 			return GetSet(key, value.ToUtf8Bytes()).FromUtf8Bytes();
 		}
@@ -135,56 +132,56 @@ namespace ServiceStack.Redis
 			return Del(key) == Success;
 		}
 
-		public bool Remove(params string[] keys)
+		public bool RemoveEntry(params string[] keys)
 		{
 			if (keys.Length == 0) return false;
 
 			return Del(keys) == Success;
 		}
 
-		public int Increment(string key)
+		public int IncrementValue(string key)
 		{
 			return Incr(key);
 		}
 
-		public int IncrementBy(string key, int count)
+		public int IncrementValueBy(string key, int count)
 		{
 			return IncrBy(key, count);
 		}
 
-		public int Decrement(string key)
+		public int DecrementValue(string key)
 		{
 			return Decr(key);
 		}
 
-		public int DecrementBy(string key, int count)
+		public int DecrementValueBy(string key, int count)
 		{
 			return DecrBy(key, count);
 		}
 
-		public int Append(string key, string value)
+		public int AppendToValue(string key, string value)
 		{
 			return base.Append(key, value.ToUtf8Bytes());
 		}
 
-		public string Substring(string key, int fromIndex, int toIndex)
+		public string GetSubstring(string key, int fromIndex, int toIndex)
 		{
 			return base.Substr(key, fromIndex, toIndex).FromUtf8Bytes();
 		}
 
-		public string NewRandomKey()
+		public string GetRandomKey()
 		{
 			return RandomKey();
 		}
 
-		public bool ExpireKeyIn(string key, TimeSpan expireIn)
+		public bool ExpireEntryIn(string key, TimeSpan expireIn)
 		{
 			return Expire(key, (int)expireIn.TotalSeconds) == Success;
 		}
 
-		public bool ExpireKeyAt(string key, DateTime dateTime)
+		public bool ExpireEntryAt(string key, DateTime expireAt)
 		{
-			return ExpireAt(key, dateTime.ToUnixTime()) == Success;
+			return ExpireAt(key, expireAt.ToUnixTime()) == Success;
 		}
 
 		public TimeSpan GetTimeToLive(string key)
@@ -212,7 +209,7 @@ namespace ServiceStack.Redis
 			return new RedisLock(this, key, timeOut);
 		}
 
-		public List<string> GetKeys(string pattern)
+		public List<string> SearchKeys(string pattern)
 		{
 			var hasBug = this.ServerVersion.CompareTo("1.2.6") <= 0;
 			if (hasBug)
@@ -227,7 +224,7 @@ namespace ServiceStack.Redis
 			return multiDataList.ToStringList();
 		}
 
-		public List<string> GetKeyValues(List<string> keys)
+		public List<string> GetValues(List<string> keys)
 		{
 			var resultBytesArray = MGet(keys.ToArray());
 
@@ -243,7 +240,7 @@ namespace ServiceStack.Redis
 			return results;
 		}
 
-		public List<T> GetKeyValues<T>(List<string> keys)
+		public List<T> GetValues<T>(List<string> keys)
 		{
 			if (keys == null) throw new ArgumentNullException("keys");
 			if (keys.Count == 0) return new List<T>();
@@ -301,7 +298,7 @@ namespace ServiceStack.Redis
 			}
 			else
 			{
-				this.AddToSet(typeIdsSetKey, id);
+				this.AddItemToSet(typeIdsSetKey, id);
 			}
 		}
 
@@ -317,7 +314,7 @@ namespace ServiceStack.Redis
 			}
 			else
 			{
-				ids.ForEach(x => this.AddToSet(typeIdsSetKey, x));
+				ids.ForEach(x => this.AddItemToSet(typeIdsSetKey, x));
 			}
 		}
 
@@ -331,7 +328,7 @@ namespace ServiceStack.Redis
 			}
 			else
 			{
-				ids.ForEach(x => this.RemoveFromSet(typeIdsSetKey, x));
+				ids.ForEach(x => this.RemoveItemFromSet(typeIdsSetKey, x));
 			}
 		}
 
@@ -345,7 +342,7 @@ namespace ServiceStack.Redis
 			}
 			else
 			{
-				values.ForEach(x => this.RemoveFromSet(typeIdsSetKey, x.GetId().ToString()));
+				values.ForEach(x => this.RemoveItemFromSet(typeIdsSetKey, x.GetId().ToString()));
 			}
 		}
 
@@ -357,7 +354,7 @@ namespace ServiceStack.Redis
 				foreach (var id in entry.Value)
 				{
 					var registeredTypeIdsWithinTransaction = GetRegisteredTypeIdsWithinTransaction(typeIdsSetKey);
-					registeredTypeIdsWithinTransaction.ForEach(x => this.AddToSet(typeIdsSetKey, id));
+					registeredTypeIdsWithinTransaction.ForEach(x => this.AddItemToSet(typeIdsSetKey, id));
 				}
 			}
 			registeredTypeIdsWithinTransactionMap = new Dictionary<string, HashSet<string>>();
@@ -372,7 +369,7 @@ namespace ServiceStack.Redis
 		public T GetById<T>(object id) where T : class, new()
 		{
 			var key = IdUtils.CreateUrn<T>(id);
-			var valueString = this.GetString(key);
+			var valueString = this.GetValue(key);
 			var value = TypeSerializer.DeserializeFromString<T>(valueString);
 			return value;
 		}
@@ -384,16 +381,16 @@ namespace ServiceStack.Redis
 				return new List<T>();
 
 			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
-			return GetKeyValues<T>(urnKeys);
+			return GetValues<T>(urnKeys);
 		}
 
 		public IList<T> GetAll<T>()
 			where T : class, new()
 		{
 			var typeIdsSetKy = this.GetTypeIdsSetKey<T>();
-			var allTypeIds = this.GetAllFromSet(typeIdsSetKy);
+			var allTypeIds = this.GetAllItemsFromSet(typeIdsSetKy);
 			var urnKeys = allTypeIds.ConvertAll(x => IdUtils.CreateUrn<T>(x));
-			return GetKeyValues<T>(urnKeys);
+			return GetValues<T>(urnKeys);
 		}
 
 		public T Store<T>(T entity)
@@ -402,7 +399,7 @@ namespace ServiceStack.Redis
 			var urnKey = entity.CreateUrn();
 			var valueString = TypeSerializer.SerializeToString(entity);
 
-			this.SetString(urnKey, valueString);
+			this.SetEntry(urnKey, valueString);
 			RegisterTypeId(entity);
 
 			return entity;
@@ -449,16 +446,16 @@ namespace ServiceStack.Redis
 			if (ids == null) return;
 
 			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
-			this.Remove(urnKeys.ToArray());
+			this.RemoveEntry(urnKeys.ToArray());
 			this.RemoveTypeIds<T>(ids.ConvertAll(x => x.ToString()).ToArray());
 		}
 
 		public void DeleteAll<T>() where T : class, new()
 		{
 			var typeIdsSetKey = this.GetTypeIdsSetKey<T>();
-			var ids = this.GetAllFromSet(typeIdsSetKey);
+			var ids = this.GetAllItemsFromSet(typeIdsSetKey);
 			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
-			this.Remove(urnKeys.ToArray());
+			this.RemoveEntry(urnKeys.ToArray());
 			this.Remove(typeIdsSetKey);
 		}
 

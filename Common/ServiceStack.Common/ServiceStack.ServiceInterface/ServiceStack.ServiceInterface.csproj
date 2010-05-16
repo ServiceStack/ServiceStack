@@ -89,6 +89,7 @@
     <Compile Include="ServiceModel\ResponseStatus.cs" />
     <Compile Include="ServiceModel\ResponseStatusTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceResponseException.cs" />
     <Compile Include="Session\CachedUserSessionManager.cs" />
     <Compile Include="Session\IUserSessionManager.cs" />
     <Compile Include="Session\UserClientSession.cs" />

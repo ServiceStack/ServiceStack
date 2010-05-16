@@ -16,7 +16,7 @@ namespace ServiceStack.Redis.Tests
 			const string channelName = "CHANNEL";
 			const string message = "Hello, World!";
 
-			Redis.Increment("CanUseNormalClient");
+			Redis.IncrementValue("CanUseNormalClient");
 
 			using (var subscription = Redis.CreateSubscription())
 			{
@@ -52,7 +52,7 @@ namespace ServiceStack.Redis.Tests
 			}
 
 			Log("Using as normal client again...");
-			Redis.Increment("CanUseNormalClient");
+			Redis.IncrementValue("CanUseNormalClient");
 			Assert.That(Redis.Get<int>("CanUseNormalClient"), Is.EqualTo(2));
 		}
 
@@ -64,7 +64,7 @@ namespace ServiceStack.Redis.Tests
 			const int publishMessageCount = 5;
 			var messagesReceived = 0;
 
-			Redis.Increment("CanUseNormalClient");
+			Redis.IncrementValue("CanUseNormalClient");
 
 			using (var subscription = Redis.CreateSubscription())
 			{
@@ -108,7 +108,7 @@ namespace ServiceStack.Redis.Tests
 			}
 
 			Log("Using as normal client again...");
-			Redis.Increment("CanUseNormalClient");
+			Redis.IncrementValue("CanUseNormalClient");
 			Assert.That(Redis.Get<int>("CanUseNormalClient"), Is.EqualTo(2));
 
 			Assert.That(messagesReceived, Is.EqualTo(publishMessageCount));
@@ -128,7 +128,7 @@ namespace ServiceStack.Redis.Tests
 			var channelsSubscribed = 0;
 			var channelsUnSubscribed = 0;
 
-			Redis.Increment("CanUseNormalClient");
+			Redis.IncrementValue("CanUseNormalClient");
 
 			using (var subscription = Redis.CreateSubscription())
 			{
@@ -168,7 +168,7 @@ namespace ServiceStack.Redis.Tests
 			}
 
 			Log("Using as normal client again...");
-			Redis.Increment("CanUseNormalClient");
+			Redis.IncrementValue("CanUseNormalClient");
 			Assert.That(Redis.Get<int>("CanUseNormalClient"), Is.EqualTo(2));
 
 			Assert.That(messagesReceived, Is.EqualTo(publishChannelCount));

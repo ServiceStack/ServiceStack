@@ -24,24 +24,24 @@ namespace ServiceStack.Redis
 	{
 		public void RemoveAll(IEnumerable<string> keys)
 		{
-			Remove(keys.ToArray());
+			RemoveEntry(keys.ToArray());
 		}
 
 		public T Get<T>(string key)
 		{
 			return typeof(T) == typeof(byte[])
 				? (T)(object)base.Get(key)
-				: TypeSerializer.DeserializeFromString<T>(GetString(key));
+				: TypeSerializer.DeserializeFromString<T>(GetValue(key));
 		}
 
 		public long Increment(string key, uint amount)
 		{
-			return IncrementBy(key, (int)amount);
+			return IncrementValueBy(key, (int)amount);
 		}
 
 		public long Decrement(string key, uint amount)
 		{
-			return DecrementBy(key, (int)amount);
+			return DecrementValueBy(key, (int)amount);
 		}
 
 		public bool Add<T>(string key, T value)
@@ -53,7 +53,7 @@ namespace ServiceStack.Redis
 			}
 
 			var valueString = TypeSerializer.SerializeToString(value);
-			return SetIfNotExists(key, valueString);
+			return SetEntryIfNotExists(key, valueString);
 		}
 
 		public bool Set<T>(string key, T value)
@@ -66,7 +66,7 @@ namespace ServiceStack.Redis
 			}
 
 			var valueString = TypeSerializer.SerializeToString(value);
-			SetString(key, valueString);
+			SetEntry(key, valueString);
 			return true;
 		}
 
@@ -82,7 +82,7 @@ namespace ServiceStack.Redis
 				return true;
 			}
 
-			SetString(key, TypeSerializer.SerializeToString(value));
+			SetEntry(key, TypeSerializer.SerializeToString(value));
 			return true;
 		}
 
@@ -90,7 +90,7 @@ namespace ServiceStack.Redis
 		{
 			if (Add(key, value))
 			{
-				ExpireKeyAt(key, expiresAt);
+				ExpireEntryAt(key, expiresAt);
 				return true;
 			}
 			return false;
@@ -106,14 +106,14 @@ namespace ServiceStack.Redis
 			}
 
 			var valueString = TypeSerializer.SerializeToString(value);
-			SetString(key, valueString, expiresIn);
+			SetEntry(key, valueString, expiresIn);
 			return true;
 		}
 
 		public bool Set<T>(string key, T value, DateTime expiresAt)
 		{
 			Set(key, value);
-			ExpireKeyAt(key, expiresAt);
+			ExpireEntryAt(key, expiresAt);
 			return true;
 		}
 
@@ -121,7 +121,7 @@ namespace ServiceStack.Redis
 		{
 			if (Replace(key, value))
 			{
-				ExpireKeyAt(key, expiresAt);
+				ExpireEntryAt(key, expiresAt);
 				return true;
 			}
 			return false;
@@ -131,7 +131,7 @@ namespace ServiceStack.Redis
 		{
 			if (Add(key, value))
 			{
-				ExpireKeyIn(key, expiresIn);
+				ExpireEntryIn(key, expiresIn);
 				return true;
 			}
 			return false;
@@ -141,7 +141,7 @@ namespace ServiceStack.Redis
 		{
 			if (Replace(key, value))
 			{
-				ExpireKeyIn(key, expiresIn);
+				ExpireEntryIn(key, expiresIn);
 				return true;
 			}
 			return false;

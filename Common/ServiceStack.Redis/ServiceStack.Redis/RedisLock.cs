@@ -16,7 +16,7 @@ namespace ServiceStack.Redis
 			this.key = key;
 
 			ExecExtensions.RetryUntilTrue(
-				() => redisClient.SetIfNotExists(key, "lock " + DateTime.UtcNow.ToUnixTime()),
+				() => redisClient.SetEntryIfNotExists(key, "lock " + DateTime.UtcNow.ToUnixTime()),
 				timeOut
 			);
 		}

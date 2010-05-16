@@ -38,7 +38,7 @@ namespace ServiceStack.Redis.Generic
 		public IEnumerator<T> GetEnumerator()
 		{
 			return this.Count <= PageLimit
-			       	? client.GetAllFromList(this).GetEnumerator()
+			       	? client.GetAllItemsFromList(this).GetEnumerator()
 			       	: GetPagingEnumerator();
 		}
 
@@ -64,7 +64,7 @@ namespace ServiceStack.Redis.Generic
 
 		public void Add(T item)
 		{
-			client.AddToList(this, item);
+			client.AddItemToList(this, item);
 		}
 
 		public void Clear()
@@ -84,13 +84,13 @@ namespace ServiceStack.Redis.Generic
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			var allItemsInList = client.GetAllFromList(this);
+			var allItemsInList = client.GetAllItemsFromList(this);
 			allItemsInList.CopyTo(array, arrayIndex);
 		}
 
 		public bool Remove(T item)
 		{
-			return client.RemoveValueFromList(this, item) > 0;
+			return client.RemoveItemFromList(this, item) > 0;
 		}
 
 		public int Count
@@ -140,7 +140,7 @@ namespace ServiceStack.Redis.Generic
 
 		public List<T> GetAll()
 		{
-			return client.GetAllFromList(this);
+			return client.GetAllItemsFromList(this);
 		}
 
 		public List<T> GetRange(int startingFrom, int endingAt)
@@ -165,12 +165,12 @@ namespace ServiceStack.Redis.Generic
 
 		public int RemoveValue(T value)
 		{
-			return client.RemoveValueFromList(this, value);
+			return client.RemoveItemFromList(this, value);
 		}
 
 		public int RemoveValue(T value, int noOfMatches)
 		{
-			return client.RemoveValueFromList(this, value, noOfMatches);
+			return client.RemoveItemFromList(this, value, noOfMatches);
 		}
 
 		public void Append(T value)
@@ -180,7 +180,7 @@ namespace ServiceStack.Redis.Generic
 
 		public void Prepend(T value)
 		{
-			client.PrependToList(this, value);
+			client.PrependItemToList(this, value);
 		}
 
 		public T RemoveStart()
@@ -200,37 +200,37 @@ namespace ServiceStack.Redis.Generic
 
 		public void Enqueue(T value)
 		{
-			client.EnqueueOnList(this, value);
+			client.EnqueueItemOnList(this, value);
 		}
 
 		public T Dequeue()
 		{
-			return client.DequeueFromList(this);
+			return client.DequeueItemFromList(this);
 		}
 
 		public T BlockingDequeue(TimeSpan? timeOut)
 		{
-			return client.BlockingDequeueFromList(this, timeOut);
+			return client.BlockingDequeueItemFromList(this, timeOut);
 		}
 
 		public void Push(T value)
 		{
-			client.PushToList(this, value);
+			client.PushItemToList(this, value);
 		}
 
 		public T Pop()
 		{
-			return client.PopFromList(this);
+			return client.PopItemFromList(this);
 		}
 
 		public T BlockingPop(TimeSpan? timeOut)
 		{
-			return client.BlockingPopFromList(this, timeOut);
+			return client.BlockingPopItemFromList(this, timeOut);
 		}
 
 		public T PopAndPush(IRedisList<T> toList)
 		{
-			return client.PopAndPushBetweenLists(this, toList);
+			return client.PopAndPushItemBetweenLists(this, toList);
 		}
 	}
 }

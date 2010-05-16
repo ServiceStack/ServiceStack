@@ -27,8 +27,8 @@ namespace ServiceStack.Redis.Tests
 			//STORING AN INT USING THE BASIC CLIENT
 			using (var redisClient = new RedisClient(TestConfig.SingleHost))
 			{
-				redisClient.SetString(intKey, intValue.ToString());
-				string strGetIntValue = redisClient.GetString(intKey);
+				redisClient.SetEntry(intKey, intValue.ToString());
+				string strGetIntValue = redisClient.GetValue(intKey);
 				int toIntValue = int.Parse(strGetIntValue);
 
 				Assert.That(toIntValue, Is.EqualTo(intValue));
@@ -40,8 +40,8 @@ namespace ServiceStack.Redis.Tests
 				//Create a generic client that treats all values as ints:
 				IRedisTypedClient<int> intRedis = redisClient.GetTypedClient<int>();
 
-				intRedis.Set(intKey, intValue);
-				var toIntValue = intRedis.Get(intKey);
+				intRedis.SetEntry(intKey, intValue);
+				var toIntValue = intRedis.GetValue(intKey);
 
 				Assert.That(toIntValue, Is.EqualTo(intValue));
 			}
@@ -105,8 +105,8 @@ namespace ServiceStack.Redis.Tests
 				var typedRedis = redisClient.GetTypedClient<IntAndString>();
 
 				var pocoValue = new IntAndString { Id = 1, Letter = "A" };
-				typedRedis.Set("pocoKey", pocoValue);
-				IntAndString toPocoValue = typedRedis.Get("pocoKey");
+				typedRedis.SetEntry("pocoKey", pocoValue);
+				IntAndString toPocoValue = typedRedis.GetValue("pocoKey");
 
 				Assert.That(toPocoValue.Id, Is.EqualTo(pocoValue.Id));
 				Assert.That(toPocoValue.Letter, Is.EqualTo(pocoValue.Letter));

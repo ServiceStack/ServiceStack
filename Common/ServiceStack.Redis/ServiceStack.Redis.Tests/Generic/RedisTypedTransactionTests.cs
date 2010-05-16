@@ -32,46 +32,46 @@ namespace ServiceStack.Redis.Tests.Generic
 		[Test]
 		public void Can_call_single_operation_in_transaction()
 		{
-			Assert.That(typedClient.Get(Key), Is.Null);
+			Assert.That(typedClient.GetValue(Key), Is.Null);
 
 			using (var trans = typedClient.CreateTransaction())
 			{
-				trans.QueueCommand(r => r.Set(Key, model));
+				trans.QueueCommand(r => r.SetEntry(Key, model));
 
 				trans.Commit();
 			}
 
-			modelFactory.AssertIsEqual(typedClient.Get(Key), model);
+			modelFactory.AssertIsEqual(typedClient.GetValue(Key), model);
 		}
 
 		[Test]
 		public void No_commit_of_atomic_transactions_discards_all_commands()
 		{
-			Assert.That(typedClient.Get(Key), Is.Null);
+			Assert.That(typedClient.GetValue(Key), Is.Null);
 
 			using (var trans = typedClient.CreateTransaction())
 			{
-				trans.QueueCommand(r => r.Set(Key, model));
+				trans.QueueCommand(r => r.SetEntry(Key, model));
 			}
 
-			Assert.That(typedClient.Get(Key), Is.Null);
+			Assert.That(typedClient.GetValue(Key), Is.Null);
 		}
 
 		[Test]
 		public void Exception_in_atomic_transactions_discards_all_commands()
 		{
-			Assert.That(typedClient.Get(Key), Is.Null);
+			Assert.That(typedClient.GetValue(Key), Is.Null);
 			try
 			{
 				using (var trans = typedClient.CreateTransaction())
 				{
-					trans.QueueCommand(r => r.Set(Key, model));
+					trans.QueueCommand(r => r.SetEntry(Key, model));
 					throw new NotSupportedException();
 				}
 			}
 			catch (NotSupportedException ignore)
 			{
-				Assert.That(typedClient.Get(Key), Is.Null);
+				Assert.That(typedClient.GetValue(Key), Is.Null);
 			}
 		}
 
@@ -83,9 +83,9 @@ namespace ServiceStack.Redis.Tests.Generic
 
 			using (var trans = typedClient.CreateTransaction())
 			{
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(1)));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(2)));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(3)));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(1)));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(2)));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(3)));
 
 				trans.Commit();
 			}
@@ -103,9 +103,9 @@ namespace ServiceStack.Redis.Tests.Generic
 
 			using (var trans = typedClient.CreateTransaction())
 			{
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(1)), () => results.Add(1));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(2)), () => results.Add(2));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(3)), () => results.Add(3));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(1)), () => results.Add(1));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(2)), () => results.Add(2));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(3)), () => results.Add(3));
 
 				trans.Commit();
 			}
@@ -125,27 +125,27 @@ namespace ServiceStack.Redis.Tests.Generic
 			var typedSet = typedClient.Sets[SetKey];
 			var typedSortedSet = typedClient.SortedSets[SortedSetKey];
 
-			Assert.That(typedClient.Get(Key), Is.Null);
+			Assert.That(typedClient.GetValue(Key), Is.Null);
 			using (var trans = typedClient.CreateTransaction())
 			{
-				trans.QueueCommand(r => r.Increment(Key), intResult => incrementResults.Add(intResult));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(1)));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(2)));
-				trans.QueueCommand(r => r.AddToSet(typedSet, modelFactory.CreateInstance(3)));
-				trans.QueueCommand(r => r.SetContainsValue(typedSet, modelFactory.CreateInstance(3)), b => containsItem = b);
-				trans.QueueCommand(r => r.AddToSortedSet(typedSortedSet, modelFactory.CreateInstance(4)));
-				trans.QueueCommand(r => r.AddToSortedSet(typedSortedSet, modelFactory.CreateInstance(5)));
-				trans.QueueCommand(r => r.AddToSortedSet(typedSortedSet, modelFactory.CreateInstance(6)));
+				trans.QueueCommand(r => r.IncrementValue(Key), intResult => incrementResults.Add(intResult));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(1)));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(2)));
+				trans.QueueCommand(r => r.AddItemToSet(typedSet, modelFactory.CreateInstance(3)));
+				trans.QueueCommand(r => r.SetContainsItem(typedSet, modelFactory.CreateInstance(3)), b => containsItem = b);
+				trans.QueueCommand(r => r.AddItemToSortedSet(typedSortedSet, modelFactory.CreateInstance(4)));
+				trans.QueueCommand(r => r.AddItemToSortedSet(typedSortedSet, modelFactory.CreateInstance(5)));
+				trans.QueueCommand(r => r.AddItemToSortedSet(typedSortedSet, modelFactory.CreateInstance(6)));
 				trans.QueueCommand(r => r.GetListCount(typedList), intResult => collectionCounts.Add(intResult));
 				trans.QueueCommand(r => r.GetSetCount(typedSet), intResult => collectionCounts.Add(intResult));
 				trans.QueueCommand(r => r.GetSortedSetCount(typedSortedSet), intResult => collectionCounts.Add(intResult));
-				trans.QueueCommand(r => r.Increment(Key), intResult => incrementResults.Add(intResult));
+				trans.QueueCommand(r => r.IncrementValue(Key), intResult => incrementResults.Add(intResult));
 
 				trans.Commit();
 			}
 
 			Assert.That(containsItem, Is.True);
-			Assert.That(Redis.GetString(Key), Is.EqualTo("2"));
+			Assert.That(Redis.GetValue(Key), Is.EqualTo("2"));
 			Assert.That(incrementResults, Is.EquivalentTo(new List<int> { 1, 2 }));
 			Assert.That(collectionCounts, Is.EquivalentTo(new List<int> { 2, 1, 3 }));
 
@@ -178,10 +178,10 @@ namespace ServiceStack.Redis.Tests.Generic
 
 			using (var trans = typedClient.CreateTransaction())
 			{
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(1)));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(2)));
-				trans.QueueCommand(r => r.AddToList(typedList, modelFactory.CreateInstance(3)));
-				trans.QueueCommand(r => r.GetAllFromList(typedList), x => results = x);
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(1)));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(2)));
+				trans.QueueCommand(r => r.AddItemToList(typedList, modelFactory.CreateInstance(3)));
+				trans.QueueCommand(r => r.GetAllItemsFromList(typedList), x => results = x);
 				trans.QueueCommand(r => r.GetItemFromList(typedList, 0), x => item1 = x);
 				trans.QueueCommand(r => r.GetItemFromList(typedList, 4), x => item4 = x);
 

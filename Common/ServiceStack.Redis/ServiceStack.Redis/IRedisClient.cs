@@ -43,26 +43,32 @@ namespace ServiceStack.Redis
 
 		//Basic Redis Connection Info
 		string this[string key] { get; set; }
-		List<string> AllKeys { get; }
-		void SetString(string key, string value);
-		void SetString(string key, string value, TimeSpan expireIn);
-		bool SetIfNotExists(string key, string value);
-		string GetString(string key);
-		string GetAndSetString(string key, string value);
-		bool ContainsKey(string key);
-		bool Remove(params string[] args);
-		int Increment(string key);
-		int IncrementBy(string key, int count);
-		int Decrement(string key);
-		int DecrementBy(string key, int count);
-		int Append(string key, string value);
-		string Substring(string key, int fromIndex, int toIndex);
 
-		RedisKeyType GetKeyType(string key);
-		string NewRandomKey();
-		bool ExpireKeyIn(string key, TimeSpan expiresAt);
-		bool ExpireKeyAt(string key, DateTime dateTime);
+		List<string> GetAllKeys();
+		void SetEntry(string key, string value);
+		void SetEntry(string key, string value, TimeSpan expireIn);
+		bool SetEntryIfNotExists(string key, string value);
+		string GetValue(string key);
+		string GetAndSetEntry(string key, string value);
+		List<string> GetValues(List<string> keys);
+		List<T> GetValues<T>(List<string> keys);
+		int AppendToValue(string key, string value);
+		string GetSubstring(string key, int fromIndex, int toIndex);
+
+		bool ContainsKey(string key);
+		bool RemoveEntry(params string[] args);
+		int IncrementValue(string key);
+		int IncrementValueBy(string key, int count);
+		int DecrementValue(string key);
+		int DecrementValueBy(string key, int count);
+		List<string> SearchKeys(string pattern);
+
+		RedisKeyType GetEntryType(string key);
+		string GetRandomKey();
+		bool ExpireEntryIn(string key, TimeSpan expireIn);
+		bool ExpireEntryAt(string key, DateTime expireAt);
 		TimeSpan GetTimeToLive(string key);
+		List<string> GetSortedEntryValues(string key, int startingFrom, int endingAt);
 
 		//Useful high-level abstractions
 		IRedisTypedClient<T> GetTypedClient<T>();
@@ -79,73 +85,69 @@ namespace ServiceStack.Redis
 
 		#region Set operations
 
-		List<string> GetKeys(string pattern);
-		List<string> GetKeyValues(List<string> keys);
-		List<T> GetKeyValues<T>(List<string> keys);
-		List<string> GetSortedRange(string setId, int startingFrom, int endingAt);
-		HashSet<string> GetAllFromSet(string setId);
-		void AddToSet(string setId, string value);
-		void RemoveFromSet(string setId, string value);
-		string PopFromSet(string setId);
-		void MoveBetweenSets(string fromSetId, string toSetId, string value);
+		HashSet<string> GetAllItemsFromSet(string setId);
+		void AddItemToSet(string setId, string item);
+		void RemoveItemFromSet(string setId, string item);
+		string PopItemFromSet(string setId);
+		void MoveBetweenSets(string fromSetId, string toSetId, string item);
 		int GetSetCount(string setId);
-		bool SetContainsValue(string setId, string value);
+		bool SetContainsItem(string setId, string item);
 		HashSet<string> GetIntersectFromSets(params string[] setIds);
 		void StoreIntersectFromSets(string intoSetId, params string[] setIds);
 		HashSet<string> GetUnionFromSets(params string[] setIds);
 		void StoreUnionFromSets(string intoSetId, params string[] setIds);
 		HashSet<string> GetDifferencesFromSet(string fromSetId, params string[] withSetIds);
 		void StoreDifferencesFromSet(string intoSetId, string fromSetId, params string[] withSetIds);
-		string GetRandomEntryFromSet(string setId);
+		string GetRandomItemFromSet(string setId);
 
 		#endregion
 
 
 		#region List operations
 
-		List<string> GetAllFromList(string listId);
+		List<string> GetAllItemsFromList(string listId);
 		List<string> GetRangeFromList(string listId, int startingFrom, int endingAt);
 		List<string> GetRangeFromSortedList(string listId, int startingFrom, int endingAt);
-		void AddToList(string listId, string value);
-		void PrependToList(string listId, string value);
+		void AddItemToList(string listId, string value);
+		void PrependItemToList(string listId, string value);
 		void RemoveAllFromList(string listId);
 		string RemoveStartFromList(string listId);
 		string BlockingRemoveStartFromList(string listId, TimeSpan? timeOut);
 		string RemoveEndFromList(string listId);
 		void TrimList(string listId, int keepStartingFrom, int keepEndingAt);
-		int RemoveValueFromList(string listId, string value);
-		int RemoveValueFromList(string listId, string value, int noOfMatches);
+		int RemoveItemFromList(string listId, string value);
+		int RemoveItemFromList(string listId, string value, int noOfMatches);
 		int GetListCount(string listId);
 		string GetItemFromList(string listId, int listIndex);
 		void SetItemInList(string listId, int listIndex, string value);
 
 		//Queue operations
-		void EnqueueOnList(string listId, string value);
-		string DequeueFromList(string listId);
-		string BlockingDequeueFromList(string listId, TimeSpan? timeOut);
+		void EnqueueItemOnList(string listId, string value);
+		string DequeueItemFromList(string listId);
+		string BlockingDequeueItemFromList(string listId, TimeSpan? timeOut);
 
 		//Stack operations
-		void PushToList(string listId, string value);
-		string PopFromList(string listId);
-		string BlockingPopFromList(string listId, TimeSpan? timeOut);
-		string PopAndPushBetweenLists(string fromListId, string toListId);
+		void PushItemToList(string listId, string value);
+		string PopItemFromList(string listId);
+		string BlockingPopItemFromList(string listId, TimeSpan? timeOut);
+		string PopAndPushItemBetweenLists(string fromListId, string toListId);
 
 		#endregion
 
 
 		#region Sorted Set operations
 
-		bool AddToSortedSet(string setId, string value);
-		bool AddToSortedSet(string setId, string value, double score);
-		double RemoveFromSortedSet(string setId, string value);
+		bool AddItemToSortedSet(string setId, string value);
+		bool AddItemToSortedSet(string setId, string value, double score);
+		bool RemoveItemFromSortedSet(string setId, string value);
 		string PopItemWithLowestScoreFromSortedSet(string setId);
 		string PopItemWithHighestScoreFromSortedSet(string setId);
-		bool SortedSetContainsValue(string setId, string value);
+		bool SortedSetContainsItem(string setId, string value);
 		double IncrementItemInSortedSet(string setId, string value, double incrementBy);
 		int GetItemIndexInSortedSet(string setId, string value);
 		int GetItemIndexInSortedSetDesc(string setId, string value);
-		List<string> GetAllFromSortedSet(string setId);
-		List<string> GetAllFromSortedSetDesc(string setId);
+		List<string> GetAllItemsFromSortedSet(string setId);
+		List<string> GetAllItemsFromSortedSetDesc(string setId);
 		List<string> GetRangeFromSortedSet(string setId, int fromRank, int toRank);
 		List<string> GetRangeFromSortedSetDesc(string setId, int fromRank, int toRank);
 		IDictionary<string, double> GetAllWithScoresFromSortedSet(string setId);
@@ -179,18 +181,18 @@ namespace ServiceStack.Redis
 
 		#region Hash operations
 
-		bool HashContainsKey(string hashId, string key);
-		bool SetItemInHash(string hashId, string key, string value);
-		bool SetItemInHashIfNotExists(string hashId, string key, string value);
+		bool HashContainsEntry(string hashId, string key);
+		bool SetEntryInHash(string hashId, string key, string value);
+		bool SetEntryInHashIfNotExists(string hashId, string key, string value);
 		void SetRangeInHash(string hashId, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
-		int IncrementItemInHash(string hashId, string key, int incrementBy);
-		string GetItemFromHash(string hashId, string key);
-		List<string> GetItemsFromHash(string hashId, params string[] keys);
-		bool RemoveFromHash(string hashId, string key);
+		int IncrementValueInHash(string hashId, string key, int incrementBy);
+		string GetValueFromHash(string hashId, string key);
+		List<string> GetValuesFromHash(string hashId, params string[] keys);
+		bool RemoveEntryFromHash(string hashId, string key);
 		int GetHashCount(string hashId);
 		List<string> GetHashKeys(string hashId);
 		List<string> GetHashValues(string hashId);
-		Dictionary<string, string> GetAllFromHash(string hashId);
+		Dictionary<string, string> GetAllEntriesFromHash(string hashId);
 
 		#endregion
 

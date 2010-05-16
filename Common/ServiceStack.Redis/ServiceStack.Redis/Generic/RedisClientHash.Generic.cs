@@ -38,7 +38,7 @@ namespace ServiceStack.Redis.Generic
 
 		public IEnumerator<KeyValuePair<TKey, T>> GetEnumerator()
 		{
-			return client.GetAllFromHash(this).GetEnumerator();
+			return client.GetAllEntriesFromHash(this).GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
@@ -48,28 +48,28 @@ namespace ServiceStack.Redis.Generic
 
 		public Dictionary<TKey, T> GetAll()
 		{
-			return client.GetAllFromHash(this);
+			return client.GetAllEntriesFromHash(this);
 		}
 
 		public void Add(KeyValuePair<TKey, T> item)
 		{
-			client.SetItemInHash(this, item.Key, item.Value);
+			client.SetEntryInHash(this, item.Key, item.Value);
 		}
 
 		public void Clear()
 		{
-			client.Remove(this);
+			client.RemoveEntry(this);
 		}
 
 		public bool Contains(KeyValuePair<TKey, T> item)
 		{
-			var value = client.GetItemFromHash(this, item.Key);
+			var value = client.GetValueFromHash(this, item.Key);
 			return !Equals(value, default(T)) && Equals(value, item.Value);
 		}
 
 		public void CopyTo(KeyValuePair<TKey, T>[] array, int arrayIndex)
 		{
-			var allItemsInHash = client.GetAllFromHash(this);
+			var allItemsInHash = client.GetAllEntriesFromHash(this);
 
 			var i = arrayIndex;
 			foreach (var entry in allItemsInHash)
@@ -81,7 +81,7 @@ namespace ServiceStack.Redis.Generic
 
 		public bool Remove(KeyValuePair<TKey, T> item)
 		{
-			return Contains(item) && client.RemoveFromHash(this, item.Key);
+			return Contains(item) && client.RemoveEntryFromHash(this, item.Key);
 		}
 
 		public int Count
@@ -96,24 +96,24 @@ namespace ServiceStack.Redis.Generic
 
 		public bool ContainsKey(TKey key)
 		{
-			return client.HashContainsKey(this, key);
+			return client.HashContainsEntry(this, key);
 		}
 
 		public void Add(TKey key, T value)
 		{
-			client.SetItemInHash(this, key, value);
+			client.SetEntryInHash(this, key, value);
 		}
 
 		public bool Remove(TKey key)
 		{
-			return client.RemoveFromHash(this, key);
+			return client.RemoveEntryFromHash(this, key);
 		}
 
 		public bool TryGetValue(TKey key, out T value)
 		{
 			if (ContainsKey(key))
 			{
-				value = client.GetItemFromHash(this, key);
+				value = client.GetValueFromHash(this, key);
 				return true;
 			}
 			value = default(T);
@@ -122,8 +122,8 @@ namespace ServiceStack.Redis.Generic
 
 		public T this[TKey key]
 		{
-			get { return client.GetItemFromHash(this, key); }
-			set { client.SetItemInHash(this, key, value); }
+			get { return client.GetValueFromHash(this, key); }
+			set { client.SetEntryInHash(this, key, value); }
 		}
 
 		public ICollection<TKey> Keys

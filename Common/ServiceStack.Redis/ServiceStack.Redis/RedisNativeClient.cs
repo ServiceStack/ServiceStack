@@ -178,7 +178,7 @@ namespace ServiceStack.Redis
 			return SendExpectCode(Commands.Type, key.ToUtf8Bytes());
 		}
 
-		public RedisKeyType GetKeyType(string key)
+		public RedisKeyType GetEntryType(string key)
 		{
 			switch (Type(key))
 			{

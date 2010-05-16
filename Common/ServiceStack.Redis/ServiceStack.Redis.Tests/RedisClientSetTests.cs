@@ -22,9 +22,9 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_AddToSet_and_GetAllFromSet()
 		{
-			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSet(SetId, x));
 
-			var members = Redis.GetAllFromSet(SetId);
+			var members = Redis.GetAllItemsFromSet(SetId);
 			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
@@ -33,22 +33,22 @@ namespace ServiceStack.Redis.Tests
 		{
 			const string removeMember = "two";
 
-			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSet(SetId, x));
 
-			Redis.RemoveFromSet(SetId, removeMember);
+			Redis.RemoveItemFromSet(SetId, removeMember);
 
 			storeMembers.Remove(removeMember);
 
-			var members = Redis.GetAllFromSet(SetId);
+			var members = Redis.GetAllItemsFromSet(SetId);
 			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 		[Test]
 		public void Can_PopFromSet()
 		{
-			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSet(SetId, x));
 
-			var member = Redis.PopFromSet(SetId);
+			var member = Redis.PopItemFromSet(SetId);
 
 			Assert.That(storeMembers.Contains(member), Is.True);
 		}
@@ -62,16 +62,16 @@ namespace ServiceStack.Redis.Tests
 			var fromSetIdMembers = new List<string> { "one", "two", "three", "four" };
 			var toSetIdMembers = new List<string> { "five", "six", "seven" };
 
-			fromSetIdMembers.ForEach(x => Redis.AddToSet(fromSetId, x));
-			toSetIdMembers.ForEach(x => Redis.AddToSet(toSetId, x));
+			fromSetIdMembers.ForEach(x => Redis.AddItemToSet(fromSetId, x));
+			toSetIdMembers.ForEach(x => Redis.AddItemToSet(toSetId, x));
 
 			Redis.MoveBetweenSets(fromSetId, toSetId, moveMember);
 
 			fromSetIdMembers.Remove(moveMember);
 			toSetIdMembers.Add(moveMember);
 
-			var readFromSetId = Redis.GetAllFromSet(fromSetId);
-			var readToSetId = Redis.GetAllFromSet(toSetId);
+			var readFromSetId = Redis.GetAllItemsFromSet(fromSetId);
+			var readToSetId = Redis.GetAllItemsFromSet(toSetId);
 
 			Assert.That(readFromSetId, Is.EquivalentTo(fromSetIdMembers));
 			Assert.That(readToSetId, Is.EquivalentTo(toSetIdMembers));
@@ -80,7 +80,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetSetCount()
 		{
-			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSet(SetId, x));
 
 			var setCount = Redis.GetSetCount(SetId);
 
@@ -93,10 +93,10 @@ namespace ServiceStack.Redis.Tests
 			const string existingMember = "two";
 			const string nonExistingMember = "five";
 
-			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSet(SetId, x));
 
-			Assert.That(Redis.SetContainsValue(SetId, existingMember), Is.True);
-			Assert.That(Redis.SetContainsValue(SetId, nonExistingMember), Is.False);
+			Assert.That(Redis.SetContainsItem(SetId, existingMember), Is.True);
+			Assert.That(Redis.SetContainsItem(SetId, nonExistingMember), Is.False);
 		}
 
 		[Test]
@@ -107,8 +107,8 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSet(set2Name, x));
 
 			var intersectingMembers = Redis.GetIntersectFromSets(set1Name, set2Name);
 
@@ -124,12 +124,12 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSet(set2Name, x));
 
 			Redis.StoreIntersectFromSets(storeSetName, set1Name, set2Name);
 
-			var intersectingMembers = Redis.GetAllFromSet(storeSetName);
+			var intersectingMembers = Redis.GetAllItemsFromSet(storeSetName);
 
 			Assert.That(intersectingMembers, Is.EquivalentTo(new List<string> { "four", "five" }));
 		}
@@ -142,8 +142,8 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSet(set2Name, x));
 
 			var unionMembers = Redis.GetUnionFromSets(set1Name, set2Name);
 
@@ -160,12 +160,12 @@ namespace ServiceStack.Redis.Tests
 			var set1Members = new List<string> { "one", "two", "three", "four", "five" };
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 
-			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSet(set2Name, x));
 
 			Redis.StoreUnionFromSets(storeSetName, set1Name, set2Name);
 
-			var unionMembers = Redis.GetAllFromSet(storeSetName);
+			var unionMembers = Redis.GetAllItemsFromSet(storeSetName);
 
 			Assert.That(unionMembers, Is.EquivalentTo(
 				new List<string> { "one", "two", "three", "four", "five", "six", "seven" }));
@@ -181,9 +181,9 @@ namespace ServiceStack.Redis.Tests
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 			var set3Members = new List<string> { "one", "five", "seven", "eleven" };
 
-			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
-			set3Members.ForEach(x => Redis.AddToSet(set3Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSet(set2Name, x));
+			set3Members.ForEach(x => Redis.AddItemToSet(set3Name, x));
 
 			var diffMembers = Redis.GetDifferencesFromSet(set1Name, set2Name, set3Name);
 
@@ -202,13 +202,13 @@ namespace ServiceStack.Redis.Tests
 			var set2Members = new List<string> { "four", "five", "six", "seven" };
 			var set3Members = new List<string> { "one", "five", "seven", "eleven" };
 
-			set1Members.ForEach(x => Redis.AddToSet(set1Name, x));
-			set2Members.ForEach(x => Redis.AddToSet(set2Name, x));
-			set3Members.ForEach(x => Redis.AddToSet(set3Name, x));
+			set1Members.ForEach(x => Redis.AddItemToSet(set1Name, x));
+			set2Members.ForEach(x => Redis.AddItemToSet(set2Name, x));
+			set3Members.ForEach(x => Redis.AddItemToSet(set3Name, x));
 
 			Redis.StoreDifferencesFromSet(storeSetName, set1Name, set2Name, set3Name);
 
-			var diffMembers = Redis.GetAllFromSet(storeSetName);
+			var diffMembers = Redis.GetAllItemsFromSet(storeSetName);
 
 			Assert.That(diffMembers, Is.EquivalentTo(
 				new List<string> { "two", "three" }));
@@ -217,9 +217,9 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_GetRandomEntryFromSet()
 		{
-			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSet(SetId, x));
 
-			var randomEntry = Redis.GetRandomEntryFromSet(SetId);
+			var randomEntry = Redis.GetRandomItemFromSet(SetId);
 
 			Assert.That(storeMembers.Contains(randomEntry), Is.True);
 		}
@@ -228,7 +228,7 @@ namespace ServiceStack.Redis.Tests
 		[Test]
 		public void Can_enumerate_small_ICollection_Set()
 		{
-			storeMembers.ForEach(x => Redis.AddToSet(SetId, x));
+			storeMembers.ForEach(x => Redis.AddItemToSet(SetId, x));
 
 			var members = new List<string>();
 			foreach (var item in Redis.Sets[SetId])
@@ -250,7 +250,7 @@ namespace ServiceStack.Redis.Tests
 			storeMembers = new List<string>();
 			setSize.Times(x =>
 			{
-				Redis.AddToSet(SetId, x.ToString());
+				Redis.AddItemToSet(SetId, x.ToString());
 				storeMembers.Add(x.ToString());
 			});
 

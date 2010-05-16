@@ -61,7 +61,7 @@ namespace ServiceStack.Redis.Generic
 			return results;
 		}
 
-		public List<T> GetAllFromList(IRedisList<T> fromList)
+		public List<T> GetAllItemsFromList(IRedisList<T> fromList)
 		{
 			var multiDataList = client.LRange(fromList.Id, FirstElement, LastElement);
 			return CreateList(multiDataList);
@@ -80,12 +80,12 @@ namespace ServiceStack.Redis.Generic
 			return CreateList(multiDataList);
 		}
 
-		public void AddToList(IRedisList<T> fromList, T value)
+		public void AddItemToList(IRedisList<T> fromList, T value)
 		{
 			client.RPush(fromList.Id, SerializeValue(value));
 		}
 
-		public void PrependToList(IRedisList<T> fromList, T value)
+		public void PrependItemToList(IRedisList<T> fromList, T value)
 		{
 			client.LPush(fromList.Id, SerializeValue(value));
 		}
@@ -116,13 +116,13 @@ namespace ServiceStack.Redis.Generic
 			client.LTrim(fromList.Id, keepStartingFrom, keepEndingAt);
 		}
 
-		public int RemoveValueFromList(IRedisList<T> fromList, T value)
+		public int RemoveItemFromList(IRedisList<T> fromList, T value)
 		{
 			const int removeAll = 0;
 			return client.LRem(fromList.Id, removeAll, SerializeValue(value));
 		}
 
-		public int RemoveValueFromList(IRedisList<T> fromList, T value, int noOfMatches)
+		public int RemoveItemFromList(IRedisList<T> fromList, T value, int noOfMatches)
 		{
 			return client.LRem(fromList.Id, noOfMatches, SerializeValue(value));
 		}
@@ -142,39 +142,39 @@ namespace ServiceStack.Redis.Generic
 			client.LSet(toList.Id, listIndex, SerializeValue(value));
 		}
 
-		public void EnqueueOnList(IRedisList<T> fromList, T item)
+		public void EnqueueItemOnList(IRedisList<T> fromList, T item)
 		{
 			client.LPush(fromList.Id, SerializeValue(item));
 		}
 
-		public T DequeueFromList(IRedisList<T> fromList)
+		public T DequeueItemFromList(IRedisList<T> fromList)
 		{
 			return DeserializeValue(client.LPop(fromList.Id));
 		}
 
-		public T BlockingDequeueFromList(IRedisList<T> fromList, TimeSpan? timeOut)
+		public T BlockingDequeueItemFromList(IRedisList<T> fromList, TimeSpan? timeOut)
 		{
 			var unblockingKeyAndValue = client.BLPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds);
 			return DeserializeValue(unblockingKeyAndValue[1]);
 		}
 
-		public void PushToList(IRedisList<T> fromList, T item)
+		public void PushItemToList(IRedisList<T> fromList, T item)
 		{
 			client.RPush(fromList.Id, SerializeValue(item));
 		}
 
-		public T PopFromList(IRedisList<T> fromList)
+		public T PopItemFromList(IRedisList<T> fromList)
 		{
 			return DeserializeValue(client.RPop(fromList.Id));
 		}
 
-		public T BlockingPopFromList(IRedisList<T> fromList, TimeSpan? timeOut)
+		public T BlockingPopItemFromList(IRedisList<T> fromList, TimeSpan? timeOut)
 		{
 			var unblockingKeyAndValue = client.BRPop(fromList.Id, (int)timeOut.GetValueOrDefault().TotalSeconds);
 			return DeserializeValue(unblockingKeyAndValue[1]);
 		}
 
-		public T PopAndPushBetweenLists(IRedisList<T> fromList, IRedisList<T> toList)
+		public T PopAndPushItemBetweenLists(IRedisList<T> fromList, IRedisList<T> toList)
 		{
 			return DeserializeValue(client.RPopLPush(fromList.Id, toList.Id));
 		}

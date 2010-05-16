@@ -51,7 +51,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		public List<string> GetAllFromList(string listId)
+		public List<string> GetAllItemsFromList(string listId)
 		{
 			var multiDataList = LRange(listId, FirstElement, LastElement);
 			return multiDataList.ToStringList();
@@ -70,12 +70,12 @@ namespace ServiceStack.Redis
 			return multiDataList.ToStringList();
 		}
 
-		public void AddToList(string listId, string value)
+		public void AddItemToList(string listId, string value)
 		{
 			RPush(listId, value.ToUtf8Bytes());
 		}
 
-		public void PrependToList(string listId, string value)
+		public void PrependItemToList(string listId, string value)
 		{
 			LPush(listId, value.ToUtf8Bytes());
 		}
@@ -105,12 +105,12 @@ namespace ServiceStack.Redis
 			LTrim(listId, keepStartingFrom, keepEndingAt);
 		}
 
-		public int RemoveValueFromList(string listId, string value)
+		public int RemoveItemFromList(string listId, string value)
 		{
 			return LRem(listId, 0, value.ToUtf8Bytes());
 		}
 
-		public int RemoveValueFromList(string listId, string value, int noOfMatches)
+		public int RemoveItemFromList(string listId, string value, int noOfMatches)
 		{
 			return LRem(listId, noOfMatches, value.ToUtf8Bytes());
 		}
@@ -130,37 +130,37 @@ namespace ServiceStack.Redis
 			LSet(listId, listIndex, value.ToUtf8Bytes());
 		}
 
-		public void EnqueueOnList(string listId, string value)
+		public void EnqueueItemOnList(string listId, string value)
 		{
 			RPush(listId, value.ToUtf8Bytes());
 		}
 
-		public string DequeueFromList(string listId)
+		public string DequeueItemFromList(string listId)
 		{
 			return LPop(listId).FromUtf8Bytes();
 		}
 
-		public string BlockingDequeueFromList(string listId, TimeSpan? timeOut)
+		public string BlockingDequeueItemFromList(string listId, TimeSpan? timeOut)
 		{
 			return BLPopValue(listId, (int) timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
 		}
 
-		public void PushToList(string listId, string value)
+		public void PushItemToList(string listId, string value)
 		{
 			RPush(listId, value.ToUtf8Bytes());
 		}
 
-		public string PopFromList(string listId)
+		public string PopItemFromList(string listId)
 		{
 			return RPop(listId).FromUtf8Bytes();
 		}
 
-		public string BlockingPopFromList(string listId, TimeSpan? timeOut)
+		public string BlockingPopItemFromList(string listId, TimeSpan? timeOut)
 		{
 			return BRPopValue(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
 		}
 
-		public string PopAndPushBetweenLists(string fromListId, string toListId)
+		public string PopAndPushItemBetweenLists(string fromListId, string toListId)
 		{
 			return RPopLPush(fromListId, toListId).FromUtf8Bytes();
 		}

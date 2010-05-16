@@ -69,19 +69,19 @@ namespace ServiceStack.Redis
 			return lexicalValue;
 		}
 
-		public bool AddToSortedSet(string setId, string value)
+		public bool AddItemToSortedSet(string setId, string value)
 		{
-			return AddToSortedSet(setId, value, GetLexicalScore(value));
+			return AddItemToSortedSet(setId, value, GetLexicalScore(value));
 		}
 
-		public bool AddToSortedSet(string setId, string value, double score)
+		public bool AddItemToSortedSet(string setId, string value, double score)
 		{
 			return base.ZAdd(setId, score, value.ToUtf8Bytes()) == Success;
 		}
 
-		public double RemoveFromSortedSet(string setId, string value)
+		public bool RemoveItemFromSortedSet(string setId, string value)
 		{
-			return base.ZRem(setId, value.ToUtf8Bytes());
+			return base.ZRem(setId, value.ToUtf8Bytes()) == Success;
 		}
 
 		public string PopItemWithLowestScoreFromSortedSet(string setId)
@@ -104,7 +104,7 @@ namespace ServiceStack.Redis
 			return topScoreItemBytes[0].FromUtf8Bytes();
 		}
 
-		public bool SortedSetContainsValue(string setId, string value)
+		public bool SortedSetContainsItem(string setId, string value)
 		{
 			return base.ZRank(setId, value.ToUtf8Bytes()) != -1;
 		}
@@ -124,13 +124,13 @@ namespace ServiceStack.Redis
 			return base.ZRevRank(setId, value.ToUtf8Bytes());
 		}
 
-		public List<string> GetAllFromSortedSet(string setId)
+		public List<string> GetAllItemsFromSortedSet(string setId)
 		{
 			var multiDataList = base.ZRange(setId, FirstElement, LastElement);
 			return multiDataList.ToStringList();
 		}
 
-		public List<string> GetAllFromSortedSetDesc(string setId)
+		public List<string> GetAllItemsFromSortedSetDesc(string setId)
 		{
 			var multiDataList = base.ZRevRange(setId, FirstElement, LastElement);
 			return multiDataList.ToStringList();
@@ -279,12 +279,12 @@ namespace ServiceStack.Redis
 
 		public int RemoveRangeFromSortedSet(string setId, int minRank, int maxRank)
 		{
-			return base.ZRemRangeByRank(setId, maxRank, maxRank);
+			return base.ZRemRangeByRank(setId, minRank, maxRank);
 		}
 
 		public int RemoveRangeFromSortedSetByScore(string setId, double fromScore, double toScore)
 		{
-			return base.ZRemRangeByScore(setId, toScore, toScore);
+			return base.ZRemRangeByScore(setId, fromScore, toScore);
 		}
 
 		public int GetSortedSetCount(string setId)

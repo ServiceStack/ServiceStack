@@ -230,9 +230,9 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 					blogPost.Tags.ForEach(x =>
 						redisClient.IncrementItemInSortedSet(TagCloudKey, x, 1));
 					blogPost.Categories.ForEach(x =>
-						  redisClient.AddToSet(AllCategoriesKey, x));
+						  redisClient.AddItemToSet(AllCategoriesKey, x));
 					blogPost.Categories.ForEach(x =>
-						  redisClient.AddToSet(UrnId.Create(CategoryTypeName, x), blogPost.Id.ToString()));
+						  redisClient.AddItemToSet(UrnId.Create(CategoryTypeName, x), blogPost.Id.ToString()));
 				}
 
 				//Rolling list only keep the last 5
@@ -272,7 +272,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 
 		public HashSet<string> GetAllCategories()
 		{
-			return redisClient.GetAllFromSet(AllCategoriesKey);
+			return redisClient.GetAllItemsFromSet(AllCategoriesKey);
 		}
 
 		public void StoreBlogPost(BlogPost blogPost)
@@ -288,7 +288,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 		public List<BlogPost> GetBlogPostsByCategory(string categoryName)
 		{
 			var categoryUrn = UrnId.Create(CategoryTypeName, categoryName);
-			var documentDbPostIds = redisClient.GetAllFromSet(categoryUrn);
+			var documentDbPostIds = redisClient.GetAllItemsFromSet(categoryUrn);
 
 			return redisClient.GetByIds<BlogPost>(documentDbPostIds.ToArray()).ToList();
 		}

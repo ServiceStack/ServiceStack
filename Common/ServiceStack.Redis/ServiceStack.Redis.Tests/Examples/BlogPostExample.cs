@@ -396,10 +396,10 @@ namespace ServiceStack.Redis.Tests.Examples
 				foreach (var blogPost in blogPosts)
 				{
 					blogPost.Categories.ForEach(x =>
-						  redisClient.AddToSet("urn:Categories", x));
+						  redisClient.AddItemToSet("urn:Categories", x));
 				}
 
-				var uniqueCategories = redisClient.GetAllFromSet("urn:Categories");
+				var uniqueCategories = redisClient.GetAllItemsFromSet("urn:Categories");
 				Console.WriteLine(uniqueCategories.Dump());
 				/* Output:
 				[
@@ -517,11 +517,11 @@ namespace ServiceStack.Redis.Tests.Examples
 				{
 					//For each post add it's Id into each of it's 'Cateogry > Posts' index
 					newBlogPost.Categories.ForEach(x =>
-						  redisClient.AddToSet("urn:Category:" + x, newBlogPost.Id.ToString()));
+						  redisClient.AddItemToSet("urn:Category:" + x, newBlogPost.Id.ToString()));
 				}
 
 				//Retrieve all the post ids for the category you want to view
-				var documentDbPostIds = redisClient.GetAllFromSet("urn:Category:DocumentDB");
+				var documentDbPostIds = redisClient.GetAllItemsFromSet("urn:Category:DocumentDB");
 
 				//Make a batch call to retrieve all the posts containing the matching ids 
 				//(i.e. the DocumentDB Category posts)

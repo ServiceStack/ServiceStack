@@ -107,18 +107,15 @@ namespace ServiceStack.Redis.Generic
 			client.ClearTypeIdsRegisteredDuringTransaction();
 		}
 
-		public List<string> AllKeys
+		public List<string> GetAllKeys()
 		{
-			get
-			{
-				return client.AllKeys;
-			}
+			return client.GetAllKeys();
 		}
 
 		public T this[string key]
 		{
-			get { return Get(key); }
-			set { Set(key, value); }
+			get { return GetValue(key); }
+			set { SetEntry(key, value); }
 		}
 
 		public byte[] SerializeValue(T value)
@@ -133,7 +130,7 @@ namespace ServiceStack.Redis.Generic
 			return serializer.DeserializeFromString(strValue);
 		}
 
-		public void Set(string key, T value)
+		public void SetEntry(string key, T value)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
@@ -142,7 +139,7 @@ namespace ServiceStack.Redis.Generic
 			client.RegisterTypeId(value);
 		}
 
-		public void Set(string key, T value, TimeSpan expireIn)
+		public void SetEntry(string key, T value, TimeSpan expireIn)
 		{
 			if (key == null)
 				throw new ArgumentNullException("key");
@@ -151,19 +148,19 @@ namespace ServiceStack.Redis.Generic
 			client.RegisterTypeId(value);
 		}
 
-		public bool SetIfNotExists(string key, T value)
+		public bool SetEntryIfNotExists(string key, T value)
 		{
 			var success = client.SetNX(key, SerializeValue(value)) == RedisNativeClient.Success;
 			if (success) client.RegisterTypeId(value);
 			return success;
 		}
 
-		public T Get(string key)
+		public T GetValue(string key)
 		{
 			return DeserializeValue(client.Get(key));
 		}
 
-		public T GetAndSet(string key, T value)
+		public T GetAndSetValue(string key, T value)
 		{
 			return DeserializeValue(client.GetSet(key, SerializeValue(value)));
 		}
@@ -173,17 +170,17 @@ namespace ServiceStack.Redis.Generic
 			return client.Exists(key) == RedisNativeClient.Success;
 		}
 
-		public bool Remove(string key)
+		public bool RemoveEntry(string key)
 		{
 			return client.Del(key) == RedisNativeClient.Success;
 		}
 
-		public bool Remove(params string[] keys)
+		public bool RemoveEntry(params string[] keys)
 		{
 			return client.Del(keys) == RedisNativeClient.Success;
 		}
 
-		public bool Remove(params IHasStringId[] entities)
+		public bool RemoveEntry(params IHasStringId[] entities)
 		{
 			var ids = entities.ConvertAll(x => x.Id);
 			var success = client.Del(ids.ToArray()) == RedisNativeClient.Success;
@@ -191,22 +188,22 @@ namespace ServiceStack.Redis.Generic
 			return success;
 		}
 
-		public int Increment(string key)
+		public int IncrementValue(string key)
 		{
 			return client.Incr(key);
 		}
 
-		public int IncrementBy(string key, int count)
+		public int IncrementValueBy(string key, int count)
 		{
 			return client.IncrBy(key, count);
 		}
 
-		public int Decrement(string key)
+		public int DecrementValue(string key)
 		{
 			return client.Decr(key);
 		}
 
-		public int DecrementBy(string key, int count)
+		public int DecrementValueBy(string key, int count)
 		{
 			return client.DecrBy(key, count);
 		}
@@ -220,27 +217,27 @@ namespace ServiceStack.Redis.Generic
 
 		public int GetNextSequence()
 		{
-			return Increment(SequenceKey);
+			return IncrementValue(SequenceKey);
 		}
 
-		public RedisKeyType GetKeyType(string key)
+		public RedisKeyType GetEntryType(string key)
 		{
-			return client.GetKeyType(key);
+			return client.GetEntryType(key);
 		}
 
-		public string NewRandomKey()
+		public string GetRandomKey()
 		{
 			return client.RandomKey();
 		}
 
-		public bool ExpireKeyIn(string key, TimeSpan expireIn)
+		public bool ExpireEntryIn(string key, TimeSpan expireIn)
 		{
 			return client.Expire(key, (int)expireIn.TotalSeconds) == RedisNativeClient.Success;
 		}
 
-		public bool ExpireKeyAt(string key, DateTime dateTime)
+		public bool ExpireEntryAt(string key, DateTime expireAt)
 		{
-			return client.ExpireAt(key, dateTime.ToUnixTime()) == RedisNativeClient.Success;
+			return client.ExpireAt(key, expireAt.ToUnixTime()) == RedisNativeClient.Success;
 		}
 
 		public TimeSpan GetTimeToLive(string key)
@@ -268,9 +265,9 @@ namespace ServiceStack.Redis.Generic
 			client.FlushAll();
 		}
 
-		public T[] GetKeys(string pattern)
+		public T[] SearchKeys(string pattern)
 		{
-			var strKeys = client.GetKeys(pattern);
+			var strKeys = client.SearchKeys(pattern);
 			var keysCount = strKeys.Count;
 
 			var keys = new T[keysCount];
@@ -281,7 +278,7 @@ namespace ServiceStack.Redis.Generic
 			return keys;
 		}
 
-		public List<T> GetKeyValues(List<string> keys)
+		public List<T> GetValues(List<string> keys)
 		{
 			var resultBytesArray = client.MGet(keys.ToArray());
 
@@ -303,7 +300,7 @@ namespace ServiceStack.Redis.Generic
 		public T GetById(string id)
 		{
 			var key = IdUtils.CreateUrn<T>(id);
-			return this.Get(key);
+			return this.GetValue(key);
 		}
 
 		public IList<T> GetByIds(ICollection<string> ids)
@@ -312,19 +309,19 @@ namespace ServiceStack.Redis.Generic
 				return new List<T>();
 
 			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
-			return GetKeyValues(urnKeys);
+			return GetValues(urnKeys);
 		}
 
 		public IList<T> GetAll()
 		{
-			var allKeys = client.GetAllFromSet(this.TypeIdsSetKey);
+			var allKeys = client.GetAllItemsFromSet(this.TypeIdsSetKey);
 			return this.GetByIds(allKeys);
 		}
 
 		public T Store(T entity)
 		{
 			var urnKey = entity.CreateUrn();
-			this.Set(urnKey, entity);
+			this.SetEntry(urnKey, entity);
 
 			return entity;
 		}
@@ -342,7 +339,7 @@ namespace ServiceStack.Redis.Generic
 		public void Delete(T entity)
 		{
 			var urnKey = entity.CreateUrn();
-			this.Remove(urnKey);
+			this.RemoveEntry(urnKey);
 			client.RemoveTypeIds(entity);
 		}
 
@@ -350,7 +347,7 @@ namespace ServiceStack.Redis.Generic
 		{
 			var urnKey = IdUtils.CreateUrn<T>(id);
 
-			this.Remove(urnKey);
+			this.RemoveEntry(urnKey);
 			client.RemoveTypeIds<T>(id);
 		}
 
@@ -359,15 +356,15 @@ namespace ServiceStack.Redis.Generic
 			if (ids == null) return;
 
 			var urnKeys = ids.ConvertAll(x => IdUtils.CreateUrn<T>(x));
-			this.Remove(urnKeys.ToArray());
+			this.RemoveEntry(urnKeys.ToArray());
 			client.RemoveTypeIds<T>(ids.ToArray());
 		}
 
 		public void DeleteAll()
 		{
-			var urnKeys = client.GetAllFromSet(this.TypeIdsSetKey);
-			this.Remove(urnKeys.ToArray());
-			this.Remove(this.TypeIdsSetKey);
+			var urnKeys = client.GetAllItemsFromSet(this.TypeIdsSetKey);
+			this.RemoveEntry(urnKeys.ToArray());
+			this.RemoveEntry(this.TypeIdsSetKey);
 		}
 
 		#endregion
