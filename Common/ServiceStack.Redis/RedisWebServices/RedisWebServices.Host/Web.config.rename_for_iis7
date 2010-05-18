@@ -1,4 +1,4 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <!--Standard IIS 7.0 Web.config as created by Visual Studio.NET -->
 <!-- All changes from the default configuaration is prefixed by '[ServiceStack Specific]:' -->
 <configuration>

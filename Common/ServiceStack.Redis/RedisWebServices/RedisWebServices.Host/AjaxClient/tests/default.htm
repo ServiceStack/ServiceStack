@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link type="text/css" rel="Stylesheet" href="testLib.css" />
+    <script type="text/javascript" src="testLib.js"></script>
+
+    <script type="text/javascript" src="../js/all"></script>
+    <script type="text/javascript" src="../jsLibOnLoad/all"></script>
+    <script type="text/javascript" src="src/all"></script>
+    
+    <script type="text/javascript">
+
+        var Dom = YAHOO.util.Dom,
+			Assert = YAHOO.util.Assert,
+			ArrayAssert = YAHOO.util.ArrayAssert,
+			DateAssert = YAHOO.util.DateAssert,
+			ObjectAssert = YAHOO.util.ObjectAssert,
+			UserAction = YAHOO.util.UserAction;
+
+        var Class = AjaxStack.Class, is = AjaxStack.is, H = AjaxStack.Html, 
+            Path = AjaxStack.Path, S = AjaxStack.StringExt;
+
+        var classTestSuite = new YAHOO.tool.TestSuite("Redis UI Suite");
+        for (var name in YAHOO.ajaxstack)
+        {
+            var testCase = YAHOO.ajaxstack[name];
+            classTestSuite.add(testCase);
+        }
+
+	    YAHOO.util.Event.onDOMReady(function()
+	    {
+	        //create the logger
+	        var logger = new YAHOO.tool.TestLogger("testLogger");
+	        YAHOO.tool.TestRunner.add(classTestSuite);
+
+	        //run the tests
+	        YAHOO.tool.TestRunner.run();
+	    });	    
+    </script>
+
+</head>
+<body>
+
+</body>
+</html>

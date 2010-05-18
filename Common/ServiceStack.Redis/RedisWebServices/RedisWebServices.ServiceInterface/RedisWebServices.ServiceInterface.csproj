@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin\EchoService.cs" />
     <Compile Include="Admin\FlushDbService.cs" />
     <Compile Include="Admin\SlaveOfService.cs" />
     <Compile Include="Admin\Shutdown.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Admin\RewriteAppendOnlyFileAsyncService.cs" />
     <Compile Include="Admin\FlushAllService.cs" />
     <Compile Include="AppConfig.cs" />
+    <Compile Include="App\GetCodeGeneratedJavaScriptService.cs" />
     <Compile Include="Common\AppendToValueService.cs" />
     <Compile Include="Common\ContainsKey.cs" />
     <Compile Include="Common\SetEntryIfNotExistsService.cs" />

@@ -66,6 +66,8 @@
     <Compile Include="Operations\Admin\FlushDb.cs" />
     <Compile Include="Operations\Admin\RewriteAppendOnlyFileAsync.cs" />
     <Compile Include="Operations\Admin\Save.cs" />
+    <Compile Include="Operations\App\GetCodeGeneratedJavaScript.cs" />
+    <Compile Include="Operations\Common\Echo.cs" />
     <Compile Include="Operations\Messaging\CreateSubscription.cs" />
     <Compile Include="Operations\Hash\GetValuesFromHash.cs" />
     <Compile Include="Operations\Messaging\PublishMessage.cs" />

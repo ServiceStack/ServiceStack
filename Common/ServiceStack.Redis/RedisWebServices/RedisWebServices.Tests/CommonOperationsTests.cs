@@ -55,6 +55,15 @@ namespace RedisWebServices.Tests
 		}
 
 		[Test]
+		public void Test_Echo()
+		{
+			var response = base.Send<EchoResponse>(
+				new Echo { Text = TestValue }, x => x.ResponseStatus);
+
+			Assert.That(response.Text, Is.EqualTo(TestValue));
+		}
+
+		[Test]
 		public void Test_ExpireEntry()
 		{
 			RedisExec(r => r.SetEntry(TestKey, TestValue));
@@ -202,6 +211,15 @@ namespace RedisWebServices.Tests
 				new IncrementValue { Key = TestKey, IncrementBy = 2 }, x => x.ResponseStatus);
 
 			Assert.That(response.Value, Is.EqualTo(10 + 2));
+		}
+
+		[Test]
+		public void Test_Ping()
+		{
+			var response = base.Send<PingResponse>(
+				new Ping(), x => x.ResponseStatus);
+
+			Assert.That(response.Result, Is.True);
 		}
 
 		[Test]

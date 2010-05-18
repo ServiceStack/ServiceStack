@@ -1,9 +1,50 @@
 ﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=8">
+    <title>AjaxStack Examples Demo</title>
+    <script type="text/javascript" src="js/all"></script>
+    
+    <script type="text/javascript">
+    <!--
+   
+        var demoApp;
+        window.onScriptLoad = function()
+        {
+            if (demoApp) return;
+
+            demoApp = new DemoApp("#body");
+            demoApp.navigateTo(AjaxStack.Path.parseHref() || "#home");
+        }
+
+        function onLoad()
+        {
+            window.onScriptLoad();
+            //AjaxStack.Script.append("release/ajaxstack-demo-1.0.onload.min.js");
+        }
+
+        if (window.addEventListener) window.addEventListener("load", onLoad, false);
+        else if (window.attachEvent) window.attachEvent("onload", onLoad);
+        else window.onload = onLoad;
+    -->    
+    </script>
 </head>
+
 <body>
+
+<div id="body">
+    <div id="header">
+        <a href="http://www.ajaxstack.com/AjaxStack.Demo/"><img src="img/demo-logo-ajaxstack.png" alt="Ajax Stack Demo" /></a> 
+    </div>
+    
+    <div id="left"></div>    
+    <div id="content"></div>    
+    
+    <div id="footer">
+        <a href="http://www.ajaxstack.com"><img src="img/small-logo-ajaxstack.png" alt="Ajax Stack" /></a> 
+        <a href="http://www.servicestack.net"><img src="img/small-logo-servicestack.png" alt="Service Stack" /></a>
+    </div>
+</div>
 
 </body>
 </html>

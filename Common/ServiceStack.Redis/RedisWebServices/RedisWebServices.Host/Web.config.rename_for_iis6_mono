@@ -20,7 +20,7 @@
 		<add key="ComplexTypeEncoding" value="Jsv"/>
 		<add key="UrnSeperator" value=":"/>
 		<add key="DefaultTake" value="20"/>
-	</appSettings>
+	</appSettings> 
 	<connectionStrings/>
 	<system.web>
 		<!-- 

@@ -67,6 +67,17 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AjaxClient\default.htm" />
+    <Content Include="AjaxClient\jsLibOnLoad\jquery.dump.js" />
+    <Content Include="AjaxClient\js\AjaxStack.js" />
+    <Content Include="AjaxClient\js\app\App.js" />
+    <Content Include="AjaxClient\js\RedisClient.js" />
+    <Content Include="AjaxClient\tests\default.htm" />
+    <Content Include="AjaxClient\tests\src\CommonUtils.Tests.js" />
+    <Content Include="AjaxClient\tests\src\RedisClient.Tests.js" />
+    <Content Include="AjaxClient\tests\src\_Template.Tests.js" />
+    <Content Include="AjaxClient\tests\src\JsonServiceClient.Tests.js" />
+    <Content Include="AjaxClient\tests\testLib.css" />
+    <Content Include="AjaxClient\tests\testLib.js" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
     <None Include="Web.config" />
@@ -96,7 +107,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="AjaxClient\js\" />
     <Folder Include="App_Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
