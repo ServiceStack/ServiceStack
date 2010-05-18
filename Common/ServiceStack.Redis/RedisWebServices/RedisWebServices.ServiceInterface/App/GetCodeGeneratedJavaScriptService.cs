@@ -17,14 +17,14 @@ namespace RedisWebServices.ServiceInterface.App
 		{
 			var sb = new StringBuilder();
 
-			sb.Append(@"function RedisClient(baseUri) {
-RedisClient.$baseConstructor.call(this);
+			sb.Append(@"function RedisGateway(baseUri) {
+RedisGateway.$baseConstructor.call(this);
 
     this.gateway = new JsonServiceClient(baseUri);
 }
-RedisClient.errorFn = function() {
+RedisGateway.errorFn = function() {
 };
-RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
+RedisGateway.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisGateway' },
 {");
 
 			var allOperationTypes = EndpointHost.AllServiceOperations.AllOperations.Types;
@@ -83,7 +83,7 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 				}
 
 				sb.AppendLine("\t\t\t},");
-				sb.AppendLine("\t\t\tonErrorFn || RedisClient.errorFn);");
+				sb.AppendLine("\t\t\tonErrorFn || RedisGateway.errorFn);");
 				sb.Append("\t}");
 
 				if (opIndex != allOperationTypes.Count - 1)
