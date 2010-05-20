@@ -23,8 +23,7 @@ namespace ServiceStack.Redis
 	{
 		private void Connect()
 		{
-			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
-			{
+			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
 				SendTimeout = SendTimeout
 			};
 			try
@@ -162,7 +161,6 @@ namespace ServiceStack.Redis
 			return cmdBytes;
 		}
 
-
 		/// <summary>
 		/// Command to set multuple binary safe arguments
 		/// </summary>
@@ -177,20 +175,48 @@ namespace ServiceStack.Redis
 				CmdLog(cmdWithBinaryArgs);
 
 				//Total command lines count
-				Socket.Send(GetCmdBytes('*', cmdWithBinaryArgs.Length));
+				WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
 
 				foreach (var safeBinaryValue in cmdWithBinaryArgs)
 				{
-					Socket.Send(GetCmdBytes('$', safeBinaryValue.Length));
-					Socket.Send(safeBinaryValue);
-					Socket.Send(endData);
+					WriteToSendBuffer(GetCmdBytes('$', safeBinaryValue.Length));
+					WriteToSendBuffer(safeBinaryValue);
+					WriteToSendBuffer(endData);
 				}
+
+				FlushSendBuffer();
 			}
 			catch (SocketException ex)
 			{
 				return HandleSocketException(ex);
 			}
+			finally
+			{
+				cmdBufferIndex = 0;
+			}
 			return true;
+		}
+
+		byte[] cmdBuffer = new byte[32 * 1024];
+		int cmdBufferIndex = 0;
+
+		public void WriteToSendBuffer(byte[] cmdBytes)
+		{
+			if ((cmdBufferIndex + cmdBytes.Length) > cmdBuffer.Length)
+			{
+				const int breathingSpaceToReduceReallocations = (32 * 1024);
+				var newLargerBuffer = new byte[cmdBufferIndex + cmdBytes.Length + breathingSpaceToReduceReallocations];
+				Buffer.BlockCopy(cmdBuffer, 0, newLargerBuffer, 0, cmdBuffer.Length);
+				cmdBuffer = newLargerBuffer;
+			}
+
+			Buffer.BlockCopy(cmdBytes, 0, cmdBuffer, cmdBufferIndex, cmdBytes.Length);
+			cmdBufferIndex += cmdBytes.Length;
+		}
+
+		public void FlushSendBuffer()
+		{
+			Socket.Send(cmdBuffer, cmdBufferIndex, SocketFlags.None);
 		}
 
 		private int SafeReadByte()
@@ -394,7 +420,7 @@ namespace ServiceStack.Redis
 		private byte[] ReadData()
 		{
 			string r = ReadLine();
-			
+
 			Log("R: {0}", r);
 			if (r.Length == 0)
 				throw CreateResponseError("Zero length respose");

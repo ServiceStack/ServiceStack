@@ -3,7 +3,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.IntegrationTests.ServiceModel
 {
-	[Service(EndpointAttributes.Internal)]
+	[Service(EndpointAttributes.InternalNetworkAccess)]
 	[DataContract]
 	public class InternalRestriction { }
 
