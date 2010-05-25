@@ -94,8 +94,8 @@ namespace ServiceStack.Redis
 		public readonly static byte[] ZScore = "ZSCORE".ToUtf8Bytes();
 		public readonly static byte[] ZRemRangeByRank = "ZREMRANGEBYRANK".ToUtf8Bytes();
 		public readonly static byte[] ZRemRangeByScore = "ZREMRANGEBYSCORE".ToUtf8Bytes();
-		public readonly static byte[] ZUnion = "ZUNION".ToUtf8Bytes();
-		public readonly static byte[] ZInter = "ZINTER".ToUtf8Bytes();
+		public readonly static byte[] ZUnionStore = "ZUNIONSTORE".ToUtf8Bytes();
+		public readonly static byte[] ZInterStore = "ZINTERSTORE".ToUtf8Bytes();
 
 		public readonly static byte[] HSet = "HSET".ToUtf8Bytes();
 		public readonly static byte[] HSetNx = "HSETNX".ToUtf8Bytes();

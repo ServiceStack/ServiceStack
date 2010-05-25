@@ -8,12 +8,14 @@ namespace RedisWebServices.ServiceInterface.Common
 	{
 		protected override object Run(GetValues request)
 		{
-			return new GetValuesResponse
+			var response = new GetValuesResponse
 			{
 				Values = new ArrayOfString(
 					RedisExec(r => r.GetValues(request.Keys))	
 				)
 			};
+
+			return response;
 		}
 	}
 }

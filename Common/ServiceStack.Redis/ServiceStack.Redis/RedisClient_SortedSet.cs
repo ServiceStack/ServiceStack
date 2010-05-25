@@ -48,7 +48,7 @@ namespace ServiceStack.Redis
 			}
 		}
 
-		private static double GetLexicalScore(string value)
+		public static double GetLexicalScore(string value)
 		{
 			if (string.IsNullOrEmpty(value))
 				return 0;
@@ -299,12 +299,12 @@ namespace ServiceStack.Redis
 
 		public int StoreIntersectFromSortedSets(string intoSetId, params string[] setIds)
 		{
-			return base.ZInter(intoSetId, setIds);
+			return base.ZInterStore(intoSetId, setIds);
 		}
 
 		public int StoreUnionFromSortedSets(string intoSetId, params string[] setIds)
 		{
-			return base.ZUnion(intoSetId, setIds);
+			return base.ZUnionStore(intoSetId, setIds);
 		}
 	}
 }

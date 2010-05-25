@@ -7,14 +7,7 @@ namespace RedisWebServices.ServiceInterface.Common
 	{
 		protected override object Run(SetEntry request)
 		{
-			if (request.ExpireIn.HasValue)
-			{
-				RedisExec(r => r.SetEntry(request.Key, request.Value, request.ExpireIn.Value));
-			}
-			else
-			{
-				RedisExec(r => r.SetEntry(request.Key, request.Value));
-			}
+			RedisExec(r => r.SetEntry(request.Key, request.Value));
 			
 			return new SetEntryResponse();
 		}

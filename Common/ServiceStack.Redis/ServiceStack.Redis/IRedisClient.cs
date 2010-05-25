@@ -83,6 +83,14 @@ namespace ServiceStack.Redis
 		IDisposable AcquireLock(string key);
 		IDisposable AcquireLock(string key, TimeSpan timeOut);
 
+		#region Redis pubsub
+
+		IRedisSubscription CreateSubscription();
+		void PublishMessage(string toChannel, string message);
+
+		#endregion
+
+
 		#region Set operations
 
 		HashSet<string> GetAllItemsFromSet(string setId);
@@ -194,14 +202,6 @@ namespace ServiceStack.Redis
 		List<string> GetHashValues(string hashId);
 		Dictionary<string, string> GetAllEntriesFromHash(string hashId);
 
-		#endregion
-
-
-		#region Redis pubsub
-
-		IRedisSubscription CreateSubscription();
-		void PublishMessage(string toChannel, string message);
-	
 		#endregion
 
 	}

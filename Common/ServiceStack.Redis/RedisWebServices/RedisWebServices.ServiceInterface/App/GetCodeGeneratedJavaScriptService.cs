@@ -17,15 +17,33 @@ namespace RedisWebServices.ServiceInterface.App
 		{
 			var sb = new StringBuilder();
 
-			sb.Append(@"function RedisGateway(baseUri) {
-RedisGateway.$baseConstructor.call(this);
+			sb.Append(@"function RedisClient(baseUri) {
+RedisClient.$baseConstructor.call(this);
 
     this.gateway = new JsonServiceClient(baseUri);
 }
-RedisGateway.errorFn = function() {
+RedisClient.errorFn = function() {
 };
-RedisGateway.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisGateway' },
-{");
+RedisClient.getLexicalScore = function(value)
+{
+	if (!is.String(value)) return 0;
+    
+	var lexicalValue = 0;
+	if (value.Length >= 1)
+		lexicalValue += value[0] * Math.pow(256, 3);
+	if (value.Length >= 2)
+		lexicalValue += value[1] * Math.pow(256, 2);
+	if (value.Length >= 3)
+		lexicalValue += value[2] * Math.pow(256, 1);
+	if (value.Length >= 4)
+		lexicalValue += value[3];
+
+	return lexicalValue;
+};
+RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
+{
+");
+			var isFirst = true;
 
 			var allOperationTypes = EndpointHost.AllServiceOperations.AllOperations.Types;
 			for (int opIndex = 0; opIndex < allOperationTypes.Count; opIndex++)
@@ -35,6 +53,11 @@ RedisGateway.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisGateway' },
 				var operationName = operationType.Name;
 			
 				if (operationName.EndsWith(ResponseDtoSuffix)) continue;
+
+				if (!isFirst)
+					sb.AppendLine(",");
+				else
+					isFirst = false;
 
 				var camelCaseOperation = GetCamelCaseName(operationName);
 
@@ -49,12 +72,12 @@ RedisGateway.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisGateway' },
 
 				sb.AppendLine("onSuccessFn, onErrorFn)");
 				sb.AppendLine("\t{");
-				sb.AppendFormat("\t\tthis.gateway.getFromJsonService('{0}', {{ ", operationName);
+				sb.AppendFormat("\t\tthis.gateway.getFromService('{0}', {{ ", operationName);
 				
 				for (int argIndex = 0; argIndex < args.Count; argIndex++)
 				{
 					var arg = args[argIndex];
-					sb.AppendFormat("{0}: {1}", arg, GetCamelCaseName(arg));
+					sb.AppendFormat("{0}: {1} || null", arg, GetCamelCaseName(arg));
 
 					if (argIndex != args.Count - 1)
 						sb.Append(", ");
@@ -83,13 +106,11 @@ RedisGateway.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisGateway' },
 				}
 
 				sb.AppendLine("\t\t\t},");
-				sb.AppendLine("\t\t\tonErrorFn || RedisGateway.errorFn);");
+				sb.AppendLine("\t\t\tonErrorFn || RedisClient.errorFn);");
 				sb.Append("\t}");
-
-				if (opIndex != allOperationTypes.Count - 1)
-					sb.AppendLine(",");
 			}
 
+			sb.AppendLine();
 			sb.Append("});");
 
 			return new TextResult(sb, MimeTypes.JavaScript);

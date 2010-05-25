@@ -575,7 +575,7 @@ function JsonServiceClient(baseUri, type)
 var JSN = JsonServiceClient;
 JSN.extend(ASObject, { type: "AjaxStack.JsonServiceClient" }, {
 
-	sendJson: function(webMethod, request, onSuccess, onError, ajaxOptions)
+	send: function(webMethod, request, onSuccess, onError, ajaxOptions)
 	{
 		var startCallTime = new Date();
 		var requestUrl = Path.combine(this.baseSyncReplyUri, webMethod);
@@ -615,7 +615,7 @@ JSN.extend(ASObject, { type: "AjaxStack.JsonServiceClient" }, {
 					JSN.log.debug(webMethod + ": server response time : " + callDuration + " ms");
 				}
 
-				if (isJsonResponseSuccessful(response.ResponseStatus, onError))
+				if (isResponseSuccessful(response.ResponseStatus, onError))
 				{
 					if (canCache) JSN.cache.add(cacheKey, response);
 
@@ -657,23 +657,23 @@ JSN.extend(ASObject, { type: "AjaxStack.JsonServiceClient" }, {
 	},
 
 	//Sends a HTTP 'GET' request on the QueryString
-	getFromJsonService: function(webMethod, request, onSuccess, onError)
+	getFromService: function(webMethod, request, onSuccess, onError)
 	{
-		this.sendJson(webMethod, request, onSuccess, onError);
+		this.send(webMethod, request, onSuccess, onError);
 	},
 
 	//Sends a HTTP 'POST' request as key value pair formData
-	postToJsonService: function(webMethod, request, onSuccess, onError)
+	postFormDataToService: function(webMethod, request, onSuccess, onError)
 	{
-		this.sendJson(webMethod, request, onSuccess, onError, { type: "POST" });
+		this.send(webMethod, request, onSuccess, onError, { type: "POST" });
 	},
 
 	//Sends a HTTP 'POST' request as JSON
-	postJsonToService: function(webMethod, request, onSuccess, onError)
+	postToService: function(webMethod, request, onSuccess, onError)
 	{
 		var jsonRequest = $.compactJSON(request);
 		//$.dump({ request:request, json: jsonRequest });
-		this.sendJson(webMethod, jsonRequest, onSuccess, onError,
+		this.send(webMethod, jsonRequest, onSuccess, onError,
 			{ type: "POST", processData: false, contentType: "application/json; charset=utf-8" });
 	}
 });
@@ -687,7 +687,7 @@ JSN.setCacheOptions = function(options)
 	JSN.cache = new Cache(options);
 }
 
-function isJsonResponseSuccessful(responseStatus, onError)
+function isResponseSuccessful(responseStatus, onError)
 {
 	//if there is no responseStatus then there is no way to work out if it was an error.
 	if (!responseStatus) return true;
@@ -697,7 +697,7 @@ function isJsonResponseSuccessful(responseStatus, onError)
 	{
 		if (onError == null)
 		{
-			JSN.log.error("isJsonResponseSuccessful: result.isSuccess == false: " + result.errorCode);
+			JSN.log.error("isResponseSuccessful: result.isSuccess == false: " + result.errorCode);
 			return;
 		}
 		var errorEvent = new ResponseErrorEvent(result);
@@ -1188,22 +1188,22 @@ A.join = function(array, on)
 		s += array[i];
 	}
 	return s;
-}
+};
 A.isEmpty = function(array)
 {
 	return !array || array.length == 0;
-}
+};
 A.each = function(array, fn)
 {
 	if (!array) return;
 	for (var i = 0, len = array.length; i < len; i++)
 		fn(array[i]);
-}
+};
 A.merge = function(a1, a2)
 {
 	A.each(a2, function(item) { a1.push(item); });
 	return a1;
-}
+};
 A.cat = function()
 {
 	var all = [];
@@ -1212,11 +1212,16 @@ A.cat = function()
 		A.merge(all, arguments[i]);
 	}
 	return all;
-}
+};
 A.clone = function(array)
 {
 	return array.slice();
-}
+};
+A.sort = function(array, sortFn) {
+    array.sort(sortFn);
+    return array;
+};
+
 function Environment() { }
 var E = Environment;
 E.getBrowserNameWithVersion = function()

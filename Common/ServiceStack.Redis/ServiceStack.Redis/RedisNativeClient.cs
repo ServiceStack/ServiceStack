@@ -350,7 +350,7 @@ namespace ServiceStack.Redis
 
 		public string RandomKey()
 		{
-			return SendExpectCode(Commands.RandomKey);
+			return SendExpectData(Commands.RandomKey).FromUtf8Bytes();
 		}
 
 		public void Rename(string oldKeyname, string newKeyname)
@@ -929,23 +929,23 @@ namespace ServiceStack.Redis
 			return SendExpectDouble(Commands.ZScore, setId.ToUtf8Bytes(), value);
 		}
 
-		public int ZUnion(string intoSetId, params string[] setIds)
+		public int ZUnionStore(string intoSetId, params string[] setIds)
 		{
 			var setIdsList = new List<string>(setIds);
 			setIdsList.Insert(0, setIds.Length.ToString());
 			setIdsList.Insert(0, intoSetId);
 
-			var cmdWithArgs = MergeCommandWithArgs(Commands.ZUnion, setIdsList.ToArray());
+			var cmdWithArgs = MergeCommandWithArgs(Commands.ZUnionStore, setIdsList.ToArray());
 			return SendExpectInt(cmdWithArgs);
 		}
 
-		public int ZInter(string intoSetId, params string[] setIds)
+		public int ZInterStore(string intoSetId, params string[] setIds)
 		{
 			var setIdsList = new List<string>(setIds);
 			setIdsList.Insert(0, setIds.Length.ToString());
 			setIdsList.Insert(0, intoSetId);
 
-			var cmdWithArgs = MergeCommandWithArgs(Commands.ZInter, setIdsList.ToArray());
+			var cmdWithArgs = MergeCommandWithArgs(Commands.ZInterStore, setIdsList.ToArray());
 			return SendExpectInt(cmdWithArgs);
 		}
 

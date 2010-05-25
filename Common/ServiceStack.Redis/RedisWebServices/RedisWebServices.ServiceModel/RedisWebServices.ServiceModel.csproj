@@ -67,6 +67,8 @@
     <Compile Include="Operations\Admin\RewriteAppendOnlyFileAsync.cs" />
     <Compile Include="Operations\Admin\Save.cs" />
     <Compile Include="Operations\App\GetCodeGeneratedJavaScript.cs" />
+    <Compile Include="Operations\Common\ExpireEntryAt.cs" />
+    <Compile Include="Operations\Common\SetEntryWithExpiry.cs" />
     <Compile Include="Operations\Common\Echo.cs" />
     <Compile Include="Operations\Messaging\CreateSubscription.cs" />
     <Compile Include="Operations\Hash\GetValuesFromHash.cs" />
@@ -141,7 +143,7 @@
     <Compile Include="Operations\Common\GetTimeToLive.cs" />
     <Compile Include="Operations\Common\GetAllKeys.cs" />
     <Compile Include="Operations\Set\SetContainsItem.cs" />
-    <Compile Include="Operations\Common\ExpireEntry.cs" />
+    <Compile Include="Operations\Common\ExpireEntryIn.cs" />
     <Compile Include="Operations\Common\GetRandomKey.cs" />
     <Compile Include="Operations\Common\GetEntryType.cs" />
     <Compile Include="Operations\Common\GetSubstring.cs" />

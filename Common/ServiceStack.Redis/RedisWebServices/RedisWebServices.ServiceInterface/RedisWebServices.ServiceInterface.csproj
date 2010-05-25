@@ -71,6 +71,8 @@
     <Compile Include="App\GetCodeGeneratedJavaScriptService.cs" />
     <Compile Include="Common\AppendToValueService.cs" />
     <Compile Include="Common\ContainsKey.cs" />
+    <Compile Include="Common\ExpireEntryAtService.cs" />
+    <Compile Include="Common\SetEntryWithExpiryService.cs" />
     <Compile Include="Common\SetEntryIfNotExistsService.cs" />
     <Compile Include="Common\GetTimeToLiveService.cs" />
     <Compile Include="Common\GetValueService.cs" />
@@ -79,7 +81,7 @@
     <Compile Include="Common\RemoveEntry.cs" />
     <Compile Include="Common\SetEntryService.cs" />
     <Compile Include="Common\DecrementValueService.cs" />
-    <Compile Include="Common\ExpireEntryService.cs" />
+    <Compile Include="Common\ExpireEntryInService.cs" />
     <Compile Include="Common\GetAllKeysService.cs" />
     <Compile Include="Common\GetAndSetEntryService.cs" />
     <Compile Include="Common\GetEntryTypeService.cs" />

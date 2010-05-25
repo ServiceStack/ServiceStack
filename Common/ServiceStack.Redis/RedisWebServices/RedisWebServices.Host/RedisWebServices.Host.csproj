@@ -70,10 +70,15 @@
     <Content Include="AjaxClient\jsLibOnLoad\jquery.dump.js" />
     <Content Include="AjaxClient\js\AjaxStack.js" />
     <Content Include="AjaxClient\js\app\App.js" />
+    <Content Include="AjaxClient\jsOld\RedisClient.sample.js" />
     <Content Include="AjaxClient\js\RedisClient.js" />
+    <Content Include="AjaxClient\js\rx.html.js" />
+    <Content Include="AjaxClient\js\rx.jQuery.js" />
+    <Content Include="AjaxClient\js\rx-.js" />
     <Content Include="AjaxClient\tests\default.htm" />
     <Content Include="AjaxClient\tests\src\CommonUtils.Tests.js" />
-    <Content Include="AjaxClient\tests\src\RedisClient.Tests.js" />
+    <Content Include="AjaxClient\tests\src\RedisClientCommon.Tests.js" />
+    <Content Include="AjaxClient\jsOld\RedisClient.Tests.js" />
     <Content Include="AjaxClient\tests\src\_Template.Tests.js" />
     <Content Include="AjaxClient\tests\src\JsonServiceClient.Tests.js" />
     <Content Include="AjaxClient\tests\testLib.css" />

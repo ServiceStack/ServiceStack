@@ -18,12 +18,6 @@ namespace RedisWebServices.ServiceModel.Operations.SortedSet
 		public double ToScore { get; set; }
 
 		[DataMember]
-		public string FromStringScore { get; set; }
-
-		[DataMember]
-		public string ToStringScore { get; set; }
-
-		[DataMember]
 		public int? Skip { get; set; }
 
 		[DataMember]

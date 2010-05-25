@@ -68,8 +68,8 @@ namespace RedisWebServices.Tests
 		{
 			RedisExec(r => r.SetEntry(TestKey, TestValue));
 
-			var response = base.Send<ExpireEntryResponse>(
-				new ExpireEntry { Key = TestKey, ExpireIn = TimeSpan.FromSeconds(1) },
+			var response = base.Send<ExpireEntryInResponse>(
+				new ExpireEntryIn { Key = TestKey, ExpireIn = TimeSpan.FromSeconds(1) },
 				x => x.ResponseStatus);
 
 			Assert.That(response.Result, Is.True);
@@ -260,6 +260,23 @@ namespace RedisWebServices.Tests
 			var testValue = RedisExec(r => r.GetValue(TestKey));
 
 			Assert.That(testValue, Is.EqualTo(TestValue));
+		}
+
+		[Test]
+		public void Test_SetEntryWithExpiry()
+		{
+			var response = base.Send<SetEntryWithExpiryResponse>(
+				new SetEntryWithExpiry { Key = TestKey, Value = TestValue, 
+					ExpireIn = TimeSpan.FromSeconds(1) },
+				x => x.ResponseStatus);
+
+			var testValue = RedisExec(r => r.GetValue(TestKey));
+			Assert.That(testValue, Is.EqualTo(TestValue));
+
+			Thread.Sleep(TimeSpan.FromSeconds(2));
+
+			var refreshedValue = RedisExec(r => r.GetValue(TestKey));
+			Assert.That(refreshedValue, Is.Null);
 		}
 
 		[Test]

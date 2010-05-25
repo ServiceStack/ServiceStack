@@ -24,15 +24,15 @@ YAHOO.ajaxstack.JsonServiceClientTests = new YAHOO.tool.TestCase({
 
         var client = new JsonServiceClient("http://localhost/RedisWebServices.Host/Public/");
 
-        this.wait(function() {
-
-            client.getFromJsonService("Echo", { Text: "Hola" }, function(r) {
+        this.resume(function() {
+        
+            client.getFromService("Echo", { Text: "Hola" }, function(r) {
                 Assert.areEqual(r.getResult().Text, "Hola");
-
             }, errorHandler);
-        }, 1000);
+            
+        });
 
-        //Assert.areEqual('1979-05-09T00:00:00Z', Dto.toUtcDate(date));
+        this.wait();
     }
 
 });

@@ -5,22 +5,25 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace RedisWebServices.ServiceModel.Operations.Common
 {
 	[DataContract]
-	public class SetEntry
+	public class ExpireEntryIn
 	{
 		[DataMember]
 		public string Key { get; set; }
 
 		[DataMember]
-		public string Value { get; set; }
+		public TimeSpan ExpireIn { get; set; }
 	}
 
 	[DataContract]
-	public class SetEntryResponse
+	public class ExpireEntryInResponse
 	{
-		public SetEntryResponse()
+		public ExpireEntryInResponse()
 		{
 			this.ResponseStatus = new ResponseStatus();
 		}
+
+		[DataMember] 
+		public bool Result { get; set; }
 
 		[DataMember]
 		public ResponseStatus ResponseStatus { get; set; }

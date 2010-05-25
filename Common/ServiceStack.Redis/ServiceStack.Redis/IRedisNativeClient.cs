@@ -108,8 +108,8 @@ namespace ServiceStack.Redis
 		int ZRemRangeByScore(string setId, double fromScore, double toScore);
 		int ZCard(string setId);
 		double ZScore(string setId, byte[] value);
-		int ZUnion(string intoSetId, params string[] setIds);
-		int ZInter(string intoSetId, params string[] setIds);
+		int ZUnionStore(string intoSetId, params string[] setIds);
+		int ZInterStore(string intoSetId, params string[] setIds);
 
 		//Redis Hash operations
 		int HSet(string hashId, byte[] key, byte[] value);
