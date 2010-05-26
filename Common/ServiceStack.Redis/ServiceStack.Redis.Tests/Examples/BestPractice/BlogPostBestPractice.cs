@@ -103,28 +103,6 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 		IBlogRepository Repository { set; }
 	}
 
-	public interface IBlogRepository
-	{
-		void StoreUsers(params User[] users);
-		List<User> GetAllUsers();
-
-		void StoreBlogs(User user, params Blog[] users);
-		List<Blog> GetBlogs(IEnumerable<int> blogIds);
-		List<Blog> GetAllBlogs();
-
-		List<BlogPost> GetBlogPosts(IEnumerable<int> blogPostIds);
-		void StoreNewBlogPosts(Blog blog, params BlogPost[] blogPosts);
-
-		List<BlogPost> GetRecentBlogPosts();
-		List<BlogPostComment> GetRecentBlogPostComments();
-		IDictionary<string, double> GetTopTags(int take);
-		HashSet<string> GetAllCategories();
-
-		void StoreBlogPost(BlogPost blogPost);
-		BlogPost GetBlogPost(int postId);
-		List<BlogPost> GetBlogPostsByCategory(string categoryName);
-	}
-
 	public class BlogRepository
 		: IBlogRepository
 	{
@@ -216,6 +194,7 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 			using (var redisBlogPosts = redisClient.GetTypedClient<BlogPost>())
 			using (var redisComments = redisClient.GetTypedClient<BlogPostComment>())
 			{
+				//Get wrapper around a strongly-typed Redis server-side List
 				var recentPosts = redisBlogPosts.Lists[RecentBlogPostsKey];
 				var recentComments = redisComments.Lists[RecentBlogPostCommentsKey];
 
@@ -225,17 +204,24 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 					blogPost.BlogId = blog.Id;
 					blog.BlogPostIds.AddIfNotExists(blogPost.Id);
 
+					//List of Recent Posts and comments
 					recentPosts.Prepend(blogPost);
 					blogPost.Comments.ForEach(recentComments.Prepend);
+					
+					//Tag Cloud
 					blogPost.Tags.ForEach(x =>
 						redisClient.IncrementItemInSortedSet(TagCloudKey, x, 1));
+					
+					//List of all post categories
 					blogPost.Categories.ForEach(x =>
 						  redisClient.AddItemToSet(AllCategoriesKey, x));
+					
+					//Map of Categories to BlogPost Ids
 					blogPost.Categories.ForEach(x =>
 						  redisClient.AddItemToSet(UrnId.Create(CategoryTypeName, x), blogPost.Id.ToString()));
 				}
 
-				//Rolling list only keep the last 5
+				//Rolling list of recent items, only keep the last 5
 				recentPosts.Trim(0, 4);
 				recentComments.Trim(0, 4);
 
@@ -375,7 +361,6 @@ namespace ServiceStack.Redis.Tests.Examples.BestPractice
 						new BlogPostComment {Content = "First Comment!", CreatedDate = DateTime.UtcNow,}
 					}
 				});
-
 		}
 
 		[Test]

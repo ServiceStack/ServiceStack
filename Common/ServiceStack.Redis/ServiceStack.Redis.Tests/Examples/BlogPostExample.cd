@@ -3,7 +3,7 @@
   <Class Name="ServiceStack.Redis.Tests.Examples.User">
     <Position X="0.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>ACACAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Examples\BlogPostExample.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -31,5 +31,12 @@
       <FileName>Examples\BlogPostExample.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Interface Name="ServiceStack.Redis.Tests.Examples.BestPractice.IBlogRepository">
+    <Position X="1" Y="3.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ACABAEAAAAAAAAAAAAAAQAAAAACAAIAAEAAAACUABAI=</HashCode>
+      <FileName>Examples\BestPractice\IBlogRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>
