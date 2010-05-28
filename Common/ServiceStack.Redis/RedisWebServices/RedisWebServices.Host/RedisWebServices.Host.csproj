@@ -77,6 +77,10 @@
     <Content Include="AjaxClient\js\rx-.js" />
     <Content Include="AjaxClient\tests\default.htm" />
     <Content Include="AjaxClient\tests\src\CommonUtils.Tests.js" />
+    <Content Include="AjaxClient\tests\src\RedisClientList.Tests.js" />
+    <Content Include="AjaxClient\tests\src\RedisClientSortedSet.Tests.js" />
+    <Content Include="AjaxClient\tests\src\RedisClientSet.Tests.js" />
+    <Content Include="AjaxClient\tests\src\RedisClientHash.Tests.js" />
     <Content Include="AjaxClient\tests\src\RedisClientCommon.Tests.js" />
     <Content Include="AjaxClient\jsOld\RedisClient.Tests.js" />
     <Content Include="AjaxClient\tests\src\_Template.Tests.js" />

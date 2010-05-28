@@ -1221,6 +1221,38 @@ A.sort = function(array, sortFn) {
     array.sort(sortFn);
     return array;
 };
+A.areEqual = function(array, other) {
+    if (!(is.Array(array) && is.Array(other))) return false;
+    if (array.length != other.length) return false;
+
+    for (var i = 0; i < array.length; i++) {
+        if (!A.containsValue(other, array[i])) return false;
+    }
+    return true;
+};
+A.take = function(array, count) {
+    var take = array.length < count ? array.length : count;
+    var to = [];
+    for (var i = 0, len = take; i < len; i++)
+        to.push(array[i]);
+
+    return to;
+};
+A.skip = function(array, count) {
+    var skip = array.length < count ? array.length : count;
+    var to = [];
+    for (var i = skip, len = array.length; i < len; i++)
+        to.push(array[i]);
+
+    return to;
+};
+A.insert = function(array, index, item) {
+    if (index >= 0) {
+        var a = array.slice(), b = a.splice(index);
+        array[index] = item;
+        return a.concat(b);
+    }
+};
 
 function Environment() { }
 var E = Environment;
@@ -1860,6 +1892,17 @@ O.clone = function(obj)
 O.factoryFn = function()
 {
 	return {};
+}
+O.areEqual = function(obj, other) {
+    if (!(is.Object(obj) && is.Object(other))) return false;
+
+    for (var k in obj) {
+        if (obj[k] != other[k]) return false;
+    }
+    for (var k in other) {
+        if (obj[k] != other[k]) return false;
+    }
+    return true;
 }
 /**
 * Path.js

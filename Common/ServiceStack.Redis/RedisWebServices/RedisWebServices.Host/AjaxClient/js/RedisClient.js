@@ -20,6 +20,32 @@ RedisClient.getLexicalScore = function(value) {
 
     return lexicalValue;
 };
+RedisClient.convertKeyValuePairsToMap = function(kvps) {
+    var to = {};
+    for (var i = 0; i < kvps.length; i++) {
+        var kvp = kvps[i];
+        to[kvp['Key']] = kvp['Value'];
+    }
+    return to;
+};
+RedisClient.convertMapToKeyValuePairs = function(map) {
+    var kvps = [];
+    for (var k in map) {
+        kvps.push({ Key: k, Value: map[k] });
+    }
+    return kvps;
+};
+RedisClient.convertMapToKeyValuePairsDto = function(map) {
+    var kvps = RedisClient.convertMapToKeyValuePairs(map);
+    var s = '';
+    for (var i = 0; i < kvps.length; i++) {
+        var kvp = kvps[i];
+        if (s) s += ',';
+        s += '{Key:' + kvp.Key + ',Value:' + kvp.Value + '}';
+    }
+    return '[' + s + ']';
+};
+
 RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 {
     removeItemFromSortedSet: function(id, item, onSuccessFn, onErrorFn) {

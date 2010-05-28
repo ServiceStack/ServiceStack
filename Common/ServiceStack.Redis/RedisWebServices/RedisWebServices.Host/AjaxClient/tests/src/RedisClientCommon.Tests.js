@@ -1,3 +1,4 @@
+/*
 YAHOO.namespace("ajaxstack");
 YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
 
@@ -359,8 +360,11 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
         }, failFn);
 
         wait();
-    }
+    },
 
+    testPause_for_a_sec: function() {
+        wait(1000);
+    }
 
 });
 

@@ -4,7 +4,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace RedisWebServices.ServiceModel.Operations.Admin
 {
-	[Service(EndpointAttributes.InternalNetworkAccess)]
+	//[Service(EndpointAttributes.InternalNetworkAccess)]
 	[DataContract]
 	public class RewriteAppendOnlyFileAsync
 	{
