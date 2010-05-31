@@ -107,6 +107,7 @@
     <Compile Include="List\BlockingDequeueItemFromListService.cs" />
     <Compile Include="List\BlockingPopItemFromListService.cs" />
     <Compile Include="List\BlockingRemoveStartFromListService.cs" />
+    <Compile Include="List\AddRangeToListService.cs" />
     <Compile Include="List\TrimListService.cs" />
     <Compile Include="List\EnqueueItemOnListService.cs" />
     <Compile Include="List\GetAllItemsFromListService.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Messaging\PublishMessageService.cs" />
     <Compile Include="RedisWebServicesBase.cs" />
     <Compile Include="Set\AddItemToSetService.cs" />
+    <Compile Include="Set\AddRangeToSetService.cs" />
     <Compile Include="Set\SetContainsItemService.cs" />
     <Compile Include="Set\StoreDifferencesFromSetService.cs" />
     <Compile Include="Set\StoreUnionFromSetsService.cs" />
@@ -142,7 +144,9 @@
     <Compile Include="Set\RemoveItemFromSetService.cs" />
     <Compile Include="Set\StoreIntersectFromSetsService.cs" />
     <Compile Include="Set\GetAllItemsFromSetService.cs" />
-    <Compile Include="SortedSet\AddItemToSetService.cs" />
+    <Compile Include="SortedSet\AddItemToSortedSetService.cs" />
+    <Compile Include="SortedSet\AddRangeToSetService.cs" />
+    <Compile Include="SortedSet\GetAllItemsFromSortedSetDescService.cs" />
     <Compile Include="SortedSet\GetRangeWithScoresFromSortedSetByLowestScoreService.cs" />
     <Compile Include="SortedSet\GetRangeWithScoresFromSortedSetByHighestScoreService.cs" />
     <Compile Include="SortedSet\GetRangeFromSortedSetByLowestScoreService.cs" />

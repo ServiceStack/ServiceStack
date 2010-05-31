@@ -93,6 +93,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetAllItemsFromList()
 		{
+			var a = new Dictionary<string, string>();
 			stringList.ForEach(x =>
 				RedisExec(r => r.AddItemToList(ListId, x)));
 
@@ -145,11 +146,11 @@ namespace RedisWebServices.Tests
 				RedisExec(r => r.AddItemToList(ListId, x)));
 
 			var response = base.Send<GetRangeFromSortedListResponse>(
-				new GetRangeFromSortedList { Id = ListId, StartingFrom = 0, EndingAt = 3 }, x => x.ResponseStatus);
+				new GetRangeFromSortedList { Id = ListId, StartingFrom = 0, EndingAt = 2 }, x => x.ResponseStatus);
 
-			stringList.Sort((x,y) => y.CompareTo(x));
+			stringList.Sort((x,y) => x.CompareTo(y));
 
-			Assert.That(response.Items, Is.EquivalentTo(stringList.Take(3).ToList()));
+			Assert.That(response.Items, Is.EquivalentTo(stringList.Take(2).ToList()));
 		}
 
 		[Test]

@@ -1,30 +1,34 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
+using RedisWebServices.ServiceModel.Types;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace RedisWebServices.ServiceModel.Operations.SortedSet
 {
 	[DataContract]
-	public class GetItemIndexInSortedSet
+	public class AddRangeToSortedSet
 		: IHasStringId
 	{
-		[DataMember]
+		public AddRangeToSortedSet()
+		{
+			this.Items = new List<ItemWithScore>();
+		}
+
+		[DataMember] 
 		public string Id { get; set; }
 
 		[DataMember]
-		public string Item { get; set; }
+		public List<ItemWithScore> Items { get; set; }
 	}
 
 	[DataContract]
-	public class GetItemIndexInSortedSetResponse
+	public class AddRangeToSortedSetResponse
 	{
-		public GetItemIndexInSortedSetResponse()
+		public AddRangeToSortedSetResponse()
 		{
 			this.ResponseStatus = new ResponseStatus();
 		}
-
-		[DataMember]
-		public int Index { get; set; }
 
 		[DataMember]
 		public ResponseStatus ResponseStatus { get; set; }

@@ -7,13 +7,11 @@ var lastListItem = "four";
 
 var onAfterFlushAllAndStringListAdd = function(onSuccessFn, onErrorFn)
 {
-    var i = 0;
+    var count = 0;
     redis.flushAll(function() {
-        for (var i = 0; i < stringList.length; i++) {
-            redis.addItemToList(listId, stringList[i], function() {
-                if (i++ == stringList.length - 1) onSuccessFn();
-            }, onErrorFn || failFn);
-        }
+        redis.addRangeToList(listId, A.join(stringList, ","), function() {
+            onSuccessFn();
+        }, onErrorFn || failFn);
     }, onErrorFn || failFn);
 };
 
@@ -30,6 +28,7 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
     setUp: function() {
         resume = this.resume;
         wait = this.wait;
+        stringList = ["one", "two", "three", "four"];
     },
 
     tearDown: function() {
@@ -40,21 +39,22 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
     //---------------------------------------------
 
     testAddItemToList: function() {
-        redis.addItemToList(listId, testValue, function() {
-            redis.getItemFromList(listId, '0', function(item) {
-                resume(function() {
-                    Assert.areEqual(item, testValue);
-                });
+        redis.flushAll(function() {
+            redis.addItemToList(listId, testValue, function() {
+                redis.getItemFromList(listId, '0', function(item) {
+                    resume(function() {
+                        Assert.areEqual(item, testValue);
+                    });
+                }, failFn);
             }, failFn);
         }, failFn);
 
         wait();
     },
 
-    /*
     testBlockingDequeueItemFromList: function() {
         onAfterFlushAllAndStringListAdd(function() {
-            redis.blockingDequeueItemFromList(listId, function(item) {
+            redis.blockingDequeueItemFromList(listId, "00:00:05", function(item) {
                 resume(function() {
                     Assert.areEqual(item, firstListItem);
                 });
@@ -66,7 +66,7 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
 
     testBlockingPopItemFromList: function() {
         onAfterFlushAllAndStringListAdd(function() {
-            redis.blockingPopItemFromList(listId, function(item) {
+            redis.blockingPopItemFromList(listId, "00:00:05", function(item) {
                 resume(function() {
                     Assert.areEqual(item, lastListItem);
                 });
@@ -78,7 +78,7 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
 
     testBlockingRemoveStartFromList: function() {
         onAfterFlushAllAndStringListAdd(function() {
-            redis.blockingRemoveStartFromList(listId, function(item) {
+            redis.blockingRemoveStartFromList(listId, "00:00:05", function(item) {
                 resume(function() {
                     Assert.areEqual(item, firstListItem);
                 });
@@ -87,14 +87,25 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
 
         wait();
     },
-    */
+
+    testDequeueItemFromList: function() {
+        onAfterFlushAllAndStringListAdd(function() {
+            redis.dequeueItemFromList(listId, function(item) {
+                resume(function() {
+                    Assert.areEqual(item, firstListItem);
+                });
+            }, failFn);
+        }, failFn);
+
+        wait();
+    },
 
     testEnqueueItemOnList: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        redis.flushAll(function() {
             redis.enqueueItemOnList(listId, testValue, function() {
                 redis.getItemFromList(listId, '0', function(item) {
                     resume(function() {
-                        Assert.areEqual(item, firstListItem);
+                        Assert.areEqual(item, testValue);
                     });
                 }, failFn);
             }, failFn);
@@ -129,7 +140,7 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
 
     testGetRangeFromList: function() {
         onAfterFlushAllAndStringListAdd(function() {
-            redis.getRangeFromList(listId,'0',2, function(items) {
+            redis.getRangeFromList(listId, '0', 2, function(items) {
                 resume(function() {
                     Assert.isTrue(A.areEqual(items, A.take(stringList, 3)));
                 });
@@ -141,9 +152,9 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
 
     testGetRangeFromSortedList: function() {
         onAfterFlushAllAndStringListAdd(function() {
-            redis.getRangeFromSortedList(listId,'0',3, function(items) {
+            redis.getRangeFromSortedList(listId, '0', 2, function(items) {
                 resume(function() {
-                    Assert.isTrue(A.areEqual(items, A.take(stringList, 3)));
+                    Assert.isTrue(A.areEqual(items, A.take(A.sort(stringList), 2)));
                 });
             }, failFn);
         }, failFn);
@@ -153,7 +164,7 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
 
     testPopAndPushItemBetweenLists: function() {
         onAfterFlushAllAndStringListAdd(function() {
-            redis.popAndPushItemBetweenLists(listId,listId2, function(item) {
+            redis.popAndPushItemBetweenLists(listId, listId2, function(item) {
                 resume(function() {
                     Assert.areEqual(item, lastListItem);
                 });
@@ -178,9 +189,9 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
     testPrependItemToList: function() {
         onAfterFlushAllAndStringListAdd(function() {
             redis.prependItemToList(listId, testValue, function() {
-                redis.getItemFromList(listId, '0', function(items) {
+                redis.getAllItemsFromList(listId, function(items) {
                     resume(function() {
-                        var matchingList = A.insert(A.clone(stringList), 0, testValue);
+                        var matchingList = A.insert(stringList, 0, testValue);
                         Assert.isTrue(A.areEqual(items, matchingList));
                     });
                 }, failFn);
@@ -195,8 +206,8 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
             redis.pushItemToList(listId, testValue, function() {
                 redis.getAllItemsFromList(listId, function(items) {
                     resume(function() {
-                        var matchingList = A.clone(stringList).push(testValue);
-                        Assert.isTrue(A.areEqual(items, matchingList));
+                        stringList.push(testValue);
+                        Assert.isTrue(A.areEqual(items, stringList));
                     });
                 }, failFn);
             }, failFn);
@@ -236,8 +247,8 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
             redis.removeItemFromList(listId, lastListItem, function(itemsRemoved) {
                 redis.getAllItemsFromList(listId, function(items) {
                     resume(function() {
-                        var matchingList = A.clone(stringList).shift();
-                        Assert.isTrue(A.areEqual(items, matchingList));
+                        stringList.pop();
+                        Assert.isTrue(A.areEqual(items, stringList));
                     });
                 }, failFn);
             }, failFn);
@@ -261,11 +272,12 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
     testSetItemInList: function() {
         onAfterFlushAllAndStringListAdd(function() {
             redis.setItemInList(listId, 1, testValue, function() {
-                resume(function() {
-                    var matchingList = A.clone(stringList);
-                    matchingList[1] = testValue;
-                    Assert.isTrue(A.areEqual(items, matchingList));
-                });
+                redis.getAllItemsFromList(listId, function(items) {
+                    resume(function() {
+                        stringList[1] = testValue;
+                        Assert.isTrue(A.areEqual(items, stringList));
+                    });
+                }, failFn);
             }, failFn);
         }, failFn);
 

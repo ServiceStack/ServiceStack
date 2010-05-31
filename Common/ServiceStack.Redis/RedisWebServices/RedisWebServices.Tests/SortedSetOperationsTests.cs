@@ -50,9 +50,19 @@ namespace RedisWebServices.Tests
 			var response = base.Send<GetAllItemsFromSortedSetResponse>(
 				new GetAllItemsFromSortedSet { Id = SetId }, x => x.ResponseStatus);
 
-			var items = RedisExec(r => r.GetAllItemsFromSortedSet(SetId));
+			Assert.That(response.Items, Is.EquivalentTo(stringList));
+		}
 
-			Assert.That(items, Is.EquivalentTo(stringList));
+		[Test]
+		public void Test_GetAllItemsFromSortedSetDesc()
+		{
+			stringList.ForEach(x =>
+				RedisExec(r => r.AddItemToSortedSet(SetId, x)));
+
+			var response = base.Send<GetAllItemsFromSortedSetDescResponse>(
+				new GetAllItemsFromSortedSetDesc { Id = SetId }, x => x.ResponseStatus);
+
+			Assert.That(response.Items, Is.EquivalentTo(stringList));
 		}
 
 		[Test]

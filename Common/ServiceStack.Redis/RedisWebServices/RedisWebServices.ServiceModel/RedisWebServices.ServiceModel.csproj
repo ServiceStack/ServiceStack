@@ -70,6 +70,7 @@
     <Compile Include="Operations\Common\ExpireEntryAt.cs" />
     <Compile Include="Operations\Common\SetEntryWithExpiry.cs" />
     <Compile Include="Operations\Common\Echo.cs" />
+    <Compile Include="Operations\List\AddRangeToList.cs" />
     <Compile Include="Operations\Messaging\CreateSubscription.cs" />
     <Compile Include="Operations\Hash\GetValuesFromHash.cs" />
     <Compile Include="Operations\Messaging\PublishMessage.cs" />
@@ -85,6 +86,9 @@
     <Compile Include="Operations\Hash\SetEntryInHashIfNotExists.cs" />
     <Compile Include="Operations\Hash\SetEntryInHash.cs" />
     <Compile Include="Operations\Hash\HashContainsEntry.cs" />
+    <Compile Include="Operations\Set\AddRangeToSet.cs" />
+    <Compile Include="Operations\SortedSet\AddRangeToSortedSet.cs" />
+    <Compile Include="Operations\SortedSet\GetAllItemsFromSortedSetDesc.cs" />
     <Compile Include="Operations\SortedSet\SortedSetContainsItem.cs" />
     <Compile Include="Operations\SortedSet\StoreUnionFromSortedSets.cs" />
     <Compile Include="Operations\SortedSet\StoreIntersectFromSortedSets.cs" />

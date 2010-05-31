@@ -212,9 +212,9 @@ namespace RedisWebServices.Tests
 				RedisExec(r => r.AddItemToSet(SetId2, x)));
 
 			var response = base.Send<StoreIntersectFromSetsResponse>(
-				new StoreIntersectFromSets { Id = SetId3, SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
+				new StoreIntersectFromSets { Id = "storeset", SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
 
-			var setItems = RedisExec(r => r.GetAllItemsFromSet(SetId3));
+			var setItems = RedisExec(r => r.GetAllItemsFromSet("storeset"));
 
 			Assert.That(setItems.ToList(), Is.EquivalentTo(new List<string> { "four" }));
 		}
@@ -228,12 +228,12 @@ namespace RedisWebServices.Tests
 				RedisExec(r => r.AddItemToSet(SetId2, x)));
 
 			var response = base.Send<StoreUnionFromSetsResponse>(
-				new StoreUnionFromSets { Id = SetId3, SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
+				new StoreUnionFromSets { Id = "storeset", SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
 
 			var unionList = new List<string>(stringList);
 			stringList2.ForEach(x => { if (!unionList.Contains(x)) unionList.Add(x); });
 
-			var setItems = RedisExec(r => r.GetAllItemsFromSet(SetId3));
+			var setItems = RedisExec(r => r.GetAllItemsFromSet("storeset"));
 
 			Assert.That(setItems, Is.EquivalentTo(unionList));
 		}

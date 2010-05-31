@@ -5,26 +5,25 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace RedisWebServices.ServiceModel.Operations.SortedSet
 {
 	[DataContract]
-	public class GetItemIndexInSortedSet
+	public class GetAllItemsFromSortedSetDesc
 		: IHasStringId
 	{
 		[DataMember]
 		public string Id { get; set; }
-
-		[DataMember]
-		public string Item { get; set; }
 	}
 
 	[DataContract]
-	public class GetItemIndexInSortedSetResponse
+	public class GetAllItemsFromSortedSetDescResponse
 	{
-		public GetItemIndexInSortedSetResponse()
+		public GetAllItemsFromSortedSetDescResponse()
 		{
 			this.ResponseStatus = new ResponseStatus();
+
+			this.Items = new ArrayOfString();
 		}
 
 		[DataMember]
-		public int Index { get; set; }
+		public ArrayOfString Items { get; set; }
 
 		[DataMember]
 		public ResponseStatus ResponseStatus { get; set; }

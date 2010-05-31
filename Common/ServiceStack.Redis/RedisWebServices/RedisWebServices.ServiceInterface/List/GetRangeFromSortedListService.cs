@@ -8,12 +8,14 @@ namespace RedisWebServices.ServiceInterface.List
 	{
 		protected override object Run(GetRangeFromSortedList request)
 		{
-			return new GetRangeFromSortedListResponse
+			var response = new GetRangeFromSortedListResponse
 			{
 				Items = new ArrayOfString(
 					RedisExec(r => r.GetRangeFromSortedList(request.Id, request.StartingFrom, request.EndingAt))
 				)
 			};
+
+			return response;
 		}
 	}
 }

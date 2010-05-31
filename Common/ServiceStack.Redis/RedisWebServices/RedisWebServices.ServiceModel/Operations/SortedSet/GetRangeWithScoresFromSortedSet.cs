@@ -17,9 +17,6 @@ namespace RedisWebServices.ServiceModel.Operations.SortedSet
 
 		[DataMember]
 		public int ToRank { get; set; }
-
-		[DataMember]
-		public bool SortDescending { get; set; }
 	}
 
 	[DataContract]

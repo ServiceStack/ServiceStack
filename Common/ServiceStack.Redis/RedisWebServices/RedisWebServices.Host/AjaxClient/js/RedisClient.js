@@ -35,8 +35,7 @@ RedisClient.convertMapToKeyValuePairs = function(map) {
     }
     return kvps;
 };
-RedisClient.convertMapToKeyValuePairsDto = function(map) {
-    var kvps = RedisClient.convertMapToKeyValuePairs(map);
+RedisClient.toKeyValuePairsDto = function(kvps) {
     var s = '';
     for (var i = 0; i < kvps.length; i++) {
         var kvp = kvps[i];
@@ -44,6 +43,54 @@ RedisClient.convertMapToKeyValuePairsDto = function(map) {
         s += '{Key:' + kvp.Key + ',Value:' + kvp.Value + '}';
     }
     return '[' + s + ']';
+};
+RedisClient.convertMapToKeyValuePairsDto = function(map) {
+    var kvps = RedisClient.convertMapToKeyValuePairs(map);
+    return RedisClient.toKeyValuePairsDto(kvps);
+};
+RedisClient.convertItemWithScoresToMap = function(itwss) {
+    var to = {};
+    for (var i = 0; i < itwss.length; i++) {
+        var itws = itwss[i];
+        to[itws['Item']] = itws['Score'];
+    }
+    return to;
+};
+RedisClient.convertMapToItemWithScores = function(map) {
+    var to = [];
+    for (var item in map) {
+        to.push({ Item: item, Score: map[item] });
+    }
+    return to;
+};
+RedisClient.convertArrayToItemWithScores = function(array, score) {
+    score = score || '0';
+    var to = [];
+    for (var i = 0; i < array.length; i++) {
+        var a = array[i];
+        var isArray = (typeof (a) === 'object') ? a.constructor.toString().match(/array/i) !== null || a.length !== undefined : false;
+        var item = isArray ? a[0] : a;
+        var score = isArray && a.length > 1 ? a[1] : score;
+        to.push({ Item: item, Score: score });
+    }
+    return to;
+};
+RedisClient.toItemWithScoresDto = function(iwss) {
+    var s = '';
+    for (var i = 0; i < iwss.length; i++) {
+        var iws = iwss[i];
+        if (s) s += ',';
+        s += '{Item:' + iws.Item + ',Score:' + iws.Score + '}';
+    }
+    return '[' + s + ']';
+};
+RedisClient.convertMapToItemWithScoresDto = function(map) {
+    var iwsArray = RedisClient.convertMapToItemWithScores(map);
+    return RedisClient.toItemWithScoresDto(iwsArray);
+};
+RedisClient.convertArrayToItemWithScoresDto = function(array, score) {
+    var iwsArray = RedisClient.convertArrayToItemWithScores(array, score);
+    return RedisClient.toItemWithScoresDto(iwsArray);
 };
 
 RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
@@ -104,15 +151,15 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 			},
 			onErrorFn || RedisClient.errorFn);
     },
-    getItemIndexInSortedSet: function(id, item, sortDescending, onSuccessFn, onErrorFn) {
-        this.gateway.getFromService('GetItemIndexInSortedSet', { Id: id || null, Item: item || null, SortDescending: sortDescending || null },
+    getItemIndexInSortedSet: function(id, item, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('GetItemIndexInSortedSet', { Id: id || null, Item: item || null },
 			function(r) {
 			    if (onSuccessFn) onSuccessFn(r.getResult().Index);
 			},
 			onErrorFn || RedisClient.errorFn);
     },
-    getRangeWithScoresFromSortedSet: function(id, fromRank, toRank, sortDescending, onSuccessFn, onErrorFn) {
-        this.gateway.getFromService('GetRangeWithScoresFromSortedSet', { Id: id || null, FromRank: fromRank || null, ToRank: toRank || null, SortDescending: sortDescending || null },
+    getRangeWithScoresFromSortedSet: function(id, fromRank, toRank, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('GetRangeWithScoresFromSortedSet', { Id: id || null, FromRank: fromRank || null, ToRank: toRank || null },
 			function(r) {
 			    if (onSuccessFn) onSuccessFn(r.getResult().ItemsWithScores);
 			},
@@ -384,8 +431,8 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 			},
 			onErrorFn || RedisClient.errorFn);
     },
-    getAllItemsFromSortedSet: function(id, sortDescending, onSuccessFn, onErrorFn) {
-        this.gateway.getFromService('GetAllItemsFromSortedSet', { Id: id || null, SortDescending: sortDescending || null },
+    getAllItemsFromSortedSet: function(id, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('GetAllItemsFromSortedSet', { Id: id || null },
 			function(r) {
 			    if (onSuccessFn) onSuccessFn(r.getResult().Items);
 			},
@@ -440,8 +487,8 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 			},
 			onErrorFn || RedisClient.errorFn);
     },
-    removeItemFromList: function(id, item, noOfMatches, onSuccessFn, onErrorFn) {
-        this.gateway.getFromService('RemoveItemFromList', { Id: id || null, Item: item || null, NoOfMatches: noOfMatches || null },
+    removeItemFromList: function(id, item, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('RemoveItemFromList', { Id: id || null, Item: item || null },
 			function(r) {
 			    if (onSuccessFn) onSuccessFn(r.getResult().ItemsRemovedCount);
 			},
@@ -514,13 +561,6 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
         this.gateway.getFromService('RemoveRangeFromSortedSetByScore', { Id: id || null, FromScore: fromScore || null, ToScore: toScore || null },
 			function(r) {
 			    if (onSuccessFn) onSuccessFn(r.getResult().ItemsRemovedCount);
-			},
-			onErrorFn || RedisClient.errorFn);
-    },
-    addItemToSortedSet: function(id, item, score, onSuccessFn, onErrorFn) {
-        this.gateway.getFromService('AddItemToSortedSet', { Id: id || null, Item: item || null, Score: score || null },
-			function(r) {
-			    if (onSuccessFn) onSuccessFn(r.getResult().Result);
 			},
 			onErrorFn || RedisClient.errorFn);
     },
@@ -731,6 +771,41 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
         this.gateway.getFromService('ExpireEntryAt', { Key: key || null, ExpireAt: expireAt || null },
 			function(r) {
 			    if (onSuccessFn) onSuccessFn(r.getResult().Result);
+			},
+			onErrorFn || RedisClient.errorFn);
+    },
+    addRangeToList: function(id, items, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('AddRangeToList', { Id: id || null, Items: items || null },
+			function(r) {
+			    if (onSuccessFn) onSuccessFn();
+			},
+			onErrorFn || RedisClient.errorFn);
+    },
+    addItemToSortedSet: function(id, item, score, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('AddItemToSortedSet', { Id: id || null, Item: item || null, Score: score || null },
+			function(r) {
+			    if (onSuccessFn) onSuccessFn(r.getResult().Result);
+			},
+			onErrorFn || RedisClient.errorFn);
+    },
+    addRangeToSet: function(id, items, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('AddRangeToSet', { Id: id || null, Items: items || null },
+			function(r) {
+			    if (onSuccessFn) onSuccessFn();
+			},
+			onErrorFn || RedisClient.errorFn);
+    },
+    addRangeToSortedSet: function(id, items, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('AddRangeToSortedSet', { Id: id || null, Items: items || null },
+			function(r) {
+			    if (onSuccessFn) onSuccessFn();
+			},
+			onErrorFn || RedisClient.errorFn);
+    },
+    getAllItemsFromSortedSetDesc: function(id, onSuccessFn, onErrorFn) {
+        this.gateway.getFromService('GetAllItemsFromSortedSetDesc', { Id: id || null },
+			function(r) {
+			    if (onSuccessFn) onSuccessFn(r.getResult().Items);
 			},
 			onErrorFn || RedisClient.errorFn);
     }

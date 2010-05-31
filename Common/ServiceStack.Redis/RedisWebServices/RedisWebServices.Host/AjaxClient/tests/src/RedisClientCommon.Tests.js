@@ -1,4 +1,3 @@
-/*
 YAHOO.namespace("ajaxstack");
 YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
 

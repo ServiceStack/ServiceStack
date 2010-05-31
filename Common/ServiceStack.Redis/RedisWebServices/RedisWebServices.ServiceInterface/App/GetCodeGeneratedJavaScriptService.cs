@@ -59,9 +59,8 @@ RedisClient.convertMapToKeyValuePairs = function(map)
     }
     return kvps;
 };
-RedisClient.convertMapToKeyValuePairsDto = function(map)
+RedisClient.toKeyValuePairsDto = function(kvps)
 {
-    var kvps = RedisClient.convertMapToKeyValuePairs(map);
     var s = '';
     for (var i=0; i<kvps.length; i++)
     {
@@ -70,6 +69,63 @@ RedisClient.convertMapToKeyValuePairsDto = function(map)
         s+= '{Key:' + kvp.Key + ',Value:' + kvp.Value + '}';
     }
     return '[' + s + ']';
+};
+RedisClient.convertMapToKeyValuePairsDto = function(map)
+{
+    var kvps = RedisClient.convertMapToKeyValuePairs(map);
+	return RedisClient.toKeyValuePairsDto(kvps);
+};
+RedisClient.convertItemWithScoresToMap = function(itwss)
+{
+    var to = {};
+    for (var i = 0; i < itwss.length; i++)
+    {
+        var itws = itwss[i];
+        to[itws['Item']] = itws['Score'];
+    }
+    return to;
+};
+RedisClient.convertMapToItemWithScores = function(map)
+{
+    var to = [];
+    for (var item in map)
+    {
+        to.push({Item:item, Score:map[item]});
+    }
+    return to;
+};
+RedisClient.convertArrayToItemWithScores = function(array, score) {
+    score = score || '0';
+    var to = [];
+    for (var i = 0; i < array.length; i++) {
+        var a = array[i];
+        var isArray = (typeof (a) === 'object') ? a.constructor.toString().match(/array/i) !== null || a.length !== undefined : false;
+        var item = isArray ? a[0] : a;
+        var score = isArray && a.length > 1 ? a[1] : score;
+        to.push({ Item: item, Score: score });
+    }
+    return to;
+};
+RedisClient.toItemWithScoresDto = function(iwss)
+{
+    var s = '';
+    for (var i=0; i<iwss.length; i++)
+    {
+        var iws = iwss[i];
+        if (s) s+= ',';
+        s+= '{Item:' + iws.Item + ',Score:' + iws.Score + '}';
+    }
+    return '[' + s + ']';
+};
+RedisClient.convertMapToItemWithScoresDto = function(map)
+{
+	var iwsArray = RedisClient.convertMapToItemWithScores(map);
+	return RedisClient.toItemWithScoresDto(iwsArray);
+};
+RedisClient.convertArrayToItemWithScoresDto = function(array, score)
+{
+	var iwsArray = RedisClient.convertArrayToItemWithScores(array, score);
+	return RedisClient.toItemWithScoresDto(iwsArray);
 };
 
 RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },

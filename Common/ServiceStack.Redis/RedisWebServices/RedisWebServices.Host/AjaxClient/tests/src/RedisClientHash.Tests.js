@@ -22,7 +22,7 @@ var isKvpsEqualToMap = function(kvps, map)
     var toMap = RedisClient.convertKeyValuePairsToMap(kvps);
     return O.areEqual(toMap, map);
 }
-/*
+
 YAHOO.namespace("ajaxstack");
 YAHOO.ajaxstack.RedisClientHashTests = new YAHOO.tool.TestCase({
 
@@ -200,4 +200,3 @@ YAHOO.ajaxstack.RedisClientHashTests = new YAHOO.tool.TestCase({
 
 });
 
-*/

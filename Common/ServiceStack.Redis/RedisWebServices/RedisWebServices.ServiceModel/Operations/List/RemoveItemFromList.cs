@@ -13,9 +13,6 @@ namespace RedisWebServices.ServiceModel.Operations.List
 
 		[DataMember]
 		public string Item { get; set; }
-
-		[DataMember]
-		public int? NoOfMatches { get; set; }
 	}
 
 	[DataContract]

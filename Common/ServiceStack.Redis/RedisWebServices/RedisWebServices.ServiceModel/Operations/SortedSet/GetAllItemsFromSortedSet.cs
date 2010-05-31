@@ -10,9 +10,6 @@ namespace RedisWebServices.ServiceModel.Operations.SortedSet
 	{
 		[DataMember]
 		public string Id { get; set; }
-
-		[DataMember]
-		public bool SortDescending { get; set; }
 	}
 
 	[DataContract]

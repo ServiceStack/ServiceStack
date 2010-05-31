@@ -10,7 +10,7 @@ namespace RedisWebServices.ServiceInterface.List
 			return new RemoveItemFromListResponse
 			{
 				ItemsRemovedCount = RedisExec(r => r.RemoveItemFromList(request.Id, 
-					request.Item, request.NoOfMatches.GetValueOrDefault(0)))
+					request.Item, 0))
 			};
 		}
 	}
