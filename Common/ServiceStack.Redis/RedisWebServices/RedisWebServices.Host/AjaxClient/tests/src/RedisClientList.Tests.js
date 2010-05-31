@@ -9,7 +9,7 @@ var onAfterFlushAllAndStringListAdd = function(onSuccessFn, onErrorFn)
 {
     var count = 0;
     redis.flushAll(function() {
-        redis.addRangeToList(listId, A.join(stringList, ","), function() {
+        redis.addRangeToList(listId, A.join(stringList), function() {
             onSuccessFn();
         }, onErrorFn || failFn);
     }, onErrorFn || failFn);
@@ -299,10 +299,14 @@ YAHOO.ajaxstack.RedisClientListTests = new YAHOO.tool.TestCase({
         wait();
     },
 
-    testPause_for_a_sec: function() {
-        wait(function() {
-            Assert.isTrue(true);
-        }, 1000);
+    testEcho: function() {
+        redis.echo("Hello", function(text) {
+            resume(function() {
+                Assert.areEqual(text, "Hello");
+            });
+        }, failFn);
+
+        wait();
     }
 
 });

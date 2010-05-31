@@ -9,11 +9,9 @@ var onAfterFlushAllAndStringMapSet = function(onSuccessFn, onErrorFn)
 {
     var i = 0;
     redis.flushAll(function() {
-        for (var key in stringMap) {
-            redis.setEntryInHash(hashId, key, stringMap[key], function() {
-                if (i++ == stringMapCount - 1) onSuccessFn();
-            }, onErrorFn || failFn);
-        }
+        redis.setRangeInHash(hashId, RedisClient.convertMapToKeyValuePairsDto(stringMap), function() {
+            onSuccessFn();
+        }, onErrorFn || failFn);
     }, onErrorFn || failFn);
 };
 
@@ -193,8 +191,14 @@ YAHOO.ajaxstack.RedisClientHashTests = new YAHOO.tool.TestCase({
         wait();
     },
 
-    testPause_for_a_sec: function() {
-        wait(1000);
+    testEcho: function() {
+        redis.echo("Hello", function(text) {
+            resume(function() {
+                Assert.areEqual(text, "Hello");
+            });
+        }, failFn);
+
+        wait();
     }
 
 
