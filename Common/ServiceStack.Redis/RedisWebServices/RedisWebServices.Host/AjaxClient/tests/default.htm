@@ -29,43 +29,14 @@
         /* Redis Test Utils */
         var redis = new RedisClient("http://localhost/RedisWebServices.Host/Public/");
 
-        var redisAssertValue = function(key, expected) {
-            return function(value) {
-                redis.getValue(key, function(value) {
-                    Assert.areEqual(expected, value);
-                }, failFn);
-            }
-        };
-
         var testKey = "testkey";
         var testValue = "Hello";
         var stringValues = [ "A", "B", "C" ];
-        var intValues = [ 1, 2, 3 ];
 
         var failFn = function(error) {
             alert("error: " + S.toString(error));
             Assert.fail("onErrorFn called" + S.toString(error));
         }
-        var resume = this.resume;
-
-        var onAfterFlushAllAndSetTeskKey = function(onSuccessFn, onErrorFn)
-        {
-            redis.flushAll(function(){
-                redis.setEntry(testKey, testValue, onSuccessFn, onErrorFn);
-            }, onErrorFn || failFn);
-        };
-
-        var onAfterFlushAllAndAllStringValuesSet = function(onSuccessFn, onErrorFn)
-        {
-            var i = 0;
-            redis.flushAll(function() {
-                for (var i in stringValues) {
-                    redis.setEntry(stringValues[i], stringValues[i], function() {
-                        if (i++ == stringValues.length - 1) onSuccessFn();
-                    }, onErrorFn || failFn);
-                }
-            }, onErrorFn || failFn);
-        };
         
 
         /* Import and run all test suites */

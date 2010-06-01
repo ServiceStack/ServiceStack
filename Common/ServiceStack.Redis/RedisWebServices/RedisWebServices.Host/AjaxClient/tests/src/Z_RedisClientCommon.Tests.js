@@ -1,3 +1,30 @@
+var redisAssertValue = function(key, expected) {
+    return function(value) {
+        redis.getValue(key, function(value) {
+            Assert.areEqual(expected, value);
+        }, failFn);
+    }
+};
+
+var onAfterFlushAllAndSetTestKey = function(onSuccessFn, onErrorFn)
+{
+    redis.flushAll(function(){
+        redis.setEntry(testKey, testValue, onSuccessFn, onErrorFn);
+    }, onErrorFn || failFn);
+};
+
+var onAfterFlushAllAndAllStringValuesSet = function(onSuccessFn, onErrorFn)
+{
+    var i = 0;
+    redis.flushAll(function() {
+        for (var i in stringValues) {
+            redis.setEntry(stringValues[i], stringValues[i], function() {
+                if (i++ == stringValues.length - 1) onSuccessFn();
+            }, onErrorFn || failFn);
+        }
+    }, onErrorFn || failFn);
+};
+
 YAHOO.namespace("ajaxstack");
 YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
 
@@ -74,22 +101,6 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
             resume(function() {
                 Assert.areEqual(text, "Hello");
             });
-        }, failFn);
-
-        wait();
-    },
-
-    testExpireEntry: function() {
-        redis.setEntry(testKey, testValue, function() {
-            redis.expireEntryIn(testKey, "00:00:01", function() {
-                setTimeout(function() {
-                    redis.getValue(testKey, function(value) {
-                        resume(function() {
-                            Assert.isNull(value);
-                        });
-                    }, failFn);
-                }, 2100);
-            }, failFn);
         }, failFn);
 
         wait();
@@ -173,7 +184,7 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
     },
 
     testGetRandomKey: function() {
-        onAfterFlushAllAndSetTeskKey(function() {
+        onAfterFlushAllAndSetTestKey(function() {
             redis.getRandomKey(function(key) {
                 resume(function() {
                     Assert.areEqual(key, testKey);
@@ -185,7 +196,7 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
     },
 
     testGetSubstring: function() {
-        onAfterFlushAllAndSetTeskKey(function() {
+        onAfterFlushAllAndSetTestKey(function() {
             redis.getSubstring(testKey, "0", 5, function(result) {
                 resume(function() {
                     Assert.areEqual(result, testValue.substring(0, 5));
@@ -196,24 +207,8 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
         wait();
     },
 
-    testGetTimeToLive: function() {
-        //Supply in C# TimeSpan SCORM 1.2 format - http://www.ostyn.com/standards/scorm/samples/ISOTimeForSCORM.htm
-        var expireIn = "00:00:02";
-
-        redis.setEntryWithExpiry(testKey, testValue, expireIn, function() {
-            redis.getTimeToLive(testKey, function(result) {
-                resume(function() {
-                    //Deserialize .NET JSON TimeSpan from ISO 8601 Duration format
-                    Assert.isTrue(SCORM12DurationToCs(expireIn) >= ISODurationToCentisec(result));
-                });
-            }, failFn);
-        }, failFn);
-
-        wait();
-    },
-
     testGetValue: function() {
-        onAfterFlushAllAndSetTeskKey(function() {
+        onAfterFlushAllAndSetTestKey(function() {
             redis.getValue(testKey, function(result) {
                 resume(function() {
                     Assert.areEqual(result, testValue);
@@ -262,7 +257,7 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
     },
 
     testRemoveEntry: function() {
-        onAfterFlushAllAndSetTeskKey(function() {
+        onAfterFlushAllAndSetTestKey(function() {
             redis.getValue(testKey, function(result) {
                 resume(function() {
                     Assert.areEqual(result, testValue);
@@ -287,7 +282,7 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
             }
         };
 
-        onAfterFlushAllAndSetTeskKey(function() {
+        onAfterFlushAllAndSetTestKey(function() {
             //Set keys of different types
             redis.setEntry("A1", testValue, waitForAllCallbacksFn, failFn);
             redis.setEntry("A2", testValue, waitForAllCallbacksFn, failFn);
@@ -306,30 +301,6 @@ YAHOO.ajaxstack.RedisClientCommonTests = new YAHOO.tool.TestCase({
                         Assert.areEqual(value, testValue);
                     });
                 }, failFn);
-            }, failFn);
-        }, failFn);
-
-        wait();
-    },
-
-    testSetEntryWithExpiry: function() {
-        //Supply in C# TimeSpan SCORM 1.2 format - http://www.ostyn.com/standards/scorm/samples/ISOTimeForSCORM.htm
-        var expireIn = "00:00:02";
-
-        redis.setEntryWithExpiry(testKey, testValue, expireIn, function() {
-            redis.getValue(testKey, function(value) {
-                //Value should exist when calling back straight away
-                Assert.areEqual(value, testValue);
-
-                //After 2 seconds key should have expired
-                setTimeout(function() {
-                    redis.getValue(testKey, function(value) {
-                        resume(function() {
-                            Assert.isNull(value);
-                        });
-                    }, failFn);
-                }, 3000);
-                
             }, failFn);
         }, failFn);
 

@@ -3,29 +3,27 @@ var setId2 = "testset2";
 var setId3 = "testset3";
 var emptySet = "testemptyset";
 
-var stringList = [];
-var stringList2 = [];
-var stringList3 = [];
+var stringSet = [];
+var stringSet2 = [];
+var stringSet3 = [];
 var lastItem = "four";
 
-var onAfterFlushAllAndStringListAdd = function(onSuccessFn, onErrorFn)
+var onAfterFlushAllAndStringSetAdd = function(onSuccessFn, onErrorFn)
 {
     var count = 0;
     redis.flushAll(function() {
-        redis.addRangeToSet(setId, A.join(stringList), function() {
+        redis.addRangeToSet(setId, A.join(stringSet), function() {
             onSuccessFn();
         }, onErrorFn || failFn);
     }, onErrorFn || failFn);
 };
-var onAfterFlushAllAndAllStringListsAdded = function(onSuccessFn, onErrorFn)
+var onAfterFlushAllAndAllStringSetsAdded = function(onSuccessFn, onErrorFn)
 {
     var count = 0;
     redis.flushAll(function() {
-        redis.addRangeToSet(setId, A.join(stringList), function() {
-            redis.addRangeToSet(setId2, A.join(stringList2), function() {
-                redis.addRangeToSet(setId3, A.join(stringList3), function() {
-                    onSuccessFn();
-                }, onErrorFn || failFn);
+        redis.addRangeToSet(setId, A.join(stringSet), function() {
+            redis.addRangeToSet(setId2, A.join(stringSet2), function() {
+                onSuccessFn();
             }, onErrorFn || failFn);
         }, onErrorFn || failFn);
     }, onErrorFn || failFn);
@@ -44,9 +42,9 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
         resume = this.resume;
         wait = this.wait;
 
-        stringList = ["one", "two", "three", "four" ];
-        stringList2 = ["four", "five", "six", "seven"];
-        stringList3 = ["one", "five", "seven", "eleven"];
+        stringSet = ["one", "two", "three", "four" ];
+        stringSet2 = ["four", "five", "six", "seven"];
+        stringSet3 = ["one", "five", "seven", "eleven"];
     },
 
     tearDown: function() {
@@ -71,10 +69,10 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testGetAllItemsFromSet: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        onAfterFlushAllAndStringSetAdd(function() {
             redis.getAllItemsFromSet(setId, function(items) {
                 resume(function() {
-                    Assert.isTrue(A.areEqual(items, stringList));
+                    Assert.isTrue(A.areEqual(items, stringSet));
                 });
             }, failFn);
         }, failFn);
@@ -83,11 +81,13 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testGetDifferencesFromSet: function() {
-        onAfterFlushAllAndAllStringListsAdded(function() {
-            redis.getDifferencesFromSet(setId, A.join([setId2, setId3]), function(items) {
-                resume(function() {
-                    Assert.isTrue(A.areEqual(items, ["two", "three"]));
-                });
+        onAfterFlushAllAndAllStringSetsAdded(function() {
+            redis.addRangeToSet(setId3, A.join(stringSet3), function() {
+                redis.getDifferencesFromSet(setId, A.join([setId2, setId3]), function(items) {
+                    resume(function() {
+                        Assert.isTrue(A.areEqual(items, ["two", "three"]));
+                    });
+                }, failFn);
             }, failFn);
         }, failFn);
 
@@ -95,7 +95,7 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testGetIntersectFromSets: function() {
-        onAfterFlushAllAndAllStringListsAdded(function() {
+        onAfterFlushAllAndAllStringSetsAdded(function() {
             redis.getIntersectFromSets(A.join([setId, setId2]), function(items) {
                 resume(function() {
                     Assert.isTrue(A.areEqual(items, ["four"]));
@@ -107,10 +107,10 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testGetRandomItemFromSet: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        onAfterFlushAllAndStringSetAdd(function() {
             redis.getRandomItemFromSet(setId, function(items) {
                 resume(function() {
-                    Assert.isTrue(A.contains(stringList, items));
+                    Assert.isTrue(A.contains(stringSet, items));
                 });
             }, failFn);
         }, failFn);
@@ -119,10 +119,10 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testGetSetCount: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        onAfterFlushAllAndStringSetAdd(function() {
             redis.getSetCount(setId, function(count) {
                 resume(function() {
-                    Assert.areEqual(count, stringList.length);
+                    Assert.areEqual(count, stringSet.length);
                 });
             }, failFn);
         }, failFn);
@@ -131,13 +131,13 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testGetUnionFromSets: function() {
-        onAfterFlushAllAndAllStringListsAdded(function() {
+        onAfterFlushAllAndAllStringSetsAdded(function() {
             redis.getUnionFromSets(A.join([setId, setId2]), function(items) {
                 resume(function() {
-                    A.each(stringList2, function(x) {
-                        if (!A.contains(stringList, x)) stringList.push(x);
+                    A.each(stringSet2, function(x) {
+                        if (!A.contains(stringSet, x)) stringSet.push(x);
                     });
-                    Assert.isTrue(A.areEqual(items, stringList));
+                    Assert.isTrue(A.areEqual(items, stringSet));
                 });
             }, failFn);
         }, failFn);
@@ -146,13 +146,13 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testMoveBetweenSets: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        onAfterFlushAllAndStringSetAdd(function() {
             redis.moveBetweenSets(setId, emptySet, lastItem, function() {
                 redis.getAllItemsFromSet(setId, function(items) {
                     redis.getAllItemsFromSet(emptySet, function(emptySetItems) {
                         resume(function() {
-                            A.removeItem(stringList, lastItem);
-                            Assert.isTrue(A.areEqual(items, stringList));
+                            A.removeItem(stringSet, lastItem);
+                            Assert.isTrue(A.areEqual(items, stringSet));
                             Assert.isTrue(A.areEqual(emptySetItems, [lastItem]));
                         });
                     }, failFn);
@@ -164,10 +164,10 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testPopItemFromSet: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        onAfterFlushAllAndStringSetAdd(function() {
             redis.popItemFromSet(setId, function(item) {
                 resume(function() {
-                    Assert.isTrue(A.contains(stringList, item));
+                    Assert.isTrue(A.contains(stringSet, item));
                 });
             }, failFn);
         }, failFn);
@@ -176,12 +176,12 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testRemoveItemFromSet: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        onAfterFlushAllAndStringSetAdd(function() {
             redis.removeItemFromSet(setId, lastItem, function() {
                 redis.getAllItemsFromSet(setId, function(items) {
                     resume(function() {
-                        A.removeItem(stringList, lastItem);
-                        Assert.isTrue(A.areEqual(items, stringList));
+                        A.removeItem(stringSet, lastItem);
+                        Assert.isTrue(A.areEqual(items, stringSet));
                     });
                 }, failFn);
             }, failFn);
@@ -191,7 +191,7 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testSetContainsItem: function() {
-        onAfterFlushAllAndStringListAdd(function() {
+        onAfterFlushAllAndStringSetAdd(function() {
             redis.setContainsItem(setId, lastItem, function(result) {
                 redis.setContainsItem(setId, "notexists", function(result2) {
                     resume(function() {
@@ -206,12 +206,14 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testStoreDifferencesFromSet: function() {
-        onAfterFlushAllAndAllStringListsAdded(function() {
-            redis.storeDifferencesFromSet("storeset", setId, A.join([setId2, setId3]), function() {
-                redis.getAllItemsFromSet("storeset", function(items) {
-                    resume(function() {
-                        Assert.isTrue(A.areEqual(items, ["two", "three"]));
-                    });
+        onAfterFlushAllAndAllStringSetsAdded(function() {
+            redis.addRangeToSet(setId3, A.join(stringSet3), function() {
+                redis.storeDifferencesFromSet("storeset", setId, A.join([setId2, setId3]), function() {
+                    redis.getAllItemsFromSet("storeset", function(items) {
+                        resume(function() {
+                            Assert.isTrue(A.areEqual(items, ["two", "three"]));
+                        });
+                    }, failFn);
                 }, failFn);
             }, failFn);
         }, failFn);
@@ -220,7 +222,7 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testStoreIntersectFromSets: function() {
-        onAfterFlushAllAndAllStringListsAdded(function() {
+        onAfterFlushAllAndAllStringSetsAdded(function() {
             redis.storeIntersectFromSets("storeset", A.join([setId, setId2]), function() {
                 redis.getAllItemsFromSet("storeset", function(items) {
                     resume(function() {
@@ -234,14 +236,14 @@ YAHOO.ajaxstack.RedisClientSetTests = new YAHOO.tool.TestCase({
     },
 
     testStoreUnionFromSets: function() {
-        onAfterFlushAllAndAllStringListsAdded(function() {
+        onAfterFlushAllAndAllStringSetsAdded(function() {
             redis.storeUnionFromSets("storeset", A.join([setId, setId2]), function() {
                 redis.getAllItemsFromSet("storeset", function(items) {
                     resume(function() {
-                        A.each(stringList2, function(x) {
-                            if (!A.contains(stringList, x)) stringList.push(x);
+                        A.each(stringSet2, function(x) {
+                            if (!A.contains(stringSet, x)) stringSet.push(x);
                         });
-                        Assert.isTrue(A.areEqual(items, stringList));
+                        Assert.isTrue(A.areEqual(items, stringSet));
                     });
                 }, failFn);
             }, failFn);
