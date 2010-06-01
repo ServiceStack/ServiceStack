@@ -14,7 +14,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_AppendToValue()
 		{
-			RedisExec(r => r.SetEntry(TestKey, "Hello"));
+			SetEntry(TestKey, "Hello");
 
 			var request = new AppendToValue { Key = TestKey, Value = ", World!" };
 			var response = base.Send<AppendToValueResponse>(request, x => x.ResponseStatus);
@@ -22,7 +22,7 @@ namespace RedisWebServices.Tests
 			const string expected = "Hello, World!";
 			Assert.That(response.ValueLength, Is.EqualTo(expected.Length));
 
-			var value = RedisExec(r => r.GetValue(TestKey));
+			var value = GetValue(TestKey);
 
 			Assert.That(value, Is.EqualTo(expected));
 		}
@@ -30,7 +30,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_ContainsKey()
 		{
-			RedisExec(r => r.SetEntry(TestKey, "Hello"));
+			SetEntry(TestKey, "Hello");
 
 			var response = base.Send<ContainsKeyResponse>(
 				new ContainsKey { Key = TestKey }, x => x.ResponseStatus);
@@ -46,7 +46,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_DecrementValue()
 		{
-			RedisExec(r => r.SetEntry(TestKey, 10.ToString()));
+			SetEntry(TestKey, 10.ToString());
 
 			var response = base.Send<DecrementValueResponse>(
 				new DecrementValue { Key = TestKey, DecrementBy = 2 }, x => x.ResponseStatus);
@@ -66,7 +66,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_ExpireEntry()
 		{
-			RedisExec(r => r.SetEntry(TestKey, TestValue));
+			SetEntry(TestKey, TestValue);
 
 			var response = base.Send<ExpireEntryInResponse>(
 				new ExpireEntryIn { Key = TestKey, ExpireIn = TimeSpan.FromSeconds(1) },
@@ -74,20 +74,19 @@ namespace RedisWebServices.Tests
 
 			Assert.That(response.Result, Is.True);
 
-			var testValue = RedisExec(r => r.GetValue(TestKey));
+			var testValue = GetValue(TestKey);
 			Assert.That(testValue, Is.EqualTo(TestValue));
 
 			Thread.Sleep(TimeSpan.FromSeconds(2));
 
-			var refreshedValue = RedisExec(r => r.GetValue(TestKey));
+			var refreshedValue = GetValue(TestKey);
 			Assert.That(refreshedValue, Is.Null);
 		}
 
 		[Test]
 		public void Test_GetAllKeys()
 		{
-			StringValues.ForEach(x =>
-				RedisExec(r => r.SetEntry(x, TestValue)));
+			StringValues.ForEach(x => SetEntry(x, TestValue));
 
 			var response = base.Send<GetAllKeysResponse>(
 				new GetAllKeys(), x => x.ResponseStatus);
@@ -98,25 +97,25 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetAndSetEntry()
 		{
-			RedisExec(r => r.SetEntry(TestKey, "A"));
+			SetEntry(TestKey, "A");
 
 			var response = base.Send<GetAndSetEntryResponse>(
 				new GetAndSetEntry { Key = TestKey, Value = "B" }, x => x.ResponseStatus);
 
 			Assert.That(response.ExistingValue, Is.EqualTo("A"));
 
-			var currentValue = RedisExec(r => r.GetValue(TestKey));
+			var currentValue = GetValue(TestKey);
 			Assert.That(currentValue, Is.EqualTo("B"));
 		}
 
 		[Test]
 		public void Test_GetEntryType()
 		{
-			RedisExec(r => r.SetEntry(TestKey, TestValue));
-			RedisExec(r => r.AddItemToList("TestList", TestValue));
-			RedisExec(r => r.AddItemToSet("TestSet", TestValue));
-			RedisExec(r => r.AddItemToSortedSet("TestSortedSet", TestValue));
-			RedisExec(r => r.SetEntryInHash("TestHash", TestKey, TestValue));
+			SetEntry(TestKey, TestValue);
+			AddItemToList("TestList", TestValue);
+			AddItemToSet("TestSet", TestValue);
+			AddItemToSortedSet("TestSortedSet", TestValue);
+			SetEntryInHash("TestHash", TestKey, TestValue);
 
 			var responseString = base.Send<GetEntryTypeResponse>(
 				new GetEntryType { Key = TestKey }, x => x.ResponseStatus);
@@ -142,7 +141,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetRandomKey()
 		{
-			RedisExec(r => r.SetEntry(TestKey, TestValue));
+			SetEntry(TestKey, TestValue);
 
 			var response = base.Send<GetRandomKeyResponse>(
 				new GetRandomKey(), x => x.ResponseStatus);
@@ -159,7 +158,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetSubstring()
 		{
-			RedisExec(r => r.SetEntry(TestKey, TestValue));
+			SetEntry(TestKey, TestValue);
 
 			var response = base.Send<GetSubstringResponse>(
 				new GetSubstring { Key = TestKey, FromIndex = 0, ToIndex = 5 }, x => x.ResponseStatus);
@@ -171,7 +170,7 @@ namespace RedisWebServices.Tests
 		public void Test_GetTimeToLive()
 		{
 			var expireIn = TimeSpan.FromSeconds(2);
-			RedisExec(r => r.SetEntry(TestKey, TestValue, expireIn));
+			SetEntry(TestKey, TestValue, expireIn);
 
 			var response = base.Send<GetTimeToLiveResponse>(
 				new GetTimeToLive { Key = TestKey }, x => x.ResponseStatus);
@@ -182,7 +181,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetValue()
 		{
-			RedisExec(r => r.SetEntry(TestKey, TestValue));
+			SetEntry(TestKey, TestValue);
 
 			var response = base.Send<GetValueResponse>(
 				new GetValue { Key = TestKey }, x => x.ResponseStatus);
@@ -193,8 +192,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetValues()
 		{
-			StringValues.ForEach(x =>
-				RedisExec(r => r.SetEntry(x, x)));
+			StringValues.ForEach(x => SetEntry(x, x));
 
 			var response = base.Send<GetValuesResponse>(
 				new GetValues { Keys = StringValues }, x => x.ResponseStatus);
@@ -205,7 +203,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_IncrementValue()
 		{
-			RedisExec(r => r.SetEntry(TestKey, 10.ToString()));
+			SetEntry(TestKey, 10.ToString());
 
 			var response = base.Send<IncrementValueResponse>(
 				new IncrementValue { Key = TestKey, IncrementBy = 2 }, x => x.ResponseStatus);
@@ -225,14 +223,14 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_RemoveEntry()
 		{
-			RedisExec(r => r.SetEntry(TestKey, TestValue));
+			SetEntry(TestKey, TestValue);
 
 			var response = base.Send<RemoveEntryResponse>(
 				new RemoveEntry { Keys = new List<string> { TestKey } }, x => x.ResponseStatus);
 
 			Assert.That(response.Result, Is.True);
 
-			var testValue = RedisExec(r => r.GetValue(TestKey));
+			var testValue = GetValue(TestKey);
 
 			Assert.That(testValue, Is.Null);
 		}
@@ -240,10 +238,10 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_SearchKeys()
 		{
-			RedisExec(r => r.SetEntry("A1", TestValue));
-			RedisExec(r => r.SetEntry("A2", TestValue));
-			RedisExec(r => r.SetEntry("B", TestValue));
-			RedisExec(r => r.SetEntry("C", TestValue));
+			SetEntry("A1", TestValue);
+			SetEntry("A2", TestValue);
+			SetEntry("B", TestValue);
+			SetEntry("C", TestValue);
 
 			var response = base.Send<SearchKeysResponse>(
 				new SearchKeys { Pattern = "A*" }, x => x.ResponseStatus);
@@ -257,7 +255,7 @@ namespace RedisWebServices.Tests
 			var response = base.Send<SetEntryResponse>(
 				new SetEntry { Key = TestKey, Value = TestValue }, x => x.ResponseStatus);
 
-			var testValue = RedisExec(r => r.GetValue(TestKey));
+			var testValue = GetValue(TestKey);
 
 			Assert.That(testValue, Is.EqualTo(TestValue));
 		}
@@ -270,12 +268,12 @@ namespace RedisWebServices.Tests
 					ExpireIn = TimeSpan.FromSeconds(1) },
 				x => x.ResponseStatus);
 
-			var testValue = RedisExec(r => r.GetValue(TestKey));
+			var testValue = GetValue(TestKey);
 			Assert.That(testValue, Is.EqualTo(TestValue));
 
 			Thread.Sleep(TimeSpan.FromSeconds(2));
 
-			var refreshedValue = RedisExec(r => r.GetValue(TestKey));
+			var refreshedValue = GetValue(TestKey);
 			Assert.That(refreshedValue, Is.Null);
 		}
 

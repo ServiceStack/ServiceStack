@@ -26,7 +26,7 @@ namespace RedisWebServices.Tests
 			var response = base.Send<AddItemToListResponse>(
 				new AddItemToList { Id = ListId, Item = TestValue }, x => x.ResponseStatus);
 
-			var value = RedisExec(r => r.GetItemFromList(ListId, 0));
+			var value = GetItemFromList(ListId, 0);
 
 			Assert.That(value, Is.EqualTo(TestValue));
 		}
@@ -34,8 +34,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_BlockingDequeueItemFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<BlockingDequeueItemFromListResponse>(
 				new BlockingDequeueItemFromList { Id = ListId }, x => x.ResponseStatus);
@@ -46,8 +45,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_BlockingPopItemFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<BlockingPopItemFromListResponse>(
 				new BlockingPopItemFromList { Id = ListId }, x => x.ResponseStatus);
@@ -58,8 +56,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_BlockingRemoveStartFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<BlockingRemoveStartFromListResponse>(
 				new BlockingRemoveStartFromList { Id = ListId }, x => x.ResponseStatus);
@@ -70,8 +67,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_DequeueItemFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<DequeueItemFromListResponse>(
 				new DequeueItemFromList { Id = ListId }, x => x.ResponseStatus);
@@ -85,7 +81,7 @@ namespace RedisWebServices.Tests
 			var response = base.Send<EnqueueItemOnListResponse>(
 				new EnqueueItemOnList { Id = ListId, Item = TestValue }, x => x.ResponseStatus);
 
-			var value = RedisExec(r => r.GetItemFromList(ListId, 0));
+			var value = GetItemFromList(ListId, 0);
 
 			Assert.That(value, Is.EqualTo(TestValue));
 		}
@@ -93,9 +89,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetAllItemsFromList()
 		{
-			var a = new Dictionary<string, string>();
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<GetAllItemsFromListResponse>(
 				new GetAllItemsFromList { Id = ListId }, x => x.ResponseStatus);
@@ -106,8 +100,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetItemFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<GetItemFromListResponse>(
 				new GetItemFromList { Id = ListId, Index = 0 }, x => x.ResponseStatus);
@@ -118,8 +111,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetListCount()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<GetListCountResponse>(
 				new GetListCount { Id = ListId }, x => x.ResponseStatus);
@@ -130,8 +122,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetRangeFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<GetRangeFromListResponse>(
 				new GetRangeFromList { Id = ListId, StartingFrom = 0, EndingAt = 2 }, x => x.ResponseStatus);
@@ -142,8 +133,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetRangeFromSortedList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<GetRangeFromSortedListResponse>(
 				new GetRangeFromSortedList { Id = ListId, StartingFrom = 0, EndingAt = 2 }, x => x.ResponseStatus);
@@ -156,8 +146,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_PopAndPushItemBetweenLists()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<PopAndPushItemBetweenListsResponse>(
 				new PopAndPushItemBetweenLists { FromListId = ListId, ToListId = ListId2 }, x => x.ResponseStatus);
@@ -169,8 +158,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_PopItemFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<PopItemFromListResponse>(
 				new PopItemFromList { Id = ListId }, x => x.ResponseStatus);
@@ -182,51 +170,47 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_PrependItemToList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<PrependItemToListResponse>(
 				new PrependItemToList { Id = ListId, Item = TestValue }, x => x.ResponseStatus);
 
 			stringList.Insert(0, TestValue);
 
-			var items = RedisExec(r => r.GetAllItemsFromList(ListId));
+			var items = GetAllItemsFromList(ListId);
 			Assert.That(items, Is.EquivalentTo(stringList));
 		}
 
 		[Test]
 		public void Test_PushItemToList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<PushItemToListResponse>(
 				new PushItemToList { Id = ListId, Item = TestValue }, x => x.ResponseStatus);
 
 			stringList.Add(TestValue);
 
-			var items = RedisExec(r => r.GetAllItemsFromList(ListId));
+			var items = GetAllItemsFromList(ListId);
 			Assert.That(items, Is.EquivalentTo(stringList));
 		}
 
 		[Test]
 		public void Test_RemoveAllFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<RemoveAllFromListResponse>(
 				new RemoveAllFromList { Id = ListId }, x => x.ResponseStatus);
 
-			var items = RedisExec(r => r.GetAllItemsFromList(ListId));
+			var items = GetAllItemsFromList(ListId);
 			Assert.That(items, Is.Empty);
 		}
 
 		[Test]
 		public void Test_RemoveEndFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<RemoveEndFromListResponse>(
 				new RemoveEndFromList { Id = ListId }, x => x.ResponseStatus);
@@ -238,8 +222,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_RemoveItemFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var expected = stringList.Last();
 
@@ -249,15 +232,14 @@ namespace RedisWebServices.Tests
 			Assert.That(response.ItemsRemovedCount, Is.EqualTo(1));
 
 			stringList.Remove(expected);
-			var items = RedisExec(r => r.GetAllItemsFromList(ListId));
+			var items = GetAllItemsFromList(ListId);
 			Assert.That(items, Is.EquivalentTo(stringList));
 		}
 
 		[Test]
 		public void Test_RemoveStartFromList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<RemoveStartFromListResponse>(
 				new RemoveStartFromList { Id = ListId }, x => x.ResponseStatus);
@@ -269,27 +251,25 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_SetItemInList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<SetItemInListResponse>(
 				new SetItemInList { Id = ListId, Index = 1, Item = TestValue }, x => x.ResponseStatus);
 
 			stringList[1] = TestValue;
-			var items = RedisExec(r => r.GetAllItemsFromList(ListId));
+			var items = GetAllItemsFromList(ListId);
 			Assert.That(items, Is.EquivalentTo(stringList));
 		}
 
 		[Test]
 		public void Test_TrimList()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToList(ListId, x)));
+			AddRangeToList(ListId, stringList);
 
 			var response = base.Send<TrimListResponse>(
 				new TrimList { Id = ListId, KeepStartingFrom = 0, KeepEndingAt = 2 }, x => x.ResponseStatus);
 
-			var items = RedisExec(r => r.GetAllItemsFromList(ListId));
+			var items = GetAllItemsFromList(ListId);
 			Assert.That(items, Is.EquivalentTo(stringList.Take(3).ToList()));
 		}
 	}

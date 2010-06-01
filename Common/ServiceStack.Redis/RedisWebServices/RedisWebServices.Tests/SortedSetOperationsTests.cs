@@ -36,7 +36,7 @@ namespace RedisWebServices.Tests
 			var response = base.Send<AddItemToSortedSetResponse>(
 				new AddItemToSortedSet { Id = SetId, Item = TestValue }, x => x.ResponseStatus);
 
-			var value = RedisExec(r => r.PopItemWithHighestScoreFromSortedSet(SetId));
+			var value = PopItemWithHighestScoreFromSortedSet(SetId);
 
 			Assert.That(value, Is.EqualTo(TestValue));
 		}
@@ -44,8 +44,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetAllItemsFromSortedSet()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x)));
+			AddRangeToSortedSet(SetId, stringList);
 
 			var response = base.Send<GetAllItemsFromSortedSetResponse>(
 				new GetAllItemsFromSortedSet { Id = SetId }, x => x.ResponseStatus);
@@ -56,8 +55,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetAllItemsFromSortedSetDesc()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x)));
+			AddRangeToSortedSet(SetId, stringList);
 
 			var response = base.Send<GetAllItemsFromSortedSetDescResponse>(
 				new GetAllItemsFromSortedSetDesc { Id = SetId }, x => x.ResponseStatus);
@@ -68,8 +66,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetItemIndexInSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<GetItemIndexInSortedSetResponse>(
@@ -81,8 +78,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetItemScoreInSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<GetItemScoreInSortedSetResponse>(
@@ -95,8 +91,7 @@ namespace RedisWebServices.Tests
 		[Ignore("Not Implemented in Redis yet")]
 		public void Test_GetRangeFromSortedSetByHighestScore()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var response = base.Send<GetRangeFromSortedSetByHighestScoreResponse>(
 				new GetRangeFromSortedSetByHighestScore { Id = SetId, FromScore = 2, ToScore = 3 }, x => x.ResponseStatus);
@@ -110,8 +105,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetRangeFromSortedSetByLowestScore()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var response = base.Send<GetRangeFromSortedSetByLowestScoreResponse>(
 				new GetRangeFromSortedSetByLowestScore { Id = SetId, FromScore = 2, ToScore = 3 }, x => x.ResponseStatus);
@@ -125,8 +119,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetRangeWithScoresFromSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var response = base.Send<GetRangeWithScoresFromSortedSetResponse>(
 				new GetRangeWithScoresFromSortedSet { Id = SetId, FromRank = 0, ToRank = 2 }, x => x.ResponseStatus);
@@ -141,8 +134,7 @@ namespace RedisWebServices.Tests
 		[Ignore("Not Implemented in Redis yet")]
 		public void Test_GetRangeWithScoresFromSortedSetByHighestScore()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var response = base.Send<GetRangeWithScoresFromSortedSetByHighestScoreResponse>(
 				new GetRangeWithScoresFromSortedSetByHighestScore { Id = SetId, FromScore = 2, ToScore = 3 }, x => x.ResponseStatus);
@@ -156,8 +148,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetRangeWithScoresFromSortedSetByLowestScore()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var response = base.Send<GetRangeWithScoresFromSortedSetByLowestScoreResponse>(
 				new GetRangeWithScoresFromSortedSetByLowestScore { Id = SetId, FromScore = 2, ToScore = 3 }, x => x.ResponseStatus);
@@ -171,8 +162,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetSortedSetCount()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<GetSortedSetCountResponse>(
@@ -184,8 +174,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_IncrementItemInSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<IncrementItemInSortedSetResponse>(
@@ -202,8 +191,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_PopItemWithHighestScoreFromSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<PopItemWithHighestScoreFromSortedSetResponse>(
@@ -215,8 +203,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_PopItemWithLowestScoreFromSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var firstItem = stringDoubleMap.First();
 			var response = base.Send<PopItemWithLowestScoreFromSortedSetResponse>(
@@ -228,8 +215,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_RemoveItemFromSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<RemoveItemFromSortedSetResponse>(
@@ -238,7 +224,7 @@ namespace RedisWebServices.Tests
 
 			stringDoubleMap.Remove(lastItem.Key);
 
-			var items = RedisExec(r => r.GetAllItemsFromSortedSet(SetId));
+			var items = GetAllItemsFromSortedSet(SetId);
 
 			Assert.That(items, Is.EquivalentTo(stringDoubleMap.Keys.ToList()));
 		}
@@ -246,8 +232,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_RemoveRangeFromSortedSet()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<RemoveRangeFromSortedSetResponse>(
@@ -255,7 +240,7 @@ namespace RedisWebServices.Tests
 			Assert.That(response.ItemsRemovedCount, Is.EqualTo(3));
 
 			var expectedItems = stringDoubleMap.Skip(3).ConvertAll(x => x.Key);
-			var items = RedisExec(r => r.GetAllItemsFromSortedSet(SetId));
+			var items = GetAllItemsFromSortedSet(SetId);
 
 			Assert.That(items, Is.EquivalentTo(expectedItems));
 		}
@@ -263,15 +248,14 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_RemoveRangeFromSortedSetByScore()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var response = base.Send<RemoveRangeFromSortedSetByScoreResponse>(
 				new RemoveRangeFromSortedSetByScore { Id = SetId, FromScore = 1, ToScore = 2 }, x => x.ResponseStatus);
 			Assert.That(response.ItemsRemovedCount, Is.EqualTo(2));
 
 			var expectedItems = stringDoubleMap.Skip(2).ConvertAll(x => x.Key);
-			var items = RedisExec(r => r.GetAllItemsFromSortedSet(SetId));
+			var items = GetAllItemsFromSortedSet(SetId);
 
 			Assert.That(items, Is.EquivalentTo(expectedItems));
 		}
@@ -279,8 +263,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_SortedSetContainsItem()
 		{
-			stringDoubleMap.ForEach(x =>
-				RedisExec(r => r.AddItemToSortedSet(SetId, x.Key, x.Value)));
+			AddRangeToSortedSet(SetId, stringDoubleMap);
 
 			var lastItem = stringDoubleMap.Last();
 			var response = base.Send<SortedSetContainsItemResponse>(
@@ -292,13 +275,13 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Can_StoreIntersectFromSortedSets()
 		{
-			stringList.ForEach(x => RedisExec(r => r.AddItemToSortedSet(SetId, x)));
-			stringList2.ForEach(x => RedisExec(r => r.AddItemToSortedSet(SetId2, x)));
+			AddRangeToSortedSet(SetId, stringList);
+			AddRangeToSortedSet(SetId2, stringList2);
 
 			var response = base.Send<StoreIntersectFromSortedSetsResponse>(
 				new StoreIntersectFromSortedSets { Id = SetId3, FromSetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
 
-			var items = RedisExec(r => r.GetAllItemsFromSortedSet(SetId3));
+			var items = GetAllItemsFromSortedSet(SetId3);
 
 			Assert.That(items, Is.EquivalentTo(new List<string> { "four" }));
 		}
@@ -306,8 +289,8 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Can_StoreUnionFromSortedSets()
 		{
-			stringList.ForEach(x => RedisExec(r => r.AddItemToSortedSet(SetId, x)));
-			stringList2.ForEach(x => RedisExec(r => r.AddItemToSortedSet(SetId2, x)));
+			AddRangeToSortedSet(SetId, stringList);
+			AddRangeToSortedSet(SetId2, stringList2);
 
 			var response = base.Send<StoreUnionFromSortedSetsResponse>(
 				new StoreUnionFromSortedSets { Id = SetId3, FromSetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
@@ -315,7 +298,7 @@ namespace RedisWebServices.Tests
 			var unionList = new List<string>(stringList);
 			stringList2.ForEach(x => { if (!unionList.Contains(x)) unionList.Add(x); });
 
-			var items = RedisExec(r => r.GetAllItemsFromSortedSet(SetId3));
+			var items = GetAllItemsFromSortedSet(SetId3);
 
 			Assert.That(items, Is.EquivalentTo(unionList));
 		}

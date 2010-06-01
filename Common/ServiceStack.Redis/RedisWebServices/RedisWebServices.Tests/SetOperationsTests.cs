@@ -32,7 +32,7 @@ namespace RedisWebServices.Tests
 			var response = base.Send<AddItemToSetResponse>(
 				new AddItemToSet { Id = SetId, Item = TestValue }, x => x.ResponseStatus);
 
-			var value = RedisExec(r => r.PopItemFromSet(SetId));
+			var value = PopItemFromSet(SetId);
 
 			Assert.That(value, Is.EqualTo(TestValue));
 		}
@@ -40,8 +40,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetAllItemsFromSet()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
+			AddRangeToSet(SetId, stringList);
 
 			var response = base.Send<GetAllItemsFromSetResponse>(
 				new GetAllItemsFromSet { Id = SetId }, x => x.ResponseStatus);
@@ -52,12 +51,9 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetDifferencesFromSet()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
-			stringList2.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId2, x)));
-			stringList3.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId3, x)));
+			AddRangeToSet(SetId, stringList);
+			AddRangeToSet(SetId2, stringList2);
+			AddRangeToSet(SetId3, stringList3);
 
 			var response = base.Send<GetDifferencesFromSetResponse>(
 				new GetDifferencesFromSet { Id = SetId, SetIds = { SetId2, SetId3 } }, x => x.ResponseStatus);
@@ -68,10 +64,8 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetIntersectFromSets()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
-			stringList2.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId2, x)));
+			AddRangeToSet(SetId, stringList);
+			AddRangeToSet(SetId2, stringList2);
 
 			var response = base.Send<GetIntersectFromSetsResponse>(
 				new GetIntersectFromSets { SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
@@ -82,8 +76,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetRandomItemFromSet()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
+			AddRangeToSet(SetId, stringList);
 
 			var response = base.Send<GetRandomItemFromSetResponse>(
 				new GetRandomItemFromSet { Id = SetId }, x => x.ResponseStatus);
@@ -94,8 +87,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetSetCount()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
+			AddRangeToSet(SetId, stringList);
 
 			var response = base.Send<GetSetCountResponse>(
 				new GetSetCount { Id = SetId }, x => x.ResponseStatus);
@@ -106,10 +98,8 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetUnionFromSets()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
-			stringList2.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId2, x)));
+			AddRangeToSet(SetId, stringList);
+			AddRangeToSet(SetId2, stringList2);
 
 			var response = base.Send<GetUnionFromSetsResponse>(
 				new GetUnionFromSets { SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
@@ -123,8 +113,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_MoveBetweenSets()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
+			AddRangeToSet(SetId, stringList);
 
 			var lastItem = stringList.Last();
 			var response = base.Send<MoveBetweenSetsResponse>(
@@ -132,8 +121,8 @@ namespace RedisWebServices.Tests
 
 			stringList.Remove(lastItem);
 
-			var setItems = RedisExec(r => r.GetAllItemsFromSet(SetId));
-			var setItems2 = RedisExec(r => r.GetAllItemsFromSet(SetId2));
+			var setItems = GetAllItemsFromSet(SetId);
+			var setItems2 = GetAllItemsFromSet(SetId2);
 
 			Assert.That(setItems, Is.EquivalentTo(stringList));
 			Assert.That(setItems2, Is.EquivalentTo(new List<string> { lastItem }));
@@ -142,8 +131,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_PopItemFromSet()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
+			AddRangeToSet(SetId, stringList);
 
 			var response = base.Send<PopItemFromSetResponse>(
 				new PopItemFromSet { Id = SetId }, x => x.ResponseStatus);
@@ -154,15 +142,14 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_RemoveItemFromSet()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
+			AddRangeToSet(SetId, stringList);
 
 			var lastItem = stringList.Last();
 			var response = base.Send<RemoveItemFromSetResponse>(
 				new RemoveItemFromSet { Id = SetId, Item = lastItem }, x => x.ResponseStatus);
 
 			stringList.Remove(lastItem);
-			var setItems = RedisExec(r => r.GetAllItemsFromSet(SetId));
+			var setItems = GetAllItemsFromSet(SetId);
 
 			Assert.That(setItems, Is.EquivalentTo(stringList));
 		}
@@ -170,8 +157,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_SetContainsItem()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
+			AddRangeToSet(SetId, stringList);
 
 			var lastItem = stringList.Last();
 
@@ -187,18 +173,15 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_StoreDifferencesFromSet()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
-			stringList2.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId2, x)));
-			stringList3.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId3, x)));
+			AddRangeToSet(SetId, stringList);
+			AddRangeToSet(SetId2, stringList2);
+			AddRangeToSet(SetId3, stringList3);
 
 			var response = base.Send<StoreDifferencesFromSetResponse>(
 				new StoreDifferencesFromSet { Id = "storeset", 
 					FromSetId = SetId, SetIds = { SetId2, SetId3 } }, x => x.ResponseStatus);
 
-			var setItems = RedisExec(r => r.GetAllItemsFromSet("storeset"));
+			var setItems = GetAllItemsFromSet("storeset");
 
 			Assert.That(setItems, Is.EquivalentTo(new List<string> { "two", "three" }));
 		}
@@ -206,15 +189,13 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_StoreIntersectFromSets()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
-			stringList2.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId2, x)));
+			AddRangeToSet(SetId, stringList);
+			AddRangeToSet(SetId2, stringList2);
 
 			var response = base.Send<StoreIntersectFromSetsResponse>(
 				new StoreIntersectFromSets { Id = "storeset", SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
 
-			var setItems = RedisExec(r => r.GetAllItemsFromSet("storeset"));
+			var setItems = GetAllItemsFromSet("storeset");
 
 			Assert.That(setItems.ToList(), Is.EquivalentTo(new List<string> { "four" }));
 		}
@@ -222,10 +203,8 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_StoreUnionFromSets()
 		{
-			stringList.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId, x)));
-			stringList2.ForEach(x =>
-				RedisExec(r => r.AddItemToSet(SetId2, x)));
+			AddRangeToSet(SetId, stringList);
+			AddRangeToSet(SetId2, stringList2);
 
 			var response = base.Send<StoreUnionFromSetsResponse>(
 				new StoreUnionFromSets { Id = "storeset", SetIds = { SetId, SetId2 } }, x => x.ResponseStatus);
@@ -233,7 +212,7 @@ namespace RedisWebServices.Tests
 			var unionList = new List<string>(stringList);
 			stringList2.ForEach(x => { if (!unionList.Contains(x)) unionList.Add(x); });
 
-			var setItems = RedisExec(r => r.GetAllItemsFromSet("storeset"));
+			var setItems = GetAllItemsFromSet("storeset");
 
 			Assert.That(setItems, Is.EquivalentTo(unionList));
 		}

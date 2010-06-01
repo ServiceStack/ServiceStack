@@ -30,7 +30,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetAllEntriesFromHash()
 		{
-			stringMap.ForEach(x => RedisExec(r => r.SetEntryInHash(HashId, x.Key, x.Value)));
+			SetRangeInHash(HashId, stringMap);
 
 			var response = base.Send<GetAllEntriesFromHashResponse>(
 				new GetAllEntriesFromHash { Id = HashId }, x => x.ResponseStatus);
@@ -43,7 +43,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetHashCount()
 		{
-			stringMap.ForEach(x => RedisExec(r => r.SetEntryInHash(HashId, x.Key, x.Value)));
+			SetRangeInHash(HashId, stringMap);
 
 			var response = base.Send<GetHashCountResponse>(
 				new GetHashCount { Id = HashId }, x => x.ResponseStatus);
@@ -54,7 +54,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetHashKeys()
 		{
-			stringMap.ForEach(x => RedisExec(r => r.SetEntryInHash(HashId, x.Key, x.Value)));
+			SetRangeInHash(HashId, stringMap);
 
 			var response = base.Send<GetHashKeysResponse>(
 				new GetHashKeys { Id = HashId }, x => x.ResponseStatus);
@@ -66,7 +66,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetHashValues()
 		{
-			stringMap.ForEach(x => RedisExec(r => r.SetEntryInHash(HashId, x.Key, x.Value)));
+			SetRangeInHash(HashId, stringMap);
 
 			var response = base.Send<GetHashValuesResponse>(
 				new GetHashValues { Id = HashId }, x => x.ResponseStatus);
@@ -78,7 +78,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetValueFromHash()
 		{
-			stringMap.ForEach(x => RedisExec(r => r.SetEntryInHash(HashId, x.Key, x.Value)));
+			SetRangeInHash(HashId, stringMap);
 
 			var key = ((KeyValuePair<string, string>)stringMap.First()).Key;
 
@@ -91,7 +91,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_GetValuesFromHash()
 		{
-			stringMap.ForEach(x => RedisExec(r => r.SetEntryInHash(HashId, x.Key, x.Value)));
+			SetRangeInHash(HashId, stringMap);
 
 			var keys = stringMap.ConvertAll(x => x.Key);
 
@@ -106,7 +106,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_HashContainsEntry()
 		{
-			stringMap.ForEach(x => RedisExec(r => r.SetEntryInHash(HashId, x.Key, x.Value)));
+			SetRangeInHash(HashId, stringMap);
 
 			var key = ((KeyValuePair<string, string>)stringMap.First()).Key;
 
@@ -122,7 +122,7 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_IncrementValueInHash()
 		{
-			RedisExec(r => r.SetEntryInHash(HashId, TestKey, 10.ToString()));
+			SetEntryInHash(HashId, TestKey, 10.ToString());
 
 			var response = base.Send<IncrementValueInHashResponse>(
 				new IncrementValueInHash { Id = HashId, Key = TestKey, IncrementBy = 2 }, x => x.ResponseStatus);
@@ -133,13 +133,13 @@ namespace RedisWebServices.Tests
 		[Test]
 		public void Test_RemoveEntryFromHash()
 		{
-			RedisExec(r => r.SetEntryInHash(HashId, TestKey, 10.ToString()));
+			SetEntryInHash(HashId, TestKey, 10.ToString());
 
 			var response = base.Send<RemoveEntryFromHashResponse>(
 				new RemoveEntryFromHash { Id = HashId, Key = TestKey }, x => x.ResponseStatus);
 			Assert.That(response.Result, Is.True);
 
-			var value = RedisExec(r => r.GetValueFromHash(HashId, TestKey));
+			var value = GetValueFromHash(HashId, TestKey);
 			Assert.That(value, Is.Null);
 		}
 
@@ -151,7 +151,7 @@ namespace RedisWebServices.Tests
 
 			Assert.That(response.Result, Is.True);
 
-			var value = RedisExec(r => r.GetValueFromHash(HashId, TestKey));
+			var value = GetValueFromHash(HashId, TestKey);
 			Assert.That(value, Is.EqualTo(TestValue));
 		}
 
@@ -162,7 +162,7 @@ namespace RedisWebServices.Tests
 				new SetEntryInHashIfNotExists { Id = HashId, Key = TestKey, Value = TestValue }, x => x.ResponseStatus);
 			Assert.That(response.Result, Is.True);
 
-			var value = RedisExec(r => r.GetValueFromHash(HashId, TestKey));
+			var value = GetValueFromHash(HashId, TestKey);
 			Assert.That(value, Is.EqualTo(TestValue));
 
 			response = base.Send<SetEntryInHashIfNotExistsResponse>(
@@ -178,7 +178,7 @@ namespace RedisWebServices.Tests
 			var response = base.Send<SetRangeInHashResponse>(
 				new SetRangeInHash { Id = HashId, KeyValuePairs = keyValuePairs }, x => x.ResponseStatus);
 
-			var allHashEntries = RedisExec(r => r.GetAllEntriesFromHash(HashId));
+			var allHashEntries = GetAllEntriesFromHash(HashId);
 
 			Assert.That(allHashEntries, Is.EquivalentTo(stringMap));
 		}
