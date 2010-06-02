@@ -55,7 +55,10 @@ namespace ServiceStack.Text.Jsv
 			return type != typeof(DateTime)
 				   || type != typeof(DateTime?)
 				   || type != typeof(Guid)
-				   || type != typeof(Guid?);
+				   || type != typeof(Guid?)
+				   || type != typeof(float) || type != typeof(float?)
+				   || type != typeof(double) || type != typeof(double?)
+				   || type != typeof(decimal) || type != typeof(decimal?);
 		}
 
 		public static Action<TextWriter, object> GetValueTypeToStringMethod(Type type)
@@ -71,6 +74,15 @@ namespace ServiceStack.Text.Jsv
 
 			if (type == typeof(Guid?))
 				return WriterUtils.WriteNullableGuid;
+
+			if (type == typeof(float) || type == typeof(float?))
+				return WriterUtils.WriteFloat;
+
+			if (type == typeof(double) || type == typeof(double?))
+				return WriterUtils.WriteDouble;
+
+			if (type == typeof(decimal) || type == typeof(decimal?))
+				return WriterUtils.WriteDecimal;
 
 			return WriterUtils.WriteBuiltIn;
 		}

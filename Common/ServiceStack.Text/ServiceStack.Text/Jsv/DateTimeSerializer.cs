@@ -63,7 +63,7 @@ namespace ServiceStack.Text.Jsv
 				return DateTime.MinValue;
 
 			if (dateTimeStr.Length == DefaultDateTimeFormat.Length)
-				return DateTime.Parse(dateTimeStr);
+				return DateTime.Parse(dateTimeStr, CultureInfo.InvariantCulture);
 
 			if (dateTimeStr.Length <= XsdDateTimeFormat.Length
 			    || dateTimeStr.Length >= XsdDateTimeFormat3F.Length)

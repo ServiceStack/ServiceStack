@@ -70,6 +70,7 @@
     <Compile Include="AdhocModelTests.cs" />
     <Compile Include="BasicStringSerializerTests.cs" />
     <Compile Include="CsvStreamTests.cs" />
+    <Compile Include="CultureInfoTests.cs" />
     <Compile Include="CustomStructTests.cs" />
     <Compile Include="DataContractTests.cs" />
     <Compile Include="DateTimeSerializerTests.cs" />

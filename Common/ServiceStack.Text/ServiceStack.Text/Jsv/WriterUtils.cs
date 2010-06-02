@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace ServiceStack.Text.Jsv
@@ -61,6 +62,24 @@ namespace ServiceStack.Text.Jsv
 		{
 			if (oByteValue == null) return;
 			writer.Write(Convert.ToBase64String((byte[])oByteValue));
+		}
+
+		public static void WriteFloat(TextWriter writer, object floatValue)
+		{
+			if (floatValue == null) return;
+			writer.Write(((float)floatValue).ToString(CultureInfo.InvariantCulture));
+		}
+
+		public static void WriteDouble(TextWriter writer, object doubleValue)
+		{
+			if (doubleValue == null) return;
+			writer.Write(((double)doubleValue).ToString(CultureInfo.InvariantCulture));
+		}
+
+		public static void WriteDecimal(TextWriter writer, object decimalValue)
+		{
+			if (decimalValue == null) return;
+			writer.Write(((decimal)decimalValue).ToString(CultureInfo.InvariantCulture));
 		}
 	}
 }

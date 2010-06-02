@@ -102,7 +102,7 @@ namespace ServiceStack.Text.Jsv
 
 			lock (EnumerableCacheFns)
 			{
-				if (!CacheFns.TryGetValue(elementType, out writeFn))
+				if (!EnumerableCacheFns.TryGetValue(elementType, out writeFn))
 				{
 					var genericType = typeof(WriteListsOfElements<>).MakeGenericType(elementType);
 
@@ -127,7 +127,7 @@ namespace ServiceStack.Text.Jsv
 
 			lock (ListValueTypeCacheFns)
 			{
-				if (!CacheFns.TryGetValue(elementType, out writeFn))
+				if (!ListValueTypeCacheFns.TryGetValue(elementType, out writeFn))
 				{
 					var genericType = typeof(WriteListsOfElements<>).MakeGenericType(elementType);
 
@@ -153,7 +153,7 @@ namespace ServiceStack.Text.Jsv
 
 			lock (IListValueTypeCacheFns)
 			{
-				if (!CacheFns.TryGetValue(elementType, out writeFn))
+				if (!IListValueTypeCacheFns.TryGetValue(elementType, out writeFn))
 				{
 					var genericType = typeof(WriteListsOfElements<>).MakeGenericType(elementType);
 

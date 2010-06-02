@@ -16,7 +16,7 @@ namespace ServiceStack.Text
 
 			SupportsExpressions = SupportsEmit = !IsMonoTouch;
 
-			ServerUserAgent = "ServiceStack/1.30 " + Environment.OSVersion.Platform
+			ServerUserAgent = "ServiceStack/1.31 " + Environment.OSVersion.Platform
 						+ (IsMono ? "/Mono" : "/.NET")
 						+ (IsMonoTouch ? " MonoTouch" : "");
 		}

@@ -11,6 +11,7 @@
 //
 
 using System;
+using System.Globalization;
 using System.Xml;
 
 namespace ServiceStack.Text.Jsv
@@ -34,11 +35,11 @@ namespace ServiceStack.Text.Jsv
 			if (type == typeof(long))
 				return value => long.Parse(value);
 			if (type == typeof(float))
-				return value => float.Parse(value);
+				return value => float.Parse(value, CultureInfo.InvariantCulture);
 			if (type == typeof(double))
-				return value => double.Parse(value);
+				return value => double.Parse(value, CultureInfo.InvariantCulture);
 			if (type == typeof(decimal))
-				return value => decimal.Parse(value);
+				return value => decimal.Parse(value, CultureInfo.InvariantCulture);
 
 			if (type == typeof(Guid))
 				return value => new Guid(value);
@@ -92,11 +93,11 @@ namespace ServiceStack.Text.Jsv
 			if (type == typeof(long) || type == typeof(long?))
 				return value => long.Parse(value);
 			if (type == typeof(float) || type == typeof(float?))
-				return value => float.Parse(value);
+				return value => float.Parse(value, CultureInfo.InvariantCulture);
 			if (type == typeof(double) || type == typeof(double?))
-				return value => double.Parse(value);
+				return value => double.Parse(value, CultureInfo.InvariantCulture);
 			if (type == typeof(decimal) || type == typeof(decimal?))
-				return value => decimal.Parse(value);
+				return value => decimal.Parse(value, CultureInfo.InvariantCulture);
 
 			if (type == typeof(Guid) || type == typeof(Guid?))
 				return value => new Guid(value);

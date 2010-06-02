@@ -1,10 +1,12 @@
-	using System;
+using System;
 using System.Runtime.Serialization;
+using Moq;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
@@ -36,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class CompressionTests
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (CompressionTests));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(CompressionTests));
 
 		[Test]
 		public void Can_compress_and_decompress_SimpleDto()
@@ -66,6 +68,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Test_response_with_CompressedResult()
 		{
+			EndpointHost.Config = new EndpointHostConfig
+			{
+				ServiceName = "ServiceName",
+				ServiceController = new Mock<IServiceController>().Object
+			};
+
 			var mockResponse = new HttpResponseMock();
 
 			var simpleDto = new TestCompress(1, "name");
@@ -98,8 +106,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Log.Debug("Content-length: " + writtenBytes.Length);
 			Log.Debug(BitConverter.ToString(writtenBytes));
 		}
-
-
 
 		[Test]
 		public void Can_gzip_and_gunzip_SimpleDto()

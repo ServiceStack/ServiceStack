@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using ServiceStack.Text.Jsv;
@@ -94,7 +95,7 @@ namespace ServiceStack.Text
 			if (typeof(T) == typeof(string)) return value as string;
 
 			var sb = new StringBuilder(4096);
-			using (var writer = new StringWriter(sb))
+			using (var writer = new StringWriter(sb, CultureInfo.InvariantCulture))
 			{
 				JsvWriter<T>.WriteObject(writer, value);
 			}
@@ -116,7 +117,7 @@ namespace ServiceStack.Text
 		public static string SerializeToCsv<T>(IEnumerable<T> records)
 		{
 			var sb = new StringBuilder();
-			using (var writer = new StringWriter(sb))
+			using (var writer = new StringWriter(sb, CultureInfo.InvariantCulture))
 			{
 				writer.WriteCsv(records);
 				return sb.ToString();
