@@ -13,12 +13,12 @@ var lastItemScore = 4;
 var startPos = '0';
 var endPos = -1;
 
-var onAfterFlushAllAndAllstringZSetsAdded = function(onSuccessFn, onErrorFn)
+var onAfterFlushAllAndAllStringZSetsAdded = function(onSuccessFn, onErrorFn)
 {
     var count = 0;
     redis.flushAll(function() {
-        redis.addRangeToSortedSet(zsetId, RedisClient.convertArrayToItemWithScoresDto(stringZSet), function() {
-            redis.addRangeToSortedSet(zsetId2, RedisClient.convertArrayToItemWithScoresDto(stringZSet2), function() {
+        redis.addRangeToSortedSet(zsetId, stringZSet, function() {
+            redis.addRangeToSortedSet(zsetId2, stringZSet2, function() {
                 onSuccessFn();
             }, onErrorFn || failFn);
         }, onErrorFn || failFn);
@@ -28,7 +28,7 @@ var onAfterFlushAllAndStringDoubleMap = function(onSuccessFn, onErrorFn)
 {
     var count = 0;
     redis.flushAll(function() {
-        redis.addRangeToSortedSet(zsetId, RedisClient.convertMapToItemWithScoresDto(stringDoubleMap), function() {
+        redis.addRangeToSortedSet(zsetId, stringDoubleMap, function() {
             onSuccessFn();
         }, onErrorFn || failFn);
     }, onErrorFn || failFn);
@@ -138,9 +138,8 @@ YAHOO.ajaxstack.RedisClientSortedSet = new YAHOO.tool.TestCase({
 
     testGetRangeWithScoresFromSortedSet: function() {
         onAfterFlushAllAndStringDoubleMap(function() {
-            redis.getRangeWithScoresFromSortedSet(zsetId, startPos, 2, function(itws) {
+            redis.getRangeWithScoresFromSortedSet(zsetId, startPos, 2, function(itemsMap) {
                 resume(function() {
-                    var itemsMap = RedisClient.convertItemWithScoresToMap(itws);
                     var expectedItems = O.take(stringDoubleMap, 3);
                     Assert.isTrue(O.areEqual(expectedItems, itemsMap));
                 });
@@ -152,9 +151,8 @@ YAHOO.ajaxstack.RedisClientSortedSet = new YAHOO.tool.TestCase({
 
     testGetRangeWithScoresFromSortedSetByLowestScore: function() {
         onAfterFlushAllAndStringDoubleMap(function() {
-            redis.getRangeWithScoresFromSortedSetByLowestScore(zsetId, 2, 3, startPos, endPos, function(itws) {
+            redis.getRangeWithScoresFromSortedSetByLowestScore(zsetId, 2, 3, startPos, endPos, function(itemsMap) {
                 resume(function() {
-                    var itemsMap = RedisClient.convertItemWithScoresToMap(itws);
                     var expectedItems = O.where(stringDoubleMap, function(k, score) {
                         return score >= 2 && score <= 3;
                     });
@@ -275,7 +273,7 @@ YAHOO.ajaxstack.RedisClientSortedSet = new YAHOO.tool.TestCase({
     },
 
     testStoreIntersectFromSortedSets: function() {
-        onAfterFlushAllAndAllstringZSetsAdded(function() {
+        onAfterFlushAllAndAllStringZSetsAdded(function() {
             redis.storeIntersectFromSortedSets(zsetId3, A.join([zsetId, zsetId2]), function() {
                 redis.getAllItemsFromSortedSet(zsetId3, function(items) {
                     resume(function() {
@@ -289,7 +287,7 @@ YAHOO.ajaxstack.RedisClientSortedSet = new YAHOO.tool.TestCase({
     },
 
     testStoreUnionFromSortedSets: function() {
-        onAfterFlushAllAndAllstringZSetsAdded(function() {
+        onAfterFlushAllAndAllStringZSetsAdded(function() {
             redis.storeUnionFromSortedSets(zsetId3, A.join([zsetId, zsetId2]), function() {
                 redis.getAllItemsFromSortedSet(zsetId3, function(items) {
                     resume(function() {

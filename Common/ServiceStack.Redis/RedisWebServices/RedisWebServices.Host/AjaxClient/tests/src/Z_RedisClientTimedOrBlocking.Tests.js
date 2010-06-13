@@ -54,7 +54,7 @@ YAHOO.ajaxstack.RedisClientTimedOrBlockingTests = new YAHOO.tool.TestCase({
 
     testSetEntryWithExpiry: function() {
         //Supply in C# TimeSpan SCORM 1.2 format - http://www.ostyn.com/standards/scorm/samples/ISOTimeForSCORM.htm
-        var expireIn = "00:00:02";
+        var expireIn = "00:00:01";
 
         redis.setEntryWithExpiry(testKey, testValue, expireIn, function() {
             redis.getValue(testKey, function(value) {
@@ -68,7 +68,7 @@ YAHOO.ajaxstack.RedisClientTimedOrBlockingTests = new YAHOO.tool.TestCase({
                             Assert.isNull(value);
                         });
                     }, failFn);
-                }, 3000);
+                }, 2100);
                 
             }, failFn);
         }, failFn);

@@ -9,17 +9,11 @@ var onAfterFlushAllAndStringMapSet = function(onSuccessFn, onErrorFn)
 {
     var i = 0;
     redis.flushAll(function() {
-        redis.setRangeInHash(hashId, RedisClient.convertMapToKeyValuePairsDto(stringMap), function() {
+        redis.setRangeInHash(hashId, stringMap, function() {
             onSuccessFn();
         }, onErrorFn || failFn);
     }, onErrorFn || failFn);
 };
-
-var isKvpsEqualToMap = function(kvps, map)
-{
-    var toMap = RedisClient.convertKeyValuePairsToMap(kvps);
-    return O.areEqual(toMap, map);
-}
 
 YAHOO.namespace("ajaxstack");
 YAHOO.ajaxstack.RedisClientHashTests = new YAHOO.tool.TestCase({
@@ -46,7 +40,7 @@ YAHOO.ajaxstack.RedisClientHashTests = new YAHOO.tool.TestCase({
         onAfterFlushAllAndStringMapSet(function() {
             redis.getAllEntriesFromHash(hashId, function(kvps) {
                 resume(function() {
-                    Assert.isTrue(isKvpsEqualToMap(kvps, stringMap));
+                    Assert.isTrue(O.areEqual(kvps, stringMap));
                 });
             }, failFn);
         }, failFn);
@@ -179,10 +173,10 @@ YAHOO.ajaxstack.RedisClientHashTests = new YAHOO.tool.TestCase({
 
     testSetRangeInHash: function() {
         onAfterFlushAllAndStringMapSet(function() {
-            redis.setRangeInHash(hashId, RedisClient.convertMapToKeyValuePairsDto(stringMap), function() {
+            redis.setRangeInHash(hashId, stringMap, function() {
                 redis.getAllEntriesFromHash(hashId, function(kvps) {
                     resume(function() {
-                        Assert.isTrue(isKvpsEqualToMap(kvps, stringMap));
+                        Assert.isTrue(O.areEqual(kvps, stringMap));
                     });
                 }, failFn);
             }, failFn);
