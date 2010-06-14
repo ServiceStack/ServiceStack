@@ -84,6 +84,35 @@ namespace ServiceStack.Text
 			return null;
 		}
 
+		public static bool IsNumericType(this Type type)
+		{
+			if (!type.IsValueType) return false;
+			return type.IsIntegerType() || type.IsRealNumberType();
+		}
+
+		public static bool IsIntegerType(this Type type)
+		{
+			if (!type.IsValueType) return false;
+			var underlyingType = Nullable.GetUnderlyingType(type);
+			return underlyingType == typeof (byte)
+		       || underlyingType == typeof (sbyte)
+		       || underlyingType == typeof (short)
+		       || underlyingType == typeof (ushort)
+		       || underlyingType == typeof (int)
+		       || underlyingType == typeof (uint)
+		       || underlyingType == typeof (long)
+		       || underlyingType == typeof (ulong);
+		}
+
+		public static bool IsRealNumberType(this Type type)
+		{
+			if (!type.IsValueType) return false;
+			var underlyingType = Nullable.GetUnderlyingType(type);
+			return underlyingType == typeof(float)
+			   || underlyingType == typeof(double)
+			   || underlyingType == typeof(decimal);
+		}
+
 		public static Type GetTypeWithGenericInterfaceOf(this Type type, Type genericInterfaceType)
 		{
 			var listInterfaces = type.FindInterfaces(
