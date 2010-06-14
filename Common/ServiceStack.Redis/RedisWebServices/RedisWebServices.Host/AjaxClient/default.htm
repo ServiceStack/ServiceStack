@@ -1,28 +1,118 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=8">
-    <title>AjaxStack Examples Demo</title>
-    <script type="text/javascript" src="js/all"></script>
-    
-    <script type="text/javascript">
+<meta http-equiv="X-UA-Compatible" content="IE=8">
+<title>AjaxStack Examples Demo</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/tree.css">
+
+<link rel="stylesheet" href="css/tab.css">
+<link rel="stylesheet" href="css/toolbar.css">
+<link rel="stylesheet" href="css/tabbar.css">
+
+<link rel="stylesheet" href="css/default.css">
+
+
+<script src="js/closure-library/closure/goog/base.js"></script>
+<script type="text/javascript" src="js/jLinq-2.2.1.js"></script>
+<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+
+<script type="text/javascript" src="js/wcf-ostynscormtime.js"></script>
+<script type="text/javascript" src="js/AjaxStack.snippets.js"></script>
+    <script type="text/javascript" src="js/RedisClient.js"></script>
+
+<script type="text/javascript">
+    goog.require('goog.debug.DivConsole');
+    goog.require('goog.debug.Trace');
+
+    goog.require('goog.events');
+    goog.require('goog.dom');
+    goog.require('goog.dom.ViewportSizeMonitor');
+    goog.require('goog.ui.tree.TreeControl');
+    goog.require('goog.ui.TabBar');
+    goog.require('goog.ui.Component');
+    goog.require('goog.ui.SplitPane');
+    goog.require('goog.ui.SplitPane.Orientation');
+</script>
+
+<script type="text/javascript" src="js/redisadmin/App.js"></script>
+
+<script type="text/javascript">
+
+    var tree;
+    $(function() {
+
+        var app = redisadmin.App.getInstance();
+        var redis = app.getRedisClient();
+
+        $("#btnPopulate").click(function() {
+            redis.populateRedisWithData(function(r) {
+                alert('redis populated with data');
+            });
+        });
+
+        $("#txtQuery").keypress(function(event){
+            var keyCode = (event.keyCode ? event.keyCode : event.which);
+            var enterKey = '13';
+            if(keyCode == enterKey){
+                $("#btnSearch").click();
+            }
+        });
         
-    </script>
+        $("#btnSearch").click(function() {
+            app.searchInMainNav($("#txtQuery").val());
+        });
+
+        $("#txtQuery").val("urn:*");
+        $("#btnSearch").click();
+    });
+
+</script>
 </head>
 
 <body>
 
 <div id="body">
     <div id="header">
-        <a href="http://www.ajaxstack.com/AjaxStack.Demo/"><img src="img/demo-logo-ajaxstack.png" alt="Ajax Stack Demo" /></a> 
+        <div id="logo">
+            <a href="default.htm"><img src="img/redis-small.png" alt="Redis Admin UI"/></a>
+
+            <h1>Admin UI</h1>
+        </div>
+        <div id="searchbox">
+            <input id="txtQuery" type="text" value="urn:*"/>
+            <button id="btnSearch">Search Keys</button>
+            <button id="btnPopulate">Populate with Data</button>
+        </div>
     </div>
-    
-    <div id="left"></div>    
-    <div id="content"></div>    
-    
+
+    <div id="container" class='goog-splitpane'>
+        <div class="goog-splitpane-first-container">
+            <div id="mainNav"></div>
+        </div>
+        <div id="content" class='goog-splitpane-second-container'>
+            <div id="tab" class="goog-tab-bar goog-tab-bar-top">
+                <div class="goog-tab goog-tab-selected">Start Page</div>
+                <div id="mainNav-tab" class="goog-tab">Main Tab<img class="close-tab" src="images/close_box.gif" title="close tab" /></div>
+            </div>
+            <!-- Use goog-tab-bar-clear to separate the tabs from the content. -->
+            <div class="goog-tab-bar-clear"></div>
+            <div id="tab_content">
+                <h3>This is the Start Page.</h3>
+                <p>
+                    No Doubt in time it will be filled with interesting stuff on how to use this app.
+                </p>
+            </div>
+        </div>
+        <div class='goog-splitpane-handle'></div>
+    </div>
+
+
     <div id="footer">
-        <a href="http://www.ajaxstack.com"><img src="img/small-logo-ajaxstack.png" alt="Ajax Stack" /></a> 
-        <a href="http://www.servicestack.net"><img src="img/small-logo-servicestack.png" alt="Service Stack" /></a>
+        <strong>powered by: </strong>
+        <a href="http://code.google.com/p/servicestack/">servicestack.net</a> |
+        <a href="http://code.google.com/p/closure-library/">closure library</a> 
     </div>
 </div>
 
