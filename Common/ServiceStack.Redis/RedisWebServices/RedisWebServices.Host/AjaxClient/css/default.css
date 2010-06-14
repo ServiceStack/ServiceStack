@@ -1,0 +1,225 @@
+/* --------------------------------------------------------------
+
+   reset.css
+   * Resets default browser CSS.
+
+-------------------------------------------------------------- */
+
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, code,
+del, dfn, em, img, q, dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, dialog, figure, footer, header,
+hgroup, nav, section {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
+}
+
+article, aside, dialog, figure, footer, header,
+hgroup, nav, section {
+    display:block;
+}
+
+body {
+  line-height: 1.5;
+}
+
+/* Tables still need 'cellspacing="0"' in the markup. */
+table { border-collapse: separate; border-spacing: 0; }
+caption, th, td { text-align: left; font-weight: normal; }
+table, td, th { vertical-align: middle; }
+
+/* Remove possible quote marks (") from <q>, <blockquote>. */
+blockquote:before, blockquote:after, q:before, q:after { content: ""; }
+blockquote, q { quotes: "" ""; }
+
+/* Remove annoying border on linked images. */
+a img { border: none; }
+
+/* end reset.css */
+
+
+HTML {
+   overflow: -moz-scrollbars-vertical;
+}
+BODY {
+	margin: 0;
+	padding: 0;
+	font-family: arial, verdana, helvetica, sans-serif;
+}
+.r 
+{
+  clear:both;
+  display:block;
+  margin:0;
+  padding:0;
+  height:1px;
+  line-height:1px;
+  font-size:1px;
+}
+H1
+{
+    font-size: 30px;
+    line-height: 30px;    
+}
+BUTTON
+{
+    padding: 5px 10px;
+}
+
+#body {
+}
+
+#header {
+    padding: 10px 15px;
+    height: 32px;
+    border-bottom: solid 1px #999;
+    background: #f1f1f1;
+}
+
+#logo IMG {
+    float: left;
+    margin-right: 20px;
+}
+#logo H1
+{
+    float:left;
+    font-weight: bold;
+    font-size: 32px;
+    color: #555;
+    text-shadow: 1px 1px 0px #fff;    
+}
+
+#container
+{
+}
+#footer
+{
+    background: #f1f1f1;
+    height:20px;
+    width:100%;
+    font-size:12px;
+    padding: 10px 0;
+    color:#333;
+}
+#footer STRONG
+{
+    padding-left: 10px;
+    text-shadow: 1px 1px 0px #fff;
+}
+#footer A
+{
+    color: #00c;
+    margin: 0 5px;
+    text-shadow: 1px 1px 0px #fff;
+}
+#searchbox
+{
+    float:left;
+}
+#searchbox #txtQuery
+{
+    margin-left: 90px;
+    padding: 2px;
+    font-size: 16px;
+    width:250px;
+    font-family:courier;
+}
+
+
+/* These are recommended styles for the default splitpane */
+.goog-splitpane {
+    hheight: 200px;
+    wwidth: 300px;
+}
+
+.goog-splitpane-handle {
+    border-left: 1px solid gray;
+    border-right: 1px solid gray;
+    background: #ccc;
+    position: absolute;
+}
+
+.goog-splitpane-handle-horizontal {
+    cursor: col-resize;
+}
+
+.goog-splitpane-handle-vertical {
+    cursor: row-resize;
+}
+
+.goog-splitpane-first-container,
+.goog-splitpane-second-container {
+    border: 1px solid #999;
+    overflow: auto;
+    position: absolute;
+}
+
+#mainNav
+{
+}
+#tree
+{
+    padding: 10px;
+}
+#tree .goog-tree-item-label
+{
+    padding: 0 2px;
+    font-size: 14px;
+}
+#tree EM
+{
+    padding-left: 5px;
+    font-size: 13px;
+    color: #666;
+}
+#tree .selected EM
+{
+    color: #fff;
+}
+
+.loading {
+    background: url(../img/loaderA16.gif) no-repeat;
+    padding-left: 20px;
+}
+
+
+#tab
+{
+}
+#tab_content
+{
+    padding: 10px;
+}
+.goog-tab-bar-top
+{
+    padding-top: 10px;
+    padding-left: 10px;
+    border-bottom: solid 1px #999;
+    height: 33px;
+}
+.goog-tab
+{
+    font-size: 13px;
+    line-height:23px;
+    border: solid 1px #999;
+}
+.close-tab
+{
+    margin: 0 -5px 5px 5px;
+}
+
+
+TEXTAREA.key-value
+{
+    width: 700px;
+    height: 300px;
+}
