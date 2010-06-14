@@ -1,15 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/servicestack" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/RedisClient.js" afterPath="$PROJECT_DIR$/js/RedisClient.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/default.htm" afterPath="$PROJECT_DIR$/default.htm" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/redisadmin" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/redisadmin/App.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js" afterPath="$PROJECT_DIR$/js" />
-    </list>
+    <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="" />
     <ignored path="AjaxClient.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />

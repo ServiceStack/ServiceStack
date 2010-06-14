@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Collections.Generic;
 using RedisWebServices.ServiceModel.Operations.App;
+using RedisWebServices.ServiceModel.Types;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
@@ -18,9 +20,8 @@ namespace RedisWebServices.ServiceInterface.App
 			var sb = new StringBuilder();
 
 			sb.Append(@"function RedisClient(baseUri) {
-RedisClient.$baseConstructor.call(this);
-
-    this.gateway = new JsonServiceClient(baseUri);
+   var baseUri = baseUri || 'http://' + document.location.hostname + '/RedisWebServices.Host/Public/';
+   this.gateway = new JsonServiceClient(baseUri);
 }
 RedisClient.errorFn = function() {
 };
@@ -85,50 +86,28 @@ RedisClient.convertItemWithScoresToMap = function(itwss)
     }
     return to;
 };
-RedisClient.convertMapToItemWithScores = function(map)
-{
-    var to = [];
-    for (var item in map)
-    {
-        to.push({Item:item, Score:map[item]});
-    }
-    return to;
-};
-RedisClient.convertArrayToItemWithScores = function(array, score) {
-    score = score || '0';
-    var to = [];
-    for (var i = 0; i < array.length; i++) {
-        var a = array[i];
-        var isArray = (typeof (a) === 'object') ? a.constructor.toString().match(/array/i) !== null || a.length !== undefined : false;
-        var item = isArray ? a[0] : a;
-        var score = isArray && a.length > 1 ? a[1] : score;
-        to.push({ Item: item, Score: score });
-    }
-    return to;
-};
-RedisClient.toItemWithScoresDto = function(iwss)
+RedisClient.convertToItemWithScoresDto = function(obj)
 {
     var s = '';
-    for (var i=0; i<iwss.length; i++)
+    var isArray = obj.length !== undefined;
+    if (isArray)
     {
-        var iws = iwss[i];
+        for (var i=0, len=obj.length; i < len; i++)
+        {
+            if (s) s+= ',';
+            s+= '{Item:' + obj[i] + ',Score:0}';
+        }
+        return '[' + s + ']';
+    }
+    for (var item in obj)
+    {
         if (s) s+= ',';
-        s+= '{Item:' + iws.Item + ',Score:' + iws.Score + '}';
+        s+= '{Item:' + item + ',Score:' + obj[item] + '}';
     }
     return '[' + s + ']';
 };
-RedisClient.convertMapToItemWithScoresDto = function(map)
-{
-	var iwsArray = RedisClient.convertMapToItemWithScores(map);
-	return RedisClient.toItemWithScoresDto(iwsArray);
-};
-RedisClient.convertArrayToItemWithScoresDto = function(array, score)
-{
-	var iwsArray = RedisClient.convertArrayToItemWithScores(array, score);
-	return RedisClient.toItemWithScoresDto(iwsArray);
-};
 
-RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
+RedisClient.prototype =
 {
 ");
 			var isFirst = true;
@@ -151,10 +130,9 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 
 				sb.AppendFormat("\t{0}: function(", camelCaseOperation);
 
-				var args = new List<string>();
-				foreach (var property in operationType.GetPublicProperties())
+				var args = operationType.GetPublicProperties();
+				foreach (var property in args)
 				{
-					args.Add(property.Name);
 					sb.AppendFormat("{0}, ", GetCamelCaseName(property.Name));
 				}
 
@@ -162,12 +140,12 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 				sb.AppendLine("\t{");
 				sb.AppendFormat("\t\tthis.gateway.getFromService('{0}', {{ ", operationName);
 				
-				for (int argIndex = 0; argIndex < args.Count; argIndex++)
+				for (int argIndex = 0; argIndex < args.Length; argIndex++)
 				{
 					var arg = args[argIndex];
-					sb.AppendFormat("{0}: {1} || null", arg, GetCamelCaseName(arg));
+					sb.Append(GetValidArgument(arg));
 
-					if (argIndex != args.Count - 1)
+					if (argIndex != args.Length - 1)
 						sb.Append(", ");
 				}
 
@@ -183,8 +161,9 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 
 					if (resultPropertyType != null)
 					{
-						sb.AppendFormat("\t\t\t\tif (onSuccessFn) onSuccessFn(r.getResult().{0});", 
-							resultPropertyType.Name);
+
+						sb.AppendFormat("\t\t\t\tif (onSuccessFn) onSuccessFn({0});",
+							GetValidReturnValue(resultPropertyType));
 						sb.AppendLine();
 					}
 					else
@@ -199,9 +178,45 @@ RedisClient.extend(AjaxStack.ASObject, { type: 'AjaxStack.RedisClient' },
 			}
 
 			sb.AppendLine();
-			sb.Append("});");
+			sb.Append("};");
 
 			return new TextResult(sb, MimeTypes.JavaScript);
+		}
+
+		public string GetValidArgument(PropertyInfo propertyInfo)
+		{
+			//"{0}: {1} || null", arg, GetCamelCaseName(arg.Name)
+			var arg = propertyInfo.Name;
+			if (propertyInfo.PropertyType.IsNumericType())
+			{
+				//JSON serializer treats 0 as undefined so need to put it in quotes
+				return string.Format("{0}: {1} || '0'", arg, GetCamelCaseName(arg));
+			}
+			if (propertyInfo.PropertyType.IsAssignableFrom(typeof(List<KeyValuePair>)))
+			{
+				return string.Format("{0}: RedisClient.convertMapToKeyValuePairsDto({1} || {{}})", arg, GetCamelCaseName(arg));
+			}
+			if (propertyInfo.PropertyType.IsAssignableFrom(typeof(List<ItemWithScore>)))
+			{
+				return string.Format("{0}: RedisClient.convertToItemWithScoresDto({1} || {{}})", arg, GetCamelCaseName(arg));
+			}
+
+			return string.Format("{0}: {1} || null", arg, GetCamelCaseName(arg));
+		}
+
+		public string GetValidReturnValue(PropertyInfo resultPropertyType)
+		{
+			var rawValue = "r.getResult()." + resultPropertyType.Name;
+
+			if (typeof(List<KeyValuePair>).IsAssignableFrom(resultPropertyType.PropertyType))
+			{
+				return string.Format("RedisClient.convertKeyValuePairsToMap({0})", rawValue);
+			}
+			if (typeof(List<ItemWithScore>).IsAssignableFrom(resultPropertyType.PropertyType))
+			{
+				return string.Format("RedisClient.convertItemWithScoresToMap({0})", rawValue);
+			}
+			return rawValue;
 		}
 
 		public Type GetResponseType(Type requestType)

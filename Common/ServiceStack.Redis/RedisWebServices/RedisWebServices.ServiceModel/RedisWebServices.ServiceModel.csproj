@@ -66,7 +66,9 @@
     <Compile Include="Operations\Admin\FlushDb.cs" />
     <Compile Include="Operations\Admin\RewriteAppendOnlyFileAsync.cs" />
     <Compile Include="Operations\Admin\Save.cs" />
+    <Compile Include="Operations\App\PopulateRedisWithData.cs" />
     <Compile Include="Operations\App\GetCodeGeneratedJavaScript.cs" />
+    <Compile Include="Operations\Common\SearchKeysGroup.cs" />
     <Compile Include="Operations\Common\ExpireEntryAt.cs" />
     <Compile Include="Operations\Common\SetEntryWithExpiry.cs" />
     <Compile Include="Operations\Common\Echo.cs" />

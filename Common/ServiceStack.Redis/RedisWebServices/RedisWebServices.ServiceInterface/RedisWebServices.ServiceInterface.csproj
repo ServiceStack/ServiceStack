@@ -68,9 +68,11 @@
     <Compile Include="Admin\RewriteAppendOnlyFileAsyncService.cs" />
     <Compile Include="Admin\FlushAllService.cs" />
     <Compile Include="AppConfig.cs" />
+    <Compile Include="App\PopulateRedisWithDataService.cs" />
     <Compile Include="App\GetCodeGeneratedJavaScriptService.cs" />
     <Compile Include="Common\AppendToValueService.cs" />
     <Compile Include="Common\ContainsKey.cs" />
+    <Compile Include="Common\SearchKeysGroupService.cs" />
     <Compile Include="Common\ExpireEntryAtService.cs" />
     <Compile Include="Common\SetEntryWithExpiryService.cs" />
     <Compile Include="Common\SetEntryIfNotExistsService.cs" />
@@ -168,6 +170,10 @@
     <Compile Include="SortedSet\GetAllItemsFromSortedSetService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RedisWebServices.DataSource.Northwind\RedisWebServices.DataSource.Northwind.csproj">
+      <Project>{508FA67C-D7B3-4823-A26E-F6467C15B83A}</Project>
+      <Name>RedisWebServices.DataSource.Northwind</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RedisWebServices.ServiceModel\RedisWebServices.ServiceModel.csproj">
       <Project>{900F6D5C-8955-40B0-9B0B-888904E42BC3}</Project>
       <Name>RedisWebServices.ServiceModel</Name>

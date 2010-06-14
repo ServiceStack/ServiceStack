@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisWebServices.ServiceMod
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisWebServices.Tests", "RedisWebServices.Tests\RedisWebServices.Tests.csproj", "{EEE1F951-50B3-4739-A0D0-362EA2A543E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisWebServices.DataSource.Northwind", "RedisWebServices.DataSource.Northwind\RedisWebServices.DataSource.Northwind.csproj", "{508FA67C-D7B3-4823-A26E-F6467C15B83A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{EEE1F951-50B3-4739-A0D0-362EA2A543E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEE1F951-50B3-4739-A0D0-362EA2A543E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EEE1F951-50B3-4739-A0D0-362EA2A543E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{508FA67C-D7B3-4823-A26E-F6467C15B83A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{508FA67C-D7B3-4823-A26E-F6467C15B83A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{508FA67C-D7B3-4823-A26E-F6467C15B83A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{508FA67C-D7B3-4823-A26E-F6467C15B83A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
