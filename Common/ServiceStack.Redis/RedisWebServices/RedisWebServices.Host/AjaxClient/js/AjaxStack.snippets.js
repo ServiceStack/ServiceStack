@@ -1,4 +1,7 @@
 /** @constructor */
+
+goog.require("goog.json");
+
 function JsonServiceClient(baseUri, type)
 {
 	this.baseSyncReplyUri = Path.combine(baseUri, "Json/SyncReply");
@@ -72,7 +75,7 @@ JsonServiceClient.prototype.postFormDataToService = function(webMethod, request,
 
 //Sends a HTTP 'POST' request as JSON @requires jQuery
 JsonServiceClient.prototype.postToService = function(webMethod, request, onSuccess, onError) {
-	var jsonRequest = $.compactJSON(request);
+	var jsonRequest = goog.json.serialize(request);
 	this.send(webMethod, jsonRequest, onSuccess, onError, { type: "POST", processData: false, contentType: "application/json; charset=utf-8" });
 };
 

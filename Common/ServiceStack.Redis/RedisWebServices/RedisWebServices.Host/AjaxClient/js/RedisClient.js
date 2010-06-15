@@ -1,7 +1,3 @@
-/**
- * 
- * @param {baseUri=}
- */
 function RedisClient(baseUri) {
    var baseUri = baseUri || 'http://' + document.location.hostname + '/RedisWebServices.Host/Public/';
    this.gateway = new JsonServiceClient(baseUri);
@@ -103,7 +99,7 @@ RedisClient.prototype =
 	},
 	getIntersectFromSets: function(setIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('GetIntersectFromSets', { SetIds: setIds || null },
+		this.gateway.postToService('GetIntersectFromSets', { SetIds: setIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Items);
@@ -148,7 +144,7 @@ RedisClient.prototype =
 	},
 	storeDifferencesFromSet: function(id, fromSetId, setIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('StoreDifferencesFromSet', { Id: id || null, FromSetId: fromSetId || null, SetIds: setIds || null },
+		this.gateway.postToService('StoreDifferencesFromSet', { Id: id || null, FromSetId: fromSetId || null, SetIds: setIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn();
@@ -319,7 +315,7 @@ RedisClient.prototype =
 	},
 	storeIntersectFromSets: function(id, setIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('StoreIntersectFromSets', { Id: id || null, SetIds: setIds || null },
+		this.gateway.postToService('StoreIntersectFromSets', { Id: id || null, SetIds: setIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn();
@@ -337,7 +333,7 @@ RedisClient.prototype =
 	},
 	getUnionFromSets: function(setIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('GetUnionFromSets', { SetIds: setIds || null },
+		this.gateway.postToService('GetUnionFromSets', { SetIds: setIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Items);
@@ -391,7 +387,7 @@ RedisClient.prototype =
 	},
 	addRangeToList: function(id, items, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('AddRangeToList', { Id: id || null, Items: items || null },
+		this.gateway.postToService('AddRangeToList', { Id: id || null, Items: items || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn();
@@ -427,7 +423,7 @@ RedisClient.prototype =
 	},
 	addRangeToSortedSet: function(id, items, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('AddRangeToSortedSet', { Id: id || null, Items: RedisClient.convertToItemWithScoresDto(items || {}) },
+		this.gateway.postToService('AddRangeToSortedSet', { Id: id || null, Items: RedisClient.convertToItemWithScoresDto(items || {}) },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn();
@@ -535,7 +531,7 @@ RedisClient.prototype =
 	},
 	createSubscription: function(channels, patterns, timeOut, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('CreateSubscription', { Channels: channels || null, Patterns: patterns || null, TimeOut: timeOut || null },
+		this.gateway.postToService('CreateSubscription', { Channels: channels || null, Patterns: patterns || null, TimeOut: timeOut || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Key);
@@ -589,7 +585,7 @@ RedisClient.prototype =
 	},
 	storeUnionFromSets: function(id, setIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('StoreUnionFromSets', { Id: id || null, SetIds: setIds || null },
+		this.gateway.postToService('StoreUnionFromSets', { Id: id || null, SetIds: setIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn();
@@ -607,7 +603,7 @@ RedisClient.prototype =
 	},
 	setRangeInHash: function(id, keyValuePairs, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('SetRangeInHash', { Id: id || null, KeyValuePairs: RedisClient.convertMapToKeyValuePairsDto(keyValuePairs || {}) },
+		this.gateway.postToService('SetRangeInHash', { Id: id || null, KeyValuePairs: RedisClient.convertMapToKeyValuePairsDto(keyValuePairs || {}) },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn();
@@ -823,7 +819,7 @@ RedisClient.prototype =
 	},
 	removeEntry: function(keys, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('RemoveEntry', { Keys: keys || null },
+		this.gateway.postToService('RemoveEntry', { Keys: keys || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Result);
@@ -904,7 +900,7 @@ RedisClient.prototype =
 	},
 	getValues: function(keys, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('GetValues', { Keys: keys || null },
+		this.gateway.postToService('GetValues', { Keys: keys || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Values);
@@ -949,7 +945,7 @@ RedisClient.prototype =
 	},
 	getDifferencesFromSet: function(id, setIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('GetDifferencesFromSet', { Id: id || null, SetIds: setIds || null },
+		this.gateway.postToService('GetDifferencesFromSet', { Id: id || null, SetIds: setIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Items);
@@ -967,7 +963,7 @@ RedisClient.prototype =
 	},
 	storeUnionFromSortedSets: function(id, fromSetIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('StoreUnionFromSortedSets', { Id: id || null, FromSetIds: fromSetIds || null },
+		this.gateway.postToService('StoreUnionFromSortedSets', { Id: id || null, FromSetIds: fromSetIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Count);
@@ -976,7 +972,7 @@ RedisClient.prototype =
 	},
 	storeIntersectFromSortedSets: function(id, fromSetIds, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('StoreIntersectFromSortedSets', { Id: id || null, FromSetIds: fromSetIds || null },
+		this.gateway.postToService('StoreIntersectFromSortedSets', { Id: id || null, FromSetIds: fromSetIds || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Count);
@@ -985,7 +981,7 @@ RedisClient.prototype =
 	},
 	addRangeToSet: function(id, items, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('AddRangeToSet', { Id: id || null, Items: items || null },
+		this.gateway.postToService('AddRangeToSet', { Id: id || null, Items: items || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn();
@@ -1012,7 +1008,7 @@ RedisClient.prototype =
 	},
 	getValuesFromHash: function(id, keys, onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('GetValuesFromHash', { Id: id || null, Keys: keys || null },
+		this.gateway.postToService('GetValuesFromHash', { Id: id || null, Keys: keys || null },
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(r.getResult().Values);
@@ -1025,6 +1021,15 @@ RedisClient.prototype =
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.getResult().KeyGroups));
+			},
+			onErrorFn || RedisClient.errorFn);
+	},
+	getEntryTypes: function(keys, onSuccessFn, onErrorFn)
+	{
+		this.gateway.postToService('GetEntryTypes', { Keys: keys || null },
+			function(r)
+			{
+				if (onSuccessFn) onSuccessFn(RedisClient.convertKeyValuePairsToMap(r.getResult().KeyTypes));
 			},
 			onErrorFn || RedisClient.errorFn);
 	}

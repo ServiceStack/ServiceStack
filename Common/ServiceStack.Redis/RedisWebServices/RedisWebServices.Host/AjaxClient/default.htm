@@ -20,10 +20,11 @@
 
 <script type="text/javascript" src="js/wcf-ostynscormtime.js"></script>
 <script type="text/javascript" src="js/AjaxStack.snippets.js"></script>
-    <script type="text/javascript" src="js/RedisClient.js"></script>
+<script type="text/javascript" src="js/RedisClient.js"></script>
 
 <script type="text/javascript">
     goog.require('goog.debug.DivConsole');
+    goog.require('goog.debug.FancyWindow');
     goog.require('goog.debug.Trace');
 
     goog.require('goog.events');
@@ -42,6 +43,10 @@
 
     var tree;
     $(function() {
+
+        var debugWindow = new goog.debug.FancyWindow('main');
+        debugWindow.setEnabled(true);
+        debugWindow.init();
 
         var app = redisadmin.App.getInstance();
         var redis = app.getRedisClient();
@@ -107,7 +112,6 @@
         </div>
         <div class='goog-splitpane-handle'></div>
     </div>
-
 
     <div id="footer">
         <strong>powered by: </strong>

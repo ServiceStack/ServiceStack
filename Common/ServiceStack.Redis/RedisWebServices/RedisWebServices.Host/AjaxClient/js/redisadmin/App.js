@@ -15,10 +15,16 @@ redisadmin.App = function()
 {
     goog.events.EventTarget.call(this);
 
+    var $this = this;
+    this.log = goog.debug.Logger.getLogger('redisadmin.App');
+    this.log.setLevel(goog.debug.Logger.Level.FINE);
+    this.log.info('initializing App()');
+
     this.redis = new RedisClient();
+    this.keyTypes = {};
+
     RedisClient.errorFn = function(e) {
-        console.log(e);
-        alert(e);
+        $this.log.error("Unknown KeyType: " + keyType);
     };
 
     redisadmin.App.initTabs();
@@ -101,6 +107,8 @@ redisadmin.App.prototype.searchInMainNav = function(query)
     var $this = this;
 
     this.redis.searchKeysGroup(query, function(keysWithChildCounts) {
+        $this.fetchTypesForValidKeys(keysWithChildCounts);
+
         var tree = new goog.ui.tree.TreeControl('root');
         var childCount = O.keys(keysWithChildCounts).length;
         tree.setHtml(query + "<em>(" + O.keys(keysWithChildCounts).length + ")</em>");
@@ -113,7 +121,14 @@ redisadmin.App.prototype.searchInMainNav = function(query)
         goog.events.listen(tree, goog.events.EventType.CHANGE, function(e)
         {
             var selectedItem = e.currentTarget.getTree().getSelectedItem();
-            $this.showKey(selectedItem.getHtml());
+            if ($this.isKeyGroup_(selectedItem))
+            {
+                $this.showKeyGroup(selectedItem);
+            }
+            else
+            {
+                $this.showKey(selectedItem.getHtml());
+            }
         });
     });
 };
@@ -139,12 +154,12 @@ redisadmin.App.prototype.addChildNodes_ = function(parentNode, keysWithChildCoun
                 goog.ui.tree.BaseNode.EventType.BEFORE_EXPAND,
                 function (e) {
                     var parentNode = e.currentTarget;
-                    var nodeLabel = e.currentTarget.getHtml();
-                    var keyGroup = nodeLabel.indexOf("<em>") != -1
-                            ? nodeLabel.substring(0, nodeLabel.indexOf("<em>"))
-                            : nodeLabel;
+
+                    var keyGroup = $this.getNodeLabel_(e.currentTarget);
 
                     $this.redis.searchKeysGroup(keyGroup + ":*", function(keysWithChildCounts) {
+                        $this.fetchTypesForValidKeys(keysWithChildCounts);
+
                         parentNode.removeChildAt(0);
                         $this.addChildNodes_(parentNode, keysWithChildCounts);
                     });
@@ -158,6 +173,69 @@ redisadmin.App.prototype.addChildNodes_ = function(parentNode, keysWithChildCoun
     }
 }
 
+redisadmin.App.prototype.isKeyGroup_ = function(node)
+{
+    return node.getHtml().indexOf("<em>") != -1;
+};
+redisadmin.App.prototype.getNodeLabel_ = function(node)
+{
+    var nodeLabel = node.getHtml();
+    if (nodeLabel.indexOf("<em>") != -1)
+    {
+        nodeLabel = nodeLabel.substring(0, nodeLabel.indexOf("<em>"));
+    }
+    return nodeLabel;
+};
+
+redisadmin.App.prototype.fetchTypesForValidKeys = function(keysWithChildCounts)
+{
+    var $this = this;
+
+    var keysToFetch = [];
+    for (var key in keysWithChildCounts)
+    {
+        var isValidKey = keysWithChildCounts[key] == 1;
+        if (isValidKey && !this.keyTypes[key])
+        {
+            keysToFetch.push(key);
+        }
+    }
+    if (keysToFetch.length > 0)
+    {
+        var ignoreLargeKeySpace = keysToFetch > 10000;
+        if (ignoreLargeKeySpace) return;
+
+        $this.log.fine("Fetching types for '" + keysToFetch.length + "' keys");
+
+        this.redis.getEntryTypes(keysToFetch, function(keysWithTypes)
+        {
+            for (var key in keysWithTypes)
+            {
+                $this.keyTypes[key] = keysWithTypes[key];
+            }
+        });
+    }
+};
+
+redisadmin.App.prototype.getKeyType = function(key, callbackFn)
+{
+    var $this = this;
+
+    if (this.keyTypes[key])
+    {
+        callbackFn(this.keyTypes[key]);
+    }
+    else
+    {
+        $this.log.warning("key for '" + key + "' not found, fetching...");
+
+        this.redis.getEntryType(key, function(keyType){
+            $this.keyTypes[key] = keyType;
+            callbackFn(keyType);
+        });
+    }
+}
+
 /**
  * Display information about the key in the main area
  * @param {string} the key
@@ -165,11 +243,86 @@ redisadmin.App.prototype.addChildNodes_ = function(parentNode, keysWithChildCoun
  */
 redisadmin.App.prototype.showKey = function(key, inNewTab)
 {
-    this.redis.getValue(key, function(value)
+    var $this = this;
+
+    this.getKeyType(key, function(keyType)
     {
-       var html = "<h3>" + key + "</h3>"
-                + "<textarea class='key-value'>" + value + "</textarea>";
-        
-        goog.dom.getElement('tab_content').innerHTML = html;
+        if (keyType == "String")
+        {
+            $this.redis.getValue(key, function(value)
+            {
+                $this.showKeyDetails(key, value);
+            });
+        }
+        else if (keyType == "List")
+        {
+            $this.redis.getAllItemsFromList(key, function(items)
+            {
+                $this.showKeyDetails(key, S.toString(items));
+            });
+        }
+        else if (keyType == "Set")
+        {
+            $this.redis.getAllItemsFromSet(key, function(items)
+            {
+                $this.showKeyDetails(key, S.toString(items));
+            });
+        }
+        else if (keyType == "SortedSet")
+        {
+            $this.redis.getAllItemsFromSortedSet(key, function(itemsWithScores)
+            {
+                $this.showKeyDetails(key, S.toString(itemsWithScores));
+            });
+        }
+        else if (keyType == "Hash")
+        {
+            $this.redis.getAllEntriesFromHash(key, function(kvps)
+            {
+                $this.showKeyDetails(key, S.toString(kvps));
+            });
+        }
+        else
+        {
+            $this.log.severe("Unknown KeyType: " + keyType);
+        }
+    });
+};
+
+redisadmin.App.prototype.showKeyDetails = function(key, textValue)
+{
+    var html = "<h3>" + key + "</h3>"
+             + "<textarea class='key-value'>" + textValue + "</textarea>";
+
+     goog.dom.getElement('tab_content').innerHTML = html;
+}
+
+redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
+{
+    var $this = this;
+
+    var childKeys = [], parentLabel = this.getNodeLabel_(parentNode);
+    for (var i=0, children = parentNode.getChildren(); i<children.length; i++)
+    {
+        var childNode = children[i];
+        if (!this.isKeyGroup_(childNode))
+        {
+            var key = this.getNodeLabel_(childNode);
+            childKeys.push(key);
+        }
+    }
+    if (childKeys.length == 0)
+    {
+        this.log.warning("no keys in keyGroup: " + parentLabel);
+        return;
+    }
+    this.redis.getValues(childKeys, function(values){
+        var map = {};
+        for (var i=0; i<childKeys.length; i++)
+        {
+           map[childKeys[i]] = values[i];
+        }
+        $this.showKeyDetails(parentLabel, S.toString(map));
+        //console.log(map);
     });
 };
