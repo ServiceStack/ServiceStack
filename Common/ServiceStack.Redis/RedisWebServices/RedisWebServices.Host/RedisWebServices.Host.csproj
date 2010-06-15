@@ -66,11 +66,70 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AjaxClient\css\common.css" />
+    <Content Include="AjaxClient\css\default.css" />
+    <Content Include="AjaxClient\css\tab.css" />
+    <Content Include="AjaxClient\css\tabbar.css" />
+    <Content Include="AjaxClient\css\toolbar.css" />
+    <Content Include="AjaxClient\css\tree.css" />
     <Content Include="AjaxClient\default.htm" />
-    <Content Include="AjaxClient\jsLibOnLoad\jquery.dump.js" />
-    <Content Include="AjaxClient\js\AjaxStack.js" />
-    <Content Include="AjaxClient\js\app\App.js" />
-    <Content Include="AjaxClient\jsOld\RedisClient.sample.js" />
+    <Content Include="AjaxClient\images\bubble_close.jpg" />
+    <Content Include="AjaxClient\images\bubble_left.gif" />
+    <Content Include="AjaxClient\images\bubble_right.gif" />
+    <Content Include="AjaxClient\images\button-bg.gif" />
+    <Content Include="AjaxClient\images\check-outline.gif" />
+    <Content Include="AjaxClient\images\check-sprite.gif" />
+    <Content Include="AjaxClient\images\check.gif" />
+    <Content Include="AjaxClient\images\cleardot.gif" />
+    <Content Include="AjaxClient\images\close_box.gif" />
+    <Content Include="AjaxClient\images\color-swatch-tick.gif" />
+    <Content Include="AjaxClient\images\dialog_close_box.gif" />
+    <Content Include="AjaxClient\images\dimension-highlighted.png" />
+    <Content Include="AjaxClient\images\dimension-unhighlighted.png" />
+    <Content Include="AjaxClient\images\dropdn.gif" />
+    <Content Include="AjaxClient\images\dropdn_disabled.gif" />
+    <Content Include="AjaxClient\images\dropdown.gif" />
+    <Content Include="AjaxClient\images\gears_bluedot.gif" />
+    <Content Include="AjaxClient\images\gears_offline.gif" />
+    <Content Include="AjaxClient\images\gears_online.gif" />
+    <Content Include="AjaxClient\images\gears_paused.gif" />
+    <Content Include="AjaxClient\images\gears_syncing.gif" />
+    <Content Include="AjaxClient\images\hsv-sprite-sm.gif" />
+    <Content Include="AjaxClient\images\hsv-sprite-sm.png" />
+    <Content Include="AjaxClient\images\hsv-sprite.gif" />
+    <Content Include="AjaxClient\images\hsv-sprite.png" />
+    <Content Include="AjaxClient\images\hsva-sprite-sm.gif" />
+    <Content Include="AjaxClient\images\hsva-sprite-sm.png" />
+    <Content Include="AjaxClient\images\hsva-sprite.gif" />
+    <Content Include="AjaxClient\images\hsva-sprite.png" />
+    <Content Include="AjaxClient\images\I.png" />
+    <Content Include="AjaxClient\images\left_anchor_bubble_bot.gif" />
+    <Content Include="AjaxClient\images\left_anchor_bubble_top.gif" />
+    <Content Include="AjaxClient\images\menu-arrows.gif" />
+    <Content Include="AjaxClient\images\no_anchor_bubble_bot.gif" />
+    <Content Include="AjaxClient\images\no_anchor_bubble_top.gif" />
+    <Content Include="AjaxClient\images\offlineicons.png" />
+    <Content Include="AjaxClient\images\right_anchor_bubble_bot.gif" />
+    <Content Include="AjaxClient\images\right_anchor_bubble_top.gif" />
+    <Content Include="AjaxClient\images\toolbar-bg.png" />
+    <Content Include="AjaxClient\images\toolbar-separator.gif" />
+    <Content Include="AjaxClient\images\toolbar_icons.gif" />
+    <Content Include="AjaxClient\images\tree.gif" />
+    <Content Include="AjaxClient\images\tree.png" />
+    <Content Include="AjaxClient\images\tree\cleardot.gif" />
+    <Content Include="AjaxClient\images\tree\I.png" />
+    <Content Include="AjaxClient\images\tree\tree.gif" />
+    <Content Include="AjaxClient\images\tree\tree.png" />
+    <Content Include="AjaxClient\images\ui_controls.jpg" />
+    <Content Include="AjaxClient\img\loaderA16.gif" />
+    <Content Include="AjaxClient\img\redis-small-white.png" />
+    <Content Include="AjaxClient\img\redis-small.png" />
+    <Content Include="AjaxClient\img\servicestack-logo-small.png" />
+    <Content Include="AjaxClient\js\AjaxStack.snippets.js" />
+    <Content Include="AjaxClient\js\jLinq-2.2.1.js" />
+    <Content Include="AjaxClient\js\jquery-1.4.2.min.js" />
+    <Content Include="AjaxClient\js\jquery.json-2.2.js" />
+    <Content Include="AjaxClient\js\redisadmin\App.js" />
     <Content Include="AjaxClient\js\RedisClient.js" />
     <Content Include="AjaxClient\js\wcf-ostynscormtime.js" />
     <Content Include="AjaxClient\tests\default.htm" />
@@ -80,7 +139,6 @@
     <Content Include="AjaxClient\tests\src\RedisClientSortedSet.Tests.js" />
     <Content Include="AjaxClient\tests\src\RedisClientSet.Tests.js" />
     <Content Include="AjaxClient\tests\src\RedisClientHash.Tests.js" />
-    <Content Include="AjaxClient\jsOld\RedisClient.Tests.js" />
     <Content Include="AjaxClient\tests\src\Z_RedisClientCommon.Tests.js" />
     <Content Include="AjaxClient\tests\src\Z_RedisClientTimedOrBlocking.Tests.js" />
     <Content Include="AjaxClient\tests\src\_Template.Tests.js" />
@@ -106,6 +164,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AjaxClient\css\.svn\all-wcprops" />
+    <None Include="AjaxClient\css\.svn\entries" />
+    <None Include="AjaxClient\css\.svn\text-base\common.css.svn-base" />
+    <None Include="AjaxClient\css\.svn\text-base\default.css.svn-base" />
+    <None Include="AjaxClient\css\.svn\text-base\tab.css.svn-base" />
+    <None Include="AjaxClient\css\.svn\text-base\tabbar.css.svn-base" />
+    <None Include="AjaxClient\css\.svn\text-base\toolbar.css.svn-base" />
+    <None Include="AjaxClient\css\.svn\text-base\tree.css.svn-base" />
     <None Include="Web.config.rename_for_iis7" />
     <None Include="Web.config.rename_for_iis6_mono" />
   </ItemGroup>
@@ -116,6 +182,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="AjaxClient\css\.svn\prop-base\" />
+    <Folder Include="AjaxClient\css\.svn\props\" />
+    <Folder Include="AjaxClient\css\.svn\tmp\prop-base\" />
+    <Folder Include="AjaxClient\css\.svn\tmp\props\" />
+    <Folder Include="AjaxClient\css\.svn\tmp\text-base\" />
     <Folder Include="App_Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

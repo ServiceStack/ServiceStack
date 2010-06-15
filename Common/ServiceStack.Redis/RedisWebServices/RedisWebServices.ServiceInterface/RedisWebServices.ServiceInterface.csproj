@@ -72,6 +72,7 @@
     <Compile Include="App\GetCodeGeneratedJavaScriptService.cs" />
     <Compile Include="Common\AppendToValueService.cs" />
     <Compile Include="Common\ContainsKey.cs" />
+    <Compile Include="Common\GetEntryTypesService.cs" />
     <Compile Include="Common\SearchKeysGroupService.cs" />
     <Compile Include="Common\ExpireEntryAtService.cs" />
     <Compile Include="Common\SetEntryWithExpiryService.cs" />

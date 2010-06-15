@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -138,16 +139,29 @@ RedisClient.prototype =
 
 				sb.AppendLine("onSuccessFn, onErrorFn)");
 				sb.AppendLine("\t{");
-				sb.AppendFormat("\t\tthis.gateway.getFromService('{0}', {{ ", operationName);
-				
+
+				var hasCollectionArg = false;
+				var sbArgs = new StringBuilder();
 				for (int argIndex = 0; argIndex < args.Length; argIndex++)
 				{
 					var arg = args[argIndex];
-					sb.Append(GetValidArgument(arg));
+
+					var isCollection = arg.PropertyType.FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
+					if (isCollection)
+						hasCollectionArg = true;
+
+					sbArgs.Append(GetValidArgument(arg));
 
 					if (argIndex != args.Length - 1)
-						sb.Append(", ");
+						sbArgs.Append(", ");
 				}
+
+				if (hasCollectionArg)
+					sb.AppendFormat("\t\tthis.gateway.postToService('{0}', {{ ", operationName);
+				else
+					sb.AppendFormat("\t\tthis.gateway.getFromService('{0}', {{ ", operationName);
+
+				sb.Append(sbArgs.ToString());
 
 				sb.AppendLine(" },");
 				sb.AppendLine("\t\t\tfunction(r)");
