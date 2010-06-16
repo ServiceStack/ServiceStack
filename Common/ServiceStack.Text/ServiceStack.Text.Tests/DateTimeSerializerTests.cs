@@ -80,6 +80,13 @@ namespace ServiceStack.Text.Tests
 			AssertDateIsEqual(new DateTime(2010, 11, 22, 11, 11, 11, 1));
 		}
 
+		[Test]
+		public void TestSqlServerDateTime()
+		{
+			var result = TypeSerializer.DeserializeFromString<DateTime>("2010-06-01 21:52:59.280");
+			Assert.That(result, Is.Not.Null);
+		}
+
 		private void AssertDateIsEqual(DateTime dateTime)
 		{
 			//Don't test short dates without time to UTC as you lose precision

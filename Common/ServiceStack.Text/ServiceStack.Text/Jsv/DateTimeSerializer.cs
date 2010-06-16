@@ -18,11 +18,12 @@ namespace ServiceStack.Text.Jsv
 {
 	public static class DateTimeSerializer
 	{
-		public const string ShortDateTimeFormat = "yyyy-MM-dd";
-		public const string DefaultDateTimeFormat = "dd/MM/yyyy HH:mm:ss";
-		public const string XsdDateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffffffZ";
-		public const string XsdDateTimeFormat3F = "yyyy-MM-ddTHH:mm:ss.fffZ";
-		public const string XsdDateTimeFormatSeconds = "yyyy-MM-ddTHH:mm:ssZ";
+		public const string ShortDateTimeFormat = "yyyy-MM-dd";					//11
+		public const string DefaultDateTimeFormat = "dd/MM/yyyy HH:mm:ss";		//20
+		public const string DefaultDateTimeFormatWithFraction = "dd/MM/yyyy HH:mm:ss.fff";	//24
+		public const string XsdDateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffffffZ";	//29
+		public const string XsdDateTimeFormat3F = "yyyy-MM-ddTHH:mm:ss.fffZ";	//25
+		public const string XsdDateTimeFormatSeconds = "yyyy-MM-ddTHH:mm:ssZ";	//21
 
 		public static string ToDateTimeString(DateTime dateTime)
 		{
@@ -62,7 +63,8 @@ namespace ServiceStack.Text.Jsv
 			if (string.IsNullOrEmpty(dateTimeStr)) 
 				return DateTime.MinValue;
 
-			if (dateTimeStr.Length == DefaultDateTimeFormat.Length)
+			if (dateTimeStr.Length == DefaultDateTimeFormat.Length
+				|| dateTimeStr.Length == DefaultDateTimeFormatWithFraction.Length)
 				return DateTime.Parse(dateTimeStr, CultureInfo.InvariantCulture);
 
 			if (dateTimeStr.Length <= XsdDateTimeFormat.Length
