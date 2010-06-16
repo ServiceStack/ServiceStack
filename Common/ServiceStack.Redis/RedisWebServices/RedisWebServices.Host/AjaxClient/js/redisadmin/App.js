@@ -294,7 +294,16 @@ redisadmin.App.prototype.showKeyDetails = function(key, textValue)
     var html = "<h3>" + key + "</h3>"
              + "<textarea class='key-value'>" + textValue + "</textarea>";
 
-     goog.dom.getElement('tab_content').innerHTML = html;
+    try
+    {
+        var obj = JSV.parse(textValue);
+        html += jLinq.from(obj).toTable();
+    }
+    catch (e) {
+        $this.log.severe("Error parsing key: " + key + ", Error: " + e);
+    }
+
+    goog.dom.getElement('tab_content').innerHTML = html;
 }
 
 redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
@@ -317,12 +326,59 @@ redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
         return;
     }
     this.redis.getValues(childKeys, function(values){
-        var map = {};
+        var rows = [];
+        var sbJsv = [];
         for (var i=0; i<childKeys.length; i++)
         {
-           map[childKeys[i]] = values[i];
+            var jsvText = values[i];
+            sbJsv.push(sbJsv.length == 0 ? '[' : ',');
+            sbJsv.push(jsvText);
+
+            var row = {Key:childKeys[i]};
+            var obj = JSV.parse(jsvText);
+            for (var k in obj)
+            {
+                row[k] = obj[k];
+            }
+            rows.push(row);
         }
-        $this.showKeyDetails(parentLabel, S.toString(map));
+        sbJsv.push(']');
+
+        //$this.benchmarkTextFormats(sbJsv.join(''), goog.json.serialize(rows));
+
+        var html = "<h3>" + parentLabel + "</h3>"
+                 + "<textarea class='key-value'>" + goog.json.serialize(rows) + "</textarea>";
+
+        html += jLinq.from(rows).toTable();
+
+        goog.dom.getElement('tab_content').innerHTML = html;
+
         //console.log(map);
     });
+};
+
+redisadmin.App.prototype.benchmarkTextFormats = function(jsv, json)
+{
+    var tracer = goog.debug.Trace.startTracer('deserializer speed tests');
+    goog.debug.Trace.addComment('BEGIN json vs jsv');
+
+    var jsonObj = goog.json.parse(json);
+    goog.debug.Trace.addComment('dserialize json');
+
+    var jsvObj = JSV.parse(jsv);
+    goog.debug.Trace.addComment('dserialize jsv');
+
+    goog.debug.Trace.addComment('END json vs jsv');
+
+    goog.debug.Trace.stopTracer(tracer);
+
+    var results = goog.debug.Trace.getFormattedTrace();
+
+    goog.dom.getElement('tab_content').innerHTML
+            = "<pre>" + goog.string.htmlEscape(results) + "</pre>";
+
+//        console.log("JSON");
+//        console.log(jsonObj);
+//        console.log("JSV");
+//        console.log(jsvObj);
 };

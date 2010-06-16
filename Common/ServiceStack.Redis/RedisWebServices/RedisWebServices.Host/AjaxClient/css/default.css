@@ -221,5 +221,19 @@ BUTTON
 TEXTAREA.key-value
 {
     width: 700px;
-    height: 600px;
+    height: 250px;
+}
+
+#tab_content TABLE
+{
+    font-size: 13px;
+}
+#tab_content TH
+{
+    font-weight: bold;
+    padding: 0 5px;
+}
+#tab_content TD
+{
+    padding: 0 5px;
 }
