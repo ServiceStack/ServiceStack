@@ -8,7 +8,7 @@ namespace RedisWebServices.ServiceInterface.App
 	{
 		static PopulateRedisWithDataService()
 		{
-			NorthwindData.LoadData();
+			//NorthwindData.LoadData();
 		}
 
 		protected override object Run(PopulateRedisWithData request)

@@ -266,14 +266,14 @@ namespace ServiceStack.Text
 					foreach (var subInterface in subType.GetInterfaces())
 					{
 						if (considered.Contains(subInterface)) continue;
-						
+
 						considered.Add(subInterface);
 						queue.Enqueue(subInterface);
 					}
 
 					var typeProperties = subType.GetProperties(
-						BindingFlags.FlattenHierarchy 
-						| BindingFlags.Public 
+						BindingFlags.FlattenHierarchy
+						| BindingFlags.Public
 						| BindingFlags.Instance);
 
 					var newPropertyInfos = typeProperties

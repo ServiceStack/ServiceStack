@@ -164,14 +164,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="AjaxClient\css\.svn\all-wcprops" />
-    <None Include="AjaxClient\css\.svn\entries" />
-    <None Include="AjaxClient\css\.svn\text-base\common.css.svn-base" />
-    <None Include="AjaxClient\css\.svn\text-base\default.css.svn-base" />
-    <None Include="AjaxClient\css\.svn\text-base\tab.css.svn-base" />
-    <None Include="AjaxClient\css\.svn\text-base\tabbar.css.svn-base" />
-    <None Include="AjaxClient\css\.svn\text-base\toolbar.css.svn-base" />
-    <None Include="AjaxClient\css\.svn\text-base\tree.css.svn-base" />
     <None Include="Web.config.rename_for_iis7" />
     <None Include="Web.config.rename_for_iis6_mono" />
   </ItemGroup>
@@ -182,11 +174,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="AjaxClient\css\.svn\prop-base\" />
-    <Folder Include="AjaxClient\css\.svn\props\" />
-    <Folder Include="AjaxClient\css\.svn\tmp\prop-base\" />
-    <Folder Include="AjaxClient\css\.svn\tmp\props\" />
-    <Folder Include="AjaxClient\css\.svn\tmp\text-base\" />
+    <Folder Include="AjaxClient\js\app\" />
+    <Folder Include="AjaxClient\js\servicestack\" />
     <Folder Include="App_Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
