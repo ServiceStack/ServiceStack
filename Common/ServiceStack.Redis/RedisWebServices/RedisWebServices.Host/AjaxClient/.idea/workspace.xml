@@ -3,11 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/jsv.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/redisadmin/App.js" afterPath="$PROJECT_DIR$/js/redisadmin/App.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/default.htm" afterPath="$PROJECT_DIR$/default.htm" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/js/JSV.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/css/default.css" afterPath="$PROJECT_DIR$/css/default.css" />
     </list>
     <ignored path="AjaxClient.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -33,10 +28,10 @@
     <splitter split-orientation="horizontal" split-proportion="0.4640523">
       <split-first>
         <leaf>
-          <file leaf-file-name="default.htm" pinned="false" current="false" current-in-tab="true">
+          <file leaf-file-name="default.htm" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/default.htm">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="92" column="0" selection-start="2875" selection-end="2947" vertical-scroll-proportion="0.5167715">
+                <state line="88" column="28" selection-start="2757" selection-end="2757" vertical-scroll-proportion="0.44549266">
                   <folding />
                 </state>
               </provider>
@@ -82,7 +77,7 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="default.css" pinned="false" current="true" current-in-tab="true">
+          <file leaf-file-name="default.css" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/css/default.css">
               <provider selected="true" editor-type-id="text-editor">
                 <state line="223" column="14" selection-start="3573" selection-end="3573" vertical-scroll-proportion="0.7920082">
@@ -393,7 +388,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1176" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25954947" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -538,13 +533,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/default.htm">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="92" column="0" selection-start="2875" selection-end="2947" vertical-scroll-proportion="0.5167715">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/redisadmin/App.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="342" column="27" selection-start="9860" selection-end="9860" vertical-scroll-proportion="0.0">
@@ -555,6 +543,13 @@
     <entry file="file://$PROJECT_DIR$/css/default.css">
       <provider selected="true" editor-type-id="text-editor">
         <state line="223" column="14" selection-start="3573" selection-end="3573" vertical-scroll-proportion="0.7920082">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/default.htm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="88" column="28" selection-start="2757" selection-end="2757" vertical-scroll-proportion="0.44549266">
           <folding />
         </state>
       </provider>
