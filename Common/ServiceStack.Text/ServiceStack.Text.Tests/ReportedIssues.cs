@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
 
 namespace ServiceStack.Text.Tests
 {
@@ -26,5 +27,44 @@ namespace ServiceStack.Text.Tests
 
 			Serialize(map);
 		}
+
+		public abstract class CorrelativeDataBase
+		{
+			protected CorrelativeDataBase()
+			{
+				CorrelationIdentifier = GetNextId();
+			}
+
+			public Guid CorrelationIdentifier { get; set; }
+
+			protected static Guid GetNextId()
+			{
+				return Guid.NewGuid();
+			}
+		}
+
+		public sealed class TestObject : CorrelativeDataBase
+		{
+			public Type SomeType { get; set; }
+			public string SomeString { get; set; }
+			public IEnumerable<Type> SomeTypeList { get; set; }
+			public IEnumerable<Type> SomeTypeList2 { get; set; }
+			public IEnumerable<object> SomeObjectList { get; set; }
+		}
+
+		[Test]
+		public void Serialize_object_with_type_field()
+		{
+			var obj = new TestObject
+			{
+				SomeType = typeof(string),
+				SomeString = "Test",
+				SomeObjectList = new object[0]
+			};
+
+			Serialize(obj);
+		}
+
+
 	}
 }

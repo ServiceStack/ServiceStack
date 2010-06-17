@@ -12,6 +12,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Text.Jsv
 {
@@ -25,6 +27,11 @@ namespace ServiceStack.Text.Jsv
 		public static string ParseString(string value)
 		{
 			return value.FromCsvField();
+		}
+
+		public static Type ParseType(string typeName)
+		{
+			return AssemblyUtils.FindType(typeName);
 		}
 
 		public static object ParseObject(string value)

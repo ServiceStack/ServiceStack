@@ -118,6 +118,11 @@ namespace ServiceStack.Text.Jsv
 				return WriteString;
 			}
 
+			if (typeof(T) == typeof(Type))
+			{
+				return WriteType;
+			}
+
 			if (typeof(T).IsValueType)
 			{
 				return JsvWriter.GetValueTypeToStringMethod(typeof(T));
@@ -217,6 +222,10 @@ namespace ServiceStack.Text.Jsv
 			writer.Write(((string)value).ToCsvField());
 		}
 
+		public static void WriteType(TextWriter writer, object value)
+		{
+			writer.Write(((Type)value).FullName);
+		}
 
 		public static void WriteObject(TextWriter writer, object value)
 		{

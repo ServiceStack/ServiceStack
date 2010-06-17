@@ -63,6 +63,9 @@ namespace ServiceStack.Text.Jsv
 			if (type == typeof(string))
 				return x => x.FromCsvField();
 
+			if (type == typeof(Type))
+				return ParseUtils.ParseType;
+
 			if (type == typeof(object))
 				return x => x;
 
