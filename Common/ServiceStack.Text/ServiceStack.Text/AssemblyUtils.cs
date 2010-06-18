@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using ServiceStack.Common.Support;
 
-namespace ServiceStack.Common.Utils
+namespace ServiceStack.Text
 {
 	/// <summary>
 	/// Utils to load types

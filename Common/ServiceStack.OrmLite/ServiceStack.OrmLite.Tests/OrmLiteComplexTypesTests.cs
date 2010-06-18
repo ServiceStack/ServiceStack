@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
@@ -41,7 +40,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbCmd.Select<ModelWithComplexTypes>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				ModelWithComplexTypes.AssertIsEqual(rows[0], row);
 			}
@@ -61,7 +60,7 @@ namespace ServiceStack.OrmLite.Tests
 					SampleOrderLine.Create(Guid.NewGuid(), x, 1)));
 
 				var rows = dbCmd.Select<SampleOrderLine>();
-				Assert.That(rows, Has.Count(orderIds.Count));
+				Assert.That(rows, Has.Count.EqualTo(orderIds.Count));
 
 			}
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using Funq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.ServiceHost.Tests.Support;
 using ServiceStack.ServiceHost.Tests.TypeFactory;
 

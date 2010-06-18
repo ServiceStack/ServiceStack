@@ -23,6 +23,16 @@ namespace ServiceStack.Text.Jsv
 			writer.Write(value);
 		}
 
+		public static void WriteObjectString(TextWriter writer, object value)
+		{
+			writer.Write(value.ToString().ToCsvField());
+		}
+
+		public static void WriteException(TextWriter writer, object value)
+		{
+			writer.Write(((Exception)value).Message.ToCsvField());
+		}
+
 		public static void WriteItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
 		{
 			if (ranOnce)

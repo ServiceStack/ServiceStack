@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.Common.Tests.Perf

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using Platform.Text;
-using ServiceStack.Text;
 
-namespace ServiceStack.Common.Tests.Text
+namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class AdhocModelTests
@@ -68,7 +66,8 @@ namespace ServiceStack.Common.Tests.Text
 
 			public static FlowPostTransient Create()
 			{
-				return new FlowPostTransient {
+				return new FlowPostTransient
+				{
 					Caption = "Caption",
 					CaptionSourceName = "CaptionSourceName",
 					CaptionUserId = Guid.NewGuid(),
@@ -112,9 +111,9 @@ namespace ServiceStack.Common.Tests.Text
 		public void Can_Serialize_multiple_FlowPostTransient()
 		{
 			var dtos = new List<FlowPostTransient> {
-				FlowPostTransient.Create(), 
-				FlowPostTransient.Create()
-			};
+			                                       	FlowPostTransient.Create(), 
+			                                       	FlowPostTransient.Create()
+			                                       };
 			var dtoString = TypeSerializer.SerializeToString(dtos);
 			var fromString = TypeSerializer.DeserializeFromString<List<FlowPostTransient>>(dtoString);
 		}

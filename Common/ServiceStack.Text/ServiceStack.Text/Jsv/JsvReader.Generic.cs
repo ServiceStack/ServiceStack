@@ -63,11 +63,12 @@ namespace ServiceStack.Text.Jsv
 			if (type == typeof(string))
 				return x => x.FromCsvField();
 
-			if (type == typeof(Type))
-				return ParseUtils.ParseType;
-
 			if (type == typeof(object))
 				return x => x;
+
+			var specialParseFn = SpecialTypeUtils.GetParseMethod(type);
+			if (specialParseFn != null)
+				return specialParseFn;
 
 			if (type.IsEnum)
 				return x => Enum.Parse(type, x);
@@ -91,6 +92,9 @@ namespace ServiceStack.Text.Jsv
 
 				if (type.IsOrHasInterfaceOf(typeof(ICollection<>)))
 					return DeserializeCollection.GetParseMethod(type);
+
+				if (type.IsOrHasInterfaceOf(typeof(IEnumerable<>)))
+					return DeserializeEnumerable<T>.Parse;
 			}
 
 			var staticParseMethod = StaticParseMethod<T>.Parse;

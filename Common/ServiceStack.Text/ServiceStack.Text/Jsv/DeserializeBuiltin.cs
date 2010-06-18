@@ -80,8 +80,6 @@ namespace ServiceStack.Text.Jsv
 			Type type = typeof(T);
 			if (type == typeof(string))
 				return ParseUtils.ParseString;
-			if (type == typeof(Type))
-				return ParseUtils.ParseType;
 			if (type == typeof(bool) || type == typeof(bool?))
 				return value => bool.Parse(value);
 			if (type == typeof(byte) || type == typeof(byte?))

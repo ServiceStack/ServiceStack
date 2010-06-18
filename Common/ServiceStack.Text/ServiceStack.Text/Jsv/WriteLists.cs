@@ -229,12 +229,20 @@ namespace ServiceStack.Text.Jsv
 
 			var ranOnce = false;
 			var listLength = list.Count;
-			for (var i=0; i < listLength; i++)
+			try
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
-				ElementWriteFn(writer, list[i]);
-			}
+				for (var i = 0; i < listLength; i++)
+				{
+					WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+					ElementWriteFn(writer, list[i]);
+				}
 
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+				throw;
+			}
 			writer.Write(TypeSerializer.ListEndChar);
 		}
 

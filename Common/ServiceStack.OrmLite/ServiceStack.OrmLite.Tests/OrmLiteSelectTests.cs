@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Tests.Models;
 
@@ -106,7 +105,7 @@ namespace ServiceStack.OrmLite.Tests
 				var rows = dbCmd.Select<ModelWithOnlyStringFields>("AlbumName = {0}", filterRow.AlbumName);
 				var dbRowIds = rows.ConvertAll(x => x.Id);
 
-				Assert.That(dbRowIds, Has.Count(1));
+				Assert.That(dbRowIds, Has.Count.EqualTo(1));
 				Assert.That(dbRowIds[0], Is.EqualTo(filterRow.Id));
 			}
 		}
@@ -175,7 +174,7 @@ namespace ServiceStack.OrmLite.Tests
 					dbRowIds.Add(row.Id);
 				}
 
-				Assert.That(dbRowIds, Has.Count(1));
+				Assert.That(dbRowIds, Has.Count.EqualTo(1));
 				Assert.That(dbRowIds[0], Is.EqualTo(filterRow.Id));
 			}
 		}
@@ -234,9 +233,9 @@ namespace ServiceStack.OrmLite.Tests
 
 				var lookup = dbCmd.GetLookup<string, int>("SELECT Name, Id FROM ModelWithIdAndName");
 
-				Assert.That(lookup, Has.Count(2));
-				Assert.That(lookup["OddGroup"], Has.Count(3));
-				Assert.That(lookup["EvenGroup"], Has.Count(2));
+				Assert.That(lookup, Has.Count.EqualTo(2));
+				Assert.That(lookup["OddGroup"], Has.Count.EqualTo(3));
+				Assert.That(lookup["EvenGroup"], Has.Count.EqualTo(2));
 			}
 		}
 

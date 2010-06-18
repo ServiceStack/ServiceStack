@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Northwind.Common.ComplexModel;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace ServiceStack.Text.Tests
 {

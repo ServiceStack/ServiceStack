@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace ServiceStack.CacheAccess.Memcached.Tests
 {
@@ -42,7 +41,7 @@ namespace ServiceStack.CacheAccess.Memcached.Tests
 			cacheClient.Set(allKeys[2], expectedValues[2]);
 
 			var keyValues = cacheClient.GetAll<int>(allKeys);
-			Assert.That(keyValues, Has.Count(expectedValues.Length));
+			Assert.That(keyValues, Has.Count.EqualTo(expectedValues.Length));
 
 			for (var keyIndex = 0; keyIndex < expectedValues.Length; keyIndex++)
 			{
@@ -61,7 +60,7 @@ namespace ServiceStack.CacheAccess.Memcached.Tests
 			cacheClient.Set(allKeys[2], expectedValues[2]);
 
 			var keyValues = cacheClient.GetAll<ModelWithIdAndName>(allKeys);
-			Assert.That(keyValues, Has.Count(expectedValues.Length));
+			Assert.That(keyValues, Has.Count.EqualTo(expectedValues.Length));
 
 			for (var keyIndex = 0; keyIndex < expectedValues.Length; keyIndex++)
 			{

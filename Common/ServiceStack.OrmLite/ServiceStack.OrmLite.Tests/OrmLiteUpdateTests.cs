@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests

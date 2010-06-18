@@ -25,22 +25,30 @@ namespace ServiceStack.Text.Jsv
 
 		public static Action<TextWriter, object> GetWriteFn(Type type)
 		{
-			Action<TextWriter, object> writeFn;
-			lock (WriteFnCache)
+			try
 			{
-				if (!WriteFnCache.TryGetValue(type, out writeFn))
+				Action<TextWriter, object> writeFn;
+				lock (WriteFnCache)
 				{
-					var genericType = typeof(JsvWriter<>).MakeGenericType(type);
-					var mi = genericType.GetMethod("WriteFn",
-						BindingFlags.Public | BindingFlags.Static);
+					if (!WriteFnCache.TryGetValue(type, out writeFn))
+					{
+						var genericType = typeof(JsvWriter<>).MakeGenericType(type);
+						var mi = genericType.GetMethod("WriteFn",
+							BindingFlags.Public | BindingFlags.Static);
 
-					var writeFactoryFn = (Func<Action<TextWriter, object>>)Delegate.CreateDelegate(
-						typeof(Func<Action<TextWriter, object>>), mi);
-					writeFn = writeFactoryFn();
-					WriteFnCache.Add(type, writeFn);
+						var writeFactoryFn = (Func<Action<TextWriter, object>>)Delegate.CreateDelegate(
+							typeof(Func<Action<TextWriter, object>>), mi);
+						writeFn = writeFactoryFn();
+						WriteFnCache.Add(type, writeFn);
+					}
 				}
+				return writeFn;
 			}
-			return writeFn;
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+				throw;
+			}
 		}
 
 		public static void WriteLateBoundObject(TextWriter writer, object value)
@@ -118,14 +126,15 @@ namespace ServiceStack.Text.Jsv
 				return WriteString;
 			}
 
-			if (typeof(T) == typeof(Type))
-			{
-				return WriteType;
-			}
-
 			if (typeof(T).IsValueType)
 			{
 				return JsvWriter.GetValueTypeToStringMethod(typeof(T));
+			}
+
+			var specialWriteFn = SpecialTypeUtils.GetWriteFn(typeof(T));
+			if (specialWriteFn != null)
+			{
+				return specialWriteFn;
 			}
 
 			if (typeof(T).IsArray)
@@ -220,11 +229,6 @@ namespace ServiceStack.Text.Jsv
 		public static void WriteString(TextWriter writer, object value)
 		{
 			writer.Write(((string)value).ToCsvField());
-		}
-
-		public static void WriteType(TextWriter writer, object value)
-		{
-			writer.Write(((Type)value).FullName);
 		}
 
 		public static void WriteObject(TextWriter writer, object value)

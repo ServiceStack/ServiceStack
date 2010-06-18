@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;

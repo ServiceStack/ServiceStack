@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
 {

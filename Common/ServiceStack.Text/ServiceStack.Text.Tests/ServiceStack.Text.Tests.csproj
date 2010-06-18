@@ -77,6 +77,14 @@
     <Compile Include="DdnContentIngestTests.cs" />
     <Compile Include="DdnDtos.cs" />
     <Compile Include="DdnDtoTests.cs" />
+    <Compile Include="DynamicModels\ComplexObjectGraphTest.cs" />
+    <Compile Include="DynamicModels\DataModel\CustomCollectionDto.cs" />
+    <Compile Include="DynamicModels\DataModel\CustomCollection.cs" />
+    <Compile Include="DynamicModels\DataModel\CustomCollectionItem.cs" />
+    <Compile Include="DynamicModels\DataModel\CustomException.cs" />
+    <Compile Include="DynamicModels\DataModel\DataContainer.cs" />
+    <Compile Include="DynamicModels\DataModel\DataContainerBase.cs" />
+    <Compile Include="DynamicModels\DataModel\ObjectGraph.cs" />
     <Compile Include="InterfaceTests.cs" />
     <Compile Include="JsvFormatterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -88,9 +88,7 @@
     <Compile Include="Support\ActionExecHandler.cs" />
     <Compile Include="Support\AdapterBase.cs" />
     <Compile Include="Support\LogicFacadeBase.cs" />
-    <Compile Include="Support\AssemblyTypeDefinition.cs" />
     <Compile Include="Utils\FuncUtils.cs" />
-    <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\AssertUtils.cs" />
     <Compile Include="Support\AssignmentDefinition.cs" />
     <Compile Include="Utils\CommandsUtils.cs" />

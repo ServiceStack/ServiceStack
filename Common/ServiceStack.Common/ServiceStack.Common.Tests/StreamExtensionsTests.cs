@@ -1,6 +1,5 @@
 using System.Runtime.Serialization;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceModel.Serialization;
 using DataContractSerializer=ServiceStack.ServiceModel.Serialization.DataContractSerializer;

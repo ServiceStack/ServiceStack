@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.ServiceHost.Tests.Support;
 
 namespace ServiceStack.ServiceHost.Tests

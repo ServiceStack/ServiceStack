@@ -5,7 +5,6 @@ using Northwind.Common.ComplexModel;
 using Northwind.Common.DataModel;
 using Northwind.Common.ServiceModel;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.Text.Jsv;
 

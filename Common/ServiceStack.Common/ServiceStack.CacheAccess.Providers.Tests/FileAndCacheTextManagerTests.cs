@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.CacheAccess.Providers.Tests.Models;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;

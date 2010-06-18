@@ -1,6 +1,5 @@
 using Funq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Messaging.Tests.Services;
 
 namespace ServiceStack.Messaging.Tests

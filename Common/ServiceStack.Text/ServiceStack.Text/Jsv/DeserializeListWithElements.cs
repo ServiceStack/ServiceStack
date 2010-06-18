@@ -169,7 +169,7 @@ namespace ServiceStack.Text.Jsv
 		{
 			var type = typeof(T);
 
-			var listInterface = type.GetTypeWithGenericInterfaceOf(typeof (IList<>));
+			var listInterface = type.GetTypeWithGenericInterfaceOf(typeof(IList<>));
 			if (listInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type IList<>", type.FullName));
 
@@ -196,4 +196,50 @@ namespace ServiceStack.Text.Jsv
 		}
 
 	}
+
+	public static class DeserializeEnumerable<T>
+	{
+		private readonly static Func<string, object> CacheFn;
+
+		static DeserializeEnumerable()
+		{
+			CacheFn = GetParseFn();
+		}
+
+		public static Func<string, object> Parse
+		{
+			get { return CacheFn; }
+		}
+
+		public static Func<string, object> GetParseFn()
+		{
+			var type = typeof(T);
+
+			var enumerableInterface = type.GetTypeWithGenericInterfaceOf(typeof(IEnumerable<>));
+			if (enumerableInterface == null)
+				throw new ArgumentException(string.Format("Type {0} is not of type IEnumerable<>", type.FullName));
+
+			//optimized access for regularly used types
+			if (type == typeof(IEnumerable<string>))
+				return DeserializeListWithElements.ParseStringList;
+
+			if (type == typeof(IEnumerable<int>))
+				return DeserializeListWithElements.ParseIntList;
+
+			var elementType = enumerableInterface.GetGenericArguments()[0];
+
+			var supportedTypeParseMethod = JsvReader.GetParseFn(elementType);
+			if (supportedTypeParseMethod != null)
+			{
+				const Type createListTypeWithNull = null;
+
+				var parseFn = DeserializeListWithElements.GetListTypeParseFn(createListTypeWithNull, elementType, supportedTypeParseMethod);
+				return value => parseFn(value, createListTypeWithNull, supportedTypeParseMethod);
+			}
+
+			return null;
+		}
+
+	}
+
 }

@@ -41,6 +41,18 @@ namespace ServiceStack.Text
 			return defaultValue;
 		}
 
+		public static bool IsInstanceOf(this Type type, Type thisOrBaseType)
+		{
+			while (type != null)
+			{
+				if (type == thisOrBaseType)
+					return true;
+
+				type = type.BaseType;
+			}
+			return false;
+		}
+
 		public static bool IsGenericType(this Type type)
 		{
 			while (type != null)

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common;
 using ServiceStack.DesignPatterns.Model;

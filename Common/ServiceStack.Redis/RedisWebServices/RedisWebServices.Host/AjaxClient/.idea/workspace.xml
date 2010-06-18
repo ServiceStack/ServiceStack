@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client" />
     <ignored path="AjaxClient.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace ServiceStack.Redis.Tests
 {
@@ -21,6 +20,8 @@ namespace ServiceStack.Redis.Tests
 			using (var trans = Redis.CreateTransaction())
 			{
 				trans.QueueCommand(r => r.IncrementValue(Key));
+				var map = new Dictionary<string, int>();
+				trans.QueueCommand(r => r.Get<int>(Key), y => map[Key] = y);
 
 				trans.Commit();
 			}

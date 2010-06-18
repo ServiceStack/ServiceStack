@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
@@ -73,7 +72,7 @@ namespace ServiceStack.OrmLite.Tests
 			{
 				dbReadOnlyCmd.Insert(new ModelWithIdAndName(2));
 				var rows = dbReadOnlyCmd.Select<ModelWithIdAndName>();
-				Assert.That(rows, Has.Count(2));
+				Assert.That(rows, Has.Count.EqualTo(2));
 			}
 
 			dbReadOnly.Dispose();

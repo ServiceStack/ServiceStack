@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using System.Linq;
 
@@ -23,14 +22,14 @@ namespace ServiceStack.Redis.Tests
 
 		private static void AssertAreEqual(List<string> actualList, List<string> expectedList)
 		{
-			Assert.That(actualList, Has.Count(expectedList.Count));
+			Assert.That(actualList, Has.Count.EqualTo(expectedList.Count));
 			var i = 0;
 			actualList.ForEach(x => Assert.That(x, Is.EqualTo(expectedList[i++])));
 		}
 
 		private static void AssertAreEqual(List<string> actualList, Queue<string> expectedList)
 		{
-			Assert.That(actualList, Has.Count(expectedList.Count));
+			Assert.That(actualList, Has.Count.EqualTo(expectedList.Count));
 			var i = 0;
 			actualList.ForEach(x => Assert.That(x, Is.EqualTo(expectedList.Dequeue())));
 		}

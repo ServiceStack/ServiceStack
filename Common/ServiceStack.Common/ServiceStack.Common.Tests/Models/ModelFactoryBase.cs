@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace ServiceStack.Common.Tests.Models
 {
@@ -11,7 +10,7 @@ namespace ServiceStack.Common.Tests.Models
 
 		public void AssertListsAreEqual(List<T> actualList, IList<T> expectedList)
 		{
-			Assert.That(actualList, Has.Count(expectedList.Count));
+			Assert.That(actualList, Has.Count.EqualTo(expectedList.Count));
 			var i = 0;
 
 			actualList.ForEach(x =>

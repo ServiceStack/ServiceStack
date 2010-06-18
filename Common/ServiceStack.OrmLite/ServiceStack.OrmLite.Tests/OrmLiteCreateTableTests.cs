@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.OrmLite.Sqlite;
 
@@ -66,7 +65,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbCmd.Select<ModelWithIdOnly>();
 
-				Assert.That(rows, Has.Count(2));
+				Assert.That(rows, Has.Count.EqualTo(2));
 			}
 		}
 
@@ -85,7 +84,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbCmd.Select<ModelWithIdAndName>();
 
-				Assert.That(rows, Has.Count(2));
+				Assert.That(rows, Has.Count.EqualTo(2));
 			}
 		}
 
@@ -104,7 +103,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbCmd.Select<ModelWithIdOnly>();
 
-				Assert.That(rows, Has.Count(0));
+				Assert.That(rows, Has.Count.EqualTo(0));
 			}
 		}
 
@@ -125,8 +124,8 @@ namespace ServiceStack.OrmLite.Tests
 				var rows1 = dbCmd.Select<ModelWithIdOnly>();
 				var rows2 = dbCmd.Select<ModelWithIdOnly>();
 
-				Assert.That(rows1, Has.Count(2));
-				Assert.That(rows2, Has.Count(2));
+				Assert.That(rows1, Has.Count.EqualTo(2));
+				Assert.That(rows2, Has.Count.EqualTo(2));
 			}
 		}
 

@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
@@ -23,13 +22,13 @@ namespace ServiceStack.OrmLite.Tests
 					dbCmd.Insert(new ModelWithIdAndName(3));
 
 					var rowsInTrans = dbCmd.Select<ModelWithIdAndName>();
-					Assert.That(rowsInTrans, Has.Count(3));
+					Assert.That(rowsInTrans, Has.Count.EqualTo(3));
 
 					dbTrans.Commit();
 				}
 
 				var rows = dbCmd.Select<ModelWithIdAndName>();
-				Assert.That(rows, Has.Count(3));
+				Assert.That(rows, Has.Count.EqualTo(3));
 			}
 		}
 
@@ -48,11 +47,11 @@ namespace ServiceStack.OrmLite.Tests
 					dbCmd.Insert(new ModelWithIdAndName(3));
 
 					var rowsInTrans = dbCmd.Select<ModelWithIdAndName>();
-					Assert.That(rowsInTrans, Has.Count(3));
+					Assert.That(rowsInTrans, Has.Count.EqualTo(3));
 				}
 
 				var rows = dbCmd.Select<ModelWithIdAndName>();
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 			}
 		}
 
@@ -74,14 +73,14 @@ namespace ServiceStack.OrmLite.Tests
 					dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(3));
 					dbCmd.Insert(ModelWithOnlyStringFields.Create("id3"));
 
-					Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count(2));
-					Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count(1));
-					Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count(1));
+					Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count.EqualTo(2));
+					Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count.EqualTo(1));
+					Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count.EqualTo(1));
 				}
 
-				Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count(1));
-				Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count(0));
-				Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count(0));
+				Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count.EqualTo(1));
+				Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count.EqualTo(0));
+				Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count.EqualTo(0));
 			}
 		}
 
@@ -103,16 +102,16 @@ namespace ServiceStack.OrmLite.Tests
 					dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(3));
 					dbCmd.Insert(ModelWithOnlyStringFields.Create("id3"));
 
-					Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count(2));
-					Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count(1));
-					Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count(1));
+					Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count.EqualTo(2));
+					Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count.EqualTo(1));
+					Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count.EqualTo(1));
 
 					dbTrans.Commit();
 				}
 
-				Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count(2));
-				Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count(1));
-				Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count(1));
+				Assert.That(dbCmd.Select<ModelWithIdAndName>(), Has.Count.EqualTo(2));
+				Assert.That(dbCmd.Select<ModelWithFieldsOfDifferentTypes>(), Has.Count.EqualTo(1));
+				Assert.That(dbCmd.Select<ModelWithOnlyStringFields>(), Has.Count.EqualTo(1));
 			}
 		}
 

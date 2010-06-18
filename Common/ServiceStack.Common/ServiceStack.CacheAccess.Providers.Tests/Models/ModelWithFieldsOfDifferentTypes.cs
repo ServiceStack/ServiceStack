@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Logging;
 
 namespace ServiceStack.CacheAccess.Providers.Tests.Models

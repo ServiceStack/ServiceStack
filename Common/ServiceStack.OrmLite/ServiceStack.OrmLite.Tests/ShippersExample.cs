@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.DataAnnotations;
 using ServiceStack.DesignPatterns.Model;
 using ServiceStack.OrmLite.Sqlite;
@@ -89,11 +88,11 @@ namespace ServiceStack.OrmLite.Tests
 				using (IDbTransaction dbTrans = dbCmd.BeginTransaction(IsolationLevel.ReadCommitted))
 				{
 					dbCmd.Insert(new ShipperType { Name = "Automobiles" });
-					Assert.That(dbCmd.Select<ShipperType>(), Has.Count(3));
+					Assert.That(dbCmd.Select<ShipperType>(), Has.Count.EqualTo(3));
 
 					dbTrans.Rollback();
 				}
-				Assert.That(dbCmd.Select<ShipperType>(), Has.Count(2));
+				Assert.That(dbCmd.Select<ShipperType>(), Has.Count.EqualTo(2));
 
 
 				//Performing standard Insert's and Selects
@@ -103,8 +102,8 @@ namespace ServiceStack.OrmLite.Tests
 
 				var trainsAreUs = dbCmd.First<Shipper>("ShipperTypeId = {0}", trainsTypeId);
 				Assert.That(trainsAreUs.CompanyName, Is.EqualTo("Trains R Us"));
-				Assert.That(dbCmd.Select<Shipper>("CompanyName = {0} OR Phone = {1}", "Trains R Us", "555-UNICORNS"), Has.Count(2));
-				Assert.That(dbCmd.Select<Shipper>("ShipperTypeId = {0}", planesTypeId), Has.Count(2));
+				Assert.That(dbCmd.Select<Shipper>("CompanyName = {0} OR Phone = {1}", "Trains R Us", "555-UNICORNS"), Has.Count.EqualTo(2));
+				Assert.That(dbCmd.Select<Shipper>("ShipperTypeId = {0}", planesTypeId), Has.Count.EqualTo(2));
 
 				//Lets update a record
 				trainsAreUs.Phone = "666-TRAINS";
@@ -122,13 +121,13 @@ namespace ServiceStack.OrmLite.Tests
 				//Performing custom queries
 				//Select only a subset from the table
 				var partialColumns = dbCmd.Select<SubsetOfShipper>(typeof (Shipper), "ShipperTypeId = {0}", planesTypeId);
-				Assert.That(partialColumns, Has.Count(2));
+				Assert.That(partialColumns, Has.Count.EqualTo(2));
 
 				//Select into another POCO class that matches sql
 				var rows = dbCmd.Select<ShipperTypeCount>(
 					"SELECT ShipperTypeId, COUNT(*) AS Total FROM Shippers GROUP BY ShipperTypeId ORDER BY COUNT(*)");
 
-				Assert.That(rows, Has.Count(2));
+				Assert.That(rows, Has.Count.EqualTo(2));
 				Assert.That(rows[0].ShipperTypeId, Is.EqualTo(trainsTypeId));
 				Assert.That(rows[0].Total, Is.EqualTo(1));
 				Assert.That(rows[1].ShipperTypeId, Is.EqualTo(planesTypeId));
@@ -139,8 +138,8 @@ namespace ServiceStack.OrmLite.Tests
 				dbCmd.DeleteAll<Shipper>();
 				dbCmd.DeleteAll<ShipperType>();
 
-				Assert.That(dbCmd.Select<Shipper>(), Has.Count(0));
-				Assert.That(dbCmd.Select<ShipperType>(), Has.Count(0));
+				Assert.That(dbCmd.Select<Shipper>(), Has.Count.EqualTo(0));
+				Assert.That(dbCmd.Select<ShipperType>(), Has.Count.EqualTo(0));
 			}
 		}
 

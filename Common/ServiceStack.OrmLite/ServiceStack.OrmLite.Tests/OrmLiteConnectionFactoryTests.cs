@@ -1,6 +1,5 @@
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.OrmLite.Tests
@@ -30,7 +29,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var dbCmd = dbConn.CreateCommand())
 			{
 				dbCmd.CreateTable<Shipper>(false);
-				Assert.That(dbCmd.Select<Shipper>(), Has.Count(0));
+				Assert.That(dbCmd.Select<Shipper>(), Has.Count.EqualTo(0));
 			}
 		}
 
@@ -50,7 +49,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var dbCmd = dbConn.CreateCommand())
 			{
 				dbCmd.CreateTable<Shipper>(false);
-				Assert.That(dbCmd.Select<Shipper>(), Has.Count(1));
+				Assert.That(dbCmd.Select<Shipper>(), Has.Count.EqualTo(1));
 			}
 		}
 

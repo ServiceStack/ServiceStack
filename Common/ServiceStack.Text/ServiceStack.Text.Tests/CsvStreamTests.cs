@@ -1,7 +1,6 @@
 using System;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace ServiceStack.Text.Tests
 {

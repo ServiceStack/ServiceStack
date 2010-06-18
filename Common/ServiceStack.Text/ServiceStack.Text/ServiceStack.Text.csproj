@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyUtils.cs" />
     <Compile Include="Controller\CommandProcessor.cs" />
     <Compile Include="Controller\PathInfo.cs" />
     <Compile Include="CsvStreamExtensions.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="Jsv\DeserializeDictionary.cs" />
     <Compile Include="Jsv\DeserializeListWithElements.cs" />
     <Compile Include="Jsv\ParseUtils.cs" />
+    <Compile Include="Jsv\SpecialTypeUtils.cs" />
     <Compile Include="Jsv\StaticParseMethod.cs" />
     <Compile Include="Jsv\DeserializeTypeUtils.cs" />
     <Compile Include="Jsv\DeserializeType.cs" />
@@ -75,6 +77,7 @@
     <Compile Include="Jsv\WriteLists.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="StringExtensions.cs" />
+    <Compile Include="Support\AssemblyTypeDefinition.cs" />
     <Compile Include="Support\TypePair.cs" />
     <Compile Include="TranslateListWithElements.cs" />
     <Compile Include="TypeSerializer.cs" />

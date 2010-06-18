@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 
@@ -69,7 +68,7 @@ namespace ServiceStack.Redis.Tests.Generic
 
 		public void AssertUnorderedListsAreEqual<T>(IList<T> actualList, IList<T> expectedList)
 		{
-			Assert.That(actualList, Has.Count(expectedList.Count));
+			Assert.That(actualList, Has.Count.EqualTo(expectedList.Count));
 
 			var actualMap = Sort(actualList.Select(x => x.GetId()));
 			var expectedMap = Sort(expectedList.Select(x => x.GetId()));

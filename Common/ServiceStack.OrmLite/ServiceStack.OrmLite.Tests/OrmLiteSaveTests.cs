@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
@@ -39,7 +38,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithFieldsOfDifferentTypes>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				ModelWithFieldsOfDifferentTypes.AssertIsEqual(rows[0], row);
 			}
@@ -60,7 +59,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithFieldsOfDifferentTypes>();
 
-				Assert.That(rows, Has.Count(newRows.Count));
+				Assert.That(rows, Has.Count.EqualTo(newRows.Count));
 			}
 		}
 
@@ -79,7 +78,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithFieldsOfDifferentTypes>();
 
-				Assert.That(rows, Has.Count(newRows.Count));
+				Assert.That(rows, Has.Count.EqualTo(newRows.Count));
 			}
 		}
 
@@ -98,7 +97,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithIdAndName>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				ModelWithIdAndName.AssertIsEqual(rows[0], row);
 			}
@@ -118,7 +117,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<TaskQueue>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				//Update the auto-increment id
 				row.Id = rows[0].Id;

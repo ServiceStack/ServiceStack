@@ -4,7 +4,6 @@ using System.Linq;
 using Northwind.Common.DataModel;
 using Northwind.Common.ComplexModel;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.ServiceModel.Tests.DataContracts.Operations;
 using ServiceStack.Text;

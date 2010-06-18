@@ -1,7 +1,6 @@
 using System;
 using System.Linq.Expressions;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.OrmLite.Tests.Support

@@ -1,7 +1,6 @@
 using System;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.OrmLite.Tests
@@ -39,7 +38,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithFieldsOfDifferentTypes>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				ModelWithFieldsOfDifferentTypes.AssertIsEqual(rows[0], row);
 			}
@@ -59,7 +58,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithFieldsOfNullableTypes>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				ModelWithFieldsOfNullableTypes.AssertIsEqual(rows[0], row);
 			}
@@ -79,7 +78,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithFieldsOfDifferentAndNullableTypes>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				ModelWithFieldsOfDifferentAndNullableTypes.AssertIsEqual(rows[0], row);
 			}
@@ -100,7 +99,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<ModelWithIdAndName>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				ModelWithIdAndName.AssertIsEqual(rows[0], row);
 			}
@@ -145,7 +144,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<TaskQueue>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				//Update the auto-increment id
 				row.Id = rows[0].Id;
@@ -168,7 +167,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				var rows = dbConn.Select<OrderBlob>();
 
-				Assert.That(rows, Has.Count(1));
+				Assert.That(rows, Has.Count.EqualTo(1));
 
 				var newRow = rows[0];
 

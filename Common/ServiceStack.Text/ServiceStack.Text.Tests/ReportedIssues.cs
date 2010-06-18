@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace ServiceStack.Text.Tests
 {
@@ -65,6 +64,21 @@ namespace ServiceStack.Text.Tests
 			Serialize(obj);
 		}
 
+		[Test]
+		public void Serialize_object_with_type_field2()
+		{
+
+			var obj = new TestObject
+			{
+				SomeType = typeof(string),
+				SomeString = "Test",
+				SomeObjectList = new object[0]
+			};
+
+			var strModel = TypeSerializer.SerializeToString<object>(obj);
+			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
+			var toModel = TypeSerializer.DeserializeFromString<TestObject>(strModel);
+		}
 
 	}
 }

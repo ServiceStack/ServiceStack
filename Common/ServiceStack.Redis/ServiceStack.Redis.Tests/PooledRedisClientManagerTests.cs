@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Moq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Text;
 
 namespace ServiceStack.Redis.Tests

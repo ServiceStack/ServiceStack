@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using Funq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Configuration;

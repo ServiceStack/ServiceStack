@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.OrmLite.Tests.UseCase
@@ -41,7 +40,7 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 
 				var rowsB = dbCmd.Select<User>("Name = {0}", "B");
 
-				Assert.That(rowsB, Has.Count(2));
+				Assert.That(rowsB, Has.Count.EqualTo(2));
 
 				var rowIds = rowsB.ConvertAll(x => x.Id);
 				Assert.That(rowIds, Is.EquivalentTo(new List<long> { 2, 3 }));
@@ -49,10 +48,10 @@ namespace ServiceStack.OrmLite.Tests.UseCase
 				rowsB.ForEach(x => dbCmd.Delete(x));
 
 				rowsB = dbCmd.Select<User>("Name = {0}", "B");
-				Assert.That(rowsB, Has.Count(0));
+				Assert.That(rowsB, Has.Count.EqualTo(0));
 
 				var rowsLeft = dbCmd.Select<User>();
-				Assert.That(rowsLeft, Has.Count(1));
+				Assert.That(rowsLeft, Has.Count.EqualTo(1));
 
 				Assert.That(rowsLeft[0].Name, Is.EqualTo("A"));
 			}
