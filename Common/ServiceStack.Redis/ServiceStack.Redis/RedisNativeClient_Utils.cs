@@ -307,7 +307,7 @@ namespace ServiceStack.Redis
 			{
 				this.CurrentTransaction.CompleteMultiBytesQueuedCommand(ReadMultiData);
 				ExpectQueued();
-				return null;
+				return new byte[0][];
 			}
 			return ReadMultiData();
 		}

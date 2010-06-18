@@ -187,6 +187,11 @@ namespace ServiceStack.OrmLite
 		{
 			if (value == null || value.GetType() == typeof(DBNull)) return null;
 
+			if (value.GetType() == type)
+			{
+				return value;
+			}
+
 			if (type == typeof(string))
 			{
 				return value;

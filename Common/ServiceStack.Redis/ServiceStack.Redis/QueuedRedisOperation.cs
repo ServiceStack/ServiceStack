@@ -80,6 +80,10 @@ namespace ServiceStack.Redis
 					{
 						OnSuccessTypeCallback(Encoding.UTF8.GetString(result));
 					}
+					if (OnSuccessIntCallback != null)
+					{
+						OnSuccessIntCallback(int.Parse(Encoding.UTF8.GetString(result)));
+					}
 				}
 				else if (StringReadCommand != null)
 				{
