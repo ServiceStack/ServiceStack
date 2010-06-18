@@ -9,7 +9,6 @@ namespace ServiceStack.Text.Tests.DynamicModels
 	public class ComplexObjectGraphTest
 	{
 		[Test]
-		[Category("NotWorking")]
 		public void ShouldSerializeCustomCollection()
 		{
 			var orig = new CustomCollection
@@ -80,7 +79,6 @@ namespace ServiceStack.Text.Tests.DynamicModels
 		}
 
 		[Test]
-		[Category("NotWorking")]
 		public void ShouldSerializeDataContainer()
 		{
 			var orig = new DataContainer
@@ -113,7 +111,6 @@ namespace ServiceStack.Text.Tests.DynamicModels
 		}
 
 		[Test]
-		[Category("NotWorking")]
 		public void ShouldSerializeObjectGraph()
 		{
 			var dc = new DataContainer
@@ -150,5 +147,44 @@ namespace ServiceStack.Text.Tests.DynamicModels
 			Assert.That(clone.IntValue, Is.EqualTo(orig.IntValue));
 			Assert.That(clone.SomeType, Is.EqualTo(orig.SomeType));
 		}
+
+		[Test]
+		public void Can_Serialize_DynamicType_and_Deserialize_into_StrictType()
+		{
+			var orig = new DynamicType
+			{
+				Name = "Dynamic Type",
+				Type = typeof(CustomCollectionDto),
+				Value = new CustomCollectionDto
+				{
+					AddressUri = new Uri("http://www.example.com/"),
+					IntValue = 123,
+					SomeType = typeof(CustomCollection)
+				}
+			};
+
+			var jsv = TypeSerializer.SerializeToString(orig);
+			var strictType = TypeSerializer.DeserializeFromString<StrictType>(jsv);
+			var dynamicType = TypeSerializer.DeserializeFromString<DynamicType>(jsv);
+
+			var origDto = (CustomCollectionDto)orig.Value;
+
+			Assert.That(strictType, Is.Not.Null);
+			Assert.That(strictType.Name, Is.EqualTo(orig.Name));
+			Assert.That(strictType.Type, Is.EqualTo(orig.Type));
+			Assert.That(strictType.Value.AddressUri, Is.EqualTo(origDto.AddressUri));
+			Assert.That(strictType.Value.IntValue, Is.EqualTo(origDto.IntValue));
+			Assert.That(strictType.Value.SomeType, Is.EqualTo(origDto.SomeType));
+
+			Assert.That(dynamicType, Is.Not.Null);
+			Assert.That(dynamicType.Name, Is.EqualTo(orig.Name));
+			Assert.That(dynamicType.Type, Is.EqualTo(orig.Type));
+			var dynamicValue = (CustomCollectionDto)dynamicType.GetTypedValue();
+			Assert.That(dynamicValue.AddressUri, Is.EqualTo(origDto.AddressUri));
+			Assert.That(dynamicValue.IntValue, Is.EqualTo(origDto.IntValue));
+			Assert.That(dynamicValue.SomeType, Is.EqualTo(origDto.SomeType));
+		}
+
+
 	}
 }

@@ -84,7 +84,9 @@
     <Compile Include="DynamicModels\DataModel\CustomException.cs" />
     <Compile Include="DynamicModels\DataModel\DataContainer.cs" />
     <Compile Include="DynamicModels\DataModel\DataContainerBase.cs" />
+    <Compile Include="DynamicModels\DataModel\DynamicType.cs" />
     <Compile Include="DynamicModels\DataModel\ObjectGraph.cs" />
+    <Compile Include="DynamicModels\DataModel\StrictType.cs" />
     <Compile Include="InterfaceTests.cs" />
     <Compile Include="JsvFormatterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
