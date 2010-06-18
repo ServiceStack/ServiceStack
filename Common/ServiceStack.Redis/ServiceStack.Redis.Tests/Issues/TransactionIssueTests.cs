@@ -15,24 +15,23 @@ namespace ServiceStack.Redis.Tests.Issues
 			5.Times(x => Redis.Set("foo" + x, x));
 
 			var keys = Redis.SearchKeys("foo*");
-			if (keys.Count > 0)
-			{
-				var dict = new Dictionary<string, int>();
-				using (var transaction = Redis.CreateTransaction())
-				{
-					foreach (var key in keys)
-					{
-						var y = key;
-						transaction.QueueCommand(x => x.Get<int>(y), val => dict.Add(y, val));
-					}
-					transaction.QueueCommand(x => x.RemoveAll(keys));
-					transaction.Commit();
-				}
+			Assert.That(keys, Has.Count.EqualTo(5));
 
-				Assert.That(dict, Has.Count.EqualTo(5));
-				keys = Redis.SearchKeys("foo*");
-				Assert.That(keys, Has.Count.EqualTo(0));
+			var dict = new Dictionary<string, int>();
+			using (var transaction = Redis.CreateTransaction())
+			{
+				foreach (var key in keys)
+				{
+					var y = key;
+					transaction.QueueCommand(x => x.Get<int>(y), val => dict.Add(y, val));
+				}
+				transaction.QueueCommand(x => x.RemoveAll(keys));
+				transaction.Commit();
 			}
+
+			Assert.That(dict, Has.Count.EqualTo(5));
+			keys = Redis.SearchKeys("foo*");
+			Assert.That(keys, Has.Count.EqualTo(0));
 		}
 
 		[Test]
@@ -41,20 +40,19 @@ namespace ServiceStack.Redis.Tests.Issues
 			5.Times(x => Redis.Set("foo" + x, x));
 
 			var keys = Redis.SearchKeys("foo*");
-			if (keys.Count > 0)
-			{
-				var values = new List<string>();
-				using (var transaction = Redis.CreateTransaction())
-				{
-					transaction.QueueCommand(x => x.GetValues(keys), val => values = val);
-					transaction.QueueCommand(x => x.RemoveAll(keys));
-					transaction.Commit();
-				}
+			Assert.That(keys, Has.Count.EqualTo(5));
 
-				Assert.That(values, Has.Count.EqualTo(5));
-				keys = Redis.SearchKeys("foo*");
-				Assert.That(keys, Has.Count.EqualTo(0));
+			var values = new List<string>();
+			using (var transaction = Redis.CreateTransaction())
+			{
+				transaction.QueueCommand(x => x.GetValues(keys), val => values = val);
+				transaction.QueueCommand(x => x.RemoveAll(keys));
+				transaction.Commit();
 			}
+
+			Assert.That(values, Has.Count.EqualTo(5));
+			keys = Redis.SearchKeys("foo*");
+			Assert.That(keys, Has.Count.EqualTo(0));
 		}
 
 	}
