@@ -21,6 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public static object CreateRequest(string operationName, string httpMethod, NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
 		{
 			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
+			AssertOperationExists(operationName, operationType);
 			if (httpMethod == "GET" || httpMethod == "OPTIONS")
 			{
 				try

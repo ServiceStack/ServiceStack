@@ -92,6 +92,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionExtensionTests.cs" />
     <Compile Include="ReportedIssues.cs" />
+    <Compile Include="DataTests.cs" />
     <Compile Include="StringSerializerNorthwindDatabaseTests.cs" />
     <Compile Include="StringSerializerTests.cs" />
     <Compile Include="StringSerializerTranslationTests.cs" />

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using RedisWebServices.ServiceModel.Operations.Common;
 using RedisWebServices.ServiceModel.Types;
 

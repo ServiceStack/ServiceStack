@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
@@ -5,7 +6,8 @@ using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 {
-	public class HttpResponseMock : IHttpResponse
+	public class HttpResponseMock 
+		: IHttpResponse
 	{
 		public HttpResponseMock()
 		{
@@ -34,7 +36,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			get;
 			set;
 		}
-        
+
+		public int StatusCode { get; set; }
+
 		public string ContentType
 		{
 			get; set;
@@ -44,6 +48,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 		{
 			get; 
 			private set;
+		}
+
+		public void AddHeader(string name, string value)
+		{
+			this.Headers.Add(name, value);
 		}
 
 		public Stream OutputStream

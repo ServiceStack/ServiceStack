@@ -220,7 +220,7 @@ RedisClient.prototype =
 
 		public string GetValidReturnValue(PropertyInfo resultPropertyType)
 		{
-			var rawValue = "r.getResult()." + resultPropertyType.Name;
+			var rawValue = "r." + resultPropertyType.Name;
 
 			if (typeof(List<KeyValuePair>).IsAssignableFrom(resultPropertyType.PropertyType))
 			{

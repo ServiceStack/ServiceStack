@@ -95,7 +95,11 @@ namespace ServiceStack.Text
 
 		public static string EncodeJson(this string value)
 		{
-			return value.Replace("\"", "\\\"");
+			return string.Concat
+			(	"\"",
+				value.Replace("\"", "\\\"").Replace("\r", "").Replace("\n","\\n"),
+				"\""
+			);
 		}
 
 		public static string EncodeJsv(this string value)

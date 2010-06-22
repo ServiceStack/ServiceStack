@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using RedisWebServices.ServiceModel.Operations.Common;
 using RedisWebServices.ServiceModel.Operations.Hash;
 using RedisWebServices.ServiceModel.Types;

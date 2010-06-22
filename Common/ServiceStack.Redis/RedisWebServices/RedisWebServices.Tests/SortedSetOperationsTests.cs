@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using RedisWebServices.ServiceModel.Operations.SortedSet;
 using RedisWebServices.ServiceModel.Types;
 using ServiceStack.Common.Extensions;

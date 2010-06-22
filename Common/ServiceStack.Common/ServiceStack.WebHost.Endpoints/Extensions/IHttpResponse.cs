@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Specialized;
 using System.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
 	public interface IHttpResponse
 	{
+		int StatusCode { set; }
+
 		string ContentType { get; set; }
 
-		NameValueCollection Headers { get; }
+		void AddHeader(string name, string value);
 
 		Stream OutputStream { get; }
 
