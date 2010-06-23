@@ -27,18 +27,19 @@ JsonServiceClient.prototype.send = function(webMethod, request, onSuccess, onErr
 				return;
 			}
 
-			if (OperationResult.isResponseSuccessful(response.ResponseStatus, onError))
+            var status = JsvServiceClient.parseResponseStatus_(response.ResponseStatus);
+			if (status.isSuccess)
 			{
-				if (onSuccess) onSuccess(new ResultEvent(response));
+				if (onSuccess) onSuccess(response);
 				JsonServiceClient.onSuccess({ id: id, webMethod: webMethod, request: request,
 					response: response, durationMs: callDuration
 				});
 			}
 			else
 			{
+                if (onError) onError(status);
 				JsonServiceClient.onError({ id: id, webMethod: webMethod, request: request,
-					error: OperationResult.Parse(response.ResponseStatus),
-					durationMs: callDuration
+					error: status, durationMs: callDuration
 				});
 			}
 		},
@@ -58,7 +59,7 @@ JsonServiceClient.prototype.send = function(webMethod, request, onSuccess, onErr
 		}
 	};
 
-	O.merge(options, ajaxOptions);
+    for (var k in ajaxOptions) options[k] = ajaxOptions[k];
 
 	var ajax = $.ajax(options);
 };
@@ -82,92 +83,37 @@ JsonServiceClient.prototype.postToService = function(webMethod, request, onSucce
 JsonServiceClient.id = 0;
 JsonServiceClient.onError = function() { };
 JsonServiceClient.onSuccess = function() { };
-
-/** @constructor */
-function OperationResult()
+JsonServiceClient.parseResponseStatus_ = function(status)
 {
-	this.isSuccess = false;
-	this.message = "";
-	this.errorCode = "";
-	this.stackTrace = "";
-	this.fieldErrors = [];
-	this.fieldErrorMap = {};
-}
-OperationResult.isResponseSuccessful = function(responseStatus, onError)
-{
-	//if there is no responseStatus then there is no way to work out if it was an error.
-	if (!responseStatus) return true;
-	
-	var result = OperationResult.Parse(responseStatus);
-	if (!result.isSuccess)
-	{
-		if (onError == null) return;
-		var errorEvent = new ResponseErrorEvent(result);
-		onError(errorEvent);
-		return false;
-	}
-	return true;
-};
-OperationResult.Parse = function(responseStatus)
-{
-	var result = new OperationResult();
-	result.isSuccess = is.Empty(responseStatus.ErrorCode);
-	result.errorCode = responseStatus.ErrorCode;
-	result.message = responseStatus.Message;
-	result.errorMessage = responseStatus.ErrorMessage;
-	result.stackTrace = responseStatus.StackTrace;
+    if (!status) return {isSuccess:true};
 
-	A.each(responseStatus.FieldErrors, function(objError)
-	{
-		var error = new FieldError(objError.ErrorCode, objError.FieldName, objError.ErrorMessage);
-		result.fieldErrors.push(error);
+	var result =
+    {
+        isSuccess: status.ErrorCode === undefined || status.ErrorCode === null,
+        errorCode: status.ErrorCode,
+        message: status.Message,
+        errorMessage: status.ErrorMessage,
+        stackTrace: status.StackTrace,
+        fieldErrors: [],
+        fieldErrorMap: {}
+    };
 
-		if (!is.Empty(error.fieldName))
-		{
-			result.fieldErrorMap[error.fieldName] = error;
-		}
-	});
+    if (status.FieldErrors)
+    {
+        for (var i=0, len = status.FieldErrors.length; i<len; i++)
+        {
+            var err = status.FieldErrors[i];
+            var error = {errorCode: err.ErrorCode, fieldName:err.FieldName, errorMessage:err.ErrorMessage||''};
+            result.fieldErrors.push(error);
 
+            if (error.fieldName)
+            {
+                result.fieldErrorMap[error.fieldName] = error;
+            }
+        }
+    }
 	return result;
 };
-
-OperationResult.prototype.toString = function()
-{
-	return this.errorCode + ": " + this.message;
-};
-OperationResult.prototype.getFieldErrors = function()
-{
-	return this.fieldErrors;
-};
-OperationResult.prototype.getFieldErrorMap = function()
-{
-	return this.fieldErrorMap;
-};
-
-/** @constructor */
-function ResultEvent(result)
-{
-	this.result = result;
-}
-ResultEvent.prototype.getResult = function()
-{
-    return this.result;
-};
-
-/** @constructor */
-function ResponseErrorEvent(result)
-{
-	this.result = result;
-}
-
-/** @constructor */
-function FieldError(errorCode, fieldName, errorMessage)
-{
-	this.errorCode = errorCode;
-	this.fieldName = fieldName;
-	this.errorMessage = errorMessage || '';
-}
-
 
 /* Dependent snippets below from AjaxStack. TODO: replace with utils in Google Closure Library */
 var is = {
@@ -301,10 +247,6 @@ A.join = function(array, on)
 
 //Object Utils
 var O = {};
-O.merge = function(dst, src) {
-	for (var k in src) dst[k] = src[k];
-	return dst;
-};
 O.keys = function(obj)
 {
     var keys = [];
@@ -316,7 +258,7 @@ O.keys = function(obj)
 var Path = {};
 Path.combine = function() {
     var paths = "";
-    for (var i = 0, len = arguments.length; i < arguments.length; i++) {
+    for (var i = 0, len = arguments.length; i < len; i++) {
         
         if (paths.length > 0)
             paths += "/";

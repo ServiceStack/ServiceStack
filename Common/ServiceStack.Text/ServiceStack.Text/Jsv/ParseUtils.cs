@@ -61,11 +61,23 @@ namespace ServiceStack.Text.Jsv
 
 			while (++i < valueLength)
 			{
-				if (value[i] == TypeSerializer.QuoteChar
-				    && (i + 1 >= valueLength || value[i + 1] == findChar))
+				if (value[i] == TypeSerializer.QuoteChar)
 				{
-					i++;
-					return value.Substring(tokenStartPos, i - tokenStartPos);
+					//if we reach the end return
+					if (i + 1 >= valueLength)
+					{
+						return value.Substring(tokenStartPos, ++i - tokenStartPos);
+					}
+
+					//skip past 'escaped quotes'
+					if (value[i + 1] == TypeSerializer.QuoteChar)
+					{
+						i++;
+					}
+					else if (value[i + 1] == findChar)
+					{
+						return value.Substring(tokenStartPos, ++i - tokenStartPos);
+					}
 				}
 			}
 

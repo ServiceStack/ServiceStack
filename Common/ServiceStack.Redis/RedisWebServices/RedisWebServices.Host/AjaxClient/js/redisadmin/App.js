@@ -24,7 +24,8 @@ redisadmin.App = function()
     this.keyTypes = {};
 
     RedisClient.errorFn = function(e) {
-        $this.log.error("Unknown KeyType: " + keyType);
+        $this.log.severe("RedisClient.errorFn: ");
+        $this.log.severe(JSV.serialize(e));
     };
 
     redisadmin.App.initTabs();

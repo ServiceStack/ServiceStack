@@ -49,8 +49,7 @@ JSV.parseArray_ = function(str)
         for (var ref={i:0}; ref.i < value.length; ref.i++)
         {
             var elementValue = JSV.eatElementValue_(value, ref);
-            var listValue = JSV.parseString(elementValue);
-            to.push(JSV.parse(listValue));
+            to.push(JSV.parse(elementValue));
         }
     }
     return to;
@@ -96,14 +95,14 @@ JSV.toCsvField = function(text)
 {
     return !text || JSV.containsAny_(JSV.ESCAPE_CHARS)
         ? text
-        : '"' + text.replace('"', '""') + '"';
+        : '"' + text.replace(/"/g, '""') + '"';
 }
 
 JSV.parseString = JSV.fromCsvField = function(text)
 {
     return !text || text[0] != '"'
         ? text
-        : text.substr(1, text.length - 2).replace('""', '"');
+        : text.substr(1, text.length - 2).replace(/""/g, '"');
 }
 
 JSV.stripList_ = function(value)
@@ -132,11 +131,20 @@ JSV.eatUntilCharFound_ = function(value, ref, findChar)
 
     while (++ref.i < valueLength)
     {
-        if (value[ref.i] == '"'
-            && (ref.i + 1 >= valueLength || value[ref.i + 1] == findChar))
+        if (value[ref.i] == '"')
         {
-            ref.i++;
-            return value.substr(tokenStartPos, ref.i - tokenStartPos);
+            if (ref.i + 1 >= valueLength)
+            {
+                return value.substr(tokenStartPos, ++ref.i - tokenStartPos);
+            }
+            if (value[ref.i + 1] == '"')
+            {
+                ref.i++;
+            }
+            else if (value[ref.i + 1] == findChar)
+            {
+                return value.substr(tokenStartPos, ++ref.i - tokenStartPos);
+            }
         }
     }
 
@@ -239,3 +247,276 @@ JSV.eatMapValue_ = function(value, ref)
 
     return value.substr(tokenStartPos, ref.i - tokenStartPos);
 }
+
+JSV.isEmpty_ = function(a)
+{
+    return (a === null || a === undefined || a === "");
+}
+JSV.isFunction_ = function(a)
+{
+    return (typeof (a) === 'function') ? a.constructor.toString().match(/Function/) !== null : false;
+};
+JSV.isString_ = function(a)
+{
+    if (a === null || a === undefined) return false;
+    return (typeof (a) === 'string') ? true : (typeof (a) === 'object') ? a.constructor.toString().match(/string/i) !== null : false;
+};
+JSV.isDate_ = function(a)
+{
+    if (JSV.isEmpty_(a)) return false;
+    return (typeof (a) === 'date') ? true : (typeof (a) === 'object') ? a.constructor.toString().match(/date/i) !== null : false;
+};
+
+JSV.isArray_ = function(a)
+{
+    if (a === null || a === undefined || a === "") return false;
+    return (typeof (a) === 'object') ? a.constructor.toString().match(/array/i) !== null || a.length !== undefined : false;
+};
+JSV.toXsdDateTime = function(date)
+{
+    function pad(n) {
+        var s = n.toString();
+        return s.length < 2 ? '0'+s : s;
+    };
+    var yyyy = date.getUTCFullYear();
+    var MM = pad(date.getUTCMonth()+1);
+    var dd = pad(date.getUTCDate());
+    var hh = pad(date.getUTCHours());
+    var mm = pad(date.getUTCMinutes());
+    var ss = pad(date.getUTCSeconds());
+    var ms = pad(date.getUTCMilliseconds());
+
+  return yyyy +'-' + MM + '-' + dd + 'T' + hh + ':' + mm + ':' + ss + '.' + ms + 'Z';
+}
+JSV.serialize = JSV.stringify = function(obj)
+{
+    if (obj === null || obj === undefined) return null;
+
+    var typeOf = typeof(obj);
+    if (obj === 'function') return null;
+
+    if (typeOf === 'object')
+    {
+        var ctorStr = obj.constructor.toString().toLowerCase();
+        if (ctorStr.indexOf('string') != -1)
+            return JSV.escapeString(obj);
+        if (ctorStr.indexOf('boolean') != -1)
+            return obj ? "True" : "False";
+        if (ctorStr.indexOf('number') != -1)
+            return obj;
+        if (ctorStr.indexOf('date') != -1)
+            return JSV.toXsdDateTime(obj);
+        if (ctorStr.indexOf('array') != -1)
+            return JSV.serializeArray(obj);
+
+        return JSV.serializeObject(obj);
+    }
+    else
+    {
+        switch(typeOf)
+        {
+            case 'string':
+                return JSV.escapeString(obj);
+                break;
+            case 'boolean':
+                return obj ? "True" : "False";
+                break;
+            case 'date':
+                return JSV.toXsdDateTime(obj);
+                break;
+            case 'array':
+                return JSV.serializeArray(obj);
+                break;
+            case 'number':
+            default:
+                return obj;
+        }
+    }
+};
+JSV.serializeObject = function(obj)
+{
+    var value, sb = [];
+    for (var key in obj)
+    {
+        value = obj[key];
+        if (!obj.hasOwnProperty(key) || JSV.isEmpty_(value) || JSV.isFunction_(value)) continue;
+
+        if (sb.length > 0)
+            sb.push(',');
+
+        sb.push(JSV.escapeString(key));
+        sb.push(':');
+        sb.push(JSV.serialize(value));
+    }
+    return '{' + sb.join('') + '}';
+};
+JSV.serializeArray = function(array)
+{
+    var value, sb = [];
+    for (var i=0, len=array.length; i<len; i++)
+    {
+        value = array[i];
+        if (JSV.isEmpty_(value) || JSV.isFunction_(value)) continue;
+
+        if (sb.length > 0)
+            sb.push(',');
+
+        sb.push(JSV.serialize(value));
+    }
+    return '[' + sb.join('') + ']';
+};
+JSV.escapeString = function(str)
+{
+	if (str === undefined || str === null) return null;
+    if (str === '') return '""';
+
+    if (str.indexOf('"'))
+    {
+        str = str.replace(/"/g,'""');
+    }
+	if (JSV.containsAny_(str, JSV.ESCAPE_CHARS))
+	{
+		return '"' + str + '"';
+	}
+	return str;
+};
+JSV.containsAny_ = function(str, tests)
+{
+	if (!JSV.isString_(str)) return;
+	for (var i = 0, len = tests.length; i < len; i++)
+	{
+		if (str.indexOf(tests[i]) != -1) return true;
+	}
+	return false;
+};
+
+/**
+ * Considering pulling this out
+ * @param baseUri
+ * @param type
+ */
+function JsvServiceClient(baseUri, type)
+{
+	this.baseSyncReplyUri = JsvServiceClient.combine_(baseUri, "Jsv/SyncReply");
+	this.baseAsyncOneWayUri = JsvServiceClient.combine_(baseUri, "Jsv/AsyncOneWay");
+}
+JsvServiceClient.prototype.send = function(webMethod, request, onSuccess, onError, ajaxOptions) {
+	var startCallTime = new Date();
+	var requestUrl = JsvServiceClient.combine_(this.baseSyncReplyUri, webMethod);
+	var id = JsvServiceClient.id++;
+
+	var options = {
+		type: "GET",
+		url: requestUrl,
+		data: request,
+		dataType: "text",
+		success: function(responseText)
+		{
+			var endCallTime = new Date();
+			var callDuration = endCallTime.getTime() - startCallTime.getTime();
+
+            var response = JSV.parse(responseText);
+			if (!response)
+			{
+				if (onSuccess) onSuccess(null);
+				return;
+			}
+
+            var status = JsvServiceClient.parseResponseStatus_(response.ResponseStatus);
+			if (status.isSuccess)
+			{
+				if (onSuccess) onSuccess(response);
+				JsvServiceClient.onSuccess({ id: id, webMethod: webMethod, request: request,
+					response: response, durationMs: callDuration
+				});
+			}
+			else
+			{
+                if (onError) onError(status);
+				JsvServiceClient.onError({ id: id, webMethod: webMethod, request: request,
+					error: status, durationMs: callDuration
+                });
+			}
+		},
+		error: function(xhr, desc, exObj)
+		{
+			var endCallTime = new Date();
+			var callDuration = endCallTime.getTime() - startCallTime.getTime();
+
+			try
+			{
+				if (onError) onError(xhr.responseText);
+			}
+			catch (e) {}
+			JsvServiceClient.onError({ id: id, webMethod: webMethod, request: request,
+				error: xhr.responseText, durationMs: callDuration
+			});
+		}
+	};
+
+    for (var k in ajaxOptions) options[k] = ajaxOptions[k];
+
+	var ajax = $.ajax(options);
+};
+
+JsvServiceClient.combine_ = function() {
+    var paths = "";
+    for (var i = 0, len = arguments.length; i < len; i++) {
+        if (paths.length > 0)
+            paths += "/";
+        paths += arguments[i].replace(/[/]+$/g, "");
+    }
+    return paths;
+};
+
+//Sends a HTTP 'GET' request on the QueryString
+JsvServiceClient.prototype.getFromService = function(webMethod, request, onSuccess, onError) {
+	this.send(webMethod, request, onSuccess, onError);
+};
+
+//Sends a HTTP 'POST' request as key value pair formData
+JsvServiceClient.prototype.postFormDataToService = function(webMethod, request, onSuccess, onError) {
+	this.send(webMethod, request, onSuccess, onError, { type: "POST" });
+};
+
+//Sends a HTTP 'POST' request as JSV @requires jQuery
+JsvServiceClient.prototype.postToService = function(webMethod, request, onSuccess, onError) {
+	var jsvRequest = JSV.serialize(request);
+	this.send(webMethod, jsvRequest, onSuccess, onError, { type: "POST", processData: false, contentType: "application/jsv; charset=utf-8" });
+};
+
+JsvServiceClient.id = 0;
+JsvServiceClient.onError = function() { };
+JsvServiceClient.onSuccess = function() { };
+
+JsvServiceClient.parseResponseStatus_ = function(status)
+{
+    if (!status) return {isSuccess:true};
+
+	var result =
+    {
+        isSuccess: status.ErrorCode === undefined || status.ErrorCode === null,
+        errorCode: status.ErrorCode,
+        message: status.Message,
+        errorMessage: status.ErrorMessage,
+        stackTrace: status.StackTrace,
+        fieldErrors: [],
+        fieldErrorMap: {}
+    };
+
+    if (status.FieldErrors)
+    {
+        for (var i=0, len = status.FieldErrors.length; i<len; i++)
+        {
+            var err = status.FieldErrors[i];
+            var error = {errorCode: err.ErrorCode, fieldName:err.FieldName, errorMessage:err.ErrorMessage||''};
+            result.fieldErrors.push(error);
+
+            if (error.fieldName)
+            {
+                result.fieldErrorMap[error.fieldName] = error;
+            }
+        }
+    }
+	return result;
+};

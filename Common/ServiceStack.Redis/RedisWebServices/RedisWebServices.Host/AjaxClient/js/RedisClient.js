@@ -1,6 +1,6 @@
 function RedisClient(baseUri) {
    var baseUri = baseUri || 'http://' + document.location.hostname + '/RedisWebServices.Host/Public/';
-   this.gateway = new JsonServiceClient(baseUri);
+   this.gateway = new JsvServiceClient(baseUri);
 }
 RedisClient.errorFn = function() {
 };
@@ -93,7 +93,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('RemoveItemFromSortedSet', { Id: id || null, Item: item || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -102,7 +102,7 @@ RedisClient.prototype =
 		this.gateway.postToService('GetIntersectFromSets', { SetIds: setIds || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -120,7 +120,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetListCount', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Count);
+				if (onSuccessFn) onSuccessFn(r.Count);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -129,7 +129,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetCodeGeneratedJavaScript', { Text: text || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().JavaScript);
+				if (onSuccessFn) onSuccessFn(r.JavaScript);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -156,7 +156,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetHashCount', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Count);
+				if (onSuccessFn) onSuccessFn(r.Count);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -165,7 +165,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetSubstring', { Key: key || null, FromIndex: fromIndex || null, ToIndex: toIndex || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Value);
+				if (onSuccessFn) onSuccessFn(r.Value);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -174,7 +174,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetItemIndexInSortedSet', { Id: id || null, Item: item || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Index);
+				if (onSuccessFn) onSuccessFn(r.Index);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -183,7 +183,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeWithScoresFromSortedSet', { Id: id || null, FromRank: fromRank || null, ToRank: toRank || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.getResult().ItemsWithScores));
+				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.ItemsWithScores));
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -192,7 +192,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('PopItemFromSet', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -210,7 +210,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('IncrementValueInHash', { Id: id || null, Key: key || null, IncrementBy: incrementBy || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Value);
+				if (onSuccessFn) onSuccessFn(r.Value);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -219,7 +219,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeFromSortedSetByHighestScore', { Id: id || null, FromScore: fromScore || null, ToScore: toScore || null, Skip: skip || '0', Take: take || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -228,7 +228,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeFromSortedSet', { Id: id || null, FromRank: fromRank || null, ToRank: toRank || null, SortDescending: sortDescending || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -237,7 +237,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('AddItemToSortedSet', { Id: id || null, Item: item || null, Score: score || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -246,7 +246,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeFromList', { Id: id || null, StartingFrom: startingFrom || null, EndingAt: endingAt || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -255,7 +255,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('BlockingRemoveStartFromList', { Id: id || null, TimeOut: timeOut || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -264,7 +264,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('SetEntryInHashIfNotExists', { Id: id || null, Key: key || null, Value: value || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -273,7 +273,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('SearchKeys', { Pattern: pattern || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Keys);
+				if (onSuccessFn) onSuccessFn(r.Keys);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -300,7 +300,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeFromSortedSetByLowestScore', { Id: id || null, FromScore: fromScore || null, ToScore: toScore || null, Skip: skip || '0', Take: take || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -309,7 +309,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeWithScoresFromSortedSetByHighestScore', { Id: id || null, FromScore: fromScore || null, ToScore: toScore || null, Skip: skip || '0', Take: take || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.getResult().ItemsWithScores));
+				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.ItemsWithScores));
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -336,7 +336,7 @@ RedisClient.prototype =
 		this.gateway.postToService('GetUnionFromSets', { SetIds: setIds || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -345,7 +345,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('RemoveEndFromList', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -354,7 +354,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('PopItemFromList', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -372,7 +372,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('ContainsKey', { Key: key || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -381,7 +381,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('SetContainsItem', { Id: id || null, Item: item || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -399,7 +399,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetValueFromHash', { Id: id || null, Key: key || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Value);
+				if (onSuccessFn) onSuccessFn(r.Value);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -408,7 +408,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeWithScoresFromSortedSetByLowestScore', { Id: id || null, FromScore: fromScore || null, ToScore: toScore || null, Skip: skip || '0', Take: take || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.getResult().ItemsWithScores));
+				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.ItemsWithScores));
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -417,7 +417,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetAllItemsFromSortedSetDesc', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -435,7 +435,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('DequeueItemFromList', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -453,7 +453,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('RemoveEntryFromHash', { Id: id || null, Key: key || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -462,7 +462,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetHashKeys', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Keys);
+				if (onSuccessFn) onSuccessFn(r.Keys);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -471,7 +471,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetAllEntriesFromHash', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(RedisClient.convertKeyValuePairsToMap(r.getResult().KeyValuePairs));
+				if (onSuccessFn) onSuccessFn(RedisClient.convertKeyValuePairsToMap(r.KeyValuePairs));
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -480,7 +480,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetEntryType', { Key: key || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().KeyType);
+				if (onSuccessFn) onSuccessFn(r.KeyType);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -489,7 +489,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetAllKeys', {  },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Keys);
+				if (onSuccessFn) onSuccessFn(r.Keys);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -498,7 +498,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('SetEntryIfNotExists', { Key: key || null, Value: value || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -507,7 +507,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('SortedSetContainsItem', { Id: id || null, Item: item || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -516,7 +516,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('PopItemWithHighestScoreFromSortedSet', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -525,7 +525,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetSetCount', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Count);
+				if (onSuccessFn) onSuccessFn(r.Count);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -534,7 +534,7 @@ RedisClient.prototype =
 		this.gateway.postToService('CreateSubscription', { Channels: channels || null, Patterns: patterns || null, TimeOut: timeOut || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Key);
+				if (onSuccessFn) onSuccessFn(r.Key);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -570,7 +570,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetAllItemsFromSortedSet', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -579,7 +579,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('PopItemWithLowestScoreFromSortedSet', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -597,7 +597,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('PopAndPushItemBetweenLists', { FromListId: fromListId || null, ToListId: toListId || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -615,7 +615,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('Ping', {  },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -624,7 +624,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetValue', { Key: key || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Value);
+				if (onSuccessFn) onSuccessFn(r.Value);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -633,7 +633,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('ExpireEntryAt', { Key: key || null, ExpireAt: expireAt || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -642,7 +642,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('IncrementItemInSortedSet', { Id: id || null, Item: item || null, IncrementBy: incrementBy || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Score);
+				if (onSuccessFn) onSuccessFn(r.Score);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -651,7 +651,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('RemoveItemFromList', { Id: id || null, Item: item || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().ItemsRemovedCount);
+				if (onSuccessFn) onSuccessFn(r.ItemsRemovedCount);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -660,7 +660,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('SetEntryInHash', { Id: id || null, Key: key || null, Value: value || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -678,7 +678,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetItemScoreInSortedSet', { Id: id || null, Item: item || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Score);
+				if (onSuccessFn) onSuccessFn(r.Score);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -687,7 +687,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetAllItemsFromSet', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -696,7 +696,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRandomItemFromSet', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -723,7 +723,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('HashContainsEntry', { Id: id || null, Key: key || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -732,7 +732,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetSortedEntryValues', { Key: key || null, StartingFrom: startingFrom || null, EndingAt: endingAt || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Values);
+				if (onSuccessFn) onSuccessFn(r.Values);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -750,7 +750,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('RemoveRangeFromSortedSetByScore', { Id: id || null, FromScore: fromScore || null, ToScore: toScore || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().ItemsRemovedCount);
+				if (onSuccessFn) onSuccessFn(r.ItemsRemovedCount);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -759,7 +759,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRandomKey', {  },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Key);
+				if (onSuccessFn) onSuccessFn(r.Key);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -768,7 +768,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('DecrementValue', { Key: key || null, DecrementBy: decrementBy || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Value);
+				if (onSuccessFn) onSuccessFn(r.Value);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -777,7 +777,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('AppendToValue', { Key: key || null, Value: value || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().ValueLength);
+				if (onSuccessFn) onSuccessFn(r.ValueLength);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -795,7 +795,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetHashValues', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Values);
+				if (onSuccessFn) onSuccessFn(r.Values);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -804,7 +804,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetAndSetEntry', { Key: key || null, Value: value || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().ExistingValue);
+				if (onSuccessFn) onSuccessFn(r.ExistingValue);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -813,7 +813,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('ExpireEntryIn', { Key: key || null, ExpireIn: expireIn || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -822,7 +822,7 @@ RedisClient.prototype =
 		this.gateway.postToService('RemoveEntry', { Keys: keys || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Result);
+				if (onSuccessFn) onSuccessFn(r.Result);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -840,7 +840,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('Echo', { Text: text || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Text);
+				if (onSuccessFn) onSuccessFn(r.Text);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -849,7 +849,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetSortedSetCount', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Count);
+				if (onSuccessFn) onSuccessFn(r.Count);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -858,7 +858,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('RemoveStartFromList', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -867,7 +867,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetItemFromList', { Id: id || null, Index: index || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -876,7 +876,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetAllItemsFromList', { Id: id || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -894,7 +894,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('IncrementValue', { Key: key || null, IncrementBy: incrementBy || '0' },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Value);
+				if (onSuccessFn) onSuccessFn(r.Value);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -903,7 +903,7 @@ RedisClient.prototype =
 		this.gateway.postToService('GetValues', { Keys: keys || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Values);
+				if (onSuccessFn) onSuccessFn(r.Values);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -912,7 +912,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('BlockingDequeueItemFromList', { Id: id || null, TimeOut: timeOut || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -921,7 +921,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetTimeToLive', { Key: key || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().TimeRemaining);
+				if (onSuccessFn) onSuccessFn(r.TimeRemaining);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -930,7 +930,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('RemoveRangeFromSortedSet', { Id: id || null, FromRank: fromRank || null, ToRank: toRank || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().ItemsRemovedCount);
+				if (onSuccessFn) onSuccessFn(r.ItemsRemovedCount);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -948,7 +948,7 @@ RedisClient.prototype =
 		this.gateway.postToService('GetDifferencesFromSet', { Id: id || null, SetIds: setIds || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -966,7 +966,7 @@ RedisClient.prototype =
 		this.gateway.postToService('StoreUnionFromSortedSets', { Id: id || null, FromSetIds: fromSetIds || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Count);
+				if (onSuccessFn) onSuccessFn(r.Count);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -975,7 +975,7 @@ RedisClient.prototype =
 		this.gateway.postToService('StoreIntersectFromSortedSets', { Id: id || null, FromSetIds: fromSetIds || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Count);
+				if (onSuccessFn) onSuccessFn(r.Count);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -993,7 +993,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('GetRangeFromSortedList', { Id: id || null, StartingFrom: startingFrom || null, EndingAt: endingAt || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Items);
+				if (onSuccessFn) onSuccessFn(r.Items);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -1002,7 +1002,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('BlockingPopItemFromList', { Id: id || null, TimeOut: timeOut || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Item);
+				if (onSuccessFn) onSuccessFn(r.Item);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -1011,7 +1011,7 @@ RedisClient.prototype =
 		this.gateway.postToService('GetValuesFromHash', { Id: id || null, Keys: keys || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(r.getResult().Values);
+				if (onSuccessFn) onSuccessFn(r.Values);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -1020,7 +1020,7 @@ RedisClient.prototype =
 		this.gateway.getFromService('SearchKeysGroup', { Pattern: pattern || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.getResult().KeyGroups));
+				if (onSuccessFn) onSuccessFn(RedisClient.convertItemWithScoresToMap(r.KeyGroups));
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -1029,7 +1029,7 @@ RedisClient.prototype =
 		this.gateway.postToService('GetEntryTypes', { Keys: keys || null },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn(RedisClient.convertKeyValuePairsToMap(r.getResult().KeyTypes));
+				if (onSuccessFn) onSuccessFn(RedisClient.convertKeyValuePairsToMap(r.KeyTypes));
 			},
 			onErrorFn || RedisClient.errorFn);
 	}
