@@ -69,8 +69,8 @@ namespace ServiceStack.Text.Controller
 		{
 			var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
 			var controllerName = actionParts.Length == 2
-			                     	? actionParts[0]
-			                     	: null;
+									? actionParts[0]
+									: null;
 
 			var pathInfo = actionParts[actionParts.Length - 1];
 
@@ -85,8 +85,8 @@ namespace ServiceStack.Text.Controller
 					var keyValuePair = option.Split('=');
 
 					optionMap[keyValuePair[0]] = keyValuePair.Length == 1
-					                             	? true.ToString()
-					                             	: keyValuePair[1].UrlDecode();
+													? true.ToString()
+													: keyValuePair[1].UrlDecode();
 				}
 				pathInfo = pathInfo.Substring(0, optionsPos);
 			}
@@ -95,8 +95,8 @@ namespace ServiceStack.Text.Controller
 			var pageName = args[0];
 
 			return new PathInfo(pageName, args.Skip(1).ToList(), optionMap) {
-			                                                                	ControllerName = controllerName
-			                                                                };
+				ControllerName = controllerName
+			};
 		}
 	}
 }

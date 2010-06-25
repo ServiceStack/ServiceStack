@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace ServiceStack.Common
 {
@@ -12,6 +13,7 @@ namespace ServiceStack.Common
 	public class UrnId
 	{
 		private const char FieldSeperator = ':';
+		private const char FieldPartsSeperator = '/';
 		public string TypeName { get; private set; }
 		public string IdFieldValue { get; private set; }
 		public string IdFieldName { get; private set; }
@@ -48,9 +50,32 @@ namespace ServiceStack.Common
 			return string.Format("urn:{0}:{1}", objectTypeName, idFieldValue);
 		}
 
+		public static string CreateWithParts(string objectTypeName, params string[] keyParts)
+		{
+			if (objectTypeName.Contains(FieldSeperator.ToString()))
+			{
+				throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", "objectTypeName");
+			}
+
+			var sb = new StringBuilder();
+			foreach (var keyPart in keyParts)
+			{
+				if (sb.Length > 0)
+					sb.Append(FieldPartsSeperator);
+				sb.Append(keyPart);
+			}
+
+			return string.Format("urn:{0}:{1}", objectTypeName, sb);
+		}
+
+		public static string CreateWithParts<T>(params string[] keyParts)
+		{
+			return CreateWithParts(typeof(T).Name, keyParts);
+		}
+
 		public static string Create<T>(string idFieldValue)
 		{
-			return Create(typeof (T), idFieldValue);
+			return Create(typeof(T), idFieldValue);
 		}
 
 		public static string Create(Type objectType, string idFieldValue)
