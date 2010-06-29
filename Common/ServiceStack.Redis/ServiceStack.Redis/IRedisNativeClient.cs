@@ -59,8 +59,8 @@ namespace ServiceStack.Redis
 
 		//Redis List operations
 		byte[][] LRange(string listId, int startingFrom, int endingAt);
-		void RPush(string listId, byte[] value);
-		void LPush(string listId, byte[] value);
+		int RPush(string listId, byte[] value);
+		int LPush(string listId, byte[] value);
 		void LTrim(string listId, int keepStartingFrom, int keepEndingAt);
 		int LRem(string listId, int removeNoOfMatches, byte[] value);
 		int LLen(string listId);
@@ -75,7 +75,7 @@ namespace ServiceStack.Redis
 
 		//Redis Set operations
 		byte[][] SMembers(string setId);
-		void SAdd(string setId, byte[] value);
+		int SAdd(string setId, byte[] value);
 		void SRem(string setId, byte[] value);
 		byte[] SPop(string setId);
 		void SMove(string fromSetId, string toSetId, byte[] value);

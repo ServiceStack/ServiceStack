@@ -175,26 +175,28 @@ namespace ServiceStack.Redis
 				CmdLog(cmdWithBinaryArgs);
 
 				//Total command lines count
-				WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
-
-				foreach (var safeBinaryValue in cmdWithBinaryArgs)
-				{
-					WriteToSendBuffer(GetCmdBytes('$', safeBinaryValue.Length));
-					WriteToSendBuffer(safeBinaryValue);
-					WriteToSendBuffer(endData);
-				}
+				WriteAllToSendBuffer(cmdWithBinaryArgs);
 
 				FlushSendBuffer();
 			}
 			catch (SocketException ex)
 			{
+				cmdBufferIndex = 0;
 				return HandleSocketException(ex);
 			}
-			finally
-			{
-				cmdBufferIndex = 0;
-			}
 			return true;
+		}
+
+		public void WriteAllToSendBuffer(params byte[][] cmdWithBinaryArgs)
+		{
+			WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
+
+			foreach (var safeBinaryValue in cmdWithBinaryArgs)
+			{
+				WriteToSendBuffer(GetCmdBytes('$', safeBinaryValue.Length));
+				WriteToSendBuffer(safeBinaryValue);
+				WriteToSendBuffer(endData);
+			}
 		}
 
 		byte[] cmdBuffer = new byte[32 * 1024];
@@ -217,6 +219,7 @@ namespace ServiceStack.Redis
 		public void FlushSendBuffer()
 		{
 			Socket.Send(cmdBuffer, cmdBufferIndex, SocketFlags.None);
+			cmdBufferIndex = 0;
 		}
 
 		private int SafeReadByte()
@@ -395,7 +398,7 @@ namespace ServiceStack.Redis
 			ExpectWord("QUEUED");
 		}
 
-		private int ReadInt()
+		public int ReadInt()
 		{
 			int c = SafeReadByte();
 			if (c == -1)

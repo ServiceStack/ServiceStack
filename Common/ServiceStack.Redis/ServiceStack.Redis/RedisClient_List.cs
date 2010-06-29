@@ -18,7 +18,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Redis
 {
-	public partial class RedisClient 
+	public partial class RedisClient
 		: IRedisClient
 	{
 		const int FirstElement = 0;
@@ -75,9 +75,41 @@ namespace ServiceStack.Redis
 			RPush(listId, value.ToUtf8Bytes());
 		}
 
+		public void AddRangeToList(string listId, List<string> values)
+		{
+			var uListId = listId.ToUtf8Bytes();
+
+			var pipeline = CreatePipelineCommand();
+			foreach (var value in values)
+			{
+				pipeline.WriteCommand(Commands.RPush, uListId, value.ToUtf8Bytes());
+			}
+			pipeline.Flush();
+
+			//the number of items after 
+			var intResults = pipeline.ReadAllAsInts();
+		}
+
 		public void PrependItemToList(string listId, string value)
 		{
 			LPush(listId, value.ToUtf8Bytes());
+		}
+
+		public void PrependRangeToList(string listId, List<string> values)
+		{
+			var uListId = listId.ToUtf8Bytes();
+
+			var pipeline = CreatePipelineCommand();
+			//ensure list[0] == value[0] after batch operation
+			for (var i = values.Count - 1; i >= 0; i--)
+			{
+				var value = values[i];
+				pipeline.WriteCommand(Commands.LPush, uListId, value.ToUtf8Bytes());
+			}
+			pipeline.Flush();
+
+			//the number of items after 
+			var intResults = pipeline.ReadAllAsInts();
 		}
 
 		public void RemoveAllFromList(string listId)
@@ -142,7 +174,7 @@ namespace ServiceStack.Redis
 
 		public string BlockingDequeueItemFromList(string listId, TimeSpan? timeOut)
 		{
-			return BLPopValue(listId, (int) timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
+			return BLPopValue(listId, (int)timeOut.GetValueOrDefault().TotalSeconds).FromUtf8Bytes();
 		}
 
 		public void PushItemToList(string listId, string value)

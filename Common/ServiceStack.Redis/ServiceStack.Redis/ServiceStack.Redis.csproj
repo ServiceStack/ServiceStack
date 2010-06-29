@@ -98,6 +98,7 @@
     <Compile Include="Messaging\RedisTransientMessageService.cs" />
     <Compile Include="RedisException.cs" />
     <Compile Include="RedisLock.cs" />
+    <Compile Include="RedisPipeline.cs" />
     <Compile Include="RedisSubscription.cs" />
     <Compile Include="RedisTransaction.cs" />
     <Compile Include="RedisClientFactory.cs" />

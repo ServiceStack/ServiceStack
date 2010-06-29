@@ -95,6 +95,7 @@ namespace ServiceStack.Redis
 
 		HashSet<string> GetAllItemsFromSet(string setId);
 		void AddItemToSet(string setId, string item);
+		void AddRangeToSet(string setId, List<string> items);
 		void RemoveItemFromSet(string setId, string item);
 		string PopItemFromSet(string setId);
 		void MoveBetweenSets(string fromSetId, string toSetId, string item);
@@ -117,7 +118,10 @@ namespace ServiceStack.Redis
 		List<string> GetRangeFromList(string listId, int startingFrom, int endingAt);
 		List<string> GetRangeFromSortedList(string listId, int startingFrom, int endingAt);
 		void AddItemToList(string listId, string value);
+		void AddRangeToList(string listId, List<string> values);
 		void PrependItemToList(string listId, string value);
+		void PrependRangeToList(string listId, List<string> values);
+
 		void RemoveAllFromList(string listId);
 		string RemoveStartFromList(string listId);
 		string BlockingRemoveStartFromList(string listId, TimeSpan? timeOut);
@@ -147,6 +151,7 @@ namespace ServiceStack.Redis
 
 		bool AddItemToSortedSet(string setId, string value);
 		bool AddItemToSortedSet(string setId, string value, double score);
+		bool AddRangeToSortedSet(string setId, List<string> values, double score);
 		bool RemoveItemFromSortedSet(string setId, string value);
 		string PopItemWithLowestScoreFromSortedSet(string setId);
 		string PopItemWithHighestScoreFromSortedSet(string setId);

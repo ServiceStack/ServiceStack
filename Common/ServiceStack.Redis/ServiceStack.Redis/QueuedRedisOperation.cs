@@ -56,6 +56,10 @@ namespace ServiceStack.Redis
 						var success = result == RedisNativeClient.Success;
 						OnSuccessBoolCallback(success);
 					}
+					if (OnSuccessVoidCallback != null)
+					{
+						OnSuccessVoidCallback();
+					}
 				}
 				else if (DoubleReadCommand != null)
 				{

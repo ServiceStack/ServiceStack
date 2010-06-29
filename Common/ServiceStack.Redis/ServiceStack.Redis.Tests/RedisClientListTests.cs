@@ -45,6 +45,24 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_AddRangeToList_and_GetAllFromList()
+		{
+			Redis.AddRangeToList(ListId, storeMembers);
+
+			var members = Redis.GetAllItemsFromList(ListId);
+			AssertAreEqual(members, storeMembers);
+		}
+
+		[Test]
+		public void Can_PrependRangeToList_and_GetAllFromList()
+		{
+			Redis.PrependRangeToList(ListId, storeMembers);
+
+			var members = Redis.GetAllItemsFromList(ListId);
+			AssertAreEqual(members, storeMembers);
+		}
+
+		[Test]
 		public void Can_GetListCount()
 		{
 			storeMembers.ForEach(x => Redis.AddItemToList(ListId, x));

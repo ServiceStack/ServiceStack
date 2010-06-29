@@ -27,13 +27,23 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
-		public void Can_AddToSet_and_GetAllFromSet()
+		public void Can_AddItemToSortedSet_and_GetAllFromSet()
 		{
 			var i = 0;
 			storeMembers.ForEach(x => Redis.AddItemToSortedSet(SetId, x, i++));
 
 			var members = Redis.GetAllItemsFromSortedSet(SetId);
 			Assert.That(members.EquivalentTo(storeMembers), Is.True);
+		}
+
+		[Test]
+		public void Can_AddRangeToSortedSet_and_GetAllFromSet()
+		{
+			var success = Redis.AddRangeToSortedSet(SetId, storeMembers, 1);
+			Assert.That(success, Is.True);
+
+			var members = Redis.GetAllItemsFromSortedSet(SetId);
+			Assert.That(members, Is.EquivalentTo(storeMembers));
 		}
 
 		[Test]

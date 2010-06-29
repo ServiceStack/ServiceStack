@@ -491,11 +491,11 @@ namespace ServiceStack.Redis
 			return SendExpectMultiData(Commands.SMembers, setId.ToUtf8Bytes());
 		}
 
-		public void SAdd(string setId, byte[] value)
+		public int SAdd(string setId, byte[] value)
 		{
 			AssertSetIdAndValue(setId, value);
 
-			SendExpectSuccess(Commands.SAdd, setId.ToUtf8Bytes(), value);
+			return SendExpectInt(Commands.SAdd, setId.ToUtf8Bytes(), value);
 		}
 
 		public void SRem(string setId, byte[] value)
@@ -651,18 +651,18 @@ namespace ServiceStack.Redis
 			return SendExpectMultiData(cmdWithArgs.ToArray());
 		}
 
-		public void RPush(string listId, byte[] value)
+		public int RPush(string listId, byte[] value)
 		{
 			AssertListIdAndValue(listId, value);
 
-			SendExpectSuccess(Commands.RPush, listId.ToUtf8Bytes(), value);
+			return SendExpectInt(Commands.RPush, listId.ToUtf8Bytes(), value);
 		}
 
-		public void LPush(string listId, byte[] value)
+		public int LPush(string listId, byte[] value)
 		{
 			AssertListIdAndValue(listId, value);
 
-			SendExpectSuccess(Commands.LPush, listId.ToUtf8Bytes(), value);
+			return SendExpectInt(Commands.LPush, listId.ToUtf8Bytes(), value);
 		}
 
 		public void LTrim(string listId, int keepStartingFrom, int keepEndingAt)
@@ -1096,6 +1096,11 @@ namespace ServiceStack.Redis
 		{
 			var cmdWithArgs = MergeCommandWithArgs(Commands.PUnSubscribe, fromChannelsMatchingPatterns);
 			return SendExpectMultiData(cmdWithArgs);
+		}
+
+		public RedisPipelineCommand CreatePipelineCommand()
+		{
+			return new RedisPipelineCommand(this);
 		}
 
 		#endregion

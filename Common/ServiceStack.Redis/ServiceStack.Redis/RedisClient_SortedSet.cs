@@ -79,6 +79,23 @@ namespace ServiceStack.Redis
 			return base.ZAdd(setId, score, value.ToUtf8Bytes()) == Success;
 		}
 
+		public bool AddRangeToSortedSet(string setId, List<string> values, double score)
+		{
+			var pipeline = CreatePipelineCommand();
+			var uSetId = setId.ToUtf8Bytes();
+			var uScore = score.ToUtf8Bytes();
+
+			foreach (var value in values)
+			{
+				pipeline.WriteCommand(Commands.ZAdd, uSetId, uScore, value.ToUtf8Bytes());
+			}
+
+			pipeline.Flush();
+
+			var success = pipeline.ReadAllAsIntsHaveSuccess();
+			return success;
+		}
+
 		public bool RemoveItemFromSortedSet(string setId, string value)
 		{
 			return base.ZRem(setId, value.ToUtf8Bytes()) == Success;

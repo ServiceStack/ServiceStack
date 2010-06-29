@@ -28,6 +28,15 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_AddRangeToSet_and_GetAllFromSet()
+		{
+			Redis.AddRangeToSet(SetId, storeMembers);
+
+			var members = Redis.GetAllItemsFromSet(SetId);
+			Assert.That(members, Is.EquivalentTo(storeMembers));
+		}
+
+		[Test]
 		public void Can_RemoveFromSet()
 		{
 			const string removeMember = "two";

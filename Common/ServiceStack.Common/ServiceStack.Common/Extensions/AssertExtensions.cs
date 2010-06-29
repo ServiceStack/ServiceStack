@@ -52,22 +52,6 @@ namespace ServiceStack.Common.Extensions
 				throw new ArgumentException(fieldName + " is empty");
 		}
 
-		public static void ThrowIfNullOrEmpty(this IList list)
-		{
-			ThrowIfNullOrEmpty(list, null);
-		}
-
-		public static void ThrowIfNullOrEmpty(this IList list, string varName)
-		{
-			var fieldName = varName ?? "list";
-
-			if (list == null)
-				throw new ArgumentNullException(fieldName);
-
-			if (list.Count == 0)
-				throw new ArgumentException(fieldName + " is empty");
-		}
-
 		public static void ThrowIfNullOrEmpty<T>(this ICollection<T> collection)
 		{
 			ThrowIfNullOrEmpty(collection, null);

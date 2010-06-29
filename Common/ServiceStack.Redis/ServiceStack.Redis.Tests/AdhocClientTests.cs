@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using NUnit.Framework;
@@ -91,5 +92,4 @@ namespace ServiceStack.Redis.Tests
 		}
 
 	}
-
 }

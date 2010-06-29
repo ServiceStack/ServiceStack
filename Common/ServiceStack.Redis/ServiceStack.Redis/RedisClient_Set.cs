@@ -10,6 +10,7 @@
 // Licensed under the same terms of Redis and ServiceStack: new BSD license.
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DesignPatterns.Model;
@@ -73,6 +74,21 @@ namespace ServiceStack.Redis
 		public void AddItemToSet(string setId, string item)
 		{
 			SAdd(setId, item.ToUtf8Bytes());
+		}
+
+		public void AddRangeToSet(string setId, List<string> items)
+		{
+			var uSetId = setId.ToUtf8Bytes();
+
+			var pipeline = CreatePipelineCommand();
+			foreach (var item in items)
+			{
+				pipeline.WriteCommand(Commands.SAdd, uSetId, item.ToUtf8Bytes());
+			}
+			pipeline.Flush();
+
+			//the number of items after 
+			var intResults = pipeline.ReadAllAsInts();
 		}
 
 		public void RemoveItemFromSet(string setId, string item)
