@@ -17,7 +17,12 @@ namespace ServiceStack.CacheAccess.Providers
 
 			if (isJson) return new JsonCacheManager(cacheClient);
 
-			throw new NotSupportedException("Only Xml and Json CachTextManagers are supported");
+			var isJsv = (endpointAttributes & EndpointAttributes.Jsv)
+						== EndpointAttributes.Jsv;
+
+			if (isJsv) return new JsvCacheManager(cacheClient);
+
+			throw new NotSupportedException("Only Xml, Json and Jsv CachTextManagers are supported");
 		}
 	}
 }

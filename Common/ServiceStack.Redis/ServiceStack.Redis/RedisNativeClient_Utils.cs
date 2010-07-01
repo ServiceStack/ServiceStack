@@ -88,7 +88,9 @@ namespace ServiceStack.Redis
 			}
 
 			if (Socket == null)
+			{
 				Connect();
+			}
 
 			var isConnected = Socket != null;
 

@@ -75,6 +75,7 @@
     <Compile Include="CompressableFileAndCacheTextManagerFactory.cs" />
     <Compile Include="ContentCacheManager.cs" />
     <Compile Include="ContentSerializer.cs" />
+    <Compile Include="JsvCacheManager.cs" />
     <Compile Include="FileAndCacheTextManager.cs" />
     <Compile Include="FileSystemXmlCacheClient.cs" />
     <Compile Include="JsonCacheManager.cs" />

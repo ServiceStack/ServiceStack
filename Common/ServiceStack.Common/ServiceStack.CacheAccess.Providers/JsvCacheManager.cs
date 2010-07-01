@@ -2,31 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common.Web;
-using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.CacheAccess.Providers
 {
-	public class JsonCacheManager 
+	public class JsvCacheManager 
 		: CacheManager, ICacheTextManager
 	{
-		public JsonCacheManager(ICacheClient cacheClient)
+		public JsvCacheManager(ICacheClient cacheClient)
 			: base(cacheClient) { }
 
 		public string ContentType
 		{
-			get { return MimeTypes.Json; }
+			get { return MimeTypes.Jsv; }
 		}
 
 		public string Resolve<T>(string cacheKey, TimeSpan? expiresIn, Func<T> createCacheFn) where T : class
 		{
-			cacheKey = cacheKey + MimeTypes.GetExtension(MimeTypes.Json);
+			cacheKey = cacheKey + MimeTypes.GetExtension(MimeTypes.Jsv);
 
 			var result = this.CacheClient.Get<string>(cacheKey);
 			if (result != null) return result;
 
 			var cacheValue = createCacheFn();
 
-			var cacheValueText = JsonDataContractSerializer.Instance.Parse(cacheValue);
+			var cacheValueText = TypeSerializer.SerializeToString(cacheValue);
 
 			if (expiresIn.HasValue)
 				this.CacheClient.Set(cacheKey, cacheValueText, expiresIn.Value);
@@ -54,7 +54,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public override void Clear(params string[] cacheKeys)
 		{
-			var ext = MimeTypes.GetExtension(MimeTypes.Json);
+			var ext = MimeTypes.GetExtension(MimeTypes.Jsv);
 			var cacheKeyWithExts = cacheKeys.ToList().ConvertAll(x => x + ext);
 
 			this.CacheClient.RemoveAll(cacheKeyWithExts);

@@ -7,7 +7,10 @@ namespace ServiceStack.CacheAccess
 	{
 		string ContentType { get; }
 
-		string ResolveText<T>(string cacheKey, Func<T> createCacheFn) 
+		string ResolveText<T>(string cacheKey, Func<T> createCacheFn)
+			where T : class;
+
+		string ResolveText<T>(string cacheKey, TimeSpan expiresIn, Func<T> createCacheFn)
 			where T : class;
 	}
 }

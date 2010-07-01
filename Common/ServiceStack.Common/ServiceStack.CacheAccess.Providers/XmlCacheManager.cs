@@ -17,21 +17,36 @@ namespace ServiceStack.CacheAccess.Providers
 			get { return MimeTypes.Xml; }
 		}
 
-		public string ResolveText<T>(string cacheKey, Func<T> createCacheFn)
+		private string Resolve<T>(string cacheKey, TimeSpan? expiresIn, Func<T> createCacheFn)
 			where T : class
 		{
-			var contentTypeCacheKey = cacheKey + MimeTypes.GetExtension(MimeTypes.Xml);
+			cacheKey = cacheKey + MimeTypes.GetExtension(MimeTypes.Xml);
 
-			var result = this.CacheClient.Get<string>(contentTypeCacheKey);
+			var result = this.CacheClient.Get<string>(cacheKey);
 			if (result != null) return result;
 
 			var cacheValue = createCacheFn();
 
-			var cacheValueXml = DataContractSerializer.Instance.Parse(cacheValue);
+			var cacheValueText = DataContractSerializer.Instance.Parse(cacheValue);
 
-			this.CacheClient.Set(contentTypeCacheKey, cacheValueXml);
+			if (expiresIn.HasValue)
+				this.CacheClient.Set(cacheKey, cacheValueText, expiresIn.Value);
+			else
+				this.CacheClient.Set(cacheKey, cacheValueText);
 
-			return cacheValueXml;
+			return cacheValueText;
+		}
+
+		public string ResolveText<T>(string cacheKey, TimeSpan expiresIn, Func<T> createCacheFn)
+			where T : class
+		{
+			return Resolve(cacheKey, expiresIn, createCacheFn);
+		}
+
+		public string ResolveText<T>(string cacheKey, Func<T> createCacheFn)
+			where T : class
+		{
+			return Resolve(cacheKey, null, createCacheFn);
 		}
 
 		public override void Clear(IEnumerable<string> cacheKeys)
@@ -42,9 +57,9 @@ namespace ServiceStack.CacheAccess.Providers
 		public override void Clear(params string[] cacheKeys)
 		{
 			var ext = MimeTypes.GetExtension(MimeTypes.Xml);
-			var xmlCacheKeys = cacheKeys.ToList().ConvertAll(x => x + ext);
+			var cacheKeyWithExts = cacheKeys.ToList().ConvertAll(x => x + ext);
 
-			this.CacheClient.RemoveAll(xmlCacheKeys);
+			this.CacheClient.RemoveAll(cacheKeyWithExts);
 		}
 	}
 

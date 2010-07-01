@@ -31,7 +31,7 @@ namespace ServiceStack.CacheAccess
 		/// <summary>
 		/// Retrieves the specified item from the cache.
 		/// </summary>
-		/// <param name="key">The identifier for the item to retrieve.</param>
+		/// <param ICTname="key">The identifier for the item to retrieve.</param>
 		/// <returns>
 		/// The retrieved item, or <value>null</value> if the key was not found.
 		/// </returns>

@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Logging;
 
 namespace ServiceStack.CacheAccess.Providers
 {
 	public class CacheManager : ICacheManager
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof (CacheManager));
+
 		public CacheManager(ICacheClient cacheClient)
 		{
 			this.CacheClient = cacheClient;
 		}
+
+		public Action<Exception> OnErrorFn { get; set; }
 
 		public virtual T Resolve<T>(string cacheKey, Func<T> createCacheFn)
 			where T : class
@@ -26,8 +31,20 @@ namespace ServiceStack.CacheAccess.Providers
 		public virtual T Resolve<T>(string cacheKey, TimeSpan expireIn, Func<T> createCacheFn)
 			where T : class
 		{
-			var result = this.CacheClient.Get<T>(cacheKey);
-			if (result != null) return result;
+			try
+			{
+				var result = this.CacheClient.Get<T>(cacheKey);
+				if (result != null) return result;
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Error accessing ICacheClient", ex);
+				if (OnErrorFn != null)
+				{
+					OnErrorFn(ex);
+				}
+				return createCacheFn();
+			}
 
 			var cacheValue = createCacheFn();
 
