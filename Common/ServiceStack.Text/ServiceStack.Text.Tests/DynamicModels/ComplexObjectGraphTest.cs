@@ -159,7 +159,7 @@ namespace ServiceStack.Text.Tests.DynamicModels
 				{
 					AddressUri = new Uri("http://www.example.com/"),
 					IntValue = 123,
-					SomeType = typeof(CustomCollection)
+					SomeType = typeof(int)
 				}
 			};
 

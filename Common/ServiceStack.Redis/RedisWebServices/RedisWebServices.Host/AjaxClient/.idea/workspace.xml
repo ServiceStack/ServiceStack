@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/JSV.js" afterPath="$PROJECT_DIR$/js/JSV.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/redisadmin/App.js" afterPath="$PROJECT_DIR$/js/redisadmin/App.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/RedisClient.js" afterPath="$PROJECT_DIR$/js/RedisClient.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/jsv.html" afterPath="$PROJECT_DIR$/jsv.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/AjaxStack.snippets.js" afterPath="$PROJECT_DIR$/js/AjaxStack.snippets.js" />
     </list>
     <ignored path="AjaxClient.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -36,7 +31,7 @@
           <file leaf-file-name="default.htm" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/default.htm">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="43" column="0" selection-start="1609" selection-end="1609" vertical-scroll-proportion="-10.88">
+                <state line="43" column="0" selection-start="1609" selection-end="1609" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
@@ -81,7 +76,7 @@
           <file leaf-file-name="RedisClient.js" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/js/RedisClient.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="40" column="2" selection-start="1004" selection-end="1004" vertical-scroll-proportion="0.69458634">
+                <state line="46" column="26" selection-start="1141" selection-end="1141" vertical-scroll-proportion="0.1215526">
                   <folding />
                 </state>
               </provider>
@@ -121,7 +116,7 @@
           <file leaf-file-name="jsv.html" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/jsv.html">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="-18.36">
+                <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
@@ -130,57 +125,8 @@
           <file leaf-file-name="JSV.js" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/js/JSV.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="51" column="0" selection-start="1036" selection-end="1036" vertical-scroll-proportion="0.7346514">
-                  <folding>
-                    <marker date="1277262956981" expanded="true" signature="0:155" placeholder="/**...*/" />
-                    <marker date="1277262956981" expanded="true" signature="171:235" placeholder="/**...*/" />
-                    <marker date="1277262956981" expanded="true" signature="262:499" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="317:362" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="395:439" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="453:497" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="585:1170" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="690:886" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="736:848" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="900:1153" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="969:1147" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="1206:1708" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="1235:1391" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="1540:1690" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="1754:1809" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="1851:2025" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="1944:2005" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="2060:2180" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="2234:2349" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="2384:2504" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="2507:2589" placeholder="/**...*/" />
-                    <marker date="1277262956981" expanded="true" signature="2646:3242" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="2756:2932" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="2972:3198" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="3244:3301" placeholder="/**...*/" />
-                    <marker date="1277262956981" expanded="true" signature="3340:3499" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="3501:3560" placeholder="/**...*/" />
-                    <marker date="1277262956981" expanded="true" signature="3601:5653" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="3951:4427" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="4489:4966" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="5033:5422" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="5081:5349" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="5477:5587" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="5698:5837" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="5935:7301" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6086:7235" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6191:6857" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6318:6372" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6456:6658" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6546:6651" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6670:6853" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6701:6846" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="6904:7232" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="7021:7071" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="7118:7226" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="7446:7501" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="7662:7735" placeholder="{...}" />
-                    <marker date="1277262956981" expanded="true" signature="7886:8080" placeholder="{...}" />
-                  </folding>
+                <state line="354" column="5" selection-start="8935" selection-end="8935" vertical-scroll-proportion="0.76066595">
+                  <folding />
                 </state>
               </provider>
             </entry>
@@ -188,7 +134,7 @@
           <file leaf-file-name="dom.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/dom/dom.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="1440" column="27" selection-start="44414" selection-end="44414" vertical-scroll-proportion="0.0">
+                <state line="1485" column="27" selection-start="46109" selection-end="46109" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
@@ -206,7 +152,7 @@
           <file leaf-file-name="component.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/ui/component.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="1071" column="28" selection-start="33768" selection-end="33768" vertical-scroll-proportion="0.0">
+                <state line="1070" column="28" selection-start="33706" selection-end="33706" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
@@ -273,6 +219,7 @@
     </navigator>
     <panes>
       <pane id="Scope" />
+      <pane id="Favorites" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -385,7 +332,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Favorites" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -401,7 +347,7 @@
   <component name="RunManager">
     <configuration default="true" type="JavascriptDebugSession" factoryName="Local">
       <JSDebuggerConfigurationSettings>
-        <option name="engineId" />
+        <option name="engineId" value="embedded" />
         <option name="fileUrl" />
       </JSDebuggerConfigurationSettings>
       <method />
@@ -432,6 +378,10 @@
           <option name="myVcsRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient" />
           <option name="myCopyRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient" />
         </SvnCopyRootSimple>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient" />
+          <option name="myCopyRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient\js\closure-library" />
+        </SvnCopyRootSimple>
       </list>
     </option>
     <option name="myMoreRealMappingRoots">
@@ -440,36 +390,41 @@
           <option name="myVcsRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient" />
           <option name="myCopyRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient" />
         </SvnCopyRootSimple>
+        <SvnCopyRootSimple>
+          <option name="myVcsRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient" />
+          <option name="myCopyRoot" value="C:\Projects\servicestack\Common\ServiceStack.Redis\RedisWebServices\RedisWebServices.Host\AjaxClient\js\closure-library" />
+        </SvnCopyRootSimple>
       </list>
     </option>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+      <changelist id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client" />
       <created>1276389738271</created>
       <updated>1276389738271</updated>
     </task>
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1176" extended-state="7" />
     <editor active="true" />
     <layout>
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25954947" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19020021" sideWeight="0.47110677" order="1" side_tool="true" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19020021" sideWeight="0.4750245" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19020021" sideWeight="0.5220372" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19020021" sideWeight="0.5181195" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25954947" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
@@ -505,6 +460,80 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="55" column="40" selection-start="2298" selection-end="2298" vertical-scroll-proportion="-0.35379812" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/default.htm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="43" column="0" selection-start="1609" selection-end="1609" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/style/style.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1331" column="24" selection-start="47987" selection-end="47987" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/math/size.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="10" selection-start="1001" selection-end="1001" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/events/eventhandler.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="70" column="45" selection-start="2181" selection-end="2181" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="26" column="23" selection-start="760" selection-end="760" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/RedisClient.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="46" column="26" selection-start="1141" selection-end="1141" vertical-scroll-proportion="0.1215526">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/css/default.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="223" column="14" selection-start="3573" selection-end="3573" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/redisadmin/App.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="384" column="2" selection-start="11086" selection-end="11086" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/json/json.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="84" column="10" selection-start="3408" selection-end="3408" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jsv.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/dom/dom.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1485" column="27" selection-start="46109" selection-end="46109" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/ui/tree/treecontrol.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="50" column="47" selection-start="1720" selection-end="1720" vertical-scroll-proportion="0.0">
@@ -514,155 +543,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/ui/component.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1071" column="28" selection-start="33768" selection-end="33768" vertical-scroll-proportion="0.0">
+        <state line="1070" column="28" selection-start="33706" selection-end="33706" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/structs/treenode.js">
+    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/ui/tree/basenode.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="109" column="32" selection-start="2828" selection-end="2828" vertical-scroll-proportion="0.33299798">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/jquery.json-2.2.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="128" column="8" selection-start="4042" selection-end="4042" vertical-scroll-proportion="0.31256384">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/testLib.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="112" selection-start="12294" selection-end="12294" vertical-scroll-proportion="0.15920916">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/jLinq-2.2.1.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1188" column="30" selection-start="37535" selection-end="37542" vertical-scroll-proportion="20.36">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/json/json.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="84" column="10" selection-start="3408" selection-end="3408" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/css/default.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="223" column="14" selection-start="3573" selection-end="3573" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/jquery-1.4.2.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="122" column="493" selection-start="56292" selection-end="56292" vertical-scroll-proportion="0.33298647">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="40" selection-start="2298" selection-end="2298" vertical-scroll-proportion="-0.35379812">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/default.htm">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="0" selection-start="1609" selection-end="1609" vertical-scroll-proportion="-10.88">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="23" selection-start="760" selection-end="760" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/redisadmin/App.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="384" column="2" selection-start="11086" selection-end="11086" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/jsv.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="-18.36">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/RedisClient.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="2" selection-start="1004" selection-end="1004" vertical-scroll-proportion="0.69458634">
+        <state line="559" column="19" selection-start="14158" selection-end="14158" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/js/JSV.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="51" column="0" selection-start="1036" selection-end="1036" vertical-scroll-proportion="0.7346514">
-          <folding>
-            <marker date="1277262956981" expanded="true" signature="0:155" placeholder="/**...*/" />
-            <marker date="1277262956981" expanded="true" signature="171:235" placeholder="/**...*/" />
-            <marker date="1277262956981" expanded="true" signature="262:499" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="317:362" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="395:439" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="453:497" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="585:1170" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="690:886" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="736:848" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="900:1153" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="969:1147" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="1206:1708" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="1235:1391" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="1540:1690" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="1754:1809" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="1851:2025" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="1944:2005" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="2060:2180" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="2234:2349" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="2384:2504" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="2507:2589" placeholder="/**...*/" />
-            <marker date="1277262956981" expanded="true" signature="2646:3242" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="2756:2932" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="2972:3198" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="3244:3301" placeholder="/**...*/" />
-            <marker date="1277262956981" expanded="true" signature="3340:3499" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="3501:3560" placeholder="/**...*/" />
-            <marker date="1277262956981" expanded="true" signature="3601:5653" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="3951:4427" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="4489:4966" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="5033:5422" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="5081:5349" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="5477:5587" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="5698:5837" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="5935:7301" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6086:7235" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6191:6857" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6318:6372" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6456:6658" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6546:6651" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6670:6853" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6701:6846" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="6904:7232" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="7021:7071" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="7118:7226" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="7446:7501" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="7662:7735" placeholder="{...}" />
-            <marker date="1277262956981" expanded="true" signature="7886:8080" placeholder="{...}" />
-          </folding>
+        <state line="354" column="5" selection-start="8935" selection-end="8935" vertical-scroll-proportion="0.76066595">
+          <folding />
         </state>
       </provider>
     </entry>

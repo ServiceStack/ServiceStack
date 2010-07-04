@@ -89,7 +89,9 @@ namespace ServiceStack.Redis
 
 			if (Socket == null)
 			{
+				var previousDb = db;
 				Connect();
+				if (previousDb != DefaultDb) this.Db = previousDb;
 			}
 
 			var isConnected = Socket != null;
@@ -104,10 +106,7 @@ namespace ServiceStack.Redis
 			SafeConnectionClose();
 			Connect(); //sets db to 0
 
-			if (previousDb != DefaultDb)
-			{
-				this.Db = previousDb;
-			}
+			if (previousDb != DefaultDb) this.Db = previousDb;
 
 			return Socket != null;
 		}

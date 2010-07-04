@@ -30,23 +30,20 @@
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="625" fromTop="17" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="409" fromTop="11" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="606" fromTop="22" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="425" fromTop="13" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="506" fromTop="17" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Greet.cs" caret="344" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="825" fromTop="16" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Properties/f:AssemblyInfo.cs" caret="1671" fromTop="39" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="727" fromTop="24" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="733" fromTop="24" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="0" fromTop="0" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="829" fromTop="26" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="533" fromTop="25" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1271" fromTop="25" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="533" fromTop="25" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="147" fromTop="4" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="727" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="372" fromTop="13" />
     </RecentFiles>
     <RecentEdits>
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="644" fromTop="20" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="430" fromTop="12" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Properties/f:AssemblyInfo.cs" caret="1639" fromTop="38" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="722" fromTop="18" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="391" fromTop="9" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="559" fromTop="17" />
@@ -74,6 +71,9 @@
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="384" fromTop="10" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="528" fromTop="24" />
       <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1627" fromTop="40" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="2835" fromTop="23" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="3410" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="5818" fromTop="24" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

@@ -116,7 +116,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 	}
 
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class Order
 	{
 		public Order()
@@ -141,7 +141,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		}
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class OrderHeader
 		: IHasIntId
 	{
@@ -234,7 +234,7 @@ namespace ServiceStack.Examples.ServiceInterface.Types
 		}
 	}
 
-	[DataContract]
+	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
 	public class OrderDetail
 		: IHasStringId
 	{
