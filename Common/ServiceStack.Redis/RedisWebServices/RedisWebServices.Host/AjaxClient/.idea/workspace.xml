@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/JSV.js" afterPath="$PROJECT_DIR$/js/JSV.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/mythz.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/mythz.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/AjaxStack.snippets.js" afterPath="$PROJECT_DIR$/js/AjaxStack.snippets.js" />
     </list>
     <ignored path="AjaxClient.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,13 +28,13 @@
   </component>
   <component name="FileColors" enabled="true" enabledForTabs="true" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.4640523">
+    <splitter split-orientation="horizontal" split-proportion="0.4764706">
       <split-first>
         <leaf>
           <file leaf-file-name="default.htm" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/default.htm">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="43" column="0" selection-start="1609" selection-end="1609" vertical-scroll-proportion="0.0">
+                <state line="28" column="0" selection-start="1134" selection-end="1172" vertical-scroll-proportion="-19.04">
                   <folding />
                 </state>
               </provider>
@@ -64,19 +67,19 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="AjaxStack.snippets.js" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="AjaxStack.snippets.js" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="26" column="23" selection-start="760" selection-end="760" vertical-scroll-proportion="0.0">
+                <state line="2" column="0" selection-start="21" selection-end="21" vertical-scroll-proportion="-0.3299285">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="RedisClient.js" pinned="false" current="false" current-in-tab="true">
+          <file leaf-file-name="RedisClient.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/js/RedisClient.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="46" column="26" selection-start="1141" selection-end="1141" vertical-scroll-proportion="0.1215526">
+                <state line="46" column="26" selection-start="1141" selection-end="1141" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
@@ -86,15 +89,6 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="default.css" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/css/default.css">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="223" column="14" selection-start="3573" selection-end="3573" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file leaf-file-name="App.js" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/js/redisadmin/App.js">
               <provider selected="true" editor-type-id="text-editor">
@@ -113,19 +107,28 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="jsv.html" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/jsv.html">
+          <file leaf-file-name="JSV.js" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/js/JSV.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="0.0">
+                <state line="290" column="16" selection-start="7218" selection-end="7231" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="JSV.js" pinned="false" current="true" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/js/JSV.js">
+          <file leaf-file-name="jsv.html" pinned="false" current="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/jsv.html">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="354" column="5" selection-start="8935" selection-end="8935" vertical-scroll-proportion="0.76066595">
+                <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="-18.36">
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="benchmarks.htm" pinned="false" current="true" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/benchmarks.htm">
+              <provider selected="true" editor-type-id="text-editor">
+                <state line="154" column="59" selection-start="4278" selection-end="4278" vertical-scroll-proportion="-0.27136752">
                   <folding />
                 </state>
               </provider>
@@ -184,11 +187,12 @@
         <option value="$PROJECT_DIR$/js/redisadmin/RedisAdminUi.js" />
         <option value="$PROJECT_DIR$/default.htm" />
         <option value="$PROJECT_DIR$/css/default.css" />
-        <option value="$PROJECT_DIR$/js/AjaxStack.snippets.js" />
         <option value="$PROJECT_DIR$/js/RedisClient.js" />
         <option value="$PROJECT_DIR$/js/redisadmin/App.js" />
         <option value="$PROJECT_DIR$/jsv.html" />
         <option value="$PROJECT_DIR$/js/JSV.js" />
+        <option value="$PROJECT_DIR$/js/AjaxStack.snippets.js" />
+        <option value="$PROJECT_DIR$/benchmarks.htm" />
       </list>
     </option>
   </component>
@@ -406,7 +410,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1176" extended-state="7" />
+    <frame x="-8" y="-8" width="1936" height="1176" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -460,25 +464,6 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="40" selection-start="2298" selection-end="2298" vertical-scroll-proportion="-0.35379812" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/default.htm">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="0" selection-start="1609" selection-end="1609" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/style/style.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1331" column="24" selection-start="47987" selection-end="47987" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/math/size.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="32" column="10" selection-start="1001" selection-end="1001" vertical-scroll-proportion="0.0">
@@ -493,18 +478,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="23" selection-start="760" selection-end="760" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/RedisClient.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="26" selection-start="1141" selection-end="1141" vertical-scroll-proportion="0.1215526">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/css/default.css">
       <provider selected="true" editor-type-id="text-editor">
         <state line="223" column="14" selection-start="3573" selection-end="3573" vertical-scroll-proportion="0.0" />
@@ -513,18 +486,6 @@
     <entry file="file://$PROJECT_DIR$/js/redisadmin/App.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="384" column="2" selection-start="11086" selection-end="11086" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/json/json.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="84" column="10" selection-start="3408" selection-end="3408" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/jsv.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/dom/dom.js">
@@ -555,9 +516,56 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/js/RedisClient.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="46" column="26" selection-start="1141" selection-end="1141" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jsv.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="27" column="37" selection-start="689" selection-end="689" vertical-scroll-proportion="-18.36">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/default.htm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="0" selection-start="1134" selection-end="1172" vertical-scroll-proportion="-19.04">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="0" selection-start="21" selection-end="21" vertical-scroll-proportion="-0.3299285">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/closure-library/closure/goog/json/json.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="84" column="10" selection-start="3408" selection-end="3408" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/JSV.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="354" column="5" selection-start="8935" selection-end="8935" vertical-scroll-proportion="0.76066595">
+        <state line="290" column="16" selection-start="7218" selection-end="7231" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavascriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/ECMAScript.js2">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="65" column="25" selection-start="2688" selection-end="2688" vertical-scroll-proportion="0.33298647">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/benchmarks.htm">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="154" column="59" selection-start="4278" selection-end="4278" vertical-scroll-proportion="-0.27136752">
           <folding />
         </state>
       </provider>

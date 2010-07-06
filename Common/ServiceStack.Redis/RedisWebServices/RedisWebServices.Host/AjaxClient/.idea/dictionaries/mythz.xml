@@ -5,6 +5,7 @@
       <w>redis</w>
       <w>redisadmin</w>
       <w>resize</w>
+      <w>stringify</w>
       <w>viewport</w>
     </words>
   </dictionary>

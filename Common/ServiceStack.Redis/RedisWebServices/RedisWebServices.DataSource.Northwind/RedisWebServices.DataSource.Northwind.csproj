@@ -42,6 +42,9 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -52,8 +55,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Northwind.dtos.cs" />
     <Compile Include="Northwind.models.cs" />
     <Compile Include="NorthwindData.cs" />
+    <Compile Include="NorthwindDtoData.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NorthwindDtoFactory.cs" />
     <Compile Include="NorthwindFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

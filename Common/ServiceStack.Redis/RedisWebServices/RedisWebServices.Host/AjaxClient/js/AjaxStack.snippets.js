@@ -2,7 +2,7 @@
 
 goog.require("goog.json");
 
-function JsonServiceClient(baseUri, type)
+function JsonServiceClient(baseUri)
 {
 	this.baseSyncReplyUri = Path.combine(baseUri, "Json/SyncReply");
 	this.baseAsyncOneWayUri = Path.combine(baseUri, "Json/AsyncOneWay");

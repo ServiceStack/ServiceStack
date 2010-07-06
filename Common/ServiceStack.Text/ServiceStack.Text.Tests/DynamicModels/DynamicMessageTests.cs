@@ -12,14 +12,14 @@ namespace ServiceStack.Text.Tests.DynamicModels
 		public int RetryAttempts { get; set; }
 		public object Body { get; set; }
 
-		public Type BodyType { get; set; }
+		public Type Type { get; set; }
 		public object GetBody()
 		{
-			//When deserialized this.Body is a string so use the serilaized this.BodyType
-			//to deserialize it back into the original type
+			//When deserialized this.Body is a string so use the serilaized 
+			//this.Type to deserialize it back into the original type
 			return this.Body is string
-					? TypeSerializer.DeserializeFromString((string)this.Body, this.BodyType)
-					: this.Body;
+			? TypeSerializer.DeserializeFromString((string)this.Body, this.Type)
+			: this.Body;
 		}
 	}
 
@@ -73,7 +73,7 @@ namespace ServiceStack.Text.Tests.DynamicModels
 				Priority = 3,
 				ReplyTo = "http://path/to/reply.svc",
 				RetryAttempts = 1,
-				BodyType = typeof(MessageBody),
+				Type = typeof(MessageBody),
 				Body = new MessageBody
 				{
 					Action = "Alphabet",

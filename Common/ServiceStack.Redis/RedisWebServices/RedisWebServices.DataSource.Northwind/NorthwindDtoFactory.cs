@@ -1,30 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace RedisWebServices.DataSource.Northwind
 {
-	public static class NorthwindFactory
+	public static class NorthwindDtoFactory
 	{
-		public static readonly List<Type> ModelTypes = new List<Type> {
-			typeof(Employee),
-			typeof(Category),
-			typeof(Customer),
-			typeof(Shipper),
-			typeof(Supplier),
-			typeof(Order),
-			typeof(Product),
-			typeof(OrderDetail),
-			typeof(CustomerCustomerDemo),
-			typeof(Category),
-			typeof(CustomerDemographic),
-			typeof(Region),
-			typeof(Territory),
-			typeof(EmployeeTerritory),
-		};
-
-		public static Category Category(int id, string categoryName, string description, byte[] picture)
+		public static CategoryDto Category(int id, string categoryName, string description, byte[] picture)
 		{
-			return new Category {
+			return new CategoryDto
+			{
 				Id = id,
 				CategoryName = categoryName,
 				Description = description,
@@ -32,13 +18,14 @@ namespace RedisWebServices.DataSource.Northwind
 			};
 		}
 
-		public static Customer Customer(
+		public static CustomerDto Customer(
 			string customerId, string companyName, string contactName, string contactTitle,
 			string address, string city, string region, string postalCode, string country,
 			string phoneNo, string faxNo,
 			byte[] picture)
 		{
-			return new Customer {
+			return new CustomerDto
+			{
 				Id = customerId,
 				CompanyName = companyName,
 				ContactName = contactName,
@@ -54,7 +41,7 @@ namespace RedisWebServices.DataSource.Northwind
 			};
 		}
 
-		public static Employee Employee(
+		public static EmployeeDto Employee(
 			int employeeId, string lastName, string firstName, string title,
 			string titleOfCourtesy, DateTime? birthDate, DateTime? hireDate,
 			string address, string city, string region, string postalCode, string country,
@@ -62,7 +49,8 @@ namespace RedisWebServices.DataSource.Northwind
 			byte[] photo,
 			string notes, int? reportsTo, string photoPath)
 		{
-			return new Employee {
+			return new EmployeeDto
+			{
 				Id = employeeId,
 				LastName = lastName,
 				FirstName = firstName,
@@ -84,22 +72,24 @@ namespace RedisWebServices.DataSource.Northwind
 			};
 		}
 
-		public static Shipper Shipper(int id, string companyName, string phoneNo)
+		public static ShipperDto Shipper(int id, string companyName, string phoneNo)
 		{
-			return new Shipper {
+			return new ShipperDto
+			{
 				Id = id,
 				CompanyName = companyName,
 				Phone = phoneNo,
 			};
 		}
 
-		public static Supplier Supplier(
+		public static SupplierDto Supplier(
 			int supplierId, string companyName, string contactName, string contactTitle,
 			string address, string city, string region, string postalCode, string country,
 			string phoneNo, string faxNo,
 			string homePage)
 		{
-			return new Supplier {
+			return new SupplierDto
+			{
 				Id = supplierId,
 				CompanyName = companyName,
 				ContactName = contactName,
@@ -115,12 +105,13 @@ namespace RedisWebServices.DataSource.Northwind
 			};
 		}
 
-		public static Order Order(
+		public static OrderDto Order(
 			int orderId, string customerId, int employeeId, DateTime? orderDate, DateTime? requiredDate,
 			DateTime? shippedDate, int shipVia, decimal freight, string shipName,
 			string address, string city, string region, string postalCode, string country)
 		{
-			return new Order {
+			return new OrderDto
+			{
 				Id = orderId,
 				CustomerId = customerId,
 				EmployeeId = employeeId,
@@ -138,12 +129,13 @@ namespace RedisWebServices.DataSource.Northwind
 			};
 		}
 
-		public static Product Product(
+		public static ProductDto Product(
 			int productId, string productName, int supplierId, int categoryId,
 			string qtyPerUnit, decimal unitPrice, short unitsInStock,
 			short unitsOnOrder, short reorderLevel, bool discontinued)
 		{
-			return new Product {
+			return new ProductDto
+			{
 				Id = productId,
 				ProductName = productName,
 				SupplierId = supplierId,
@@ -157,10 +149,11 @@ namespace RedisWebServices.DataSource.Northwind
 			};
 		}
 
-		public static OrderDetail OrderDetail(
+		public static OrderDetailDto OrderDetail(
 			int orderId, int productId, decimal unitPrice, short quantity, double discount)
 		{
-			return new OrderDetail {
+			return new OrderDetailDto
+			{
 				OrderId = orderId,
 				ProductId = productId,
 				UnitPrice = unitPrice,
@@ -169,38 +162,42 @@ namespace RedisWebServices.DataSource.Northwind
 			};
 		}
 
-		public static CustomerCustomerDemo CustomerCustomerDemo(
+		public static CustomerCustomerDemoDto CustomerCustomerDemo(
 			string customerId, string customerTypeId)
 		{
-			return new CustomerCustomerDemo {
+			return new CustomerCustomerDemoDto
+			{
 				Id = customerId,
 				CustomerTypeId = customerTypeId,
 			};
 		}
 
-		public static Region Region(
+		public static RegionDto Region(
 			int regionId, string regionDescription)
 		{
-			return new Region {
+			return new RegionDto
+			{
 				Id = regionId,
 				RegionDescription = regionDescription,
 			};
 		}
 
-		public static Territory Territory(
+		public static TerritoryDto Territory(
 			string territoryId, string territoryDescription, int regionId)
 		{
-			return new Territory {
+			return new TerritoryDto
+			{
 				Id = territoryId,
 				TerritoryDescription = territoryDescription,
 				RegionId = regionId,
 			};
 		}
 
-		public static EmployeeTerritory EmployeeTerritory(
+		public static EmployeeTerritoryDto EmployeeTerritory(
 			int employeeId, string territoryId)
 		{
-			return new EmployeeTerritory {
+			return new EmployeeTerritoryDto
+			{
 				EmployeeId = employeeId,
 				TerritoryId = territoryId,
 			};

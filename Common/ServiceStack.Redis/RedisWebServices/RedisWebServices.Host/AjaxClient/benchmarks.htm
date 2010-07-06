@@ -1,0 +1,306 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=8">
+    <title>JSON vs JSV Benchmarks</title>
+
+    <style type="text/css">
+        BODY {
+            font-family: arial;
+        }
+
+        H2 {
+            color: #073;
+            margin-bottom: 20px;
+            font: normal 26px Tahoma;
+        }
+
+        H2 SPAN {
+            color: #444;
+            background: #f1f1f1;
+            padding: 0 5px;
+        }
+
+        H3 {
+            border-top: solid 1px #ccc;
+            padding: 10px 0;
+            color: #333;
+            font: normal 22px Tahoma;
+            margin-left: 10px;
+        }
+
+        SPAN.summary {
+            background: #FAFFBD;
+            border: solid 1px #C3D9FF;
+            display: block;
+            margin: 10px;
+            padding: 10px;
+            width: 850px;
+            font-size: 13px;
+        }
+
+        SPAN.summary STRONG {
+            padding: 0 5px;
+            font-size: 18px;
+            line-height: 28px;
+        }
+
+        #combined H3 {
+            color: #073;
+            margin-left: 350px;
+            margin-bottom: 0;
+            border: none;
+            font-size: 26px;
+        }
+
+        #combined TABLE THEAD TH {
+            background: #036;
+        }
+
+        TABLE {
+            border-collapse: collapse;
+            margin: 20px;
+        }
+
+        TABLE CAPTION {
+            color: #333;
+            padding-bottom: 5px;
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        TABLE THEAD TH {
+            background: #444;
+            color: #fff;
+            padding: 5px 10px;
+            font-weight: normal;
+        }
+
+        TABLE TBODY TH {
+            background: #f1f1f1;
+            font-weight: normal;
+            padding: 5px 20px 5px 10px;
+        }
+
+        TABLE TBODY TH.c1 {
+            text-align: left;
+        }
+
+        TABLE TD {
+            padding: 5px 10px;
+            text-align: center;
+            border-right: solid 1px #f1f1f1;
+            border-bottom: solid 1px #f1f1f1;
+        }
+
+        TR.failed TD, TR.failed TH {
+            text-decoration: line-through;
+            color: red;
+        }
+
+        TR.best-time TD, TR.best-time TH {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+
+    <script src="js/closure-library/closure/goog/base.js"></script>
+
+    <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="js/AjaxStack.snippets.js"></script>
+    <script type="text/javascript" src="js/JSV.js"></script>
+
+    <script type="text/javascript">
+        goog.require('goog.json');
+    </script>
+
+    <script type="text/javascript">
+        var jsonServiceClient, jsvServiceClient, jsonData, jsvData;
+
+        $(function() {
+            jsonServiceClient = new JsonServiceClient("http://localhost/RedisWebServices.Host/Public/");
+            jsvServiceClient = new JsvServiceClient("http://localhost/RedisWebServices.Host/Public/");
+
+            $("#btnFetch").click(function() {
+                jsonData = jsvData = null;
+                var alertFn = function() {
+                    if (jsonData && jsvData) alert('Json and Jsv loaded!');
+                };
+
+                jsonServiceClient.getFromService("GetNorthwindData", null, function(r) {
+                    jsonData = r;
+                    alertFn();
+                });
+                jsvServiceClient.getFromService("GetNorthwindData", null, function(r) {
+                    jsvData = r;
+                    alertFn();
+                });
+            });
+
+            $("#btnRun").click(function() {
+                var times = 10000;
+
+                var typeResults = {};
+
+                var row = jsonData.Categories[0];
+                for (var rowType in jsonData)
+                {
+                    var rows = jsonData[rowType];
+                    if (!rows.length || rows.length == 0) continue;
+
+                    var row = rows[0];
+                    typeResults[rowType] = runBenchmarks(times, row);
+                }
+                $("#log").html(JSV.stringify(typeResults));
+            });
+
+            var BENCHMARK_TYPE =
+            {
+                GOOG_PARSE: 1,
+                GOOG_UNSAFE_PARSE: 2,
+                GOOG_SERIALIZE: 3,
+                JSON_PARSE: 4,
+                JSON_STRINGIFY: 5,
+                JSV_PARSE: 6,
+                JSV_STRINGIFY: 7
+            };
+
+            function runBenchmarks(times, row)
+            {
+                var start, end, elapsed;
+                var results = [];
+
+                start = new Date().getTime();
+                for (var i = 0; i < times; i++) {
+                    goog.json.serialize(row);
+                }
+                results[BENCHMARK_TYPE.GOOG_SERIALIZE] = new Date().getTime() - start; 
+
+                start = new Date().getTime();
+                for (var i = 0; i < times; i++) {
+                    JSON.stringify(row);
+                }
+                results[BENCHMARK_TYPE.JSON_STRINGIFY] = new Date().getTime() - start; 
+
+                start = new Date().getTime();
+                for (var i = 0; i < times; i++) {
+                    JSV.stringify(row);
+                }
+                results[BENCHMARK_TYPE.JSV_STRINGIFY] = new Date().getTime() - start;
+
+                var json = goog.json.serialize(row);
+                var jsv = JSV.stringify(row);
+
+                start = new Date().getTime();
+                for (var i = 0; i < times; i++) {
+                    goog.json.parse(json);
+                }
+                results[BENCHMARK_TYPE.GOOG_PARSE] = new Date().getTime() - start;
+
+                start = new Date().getTime();
+                for (var i = 0; i < times; i++) {
+                    goog.json.unsafeParse(json);
+                }
+                results[BENCHMARK_TYPE.GOOG_UNSAFE_PARSE] = new Date().getTime() - start;
+
+                start = new Date().getTime();
+                for (var i = 0; i < times; i++) {
+                    JSON.parse(json);
+                }
+                results[BENCHMARK_TYPE.JSON_PARSE] = new Date().getTime() - start;
+
+                start = new Date().getTime();
+                for (var i = 0; i < times; i++) {
+                    JSV.parse(jsv);
+                }
+                results[BENCHMARK_TYPE.JSV_PARSE] = new Date().getTime() - start;
+
+                return results;
+            }
+        });
+    </script>
+</head>
+
+<body>
+
+<h2>Results of <span>JSON vs JSV</span> Northwind database Javascript serialization benchmarks</h2>
+<span class="summary">
+    These benchmarks show the total time in milliseconds that it takes each serializer to serialize
+    and deserialize the first row from each table in the
+    <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Common/DataModel/NorthwindData.cs'>Northwind
+        Database</a>
+    <strong>1,000</strong> Times.
+    <br/><br/>The full source code of the serialization benchmarks is
+    <a href='http://code.google.com/p/servicestack/source/browse/trunk/Common/Northwind.Benchmarks/Northwind.Benchmarks.Console/Program.cs'>available
+        here</a>.
+</span>
+
+<button id="btnFetch">Fetch Data</button>
+<button id="btnRun">Run Tests</button>
+
+<div id='combined'>
+    <h3>Combined results of all benchmarks below</h3>
+    <table>
+        <caption>* All times measured in ticks and payload size in bytes</caption>
+        <thead>
+        <tr>
+            <th>Serializer</th>
+            <th>Payload size</th>
+            <th>Larger than best</th>
+            <th>Serialization</th>
+            <th>Deserialization</th>
+            <th>Total</th>
+            <th>Avg per iteration</th>
+            <th>Slower than best</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class=''>
+            <th class='c1'>goog.serialize/goog.parse</th>
+            <td>4097</td>
+            <th>4.68x</th>
+            <td>235392060</td>
+            <td>643889088</td>
+            <td>879281148</td>
+            <td>879.2811</td>
+            <th>6.72x</th>
+        </tr>
+        <tr class=''>
+            <th class='c1'>goog.serialize/goog.unsafeParse</th>
+            <td>4097</td>
+            <th>4.68x</th>
+            <td>235392060</td>
+            <td>643889088</td>
+            <td>879281148</td>
+            <td>879.2811</td>
+            <th>6.72x</th>
+        </tr>
+        <tr class=''>
+            <th class='c1'>JSON.parse/JSON.stringify</th>
+            <td>4097</td>
+            <th>4.68x</th>
+            <td>235392060</td>
+            <td>643889088</td>
+            <td>879281148</td>
+            <td>879.2811</td>
+            <th>6.72x</th>
+        </tr>
+        <tr class=''>
+            <th class='c1'>JSV.parse/JSV.stringify</th>
+            <td>1958</td>
+            <th>2.24x</th>
+            <td>400010575</td>
+            <td>932212071</td>
+            <td>1332222646</td>
+            <td>1332.2226</td>
+            <th>10.18x</th>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="log"></div>
+
+</body>
+</html>

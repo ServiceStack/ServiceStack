@@ -66,6 +66,7 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AjaxClient\benchmarks.htm" />
     <Content Include="AjaxClient\css\common.css" />
     <Content Include="AjaxClient\css\default.css" />
     <Content Include="AjaxClient\css\tab.css" />

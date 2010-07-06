@@ -395,7 +395,7 @@ JSV.containsAny_ = function(str, tests)
  * @param baseUri
  * @param type
  */
-function JsvServiceClient(baseUri, type)
+function JsvServiceClient(baseUri)
 {
 	this.baseSyncReplyUri = JsvServiceClient.combine_(baseUri, "Jsv/SyncReply");
 	this.baseAsyncOneWayUri = JsvServiceClient.combine_(baseUri, "Jsv/AsyncOneWay");

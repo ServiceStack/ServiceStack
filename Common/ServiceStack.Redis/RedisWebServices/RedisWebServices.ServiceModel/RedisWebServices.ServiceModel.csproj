@@ -66,6 +66,7 @@
     <Compile Include="Operations\Admin\FlushDb.cs" />
     <Compile Include="Operations\Admin\RewriteAppendOnlyFileAsync.cs" />
     <Compile Include="Operations\Admin\Save.cs" />
+    <Compile Include="Operations\App\GetNorthwindData.cs" />
     <Compile Include="Operations\App\PopulateRedisWithData.cs" />
     <Compile Include="Operations\App\GetCodeGeneratedJavaScript.cs" />
     <Compile Include="Operations\Common\GetEntryTypes.cs" />
@@ -171,6 +172,12 @@
     <Compile Include="Types\KeyValuePair.cs" />
     <Compile Include="Types\ItemWithScore.cs" />
     <Compile Include="Types\KeyType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RedisWebServices.DataSource.Northwind\RedisWebServices.DataSource.Northwind.csproj">
+      <Project>{508FA67C-D7B3-4823-A26E-F6467C15B83A}</Project>
+      <Name>RedisWebServices.DataSource.Northwind</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

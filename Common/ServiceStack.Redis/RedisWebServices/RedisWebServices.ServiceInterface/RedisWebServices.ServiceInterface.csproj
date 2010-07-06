@@ -68,6 +68,7 @@
     <Compile Include="Admin\RewriteAppendOnlyFileAsyncService.cs" />
     <Compile Include="Admin\FlushAllService.cs" />
     <Compile Include="AppConfig.cs" />
+    <Compile Include="App\GetNorthwindDataService.cs" />
     <Compile Include="App\PopulateRedisWithDataService.cs" />
     <Compile Include="App\GetCodeGeneratedJavaScriptService.cs" />
     <Compile Include="Common\AppendToValueService.cs" />
