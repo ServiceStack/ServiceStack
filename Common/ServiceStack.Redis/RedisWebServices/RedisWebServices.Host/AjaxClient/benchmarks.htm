@@ -122,26 +122,25 @@
             jsonServiceClient = new JsonServiceClient("http://localhost/RedisWebServices.Host/Public/");
             jsvServiceClient = new JsvServiceClient("http://localhost/RedisWebServices.Host/Public/");
 
-            $("#btnFetch").click(function() {
-                jsonData = jsvData = null;
-                var alertFn = function() {
-                    if (jsonData && jsvData) alert('Json and Jsv loaded!');
-                };
+            var isReadyFn = function() {
+                if (jsonData && jsvData) $("#btnRun").attr('disabled',false);
+            };
 
-                jsonServiceClient.getFromService("GetNorthwindData", null, function(r) {
-                    jsonData = r;
-                    alertFn();
-                });
-                jsvServiceClient.getFromService("GetNorthwindData", null, function(r) {
-                    jsvData = r;
-                    alertFn();
-                });
+            jsonServiceClient.getFromService("GetNorthwindData", null, function(r) {
+                jsonData = r;
+                isReadyFn();
+            });
+            jsvServiceClient.getFromService("GetNorthwindData", null, function(r) {
+                jsvData = r;
+                isReadyFn();
             });
 
             $("#btnRun").click(function() {
                 var times = 10000;
 
                 var typeResults = {};
+                var typeBenchmarkTimes = {};
+                var combinedBenchmarkTimes = {};
 
                 var row = jsonData.Categories[0];
                 for (var rowType in jsonData)
@@ -150,9 +149,69 @@
                     if (!rows.length || rows.length == 0) continue;
 
                     var row = rows[0];
-                    typeResults[rowType] = runBenchmarks(times, row);
+
+                    var benchmarks = runBenchmarks(times, row);
+                    typeResults[rowType] = benchmarks;
+
+                    var jsonRow = JSON.stringify(row);
+                    var jsvRow = JSV.stringify(row);
+
+                    var minPayload = jsonRow.length < jsvRow.length ? jsonRow.length : jsvRow.length;
+
+                    var benchmarkTimes = [
+                        ['goog.serialize/goog.parse', jsonRow.length, Math.round((jsonRow.length / minPayload) * 100) / 100,
+                            benchmarks[BENCHMARK_TYPE.GOOG_SERIALIZE],
+                            benchmarks[BENCHMARK_TYPE.GOOG_PARSE],
+                            benchmarks[BENCHMARK_TYPE.GOOG_SERIALIZE] + benchmarks[BENCHMARK_TYPE.GOOG_PARSE],
+                            Math.round(((benchmarks[BENCHMARK_TYPE.GOOG_SERIALIZE] + benchmarks[BENCHMARK_TYPE.GOOG_PARSE]) / times)*100)/100,
+                            0
+                        ],
+                        ['goog.serialize/goog.unsafeParse', jsonRow.length, Math.round((jsonRow.length / minPayload) * 100) / 100,
+                            benchmarks[BENCHMARK_TYPE.GOOG_SERIALIZE],
+                            benchmarks[BENCHMARK_TYPE.GOOG_UNSAFE_PARSE],
+                            benchmarks[BENCHMARK_TYPE.GOOG_SERIALIZE] + benchmarks[BENCHMARK_TYPE.GOOG_UNSAFE_PARSE],
+                            Math.round(((benchmarks[BENCHMARK_TYPE.GOOG_SERIALIZE] + benchmarks[BENCHMARK_TYPE.GOOG_UNSAFE_PARSE]) / times)*100)/100,
+                            0
+                        ],
+                        ['JSON.stringify/JSON.parse', jsonRow.length, Math.round((jsonRow.length / minPayload) * 100) / 100,
+                            benchmarks[BENCHMARK_TYPE.JSON_STRINGIFY],
+                            benchmarks[BENCHMARK_TYPE.JSON_PARSE],
+                            benchmarks[BENCHMARK_TYPE.JSON_STRINGIFY] + benchmarks[BENCHMARK_TYPE.JSON_PARSE],
+                            Math.round(((benchmarks[BENCHMARK_TYPE.JSON_STRINGIFY] + benchmarks[BENCHMARK_TYPE.JSON_PARSE]) / times)*100)/100,
+                            0
+                        ],
+                        ['JSV.stringify/JSV.parse', jsvRow.length, Math.round((jsvRow.length / minPayload) * 100) / 100,
+                            benchmarks[BENCHMARK_TYPE.JSV_STRINGIFY],
+                            benchmarks[BENCHMARK_TYPE.JSV_PARSE],
+                            benchmarks[BENCHMARK_TYPE.JSV_STRINGIFY] + benchmarks[BENCHMARK_TYPE.JSV_PARSE],
+                            Math.round(((benchmarks[BENCHMARK_TYPE.JSV_STRINGIFY] + benchmarks[BENCHMARK_TYPE.JSV_PARSE]) / times)*100)/100,
+                            0
+                        ],
+                    ];
+                    typeBenchmarkTimes[rowType] = benchmarkTimes;
+
+                    var minTotalTime = 0;
+                    for (var i=0; i<benchmarkTimes.length; i++)
+                    {
+                        var benchmarkTime = benchmarkTimes[i];
+                        var totalTime = benchmarkTime[6];
+
+                        if (i == 0 || totalTime < minTotalTime)
+                        {
+                            minTotalTime = totalTime;
+                        }
+                    }
+
+                    for (var i=0; i<benchmarkTimes.length; i++)
+                    {
+                        benchmarkTimes[i][8] = benchmarkTimes[i][6] / minTotalTime;
+                    }
+
+                    var html = getTableHtml(rowType, times, benchmarkTimes);
+                    $("#results").append(html);
                 }
-                $("#log").html(JSV.stringify(typeResults));
+
+                //$("#log").html(JSV.stringify(typeResults));
             });
 
             var BENCHMARK_TYPE =
@@ -218,6 +277,44 @@
 
                 return results;
             }
+
+            function getTableHtml(rowType, times, benchmarkTimes)
+            {
+                var sb = [];
+                sb.push('<h3>Results of serializing and deserializing ' + rowType + ' ' + times + ' times</h3>');
+                sb.push('<table><caption>* All times measured in milliseconds</caption>');
+                sb.push('<thead>');
+                sb.push('<tr>');
+                sb.push('<th>Serializer</th>');
+                sb.push('<th>Payload size</th>');
+                sb.push('<th>Larger than best</th>');
+                sb.push('<th>Serialization</th>');
+                sb.push('<th>Deserialization</th>');
+                sb.push('<th>Total</th>');
+                sb.push('<th>Avg per iteration</th>');
+                sb.push('<th>Slower than best</th>');
+                sb.push('</tr>');
+                sb.push('</thead>');
+                sb.push('<tbody>');
+
+                for (var i=0; i<benchmarkTimes.length; i++)
+                {
+                    sb.push('<tr>');
+                    sb.push('<td>' + benchmarkTimes[i][0] + '</td>');
+                    sb.push('<td>' + benchmarkTimes[i][1] + '</td>');
+                    sb.push('<td>' + benchmarkTimes[i][2] + '</td>');
+                    sb.push('<td>' + benchmarkTimes[i][3] + '</td>');
+                    sb.push('<td>' + benchmarkTimes[i][4] + '</td>');
+                    sb.push('<td>' + benchmarkTimes[i][5] + '</td>');
+                    sb.push('<td>' + benchmarkTimes[i][6] + '</td>');
+                    sb.push('<td>' + benchmarkTimes[i][7] + '</td>');
+                    sb.push('</tr>');
+                }
+                sb.push('</tbody>');
+                sb.push('</table>');
+
+                return sb.join('');
+            }
         });
     </script>
 </head>
@@ -236,8 +333,7 @@
         here</a>.
 </span>
 
-<button id="btnFetch">Fetch Data</button>
-<button id="btnRun">Run Tests</button>
+<button id="btnRun" disabled="disabled">Run Benchmarks</button>
 
 <div id='combined'>
     <h3>Combined results of all benchmarks below</h3>
@@ -298,6 +394,10 @@
         </tr>
         </tbody>
     </table>
+</div>
+
+<div id='results'>
+
 </div>
 
 <div id="log"></div>

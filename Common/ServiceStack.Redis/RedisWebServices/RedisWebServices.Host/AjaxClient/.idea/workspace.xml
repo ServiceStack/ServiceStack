@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/JSV.js" afterPath="$PROJECT_DIR$/js/JSV.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/mythz.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/mythz.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/AjaxStack.snippets.js" afterPath="$PROJECT_DIR$/js/AjaxStack.snippets.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/benchmarks.htm" afterPath="$PROJECT_DIR$/benchmarks.htm" />
     </list>
     <ignored path="AjaxClient.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -70,7 +68,7 @@
           <file leaf-file-name="AjaxStack.snippets.js" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="2" column="0" selection-start="21" selection-end="21" vertical-scroll-proportion="-0.3299285">
+                <state line="2" column="0" selection-start="21" selection-end="21" vertical-scroll-proportion="-0.38202247">
                   <folding />
                 </state>
               </provider>
@@ -128,7 +126,7 @@
           <file leaf-file-name="benchmarks.htm" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/benchmarks.htm">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="154" column="59" selection-start="4278" selection-end="4278" vertical-scroll-proportion="-0.27136752">
+                <state line="192" column="0" selection-start="6867" selection-end="6867" vertical-scroll-proportion="-0.017094018">
                   <folding />
                 </state>
               </provider>
@@ -539,7 +537,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="0" selection-start="21" selection-end="21" vertical-scroll-proportion="-0.3299285">
+        <state line="2" column="0" selection-start="21" selection-end="21" vertical-scroll-proportion="-0.38202247">
           <folding />
         </state>
       </provider>
@@ -565,7 +563,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/benchmarks.htm">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="154" column="59" selection-start="4278" selection-end="4278" vertical-scroll-proportion="-0.27136752">
+        <state line="192" column="0" selection-start="6867" selection-end="6867" vertical-scroll-proportion="-0.017094018">
           <folding />
         </state>
       </provider>
