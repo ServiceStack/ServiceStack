@@ -47,6 +47,9 @@ namespace ServiceStack.Redis
 				lastCommand = null;
 				lastSocketException = null;
 				LastConnectedAtTimestamp = Stopwatch.GetTimestamp();
+
+				//force version reload
+				log.DebugFormat("redis-server Version: {0}", IsPreVersion1_26);
 			}
 			catch (SocketException ex)
 			{

@@ -211,7 +211,7 @@ namespace ServiceStack.Redis
 
 		public List<string> SearchKeys(string pattern)
 		{
-			var hasBug = this.ServerVersion.CompareTo("1.2.6") <= 0;
+			var hasBug = IsPreVersion1_26;
 			if (hasBug)
 			{
 				var spaceDelimitedKeys = KeysV126(pattern).FromUtf8Bytes();

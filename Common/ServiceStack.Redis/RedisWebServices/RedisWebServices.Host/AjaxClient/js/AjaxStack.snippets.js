@@ -27,7 +27,7 @@ JsonServiceClient.prototype.send = function(webMethod, request, onSuccess, onErr
 				return;
 			}
 
-            var status = JsvServiceClient.parseResponseStatus_(response.ResponseStatus);
+            var status = JsonServiceClient.parseResponseStatus_(response.ResponseStatus);
 			if (status.isSuccess)
 			{
 				if (onSuccess) onSuccess(response);

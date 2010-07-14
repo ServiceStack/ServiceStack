@@ -20,9 +20,19 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			NetworkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
 		}
 
-		protected static bool AllowRequest(HttpContext context)
+		protected static bool DefaultHandledRequest(HttpContext context)
 		{
-			return context.Request.HttpMethod != "OPTIONS";
+			if (context.Request.HttpMethod == "OPTIONS")
+			{
+				foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+				{
+					context.Response.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
+				}
+
+				return true;
+			}
+
+			return false;
 		}
 
 		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes)

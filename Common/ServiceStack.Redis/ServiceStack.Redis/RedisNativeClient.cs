@@ -150,6 +150,19 @@ namespace ServiceStack.Redis
 			}
 		}
 
+		private bool? isPreVersion1_26;
+		protected bool IsPreVersion1_26
+		{
+			get
+			{
+				if (isPreVersion1_26 == null)
+				{
+					isPreVersion1_26 = this.ServerVersion.CompareTo("1.2.6") <= 0;
+				}
+				return isPreVersion1_26.Value;
+			}
+		}
+
 		public bool Ping()
 		{
 			return SendExpectCode(Commands.Ping) == "PONG";
@@ -655,12 +668,24 @@ namespace ServiceStack.Redis
 		{
 			AssertListIdAndValue(listId, value);
 
+			if (IsPreVersion1_26)
+			{
+				SendExpectSuccess(Commands.RPush, listId.ToUtf8Bytes(), value);
+				return -1;
+			}
+
 			return SendExpectInt(Commands.RPush, listId.ToUtf8Bytes(), value);
 		}
 
 		public int LPush(string listId, byte[] value)
 		{
 			AssertListIdAndValue(listId, value);
+
+			if (IsPreVersion1_26)
+			{
+				SendExpectSuccess(Commands.LPush, listId.ToUtf8Bytes(), value);
+				return -1;
+			}
 
 			return SendExpectInt(Commands.LPush, listId.ToUtf8Bytes(), value);
 		}
