@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdhocTests.cs" />
     <Compile Include="SortedSetOperationsTests.cs" />
     <Compile Include="SetOperationsTests.cs" />
     <Compile Include="HashOperationsTests.cs" />

@@ -45,9 +45,14 @@
     var tree;
     $(function() {
 
-        var debugWindow = new goog.debug.FancyWindow('main');
-        debugWindow.setEnabled(true);
-        debugWindow.init();
+//        var debugWindow = new goog.debug.FancyWindow('main');
+//        debugWindow.setEnabled(true);
+//        debugWindow.init();
+
+        var divConsole = new goog.debug.DivConsole(goog.dom.getElement('divconsole'));
+        divConsole.setCapturing(true);
+        //var logger = goog.debug.LogManager.getRoot();
+
 
         var app = redisadmin.App.getInstance();
         var redis = app.getRedisClient();
@@ -98,6 +103,7 @@
             <div id="mainNav"></div>
         </div>
         <div id="content" class='goog-splitpane-second-container'>
+            <div id="divconsole" style="width:500px; float:right"></div>
             <div id="tab" class="goog-tab-bar goog-tab-bar-top">
                 <div class="goog-tab goog-tab-selected">Start Page</div>
                 <!--<div id="mainNav-tab" class="goog-tab">Main Tab<img class="close-tab" src="images/close_box.gif" title="close tab" /></div>-->

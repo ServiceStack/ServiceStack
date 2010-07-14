@@ -66,7 +66,7 @@ namespace ServiceStack.Text.Jsv
 			if (type == typeof(object))
 				return x => x;
 
-			var specialParseFn = SpecialTypeUtils.GetParseMethod(type);
+			var specialParseFn = JsvWriter.Instance.GetSpecialParseMethod(type);
 			if (specialParseFn != null)
 				return specialParseFn;
 

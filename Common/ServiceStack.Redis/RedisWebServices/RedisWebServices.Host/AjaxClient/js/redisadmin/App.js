@@ -292,19 +292,31 @@ redisadmin.App.prototype.showKey = function(key, inNewTab)
 
 redisadmin.App.prototype.showKeyDetails = function(key, textValue)
 {
-    var html = "<h3>" + key + "</h3>"
-             + "<textarea class='key-value'>" + textValue + "</textarea>";
+    var html = "<h2>" + key + "</h2>";
 
     try
     {
         var obj = JSV.parse(textValue);
-        html += jLinq.from(obj).toTable();
+
+        html += "<dl>";
+        for (var k in obj)
+        {
+            html += "<dt>" + k + "</dt>"
+                  + "<dd>" + obj[k] + "</dd>";
+        }
+        html += "</dl>";
+        //html += jLinq.from(obj).toTable();
     }
     catch (e) {
         $this.log.severe("Error parsing key: " + key + ", Error: " + e);
     }
 
+    html += "<span class='lnk-show'>show contents</span>"
+          + "<textarea style='display:none' class='key-value'>" + textValue + "</textarea>";
+
     goog.dom.getElement('tab_content').innerHTML = html;
+
+    
 }
 
 redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
@@ -347,7 +359,7 @@ redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
 
         //$this.benchmarkTextFormats(sbJsv.join(''), goog.json.serialize(rows));
 
-        var html = "<h3>" + parentLabel + "</h3>"
+        var html = "<h2>" + parentLabel + "</h2>"
                  + "<textarea class='key-value'>" + goog.json.serialize(rows) + "</textarea>";
 
         html += jLinq.from(rows).toTable();

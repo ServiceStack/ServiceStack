@@ -103,7 +103,7 @@ namespace ServiceStack.Text
 				var ranOnce = false;
 				foreach (var header in dataSource.Headers)
 				{
-					WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+					TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 					writer.Write(header);
 				}
 				writer.WriteLine();
@@ -114,7 +114,7 @@ namespace ServiceStack.Text
 				var ranOnce = false;
 				foreach (var field in row)
 				{
-					WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+					TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 					writer.Write(field.ToCsvField());
 				}

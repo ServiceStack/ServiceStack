@@ -101,7 +101,7 @@ namespace ServiceStack.Text.Jsv
 					writeValueFn = JsvWriter.GetWriteFn(dictionaryValue.GetType());
 
 
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				writeKeyFn(writer, key);
 
@@ -136,7 +136,7 @@ namespace ServiceStack.Text.Jsv
 			var ranOnce = false;
 			foreach (var kvp in map)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				writeKeyFn(writer, kvp.Key);
 

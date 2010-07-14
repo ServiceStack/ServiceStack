@@ -88,7 +88,9 @@
     <Compile Include="DynamicModels\DataModel\ObjectGraph.cs" />
     <Compile Include="DynamicModels\DataModel\StrictType.cs" />
     <Compile Include="DynamicModels\DynamicMessageTests.cs" />
+    <Compile Include="DynamicModels\ModelWithAllTypes.cs" />
     <Compile Include="InterfaceTests.cs" />
+    <Compile Include="JsonTests\ModelWithAllTypesTests.cs" />
     <Compile Include="JsvFormatterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionExtensionTests.cs" />

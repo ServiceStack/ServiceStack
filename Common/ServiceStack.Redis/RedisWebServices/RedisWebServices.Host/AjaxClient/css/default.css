@@ -237,3 +237,22 @@ TEXTAREA.key-value
 {
     padding: 0 5px;
 }
+
+DT
+{
+    float: left;
+    clear: left;
+    font-weight:bold;
+    width: 150px;
+}
+DD
+{
+    float: left;
+}
+.lnk-show
+{
+    clear: left;
+    display:block;
+    margin-top: 10px;
+    color: #039;
+}

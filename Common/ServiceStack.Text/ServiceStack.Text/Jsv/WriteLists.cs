@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using ServiceStack.Text.JsText;
 
 namespace ServiceStack.Text.Jsv
 {
@@ -192,7 +193,7 @@ namespace ServiceStack.Text.Jsv
 
 			var ranOnce = false;
 			list.ForEach(x => {
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				ElementWriteFn(writer, x);
 			});
 
@@ -210,7 +211,7 @@ namespace ServiceStack.Text.Jsv
 
 			var ranOnce = false;
 			list.ForEach(x => {
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(x);
 			});
 
@@ -233,7 +234,7 @@ namespace ServiceStack.Text.Jsv
 			{
 				for (var i = 0; i < listLength; i++)
 				{
-					WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+					TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 					ElementWriteFn(writer, list[i]);
 				}
 
@@ -259,7 +260,7 @@ namespace ServiceStack.Text.Jsv
 			var listLength = list.Count;
 			for (var i=0; i < listLength; i++)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(list[i]);
 			}
 
@@ -281,7 +282,7 @@ namespace ServiceStack.Text.Jsv
 			var arrayLength = array.Length;
 			for (var i=0; i < arrayLength; i++)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(array[i]);
 			}
 
@@ -296,7 +297,7 @@ namespace ServiceStack.Text.Jsv
 			var arrayLength = array.Length;
 			for (var i=0; i < arrayLength; i++)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				ElementWriteFn(writer, array[i]);
 			}
 
@@ -316,7 +317,7 @@ namespace ServiceStack.Text.Jsv
 			var ranOnce = false;
 			foreach (var value in enumerable)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				ElementWriteFn(writer, value);
 			}
 
@@ -330,14 +331,13 @@ namespace ServiceStack.Text.Jsv
 			var ranOnce = false;
 			foreach (var value in enumerable)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(value);
 			}
 
 			writer.Write(TypeSerializer.ListEndChar);
 		}
 	}
-
 
 	public static class WriteLists
 	{
@@ -352,19 +352,19 @@ namespace ServiceStack.Text.Jsv
 
 			var ranOnce = false;
 			list.ForEach(x => {
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 				writer.Write(x.ToCsvField());
 			});
 
 			writer.Write(TypeSerializer.ListEndChar);
 		}
 
-		public static void WriteIListString(TextWriter writer, object list)
+		public static void WriteIListString(ITypeSerializer serializer, TextWriter writer, object list)
 		{
-			WriteIListString(writer, (IList<string>)list);
+			WriteIListString(serializer, writer, (IList<string>)list);
 		}
 
-		public static void WriteIListString(TextWriter writer, IList<string> list)
+		public static void WriteIListString(ITypeSerializer serializer, TextWriter writer, IList<string> list)
 		{
 			writer.Write(TypeSerializer.ListStartChar);
 
@@ -372,13 +372,12 @@ namespace ServiceStack.Text.Jsv
 			var listLength = list.Count;
 			for (var i=0; i < listLength; i++)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
-				writer.Write(list[i].ToCsvField());
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				serializer.WriteString(writer, list[i]);
 			}
 
 			writer.Write(TypeSerializer.ListEndChar);
 		}
-
 
 		public static void WriteBytes(TextWriter writer, object byteValue)
 		{
@@ -386,7 +385,7 @@ namespace ServiceStack.Text.Jsv
 			writer.Write(Convert.ToBase64String((byte[])byteValue));
 		}
 
-		public static void WriteStringArray(TextWriter writer, object oList)
+		public static void WriteStringArray(ITypeSerializer serializer, TextWriter writer, object oList)
 		{
 			writer.Write(TypeSerializer.ListStartChar);
 
@@ -395,13 +394,12 @@ namespace ServiceStack.Text.Jsv
 			var listLength = list.Length;
 			for (var i=0; i < listLength; i++)
 			{
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
-				writer.Write(list[i].ToCsvField());
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				serializer.WriteString(writer, list[i]);
 			}
 
 			writer.Write(TypeSerializer.ListEndChar);
 		}
-
 
 		public static void WriteIEnumerable(TextWriter writer, object oValueCollection)
 		{
@@ -416,7 +414,7 @@ namespace ServiceStack.Text.Jsv
 				if (toStringFn == null)
 					toStringFn = JsvWriter.GetWriteFn(valueItem.GetType());
 
-				WriterUtils.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+				TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 				toStringFn(writer, valueItem);
 			}
@@ -425,9 +423,11 @@ namespace ServiceStack.Text.Jsv
 		}
 	}
 
-	public static class WriteLists<T>
+	public static class WriteLists<T, TSerializer>
+		where TSerializer : ITypeSerializer, new()
 	{
 		private static readonly Action<TextWriter, object> CacheFn;
+		static readonly TSerializer Serializer = new TSerializer();
 
 		static WriteLists()
 		{
@@ -449,12 +449,11 @@ namespace ServiceStack.Text.Jsv
 			if (listInterfaces.Length == 0)
 				throw new ArgumentException(string.Format("Type {0} is not of type IList<>", type.FullName));
 
-
 			//optimized access for regularly used types
 			if (type == typeof(List<string>))
 				return WriteLists.WriteListString;
 			if (type == typeof(IList<string>))
-				return WriteLists.WriteIListString;
+				return (w, x) => WriteLists.WriteIListString(Serializer, w, x);
 
 			if (type == typeof(List<int>))
 				return WriteListsOfElements<int>.WriteListValueType;
@@ -473,7 +472,7 @@ namespace ServiceStack.Text.Jsv
 								&& typeof(T).GetGenericTypeDefinition() == typeof(List<>);
 
 			if (elementType.IsValueType
-				&& JsvWriter.ShouldUseDefaultToStringMethod(elementType))
+				&& TypeSerializer.ShouldUseDefaultToStringMethod(elementType))
 			{
 				if (isGenericList)
 					return WriteListsOfElements.GetWriteListValueType(elementType);

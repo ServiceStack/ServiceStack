@@ -16,11 +16,11 @@ using System.IO;
 using System.Reflection;
 using ServiceStack.Text.JsText;
 
-namespace ServiceStack.Text.Jsv
+namespace ServiceStack.Text.Json
 {
-	public static class JsvWriter
+	public static class JsonWriter
 	{
-		public static readonly JsWriter<JsvTypeSerializer> Instance = new JsWriter<JsvTypeSerializer>();
+		public static readonly JsWriter<JsonTypeSerializer> Instance = new JsWriter<JsonTypeSerializer>();
 
 		private static readonly Dictionary<Type, Action<TextWriter, object>> WriteFnCache =
 			new Dictionary<Type, Action<TextWriter, object>>();
@@ -34,7 +34,7 @@ namespace ServiceStack.Text.Jsv
 				{
 					if (!WriteFnCache.TryGetValue(type, out writeFn))
 					{
-						var genericType = typeof(JsvWriter<>).MakeGenericType(type);
+						var genericType = typeof(JsonWriter<>).MakeGenericType(type);
 						var mi = genericType.GetMethod("WriteFn",
 							BindingFlags.Public | BindingFlags.Static);
 
@@ -70,7 +70,7 @@ namespace ServiceStack.Text.Jsv
 	/// Implement the serializer using a more static approach
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public static class JsvWriter<T>
+	public static class JsonWriter<T>
 	{
 		private static readonly Action<TextWriter, object> CacheFn;
 
@@ -79,15 +79,15 @@ namespace ServiceStack.Text.Jsv
 			return CacheFn;
 		}
 
-		static JsvWriter()
+		static JsonWriter()
 		{
 			if (typeof(T) == typeof(object))
 			{
-				CacheFn = JsvWriter.WriteLateBoundObject;
+				CacheFn = JsonWriter.WriteLateBoundObject;
 			}
 			else
 			{
-				CacheFn = JsvWriter.Instance.GetWriteFn<T>();
+				CacheFn = JsonWriter.Instance.GetWriteFn<T>();
 			}
 		}
 
@@ -95,6 +95,6 @@ namespace ServiceStack.Text.Jsv
 		{
 			CacheFn(writer, value);
 		}
-
 	}
+
 }

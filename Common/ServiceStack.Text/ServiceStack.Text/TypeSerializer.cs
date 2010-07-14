@@ -43,6 +43,25 @@ namespace ServiceStack.Text
 		public static readonly char[] CsvChars = new[] { ItemSeperator, QuoteChar };
 		public static readonly char[] EscapeChars = new[] { QuoteChar, ItemSeperator, MapStartChar, MapEndChar, ListStartChar, ListEndChar, };
 
+		internal static void WriteItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
+		{
+			if (ranOnce)
+				writer.Write(ItemSeperator);
+			else
+				ranOnce = true;
+		}
+
+		internal static bool ShouldUseDefaultToStringMethod(Type type)
+		{
+			return type != typeof(DateTime)
+				   || type != typeof(DateTime?)
+				   || type != typeof(Guid)
+				   || type != typeof(Guid?)
+				   || type != typeof(float) || type != typeof(float?)
+				   || type != typeof(double) || type != typeof(double?)
+				   || type != typeof(decimal) || type != typeof(decimal?);
+		}
+
 		/// <summary>
 		/// Determines whether the specified type is convertible from string.
 		/// </summary>

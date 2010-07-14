@@ -12,13 +12,16 @@
 
 using System;
 using System.IO;
-using System.Reflection;
+using ServiceStack.Text.JsText;
 using ServiceStack.Text.Reflection;
 
 namespace ServiceStack.Text.Jsv
 {
-	public static class WriteType<T>
+	public static class WriteType<T,TSerializer>
+		where TSerializer : ITypeSerializer, new()
 	{
+		private static readonly ITypeSerializer Serializer = new TSerializer();
+
 		private static readonly Action<TextWriter, object> CacheFn;
 		private static  TypePropertyWriter[] propertyWriters;
 
@@ -52,7 +55,7 @@ namespace ServiceStack.Text.Jsv
 					(
 						propertyInfo.Name,
 						propertyInfo.GetValueGetter<T>(),
-						JsvWriter.GetWriteFn(propertyInfo.PropertyType),
+						Serializer.GetWriteFn(propertyInfo.PropertyType),
 						i
 					);
 			}
@@ -84,7 +87,7 @@ namespace ServiceStack.Text.Jsv
 				if (i++ > 0)
 					writer.Write(TypeSerializer.ItemSeperator);
 
-				writer.Write(propertyName);
+				Serializer.WritePropertyName(writer, propertyName);
 				writer.Write(TypeSerializer.MapKeySeperator);
 				writeFn(writer, propertyValue);
 			}
