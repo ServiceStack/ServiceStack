@@ -75,7 +75,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		public void SendOneWay(object request)
 		{
-			var requestUri = this.AsyncOneWayBaseUri + "/" + request.GetType().Name;
+			var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
 			{
