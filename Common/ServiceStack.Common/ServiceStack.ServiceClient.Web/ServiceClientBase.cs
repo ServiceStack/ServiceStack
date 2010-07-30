@@ -44,7 +44,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		public TResponse Send<TResponse>(object request)
 		{
-			var requestUri = this.SyncReplyBaseUri + "/" + request.GetType().Name;
+			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
 			{
