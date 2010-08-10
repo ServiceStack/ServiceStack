@@ -30,6 +30,16 @@ namespace ServiceStack.Examples.Host.Console
 
 		public override void Configure(Container container)
 		{
+			//Signal advanced web browsers what HTTP Methods you accept
+			base.SetConfig(new EndpointHostConfig
+			{
+				GlobalResponseHeaders =
+					{
+						{ "Access-Control-Allow-Origin", "*" },
+						{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
+					},
+			});
+
 			container.Register<IResourceManager>(new ConfigurationResourceManager());
 
 			var appSettings = container.Resolve<IResourceManager>();

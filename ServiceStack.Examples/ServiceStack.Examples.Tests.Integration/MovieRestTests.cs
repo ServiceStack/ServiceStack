@@ -8,6 +8,13 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Examples.Tests.Integration
 {
+	/// <summary>
+	/// These integration tests spawns a ServiceStack HTTP server (using HttpListener - requires admin privillages)
+	/// And sends each request to each REST-like endpoint, effectively sending each request 3 times.
+	/// 
+	/// Because each web service is idempotent the resulting state ends up being the same after multiple requests
+	/// including PUT/Add requests failing after the first one because of a Unique constraint violation.
+	/// </summary>
 	[TestFixture]
 	public class MovieRestTests
 		: IntegrationTestBase

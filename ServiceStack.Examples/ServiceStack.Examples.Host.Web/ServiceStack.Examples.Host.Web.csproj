@@ -66,8 +66,12 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AjaxClient\AjaxStack.snippets.js" />
+    <Content Include="AjaxClient\jquery-1.4.2.min.js" />
+    <Content Include="AjaxClient\jquery.json-2.2.js" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="AjaxClient\MovieRestTest.htm" />
     <Content Include="Public\Soap11\AsyncOneWay.svc" />
     <Content Include="Public\Soap11\SyncReply.svc" />
     <Content Include="Public\Soap12\AsyncOneWay.svc" />

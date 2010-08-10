@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.Tests.Integration", "ServiceStack.Examples.Tests.Integration\ServiceStack.Examples.Tests.Integration.csproj", "{21777EAF-74FD-4D0B-947A-C602D8D3EBBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Examples.ServiceModel", "ServiceStack.Examples.ServiceModel\ServiceStack.Examples.ServiceModel.csproj", "{2B840832-3036-47D9-8F9B-560CD5C2BF90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{21777EAF-74FD-4D0B-947A-C602D8D3EBBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21777EAF-74FD-4D0B-947A-C602D8D3EBBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21777EAF-74FD-4D0B-947A-C602D8D3EBBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B840832-3036-47D9-8F9B-560CD5C2BF90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B840832-3036-47D9-8F9B-560CD5C2BF90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B840832-3036-47D9-8F9B-560CD5C2BF90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B840832-3036-47D9-8F9B-560CD5C2BF90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>ServiceStack Movie Database</title>
+    
+    <style type="text/css">
+        BODY 
+        {
+        	font-family: Arial;
+        }
+    </style>
+    
+    <script type="text/javascript" src="AjaxStack.snippets.js"></script>
+    <script type="text/javascript" src="jquery.json-2.2.js"></script>
+    <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            var baseUri = 'http://' + document.location.hostname + '/ServiceStack.Examples.Host.Web/Public/';
+            var gateway = new JsonServiceClient(baseUri);
+
+            var refreshExistingMovies = function() {
+                
+            }
+        });
+    </script>
+</head>
+<body>
+
+    <h1>ServiceStack Movie Database</h1>
+    <p>
+        A simple REST web services example showing how to develop and call 
+        HTTP GET, PUT, POST and DELETE webservices in a browser via AJAX
+        using <a href="http://www.servicestack.net">www.servicestack.net</a>.        
+    </p>
+    <p>
+        For more information on how to build REST services with ServiceStack check out the 
+        <a href="">Server Code</a>
+        as well as the
+        <a href="http://code.google.com/p/servicestack/source/browse/trunk/ServiceStack.Examples/ServiceStack.Examples.Tests/MovieRestTests.cs">Unit Tests</a> 
+        and
+        <a href="http://code.google.com/p/servicestack/source/browse/trunk/ServiceStack.Examples/ServiceStack.Examples.Tests.Integration/MovieRestTests.cs">Integration Tests</a> 
+    </p>
+
+    <div id="actions">
+        <button id="btnResetMovieDb">Reset Movie Database</button>
+    </div>
+        
+    <div id="existing-section">
+        <h3>Existing Movies</h3>        
+
+        <button id="btnRefreshExistingMovies">Refesh</button>
+        <button id="btnPrepareAdd">Add &gt;&gt;</button>
+        
+        <dl id="existing-movies">
+        </dl>    
+    </div>
+    
+    <div id="add-section">
+        <h3>Add a new movie (uses HTTP PUT)</h3>
+        <form action="">
+            <dl>
+                <dt>Imdb Id</dt>
+                <dd>
+                    <input type="text" id="txtId" value="tt0110912" />
+                </dd>
+
+                <dt>Title</dt>
+                <dd>
+                    <input type="text" id="txtTitle" value="Pulp Fiction" />
+                </dd>
+
+                <dt>Rating</dt>
+                <dd>
+                    <input type="text" id="txtRating" value="8.9m" />
+                </dd>
+
+                <dt>Director</dt>
+                <dd>
+                    <input type="text" id="txtDirector" value="Quentin Tarantino" />
+                </dd>
+
+                <dt>Release Date</dt>
+                <dd>
+                    <input type="text" id="txtReleaseDate" value="1994-10-24" />
+                </dd>
+
+                <dt>Tag Line</dt>
+                <dd>
+                    <input type="text" id="txtTagLine" value="Girls like me don't make invitations like this to just anyone!" />
+                </dd>
+
+                <dt>Genres</dt>
+                <dd>
+                    <input type="text" id="txtGenres" value="Crime,Drama,Thriller" />
+                </dd>
+            </dl>
+                
+            <button id="btnAddMovie">Add new movie</button>
+        </form>
+    </div>
+
+</body>
+</html>

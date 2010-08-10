@@ -12,68 +12,68 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="1141" fromTop="33" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="554" fromTop="19" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="470" fromTop="12" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="0" fromTop="0" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:TestHostBase.cs" caret="0" fromTop="0" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:App.config" caret="76" fromTop="4" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:Program.cs" caret="408" fromTop="17" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersService.cs" caret="1702" fromTop="29" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersCachedService.cs" caret="982" fromTop="27" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:IntegrationTests.cs" caret="795" fromTop="26" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1160" fromTop="36" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfUser.cs" caret="133" fromTop="5" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="545" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="625" fromTop="17" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="409" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="606" fromTop="22" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="506" fromTop="17" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Greet.cs" caret="344" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Properties/f:AssemblyInfo.cs" caret="1671" fromTop="39" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="733" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="829" fromTop="26" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1271" fromTop="25" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="533" fromTop="25" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="147" fromTop="4" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="727" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="372" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:Copy of GreetService.cs" caret="1829" fromTop="37" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="623" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="423" fromTop="11" />
+      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:IntegrationTests.cs" caret="813" fromTop="28" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="1871" fromTop="27" />
+      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:AppHost.cs" caret="1428" fromTop="41" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1307" fromTop="30" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:Properties/f:AssemblyInfo.cs" caret="1121" fromTop="25" />
+      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1093" fromTop="22" />
+      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:IntegrationTestBase.cs" caret="581" fromTop="27" />
+      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:MovieRestTests.cs" caret="1958" fromTop="25" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Copy of Greet.cs" caret="2048" fromTop="38" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:AjaxStack.snippets.js" caret="0" fromTop="0" />
+      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:MovieRestTests.cs" caret="1650" fromTop="24" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="1564" fromTop="25" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:DeleteAllUsers.cs" caret="282" fromTop="8" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetAllUsers.cs" caret="245" fromTop="5" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetFactorial.cs" caret="141" fromTop="3" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetFibonacciNumbers.cs" caret="192" fromTop="4" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetNorthwindCustomerOrders.cs" caret="245" fromTop="5" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="260" fromTop="6" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetUsers.cs" caret="300" fromTop="7" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Greet.cs" caret="141" fromTop="3" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movies.cs" caret="280" fromTop="6" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:PopulateMovies.cs" caret="192" fromTop="4" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:StoreNewUser.cs" caret="192" fromTop="4" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:ArrayOfUser.cs" caret="171" fromTop="5" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="248" fromTop="9" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:NorthwindDtos.cs" caret="0" fromTop="0" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:User.cs" caret="188" fromTop="5" />
     </RecentFiles>
     <RecentEdits>
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="722" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="391" fromTop="9" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="559" fromTop="17" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFactorial.cs" caret="409" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:ArrayOfUser.cs" caret="133" fromTop="5" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="400" fromTop="13" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:DeleteAllUsers.cs" caret="501" fromTop="18" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="483" fromTop="12" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetAllUsers.cs" caret="581" fromTop="17" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="457" fromTop="12" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetFibonacciNumbers.cs" caret="667" fromTop="22" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="210" fromTop="6" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrders.cs" caret="381" fromTop="13" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="225" fromTop="7" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="462" fromTop="17" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="514" fromTop="14" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:GetUsers.cs" caret="733" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Greet.cs" caret="159" fromTop="5" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:Greet.cs" caret="300" fromTop="11" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="271" fromTop="9" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="825" fromTop="34" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="561" fromTop="13" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:StoreNewUser.cs" caret="829" fromTop="26" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="211" fromTop="7" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:ExampleConfig.cs" caret="384" fromTop="10" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:User.cs" caret="528" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="1627" fromTop="40" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="2835" fromTop="23" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="3410" fromTop="24" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Types/f:NorthwindDtos.cs" caret="5818" fromTop="24" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="788" fromTop="8" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="875" fromTop="12" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="861" fromTop="21" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="215" fromTop="3" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="1121" fromTop="25" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="1588" fromTop="34" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="1347" fromTop="21" />
+      <File id="d:&amp;/f:MovieRestTest.htm/l:C!?Projects?servicestack?ServiceStack.Examples?ServiceStack.Examples.Host.Web?MovieRestTest.htm" caret="1718" fromTop="25" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="2204" fromTop="11" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="2204" fromTop="10" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movies.cs" caret="347" fromTop="14" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movies.cs" caret="764" fromTop="31" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movies.cs" caret="815" fromTop="32" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="2204" fromTop="15" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:DeleteAllUsers.cs" caret="282" fromTop="8" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetAllUsers.cs" caret="245" fromTop="5" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetFactorial.cs" caret="141" fromTop="3" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetFibonacciNumbers.cs" caret="192" fromTop="4" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetNorthwindCustomerOrders.cs" caret="245" fromTop="5" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetNorthwindCustomerOrdersCached.cs" caret="260" fromTop="6" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:GetUsers.cs" caret="300" fromTop="7" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Greet.cs" caret="141" fromTop="3" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movies.cs" caret="280" fromTop="6" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:PopulateMovies.cs" caret="192" fromTop="4" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:StoreNewUser.cs" caret="192" fromTop="4" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:ArrayOfUser.cs" caret="171" fromTop="5" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="2204" fromTop="70" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="171" fromTop="4" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:NorthwindDtos.cs" caret="7073" fromTop="284" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:User.cs" caret="188" fromTop="5" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -91,17 +91,17 @@
       <Item value="IApplicationContext" priority="0" />
       <Item value="IRequestContext" priority="1" />
       <Item value="Namespace" priority="3" />
-      <Item value="public" priority="24" />
+      <Item value="public" priority="26" />
       <Item value="GetFactorials" priority="2" />
       <Item value="DataMember" priority="2" />
       <Item value="type" priority="0" />
-      <Item value="var" priority="50" />
+      <Item value="var" priority="57" />
       <Item value="context" priority="2" />
-      <Item value="return" priority="8" />
-      <Item value="new" priority="64" />
+      <Item value="return" priority="12" />
+      <Item value="new" priority="80" />
       <Item value="GetFactorialsResponse" priority="0" />
       <Item value="Result" priority="0" />
-      <Item value="request" priority="26" />
+      <Item value="request" priority="32" />
       <Item value="base" priority="1" />
       <Item value="ApplicationContext" priority="4" />
       <Item value="BasicOperationContext" priority="0" />
@@ -111,10 +111,10 @@
       <Item value="MemcachedClientCache" priority="2" />
       <Item value="LogManager" priority="6" />
       <Item value="AppHost" priority="4" />
-      <Item value="void" priority="11" />
-      <Item value="if" priority="11" />
+      <Item value="void" priority="13" />
+      <Item value="if" priority="14" />
       <Item value="Instance" priority="1" />
-      <Item value="null" priority="9" />
+      <Item value="null" priority="13" />
       <Item value="long" priority="8" />
       <Item value="defaultLimit" priority="0" />
       <Item value="List" priority="2" />
@@ -134,10 +134,10 @@
       <Item value="ArrayOfLong" priority="4" />
       <Item value="IPersistenceProviderManagerFactory" priority="0" />
       <Item value="IResponseStatus" priority="0" />
-      <Item value="ResponseStatus" priority="3" />
+      <Item value="ResponseStatus" priority="4" />
       <Item value="DataContract" priority="1" />
-      <Item value="this" priority="5" />
-      <Item value="string" priority="20" />
+      <Item value="this" priority="8" />
+      <Item value="string" priority="22" />
       <Item value="persistenceProvider" priority="7" />
       <Item value="IQueryablePersistenceProvider" priority="1" />
       <Item value="delegate" priority="2" />
@@ -155,7 +155,7 @@
       <Item value="List&lt;User&gt;" priority="2" />
       <Item value="users" priority="3" />
       <Item value="Users" priority="0" />
-      <Item value="false" priority="4" />
+      <Item value="false" priority="8" />
       <Item value="FactoryProvider" priority="0" />
       <Item value="IPersistenceProviderManager" priority="1" />
       <Item value="x" priority="0" />
@@ -166,13 +166,13 @@
       <Item value="GetFactorialHandler" priority="1" />
       <Item value="handler" priority="1" />
       <Item value="TestBase" priority="0" />
-      <Item value="protected" priority="2" />
-      <Item value="object" priority="1" />
+      <Item value="protected" priority="4" />
+      <Item value="object" priority="3" />
       <Item value="OperationContext" priority="0" />
       <Item value="RequestContext" priority="0" />
       <Item value="CreateOperationContext" priority="3" />
-      <Item value="Assert" priority="2" />
-      <Item value="response" priority="4" />
+      <Item value="Assert" priority="3" />
+      <Item value="response" priority="9" />
       <Item value="GetFactorialResponse" priority="0" />
       <Item value="IServiceProvider" priority="1" />
       <Item value="Skip" priority="1" />
@@ -181,7 +181,7 @@
       <Item value="default" priority="0" />
       <Item value="mockPersistence" priority="3" />
       <Item value="It" priority="4" />
-      <Item value="bool" priority="2" />
+      <Item value="bool" priority="3" />
       <Item value="UserIds" priority="1" />
       <Item value="params" priority="1" />
       <Item value="UserNames" priority="0" />
@@ -189,13 +189,13 @@
       <Item value="Predicate" priority="0" />
       <Item value="IList" priority="0" />
       <Item value="ICollection" priority="1" />
-      <Item value="Id" priority="1" />
-      <Item value="static" priority="7" />
+      <Item value="Id" priority="5" />
+      <Item value="static" priority="8" />
       <Item value="class" priority="3" />
       <Item value="const" priority="4" />
       <Item value="Config" priority="2" />
       <Item value="AppContext" priority="2" />
-      <Item value="private" priority="1" />
+      <Item value="private" priority="2" />
       <Item value="DeleteAllUsersResponse" priority="1" />
       <Item value="StoreNewUserResponse" priority="0" />
       <Item value="MainPage" priority="0" />
@@ -214,12 +214,12 @@
       <Item value="GetUsersResponse" priority="1" />
       <Item value="dataContract" priority="4" />
       <Item value="Console" priority="12" />
-      <Item value="true" priority="1" />
+      <Item value="true" priority="2" />
       <Item value="xml" priority="1" />
       <Item value="DataContractDeserializer" priority="0" />
-      <Item value="DateTime" priority="5" />
-      <Item value="double" priority="1" />
-      <Item value="decimal" priority="1" />
+      <Item value="DateTime" priority="6" />
+      <Item value="double" priority="2" />
+      <Item value="decimal" priority="2" />
       <Item value="Order" priority="0" />
       <Item value="TestDataContract" priority="0" />
       <Item value="GuidField" priority="0" />
@@ -245,10 +245,10 @@
       <Item value="InitOptions" priority="0" />
       <Item value="InitApplicationContext" priority="0" />
       <Item value="StoreNewUserHandler" priority="3" />
-      <Item value="EndpointAttributes" priority="2" />
+      <Item value="EndpointAttributes" priority="4" />
       <Item value="GetUsersHandler" priority="0" />
       <Item value="GetUsers" priority="0" />
-      <Item value="else" priority="0" />
+      <Item value="else" priority="1" />
       <Item value="System" priority="0" />
       <Item value="ThreadStaticAttribute" priority="0" />
       <Item value="TimeSpan" priority="0" />
@@ -265,10 +265,10 @@
       <Item value="DeleteAllUsers" priority="0" />
       <Item value="StoreNewUser" priority="0" />
       <Item value="GetFibonacciNumbers" priority="1" />
-      <Item value="Logging" priority="0" />
+      <Item value="Logging" priority="1" />
       <Item value="appHost" priority="2" />
       <Item value="ILog" priority="1" />
-      <Item value="typeof" priority="1" />
+      <Item value="typeof" priority="2" />
       <Item value="DebugLogFactory" priority="0" />
       <Item value="container" priority="7" />
       <Item value="GetType" priority="0" />
@@ -281,20 +281,57 @@
       <Item value="using" priority="7" />
       <Item value="dbPath" priority="0" />
       <Item value="dbConn" priority="3" />
-      <Item value="dbCmd" priority="8" />
+      <Item value="dbCmd" priority="10" />
       <Item value="ConnectionString" priority="0" />
       <Item value="testConfig" priority="0" />
       <Item value="DefaultFibonacciLimit" priority="0" />
       <Item value="OrmLiteConnectionFactory" priority="0" />
       <Item value="c" priority="0" />
-      <Item value="IDbConnectionFactory" priority="1" />
+      <Item value="IDbConnectionFactory" priority="2" />
       <Item value="InMemoryDb" priority="0" />
       <Item value="storedUser" priority="0" />
-      <Item value="Is" priority="0" />
+      <Item value="Is" priority="1" />
       <Item value="ConnectionFactory" priority="2" />
       <Item value="connectionFactory" priority="2" />
       <Item value="IntegrationTestBase" priority="0" />
-      <Item value="Send" priority="0" />
+      <Item value="Send" priority="1" />
+      <Item value="List&lt;string&gt;" priority="1" />
+      <Item value="IRestGetService" priority="0" />
+      <Item value="GetMovie" priority="1" />
+      <Item value="Movie" priority="6" />
+      <Item value="ListMovies" priority="0" />
+      <Item value="Title" priority="0" />
+      <Item value="ReleaseDate" priority="0" />
+      <Item value="Director" priority="0" />
+      <Item value="Genres" priority="0" />
+      <Item value="Rating" priority="0" />
+      <Item value="TagLine" priority="0" />
+      <Item value="top5Movies" priority="0" />
+      <Item value="PopulateMoviesResponse" priority="1" />
+      <Item value="Movies" priority="0" />
+      <Item value="ListMoviesResponse" priority="0" />
+      <Item value="ServiceClient" priority="0" />
+      <Item value="topMovie" priority="4" />
+      <Item value="PostMovie" priority="0" />
+      <Item value="updatedMovie" priority="0" />
+      <Item value="List&lt;Movie&gt;" priority="1" />
+      <Item value="other" priority="0" />
+      <Item value="TResponse" priority="0" />
+      <Item value="Get" priority="0" />
+      <Item value="EmitDefaultValue" priority="0" />
+      <Item value="newMovie" priority="1" />
+      <Item value="Has" priority="0" />
+      <Item value="movie" priority="1" />
+      <Item value="serviceClient" priority="0" />
+      <Item value="JsonServiceClient" priority="0" />
+      <Item value="SendToEachEndpoint" priority="1" />
+      <Item value="MoviesResponse" priority="0" />
+      <Item value="TRes" priority="0" />
+      <Item value="validate" priority="0" />
+      <Item value="xmlClient" priority="0" />
+      <Item value="httpMethod" priority="0" />
+      <Item value="MovieRestService" priority="0" />
+      <Item value="nguid" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.ConfigurationResourceManager">
       <Item value="GetString" priority="0" />
@@ -339,8 +376,8 @@
       <Item value="GetString" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
-      <Item value="Add" priority="2" />
-      <Item value="Count" priority="2" />
+      <Item value="Add" priority="4" />
+      <Item value="Count" priority="4" />
       <Item value="AddRange" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Web.HttpResponse">
@@ -405,7 +442,7 @@
       <Item value="Execute" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
-      <Item value="That" priority="2" />
+      <Item value="That" priority="3" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetFactorialResponse">
       <Item value="Result" priority="0" />
@@ -413,6 +450,7 @@
     <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Is">
       <Item value="EqualTo" priority="3" />
       <Item value="Not" priority="0" />
+      <Item value="True" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.ArrayOfLong">
       <Item value="Count" priority="1" />
@@ -566,12 +604,13 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Logging.ILog">
       <Item value="Debug" priority="0" />
+      <Item value="InfoFormat" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.Host.Web.AppHost">
       <Item value="Init" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:Funq.Container">
-      <Item value="Resolve" priority="9" />
+      <Item value="Resolve" priority="10" />
       <Item value="Register" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetFibonacciNumbersHandler">
@@ -595,12 +634,17 @@
       <Item value="CreateCommand" priority="3" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Data.IDbCommand">
-      <Item value="Select" priority="4" />
-      <Item value="Insert" priority="2" />
+      <Item value="Select" priority="5" />
+      <Item value="Insert" priority="4" />
       <Item value="CreateTable" priority="1" />
       <Item value="FirstOrDefault" priority="0" />
       <Item value="First" priority="0" />
       <Item value="GetLastInsertId" priority="0" />
+      <Item value="SaveAll" priority="0" />
+      <Item value="GetById" priority="0" />
+      <Item value="DeleteById" priority="0" />
+      <Item value="Update" priority="0" />
+      <Item value="GetByIdOrDefault" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.ArrayOfString">
       <Item value="SqlJoin" priority="0" />
@@ -622,7 +666,7 @@
       <Item value="OpenDbConnection" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Examples.ServiceInterface.Support.ConfigureDatabase">
-      <Item value="Init" priority="0" />
+      <Item value="Init" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetFactorialResponse">
       <Item value="Result" priority="0" />
@@ -644,6 +688,74 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Examples.ServiceInterface.ExampleConfig">
       <Item value="DefaultNamespace" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.Movie">
+      <Item value="Genres" priority="1" />
+      <Item value="Id" priority="3" />
+      <Item value="Equals" priority="0" />
+      <Item value="Title" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetMovieResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.ListMoviesResponse">
+      <Item value="Movies" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.GetMovie">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.PutMovie">
+      <Item value="Movie" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.DeleteMovie">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.AppHostBase">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.AppHostBase">
+      <Item value="Container" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.ServiceHost.EndpointAttributes">
+      <Item value="None" priority="0" />
+      <Item value="HttpPost" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.Tests.TestHostBase">
+      <Item value="Send" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@NUnit.Framework.SyntaxHelpers.Has">
+      <Item value="Count" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Examples.ServiceInterface.PopulateMoviesService">
+      <Item value="Top5Movies" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Text.TypeSerializer">
+      <Item value="Clone" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.MoviesResponse">
+      <Item value="MemberwiseClone" priority="0" />
+      <Item value="Movies" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.Movies">
+      <Item value="Id" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceClient.Web.XmlServiceClient">
+      <Item value="HttpMethod" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Common.Web.HttpMethods">
+      <Item value="Get" priority="1" />
+      <Item value="Post" priority="0" />
+      <Item value="Put" priority="0" />
+      <Item value="Delete" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:NUnit.Framework.Constraints.ResolvableConstraintExpression">
+      <Item value="EqualTo" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.MovieRestService">
+      <Item value="RequestContext" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.IRequestContext">
+      <Item value="EndpointAttributes" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>
