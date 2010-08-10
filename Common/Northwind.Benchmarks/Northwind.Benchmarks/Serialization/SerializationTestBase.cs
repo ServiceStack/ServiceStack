@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
+using LitJson;
 using Newtonsoft.Json;
 using Northwind.Perf;
 using NUnit.Framework;
@@ -293,16 +294,16 @@ namespace Northwind.Benchmarks.Serialization
 				? typeof(T).GetGenericArguments()[0].Name
 				: typeof(T).Name;
 
-			var dtoXml = DataContractSerializer.Instance.Parse(dto);
-			RecordRunResults("Microsoft DataContractSerializer", dtoXml,
+			var dtoMsXml = DataContractSerializer.Instance.Parse(dto);
+			RecordRunResults("Microsoft DataContractSerializer", dtoMsXml,
 				() => DataContractSerializer.Instance.Parse(dto),
-				() => DataContractDeserializer.Instance.Parse<T>(dtoXml)
+				() => DataContractDeserializer.Instance.Parse<T>(dtoMsXml)
 			);
 
-			var dtoJson = JsonDataContractSerializer.Instance.Parse(dto);
-			RecordRunResults("Microsoft JsonDataContractSerializer", dtoJson,
+			var dtoMsJson = JsonDataContractSerializer.Instance.Parse(dto);
+			RecordRunResults("Microsoft JsonDataContractSerializer", dtoMsJson,
 				() => JsonDataContractSerializer.Instance.Parse(dto),
-				() => JsonDataContractDeserializer.Instance.Parse<T>(dtoJson)
+				() => JsonDataContractDeserializer.Instance.Parse<T>(dtoMsJson)
 			);
 
 			if (this.MultipleIterations.Sum() <= 10)
@@ -335,16 +336,28 @@ namespace Northwind.Benchmarks.Serialization
 				() => JsonConvert.DeserializeObject<T>(dtoJsonNet)
 			);
 
+			var dtoLitJson = JsonMapper.ToJson(dto);
+			RecordRunResults("LitJson", dtoJsonNet,
+				() => JsonMapper.ToJson(dto),
+				() => JsonMapper.ToObject<T>(dtoLitJson)
+			);	
+
 			var dtoProtoBuf = ProtoBufToBytes(dto);
 			RecordRunResults("ProtoBuf.net", dtoProtoBuf,
 				() => ProtoBufToBytes(dto),
 				() => ProtoBufFromBytes<T>(dtoProtoBuf)
 			);
 
-			var dtoString = TypeSerializer.SerializeToString(dto);
-			RecordRunResults("ServiceStack TypeSerializer", dtoString,
+			var dtoJsv = TypeSerializer.SerializeToString(dto);
+			RecordRunResults("ServiceStack TypeSerializer", dtoJsv,
 				() => TypeSerializer.SerializeToString(dto),
-				() => TypeSerializer.DeserializeFromString<T>(dtoString)
+				() => TypeSerializer.DeserializeFromString<T>(dtoJsv)
+			);
+
+			var dtoJson = ServiceStack.Text.JsonSerializer.SerializeToString(dto);
+			RecordRunResults("ServiceStack JsonSerializer", dtoJson,
+				() => ServiceStack.Text.JsonSerializer.SerializeToString(dto),
+				() => TypeSerializer.DeserializeFromString<T>(dtoJsv)
 			);
 
 			//Propietary library, not freely available.

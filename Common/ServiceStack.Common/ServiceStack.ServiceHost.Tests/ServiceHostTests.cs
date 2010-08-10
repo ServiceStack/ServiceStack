@@ -71,5 +71,69 @@ namespace ServiceStack.ServiceHost.Tests
 			Assert.That(service.Foo, Is.Not.Null);
 			Assert.That(service.Bar, Is.Not.Null);
 		}
+
+		[Test]
+		public void Can_execute_RestTestService()
+		{
+			var serviceController = new ServiceController();
+
+			serviceController.Register(() => new RestTestService());
+			var result = serviceController.Execute(new RestTest()) as RestTestResponse;
+
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result.MethodName, Is.EqualTo("Execute"));
+		}
+
+		[Test]
+		public void Can_RestTestService_GET()
+		{
+			var serviceController = new ServiceController();
+
+			serviceController.Register(() => new RestTestService());
+			var result = serviceController.Execute(new RestTest(),
+				new HttpRequestContext(null, EndpointAttributes.HttpGet)) as RestTestResponse;
+
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result.MethodName, Is.EqualTo("Get"));
+		}
+
+		[Test]
+		public void Can_RestTestService_PUT()
+		{
+			var serviceController = new ServiceController();
+
+			serviceController.Register(() => new RestTestService());
+			var result = serviceController.Execute(new RestTest(),
+				new HttpRequestContext(null, EndpointAttributes.HttpPut)) as RestTestResponse;
+
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result.MethodName, Is.EqualTo("Put"));
+		}
+
+		[Test]
+		public void Can_RestTestService_POST()
+		{
+			var serviceController = new ServiceController();
+
+			serviceController.Register(() => new RestTestService());
+			var result = serviceController.Execute(new RestTest(),
+				new HttpRequestContext(null, EndpointAttributes.HttpPost)) as RestTestResponse;
+
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result.MethodName, Is.EqualTo("Post"));
+		}
+
+		[Test]
+		public void Can_RestTestService_DELETE()
+		{
+			var serviceController = new ServiceController();
+
+			serviceController.Register(() => new RestTestService());
+			var result = serviceController.Execute(new RestTest(),
+				new HttpRequestContext(null, EndpointAttributes.HttpDelete)) as RestTestResponse;
+
+			Assert.That(result, Is.Not.Null);
+			Assert.That(result.MethodName, Is.EqualTo("Delete"));
+		}
 	}
 }

@@ -16,6 +16,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Jsv
 {
@@ -47,17 +48,17 @@ namespace ServiceStack.Text.Jsv
 			IDictionary<string, Action<object, object>> setterMap, 
 			IDictionary<string, Func<string, object>> parseStringFnMap)
 		{
-			if (strType[0] != TypeSerializer.MapStartChar)
+			if (strType[0] != JsWriter.MapStartChar)
 				throw new SerializationException(string.Format(
-					"Type definitions should start with a '{0}', expecting serialized type '{1}', got string starting with: {2}", 
-					TypeSerializer.MapStartChar, type.Name, strType.Substring(0, strType.Length < 50 ? strType.Length : 50)));
+					"Type definitions should start with a '{0}', expecting serialized type '{1}', got string starting with: {2}",
+					JsWriter.MapStartChar, type.Name, strType.Substring(0, strType.Length < 50 ? strType.Length : 50)));
 
 			var instance = ctorFn();
 			string propertyName;
 
 			try
 			{
-				if (strType == TypeSerializer.EmptyMap) return null;
+				if (strType == JsWriter.EmptyMap) return null;
 				var strTypeLength = strType.Length;
 				for (var i=1; i < strTypeLength; i++)
 				{

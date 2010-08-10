@@ -24,43 +24,7 @@ namespace ServiceStack.Text
 	/// </summary>
 	public static class TypeSerializer
 	{
-		public const char MapStartChar = '{';
-		public const char MapKeySeperator = ':';
-		public const char ItemSeperator = ',';
-		public const char MapEndChar = '}';
-		public const string MapNullValue = "\"\"";
-		public const string EmptyMap = "{}";
-
-		public const char ListStartChar = '[';
-		public const char ListEndChar = ']';
-
-		public const char QuoteChar = '"';
-		public const string QuoteString = "\"";
 		public const string DoubleQuoteString = "\"\"";
-		public const string ItemSeperatorString = ",";
-		public const string MapKeySeperatorString = ":";
-
-		public static readonly char[] CsvChars = new[] { ItemSeperator, QuoteChar };
-		public static readonly char[] EscapeChars = new[] { QuoteChar, ItemSeperator, MapStartChar, MapEndChar, ListStartChar, ListEndChar, };
-
-		internal static void WriteItemSeperatorIfRanOnce(TextWriter writer, ref bool ranOnce)
-		{
-			if (ranOnce)
-				writer.Write(ItemSeperator);
-			else
-				ranOnce = true;
-		}
-
-		internal static bool ShouldUseDefaultToStringMethod(Type type)
-		{
-			return type != typeof(DateTime)
-				   || type != typeof(DateTime?)
-				   || type != typeof(Guid)
-				   || type != typeof(Guid?)
-				   || type != typeof(float) || type != typeof(float?)
-				   || type != typeof(double) || type != typeof(double?)
-				   || type != typeof(decimal) || type != typeof(decimal?);
-		}
 
 		/// <summary>
 		/// Determines whether the specified type is convertible from string.
@@ -141,6 +105,13 @@ namespace ServiceStack.Text
 				writer.WriteCsv(records);
 				return sb.ToString();
 			}
+		}
+
+		public static T Clone<T>(T value)
+		{
+			var serializedValue = SerializeToString(value);
+			var cloneObj = DeserializeFromString<T>(serializedValue);
+			return cloneObj;
 		}
 	}
 }

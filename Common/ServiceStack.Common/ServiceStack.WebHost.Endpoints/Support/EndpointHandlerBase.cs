@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Web;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Support
@@ -22,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected static bool DefaultHandledRequest(HttpContext context)
 		{
-			if (context.Request.HttpMethod == "OPTIONS")
+			if (context.Request.HttpMethod == HttpMethods.Options)
 			{
 				foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
 				{
@@ -83,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var portRestrictions = EndpointAttributes.None;
 
-			portRestrictions |= GetRequestTypeEndpointAttributes(request.RequestType);
+			portRestrictions |= HttpMethods.GetEndpointAttribute(request.RequestType);
 			portRestrictions |= request.IsSecureConnection ? EndpointAttributes.Secure : EndpointAttributes.InSecure;
 
 			var ipAddress = IPAddress.Parse(request.UserHostAddress);
@@ -91,25 +92,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			portRestrictions |= GetIpAddressEndpointAttributes(ipAddress);
 
 			return portRestrictions;
-		}
-
-		private static EndpointAttributes GetRequestTypeEndpointAttributes(string requestType)
-		{
-			switch (requestType)
-			{
-				case "HEAD":
-					return EndpointAttributes.HttpHead;
-				case "GET":
-					return EndpointAttributes.HttpGet;
-				case "POST":
-					return EndpointAttributes.HttpPost;
-				case "PUT":
-					return EndpointAttributes.HttpPut;
-				case "DELETE":
-					return EndpointAttributes.HttpDelete;
-			}
-			
-			return EndpointAttributes.None;
 		}
 
 		private static EndpointAttributes GetIpAddressEndpointAttributes(IPAddress ipAddress)

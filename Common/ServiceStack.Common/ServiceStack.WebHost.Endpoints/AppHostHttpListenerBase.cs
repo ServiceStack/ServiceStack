@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
@@ -67,12 +68,12 @@ namespace ServiceStack.WebHost.Endpoints
 
 				if (url.Contains("/jsv/syncreply/"))
 				{
-					var result = ExecuteService(request, EndpointAttributes.SyncReply | EndpointAttributes.Jsv);
+					var result = ExecuteService(request, EndpointAttributes.SyncReply | EndpointAttributes.Jsv | HttpMethods.GetEndpointAttribute(httpMethod));
 					response.WriteToResponse(result, x => TypeSerializer.SerializeToString(result), ContentType.Jsv);
 				}
 				else if (url.Contains("/jsv/asynconeway/"))
 				{
-					var result = ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv);
+					var result = ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv | HttpMethods.GetEndpointAttribute(httpMethod));
 				}
 			}
 			catch (Exception ex)
@@ -91,12 +92,12 @@ namespace ServiceStack.WebHost.Endpoints
 
 				if (url.Contains("/json/syncreply/"))
 				{
-					var result = ExecuteService(request, EndpointAttributes.SyncReply | EndpointAttributes.Json);
+					var result = ExecuteService(request, EndpointAttributes.SyncReply | EndpointAttributes.Json | HttpMethods.GetEndpointAttribute(httpMethod));
 					response.WriteToResponse(result, x => JsonDataContractSerializer.Instance.Parse(result), ContentType.Json);
 				}
 				else if (url.Contains("/json/asynconeway/"))
 				{
-					var result = ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Json);
+					var result = ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Json | HttpMethods.GetEndpointAttribute(httpMethod));
 				}
 			}
 			catch (Exception ex)
@@ -115,12 +116,12 @@ namespace ServiceStack.WebHost.Endpoints
 
 				if (url.Contains("/xml/syncreply/"))
 				{
-					var result = ExecuteService(request, EndpointAttributes.SyncReply | EndpointAttributes.Xml);
+					var result = ExecuteService(request, EndpointAttributes.SyncReply | EndpointAttributes.Xml | HttpMethods.GetEndpointAttribute(httpMethod));
 					response.WriteToResponse(result, x => DataContractSerializer.Instance.Parse(result), ContentType.Xml);
 				}
 				else if (url.Contains("/xml/asynconeway/"))
 				{
-					var result = ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Xml);
+					var result = ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Xml | HttpMethods.GetEndpointAttribute(httpMethod));
 				}
 			}
 			catch (Exception ex)

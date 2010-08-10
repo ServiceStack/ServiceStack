@@ -98,6 +98,7 @@
     <Compile Include="Models\ModelWithFieldsOfDifferentTypesFactory.cs" />
     <Compile Include="Models\ModelWithFieldsOfNullableTypesFactory.cs" />
     <Compile Include="Models\ModelWithMapAndList.cs" />
+    <Compile Include="Models\Movie.cs" />
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />

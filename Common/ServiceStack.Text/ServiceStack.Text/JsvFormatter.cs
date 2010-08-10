@@ -13,6 +13,7 @@
 
 using System;
 using System.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text
 {
@@ -44,11 +45,11 @@ namespace ServiceStack.Text
 				var previous = i - 1 >= 0 ? serializedText[i - 1] : 0;
 				var next = i < serializedText.Length - 1 ? serializedText[i + 1] : 0;
 
-				if (current == TypeSerializer.MapStartChar || current == TypeSerializer.ListStartChar)
+				if (current == JsWriter.MapStartChar || current == JsWriter.ListStartChar)
 				{
-					if (previous == TypeSerializer.MapKeySeperator)
+					if (previous == JsWriter.MapKeySeperator)
 					{
-						if (next == TypeSerializer.MapEndChar || next == TypeSerializer.ListEndChar)
+						if (next == JsWriter.MapEndChar || next == JsWriter.ListEndChar)
 						{
 							sb.Append(current);
 							sb.Append(serializedText[++i]); //eat next
@@ -64,7 +65,7 @@ namespace ServiceStack.Text
 					continue;
 				}
 
-				if (current == TypeSerializer.MapEndChar || current == TypeSerializer.ListEndChar)
+				if (current == JsWriter.MapEndChar || current == JsWriter.ListEndChar)
 				{
 					AppendTabLine(sb, --tabCount);
 					sb.Append(current);
@@ -72,7 +73,7 @@ namespace ServiceStack.Text
 					continue;
 				}
 
-				if (current == TypeSerializer.ItemSeperator)
+				if (current == JsWriter.ItemSeperator)
 				{
 					sb.Append(current);
 					AppendTabLine(sb, tabCount);
@@ -82,7 +83,7 @@ namespace ServiceStack.Text
 
 				sb.Append(current);
 
-				if (current == TypeSerializer.MapKeySeperator && firstKeySeparator)
+				if (current == JsWriter.MapKeySeperator && firstKeySeparator)
 				{
 					sb.Append(" ");
 					firstKeySeparator = false;

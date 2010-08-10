@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text
 {
@@ -20,13 +21,13 @@ namespace ServiceStack.Text
 	{
 		public static string ToCsvField(this string text)
 		{
-			return string.IsNullOrEmpty(text) || text.IndexOfAny(TypeSerializer.EscapeChars) == -1
+			return string.IsNullOrEmpty(text) || text.IndexOfAny(JsWriter.EscapeChars) == -1
 		       	? text
 		       	: string.Concat
 		       	  	(
-		       	  		TypeSerializer.QuoteString,
-		       	  		text.Replace(TypeSerializer.QuoteString, TypeSerializer.DoubleQuoteString),
-		       	  		TypeSerializer.QuoteString
+						JsWriter.QuoteString,
+						text.Replace(JsWriter.QuoteString, TypeSerializer.DoubleQuoteString),
+						JsWriter.QuoteString
 		       	  	);
 		}
 
@@ -34,10 +35,10 @@ namespace ServiceStack.Text
 		{
 			const int startingQuotePos = 1;
 			const int endingQuotePos = 2;
-			return string.IsNullOrEmpty(text) || text[0] != TypeSerializer.QuoteChar
+			return string.IsNullOrEmpty(text) || text[0] != JsWriter.QuoteChar
 			       	? text
 					: text.Substring(startingQuotePos, text.Length - endingQuotePos)
-			       	  	.Replace(TypeSerializer.DoubleQuoteString, TypeSerializer.QuoteString);
+						.Replace(TypeSerializer.DoubleQuoteString, JsWriter.QuoteString);
 		}
 
 		public static List<string> FromCsvFields(this IEnumerable<string> texts)

@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using ServiceStack.Text.JsText;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Json
 {

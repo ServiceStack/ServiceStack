@@ -421,8 +421,10 @@ namespace ServiceStack.OrmLite
 			if (Equals(firstRow, default(T))) return;
 
 			var defaultIdValue = ReflectionUtils.GetDefaultValue(IdUtils.GetId(firstRow).GetType());
-			var idMap = saveRows.Where(x => !defaultIdValue.Equals(IdUtils.GetId(x)))
-				.ToDictionary(x => IdUtils.GetId(x));
+
+			var idMap = defaultIdValue != null 
+				? saveRows.Where(x => !defaultIdValue.Equals(IdUtils.GetId(x))).ToDictionary(x => IdUtils.GetId(x))
+				: saveRows.Where(x => IdUtils.GetId(x) != null).ToDictionary(x => IdUtils.GetId(x));
 
 			var existingRowsMap = dbCommand.GetByIds<T>(idMap.Keys).ToDictionary(x => IdUtils.GetId(x));
 

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text
 {
@@ -21,7 +22,7 @@ namespace ServiceStack.Text
 	{
 		public static string Join<T>(this IEnumerable<T> values)
 		{
-			return Join(values, TypeSerializer.ItemSeperatorString);
+			return Join(values, JsWriter.ItemSeperatorString);
 		}
 
 		public static string Join<T>(this IEnumerable<T> values, string seperator)

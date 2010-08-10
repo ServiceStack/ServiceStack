@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Jsv
 {
@@ -53,7 +54,7 @@ namespace ServiceStack.Text.Jsv
 			if (string.IsNullOrEmpty(value))
 				return null;
 
-			return value[0] == TypeSerializer.MapStartChar
+			return value[0] == JsWriter.MapStartChar
 			       	? value.Substring(1, value.Length - 2)
 			       	: value;
 		}

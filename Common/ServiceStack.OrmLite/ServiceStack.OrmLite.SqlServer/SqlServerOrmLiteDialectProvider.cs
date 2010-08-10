@@ -19,6 +19,7 @@ namespace ServiceStack.OrmLite.SqlServer
 			base.BoolColumnDefinition = base.IntColumnDefinition;
 			base.GuidColumnDefinition = "UniqueIdentifier";
 			base.RealColumnDefinition = "FLOAT";
+			base.DecimalColumnDefinition = "DECIMAL(38,6)";
 
 			base.InitColumnTypeMap();
 		}

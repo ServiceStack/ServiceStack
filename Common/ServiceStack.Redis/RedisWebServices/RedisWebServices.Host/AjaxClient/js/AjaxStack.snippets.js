@@ -244,6 +244,32 @@ A.join = function(array, on)
 	}
 	return s;
 };
+A.toTable = function(array)
+{
+    var cols = [], sb = [];
+    for (var i=0, len = array.length; i<len; i++)
+    {
+        var obj = array[i];
+        if (i == 0)
+        {
+            sb.push("<table><thead><tr>");
+            for (var k in obj) {
+                cols.push(k);
+                sb.push("<th>" + k + "</th>");
+            }
+            sb.push("</tr></thead><tbody>");
+        }
+        sb.push("<tr>");
+        for (var j=0, len=cols.length; j<len; j++)
+        {
+            var k = cols[j];
+            sb.push("<th>" + obj[k] + "</th>");
+        }
+        sb.push("</tr>");
+    }
+    sb.push("</tbody></table>");
+    return sb.join('');
+}
 
 //Object Utils
 var O = {};

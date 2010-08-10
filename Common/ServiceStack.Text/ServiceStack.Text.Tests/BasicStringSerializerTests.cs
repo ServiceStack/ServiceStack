@@ -7,6 +7,7 @@ using NUnit.Framework;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Tests.Models;
 using System.Collections.Generic;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Tests
 {
@@ -14,15 +15,15 @@ namespace ServiceStack.Text.Tests
 	public class BasicStringSerializerTests
 	{
 		readonly char[] allCharsUsed = new[] {
-			TypeSerializer.QuoteChar, TypeSerializer.ItemSeperator,
-			TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
-			TypeSerializer.ListEndChar, TypeSerializer.ListEndChar,
+			JsWriter.QuoteChar, JsWriter.ItemSeperator,
+			JsWriter.MapStartChar, JsWriter.MapKeySeperator, JsWriter.MapEndChar,
+			JsWriter.ListEndChar, JsWriter.ListEndChar,
 		};
 
 		readonly string fieldWithInvalidChars = string.Format("all {0} {1} {2} {3} {4} {5} {6} invalid chars",
-			TypeSerializer.QuoteChar, TypeSerializer.ItemSeperator,
-			TypeSerializer.MapStartChar, TypeSerializer.MapKeySeperator, TypeSerializer.MapEndChar,
-			TypeSerializer.ListEndChar, TypeSerializer.ListEndChar);
+			JsWriter.QuoteChar, JsWriter.ItemSeperator,
+			JsWriter.MapStartChar, JsWriter.MapKeySeperator, JsWriter.MapEndChar,
+			JsWriter.ListEndChar, JsWriter.ListEndChar);
 
 		readonly int[] intValues = new[] { 1, 2, 3, 4, 5 };
 		readonly double[] doubleValues = new[] { 1.0d, 2.0d, 3.0d, 4.0d, 5.0d };

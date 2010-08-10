@@ -335,35 +335,35 @@ JSV.serialize = JSV.stringify = function(obj)
 };
 JSV.serializeObject = function(obj)
 {
-    var value, sb = [];
+    var value, sb = new StringBuffer();
     for (var key in obj)
     {
         value = obj[key];
         if (!obj.hasOwnProperty(key) || JSV.isEmpty_(value) || JSV.isFunction_(value)) continue;
 
         if (sb.length > 0)
-            sb.push(',');
+            sb.append(',');
 
-        sb.push(JSV.escapeString(key));
-        sb.push(':');
-        sb.push(JSV.serialize(value));
+        sb.append(JSV.escapeString(key));
+        sb.append(':');
+        sb.append(JSV.serialize(value));
     }
-    return '{' + sb.join('') + '}';
+    return '{' + sb.toString() + '}';
 };
 JSV.serializeArray = function(array)
 {
-    var value, sb = [];
+    var value, sb = new StringBuffer();
     for (var i=0, len=array.length; i<len; i++)
     {
         value = array[i];
         if (JSV.isEmpty_(value) || JSV.isFunction_(value)) continue;
 
-        if (sb.length > 0)
-            sb.push(',');
+        if (sb.getLength() > 0)
+            sb.append(',');
 
-        sb.push(JSV.serialize(value));
+        sb.append(JSV.serialize(value));
     }
-    return '[' + sb.join('') + ']';
+    return '[' + sb.toString() + ']';
 };
 JSV.escapeString = function(str)
 {
@@ -389,6 +389,72 @@ JSV.containsAny_ = function(str, tests)
 	}
 	return false;
 };
+
+/* Closure Library StringBuffer for efficient string concatenation */
+var hasScriptEngine = 'ScriptEngine' in window;
+var HAS_JSCRIPT = hasScriptEngine && window['ScriptEngine']() == 'JScript';
+
+StringBuffer = function(opt_a1, var_args) {
+  this.buffer_ = HAS_JSCRIPT ? [] : '';
+
+  if (opt_a1 != null) {
+    this.append.apply(this, arguments);
+  }
+};
+StringBuffer.prototype.set = function(s) {
+  this.clear();
+  this.append(s);
+};
+if (HAS_JSCRIPT) {
+  StringBuffer.prototype.bufferLength_ = 0;
+  StringBuffer.prototype.append = function(a1, opt_a2, var_args) {
+    // IE version.
+    if (opt_a2 == null) { // second argument is undefined (null == undefined)
+      // Array assignment is 2x faster than Array push.  Also, use a1
+      // directly to avoid arguments instantiation, another 2x improvement.
+      this.buffer_[this.bufferLength_++] = a1;
+    } else {
+      this.buffer_.push.apply(/** @type {Array} */ (this.buffer_), arguments);
+      this.bufferLength_ = this.buffer_.length;
+    }
+    return this;
+  };
+} else {
+  StringBuffer.prototype.append = function(a1, opt_a2, var_args) {
+    // W3 version.
+    this.buffer_ += a1;
+    if (opt_a2 != null) { // second argument is undefined (null == undefined)
+      for (var i = 1; i < arguments.length; i++) {
+        this.buffer_ += arguments[i];
+      }
+    }
+    return this;
+  };
+}
+StringBuffer.prototype.clear = function() {
+  if (HAS_JSCRIPT) {
+     this.buffer_.length = 0;  // Reuse the array to avoid creating new object.
+     this.bufferLength_ = 0;
+   } else {
+     this.buffer_ = '';
+   }
+};
+StringBuffer.prototype.getLength = function() {
+   return this.toString().length;
+};
+StringBuffer.prototype.toString = function() {
+  if (HAS_JSCRIPT) {
+    var str = this.buffer_.join('');
+    this.clear();
+    if (str) {
+      this.append(str);
+    }
+    return str;
+  } else {
+    return /** @type {string} */ (this.buffer_);
+  }
+};
+
 
 /**
  * Considering pulling this out

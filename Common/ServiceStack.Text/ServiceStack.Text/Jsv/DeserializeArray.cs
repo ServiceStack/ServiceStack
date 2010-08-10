@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Jsv
 {
@@ -47,7 +48,7 @@ namespace ServiceStack.Text.Jsv
 			if ((value = DeserializeListWithElements.StripList(value)) == null) return null;
 			if (value == string.Empty) return new T[0];
 
-			if (value[0] == TypeSerializer.MapStartChar)
+			if (value[0] == JsWriter.MapStartChar)
 			{
 				var itemValues = new List<string>();
 				var i = 0;

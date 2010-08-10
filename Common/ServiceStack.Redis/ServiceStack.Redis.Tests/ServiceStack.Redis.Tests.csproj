@@ -128,6 +128,7 @@
     <Compile Include="TestConfig.cs" />
     <Compile Include="RedisPersistenceProviderTests.cs" />
     <Compile Include="ShippersExample.cs" />
+    <Compile Include="TestData\PopulateTestData.cs" />
     <Compile Include="UserSessionRedisClientTests.cs" />
     <Compile Include="ValueTypeExamples.cs" />
   </ItemGroup>

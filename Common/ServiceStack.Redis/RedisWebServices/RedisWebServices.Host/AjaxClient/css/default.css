@@ -131,7 +131,6 @@ BUTTON
     padding: 2px;
     font-size: 16px;
     width:250px;
-    font-family:courier;
 }
 
 
@@ -186,6 +185,41 @@ BUTTON
     color: #fff;
 }
 
+
+#log
+{
+    position: absolute;
+    top: 110px;
+    right: 10px;
+    padding: 10px;
+    background: #eef9ff;
+
+    z-index:1;
+    border-left: solid 1px #999;
+    border-top: solid 1px #999;
+    border-right: solid 1px #333;
+    border-bottom: solid 1px #333;
+}
+#log #divconsole
+{
+    width:600px;
+}
+#log #lnkViewLog
+{
+    display:block;
+    float: left;
+    width: 12px;
+    height: 13px;
+    margin: 5px 5px 0 0;
+    background: url(../img/windowsprites.gif) no-repeat -130px 0;
+    cursor:pointer;
+}
+#log .min
+{
+    background-position: -142px 0 !important;
+}
+
+
 .loading {
     background: url(../img/loaderA16.gif) no-repeat;
     padding-left: 20px;
@@ -218,10 +252,15 @@ BUTTON
 }
 
 
-TEXTAREA.key-value
+#keydetails-body
 {
-    width: 700px;
-    height: 250px;
+    width: 800px;
+}
+TEXTAREA#txtEntryValue
+{
+    width: 794px;
+    height: 350px;
+    border: solid 1px #666;
 }
 
 #tab_content TABLE
@@ -238,21 +277,89 @@ TEXTAREA.key-value
     padding: 0 5px;
 }
 
+H2.key
+{
+    background: url(../img/key16x16.png) no-repeat 0 5px;
+    padding: 0 0 0 20px;
+    font-size: 22px;
+}
+.key-group
+{
+    border-bottom: solid 1px #ccc;    
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+#txtKeyGroupFilter
+{
+    width: 200px;
+    padding: 4px 5px;
+    font-size:17px;
+}
+#btnKeyGroupFilter
+{
+    margin: -2px 0 0 0px;
+}
+
+.nav-link
+{
+    color: #039;
+}
+
+DL
+{
+    padding: 5px;
+}
 DT
 {
     float: left;
     clear: left;
-    font-weight:bold;
     width: 150px;
 }
 DD
 {
     float: left;
+    color: #666;
 }
-.lnk-show
+
+#icon-edit
 {
-    clear: left;
-    display:block;
-    margin-top: 10px;
-    color: #039;
+    background: url(../img/edit16x16.png) no-repeat 0 4px;
+    height:17px;
+    width:16px;
+    margin-right: 4px;
+}
+#icon-delete
+{
+    background: url(../img/delete13x13.gif) no-repeat 0 4px;
+    height:17px;
+    width:16px;
+    margin-right: 2px;
+}
+#icon-save
+{
+    background: url(../img/editor-toolbar.png) no-repeat -480px 2px;
+    height:17px;
+    width:16px;
+    margin-right: 2px;
+}
+
+.tnode-String
+{
+    background-position: -48px -24px;
+}
+.tnode-List
+{
+    background-position: -72px -24px;
+}
+.tnode-Set
+{
+    background-position: -96px -24px;
+}
+.tnode-SortedSet
+{
+    background-position: -120px -24px;
+}
+.tnode-Hash
+{
+    background-position: -144px -24px;
 }

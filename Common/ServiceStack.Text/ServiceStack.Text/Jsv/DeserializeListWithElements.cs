@@ -13,6 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Jsv
 {
@@ -50,7 +51,7 @@ namespace ServiceStack.Text.Jsv
 
 			const int startQuotePos = 1;
 			const int endQuotePos = 2;
-			return value[0] == TypeSerializer.ListStartChar
+			return value[0] == JsWriter.ListStartChar
 					? value.Substring(startQuotePos, value.Length - endQuotePos)
 					: value;
 		}
@@ -77,7 +78,7 @@ namespace ServiceStack.Text.Jsv
 			if ((value = StripList(value)) == null) return null;
 			if (value == string.Empty) return new List<int>();
 
-			var intParts = value.Split(TypeSerializer.ItemSeperator);
+			var intParts = value.Split(JsWriter.ItemSeperator);
 			var intValues = new List<int>(intParts.Length);
 			foreach (var intPart in intParts)
 			{
@@ -101,7 +102,7 @@ namespace ServiceStack.Text.Jsv
 
 			if (!string.IsNullOrEmpty(value))
 			{
-				if (value[0] == TypeSerializer.MapStartChar)
+				if (value[0] == JsWriter.MapStartChar)
 				{
 					var i = 0;
 					do

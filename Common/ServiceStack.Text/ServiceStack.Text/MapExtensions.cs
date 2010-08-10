@@ -12,6 +12,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text
 {
@@ -19,7 +20,7 @@ namespace ServiceStack.Text
 	{
 		public static string Join<K, V>(this Dictionary<K, V> values)
 		{
-			return Join(values, TypeSerializer.ItemSeperatorString, TypeSerializer.MapKeySeperatorString);
+			return Join(values, JsWriter.ItemSeperatorString, JsWriter.MapKeySeperatorString);
 		}
 
 		public static string Join<K, V>(this Dictionary<K, V> values, string itemSeperator, string keySeperator)

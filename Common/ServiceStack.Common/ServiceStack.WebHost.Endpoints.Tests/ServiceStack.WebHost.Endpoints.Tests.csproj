@@ -85,6 +85,13 @@
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="HttpRequestExtensionsTests.cs" />
+    <Compile Include="IntegrationTests\AppHost.cs" />
+    <Compile Include="IntegrationTests\ConfigureDatabase.cs" />
+    <Compile Include="IntegrationTests\ExampleConfig.cs" />
+    <Compile Include="IntegrationTests\IntegrationTestBase.cs" />
+    <Compile Include="IntegrationTests\Movie.cs" />
+    <Compile Include="IntegrationTests\MovieRestService.cs" />
+    <Compile Include="IntegrationTests\MovieRestTests.cs" />
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
@@ -121,6 +128,14 @@
     <Compile Include="Support\Types\Customer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj">
+      <Project>{CF68A37D-D071-469D-AE04-68594CB95382}</Project>
+      <Name>ServiceStack.OrmLite.Sqlite</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ServiceStack.OrmLite\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj">
+      <Project>{96179AC6-F6F1-40C3-9FDD-4F6582F54C5C}</Project>
+      <Name>ServiceStack.OrmLite</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ServiceStack.Text\ServiceStack.Text\ServiceStack.Text.csproj">
       <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
       <Name>ServiceStack.Text</Name>
@@ -133,9 +148,17 @@
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Configuration\ServiceStack.Configuration.csproj">
+      <Project>{17FEDF77-62F1-48F8-BB82-3BAB5E477BCD}</Project>
+      <Name>ServiceStack.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
       <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
       <Name>ServiceStack.ServiceClient.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
+      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
+      <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
@@ -145,6 +168,11 @@
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack.WebHost.Endpoints</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="sqlite3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Lib\" />

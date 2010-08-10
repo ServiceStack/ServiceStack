@@ -13,13 +13,20 @@
 using System;
 using System.Globalization;
 using System.IO;
-using ServiceStack.Text.JsText;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Jsv
 {
 	public class JsvTypeSerializer 
 		: ITypeSerializer
 	{
+		public static ITypeSerializer Instance = new JsvTypeSerializer();
+
+		public Action<TextWriter, object> GetWriteFn<T>()
+		{
+			return JsvWriter<T>.WriteFn();
+		}
+
 		public Action<TextWriter, object> GetWriteFn(Type type)
 		{
 			return JsvWriter.GetWriteFn(type);
@@ -42,7 +49,10 @@ namespace ServiceStack.Text.Jsv
 
 		public void WriteObjectString(TextWriter writer, object value)
 		{
-			writer.Write(value.ToString().ToCsvField());
+			if (value != null)
+			{
+				writer.Write(value.ToString().ToCsvField());
+			}
 		}
 
 		public void WriteException(TextWriter writer, object value)

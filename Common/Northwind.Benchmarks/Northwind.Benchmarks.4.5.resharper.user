@@ -38,7 +38,7 @@
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderListDto.cs" caret="476" fromTop="19" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="540" fromTop="23" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="9752" fromTop="25" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:NorthwindDtoFactory.cs" caret="4654" fromTop="38" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:NorthwindDtoFactory.cs" caret="4224" fromTop="20" />
     </RecentFiles>
     <RecentEdits>
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2995" fromTop="21" />

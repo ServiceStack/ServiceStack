@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Common.Tests.Perf
 {
@@ -235,7 +236,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToCsvField())
-							.Append(TypeSerializer.MapKeySeperator)
+							.Append(JsWriter.MapKeySeperator)
 							.Append(kv.Value.ToCsvField());
 					}
 					sb.ToString();
@@ -258,7 +259,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToCsvField())
-							.Append(TypeSerializer.MapKeySeperator)
+							.Append(JsWriter.MapKeySeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();
@@ -281,7 +282,7 @@ namespace ServiceStack.Common.Tests.Perf
 					{
 						if (sb.Length > 0) sb.Append(",");
 						sb.Append(kv.Key.ToCsvField())
-							.Append(TypeSerializer.MapKeySeperator)
+							.Append(JsWriter.MapKeySeperator)
 							.Append(kv.Value.ToString());
 					}
 					sb.ToString();

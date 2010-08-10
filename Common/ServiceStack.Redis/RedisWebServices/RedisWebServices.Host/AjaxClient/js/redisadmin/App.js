@@ -34,6 +34,17 @@ redisadmin.App = function()
 goog.inherits(redisadmin.App, goog.events.EventTarget);
 goog.addSingletonGetter(redisadmin.App);
 
+redisadmin.App.prototype.loadPath = function(path)
+{
+    this.log.info('Loading: ' + path);
+};
+
+redisadmin.App.prototype.setNavPath_ = function(path)
+{
+};
+redisadmin.App.prototype.init = function(path)
+{
+};
 redisadmin.App.initTabs = function()
 {
     var tabBar = new goog.ui.TabBar();
@@ -72,14 +83,6 @@ redisadmin.App.initSplitter = function()
         var width = size.width;
         var resizeTo = new goog.math.Size(width, height);
         splitpane.setSize(resizeTo);
-
-        /*
-        goog.dom.setTextContent(goog.dom.getElement('tab_content'),
-                size.toString()
-                        + ", header: " + headerSize.toString()
-                        + ", footer: " + footerSize.toString()
-                );
-        */
     }
 
     // Initialize the layout.
@@ -131,6 +134,19 @@ redisadmin.App.prototype.searchInMainNav = function(query)
                 $this.showKey(selectedItem.getHtml());
             }
         });
+
+        var fetchKeyTypes = [];
+        tree.forEachChild(function(child, i){
+           if (!$this.isKeyGroup_(child))
+           {
+               var key = $this.getNodeLabel_(child);
+               if (!$this.keyTypes[key]) fetchKeyTypes.push(key);
+           }
+        });
+        $this.fetchKeyTypes(fetchKeyTypes, function(){
+           $this.updateNodeTypes_(tree); 
+        });
+
     });
 };
 
@@ -159,7 +175,9 @@ redisadmin.App.prototype.addChildNodes_ = function(parentNode, keysWithChildCoun
                     var keyGroup = $this.getNodeLabel_(e.currentTarget);
 
                     $this.redis.searchKeysGroup(keyGroup + ":*", function(keysWithChildCounts) {
-                        $this.fetchTypesForValidKeys(keysWithChildCounts);
+                        $this.fetchTypesForValidKeys(keysWithChildCounts, function(){
+                            $this.updateNodeTypes_(parentNode);
+                        });
 
                         parentNode.removeChildAt(0);
                         $this.addChildNodes_(parentNode, keysWithChildCounts);
@@ -173,6 +191,21 @@ redisadmin.App.prototype.addChildNodes_ = function(parentNode, keysWithChildCoun
         parentNode.add(childNode);
     }
 }
+
+redisadmin.App.prototype.updateNodeTypes_ = function(parentNode, keyTypes)
+{
+    var $this = this;
+    keyTypes = keyTypes || this.keyTypes;
+    parentNode.forEachChild(function(child, i){
+       var label = $this.getNodeLabel_(child);
+       var keyType = keyTypes[label];
+       //$this.log.info($this.getNodeLabel_(parentNode) + "> navTo: " + label + " (" + keyType + ")");
+       if (keyType)
+       {
+           child.setIconClass("goog-tree-icon goog-tree-file-icon tnode-" + keyType);
+       }
+    });
+};
 
 redisadmin.App.prototype.isKeyGroup_ = function(node)
 {
@@ -188,7 +221,20 @@ redisadmin.App.prototype.getNodeLabel_ = function(node)
     return nodeLabel;
 };
 
-redisadmin.App.prototype.fetchTypesForValidKeys = function(keysWithChildCounts)
+redisadmin.App.prototype.fetchKeyTypes = function(keys, callbackFn)
+{
+    var $this = this;
+    this.redis.getEntryTypes(keys, function(keysWithTypes)
+    {
+        for (var key in keysWithTypes)
+        {
+            $this.keyTypes[key] = keysWithTypes[key];
+        }
+        if (callbackFn) callbackFn();
+    });
+}
+
+redisadmin.App.prototype.fetchTypesForValidKeys = function(keysWithChildCounts, callbackFn)
 {
     var $this = this;
 
@@ -208,13 +254,7 @@ redisadmin.App.prototype.fetchTypesForValidKeys = function(keysWithChildCounts)
 
         $this.log.fine("Fetching types for '" + keysToFetch.length + "' keys");
 
-        this.redis.getEntryTypes(keysToFetch, function(keysWithTypes)
-        {
-            for (var key in keysWithTypes)
-            {
-                $this.keyTypes[key] = keysWithTypes[key];
-            }
-        });
+        this.fetchKeyTypes(keysToFetch, callbackFn);
     }
 };
 
@@ -292,31 +332,85 @@ redisadmin.App.prototype.showKey = function(key, inNewTab)
 
 redisadmin.App.prototype.showKeyDetails = function(key, textValue)
 {
-    var html = "<h2>" + key + "</h2>";
+    var sb = [];
+    sb.push("<h2 class='key'>" + key + "</h2>");
+
+
+    sb.push("<div id='keydetails-body'>");
+
+    sb.push("<div id='toolbarViewKey' class='key-options goog-toolbar'>");
+    sb.push("<div id='lnk-editkey' class='goog-toolbar-button nav-link'><span id='icon-edit' class='goog-inline-block'></span>edit</div>");
+    sb.push("<div class='goog-toolbar-separator nav-separator'></div>");
+    sb.push("</div>");
+
+    sb.push("<div id='toolbarEditKey' class='goog-toolbar' style='display:none'>");
+    sb.push("<div id='lnk-back' class='goog-toolbar-button nav-link'>« back</div>");
+    sb.push("<hr/>");
+    sb.push("<div class='goog-toolbar-separator nav-separator'></div>");
+    sb.push("<div id='btnDeleteKey' class='goog-toolbar-button'><span id='icon-delete' class='goog-inline-block'></span>Delete</div>");
+    sb.push("<hr/>");
+    sb.push("<div id='btnSaveKey' class='goog-toolbar-button'><span id='icon-save' class='goog-inline-block'></span>Save</div>");
+    sb.push("</div>");
 
     try
     {
         var obj = JSV.parse(textValue);
 
-        html += "<dl>";
+        sb.push("<div id='key-view'>");
+        sb.push("<dl>");
         for (var k in obj)
         {
-            html += "<dt>" + k + "</dt>"
-                  + "<dd>" + obj[k] + "</dd>";
+            sb.push("<dt>" + k + "</dt>"
+                  + "<dd>" + obj[k] + "</dd>");
         }
-        html += "</dl>";
-        //html += jLinq.from(obj).toTable();
+        sb.push("</dl>");
+        sb.push("</div>");
     }
     catch (e) {
         $this.log.severe("Error parsing key: " + key + ", Error: " + e);
     }
 
-    html += "<span class='lnk-show'>show contents</span>"
-          + "<textarea style='display:none' class='key-value'>" + textValue + "</textarea>";
+    sb.push("<div id='key-edit' style='display:none'>");
+    sb.push("<textarea id='txtEntryValue'>" + textValue + "</textarea>");
+    sb.push("</div>");
 
-    goog.dom.getElement('tab_content').innerHTML = html;
+    sb.push("<div>");
 
-    
+    goog.dom.getElement('tab_content').innerHTML = sb.join('');
+
+    var toolbarViewKey = new goog.ui.Toolbar();
+    toolbarViewKey.decorate(goog.dom.getElement('toolbarViewKey'));
+
+    var toolbarEditKey = new goog.ui.Toolbar();
+    toolbarEditKey.decorate(goog.dom.getElement('toolbarEditKey'));
+
+    var lnkEdit = goog.dom.getElement('lnk-editkey'),
+        lnkBack = goog.dom.getElement('lnk-back'),
+        btnDeleteKey = goog.dom.getElement('btnDeleteKey'),
+        btnSaveKey = goog.dom.getElement('btnSaveKey'),
+        txtEntryValue = goog.dom.getElement('txtEntryValue');
+
+    var editMode = false;
+
+    var toggleEditModeFn = function(e) {
+        editMode = !editMode;
+        goog.style.showElement(goog.dom.getElement('key-view'), !editMode);
+        goog.style.showElement(goog.dom.getElement('key-edit'), editMode);
+        goog.style.showElement(goog.dom.getElement('toolbarViewKey'), !editMode);
+        goog.style.showElement(goog.dom.getElement('toolbarEditKey'), editMode);
+    };
+    goog.events.listen(lnkEdit, goog.events.EventType.CLICK, toggleEditModeFn);
+    goog.events.listen(lnkBack, goog.events.EventType.CLICK, toggleEditModeFn);
+
+    goog.events.listen(btnDeleteKey, goog.events.EventType.CLICK,
+    function(e) {
+        alert('delete');
+    });
+
+    goog.events.listen(btnSaveKey, goog.events.EventType.CLICK,
+    function(e) {
+        alert('updating: ' + goog.dom.getTextContent(txtEntryValue));
+    });
 }
 
 redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
@@ -359,39 +453,39 @@ redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
 
         //$this.benchmarkTextFormats(sbJsv.join(''), goog.json.serialize(rows));
 
-        var html = "<h2>" + parentLabel + "</h2>"
-                 + "<textarea class='key-value'>" + goog.json.serialize(rows) + "</textarea>";
+        var html = "<div class='key-group'>"
+                + "<input id='txtKeyGroupFilter' type='text' value='" + parentLabel + "' />"
+                + '<div id="btnKeyGroupFilter" class="goog-custom-button goog-inline-block">Filter</div>'
+                + "</div>";
 
-        html += jLinq.from(rows).toTable();
+        html += "<div id='keys-table'>" + jLinq.from(rows).toTable() + "</div>";
 
         goog.dom.getElement('tab_content').innerHTML = html;
 
-        //console.log(map);
+        var txtKeyGroupFilter = goog.dom.getElement('txtKeyGroupFilter');
+        var autoComplete = new goog.ui.AutoComplete.Basic(childKeys, txtKeyGroupFilter, false);
+        autoComplete.setAllowFreeSelect(true);
+        autoComplete.setAutoHilite(false);
+
+        var filterFn = function(e)
+        {
+            var filteredRows = [], filterText = txtKeyGroupFilter.value;
+            for (var i=0; i<rows.length; i++)
+            {
+                var row = rows[i];
+                if (row.Key.indexOf(filterText) != -1)
+                {
+                    filteredRows.push(row);
+                }
+            }
+            goog.dom.getElement('keys-table').innerHTML = jLinq.from(filteredRows).toTable();
+        };
+
+        goog.events.listen(autoComplete, goog.ui.AutoComplete.EventType.UPDATE, filterFn);
+
+        var btnKeyGroupFilter = goog.dom.getElement("btnKeyGroupFilter");
+        var button = goog.ui.decorate(btnKeyGroupFilter);
+        button.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+        goog.events.listen(btnKeyGroupFilter, goog.events.EventType.CLICK, filterFn);
     });
-};
-
-redisadmin.App.prototype.benchmarkTextFormats = function(jsv, json)
-{
-    var tracer = goog.debug.Trace.startTracer('deserializer speed tests');
-    goog.debug.Trace.addComment('BEGIN json vs jsv');
-
-    var jsonObj = goog.json.parse(json);
-    goog.debug.Trace.addComment('dserialize json');
-
-    var jsvObj = JSV.parse(jsv);
-    goog.debug.Trace.addComment('dserialize jsv');
-
-    goog.debug.Trace.addComment('END json vs jsv');
-
-    goog.debug.Trace.stopTracer(tracer);
-
-    var results = goog.debug.Trace.getFormattedTrace();
-
-    goog.dom.getElement('tab_content').innerHTML
-            = "<pre>" + goog.string.htmlEscape(results) + "</pre>";
-
-//        console.log("JSON");
-//        console.log(jsonObj);
-//        console.log("JSV");
-//        console.log(jsvObj);
 };

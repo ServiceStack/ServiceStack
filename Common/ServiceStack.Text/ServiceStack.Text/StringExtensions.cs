@@ -97,7 +97,7 @@ namespace ServiceStack.Text
 		{
 			return string.Concat
 			(	"\"",
-				value.Replace("\"", "\\\"").Replace("\r", "").Replace("\n","\\n"),
+				value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", "").Replace("\n","\\n"),
 				"\""
 			);
 		}

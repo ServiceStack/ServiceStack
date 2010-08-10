@@ -111,9 +111,9 @@ namespace ServiceStack.Text.Tests
 		public void Can_Serialize_multiple_FlowPostTransient()
 		{
 			var dtos = new List<FlowPostTransient> {
-			                                       	FlowPostTransient.Create(), 
-			                                       	FlowPostTransient.Create()
-			                                       };
+				FlowPostTransient.Create(), 
+				FlowPostTransient.Create()
+			};
 			var dtoString = TypeSerializer.SerializeToString(dtos);
 			var fromString = TypeSerializer.DeserializeFromString<List<FlowPostTransient>>(dtoString);
 		}

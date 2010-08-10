@@ -8,20 +8,12 @@ namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class StringSerializerNorthwindDatabaseTests
-		: TestBase
+		: TextSerializerTestBase
 	{
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
 			NorthwindData.LoadData(false);
-		}
-
-		public T Serialize<T>(T model)
-		{
-			var strModel = TypeSerializer.SerializeToString(model);
-			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
-			var toModel = TypeSerializer.DeserializeFromString<T>(strModel);
-			return toModel;
 		}
 
 

@@ -13,6 +13,13 @@
 
 <link rel="stylesheet" href="css/default.css">
 
+<link rel="stylesheet" href="css/button.css">
+<link rel="stylesheet" href="css/custombutton.css">
+<link rel="stylesheet" href="css/flatbutton.css">
+<link rel="stylesheet" href="css/linkbutton.css">
+
+<link rel="stylesheet" href="css/autocomplete.css">
+
 
 <script src="js/closure-library/closure/goog/base.js"></script>
 <script type="text/javascript" src="js/jLinq-2.2.1.js"></script>
@@ -31,37 +38,63 @@
     goog.require('goog.events');
     goog.require('goog.dom');
     goog.require('goog.dom.ViewportSizeMonitor');
+    goog.require('goog.History');
     goog.require('goog.ui.tree.TreeControl');
     goog.require('goog.ui.TabBar');
     goog.require('goog.ui.Component');
     goog.require('goog.ui.SplitPane');
     goog.require('goog.ui.SplitPane.Orientation');
+
+    goog.require('goog.ui.Toolbar');
+    goog.require('goog.ui.ToolbarRenderer');
+    goog.require('goog.ui.ToolbarButton');
+    goog.require('goog.ui.ToolbarMenuButton');
+    goog.require('goog.ui.ToolbarSelect');
+    goog.require('goog.ui.ToolbarSeparator');
+    goog.require('goog.ui.ToolbarToggleButton');
+
+    goog.require('goog.ui.Button');
+    goog.require('goog.ui.ButtonRenderer');
+    goog.require('goog.ui.CustomButton');
+    goog.require('goog.ui.CustomButtonRenderer');
+    goog.require('goog.ui.FlatButtonRenderer');
+    goog.require('goog.ui.LinkButtonRenderer');
+    goog.require('goog.ui.ToggleButton');
+    goog.require('goog.ui.decorate');
+
+    goog.require('goog.ui.AutoComplete.Basic');
+    
 </script>
 
 <script type="text/javascript" src="js/redisadmin/App.js"></script>
+<script type="text/javascript" src="js/redisadmin/ViewController.js"></script>
+<script type="text/javascript" src="js/redisadmin/EditorViewController.js"></script>
+<script type="text/javascript" src="js/redisadmin/AdminViewController.js"></script>
 
 <script type="text/javascript">
+    var tree, app, initPath;
 
-    var tree;
     $(function() {
 
-//        var debugWindow = new goog.debug.FancyWindow('main');
-//        debugWindow.setEnabled(true);
-//        debugWindow.init();
+        var enableLogging = true;
+        if (enableLogging)
+        {
+            var divConsole = new goog.debug.DivConsole(goog.dom.getElement('divconsole'));
+            divConsole.setCapturing(true);
 
-        var divConsole = new goog.debug.DivConsole(goog.dom.getElement('divconsole'));
-        divConsole.setCapturing(true);
-        //var logger = goog.debug.LogManager.getRoot();
-
-
-        var app = redisadmin.App.getInstance();
-        var redis = app.getRedisClient();
-
-        $("#btnPopulate").click(function() {
-            redis.populateRedisWithData(function(r) {
-                alert('redis populated with data');
+            $("#lnkViewLog").toggle(
+            function(){
+                $(this).addClass("min");
+                $("#divconsole").hide();
+            }, function(){
+                $(this).removeClass("min");
+                $("#divconsole").show();
             });
-        });
+
+            goog.style.showElement(goog.dom.getElement('log'), true);            
+        }
+
+        app = redisadmin.App.getInstance();
 
         $("#txtQuery").keypress(function(event){
             var keyCode = (event.keyCode ? event.keyCode : event.which);
@@ -77,14 +110,25 @@
 
         $("#txtQuery").val("urn:*");
         $("#btnSearch").click();
-    });
 
+        if (initPath)
+        {
+            app.loadPath(initPath);
+        }
+
+    });
 </script>
+
 </head>
 
 <body>
 
 <div id="body">
+    <div id="log" style="display:none">
+        <h3><a id="lnkViewLog"></a>Event Logger</h3>
+        <div id="divconsole"></div>
+    </div>
+
     <div id="header">
         <div id="logo">
             <a href="default.htm"><img src="img/redis-small.png" alt="Redis Admin UI"/></a>
@@ -92,7 +136,7 @@
             <h1>Admin UI</h1>
         </div>
         <div id="searchbox">
-            <input id="txtQuery" type="text" value="urn:*"/>
+            <input id="txtQuery" type="text" value="urn:*" />
             <button id="btnSearch">Search Keys</button>
             <!--<button id="btnPopulate">Populate with Data</button>-->
         </div>
@@ -103,9 +147,9 @@
             <div id="mainNav"></div>
         </div>
         <div id="content" class='goog-splitpane-second-container'>
-            <div id="divconsole" style="width:500px; float:right"></div>
             <div id="tab" class="goog-tab-bar goog-tab-bar-top">
-                <div class="goog-tab goog-tab-selected">Start Page</div>
+                <div class="goog-tab goog-tab-selected">Admin</div>
+                <div class="goog-tab goog-tab-selected">Editor</div>
                 <!--<div id="mainNav-tab" class="goog-tab">Main Tab<img class="close-tab" src="images/close_box.gif" title="close tab" /></div>-->
             </div>
             <!-- Use goog-tab-bar-clear to separate the tabs from the content. -->
@@ -115,6 +159,14 @@
                 <p>
                     No Doubt in time it will be filled with interesting stuff on how to use this app.
                 </p>
+                <h4>Action tests</h4>
+                <ul>
+                    <li><a href="#editor">#editor</a></li>
+                    <li><a href="#editor/A">#editor/A</a></li>
+                    <li><a href="#editor/B/1">#editor/B/1</a></li>
+                    <li><a href="#editor/urn:customer">#editor/urn:customer</a></li>
+                    <li><a href="#editor/urn:customer/urn:customer:ALFKI">#editor/urn:customer/urn:customer:ALFKI</a></li>
+                </ul>
             </div>
         </div>
         <div class='goog-splitpane-handle'></div>
@@ -126,6 +178,19 @@
         <a href="http://code.google.com/p/closure-library/">closure library</a> 
     </div>
 </div>
+
+<script type="text/javascript">
+    //After some trial & error this is only good place to init 'goog.History()'
+    var h = new goog.History();
+    goog.events.listen(h, goog.History.EventType.NAVIGATE, function(e){
+        if (!app) {
+            initPath = e.token;
+            return;
+        }
+        app.loadPath(e.token);
+    });
+    h.setEnabled(true);
+</script>
 
 </body>
 </html>

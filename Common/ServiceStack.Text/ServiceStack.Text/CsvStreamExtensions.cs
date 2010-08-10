@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using ServiceStack.Text.Common;
 using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.Text
@@ -103,7 +104,7 @@ namespace ServiceStack.Text
 				var ranOnce = false;
 				foreach (var header in dataSource.Headers)
 				{
-					TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+					JsWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 					writer.Write(header);
 				}
 				writer.WriteLine();
@@ -114,7 +115,7 @@ namespace ServiceStack.Text
 				var ranOnce = false;
 				foreach (var field in row)
 				{
-					TypeSerializer.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
+					JsWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
 					writer.Write(field.ToCsvField());
 				}
