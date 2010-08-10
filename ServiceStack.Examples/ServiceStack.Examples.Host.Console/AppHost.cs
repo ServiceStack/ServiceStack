@@ -1,10 +1,9 @@
-﻿using System;
-using Funq;
+﻿using Funq;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
 using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.Examples.ServiceInterface.Support;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Operations;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;

@@ -83,6 +83,10 @@
       <Project>{519A7B72-D144-436D-AAC3-7BAAEAD3FF52}</Project>
       <Name>ServiceStack.Examples.ServiceInterface</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Examples.ServiceModel\ServiceStack.Examples.ServiceModel.csproj">
+      <Project>{2B840832-3036-47D9-8F9B-560CD5C2BF90}</Project>
+      <Name>ServiceStack.Examples.ServiceModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="sqlite3.dll">

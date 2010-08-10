@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.Serialization;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Examples.ServiceInterface;
 
 namespace ServiceStack.Examples.ServiceModel.Types
 {

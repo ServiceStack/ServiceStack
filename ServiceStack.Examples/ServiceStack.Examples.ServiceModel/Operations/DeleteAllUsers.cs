@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceModel.Operations

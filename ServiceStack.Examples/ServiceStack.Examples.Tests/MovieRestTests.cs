@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Examples.ServiceInterface.Support;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Operations;
+using ServiceStack.Examples.ServiceModel.Types;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 

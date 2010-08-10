@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Extensions;
-using ServiceStack.Examples.ServiceInterface;
 
 /*
  * Examples of preliminery REST method support in ServiceStack

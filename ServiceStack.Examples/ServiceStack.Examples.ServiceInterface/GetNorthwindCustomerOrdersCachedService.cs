@@ -1,7 +1,7 @@
 using System;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common.Utils;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Operations;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 

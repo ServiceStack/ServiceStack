@@ -69,25 +69,17 @@
     <Compile Include="GetNorthwindCustomerOrdersService.cs" />
     <Compile Include="StoreNewUserService.cs" />
     <Compile Include="Support\ConfigureDatabase.cs" />
-    <Compile Include="Types\Movie.cs" />
-    <Compile Include="Types\GetNorthwindCustomerOrdersCached.cs" />
-    <Compile Include="Types\GetNorthwindCustomerOrders.cs" />
-    <Compile Include="Types\Greet.cs" />
-    <Compile Include="Types\GetAllUsers.cs" />
-    <Compile Include="Types\DeleteAllUsers.cs" />
     <Compile Include="DeleteAllUsersService.cs" />
     <Compile Include="GreetService.cs" />
     <Compile Include="GetUsersService.cs" />
-    <Compile Include="Types\GetFibonacciNumbers.cs" />
     <Compile Include="GetFibonacciNumbersService.cs" />
-    <Compile Include="Types\GetFactorial.cs" />
-    <Compile Include="Types\GetUsers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Types\ArrayOfUser.cs" />
-    <Compile Include="Types\NorthwindDtos.cs" />
-    <Compile Include="Types\PopulateMovies.cs" />
-    <Compile Include="Types\StoreNewUser.cs" />
-    <Compile Include="Types\User.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Examples.ServiceModel\ServiceStack.Examples.ServiceModel.csproj">
+      <Project>{2B840832-3036-47D9-8F9B-560CD5C2BF90}</Project>
+      <Name>ServiceStack.Examples.ServiceModel</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Examples.ServiceInterface;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Operations;
 
 namespace ServiceStack.Examples.Tests
 {

@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExampleConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Types\ArrayOfUser.cs" />
     <Compile Include="Operations\DeleteAllUsers.cs" />
@@ -76,12 +77,6 @@
     <Compile Include="Operations\PopulateMovies.cs" />
     <Compile Include="Operations\StoreNewUser.cs" />
     <Compile Include="Types\User.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Examples.ServiceInterface\ServiceStack.Examples.ServiceInterface.csproj">
-      <Project>{519A7B72-D144-436D-AAC3-7BAAEAD3FF52}</Project>
-      <Name>ServiceStack.Examples.ServiceInterface</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

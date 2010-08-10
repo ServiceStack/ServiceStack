@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using Movie=ServiceStack.Examples.ServiceModel.Types.Movie;
 

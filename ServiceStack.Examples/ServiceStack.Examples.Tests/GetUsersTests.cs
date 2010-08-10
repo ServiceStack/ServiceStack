@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Examples.ServiceInterface;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Operations;
+using ServiceStack.Examples.ServiceModel.Types;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ServiceInterface.ServiceModel;

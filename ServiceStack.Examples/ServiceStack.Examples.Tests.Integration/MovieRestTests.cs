@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.Examples.ServiceInterface.Support;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Operations;
+using ServiceStack.Examples.ServiceModel.Types;
 using ServiceStack.Text;
 
 namespace ServiceStack.Examples.Tests.Integration

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.DesignPatterns.Model;
-using ServiceStack.Examples.ServiceInterface;
 
 namespace ServiceStack.Examples.ServiceModel.Types
 {

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Types;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack.Examples.ServiceInterface.Support
@@ -27,7 +27,6 @@ namespace ServiceStack.Examples.ServiceInterface.Support
 					dbCmd.CreateTable<Movie>(false);
 					dbCmd.SaveAll(Top5Movies);			//insert or update the Top5Movies
 				}
-
 			}
 			catch (Exception ex)
 			{

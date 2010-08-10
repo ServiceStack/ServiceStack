@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Examples.ServiceModel.Operations

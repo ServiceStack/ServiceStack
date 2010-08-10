@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using ServiceStack.Examples.ServiceInterface.Types;
+using ServiceStack.Examples.ServiceModel.Operations;
+using ServiceStack.Examples.ServiceModel.Types;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Examples.ServiceInterface

@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using ServiceStack.Examples.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using CustomerOrders=ServiceStack.Examples.ServiceModel.Types.CustomerOrders;
 

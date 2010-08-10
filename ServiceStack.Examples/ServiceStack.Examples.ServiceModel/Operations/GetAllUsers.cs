@@ -1,7 +1,6 @@
 using System.Runtime.Serialization;
-using ServiceStack.Examples.ServiceInterface;
+using ServiceStack.Examples.ServiceModel.Types;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ArrayOfUser=ServiceStack.Examples.ServiceModel.Types.ArrayOfUser;
 
 namespace ServiceStack.Examples.ServiceModel.Operations
 {
