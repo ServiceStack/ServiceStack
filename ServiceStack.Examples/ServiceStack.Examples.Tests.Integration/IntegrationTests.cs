@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using ServiceStack.Examples.ServiceInterface.Types;
 
 namespace ServiceStack.Examples.Tests.Integration

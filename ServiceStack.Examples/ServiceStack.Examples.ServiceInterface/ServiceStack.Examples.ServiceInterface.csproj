@@ -60,6 +60,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PopulateMoviesService.cs" />
+    <Compile Include="MovieRestService.cs" />
     <Compile Include="GetNorthwindCustomerOrdersCachedService.cs" />
     <Compile Include="ExampleConfig.cs" />
     <Compile Include="GetFactorialService.cs" />
@@ -67,6 +69,7 @@
     <Compile Include="GetNorthwindCustomerOrdersService.cs" />
     <Compile Include="StoreNewUserService.cs" />
     <Compile Include="Support\ConfigureDatabase.cs" />
+    <Compile Include="Types\Movie.cs" />
     <Compile Include="Types\GetNorthwindCustomerOrdersCached.cs" />
     <Compile Include="Types\GetNorthwindCustomerOrders.cs" />
     <Compile Include="Types\Greet.cs" />
@@ -82,6 +85,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Types\ArrayOfUser.cs" />
     <Compile Include="Types\NorthwindDtos.cs" />
+    <Compile Include="Types\PopulateMovies.cs" />
     <Compile Include="Types\StoreNewUser.cs" />
     <Compile Include="Types\User.cs" />
   </ItemGroup>
