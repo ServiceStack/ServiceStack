@@ -25,7 +25,7 @@ namespace ServiceStack.Examples.ServiceInterface.Support
 				{
 					dbCmd.CreateTable<User>(false);
 					dbCmd.CreateTable<Movie>(false);
-					dbCmd.SaveAll(Top5Movies);
+					dbCmd.SaveAll(Top5Movies);			//insert or update the Top5Movies
 				}
 
 			}

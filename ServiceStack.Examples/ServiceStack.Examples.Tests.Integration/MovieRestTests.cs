@@ -47,15 +47,15 @@ namespace ServiceStack.Examples.Tests.Integration
 		public void Can_add_movie()
 		{
 			var newMovie = new Movie
-               	{
-               		Id = "tt0110912",
-               		Title = "Pulp Fiction",
-               		Rating = 8.9m,
-               		Director = "Quentin Tarantino",
-               		ReleaseDate = new DateTime(1994, 10, 24),
-               		TagLine = "Girls like me don't make invitations like this to just anyone!",
-               		Genres = new List<string> { "Crime", "Drama", "Thriller" },
-               	};
+			{
+				Id = "tt0110912",
+				Title = "Pulp Fiction",
+				Rating = 8.9m,
+				Director = "Quentin Tarantino",
+				ReleaseDate = new DateTime(1994, 10, 24),
+				TagLine = "Girls like me don't make invitations like this to just anyone!",
+				Genres = new List<string> { "Crime", "Drama", "Thriller" },
+			};
 
 			SendToEachEndpoint<MoviesResponse>(new Movies { Movie = newMovie }, HttpMethods.Put, null);
 

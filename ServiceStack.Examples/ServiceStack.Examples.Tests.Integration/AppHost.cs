@@ -35,8 +35,8 @@ namespace ServiceStack.Examples.Tests.Integration
 
 			container.Register<IDbConnectionFactory>(c =>
 				 new OrmLiteConnectionFactory(
-					":memory:",
-					false,
+					":memory:",	//Use an in-memory database instead
+					false,		//keep the same in-memory db connection open
 					SqliteOrmLiteDialectProvider.Instance));
 
 			ConfigureDatabase.Init(container.Resolve<IDbConnectionFactory>());
