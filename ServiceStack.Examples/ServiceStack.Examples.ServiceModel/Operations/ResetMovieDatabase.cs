@@ -4,14 +4,14 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace ServiceStack.Examples.ServiceModel.Operations
 {
 	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
-	public class PopulateMovies
+	public class ResetMovieDatabase
 	{
 	}
 
 	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
-	public class PopulateMoviesResponse
+	public class ResetMovieDatabaseResponse
 	{
-		public PopulateMoviesResponse()
+		public ResetMovieDatabaseResponse()
 		{
 			this.ResponseStatus = new ResponseStatus();
 		}

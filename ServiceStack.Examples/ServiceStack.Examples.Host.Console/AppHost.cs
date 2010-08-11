@@ -33,10 +33,10 @@ namespace ServiceStack.Examples.Host.Console
 			base.SetConfig(new EndpointHostConfig
 			{
 				GlobalResponseHeaders =
-					{
-						{ "Access-Control-Allow-Origin", "*" },
-						{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
-					},
+				{
+					{ "Access-Control-Allow-Origin", "*" },
+					{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
+				},
 			});
 
 			container.Register<IResourceManager>(new ConfigurationResourceManager());

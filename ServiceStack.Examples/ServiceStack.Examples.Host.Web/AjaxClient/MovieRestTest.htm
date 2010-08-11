@@ -4,99 +4,278 @@
     <title>ServiceStack Movie Database</title>
     
     <style type="text/css">
+        .goog-inline-block { position: relative; display: -moz-inline-box; display: inline-block; }
+        * html .goog-inline-block { display: inline; }
+        *:first-child+html .goog-inline-block { display: inline; }        
+        H1, H2, H3, H4, H5, H6 { margin: 0; padding: 0; }
+
         BODY 
         {
         	font-family: Arial;
+        	width: 900px;
+        }
+        H1 A
+        {
+        	background: url(http://www.servicestack.net/logo-servicestack.png) no-repeat;
+        	display: block;
+        	height: 40px;
+        	padding: 70px 30px 0 120px;
+        	color: #051;
+        	margin: 0 50px 20px 0;
+        	text-decoration: none;
+        }
+        #summary
+        {
+        	margin: 0 0 20px 0;
+        	padding: 10px;
+        	background: #ffc;
+        	color: #333;
+        	font-size: 13px;
+        	border: solid 1px #ccc;
+        	float: left;
+        }
+        #actions 
+        {
+        	clear: left;
+        	float: right;
+        }
+        BUTTON 
+        {
+        	font-size: 14px;
+        	padding: 5px 10px;
+        }
+        INPUT 
+        {
+        	width: 400px;
+        	padding: 2px 5px;
+        }
+        DT 
+        {
+        	margin: 10px 0 5px 0;
+        }
+        #existing-movies DD LABEL
+        {
+        	width: 300px;
+        }
+        .lnk-update, .lnk-delete
+        {
+        	margin-left: 10px;
+        	color: #039;
+        	text-decoration: underline;
+        	cursor: pointer;
+        }
+        #details-section 
+        {
+        	margin: 10px 0 0 90px;
+        }
+        EM 
+        {
+        	color: #999;
+        	font-style: normal;
+        	font-weight: normal;
+        	font-size: 16px;
         }
     </style>
     
     <script type="text/javascript" src="AjaxStack.snippets.js"></script>
-    <script type="text/javascript" src="jquery.json-2.2.js"></script>
     <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="jquery.json-2.2.js"></script>
     <script type="text/javascript">
         $(function() {
             var baseUri = 'http://' + document.location.hostname + '/ServiceStack.Examples.Host.Web/Public/';
             var gateway = new JsonServiceClient(baseUri);
+            //Uncomment to enable global gateway error handler
+            //JsonServiceClient.onError = function(e) { alert("Error: " + $.toJSON(e)); }
 
             var refreshExistingMovies = function() {
-                
+                gateway.getFromService("Movies", {}, function(r) {
+
+                    var html = "";
+                    for (var i = 0; i < r.Movies.length; i++) {
+                        var movie = r.Movies[i];
+                        html += "<dd id='" + movie.Id + "'>"
+                             + "<label class='goog-inline-block'>" + movie.Title + "</label>"
+                             + "<span class='goog-inline-block lnk-update'>update</span>"
+                             + "<span class='goog-inline-block lnk-delete'>delete</span>"
+                        "</dd>";
+                    }
+
+                    $("#existing-movies").html(html);
+
+                    $("#existing-movies .lnk-delete").click(function() {
+                        var movieId = $(this).parent().attr('id');
+                        var movieName = $(this).parent().children()[0].innerHTML;
+
+                        if (confirm("Are you sure you want to delete\n '" + movieName + "'?\n\n(uses HTTP DELETE)")) {
+                            gateway.deleteFromService("Movies", { Id: movieId }, function(r) {
+                                refreshExistingMovies();
+                            });
+                        }
+                    });
+
+                    $("#existing-movies .lnk-update").click(function() {
+                        var movieId = $(this).parent().attr('id');
+
+                        gateway.getFromService("Movies", { Id: movieId }, function(r) {
+                            showDetailsForm(r.Movies[0]);
+                        });
+                    });
+                });
             }
+
+            $("#btnResetMovieDb").click(function() {
+                gateway.postToService("ResetMovieDatabase", {}, function(r) {
+                    alert("The movies database was reset.\n\n(used HTTP POST)");
+                    refreshExistingMovies();
+                });
+            });
+
+            var showDetailsForm = function(updateMovie) {
+                var isUpdate = !!updateMovie;
+                var defaultNewMovieTemplate =
+                {
+                    Id: "tt0110912",
+                    Title: "Pulp Fiction",
+                    Rating: 8.9,
+                    Director: "Quentin Tarantino",
+                    ReleaseDate: new Date(1994, 10, 24),
+                    TagLine: "Girls like me don't make invitations like this to just anyone!",
+                    Genres: ["Crime", "Drama", "Thriller"]
+                };
+
+                var movie = updateMovie || defaultNewMovieTemplate;
+                var title = isUpdate
+                    ? "Update '" + movie.Title + "' <em>(uses HTTP POST)</em>"
+                    : "Add a new movie <em>(uses HTTP PUT)</em>";
+
+                $("#txtId").val(movie.Id);
+                $("#txtTitle").val(movie.Title);
+                $("#txtRating").val(movie.Rating);
+                $("#txtDirector").val(movie.Director);
+                $("#txtReleaseDate").val(Dto.formatDate(movie.ReleaseDate));
+                $("#txtTagLine").val(movie.TagLine);
+                $("#txtGenres").val(movie.Genres.join(','));
+
+                $("#lblDetails").html(title);
+                $("#btnDetailsSubmit").html(isUpdate ? "Update movie" : "Add new movie");
+                $("#details-section").attr('action', isUpdate ? 'update' : 'add');
+                $("#details-section").fadeIn('fast');
+            };
+
+            $("#btnPrepareAdd").click(function() {
+                showDetailsForm();
+            });
+
+            $("#btnDetailsSubmit").click(function() {
+                var movie = {
+                    Id: $("#txtId").val(),
+                    Title: $("#txtTitle").val(),
+                    Rating: $("#txtRating").val(),
+                    Director: $("#txtDirector").val(),
+                    ReleaseDate: Dto.toJsonDate($("#txtReleaseDate").val()),
+                    TagLine: $("#txtTagLine").val(),
+                    Genres: $("#txtGenres").val().split(",")
+                };
+
+                var onSuccess = function(msg) {
+                    $("#details-section").hide();
+                    alert(msg);
+                    refreshExistingMovies();
+                }
+
+                var isUpdate = $("#details-section").attr('action') == 'update';
+                if (isUpdate) {
+                    gateway.postToService("Movies", { Movie: movie }, function(r) {
+                        onSuccess(movie.Title + " was updated");
+                    });
+                }
+                else {
+                    gateway.putToService("Movies", { Movie: movie }, function(r) {
+                        onSuccess(movie.Title + " was added");
+                    },
+                    function(r) {
+                        var status = r.ResponseStatus;
+                        alert(movie.Title + " could not be added.\n\n"
+                            + status.ErrorCode + ":\n" + status.Message);
+                    });
+                }
+            });
+
+            refreshExistingMovies();
         });
     </script>
 </head>
 <body>
 
-    <h1>ServiceStack Movie Database</h1>
-    <p>
-        A simple REST web services example showing how to develop and call 
-        HTTP GET, PUT, POST and DELETE webservices in a browser via AJAX
-        using <a href="http://www.servicestack.net">www.servicestack.net</a>.        
-    </p>
-    <p>
-        For more information on how to build REST services with ServiceStack check out the 
-        <a href="">Server Code</a>
-        as well as the
-        <a href="http://code.google.com/p/servicestack/source/browse/trunk/ServiceStack.Examples/ServiceStack.Examples.Tests/MovieRestTests.cs">Unit Tests</a> 
+    <h1><a href="MovieRestTest.htm">Movie Database</a></h1>
+    <div id="summary">
+        A simple REST web service example showing how to use Ajax to call 
+        HTTP GET, PUT, POST and DELETE webservices with 
+        <a href="http://www.servicestack.net">www.servicestack.net</a>.        
+
+        <br /><br />
+
+        For information on how to develop REST services with ServiceStack check out the 
+        <a href="http://code.google.com/p/servicestack/source/browse/trunk/ServiceStack.Examples/ServiceStack.Examples.ServiceInterface/MovieRestService.cs">Server Code</a>
+        along with the accompanying
+        <a href="http://code.google.com/p/servicestack/source/browse/trunk/ServiceStack.Examples/ServiceStack.Examples.Tests/MovieRestTests.cs">Unit</a> 
         and
         <a href="http://code.google.com/p/servicestack/source/browse/trunk/ServiceStack.Examples/ServiceStack.Examples.Tests.Integration/MovieRestTests.cs">Integration Tests</a> 
-    </p>
+    </div>
 
     <div id="actions">
         <button id="btnResetMovieDb">Reset Movie Database</button>
     </div>
         
     <div id="existing-section">
-        <h3>Existing Movies</h3>        
-
-        <button id="btnRefreshExistingMovies">Refesh</button>
-        <button id="btnPrepareAdd">Add &gt;&gt;</button>
+        <h3>Existing Movies <em>(uses HTTP GET)</em></h3>        
         
-        <dl id="existing-movies">
-        </dl>    
+        <dl id="existing-movies"></dl>    
+
+        <button id="btnPrepareAdd">Add &gt;&gt;</button>
     </div>
     
-    <div id="add-section">
-        <h3>Add a new movie (uses HTTP PUT)</h3>
-        <form action="">
-            <dl>
-                <dt>Imdb Id</dt>
-                <dd>
-                    <input type="text" id="txtId" value="tt0110912" />
-                </dd>
-
-                <dt>Title</dt>
-                <dd>
-                    <input type="text" id="txtTitle" value="Pulp Fiction" />
-                </dd>
-
-                <dt>Rating</dt>
-                <dd>
-                    <input type="text" id="txtRating" value="8.9m" />
-                </dd>
-
-                <dt>Director</dt>
-                <dd>
-                    <input type="text" id="txtDirector" value="Quentin Tarantino" />
-                </dd>
-
-                <dt>Release Date</dt>
-                <dd>
-                    <input type="text" id="txtReleaseDate" value="1994-10-24" />
-                </dd>
-
-                <dt>Tag Line</dt>
-                <dd>
-                    <input type="text" id="txtTagLine" value="Girls like me don't make invitations like this to just anyone!" />
-                </dd>
-
-                <dt>Genres</dt>
-                <dd>
-                    <input type="text" id="txtGenres" value="Crime,Drama,Thriller" />
-                </dd>
-            </dl>
+    <div id="details-section" style="display:none">
+        <h3 id="lblDetails"></h3>
                 
-            <button id="btnAddMovie">Add new movie</button>
-        </form>
+        <dl>
+            <dt>Imdb Id</dt>
+            <dd>
+                <input type="text" id="txtId" />
+            </dd>
+
+            <dt>Title</dt>
+            <dd>
+                <input type="text" id="txtTitle" />
+            </dd>
+
+            <dt>Rating</dt>
+            <dd>
+                <input type="text" id="txtRating" />
+            </dd>
+
+            <dt>Director</dt>
+            <dd>
+                <input type="text" id="txtDirector" />
+            </dd>
+
+            <dt>Release Date</dt>
+            <dd>
+                <input type="text" id="txtReleaseDate" />
+            </dd>
+
+            <dt>Tag Line</dt>
+            <dd>
+                <input type="text" id="txtTagLine" />
+            </dd>
+
+            <dt>Genres</dt>
+            <dd>
+                <input type="text" id="txtGenres" />
+            </dd>
+        </dl>
+
+        <button id="btnDetailsSubmit"></button>
     </div>
 
 </body>

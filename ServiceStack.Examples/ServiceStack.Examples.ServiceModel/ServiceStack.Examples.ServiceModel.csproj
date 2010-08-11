@@ -74,7 +74,7 @@
     <Compile Include="Types\Movie.cs" />
     <Compile Include="Operations\Movies.cs" />
     <Compile Include="Types\NorthwindDtos.cs" />
-    <Compile Include="Operations\PopulateMovies.cs" />
+    <Compile Include="Operations\ResetMovieDatabase.cs" />
     <Compile Include="Operations\StoreNewUser.cs" />
     <Compile Include="Types\User.cs" />
   </ItemGroup>

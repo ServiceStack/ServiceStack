@@ -10,7 +10,7 @@ namespace ServiceStack.Examples.ServiceInterface
 	/// An example of a basic REST web service
 	/// 
 	/// Each operation needs to support same Request and Response DTO's so you will
-	/// need to combine they types of all your operations into the same type as seen
+	/// need to combine the types of all your operations into the same DTO as done
 	/// in this example.
 	/// </summary>
 	public class MovieRestService
@@ -32,9 +32,16 @@ namespace ServiceStack.Examples.ServiceInterface
 			return Get(request);
 		}
 
+		/// <summary>
+		/// GET /Movies 
+		/// GET /Movies?Id={Imdb Id}
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
 		public object Get(Movies request)
 		{
-			Log.InfoFormat("Inspecting request Endpoint attributes: {0}",
+			//Alternatively you can infer the HTTP method by inspecting the RequestContext attributes
+			Log.InfoFormat("Using RequestContext to inspect Endpoint attributes: {0}",
 				this.RequestContext.EndpointAttributes);
 
 			var response = new MoviesResponse();
@@ -44,6 +51,7 @@ namespace ServiceStack.Examples.ServiceInterface
 			{
 				if (request.Id != null)
 				{
+					// GET /Movies?Id={request.Id}
 					var movie = dbCmd.GetByIdOrDefault<Movie>(request.Id);
 					if (movie != null)
 					{
@@ -52,6 +60,7 @@ namespace ServiceStack.Examples.ServiceInterface
 				}
 				else
 				{
+					// GET /Movies
 					response.Movies = dbCmd.Select<Movie>();
 				}
 			}
@@ -59,6 +68,11 @@ namespace ServiceStack.Examples.ServiceInterface
 			return response;
 		}
 
+		/// <summary>
+		/// PUT /Movies
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
 		public object Put(Movies request)
 		{
 			using (var dbConn = ConnectionFactory.OpenDbConnection())
@@ -70,6 +84,11 @@ namespace ServiceStack.Examples.ServiceInterface
 			return new MoviesResponse();
 		}
 
+		/// <summary>
+		/// DELETE /Movies
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
 		public object Delete(Movies request)
 		{
 			using (var dbConn = ConnectionFactory.OpenDbConnection())
@@ -81,6 +100,11 @@ namespace ServiceStack.Examples.ServiceInterface
 			return new MoviesResponse();
 		}
 
+		/// <summary>
+		/// POST /Movies
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
 		public object Post(Movies request)
 		{
 			using (var dbConn = ConnectionFactory.OpenDbConnection())
