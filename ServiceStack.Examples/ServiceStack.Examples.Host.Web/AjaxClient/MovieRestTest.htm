@@ -9,7 +9,7 @@
         *:first-child+html .goog-inline-block { display: inline; }        
         H1, H2, H3, H4, H5, H6 { margin: 0; padding: 0; }
 
-        BODY 
+        #body 
         {
         	font-family: Arial;
         	width: 900px;
@@ -32,11 +32,9 @@
         	color: #333;
         	font-size: 13px;
         	border: solid 1px #ccc;
-        	float: left;
         }
         #actions 
         {
-        	clear: left;
         	float: right;
         }
         BUTTON 
@@ -206,13 +204,13 @@
     </script>
 </head>
 <body>
+<div id="body">
 
     <h1><a href="MovieRestTest.htm">Movie Database</a></h1>
     <div id="summary">
-        A simple REST web service example showing how to use Ajax to call 
-        HTTP GET, PUT, POST and DELETE webservices with 
-        <a href="http://www.servicestack.net">www.servicestack.net</a>.        
-
+        A simple REST example showing how to use Ajax to call a 
+        <a href="http://www.servicestack.net">servicestack.net</a>
+        web service using the HTTP methods GET, PUT, POST and DELETE.
         <br /><br />
 
         For information on how to develop REST services with ServiceStack check out the 
@@ -278,5 +276,6 @@
         <button id="btnDetailsSubmit"></button>
     </div>
 
+</div>
 </body>
 </html>

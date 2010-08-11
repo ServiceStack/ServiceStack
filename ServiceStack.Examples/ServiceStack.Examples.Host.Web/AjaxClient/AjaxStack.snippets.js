@@ -59,7 +59,8 @@ JsonServiceClient.prototype.send = function(webMethod, request, onSuccess, onErr
 
 //Sends a HTTP 'GET' request on the QueryString
 JsonServiceClient.prototype.getFromService = function(webMethod, request, onSuccess, onError) {
-    this.send(webMethod, request, onSuccess, onError);
+    var options = document.all ? { cache: false} : null;
+    this.send(webMethod, request, onSuccess, onError, options);
 };
 
 //Sends a HTTP 'POST' request as key value pair formData
@@ -358,8 +359,9 @@ Dto.parseJsonDate = function(date) {
             : new Date(date));
 };
 Dto.formatDate = function(date) {
+    //IE needs '/' seperators
     date = Dto.parseJsonDate(date);
     return date.getUTCFullYear()
-        + '-' + S.lpad(date.getUTCMonth() + 1, 2)
-        + '-' + S.lpad(date.getUTCDate(), 2);
+        + '/' + S.lpad(date.getUTCMonth() + 1, 2)
+        + '/' + S.lpad(date.getUTCDate(), 2);
 };

@@ -34,7 +34,7 @@ namespace ServiceStack.Examples.ServiceInterface
 
 		/// <summary>
 		/// GET /Movies 
-		/// GET /Movies?Id={Imdb Id}
+		/// GET /Movies?Id={Id}
 		/// </summary>
 		/// <param name="request"></param>
 		/// <returns></returns>
