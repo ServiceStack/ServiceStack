@@ -27,7 +27,7 @@ namespace ServiceStack.Examples.Host.Web
 		public AppHost()
 			: base("ServiceStack Examples", typeof(GetFactorialService).Assembly)
 		{
-			LogManager.LogFactory = new DebugLogFactory();
+			LogManager.LogFactory = new ConsoleLogFactory();
 			log = LogManager.GetLogger(typeof (AppHost));
 		}
 
