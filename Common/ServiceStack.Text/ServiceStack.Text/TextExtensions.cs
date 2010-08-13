@@ -21,7 +21,7 @@ namespace ServiceStack.Text
 	{
 		public static string ToCsvField(this string text)
 		{
-			return string.IsNullOrEmpty(text) || text.IndexOfAny(JsWriter.EscapeChars) == -1
+			return string.IsNullOrEmpty(text) || !JsWriter.HasAnyEscapeChars(text)
 		       	? text
 		       	: string.Concat
 		       	  	(

@@ -23,26 +23,26 @@ namespace ServiceStack.Text
 {
 	public static class QueryStringSerializer
 	{
-		public static readonly JsWriter<JsvTypeSerializer> Instance = new JsWriter<JsvTypeSerializer>();
+		internal static readonly JsWriter<JsvTypeSerializer> Instance = new JsWriter<JsvTypeSerializer>();
 
-		private static readonly Dictionary<Type, Action<TextWriter, object>> WriteFnCache =
-			new Dictionary<Type, Action<TextWriter, object>>();
+		private static readonly Dictionary<Type, WriteObjectDelegate> WriteFnCache =
+			new Dictionary<Type, WriteObjectDelegate>();
 
-		public static Action<TextWriter, object> GetWriteFn(Type type)
+		internal static WriteObjectDelegate GetWriteFn(Type type)
 		{
 			try
 			{
-				Action<TextWriter, object> writeFn;
+				WriteObjectDelegate writeFn;
 				lock (WriteFnCache)
 				{
 					if (!WriteFnCache.TryGetValue(type, out writeFn))
 					{
 						var genericType = typeof(QueryStringWriter<>).MakeGenericType(type);
 						var mi = genericType.GetMethod("WriteFn",
-							BindingFlags.Public | BindingFlags.Static);
+							BindingFlags.NonPublic | BindingFlags.Static);
 
-						var writeFactoryFn = (Func<Action<TextWriter, object>>)Delegate.CreateDelegate(
-							typeof(Func<Action<TextWriter, object>>), mi);
+						var writeFactoryFn = (Func<WriteObjectDelegate>)Delegate.CreateDelegate(
+							typeof(Func<WriteObjectDelegate>), mi);
 
 						writeFn = writeFactoryFn();
 						WriteFnCache.Add(type, writeFn);
@@ -64,7 +64,7 @@ namespace ServiceStack.Text
 			writeFn(writer, value);
 		}
 
-		public static Action<TextWriter, object> GetValueTypeToStringMethod(Type type)
+		internal static WriteObjectDelegate GetValueTypeToStringMethod(Type type)
 		{
 			return Instance.GetValueTypeToStringMethod(type);
 		}
@@ -86,9 +86,9 @@ namespace ServiceStack.Text
 	/// <typeparam name="T"></typeparam>
 	public static class QueryStringWriter<T>
 	{
-		private static readonly Action<TextWriter, object> CacheFn;
+		private static readonly WriteObjectDelegate CacheFn;
 
-		public static Action<TextWriter, object> WriteFn()
+		internal static WriteObjectDelegate WriteFn()
 		{
 			return CacheFn;
 		}

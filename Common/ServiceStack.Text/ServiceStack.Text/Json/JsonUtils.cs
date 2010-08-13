@@ -16,30 +16,20 @@ namespace ServiceStack.Text.Json
 			};
 
 		private const int LengthFromLargestChar = '\\' + 1;
-		private static readonly bool[] HasEscapeChars = new bool[LengthFromLargestChar];
+		private static readonly bool[] EscapeCharFlags = new bool[LengthFromLargestChar];
 
 		static JsonUtils()
 		{
 			foreach (var escapeChar in EscapeChars)
 			{
-				HasEscapeChars[escapeChar] = true;
+				EscapeCharFlags[escapeChar] = true;
 			}
 		}
 
 		public static void WriteString(TextWriter writer, string value)
 		{
-			var len = value.Length;
 
-			//micro optimizations: instead of value.IndexOfAny(EscapeChars)
-			var hasEscapeChars = false;
-			for (var i = 0; i < len; i++)
-			{
-				var c = value[i];
-				if (c >= LengthFromLargestChar || !HasEscapeChars[c]) continue;
-				hasEscapeChars = true;
-				break;
-			}
-			if (!hasEscapeChars)
+			if (!HasAnyEscapeChars(value))
 			{
 				writer.Write(QuoteChar);
 				writer.Write(value);
@@ -50,6 +40,7 @@ namespace ServiceStack.Text.Json
 			var hexSeqBuffer = new char[4];
 			writer.Write(QuoteChar);
 
+			var len = value.Length;
 			for (var i = 0; i < len; i++)
 			{
 				switch (value[i])
@@ -95,6 +86,23 @@ namespace ServiceStack.Text.Json
 			}
 
 			writer.Write(QuoteChar);
+		}
+
+		/// <summary>
+		/// micro optimizations: using flags instead of value.IndexOfAny(EscapeChars)
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		private static bool HasAnyEscapeChars(string value)
+		{
+			var len = value.Length;
+			for (var i = 0; i < len; i++)
+			{
+				var c = value[i];
+				if (c >= LengthFromLargestChar || !EscapeCharFlags[c]) continue;
+				return true;
+			}
+			return false;
 		}
 
 		public static void IntToHex(int intValue, char[] hex)

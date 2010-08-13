@@ -17,7 +17,7 @@ namespace Northwind.Benchmarks.Serialization
 
 		public NorthwindDatabaseRowsSerialization()
 		{
-			this.MultipleIterations = new List<int> { 10000 };
+			this.MultipleIterations = new List<int> { 100000 };
 
 			NorthwindDtoData.LoadData(false);
 		}

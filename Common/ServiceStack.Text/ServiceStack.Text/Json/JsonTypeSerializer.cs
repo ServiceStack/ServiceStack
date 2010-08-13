@@ -13,18 +13,17 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Text;
 using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Json
 {
-	public class JsonTypeSerializer
+	internal class JsonTypeSerializer
 		: ITypeSerializer
 	{
 		public static ITypeSerializer Instance = new JsonTypeSerializer();
 
-		public static readonly bool[] WhiteSpaceFlags = new bool[(int) ' ' + 1];
+		public static readonly bool[] WhiteSpaceFlags = new bool[(int)' ' + 1];
 
 		static JsonTypeSerializer()
 		{
@@ -34,12 +33,12 @@ namespace ServiceStack.Text.Json
 			WhiteSpaceFlags[(int)'\n'] = true;
 		}
 
-		public Action<TextWriter, object> GetWriteFn<T>()
+		public WriteObjectDelegate GetWriteFn<T>()
 		{
 			return JsonWriter<T>.WriteFn();
 		}
 
-		public Action<TextWriter, object> GetWriteFn(Type type)
+		public WriteObjectDelegate GetWriteFn(Type type)
 		{
 			return JsonWriter.GetWriteFn(type);
 		}
@@ -152,6 +151,11 @@ namespace ServiceStack.Text.Json
 				writer.Write(((decimal)decimalValue).ToString(CultureInfo.InvariantCulture));
 		}
 
+		/// <summary>
+		/// A JSON key needs to be a string with quotes
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		public object EncodeMapKey(object value)
 		{
 			var strValue = value.ToString();
@@ -172,27 +176,23 @@ namespace ServiceStack.Text.Json
 		{
 			if (string.IsNullOrEmpty(value)) return value;
 
-			if (value[0] == JsonUtils.QuoteChar)
-			{
-				return value.Substring(1, value.Length - 2);
-			}
-
-			return value;
+			return value[0] == JsonUtils.QuoteChar
+				? value.Substring(1, value.Length - 2)
+				: value;
 		}
 
 		public string ParseString(string value)
 		{
 			if (string.IsNullOrEmpty(value)) return value;
 
-			//var i = 0;
-			//return ParseString(value, ref i);
 			return ParseRawString(value);
 		}
 
-		private static string ParseString(string json, ref int index)
+		static readonly char[] IsSafeJsonChars = new[] { JsonUtils.QuoteChar, JsonUtils.EscapeChar };
+
+		private static string ParseJsonString(string json, ref int index)
 		{
 			var jsonLength = json.Length;
-			var sb = new StringBuilder(jsonLength);
 
 			EatWhitespace(json, ref index);
 
@@ -200,17 +200,18 @@ namespace ServiceStack.Text.Json
 			{
 				index++;
 
-				//See if we can short-circuit evaluation (StringBuilder takes the most time here)
-				var strEndPos = json.IndexOf(JsonUtils.QuoteChar, index);
-				if (strEndPos == -1) strEndPos = jsonLength;
-				var potentialValue = json.Substring(index, strEndPos - index);
-				if (potentialValue.IndexOf(JsonUtils.EscapeChar) == -1)
+				//MicroOp: See if we can short-circuit evaluation (to avoid StringBuilder)
+				var strEndPos = json.IndexOfAny(IsSafeJsonChars, index);
+				if (strEndPos == -1) return json.Substring(index, jsonLength - index);
+				if (json[strEndPos] == JsonUtils.QuoteChar)
 				{
+					var potentialValue = json.Substring(index, strEndPos - index);
 					index = strEndPos + 1;
 					return potentialValue;
 				}
 			}
 
+			var sb = new StringBuilder(jsonLength);
 			char c;
 
 			while (true)
@@ -295,45 +296,7 @@ namespace ServiceStack.Text.Json
 
 		public string EatTypeValue(string value, ref int i)
 		{
-			return EatMapValue(value, ref i);
-		}
-
-		public static string EatUntilCharFound(string value, ref int i, char findChar)
-		{
-			var tokenStartPos = i;
-			var valueLength = value.Length;
-			if (value[tokenStartPos] != JsWriter.QuoteChar)
-			{
-				i = value.IndexOf(findChar, tokenStartPos);
-				if (i == -1) i = valueLength;
-				return value.Substring(tokenStartPos, i - tokenStartPos);
-			}
-
-			while (++i < valueLength)
-			{
-				if (value[i] == JsWriter.QuoteChar)
-				{
-					//if we reach the end return
-					if (i + 1 >= valueLength)
-					{
-						return value.Substring(tokenStartPos, ++i - tokenStartPos);
-					}
-
-					//skip past 'escaped quotes'
-					if (value[i + 1] == JsonUtils.EscapeChar
-						&& i + 2 < valueLength
-						&& value[i + 2] == JsonUtils.QuoteChar)
-					{
-						i += 2;
-					}
-					else if (value[i + 1] == findChar)
-					{
-						return value.Substring(tokenStartPos, ++i - tokenStartPos);
-					}
-				}
-			}
-
-			throw new IndexOutOfRangeException("Could not find ending quote");
+			return EatValue(value, ref i);
 		}
 
 		public bool EatMapStartChar(string value, ref int i)
@@ -342,14 +305,9 @@ namespace ServiceStack.Text.Json
 			return value[i++] == JsWriter.MapStartChar;
 		}
 
-		public string EatElementValue(string value, ref int i)
-		{
-			return EatUntilCharFound(value, ref i, JsWriter.ItemSeperator);
-		}
-
 		public string EatMapKey(string value, ref int i)
 		{
-			return ParseString(value, ref i);
+			return ParseJsonString(value, ref i);
 		}
 
 		public bool EatMapKeySeperator(string value, ref int i)
@@ -358,13 +316,15 @@ namespace ServiceStack.Text.Json
 			return value[i++] == JsWriter.MapKeySeperator;
 		}
 
-		public bool EatMapItemSeperatorOrEndChar(string value, ref int i)
+		public bool EatItemSeperatorOrMapEndChar(string value, ref int i)
 		{
 			EatWhitespace(value, ref i);
-			
-			var success = value[i] == JsWriter.ItemSeperator 
+
+			if (i == value.Length) return false;
+
+			var success = value[i] == JsWriter.ItemSeperator
 				|| value[i] == JsWriter.MapEndChar;
-			
+
 			i++;
 
 			if (success)
@@ -375,7 +335,7 @@ namespace ServiceStack.Text.Json
 			return success;
 		}
 
-		public string EatMapValue(string value, ref int i)
+		public string EatValue(string value, ref int i)
 		{
 			var valueLength = value.Length;
 			if (i == valueLength) return null;
@@ -442,7 +402,7 @@ namespace ServiceStack.Text.Json
 			//Is Within Quotes, i.e. "..."
 			if (valueChar == JsWriter.QuoteChar)
 			{
-				return ParseString(value, ref i);
+				return ParseJsonString(value, ref i);
 			}
 
 			//Is Value

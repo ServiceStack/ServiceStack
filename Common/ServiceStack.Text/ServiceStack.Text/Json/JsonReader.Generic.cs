@@ -17,7 +17,7 @@ using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Json
 {
-	public static class JsonReader
+	internal static class JsonReader
 	{
 		public static readonly JsReader<JsonTypeSerializer> Instance = new JsReader<JsonTypeSerializer>();
 

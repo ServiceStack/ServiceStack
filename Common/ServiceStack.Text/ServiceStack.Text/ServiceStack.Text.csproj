@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="AssemblyUtils.cs" />
     <Compile Include="Common\JsReader.cs" />
+    <Compile Include="Jsv\JsvDeserializeType.cs" />
     <Compile Include="Controller\CommandProcessor.cs" />
     <Compile Include="Controller\PathInfo.cs" />
     <Compile Include="JsonSerializer.cs" />
@@ -76,7 +77,7 @@
     <Compile Include="Common\StaticParseMethod.cs" />
     <Compile Include="Common\DeserializeTypeUtils.cs" />
     <Compile Include="Common\DeserializeType.cs" />
-    <Compile Include="Common\JsvDelegates.cs" />
+    <Compile Include="Common\JsDelegates.cs" />
     <Compile Include="ListExtensions.cs" />
     <Compile Include="MapExtensions.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />

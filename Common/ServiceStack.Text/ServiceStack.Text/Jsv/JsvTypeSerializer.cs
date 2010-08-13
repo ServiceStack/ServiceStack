@@ -17,17 +17,17 @@ using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Jsv
 {
-	public class JsvTypeSerializer 
+	internal class JsvTypeSerializer 
 		: ITypeSerializer
 	{
 		public static ITypeSerializer Instance = new JsvTypeSerializer();
 
-		public Action<TextWriter, object> GetWriteFn<T>()
+		public WriteObjectDelegate GetWriteFn<T>()
 		{
 			return JsvWriter<T>.WriteFn();
 		}
 
-		public Action<TextWriter, object> GetWriteFn(Type type)
+		public WriteObjectDelegate GetWriteFn(Type type)
 		{
 			return JsvWriter.GetWriteFn(type);
 		}
@@ -151,48 +151,7 @@ namespace ServiceStack.Text.Jsv
 
 		public string EatTypeValue(string value, ref int i)
 		{
-			return EatMapValue(value, ref i);
-		}
-
-		public string EatElementValue(string value, ref int i)
-		{
-			return EatUntilCharFound(value, ref i, JsWriter.ItemSeperator);
-		}
-
-		public static string EatUntilCharFound(string value, ref int i, char findChar)
-		{
-			var tokenStartPos = i;
-			var valueLength = value.Length;
-			if (value[tokenStartPos] != JsWriter.QuoteChar)
-			{
-				i = value.IndexOf(findChar, tokenStartPos);
-				if (i == -1) i = valueLength;
-				return value.Substring(tokenStartPos, i - tokenStartPos);
-			}
-
-			while (++i < valueLength)
-			{
-				if (value[i] == JsWriter.QuoteChar)
-				{
-					//if we reach the end return
-					if (i + 1 >= valueLength)
-					{
-						return value.Substring(tokenStartPos, ++i - tokenStartPos);
-					}
-
-					//skip past 'escaped quotes'
-					if (value[i + 1] == JsWriter.QuoteChar)
-					{
-						i++;
-					}
-					else if (value[i + 1] == findChar)
-					{
-						return value.Substring(tokenStartPos, ++i - tokenStartPos);
-					}
-				}
-			}
-
-			throw new IndexOutOfRangeException("Could not find ending quote");
+			return EatValue(value, ref i);
 		}
 
 		public bool EatMapStartChar(string value, ref int i)
@@ -212,15 +171,17 @@ namespace ServiceStack.Text.Jsv
 			return value[i++] == JsWriter.MapKeySeperator;
 		}
 
-		public bool EatMapItemSeperatorOrEndChar(string value, ref int i)
+		public bool EatItemSeperatorOrMapEndChar(string value, ref int i)
 		{
+			if (i == value.Length) return false;
+
 			var success = value[i] == JsWriter.ItemSeperator
 				|| value[i] == JsWriter.MapEndChar;
 			i++;
 			return success;
 		}
 
-		public string EatMapValue(string value, ref int i)
+		public string EatValue(string value, ref int i)
 		{
 			var tokenStartPos = i;
 			var valueLength = value.Length;

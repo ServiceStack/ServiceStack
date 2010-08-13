@@ -8,8 +8,6 @@ namespace ServiceStack.Text.Tests
 {
 	public abstract class TestBase
 	{
-		private readonly Stopwatch stopwatch = new Stopwatch();
-
 		public virtual void Log(string message, params object[] args)
 		{
 #if DEBUG
@@ -32,16 +30,14 @@ namespace ServiceStack.Text.Tests
 
 		private T Serialize<T>(T model, bool assertEqual)
 		{
-			stopwatch.Reset();
-			stopwatch.Start();
+			var stopwatch = Stopwatch.StartNew();
 			var jsv = TypeSerializer.SerializeToString(model);
 			stopwatch.Stop();
 
 			var partialJsv = jsv.Length > 100 ? jsv.Substring(0, 100) + "..." : jsv;
 			Console.WriteLine("JSV  Time: {0} ticks, Len: {1}: {2}", stopwatch.ElapsedTicks, jsv.Length, partialJsv);
 
-			stopwatch.Reset();
-			stopwatch.Start();
+			stopwatch = Stopwatch.StartNew();
 			var json = JsonSerializer.SerializeToString(model);
 			stopwatch.Stop();
 

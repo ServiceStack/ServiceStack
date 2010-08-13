@@ -19,7 +19,7 @@ namespace ServiceStack.Text.Jsv
 {
 	public static class JsvReader
 	{
-		public static readonly JsReader<JsvTypeSerializer> Instance = new JsReader<JsvTypeSerializer>();
+		internal static readonly JsReader<JsvTypeSerializer> Instance = new JsReader<JsvTypeSerializer>();
 
 		private static readonly Dictionary<Type, ParseFactoryDelegate> ParseFnCache =
 			new Dictionary<Type, ParseFactoryDelegate>();

@@ -54,13 +54,19 @@ namespace ServiceStack.Text.Tests.Support
 		{
 			'"', '\n', '\r', '\t', '"', '\\', '\f', '\b',
 		};
+		public static readonly char[] JsvEscapeChars = new[]
+    	{
+    		'"', ',', '{', '}', '[', ']',
+    	};
+
 		private const int LengthFromLargestChar = '\\' + 1;
 		private static readonly bool[] HasEscapeChars = new bool[LengthFromLargestChar];
 
 		[Test]
 		public void PrintEscapeChars()
 		{
-			EscapeChars.ToList().OrderBy(x => (int)x).ForEach(x => Console.WriteLine(x + ": " + (int)x));
+			//EscapeChars.ToList().OrderBy(x => (int)x).ForEach(x => Console.WriteLine(x + ": " + (int)x));
+			JsvEscapeChars.ToList().OrderBy(x => (int)x).ForEach(x => Console.WriteLine(x + ": " + (int)x));
 		}
 
 		[Test]
@@ -95,5 +101,7 @@ namespace ServiceStack.Text.Tests.Support
 
 			Console.WriteLine(hasEscapeChars);
 		}
+
+
 	}
 }
