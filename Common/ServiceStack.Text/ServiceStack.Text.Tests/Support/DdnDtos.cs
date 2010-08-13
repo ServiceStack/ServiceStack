@@ -5,7 +5,7 @@ using Platform.Text;
 using ServiceStack.DataAnnotations;
 using ServiceStack.DesignPatterns.Model;
 
-namespace ServiceStack.Text.Tests
+namespace ServiceStack.Text.Tests.Support
 {
 	[DataContract(Namespace = "http://schemas.ddnglobal.com/types/")]
 	public class UserPublicView

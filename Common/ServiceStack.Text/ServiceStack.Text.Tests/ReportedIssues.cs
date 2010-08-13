@@ -6,16 +6,8 @@ namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class ReportedIssues
+		: TestBase
 	{
-
-		public T Serialize<T>(T model)
-		{
-			var strModel = TypeSerializer.SerializeToString(model);
-			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
-			var toModel = TypeSerializer.DeserializeFromString<T>(strModel);
-			return toModel;
-		}
-
 
 		[Test]
 		public void Issue5_Can_serialize_Dictionary_with_null_value()

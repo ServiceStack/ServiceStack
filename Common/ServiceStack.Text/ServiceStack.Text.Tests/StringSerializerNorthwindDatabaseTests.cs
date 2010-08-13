@@ -8,7 +8,7 @@ namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class StringSerializerNorthwindDatabaseTests
-		: TextSerializerTestBase
+		: TestBase
 	{
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()

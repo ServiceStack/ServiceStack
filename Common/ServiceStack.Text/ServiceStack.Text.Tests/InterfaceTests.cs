@@ -5,6 +5,7 @@ namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class InterfaceTests
+		: TestBase
 	{
 		[Test]
 		public void Can_serialize_Message()
@@ -15,6 +16,8 @@ namespace ServiceStack.Text.Tests
 			var messageString = TypeSerializer.SerializeToString(message);
 
 			Assert.That(messageString, Is.EqualTo("{Id:00000000000000000000000000000000,CreatedDate:0001-01-01,Priority:0,RetryAttempts:0,Body:test}"));
+
+			Serialize(message);
 		}
 
 		[Test]

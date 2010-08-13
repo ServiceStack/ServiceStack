@@ -8,15 +8,15 @@ namespace Northwind.Benchmarks.Console
 		{
 			int noOfIterations;
 			if (args.Length < 1 || !int.TryParse(args[0], out noOfIterations))
-				noOfIterations = 1;
+				noOfIterations = 1000;
 
-			//Run_NorthwindDatabaseRowsSerialization(noOfIterations);
-			Run_NorthwindDatabaseTablesSerialization(noOfIterations);
+			Run_NorthwindDatabaseRowsSerialization(noOfIterations);
+			//Run_NorthwindDatabaseTablesSerialization(noOfIterations);
 		}
 
 		private static void Run_NorthwindDatabaseRowsSerialization(int iterations)
 		{
-			var fixture = new NorthwindDatabaseRowsSerialization(iterations);
+			var fixture = new NorthwindDatabaseRowsSerialization(iterations) { OnlyRunServiceStackSerializers = true };
 
 			fixture.serialize_Categories();
 			fixture.serialize_Customers();
@@ -35,7 +35,7 @@ namespace Northwind.Benchmarks.Console
 
 		private static void Run_NorthwindDatabaseTablesSerialization(int iterations)
 		{
-			var fixture = new NorthwindDatabaseTablesSerialization(iterations);
+			var fixture = new NorthwindDatabaseTablesSerialization(iterations) { OnlyRunServiceStackSerializers = true };
 
 			fixture.serialize_Categories();
 			fixture.serialize_Customers();

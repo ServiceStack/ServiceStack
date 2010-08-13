@@ -85,7 +85,6 @@
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="HttpRequestExtensionsTests.cs" />
-    <Compile Include="IntegrationTests\AppHost.cs" />
     <Compile Include="IntegrationTests\ConfigureDatabase.cs" />
     <Compile Include="IntegrationTests\ExampleConfig.cs" />
     <Compile Include="IntegrationTests\IntegrationTestBase.cs" />

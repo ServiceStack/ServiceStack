@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 
-namespace ServiceStack.Text.Tests
+namespace ServiceStack.Text.Tests.Utils
 {
 	[TestFixture]
 	public class JsvFormatterTests
@@ -41,9 +38,9 @@ namespace ServiceStack.Text.Tests
 				this.IntList = new List<int> { 1, 2, 3 };
 				this.StringList = new List<string> { "one", "two", "three" };
 				this.StringIntMap = new Dictionary<string, int>
-            		{
-            			{"a", 1},{"b", 2},{"c", 3},
-            		};
+    				{
+    					{"a", 1},{"b", 2},{"c", 3},
+    				};
 			}
 
 			public int Int { get; set; }
@@ -64,5 +61,4 @@ namespace ServiceStack.Text.Tests
 		}
 
 	}
-
 }

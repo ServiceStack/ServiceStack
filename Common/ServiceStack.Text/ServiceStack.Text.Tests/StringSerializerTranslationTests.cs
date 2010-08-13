@@ -6,7 +6,7 @@ using Northwind.Common.DataModel;
 using Northwind.Common.ServiceModel;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
-using ServiceStack.Text.Jsv;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Tests
 {
@@ -22,6 +22,7 @@ namespace ServiceStack.Text.Tests
 		public void Can_convert_from_Customer_to_Dictionary()
 		{
 			var model = DtoFactory.CustomerDto;
+
 			var modelString = TypeSerializer.SerializeToString(model);
 			var translateToModel = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(modelString);
 

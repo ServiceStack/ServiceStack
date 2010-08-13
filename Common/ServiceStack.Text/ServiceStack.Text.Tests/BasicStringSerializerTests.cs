@@ -57,18 +57,21 @@ namespace ServiceStack.Text.Tests
 
 			var stringValueList = "[" + string.Join(",", stringValues) + "]";
 
-			var convertedStringValues = TypeSerializer.DeserializeFromString<List<string>>(stringValueList);
-			Assert.That(convertedStringValues, Is.EquivalentTo(stringValues));
+			var convertedJsvValues = TypeSerializer.DeserializeFromString<List<string>>(stringValueList);
+			Assert.That(convertedJsvValues, Is.EquivalentTo(stringValues));
+
+			var convertedJsonValues = JsonSerializer.DeserializeFromString<List<string>>(stringValueList);
+			Assert.That(convertedJsonValues, Is.EquivalentTo(stringValues));
 		}
 
 		[Test]
 		public void Null_or_Empty_string_returns_null()
 		{
-			var convertedStringValues = TypeSerializer.DeserializeFromString<List<string>>(null);
-			Assert.That(convertedStringValues, Is.EqualTo(null));
+			var convertedJsvValues = TypeSerializer.DeserializeFromString<List<string>>(null);
+			Assert.That(convertedJsvValues, Is.EqualTo(null));
 
-			convertedStringValues = TypeSerializer.DeserializeFromString<List<string>>(string.Empty);
-			Assert.That(convertedStringValues, Is.EqualTo(null));
+			convertedJsvValues = TypeSerializer.DeserializeFromString<List<string>>(string.Empty);
+			Assert.That(convertedJsvValues, Is.EqualTo(null));
 		}
 
 		[Test]
@@ -240,9 +243,10 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_convert_string_dictionary()
 		{
-			var stringDictionary = new Dictionary<string, string> {
-			                                                      	{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
-			                                                      };
+			var stringDictionary = new Dictionary<string, string> 
+				{
+					{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
+				};
 			var expectedString = "{One:1st,Two:2nd,Three:3rd}";
 			var stringValue = TypeSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -251,9 +255,10 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_parse_string_dictionary()
 		{
-			var stringDictionary = new Dictionary<string, string> {
-			                                                      	{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
-			                                                      };
+			var stringDictionary = new Dictionary<string, string> 
+				{
+					{ "One", "1st" }, { "Two", "2nd" }, { "Three", "3rd" }
+				};
 			const string mapValues = "{One:1st,Two:2nd,Three:3rd}";
 			var parsedDictionary = TypeSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
@@ -273,9 +278,10 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_convert_string_dictionary_with_special_chars_as_object()
 		{
-			var stringDictionary = new Dictionary<string, string> {
-			                                                      	{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
-			                                                      };
+			var stringDictionary = new Dictionary<string, string> 
+				{
+					{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
+				};
 			var expectedString = "{One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\",Four:four%}";
 			var stringValue = TypeSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -284,9 +290,10 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_parse_string_dictionary_with_special_chars_as_object()
 		{
-			var stringDictionary = new Dictionary<string, string> {
-			                                                      	{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }
-			                                                      };
+			var stringDictionary = new Dictionary<string, string> 
+				{
+					{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }
+				};
 			const string mapValues = "{One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\"}";
 			var parsedDictionary = TypeSerializer.DeserializeFromString(mapValues, stringDictionary.GetType());
 			Assert.That(parsedDictionary, Is.EquivalentTo(stringDictionary));
@@ -295,9 +302,10 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_convert_string_list_with_special_chars_as_object()
 		{
-			var stringList = new List<string> {
-			                                  	"\"1st", "2:nd", "3r,d", "four%"
-			                                  };
+			var stringList = new List<string> 
+				{
+					"\"1st", "2:nd", "3r,d", "four%"
+				};
 			var expectedString = "[\"\"\"1st\",2:nd,\"3r,d\",four%]";
 			var stringValue = TypeSerializer.SerializeToString(stringList);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
@@ -306,9 +314,10 @@ namespace ServiceStack.Text.Tests
 		[Test]
 		public void Can_parse_string_list_with_special_chars_as_object()
 		{
-			var stringList = new List<string> {
-			                                  	"\"1st", "2:nd", "3r,d", "four%"
-			                                  };
+			var stringList = new List<string> 
+				{
+					"\"1st", "2:nd", "3r,d", "four%"
+				};
 			const string listValues = "[\"\"\"1st\",2:nd,\"3r,d\",four%]";
 			var parsedList = TypeSerializer.DeserializeFromString(listValues, stringList.GetType());
 			Assert.That(parsedList, Is.EquivalentTo(stringList));

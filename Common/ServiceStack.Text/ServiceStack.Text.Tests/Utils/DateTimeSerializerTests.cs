@@ -1,11 +1,8 @@
 using System;
 using NUnit.Framework;
-using ServiceStack.Common.Extensions;
-using ServiceStack.Common.Tests;
-using ServiceStack.Logging;
-using ServiceStack.Text.Jsv;
+using ServiceStack.Text.Common;
 
-namespace ServiceStack.Text.Tests
+namespace ServiceStack.Text.Tests.Utils
 {
 	[TestFixture]
 	public class DateTimeSerializerTests
@@ -44,13 +41,13 @@ namespace ServiceStack.Text.Tests
 
 			var shortDateTime = new DateTime(1979, 5, 9, 0, 0, 1);
 			var shortDateTimeString = shortDateTime.Equals(shortDateTime.ToUniversalTime())
-				? "1979-05-09T00:00:01Z"
-				: "1979-05-08T23:00:01Z";
+              	? "1979-05-09T00:00:01Z"
+              	: "1979-05-08T23:00:01Z";
 
 			var longDateTime = new DateTime(1979, 5, 9, 0, 0, 0, 1);
 			var longDateTimeString = longDateTime.Equals(longDateTime.ToUniversalTime())
-				? "1979-05-09T00:00:00.001Z"
-				: "1979-05-08T23:00:00.001Z";
+         		? "1979-05-09T00:00:00.001Z"
+         		: "1979-05-08T23:00:00.001Z";
 
 			Assert.That(shortDateString, Is.EqualTo(DateTimeSerializer.ToShortestXsdDateTimeString(shortDate)));
 			Assert.That(shortDateTimeString, Is.EqualTo(DateTimeSerializer.ToShortestXsdDateTimeString(shortDateTime)));
@@ -95,7 +92,7 @@ namespace ServiceStack.Text.Tests
 			var shortestDateStr = DateTimeSerializer.ToShortestXsdDateTimeString(dateTime);
 
 			Log("{0} | {1} | {2}  [{3}]",
-				shortDateStr, shortDateTimeStr, longDateTimeStr, shortestDateStr);
+			    shortDateStr, shortDateTimeStr, longDateTimeStr, shortestDateStr);
 
 			var shortDate = DateTimeSerializer.ParseShortestXsdDateTime(shortDateStr);
 			var shortDateTime = DateTimeSerializer.ParseShortestXsdDateTime(shortDateTimeStr);
@@ -104,14 +101,24 @@ namespace ServiceStack.Text.Tests
 			Assert.That(shortDate, Is.EqualTo(dateTime.Date));
 
 			var shortDateTimeUtc = shortDateTime.ToUniversalTime();
-			Assert.That(shortDateTimeUtc, Is.EqualTo(new DateTime(
-				shortDateTimeUtc.Year, shortDateTimeUtc.Month, shortDateTimeUtc.Day,
-				shortDateTimeUtc.Hour, shortDateTimeUtc.Minute, shortDateTimeUtc.Second,
-				shortDateTimeUtc.Millisecond, DateTimeKind.Utc)));
+			Assert.That(shortDateTimeUtc, Is.EqualTo(
+				new DateTime(
+					shortDateTimeUtc.Year, shortDateTimeUtc.Month, shortDateTimeUtc.Day,
+					shortDateTimeUtc.Hour, shortDateTimeUtc.Minute, shortDateTimeUtc.Second,
+					shortDateTimeUtc.Millisecond, DateTimeKind.Utc)));
 			
 			Assert.That(longDateTime.ToUniversalTime(), Is.EqualTo(dateTime.ToUniversalTime()));
 
 			var toDateTime = DateTimeSerializer.ParseShortestXsdDateTime(shortestDateStr);
+			AssertDatesAreEqual(toDateTime, dateTime);
+
+			var unixTime = dateTime.ToUnixTime();
+			var fromUnixTime = DateTimeExtensions.FromUnixTime(unixTime);
+			AssertDatesAreEqual(fromUnixTime, dateTime);
+		}
+
+		private void AssertDatesAreEqual(DateTime toDateTime, DateTime dateTime)
+		{
 			try
 			{
 				Assert.That(toDateTime.ToUniversalTime(), Is.EqualTo(dateTime.ToUniversalTime()));

@@ -1,31 +1,53 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+using Funq;
+using ServiceStack.Configuration;
+using ServiceStack.Logging;
+using ServiceStack.Logging.Support.Logging;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ServiceClient.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
-	[TestFixture]
 	public class IntegrationTestBase
+		: AppHostHttpListenerBase
 	{
 		private const string BaseUrl = "http://127.0.0.1:8080/";
-		private AppHost appHost;
 
-		[TestFixtureSetUp]
-		public virtual void TestFixtureSetUp()
+		private static ILog log;
+
+		public IntegrationTestBase()
+			: base("ServiceStack Examples", typeof(MovieRestService).Assembly)
 		{
-			appHost = new AppHost();
-			appHost.Init();
+			LogManager.LogFactory = new DebugLogFactory();
+			log = LogManager.GetLogger(GetType());
+			Instance = null;
+
+			Init();
 			try
 			{
-				appHost.Start(BaseUrl);
+				Start(BaseUrl);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine("Error trying to run ConsoleHost: " + ex.Message);
 			}
+		}
+
+		public override void Configure(Container container)
+		{
+			container.Register<IResourceManager>(new ConfigurationResourceManager());
+
+			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
+			var appConfig = container.Resolve<ExampleConfig>();
+
+			container.Register<IDbConnectionFactory>(c =>
+				 new OrmLiteConnectionFactory(
+					":memory:",			//Use an in-memory database instead
+					false,				//keep the same in-memory db connection open
+					SqliteOrmLiteDialectProvider.Instance));
+
+			ConfigureDatabase.Init(container.Resolve<IDbConnectionFactory>());
 		}
 
 		public void SendToEachEndpoint<TRes>(object request, Action<TRes> validate)
@@ -60,5 +82,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				if (validate != null) validate(jsvResponse);
 			}
 		}
+
 	}
 }

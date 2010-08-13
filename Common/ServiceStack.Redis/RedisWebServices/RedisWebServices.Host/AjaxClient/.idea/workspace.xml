@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="6aca2346-3aae-473b-ab07-9b570b2d70a0" name="Default" comment="Added working components for the Redis client">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/js/AjaxStack.snippets.js" afterPath="$PROJECT_DIR$/js/AjaxStack.snippets.js" />
     </list>
     <ignored path=".idea/workspace.xml" />
     <ignored path="AjaxClient.iws" />
@@ -41,7 +40,7 @@
           <file leaf-file-name="AjaxStack.snippets.js" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="348" column="30" selection-start="11534" selection-end="11534" vertical-scroll-proportion="0.64620185">
+                <state line="331" column="0" selection-start="11036" selection-end="11036" vertical-scroll-proportion="0.29240376">
                   <folding />
                 </state>
               </provider>
@@ -526,7 +525,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/AjaxStack.snippets.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="348" column="30" selection-start="11534" selection-end="11534" vertical-scroll-proportion="0.64620185">
+        <state line="331" column="0" selection-start="11036" selection-end="11036" vertical-scroll-proportion="0.29240376">
           <folding />
         </state>
       </provider>

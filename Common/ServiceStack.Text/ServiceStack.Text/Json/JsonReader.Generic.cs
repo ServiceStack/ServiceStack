@@ -15,11 +15,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Text.Common;
 
-namespace ServiceStack.Text.Jsv
+namespace ServiceStack.Text.Json
 {
-	public static class JsvReader
+	public static class JsonReader
 	{
-		public static readonly JsReader<JsvTypeSerializer> Instance = new JsReader<JsvTypeSerializer>();
+		public static readonly JsReader<JsonTypeSerializer> Instance = new JsReader<JsonTypeSerializer>();
 
 		private static readonly Dictionary<Type, ParseFactoryDelegate> ParseFnCache =
 			new Dictionary<Type, ParseFactoryDelegate>();
@@ -31,7 +31,7 @@ namespace ServiceStack.Text.Jsv
 			{
 				if (!ParseFnCache.TryGetValue(type, out parseFactoryFn))
 				{
-					var genericType = typeof(JsvReader<>).MakeGenericType(type);
+					var genericType = typeof(JsonReader<>).MakeGenericType(type);
 					var mi = genericType.GetMethod("GetParseFn",
 						BindingFlags.Public | BindingFlags.Static);
 
@@ -45,13 +45,13 @@ namespace ServiceStack.Text.Jsv
 		}
 	}
 
-	public static class JsvReader<T>
+	public static class JsonReader<T>
 	{
 		private static readonly Func<string, object> ReadFn;
 
-		static JsvReader()
+		static JsonReader()
 		{
-			ReadFn = JsvReader.Instance.GetParseFn<T>();
+			ReadFn = JsonReader.Instance.GetParseFn<T>();
 		}
 		
 		public static Func<string, object> GetParseFn()

@@ -9,6 +9,7 @@ namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class StringSerializerTests
+		: TestBase
 	{
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
@@ -21,10 +22,7 @@ namespace ServiceStack.Text.Tests
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = TypeSerializer.SerializeToString(dto);
-			dtoString = TypeSerializer.SerializeToString(dto);
-
-			Assert.That(dtoString, Is.Not.Null);
+			Serialize(dto);
 		}
 
 		[Test]
@@ -32,11 +30,7 @@ namespace ServiceStack.Text.Tests
 		{
 			var dto = DtoFactory.CustomerOrderListDto;
 
-			var dtoString = TypeSerializer.SerializeToString(dto);
-			Console.WriteLine(dtoString);
-			var fromDto = TypeSerializer.DeserializeFromString<CustomerOrderListDto>(dtoString);
-
-			Assert.That(fromDto, Is.Not.Null);
+			Serialize(dto);
 		}
 
 		[Test]
@@ -44,11 +38,7 @@ namespace ServiceStack.Text.Tests
 		{
 			var dto = NorthwindData.Customers;
 
-			var dtoString = TypeSerializer.SerializeToString(dto);
-			Console.WriteLine(dtoString);
-			var fromDto = TypeSerializer.DeserializeFromString<List<Customer>>(dtoString);
-
-			Assert.That(fromDto, Is.Not.Null);
+			Serialize(dto);
 		}
 
 		[Test]
@@ -57,11 +47,7 @@ namespace ServiceStack.Text.Tests
 			NorthwindData.LoadData(false);
 			var dto = NorthwindData.Orders;
 
-			var dtoString = TypeSerializer.SerializeToString(dto);
-			Console.WriteLine(dtoString);
-			var fromDto = TypeSerializer.DeserializeFromString<List<Order>>(dtoString);
-
-			Assert.That(fromDto, Is.Not.Null);
+			Serialize(dto);
 		}
 
 	}

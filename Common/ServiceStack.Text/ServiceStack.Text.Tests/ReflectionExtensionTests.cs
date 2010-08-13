@@ -9,6 +9,7 @@ namespace ServiceStack.Text.Tests
 
 	[TestFixture]
 	public class ReflectionExtensionTests
+		: TestBase
 	{
 		public class TestModel
 		{
@@ -47,9 +48,9 @@ namespace ServiceStack.Text.Tests
 			var model = new TestModel();
 			var modelStr = TypeSerializer.SerializeToString(model);
 
-			Console.WriteLine(modelStr);
-
 			Assert.That(modelStr, Is.EqualTo("{PublicInt:0,PublicGetInt:1}"));
+
+			Serialize(model);
 		}
 	}
 }

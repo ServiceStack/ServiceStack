@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite
@@ -70,6 +71,8 @@ namespace ServiceStack.OrmLite
 			SMALLDATETIME	DbType.DateTime
 		 */
 		#endregion
+
+		private static ILog log = LogManager.GetLogger(typeof (OrmLiteDialectProviderBase));
 
 		public string StringLengthNonUnicodeColumnDefinitionFormat = "VARCHAR({0})";
 		public string StringLengthUnicodeColumnDefinitionFormat = "NVARCHAR({0})";

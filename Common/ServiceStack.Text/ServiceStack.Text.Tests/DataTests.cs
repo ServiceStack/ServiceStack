@@ -1,13 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Northwind.Common.DataModel;
 using NUnit.Framework;
+using ServiceStack.Text.Tests.Support;
 
 namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class DataStressTests
+		: TestBase
 	{
 		public class TestClass
 		{
@@ -33,16 +34,6 @@ namespace ServiceStack.Text.Tests
 				return (Value != null ? Value.GetHashCode() : 0);
 			}
 		}
-
-		public T Serialize<T>(T model)
-		{
-			var strModel = TypeSerializer.SerializeToString(model);
-			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
-			var toModel = TypeSerializer.DeserializeFromString<T>(strModel);
-			Assert.That(model.Equals(toModel));
-			return toModel;
-		}
-
 
 		[Test]
 		public void serialize_Customer_BOLID()

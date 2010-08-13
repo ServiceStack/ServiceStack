@@ -7,6 +7,7 @@ namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class CultureInfoTests
+		: TestBase
 	{
 		public class Point
 		{
@@ -52,21 +53,11 @@ namespace ServiceStack.Text.Tests
 			Thread.CurrentThread.CurrentCulture = previousCulture;
 		}
 
-		public T Serialize<T>(T model)
-		{
-			var strModel = TypeSerializer.SerializeToString(model);
-			Console.WriteLine("Len: " + strModel.Length + ", " + strModel);
-			var toModel = TypeSerializer.DeserializeFromString<T>(strModel);
-			return toModel;
-		}
-
-
 		[Test]
 		public void Can_deserialize_type_with_doubles_in_different_culture()
 		{
 			var point = new Point { Latitude = -23.5707, Longitude = -46.57239 };
-			var toPoint = Serialize(point);
-			Assert.That(toPoint, Is.EqualTo(point));
+			SerializeAndCompare(point);
 		}
 	}
 }

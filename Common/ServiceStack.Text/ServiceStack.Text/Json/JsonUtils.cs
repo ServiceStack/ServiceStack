@@ -4,12 +4,52 @@ namespace ServiceStack.Text.Json
 {
 	public static class JsonUtils
 	{
+		public const char EscapeChar = '\\';
+		public const char QuoteChar = '"';
+		public const string Null = "null";
+		public const string True = "true";
+		public const string False = "false";
+
+		static readonly char[] EscapeChars = new[]
+			{
+				QuoteChar, '\n', '\r', '\t', '"', '\\', '\f', '\b',
+			};
+
+		private const int LengthFromLargestChar = '\\' + 1;
+		private static readonly bool[] HasEscapeChars = new bool[LengthFromLargestChar];
+
+		static JsonUtils()
+		{
+			foreach (var escapeChar in EscapeChars)
+			{
+				HasEscapeChars[escapeChar] = true;
+			}
+		}
+
 		public static void WriteString(TextWriter writer, string value)
 		{
-			var hexSeqBuffer = new char[4];
-			writer.Write('"');
-
 			var len = value.Length;
+
+			//micro optimizations: instead of value.IndexOfAny(EscapeChars)
+			var hasEscapeChars = false;
+			for (var i = 0; i < len; i++)
+			{
+				var c = value[i];
+				if (c >= LengthFromLargestChar || !HasEscapeChars[c]) continue;
+				hasEscapeChars = true;
+				break;
+			}
+			if (!hasEscapeChars)
+			{
+				writer.Write(QuoteChar);
+				writer.Write(value);
+				writer.Write(QuoteChar);
+				return;
+			}
+
+			var hexSeqBuffer = new char[4];
+			writer.Write(QuoteChar);
+
 			for (var i = 0; i < len; i++)
 			{
 				switch (value[i])
@@ -29,7 +69,7 @@ namespace ServiceStack.Text.Json
 					case '"':
 					case '\\':
 						writer.Write('\\');
-						writer.Write(value[i]); 
+						writer.Write(value[i]);
 						continue;
 
 					case '\f':
@@ -54,7 +94,7 @@ namespace ServiceStack.Text.Json
 				writer.Write(hexSeqBuffer);
 			}
 
-			writer.Write('"');
+			writer.Write(QuoteChar);
 		}
 
 		public static void IntToHex(int intValue, char[] hex)

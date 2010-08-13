@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Text.Common;
 using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.ServiceModel.Serialization
@@ -36,7 +37,7 @@ namespace ServiceStack.ServiceModel.Serialization
 
 			foreach (var propertyInfo in type.GetProperties())
 			{
-				var propertySetFn = DeserializeType.GetSetPropertyMethod(type, propertyInfo);
+				var propertySetFn = DeserializeType<JsvTypeSerializer>.GetSetPropertyMethod(type, propertyInfo);
 				var propertyParseStringFn = JsvReader.GetParseFn(propertyInfo.PropertyType);
 				var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn);
 				propertySetterMap.Add(propertyInfo.Name, propertySerializer);

@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyUtils.cs" />
+    <Compile Include="Common\JsReader.cs" />
     <Compile Include="Controller\CommandProcessor.cs" />
     <Compile Include="Controller\PathInfo.cs" />
     <Compile Include="JsonSerializer.cs" />
@@ -58,23 +59,24 @@
     <Compile Include="Json\JsonUtils.cs" />
     <Compile Include="Json\JsonWriter.Generic.cs" />
     <Compile Include="Common\JsWriter.cs" />
+    <Compile Include="Json\JsonReader.Generic.cs" />
     <Compile Include="QueryStringSerializer.cs" />
     <Compile Include="JsvFormatter.cs" />
-    <Compile Include="Jsv\DateTimeSerializer.cs" />
+    <Compile Include="Common\DateTimeSerializer.cs" />
     <Compile Include="Common\ITypeSerializer.cs" />
     <Compile Include="Jsv\JsvReader.Generic.cs" />
     <Compile Include="Jsv\JsvSerializer.Generic.cs" />
     <Compile Include="Jsv\JsvWriter.Generic.cs" />
-    <Compile Include="Jsv\DeserializeArray.cs" />
-    <Compile Include="Jsv\DeserializeBuiltin.cs" />
-    <Compile Include="Jsv\DeserializeCollection.cs" />
-    <Compile Include="Jsv\DeserializeDictionary.cs" />
-    <Compile Include="Jsv\DeserializeListWithElements.cs" />
-    <Compile Include="Jsv\ParseUtils.cs" />
-    <Compile Include="Jsv\StaticParseMethod.cs" />
-    <Compile Include="Jsv\DeserializeTypeUtils.cs" />
-    <Compile Include="Jsv\DeserializeType.cs" />
-    <Compile Include="Jsv\JsvDelegates.cs" />
+    <Compile Include="Common\DeserializeArray.cs" />
+    <Compile Include="Common\DeserializeBuiltin.cs" />
+    <Compile Include="Common\DeserializeCollection.cs" />
+    <Compile Include="Common\DeserializeDictionary.cs" />
+    <Compile Include="Common\DeserializeListWithElements.cs" />
+    <Compile Include="Common\ParseUtils.cs" />
+    <Compile Include="Common\StaticParseMethod.cs" />
+    <Compile Include="Common\DeserializeTypeUtils.cs" />
+    <Compile Include="Common\DeserializeType.cs" />
+    <Compile Include="Common\JsvDelegates.cs" />
     <Compile Include="ListExtensions.cs" />
     <Compile Include="MapExtensions.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />

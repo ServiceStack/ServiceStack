@@ -1,12 +1,15 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
-using Platform.Text;
+using ServiceStack.Common.Extensions;
+using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class AdhocModelTests
+		: TestBase
 	{
 		public enum FlowPostType
 		{
@@ -15,7 +18,6 @@ namespace ServiceStack.Text.Tests
 			Promo,
 		}
 
-		[TextRecord]
 		public class FlowPostTransient
 		{
 			public FlowPostTransient()
@@ -23,45 +25,44 @@ namespace ServiceStack.Text.Tests
 				this.TrackUrns = new List<string>();
 			}
 
-			[TextField]
 			public long Id { get; set; }
-			[TextField]
+
 			public string Urn { get; set; }
-			[TextField]
+
 			public Guid UserId { get; set; }
-			[TextField]
+
 			public DateTime DateAdded { get; set; }
-			[TextField]
+
 			public DateTime DateModified { get; set; }
-			[TextField]
+
 			public Guid? TargetUserId { get; set; }
-			[TextField]
+
 			public long? ForwardedPostId { get; set; }
-			[TextField]
+
 			public Guid OriginUserId { get; set; }
-			[TextField]
+
 			public string OriginUserName { get; set; }
-			[TextField]
+
 			public Guid SourceUserId { get; set; }
-			[TextField]
+
 			public string SourceUserName { get; set; }
-			[TextField]
+
 			public string SubjectUrn { get; set; }
-			[TextField]
+
 			public string ContentUrn { get; set; }
-			[TextField]
+
 			public IList<string> TrackUrns { get; set; }
-			[TextField]
+
 			public string Caption { get; set; }
-			[TextField]
+
 			public Guid CaptionUserId { get; set; }
-			[TextField]
+
 			public string CaptionSourceName { get; set; }
-			[TextField]
+
 			public string ForwardedPostUrn { get; set; }
-			[TextField]
+
 			public FlowPostType PostType { get; set; }
-			[TextField]
+
 			public Guid? OnBehalfOfUserId { get; set; }
 
 			public static FlowPostTransient Create()
@@ -90,6 +91,49 @@ namespace ServiceStack.Text.Tests
 					UserId = Guid.NewGuid(),
 				};
 			}
+
+			public bool Equals(FlowPostTransient other)
+			{
+				if (ReferenceEquals(null, other)) return false;
+				if (ReferenceEquals(this, other)) return true;
+				return other.Id == Id && Equals(other.Urn, Urn) && other.UserId.Equals(UserId) && other.DateAdded.IsEqualToTheSecond(DateAdded) && other.DateModified.IsEqualToTheSecond(DateModified) && other.TargetUserId.Equals(TargetUserId) && other.ForwardedPostId.Equals(ForwardedPostId) && other.OriginUserId.Equals(OriginUserId) && Equals(other.OriginUserName, OriginUserName) && other.SourceUserId.Equals(SourceUserId) && Equals(other.SourceUserName, SourceUserName) && Equals(other.SubjectUrn, SubjectUrn) && Equals(other.ContentUrn, ContentUrn) && TrackUrns.EquivalentTo(other.TrackUrns) && Equals(other.Caption, Caption) && other.CaptionUserId.Equals(CaptionUserId) && Equals(other.CaptionSourceName, CaptionSourceName) && Equals(other.ForwardedPostUrn, ForwardedPostUrn) && Equals(other.PostType, PostType) && other.OnBehalfOfUserId.Equals(OnBehalfOfUserId);
+			}
+
+			public override bool Equals(object obj)
+			{
+				if (ReferenceEquals(null, obj)) return false;
+				if (ReferenceEquals(this, obj)) return true;
+				if (obj.GetType() != typeof (FlowPostTransient)) return false;
+				return Equals((FlowPostTransient) obj);
+			}
+
+			public override int GetHashCode()
+			{
+				unchecked
+				{
+					int result = Id.GetHashCode();
+					result = (result*397) ^ (Urn != null ? Urn.GetHashCode() : 0);
+					result = (result*397) ^ UserId.GetHashCode();
+					result = (result*397) ^ DateAdded.GetHashCode();
+					result = (result*397) ^ DateModified.GetHashCode();
+					result = (result*397) ^ (TargetUserId.HasValue ? TargetUserId.Value.GetHashCode() : 0);
+					result = (result*397) ^ (ForwardedPostId.HasValue ? ForwardedPostId.Value.GetHashCode() : 0);
+					result = (result*397) ^ OriginUserId.GetHashCode();
+					result = (result*397) ^ (OriginUserName != null ? OriginUserName.GetHashCode() : 0);
+					result = (result*397) ^ SourceUserId.GetHashCode();
+					result = (result*397) ^ (SourceUserName != null ? SourceUserName.GetHashCode() : 0);
+					result = (result*397) ^ (SubjectUrn != null ? SubjectUrn.GetHashCode() : 0);
+					result = (result*397) ^ (ContentUrn != null ? ContentUrn.GetHashCode() : 0);
+					result = (result*397) ^ (TrackUrns != null ? TrackUrns.GetHashCode() : 0);
+					result = (result*397) ^ (Caption != null ? Caption.GetHashCode() : 0);
+					result = (result*397) ^ CaptionUserId.GetHashCode();
+					result = (result*397) ^ (CaptionSourceName != null ? CaptionSourceName.GetHashCode() : 0);
+					result = (result*397) ^ (ForwardedPostUrn != null ? ForwardedPostUrn.GetHashCode() : 0);
+					result = (result*397) ^ PostType.GetHashCode();
+					result = (result*397) ^ (OnBehalfOfUserId.HasValue ? OnBehalfOfUserId.Value.GetHashCode() : 0);
+					return result;
+				}
+			}
 		}
 
 		[Test]
@@ -103,8 +147,28 @@ namespace ServiceStack.Text.Tests
 		public void Can_Serialize_single_FlowPostTransient()
 		{
 			var dto = FlowPostTransient.Create();
-			var dtoString = TypeSerializer.SerializeToString(dto);
-			var fromString = TypeSerializer.DeserializeFromString<FlowPostTransient>(dtoString);
+			SerializeAndCompare(dto);
+		}
+
+		[Test]
+		public void Can_serialize_jsv_dates()
+		{
+			var now = DateTime.Now;
+
+			var jsvDate = TypeSerializer.SerializeToString(now);
+			var fromJsvDate = TypeSerializer.DeserializeFromString<DateTime>(jsvDate);
+			Assert.That(fromJsvDate, Is.EqualTo(now));
+		}
+
+		[Test]
+		public void Can_serialize_json_dates()
+		{
+			var now = DateTime.Now;
+
+			var jsonDate = JsonSerializer.SerializeToString(now);
+			var fromJsonDate = JsonSerializer.DeserializeFromString<DateTime>(jsonDate);
+
+			Assert.That(fromJsonDate.RoundToSecond(), Is.EqualTo(now.RoundToSecond()));
 		}
 
 		[Test]
@@ -114,8 +178,7 @@ namespace ServiceStack.Text.Tests
 				FlowPostTransient.Create(), 
 				FlowPostTransient.Create()
 			};
-			var dtoString = TypeSerializer.SerializeToString(dtos);
-			var fromString = TypeSerializer.DeserializeFromString<List<FlowPostTransient>>(dtoString);
+			Serialize(dtos);
 		}
 	}
 }

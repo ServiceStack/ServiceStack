@@ -125,7 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					? result.GetType().Name.Replace("Response", "")
 					: "OperationName";
 
-				response.WriteXmlErrorToResponse(operationName, errorMessage, ex);
+				response.WriteErrorToResponse(defaultContentType, operationName, errorMessage, ex);
 				return true;
 			}
 			finally
@@ -152,6 +152,26 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				Log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
 				throw;
+			}
+		}
+
+		public static void WriteErrorToResponse(this IHttpResponse response, string contentType,
+			string operationName, string errorMessage, Exception ex)
+		{
+			switch (contentType)
+			{
+				case ContentType.Xml:
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					break;
+				case ContentType.Json:
+					WriteJsonErrorToResponse(response, operationName, errorMessage, ex);
+					break;
+				case ContentType.Jsv:
+					WriteJsvErrorToResponse(response, operationName, errorMessage, ex);
+					break;
+				default:
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					break;
 			}
 		}
 

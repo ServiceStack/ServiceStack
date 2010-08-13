@@ -61,6 +61,7 @@ namespace ServiceStack.Text.Tests
 
 	[TestFixture]
 	public class CustomStructTests
+		: TestBase
 	{
 		private static UserStat CreateUserStat(Guid userId, int score)
 		{
@@ -81,8 +82,7 @@ namespace ServiceStack.Text.Tests
 
 			Assert.That(dtoStr, Is.EqualTo("00000000000000000000000000000000:0:0:0:0:0"));
 
-			var fromDto = UserStat.Parse(dtoStr);
-			Assert.That(fromDto, Is.EqualTo(userStat));
+			SerializeAndCompare(userStat);
 		}
 
 		[Test]
@@ -94,8 +94,7 @@ namespace ServiceStack.Text.Tests
 
 			Assert.That(dtoStr, Is.EqualTo("96d7a49f7a0f46918661217995c5e4cc:1:1:1:1:16"));
 
-			var fromDto = UserStat.Parse(dtoStr);
-			Assert.That(fromDto, Is.EqualTo(userStat));
+			SerializeAndCompare(userStat);
 		}
 
 		[Test]
@@ -113,10 +112,9 @@ namespace ServiceStack.Text.Tests
 			var dtoStr = TypeSerializer.SerializeToString(userStats);
 
 			Assert.That(dtoStr, Is.EqualTo(
-									"[6203a3af17384cdfa3ad0f578ad198f0:0:0:0:0:0,c7c87df54821400db9f7d8eee23c5842:1:1:1:1:16,33eb45d421a041cca07d43bfab4b3e92:2:2:2:2:32,ed041f82572a41cb90d3e227786be9eb:3:3:3:3:48,d703f00c613a44a9ac2bc46ed0f23d3c:4:4:4:4:64]"));
+				"[6203a3af17384cdfa3ad0f578ad198f0:0:0:0:0:0,c7c87df54821400db9f7d8eee23c5842:1:1:1:1:16,33eb45d421a041cca07d43bfab4b3e92:2:2:2:2:32,ed041f82572a41cb90d3e227786be9eb:3:3:3:3:48,d703f00c613a44a9ac2bc46ed0f23d3c:4:4:4:4:64]"));
 
-			var fromDto = TypeSerializer.DeserializeFromString<List<UserStat>>(dtoStr);
-			Assert.That(fromDto, Is.EqualTo(userStats));
+			SerializeAndCompare(userStats);
 		}
 	}
 }

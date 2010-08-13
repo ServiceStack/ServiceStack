@@ -73,9 +73,13 @@
     <Compile Include="CultureInfoTests.cs" />
     <Compile Include="CustomStructTests.cs" />
     <Compile Include="DataContractTests.cs" />
-    <Compile Include="DateTimeSerializerTests.cs" />
+    <Compile Include="DictionaryTests.cs" />
+    <Compile Include="JsonTests\BasicJsonTests.cs" />
+    <Compile Include="JsonTests\EscapedCharsTests.cs" />
+    <Compile Include="Support\BenchmarkTests.cs" />
+    <Compile Include="Utils\DateTimeSerializerTests.cs" />
     <Compile Include="DdnContentIngestTests.cs" />
-    <Compile Include="DdnDtos.cs" />
+    <Compile Include="Support\DdnDtos.cs" />
     <Compile Include="DdnDtoTests.cs" />
     <Compile Include="DynamicModels\ComplexObjectGraphTest.cs" />
     <Compile Include="DynamicModels\DataModel\CustomCollectionDto.cs" />
@@ -91,7 +95,7 @@
     <Compile Include="DynamicModels\ModelWithAllTypes.cs" />
     <Compile Include="InterfaceTests.cs" />
     <Compile Include="JsonTests\ModelWithAllTypesTests.cs" />
-    <Compile Include="JsvFormatterTests.cs" />
+    <Compile Include="Utils\JsvFormatterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryStringWriterTests.cs" />
     <Compile Include="ReflectionExtensionTests.cs" />
@@ -100,8 +104,8 @@
     <Compile Include="StringSerializerNorthwindDatabaseTests.cs" />
     <Compile Include="StringSerializerTests.cs" />
     <Compile Include="StringSerializerTranslationTests.cs" />
-    <Compile Include="TextSerializerTestBase.cs" />
-    <Compile Include="TypeRegistrationTests.cs" />
+    <Compile Include="TestBase.cs" />
+    <Compile Include="TypeConverterTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
@@ -116,6 +120,9 @@
       <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
       <Name>ServiceStack.Text</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="JsvTests\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

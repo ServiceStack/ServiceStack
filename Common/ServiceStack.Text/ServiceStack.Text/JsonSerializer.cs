@@ -10,6 +10,7 @@
 // Licensed under the same terms of ServiceStack: new BSD license.
 //
 
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -22,28 +23,28 @@ namespace ServiceStack.Text
 	/// </summary>
 	public static class JsonSerializer
 	{
-		//public static T DeserializeFromString<T>(string value)
-		//{
-		//    if (string.IsNullOrEmpty(value)) return default(T);
-		//    return (T)JsvReader<T>.Parse(value);
-		//}
+		public static T DeserializeFromString<T>(string value)
+		{
+			if (string.IsNullOrEmpty(value)) return default(T);
+			return (T)JsonReader<T>.Parse(value);
+		}
 
-		//public static T DeserializeFromReader<T>(TextReader reader)
-		//{
-		//    return DeserializeFromString<T>(reader.ReadToEnd());
-		//}
+		public static T DeserializeFromReader<T>(TextReader reader)
+		{
+			return DeserializeFromString<T>(reader.ReadToEnd());
+		}
 
-		//public static object DeserializeFromString(string value, Type type)
-		//{
-		//    return value == null 
-		//            ? null 
-		//            : JsvReader.GetParseFn(type)(value);
-		//}
+		public static object DeserializeFromString(string value, Type type)
+		{
+			return value == null
+					? null
+					: JsonReader.GetParseFn(type)(value);
+		}
 
-		//public static object DeserializeFromReader(TextReader reader, Type type)
-		//{
-		//    return DeserializeFromString(reader.ReadToEnd(), type);
-		//}
+		public static object DeserializeFromReader(TextReader reader, Type type)
+		{
+			return DeserializeFromString(reader.ReadToEnd(), type);
+		}
 
 		public static string SerializeToString<T>(T value)
 		{

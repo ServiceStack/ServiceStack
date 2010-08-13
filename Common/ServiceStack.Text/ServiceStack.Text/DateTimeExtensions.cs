@@ -11,7 +11,7 @@
 //
 
 using System;
-using ServiceStack.Text.Jsv;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text
 {
@@ -31,7 +31,8 @@ namespace ServiceStack.Text
 
 		public static DateTime FromUnixTime(this double unixTime)
 		{
-			return UnixEpochDateTime + TimeSpan.FromSeconds(unixTime);
+			var ticks = (long)(UnixEpoch + (unixTime * TimeSpan.TicksPerSecond));
+			return new DateTime(ticks, DateTimeKind.Utc).ToLocalTime();
 		}
 
 		public static DateTime RoundToSecond(this DateTime dateTime)
@@ -47,6 +48,11 @@ namespace ServiceStack.Text
 		public static DateTime FromShortestXsdDateTimeString(this string xsdDateTime)
 		{
 			return DateTimeSerializer.ParseShortestXsdDateTime(xsdDateTime);
+		}
+
+		public static bool IsEqualToTheSecond(this DateTime dateTime, DateTime otherDateTime)
+		{
+			return dateTime.ToUniversalTime().RoundToSecond().Equals(otherDateTime.ToUniversalTime().RoundToSecond());
 		}
 	}
 }

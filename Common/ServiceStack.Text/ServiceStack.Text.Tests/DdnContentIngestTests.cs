@@ -6,6 +6,7 @@ namespace ServiceStack.Text.Tests
 {
 	[TestFixture]
 	public class DdnContentIngestTests
+		: TestBase
 	{
 		[Test]
 		public void Can_serialize_ReleaseSet()
@@ -43,8 +44,7 @@ namespace ServiceStack.Text.Tests
 				Genres = new List<string> { "Classical" },
 			};
 
-			var dtoString = dto.SerializeToString();
-			var toDto = dtoString.DeserializeFromString<ReleaseChangeSet>();
+			Serialize(dto);
 		}
 
 	}
