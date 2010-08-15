@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Common.Tests.Perf
 {
@@ -87,7 +88,7 @@ namespace ServiceStack.Common.Tests.Perf
 
 	public class TestClassWithFunc
 	{
-		public Func<string, object> GetValueFn;
+		public ParseStringDelegate GetValueFn;
 
 		public object GetValue(string value)
 		{

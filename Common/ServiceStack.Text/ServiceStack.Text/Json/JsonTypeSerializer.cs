@@ -162,12 +162,12 @@ namespace ServiceStack.Text.Json
 			return strValue[0] != JsonUtils.QuoteChar ? '"' + strValue + '"' : value;
 		}
 
-		public Func<string, object> GetParseFn<T>()
+		public ParseStringDelegate GetParseFn<T>()
 		{
 			return JsonReader.Instance.GetParseFn<T>();
 		}
 
-		public Func<string, object> GetParseFn(Type type)
+		public ParseStringDelegate GetParseFn(Type type)
 		{
 			return JsonReader.GetParseFn(type);
 		}

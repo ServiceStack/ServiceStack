@@ -129,12 +129,12 @@ namespace ServiceStack.Text.Jsv
 			return value;
 		}
 
-		public Func<string, object> GetParseFn<T>()
+		public ParseStringDelegate GetParseFn<T>()
 		{
 			return JsvReader.Instance.GetParseFn<T>();
 		}
 
-		public Func<string, object> GetParseFn(Type type)
+		public ParseStringDelegate GetParseFn(Type type)
 		{
 			return JsvReader.GetParseFn(type);
 		}

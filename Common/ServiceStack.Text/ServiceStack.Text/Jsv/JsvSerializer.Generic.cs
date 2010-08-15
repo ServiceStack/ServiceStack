@@ -14,17 +14,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ServiceStack.Text.Common;
 
 namespace ServiceStack.Text.Jsv
 {
 	public class JsvSerializer<T>
 	{
-		readonly Dictionary<Type, Func<string, object>> DeserializerCache = 
-			new Dictionary<Type, Func<string, object>>();
+		readonly Dictionary<Type, ParseStringDelegate> DeserializerCache = 
+			new Dictionary<Type, ParseStringDelegate>();
 
 		public T DeserializeFromString(string value, Type type)
 		{
-			Func<string, object> parseFn;
+			ParseStringDelegate parseFn;
 			lock (DeserializerCache)
 			{
 				if (!DeserializerCache.TryGetValue(type, out parseFn))
@@ -33,8 +34,8 @@ namespace ServiceStack.Text.Jsv
 					var mi = genericType.GetMethod(
 						"DeserializeFromString", new[] { typeof(string) });
 					
-					parseFn = (Func<string, object>)Delegate.CreateDelegate(
-						typeof(Func<string, object>), mi);
+					parseFn = (ParseStringDelegate)Delegate.CreateDelegate(
+						typeof(ParseStringDelegate), mi);
 
 					DeserializerCache.Add(type, parseFn);
 				}

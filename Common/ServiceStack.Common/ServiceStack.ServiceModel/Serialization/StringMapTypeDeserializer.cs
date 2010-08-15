@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Text.Common;
 using ServiceStack.Text.Jsv;
 
 namespace ServiceStack.ServiceModel.Serialization
@@ -16,14 +17,14 @@ namespace ServiceStack.ServiceModel.Serialization
 
 		internal class PropertySerializerEntry
 		{
-			public PropertySerializerEntry(Action<object, object> propertySetFn, Func<string, object> propertyParseStringFn)
+			public PropertySerializerEntry(SetPropertyDelegate propertySetFn, ParseStringDelegate propertyParseStringFn)
 			{
 				PropertySetFn = propertySetFn;
 				PropertyParseStringFn = propertyParseStringFn;
 			}
 
-			public Action<object, object> PropertySetFn;
-			public Func<string, object> PropertyParseStringFn;
+			public SetPropertyDelegate PropertySetFn;
+			public ParseStringDelegate PropertyParseStringFn;
 		}
 
 		private readonly Type type;

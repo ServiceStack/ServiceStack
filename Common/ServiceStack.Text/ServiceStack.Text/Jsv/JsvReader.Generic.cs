@@ -18,13 +18,13 @@ using ServiceStack.Text.Common;
 namespace ServiceStack.Text.Jsv
 {
 	public static class JsvReader
-	{
+	{ 
 		internal static readonly JsReader<JsvTypeSerializer> Instance = new JsReader<JsvTypeSerializer>();
 
 		private static readonly Dictionary<Type, ParseFactoryDelegate> ParseFnCache =
 			new Dictionary<Type, ParseFactoryDelegate>();
 
-		public static Func<string, object> GetParseFn(Type type)
+		public static ParseStringDelegate GetParseFn(Type type)
 		{
 			ParseFactoryDelegate parseFactoryFn;
 			lock (ParseFnCache)
@@ -47,14 +47,14 @@ namespace ServiceStack.Text.Jsv
 
 	public static class JsvReader<T>
 	{
-		private static readonly Func<string, object> ReadFn;
+		private static readonly ParseStringDelegate ReadFn;
 
 		static JsvReader()
 		{
 			ReadFn = JsvReader.Instance.GetParseFn<T>();
 		}
 		
-		public static Func<string, object> GetParseFn()
+		public static ParseStringDelegate GetParseFn()
 		{
 			return ReadFn;
 		}

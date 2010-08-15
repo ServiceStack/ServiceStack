@@ -24,7 +24,7 @@ namespace ServiceStack.Text.Json
 		private static readonly Dictionary<Type, ParseFactoryDelegate> ParseFnCache =
 			new Dictionary<Type, ParseFactoryDelegate>();
 
-		public static Func<string, object> GetParseFn(Type type)
+		public static ParseStringDelegate GetParseFn(Type type)
 		{
 			ParseFactoryDelegate parseFactoryFn;
 			lock (ParseFnCache)
@@ -47,14 +47,14 @@ namespace ServiceStack.Text.Json
 
 	public static class JsonReader<T>
 	{
-		private static readonly Func<string, object> ReadFn;
+		private static readonly ParseStringDelegate ReadFn;
 
 		static JsonReader()
 		{
 			ReadFn = JsonReader.Instance.GetParseFn<T>();
 		}
 		
-		public static Func<string, object> GetParseFn()
+		public static ParseStringDelegate GetParseFn()
 		{
 			return ReadFn;
 		}
