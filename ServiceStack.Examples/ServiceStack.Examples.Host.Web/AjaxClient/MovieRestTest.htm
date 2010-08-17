@@ -14,6 +14,19 @@
         	font-family: Arial;
         	width: 900px;
         }
+        #header-links
+        {
+	        text-align: center;	
+	        margin-top: 100px;        
+        }       
+        #header-links A
+        {
+        	padding-right: 10px;
+        }
+        A
+        {
+        	color: Blue;
+        }
         H1 A
         {
         	background: url(http://www.servicestack.net/logo-servicestack.png) no-repeat;
@@ -58,7 +71,7 @@
         .lnk-update, .lnk-delete
         {
         	margin-left: 10px;
-        	color: #039;
+        	color: Blue;
         	text-decoration: underline;
         	cursor: pointer;
         }
@@ -75,7 +88,7 @@
         }
     </style>
     
-    <script type="text/javascript" src="AjaxStack.snippets.js"></script>
+    <script type="text/javascript" src="ServiceStack.js"></script>
     <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
     <script type="text/javascript" src="jquery.json-2.2.js"></script>
     <script type="text/javascript">
@@ -276,6 +289,11 @@
         <button id="btnDetailsSubmit"></button>
     </div>
 
+    <div id="header-links">
+        <a href="../../ServiceStack.Examples.Clients/Default.htm">Ajax Client Examples</a>
+        <a href="../../ServiceStack.Examples.Clients/Silverlight.htm">Silverlight Examples</a>
+        <a href="MovieRestTest.htm">REST examples</a>
+    </div>
 </div>
 </body>
 </html>

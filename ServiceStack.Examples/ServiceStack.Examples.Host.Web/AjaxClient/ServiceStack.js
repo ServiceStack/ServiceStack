@@ -349,7 +349,7 @@ Dto.toUtcDate = function(date) {
 Dto.WcfDatePrefix = "\/Date(";
 Dto.toJsonDate = function(date) {
     date = Dto.parseJsonDate(date);
-    return Dto.WcfDatePrefix + date.getTime() + "-0000)\/";
+    return Dto.WcfDatePrefix + date.getTime() + "+0000)\/";
 };
 Dto.parseJsonDate = function(date) {
     return is.Date(date)
