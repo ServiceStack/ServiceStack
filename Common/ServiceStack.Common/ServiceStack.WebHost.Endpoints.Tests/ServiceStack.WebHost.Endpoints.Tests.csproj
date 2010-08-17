@@ -91,6 +91,8 @@
     <Compile Include="IntegrationTests\Movie.cs" />
     <Compile Include="IntegrationTests\MovieRestService.cs" />
     <Compile Include="IntegrationTests\MovieRestTests.cs" />
+    <Compile Include="IntegrationTests\ResetMovieDatabase.cs" />
+    <Compile Include="IntegrationTests\ResetMovieDatabaseService.cs" />
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
     <Compile Include="ServiceHostTestBase.cs" />

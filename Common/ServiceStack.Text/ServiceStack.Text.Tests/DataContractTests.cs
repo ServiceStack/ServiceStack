@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using NUnit.Framework;
 using ServiceStack.Text.Tests.Support;
 
@@ -21,5 +22,18 @@ namespace ServiceStack.Text.Tests
 
 			Serialize(dto);
 		}
+
+		[DataContract]
+		public class EmptyDataContract
+		{
+		}
+
+		[Test]
+		public void Can_Serialize_Empty_DataContract()
+		{
+			var dto = new EmptyDataContract();
+			Serialize(dto);
+		}
+
 	}
 }

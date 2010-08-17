@@ -71,5 +71,21 @@ namespace ServiceStack.Text
 			JsonWriter<T>.WriteObject(writer, value);
 		}
 
+		public static void SerializeToStream<T>(T value, Stream stream)
+		{
+			using (var writer = new StreamWriter(stream, Encoding.UTF8))
+			{
+				JsonWriter<T>.WriteObject(writer, value);
+			}
+		}
+
+		public static T DeserializeFromStream<T>(Stream stream)
+		{
+			using (var reader = new StreamReader(stream, Encoding.UTF8))
+			{
+				return DeserializeFromString<T>(reader.ReadToEnd());
+			}
+		}
+
 	}
 }

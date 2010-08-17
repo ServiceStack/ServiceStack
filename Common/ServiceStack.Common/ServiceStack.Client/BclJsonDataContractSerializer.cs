@@ -5,9 +5,9 @@ using System.Runtime.Serialization.Json;
 
 namespace ServiceStack.Client
 {
-	public class JsonDataContractSerializer
+	public class BclJsonDataContractSerializer
 	{
-		public static JsonDataContractSerializer Instance = new JsonDataContractSerializer();
+		public static BclJsonDataContractSerializer Instance = new BclJsonDataContractSerializer();
 
 		public string Parse(object obj)
 		{
@@ -28,7 +28,7 @@ namespace ServiceStack.Client
 			}
 			catch (Exception ex)
 			{
-				throw new SerializationException("JsonDataContractSerializer: Error converting type: " + ex.Message, ex);
+				throw new SerializationException("BclJsonDataContractSerializer: Error converting type: " + ex.Message, ex);
 			}
 		}
 	}

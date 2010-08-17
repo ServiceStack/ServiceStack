@@ -20,7 +20,7 @@ namespace ServiceStack.Client
 
 		public T Send<T>(object request)
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
+			var jsonRequest = BclJsonDataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try
@@ -48,14 +48,14 @@ namespace ServiceStack.Client
 			using (var reader = new StreamReader(responseStream))
 			{
 				var json = reader.ReadToEnd();
-				var response = (T)JsonDataContractDeserializer.Instance.Parse(json, typeof(T));
+				var response = (T)BclJsonDataContractDeserializer.Instance.Parse(json, typeof(T));
 				return response;
 			}
 		}
 
 		public void SendOneWay(object request)
 		{
-			var jsonRequest = JsonDataContractSerializer.Instance.Parse(request);
+			var jsonRequest = BclJsonDataContractSerializer.Instance.Parse(request);
 			var requestUri = this.BaseUri + "/" + request.GetType().Name;
 			var client = WebRequest.Create(requestUri);
 			try

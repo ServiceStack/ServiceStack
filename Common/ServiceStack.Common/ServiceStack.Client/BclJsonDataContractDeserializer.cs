@@ -6,9 +6,9 @@ using System.Text;
 
 namespace ServiceStack.Client
 {
-	public class JsonDataContractDeserializer
+	public class BclJsonDataContractDeserializer
 	{
-		public static JsonDataContractDeserializer Instance = new JsonDataContractDeserializer();
+		public static BclJsonDataContractDeserializer Instance = new BclJsonDataContractDeserializer();
 
 		public object Parse(string json, Type returnType)
 		{
@@ -25,7 +25,7 @@ namespace ServiceStack.Client
 			}
 			catch (Exception ex)
 			{
-				throw new SerializationException("JsonDataContractDeserializer: Error converting to type: " + ex.Message, ex);
+				throw new SerializationException("BclJsonDataContractDeserializer: Error converting to type: " + ex.Message, ex);
 			}
 		}
 

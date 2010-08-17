@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using ServiceStack.Common.Tests.Models;
 
 namespace ServiceStack.Text.Tests.JsonTests
 {
@@ -26,7 +27,7 @@ namespace ServiceStack.Text.Tests.JsonTests
 					Float = i,
 					Double = i,
 					Boolean = i % 2 == 0,
-					DateTime = new DateTime(DateTimeExtensions.UnixEpoch + (i * 10000000)),
+					DateTime = new DateTime(DateTimeExtensions.UnixEpoch + (i * DateTimeExtensions.TicksPerMs)),
 				};
 			}
 		}
@@ -38,7 +39,7 @@ namespace ServiceStack.Text.Tests.JsonTests
 			Log(json);
 
 			Assert.That(json, Is.EqualTo(
-				"{\"Int\":1,\"Long\":1,\"Float\":1,\"Double\":1,\"Boolean\":false,\"DateTime\":\"/Date(1)/\"}"));
+				"{\"Int\":1,\"Long\":1,\"Float\":1,\"Double\":1,\"Boolean\":false,\"DateTime\":\"\\/Date(1+0000)\\/\"}"));
 		}
 
 		[Test]
@@ -50,6 +51,5 @@ namespace ServiceStack.Text.Tests.JsonTests
 			Assert.That(value.Int, Is.EqualTo(1));
 			Assert.That(value.NullString, Is.Null);
 		}
-
 	}
 }

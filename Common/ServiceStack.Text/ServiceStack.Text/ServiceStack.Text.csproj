@@ -54,7 +54,6 @@
     <Compile Include="CsvStreamExtensions.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="Env.cs" />
-    <Compile Include="ITextFormatter.cs" />
     <Compile Include="ITypeSerializer.Generic.cs" />
     <Compile Include="Json\JsonTypeSerializer.cs" />
     <Compile Include="Json\JsonUtils.cs" />

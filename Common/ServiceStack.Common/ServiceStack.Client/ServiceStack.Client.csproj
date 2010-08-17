@@ -69,8 +69,8 @@
     <Compile Include="DataContractDeserializer.cs" />
     <Compile Include="DataContractSerializer.cs" />
     <Compile Include="IServiceClient.cs" />
-    <Compile Include="JsonDataContractDeserializer.cs" />
-    <Compile Include="JsonDataContractSerializer.cs" />
+    <Compile Include="BclJsonDataContractDeserializer.cs" />
+    <Compile Include="BclJsonDataContractSerializer.cs" />
     <Compile Include="JsonServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebRequestUtils.cs" />

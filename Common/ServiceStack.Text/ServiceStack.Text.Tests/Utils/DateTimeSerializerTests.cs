@@ -112,8 +112,8 @@ namespace ServiceStack.Text.Tests.Utils
 			var toDateTime = DateTimeSerializer.ParseShortestXsdDateTime(shortestDateStr);
 			AssertDatesAreEqual(toDateTime, dateTime);
 
-			var unixTime = dateTime.ToUnixTime();
-			var fromUnixTime = DateTimeExtensions.FromUnixTime(unixTime);
+			var unixTime = dateTime.ToUnixTimeMs();
+			var fromUnixTime = DateTimeExtensions.FromUnixTimeMs(unixTime);
 			AssertDatesAreEqual(fromUnixTime, dateTime);
 		}
 

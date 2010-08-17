@@ -76,6 +76,7 @@
     <Compile Include="DictionaryTests.cs" />
     <Compile Include="JsonTests\BasicJsonTests.cs" />
     <Compile Include="JsonTests\EscapedCharsTests.cs" />
+    <Compile Include="JsonTests\JsonDataContractCompatibilityTests.cs" />
     <Compile Include="Support\BenchmarkTests.cs" />
     <Compile Include="Utils\DateTimeSerializerTests.cs" />
     <Compile Include="DdnContentIngestTests.cs" />
@@ -108,6 +109,10 @@
     <Compile Include="TypeConverterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Client\ServiceStack.Client.csproj">
+      <Project>{6B133D45-91D4-4AA5-A6D4-247282879CBB}</Project>
+      <Name>ServiceStack.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
       <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
       <Name>ServiceStack.Common.Tests</Name>

@@ -6,8 +6,8 @@ namespace ServiceStack.CacheAccess.Memcached.Tests
 	{
 		public class TestConfig
 		{
-			public const string SingleHost = "chi-dev-mem1.ddnglobal.local";
-			public static readonly string [] MasterHosts = new[] { "chi-dev-mem1.ddnglobal.local" };
+			public const string SingleHost = "localhost";
+			public static readonly string[] MasterHosts = new[] { "localhost" };
 		}
 
 		protected static void AssertGetAll(ICacheClient cacheClient)

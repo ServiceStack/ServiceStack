@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Serialization
 {
@@ -9,8 +10,15 @@ namespace ServiceStack.ServiceModel.Serialization
 	{
 		public static JsonDataContractSerializer Instance = new JsonDataContractSerializer();
 
-		public string Parse(object obj)
+		public bool UseBcl { get; set; }
+
+		public string Parse<T>(T obj)
 		{
+			if (!UseBcl)
+			{
+				return JsonSerializer.SerializeToString(obj);
+			}
+
 			if (obj == null) return null;
 			var type = obj.GetType();
 			try
@@ -32,10 +40,17 @@ namespace ServiceStack.ServiceModel.Serialization
 			}
 		}
 
-		public void SerializeToStream(object obj, Stream stream)
+		public void SerializeToStream<T>(T obj, Stream stream)
 		{
-			var serializer = new DataContractJsonSerializer(obj.GetType());
-			serializer.WriteObject(stream, obj);
+			if (UseBcl)
+			{
+				var serializer = new DataContractJsonSerializer(obj.GetType());
+				serializer.WriteObject(stream, obj);
+			}
+			else
+			{
+				JsonSerializer.SerializeToStream(obj, stream);
+			}
 		}
 	}
 }

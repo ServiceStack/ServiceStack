@@ -23,6 +23,8 @@ namespace ServiceStack.Text
 		public const long UnixEpoch = 621355968000000000L;
 		private static readonly DateTime UnixEpochDateTime = new DateTime(UnixEpoch);
 
+		public const long TicksPerMs = TimeSpan.TicksPerSecond / 1000;
+
 		public static long ToUnixTime(this DateTime dateTime)
 		{
 			var epoch = (dateTime.ToUniversalTime().Ticks - UnixEpoch) / TimeSpan.TicksPerSecond;
@@ -31,13 +33,24 @@ namespace ServiceStack.Text
 
 		public static DateTime FromUnixTime(this double unixTime)
 		{
-			var ticks = (long)(UnixEpoch + (unixTime * TimeSpan.TicksPerSecond));
+			return UnixEpochDateTime + TimeSpan.FromSeconds(unixTime);
+		}
+
+		public static long ToUnixTimeMs(this DateTime dateTime)
+		{
+			var epoch = (dateTime.ToUniversalTime().Ticks - UnixEpoch) / TicksPerMs;
+			return epoch;
+		}
+
+		public static DateTime FromUnixTimeMs(this double msSince1970)
+		{
+			var ticks = (long)(UnixEpoch + (msSince1970 * TicksPerMs));
 			return new DateTime(ticks, DateTimeKind.Utc).ToLocalTime();
 		}
 
 		public static DateTime RoundToSecond(this DateTime dateTime)
 		{
-			return new DateTime(((dateTime.Ticks) / 10000000) * 10000000);
+			return new DateTime(((dateTime.Ticks) / TimeSpan.TicksPerSecond) * TimeSpan.TicksPerSecond);
 		}
 
 		public static string ToShortestXsdDateTimeString(this DateTime dateTime)

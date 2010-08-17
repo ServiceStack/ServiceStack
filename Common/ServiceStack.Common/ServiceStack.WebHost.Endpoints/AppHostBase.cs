@@ -4,6 +4,7 @@ using System.Reflection;
 using Funq;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -93,6 +94,9 @@ namespace ServiceStack.WebHost.Endpoints
 
 			EndpointHost.Config = config;
 			this.serviceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
+
+			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
+			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
 		public virtual object ExecuteService(object requestDto)

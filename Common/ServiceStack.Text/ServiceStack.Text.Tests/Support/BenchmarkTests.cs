@@ -102,6 +102,76 @@ namespace ServiceStack.Text.Tests.Support
 			Console.WriteLine(hasEscapeChars);
 		}
 
+		public class RuntimeType<T>
+		{
+			private static Type type = typeof (T);
+
+			internal static bool TestVarType()
+			{
+				return type == typeof(byte) || type == typeof(byte?)
+						|| type == typeof(short) || type == typeof(short?)
+						|| type == typeof(ushort) || type == typeof(ushort?)
+						|| type == typeof(int) || type == typeof(int?)
+						|| type == typeof(uint) || type == typeof(uint?)
+						|| type == typeof(long) || type == typeof(long?)
+						|| type == typeof(ulong) || type == typeof(ulong?)
+						|| type == typeof(bool) || type == typeof(bool?)
+						|| type != typeof(DateTime)
+						|| type != typeof(DateTime?)
+						|| type != typeof(Guid)
+						|| type != typeof(Guid?)
+						|| type != typeof(float) || type != typeof(float?)
+						|| type != typeof(double) || type != typeof(double?)
+						|| type != typeof(decimal) || type != typeof(decimal?);
+			}
+
+			internal static bool TestGenericType()
+			{
+				return typeof(T) == typeof(byte) || typeof(T) == typeof(byte?)
+						|| typeof(T) == typeof(short) || typeof(T) == typeof(short?)
+						|| typeof(T) == typeof(ushort) || typeof(T) == typeof(ushort?)
+						|| typeof(T) == typeof(int) || typeof(T) == typeof(int?)
+						|| typeof(T) == typeof(uint) || typeof(T) == typeof(uint?)
+						|| typeof(T) == typeof(long) || typeof(T) == typeof(long?)
+						|| typeof(T) == typeof(ulong) || typeof(T) == typeof(ulong?)
+						|| typeof(T) == typeof(bool) || typeof(T) == typeof(bool?)
+						|| typeof(T) != typeof(DateTime)
+						|| typeof(T) != typeof(DateTime?)
+						|| typeof(T) != typeof(Guid)
+						|| typeof(T) != typeof(Guid?)
+						|| typeof(T) != typeof(float) || typeof(T) != typeof(float?)
+						|| typeof(T) != typeof(double) || typeof(T) != typeof(double?)
+						|| typeof(T) != typeof(decimal) || typeof(T) != typeof(decimal?);
+			}
+		}
+
+
+		[Test]
+		public void TestVarOrGenericType()
+		{
+			var matchingTypesCount = 0;
+
+			CompareMultipleRuns(
+				"With var type",
+				() =>
+				{
+					if (RuntimeType<BenchmarkTests>.TestVarType())
+					{
+						matchingTypesCount++;
+					}
+				},
+				"With generic type",
+				() =>
+				{
+					if (RuntimeType<BenchmarkTests>.TestGenericType())
+					{
+						matchingTypesCount++;
+					}
+				});
+
+			Console.WriteLine(matchingTypesCount);
+		}
+
 
 	}
 }

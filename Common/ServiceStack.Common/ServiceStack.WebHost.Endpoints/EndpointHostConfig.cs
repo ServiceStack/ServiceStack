@@ -36,6 +36,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
 		public bool EnableAccessRestrictions { get; set; }
+		public bool UseBclJsonSerializers { get; set; }
 		public Dictionary<string, string> GlobalResponseHeaders { get; set; }
 
 		private string defaultOperationNamespace;

@@ -156,7 +156,9 @@ namespace ServiceStack.Text.Jsv
 
 		public bool EatMapStartChar(string value, ref int i)
 		{
-			return value[i++] == JsWriter.MapStartChar;
+			var success = value[i] == JsWriter.MapStartChar;
+			if (success) i++;
+			return success;
 		}
 
 		public string EatMapKey(string value, ref int i)

@@ -19,6 +19,8 @@ using ServiceStack.Text.Support;
 
 namespace ServiceStack.Text
 {
+	public delegate object EmptyCtorDelegate();
+
 	public static class ReflectionExtensions
 	{
 		private static readonly Dictionary<Type, object> DefaultValueTypes
@@ -220,24 +222,22 @@ namespace ServiceStack.Text
 			return true;
 		}
 
-		internal delegate object CtorDelegate();
-
-		static readonly Dictionary<Type, Func<object>> ConstructorMethods = new Dictionary<Type, Func<object>>();
-		public static Func<object> GetConstructorMethod(Type type)
+		static readonly Dictionary<Type, EmptyCtorDelegate> ConstructorMethods = new Dictionary<Type, EmptyCtorDelegate>();
+		public static EmptyCtorDelegate GetConstructorMethod(Type type)
 		{
 			lock (ConstructorMethods)
 			{
-				Func<object> ctorFn;
-				if (!ConstructorMethods.TryGetValue(type, out ctorFn))
+				EmptyCtorDelegate emptyCtorFn;
+				if (!ConstructorMethods.TryGetValue(type, out emptyCtorFn))
 				{
-					ctorFn = GetConstructorMethodToCache(type);
-					ConstructorMethods[type] = ctorFn;
+					emptyCtorFn = GetConstructorMethodToCache(type);
+					ConstructorMethods[type] = emptyCtorFn;
 				}
-				return ctorFn;
+				return emptyCtorFn;
 			}
 		}
 
-		public static Func<object> GetConstructorMethodToCache(Type type)
+		public static EmptyCtorDelegate GetConstructorMethodToCache(Type type)
 		{
 			var dm = new System.Reflection.Emit.DynamicMethod("MyCtor", type, Type.EmptyTypes, typeof(ReflectionExtensions).Module, true);
 			var ilgen = dm.GetILGenerator();
@@ -245,8 +245,7 @@ namespace ServiceStack.Text
 			ilgen.Emit(System.Reflection.Emit.OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
 			ilgen.Emit(System.Reflection.Emit.OpCodes.Ret);
 
-			Func<object> ctorFn = ((CtorDelegate)dm.CreateDelegate(typeof(CtorDelegate))).Invoke;
-			return ctorFn;
+			return (EmptyCtorDelegate)dm.CreateDelegate(typeof(EmptyCtorDelegate));
 		}
 
 		public static object CreateInstance(Type type)
@@ -301,25 +300,29 @@ namespace ServiceStack.Text
 				| BindingFlags.Public | BindingFlags.Instance);
 		}
 
+		const string DataContract = "DataContractAttribute";
+		const string DataMember = "DataMemberAttribute";
+
 		public static PropertyInfo[] GetSerializableProperties(this Type type)
 		{
-			const string dataContract = "DataContractAttribute";
-			const string dataMember = "DataMemberAttribute";
-
 			var publicProperties = GetPublicProperties(type);
 			var publicReadableProperties = publicProperties.Where(x => x.GetGetMethod(false) != null);
 
 			//If it is a 'DataContract' only return 'DataMember' properties.
 			//checking for "DataContract" using strings to avoid dependency on System.Runtime.Serialization
-			var isDataContract = type.GetCustomAttributes(true).Any(x => x.GetType().Name == dataContract);
-			if (isDataContract)
+			if (type.IsDto())
 			{
 				return publicReadableProperties.Where(attr =>
-					attr.GetCustomAttributes(false).Any(x => x.GetType().Name == dataMember))
+					attr.GetCustomAttributes(false).Any(x => x.GetType().Name == DataMember))
 					.ToArray();
 			}
 
 			return publicReadableProperties.ToArray();
+		}
+
+		public static bool IsDto(this Type type)
+		{
+			return type.GetCustomAttributes(true).Any(x => x.GetType().Name == DataContract);
 		}
 
 	}

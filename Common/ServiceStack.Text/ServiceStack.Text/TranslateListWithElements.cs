@@ -14,7 +14,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using ServiceStack.Text.Support;
 
 namespace ServiceStack.Text
 {

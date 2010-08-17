@@ -73,5 +73,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				Assert.That(response.Movies, Has.Count.EqualTo(0))
 			);
 		}
+
+		[Test]
+		public void Can_ResetMovieDatabase()
+		{
+			SendToEachEndpoint<ResetMovieDatabaseResponse>(new ResetMovieDatabase(), HttpMethods.Post, response =>
+				Assert.That(response.ResponseStatus.IsSuccess, Is.True)
+			);
+		}
+
 	}
 }

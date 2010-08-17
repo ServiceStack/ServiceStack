@@ -12,15 +12,10 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Db4o/f:InsertNorthwindDatabase.cs" caret="629" fromTop="17" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:BasicPersistenceProviders/d:Redis/f:InsertNorthwindDatabase.cs" caret="338" fromTop="14" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TypeToStringTests.cs" caret="0" fromTop="0" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextTestBase.cs" caret="0" fromTop="0" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextSerializerPerfTests.cs" caret="1004" fromTop="32" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:RedisClient.cs" caret="0" fromTop="0" />
       <File id="373D954D-93F9-439D-937F-28709BB04B65/f:PerfTestBase.cs" caret="2659" fromTop="12" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="656" fromTop="15" />
-      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="83" fromTop="2" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:IRedisClient.cs" caret="742" fromTop="14" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:_Misc/f:StopWatchTests.cs" caret="524" fromTop="11" />
       <File id="6B133D45-91D4-4AA5-A6D4-247282879CBB/f:BinaryFormatterSerializer.cs" caret="504" fromTop="18" />
@@ -29,35 +24,30 @@
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Extensions/f:StringExtensions.cs" caret="110" fromTop="3" />
       <File id="96179AC6-F6F1-40C3-9FDD-4F6582F54C5C/f:OrmLiteDialectProviderBase.cs" caret="5483" fromTop="43" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/d:Generic/f:RedisTypedClient_Hash.cs" caret="742" fromTop="26" />
-      <File id="CF68A37D-D071-469D-AE04-68594CB95382/f:SqliteOrmLiteDialectProvider.cs" caret="2628" fromTop="43" />
+      <File id="CF68A37D-D071-469D-AE04-68594CB95382/f:SqliteOrmLiteDialectProvider.cs" caret="3118" fromTop="43" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="6379" fromTop="16" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="7567" fromTop="27" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:CustomerOrderListDto.cs" caret="476" fromTop="19" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="540" fromTop="23" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="9752" fromTop="25" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:NorthwindDtoFactory.cs" caret="4224" fromTop="20" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseRowsSerialization.cs" caret="458" fromTop="18" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseTablesSerialization.cs" caret="514" fromTop="0" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="10926" fromTop="35" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:DataModel/f:NorthwindDtoData.cs" caret="656" fromTop="18" />
+      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="455" fromTop="0" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseTablesSerialization.cs" caret="1645" fromTop="34" />
+      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="1024" fromTop="32" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/f:JsonSerializer.cs" caret="2219" fromTop="30" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Reflection/f:StaticAccessors.cs" caret="1546" fromTop="28" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Json/f:JsonWriter.Generic.cs" caret="2380" fromTop="29" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Json/f:JsonTypeSerializer.cs" caret="1379" fromTop="0" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Common/f:WriteType.cs" caret="3255" fromTop="16" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Common/f:JsWriter.cs" caret="2809" fromTop="32" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseRowsSerialization.cs" caret="1523" fromTop="39" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11271" fromTop="163" />
     </RecentFiles>
     <RecentEdits>
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2534" fromTop="24" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2356" fromTop="16" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="2131" fromTop="13" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="1734" fromTop="16" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="1847" fromTop="18" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="1443" fromTop="18" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="2170" fromTop="18" />
-      <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ServiceModel/f:Northwind.dtos.cs" caret="3227" fromTop="18" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="10804" fromTop="17" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="5019" fromTop="28" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="4792" fromTop="22" />
-      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="83" fromTop="2" />
       <File id="AF99F19B-4C04-4F58-81EF-B092F1FCC540/f:IRedisClient.cs" caret="742" fromTop="14" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="9784" fromTop="15" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11463" fromTop="15" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseTablesSerialization.cs" caret="112" fromTop="3" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SingleModelSerializationPerf.cs" caret="1161" fromTop="62" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseRowsSerialization.cs" caret="510" fromTop="19" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseTablesSerialization.cs" caret="2121" fromTop="73" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:DtoFactory.cs" caret="6631" fromTop="2" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:TextDeserializerPerfTests.cs" caret="6464" fromTop="19" />
@@ -67,10 +57,23 @@
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="229" fromTop="9" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="467" fromTop="19" />
       <File id="495EBC3A-0F73-4D25-9641-D6ECA70D0026/d:ComplexModel/f:FullOrderDto.cs" caret="542" fromTop="24" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11817" fromTop="31" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11978" fromTop="31" />
       <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseTablesSerialization.cs" caret="514" fromTop="19" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11300" fromTop="31" />
-      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11119" fromTop="40" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11463" fromTop="31" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11463" fromTop="40" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="949" fromTop="25" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="9271" fromTop="12" />
+      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="1228" fromTop="29" />
+      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="596" fromTop="10" />
+      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="3118" fromTop="23" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11271" fromTop="25" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11457" fromTop="31" />
+      <File id="D5681EFB-0FCE-4E55-910B-F4620CFECBD2/f:Program.cs" caret="267" fromTop="10" />
+      <File id="579B3FDB-CDAD-44E1-8417-885C38E49A0E/d:Json/f:JsonTypeSerializer.cs" caret="1413" fromTop="42" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseRowsSerialization.cs" caret="3256" fromTop="13" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:NorthwindDatabaseRowsSerialization.cs" caret="509" fromTop="16" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="11348" fromTop="21" />
+      <File id="97A8E62D-14DF-402B-8B6A-C5C0D959E68A/d:Serialization/f:SerializationTestBase.cs" caret="10939" fromTop="21" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -80,7 +83,7 @@
     <ItemStatistics item="Default">
       <Item value="var" priority="40" />
       <Item value="TimeSpan" priority="4" />
-      <Item value="public" priority="21" />
+      <Item value="public" priority="22" />
       <Item value="void" priority="6" />
       <Item value="new" priority="29" />
       <Item value="Stopwatch" priority="2" />
@@ -139,9 +142,9 @@
       <Item value="private" priority="0" />
       <Item value="AssertAllAreEqual" priority="0" />
       <Item value="const" priority="1" />
-      <Item value="bool" priority="1" />
-      <Item value="true" priority="1" />
-      <Item value="if" priority="4" />
+      <Item value="bool" priority="2" />
+      <Item value="true" priority="2" />
+      <Item value="if" priority="5" />
       <Item value="ProtoBufToBytes" priority="0" />
       <Item value="dtoProtoBuf" priority="0" />
       <Item value="i" priority="2" />
@@ -296,6 +299,8 @@
       <Item value="CalculateBestTimes" priority="0" />
       <Item value="Console" priority="0" />
       <Item value="JsonSerializer" priority="0" />
+      <Item value="OnlyRunServiceStackSerializers" priority="0" />
+      <Item value="JsWriter" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.TimeSpan">
       <Item value="TicksPerMillisecond" priority="2" />
@@ -612,6 +617,9 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:Northwind.Common.ComplexModel.CustomerOrderListDto">
       <Item value="Dump" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Text.Common.JsWriter">
+      <Item value="QuoteChar" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
   <UnitTestRunnerMSTest>

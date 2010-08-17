@@ -50,9 +50,9 @@ namespace ServiceStack.Text.Json
 		/// <param name="value"></param>
 		public void WriteRawString(TextWriter writer, string value)
 		{
-			writer.Write('"');
+			writer.Write(JsWriter.QuoteChar);
 			writer.Write(value);
-			writer.Write('"');
+			writer.Write(JsWriter.QuoteChar);
 		}
 
 		public void WritePropertyName(TextWriter writer, string value)
