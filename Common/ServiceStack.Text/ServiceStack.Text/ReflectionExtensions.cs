@@ -15,6 +15,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using ServiceStack.Text.Support;
 
 namespace ServiceStack.Text
@@ -239,13 +240,20 @@ namespace ServiceStack.Text
 
 		public static EmptyCtorDelegate GetConstructorMethodToCache(Type type)
 		{
-			var dm = new System.Reflection.Emit.DynamicMethod("MyCtor", type, Type.EmptyTypes, typeof(ReflectionExtensions).Module, true);
-			var ilgen = dm.GetILGenerator();
-			ilgen.Emit(System.Reflection.Emit.OpCodes.Nop);
-			ilgen.Emit(System.Reflection.Emit.OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
-			ilgen.Emit(System.Reflection.Emit.OpCodes.Ret);
+			var emptyCtor = type.GetConstructor(Type.EmptyTypes);
+			if (emptyCtor != null)
+			{
+				var dm = new System.Reflection.Emit.DynamicMethod("MyCtor", type, Type.EmptyTypes, typeof(ReflectionExtensions).Module, true);
+				var ilgen = dm.GetILGenerator();
+				ilgen.Emit(System.Reflection.Emit.OpCodes.Nop);
+				ilgen.Emit(System.Reflection.Emit.OpCodes.Newobj, emptyCtor);
+				ilgen.Emit(System.Reflection.Emit.OpCodes.Ret);
 
-			return (EmptyCtorDelegate)dm.CreateDelegate(typeof(EmptyCtorDelegate));
+				return (EmptyCtorDelegate)dm.CreateDelegate(typeof(EmptyCtorDelegate));
+			}
+
+			//Anonymous types don't have empty constructors
+			return () => FormatterServices.GetUninitializedObject(type);
 		}
 
 		public static object CreateInstance(Type type)

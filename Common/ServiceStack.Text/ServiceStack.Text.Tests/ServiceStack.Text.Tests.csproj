@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdhocModelTests.cs" />
+    <Compile Include="AnonymousTypes.cs" />
     <Compile Include="BasicStringSerializerTests.cs" />
     <Compile Include="CsvStreamTests.cs" />
     <Compile Include="CultureInfoTests.cs" />
