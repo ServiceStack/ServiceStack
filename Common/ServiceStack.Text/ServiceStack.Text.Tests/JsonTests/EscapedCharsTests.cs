@@ -101,15 +101,15 @@ namespace ServiceStack.Text.Tests.JsonTests
 			{
 				if (ReferenceEquals(null, obj)) return false;
 				if (ReferenceEquals(this, obj)) return true;
-				if (obj.GetType() != typeof (ModelWithList)) return false;
-				return Equals((ModelWithList) obj);
+				if (obj.GetType() != typeof(ModelWithList)) return false;
+				return Equals((ModelWithList)obj);
 			}
 
 			public override int GetHashCode()
 			{
 				unchecked
 				{
-					return (Id*397) ^ (StringList != null ? StringList.GetHashCode() : 0);
+					return (Id * 397) ^ (StringList != null ? StringList.GetHashCode() : 0);
 				}
 			}
 		}
@@ -152,6 +152,18 @@ namespace ServiceStack.Text.Tests.JsonTests
 			const string json = "\t { \"Id\" : 1 , \n \"StringList\" \t : \n [ \t \" One \" \t , \t \" Two \" \t ] \n } \t ";
 
 			var fromJson = JsonSerializer.DeserializeFromString<ModelWithList>(json);
+
+			Assert.That(fromJson, Is.EqualTo(model));
+		}
+
+		[Test]
+		public void Can_deserialize_basic_latin_unicode()
+		{
+			const string json = "{\"Id\":1,\"Name\":\"\\u0041 \\u0042 \\u0043 | \\u0031 \\u0032 \\u0033\"}";
+
+			var model = new ModelWithIdAndName { Id = 1, Name = "A B C | 1 2 3" };
+
+			var fromJson = JsonSerializer.DeserializeFromString<ModelWithIdAndName>(json);
 
 			Assert.That(fromJson, Is.EqualTo(model));
 		}

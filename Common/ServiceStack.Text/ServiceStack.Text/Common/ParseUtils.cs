@@ -30,7 +30,7 @@ namespace ServiceStack.Text.Common
 
 		public static object ParseEnum(Type type, string value)
 		{
-			return Enum.Parse(type, value);
+			return Enum.Parse(type, value, false);
 		}
 
 		public static ParseStringDelegate GetSpecialParseMethod(Type type)

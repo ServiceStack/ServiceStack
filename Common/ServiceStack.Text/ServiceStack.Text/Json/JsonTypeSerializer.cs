@@ -259,9 +259,9 @@ namespace ServiceStack.Text.Json
 							var remainingLength = jsonLength - index;
 							if (remainingLength >= 4)
 							{
-								var unicodeCharArray = json.ToCharArray(index, 4);
-								var unicodeIntVal = uint.Parse(new string(unicodeCharArray), NumberStyles.HexNumber);
-								sb.Append(char.ConvertFromUtf32((int)unicodeIntVal));
+								var unicodeString = json.Substring(index, 4);
+								var unicodeIntVal = uint.Parse(unicodeString, NumberStyles.HexNumber);
+								sb.Append(ConvertFromUtf32((int)unicodeIntVal));
 								index += 4;
 							}
 							else
@@ -279,6 +279,24 @@ namespace ServiceStack.Text.Json
 
 			var strValue = sb.ToString();
 			return strValue == JsonUtils.Null ? null : strValue;
+		}
+
+		/// <summary>
+		/// Since Silverlight doesn't have char.ConvertFromUtf32() so putting Mono's implemenation inline.
+		/// </summary>
+		/// <param name="utf32"></param>
+		/// <returns></returns>
+		private static string ConvertFromUtf32(int utf32)
+		{
+			if (utf32 < 0 || utf32 > 0x10FFFF)
+				throw new ArgumentOutOfRangeException("utf32", "The argument must be from 0 to 0x10FFFF.");
+			if (0xD800 <= utf32 && utf32 <= 0xDFFF)
+				throw new ArgumentOutOfRangeException("utf32", "The argument must not be in surrogate pair range.");
+			if (utf32 < 0x10000)
+				return new string((char)utf32, 1);
+			utf32 -= 0x10000;
+			return new string(new[] {(char) ((utf32 >> 10) + 0xD800),
+                                (char) (utf32 % 0x0400 + 0xDC00)});
 		}
 
 		private static void EatWhitespace(string json, ref int index)

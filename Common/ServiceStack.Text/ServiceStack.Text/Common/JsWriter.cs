@@ -192,20 +192,13 @@ namespace ServiceStack.Text.Common
 
 			if (typeof(T).IsGenericType())
 			{
-				var listInterfaces = typeof(T).FindInterfaces(
-					(t, critera) => t.IsGenericType
-						&& t.GetGenericTypeDefinition() == typeof(IList<>), null);
-
-				if (listInterfaces.Length > 0)
+				if (typeof(T).IsOrHasGenericInterfaceTypeOf(typeof(IList<>)))
 					return WriteLists<T, TSerializer>.Write;
 
-				var mapInterfaces = typeof(T).FindInterfaces(
-					(t, critera) => t.IsGenericType
-						&& t.GetGenericTypeDefinition() == typeof(IDictionary<,>), null);
-
-				if (mapInterfaces.Length > 0)
+				var mapInterface = typeof(T).GetTypeWithGenericTypeDefinitionOf(typeof(IDictionary<,>));
+				if (mapInterface != null)
 				{
-					var mapTypeArgs = mapInterfaces[0].GetGenericArguments();
+					var mapTypeArgs = mapInterface.GetGenericArguments();
 					var writeFn = WriteDictionary<TSerializer>.GetWriteGenericDictionary(
 						mapTypeArgs[0], mapTypeArgs[1]);
 
@@ -215,24 +208,20 @@ namespace ServiceStack.Text.Common
 					return (w, x) => writeFn(w, x, keyWriteFn, valueWriteFn);
 				}
 
-				var enumerableInterfaces = typeof(T).FindInterfaces(
-					(t, critera) => t.IsGenericType
-						&& t.GetGenericTypeDefinition() == typeof(IEnumerable<>), null);
-
-				if (enumerableInterfaces.Length > 0)
+				var enumerableInterface = typeof(T).GetTypeWithGenericTypeDefinitionOf(typeof(IEnumerable<>));
+				if (enumerableInterface != null)
 				{
-					var elementType = enumerableInterfaces[0].GetGenericArguments()[0];
+					var elementType = enumerableInterface.GetGenericArguments()[0];
 					var writeFn = WriteListsOfElements<TSerializer>.GetGenericWriteEnumerable(elementType);
 					return writeFn;
 				}
 			}
 
-			var isCollection = typeof(T).FindInterfaces((x, y) => x == typeof(ICollection), null).Length > 0;
+			var isCollection = typeof(T).IsOrHasGenericInterfaceTypeOf(typeof(ICollection));
 			if (isCollection)
 			{
 				var isDictionary = typeof(T).IsAssignableFrom(typeof(IDictionary))
-					|| typeof(T).FindInterfaces((x, y) => x == typeof(IDictionary), null).Length > 0;
-
+					|| typeof(T).HasInterface(typeof(IDictionary));
 				if (isDictionary)
 				{
 					return WriteDictionary<TSerializer>.WriteIDictionary;
@@ -242,7 +231,7 @@ namespace ServiceStack.Text.Common
 			}
 
 			var isEnumerable = typeof(T).IsAssignableFrom(typeof(IEnumerable))
-				|| typeof(T).FindInterfaces((x, y) => x == typeof(IEnumerable), null).Length > 0;
+				|| typeof(T).HasInterface(typeof(IEnumerable));
 
 			if (isEnumerable)
 			{

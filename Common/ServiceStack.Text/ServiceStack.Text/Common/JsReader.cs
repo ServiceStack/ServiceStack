@@ -14,7 +14,7 @@ namespace ServiceStack.Text.Common
 
 			if (type.IsEnum)
 			{
-				return x => Enum.Parse(type, x);
+				return x => Enum.Parse(type, x, false);
 			}
 
 			if (type == typeof(string))
@@ -28,7 +28,7 @@ namespace ServiceStack.Text.Common
 				return specialParseFn;
 
 			if (type.IsEnum)
-				return x => Enum.Parse(type, x);
+				return x => Enum.Parse(type, x, false);
 
 			if (type.IsArray)
 			{
@@ -41,16 +41,16 @@ namespace ServiceStack.Text.Common
 
 			if (type.IsGenericType())
 			{
-				if (type.IsOrHasInterfaceOf(typeof(IList<>)))
+				if (type.IsOrHasGenericInterfaceTypeOf(typeof(IList<>)))
 					return DeserializeList<T, TSerializer>.Parse;
 
-				if (type.IsOrHasInterfaceOf(typeof(IDictionary<,>)))
+				if (type.IsOrHasGenericInterfaceTypeOf(typeof(IDictionary<,>)))
 					return DeserializeDictionary<TSerializer>.GetParseMethod(type);
 
-				if (type.IsOrHasInterfaceOf(typeof(ICollection<>)))
+				if (type.IsOrHasGenericInterfaceTypeOf(typeof(ICollection<>)))
 					return DeserializeCollection<TSerializer>.GetParseMethod(type);
 
-				if (type.IsOrHasInterfaceOf(typeof(IEnumerable<>)))
+				if (type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)))
 					return DeserializeEnumerable<T, TSerializer>.Parse;
 			}
 

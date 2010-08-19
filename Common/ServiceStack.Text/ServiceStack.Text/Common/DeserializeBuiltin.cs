@@ -58,7 +58,10 @@ namespace ServiceStack.Text.Common
 				return value => TimeSpan.Parse(value);
 
 			if (typeof(T) == typeof(char) || typeof(T) == typeof(char?))
-				return value => char.Parse(value);
+			{
+				char cValue;
+				return value => char.TryParse(value, out cValue) ? cValue : '\0';
+			}
 			if (typeof(T) == typeof(ushort) || typeof(T) == typeof(ushort?))
 				return value => ushort.Parse(value);
 			if (typeof(T) == typeof(uint) || typeof(T) == typeof(uint?))

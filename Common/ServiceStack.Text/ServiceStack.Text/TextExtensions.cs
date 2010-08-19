@@ -79,7 +79,7 @@ namespace ServiceStack.Text
 
 		public static T DeserializeFromUtf8Bytes<T>(this byte[] serializedbytes)
 		{
-			var serializedObj = Encoding.UTF8.GetString(serializedbytes);
+			var serializedObj = Encoding.UTF8.GetString(serializedbytes, 0, serializedbytes.Length);
 			return TypeSerializer.DeserializeFromString<T>(serializedObj);
 		}
 	}

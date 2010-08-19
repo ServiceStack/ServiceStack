@@ -28,10 +28,10 @@ namespace ServiceStack.Text.Common
 				throw new ArgumentException(string.Format("Type {0} is not of type ICollection<>", type.FullName));
 
 			//optimized access for regularly used types
-			if (type.FindInterfaces((t, critera) => t == typeof(ICollection<string>), null).Length > 0)
+			if (type.HasInterface(typeof(ICollection<string>)))
 				return value => ParseStringCollection(value, type);
 
-			if (type.FindInterfaces((t, critera) => t == typeof(ICollection<int>), null).Length > 0)
+			if (type.HasInterface(typeof(ICollection<int>)))
 				return value => ParseIntCollection(value, type);
 
 			var elementType =  collectionInterface.GetGenericArguments()[0];

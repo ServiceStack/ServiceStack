@@ -449,10 +449,8 @@ namespace ServiceStack.Text.Common
 		{
 			var type = typeof(T);
 
-			var listInterfaces = type.FindInterfaces(
-				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>), null);
-
-			if (listInterfaces.Length == 0)
+			var listInterface = type.GetTypeWithGenericTypeDefinitionOf(typeof(IList<>));
+			if (listInterface == null)
 				throw new ArgumentException(string.Format("Type {0} is not of type IList<>", type.FullName));
 
 			//optimized access for regularly used types
@@ -472,10 +470,10 @@ namespace ServiceStack.Text.Common
 				return WriteListsOfElements<long, TSerializer>.WriteIListValueType;
 
 
-			var elementType = listInterfaces[0].GetGenericArguments()[0];
+			var elementType = listInterface.GetGenericArguments()[0];
 
 			var isGenericList = typeof(T).IsGenericType
-								&& typeof(T).GetGenericTypeDefinition() == typeof(List<>);
+				&& typeof(T).GetGenericTypeDefinition() == typeof(List<>);
 
 			if (elementType.IsValueType
 				&& JsWriter.ShouldUseDefaultToStringMethod(elementType))

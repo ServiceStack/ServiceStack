@@ -80,23 +80,61 @@ namespace ServiceStack.Text
 			return null;
 		}
 
-		public static bool IsOrHasInterfaceOf(this Type type, Type interfaceType)
+		public static bool IsOrHasGenericInterfaceTypeOf(this Type type, Type genericTypeDefinition)
 		{
+			return type.GetTypeWithGenericTypeDefinitionOf(genericTypeDefinition) != null;
+		}
+
+		public static Type GetTypeWithGenericTypeDefinitionOf(this Type type, Type genericTypeDefinition)
+		{
+			foreach (var t in type.GetInterfaces())
+			{
+				if (t.IsGenericType && t.GetGenericTypeDefinition() == genericTypeDefinition)
+				{
+					return t;
+				}
+			}
+
 			var genericType = type.GetGenericType();
-			var listInterfaces = type.FindInterfaces((t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == interfaceType, null);
-			return listInterfaces.Length > 0 || (genericType != null && genericType.GetGenericTypeDefinition() == interfaceType);
+			if (genericType != null && genericType.GetGenericTypeDefinition() == genericTypeDefinition)
+			{
+				return genericType;
+			}
+
+			return null;
 		}
 
 		public static Type GetTypeWithInterfaceOf(this Type type, Type interfaceType)
 		{
 			if (type == interfaceType) return interfaceType;
 
-			var interfaces = type.FindInterfaces((t, critera) => t == interfaceType, null);
-
-			if (interfaces.Length > 0)
-				return interfaces[0];
+			foreach (var t in type.GetInterfaces())
+			{
+				if (t == interfaceType)
+					return t;
+			}
 
 			return null;
+		}
+
+		public static bool HasInterface(this Type type, Type interfaceType)
+		{
+			foreach (var t in type.GetInterfaces())
+			{
+				if (t == interfaceType)
+					return true;
+			}
+			return false;
+		}
+
+		public static bool AllHaveInterfacesOfType(
+			this Type assignableFromType, params Type[] types)
+		{
+			foreach (var type in types)
+			{
+				if (assignableFromType.GetTypeWithInterfaceOf(type) == null) return false;
+			}
+			return true;
 		}
 
 		public static bool IsNumericType(this Type type)
@@ -130,11 +168,10 @@ namespace ServiceStack.Text
 
 		public static Type GetTypeWithGenericInterfaceOf(this Type type, Type genericInterfaceType)
 		{
-			var listInterfaces = type.FindInterfaces(
-				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == genericInterfaceType, null);
-
-			if (listInterfaces.Length > 0)
-				return listInterfaces[0];
+			foreach (var t in type.GetInterfaces())
+			{
+				if (t.IsGenericType && t.GetGenericTypeDefinition() == genericInterfaceType) return t;
+			}
 
 			var genericType = type.GetGenericType();
 			return genericType.GetGenericTypeDefinition() == genericInterfaceType
@@ -154,16 +191,6 @@ namespace ServiceStack.Text
 			}
 
 			return false;
-		}
-
-		public static bool AllHaveInterfacesOfType(
-			this Type assignableFromType, params Type[] types)
-		{
-			foreach (var type in types)
-			{
-				if (assignableFromType.GetTypeWithInterfaceOf(type) == null) return false;
-			}
-			return true;
 		}
 
 		public static Type[] GetGenericArgumentsIfBothHaveSameGenericDefinitionTypeAndArguments(

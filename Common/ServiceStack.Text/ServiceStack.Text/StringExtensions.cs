@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ServiceStack.Text
@@ -218,9 +219,14 @@ namespace ServiceStack.Text
 
 		public static string UrlFormat(this string url, params string[] urlComponents)
 		{
-			var encodedUrlComponents = new List<string>(urlComponents).ConvertAll(x => x.UrlEncode());
+			var encodedUrlComponents = new string[urlComponents.Length];
+			for (var i = 0; i < urlComponents.Length; i++)
+			{
+				var x = urlComponents[i];
+				encodedUrlComponents[i] = x.UrlEncode();
+			}
 
-			return string.Format(url, encodedUrlComponents.ToArray());
+			return string.Format(url, encodedUrlComponents);
 		}
 
 		public static string ToRot13(this string value)
@@ -256,7 +262,7 @@ namespace ServiceStack.Text
 		public static string FromUtf8Bytes(this byte[] bytes)
 		{
 			return bytes == null ? null
-				: Encoding.UTF8.GetString(bytes);
+				: Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 		}
 
 		public static byte[] ToUtf8Bytes(this string value)
