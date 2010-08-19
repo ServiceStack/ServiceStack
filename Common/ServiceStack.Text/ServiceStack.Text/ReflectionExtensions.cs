@@ -279,8 +279,12 @@ namespace ServiceStack.Text
 				return (EmptyCtorDelegate)dm.CreateDelegate(typeof(EmptyCtorDelegate));
 			}
 
+#if SILVERLIGHT
+			return () => Activator.CreateInstance(type);
+#else
 			//Anonymous types don't have empty constructors
 			return () => FormatterServices.GetUninitializedObject(type);
+#endif
 		}
 
 		public static object CreateInstance(Type type)
