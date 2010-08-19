@@ -31,7 +31,7 @@ namespace ServiceStack.Redis
 		{
 			return typeof(T) == typeof(byte[])
 				? (T)(object)base.Get(key)
-				: TypeSerializer.DeserializeFromString<T>(GetValue(key));
+				: JsonSerializer.DeserializeFromString<T>(GetValue(key));
 		}
 
 		public long Increment(string key, uint amount)
@@ -52,7 +52,7 @@ namespace ServiceStack.Redis
 				return base.SetNX(key, bytesValue) == Success;
 			}
 
-			var valueString = TypeSerializer.SerializeToString(value);
+			var valueString = JsonSerializer.SerializeToString(value);
 			return SetEntryIfNotExists(key, valueString);
 		}
 
@@ -65,7 +65,7 @@ namespace ServiceStack.Redis
 				return true;
 			}
 
-			var valueString = TypeSerializer.SerializeToString(value);
+			var valueString = JsonSerializer.SerializeToString(value);
 			SetEntry(key, valueString);
 			return true;
 		}
@@ -82,7 +82,7 @@ namespace ServiceStack.Redis
 				return true;
 			}
 
-			SetEntry(key, TypeSerializer.SerializeToString(value));
+			SetEntry(key, JsonSerializer.SerializeToString(value));
 			return true;
 		}
 
@@ -105,7 +105,7 @@ namespace ServiceStack.Redis
 				return true;
 			}
 
-			var valueString = TypeSerializer.SerializeToString(value);
+			var valueString = JsonSerializer.SerializeToString(value);
 			SetEntry(key, valueString, expiresIn);
 			return true;
 		}
@@ -172,7 +172,7 @@ namespace ServiceStack.Redis
 				else
 				{
 					var keyValueString = Encoding.UTF8.GetString(keyValue);
-					results[key] = TypeSerializer.DeserializeFromString<T>(keyValueString);
+					results[key] = JsonSerializer.DeserializeFromString<T>(keyValueString);
 				}
 			}
 			return results;

@@ -152,6 +152,6 @@ namespace ServiceStack.Redis.Tests
 			Assert.That(item1, Is.EqualTo("listitem1"));
 			Assert.That(item4, Is.Null);
 		}
-	
+
 	}
 }

@@ -64,23 +64,7 @@ namespace ServiceStack.Text
 
 		public static string SerializeToString<T>(this T value)
 		{
-			return TypeSerializer.SerializeToString(value);
-		}
-
-		public static byte[] SerializeToUtf8Bytes<T>(this T value)
-		{
-			return Encoding.UTF8.GetBytes(TypeSerializer.SerializeToString(value));
-		}
-
-		public static T DeserializeFromString<T>(this string serializedObj)
-		{
-			return TypeSerializer.DeserializeFromString<T>(serializedObj);
-		}
-
-		public static T DeserializeFromUtf8Bytes<T>(this byte[] serializedbytes)
-		{
-			var serializedObj = Encoding.UTF8.GetString(serializedbytes, 0, serializedbytes.Length);
-			return TypeSerializer.DeserializeFromString<T>(serializedObj);
+			return JsonSerializer.SerializeToString(value);
 		}
 	}
 }

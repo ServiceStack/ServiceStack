@@ -50,12 +50,17 @@ namespace ServiceStack.Redis.Generic
 			}
 		}
 
+		public static T DeserializeFromString(string serializedObj)
+		{
+			return JsonSerializer.DeserializeFromString<T>(serializedObj);
+		}
+
 		private static IDictionary<T, double> CreateGenericMap(IDictionary<string, double> map)
 		{
 			var genericMap = new OrderedDictionary<T, double>();
 			foreach (var entry in map)
 			{
-				genericMap[entry.Key.DeserializeFromString<T>()] = entry.Value;
+				genericMap[DeserializeFromString(entry.Key)] = entry.Value;
 			}
 			return genericMap;
 		}
@@ -77,14 +82,14 @@ namespace ServiceStack.Redis.Generic
 
 		public T PopItemWithLowestScoreFromSortedSet(IRedisSortedSet<T> fromSet)
 		{
-			return client.PopItemWithLowestScoreFromSortedSet(fromSet.Id)
-				.DeserializeFromString<T>();
+			return DeserializeFromString(
+				client.PopItemWithLowestScoreFromSortedSet(fromSet.Id));
 		}
 
 		public T PopItemWithHighestScoreFromSortedSet(IRedisSortedSet<T> fromSet)
 		{
-			return client.PopItemWithHighestScoreFromSortedSet(fromSet.Id)
-				.DeserializeFromString<T>();
+			return DeserializeFromString(
+				client.PopItemWithHighestScoreFromSortedSet(fromSet.Id));
 		}
 
 		public bool SortedSetContainsItem(IRedisSortedSet<T> set, T value)

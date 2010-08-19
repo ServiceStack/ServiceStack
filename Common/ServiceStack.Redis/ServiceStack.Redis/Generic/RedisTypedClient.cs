@@ -28,7 +28,7 @@ namespace ServiceStack.Redis.Generic
 	internal partial class RedisTypedClient<T>
 		: IRedisTypedClient<T>
 	{
-		readonly TypeSerializer<T> serializer = new TypeSerializer<T>();
+		readonly ITypeSerializer<T> serializer = new JsonSerializer<T>();
 		private readonly RedisClient client;
 
 		internal IRedisNativeClient NativeClient

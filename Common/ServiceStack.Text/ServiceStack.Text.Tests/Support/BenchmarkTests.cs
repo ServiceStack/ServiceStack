@@ -172,6 +172,34 @@ namespace ServiceStack.Text.Tests.Support
 			Console.WriteLine(matchingTypesCount);
 		}
 
+		[Test]
+		public void Test_for_numeric_type()
+		{
+			var value1 = Guid.NewGuid();
+			var value2 = "1.2345";
+			var results = 0;
+
+			CompareMultipleRuns(
+				"With Type Checking",
+				() =>
+				{
+					if (value1.GetType().IsNumericType())
+					{
+						results++;
+					}
+				},
+				"With Double Parsing",
+				() =>
+				{
+					int d;
+					if (int.TryParse(value1.ToString(), out d))
+					{
+						results++;
+					}
+				});
+
+			Console.WriteLine(results);
+		}
 
 	}
 }

@@ -194,11 +194,6 @@ namespace ServiceStack.Redis
 			return new RedisTypedClient<T>(this);
 		}
 
-		public IRedisTransaction CreateTransaction()
-		{
-			return new RedisTransaction(this);
-		}
-
 		public IDisposable AcquireLock(string key)
 		{
 			return new RedisLock(this, key, null);
@@ -207,6 +202,11 @@ namespace ServiceStack.Redis
 		public IDisposable AcquireLock(string key, TimeSpan timeOut)
 		{
 			return new RedisLock(this, key, timeOut);
+		}
+
+		public IRedisTransaction CreateTransaction()
+		{
+			return new RedisTransaction(this);
 		}
 
 		public List<string> SearchKeys(string pattern)
@@ -253,7 +253,7 @@ namespace ServiceStack.Redis
 				if (resultBytes == null) continue;
 
 				var resultString = resultBytes.FromUtf8Bytes();
-				var result = TypeSerializer.DeserializeFromString<T>(resultString);
+				var result = JsonSerializer.DeserializeFromString<T>(resultString);
 				results.Add(result);
 			}
 
@@ -370,7 +370,7 @@ namespace ServiceStack.Redis
 		{
 			var key = IdUtils.CreateUrn<T>(id);
 			var valueString = this.GetValue(key);
-			var value = TypeSerializer.DeserializeFromString<T>(valueString);
+			var value = JsonSerializer.DeserializeFromString<T>(valueString);
 			return value;
 		}
 
@@ -397,7 +397,7 @@ namespace ServiceStack.Redis
 			where T : class, new()
 		{
 			var urnKey = entity.CreateUrn();
-			var valueString = TypeSerializer.SerializeToString(entity);
+			var valueString = JsonSerializer.SerializeToString(entity);
 
 			this.SetEntry(urnKey, valueString);
 			RegisterTypeId(entity);
@@ -419,11 +419,16 @@ namespace ServiceStack.Redis
 			for (var i = 0; i < len; i++)
 			{
 				keys[i] = entitiesList[i].CreateUrn().ToUtf8Bytes();
-				values[i] = entitiesList[i].SerializeToUtf8Bytes();
+				values[i] = SerializeToUtf8Bytes(entitiesList[i]);
 			}
 
 			base.MSet(keys, values);
 			RegisterTypeIds(entitiesList);
+		}
+
+		public static byte[] SerializeToUtf8Bytes<T>(T value)
+		{
+			return Encoding.UTF8.GetBytes(JsonSerializer.SerializeToString(value));
 		}
 
 		public void Delete<T>(T entity)

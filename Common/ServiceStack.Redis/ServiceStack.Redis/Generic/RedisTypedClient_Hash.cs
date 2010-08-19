@@ -49,8 +49,8 @@ namespace ServiceStack.Redis.Generic
 
 		public T GetValueFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key)
 		{
-			return client.GetValueFromHash(hash.Id, key.SerializeToString())
-				.DeserializeFromString<T>();
+			return DeserializeFromString(
+				client.GetValueFromHash(hash.Id, key.SerializeToString()));
 		}
 
 		public bool RemoveEntryFromHash<TKey>(IRedisHash<TKey, T> hash, TKey key)
@@ -75,8 +75,18 @@ namespace ServiceStack.Redis.Generic
 
 		public Dictionary<TKey, T> GetAllEntriesFromHash<TKey>(IRedisHash<TKey, T> hash)
 		{
-			return client.GetAllEntriesFromHash(hash.Id).ConvertEachTo<TKey, T>();
+			return ConvertEachTo<TKey, T>(client.GetAllEntriesFromHash(hash.Id));
 		}
 
+		public static Dictionary<TKey, TValue> ConvertEachTo<TKey, TValue>(IDictionary<string, string> map)
+		{
+			var to = new Dictionary<TKey, TValue>();
+			foreach (var item in map)
+			{
+				to[JsonSerializer.DeserializeFromString<TKey>(item.Key)] 
+					= JsonSerializer.DeserializeFromString<TValue>(item.Value);
+			}
+			return to;
+		}
 	}
 }

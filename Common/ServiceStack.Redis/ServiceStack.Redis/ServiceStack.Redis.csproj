@@ -137,6 +137,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Support\OrderedDictionary.cs" />
+    <Compile Include="UtilExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ServiceStack.Common\ServiceStack.Client\ServiceStack.Client.csproj">

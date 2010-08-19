@@ -256,7 +256,7 @@ namespace ServiceStack.Redis.Generic
 		{
 			BeginQueuedCommand(new QueuedRedisOperation
 			{
-				OnSuccessTypeCallback = x => onSuccessCallback(TypeSerializer.DeserializeFromString<T>(x)),
+				OnSuccessTypeCallback = x => onSuccessCallback(JsonSerializer.DeserializeFromString<T>(x)),
 				OnErrorCallback = onErrorCallback
 			});
 			command(redisClient);
@@ -318,7 +318,7 @@ namespace ServiceStack.Redis.Generic
 		{
 			BeginQueuedCommand(new QueuedRedisOperation
 			{
-				OnSuccessMultiTypeCallback = x => onSuccessCallback(x.ConvertAll(y => TypeSerializer.DeserializeFromString<T>(y))),
+				OnSuccessMultiTypeCallback = x => onSuccessCallback(x.ConvertAll(y => JsonSerializer.DeserializeFromString<T>(y))),
 				OnErrorCallback = onErrorCallback
 			});
 			command(redisClient);
