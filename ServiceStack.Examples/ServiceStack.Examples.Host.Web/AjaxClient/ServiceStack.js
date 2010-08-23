@@ -287,9 +287,9 @@ A.toTable = function(array) {
             sb.push("</tr></thead><tbody>");
         }
         sb.push("<tr>");
-        for (var j = 0, len = cols.length; j < len; j++) {
+        for (var j = 0, colsLen = cols.length; j < colsLen; j++) {
             var k = cols[j];
-            sb.push("<th>" + obj[k] + "</th>");
+            sb.push("<td>" + obj[k] + "</td>");
         }
         sb.push("</tr>");
     }

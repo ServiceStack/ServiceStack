@@ -67,8 +67,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AjaxClient\benchmarks.htm" />
+    <Content Include="AjaxClient\css\autocomplete.css" />
+    <Content Include="AjaxClient\css\button.css" />
     <Content Include="AjaxClient\css\common.css" />
+    <Content Include="AjaxClient\css\custombutton.css" />
     <Content Include="AjaxClient\css\default.css" />
+    <Content Include="AjaxClient\css\flatbutton.css" />
+    <Content Include="AjaxClient\css\linkbutton.css" />
     <Content Include="AjaxClient\css\tab.css" />
     <Content Include="AjaxClient\css\tabbar.css" />
     <Content Include="AjaxClient\css\toolbar.css" />
@@ -126,12 +131,12 @@
     <Content Include="AjaxClient\img\redis-small-white.png" />
     <Content Include="AjaxClient\img\redis-small.png" />
     <Content Include="AjaxClient\img\servicestack-logo-small.png" />
-    <Content Include="AjaxClient\js\AjaxStack.snippets.js" />
     <Content Include="AjaxClient\js\jLinq-2.2.1.js" />
     <Content Include="AjaxClient\js\jquery-1.4.2.min.js" />
     <Content Include="AjaxClient\js\jquery.json-2.2.js" />
     <Content Include="AjaxClient\js\redisadmin\App.js" />
     <Content Include="AjaxClient\js\RedisClient.js" />
+    <Content Include="AjaxClient\js\ServiceStack.js" />
     <Content Include="AjaxClient\js\wcf-ostynscormtime.js" />
     <Content Include="AjaxClient\tests\default.htm" />
     <Content Include="AjaxClient\tests\src\CommonUtils.Tests.js" />

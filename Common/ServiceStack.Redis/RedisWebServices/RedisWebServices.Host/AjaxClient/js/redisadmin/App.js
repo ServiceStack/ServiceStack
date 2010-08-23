@@ -8,6 +8,8 @@
 
 goog.provide("redisadmin.App");
 
+goog.require('goog.json');
+
 /**
  * @constructor 
  */
@@ -19,13 +21,21 @@ redisadmin.App = function()
     this.log = goog.debug.Logger.getLogger('redisadmin.App');
     this.log.setLevel(goog.debug.Logger.Level.FINE);
     this.log.info('initializing App()');
+    this.tree = null;
+    this.history = null;
+    this.currentPath = null;
+
+    this.editor = new redisadmin.EditorViewController("tab_content", this);
+    this.admin = new redisadmin.AdminViewController("tab_content", this);
+    this.controllers = [this.editor, this.admin];
+    this.deferredCalls = [];
 
     this.redis = new RedisClient();
     this.keyTypes = {};
 
     RedisClient.errorFn = function(e) {
         $this.log.severe("RedisClient.errorFn: ");
-        $this.log.severe(JSV.serialize(e));
+        $this.log.severe(goog.json.serialize(e));
     };
 
     redisadmin.App.initTabs();
@@ -34,14 +44,157 @@ redisadmin.App = function()
 goog.inherits(redisadmin.App, goog.events.EventTarget);
 goog.addSingletonGetter(redisadmin.App);
 
-redisadmin.App.prototype.loadPath = function(path)
-{
-    this.log.info('Loading: ' + path);
+redisadmin.App.NodeType = {
+  UNLOADED: 'loading',
+  KEY_GROUP: 'keyGroup',
+  KEY: 'key'
 };
 
-redisadmin.App.prototype.setNavPath_ = function(path)
+
+redisadmin.App.prototype.setHistory = function(history, initPath)
 {
+    this.log.info('setHistory: ' + history + ": " + initPath);
+    this.history = history;
+
+    if (initPath)
+    {
+        app.loadPath(initPath);
+    }
 };
+
+redisadmin.App.prototype.loadPath = function(path)
+{
+    if (path == this.currentPath)
+    {
+        //this.log.fine('loadPath: ignore current path: ' + path);
+        return;
+    }
+
+    this.log.info('loadPath: ' + path + ", from: " + this.currentPath);
+
+    var $this = this;
+    var navRoot = Path.getFirstArg(path);
+
+    if (navRoot == "key")
+    {
+        var keyName = Path.getFirstValue(path);
+
+        $this.addDeferredCall_(
+            function() {
+                return $this.tree != null && $this.tree.getChildren().length > 0;
+            },
+            function(){
+                $this.openKeyNode_(keyName, $this.tree);
+                $this.setNavPath(Path.combine("key", keyName));
+            });
+    }
+};
+
+redisadmin.App.prototype.setNavPath = function(path)
+{
+    var $this = this;
+    if (this.currentPath == path) return;
+    
+    this.log.info('setNavPath: from: ' + this.currentPath + " to" + path);
+    this.currentPath = path;
+    //Would ideally like to set without triggering but nothing lets me do this
+    $this.history.setToken(path);
+};
+
+redisadmin.App.prototype.addDeferredCall_ = function(waitUntilFn, onSuccessFn)
+{
+    var $this = this;
+
+    if (waitUntilFn())
+    {
+        onSuccessFn();
+        return;
+    }
+
+    var deferredCall = new goog.async.ConditionalDelay(waitUntilFn);
+    deferredCall.onSuccess = onSuccessFn;
+    deferredCall.onFailure = function() {
+        $this.log.severe('Failure: Time limit exceeded.');
+    }
+    deferredCall.start(100, 5000);
+
+    for (var i=0, len = this.deferredCalls.length; i<len; i++)
+    {
+        var previousCall = this.deferredCalls[i];
+        if (previousCall.isDone())
+        {
+            previousCall.dispose();
+            this.deferredCalls[i] = deferredCall;
+        }
+    }
+}
+
+redisadmin.App.prototype.openKeyNode_ = function(keyName, parentNode)
+{
+    var $this = this;
+
+    if (!keyName || !parentNode) return;
+
+    //Navigate backwards because sub keys navigate down the wrong path, i.e. employee & employeeterritory
+    for (var children = parentNode.getChildren(), i=children.length-1; i>=0; i--)
+    {
+        var childNode = children[i];
+        var nodeLabel = this.getNodeLabel_(childNode);
+
+        if (goog.string.startsWith(keyName, nodeLabel))
+        {
+            if (this.isKeyGroup_(childNode))
+            {
+                if (nodeLabel == keyName)
+                {
+                    this.showKeyGroup(childNode);
+                }
+                else
+                {
+                    childNode.expand();
+
+                    this.addDeferredCall_(
+                        function()
+                        {
+                            return childNode.nodeType != redisadmin.App.NodeType.UNLOADED;
+                        },
+                        function()
+                        {
+                            $this.openKeyNode_(keyName, childNode);
+                        });
+                }
+            }
+            else
+            {
+                childNode.select();
+                this.showKey(childNode.getHtml());
+            }
+            break;
+        }
+    }
+};
+
+redisadmin.App.prototype.showKeyGroup = function(parentNode)
+{
+    var $this = this;
+
+    var nodeLabel = $this.getNodeLabel_(parentNode);
+
+    var onSuccess = function() {        
+        $this.editor.showKeyGroup(nodeLabel, $this.getChildKeys_(parentNode));
+        parentNode.select();
+    };
+
+    if (parentNode.nodeType == redisadmin.App.NodeType.UNLOADED)
+    {
+        this.loadChildren_(parentNode, onSuccess);
+    }
+    else
+    {
+        onSuccess();
+    }
+};
+
 redisadmin.App.prototype.init = function(path)
 {
 };
@@ -54,10 +207,9 @@ redisadmin.App.initTabs = function()
     goog.events.listen(tabBar, goog.ui.Component.EventType.SELECT,
         function(e) {
             var tabSelected = e.target;
-            var contentElement = goog.dom.getElement(tabBar.getId() +
-                    '_content');
+            var contentElement = goog.dom.getElement(tabBar.getId() + '_content');
             goog.dom.setTextContent(contentElement,
-                    'You selected the "' + tabSelected.getCaption() + '" tab.');
+                'You selected the "' + tabSelected.getCaption() + '" tab.');
         });
 };
 
@@ -113,30 +265,29 @@ redisadmin.App.prototype.searchInMainNav = function(query)
     this.redis.searchKeysGroup(query, function(keysWithChildCounts) {
         $this.fetchTypesForValidKeys(keysWithChildCounts);
 
-        var tree = new goog.ui.tree.TreeControl('root');
+        if ($this.tree)
+        {
+            $this.tree.dispose();
+            $this.tree = null;
+        }
+        $this.tree = new goog.ui.tree.TreeControl('root');
         var childCount = O.keys(keysWithChildCounts).length;
-        tree.setHtml(query + "<em>(" + O.keys(keysWithChildCounts).length + ")</em>");
-        tree.setShowExpandIcons(true);
-        $this.addChildNodes_(tree, keysWithChildCounts);
+        $this.tree.setHtml(query + "<em>(" + O.keys(keysWithChildCounts).length + ")</em>");
+        $this.tree.setShowExpandIcons(true);
+        $this.addChildNodes_($this.tree, keysWithChildCounts);
 
         goog.dom.getElement("mainNav").innerHTML = "<div id='tree'></div>";
-        tree.render(goog.dom.getElement("tree"));
+        $this.tree.render(goog.dom.getElement("tree"));
         
-        goog.events.listen(tree, goog.events.EventType.CHANGE, function(e)
+        goog.events.listen($this.tree, goog.events.EventType.CHANGE, function(e)
         {
             var selectedItem = e.currentTarget.getTree().getSelectedItem();
-            if ($this.isKeyGroup_(selectedItem))
-            {
-                $this.showKeyGroup(selectedItem);
-            }
-            else
-            {
-                $this.showKey(selectedItem.getHtml());
-            }
+            var nodeLabel = $this.getNodeLabel_(selectedItem);
+            $this.loadPath(Path.combine("key", nodeLabel));
         });
 
         var fetchKeyTypes = [];
-        tree.forEachChild(function(child, i){
+        $this.tree.forEachChild(function(child, i){
            if (!$this.isKeyGroup_(child))
            {
                var key = $this.getNodeLabel_(child);
@@ -144,44 +295,52 @@ redisadmin.App.prototype.searchInMainNav = function(query)
            }
         });
         $this.fetchKeyTypes(fetchKeyTypes, function(){
-           $this.updateNodeTypes_(tree); 
+           $this.updateNodeTypes_($this.tree);
         });
 
     });
 };
 
+redisadmin.App.prototype.getChildKeys_ = function(parentNode)
+{
+    var childKeys = [];
+    for (var i=0, children = parentNode.getChildren(); i<children.length; i++)
+    {
+        var childNode = children[i];
+        if (!this.isKeyGroup_(childNode))
+        {
+            var key = this.getNodeLabel_(childNode);
+            childKeys.push(key);
+        }
+    }
+    return childKeys;
+}
+
 redisadmin.App.prototype.addChildNodes_ = function(parentNode, keysWithChildCounts)
 {
     var $this = this;
-    var tree = parentNode.getTree();
 
     for (var key in keysWithChildCounts)
     {
         var childCount = keysWithChildCounts[key];
-        var childNode = tree.createNode();
+        var childNode = parentNode.getTree().createNode();
 
         var htmlCount = childCount > 1 ? "<em>(" + childCount + ")</em>" : "";
         childNode.setHtml(key + htmlCount);
 
-        if (childCount > 1) {
+        var hasChildrenToLoad = childCount > 1;
+        childNode.nodeType = hasChildrenToLoad
+                ? redisadmin.App.NodeType.UNLOADED
+                : redisadmin.App.NodeType.KEY_GROUP;
+
+        if (hasChildrenToLoad) {
             var loadingNode = parentNode.getTree().createNode();
             loadingNode.setHtml("<span class='loading'>loading...</span>");
 
             goog.events.listenOnce(childNode,
                 goog.ui.tree.BaseNode.EventType.BEFORE_EXPAND,
                 function (e) {
-                    var parentNode = e.currentTarget;
-
-                    var keyGroup = $this.getNodeLabel_(e.currentTarget);
-
-                    $this.redis.searchKeysGroup(keyGroup + ":*", function(keysWithChildCounts) {
-                        $this.fetchTypesForValidKeys(keysWithChildCounts, function(){
-                            $this.updateNodeTypes_(parentNode);
-                        });
-
-                        parentNode.removeChildAt(0);
-                        $this.addChildNodes_(parentNode, keysWithChildCounts);
-                    });
+                    $this.loadChildren_(e.currentTarget);
                 }
             );
 
@@ -192,18 +351,44 @@ redisadmin.App.prototype.addChildNodes_ = function(parentNode, keysWithChildCoun
     }
 }
 
+redisadmin.App.prototype.loadChildren_ = function(parentNode, callbackFn)
+{
+    var $this = this;
+
+    if (parentNode.nodeType != redisadmin.App.NodeType.UNLOADED)
+    {
+        return;
+    }
+
+    var keyGroup = $this.getNodeLabel_(parentNode);
+    $this.redis.searchKeysGroup(keyGroup + ":*", function(keysWithChildCounts) {
+        $this.fetchTypesForValidKeys(keysWithChildCounts, function() {
+            $this.updateNodeTypes_(parentNode);
+        });
+
+        $this.addChildNodes_(parentNode, keysWithChildCounts);
+        parentNode.removeChildAt(0); //remove loading node
+        parentNode.nodeType = redisadmin.App.NodeType.KEY_GROUP;
+
+        if (callbackFn) callbackFn();
+    });
+}
+
 redisadmin.App.prototype.updateNodeTypes_ = function(parentNode, keyTypes)
 {
     var $this = this;
     keyTypes = keyTypes || this.keyTypes;
-    parentNode.forEachChild(function(child, i){
-       var label = $this.getNodeLabel_(child);
-       var keyType = keyTypes[label];
-       //$this.log.info($this.getNodeLabel_(parentNode) + "> navTo: " + label + " (" + keyType + ")");
-       if (keyType)
-       {
-           child.setIconClass("goog-tree-icon goog-tree-file-icon tnode-" + keyType);
-       }
+    parentNode.forEachChild(function(child, i)
+    {
+        var label = $this.getNodeLabel_(child);
+        var keyType = keyTypes[label];
+
+        //$this.log.info($this.getNodeLabel_(parentNode) + "> navTo: " + label + " (" + keyType + ")");
+        if (keyType)
+        {
+            child.setIconClass("goog-tree-icon goog-tree-file-icon tnode-" + keyType);
+            child.nodeType = redisadmin.App.NodeType.KEY;
+        }
     });
 };
 
@@ -211,6 +396,7 @@ redisadmin.App.prototype.isKeyGroup_ = function(node)
 {
     return node.getHtml().indexOf("<em>") != -1;
 };
+
 redisadmin.App.prototype.getNodeLabel_ = function(node)
 {
     var nodeLabel = node.getHtml();
@@ -292,200 +478,40 @@ redisadmin.App.prototype.showKey = function(key, inNewTab)
         {
             $this.redis.getValue(key, function(value)
             {
-                $this.showKeyDetails(key, value);
+                $this.editor.showKeyDetails(key, value);
             });
         }
         else if (keyType == "List")
         {
             $this.redis.getAllItemsFromList(key, function(items)
             {
-                $this.showKeyDetails(key, S.toString(items));
+                $this.editor.showKeyDetails(key, S.toString(items));
             });
         }
         else if (keyType == "Set")
         {
             $this.redis.getAllItemsFromSet(key, function(items)
             {
-                $this.showKeyDetails(key, S.toString(items));
+                $this.editor.showKeyDetails(key, S.toString(items));
             });
         }
         else if (keyType == "SortedSet")
         {
             $this.redis.getAllItemsFromSortedSet(key, function(itemsWithScores)
             {
-                $this.showKeyDetails(key, S.toString(itemsWithScores));
+                $this.editor.showKeyDetails(key, S.toString(itemsWithScores));
             });
         }
         else if (keyType == "Hash")
         {
             $this.redis.getAllEntriesFromHash(key, function(kvps)
             {
-                $this.showKeyDetails(key, S.toString(kvps));
+                $this.editor.showKeyDetails(key, S.toString(kvps));
             });
         }
         else
         {
             $this.log.severe("Unknown KeyType: " + keyType);
         }
-    });
-};
-
-redisadmin.App.prototype.showKeyDetails = function(key, textValue)
-{
-    var sb = [];
-    sb.push("<h2 class='key'>" + key + "</h2>");
-
-
-    sb.push("<div id='keydetails-body'>");
-
-    sb.push("<div id='toolbarViewKey' class='key-options goog-toolbar'>");
-    sb.push("<div id='lnk-editkey' class='goog-toolbar-button nav-link'><span id='icon-edit' class='goog-inline-block'></span>edit</div>");
-    sb.push("<div class='goog-toolbar-separator nav-separator'></div>");
-    sb.push("</div>");
-
-    sb.push("<div id='toolbarEditKey' class='goog-toolbar' style='display:none'>");
-    sb.push("<div id='lnk-back' class='goog-toolbar-button nav-link'>« back</div>");
-    sb.push("<hr/>");
-    sb.push("<div class='goog-toolbar-separator nav-separator'></div>");
-    sb.push("<div id='btnDeleteKey' class='goog-toolbar-button'><span id='icon-delete' class='goog-inline-block'></span>Delete</div>");
-    sb.push("<hr/>");
-    sb.push("<div id='btnSaveKey' class='goog-toolbar-button'><span id='icon-save' class='goog-inline-block'></span>Save</div>");
-    sb.push("</div>");
-
-    try
-    {
-        var obj = JSV.parse(textValue);
-
-        sb.push("<div id='key-view'>");
-        sb.push("<dl>");
-        for (var k in obj)
-        {
-            sb.push("<dt>" + k + "</dt>"
-                  + "<dd>" + obj[k] + "</dd>");
-        }
-        sb.push("</dl>");
-        sb.push("</div>");
-    }
-    catch (e) {
-        $this.log.severe("Error parsing key: " + key + ", Error: " + e);
-    }
-
-    sb.push("<div id='key-edit' style='display:none'>");
-    sb.push("<textarea id='txtEntryValue'>" + textValue + "</textarea>");
-    sb.push("</div>");
-
-    sb.push("<div>");
-
-    goog.dom.getElement('tab_content').innerHTML = sb.join('');
-
-    var toolbarViewKey = new goog.ui.Toolbar();
-    toolbarViewKey.decorate(goog.dom.getElement('toolbarViewKey'));
-
-    var toolbarEditKey = new goog.ui.Toolbar();
-    toolbarEditKey.decorate(goog.dom.getElement('toolbarEditKey'));
-
-    var lnkEdit = goog.dom.getElement('lnk-editkey'),
-        lnkBack = goog.dom.getElement('lnk-back'),
-        btnDeleteKey = goog.dom.getElement('btnDeleteKey'),
-        btnSaveKey = goog.dom.getElement('btnSaveKey'),
-        txtEntryValue = goog.dom.getElement('txtEntryValue');
-
-    var editMode = false;
-
-    var toggleEditModeFn = function(e) {
-        editMode = !editMode;
-        goog.style.showElement(goog.dom.getElement('key-view'), !editMode);
-        goog.style.showElement(goog.dom.getElement('key-edit'), editMode);
-        goog.style.showElement(goog.dom.getElement('toolbarViewKey'), !editMode);
-        goog.style.showElement(goog.dom.getElement('toolbarEditKey'), editMode);
-    };
-    goog.events.listen(lnkEdit, goog.events.EventType.CLICK, toggleEditModeFn);
-    goog.events.listen(lnkBack, goog.events.EventType.CLICK, toggleEditModeFn);
-
-    goog.events.listen(btnDeleteKey, goog.events.EventType.CLICK,
-    function(e) {
-        alert('delete');
-    });
-
-    goog.events.listen(btnSaveKey, goog.events.EventType.CLICK,
-    function(e) {
-        alert('updating: ' + goog.dom.getTextContent(txtEntryValue));
-    });
-}
-
-redisadmin.App.prototype.showKeyGroup = function(parentNode, inNewTab)
-{
-    var $this = this;
-
-    var childKeys = [], parentLabel = this.getNodeLabel_(parentNode);
-    for (var i=0, children = parentNode.getChildren(); i<children.length; i++)
-    {
-        var childNode = children[i];
-        if (!this.isKeyGroup_(childNode))
-        {
-            var key = this.getNodeLabel_(childNode);
-            childKeys.push(key);
-        }
-    }
-    if (childKeys.length == 0)
-    {
-        this.log.warning("no keys in keyGroup: " + parentLabel);
-        return;
-    }
-    this.redis.getValues(childKeys, function(values){
-        var rows = [];
-        var sbJsv = [];
-        for (var i=0; i<childKeys.length; i++)
-        {
-            var jsvText = values[i];
-            sbJsv.push(sbJsv.length == 0 ? '[' : ',');
-            sbJsv.push(jsvText);
-
-            var row = {Key:childKeys[i]};
-            var obj = JSV.parse(jsvText);
-            for (var k in obj)
-            {
-                row[k] = obj[k];
-            }
-            rows.push(row);
-        }
-        sbJsv.push(']');
-
-        //$this.benchmarkTextFormats(sbJsv.join(''), goog.json.serialize(rows));
-
-        var html = "<div class='key-group'>"
-                + "<input id='txtKeyGroupFilter' type='text' value='" + parentLabel + "' />"
-                + '<div id="btnKeyGroupFilter" class="goog-custom-button goog-inline-block">Filter</div>'
-                + "</div>";
-
-        html += "<div id='keys-table'>" + jLinq.from(rows).toTable() + "</div>";
-
-        goog.dom.getElement('tab_content').innerHTML = html;
-
-        var txtKeyGroupFilter = goog.dom.getElement('txtKeyGroupFilter');
-        var autoComplete = new goog.ui.AutoComplete.Basic(childKeys, txtKeyGroupFilter, false);
-        autoComplete.setAllowFreeSelect(true);
-        autoComplete.setAutoHilite(false);
-
-        var filterFn = function(e)
-        {
-            var filteredRows = [], filterText = txtKeyGroupFilter.value;
-            for (var i=0; i<rows.length; i++)
-            {
-                var row = rows[i];
-                if (row.Key.indexOf(filterText) != -1)
-                {
-                    filteredRows.push(row);
-                }
-            }
-            goog.dom.getElement('keys-table').innerHTML = jLinq.from(filteredRows).toTable();
-        };
-
-        goog.events.listen(autoComplete, goog.ui.AutoComplete.EventType.UPDATE, filterFn);
-
-        var btnKeyGroupFilter = goog.dom.getElement("btnKeyGroupFilter");
-        var button = goog.ui.decorate(btnKeyGroupFilter);
-        button.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
-        goog.events.listen(btnKeyGroupFilter, goog.events.EventType.CLICK, filterFn);
     });
 };

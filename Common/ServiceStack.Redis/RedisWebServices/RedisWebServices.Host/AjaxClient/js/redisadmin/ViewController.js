@@ -17,6 +17,5 @@ redisadmin.ViewController = function(rootEl, app)
 goog.inherits(redisadmin.ViewController, goog.ui.Component);
 
 redisadmin.ViewController.prototype.loadPath = function(path)
-{
-    
+{    
 };

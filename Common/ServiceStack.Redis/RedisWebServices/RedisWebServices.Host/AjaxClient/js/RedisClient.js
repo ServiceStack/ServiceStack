@@ -1,6 +1,6 @@
 function RedisClient(baseUri) {
    var baseUri = baseUri || 'http://' + document.location.hostname + '/RedisWebServices.Host/Public/';
-   this.gateway = new JsvServiceClient(baseUri);
+   this.gateway = new JsonServiceClient(baseUri);
 }
 RedisClient.errorFn = function() {
 };

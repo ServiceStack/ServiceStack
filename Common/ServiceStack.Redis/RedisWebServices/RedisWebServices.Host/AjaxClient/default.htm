@@ -22,23 +22,23 @@
 
 
 <script src="js/closure-library/closure/goog/base.js"></script>
-<script type="text/javascript" src="js/jLinq-2.2.1.js"></script>
 <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
 
-<script type="text/javascript" src="js/wcf-ostynscormtime.js"></script>
-<script type="text/javascript" src="js/AjaxStack.snippets.js"></script>
+<script type="text/javascript" src="js/ServiceStack.js"></script>
 <script type="text/javascript" src="js/RedisClient.js"></script>
-<script type="text/javascript" src="js/JSV.js"></script>
 
 <script type="text/javascript">
     goog.require('goog.debug.DivConsole');
     goog.require('goog.debug.FancyWindow');
     goog.require('goog.debug.Trace');
 
+    goog.require('goog.json');
     goog.require('goog.events');
     goog.require('goog.dom');
     goog.require('goog.dom.ViewportSizeMonitor');
     goog.require('goog.History');
+    goog.require('goog.async.ConditionalDelay');
+
     goog.require('goog.ui.tree.TreeControl');
     goog.require('goog.ui.TabBar');
     goog.require('goog.ui.Component');
@@ -72,7 +72,7 @@
 <script type="text/javascript" src="js/redisadmin/AdminViewController.js"></script>
 
 <script type="text/javascript">
-    var tree, app, initPath;
+    var tree, app, initPath, _history;
 
     $(function() {
 
@@ -111,10 +111,7 @@
         $("#txtQuery").val("urn:*");
         $("#btnSearch").click();
 
-        if (initPath)
-        {
-            app.loadPath(initPath);
-        }
+        app.setHistory(_history, initPath);
 
     });
 </script>
@@ -161,11 +158,11 @@
                 </p>
                 <h4>Action tests</h4>
                 <ul>
-                    <li><a href="#editor">#editor</a></li>
-                    <li><a href="#editor/A">#editor/A</a></li>
-                    <li><a href="#editor/B/1">#editor/B/1</a></li>
-                    <li><a href="#editor/urn:customer">#editor/urn:customer</a></li>
-                    <li><a href="#editor/urn:customer/urn:customer:ALFKI">#editor/urn:customer/urn:customer:ALFKI</a></li>
+                    <li><a href="#key">#keys</a></li>
+                    <li><a href="#key/A">#keys/A</a></li>
+                    <li><a href="#key/B/1">#keys/B/1</a></li>
+                    <li><a href="#key/urn:customer">#keys/urn:customer</a></li>
+                    <li><a href="#key/urn:customer:ALFKI">#keys/urn:customer:ALFKI</a></li>
                 </ul>
             </div>
         </div>
@@ -181,15 +178,15 @@
 
 <script type="text/javascript">
     //After some trial & error this is only good place to init 'goog.History()'
-    var h = new goog.History();
-    goog.events.listen(h, goog.History.EventType.NAVIGATE, function(e){
+    _history = new goog.History();
+    goog.events.listen(_history, goog.History.EventType.NAVIGATE, function(e){
         if (!app) {
             initPath = e.token;
             return;
         }
         app.loadPath(e.token);
     });
-    h.setEnabled(true);
+    _history.setEnabled(true);
 </script>
 
 </body>

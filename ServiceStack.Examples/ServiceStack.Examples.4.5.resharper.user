@@ -32,9 +32,14 @@
       <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1044" fromTop="34" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:jquery.json-2.2.js" caret="1057" fromTop="30" />
       <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:MovieRestTests.cs" caret="1393" fromTop="35" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:AjaxStack.snippets.js" caret="12314" fromTop="42" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1789" fromTop="39" />
       <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="1436" fromTop="42" />
+      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Operations/f:ResetMovieDatabase.cs" caret="535" fromTop="21" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:AjaxStack.snippets.js" caret="12314" fromTop="42" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:default.css" caret="159" fromTop="11" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="2004" fromTop="22" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="5028" fromTop="16" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="1311" fromTop="34" />
     </RecentFiles>
     <RecentEdits>
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:AjaxStack.snippets.js" caret="2919" fromTop="62" />
@@ -49,6 +54,19 @@
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:AjaxStack.snippets.js" caret="12345" fromTop="44" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:AjaxStack.snippets.js" caret="2392" fromTop="22" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="884" fromTop="14" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="2282" fromTop="8" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:AjaxStack.snippets.js" caret="12006" fromTop="33" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="1979" fromTop="20" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="2257" fromTop="20" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="8072" fromTop="19" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="900" fromTop="14" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="8072" fromTop="14" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="10460" fromTop="42" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="5040" fromTop="16" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="10512" fromTop="38" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="866" fromTop="18" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="1903" fromTop="32" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="734" fromTop="10" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>

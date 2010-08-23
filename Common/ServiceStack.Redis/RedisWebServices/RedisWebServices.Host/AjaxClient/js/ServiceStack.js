@@ -229,8 +229,7 @@ S.containsAny = function(str, tests) {
 };
 S.startsWith = function(text, startsWith) {
     if (!text || !startsWith) return false;
-    if (startsWith.length > text.length) return false;
-    return text.substring(0, startsWith.length) == startsWith;
+    return text.lastIndexOf(startsWith, 0) == 0;
 };
 S.pad = function(text, padLen, padChar, rpad) {
     var padChar = padChar || (rpad ? " " : "0");
@@ -278,6 +277,7 @@ A.toTable = function(array) {
     var cols = [], sb = [];
     for (var i = 0, len = array.length; i < len; i++) {
         var obj = array[i];
+        if (!obj) continue;
         if (i == 0) {
             sb.push("<table><thead><tr>");
             for (var k in obj) {
@@ -287,9 +287,9 @@ A.toTable = function(array) {
             sb.push("</tr></thead><tbody>");
         }
         sb.push("<tr>");
-        for (var j = 0, len = cols.length; j < len; j++) {
+        for (var j = 0, colsLen = cols.length; j < colsLen; j++) {
             var k = cols[j];
-            sb.push("<th>" + obj[k] + "</th>");
+            sb.push("<td>" + Dto.formatValue(obj[k]) + "</td>");
         }
         sb.push("</tr>");
     }
@@ -317,6 +317,21 @@ Path.combine = function() {
         paths += S.rtrim(arguments[i], '/');
     }
     return paths;
+};
+Path.getFirstArg = function(path)
+{
+    if (!path) return null;
+    return path.split('/')[0];
+};
+Path.getFirstValue = function(path)
+{
+    if (!path || path.indexOf('/') == -1) return null;
+    return path.substr(path.indexOf('/') + 1);
+};
+Path.getArgs = function(path)
+{
+    if (!path) return null;
+    return path.split('/');
 };
 
 var Urn = {};
@@ -346,16 +361,21 @@ Dto.toUtcDate = function(date) {
         + ':' + S.lpad(date.getUTCSeconds(), 2)
         + 'Z';
 };
+Dto.isJsonDate = function(str)
+{
+    if (!is.String(str)) return false;
+    return S.startsWith(str, Dto.WcfDatePrefix);
+};
 Dto.WcfDatePrefix = "\/Date(";
 Dto.toJsonDate = function(date) {
     date = Dto.parseJsonDate(date);
-    return Dto.WcfDatePrefix + date.getTime() + "-0000)\/";
+    return Dto.WcfDatePrefix + date.getTime() + "+0000)\/";
 };
 Dto.parseJsonDate = function(date) {
     return is.Date(date)
         ? date
         : (S.startsWith(date, Dto.WcfDatePrefix)
-            ? new Date(parseInt(date.substring(Dto.WcfDatePrefix.length, date.length - 2)))
+            ? new Date(parseInt(date.substring(Dto.WcfDatePrefix.length, date.length - 2))) 
             : new Date(date));
 };
 Dto.formatDate = function(date) {
@@ -364,4 +384,10 @@ Dto.formatDate = function(date) {
     return date.getUTCFullYear()
         + '/' + S.lpad(date.getUTCMonth() + 1, 2)
         + '/' + S.lpad(date.getUTCDate(), 2);
+};
+Dto.formatValue = function(value)
+{
+    if (Dto.isJsonDate(value)) return Dto.formatDate(value);
+    if (is.Empty(value)) return "";
+    return value;
 };
