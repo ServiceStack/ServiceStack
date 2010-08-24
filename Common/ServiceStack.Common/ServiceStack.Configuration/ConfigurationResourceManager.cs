@@ -23,7 +23,10 @@ namespace ServiceStack.Configuration
 		public T Get<T>(string name, T defaultValue)
 		{
 			var stringValue = ConfigUtils.GetNullableAppSetting(name);
-			return TypeSerializer.DeserializeFromString<T>(stringValue);
+
+			return stringValue != null 
+				? TypeSerializer.DeserializeFromString<T>(stringValue)
+				: defaultValue;
 		}
 	}
 }
