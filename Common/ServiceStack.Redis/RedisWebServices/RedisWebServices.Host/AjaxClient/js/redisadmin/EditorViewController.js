@@ -101,7 +101,7 @@ redisadmin.EditorViewController.prototype.showKeyDetails = function(key, textVal
         + "<div class='goog-toolbar-separator nav-separator'></div>"
         + "</div>"
         + "<div id='toolbarEditKey' class='goog-toolbar' style='display:none'>"
-        + "<div id='lnk-back' class='goog-toolbar-button nav-link'>« back</div>"
+        + "<div id='lnk-back' class='goog-toolbar-button'><span class='icon-back goog-inline-block'></span>Back</div>"
         + "<hr/>"
         + "<div class='goog-toolbar-separator nav-separator'></div>"
         + "<div id='btnDeleteKey' class='goog-toolbar-button'><span class='icon-delete goog-inline-block'></span>Delete</div>"

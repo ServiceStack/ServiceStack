@@ -315,6 +315,13 @@ DD
     color: #666;
 }
 
+.icon-back
+{
+    background: url(../img/back13x13.png) no-repeat 0 4px;
+    height:17px;
+    width:16px;
+    margin-right: 2px;
+}
 .icon-edit
 {
     background: url(../img/edit16x16.png) no-repeat 0 4px;
