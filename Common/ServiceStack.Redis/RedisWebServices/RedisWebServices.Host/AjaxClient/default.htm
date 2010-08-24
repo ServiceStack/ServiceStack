@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=8">
-<title>AjaxStack Examples Demo</title>
+<title>ServiceStack Redis Admin UI</title>
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/tree.css">
 
@@ -62,8 +62,9 @@
     goog.require('goog.ui.ToggleButton');
     goog.require('goog.ui.decorate');
 
+    goog.require('goog.ui.Zippy');
     goog.require('goog.ui.AutoComplete.Basic');
-    
+
 </script>
 
 <script type="text/javascript" src="js/redisadmin/App.js"></script>
@@ -71,58 +72,13 @@
 <script type="text/javascript" src="js/redisadmin/EditorViewController.js"></script>
 <script type="text/javascript" src="js/redisadmin/AdminViewController.js"></script>
 
-<script type="text/javascript">
-    var tree, app, initPath, _history;
-
-    $(function() {
-
-        var enableLogging = true;
-        if (enableLogging)
-        {
-            var divConsole = new goog.debug.DivConsole(goog.dom.getElement('divconsole'));
-            divConsole.setCapturing(true);
-
-            $("#lnkViewLog").toggle(
-            function(){
-                $(this).addClass("min");
-                $("#divconsole").hide();
-            }, function(){
-                $(this).removeClass("min");
-                $("#divconsole").show();
-            });
-
-            goog.style.showElement(goog.dom.getElement('log'), true);            
-        }
-
-        app = redisadmin.App.getInstance();
-
-        $("#txtQuery").keypress(function(event){
-            var keyCode = (event.keyCode ? event.keyCode : event.which);
-            var enterKey = '13';
-            if(keyCode == enterKey){
-                $("#btnSearch").click();
-            }
-        });
-        
-        $("#btnSearch").click(function() {
-            app.searchInMainNav($("#txtQuery").val());
-        });
-
-        $("#txtQuery").val("urn:*");
-        $("#btnSearch").click();
-
-        app.setHistory(_history, initPath);
-
-    });
-</script>
-
 </head>
 
 <body>
 
 <div id="body">
     <div id="log" style="display:none">
-        <h3><a id="lnkViewLog"></a>Event Logger</h3>
+        <h3 id="divconsole-header">Event Logger</h3>
         <div id="divconsole"></div>
     </div>
 
@@ -133,9 +89,7 @@
             <h1>Admin UI</h1>
         </div>
         <div id="searchbox">
-            <input id="txtQuery" type="text" value="urn:*" />
-            <button id="btnSearch">Search Keys</button>
-            <!--<button id="btnPopulate">Populate with Data</button>-->
+            <input id="txtQuery" type="text" value="urn:*" /><div id="btnSearch" class="goog-custom-button  goog-inline-block">Search Keys</div>
         </div>
     </div>
 
@@ -145,25 +99,67 @@
         </div>
         <div id="content" class='goog-splitpane-second-container'>
             <div id="tab" class="goog-tab-bar goog-tab-bar-top">
-                <div class="goog-tab goog-tab-selected">Admin</div>
-                <div class="goog-tab goog-tab-selected">Editor</div>
+                <div id="Admin-tab"  class="goog-tab goog-tab-selected">Admin</div>
+                <div id="Editor-tab" class="goog-tab goog-tab-selected">Editor</div>
                 <!--<div id="mainNav-tab" class="goog-tab">Main Tab<img class="close-tab" src="images/close_box.gif" title="close tab" /></div>-->
             </div>
             <!-- Use goog-tab-bar-clear to separate the tabs from the content. -->
             <div class="goog-tab-bar-clear"></div>
             <div id="tab_content">
-                <h3>This is the Start Page.</h3>
-                <p>
-                    No Doubt in time it will be filled with interesting stuff on how to use this app.
-                </p>
-                <h4>Action tests</h4>
-                <ul>
-                    <li><a href="#key">#keys</a></li>
-                    <li><a href="#key/A">#keys/A</a></li>
-                    <li><a href="#key/B/1">#keys/B/1</a></li>
-                    <li><a href="#key/urn:customer">#keys/urn:customer</a></li>
-                    <li><a href="#key/urn:customer:ALFKI">#keys/urn:customer:ALFKI</a></li>
-                </ul>
+                <div id="Admin-tab_content">
+                    <div id="developers">
+                        <h3>For Admin UI Developers</h3>
+                        <p>
+                            The Redis Admin UI is composed of two parts:
+                        </p>
+                        <ol>
+                            <li>
+                                An Ajax client web application
+                                <em>(developed with
+                                <a href="http://code.google.com/p/closure-library/">Google's Closure Library</a>)
+                                </em>
+                                which as its simply a static html/js/css app, can be easily modified and decoupled
+                                from the server component and hosted on any static HTTP file server.
+                            </li>
+                            <li>
+                                A <a href="http://www.servicestack.net">ServiceStack</a>
+                                ASP.NET Web Services server application providing SOAP, XML
+                                and JSON end points for all Redis operations. <br />
+                                It works cross-platform though as its writen in .NET
+                                <a href="http://www.mono-project.com/ASP.NET">requires Mono to run on Linux</a>.
+                            </li>
+                        </ol>
+                        <p>
+                            This Admin UI is customizable and can be easily modified and made to access any of the
+                            available <a href="../Public/Metadata">Redis web service operations</a>.
+                        </p>
+                        <p>
+                            A feature-complete JavaScript <a href="js/RedisClient.js">RedisClient.js</a> library
+                            provides the most convenient way to access these services from a web page.                            
+                        </p>
+                    </div>
+
+                    <h2>Redis Server Info</h2>
+
+                    <div id='toolbarServerOps' class='goog-toolbar'>
+                    <div id='btnRefreshServerInfo' class='goog-toolbar-button'><span class='icon-refresh goog-inline-block'></span>Refresh Info</div>
+                        <div class='goog-toolbar-separator nav-separator'></div>
+                        <hr/>
+                    <div id='btnRewriteAof' class='goog-toolbar-button'><span class='icon-edit goog-inline-block'></span>Rewrite AOF</div>
+                        <hr/>
+                    <div id='btnFlushAll' class='goog-toolbar-button'><span class='icon-delete goog-inline-block'></span>Flush All</div>
+                    <div id='btnFlushDb' class='goog-toolbar-button'><span class='icon-delete goog-inline-block'></span>Flush DB</div>
+                        <hr/>
+                        <div class='goog-toolbar-separator nav-separator'></div>
+                    <div id='btnResetDb' class='goog-toolbar-button'><span class='icon-refresh goog-inline-block'></span>Reset DB</div>
+                    </div>
+
+                    <div id="server-info"></div>
+                    
+                </div>
+                <div id="Editor-tab_content">
+                    <h3>Select a key from the left navigation to edit</h3>
+                </div>
             </div>
         </div>
         <div class='goog-splitpane-handle'></div>
@@ -177,6 +173,17 @@
 </div>
 
 <script type="text/javascript">
+    var tree, app, initPath, _history;
+
+    var enableLogging = true;
+    if (enableLogging)
+    {
+        var divConsole = new goog.debug.DivConsole(goog.dom.getElement('divconsole'));
+        divConsole.setCapturing(true);
+        new goog.ui.Zippy('divconsole-header', 'divconsole');
+        goog.style.showElement(goog.dom.getElement('log'), true);
+    }
+
     //After some trial & error this is only good place to init 'goog.History()'
     _history = new goog.History();
     goog.events.listen(_history, goog.History.EventType.NAVIGATE, function(e){
@@ -187,6 +194,27 @@
         app.loadPath(e.token);
     });
     _history.setEnabled(true);
+
+    app = redisadmin.App.getInstance();
+
+    var $txtQuery = goog.dom.getElement("txtQuery"),
+        $btnSearch = goog.dom.getElement("btnSearch");
+
+    var searchKeysFn = function(){ app.searchInMainNav($txtQuery.value); };
+    
+    goog.events.listen($txtQuery, goog.events.EventType.KEYPRESS, function(e){
+        if (e.keyCode == goog.events.KeyCodes.ENTER) searchKeysFn();
+    });
+
+    var btnSearch = goog.ui.decorate($btnSearch);
+    btnSearch.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+    goog.events.listen($btnSearch, goog.events.EventType.CLICK, searchKeysFn);
+
+    $txtQuery.value = "urn:*";
+
+    searchKeysFn();
+
+    app.setHistory(_history, initPath);
 </script>
 
 </body>

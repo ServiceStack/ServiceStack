@@ -273,7 +273,8 @@ A.join = function(array, on) {
     }
     return s;
 };
-A.toTable = function(array) {
+A.toTable = function(array, tableFormatFns) {
+    tableFormatFns = tableFormatFns || {};
     var cols = [], sb = [];
     for (var i = 0, len = array.length; i < len; i++) {
         var obj = array[i];
@@ -289,7 +290,9 @@ A.toTable = function(array) {
         sb.push("<tr>");
         for (var j = 0, colsLen = cols.length; j < colsLen; j++) {
             var k = cols[j];
-            sb.push("<td>" + Dto.formatValue(obj[k]) + "</td>");
+            var data = tableFormatFns[k] ? tableFormatFns[k](obj[k]) : Dto.formatValue(obj[k]);
+
+            sb.push("<td>" + data + "</td>");
         }
         sb.push("</tr>");
     }

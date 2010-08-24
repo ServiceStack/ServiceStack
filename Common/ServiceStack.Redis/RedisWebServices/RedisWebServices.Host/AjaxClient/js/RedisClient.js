@@ -952,12 +952,12 @@ RedisClient.prototype =
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
-	populateRedisWithData: function(onSuccessFn, onErrorFn)
+	getNorthwindData: function(onSuccessFn, onErrorFn)
 	{
-		this.gateway.getFromService('PopulateRedisWithData', {  },
+		this.gateway.getFromService('GetNorthwindData', {  },
 			function(r)
 			{
-				if (onSuccessFn) onSuccessFn();
+				if (onSuccessFn) onSuccessFn(r.Categories);
 			},
 			onErrorFn || RedisClient.errorFn);
 	},
@@ -1030,6 +1030,24 @@ RedisClient.prototype =
 			function(r)
 			{
 				if (onSuccessFn) onSuccessFn(RedisClient.convertKeyValuePairsToMap(r.KeyTypes));
+			},
+			onErrorFn || RedisClient.errorFn);
+	},
+	populateRedisWithData: function(onSuccessFn, onErrorFn)
+	{
+		this.gateway.getFromService('PopulateRedisWithData', {  },
+			function(r)
+			{
+				if (onSuccessFn) onSuccessFn();
+			},
+			onErrorFn || RedisClient.errorFn);
+	},
+	getServerInfo: function(onSuccessFn, onErrorFn)
+	{
+		this.gateway.getFromService('GetServerInfo', {  },
+			function(r)
+			{
+				if (onSuccessFn) onSuccessFn(RedisClient.convertKeyValuePairsToMap(r.ServerInfo));
 			},
 			onErrorFn || RedisClient.errorFn);
 	}

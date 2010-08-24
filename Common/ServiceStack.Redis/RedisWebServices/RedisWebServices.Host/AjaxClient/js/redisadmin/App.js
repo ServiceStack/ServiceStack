@@ -25,10 +25,15 @@ redisadmin.App = function()
     this.history = null;
     this.currentPath = null;
 
-    this.editor = new redisadmin.EditorViewController("tab_content", this);
-    this.admin = new redisadmin.AdminViewController("tab_content", this);
+    this.tabBar = null; /* TabBar */
+    this.selectedTab = redisadmin.App.TabName.ADMIN;
+
+    this.editor = new redisadmin.EditorViewController("Editor-tab_content", this);
+    this.admin = new redisadmin.AdminViewController("Admin-tab_content", this);
     this.controllers = [this.editor, this.admin];
     this.deferredCalls = [];
+    this.deferChangeEvent = false;
+    this.deferredChangeEvent = null;
 
     this.redis = new RedisClient();
     this.keyTypes = {};
@@ -38,8 +43,9 @@ redisadmin.App = function()
         $this.log.severe(goog.json.serialize(e));
     };
 
-    redisadmin.App.initTabs();
-    redisadmin.App.initSplitter();
+    this.initTabs();
+    this.initSplitter();
+    this.init();
 }
 goog.inherits(redisadmin.App, goog.events.EventTarget);
 goog.addSingletonGetter(redisadmin.App);
@@ -50,6 +56,15 @@ redisadmin.App.NodeType = {
   KEY: 'key'
 };
 
+redisadmin.App.TabName = {
+  ADMIN: 'Admin',
+  EDITOR: 'Editor'
+};
+redisadmin.App.TabIndexMap = {
+    'Admin': 0,
+    'Editor': 1
+};
+redisadmin.App.TabNames = [redisadmin.App.TabName.ADMIN, redisadmin.App.TabName.EDITOR];
 
 redisadmin.App.prototype.setHistory = function(history, initPath)
 {
@@ -70,16 +85,18 @@ redisadmin.App.prototype.loadPath = function(path)
         return;
     }
 
-    this.log.info('loadPath: ' + path + ", from: " + this.currentPath);
+    this.log.fine('loadPath: ' + path);
 
     var $this = this;
     var navRoot = Path.getFirstArg(path);
 
     if (navRoot == "key")
     {
+        this.selectTab(redisadmin.App.TabName.EDITOR);
+
         var keyName = Path.getFirstValue(path);
 
-        $this.addDeferredCall_(
+        this.addDeferredCall_(
             function() {
                 return $this.tree != null && $this.tree.getChildren().length > 0;
             },
@@ -88,6 +105,10 @@ redisadmin.App.prototype.loadPath = function(path)
                 $this.setNavPath(Path.combine("key", keyName));
             });
     }
+    else
+    {
+        this.selectTab(redisadmin.App.TabName.ADMIN);
+    }
 };
 
 redisadmin.App.prototype.setNavPath = function(path)
@@ -95,7 +116,7 @@ redisadmin.App.prototype.setNavPath = function(path)
     var $this = this;
     if (this.currentPath == path) return;
     
-    this.log.info('setNavPath: from: ' + this.currentPath + " to" + path);
+    this.log.fine('setNavPath: ' + path);
     this.currentPath = path;
     //Would ideally like to set without triggering but nothing lets me do this
     $this.history.setToken(path);
@@ -197,23 +218,60 @@ redisadmin.App.prototype.showKeyGroup = function(parentNode)
 
 redisadmin.App.prototype.init = function(path)
 {
-};
-redisadmin.App.initTabs = function()
-{
-    var tabBar = new goog.ui.TabBar();
-    tabBar.decorate(goog.dom.getElement('tab'));
+    var $this = this;
+    goog.events.listen(document, goog.events.EventType.KEYDOWN, function(e)
+    {
+        if (!$this.tree || !$this.tree.hasFocus()) return;
+        if (e.keyCode == goog.events.KeyCodes.DELETE)
+        {
+            var selectedNode = $this.tree.getSelectedItem();
+            if (!selectedNode || selectedNode.nodeType != redisadmin.App.NodeType.KEY) return;
 
-    // Handle SELECT events dispatched by tabs.
-    goog.events.listen(tabBar, goog.ui.Component.EventType.SELECT,
+            var key = $this.getNodeLabel_(selectedNode);
+            $this.confirmDelete(key);
+        }
+    });
+
+    goog.array.forEach($this.controllers, function(controller){
+        controller.init();
+    });
+};
+
+redisadmin.App.prototype.initTabs = function()
+{
+    var $this = this;
+
+    this.tabBar = new goog.ui.TabBar();
+    this.tabBar.decorate(goog.dom.getElement('tab'));
+
+    //Required as the first selectTab() does not fire the tabBars SELECT event
+    this.selectTab(redisadmin.App.TabName.ADMIN);
+    this.showTab(redisadmin.App.TabName.ADMIN);
+
+    // Handle SELECT events dispatched by code or user.
+    goog.events.listen(this.tabBar, goog.ui.Component.EventType.SELECT,
         function(e) {
-            var tabSelected = e.target;
-            var contentElement = goog.dom.getElement(tabBar.getId() + '_content');
-            goog.dom.setTextContent(contentElement,
-                'You selected the "' + tabSelected.getCaption() + '" tab.');
+            var tabNameToShow = e.target.getCaption();
+            $this.showTab(tabNameToShow);
         });
 };
 
-redisadmin.App.initSplitter = function()
+redisadmin.App.prototype.selectTab = function(tabNameToShow)
+{
+    var tabIndex = redisadmin.App.TabIndexMap[tabNameToShow];
+    this.tabBar.setSelectedTabIndex(tabIndex);
+    this.tabNameSelected = tabNameToShow;
+};
+
+redisadmin.App.prototype.showTab = function(tabNameToShow) {
+    goog.array.forEach(redisadmin.App.TabNames, function(tabName) {
+        var tabContent = goog.dom.getElement(tabName + '-tab_content');
+        var displayTab = tabNameToShow == tabName;
+        goog.style.showElement(tabContent, displayTab);
+    });
+}
+
+redisadmin.App.prototype.initSplitter = function()
 {
     var lhs = new goog.ui.Component();
     var rhs = new goog.ui.Component();
@@ -262,6 +320,9 @@ redisadmin.App.prototype.searchInMainNav = function(query)
 {
     var $this = this;
 
+    //Reset caches
+    $this.keyTypes = {};
+
     this.redis.searchKeysGroup(query, function(keysWithChildCounts) {
         $this.fetchTypesForValidKeys(keysWithChildCounts);
 
@@ -281,9 +342,25 @@ redisadmin.App.prototype.searchInMainNav = function(query)
         
         goog.events.listen($this.tree, goog.events.EventType.CHANGE, function(e)
         {
-            var selectedItem = e.currentTarget.getTree().getSelectedItem();
-            var nodeLabel = $this.getNodeLabel_(selectedItem);
-            $this.loadPath(Path.combine("key", nodeLabel));
+            var changeEvent = function()
+            {
+                var selectedItem = e.currentTarget.getTree().getSelectedItem();
+                var nodeLabel = $this.getNodeLabel_(selectedItem);
+                if (selectedItem.nodeType == redisadmin.App.NodeType.KEY_GROUP
+                    && selectedItem.getChildCount() > 0)
+                {
+                    selectedItem.setHtml(nodeLabel + "<em>(" + selectedItem.getChildCount() + ")</em>");
+                }
+                $this.loadPath(Path.combine("key", nodeLabel));
+            }
+            if ($this.deferChangeEvent)
+            {
+                $this.deferredChangeEvent = changeEvent;
+            }
+            else
+            {
+                changeEvent();
+            }
         });
 
         var fetchKeyTypes = [];
@@ -383,13 +460,79 @@ redisadmin.App.prototype.updateNodeTypes_ = function(parentNode, keyTypes)
         var label = $this.getNodeLabel_(child);
         var keyType = keyTypes[label];
 
-        //$this.log.info($this.getNodeLabel_(parentNode) + "> navTo: " + label + " (" + keyType + ")");
         if (keyType)
         {
             child.setIconClass("goog-tree-icon goog-tree-file-icon tnode-" + keyType);
             child.nodeType = redisadmin.App.NodeType.KEY;
+            child.keyType = keyType;
         }
     });
+};
+
+redisadmin.App.prototype.confirmDelete = function(key)
+{
+    if (confirm("Are you sure you want to permanently delete '" + key + "'?\n\n(There is no UNDO)"))
+    {
+        this.deleteKey(key);
+    }
+};
+
+redisadmin.App.prototype.deleteKey = function(key)
+{
+    var $this = this;
+    var keyNode = this.tree.getSelectedItem();
+    var parentNode = keyNode.getParent();
+    
+    if (this.getNodeLabel_(keyNode) != key)
+    {
+        this.log.severe("Selected node is not delete target: " + key);
+        return;
+    }
+
+    this.redis.removeEntry(key,
+        function(){
+            $this.deferChangeEventsAfterExec_(function(){
+                parentNode.removeChild(keyNode);
+            })
+        },
+        function(e){
+            alert(key + " could not be deleted:\n" + goog.json.serialize(e));
+        });
+};
+
+//Required when we want to defer node 'CHANGE' events until after the action is execed().
+//i.e. removing a node from the tree selects a different node before the childNode is removed.
+redisadmin.App.prototype.deferChangeEventsAfterExec_ = function(execFn)
+{
+    var $this = this;
+    
+    $this.deferChangeEvent = true;
+
+    execFn();
+
+    try
+    {
+        if ($this.deferredChangeEvent)
+        {
+            $this.deferredChangeEvent();
+            $this.deferredChangeEvent = null;
+        }
+    } catch(e){}
+
+    $this.deferChangeEvent = false;
+}
+
+redisadmin.App.prototype.updateKey = function(key, value)
+{
+    var $this = this;
+
+    this.redis.setEntry(key, value,
+        function(){
+            $this.showKey(key);
+        },
+        function(e){
+            alert(key + " could not be updated:\n" + goog.json.serialize(e));
+        });
 };
 
 redisadmin.App.prototype.isKeyGroup_ = function(node)
@@ -478,35 +621,35 @@ redisadmin.App.prototype.showKey = function(key, inNewTab)
         {
             $this.redis.getValue(key, function(value)
             {
-                $this.editor.showKeyDetails(key, value);
+                $this.editor.showKeyDetails(key, value, true);
             });
         }
         else if (keyType == "List")
         {
             $this.redis.getAllItemsFromList(key, function(items)
             {
-                $this.editor.showKeyDetails(key, S.toString(items));
+                $this.editor.showKeyDetails(key, goog.json.serialize(items));
             });
         }
         else if (keyType == "Set")
         {
             $this.redis.getAllItemsFromSet(key, function(items)
             {
-                $this.editor.showKeyDetails(key, S.toString(items));
+                $this.editor.showKeyDetails(key, goog.json.serialize(items));
             });
         }
         else if (keyType == "SortedSet")
         {
             $this.redis.getAllItemsFromSortedSet(key, function(itemsWithScores)
             {
-                $this.editor.showKeyDetails(key, S.toString(itemsWithScores));
+                $this.editor.showKeyDetails(key, goog.json.serialize(itemsWithScores));
             });
         }
         else if (keyType == "Hash")
         {
             $this.redis.getAllEntriesFromHash(key, function(kvps)
             {
-                $this.editor.showKeyDetails(key, S.toString(kvps));
+                $this.editor.showKeyDetails(key, goog.json.serialize(kvps));
             });
         }
         else

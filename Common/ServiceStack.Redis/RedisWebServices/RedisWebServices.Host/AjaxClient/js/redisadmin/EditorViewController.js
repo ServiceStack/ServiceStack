@@ -18,7 +18,7 @@ redisadmin.EditorViewController = function(rootEl, app)
 }
 goog.inherits(redisadmin.EditorViewController, redisadmin.ViewController);
 
-redisadmin.EditorViewController.prototype.loadPath = function(path)
+redisadmin.EditorViewController.prototype.init = function(path)
 {    
 };
 
@@ -28,38 +28,39 @@ redisadmin.EditorViewController.prototype.showKeyGroup = function(parentLabel, c
 
     this.app.getRedisClient().getValues(childKeys, function(values){
         var rows = [];
-        var json = "";
         for (var i=0; i<childKeys.length; i++)
         {
             var jsonText = values[i];
-            json += json.length == 0 ? '[' : ',';
-            json += jsonText;
 
-            var row = {Key:childKeys[i]};
+            var row = {Key:childKeys[i]}, obj = {};
+
             try
             {
-                var obj = goog.json.parse(jsonText);
+                obj = goog.json.parse(jsonText);
             }
-            catch(e)
-            {
-                $this.log.severe("Error on showKeyGroup: " + e);
-            }
+            catch(e){}
+
             for (var k in obj)
             {
                 row[k] = obj[k];
             }
             rows.push(row);
         }
-        json += ']';
+
+        var tableFormatFns = {
+            Key: function(value) {
+                return "<a href='#key/" + value + "'>" + value + "</a>";
+            }
+        };
 
         var html = "<div class='key-group'>"
             + "<input id='txtKeyGroupFilter' type='text' value='" + parentLabel + "' />"
             + '<div id="btnKeyGroupFilter" class="goog-custom-button goog-inline-block">Filter</div>'
             + "</div>";
 
-        html += "<div id='keys-table'>" + A.toTable(rows) + "</div>";
+        html += "<div id='keys-table'>" + A.toTable(rows, tableFormatFns) + "</div>";
 
-        goog.dom.getElement('tab_content').innerHTML = html;
+        goog.dom.getElement($this.rootEl).innerHTML = html;
 
         var txtKeyGroupFilter = goog.dom.getElement('txtKeyGroupFilter');
         var autoComplete = new goog.ui.AutoComplete.Basic(childKeys, txtKeyGroupFilter, false);
@@ -77,7 +78,7 @@ redisadmin.EditorViewController.prototype.showKeyGroup = function(parentLabel, c
                     filteredRows.push(row);
                 }
             }
-            goog.dom.getElement('keys-table').innerHTML = A.toTable(filteredRows);
+            goog.dom.getElement('keys-table').innerHTML = A.toTable(filteredRows, tableFormatFns);
         };
 
         goog.events.listen(autoComplete, goog.ui.AutoComplete.EventType.UPDATE, filterFn);
@@ -89,21 +90,23 @@ redisadmin.EditorViewController.prototype.showKeyGroup = function(parentLabel, c
     });
 };
 
-redisadmin.EditorViewController.prototype.showKeyDetails = function(key, textValue)
+redisadmin.EditorViewController.prototype.showKeyDetails = function(key, textValue, canEdit)
 {
+    var $this = this;
+
     var html = "<h2 class='key'>" + key + "</h2>"
         + "<div id='keydetails-body'>"
         + "<div id='toolbarViewKey' class='key-options goog-toolbar'>"
-        + "<div id='lnk-editkey' class='goog-toolbar-button nav-link'><span id='icon-edit' class='goog-inline-block'></span>edit</div>"
+        + "<div id='lnk-editkey' class='goog-toolbar-button nav-link'><span class='icon-edit goog-inline-block'></span>edit</div>"
         + "<div class='goog-toolbar-separator nav-separator'></div>"
         + "</div>"
         + "<div id='toolbarEditKey' class='goog-toolbar' style='display:none'>"
         + "<div id='lnk-back' class='goog-toolbar-button nav-link'>« back</div>"
         + "<hr/>"
         + "<div class='goog-toolbar-separator nav-separator'></div>"
-        + "<div id='btnDeleteKey' class='goog-toolbar-button'><span id='icon-delete' class='goog-inline-block'></span>Delete</div>"
+        + "<div id='btnDeleteKey' class='goog-toolbar-button'><span class='icon-delete goog-inline-block'></span>Delete</div>"
         + "<hr/>"
-        + "<div id='btnSaveKey' class='goog-toolbar-button'><span id='icon-save' class='goog-inline-block'></span>Save</div>"
+        + "<div id='btnSaveKey' class='goog-toolbar-button'><span class='icon-save goog-inline-block'></span>Save</div>"
         + "</div>";
 
     try
@@ -121,15 +124,16 @@ redisadmin.EditorViewController.prototype.showKeyDetails = function(key, textVal
         + "</div>";
     }
     catch (e) {
-        this.log.severe("Error parsing key: " + key + ", Error: " + e);
+        this.log.warning("Error parsing key as json: " + key + ", Error: " + e);
+        html += "<div id='key-view'>" + textValue + "</div>";
     }
 
     html += "<div id='key-edit' style='display:none'>"
-          + "<textarea id='txtEntryValue'>" + textValue + "</textarea>"
+          + "<textarea id='txtEntryValue'></textarea>"
           + "</div>"
           + "<div>";
 
-    goog.dom.getElement('tab_content').innerHTML = html;
+    goog.dom.getElement($this.rootEl).innerHTML = html;
 
     var toolbarViewKey = new goog.ui.Toolbar();
     toolbarViewKey.decorate(goog.dom.getElement('toolbarViewKey'));
@@ -142,6 +146,10 @@ redisadmin.EditorViewController.prototype.showKeyDetails = function(key, textVal
         btnDeleteKey = goog.dom.getElement('btnDeleteKey'),
         btnSaveKey = goog.dom.getElement('btnSaveKey'),
         txtEntryValue = goog.dom.getElement('txtEntryValue');
+
+    goog.dom.setTextContent(txtEntryValue, textValue);
+
+    toolbarViewKey.getChildAt(0).setEnabled(!!canEdit);
 
     var editMode = false;
 
@@ -156,12 +164,12 @@ redisadmin.EditorViewController.prototype.showKeyDetails = function(key, textVal
     goog.events.listen(lnkBack, goog.events.EventType.CLICK, toggleEditModeFn);
 
     goog.events.listen(btnDeleteKey, goog.events.EventType.CLICK,
-    function(e) {
-        alert('delete');
-    });
+        function(e) {
+            $this.app.confirmDelete(key, txtEntryValue.value);
+        });
 
     goog.events.listen(btnSaveKey, goog.events.EventType.CLICK,
-    function(e) {
-        alert('updating: ' + goog.dom.getTextContent(txtEntryValue));
-    });
+        function(e) {
+            $this.app.updateKey(key, txtEntryValue.value);
+        });
 }

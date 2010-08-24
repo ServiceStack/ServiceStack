@@ -10,13 +10,13 @@ namespace ServiceStack.Redis.Tests.TestData
 	public class PopulateTestData
 		: RedisClientTestsBase
 	{
-		private const int RedisDb = 2;
+		private const int RedisDb = 0;
 
-		const string StringId = "urn:test";
-		const string ListId = "urn:testlist";
-		const string SetId = "urn:testset";
-		const string SortedSetId = "urn:testzset";
-		const string HashId = "urn:testhash";
+		const string StringId = "urn:test:string";
+		const string ListId = "urn:test:list";
+		const string SetId = "urn:test:set";
+		const string SortedSetId = "urn:test:zset";
+		const string HashId = "urn:test:hash";
 
 		private readonly List<string> items = new List<string> { "one", "two", "three", "four" };
 		private readonly Dictionary<string, string> map = new Dictionary<string, string> {

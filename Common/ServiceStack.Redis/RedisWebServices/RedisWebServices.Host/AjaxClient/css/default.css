@@ -128,11 +128,14 @@ BUTTON
 #searchbox #txtQuery
 {
     margin-left: 90px;
-    padding: 2px;
-    font-size: 16px;
+    padding: 4px 5px;
+    font-size:17px;
     width:250px;
 }
-
+#btnSearch
+{
+    margin: -2px 0 0 0px;    
+}
 
 /* These are recommended styles for the default splitpane */
 .goog-splitpane {
@@ -182,16 +185,18 @@ BUTTON
 }
 #tree .selected EM
 {
+    color: #666;
+}
+#tree .focused .selected EM
+{
     color: #fff;
 }
-
 
 #log
 {
     position: absolute;
-    top: 110px;
-    right: 10px;
-    padding: 10px;
+    top: 10px;
+    right: 5px;
     background: #eef9ff;
 
     z-index:1;
@@ -200,25 +205,14 @@ BUTTON
     border-right: solid 1px #333;
     border-bottom: solid 1px #333;
 }
+#log H3
+{
+    padding: 2px 5px;
+}
 #log #divconsole
 {
-    width:600px;
+    width:700px;
 }
-#log #lnkViewLog
-{
-    display:block;
-    float: left;
-    width: 12px;
-    height: 13px;
-    margin: 5px 5px 0 0;
-    background: url(../img/windowsprites.gif) no-repeat -130px 0;
-    cursor:pointer;
-}
-#log .min
-{
-    background-position: -142px 0 !important;
-}
-
 
 .loading {
     background: url(../img/loaderA16.gif) no-repeat;
@@ -321,21 +315,21 @@ DD
     color: #666;
 }
 
-#icon-edit
+.icon-edit
 {
     background: url(../img/edit16x16.png) no-repeat 0 4px;
     height:17px;
     width:16px;
     margin-right: 4px;
 }
-#icon-delete
+.icon-delete
 {
     background: url(../img/delete13x13.gif) no-repeat 0 4px;
     height:17px;
     width:16px;
     margin-right: 2px;
 }
-#icon-save
+.icon-save
 {
     background: url(../img/editor-toolbar.png) no-repeat -480px 2px;
     height:17px;
@@ -362,4 +356,48 @@ DD
 .tnode-Hash
 {
     background-position: -144px -24px;
+}
+
+#Admin-tab_content
+{
+    font-size: 13px;
+}
+#Admin-tab_content H2
+{
+    font-size: 24px;
+}
+#developers OL
+{
+    margin: 10px 20px;
+}
+#developers
+{
+    border: solid 1px #666;
+    padding: 10px;
+    width: 32%;
+    float: right;
+    background: #f1f1f1;
+}
+#developers H3
+{
+    font-size: 18px;
+    text-align:center;
+    margin-bottom: 10px;
+}
+#developers EM
+{
+    font-style:italic;
+    font-size: 11px;
+}
+
+#toolbarServerOps
+{
+    width: 460px;
+}
+.icon-refresh
+{
+    background: url(../img/refresh13x13.png) no-repeat 0 4px;
+    height:17px;
+    width:16px;
+    margin-right: 2px;
 }

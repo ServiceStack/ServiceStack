@@ -15,7 +15,7 @@ namespace RedisWebServices.ServiceInterface.Admin
 			{
 				using (var redisClient = ClientsManager.GetClient())
 				{
-					redisClient.Db = redisClient.Db;
+					redisClient.Db = request.Db;
 					redisClient.FlushDb();
 				}
 			}
