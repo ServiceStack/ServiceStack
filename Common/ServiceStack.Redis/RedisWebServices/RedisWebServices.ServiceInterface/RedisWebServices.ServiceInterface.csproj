@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin\GetServerInfoService.cs" />
     <Compile Include="Admin\EchoService.cs" />
     <Compile Include="Admin\FlushDbService.cs" />
     <Compile Include="Admin\SlaveOfService.cs" />

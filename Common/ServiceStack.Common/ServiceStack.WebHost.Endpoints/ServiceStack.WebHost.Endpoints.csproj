@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
     <Compile Include="Ext\AllFilesHandler.cs" />
+    <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
     <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="JsvAsyncOneWayHandler.cs" />

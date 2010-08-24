@@ -69,6 +69,7 @@
     <Compile Include="Operations\App\GetNorthwindData.cs" />
     <Compile Include="Operations\App\PopulateRedisWithData.cs" />
     <Compile Include="Operations\App\GetCodeGeneratedJavaScript.cs" />
+    <Compile Include="Operations\Common\GetServerInfo.cs" />
     <Compile Include="Operations\Common\GetEntryTypes.cs" />
     <Compile Include="Operations\Common\SearchKeysGroup.cs" />
     <Compile Include="Operations\Common\ExpireEntryAt.cs" />

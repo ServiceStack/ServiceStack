@@ -13,6 +13,8 @@ namespace ServiceStack.ServiceClient.Web
 	{
 		private static ILog log = LogManager.GetLogger(typeof (ServiceClientBase));
 
+		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
+
 		public const string DefaultHttpMethod = "POST";
 
 		protected ServiceClientBase()
@@ -114,6 +116,11 @@ namespace ServiceStack.ServiceClient.Web
 
 				client.Accept = string.Format("{0}, */*", ContentType);
 				client.Method = HttpMethod ?? DefaultHttpMethod;
+
+				if (HttpWebRequestFilter != null)
+				{
+					HttpWebRequestFilter(client);
+				}
 
 				if (!isHttpGet)
 				{
