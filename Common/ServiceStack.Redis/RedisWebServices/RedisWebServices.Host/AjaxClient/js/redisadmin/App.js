@@ -8,7 +8,21 @@
 
 goog.provide("redisadmin.App");
 
+goog.require('goog.events');
 goog.require('goog.json');
+goog.require('goog.async');
+goog.require('goog.string');
+goog.require('goog.array');
+goog.require('goog.dom');
+goog.require('goog.style');
+goog.require('goog.debug.Logger');
+
+goog.require('goog.ui.Component');
+goog.require('goog.ui.TabBar');
+goog.require('goog.ui.SplitPane');
+goog.require('goog.ui.tree.TreeControl');
+goog.require('goog.ui.tree.BaseNode');
+
 
 /**
  * @constructor 
@@ -45,7 +59,6 @@ redisadmin.App = function()
 
     this.initTabs();
     this.initSplitter();
-    this.init();
 }
 goog.inherits(redisadmin.App, goog.events.EventTarget);
 goog.addSingletonGetter(redisadmin.App);
@@ -65,17 +78,6 @@ redisadmin.App.TabIndexMap = {
     'Editor': 1
 };
 redisadmin.App.TabNames = [redisadmin.App.TabName.ADMIN, redisadmin.App.TabName.EDITOR];
-
-redisadmin.App.prototype.setHistory = function(history, initPath)
-{
-    this.log.info('setHistory: ' + history + ": " + initPath);
-    this.history = history;
-
-    if (initPath)
-    {
-        app.loadPath(initPath);
-    }
-};
 
 redisadmin.App.prototype.loadPath = function(path)
 {
@@ -216,7 +218,7 @@ redisadmin.App.prototype.showKeyGroup = function(parentNode)
     }
 };
 
-redisadmin.App.prototype.init = function(path)
+redisadmin.App.prototype.init = function(globalSearchPattern)
 {
     var $this = this;
     goog.events.listen(document, goog.events.EventType.KEYDOWN, function(e)
@@ -235,7 +237,51 @@ redisadmin.App.prototype.init = function(path)
     goog.array.forEach($this.controllers, function(controller){
         controller.init();
     });
+
+    this.history = new goog.History();
+    goog.events.listen(this.history, goog.History.EventType.NAVIGATE, function(e){
+        $this.loadPath(e.token);
+    });
+    this.history.setEnabled(true);
+
+    var $txtQuery = goog.dom.getElement("txtQuery"),
+        $btnSearch = goog.dom.getElement("btnSearch");
+
+    var searchKeysFn = function(){ app.searchInMainNav($txtQuery.value); };
+
+    goog.events.listen($txtQuery, goog.events.EventType.KEYPRESS, function(e){
+        if (e.keyCode == goog.events.KeyCodes.ENTER) searchKeysFn();
+    });
+
+    var btnSearch = goog.ui.decorate($btnSearch);
+    btnSearch.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
+    goog.events.listen($btnSearch, goog.events.EventType.CLICK, searchKeysFn);
+
+    $txtQuery.value = globalSearchPattern;
+
+    searchKeysFn();
 };
+
+redisadmin.App.prototype.setHistory = function(history, initPath)
+{
+    this.log.info('setHistory: ' + history + ": " + initPath);
+    this.history = history;
+
+    if (initPath)
+    {
+        app.loadPath(initPath);
+    }
+};
+
+
+redisadmin.App.prototype.enableLogging = function()
+{
+    var divConsole = new goog.debug.DivConsole(goog.dom.getElement('divconsole'));
+    divConsole.setCapturing(true);
+    new goog.ui.Zippy('divconsole-header', 'divconsole');
+    goog.style.showElement(goog.dom.getElement('log'), true);
+}
+
 
 redisadmin.App.prototype.initTabs = function()
 {
@@ -658,3 +704,5 @@ redisadmin.App.prototype.showKey = function(key, inNewTab)
         }
     });
 };
+
+goog.exportSymbol("redisadmin.App", redisadmin.App);

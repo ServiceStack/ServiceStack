@@ -8,6 +8,10 @@
 
 goog.provide("redisadmin.AdminViewController");
 
+goog.require('goog.events');
+goog.require('goog.dom');
+goog.require('goog.ui.Toolbar');
+
 redisadmin.AdminViewController = function(rootEl, app)
 {
     redisadmin.ViewController.call(this, rootEl, app);

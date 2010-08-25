@@ -8,6 +8,15 @@
 
 goog.provide("redisadmin.EditorViewController");
 
+goog.require('goog.events');
+goog.require('goog.json');
+goog.require('goog.dom');
+goog.require('goog.style');
+
+goog.require('goog.ui.Component');
+goog.require('goog.ui.AutoComplete.Basic');
+goog.require('goog.ui.Toolbar');
+
 redisadmin.EditorViewController = function(rootEl, app)
 {
     redisadmin.ViewController.call(this, rootEl, app);
