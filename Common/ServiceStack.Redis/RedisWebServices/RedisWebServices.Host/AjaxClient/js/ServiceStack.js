@@ -1,5 +1,30 @@
 /** @constructor */
 
+/*
+if (!goog) {
+    var goog = {};
+    goog.provide = goog.require = goog.exportSymbol = function(){} 
+}
+*/
+
+/*
+goog.provide("JsonServiceClient");
+goog.provide("is");
+goog.provide("S");
+goog.provide("A");
+goog.provide("O");
+goog.provide("Path");
+goog.provide("Urn");
+goog.provide("Dto");
+*/
+
+goog.require("goog.dom");
+goog.require("goog.net.XhrIo");
+goog.require("goog.structs.Map");
+goog.require("goog.Uri.QueryData");
+goog.require("goog.Uri.QueryData");
+goog.require("goog.structs.Map");
+
 function JsonServiceClient(baseUri) {
     this.baseSyncReplyUri = Path.combine(baseUri, "Json/SyncReply");
     this.baseAsyncOneWayUri = Path.combine(baseUri, "Json/AsyncOneWay");
@@ -71,19 +96,19 @@ JsonServiceClient.prototype.postFormDataToService = function(webMethod, request,
 //Sends a HTTP 'POST' request as JSON @requires jQuery
 JsonServiceClient.prototype.postToService = function(webMethod, request, onSuccess, onError) {
     var jsonRequest = JsonServiceClient.toJSON(request);
-    this.send(webMethod, jsonRequest, onSuccess, onError, { type: "POST", processData: false, contentType: "application/json; charset=utf-8" });
+    this.send(webMethod, jsonRequest, onSuccess, onError, { type: "POST", processData: false, contentType: jsonContentType });
 };
 
 //Sends a HTTP 'PUT' request as JSON @requires jQuery
 JsonServiceClient.prototype.putToService = function(webMethod, request, onSuccess, onError) {
     var jsonRequest = JsonServiceClient.toJSON(request);
-    this.send(webMethod, jsonRequest, onSuccess, onError, { type: "PUT", processData: false, contentType: "application/json; charset=utf-8" });
+    this.send(webMethod, jsonRequest, onSuccess, onError, { type: "PUT", processData: false, contentType: jsonContentType });
 };
 
 //Sends a HTTP 'DELETE' request as JSON @requires jQuery
 JsonServiceClient.prototype.deleteFromService = function(webMethod, request, onSuccess, onError) {
     var jsonRequest = JsonServiceClient.toJSON(request);
-    this.send(webMethod, jsonRequest, onSuccess, onError, { type: "DELETE", processData: false, contentType: "application/json; charset=utf-8" });
+    this.send(webMethod, jsonRequest, onSuccess, onError, { type: "DELETE", processData: false, contentType: jsonContentType });
 };
 
 JsonServiceClient.id = 0;
@@ -120,28 +145,104 @@ JsonServiceClient.toJsonDate = function(date) {
     var jsDate = is.Date(date) ? date : new Date(date);
 }
 //Adapter methods use jquery or google closure library if available
+JsonServiceClient.parseJSON_ = null;
 JsonServiceClient.parseJSON = function(json) {
-    if (typeof (JSON) == 'object' && JSON.parse)
-        return JSON.parse(json);
-    if ($ && $.parseJSON)
-        return $.parseJSON(json);
-    if (goog && goog.json)
-        return goog.json.parse(json);
-    throw "no json parser found";
+    if (JsonServiceClient.parseJSON_ === null)
+    {
+        if (typeof(JSON) == 'object' && JSON.parse)
+            JsonServiceClient.parseJSON_ = JSON.parse(json);
+        if (window.$ !== undefined && $.parseJSON)
+            JsonServiceClient.parseJSON_ = $.parseJSON(json);
+        if (!is.Undefined(goog) && goog.json)
+            JsonServiceClient.parseJSON_ = goog.json.parse(json);
+        else
+            throw "no json parser found";
+    }
+    return JsonServiceClient.parseJSON_(json);
 }
+JsonServiceClient.toJSON_ = null;
 JsonServiceClient.toJSON = function(o) {
-    if (typeof(JSON) == 'object' && JSON.stringify)
-        return JSON.stringify(o);
-    if ($ && $.toJSON)
-        return $.toJSON(o);
-    if (goog && goog.json)
-        return goog.json.serialize(o);
-    throw "no json serializer found";
+    if (JsonServiceClient.toJSON_ === null)
+    {
+        if (typeof(JSON) == 'object' && JSON.stringify)
+            JsonServiceClient.toJSON_ = JSON.stringify;
+        if (window.$ !== undefined && $.toJSON)
+            JsonServiceClient.toJSON_ = $.toJSON;
+        if (!is.Undefined(goog) && goog.json)
+            JsonServiceClient.toJSON_ = goog.json.serialize;
+        else
+            throw "no json serializer found";
+    }
+    return JsonServiceClient.toJSON_(o);
 }
-JsonServiceClient.ajax = function(ajaxOptions) {
-    if ($ && $.ajax)
-        return $.ajax(ajaxOptions);
-    throw "no ajax provider found";
+
+var jsonContentType = "application/json; charset=utf-8",
+    rquery = /\?/,
+	rts = /(\?|&)_=.*?(&|$)/,
+	rurl = /^(\w+:)?\/\/([^\/?#]+)/,
+    ajaxSettings = {
+        type: "GET",
+        contentType: "application/x-www-form-urlencoded",
+        dataType: "json",
+        accepts: {
+            xml: "application/xml, text/xml",
+            html: "text/html",
+            script: "text/javascript, application/javascript",
+            json: "application/json, text/javascript",
+            text: "text/plain",
+            _default: "*/*"
+        }
+    };
+
+JsonServiceClient.ajax = function(s) {
+    if (window.$ !== undefined && $.ajax)
+        return $.ajax(s);
+
+    for (var k in ajaxSettings) if (!s[k]) s[k] = ajaxSettings[k];
+
+    var xhr = new goog.net.XhrIo();
+    goog.events.listen(xhr, "complete", function(){
+        if (xhr.isSuccess())
+        {
+            if (!s.success) return;
+            if (s.dataType == "json") {
+                s.success(xhr.getResponseJson());
+            } else if (s.dataType == "xml") {
+                s.success(xhr.getResponseXml());
+            } else {
+                s.success(xhr.getResponseText());
+            }
+        }
+        else
+        {
+            if (!s.error) return;
+            s.error(xhr, xhr.getLastErrorCode(), xhr.getLastError());
+        }
+    });
+
+    if (s.cache === false && type === "GET" )
+    {
+        var ts = (new Date).getTime();
+        var ret = s.url.replace(rts, "$1_=" + ts + "$2");
+        s.url = ret + ((ret === s.url) ? (rquery.test(s.url) ? "&" : "?") + "_=" + ts : "");
+    }
+
+    var headers = {'Content-Type':s.contentType};
+    var data = goog.Uri.QueryData.createFromMap(new goog.structs.Map(s.data));
+
+    if (s.type == "GET")
+    {
+        s.url += (rquery.test(s.url) ? "&" : "?") + data.toString();
+        xhr.send(s.url, "GET", null, headers);
+    }
+    else
+    {
+        var strData = (s.contentType == jsonContentType)
+            ? s.data
+            : data.toString();
+
+        xhr.send(s.url, s.type, strData, headers);
+    }
 }
 
 /* Dependent snippets below from AjaxStack. TODO: replace with utils in Google Closure Library */
@@ -394,3 +495,14 @@ Dto.formatValue = function(value)
     if (is.Empty(value)) return "";
     return value;
 };
+
+/*
+goog.exportSymbol("JsonServiceClient", JsonServiceClient);
+goog.exportSymbol("is", is);
+goog.exportSymbol("S", S);
+goog.exportSymbol("A", A);
+goog.exportSymbol("O", O);
+goog.exportSymbol("Path", Path);
+goog.exportSymbol("Urn", Urn);
+goog.exportSymbol("Dto", Dto);
+*/
