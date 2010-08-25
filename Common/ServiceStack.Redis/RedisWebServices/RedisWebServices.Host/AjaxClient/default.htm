@@ -4,22 +4,19 @@
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=8">
 <title>ServiceStack Redis Admin UI</title>
+    
 <link rel="stylesheet" href="css/common.css">
 <link rel="stylesheet" href="css/tree.css">
-
 <link rel="stylesheet" href="css/tab.css">
 <link rel="stylesheet" href="css/toolbar.css">
 <link rel="stylesheet" href="css/tabbar.css">
-
-<link rel="stylesheet" href="css/default.css">
-
 <link rel="stylesheet" href="css/button.css">
 <link rel="stylesheet" href="css/custombutton.css">
 <link rel="stylesheet" href="css/flatbutton.css">
 <link rel="stylesheet" href="css/linkbutton.css">
-
 <link rel="stylesheet" href="css/autocomplete.css">
-
+    
+<link rel="stylesheet" href="css/default.css">
 
 <script src="js/closure-library/closure/goog/base.js"></script>
 <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
@@ -173,48 +170,9 @@
 </div>
 
 <script type="text/javascript">
-    var tree, app, initPath, _history;
-
-    var enableLogging = true;
-    if (enableLogging)
-    {
-        var divConsole = new goog.debug.DivConsole(goog.dom.getElement('divconsole'));
-        divConsole.setCapturing(true);
-        new goog.ui.Zippy('divconsole-header', 'divconsole');
-        goog.style.showElement(goog.dom.getElement('log'), true);
-    }
-
-    //After some trial & error this is only good place to init 'goog.History()'
-    _history = new goog.History();
-    goog.events.listen(_history, goog.History.EventType.NAVIGATE, function(e){
-        if (!app) {
-            initPath = e.token;
-            return;
-        }
-        app.loadPath(e.token);
-    });
-    _history.setEnabled(true);
-
-    app = redisadmin.App.getInstance();
-
-    var $txtQuery = goog.dom.getElement("txtQuery"),
-        $btnSearch = goog.dom.getElement("btnSearch");
-
-    var searchKeysFn = function(){ app.searchInMainNav($txtQuery.value); };
-    
-    goog.events.listen($txtQuery, goog.events.EventType.KEYPRESS, function(e){
-        if (e.keyCode == goog.events.KeyCodes.ENTER) searchKeysFn();
-    });
-
-    var btnSearch = goog.ui.decorate($btnSearch);
-    btnSearch.setDispatchTransitionEvents(goog.ui.Component.State.ALL, true);
-    goog.events.listen($btnSearch, goog.events.EventType.CLICK, searchKeysFn);
-
-    $txtQuery.value = "urn:*";
-
-    searchKeysFn();
-
-    app.setHistory(_history, initPath);
+    var app = redisadmin.App.getInstance();
+    app.enableLogging();
+    app.init("urn:*");
 </script>
 
 </body>

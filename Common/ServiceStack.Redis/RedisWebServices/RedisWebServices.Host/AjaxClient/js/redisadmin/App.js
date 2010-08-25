@@ -10,12 +10,12 @@ goog.provide("redisadmin.App");
 
 goog.require('goog.events');
 goog.require('goog.json');
-goog.require('goog.async');
 goog.require('goog.string');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.style');
 goog.require('goog.debug.Logger');
+goog.require('goog.async.ConditionalDelay');
 
 goog.require('goog.ui.Component');
 goog.require('goog.ui.TabBar');
