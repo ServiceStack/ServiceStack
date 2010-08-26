@@ -7,8 +7,11 @@ goog.require("JsonServiceClient");
  * @constructor
  */
 RedisClient = function(baseUri) {
-   var baseUri = baseUri || 'http://' + document.location.hostname + '/RedisWebServices.Host/Public/';
-   this.gateway = new JsonServiceClient(baseUri);
+    var baseUri = document.location.href.indexOf('#') != -1
+        ? document.location.href.substr(0, document.location.href.indexOf('#'))
+        : document.location.href;
+    baseUri = baseUri.replace('default.htm','').replace('AjaxClient', 'Public');
+    this.gateway = new JsonServiceClient(baseUri);
 }
 RedisClient.errorFn = function() {
 };

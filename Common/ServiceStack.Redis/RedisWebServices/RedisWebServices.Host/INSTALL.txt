@@ -1,0 +1,81 @@
+The Redis Admin UI is an ASP.NET web application that lets you manage and visualize your Redis data. It is primarily 
+It requires .NET and IIS installed to run on Windows, and Mono installed to run on Linux and OSX platforms.
+
+WARNING: The Redis Admin UI exposes all Redis operations (including FLUSHALL) as Web Services so you only want to host it inside a trusted network.
+You will need to add your own infrastructure security (e.g. VPN) if you want to host it on the Internet as you will effectively giving everyone full access to your Redis data.
+
+
+== INSALLING ON WINDOWS ==
+
+The recommend way to host this application is to use IIS:
+1. Run IIS Manager Console
+2. Right-click on the 'Default Web Site' on the tree view in the left side bar
+3. Click on 'Add Application' 
+4. Set the Alias to 'RedisAdminUI' and the Physical path to the base path of the application
+5. Modify the appSettings in the Web.config to point it your Redis instance
+6. Open 'http://localhost/RedisAdminUi/' in a browser to run the application
+
+
+== INSALLING ON LINUX/OSX ==
+
+1. If you haven't already done so download and install Mono from their download page:
+http://www.go-mono.com/mono-downloads/download.html
+
+2. Configure the application to point to the Redis instance you want to view. To do this modify the <appSettings/> in the 'Web.config' file which defaults to:
+
+<appSettings>
+	<add key="RedisHostAddress" value="localhost:6379"/>
+	<add key="RedisDb" value="0"/>
+</appSettings> 
+
+
+For a temp but immediate solution you can simply run mono's embedded appserver 'xsp' on the base directory (where the Web.config file is).
+This will run the application on port 8080 by default so you can run the application by opening the url:
+
+http://localhost:8080/RedisAdminUi/
+
+
+For a more permanent solution you will want to configure mono and the application to run on your preferred web server.
+
+To run it on Apache with mod_mono follow this guideline:
+http://mono-project.com/Mod_mono
+
+You can also host it inside any web server that supports FastCGI, if you're using nginx follow this guideline:
+http://mono-project.com/FastCGI_Nginx
+
+
+If the application is configured correctly you can run it by opening this url:
+http://localhost/RedisAdminUi/
+
+
+
+== TROUBLE SHOOTING ==
+
+Once you have the application installed you should test it to see if its configured and installed properly.
+
+Since the client are just static html/js/css (i.e. nothing can go wrong) the only thing we need to test is that the server. 
+To do this we can just call any of the web services listed here:
+
+http://localhost/RedisAdminUi/Public/Metadata
+
+Here are couple of examples using the XML endpoint:
+http://localhost/RedisAdminUi/Public/Xml/SyncReply/GetServerInfo
+http://localhost/RedisAdminUi/Public/Xml/SyncReply/SearchKeysGroup?Pattern=urn:c*
+
+If the results don't return a 404 or 500 then everything looks good and you can run confidentally try out the client on this url:
+
+http://localhost/RedisAdminUi/
+
+
+== FINAL WORDS ==
+
+As the Redis Admin UI is Open source and since all Redis operations are available as web services you can add any additional functionality to the UI using basic javascript and html. If you're keen to do this I recommend checking out the development version from the svn repo:
+
+http://code.google.com/p/servicestack/source/browse/#svn/trunk/Common/ServiceStack.Redis/RedisWebServices
+
+You can ask questions or provide feedback on the redis mailing list:
+http://groups.google.com/group/redis-db/topics
+
+And you can file any issues you have with Admin UI here:
+http://code.google.com/p/servicestack/issues/list
+

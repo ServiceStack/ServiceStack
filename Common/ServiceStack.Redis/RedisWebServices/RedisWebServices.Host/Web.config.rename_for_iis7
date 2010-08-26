@@ -17,7 +17,9 @@
 	</configSections> 
 	<appSettings>
 		<add key="RedisHostAddress" value="localhost:6379"/>
-		<add key="UrnSeperator" value=":"/>
+		<add key="RedisDb" value="0"/>
+		<add key="DefaultRedirectPath" value="AjaxClient"/>
+		<!--<add key="DefaultRedirectPath" value="Public/Metadata"/>-->
 	</appSettings> 
 	<connectionStrings/>
 	<system.web>
