@@ -20,10 +20,19 @@ namespace RedisWebServices.ServiceInterface.App
 		{
 			var sb = new StringBuilder();
 
-			sb.Append(@"function RedisClient(baseUri) {
+			sb.Append(@"goog.provide(""RedisClient"");
+goog.require(""JsonServiceClient"");
+
+/**
+ * The Redis ajax service client gateway
+ * @param {string} the baseUri of ServiceStack web services.
+ * @constructor
+ */
+RedisClient = function(baseUri) {
    var baseUri = baseUri || 'http://' + document.location.hostname + '/RedisWebServices.Host/Public/';
    this.gateway = new JsonServiceClient(baseUri);
 }
+
 RedisClient.errorFn = function() {
 };
 RedisClient.getLexicalScore = function(value)
@@ -193,6 +202,7 @@ RedisClient.prototype =
 
 			sb.AppendLine();
 			sb.Append("};");
+			sb.AppendLine("goog.exportSymbol(\"RedisClient\", RedisClient);");
 
 			return new TextResult(sb, MimeTypes.JavaScript);
 		}
