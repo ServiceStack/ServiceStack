@@ -8,6 +8,8 @@
 
 goog.provide("redisadmin.EditorViewController");
 
+goog.require("redisadmin.ViewController");
+
 goog.require('goog.events');
 goog.require('goog.json');
 goog.require('goog.dom');
@@ -16,7 +18,15 @@ goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.AutoComplete.Basic');
 goog.require('goog.ui.Toolbar');
+goog.require('goog.ui.ToolbarButton');
+goog.require('goog.ui.ToolbarSeparator');
 
+/**
+ * Handles the Editor tab content
+ * @param {string} rootEl name of root element.
+ * @param {redisadmin.App} the main app.
+ * @constructor
+ */
 redisadmin.EditorViewController = function(rootEl, app)
 {
     redisadmin.ViewController.call(this, rootEl, app);

@@ -8,6 +8,12 @@
 
 goog.provide("redisadmin.ViewController");
 
+/**
+ * Base controller
+ * @param {string} rootEl name of root element.
+ * @param {?Object} the main app.
+ * @constructor
+ */
 redisadmin.ViewController = function(rootEl, app)
 {
     this.app = app;
@@ -15,7 +21,3 @@ redisadmin.ViewController = function(rootEl, app)
     goog.events.EventTarget.call(this);
 }
 goog.inherits(redisadmin.ViewController, goog.ui.Component);
-
-redisadmin.ViewController.prototype.loadPath = function(path)
-{    
-};

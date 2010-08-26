@@ -8,10 +8,20 @@
 
 goog.provide("redisadmin.AdminViewController");
 
+goog.require("redisadmin.ViewController");
+
 goog.require('goog.events');
 goog.require('goog.dom');
 goog.require('goog.ui.Toolbar');
+goog.require('goog.ui.ToolbarButton');
+goog.require('goog.ui.ToolbarSeparator');
 
+/**
+ * Handles the Admin tab content
+ * @param {string} rootEl name of root element.
+ * @param {redisadmin.App} the main app.
+ * @constructor
+ */
 redisadmin.AdminViewController = function(rootEl, app)
 {
     redisadmin.ViewController.call(this, rootEl, app);
@@ -98,3 +108,5 @@ redisadmin.AdminViewController.prototype.refreshServerInfo = function(path)
             alert("There was a problem retrieving Redis server info:\n" + e);
         });
 }
+
+//goog.exportSymbol("redisadmin.AdminViewController", redisadmin.AdminViewController);

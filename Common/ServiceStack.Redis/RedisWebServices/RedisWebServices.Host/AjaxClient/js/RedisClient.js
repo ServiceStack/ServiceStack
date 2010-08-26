@@ -1,4 +1,12 @@
-function RedisClient(baseUri) {
+goog.provide("RedisClient");
+goog.require("JsonServiceClient");
+
+/**
+ * The Redis ajax service client gateway
+ * @param {string} the baseUri of ServiceStack web services.
+ * @constructor
+ */
+RedisClient = function(baseUri) {
    var baseUri = baseUri || 'http://' + document.location.hostname + '/RedisWebServices.Host/Public/';
    this.gateway = new JsonServiceClient(baseUri);
 }
@@ -1052,3 +1060,5 @@ RedisClient.prototype =
 			onErrorFn || RedisClient.errorFn);
 	}
 };
+
+goog.exportSymbol("RedisClient", RedisClient);

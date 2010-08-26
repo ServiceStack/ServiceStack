@@ -8,23 +8,35 @@
 
 goog.provide("redisadmin.App");
 
+goog.require("redisadmin.EditorViewController");
+goog.require("redisadmin.AdminViewController");
+goog.require("RedisClient");
+
 goog.require('goog.events');
 goog.require('goog.json');
 goog.require('goog.string');
 goog.require('goog.array');
 goog.require('goog.dom');
+goog.require('goog.dom.ViewportSizeMonitor');
+goog.require('goog.math.Size');
 goog.require('goog.style');
-goog.require('goog.debug.Logger');
 goog.require('goog.async.ConditionalDelay');
+goog.require('goog.History');
+
+goog.require('goog.debug.Logger');
+goog.require('goog.debug.DivConsole');
 
 goog.require('goog.ui.Component');
+goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.TabBar');
 goog.require('goog.ui.SplitPane');
+goog.require('goog.ui.Zippy');
 goog.require('goog.ui.tree.TreeControl');
 goog.require('goog.ui.tree.BaseNode');
 
 
 /**
+ * The main singleton App
  * @constructor 
  */
 redisadmin.App = function()
@@ -351,17 +363,11 @@ redisadmin.App.prototype.initSplitter = function()
     });
 };
 
-/**
- * @return {object}
- */
 redisadmin.App.prototype.getRedisClient = function()
 {
     return this.redis;
 }
 
-/**
- * @param {string}
- */
 redisadmin.App.prototype.searchInMainNav = function(query)
 {
     var $this = this;

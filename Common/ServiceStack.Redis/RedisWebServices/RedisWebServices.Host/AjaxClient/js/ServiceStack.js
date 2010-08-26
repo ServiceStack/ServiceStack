@@ -1,13 +1,9 @@
-/** @constructor */
+//Uncomment below to use this script with jQuery instead of the google closure library
+//if (!window.goog) {
+//    var goog = {};
+//    goog.provide = goog.require = goog.exportSymbol = function(){}
+//}
 
-/*
-if (!goog) {
-    var goog = {};
-    goog.provide = goog.require = goog.exportSymbol = function(){} 
-}
-*/
-
-/*
 goog.provide("JsonServiceClient");
 goog.provide("is");
 goog.provide("S");
@@ -16,7 +12,6 @@ goog.provide("O");
 goog.provide("Path");
 goog.provide("Urn");
 goog.provide("Dto");
-*/
 
 goog.require("goog.dom");
 goog.require("goog.net.XhrIo");
@@ -25,7 +20,12 @@ goog.require("goog.Uri.QueryData");
 goog.require("goog.Uri.QueryData");
 goog.require("goog.structs.Map");
 
-function JsonServiceClient(baseUri) {
+/**
+ * Handles the Editor tab content
+ * @param {string} the baseUri of ServiceStack web services.
+ * @constructor
+ */
+JsonServiceClient = function(baseUri) {
     this.baseSyncReplyUri = Path.combine(baseUri, "Json/SyncReply");
     this.baseAsyncOneWayUri = Path.combine(baseUri, "Json/AsyncOneWay");
 }
@@ -153,7 +153,7 @@ JsonServiceClient.parseJSON = function(json) {
             JsonServiceClient.parseJSON_ = JSON.parse(json);
         if (window.$ !== undefined && $.parseJSON)
             JsonServiceClient.parseJSON_ = $.parseJSON(json);
-        if (!is.Undefined(goog) && goog.json)
+        if (window.goog !== undefined && goog.json)
             JsonServiceClient.parseJSON_ = goog.json.parse(json);
         else
             throw "no json parser found";
@@ -168,7 +168,7 @@ JsonServiceClient.toJSON = function(o) {
             JsonServiceClient.toJSON_ = JSON.stringify;
         if (window.$ !== undefined && $.toJSON)
             JsonServiceClient.toJSON_ = $.toJSON;
-        if (!is.Undefined(goog) && goog.json)
+        if (window.goog !== undefined && goog.json)
             JsonServiceClient.toJSON_ = goog.json.serialize;
         else
             throw "no json serializer found";
@@ -496,7 +496,6 @@ Dto.formatValue = function(value)
     return value;
 };
 
-/*
 goog.exportSymbol("JsonServiceClient", JsonServiceClient);
 goog.exportSymbol("is", is);
 goog.exportSymbol("S", S);
@@ -505,4 +504,3 @@ goog.exportSymbol("O", O);
 goog.exportSymbol("Path", Path);
 goog.exportSymbol("Urn", Urn);
 goog.exportSymbol("Dto", Dto);
-*/
