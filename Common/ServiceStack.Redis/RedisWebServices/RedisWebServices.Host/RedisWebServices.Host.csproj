@@ -66,7 +66,6 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AjaxClient\benchmarks.htm" />
     <Content Include="AjaxClient\css\autocomplete.css" />
     <Content Include="AjaxClient\css\button.css" />
     <Content Include="AjaxClient\css\common.css" />
@@ -78,6 +77,7 @@
     <Content Include="AjaxClient\css\tabbar.css" />
     <Content Include="AjaxClient\css\toolbar.css" />
     <Content Include="AjaxClient\css\tree.css" />
+    <Content Include="AjaxClient\debug.htm" />
     <Content Include="AjaxClient\default.htm" />
     <Content Include="AjaxClient\images\bubble_close.jpg" />
     <Content Include="AjaxClient\images\bubble_left.gif" />
@@ -124,20 +124,33 @@
     <Content Include="AjaxClient\images\tree.png" />
     <Content Include="AjaxClient\images\tree\cleardot.gif" />
     <Content Include="AjaxClient\images\tree\I.png" />
+    <Content Include="AjaxClient\images\tree\tree-old.png" />
     <Content Include="AjaxClient\images\tree\tree.gif" />
     <Content Include="AjaxClient\images\tree\tree.png" />
     <Content Include="AjaxClient\images\ui_controls.jpg" />
+    <Content Include="AjaxClient\img\27-icons.jpg" />
+    <Content Include="AjaxClient\img\back13x13.png" />
+    <Content Include="AjaxClient\img\delete13x13.gif" />
+    <Content Include="AjaxClient\img\edit-16x16.png" />
+    <Content Include="AjaxClient\img\edit16x16.png" />
+    <Content Include="AjaxClient\img\editor-toolbar.png" />
+    <Content Include="AjaxClient\img\key16x16.png" />
     <Content Include="AjaxClient\img\loaderA16.gif" />
     <Content Include="AjaxClient\img\redis-small-white.png" />
     <Content Include="AjaxClient\img\redis-small.png" />
+    <Content Include="AjaxClient\img\refresh13x13.png" />
+    <Content Include="AjaxClient\img\refresh16x16.png" />
     <Content Include="AjaxClient\img\servicestack-logo-small.png" />
-    <Content Include="AjaxClient\js\jLinq-2.2.1.js" />
-    <Content Include="AjaxClient\js\jquery-1.4.2.min.js" />
-    <Content Include="AjaxClient\js\jquery.json-2.2.js" />
+    <Content Include="AjaxClient\img\silk_icons_preview.png" />
+    <Content Include="AjaxClient\img\tree.png" />
+    <Content Include="AjaxClient\img\windowsprites.gif" />
+    <Content Include="AjaxClient\js\redisadmin\AdminViewController.js" />
     <Content Include="AjaxClient\js\redisadmin\App.js" />
+    <Content Include="AjaxClient\js\redisadmin\EditorViewController.js" />
+    <Content Include="AjaxClient\js\redisadmin\ViewController.js" />
     <Content Include="AjaxClient\js\RedisClient.js" />
     <Content Include="AjaxClient\js\ServiceStack.js" />
-    <Content Include="AjaxClient\js\wcf-ostynscormtime.js" />
+    <Content Include="AjaxClient\redisadmin-compiled.js" />
     <Content Include="AjaxClient\tests\default.htm" />
     <Content Include="AjaxClient\tests\src\CommonUtils.Tests.js" />
     <Content Include="AjaxClient\tests\src\RedisClient.Tests.js" />
@@ -158,8 +171,8 @@
   <ItemGroup>
     <Compile Include="AppHost.cs" />
     <Compile Include="Default.aspx.cs">
-      <SubType>ASPXCodeBehind</SubType>
       <DependentUpon>Default.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -180,7 +193,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="AjaxClient\js\app\" />
     <Folder Include="AjaxClient\js\servicestack\" />
     <Folder Include="App_Data\" />
   </ItemGroup>

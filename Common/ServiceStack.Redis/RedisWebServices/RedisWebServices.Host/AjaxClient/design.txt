@@ -1,2 +1,0 @@
-#editor/urn:customer/urn:customer:1
-#admin

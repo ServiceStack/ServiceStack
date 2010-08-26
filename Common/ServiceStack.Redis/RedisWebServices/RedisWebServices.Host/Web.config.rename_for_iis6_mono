@@ -17,9 +17,7 @@
 	</configSections>
 	<appSettings>
 		<add key="RedisHostAddress" value="localhost:6379"/>
-		<add key="ComplexTypeEncoding" value="Jsv"/>
-		<add key="UrnSeperator" value=":"/>
-		<add key="DefaultTake" value="20"/>
+		<add key="RedisDb" value="0"/>
 	</appSettings> 
 	<connectionStrings/>
 	<system.web>
