@@ -36,4 +36,12 @@ using System.Runtime.Serialization;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: ContractNamespace("http://schemas.servicestack.net/redis", ClrNamespace = "RedisWebServices.ServiceModel")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.Admin")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.App")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.Common")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.Hash")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.List")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.Messaging")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.Set")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Operations.SortedSet")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "RedisWebServices.ServiceModel.Types")]

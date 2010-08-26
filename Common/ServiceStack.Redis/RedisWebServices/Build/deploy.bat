@@ -8,7 +8,8 @@ MD "%DEPLOY_PATH%"
 
 XCOPY "%HOST_PATH%\*.aspx" "%DEPLOY_PATH%\" /Y
 XCOPY "%HOST_PATH%\*.asax" "%DEPLOY_PATH%\" /Y
-XCOPY "%HOST_PATH%\*.config" "%DEPLOY_PATH%\" /Y
+XCOPY "%HOST_PATH%\*.txt" "%DEPLOY_PATH%\" /Y
+XCOPY "%HOST_PATH%\*.config*" "%DEPLOY_PATH%\" /Y
 XCOPY "%HOST_PATH%\bin" "%DEPLOY_PATH%\bin\" /Y /S 
 XCOPY "%HOST_PATH%\AjaxClient" "%DEPLOY_PATH%\AjaxClient\" /Y /S 
 
