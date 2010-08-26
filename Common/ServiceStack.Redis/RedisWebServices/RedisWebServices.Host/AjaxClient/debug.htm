@@ -18,7 +18,55 @@
     
 <link rel="stylesheet" href="css/default.css">
 
-<script src="redisadmin-compiled.js" type="text/javascript"></script>
+<script src="../closure-library/closure/goog/base.js"></script>
+
+<script type="text/javascript">
+    goog.require('goog.debug.DivConsole');
+    goog.require('goog.debug.FancyWindow');
+    goog.require('goog.debug.Trace');
+
+    goog.require('goog.json');
+    goog.require('goog.events');
+    goog.require('goog.dom');
+    goog.require('goog.dom.ViewportSizeMonitor');
+    goog.require('goog.History');
+    goog.require('goog.async.ConditionalDelay');
+
+    goog.require('goog.ui.tree.TreeControl');
+    goog.require('goog.ui.TabBar');
+    goog.require('goog.ui.Component');
+    goog.require('goog.ui.SplitPane');
+    goog.require('goog.ui.SplitPane.Orientation');
+
+    goog.require('goog.ui.Toolbar');
+    goog.require('goog.ui.ToolbarRenderer');
+    goog.require('goog.ui.ToolbarButton');
+    goog.require('goog.ui.ToolbarMenuButton');
+    goog.require('goog.ui.ToolbarSelect');
+    goog.require('goog.ui.ToolbarSeparator');
+    goog.require('goog.ui.ToolbarToggleButton');
+
+    goog.require('goog.ui.Button');
+    goog.require('goog.ui.ButtonRenderer');
+    goog.require('goog.ui.CustomButton');
+    goog.require('goog.ui.CustomButtonRenderer');
+    goog.require('goog.ui.FlatButtonRenderer');
+    goog.require('goog.ui.LinkButtonRenderer');
+    goog.require('goog.ui.ToggleButton');
+    goog.require('goog.ui.decorate');
+
+    goog.require('goog.ui.Zippy');
+    goog.require('goog.ui.AutoComplete.Basic');
+
+</script>
+
+<script type="text/javascript" src="js/ServiceStack.js"></script>
+<script type="text/javascript" src="js/RedisClient.js"></script>
+
+<script type="text/javascript" src="js/redisadmin/ViewController.js"></script>
+<script type="text/javascript" src="js/redisadmin/EditorViewController.js"></script>
+<script type="text/javascript" src="js/redisadmin/AdminViewController.js"></script>
+<script type="text/javascript" src="js/redisadmin/App.js"></script>
 
 </head>
 
