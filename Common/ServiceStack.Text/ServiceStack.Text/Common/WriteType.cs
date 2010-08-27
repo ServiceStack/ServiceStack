@@ -115,7 +115,7 @@ namespace ServiceStack.Text.Common
 			foreach (var propertyWriter in PropertyWriters)
 			{
 				var propertyValue = propertyWriter.GetterFn((T)value);
-				if (propertyValue == null) return;
+				if (propertyValue == null) continue;
 				var propertyValueString = propertyValue as string;
 				if (propertyValueString != null)
 				{

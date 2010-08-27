@@ -78,6 +78,7 @@
     <Compile Include="JsonTests\BasicJsonTests.cs" />
     <Compile Include="JsonTests\EscapedCharsTests.cs" />
     <Compile Include="JsonTests\JsonDataContractCompatibilityTests.cs" />
+    <Compile Include="QueryStringSerializerTests.cs" />
     <Compile Include="Support\BenchmarkTests.cs" />
     <Compile Include="Utils\DateTimeSerializerTests.cs" />
     <Compile Include="DdnContentIngestTests.cs" />

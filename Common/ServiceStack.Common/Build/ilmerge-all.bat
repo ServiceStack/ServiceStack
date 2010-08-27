@@ -60,5 +60,9 @@ COPY ServiceStack.ServiceInterface.dll ..\..\..\ServiceStack.Examples\Lib
 COPY ServiceStack.dll ..\..\..\MonoTouch.Examples\RemoteInfo\Server\Lib
 COPY ServiceStack.Interfaces.dll ..\..\..\MonoTouch.Examples\RemoteInfo\Server\Lib
 
+COPY ServiceStack.dll ..\..\ServiceStack.Redis\RedisWebServices\Lib
+COPY ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\RedisWebServices\Lib
+COPY ServiceStack.ServiceInterface.dll ..\..\ServiceStack.Redis\RedisWebServices\Lib
+
 REM COPY TO RELEASE
 COPY ..\..\ServiceStack.Text\ServiceStack.Text\bin\%BUILD%\ServiceStack.Text.dll ..\..\..\release\latest\ServiceStack.Text\

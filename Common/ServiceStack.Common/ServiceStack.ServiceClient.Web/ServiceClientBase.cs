@@ -53,7 +53,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		public abstract T DeserializeFromStream<T>(Stream stream);
 
-		public TResponse Send<TResponse>(object request)
+		public virtual TResponse Send<TResponse>(object request)
 		{
 			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
 			var client = SendRequest(request, requestUri);
