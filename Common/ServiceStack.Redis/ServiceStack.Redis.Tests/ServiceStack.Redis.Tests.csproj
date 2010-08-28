@@ -85,6 +85,7 @@
     <Compile Include="Examples\BestPractice\IBlogRepository.cs" />
     <Compile Include="Examples\SimpleLocks.cs" />
     <Compile Include="Examples\SimplePubSub.cs" />
+    <Compile Include="Issues\ReportedIssues.cs" />
     <Compile Include="Issues\TransactionIssueTests.cs" />
     <Compile Include="RedisBasicPersistenceProviderTests.cs" />
     <Compile Include="Examples\BestPractice\BlogPostMigrations.cs" />

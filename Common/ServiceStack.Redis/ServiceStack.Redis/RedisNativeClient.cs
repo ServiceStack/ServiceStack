@@ -44,7 +44,7 @@ namespace ServiceStack.Redis
 		private SocketException lastSocketException;
 		public bool HadExceptions { get; protected set; }
 
-		protected Socket Socket;
+		protected Socket socket;
 		protected BufferedStream Bstream;
 
 		/// <summary>
@@ -1125,6 +1125,7 @@ namespace ServiceStack.Redis
 
 		public RedisPipelineCommand CreatePipelineCommand()
 		{
+			AssertConnectedSocket();
 			return new RedisPipelineCommand(this);
 		}
 
@@ -1159,7 +1160,7 @@ namespace ServiceStack.Redis
 
 		internal void DisposeConnection()
 		{
-			if (Socket == null) return;
+			if (socket == null) return;
 
 			try
 			{
@@ -1186,12 +1187,12 @@ namespace ServiceStack.Redis
 			catch { }
 			try
 			{
-				if (Socket != null)
-					Socket.Close();
+				if (socket != null)
+					socket.Close();
 			}
 			catch { }
 			Bstream = null;
-			Socket = null;
+			socket = null;
 		}
 	}
 }

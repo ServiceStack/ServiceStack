@@ -33,8 +33,8 @@ namespace ServiceStack.Redis
 			if (redisClient.CurrentTransaction != null)
 				throw new InvalidOperationException("An atomic command is already in use");
 
-			redisClient.CurrentTransaction = this;
 			redisClient.Multi();
+			redisClient.CurrentTransaction = this;
 		}
 
 		private void BeginQueuedCommand(QueuedRedisOperation queuedRedisOperation)

@@ -23,33 +23,38 @@ namespace ServiceStack.Redis
 	{
 		private void Connect()
 		{
-			Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
+			socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp) {
 				SendTimeout = SendTimeout
 			};
 			try
 			{
-				Socket.Connect(Host, Port);
+				socket.Connect(Host, Port);
 
-				if (!Socket.Connected)
+				if (!socket.Connected)
 				{
-					Socket.Close();
-					Socket = null;
+					socket.Close();
+					socket = null;
 					return;
 				}
-				Bstream = new BufferedStream(new NetworkStream(Socket), 16 * 1024);
+				Bstream = new BufferedStream(new NetworkStream(socket), 16 * 1024);
 
 				if (Password != null)
 					SendExpectSuccess(Commands.Auth, Password.ToUtf8Bytes());
 
 				db = 0;
-				var ipEndpoint = Socket.LocalEndPoint as IPEndPoint;
+				var ipEndpoint = socket.LocalEndPoint as IPEndPoint;
 				clientPort = ipEndpoint != null ? ipEndpoint.Port : -1;
 				lastCommand = null;
 				lastSocketException = null;
 				LastConnectedAtTimestamp = Stopwatch.GetTimestamp();
 
-				//force version reload
-				log.DebugFormat("redis-server Version: {0}", IsPreVersion1_26);
+				if (isPreVersion1_26 == null)
+				{
+					isPreVersion1_26 = this.ServerVersion.CompareTo("1.2.6") <= 0;
+
+					//force version reload
+					log.DebugFormat("redis-server Version: {0}", isPreVersion1_26);
+				}
 			}
 			catch (SocketException ex)
 			{
@@ -83,21 +88,21 @@ namespace ServiceStack.Redis
 				var now = Stopwatch.GetTimestamp();
 				var elapsedSecs = (now - LastConnectedAtTimestamp) / Stopwatch.Frequency;
 
-				if (elapsedSecs > IdleTimeOutSecs && !Socket.IsConnected())
+				if (elapsedSecs > IdleTimeOutSecs && !socket.IsConnected())
 				{
 					return Reconnect();
 				}
 				LastConnectedAtTimestamp = now;
 			}
 
-			if (Socket == null)
+			if (socket == null)
 			{
 				var previousDb = db;
 				Connect();
 				if (previousDb != DefaultDb) this.Db = previousDb;
 			}
 
-			var isConnected = Socket != null;
+			var isConnected = socket != null;
 
 			return isConnected;
 		}
@@ -111,7 +116,7 @@ namespace ServiceStack.Redis
 
 			if (previousDb != DefaultDb) this.Db = previousDb;
 
-			return Socket != null;
+			return socket != null;
 		}
 
 		private bool HandleSocketException(SocketException ex)
@@ -122,8 +127,8 @@ namespace ServiceStack.Redis
 			lastSocketException = ex;
 
 			// timeout?
-			Socket.Close();
-			Socket = null;
+			socket.Close();
+			socket = null;
 
 			return false;
 		}
@@ -222,7 +227,7 @@ namespace ServiceStack.Redis
 
 		public void FlushSendBuffer()
 		{
-			Socket.Send(cmdBuffer, cmdBufferIndex, SocketFlags.None);
+			socket.Send(cmdBuffer, cmdBufferIndex, SocketFlags.None);
 			cmdBufferIndex = 0;
 		}
 
