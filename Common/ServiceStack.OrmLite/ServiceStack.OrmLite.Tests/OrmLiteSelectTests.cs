@@ -191,7 +191,7 @@ namespace ServiceStack.OrmLite.Tests
 
 				n.Times(x => dbCmd.Insert(ModelWithIdAndName.Create(x)));
 
-				var ids = dbCmd.GetFirstColumn<long>("SELECT Id FROM ModelWithIdAndName");
+				var ids = dbCmd.GetFirstColumn<int>("SELECT Id FROM ModelWithIdAndName");
 
 				Assert.That(ids.Count, Is.EqualTo(n));
 			}

@@ -90,6 +90,8 @@ namespace ServiceStack.OrmLite
 		public string DecimalColumnDefinition = "DECIMAL";
 		public string BlobColumnDefinition = "BLOB";
 		public string DateTimeColumnDefinition = "DATETIME";
+		public string TimeColumnDefinition = "DATETIME";
+		//public string TimeColumnDefinition = "TIME"; //SQLSERVER 2008+
 
 		protected Dictionary<Type, string> ColumnTypeMap;
 
@@ -150,7 +152,7 @@ namespace ServiceStack.OrmLite
         		{ typeof(Guid), GuidColumnDefinition },
 
         		{ typeof(DateTime), DateTimeColumnDefinition },
-        		{ typeof(TimeSpan), DateTimeColumnDefinition },
+        		{ typeof(TimeSpan), TimeColumnDefinition },
 
         		{ typeof(byte), IntColumnDefinition },
         		{ typeof(sbyte), IntColumnDefinition },
@@ -200,8 +202,17 @@ namespace ServiceStack.OrmLite
 				return value;
 			}
 
-			var convertedValue = TypeSerializer.DeserializeFromString(value.ToString(), type);
-			return convertedValue;
+			try
+			{
+				var convertedValue = TypeSerializer.DeserializeFromString(value.ToString(), type);
+				return convertedValue;
+			}
+			catch (Exception ex)
+			{
+				log.ErrorFormat("Error ConvertDbValue trying to convert {0} into {1}",
+					value, type.Name);
+				throw;
+			}
 		}
 
 		public virtual string GetQuotedValue(object value, Type fieldType)

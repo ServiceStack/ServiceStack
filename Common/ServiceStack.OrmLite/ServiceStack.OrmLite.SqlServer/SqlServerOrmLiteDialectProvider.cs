@@ -11,6 +11,8 @@ namespace ServiceStack.OrmLite.SqlServer
 	{
 		public static SqlServerOrmLiteDialectProvider Instance = new SqlServerOrmLiteDialectProvider();
 
+		private static DateTime timeSpanOffset = new DateTime(1900,01,01);
+
 		public SqlServerOrmLiteDialectProvider()
 		{
 			base.AutoIncrementDefinition = "IDENTITY(1,1)";
@@ -65,15 +67,28 @@ namespace ServiceStack.OrmLite.SqlServer
 
 		public override object ConvertDbValue(object value, Type type)
 		{
-			if (value == null) return null;
-
-			if (type == typeof(bool))
+			try
 			{
-				var intVal = int.Parse(value.ToString());
-				return intVal != 0;
-			}
+				if (value == null || value is DBNull) return null;
 
-			return base.ConvertDbValue(value, type);
+				if (type == typeof(bool))
+				{
+					var intVal = Convert.ToInt32(value.ToString());
+					return intVal != 0;
+				}
+
+				if (type == typeof(TimeSpan) && value is DateTime)
+				{
+					var dateTimeValue = (DateTime)value;
+					return dateTimeValue - timeSpanOffset;
+				}
+
+				return base.ConvertDbValue(value, type);
+			}
+			catch (Exception ex)
+			{
+				throw;
+			}
 		}
 
 		public override string GetQuotedValue(object value, Type fieldType)
@@ -104,6 +119,7 @@ namespace ServiceStack.OrmLite.SqlServer
 		{
 			dbCmd.CommandText = "SELECT SCOPE_IDENTITY()";
 			var result = dbCmd.ExecuteScalar();
+			//if (result is DBNull) return 0;
 			return (long)result;
 		}
 	}

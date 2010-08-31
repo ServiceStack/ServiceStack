@@ -22,7 +22,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var rowIds = new List<int>(new[] { 1, 2, 3 });
 				rowIds.ForEach(x => dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(x)));
@@ -45,7 +45,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var rowIds = new List<int>(new[] { 1, 2, 3 });
 				rowIds.ForEach(x => dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(x)));
@@ -65,7 +65,7 @@ namespace ServiceStack.OrmLite.Tests
 			using (var db = ConnectionString.OpenDbConnection())
 			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(false);
+				dbCmd.CreateTable<ModelWithFieldsOfDifferentTypes>(true);
 
 				var rowIds = new List<int>(new[] { 1, 2, 3 });
 				rowIds.ForEach(x => dbCmd.Insert(ModelWithFieldsOfDifferentTypes.Create(x)));

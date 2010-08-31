@@ -138,6 +138,7 @@ namespace ServiceStack.Common.Tests.Models
 		{
 			return new SampleOrderLine {
 				Id = CreateUrn(userId, orderId, orderLineId),
+				CreatedDate = DateTime.Now,
 				OrderId = orderId,
 				OrderLineId = orderLineId,
 				AlbumName = "AlbumName",

@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Common.Tests.Models
 {
