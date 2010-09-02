@@ -63,17 +63,24 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
-				var request = JsvHandlerBase.CreateRequest(operationName,
-				                                           httpMethod, queryString, null, inputStream);
+				var request = JsvHandlerBase.CreateRequest(operationName, httpMethod, queryString, null, inputStream);
+
+				var isDebugRequest = queryString["debug"] != null;
+				
+				var writeFn = isDebugRequest
+					? (Func<object, string>)JsvFormatter.SerializeAndFormat
+					: TypeSerializer.SerializeToString;
+				
+				var contentType = isDebugRequest ? ContentType.PlainText : ContentType.JsvText;
 
 				if (url.Contains("/jsv/syncreply/"))
 				{
 					var result = ExecuteService(request, EndpointAttributes.SyncReply | EndpointAttributes.Jsv | HttpMethods.GetEndpointAttribute(httpMethod));
-					response.WriteToResponse(result, x => TypeSerializer.SerializeToString(result), ContentType.Jsv);
+					response.WriteToResponse(result, writeFn, contentType);
 				}
 				else if (url.Contains("/jsv/asynconeway/"))
 				{
-					var result = ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv | HttpMethods.GetEndpointAttribute(httpMethod));
+					ExecuteService(request, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv | HttpMethods.GetEndpointAttribute(httpMethod));
 				}
 			}
 			catch (Exception ex)
