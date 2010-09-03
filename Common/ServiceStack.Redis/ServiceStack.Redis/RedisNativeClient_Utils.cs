@@ -361,7 +361,7 @@ namespace ServiceStack.Redis
 			Log((char)c + s);
 
 			if (c == '-')
-				throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+				throw CreateResponseError(s.StartsWith("ERR") && s.Length >= 4 ? s.Substring(4) : s);
 		}
 
 		private void ExpectWord(string word)
