@@ -56,6 +56,8 @@ namespace ServiceStack.Redis
 		internal int IdleTimeOutSecs = 240; //default on redis is 300
 		internal long LastConnectedAtTimestamp;
 
+		public int Id { get; set; }
+
 		public string Host { get; private set; }
 		public int Port { get; private set; }
 		public int RetryTimeout { get; set; }
@@ -1131,6 +1133,7 @@ namespace ServiceStack.Redis
 
 		#endregion
 
+		internal bool IsDisposed { get; set; }
 
 		public void Dispose()
 		{
@@ -1160,6 +1163,9 @@ namespace ServiceStack.Redis
 
 		internal void DisposeConnection()
 		{
+			if (IsDisposed) throw new ObjectDisposedException("Redis client already disposed");
+			IsDisposed = true;
+
 			if (socket == null) return;
 
 			try

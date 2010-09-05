@@ -6,7 +6,7 @@ namespace ServiceStack.CacheAccess.Providers
 {
 	public class CacheManager : ICacheManager
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (CacheManager));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(CacheManager));
 
 		public CacheManager(ICacheClient cacheClient)
 		{
@@ -65,7 +65,8 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public ICacheClient CacheClient
 		{
-			get; private set;
+			get;
+			private set;
 		}
 	}
 

@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -38,6 +39,8 @@ namespace ServiceStack.Redis
 
 		private RedisClient[] readClients = new RedisClient[0];
 		protected int ReadPoolIndex;
+
+		protected int RedisClientCounter = 0;
 
 		protected RedisClientManagerConfig Config { get; set; }
 
@@ -141,6 +144,10 @@ namespace ServiceStack.Redis
 			}
 		}
 
+		/// <summary>
+		/// Called within a lock
+		/// </summary>
+		/// <returns></returns>
 		private RedisClient GetInActiveWriteClient()
 		{
 			for (var i=0; i < writeClients.Length; i++)
@@ -162,6 +169,7 @@ namespace ServiceStack.Redis
 					var client = RedisClientFactory.CreateRedisClient(
 						nextHost.Host, nextHost.Port);
 
+					client.Id = RedisClientCounter++;
 					client.ClientManager = this;
 
 					writeClients[nextIndex] = client;
@@ -207,6 +215,10 @@ namespace ServiceStack.Redis
 			}
 		}
 
+		/// <summary>
+		/// Called within a lock
+		/// </summary>
+		/// <returns></returns>
 		private RedisClient GetInActiveReadClient()
 		{
 			for (var i=0; i < readClients.Length; i++)
@@ -268,6 +280,14 @@ namespace ServiceStack.Redis
 					return;
 				}
 			}
+			
+			//Console.WriteLine("Couldn't find {0} client with Id: {1}, readclients: {2}, writeclients: {3}",
+			//    client.IsDisposed ? "Disposed" : "Undisposed",
+			//    client.Id,
+			//    string.Join(", ", readClients.ToList().ConvertAll(x => x != null ? x.Id.ToString() : "").ToArray()),
+			//    string.Join(", ", writeClients.ToList().ConvertAll(x => x != null ? x.Id.ToString() : "").ToArray()));
+
+			if (client.IsDisposed) return;
 
 			throw new NotSupportedException("Cannot add unknown client back to the pool");
 		}
