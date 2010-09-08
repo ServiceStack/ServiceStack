@@ -330,10 +330,20 @@ namespace ServiceStack.Redis.Generic
 		{
 			if (entities == null) return;
 
-			foreach (var entity in entities)
+			var entitiesList = entities.ToList();
+			var len = entitiesList.Count;
+
+			var keys = new byte[len][];
+			var values = new byte[len][];
+
+			for (var i = 0; i < len; i++)
 			{
-				Store(entity);
+				keys[i] = entitiesList[i].CreateUrn().ToUtf8Bytes();
+				values[i] = RedisClient.SerializeToUtf8Bytes(entitiesList[i]);
 			}
+
+			client.MSet(keys, values);
+			client.RegisterTypeIds(entitiesList);
 		}
 
 		public void Delete(T entity)

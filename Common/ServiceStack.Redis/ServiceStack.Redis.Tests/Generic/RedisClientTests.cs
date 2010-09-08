@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Northwind.Common.DataModel;
@@ -74,6 +75,39 @@ namespace ServiceStack.Redis.Tests.Generic
 			var expectedMap = Sort(expectedList.Select(x => x.GetId()));
 
 			Assert.That(actualMap, Is.EquivalentTo(expectedMap));
+		}
+
+		[Test]
+		public void Can_StoreAll_RedisClient()
+		{
+			var sp = Stopwatch.StartNew();
+			using (var client = new RedisClient(TestConfig.SingleHost))
+			{
+				client.StoreAll(NorthwindData.OrderDetails);
+
+				var orderDetails = client.GetAll<OrderDetail>();
+				AssertUnorderedListsAreEqual(orderDetails, NorthwindData.OrderDetails);
+			}
+			Console.WriteLine("\nWrote {0:#,#} in {1:#,#}ms: {2:#,#.##}: items/ms",
+				NorthwindData.OrderDetails.Count, sp.ElapsedMilliseconds,
+				NorthwindData.OrderDetails.Count / (double)sp.ElapsedMilliseconds);
+		}
+
+		[Test]
+		public void Can_StoreAll_RedisTypedClient()
+		{
+			var sp = Stopwatch.StartNew();
+			using (var client = new RedisClient(TestConfig.SingleHost))
+			using (var typedClient = client.GetTypedClient<OrderDetail>())
+			{
+				typedClient.StoreAll(NorthwindData.OrderDetails);
+
+				var orderDetails = typedClient.GetAll();
+				AssertUnorderedListsAreEqual(orderDetails, NorthwindData.OrderDetails);
+			}
+			Console.WriteLine("\nWrote {0:#,#} in {1:#,#}ms: {2:#,#.##}: items/ms",
+				NorthwindData.OrderDetails.Count, sp.ElapsedMilliseconds,
+				NorthwindData.OrderDetails.Count / (double)sp.ElapsedMilliseconds);
 		}
 
 		[Test]
