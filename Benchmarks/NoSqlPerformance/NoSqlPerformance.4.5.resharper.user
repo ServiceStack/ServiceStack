@@ -1,0 +1,68 @@
+<Configuration>
+  <SettingsComponent>
+    <string />
+    <integer />
+    <boolean>
+      <setting name="SolutionAnalysisEnabled">False</setting>
+    </boolean>
+  </SettingsComponent>
+  <NAntValidationSettings>
+    <NAntPath value="" />
+  </NAntValidationSettings>
+  <RecentFiles>
+    <RecentFiles>
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57109" fromTop="13" />
+    </RecentFiles>
+    <RecentEdits>
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="0" fromTop="14" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57741" fromTop="28" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57008" fromTop="15" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="294" fromTop="13" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="321" fromTop="15" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56175" fromTop="13" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57008" fromTop="17" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56949" fromTop="8" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="54280" fromTop="13" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="54404" fromTop="19" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56709" fromTop="23" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57008" fromTop="5" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57289" fromTop="19" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57375" fromTop="23" />
+    </RecentEdits>
+  </RecentFiles>
+  <UnitTestRunner>
+    <Providers />
+  </UnitTestRunner>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="redisClient" priority="1" />
+      <Item value="using" priority="2" />
+      <Item value="var" priority="2" />
+      <Item value="User" priority="1" />
+      <Item value="userClient" priority="0" />
+      <Item value="userBatch" priority="1" />
+      <Item value="List" priority="0" />
+      <Item value="public" priority="0" />
+      <Item value="Enum" priority="0" />
+      <Item value="new" priority="0" />
+      <Item value="RedisClient" priority="0" />
+      <Item value="IRedisClient" priority="0" />
+      <Item value="WriteRedisData" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.IRedisClient">
+      <Item value="GetType" priority="0" />
+      <Item value="GetTypedClient" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.Generic.IRedisTypedClient`1">
+      <Item value="StoreAll" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
+      <Item value="Add" priority="0" />
+      <Item value="Count" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.RedisClient">
+      <Item value="Dispose" priority="0" />
+      <Item value="FlushAll" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
+</Configuration>
