@@ -11,23 +11,31 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57109" fromTop="13" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57429" fromTop="54" />
     </RecentFiles>
     <RecentEdits>
       <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="0" fromTop="14" />
       <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57741" fromTop="28" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57008" fromTop="15" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="15" />
       <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="294" fromTop="13" />
       <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="321" fromTop="15" />
       <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56175" fromTop="13" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57008" fromTop="17" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56949" fromTop="8" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="17" />
       <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="54280" fromTop="13" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="54404" fromTop="19" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56709" fromTop="23" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57008" fromTop="5" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57289" fromTop="19" />
-      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57375" fromTop="23" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="5" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="19" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="29" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56717" fromTop="6" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="31" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="54425" fromTop="2" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56717" fromTop="30" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="30" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="30" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="19" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56878" fromTop="25" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56916" fromTop="2" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="56717" fromTop="1" />
+      <File id="B8B138C1-E492-408B-A225-AC3BDC1CB006/f:Program.cs" caret="57429" fromTop="30" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -35,7 +43,7 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="redisClient" priority="1" />
+      <Item value="redisClient" priority="2" />
       <Item value="using" priority="2" />
       <Item value="var" priority="2" />
       <Item value="User" priority="1" />
@@ -48,6 +56,7 @@
       <Item value="RedisClient" priority="0" />
       <Item value="IRedisClient" priority="0" />
       <Item value="WriteRedisData" priority="0" />
+      <Item value="WriteRedisDataWithBatch" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Redis.IRedisClient">
       <Item value="GetType" priority="0" />
