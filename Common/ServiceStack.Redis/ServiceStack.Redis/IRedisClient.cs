@@ -70,6 +70,9 @@ namespace ServiceStack.Redis
 		TimeSpan GetTimeToLive(string key);
 		List<string> GetSortedEntryValues(string key, int startingFrom, int endingAt);
 
+		//Store entities without registering entity ids
+		void WriteAll<TEntity>(IEnumerable<TEntity> entities);
+
 		//Useful high-level abstractions
 		IRedisTypedClient<T> GetTypedClient<T>();
 

@@ -314,7 +314,7 @@ namespace ServiceStack.Redis
 			}
 			else
 			{
-				ids.ForEach(x => this.AddItemToSet(typeIdsSetKey, x));
+				AddRangeToSet(typeIdsSetKey, ids);
 			}
 		}
 
@@ -424,6 +424,25 @@ namespace ServiceStack.Redis
 
 			base.MSet(keys, values);
 			RegisterTypeIds(entitiesList);
+		}
+
+		public void WriteAll<TEntity>(IEnumerable<TEntity> entities)
+		{
+			if (entities == null) return;
+
+			var entitiesList = entities.ToList();
+			var len = entitiesList.Count;
+
+			var keys = new byte[len][];
+			var values = new byte[len][];
+
+			for (var i = 0; i < len; i++)
+			{
+				keys[i] = entitiesList[i].CreateUrn().ToUtf8Bytes();
+				values[i] = SerializeToUtf8Bytes(entitiesList[i]);
+			}
+
+			base.MSet(keys, values);
 		}
 
 		public static byte[] SerializeToUtf8Bytes<T>(T value)

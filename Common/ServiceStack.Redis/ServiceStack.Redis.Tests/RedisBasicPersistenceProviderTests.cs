@@ -80,6 +80,19 @@ namespace ServiceStack.Redis.Tests
 		}
 
 		[Test]
+		public void Can_WriteAll()
+		{
+			Redis.WriteAll(testModels);
+
+			var testModelIds = testModels.ConvertAll(x => x.Id);
+
+			var allModels = Redis.GetByIds<TestModel>(testModelIds)
+				.OrderBy(x => x.Age).ToList();
+
+			Assert.That(allModels, Is.EquivalentTo(testModels));
+		}
+
+		[Test]
 		public void Can_GetById()
 		{
 			Redis.StoreAll(testModels);

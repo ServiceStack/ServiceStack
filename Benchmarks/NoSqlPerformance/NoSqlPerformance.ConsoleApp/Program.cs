@@ -482,15 +482,14 @@ namespace Raven.Performance
 											Map = "from doc in docs.Users select new { doc.Name } "
 										});
 
-				//RavenDB
-				WriteData(store);
+				WriteAllWithRaven(store);
 
 				using (var redisClient = new RedisClient("localhost"))
 				{
 					redisClient.FlushAll();
-
-					WriteRedisData(redisClient);
+					WriteAllWithRedis(redisClient);
 				}
+
 
 				WaitForNonStaleResult(store);
 
@@ -549,7 +548,7 @@ namespace Raven.Performance
 			Console.WriteLine("Finished indexing in {0:#,#}ms after last document write", sp.ElapsedMilliseconds);
 		}
 
-		private static void WriteData(IDocumentStore store)
+		private static void WriteAllWithRaven(IDocumentStore store)
 		{
 			var sp = Stopwatch.StartNew();
 			int batch = 0;
@@ -564,7 +563,7 @@ namespace Raven.Performance
 					Name = name
 				});
 
-				if (batch == 128)
+				if (batch % 128 == 0)
 				{
 					session.SaveChanges();
 					session.Dispose();
@@ -578,32 +577,22 @@ namespace Raven.Performance
 				names.Length / (double)sp.ElapsedMilliseconds);
 		}
 
-		private static void WriteRedisData(IRedisClient redisClient)
+		private static void WriteAllWithRedis(IRedisClient redisClient)
 		{
 			var sp = Stopwatch.StartNew();
-			int batch = 0;
-
-			int id=0;
-			var userBatch = new List<User>();
+			var id=0;
+			var users = new List<User>();
 			foreach (var name in names)
 			{
-				batch++;
-
-				userBatch.Add(new User {
+				users.Add(new User {
 					Id = "users/" + (++id),
 					Email = name + "@" + name + ".name",
 					Name = name
 				});
-
-				if (batch == 128)
-				{
-					redisClient.StoreAll(userBatch);
-					userBatch = new List<User>();
-				}
 			}
-			redisClient.StoreAll(userBatch);
+			redisClient.WriteAll(users);
 
-			Console.WriteLine("\nRedis Wrote {0:#,#} documents in {1:#,#}ms: {2:#,#.##}: docs/ms\n\n", names.Length, sp.ElapsedMilliseconds,
+			Console.WriteLine("Redis Wrote {0:#,#} documents in {1:#,#}ms: {2:#,#.##}: docs/ms\n\n", names.Length, sp.ElapsedMilliseconds,
 				names.Length / (double)sp.ElapsedMilliseconds);
 		}
 
