@@ -146,7 +146,7 @@ namespace ServiceStack.Text
 		public static bool IsIntegerType(this Type type)
 		{
 			if (!type.IsValueType) return false;
-			var underlyingType = Nullable.GetUnderlyingType(type);
+			var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 			return underlyingType == typeof (byte)
 		       || underlyingType == typeof (sbyte)
 		       || underlyingType == typeof (short)
@@ -160,7 +160,7 @@ namespace ServiceStack.Text
 		public static bool IsRealNumberType(this Type type)
 		{
 			if (!type.IsValueType) return false;
-			var underlyingType = Nullable.GetUnderlyingType(type);
+			var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 			return underlyingType == typeof(float)
 			   || underlyingType == typeof(double)
 			   || underlyingType == typeof(decimal);

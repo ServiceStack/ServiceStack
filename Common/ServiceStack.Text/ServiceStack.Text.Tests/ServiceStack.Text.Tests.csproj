@@ -75,6 +75,7 @@
     <Compile Include="CustomStructTests.cs" />
     <Compile Include="DataContractTests.cs" />
     <Compile Include="DictionaryTests.cs" />
+    <Compile Include="DynamicObjectTests.cs" />
     <Compile Include="JsonTests\BasicJsonTests.cs" />
     <Compile Include="JsonTests\EscapedCharsTests.cs" />
     <Compile Include="JsonTests\JsonDataContractCompatibilityTests.cs" />

@@ -72,5 +72,65 @@ namespace ServiceStack.Text.Tests
 			var toModel = TypeSerializer.DeserializeFromString<TestObject>(strModel);
 		}
 
+		class Article
+		{
+			public string title { get; set; }
+			public string url { get; set; }
+			public string author { get; set; }
+			public string author_id { get; set; }
+			public string date { get; set; }
+			public string type { get; set; }
+		}
+
+		[Test]
+		public void Serialize_Dictionary_with_backslash_as_last_char()
+		{
+			var map = new Dictionary<string, Article>
+          	{
+				{
+					"http://www.eurogamer.net/articles/2010-09-14-vanquish-limited-edition-has-7-figurine",
+					new Article
+					{
+						title = "Vanquish Limited Edition has 7\" figurine",
+						url = "articles/2010-09-14-vanquish-limited-edition-has-7-figurine",
+						author = "Wesley Yin-Poole",
+						author_id = "621",
+						date = "14/09/2010",
+						type = "news",
+					}
+				},
+				{
+					"http://www.eurogamer.net/articles/2010-09-14-supercar-challenge-devs-next-detailed",
+					new Article
+					{
+						title = "SuperCar Challenge dev's next detailed",
+						url = "articles/2010-09-14-supercar-challenge-devs-next-detailed",
+						author = "Wesley Yin-Poole",
+						author_id = "621",
+						date = "14/09/2010",
+						type = "news",
+					}
+				},
+				{
+					"http://www.eurogamer.net/articles/2010-09-14-hmv-to-sell-dead-rising-2-a-day-early",
+					new Article
+					{
+						title = "HMV to sell Dead Rising 2 a day early",
+						url = "articles/2010-09-14-hmv-to-sell-dead-rising-2-a-day-early",
+						author = "Wesley Yin-Poole",
+						author_id = "621",
+						date = "14/09/2010",
+						type = "News",
+					}
+				},
+          	};
+
+			Serialize(map);
+
+			var json = JsonSerializer.SerializeToString(map);
+			var fromJson = JsonSerializer.DeserializeFromString<Dictionary<string, Article>>(json);
+
+			Assert.That(fromJson, Has.Count.EqualTo(map.Count));
+		}
 	}
 }

@@ -104,7 +104,7 @@ namespace ServiceStack.Text.Json
 			if (oValue == null) return;
 			WriteRawString(writer, ((Guid)oValue).ToString("N"));
 		}
-		 
+
 		public void WriteBytes(TextWriter writer, object oByteValue)
 		{
 			if (oByteValue == null) return;
@@ -159,6 +159,7 @@ namespace ServiceStack.Text.Json
 		public object EncodeMapKey(object value)
 		{
 			var type = value.GetType();
+			//TODO: might need to optimize this
 			if (type == typeof(bool) || type.IsNumericType())
 			{
 				return '"' + value.ToString() + '"';
@@ -383,7 +384,8 @@ namespace ServiceStack.Text.Json
 				{
 					valueChar = value[i];
 
-					if (valueChar == JsWriter.QuoteChar)
+					if (valueChar == JsWriter.QuoteChar
+						&& value[i - 1] != JsonUtils.EscapeChar)
 						withinQuotes = !withinQuotes;
 
 					if (withinQuotes)
@@ -406,7 +408,8 @@ namespace ServiceStack.Text.Json
 				{
 					valueChar = value[i];
 
-					if (valueChar == JsWriter.QuoteChar)
+					if (valueChar == JsWriter.QuoteChar
+						&& value[i - 1] != JsonUtils.EscapeChar)
 						withinQuotes = !withinQuotes;
 
 					if (withinQuotes)

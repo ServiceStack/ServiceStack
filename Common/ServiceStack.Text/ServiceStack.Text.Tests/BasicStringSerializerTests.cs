@@ -282,7 +282,7 @@ namespace ServiceStack.Text.Tests
 				{
 					{ "One", "\"1st" }, { "Two", "2:nd" }, { "Three", "3r,d" }, { "Four", "four%" }
 				};
-			var expectedString = "{One:\"\"\"1st\",Two:2:nd,Three:\"3r,d\",Four:four%}";
+			var expectedString = "{One:\"\"\"1st\",Two:\"2:nd\",Three:\"3r,d\",Four:four%}";
 			var stringValue = TypeSerializer.SerializeToString(stringDictionary);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}
@@ -306,7 +306,7 @@ namespace ServiceStack.Text.Tests
 				{
 					"\"1st", "2:nd", "3r,d", "four%"
 				};
-			var expectedString = "[\"\"\"1st\",2:nd,\"3r,d\",four%]";
+			var expectedString = "[\"\"\"1st\",\"2:nd\",\"3r,d\",four%]";
 			var stringValue = TypeSerializer.SerializeToString(stringList);
 			Assert.That(stringValue, Is.EqualTo(expectedString));
 		}

@@ -26,7 +26,7 @@ namespace ServiceStack.Text.Common
 		public const string MapKeySeperatorString = ":";
 
 		public static readonly char[] CsvChars = new[] { ItemSeperator, QuoteChar };
-		public static readonly char[] EscapeChars = new[] { QuoteChar, ItemSeperator, MapStartChar, MapEndChar, ListStartChar, ListEndChar, };
+		public static readonly char[] EscapeChars = new[] { QuoteChar, MapKeySeperator, ItemSeperator, MapStartChar, MapEndChar, ListStartChar, ListEndChar, };
 
 		private const int LengthFromLargestChar = '}' + 1;
 		private static readonly bool[] EscapeCharFlags = new bool[LengthFromLargestChar];

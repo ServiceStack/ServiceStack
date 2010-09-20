@@ -164,6 +164,26 @@ namespace ServiceStack.Text.Jsv
 		public string EatMapKey(string value, ref int i)
 		{
 			var tokenStartPos = i;
+
+			var valueChar = value[tokenStartPos];
+			if (valueChar == JsWriter.QuoteChar)
+			{
+				var valueLength = value.Length;
+				while (++i < valueLength)
+				{
+					valueChar = value[i];
+
+					if (valueChar != JsWriter.QuoteChar) continue;
+
+					var isLiteralQuote = i + 1 < valueLength && value[i + 1] == JsWriter.QuoteChar;
+
+					i++; //skip quote
+					if (!isLiteralQuote)
+						break;
+				}
+				return value.Substring(tokenStartPos, i - tokenStartPos);
+			}
+
 			while (value[++i] != JsWriter.MapKeySeperator) { }
 			return value.Substring(tokenStartPos, i - tokenStartPos);
 		}
