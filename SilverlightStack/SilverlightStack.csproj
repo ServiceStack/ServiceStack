@@ -4,16 +4,16 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{78EEE357-3F08-450A-9558-D16364C339D5}</ProjectGuid>
+    <ProjectGuid>{621F6AE8-50AC-4548-9DCD-6A75E7BFAC2E}</ProjectGuid>
     <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SilverlightStack.Client</RootNamespace>
-    <AssemblyName>SilverlightStack.Client</AssemblyName>
+    <RootNamespace>SilverlightStack</RootNamespace>
+    <AssemblyName>SilverlightStack</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <SilverlightApplication>false</SilverlightApplication>
     <ValidateXaml>true</ValidateXaml>
-    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+    <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows" />
     <Reference Include="mscorlib" />
     <Reference Include="system" />
@@ -46,21 +47,42 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContextBase.cs" />
-    <Compile Include="DataEventArgs.cs" />
+    <Compile Include="Core\ServiceClient\XmlAsyncServiceClient.cs" />
+    <Compile Include="Interfaces\Service\IAsyncServiceClient.cs" />
+    <Compile Include="Interfaces\Service\IAsyncReplyClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Client\ContextBase.cs" />
+    <Compile Include="Client\DataEventArgs.cs" />
+    <Compile Include="Core\Serialization\DataContractDeserializer.cs" />
+    <Compile Include="Core\Serialization\DataContractSerializer.cs" />
+    <Compile Include="Core\ServiceClient\XmlServiceClient.cs" />
+    <Compile Include="Core\SilverlightStackException.cs" />
+    <Compile Include="Interfaces\Logging\ILog.cs" />
+    <Compile Include="Interfaces\Logging\ILogFactory.cs" />
+    <Compile Include="Interfaces\Logging\LogManager.cs" />
+    <Compile Include="Interfaces\Logging\Support\ConsoleLogFactory.cs" />
+    <Compile Include="Interfaces\Logging\Support\ConsoleLogger.cs" />
+    <Compile Include="Interfaces\Logging\Support\DebugLogFactory.cs" />
+    <Compile Include="Interfaces\Logging\Support\DebugLogger.cs" />
+    <Compile Include="Interfaces\Logging\Support\NullDebugLogger.cs" />
+    <Compile Include="Interfaces\Logging\Support\NullLogFactory.cs" />
+    <Compile Include="Interfaces\Serialization\IStringDeserializer.cs" />
+    <Compile Include="Interfaces\Serialization\IStringSerializer.cs" />
+    <Compile Include="Interfaces\ServiceModel\Version100\ResponseStatus.cs" />
+    <Compile Include="Interfaces\Service\EndpointAttributes.cs" />
+    <Compile Include="Interfaces\Service\IAsyncCallbackReplyClient.cs" />
+    <Compile Include="Interfaces\Service\IOneWayClient.cs" />
+    <Compile Include="Interfaces\Service\IReplyClient.cs" />
+    <Compile Include="Interfaces\Service\IServiceClient.cs" />
+    <Compile Include="Interfaces\Service\IServiceHost.cs" />
+    <Compile Include="Interfaces\Service\IStreamWriter.cs" />
+    <Compile Include="Interfaces\Service\PortAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SilverlightStack.Core\SilverlightStack.csproj">
-      <Project>{F637FD83-C150-4A8F-A8D5-72A8BA0B9DB9}</Project>
-      <Name>SilverlightStack</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SilverlightStack.Interfaces\SilverlightStack.Interfaces.csproj">
-      <Project>{2C6B0012-B3A9-45DA-A18E-6CE95A186D3B}</Project>
-      <Name>SilverlightStack.Interfaces</Name>
-    </ProjectReference>
+    <None Include="Core\_build\refresh.bat" />
+    <None Include="Interfaces\_build\refresh.bat" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\v3.0\Microsoft.Silverlight.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight\v2.0\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
