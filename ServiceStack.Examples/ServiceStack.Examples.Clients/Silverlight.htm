@@ -85,7 +85,7 @@
         var request = new GetFactorial { ForNumber = 3 };
 
         //Note: As this is a synchronous request it should always be run in a backround thread.
-        var response = this.ServiceClient.Send&lt;GetFactorialResponse&gt;(request);
+        this.ServiceClient.Send&lt;GetFactorialResponse&gt;(request, response => Console.WriteLine(response.Dump()));
     </code>
 
     <h4>3. Try the live examples yourself:</h4>

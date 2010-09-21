@@ -12,49 +12,59 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/f:ExampleConfig.cs" caret="115" fromTop="3" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:DeleteAllUsersService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetAllUsersService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFactorialService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetFibonacciNumbersService.cs" caret="33" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersCachedService.cs" caret="2389" fromTop="46" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetNorthwindCustomerOrdersService.cs" caret="858" fromTop="8" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GetUsersService.cs" caret="33" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:GreetService.cs" caret="0" fromTop="0" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:StoreNewUserService.cs" caret="33" fromTop="1" />
-      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Support/f:ConfigureDatabase.cs" caret="1781" fromTop="23" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/d:MonoTests/f:Soap12WsdlProgram.cs" caret="583" fromTop="23" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFactorialTests.cs" caret="69" fromTop="1" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetUsersTests.cs" caret="69" fromTop="1" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:GetFibonacciNumbersTests.cs" caret="69" fromTop="1" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:StoreNewUserTests.cs" caret="69" fromTop="1" />
-      <File id="969644BC-B209-4458-8DC1-041D7A9ADD3B/f:MovieRestTests.cs" caret="1049" fromTop="20" />
-      <File id="77363223-98F2-4724-8044-569C6485B3A9/f:AppHost.cs" caret="1044" fromTop="34" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:jquery.json-2.2.js" caret="1057" fromTop="30" />
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:MovieRestTests.cs" caret="1393" fromTop="35" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1789" fromTop="39" />
-      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Types/f:Movie.cs" caret="1436" fromTop="42" />
-      <File id="2B840832-3036-47D9-8F9B-560CD5C2BF90/d:Operations/f:ResetMovieDatabase.cs" caret="535" fromTop="21" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:default.css" caret="159" fromTop="11" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="2004" fromTop="22" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="5028" fromTop="16" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="1311" fromTop="34" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:build/f:copy-types.bat" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:User.cs" caret="356" fromTop="17" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Web.config" caret="6822" fromTop="23" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:DataEventArgs.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:App.xaml.cs" caret="483" fromTop="20" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:MainPage.xaml.cs" caret="2014" fromTop="20" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1789" fromTop="47" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1969" fromTop="22" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:AppContext.cs" caret="230" fromTop="9" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfString.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfLong.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfUser.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:DeleteAllUsers.cs" caret="302" fromTop="11" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:GetFactorial.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:GetFibonacciNumbers.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:GetUsers.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ResponseStatus.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Properties/f:AssemblyInfo.cs" caret="1488" fromTop="37" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:StoreNewUser.cs" caret="701" fromTop="34" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="386" fromTop="14" />
     </RecentFiles>
     <RecentEdits>
-      <File id="21777EAF-74FD-4D0B-947A-C602D8D3EBBA/f:MovieRestTests.cs" caret="796" fromTop="16" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="884" fromTop="14" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="2282" fromTop="8" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="1979" fromTop="20" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="2257" fromTop="20" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="8072" fromTop="19" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="900" fromTop="14" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="8072" fromTop="14" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="10460" fromTop="42" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="5040" fromTop="16" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="10512" fromTop="38" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="866" fromTop="18" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="1903" fromTop="32" />
-      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:MovieRestTest.htm" caret="734" fromTop="10" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="987" fromTop="14" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="969" fromTop="14" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="1094" fromTop="19" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="293" fromTop="9" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="546" fromTop="17" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="829" fromTop="29" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="746" fromTop="23" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1104" fromTop="34" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1102" fromTop="32" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="906" fromTop="28" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1568" fromTop="34" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1455" fromTop="30" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1451" fromTop="29" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1908" fromTop="29" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1637" fromTop="21" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="2158" fromTop="28" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1972" fromTop="22" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:AppContext.cs" caret="414" fromTop="16" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:AppContext.cs" caret="230" fromTop="9" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfString.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfLong.cs" caret="158" fromTop="5" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfUser.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:GetFactorial.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:DeleteAllUsers.cs" caret="212" fromTop="11" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:GetUsers.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ResponseStatus.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:GetFibonacciNumbers.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:StoreNewUser.cs" caret="0" fromTop="0" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Properties/f:AssemblyInfo.cs" caret="1621" fromTop="38" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="1302" fromTop="16" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -92,7 +102,7 @@
       <Item value="MemcachedClientCache" priority="2" />
       <Item value="LogManager" priority="6" />
       <Item value="AppHost" priority="4" />
-      <Item value="void" priority="13" />
+      <Item value="void" priority="14" />
       <Item value="if" priority="14" />
       <Item value="Instance" priority="1" />
       <Item value="null" priority="13" />
@@ -148,12 +158,12 @@
       <Item value="handler" priority="1" />
       <Item value="TestBase" priority="0" />
       <Item value="protected" priority="4" />
-      <Item value="object" priority="3" />
+      <Item value="object" priority="4" />
       <Item value="OperationContext" priority="0" />
       <Item value="RequestContext" priority="0" />
       <Item value="CreateOperationContext" priority="3" />
       <Item value="Assert" priority="3" />
-      <Item value="response" priority="9" />
+      <Item value="response" priority="11" />
       <Item value="GetFactorialResponse" priority="0" />
       <Item value="IServiceProvider" priority="1" />
       <Item value="Skip" priority="1" />
@@ -194,7 +204,7 @@
       <Item value="App" priority="0" />
       <Item value="GetUsersResponse" priority="1" />
       <Item value="dataContract" priority="4" />
-      <Item value="Console" priority="12" />
+      <Item value="Console" priority="13" />
       <Item value="true" priority="3" />
       <Item value="xml" priority="1" />
       <Item value="DataContractDeserializer" priority="0" />
@@ -297,7 +307,7 @@
       <Item value="updatedMovie" priority="0" />
       <Item value="List&lt;Movie&gt;" priority="1" />
       <Item value="other" priority="0" />
-      <Item value="TResponse" priority="0" />
+      <Item value="TResponse" priority="5" />
       <Item value="Get" priority="0" />
       <Item value="EmitDefaultValue" priority="0" />
       <Item value="newMovie" priority="1" />
@@ -314,6 +324,10 @@
       <Item value="MovieRestService" priority="0" />
       <Item value="nguid" priority="0" />
       <Item value="TestFixture" priority="0" />
+      <Item value="IOneWayClient" priority="0" />
+      <Item value="callback" priority="2" />
+      <Item value="Action" priority="0" />
+      <Item value="IAsyncServiceClient" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.ConfigurationResourceManager">
       <Item value="GetString" priority="0" />
@@ -525,7 +539,7 @@
       <Item value="Parse" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Console">
-      <Item value="WriteLine" priority="9" />
+      <Item value="WriteLine" priority="10" />
       <Item value="ReadKey" priority="0" />
       <Item value="ReadLine" priority="0" />
     </ItemStatistics>

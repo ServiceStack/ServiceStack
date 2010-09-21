@@ -1,0 +1,12 @@
+<cross-domain-access>
+    <policy>
+      <allow-from http-request-headers="*">
+        <domain uri="http://www.servicestack.net"/>
+        <domain uri="http://localhost"/>
+      </allow-from>
+      <grant-to>
+        <resource path="/" include-subpaths="true"/>
+      </grant-to>
+    </policy>
+  </cross-domain-access>
+</access-policy>
