@@ -30,22 +30,31 @@ namespace ServiceStack.Examples.Clients.Silverlight
 		}
 
 		protected void Send<TResponse>(object request,
-			Func<TResponse, ResponseStatus> chechResponseStatus,
-			Action<TResponse> callback)
+			Func<TResponse, ResponseStatus> checkResponseStatus,
+			Action<TResponse> onSuccess)
+		{
+			Send(request, checkResponseStatus, onSuccess, null);
+		}
+
+		protected void Send<TResponse>(object request,
+			Func<TResponse, ResponseStatus> checkResponseStatus,
+			Action<TResponse> onSuccess,
+			Action<SilverlightStackException> onError)
 		{
 			ServiceClient.Send<TResponse>(request, response =>
 				{
-					AssertSuccessResponse(chechResponseStatus(response));
-					callback(response);
+					var responseStatus = checkResponseStatus(response);
+					if (responseStatus.IsSuccess)
+					{
+						onSuccess(response);
+					}
+					else
+					{
+						if (onError == null) return;
+						onError(new SilverlightStackException(responseStatus.ErrorCode));
+					}
 				});
 		}
 
-		private static void AssertSuccessResponse(ResponseStatus responseStatus)
-		{
-			if (!responseStatus.IsSuccess)
-			{
-				throw new SilverlightStackException(responseStatus.ErrorCode);
-			}
-		}
 	}
 }

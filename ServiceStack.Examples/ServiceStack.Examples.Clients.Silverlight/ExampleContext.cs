@@ -29,7 +29,6 @@ namespace ServiceStack.Examples.Clients.Silverlight
 			}
 		}
 
-
 		public void GetFibonacciNumbersAsync(int skip, int take)
 		{
 			base.Send<GetFibonacciNumbersResponse>(
@@ -39,37 +38,24 @@ namespace ServiceStack.Examples.Clients.Silverlight
 			);
 		}
 
-
 		public void StoreNewUserAsync(string userName, string password, string email)
 		{
-			try
-			{
-				var request = new StoreNewUser { UserName = userName, Password = password, Email = email };
-				base.Send<StoreNewUserResponse>(
-					request, 
-					x => x.ResponseStatus,
-					response => OnDataLoaded(new DataEventArgs(response)));
-			}
-			catch (Exception ex)
-			{
-				OnDataLoaded(new DataEventArgs(new StoreNewUserResponse(), ex));
-			}
+			var request = new StoreNewUser { UserName = userName, Password = password, Email = email };
+			base.Send<StoreNewUserResponse>(
+				request,
+				x => x.ResponseStatus,
+				response => OnDataLoaded(new DataEventArgs(response)),
+				ex => OnDataLoaded(new DataEventArgs(new StoreNewUserResponse(), ex)));
 		}
 
 
 		public void DeleteAllUsersAsync()
 		{
-			try
-			{
-				base.Send<DeleteAllUsersResponse>(
-					new DeleteAllUsers(), 
-					x => x.ResponseStatus,
-					response => OnDataLoaded(new DataEventArgs(response)));
-			}
-			catch (Exception ex)
-			{
-				OnDataLoaded(new DataEventArgs(new DeleteAllUsersResponse(), ex));
-			}
+			base.Send<DeleteAllUsersResponse>(
+				new DeleteAllUsers(),
+				x => x.ResponseStatus,
+				response => OnDataLoaded(new DataEventArgs(response)),
+				ex => OnDataLoaded(new DataEventArgs(new DeleteAllUsersResponse(), ex)));
 		}
 
 		public void GetUsersAsync(List<long> userIds)
