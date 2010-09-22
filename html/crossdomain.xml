@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE cross-domain-policy SYSTEM
+"http://www.adobe.com/xml/dtds/cross-domain-policy.dtd">
+<cross-domain-policy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.adobe.com/xml/schemas/PolicyFile.xsd">
+	<site-control permitted-cross-domain-policies="master-only"/>
+	<allow-access-from domain="*" />
+	<allow-http-request-headers-from domain="*" headers="*" secure="true"/>
+</cross-domain-policy>
