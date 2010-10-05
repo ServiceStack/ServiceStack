@@ -25,14 +25,14 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="ServiceStack.Redis.Tests.Examples.BlogPostComment">
-    <Position X="6" Y="2.75" Width="1.75" />
+    <Position X="4" Y="4" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
       <FileName>Examples\BlogPostExample.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="ServiceStack.Redis.Tests.Examples.BestPractice.IBlogRepository">
-    <Position X="1" Y="3.25" Width="2" />
+    <Position X="6.5" Y="0.5" Width="2" />
     <TypeIdentifier>
       <HashCode>ACABAEAAAAAAAAAAAAAAQAAAAACAAIAAEAAAACUABAI=</HashCode>
       <FileName>Examples\BestPractice\IBlogRepository.cs</FileName>
