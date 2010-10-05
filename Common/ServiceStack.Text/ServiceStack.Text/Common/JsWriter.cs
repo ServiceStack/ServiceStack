@@ -22,6 +22,7 @@ namespace ServiceStack.Text.Common
 
 		public const char QuoteChar = '"';
 		public const string QuoteString = "\"";
+		public const string EscapedQuoteString = "\\\"";
 		public const string ItemSeperatorString = ",";
 		public const string MapKeySeperatorString = ":";
 

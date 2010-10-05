@@ -26,7 +26,7 @@ namespace ServiceStack.Text.Common
 		void WriteDouble(TextWriter writer, object doubleValue);
 		void WriteDecimal(TextWriter writer, object decimalValue);
 
-		object EncodeMapKey(object value);
+		//object EncodeMapKey(object value);
 
 		ParseStringDelegate GetParseFn<T>();
 		ParseStringDelegate GetParseFn(Type type);

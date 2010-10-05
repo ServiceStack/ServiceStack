@@ -165,10 +165,11 @@ namespace ServiceStack.Text.Jsv
 		{
 			var tokenStartPos = i;
 
+			var valueLength = value.Length;
+
 			var valueChar = value[tokenStartPos];
 			if (valueChar == JsWriter.QuoteChar)
 			{
-				var valueLength = value.Length;
 				while (++i < valueLength)
 				{
 					valueChar = value[i];
@@ -180,6 +181,30 @@ namespace ServiceStack.Text.Jsv
 					i++; //skip quote
 					if (!isLiteralQuote)
 						break;
+				}
+				return value.Substring(tokenStartPos, i - tokenStartPos);
+			}
+
+			//Is Type/Map, i.e. {...}
+			if (valueChar == JsWriter.MapStartChar)
+			{
+				var endsToEat = 1;
+				var withinQuotes = false;
+				while (++i < valueLength && endsToEat > 0)
+				{
+					valueChar = value[i];
+
+					if (valueChar == JsWriter.QuoteChar)
+						withinQuotes = !withinQuotes;
+
+					if (withinQuotes)
+						continue;
+
+					if (valueChar == JsWriter.MapStartChar)
+						endsToEat++;
+
+					if (valueChar == JsWriter.MapEndChar)
+						endsToEat--;
 				}
 				return value.Substring(tokenStartPos, i - tokenStartPos);
 			}

@@ -105,14 +105,17 @@ namespace ServiceStack.Text.Common
 				if (writeValueFn == null)
 					writeValueFn = Serializer.GetWriteFn(dictionaryValue.GetType());
 
-
 				JsWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
-				writeKeyFn(writer, Serializer.EncodeMapKey(key));
+				JsState.WritingKeyCount++;
+				writeKeyFn(writer, key);
+				JsState.WritingKeyCount--;
 
 				writer.Write(JsWriter.MapKeySeperator);
 
+				JsState.IsWritingValue = true;
 				writeValueFn(writer, dictionaryValue ?? JsWriter.MapNullValue);
+				JsState.IsWritingValue = false;
 			}
 
 			writer.Write(JsWriter.MapEndChar);
@@ -146,11 +149,15 @@ namespace ServiceStack.Text.Common
 			{
 				JsWriter.WriteItemSeperatorIfRanOnce(writer, ref ranOnce);
 
-				writeKeyFn(writer, Serializer.EncodeMapKey(kvp.Key));
+				JsState.WritingKeyCount++;
+				writeKeyFn(writer, kvp.Key);
+				JsState.WritingKeyCount--;
 
 				writer.Write(JsWriter.MapKeySeperator);
 
+				JsState.IsWritingValue = true;
 				writeValueFn(writer, kvp.Value);
+				JsState.IsWritingValue = false;
 			}
 
 			writer.Write(JsWriter.MapEndChar);

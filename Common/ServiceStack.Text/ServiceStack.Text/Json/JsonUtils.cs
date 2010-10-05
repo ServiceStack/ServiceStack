@@ -28,7 +28,6 @@ namespace ServiceStack.Text.Json
 
 		public static void WriteString(TextWriter writer, string value)
 		{
-
 			if (!HasAnyEscapeChars(value))
 			{
 				writer.Write(QuoteChar);

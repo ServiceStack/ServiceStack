@@ -15,12 +15,10 @@
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:build/f:copy-types.bat" caret="0" fromTop="0" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:User.cs" caret="356" fromTop="17" />
       <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Web.config" caret="6822" fromTop="23" />
-      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="0" fromTop="0" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:DataEventArgs.cs" caret="0" fromTop="0" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:App.xaml.cs" caret="483" fromTop="20" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:MainPage.xaml.cs" caret="2014" fromTop="20" />
       <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="1789" fromTop="47" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1969" fromTop="22" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:AppContext.cs" caret="230" fromTop="9" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfString.cs" caret="0" fromTop="0" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfLong.cs" caret="0" fromTop="0" />
@@ -32,26 +30,19 @@
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ResponseStatus.cs" caret="0" fromTop="0" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Properties/f:AssemblyInfo.cs" caret="1488" fromTop="37" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:StoreNewUser.cs" caret="701" fromTop="34" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="386" fromTop="14" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="3382" fromTop="17" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Default.htm" caret="7225" fromTop="19" />
+      <File id="d:Miscellaneous Files/f:XmlAsyncServiceClient.cs/l:C!?Projects?servicestack?SilverlightStack?Core?ServiceClient?XmlAsyncServiceClient.cs" caret="1379" fromTop="45" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="1413" fromTop="36" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="781" fromTop="25" />
     </RecentFiles>
     <RecentEdits>
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="987" fromTop="14" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="969" fromTop="14" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="1094" fromTop="19" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="293" fromTop="9" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="546" fromTop="17" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="829" fromTop="29" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="746" fromTop="23" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1104" fromTop="34" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1102" fromTop="32" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="906" fromTop="28" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1568" fromTop="34" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1455" fromTop="30" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1451" fromTop="29" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1908" fromTop="29" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1637" fromTop="21" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="2158" fromTop="28" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1972" fromTop="22" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1102" fromTop="34" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1100" fromTop="32" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1507" fromTop="34" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="2041" fromTop="28" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1855" fromTop="22" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:AppContext.cs" caret="414" fromTop="16" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:AppContext.cs" caret="230" fromTop="9" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:ArrayOfString.cs" caret="0" fromTop="0" />
@@ -64,7 +55,18 @@
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:GetFibonacciNumbers.cs" caret="0" fromTop="0" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Types/f:StoreNewUser.cs" caret="0" fromTop="0" />
       <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/d:Properties/f:AssemblyInfo.cs" caret="1621" fromTop="38" />
-      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="1302" fromTop="16" />
+      <File id="53F87D5C-4540-4AFD-BD19-E081FD8E586B/f:Silverlight.htm" caret="3656" fromTop="21" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="1547" fromTop="34" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="791" fromTop="14" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="991" fromTop="19" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ContextBase.cs" caret="1447" fromTop="36" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1507" fromTop="30" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1507" fromTop="24" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1561" fromTop="14" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1791" fromTop="23" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1791" fromTop="19" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="1109" fromTop="27" />
+      <File id="488CD5B3-611A-4713-AC2F-CC3FC000AC6E/f:ExampleContext.cs" caret="836" fromTop="17" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -86,13 +88,13 @@
       <Item value="GetFactorials" priority="2" />
       <Item value="DataMember" priority="2" />
       <Item value="type" priority="0" />
-      <Item value="var" priority="57" />
+      <Item value="var" priority="58" />
       <Item value="context" priority="2" />
-      <Item value="return" priority="12" />
-      <Item value="new" priority="80" />
+      <Item value="return" priority="13" />
+      <Item value="new" priority="81" />
       <Item value="GetFactorialsResponse" priority="0" />
       <Item value="Result" priority="0" />
-      <Item value="request" priority="32" />
+      <Item value="request" priority="33" />
       <Item value="base" priority="1" />
       <Item value="ApplicationContext" priority="4" />
       <Item value="BasicOperationContext" priority="0" />
@@ -103,7 +105,7 @@
       <Item value="LogManager" priority="6" />
       <Item value="AppHost" priority="4" />
       <Item value="void" priority="14" />
-      <Item value="if" priority="14" />
+      <Item value="if" priority="17" />
       <Item value="Instance" priority="1" />
       <Item value="null" priority="13" />
       <Item value="long" priority="8" />
@@ -163,7 +165,7 @@
       <Item value="RequestContext" priority="0" />
       <Item value="CreateOperationContext" priority="3" />
       <Item value="Assert" priority="3" />
-      <Item value="response" priority="11" />
+      <Item value="response" priority="12" />
       <Item value="GetFactorialResponse" priority="0" />
       <Item value="IServiceProvider" priority="1" />
       <Item value="Skip" priority="1" />
@@ -239,7 +241,7 @@
       <Item value="EndpointAttributes" priority="4" />
       <Item value="GetUsersHandler" priority="0" />
       <Item value="GetUsers" priority="0" />
-      <Item value="else" priority="1" />
+      <Item value="else" priority="2" />
       <Item value="System" priority="0" />
       <Item value="ThreadStaticAttribute" priority="0" />
       <Item value="TimeSpan" priority="0" />
@@ -285,7 +287,7 @@
       <Item value="ConnectionFactory" priority="2" />
       <Item value="connectionFactory" priority="2" />
       <Item value="IntegrationTestBase" priority="0" />
-      <Item value="Send" priority="1" />
+      <Item value="Send" priority="2" />
       <Item value="List&lt;string&gt;" priority="1" />
       <Item value="IRestGetService" priority="0" />
       <Item value="GetMovie" priority="1" />
@@ -328,6 +330,11 @@
       <Item value="callback" priority="2" />
       <Item value="Action" priority="0" />
       <Item value="IAsyncServiceClient" priority="0" />
+      <Item value="responseStatus" priority="1" />
+      <Item value="onSuccess" priority="1" />
+      <Item value="onError" priority="1" />
+      <Item value="SilverlightStackException" priority="0" />
+      <Item value="checkResponseStatus" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Configuration.ConfigurationResourceManager">
       <Item value="GetString" priority="0" />
@@ -480,7 +487,8 @@
       <Item value="Container" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.Types.ResponseStatus">
-      <Item value="ErrorCode" priority="0" />
+      <Item value="ErrorCode" priority="1" />
+      <Item value="IsSuccess" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Examples.ServiceInterface.GetUsersResponse">
       <Item value="Users" priority="0" />

@@ -13,6 +13,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using ServiceStack.Text.Json;
 using ServiceStack.Text.Reflection;
 
 namespace ServiceStack.Text.Common
@@ -86,6 +87,9 @@ namespace ServiceStack.Text.Common
 
 		public static void WriteProperties(TextWriter writer, object value)
 		{
+			if (typeof(TSerializer) == typeof(JsonTypeSerializer) && JsState.WritingKeyCount > 0) 
+				writer.Write(JsWriter.QuoteChar);
+
 			writer.Write(JsWriter.MapStartChar);
 
 			if (PropertyWriters != null)
@@ -101,12 +105,17 @@ namespace ServiceStack.Text.Common
 
 					Serializer.WritePropertyName(writer, propertyWriter.PropertyName);
 					writer.Write(JsWriter.MapKeySeperator);
-					propertyWriter.WriteFn(writer, propertyValue);
 
+					if (typeof(TSerializer) == typeof(JsonTypeSerializer)) JsState.IsWritingValue = true;
+					propertyWriter.WriteFn(writer, propertyValue);
+					if (typeof(TSerializer) == typeof(JsonTypeSerializer)) JsState.IsWritingValue = false;
 				}
 			}
 
 			writer.Write(JsWriter.MapEndChar);
+
+			if (typeof(TSerializer) == typeof(JsonTypeSerializer) && JsState.WritingKeyCount > 0)
+				writer.Write(JsWriter.QuoteChar);
 		}
 
 		public static void WriteQueryString(TextWriter writer, object value)

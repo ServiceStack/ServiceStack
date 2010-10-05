@@ -3,6 +3,7 @@
     <string />
     <integer />
     <boolean>
+      <setting name="livetemplates.csharp.usevar">True</setting>
       <setting name="SolutionAnalysisEnabled">False</setting>
     </boolean>
   </SettingsComponent>
@@ -11,14 +12,602 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:App.config" caret="0" fromTop="0" />
-      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:CommonOperationsTests.cs" caret="414" fromTop="17" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Operations/d:Common/f:Ping.cs" caret="183" fromTop="6" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Types/f:ArrayOfKeyValuePair.cs" caret="231" fromTop="7" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Operations/d:Common/f:Copy of Ping.cs" caret="494" fromTop="21" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Admin/f:Copy of PingService.cs" caret="438" fromTop="16" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Operations/d:Admin/f:FlushDb.cs" caret="278" fromTop="8" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Admin/f:FlushDbService.cs" caret="388" fromTop="17" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:TestServiceClient.cs" caret="0" fromTop="0" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:TestConfig.cs" caret="0" fromTop="0" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:TestHostBase.cs" caret="0" fromTop="0" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:HashOperationsTests.cs" caret="5546" fromTop="41" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:ListOperationsTests.cs" caret="6421" fromTop="22" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:SetOperationsTests.cs" caret="6492" fromTop="41" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:SortedSetOperationsTests.cs" caret="10126" fromTop="41" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:TestBase.cs" caret="6917" fromTop="41" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:AdhocTests.cs" caret="564" fromTop="24" />
+      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:CommonOperationsTests.cs" caret="233" fromTop="7" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:PopulateRedisWithDataService.cs" caret="1692" fromTop="38" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/d:AjaxClient/f:default.htm" caret="827" fromTop="19" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Types/f:KeyValuePair.cs" caret="0" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:AppHost.cs" caret="692" fromTop="25" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="80" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.designer.cs" caret="823" fromTop="25" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="488" fromTop="18" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.rename_for_iis7" caret="2428" fromTop="23" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:AppConfig.cs" caret="137" fromTop="6" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Properties/f:AssemblyInfo.cs" caret="1503" fromTop="32" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Operations/d:Admin/f:FlushAll.cs" caret="0" fromTop="0" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:GetCodeGeneratedJavaScriptService.cs" caret="1258" fromTop="29" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.rename_for_iis6_mono" caret="0" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="5120" fromTop="22" />
     </RecentFiles>
     <RecentEdits>
-      <File id="EEE1F951-50B3-4739-A0D0-362EA2A543E2/f:CommonOperationsTests.cs" caret="0" fromTop="0" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Operations/d:Common/f:Copy of Ping.cs" caret="494" fromTop="21" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Admin/f:Copy of PingService.cs" caret="350" fromTop="8" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Admin/f:Copy of PingService.cs" caret="412" fromTop="9" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:Admin/f:FlushDbService.cs" caret="417" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:PopulateRedisWithDataService.cs" caret="1301" fromTop="35" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:PopulateRedisWithDataService.cs" caret="1230" fromTop="17" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:PopulateRedisWithDataService.cs" caret="1755" fromTop="33" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:PopulateRedisWithDataService.cs" caret="1812" fromTop="33" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:PopulateRedisWithDataService.cs" caret="1097" fromTop="7" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:PopulateRedisWithDataService.cs" caret="1195" fromTop="13" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:GetCodeGeneratedJavaScriptService.cs" caret="745" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:GetCodeGeneratedJavaScriptService.cs" caret="5692" fromTop="23" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:AppConfig.cs" caret="538" fromTop="17" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Properties/f:AssemblyInfo.cs" caret="2599" fromTop="41" />
+      <File id="900F6D5C-8955-40B0-9B0B-888904E42BC3/d:Properties/f:AssemblyInfo.cs" caret="1572" fromTop="34" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:AppConfig.cs" caret="534" fromTop="16" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:AppConfig.cs" caret="391" fromTop="12" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/f:AppConfig.cs" caret="137" fromTop="6" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="474" fromTop="15" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx.cs" caret="259" fromTop="9" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Default.aspx" caret="0" fromTop="0" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.rename_for_iis6_mono" caret="2223" fromTop="20" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.rename_for_iis6_mono" caret="2435" fromTop="22" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.rename_for_iis7" caret="2198" fromTop="20" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config.rename_for_iis7" caret="2410" fromTop="22" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:GetCodeGeneratedJavaScriptService.cs" caret="908" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:GetCodeGeneratedJavaScriptService.cs" caret="908" fromTop="24" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:GetCodeGeneratedJavaScriptService.cs" caret="908" fromTop="27" />
+      <File id="519A7B72-D144-436D-AAC3-7BAAEAD3FF52/d:App/f:GetCodeGeneratedJavaScriptService.cs" caret="1219" fromTop="27" />
+      <File id="3A8D2349-6E97-47A2-AC49-EFE7D89C0344/f:Web.config" caret="10221" fromTop="71" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
     <Providers />
   </UnitTestRunner>
+  <CompletionStatisticsManager>
+    <ItemStatistics item="Default">
+      <Item value="string" priority="21" />
+      <Item value="propg" priority="0" />
+      <Item value="int" priority="6" />
+      <Item value="BasicRedisClientManager" priority="0" />
+      <Item value="ArrayOfString" priority="30" />
+      <Item value="this" priority="44" />
+      <Item value="new" priority="69" />
+      <Item value="ResponseStatus" priority="27" />
+      <Item value="byte" priority="0" />
+      <Item value="bool" priority="11" />
+      <Item value="List&lt;string&gt;" priority="3" />
+      <Item value="typeof" priority="0" />
+      <Item value="ref" priority="0" />
+      <Item value="double" priority="6" />
+      <Item value="List" priority="3" />
+      <Item value="using" priority="5" />
+      <Item value="System" priority="2" />
+      <Item value="Collections" priority="3" />
+      <Item value="Generic" priority="3" />
+      <Item value="value" priority="0" />
+      <Item value="List&lt;KeyValuePair&gt;" priority="0" />
+      <Item value="public" priority="8" />
+      <Item value="IRedisClient" priority="0" />
+      <Item value="TRequest" priority="0" />
+      <Item value="var" priority="19" />
+      <Item value="RedisClient" priority="0" />
+      <Item value="ClientsManager" priority="0" />
+      <Item value="redisClient" priority="8" />
+      <Item value="return" priority="2" />
+      <Item value="action" priority="0" />
+      <Item value="RedisExec" priority="0" />
+      <Item value="r" priority="0" />
+      <Item value="request" priority="48" />
+      <Item value="Result" priority="10" />
+      <Item value="IRedisNativeClient" priority="0" />
+      <Item value="RedisNativeExec" priority="0" />
+      <Item value="ValueLength" priority="0" />
+      <Item value="Value" priority="6" />
+      <Item value="success" priority="0" />
+      <Item value="Keys" priority="2" />
+      <Item value="ExistingValue" priority="0" />
+      <Item value="KeyType" priority="0" />
+      <Item value="Values" priority="2" />
+      <Item value="TimeRemaining" priority="0" />
+      <Item value="Action" priority="0" />
+      <Item value="void" priority="2" />
+      <Item value="if" priority="4" />
+      <Item value="else" priority="0" />
+      <Item value="KeyValuePairs" priority="0" />
+      <Item value="IDictionary" priority="0" />
+      <Item value="KeyValuePair" priority="2" />
+      <Item value="x" priority="1" />
+      <Item value="Key" priority="1" />
+      <Item value="ArrayOfKeyValuePair" priority="2" />
+      <Item value="Count" priority="5" />
+      <Item value="map" priority="3" />
+      <Item value="kvp" priority="3" />
+      <Item value="Item" priority="5" />
+      <Item value="DataMember" priority="1" />
+      <Item value="Items" priority="5" />
+      <Item value="base" priority="1" />
+      <Item value="subscription" priority="5" />
+      <Item value="null" priority="3" />
+      <Item value="Message" priority="0" />
+      <Item value="message" priority="2" />
+      <Item value="key" priority="1" />
+      <Item value="timer" priority="0" />
+      <Item value="Thread" priority="1" />
+      <Item value="true" priority="0" />
+      <Item value="false" priority="1" />
+      <Item value="results" priority="5" />
+      <Item value="Index" priority="0" />
+      <Item value="Score" priority="1" />
+      <Item value="ItemWithScores" priority="0" />
+      <Item value="ArrayOfItemWithScore" priority="0" />
+      <Item value="ItemWithScore" priority="0" />
+      <Item value="foreach" priority="0" />
+      <Item value="to" priority="1" />
+      <Item value="itemWithScore" priority="1" />
+      <Item value="ItemsWithScores" priority="0" />
+      <Item value="ItemsRemovedCount" priority="1" />
+      <Item value="TestHostBase" priority="1" />
+      <Item value="protected" priority="3" />
+      <Item value="appHostBase" priority="0" />
+      <Item value="TestServiceClient" priority="0" />
+      <Item value="object" priority="0" />
+      <Item value="Func" priority="0" />
+      <Item value="getResponseStatusFn" priority="0" />
+      <Item value="response" priority="1" />
+      <Item value="responseStatus" priority="1" />
+      <Item value="throw" priority="0" />
+      <Item value="static" priority="0" />
+      <Item value="NorthwindData" priority="0" />
+      <Item value="for" priority="0" />
+      <Item value="i" priority="2" />
+      <Item value="ConsoleTraceListener" priority="0" />
+      <Item value="before" priority="0" />
+      <Item value="Console" priority="1" />
+      <Item value="noOfEvens" priority="1" />
+      <Item value="ServerInfo" priority="0" />
+      <Item value="LoadDifferentKeys" priority="0" />
+      <Item value="client" priority="0" />
+      <Item value="sb" priority="0" />
+      <Item value="DefaultRedirectPath" priority="0" />
+      <Item value="appConfig" priority="0" />
+      <Item value="AppConfig" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceInterface.RedisWebServicesConfig">
+      <Item value="RedisHostAddress" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetAllKeysResponse">
+      <Item value="Keys" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SetEntryResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.GetAllKeysResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetAndSetEntryResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetValueResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetValuesResponse">
+      <Item value="Values" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetValues">
+      <Item value="Keys" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.AppendToValueResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.ContainsKeyResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.GetSubstringResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.RemoveEntryResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.RemoveEntry">
+      <Item value="Keys" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.IncrementValueResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetEntryTypeResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetRandomKeyResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.ExpireEntryResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetTimeToLiveResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetSortedEntryValuesResponse">
+      <Item value="ResponseStatus" priority="0" />
+      <Item value="Values" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetAllFromSetResponse">
+      <Item value="ResponseStatus" priority="0" />
+      <Item value="Members" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.AddToSetResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.MoveBetweenSetsResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SetContainsItemResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetIntersectFromSets">
+      <Item value="SetIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetIntersectFromSetsResponse">
+      <Item value="ResponseStatus" priority="0" />
+      <Item value="Items" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetRandomItemFromSetResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.GetSetCountResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.PopFromSetResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetAllFromListResponse">
+      <Item value="ResponseStatus" priority="0" />
+      <Item value="Items" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.GetItemFromListResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.PopAndPushItemBetweenListsResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.AddItemToSortedSetResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.GetAllItemsFromSortedSetResponse">
+      <Item value="Items" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.SetRangeInHash">
+      <Item value="KeyValuePairs" priority="1" />
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.GetValuesFromHashResponse">
+      <Item value="Values" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.GetHashKeysResponse">
+      <Item value="Keys" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.CreateSubscription">
+      <Item value="Channels" priority="0" />
+      <Item value="Patterns" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.CreateSubscriptionResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.IRedisClientsManager">
+      <Item value="GetClient" priority="3" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.IRedisClient">
+      <Item value="GetKeys" priority="0" />
+      <Item value="SearchKeys" priority="0" />
+      <Item value="ExpireEntryAt" priority="0" />
+      <Item value="IncrementValueBy" priority="0" />
+      <Item value="GetAllItemsFromList" priority="0" />
+      <Item value="CreateSubscription" priority="0" />
+      <Item value="StoreAll" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.SearchKeys">
+      <Item value="Pattern" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.PingResponse">
+      <Item value="ResponseStatus" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.AppendToValue">
+      <Item value="Key" priority="0" />
+      <Item value="Value" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.ExpireEntry">
+      <Item value="ExpireAt" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Nullable`1">
+      <Item value="HasValue" priority="2" />
+      <Item value="Value" priority="2" />
+      <Item value="GetValueOrDefault" priority="4" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.RedisKeyType">
+      <Item value="ToString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.GetSortedEntryValues">
+      <Item value="StartingFrom" priority="0" />
+      <Item value="EndingAt" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.GetSubstring">
+      <Item value="FromIndex" priority="0" />
+      <Item value="ToIndex" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
+      <Item value="ToArray" priority="9" />
+      <Item value="ConvertAll" priority="0" />
+      <Item value="ForEach" priority="0" />
+      <Item value="Add" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.IncrementValue">
+      <Item value="IncrementBy" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Common.SetEntry">
+      <Item value="ExpireIn" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.GetAllEntriesFromHash">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.GetHashCount">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.GetHashValues">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.HashContainsEntry">
+      <Item value="Key" priority="0" />
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.GetValueFromHash">
+      <Item value="Id" priority="0" />
+      <Item value="Key" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.GetValuesFromHash">
+      <Item value="Id" priority="0" />
+      <Item value="Keys" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.IncrementValueInHash">
+      <Item value="Id" priority="0" />
+      <Item value="Key" priority="0" />
+      <Item value="IncrementBy" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.RemoveEntryFromHash">
+      <Item value="Id" priority="0" />
+      <Item value="Key" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.SetEntryInHash">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Hash.SetEntryInHashIfNotExists">
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Types.KeyValuePair">
+      <Item value="Key" priority="0" />
+      <Item value="Value" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.TimeSpan">
+      <Item value="Zero" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.AddItemToList">
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.BlockingDequeueItemFromList">
+      <Item value="TimeOut" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.BlockingPopItemFromList">
+      <Item value="TimeOut" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.BlockingRemoveStartFromList">
+      <Item value="TimeOut" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.EnqueueItemOnList">
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.GetItemFromList">
+      <Item value="Index" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.GetRangeFromList">
+      <Item value="StartingFrom" priority="0" />
+      <Item value="EndingAt" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.GetRangeFromSortedList">
+      <Item value="StartingFrom" priority="0" />
+      <Item value="EndingAt" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.PopAndPushItemBetweenLists">
+      <Item value="FromListId" priority="0" />
+      <Item value="ToListId" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.PrependItemToList">
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.PushItemToList">
+      <Item value="Id" priority="0" />
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.RemoveItemFromList">
+      <Item value="Item" priority="0" />
+      <Item value="NoOfMatches" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.SetItemInList">
+      <Item value="Index" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.List.TrimList">
+      <Item value="KeepStartingFrom" priority="0" />
+      <Item value="KeepEndingAt" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceInterface.RedisServiceBase`1">
+      <Item value="ClientsManager" priority="1" />
+      <Item value="RedisExec" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.IRedisSubscription">
+      <Item value="OnMessage" priority="0" />
+      <Item value="UnSubscribeFromAllChannels" priority="1" />
+      <Item value="SubscribeToChannels" priority="0" />
+      <Item value="SubscribeToChannelsMatching" priority="0" />
+      <Item value="OnSubscribe" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Messaging.CreateSubscription">
+      <Item value="Channels" priority="1" />
+      <Item value="Patterns" priority="1" />
+      <Item value="TimeOut" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Threading.ThreadPool">
+      <Item value="QueueUserWorkItem" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Threading.Thread">
+      <Item value="Sleep" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Messaging.PublishMessage">
+      <Item value="ToChannel" priority="0" />
+      <Item value="Message" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.GetIntersectFromSets">
+      <Item value="SetIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.GetUnionFromSets">
+      <Item value="SetIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.MoveBetweenSets">
+      <Item value="FromSetId" priority="0" />
+      <Item value="ToSetId" priority="0" />
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.RemoveItemFromSet">
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.SetContainsItem">
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.StoreDifferencesFromSet">
+      <Item value="FromSetId" priority="0" />
+      <Item value="SetIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.Set.StoreUnionFromSets">
+      <Item value="SetIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.GetAllItemsFromSortedSet">
+      <Item value="SortDescending" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.GetItemIndexInSortedSet">
+      <Item value="Item" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.GetRangeFromSortedSet">
+      <Item value="FromRank" priority="1" />
+      <Item value="ToRank" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.GetRangeFromSortedSetByHighestScore">
+      <Item value="FromScore" priority="2" />
+      <Item value="FromStringScore" priority="1" />
+      <Item value="ToScore" priority="0" />
+      <Item value="ToStringScore" priority="0" />
+      <Item value="Skip" priority="0" />
+      <Item value="Take" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.String">
+      <Item value="IsNullOrEmpty" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.GetRangeWithScoresFromSortedSet">
+      <Item value="FromRank" priority="0" />
+      <Item value="ToRank" priority="0" />
+      <Item value="Id" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Types.ArrayOfItemWithScore">
+      <Item value="Add" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.KeyValuePair`2">
+      <Item value="Key" priority="1" />
+      <Item value="Value" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Collections.Generic.IDictionary`2">
+      <Item value="ConvertAll" priority="0" />
+      <Item value="ToKeyValuePairs" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Double">
+      <Item value="ToString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.GetRangeWithScoresFromSortedSetByHighestScore">
+      <Item value="FromScore" priority="0" />
+      <Item value="ToScore" priority="0" />
+      <Item value="FromStringScore" priority="1" />
+      <Item value="Skip" priority="0" />
+      <Item value="Take" priority="0" />
+      <Item value="ToStringScore" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.IncrementItemInSortedSet">
+      <Item value="Item" priority="0" />
+      <Item value="IncrementBy" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.RemoveRangeFromSortedSet">
+      <Item value="FromRank" priority="0" />
+      <Item value="ToRank" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.RemoveRangeFromSortedSetByScore">
+      <Item value="FromScore" priority="0" />
+      <Item value="ToScore" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.StoreIntersectFromSortedSets">
+      <Item value="FromSetIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceModel.Operations.SortedSet.StoreUnionFromSortedSets">
+      <Item value="FromSetIds" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.AppHostBase">
+      <Item value="ExecuteService" priority="0" />
+      <Item value="Container" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.Tests.TestHostBase">
+      <Item value="ServiceClient" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Service.IServiceClient">
+      <Item value="Send" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.ServiceModel.ResponseStatus">
+      <Item value="ErrorCode" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@RedisWebServices.DataSource.Northwind.NorthwindData">
+      <Item value="LoadData" priority="0" />
+      <Item value="Categories" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@RedisWebServices.DataSource.Northwind.NorthwindDtoData">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Diagnostics.Stopwatch">
+      <Item value="GetTimestamp" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.Console">
+      <Item value="WriteLine" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Redis.IRedisNativeClient">
+      <Item value="Info" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Text.StringBuilder">
+      <Item value="AppendLine" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Configuration.IResourceManager">
+      <Item value="Get" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:Funq.Container">
+      <Item value="Resolve" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:RedisWebServices.ServiceInterface.AppConfig">
+      <Item value="DefaultRedirectPath" priority="0" />
+    </ItemStatistics>
+  </CompletionStatisticsManager>
 </Configuration>

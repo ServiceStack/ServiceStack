@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.Text.Tests
 {
@@ -131,6 +132,30 @@ namespace ServiceStack.Text.Tests
 			var fromJson = JsonSerializer.DeserializeFromString<Dictionary<string, Article>>(json);
 
 			Assert.That(fromJson, Has.Count.EqualTo(map.Count));
+		}
+
+		public class Item
+		{
+			public int type { get; set; }
+			public int color { get; set; }
+		}
+		public class Basket
+		{
+			public Basket()
+			{
+				Items = new Dictionary<Item, int>();
+			}
+			public Dictionary<Item, int> Items { get; set; }
+		}
+
+		[Test]
+		public void Can_Serialize_Class_with_Typed_Dictionary()
+		{
+			var basket = new Basket();
+			basket.Items.Add(new Item { type = 1, color = 2 }, 10);
+			basket.Items.Add(new Item { type = 4, color = 1 }, 20);
+
+			Serialize(basket);
 		}
 	}
 }

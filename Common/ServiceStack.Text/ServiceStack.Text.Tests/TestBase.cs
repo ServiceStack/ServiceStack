@@ -23,6 +23,11 @@ namespace ServiceStack.Text.Tests
 			return Serialize(model, false);
 		}
 
+		public T JsonSerialize<T>(T model)
+		{
+			return JsonSerialize(model, false);
+		}
+
 		public T SerializeAndCompare<T>(T model)
 		{
 			return Serialize(model, true);
@@ -56,7 +61,7 @@ namespace ServiceStack.Text.Tests
 						string.Format("Deserialized JSV  {0} was not equal to the original\n{1}", typeof(T), partialJsv));
 
 					Assert.That(fromJsonModel, Is.EquivalentTo(enumerableModel),
-						string.Format("Deserialized JSON {0} was not equal to the original\n{1}", typeof(T), partialJsv));
+						string.Format("Deserialized JSON {0} was not equal to the original\n{1}", typeof(T), partialJson));
 				}
 				else
 				{
@@ -64,11 +69,40 @@ namespace ServiceStack.Text.Tests
 						string.Format("Deserialized JSV  {0} was not equal to the original\n{1}", typeof(T), partialJsv));
 
 					Assert.That(fromJsonModel, Is.EqualTo(model),
-						string.Format("Deserialized JSON {0} was not equal to the original\n{1}", typeof(T), partialJsv));
+						string.Format("Deserialized JSON {0} was not equal to the original\n{1}", typeof(T), partialJson));
 				}
 			}
 
 			return fromJsvModel;
+		}
+
+		private T JsonSerialize<T>(T model, bool assertEqual)
+		{
+			var stopwatch = Stopwatch.StartNew();
+			var json = JsonSerializer.SerializeToString(model);
+			stopwatch.Stop();
+
+			var partialJson = json.Length > 100 ? json.Substring(0, 100) + "..." : json;
+			Console.WriteLine("JSON Time: {0} ticks, Len: {1}: {2}", stopwatch.ElapsedTicks, json.Length, partialJson);
+
+			var fromJsonModel = JsonSerializer.DeserializeFromString<T>(json);
+
+			if (assertEqual)
+			{
+				var enumerableModel = model as IEnumerable;
+				if (enumerableModel != null)
+				{
+					Assert.That(fromJsonModel, Is.EquivalentTo(enumerableModel),
+						string.Format("Deserialized JSON {0} was not equal to the original\n{1}", typeof(T), partialJson));
+				}
+				else
+				{
+					Assert.That(fromJsonModel, Is.EqualTo(model),
+						string.Format("Deserialized JSON {0} was not equal to the original\n{1}", typeof(T), partialJson));
+				}
+			}
+
+			return fromJsonModel;
 		}
 	}
 }

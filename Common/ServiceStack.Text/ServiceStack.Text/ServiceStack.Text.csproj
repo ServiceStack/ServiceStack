@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="AssemblyUtils.cs" />
     <Compile Include="Common\JsReader.cs" />
+    <Compile Include="Common\JsState.cs" />
     <Compile Include="JsonSerializer.Generic.cs" />
     <Compile Include="Jsv\JsvDeserializeType.cs" />
     <Compile Include="Controller\CommandProcessor.cs" />

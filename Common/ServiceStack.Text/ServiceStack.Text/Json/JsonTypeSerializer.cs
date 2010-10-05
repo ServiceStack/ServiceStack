@@ -57,7 +57,16 @@ namespace ServiceStack.Text.Json
 
 		public void WritePropertyName(TextWriter writer, string value)
 		{
-			WriteRawString(writer, value);
+			if (JsState.WritingKeyCount > 0) 
+			{
+				writer.Write(JsWriter.EscapedQuoteString);
+				writer.Write(value);
+				writer.Write(JsWriter.EscapedQuoteString);
+			}
+			else
+			{
+				WriteRawString(writer, value);
+			}
 		}
 
 		public void WriteString(TextWriter writer, string value)
@@ -67,7 +76,11 @@ namespace ServiceStack.Text.Json
 
 		public void WriteBuiltIn(TextWriter writer, object value)
 		{
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
+
 			WriteRawString(writer, value.ToString());
+
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
 		}
 
 		public void WriteObjectString(TextWriter writer, object value)
@@ -113,42 +126,62 @@ namespace ServiceStack.Text.Json
 
 		public void WriteInteger(TextWriter writer, object integerValue)
 		{
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
+
 			if (integerValue == null)
 				writer.Write(JsonUtils.Null);
 			else
 				writer.Write(integerValue.ToString());
+
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
 		}
 
 		public void WriteBool(TextWriter writer, object boolValue)
 		{
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
+
 			if (boolValue == null)
 				writer.Write(JsonUtils.Null);
 			else
 				writer.Write(((bool)boolValue) ? JsonUtils.True : JsonUtils.False);
+
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
 		}
 
 		public void WriteFloat(TextWriter writer, object floatValue)
 		{
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
+
 			if (floatValue == null)
 				writer.Write(JsonUtils.Null);
 			else
 				writer.Write(((float)floatValue).ToString(CultureInfo.InvariantCulture));
+
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
 		}
 
 		public void WriteDouble(TextWriter writer, object doubleValue)
 		{
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
+
 			if (doubleValue == null)
 				writer.Write(JsonUtils.Null);
 			else
 				writer.Write(((double)doubleValue).ToString(CultureInfo.InvariantCulture));
+
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
 		}
 
 		public void WriteDecimal(TextWriter writer, object decimalValue)
 		{
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
+
 			if (decimalValue == null)
 				writer.Write(JsonUtils.Null);
 			else
 				writer.Write(((decimal)decimalValue).ToString(CultureInfo.InvariantCulture));
+
+			if (JsState.WritingKeyCount > 0 && !JsState.IsWritingValue) writer.Write(JsonUtils.QuoteChar);
 		}
 
 		/// <summary>
@@ -163,6 +196,18 @@ namespace ServiceStack.Text.Json
 			if (type == typeof(bool) || type.IsNumericType())
 			{
 				return '"' + value.ToString() + '"';
+			}
+			if (!type.IsValueType)
+			{
+/*
+				if (!JsonUtils.HasAnyEscapeChars(value))
+				{
+					writer.Write(QuoteChar);
+					writer.Write(value);
+					writer.Write(QuoteChar);
+					return;
+				}
+*/
 			}
 			return value;
 		}
