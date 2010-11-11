@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
@@ -244,9 +245,12 @@ namespace ServiceStack.ServiceHost
 			return handlerFn;
 		}
 
-		public object ExecuteText(string text, IRequestContext requestContext)
+		public object ExecuteText(string requestXml, Type requestType, IRequestContext requestContext)
 		{
-			throw new NotImplementedException();
+			var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
+			var response = Execute(request, requestContext);
+			var responseXml = DataContractSerializer.Instance.Parse(response);
+			return responseXml;
 		}
 
 		public void AssertServiceRestrictions(Type requestType, EndpointAttributes actualAttributes)

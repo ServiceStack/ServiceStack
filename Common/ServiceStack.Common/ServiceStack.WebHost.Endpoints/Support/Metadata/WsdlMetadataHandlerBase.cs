@@ -18,13 +18,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			var optimizeForFlash = context.Request.QueryString["flash"] != null;
 			var includeAllTypesInAssembly = context.Request.QueryString["includeAllTypes"] != null;
 			var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
-
-			var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, includeAllTypesInAssembly);
+			
+			var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, includeAllTypesInAssembly, context.Request.GetBaseUrl());
 
 			context.Response.Write(wsdlTemplate.ToString());
 		}
 
-		public WsdlTemplateBase GetWsdlTemplate(ServiceOperations operations, string baseUri, bool optimizeForFlash, bool includeAllTypesInAssembly)
+		public WsdlTemplateBase GetWsdlTemplate(ServiceOperations operations, string baseUri, bool optimizeForFlash, bool includeAllTypesInAssembly, string rawUrl)
 		{
 			var xsd = new XsdGenerator {
 				OperationTypes = operations.AllOperations.Types,
@@ -36,8 +36,22 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			wsdlTemplate.Xsd = xsd;
 			wsdlTemplate.ReplyOperationNames = operations.ReplyOperations.Names;
 			wsdlTemplate.OneWayOperationNames = operations.OneWayOperations.Names;
-			wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
-			wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";
+
+
+			if (rawUrl.ToLower().Contains("servicestack"))
+			{
+				//var qsPos = rawUrl.IndexOf('?');
+				//var urlWithoutQueryString = qsPos != -1 ? rawUrl.Substring(0, qsPos) : rawUrl;
+				wsdlTemplate.ReplyEndpointUri = rawUrl;
+				wsdlTemplate.OneWayEndpointUri = rawUrl;
+			}
+			else
+			{
+				wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
+				wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";
+			}
+
+
 			return wsdlTemplate;
 		}
 	}

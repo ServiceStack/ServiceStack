@@ -110,14 +110,14 @@ namespace ServiceStack.WebHost.Endpoints
 				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 
-		public virtual string ExecuteXmlService(string xml)
+		public virtual string ExecuteXmlService(string xml, Type requestType)
 		{
-			return ExecuteXmlService(xml, EndpointAttributes.None);
+			return ExecuteXmlService(xml, requestType, EndpointAttributes.None);
 		}
 
-		public string ExecuteXmlService(string xml, EndpointAttributes endpointAttributes)
+		public string ExecuteXmlService(string xml, Type requestType, EndpointAttributes endpointAttributes)
 		{
-			return (string)EndpointHost.Config.ServiceController.ExecuteText(xml,
+			return (string)EndpointHost.Config.ServiceController.ExecuteText(xml, requestType, 
 				new HttpRequestContext(xml, endpointAttributes));
 		}
 

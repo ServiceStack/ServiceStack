@@ -7,6 +7,6 @@ namespace ServiceStack.ServiceClient.Web
     public interface IOneWay
     {
         [OperationContract(Action = "*", IsOneWay = true)]
-        void SendOneWay(Message msg);
+        void SendOneWay(Message requestMsg);
     }
 }

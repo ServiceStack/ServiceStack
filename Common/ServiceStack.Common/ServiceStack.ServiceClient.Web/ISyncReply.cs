@@ -7,6 +7,6 @@ namespace ServiceStack.ServiceClient.Web
     public interface ISyncReply
     {
         [OperationContract(Action = "*", ReplyAction = "*")]
-        Message Send(Message msg);
+        Message Send(Message requestMsg);
     }
 }

@@ -23,6 +23,6 @@ namespace ServiceStack.ServiceHost
 
 		object Execute(object request, IRequestContext requestContext);
 
-		object ExecuteText(string text, IRequestContext requestContext);
+		object ExecuteText(string text, Type requestType, IRequestContext requestContext);
 	}
 }

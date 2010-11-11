@@ -98,12 +98,12 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 		protected abstract string ReplyEndpointUriTemplate { get; }
 		protected abstract string OneWayEndpointUriTemplate { get; }
 
-		private const string TEMPLATE = 
+		private const string Template = 
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <wsdl:definitions name=""{0}"" 
     targetNamespace=""http://services.servicestack.net/"" 
     xmlns:svc=""http://services.servicestack.net/"" 
-    xmlns:tns=""http://schemas.servicestack.net/types/"" 
+    xmlns:tns=""http://schemas.servicestack.net/types"" 
     
     xmlns:wsdl=""http://schemas.xmlsoap.org/wsdl/"" 
     xmlns:soap=""http://schemas.xmlsoap.org/wsdl/soap/"" 
@@ -171,7 +171,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			var replyEndpointUri = string.Format(this.ReplyEndpointUriTemplate, ServiceName, this.ReplyEndpointUri);
 			var oneWayEndpointUri = string.Format(this.OneWayEndpointUriTemplate, ServiceName, this.OneWayEndpointUri);
 
-			var wsdl = string.Format(TEMPLATE, 
+			var wsdl = string.Format(Template, 
 				WsdlName, 
 				Xsd, 
 				replyMessages, 

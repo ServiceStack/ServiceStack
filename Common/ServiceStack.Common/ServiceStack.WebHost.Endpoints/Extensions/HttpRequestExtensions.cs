@@ -101,6 +101,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			return GetAuthority(request) + endpointsPath;
 		}
 
+		public static string GetBaseUrl(this HttpRequest request)
+		{
+			return GetAuthority(request) + request.RawUrl;
+		}
+
 		//=> http://localhost:96 ?? ex=> http://localhost
 		private static string GetAuthority(HttpRequest request)
 		{

@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			var serviceOperations = new ServiceOperations(base.AllOperations);
 			var wsdlGenerator = new Soap11WsdlMetadataHandler();
-			var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(serviceOperations, "http://w3c.org/types", false, false);
+			var wsdlTemplate = wsdlGenerator.GetWsdlTemplate(serviceOperations, "http://w3c.org/types", false, false, "http://w3c.org/types");
 
 			Assert.That(wsdlTemplate.ReplyOperationNames, Is.EquivalentTo(serviceOperations.ReplyOperations.Names));
 			Assert.That(wsdlTemplate.OneWayOperationNames, Is.EquivalentTo(serviceOperations.OneWayOperations.Names));

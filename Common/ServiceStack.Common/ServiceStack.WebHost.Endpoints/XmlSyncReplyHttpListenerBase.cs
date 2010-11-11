@@ -241,9 +241,9 @@ namespace ServiceStack.WebHost.Endpoints
 				new HttpRequestContext(request, endpointAttributes));
 		}
 
-		public virtual string ExecuteXmlService(string xmlRequest, EndpointAttributes endpointAttributes)
+		public virtual string ExecuteXmlService(string xmlRequest, Type requestType, EndpointAttributes endpointAttributes)
 		{
-			return (string)EndpointHost.Config.ServiceController.ExecuteText(xmlRequest,
+			return (string)EndpointHost.Config.ServiceController.ExecuteText(xmlRequest, requestType,
 				new HttpRequestContext(xmlRequest, endpointAttributes));
 		}
 
