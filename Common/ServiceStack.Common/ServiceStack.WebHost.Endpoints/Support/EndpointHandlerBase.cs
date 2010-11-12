@@ -162,12 +162,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return EndpointHost.ExecuteService(request, endpointAttributes);
 		}
 
-		//Execute SOAP requests
-		protected static string ExecuteXmlService(string xmlRequest, Type requestType, EndpointAttributes endpointAttributes)
-		{
-			return EndpointHost.ExecuteXmlService(xmlRequest, requestType, endpointAttributes);
-		}
-
 		public EndpointAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)
 		{
 			if (!EndpointHost.Config.EnableAccessRestrictions) return default(EndpointAttributes);

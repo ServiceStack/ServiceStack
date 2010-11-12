@@ -8,7 +8,8 @@ using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-	public class SoapSyncReplyHttpHandler : SoapSyncReplyHandler, IHttpHandler
+	public class Soap12MessageSyncReplyHttpHandler 
+		: SoapSyncReplyHandler, IHttpHandler
 	{
 		public void ProcessRequest(HttpContext context)
 		{

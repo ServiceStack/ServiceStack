@@ -8,14 +8,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	{
 		public void SendOneWay(Message requestMsg)
 		{
-			var xml = requestMsg.GetReaderAtBodyContents().ReadOuterXml();
-
 			var endpointAttributes = EndpointAttributes.AsyncOneWay;
 
 			endpointAttributes |= GetType() == typeof(Soap11AsyncOneWayHandler)
 				? EndpointAttributes.Soap11 : EndpointAttributes.Soap12;
-			
-			ExecuteXmlService(xml, GetRequestType(requestMsg, xml), endpointAttributes);
+
+			ExecuteMessage(requestMsg, endpointAttributes);
 		}
 	}
 }

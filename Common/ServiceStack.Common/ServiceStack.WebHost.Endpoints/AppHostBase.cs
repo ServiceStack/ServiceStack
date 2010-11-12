@@ -110,17 +110,6 @@ namespace ServiceStack.WebHost.Endpoints
 				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 
-		public virtual string ExecuteXmlService(string xml, Type requestType)
-		{
-			return ExecuteXmlService(xml, requestType, EndpointAttributes.None);
-		}
-
-		public string ExecuteXmlService(string xml, Type requestType, EndpointAttributes endpointAttributes)
-		{
-			return (string)EndpointHost.Config.ServiceController.ExecuteText(xml, requestType, 
-				new HttpRequestContext(xml, endpointAttributes));
-		}
-
 		public virtual void Dispose()
 		{
 			if (this.serviceManager != null)

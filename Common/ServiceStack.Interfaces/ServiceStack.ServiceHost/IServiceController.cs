@@ -21,8 +21,12 @@ namespace ServiceStack.ServiceHost
 		/// <value>The operation types.</value>
 		IList<Type> AllOperationTypes { get; }
 
+		/// <summary>
+		/// Executes the DTO request under the supplied requestContext.
+		/// </summary>
+		/// <param name="request"></param>
+		/// <param name="requestContext"></param>
+		/// <returns></returns>
 		object Execute(object request, IRequestContext requestContext);
-
-		object ExecuteText(string text, Type requestType, IRequestContext requestContext);
 	}
 }

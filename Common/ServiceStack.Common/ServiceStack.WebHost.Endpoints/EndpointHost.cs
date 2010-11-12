@@ -43,13 +43,6 @@ namespace ServiceStack.WebHost.Endpoints
 				new HttpRequestContext(request, endpointAttributes));
 		}
 
-		internal static string ExecuteXmlService(string xmlRequest, Type requestType, EndpointAttributes endpointAttributes)
-		{
-			AssertConfig();
-			return (string)Config.ServiceController.ExecuteText(xmlRequest, requestType, 
-				new HttpRequestContext(xmlRequest, endpointAttributes));
-		}
-
 		private static void AssertConfig()
 		{
 			if (Config == null) throw new ArgumentNullException("Config");

@@ -177,12 +177,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				request, new HttpRequestContext(request, endpointAttributes));
 		}
 
-		public virtual string ExecuteXmlService(string xmlRequest, Type requestType, EndpointAttributes endpointAttributes)
-		{
-			return (string)EndpointHost.Config.ServiceController.ExecuteText(xmlRequest, requestType, 
-				new HttpRequestContext(xmlRequest, endpointAttributes));
-		}
-
 		public virtual void Dispose()
 		{
 			this.Stop();
