@@ -283,17 +283,19 @@ namespace ServiceStack.Redis
 			var bytes = SendExpectData(cmdWithBinaryArgs);
 			return bytes.FromUtf8Bytes();
 		}
-
 		private double SendExpectDouble(params byte[][] cmdWithBinaryArgs)
 		{
-			var doubleBytes = SendExpectData(cmdWithBinaryArgs);
-			var doubleString = Encoding.UTF8.GetString(doubleBytes);
-
-			double d;
-			double.TryParse(doubleString, out d);
-
-			return d;
+			return parseDouble( SendExpectData(cmdWithBinaryArgs) );
 		}
+        private double parseDouble(byte[] doubleBytes)
+        {
+            var doubleString = Encoding.UTF8.GetString(doubleBytes);
+
+            double d;
+            double.TryParse(doubleString, out d);
+
+            return d;
+        }
 
 		private string SendExpectCode(params byte[][] cmdWithBinaryArgs)
 		{
