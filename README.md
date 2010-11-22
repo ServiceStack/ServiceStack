@@ -5,7 +5,7 @@ Service Stack is a high-performance .NET web services framework _(including a nu
 Simple web service example
 ==========================
 
-`
+```c#
 [DataContract]
 public class GetFactorial
 {
@@ -32,7 +32,7 @@ public class GetFactorialService : IService<GetFactorial>
 		return n > 1 ? n * GetFactorial(n - 1) : 1;
 	}
 }
-`
+```
 
 ### Calling the service from any C#/.NET Client
 
