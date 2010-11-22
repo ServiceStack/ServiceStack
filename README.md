@@ -60,14 +60,14 @@ Download
 ========
 
 To start developing web services with Service Stack we recommend starting with the ServiceStack.Examples project (includes ServiceStack.dlls):
-  * [](http://servicestack.googlecode.com/files/ServiceStack.Examples.zip)
+  * http://servicestack.googlecode.com/files/ServiceStack.Examples.zip
 
 If you already have ServiceStack and just want to download the latest release binaries get them at:
-  * [](http://servicestack.googlecode.com/files/ServiceStack.zip)
+  * http://servicestack.googlecode.com/files/ServiceStack.zip
 
 ## Getting Started
 An online tutorial that walks you through developing and calling web services is available here:
- * [](http://www.servicestack.net/monotouch/remote-info/)
+ * http://www.servicestack.net/monotouch/remote-info/
 
 
 # Features of a modern web services framework
