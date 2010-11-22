@@ -25,6 +25,8 @@ namespace ServiceStack.WebHost.Endpoints
 			};
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
+			this.WsdlServiceNamespace = "http://services.servicestack.net/";
+			this.WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types";
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> 
 				{ { "X-Powered-By", Env.ServerUserAgent } };
@@ -33,6 +35,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public IServiceController ServiceController { get; set; }
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
+		public string WsdlServiceNamespace { get; set; }
+		public string WsdlServiceTypesNamespace { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
 		public bool EnableAccessRestrictions { get; set; }
