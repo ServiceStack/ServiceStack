@@ -6,51 +6,50 @@ Simple web service example
 ==========================
 
 ```
-[DataContract]
-public class GetFactorial
-{
-	[DataMember]
-	public long ForNumber { get; set; }
-}
+    [DataContract]
+    public class GetFactorial
+    {
+        [DataMember]
+        public long ForNumber { get; set; }
+    }
 
-[DataContract]
-public class GetFactorialResponse
-{
-	[DataMember]
-	public long Result { get; set; }
-}
+    [DataContract]
+    public class GetFactorialResponse
+    {
+        [DataMember]
+        public long Result { get; set; }
+    }
 
-public class GetFactorialService : IService<GetFactorial>
-{
-	public object Execute(GetFactorial request)
-	{
-		return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
-	}
+    public class GetFactorialService : IService<GetFactorial>
+    {
+        public object Execute(GetFactorial request)
+        {
+            return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
+        }
 
-	static long GetFactorial(long n)
-	{
-		return n > 1 ? n * GetFactorial(n - 1) : 1;
-	}
-}
+        static long GetFactorial(long n)
+        {
+            return n > 1 ? n * GetFactorial(n - 1) : 1;
+        }
+    }
 ```
 
 ### Calling the service from any C#/.NET Client
 
 ```
-//no code-gen required, can re-use above DTO's
-var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
-var response = this.ServiceClient.Send<GetFactorialResponse>(new GetFactorial { ForNumber = 3 });
-Console.WriteLine("Result: {0}", response.Result);
+    //no code-gen required, can re-use above DTO's
+    var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
+    var response = this.ServiceClient.Send<GetFactorialResponse>(new GetFactorial { ForNumber = 3 });
+    Console.WriteLine("Result: {0}", response.Result);
 ```
 
 ### Calling the service from a Java Script client i.e. Ajax
 
-`
-var serviceClient = new JsonServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
-serviceClient.getFromService("GetFactorial", { ForNumber: 3 }, function(e) {
-  alert(e.Result);
-});
-`
+    var serviceClient = new JsonServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
+    serviceClient.getFromService("GetFactorial", { ForNumber: 3 }, function(e) {
+      alert(e.Result);
+    });
+
 
 That's all the application code required to create a simple web service.
 
