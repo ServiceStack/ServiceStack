@@ -5,7 +5,7 @@ Service Stack is a high-performance .NET web services framework _(including a nu
 Simple web service example
 ==========================
 
-```c#
+```
 [DataContract]
 public class GetFactorial
 {
@@ -36,12 +36,12 @@ public class GetFactorialService : IService<GetFactorial>
 
 ### Calling the service from any C#/.NET Client
 
-`
+```
 //no code-gen required, can re-use above DTO's
 var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
 var response = this.ServiceClient.Send<GetFactorialResponse>(new GetFactorial { ForNumber = 3 });
 Console.WriteLine("Result: {0}", response.Result);
-`
+```
 
 ### Calling the service from a Java Script client i.e. Ajax
 
