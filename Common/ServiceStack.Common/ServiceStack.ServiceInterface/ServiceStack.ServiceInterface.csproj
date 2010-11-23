@@ -57,7 +57,7 @@
     </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\..\release\lib\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -95,6 +95,12 @@
     <Compile Include="Session\UserClientSession.cs" />
     <Compile Include="Session\PublicAndPrivateClientSessions.cs" />
     <Compile Include="Session\UserSession.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Funq\Funq.csproj">
+      <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
+      <Name>Funq</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

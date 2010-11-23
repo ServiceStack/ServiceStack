@@ -40,6 +40,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\release\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\release\lib\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -59,15 +67,9 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
-    <Compile Include="Soap12MessageAsyncOneWayHttpHandler.cs" />
-    <Compile Include="Soap11MessageSyncReplyHttpHandler.cs" />
     <Compile Include="Ext\AllFilesHandler.cs" />
     <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
@@ -81,6 +83,8 @@
     <Compile Include="Extensions\HttpResponseWrapper.cs" />
     <Compile Include="Extensions\IHttpResponse.cs" />
     <Compile Include="MetadataConfig.cs" />
+    <Compile Include="Soap11MessageSyncReplyHttpHandler.cs" />
+    <Compile Include="Soap12MessageAsyncOneWayHttpHandler.cs" />
     <Compile Include="Support\HttpListenerBase.cs" />
     <Compile Include="AppHostHttpListenerBase.cs" />
     <Compile Include="Support\ContentType.cs" />
@@ -138,10 +142,6 @@
     <Compile Include="Support\Templates\ListTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ServiceStack.Text\ServiceStack.Text\ServiceStack.Text.csproj">
-      <Project>{579B3FDB-CDAD-44E1-8417-885C38E49A0E}</Project>
-      <Name>ServiceStack.Text</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Funq\Funq.csproj">
       <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
       <Name>Funq</Name>

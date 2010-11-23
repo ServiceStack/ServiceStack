@@ -127,17 +127,17 @@ Also included in ServiceStack are libraries that are useful in the development o
    *  You can download the latest [RedisWindowsDownload Windows build for the Redis Server here].
    * [Redis Admin UI](http://www.servicestack.net/mythz_blog/?p=381) - An Ajax GUI admin tool to help visualize your Redis data.
 
- * OrmLite - A convention-based, configuration free lightweight ORM that uses attributes from DataAnnotations to infer the table schema. Currently supports both Sqlite and SqlServer.
+ * [OrmLite](https://github.com/mythz/ServiceStack.OrmLite) - A convention-based, configuration free lightweight ORM that uses attributes from DataAnnotations to infer the table schema. Currently supports both Sqlite and SqlServer.
 
- * [Caching Caching] - A common interface for caching with providers for:
+ * [Caching] - A common interface for caching with providers for:
    * Memcached
    * In Memory Cache
    * Redis
 
 
 ## Find out More
- * Twitter: to get updates of ServiceStack, follow [http://twitter.com/ServiceStack @ServiceStack on twitter].
- * Email any questions to _demis@servicestack.net_
+ * Twitter: to get updates of ServiceStack, follow [@ServiceStack](http://twitter.com/ServiceStack) on twitter.
+ * Email any questions to _demis.bellot@gmail.com_
 
 ## Future Roadmap
 Service Stack is under continuous improvement and is always adding features that are useful for high-performance, scalable and resilient web service scenarios. This is the current road map but is open to change.

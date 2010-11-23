@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.ServiceModel.Channels;
-using System.Web;
+﻿using System.Web;
 using System.Xml;
 using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Metadata;
@@ -9,7 +7,7 @@ using ServiceStack.WebHost.Endpoints.Support;
 namespace ServiceStack.WebHost.Endpoints
 {
 	public class Soap12MessageSyncReplyHttpHandler 
-		: SoapSyncReplyHandler, IHttpHandler
+		: SoapHandler, IHttpHandler
 	{
 		public void ProcessRequest(HttpContext context)
 		{
