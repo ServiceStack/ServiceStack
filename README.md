@@ -60,14 +60,14 @@ Download
 ========
 
 To start developing web services with Service Stack we recommend starting with the ServiceStack.Examples project (includes ServiceStack.dlls):
-  * http://servicestack.googlecode.com/files/ServiceStack.Examples.zip
+  * [http://servicestack.googlecode.com/files/ServiceStack.Examples.zip](http://servicestack.googlecode.com/files/ServiceStack.Examples.zip)
 
 If you already have ServiceStack and just want to download the latest release binaries get them at:
-  * http://servicestack.googlecode.com/files/ServiceStack.zip
+  * [http://servicestack.googlecode.com/files/ServiceStack.zip](http://servicestack.googlecode.com/files/ServiceStack.zip)
 
 ## Getting Started
 An online tutorial that walks you through developing and calling web services is available here:
- * http://www.servicestack.net/monotouch/remote-info/
+ * [http://www.servicestack.net/monotouch/remote-info/](http://www.servicestack.net/monotouch/remote-info/)
 
 
 # Features of a modern web services framework
@@ -107,24 +107,25 @@ With Mono on Linux now reaching full-maturity, Service Stack runs on .NET or Lin
 No coupling between the transport's endpoint and your web service's payload. You can re-use your existing strongly-typed web service DTO's with any .NET client using the available Soap, Xml and Json Service Clients - giving you a strongly-typed API while at the same time avoiding the need for any generated code.
 
   * The most popular web service endpoints are configured by default. With no extra effort, each new web service created is immediately available and [http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Metadata discoverable] on the following end points:
-    * [http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Xml/Metadata?op=GetFactorial XML (+REST)]
-    * [http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Json/Metadata?op=GetFactorial JSON (+REST)]
-    * [http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Jsv/Metadata?op=GetFactorial JSV (+REST)]
-    * [http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Soap11/Metadata?op=GetFactorial SOAP 1.1]
-    * [http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Soap12/Metadata?op=GetFactorial SOAP 1.2]
+    * [XML (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Xml/Metadata?op=GetFactorial)
+    * [JSON (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Json/Metadata?op=GetFactorial)
+    * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Jsv/Metadata?op=GetFactorial)
+    * [SOAP 1.1](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Soap11/Metadata?op=GetFactorial)
+    * [SOAP 1.2](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Soap12/Metadata?op=GetFactorial)
   * View the [ServiceStackWebServices Service Stack endpoints page] for our recommendations on which endpoint to use and when.
 
 # High Performance Sub Projects
 Also included in ServiceStack are libraries that are useful in the development of high performance web services:
 
- * [http://www.servicestack.net/mythz_blog/?p=344 JsonSerializer] - The fastest JSON Serializer for .NET. Over 3 times faster than other .NET JSON serialisers.
- * TypeSerializer - A fast, compact text serializer that is very resilient to schema changes and is:
-   * 3.5x quicker and 2.6x smaller than the .NET XML DataContractSerializer and
-   * 5.3x quicker and 1.3x smaller than the .NET JSON DataContractSerializer - _[http://www.servicestack.net/benchmarks/NorthwindDatabaseRowsSerialization.1000000-times.2010-02-06.html view the detailed benchmarks]_
+ * [ServiceStack.Text](https://github.com/mythz/ServiceStack.Text) - The home of ServiceStack's JSON and JSV text serializers, the fastest text serializers for .NET
+   * [JsonSerializer](http://www.servicestack.net/mythz_blog/?p=344) - The fastest JSON Serializer for .NET. Over 3 times faster than other .NET JSON serialisers.
+   * [TypeSerializer](https://github.com/mythz/ServiceStack.Text) - The JSV-format, a fast, compact text serializer that is very resilient to schema changes and is:
+       * 3.5x quicker and 2.6x smaller than the .NET XML DataContractSerializer and
+       * 5.3x quicker and 1.3x smaller than the .NET JSON DataContractSerializer - _[view the detailed benchmarks](http://www.servicestack.net/benchmarks/NorthwindDatabaseRowsSerialization.1000000-times.2010-02-06.html)_
 
- * [ServiceStackRedis ServiceStack.Redis] - An API complete C# [http://code.google.com/p/redis/ Redis] client with native support for persisting C# POCO objects.
+ * [ServiceStack.Redis](https://github.com/mythz/ServiceStack.Redis) - An API complete C# [Redis](http://code.google.com/p/redis/) client with native support for persisting C# POCO objects.
    *  You can download the latest [RedisWindowsDownload Windows build for the Redis Server here].
-   * [http://www.servicestack.net/mythz_blog/?p=381 Redis Admin UI] - An Ajax GUI admin tool to help visualize your Redis data.
+   * [Redis Admin UI](http://www.servicestack.net/mythz_blog/?p=381) - An Ajax GUI admin tool to help visualize your Redis data.
 
  * OrmLite - A convention-based, configuration free lightweight ORM that uses attributes from DataAnnotations to infer the table schema. Currently supports both Sqlite and SqlServer.
 
@@ -157,7 +158,6 @@ Similar Open source .NET projects for developing or accessing web services inclu
 
  * Rest Sharp - an open source REST client for .NET
      * http://restsharp.org
-
 
 
 ----
