@@ -1,0 +1,6 @@
+bin/
+obj/
+_ReSharper.ServiceStack.Common/
+.idea/
+latest/
+/env-vars.bat
