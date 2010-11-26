@@ -12,6 +12,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public const string XmlText = "text/xml";
 
+		public const string Soap11 = " text/xml; charset=utf-8";
+
 		public const string Soap12 = " application/soap+xml";
 
 		public const string JsonText = "text/json";

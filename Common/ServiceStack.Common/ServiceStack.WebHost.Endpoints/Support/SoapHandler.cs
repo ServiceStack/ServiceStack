@@ -58,7 +58,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		protected static Message GetRequestMessage(HttpContext context)
+		protected static Message GetSoap12RequestMessage(HttpContext context)
+		{
+			return GetRequestMessage(context, MessageVersion.Soap12WSAddressingAugust2004);
+		}
+
+		protected static Message GetSoap11RequestMessage(HttpContext context)
+		{
+			return GetRequestMessage(context, MessageVersion.Soap11WSAddressingAugust2004);
+		}
+
+		protected static Message GetRequestMessage(HttpContext context, MessageVersion msgVersion)
 		{
 			using (var sr = new StreamReader(context.Request.InputStream))
 			{
@@ -67,8 +77,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				var doc = new XmlDocument();
 				doc.LoadXml(requestXml);
 
-				var msg = Message.CreateMessage(new XmlNodeReader(doc), requestXml.Length,
-					MessageVersion.Soap12WSAddressingAugust2004);
+				var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+					msgVersion);
 
 				return msg;
 			}
@@ -96,7 +106,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			if (xml.StartsWith("<"))
 			{
-				return xml.Substring(1, xml.IndexOf(" "));
+				return xml.Substring(1, xml.IndexOf(" ") - 1);
 			}
 
 			return null;
@@ -142,7 +152,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var requestOperationName = GetAction(context);
 			return requestOperationName != null
 					? context.Request.ContentType.Replace(requestOperationName, requestOperationName + "Response")
-					: ContentType.Soap12;
+					: (SoapType == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
 		}
 	}
 }

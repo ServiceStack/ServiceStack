@@ -43,13 +43,16 @@ COPY ..\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.ServiceInterface.
 COPY *.dll ..\Lib
 COPY *.dll ..\..\..\release\latest
 
+COPY *.dll %SERVICESTACK_DEPLOY_PATH%
+
+
 COPY ServiceStack.dll ..\..\..\ServiceStack.Examples\Lib
 COPY ..\..\..\release\lib\ServiceStack.Interfaces.dll ..\..\..\ServiceStack.Examples\Lib
-COPY ServiceStack.ServiceInterface.dll ..\..\..\ServiceStack.Examples\Lib
+COPY ..\..\..\release\latest\ServiceStack.ServiceInterface.dll ..\..\..\ServiceStack.Examples\Lib
 
 COPY ServiceStack.dll ..\..\..\MonoTouch.Examples\RemoteInfo\Server\Lib
 COPY ..\..\..\release\lib\ServiceStack.Interfaces.dll ..\..\..\MonoTouch.Examples\RemoteInfo\Server\Lib
 
 COPY ServiceStack.dll ..\..\ServiceStack.Redis\RedisWebServices\Lib
 COPY ..\..\..\release\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\RedisWebServices\Lib
-COPY ServiceStack.ServiceInterface.dll ..\..\ServiceStack.Redis\RedisWebServices\Lib
+COPY ..\..\..\release\latest\ServiceStack.ServiceInterface.dll ..\..\ServiceStack.Redis\RedisWebServices\Lib

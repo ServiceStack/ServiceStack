@@ -7,7 +7,7 @@ using System.Xml;
 using NUnit.Framework;
 using ServiceStack.Messaging;
 using ServiceStack.ServiceModel.Serialization;
-using DataContractSerializer = System.Runtime.Serialization.DataContractSerializer;
+using DataContractSerializer = ServiceStack.ServiceModel.Serialization.DataContractSerializer;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -31,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var msg = Message.CreateMessage(MessageVersion.Default, "Reverse", request);
 			//Console.WriteLine("BODY: " + msg.GetReaderAtBodyContents().ReadOuterXml());
 
-			var fromRequest = msg.GetBody<Reverse>(new DataContractSerializer(typeof(Reverse)));
+			var fromRequest = msg.GetBody<Reverse>(new System.Runtime.Serialization.DataContractSerializer(typeof(Reverse)));
 			Assert.That(fromRequest.Value, Is.EqualTo(request.Value));
 		}
 
@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				var msg = Message.CreateMessage(xnr, msgXml.Length, MessageVersion.Soap12WSAddressingAugust2004);
 
 				var xml = msg.GetReaderAtBodyContents().ReadOuterXml();
-				Console.WriteLine("BODY: " + ServiceStack.ServiceModel.Serialization.DataContractSerializer.Instance.Parse(request));
+				Console.WriteLine("BODY: " + DataContractSerializer.Instance.Parse(request));
 				Console.WriteLine("EXPECTED BODY: " + xml);
 
 				var fromRequest = (Reverse)DataContractDeserializer.Instance.Parse(xml, typeof(Reverse));
@@ -116,5 +116,74 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 
+
+		protected static Message GetRequestMessage(string requestXml)
+		{
+			var doc = new XmlDocument();
+			doc.LoadXml(requestXml);
+
+			var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+				MessageVersion.Soap11WSAddressingAugust2004);
+			//var msg = Message.CreateMessage(MessageVersion.Soap12WSAddressingAugust2004, 
+			//    "*", new XmlBodyWriter(requestXml));
+
+			return msg;
+		}
+
+		[Test]
+		public void Can_create_message_from_xml()
+		{
+			var requestXml =
+				"<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+				+ "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+				+ " xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+				+ " xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body>"
+				+ "<Reverse xmlns=\"http://schemas.servicestack.net/types\"><Value>Testing</Value></Reverse>"
+				+ "</soap:Body></soap:Envelope>";
+
+			var requestMsg = GetRequestMessage(requestXml);
+
+			using (var reader = requestMsg.GetReaderAtBodyContents())
+			{
+				requestXml = reader.ReadOuterXml();
+			}
+
+			var requestType = typeof (Reverse);
+			var request = (Reverse)DataContractDeserializer.Instance.Parse(requestXml, requestType);
+			Assert.That(request.Value, Is.EqualTo("Testing"));
+		}
+
+		public class DtoBodyWriter : BodyWriter
+		{
+			private readonly object dto;
+			public DtoBodyWriter(object dto)
+				: base(true)
+			{
+				this.dto = dto;
+			}
+
+			protected override void OnWriteBodyContents(XmlDictionaryWriter writer)
+			{
+				var xml = DataContractSerializer.Instance.Parse(dto);
+				writer.WriteString(xml);
+			}
+		}
+
+		public class XmlBodyWriter : BodyWriter
+		{
+			private readonly string xml;
+			public XmlBodyWriter(string xml)
+				: base(true)
+			{
+				this.xml = xml;
+			}
+
+			protected override void OnWriteBodyContents(XmlDictionaryWriter writer)
+			{
+				writer.WriteString(xml);
+			}
+		}
 	}
+
+
 }

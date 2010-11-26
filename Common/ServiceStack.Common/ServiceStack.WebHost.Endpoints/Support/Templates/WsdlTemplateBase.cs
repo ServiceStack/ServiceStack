@@ -101,8 +101,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 		private const string Template = 
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <wsdl:definitions name=""{0}"" 
-    targetNamespace=""http://services.servicestack.net/"" 
-    xmlns:svc=""http://services.servicestack.net/"" 
+    targetNamespace=""http://schemas.servicestack.net/types"" 
+    xmlns:svc=""http://schemas.servicestack.net/types"" 
     xmlns:tns=""http://schemas.servicestack.net/types"" 
     
     xmlns:wsdl=""http://schemas.xmlsoap.org/wsdl/"" 

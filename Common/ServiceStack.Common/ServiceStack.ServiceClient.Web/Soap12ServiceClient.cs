@@ -21,7 +21,8 @@ namespace ServiceStack.ServiceClient.Web
 				{
 					this.binding = new WSHttpBinding {
 						MaxReceivedMessageSize = int.MaxValue,
-						HostNameComparisonMode = HostNameComparisonMode.StrongWildcard
+						HostNameComparisonMode = HostNameComparisonMode.StrongWildcard,						
+						MaxBufferPoolSize = 524288,
 					};
 					this.binding.Security.Mode = SecurityMode.None;
 				}

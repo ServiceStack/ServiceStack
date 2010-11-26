@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints
 				return;
 			}
 
-			var requestMessage = GetRequestMessage(context);
+			var requestMessage = GetSoap12RequestMessage(context);
 			var responseMessage = Send(requestMessage);
 			
 			context.Response.ContentType = GetSoapContentType(context);
