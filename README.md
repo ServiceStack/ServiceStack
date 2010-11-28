@@ -129,25 +129,26 @@ Also included in ServiceStack are libraries that are useful in the development o
 
  * [OrmLite](https://github.com/mythz/ServiceStack.OrmLite) - A convention-based, configuration free lightweight ORM that uses attributes from DataAnnotations to infer the table schema. Currently supports both Sqlite and SqlServer.
 
- * [Caching] - A common interface for caching with providers for:
+ * [Caching](https://github.com/mythz/ServiceStack/wiki/Caching) - A common interface for caching with providers for:
    * Memcached
    * In Memory Cache
    * Redis
 
 
 ## Find out More
- * Twitter: to get updates of ServiceStack, follow [@ServiceStack](http://twitter.com/ServiceStack) on twitter.
+ * Twitter: to get updates of ServiceStack, follow [@demisbellot](http://twitter.com/demisbellot) or [@ServiceStack](http://twitter.com/ServiceStack) on twitter.
  * Email any questions to _demis.bellot@gmail.com_
 
 ## Future Roadmap
 Service Stack is under continuous improvement and is always adding features that are useful for high-performance, scalable and resilient web service scenarios. This is the current road map but is open to change.
 If you have suggestions for new features or want to prioritize the existing ones below: [http://code.google.com/p/servicestack/issues/entry you can leave feedback here].
+
  * Add an opt-in durable Message Queue service processing of [AsyncOneWay] requests (with In Memory, Redis and RabbitMQ implementations)
- * Enable [http://code.google.com/p/protobuf-net/ ProtoBuf.NET], TypeSerializer and CSV (for tabular datasets) web service endpoints
+ * Enable [ProtoBuf.NET](http://code.google.com/p/protobuf-net/), TypeSerializer and CSV (for tabular datasets) web service endpoints
  * Integrate the Spark View Engine and enable a HTML endpoint so web services can also return a HTML human-friendly view
  * New REST web service endpoint developed in the 'Spirit of REST' with partitioning of GET / POST / PUT / DELETE requests and utilizing 'Accept mimetype' HTTP request header to determine the resulting content type.
  * Code generated proxy classes for Objective-C, Java Script / Action Script (and Java or C++ if there's enough interest) clients.
- * Develop a completely managed HTTP Web Service Host (at the moment looking at building on top of [http://kayakhttp.com Kayak HTTP])
+ * Develop a completely managed HTTP Web Service Host (at the moment looking at building on top of [Kayak HTTP](http://kayakhttp.com))
  * Add support for 'Web Sockets' protocol
 
 ## Similar open source projects
