@@ -1,3 +1,4 @@
+REM SET SERVICESTACK_DEPLOY_PATH=..\release\latest
 REM SET BUILD=Debug
 SET BUILD=Release
 
@@ -44,7 +45,7 @@ COPY ..\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.ServiceInterface.
 REM COPY *.dll ..\lib\tests
 COPY *.dll ..\release\latest
 
-COPY *.dll %SERVICESTACK_DEPLOY_PATH%
+REM COPY *.dll %SERVICESTACK_DEPLOY_PATH%
 
 
 COPY ServiceStack.dll ..\..\ServiceStack.Examples\Lib
