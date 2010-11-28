@@ -1,9 +1,0 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>
-    </StartArguments>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ProjectView>ProjectFiles</ProjectView>
-  </PropertyGroup>
-</Project>

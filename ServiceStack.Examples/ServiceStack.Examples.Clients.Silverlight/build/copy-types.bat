@@ -1,1 +1,0 @@
-COPY ..\..\ServiceStack.Examples.ServiceInterface\Types\* ..\Types\

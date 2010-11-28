@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B26FCC95-9FDD-47F3-A920-0948877BA219}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack.MonoTouch</RootNamespace>
+    <AssemblyName>ServiceStack.MonoTouch</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel.Web">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AppHostHttpListenerBase.cs" />
+    <Compile Include="CompressionTypes.cs" />
+    <Compile Include="ContentType.cs" />
+    <Compile Include="DataContractDeserializer.cs" />
+    <Compile Include="DataContractSerializer.cs" />
+    <Compile Include="EndpointHandlerBase.cs" />
+    <Compile Include="EndpointHost.cs" />
+    <Compile Include="EndpointHostConfig.cs" />
+    <Compile Include="EndpointType.cs" />
+    <Compile Include="ExpressionTypeFunqContainer.cs" />
+    <Compile Include="HttpListenerBase.cs" />
+    <Compile Include="HttpListenerResponseWrapper.cs" />
+    <Compile Include="HttpMethods.cs" />
+    <Compile Include="HttpRequestContext.cs" />
+    <Compile Include="IHttpResponse.cs" />
+    <Compile Include="IHttpResponseExtensions.cs" />
+    <Compile Include="IPAddressExtensions.cs" />
+    <Compile Include="IServiceController.cs" />
+    <Compile Include="IStreamWriter.cs" />
+    <Compile Include="JsonDataContractDeserializer.cs" />
+    <Compile Include="JsonDataContractSerializer.cs" />
+    <Compile Include="JsonHandlerBase.cs" />
+    <Compile Include="JsonServiceClient.cs" />
+    <Compile Include="JsvHandlerBase.cs" />
+    <Compile Include="KeyValueDataContractDeserializer.cs" />
+    <Compile Include="MetadataConfig.cs" />
+    <Compile Include="MimeTypes.cs" />
+    <Compile Include="Operations.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestAttributes.cs" />
+    <Compile Include="ServiceClientBase.cs" />
+    <Compile Include="ServiceController.cs" />
+    <Compile Include="ServiceEndpointsMetadataConfig.cs" />
+    <Compile Include="ServiceExec.cs" />
+    <Compile Include="ServiceManager.cs" />
+    <Compile Include="ServiceOperations.cs" />
+    <Compile Include="SoapMetadataConfig.cs" />
+    <Compile Include="StringMapTypeDeserializer.cs" />
+    <Compile Include="Support\MockModels.cs" />
+    <Compile Include="Support\SupportExtensions.cs" />
+    <Compile Include="WebRequestUtils.cs" />
+    <Compile Include="XmlHandlerBase.cs" />
+    <Compile Include="XmlServiceClient.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Funq\Funq.csproj">
+      <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
+      <Name>Funq</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

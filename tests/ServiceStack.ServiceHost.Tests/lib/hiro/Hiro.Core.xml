@@ -1,0 +1,2012 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Hiro.Core</name>
+    </assembly>
+    <members>
+        <member name="T:Hiro.Compilers.AssemblyBuilder">
+            <summary>
+            Represents a class that can create <see cref="T:Mono.Cecil.AssemblyDefinition"/> instances.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.AssemblyBuilder.CreateAssembly(System.String,Mono.Cecil.AssemblyKind)">
+            <summary>
+            Creates an assembly.
+            </summary>
+            <param name="assemblyName">The name of the assembly.</param>
+            <param name="assemblyKind">The assembly type.</param>
+            <returns>An assembly.</returns>
+        </member>
+        <member name="T:Hiro.Compilers.ContainerTypeBuilder">
+            <summary>
+            Represents a class that can create other types.
+            </summary>
+        </member>
+        <member name="T:Hiro.Compilers.TypeBuilder">
+            <summary>
+            Represents the basic implementation for a type builder class.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.TypeBuilder.CreateType(System.String,System.String,Mono.Cecil.TypeReference,Mono.Cecil.AssemblyDefinition,Mono.Cecil.TypeReference[])">
+            <summary>
+            Creates a class type.
+            </summary>
+            <param name="typeName">The class name.</param>
+            <param name="namespaceName">The namespace name.</param>
+            <param name="baseType">The base type</param>
+            <param name="assembly">The assembly that will contain the type</param>
+            <param name="interfaces">The list of interfaces that the type will implement.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeDefinition"/> instance.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.TypeBuilder.AddInterfaces(Mono.Cecil.ModuleDefinition,Mono.Cecil.TypeDefinition)">
+            <summary>
+            Adds additional interfaces to the target type.
+            </summary>
+            <param name="module">The host module.</param>
+            <param name="containerType">The container type.</param>
+        </member>
+        <member name="M:Hiro.Compilers.ContainerTypeBuilder.AddInterfaces(Mono.Cecil.ModuleDefinition,Mono.Cecil.TypeDefinition)">
+            <summary>
+            Adds additional interfaces to the target type.
+            </summary>
+            <param name="module">The host module.</param>
+            <param name="containerType">The container type.</param>
+        </member>
+        <member name="T:Hiro.Compilers.ContainsMethodImplementor">
+            <summary>
+            Represents the default implementation of the <see cref="T:Hiro.Interfaces.IContainsMethodImplementor"/> class.
+            </summary>
+        </member>
+        <member name="T:Hiro.Interfaces.IContainsMethodImplementor">
+            <summary>
+            Represents a class that implements the <see cref="M:Hiro.Containers.IMicroContainer.Contains(System.Type,System.String)"/> method.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IContainsMethodImplementor.DefineContainsMethod(Mono.Cecil.TypeDefinition,Mono.Cecil.ModuleDefinition,Mono.Cecil.MethodDefinition,Mono.Cecil.FieldDefinition)">
+            <summary>
+            Emits the body of the <see cref="M:Hiro.Containers.IMicroContainer.Contains(System.Type,System.String)"/> method implementation.
+            </summary>
+            <param name="containerType">The container type.</param>
+            <param name="module">The target module.</param>
+            <param name="getServiceHash">The method that will be used to determine the hash code of the current service.</param>
+            <param name="jumpTargetField">The field that contains the list of jump entries.</param>
+        </member>
+        <member name="M:Hiro.Compilers.ContainsMethodImplementor.DefineContainsMethod(Mono.Cecil.TypeDefinition,Mono.Cecil.ModuleDefinition,Mono.Cecil.MethodDefinition,Mono.Cecil.FieldDefinition)">
+            <summary>
+            Emits the body of the <see cref="M:Hiro.Containers.IMicroContainer.Contains(System.Type,System.String)"/> method implementation.
+            </summary>
+            <param name="containerType">The container type.</param>
+            <param name="module">The target module.</param>
+            <param name="getServiceHash">The method that will be used to determine the hash code of the current service.</param>
+            <param name="jumpTargetField">The field that contains the list of jump entries.</param>
+        </member>
+        <member name="T:Hiro.Compilers.CreateContainerStub">
+            <summary>
+            Represents a class that creates a <see cref="T:Hiro.Containers.IMicroContainer"/> implementation.
+            </summary>
+        </member>
+        <member name="T:Hiro.Interfaces.ICreateContainerType">
+            <summary>
+            Represents a type that can create a <see cref="T:Hiro.Containers.IMicroContainer"/> implementation.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.ICreateContainerType.CreateContainerType(System.String,System.String,System.String)">
+            <summary>
+            Creates a <see cref="T:Hiro.Containers.IMicroContainer"/> implementation.
+            </summary>
+            <param name="typeName">The name of the new container type.</param>
+            <param name="namespaceName">The namespace of the container type.</param>
+            <param name="assemblyName">The name of the container assembly.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeDefinition"/> with a stubbed <see cref="T:Hiro.Containers.IMicroContainer"/> implementation.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.CreateContainerStub.CreateContainerType(System.String,System.String,System.String)">
+            <summary>
+            Creates a stub <see cref="T:Hiro.Containers.IMicroContainer"/> implementation.
+            </summary>
+            <param name="typeName">The name of the new container type.</param>
+            <param name="namespaceName">The namespace of the container type.</param>
+            <param name="assemblyName">The name of the container assembly.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeDefinition"/> with a stubbed <see cref="T:Hiro.Containers.IMicroContainer"/> implementation.</returns>
+        </member>
+        <member name="T:Hiro.Compilers.FieldBuilder">
+            <summary>
+            Represents a class that adds a <see cref="T:Mono.Cecil.FieldDefinition"/> to a target type.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.FieldBuilder.AddField(Mono.Cecil.TypeDefinition,System.String,Mono.Cecil.TypeReference)">
+            <summary>
+            Adds a <see cref="T:Mono.Cecil.FieldDefinition"/> to a target type.
+            </summary>
+            <param name="targetType">The target type.</param>
+            <param name="fieldName">The field name.</param>
+            <param name="fieldType">The field type.</param>
+            <returns>The newly-created field.</returns>
+        </member>
+        <member name="T:Hiro.Interfaces.IGetAllInstancesMethodImplementor">
+            <summary>
+            Represents a class that implements the <see cref="M:Hiro.Containers.IMicroContainer.GetAllInstances(System.Type)"/> method.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IGetAllInstancesMethodImplementor.DefineGetAllInstancesMethod(Mono.Cecil.TypeDefinition,Mono.Cecil.ModuleDefinition,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation})">
+            <summary>
+            Emits the body of the <see cref="M:Hiro.Containers.IMicroContainer.GetAllInstances(System.Type)"/> method implementation.
+            </summary>
+            <param name="containerType">The container type.</param>
+            <param name="module">The target module.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies that will be emitted into the method.</param>
+        </member>
+        <member name="T:Hiro.Compilers.GetInstanceMethodImplementor">
+            <summary>
+            Represents the default implementation of the <see cref="T:Hiro.Interfaces.IGetInstanceMethodImplementor"/> interface.
+            </summary>
+        </member>
+        <member name="T:Hiro.Interfaces.IGetInstanceMethodImplementor">
+            <summary>
+            Represents a type that can implement the <see cref="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)"/> method.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IGetInstanceMethodImplementor.DefineGetInstanceMethod(Mono.Cecil.TypeDefinition,Mono.Cecil.ModuleDefinition,Mono.Cecil.MethodDefinition,Mono.Cecil.FieldDefinition,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation})">
+            <summary>
+            Defines the <see cref="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)"/> method implementation for the container type.
+            </summary>
+            <param name="containerType">The container type.</param>
+            <param name="module">The target module.</param>
+            <param name="getServiceHash">The GetServiceHash method.</param>
+            <param name="jumpTargetField">The field that will store the jump target indexes.</param>
+            <param name="serviceMap">The service map that contains the list of existing services.</param>
+        </member>
+        <member name="M:Hiro.Compilers.GetInstanceMethodImplementor.DefineGetInstanceMethod(Mono.Cecil.TypeDefinition,Mono.Cecil.ModuleDefinition,Mono.Cecil.MethodDefinition,Mono.Cecil.FieldDefinition,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation})">
+            <summary>
+            Defines the <see cref="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)"/> method implementation for the container type.
+            </summary>
+            <param name="containerType">The container type.</param>
+            <param name="module">The target module.</param>
+            <param name="getServiceHash">The GetServiceHash method.</param>
+            <param name="jumpTargetField">The field that will store the jump target indexes.</param>
+            <param name="serviceMap">The service map that contains the list of existing services.</param>
+        </member>
+        <member name="M:Hiro.Compilers.GetInstanceMethodImplementor.EmitService(Mono.Cecil.MethodDefinition,Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation})">
+            <summary>
+            Emits the instructions that will instantiate the target service.
+            </summary>
+            <param name="getInstanceMethod">The method that will instantiate the target type.</param>
+            <param name="dependency">The target dependency</param>       
+            <param name="implementation">The implementation that will instantiate the dependency.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+        </member>
+        <member name="M:Hiro.Compilers.GetInstanceMethodImplementor.DefineServices(System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition,Mono.Cecil.Cil.CilWorker)">
+            <summary>
+            Defines the instructions that create each service type in the <paramref name="serviceMap"/>.
+            </summary>
+            <param name="serviceMap">The service map that contains the list of application dependencies.</param>
+            <param name="getInstanceMethod">The method that will be used to instantiate the service types.</param>
+            <param name="worker">The <see cref="T:Mono.Cecil.Cil.CilWorker"/> that points to the body of the factory method.</param>
+        </member>
+        <member name="T:Hiro.Compilers.InterfaceStubBuilder">
+            <summary>
+            A class that can generate a stub implementation for any given interface type.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.InterfaceStubBuilder.AddStubImplementationFor(System.Type,Mono.Cecil.TypeDefinition)">
+            <summary>
+            Implements each one of the methods in the given <paramref name="interfaceType"/>.
+            </summary>
+            <remarks>By default, each implemented method will throw a <see cref="T:System.NotImplementedException"/>.</remarks>
+            <param name="interfaceType">The interface type.</param>
+            <param name="type">The host type.</param>
+            <returns>The list of stubbed methods.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.InterfaceStubBuilder.CreateInterfaceStub(System.Type,Mono.Cecil.TypeDefinition)">
+            <summary>
+            Overrides all methods in the given interface type with methods that throw a <see cref="T:System.NotImplementedException"/>.
+            </summary>
+            <param name="interfaceType">The interface type that will be implemented by the target type.</param>
+            <param name="type">The target type.</param>
+            <returns>The list of stubbed methods.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.InterfaceStubBuilder.CreateMethodStub(Mono.Cecil.TypeDefinition,Mono.Cecil.ModuleDefinition,Hiro.Compilers.MethodOverrider,System.Reflection.MethodInfo)">
+            <summary>
+            Overrides the target <paramref name="method"/> with a method that throws a <see cref="T:System.NotImplementedException"/>.
+            </summary>
+            <param name="type">The target type.</param>
+            <param name="module">The host module.</param>
+            <param name="overrider">The <see cref="T:Hiro.Compilers.MethodOverrider"/> that will be used to override the target method.</param>
+            <param name="method">The target method.</param>
+            <returns>The stubbed method.</returns>
+        </member>
+        <member name="T:Hiro.Compilers.MethodBuilder">
+            <summary>
+            Represents a type that can create methods.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.MethodBuilder.CreateMethod(Hiro.Compilers.MethodBuilderOptions)">
+            <summary>
+            Creates a method on the given host type.
+            </summary>
+            <param name="options">The method options object that describes the method to be created.</param>
+            <returns>A method definition.</returns>
+        </member>
+        <member name="T:Hiro.Compilers.MethodBuilderOptions">
+            <summary>
+            Represents a class that describes the options for creating a target method.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.MethodBuilderOptions.SetMethodParameters(System.Type[])">
+            <summary>
+            Assigns parameters to the target method.
+            </summary>
+            <param name="parameterTypes">The method parameter types.</param>
+        </member>
+        <member name="P:Hiro.Compilers.MethodBuilderOptions.MethodName">
+            <summary>
+            Gets or sets the value indicating the method name.
+            </summary>
+            <value>The method name.</value>
+        </member>
+        <member name="P:Hiro.Compilers.MethodBuilderOptions.ReturnType">
+            <summary>
+            Gets or sets the value indicating the method return type.
+            </summary>
+            <value>The method return type.</value>
+        </member>
+        <member name="P:Hiro.Compilers.MethodBuilderOptions.IsPublic">
+            <summary>
+            Gets or sets a value indicating whether or not the method is publicly visible.
+            </summary>
+            <value>A boolean value indicating whether or not the method is public.</value>
+        </member>
+        <member name="P:Hiro.Compilers.MethodBuilderOptions.IsStatic">
+            <summary>
+            Gets or sets a value indicating whether or not the method is marked as static.
+            </summary>
+            <value>The static method flag.</value>
+        </member>
+        <member name="P:Hiro.Compilers.MethodBuilderOptions.HostType">
+            <summary>
+            Gets or sets a value indicating the type that will hold the newly-created method.
+            </summary>
+            <value>The method host.</value>
+        </member>
+        <member name="P:Hiro.Compilers.MethodBuilderOptions.ParameterTypes">
+            <summary>
+            Gets a value indicating the list of method parameters.
+            </summary>
+            <value>The list of parameters for the new method.</value>
+        </member>
+        <member name="T:Hiro.Compilers.MethodOverrider">
+            <summary>
+            Represents a type that adds method overrides for interface methods.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.MethodOverrider.AddOverrideFor(System.Reflection.MethodInfo,Mono.Cecil.TypeDefinition)">
+            <summary>
+            Adds a method override for a particular <paramref name="targetMethod"/>.
+            </summary>
+            <param name="targetMethod">The target method.</param>
+            <param name="hostType">The type that will host the new method.</param>
+            <returns>The overridden method.</returns>
+        </member>
+        <member name="T:Hiro.Compilers.ServiceHashEmitter">
+            <summary>
+            Rrepesnts a class that adds a GetServiceHashCode method to a target type.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.ServiceHashEmitter.AddGetServiceHashMethodTo(Mono.Cecil.TypeDefinition,System.Boolean)">
+            <summary>
+            Adds a GetServiceHashCode method to a target type.
+            </summary>
+            <param name="targetType">The target type.</param>
+            <param name="shouldBeVisible">A boolean flag that indicates whether or not the method should be public.</param>
+            <returns>The GetServiceHashCode method.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.ServiceHashEmitter.EmitGetServiceNameHashCode(Mono.Cecil.Cil.CilWorker,Mono.Cecil.MethodReference,Mono.Cecil.Cil.VariableDefinition)">
+            <summary>
+            Emits the IL that calculates a hash code from a given service name.
+            </summary>
+            <param name="worker">The <see cref="T:Mono.Cecil.Cil.CilWorker"/> that will be used to emit the instructions.</param>
+            <param name="getHashCodeMethod">The <see cref="M:System.Object.GetHashCode"/> method.</param>
+            <param name="hashVariable">The local variable that will store the hash code.</param>
+        </member>
+        <member name="M:Hiro.Compilers.ServiceHashEmitter.EmitGetServiceTypeHashCode(Mono.Cecil.ModuleDefinition,Mono.Cecil.Cil.MethodBody,Mono.Cecil.Cil.CilWorker,Mono.Cecil.MethodReference)">
+            <summary>
+            Emits the IL that calculates a hash code from a given service type.
+            </summary>
+            <param name="module">The module that holds the target type.</param>
+            <param name="body">The body of the GetServiceHashCode method.</param>
+            <param name="worker">The <see cref="T:Mono.Cecil.Cil.CilWorker"/> that will be used to emit the instructions.</param>
+            <param name="getHashCodeMethod">The <see cref="M:System.Object.GetHashCode"/> method.</param>
+            <returns>The variable that holds the hash code.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.ServiceHashEmitter.AddLocals(Mono.Cecil.ModuleDefinition,Mono.Cecil.Cil.MethodBody)">
+            <summary>
+            Adds the necessary local variables to the GetServiceHashCode method.
+            </summary>
+            <param name="module">The target module.</param>
+            <param name="body">The method body of the GetServiceHashCode method.</param>
+            <returns>The variable that holds the hash code.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.ServiceHashEmitter.DefineOptions(Mono.Cecil.TypeDefinition,System.Boolean,Hiro.Compilers.MethodBuilderOptions)">
+            <summary>
+            Sets the default method options for the GetServiceHashCode method.
+            </summary>
+            <param name="targetType">The targe type.</param>
+            <param name="shouldBeVisible">A boolean flag that determines whether or not the method should be publicly visible.</param>
+            <param name="options">The <see cref="T:Hiro.Compilers.MethodBuilderOptions"/> object to be modified.</param>
+        </member>
+        <member name="T:Hiro.Compilers.ServiceMapBuilder">
+            <summary>
+            Represents the default implementation of the <see cref="T:Hiro.Interfaces.IServiceMapBuilder"/> interface.
+            </summary>
+        </member>
+        <member name="T:Hiro.Interfaces.IServiceMapBuilder">
+            <summary>
+            Represents a type that can create service map instances from a given <see cref="T:Hiro.Interfaces.IDependencyContainer"/>.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IServiceMapBuilder.GetAvailableServices(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Obtains the list of available services from the given <paramref name="dependencyContainer"/>.
+            </summary>
+            <param name="dependencyContainer">The container that contains the list of services.</param>
+            <returns>A dictionary that maps dependencies to their respective implementations.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.ServiceMapBuilder.GetAvailableServices(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Gets the list of available services from the given dependency container.
+            </summary>
+            <param name="dependencyContainer">The container that holds the application dependencies.</param>
+            <returns>The service map.</returns>
+        </member>
+        <member name="T:Hiro.Compilers.SingletonEmitter">
+            <summary>
+            Represents a class that creates singleton services.
+            </summary>
+        </member>
+        <member name="F:Hiro.Compilers.SingletonEmitter._entries">
+            <summary>
+            The dictionary that maps dependencies to the corresponding singleton factory methods.
+            </summary>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.EmitService(Mono.Cecil.MethodDefinition,Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation})">
+            <summary>
+            Emits a service as a singleton type.
+            </summary>
+            <param name="newMethod">The <see cref="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)"/> method implementation.</param>
+            <param name="dependency">The dependency that will be instantiated by the container.</param>
+            <param name="implementation">The implementation that will be used to instantiate the dependency.</param>
+            <param name="serviceMap">The service map the contains the current application dependencies.</param>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.AddDefaultSingletonConstructor(Mono.Cecil.ModuleDefinition,System.String,Mono.Cecil.TypeAttributes,Mono.Cecil.TypeReference)">
+            <summary>
+            Adds a default constructor to the singleton type.
+            </summary>
+            <param name="module">The module that will host the singleton type.</param>
+            <param name="singletonName">The name of the singleton.</param>
+            <param name="typeAttributes">The type attributes that describes the singleton type.</param>
+            <param name="objectType">The object ty pe.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeDefinition"/> that represents the singleton type.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.DefineNestedType(Mono.Cecil.ModuleDefinition,Mono.Cecil.TypeDefinition,Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.TypeReference,Mono.Cecil.TypeDefinition,Mono.Cecil.FieldDefinition)">
+            <summary>
+            Defines the nested type that will instantiate the actual singleton service instance.
+            </summary>
+            <param name="module">The module that will host the singleton type.</param>
+            <param name="containerType">The container type.</param>
+            <param name="dependency">The dependency that will be instantiated by the singleton.</param>
+            <param name="implementation">The implementation that will instantiate the dependency.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="objectType">The object type.</param>
+            <param name="singletonType">The singleton type.</param>
+            <param name="instanceField">The field that will hold the singleton instance.</param>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.DefineNestedStaticConstructorBody(Mono.Cecil.ModuleDefinition,Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.FieldDefinition,Mono.Cecil.MethodDefinition,Mono.Cecil.Cil.VariableDefinition,Mono.Cecil.MethodDefinition)">
+            <summary>
+            Defines the instructions that will instantiate the singleton instance itself.
+            </summary>
+            <param name="module">The module that will host the singleton type.</param>
+            <param name="dependency">The dependency that will be instantiated by the singleton.</param>
+            <param name="implementation">The implementation that will instantiate the dependency.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="instanceField">The field that will hold the singleton instance.</param>
+            <param name="cctor">The static constructor itself.</param>
+            <param name="containerLocal">The local variable that will hold the container instance.</param>
+            <param name="containerConstructor">The constructor that will be used to instantiate the container.</param>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.DefineNestedConstructors(Mono.Cecil.ModuleDefinition,Mono.Cecil.TypeDefinition)">
+            <summary>
+            Defines the nested constructors for the singleton type.
+            </summary>
+            <param name="module">The target module.</param>
+            <param name="nestedType">The nested type.</param>
+            <returns>The static singleton constructor.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.ReplaceContainerCalls(Mono.Cecil.MethodDefinition,Mono.Cecil.Cil.VariableDefinition,Mono.Cecil.Cil.CilWorker)">
+            <summary>
+            Converts the self calls made to the <see cref="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)"/> instance into method calls that use
+            a <see cref="T:Hiro.Containers.IMicroContainer"/> instance stored in a local variable.
+            </summary>
+            <param name="cctor">The static constructor.</param>
+            <param name="containerLocal">The variable that will store the <see cref="T:Hiro.Containers.IMicroContainer"/> instance.</param>
+            <param name="worker">The worker that points to the target method body.</param>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.DefineStaticConstructor(Mono.Cecil.ModuleDefinition,Mono.Cecil.TypeDefinition)">
+            <summary>
+            Defines the static constructor for the nested type.
+            </summary>
+            <param name="module">The target module.</param>
+            <param name="nestedType">The nested type itself.</param>
+            <returns>The nested static constructor itself.</returns>
+        </member>
+        <member name="M:Hiro.Compilers.SingletonEmitter.DefineGetInstance(Mono.Cecil.TypeDefinition,Mono.Cecil.Cil.CilWorker,Mono.Cecil.FieldDefinition)">
+            <summary>
+            Defines the factory method on the singleton type.
+            </summary>
+            <param name="singletonType">The singleton type that will be generated by the emitter.</param>
+            <param name="worker">The <see cref="T:Mono.Cecil.Cil.CilWorker"/> instance that points to the target method body.</param>
+            <param name="instanceField">The static field that holds the singleton instance.</param>
+            <returns>The singleton type's GetInstance method.</returns>
+        </member>
+        <member name="T:Hiro.Implementations.BaseContainerCall">
+            <summary>
+            Represents a class that provides the basic fuctionality for a compiled <see cref="T:Hiro.Containers.IMicroContainer"/> instance to compile itself.
+            </summary>
+        </member>
+        <member name="T:Hiro.Interfaces.IImplementation">
+            <summary>
+            Represents a service implementation that can be emitted in IL.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IImplementation.GetMissingDependencies(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Gets the list of missing dependencies from the current implementation.
+            </summary>
+            <param name="map">The implementation map.</param>
+            <returns>A list of missing dependencies.</returns>
+        </member>
+        <member name="M:Hiro.Interfaces.IImplementation.GetRequiredDependencies">
+            <summary>
+            Returns the dependencies required by the current implementation.
+            </summary>
+            <returns>The list of required dependencies required by the current implementation.</returns>
+        </member>
+        <member name="M:Hiro.Interfaces.IImplementation.Emit(Hiro.Interfaces.IDependency,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition)">
+            <summary>
+            Emits the instructions that will instantiate the current implementation.
+            </summary>
+            <param name="dependency">The dependency that describes the service to be instantiated.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="targetMethod">The target method.</param>
+        </member>
+        <member name="M:Hiro.Implementations.BaseContainerCall.#ctor(System.Type,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Hiro.Implementations.NextContainerCall"/> class.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="serviceName">The service name.</param>
+        </member>
+        <member name="M:Hiro.Implementations.BaseContainerCall.GetMissingDependencies(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Gets the list of missing dependencies from the current implementation.
+            </summary>
+            <param name="map">The implementation map.</param>
+            <returns>A list of missing dependencies.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.BaseContainerCall.GetRequiredDependencies">
+            <summary>
+            Returns the dependencies required by the current implementation.
+            </summary>
+            <returns>The list of required dependencies required by the current implementation.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.BaseContainerCall.Emit(Hiro.Interfaces.IDependency,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition)">
+            <summary>
+            Emits the instructions that will instantiate the current implementation.
+            </summary>
+            <param name="dependency">The dependency that describes the service to be instantiated.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="targetMethod">The target method.</param>
+        </member>
+        <member name="M:Hiro.Implementations.BaseContainerCall.EmitGetContainerInstance(Mono.Cecil.ModuleDefinition,Mono.Cecil.TypeReference,Mono.Cecil.Cil.CilWorker,Mono.Cecil.Cil.Instruction)">
+            <summary>
+            Emits the instructions that will obtain the <see cref="T:Hiro.Containers.IMicroContainer"/> instance.
+            </summary>
+            <param name="module">The target module.</param>
+            <param name="microContainerType">The type reference that points to the <see cref="T:Hiro.Containers.IMicroContainer"/> type.</param>
+            <param name="worker">The <see cref="T:Mono.Cecil.Cil.CilWorker"/> that points to the <see cref="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)"/> method body.</param>
+            <param name="skipCreate">The skip label that will be used if the service cannot be instantiated.</param>
+        </member>
+        <member name="T:Hiro.Implementations.ConstructorCall">
+            <summary>
+            Represents an implementation that emits a constructor call.
+            </summary>
+        </member>
+        <member name="T:Hiro.Interfaces.IImplementation`1">
+            <summary>
+            Represents a service implementation that can be emitted in IL.
+            </summary>
+            <typeparam name="TMember">The member type.</typeparam>
+        </member>
+        <member name="T:Hiro.Interfaces.IStaticImplementation">
+            <summary>
+            Represents a type that is statically resolved at compile time.
+            </summary>
+        </member>
+        <member name="P:Hiro.Interfaces.IStaticImplementation.TargetType">
+            <summary>
+            Gets the value indicating the type that will be instantiated by this implementation.
+            </summary>
+            <value>The target type.</value>
+        </member>
+        <member name="P:Hiro.Interfaces.IImplementation`1.Target">
+            <summary>
+            Gets the value indicating the target member.
+            </summary>
+            <value>The target member.</value>
+        </member>
+        <member name="M:Hiro.Implementations.ConstructorCall.#ctor(System.Reflection.ConstructorInfo)">
+            <summary>
+            Initializes a new instance of the ConstructorCall class.
+            </summary>
+            <param name="constructor">The target constructor.</param>
+        </member>
+        <member name="M:Hiro.Implementations.ConstructorCall.GetMissingDependencies(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Gets the list of missing dependencies from the current implementation.
+            </summary>
+            <param name="map">The implementation map.</param>
+            <returns>A list of missing dependencies.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.ConstructorCall.GetRequiredDependencies">
+            <summary>
+            Returns the dependencies required by the current implementation.
+            </summary>
+            <returns>The list of required dependencies required by the current implementation.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.ConstructorCall.Emit(Hiro.Interfaces.IDependency,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition)">
+            <summary>
+            Emits the instructions that will instantiate the current implementation.
+            </summary>
+            <param name="dependency">The dependency that describes the service to be instantiated.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="targetMethod">The target method.</param>
+        </member>
+        <member name="M:Hiro.Implementations.ConstructorCall.EmitDependency(Hiro.Interfaces.IDependency,Mono.Cecil.MethodDefinition,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation})">
+            <summary>
+            Emits the necessary IL to instantiate a given service type.
+            </summary>
+            <param name="currentDependency">The dependency that will be instantiated.</param>
+            <param name="targetMethod">The target method that will instantiate the service instance.</param>
+            <param name="serviceMap">The service map that contains the target dependency to be instantiated.</param>
+        </member>
+        <member name="M:Hiro.Implementations.ConstructorCall.Resolve(System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Hiro.Interfaces.IDependency)">
+            <summary>
+            Resolves an <see cref="T:Hiro.Interfaces.IImplementation"/> from the given <paramref name="currentDependency">dependency</paramref> and <paramref name="serviceMap"/>.
+            </summary>
+            <param name="serviceMap">The service map that contains the target dependency to be instantiated.</param>
+            <param name="currentDependency">The dependency that will be instantiated.</param>
+            <returns>The <see cref="T:Hiro.Interfaces.IImplementation"/> instance that will be used to instantiate the dependency.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.ConstructorCall.GetDependency(System.Reflection.ParameterInfo)">
+            <summary>
+            Determines which dependency should be used for the target parameter.
+            </summary>
+            <param name="parameter">The constructor parameter.</param>
+            <returns>A <see cref="T:Hiro.Interfaces.IDependency"/> instance that represents the dependency that will be used for the target parameter.</returns>
+        </member>
+        <member name="P:Hiro.Implementations.ConstructorCall.TargetType">
+            <summary>
+            Gets the value indicating the type that will be instantiated by this implementation.
+            </summary>
+            <value>The target type.</value>
+        </member>
+        <member name="P:Hiro.Implementations.ConstructorCall.Target">
+            <summary>
+            Gets the value indicating the target member.
+            </summary>
+            <value>The target member.</value>
+        </member>
+        <member name="T:Hiro.Implementations.ContainerCall">
+            <summary>
+            Represents a class that emits a self container call that instantiates the given service name and service type.
+            </summary>
+        </member>
+        <member name="M:Hiro.Implementations.ContainerCall.#ctor(System.Type,System.String)">
+            <summary>
+            Initializes a new instance of the ContainerCall class.
+            </summary>
+            <param name="serviceType">The service type that will be instantiated.</param>
+            <param name="serviceName">The name of the service to instantiaet.</param>
+        </member>
+        <member name="M:Hiro.Implementations.ContainerCall.EmitGetContainerInstance(Mono.Cecil.ModuleDefinition,Mono.Cecil.TypeReference,Mono.Cecil.Cil.CilWorker,Mono.Cecil.Cil.Instruction)">
+            <summary>
+            Emits the instructions that will obtain the <see cref="!:IMicroContainer"/> instance.
+            </summary>
+            <param name="module">The target module.</param>
+            <param name="microContainerType">The type reference that points to the <see cref="!:IMicroContainer"/> type.</param>
+            <param name="worker">The <see cref="T:Mono.Cecil.Cil.CilWorker"/> that points to the <see cref="!:IMicroContainer.GetInstance"/> method body.</param>
+            <param name="skipCreate">The skip label that will be used if the service cannot be instantiated.</param>
+        </member>
+        <member name="T:Hiro.Implementations.NextContainerCall">
+            <summary>
+            Represents an implementation that will use the next container in the <see cref="T:Hiro.Containers.IMicroContainer"/>
+            chain to instantiate a particular service name and service type.
+            </summary>
+        </member>
+        <member name="M:Hiro.Implementations.NextContainerCall.#ctor(System.Type,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Hiro.Implementations.NextContainerCall"/> class.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="serviceName">The service name.</param>
+        </member>
+        <member name="T:Hiro.Implementations.PropertyInjectionCall">
+            <summary>
+            Represents an <see cref="T:Hiro.Interfaces.IImplementation"/> type that adds property injection capabilities to other <see cref="T:Hiro.Interfaces.IImplementation"/> instances.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.PropertyInjectionCall._implementation">
+            <summary>
+            The implementation that will instantiate the target type.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.PropertyInjectionCall._propertyFilter">
+            <summary>
+            The functor that determines which properties will be injected.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.PropertyInjectionCall._propertyDependencyResolver">
+            <summary>
+            The functor that determines the dependencies that will be injected into each property.
+            </summary>
+        </member>
+        <member name="M:Hiro.Implementations.PropertyInjectionCall.#ctor(Hiro.Interfaces.IStaticImplementation)">
+            <summary>
+            Initializes a new instance of the PropertyInjector class.
+            </summary>
+            <param name="implementation">The target implementation that will instantiate the service type.</param>
+        </member>
+        <member name="M:Hiro.Implementations.PropertyInjectionCall.#ctor(Hiro.Interfaces.IStaticImplementation,System.Func{System.Reflection.PropertyInfo,System.Boolean},System.Func{System.Reflection.PropertyInfo,Hiro.Interfaces.IDependency})">
+            <summary>
+            Initializes a new instance of the PropertyInjector class.
+            </summary>
+            <param name="implementation">The target implementation that will instantiate the service type.</param>
+            <param name="propertyFilter">The functor that determines which properties will be injected.</param>
+            <param name="propertyDependencyResolver">The functor that determines the dependencies that will be injected into each property.</param>
+        </member>
+        <member name="M:Hiro.Implementations.PropertyInjectionCall.GetMissingDependencies(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Gets the list of missing dependencies from the current implementation.
+            </summary>
+            <param name="map">The implementation map.</param>
+            <returns>A list of missing dependencies.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.PropertyInjectionCall.GetRequiredDependencies">
+            <summary>
+            Returns the dependencies required by the current implementation.
+            </summary>
+            <returns>The list of required dependencies required by the current implementation.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.PropertyInjectionCall.Emit(Hiro.Interfaces.IDependency,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition)">
+            <summary>
+            Emits the instructions that will instantiate the current implementation.
+            </summary>
+            <param name="dependency">The dependency that describes the service to be instantiated.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="targetMethod">The target method.</param>
+        </member>
+        <member name="M:Hiro.Implementations.PropertyInjectionCall.EmitPropertySetter(System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition,Mono.Cecil.ModuleDefinition,Mono.Cecil.Cil.CilWorker,System.Reflection.PropertyInfo,Hiro.Interfaces.IDependency)">
+            <summary>
+            Emits the instructions that will instantiate each property value and assign it to the target property.
+            </summary>
+            <param name="serviceMap">The service map that contains the application dependencies.</param>
+            <param name="targetMethod">The target method.</param>
+            <param name="module">The module that hosts the container type.</param>
+            <param name="worker">The <see cref="T:Mono.Cecil.Cil.CilWorker"/> that points to the target method body.</param>
+            <param name="property">The target property.</param>
+            <param name="curentDependency">The <see cref="T:Hiro.Interfaces.IDependency"/> that describes the service instance that will be assigned to the target property.</param>
+        </member>
+        <member name="P:Hiro.Implementations.PropertyInjectionCall.TargetType">
+            <summary>
+            Gets the value indicating the type that will be instantiated by this implementation.
+            </summary>
+            <value>The target type.</value>
+        </member>
+        <member name="T:Hiro.Implementations.PropertyInjector">
+            <summary>
+            Represents a class that adds property injection calls to an existing <see cref="T:Hiro.Interfaces.IImplementation"/> instance.
+            </summary>
+        </member>
+        <member name="T:Hiro.Interfaces.IImplementationInjector">
+            <summary>
+            Represents an interface that allows users to intercept <see cref="T:Hiro.Interfaces.IImplementation"/> instances.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IImplementationInjector.Inject(Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation)">
+            <summary>
+            Injects the target <paramref name="IImplementation"/> instance.
+            </summary>
+            <param name="dependency">The target dependency.</param>
+            <param name="originalImplementation">The target implementation that will be intercepted by this method.</param>
+            <returns>The <see cref="T:Hiro.Interfaces.IImplementation"/> instance that will be injected in place of the original implementation.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.PropertyInjector.Inject(Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation)">
+            <summary>
+            Injects the target <paramref name="IImplementation"/> instance.
+            </summary>
+            <param name="dependency">The target dependency.</param>
+            <param name="originalImplementation">The target implementation that will be intercepted by this method.</param>
+            <returns>The <see cref="T:Hiro.Interfaces.IImplementation"/> instance that will be injected in place of the original implementation.</returns>
+        </member>
+        <member name="T:Hiro.Implementations.SingletonType">
+            <summary>
+            Represents a service implementation that will be instantiated as a singleton instance.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.SingletonType._implementation">
+            <summary>
+            The implementation that will be instantiated as a singleton.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.SingletonType._emitter">
+            <summary>
+            The singleton emitter that will generate the singleton types.
+            </summary>
+        </member>
+        <member name="M:Hiro.Implementations.SingletonType.#ctor(Hiro.Interfaces.IStaticImplementation)">
+            <summary>
+            Initializes a new instance of the SingletonType class.
+            </summary>
+            <param name="implementation">The implementation that will be used to instantiate a service instance.</param>
+        </member>
+        <member name="M:Hiro.Implementations.SingletonType.#ctor(System.Type,Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Initializes a new instance of the SingletonType class.
+            </summary>
+            <param name="targetType">The concrete service type.</param>
+            <param name="container">The dependency container that contains the dependencies that will be used by the target type.</param>
+        </member>
+        <member name="M:Hiro.Implementations.SingletonType.Emit(Hiro.Interfaces.IDependency,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition)">
+            <summary>
+            Emits the instructions that will instantiate the current implementation.
+            </summary>
+            <param name="dependency">The dependency that describes the service to be instantiated.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="targetMethod">The target method.</param>
+        </member>
+        <member name="M:Hiro.Implementations.SingletonType.GetMissingDependencies(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Gets the list of missing dependencies from the current implementation.
+            </summary>
+            <param name="map">The implementation map.</param>
+            <returns>A list of missing dependencies.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.SingletonType.GetRequiredDependencies">
+            <summary>
+            Returns the dependencies that are required by the current implementation.
+            </summary>
+            <returns>The list of required dependencies required by the current implementation.</returns>
+        </member>
+        <member name="P:Hiro.Implementations.SingletonType.TargetType">
+            <summary>
+            Gets the value indicating the type that will be instantiated by this implementation.
+            </summary>
+            <value>The target type.</value>
+        </member>
+        <member name="T:Hiro.Implementations.TransientType">
+            <summary>
+            Represents an implementation that can instantiate a type that has more than one constructor.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.TransientType._targetType">
+            <summary>
+            The type that will be instantiated by the compiled container.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.TransientType._container">
+            <summary>
+            The dependency container that contains the dependencies in the given application.
+            </summary>
+        </member>
+        <member name="F:Hiro.Implementations.TransientType._getConstructorImplementation">
+            <summary>
+            The functor that determines which constructor implementation will be used to instantiate the target type.
+            </summary>
+        </member>
+        <member name="M:Hiro.Implementations.TransientType.#ctor(System.Type,Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Initializes a new instance of the TransientType class.
+            </summary>
+            <param name="targetType">The target type.</param>
+            <param name="container">The dependency container.</param>
+        </member>
+        <member name="M:Hiro.Implementations.TransientType.GetMissingDependencies(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Returns the dependencies required by the current implementation.
+            </summary>
+            <param name="map">The dependency container.</param>
+            <returns>The list of required dependencies required by the current implementation.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.TransientType.GetRequiredDependencies">
+            <summary>
+            Returns the dependencies required by the current implementation.
+            </summary>
+            <returns>The list of required dependencies required by the current implementation.</returns>
+        </member>
+        <member name="M:Hiro.Implementations.TransientType.Emit(Hiro.Interfaces.IDependency,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},Mono.Cecil.MethodDefinition)">
+            <summary>
+            Emits the instructions that will instantiate the current implementation.
+            </summary>
+            <param name="dependency">The dependency that describes the service to be instantiated.</param>
+            <param name="serviceMap">The service map that contains the list of dependencies in the application.</param>
+            <param name="targetMethod">The target method.</param>
+        </member>
+        <member name="P:Hiro.Implementations.TransientType.TargetType">
+            <summary>
+            Gets the value indicating the type that will be instantiated by this implementation.
+            </summary>
+            <value>The target type.</value>
+        </member>
+        <member name="P:Hiro.Implementations.TransientType.Target">
+            <summary>
+            Gets the value indicating the constructor that will be used to instantiate the implementation.
+            </summary>
+            <value>The target constructor.</value>
+        </member>
+        <member name="P:Hiro.Implementations.TransientType.TargetImplementation">
+            <summary>
+            Gets the value indicating the constructor implementation that will be used to 
+            instantiate the target type.
+            </summary>
+            <value>The target implementation that will instantiate the target type.</value>
+        </member>
+        <member name="T:Hiro.Interfaces.IAssemblyLoader">
+            <summary>
+            Represents a type that loads assemblies from a given location.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IAssemblyLoader.Load(System.String)">
+            <summary>
+            Loads an assembly from disk.
+            </summary>
+            <param name="filename">The file name of the target assembly.</param>
+            <returns>The loaded <see cref="T:System.Reflection.Assembly"/>.</returns>
+        </member>
+        <member name="T:Hiro.Interfaces.IContainerCompiler">
+            <summary>
+            Represents a type that can convert <see cref="T:Hiro.Interfaces.IDependencyContainer"/> objects into a compiled assembly that contains an IOC container.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IContainerCompiler.Compile(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Compiles a dependency graph into an IOC container.
+            </summary>
+            <param name="dependencyContainer">The <see cref="T:Hiro.Interfaces.IDependencyContainer"/> instance that contains the services that will be instantiated by compiled container.</param>
+            <returns>An assembly containing the compiled IOC container.</returns>
+        </member>
+        <member name="T:Hiro.Interfaces.IDefaultServiceResolver">
+            <summary>
+            Represents a type that determines the default service when multiple implementations of the same type already exist in the dependency map.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IDefaultServiceResolver.GetDefaultService(System.Type,System.Collections.Generic.IEnumerable{Hiro.Interfaces.IServiceInfo})">
+            <summary>
+            Determines which service should be used as the default service for the given service type.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="services">The list of services that implement the service type.</param>
+            <returns>The <see cref="T:Hiro.Interfaces.IServiceInfo"/> instance that will determine </returns>
+        </member>
+        <member name="T:Hiro.Interfaces.IDependency">
+            <summary>
+            Represents a service dependency.
+            </summary>
+        </member>
+        <member name="P:Hiro.Interfaces.IDependency.ServiceName">
+            <summary>
+            Gets the value indicating the name of the service itself.
+            </summary>
+            <value>The service name.</value>
+        </member>
+        <member name="P:Hiro.Interfaces.IDependency.ServiceType">
+            <summary>
+            Gets a value indicating the service type.
+            </summary>
+            <value>The service type.</value>
+        </member>
+        <member name="T:Hiro.Interfaces.IDependencyContainer">
+            <summary>
+            Represents a type that maps a service dependency to its corresponding type implementation.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IDependencyContainer.Contains(Hiro.Interfaces.IDependency)">
+            <summary>
+            Determines whether or not a particular service dependency exists in the current dependency container.
+            </summary>
+            <param name="dependency">The target service dependency.</param>
+            <returns><c>true</c> if the service exists; otherwise, it will return <c>false</c>.</returns>
+        </member>
+        <member name="M:Hiro.Interfaces.IDependencyContainer.GetImplementations(Hiro.Interfaces.IDependency,System.Boolean)">
+            <summary>
+            Gets the current list of implementations for the current dependency.
+            </summary>
+            <param name="targetDependency">The target dependency.</param>
+            <param name="addIncompleteImplementations">A boolean flag that determines whether or not the resulting list should include implementations with incomplete dependencies.</param>
+            <returns>A list of implementations.</returns>
+        </member>
+        <member name="P:Hiro.Interfaces.IDependencyContainer.Dependencies">
+            <summary>
+            Gets the value indicating the list of dependencies that currently exist within the current container.
+            </summary>
+            <value>The current list of dependencies.</value>
+        </member>
+        <member name="T:Hiro.Interfaces.IDependencyMap">
+            <summary>
+            Represents a type that can map <see cref="T:Hiro.Interfaces.IDependency"/> instances to their respective <see cref="T:Hiro.Interfaces.IImplementation"/> instances.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IDependencyMap.AddService(Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation)">
+            <summary>
+            Associates the given <paramref name="implementation"/> with the target <paramref name="dependency"/>.
+            </summary>
+            <param name="dependency">The dependency that will be associated with the implementation.</param>
+            <param name="implementation">The implementation itself.</param>
+        </member>
+        <member name="T:Hiro.Interfaces.IServiceInfo">
+            <summary>
+            Describes a service that can be created by the container.
+            </summary>
+        </member>
+        <member name="P:Hiro.Interfaces.IServiceInfo.ImplementingType">
+            <summary>
+            Gets the value indicating the type that will implement the service type.
+            </summary>
+            <value>The implementing type.</value>
+        </member>
+        <member name="T:Hiro.Interfaces.IServiceLoader">
+            <summary>
+            Represents a type that can load services from a given assembly.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IServiceLoader.Load(System.Reflection.Assembly)">
+            <summary>
+            Loads services from the given assembly.
+            </summary>
+            <param name="targetAssembly">The assembly that contains the types to be loaded.</param>
+            <returns>The list of services.</returns>
+        </member>
+        <member name="T:Hiro.Interfaces.IServicePicker">
+            <summary>
+            Represents a type that determines the default service implementation from a given list of services.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.IServicePicker.ChooseDefaultServiceFrom(System.Type,System.Collections.Generic.IEnumerable{Hiro.Interfaces.IServiceInfo})">
+            <summary>
+            Determines which <see cref="T:Hiro.Interfaces.IServiceInfo"/> instance should be used as the default service.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="services">The list of services.</param>
+            <returns>The default service implementation.</returns>
+        </member>
+        <member name="T:Hiro.Interfaces.ITypeFilter">
+            <summary>
+            Represents a type that can filter a list of types.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.ITypeFilter.GetTypes(System.Collections.Generic.IEnumerable{System.Type},System.Predicate{System.Type})">
+            <summary>
+            Filters a list of given types.
+            </summary>
+            <param name="items">The list of types to be filtered.</param>
+            <param name="filter">The predicate that determines which types should be selected.</param>
+            <returns>A list of types.</returns>
+        </member>
+        <member name="T:Hiro.Interfaces.ITypeLoader">
+            <summary>
+            Represents a type that loads types from a given assembly.
+            </summary>
+        </member>
+        <member name="M:Hiro.Interfaces.ITypeLoader.LoadTypes(System.Reflection.Assembly)">
+            <summary>
+            Loads a set of types from a given assembly.
+            </summary>
+            <param name="targetAssembly">The target assembly that contains the types to be loaded.</param>
+            <returns>The list of types.</returns>
+        </member>
+        <member name="T:Hiro.Loaders.AssemblyLoader">
+            <summary>
+            A class that loads assemblies from a given location.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.AssemblyLoader.Load(System.String)">
+            <summary>
+            Loads an assembly from disk.
+            </summary>
+            <param name="filename">The file name of the target assembly.</param>
+            <returns>The loaded <see cref="T:System.Reflection.Assembly"/>.</returns>
+        </member>
+        <member name="T:Hiro.Loaders.DefaultServiceResolver">
+            <summary>
+            Represents a class that determines the default service when multiple implementations of the same type already exist.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.DefaultServiceResolver.#ctor">
+            <summary>
+            Initializes a new instance of the DefaultServiceResolver class.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.DefaultServiceResolver.#ctor(Hiro.Interfaces.IServicePicker)">
+            <summary>
+            Initializes a new instance of the DefaultServiceResolver class.
+            </summary>
+            <param name="picker">The <see cref="T:Hiro.Interfaces.IServicePicker"/> that will determine the default implementation for each service type.</param>
+        </member>
+        <member name="M:Hiro.Loaders.DefaultServiceResolver.GetDefaultService(System.Type,System.Collections.Generic.IEnumerable{Hiro.Interfaces.IServiceInfo})">
+            <summary>
+            Determines which service should be used as the default service for the given service type.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="services">The list of services that implement the service type.</param>
+            <returns>The <see cref="T:Hiro.Interfaces.IServiceInfo"/> instance that will determine </returns>
+        </member>
+        <member name="T:Hiro.Loaders.DependencyMapExtensions">
+            <summary>
+            Represents a helper class that adds helper methods for loading services into the dependency map.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapExtensions.RegisterDefaultServices(Hiro.DependencyMap,System.Collections.Generic.List{Hiro.Interfaces.IServiceInfo})">
+            <summary>
+            Adds default service implementations to the dependency map.
+            </summary>
+            <param name="map">The dependency map.</param>
+            <param name="defaultServices">The list of default services that will be added to the container as anonymous services.</param>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapExtensions.RegisterNamedServices(Hiro.DependencyMap,NGenerics.DataStructures.General.HashList{System.Type,Hiro.Interfaces.IServiceInfo})">
+            <summary>
+            Adds named services to the dependency map.
+            </summary>
+            <param name="map">The dependency map.</param>
+            <param name="serviceList">The list of named services that will be added to the container.</param>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapExtensions.Register(Hiro.DependencyMap,System.Collections.Generic.IEnumerable{Hiro.Interfaces.IServiceInfo})">
+            <summary>
+            Registers a set of services with a dependency map.
+            </summary>
+            <param name="map">The dependency map.</param>
+            <param name="services">The list of services that will be registered with the dependency map.</param>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapExtensions.Register(Hiro.DependencyMap,Hiro.Interfaces.IServiceInfo)">
+            <summary>
+            Registers a service with a dependency map.
+            </summary>
+            <param name="map">The dependency map.</param>
+            <param name="service">The service that will be registered with the dependency map.</param>
+        </member>
+        <member name="T:Hiro.Loaders.DependencyMapLoader">
+            <summary>
+            Represents a class that can load a dependency map from a given set o fassemblies
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.#ctor">
+            <summary>
+            Initializes a new instance of the DependencyMapLoader class.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.#ctor(Hiro.Interfaces.IServiceLoader,Hiro.Interfaces.IDefaultServiceResolver)">
+            <summary>
+            Initializes a new instance of the DependencyMapLoader class.
+            </summary>
+            <param name="serviceLoader">The service loader that will load services from a given assembly.</param>
+            <param name="defaultServiceResolver">The resolver that will determine the default anonymous implementation for a particular service type.</param>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.LoadFrom(System.Reflection.Assembly)">
+            <summary>
+            Loads a dependency map using the types in the given <paramref name="assemblies"/>.
+            </summary>
+            <param name="assembly">The assembly that will be used to construct the dependency map.</param>
+            <returns>A dependency map.</returns>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.LoadFrom(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Loads a dependency map using the types in the given <paramref name="assemblies"/>.
+            </summary>
+            <param name="assemblies">The list of assemblies that will be used to construct the dependency map.</param>
+            <returns>A dependency map.</returns>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.LoadFrom(System.String,System.String)">
+            <summary>
+            Loads a dependency map using the assemblies located in the target directory.
+            </summary>
+            <param name="directory">The directory that contains the assemblies that will be loaded into the dependency map.</param>
+            <param name="filePattern">The search pattern that describes which assemblies will be loaded.</param>
+            <returns>A dependency map.</returns>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.LoadFrom(System.String,System.String,Hiro.Interfaces.IAssemblyLoader)">
+            <summary>
+            Loads a dependency map using the assemblies located in the target directory.
+            </summary>
+            <param name="directory">The directory that contains the assemblies that will be loaded into the dependency map.</param>
+            <param name="filePattern">The search pattern that describes which assemblies will be loaded.</param>
+            <param name="assemblyLoader">The assembly loader that will load assemblies into memory.</param>
+            <returns>A dependency map.</returns>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.LoadFromBaseDirectory(System.String)">
+            <summary>
+            Loads a dependency map using the assemblies located in the base application directory.
+            </summary>
+            <param name="filePattern">The search pattern that describes which assemblies will be loaded.</param>
+            <returns>A dependency map.</returns>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.LoadFromBaseDirectory(System.String,Hiro.Interfaces.IAssemblyLoader)">
+            <summary>
+            Loads a dependency map using the assemblies located in the base application directory.
+            </summary>
+            <param name="filePattern">The search pattern that describes which assemblies will be loaded.</param>
+            <param name="assemblyLoader">The assembly loader that will load assemblies into memory.</param>
+            <returns>A dependency map.</returns>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.GetDefaultServices(System.Collections.Generic.IDictionary{System.Type,System.Collections.Generic.IList{Hiro.Interfaces.IServiceInfo}})">
+            <summary>
+            Gets the list of default services from a given service list.
+            </summary>
+            <param name="serviceList">The list of service implementations that will be used to determine the default service for each service type.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hiro.Loaders.DependencyMapLoader.GetServiceList(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Obtains a list of services (grouped by type) from the list of assemblies.
+            </summary>
+            <param name="assemblies">The list of assemblies that contain the types that will be injected into the dependency map.</param>
+            <returns>A list of services grouped by type.</returns>
+        </member>
+        <member name="P:Hiro.Loaders.DependencyMapLoader.ServiceFilter">
+            <summary>
+            Gets or sets the value indicating the predicate that will determine the services that will be loaded into the dependency map.
+            </summary>
+            <value>The predicate that will be used to determine which services will be loaded into the dependency map.</value>
+        </member>
+        <member name="T:Hiro.Loaders.ServiceLoader">
+            <summary>
+            Represents a type that can load services into memory.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.ServiceLoader.#ctor">
+            <summary>
+            Initializes a new instance of the ServiceLoader class.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.ServiceLoader.#ctor(Hiro.Interfaces.ITypeLoader,Hiro.Interfaces.ITypeFilter)">
+            <summary>
+            Initializes a new instance of the ServiceLoader class.
+            </summary>
+            <param name="typeLoader">The type loader that will load types into memory.</param>
+            <param name="typeFilter">The filter that will be used to determine which types should be loaded.</param>
+        </member>
+        <member name="M:Hiro.Loaders.ServiceLoader.Load(System.Reflection.Assembly)">
+            <summary>
+            Loads services from the given assembly.
+            </summary>
+            <param name="targetAssembly">The assembly that contains the types to be loaded.</param>
+            <returns>The list of services.</returns>
+        </member>
+        <member name="P:Hiro.Loaders.ServiceLoader.TypeLoader">
+            <summary>
+            Gets or sets a value indicating the <see cref="T:Hiro.Interfaces.ITypeLoader"/> instance that will be used to load a type into memory.
+            </summary>
+            <value>The type loader.</value>
+        </member>
+        <member name="P:Hiro.Loaders.ServiceLoader.TypeFilter">
+            <summary>
+            Gets or sets a value indicating hte <see cref="T:Hiro.Interfaces.ITypeFilter"/> instance that will be used to determine which types should be loaded into memory.
+            </summary>
+        </member>
+        <member name="T:Hiro.Loaders.ServicePicker">
+            <summary>
+            Represents a class that determines the default service implementation from a list of service implementations.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.ServicePicker.ChooseDefaultServiceFrom(System.Type,System.Collections.Generic.IEnumerable{Hiro.Interfaces.IServiceInfo})">
+            <summary>
+            Determines which <see cref="T:Hiro.Interfaces.IServiceInfo"/> instance should be used as the default service.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="services">The list of services.</param>
+            <returns>The default service implementation.</returns>
+        </member>
+        <member name="T:Hiro.Loaders.TypeFilter">
+            <summary>
+            Represents a type that can filter a list of types.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.TypeFilter.GetTypes(System.Collections.Generic.IEnumerable{System.Type},System.Predicate{System.Type})">
+            <summary>
+            Filters a list of given types.
+            </summary>
+            <param name="items">The list of types to be filtered.</param>
+            <param name="filter">The predicate that determines which types should be selected.</param>
+            <returns>A list of types.</returns>
+        </member>
+        <member name="T:Hiro.Loaders.TypeLoader">
+            <summary>
+            Represents a type that loads types from a given assembly.
+            </summary>
+        </member>
+        <member name="M:Hiro.Loaders.TypeLoader.LoadTypes(System.Reflection.Assembly)">
+            <summary>
+            Loads a set of types from a given assembly.
+            </summary>
+            <param name="targetAssembly">The target assembly that contains the types to be loaded.</param>
+            <returns>The list of types.</returns>
+        </member>
+        <member name="T:Hiro.Resolvers.ConstructorResolver">
+            <summary>
+            Represents a class that selects the constructor with the most resolvable parameters.
+            </summary>
+        </member>
+        <member name="F:Hiro.Resolvers.ConstructorResolver._constructors">
+            <summary>
+            The list of available constructors.
+            </summary>
+        </member>
+        <member name="M:Hiro.Resolvers.ConstructorResolver.#ctor(System.Collections.Generic.IEnumerable{Hiro.Interfaces.IImplementation{System.Reflection.ConstructorInfo}})">
+            <summary>
+            Initializes a new instance of the ConstructorResolver class.
+            </summary>
+            <param name="constructors">The list of constructors.</param>
+        </member>
+        <member name="M:Hiro.Resolvers.ConstructorResolver.ResolveFrom(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Determines which constructor implementation should be used from a given <see cref="T:Hiro.Interfaces.IDependencyContainer"/> instance.
+            </summary>
+            <param name="container">The dependency container that holds the current set of dependencies.</param>
+            <returns>An implementation that can instantiate the object associated with the constructor.</returns>
+        </member>
+        <member name="M:Hiro.Resolvers.ConstructorResolver.ChooseConstructor(Hiro.Interfaces.IImplementation{System.Reflection.ConstructorInfo}@,System.Int32@,Hiro.Interfaces.IImplementation{System.Reflection.ConstructorInfo})">
+            <summary>
+            Selects the constructor with the most resolvable parameters.
+            </summary>
+            <param name="result">The variable that will store the best match.</param>
+            <param name="bestParameterCount">The parameter count of the current best matching constructor.</param>
+            <param name="constructor">The current constructor.</param>
+        </member>
+        <member name="T:Hiro.AssemblyDefinitionExtensions">
+            <summary>
+            Represents an extension class that allows users to convert assembly definitions into running assemblies.
+            </summary>
+        </member>
+        <member name="M:Hiro.AssemblyDefinitionExtensions.ToAssembly(Mono.Cecil.AssemblyDefinition)">
+            <summary>
+            Converts an <see cref="T:Mono.Cecil.AssemblyDefinition"/>
+            into a running <see cref="T:System.Reflection.Assembly"/>.
+            </summary>
+            <param name="definition">The <see cref="T:Mono.Cecil.AssemblyDefinition"/> to convert.</param>
+            <returns>An <see cref="T:System.Reflection.Assembly"/> that represents the <see cref="T:Mono.Cecil.AssemblyDefinition"/> instance.
+            </returns>
+        </member>
+        <member name="T:Hiro.BaseDependencyMap">
+            <summary>
+            Represents a class that can map dependencies to implementations.
+            </summary>
+        </member>
+        <member name="F:Hiro.BaseDependencyMap._entries">
+            <summary>
+            The list of dependencies in the current map.
+            </summary>
+        </member>
+        <member name="M:Hiro.BaseDependencyMap.Contains(Hiro.Interfaces.IDependency)">
+            <summary>
+            Determines whether or not a particular service dependency exists in the current dependency container.
+            </summary>
+            <param name="dependency">The target service dependency.</param>
+            <returns><c>true</c> if the service exists; otherwise, it will return <c>false</c>.</returns>
+        </member>
+        <member name="M:Hiro.BaseDependencyMap.AddService(Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation)">
+            <summary>
+            Associates the given <paramref name="implementation"/> with the target <paramref name="dependency"/>.
+            </summary>
+            <param name="dependency">The dependency that will be associated with the implementation.</param>
+            <param name="implementation">The implementation itself.</param>
+        </member>
+        <member name="M:Hiro.BaseDependencyMap.GetImplementations(Hiro.Interfaces.IDependency,System.Boolean)">
+            <summary>
+            Gets the current list of implementations for the current dependency.
+            </summary>
+            <param name="targetDependency">The target dependency.</param>
+            <param name="addIncompleteImplementations">A boolean flag that determines whether or not the resulting list should include implementations with incomplete dependencies.</param>
+            <returns>A list of implementations.</returns>
+        </member>
+        <member name="P:Hiro.BaseDependencyMap.Injector">
+            <summary>
+            Gets or sets the value indicating the <see cref="T:Hiro.Interfaces.IImplementationInjector"/> instance that will be used to intercept <see cref="T:Hiro.Interfaces.IImplementation"/> instances.
+            </summary>
+            <value>The implementation injector.</value>
+        </member>
+        <member name="P:Hiro.BaseDependencyMap.Dependencies">
+            <summary>
+            Gets the value indicating the list of dependencies that currently exist within the current container.
+            </summary>
+            <value>The current list of dependencies.</value>
+        </member>
+        <member name="T:Hiro.CachedContainerCompiler">
+            <summary>
+            Represents a container compiler that caches its compiled results.
+            </summary>
+        </member>
+        <member name="M:Hiro.CachedContainerCompiler.#ctor(Hiro.Interfaces.IContainerCompiler)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Hiro.CachedContainerCompiler"/> class.
+            </summary>
+            <param name="compiler">The container compiler implementation.</param>
+        </member>
+        <member name="M:Hiro.CachedContainerCompiler.Compile(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Compiles a dependency graph into an IOC container.
+            </summary>
+            <param name="dependencyContainer">The <see cref="T:Hiro.Interfaces.IDependencyContainer"/> instance that contains the services that will be instantiated by compiled container.</param>
+            <returns>An assembly containing the compiled IOC container.</returns>
+        </member>
+        <member name="T:Hiro.ConstructorNotFoundException">
+            <summary>
+            An exception that is thrown whenever the compiler is unable to find a constructor that can be instantiated by the compiled container.
+            </summary>
+        </member>
+        <member name="M:Hiro.ConstructorNotFoundException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the ConstructorNotFoundException class.
+            </summary>
+            <param name="message">The error message.</param>
+        </member>
+        <member name="T:Hiro.ContainerCompiler">
+            <summary>
+            A class that compile a dependency graph into an inversion of control container.
+            </summary>
+        </member>
+        <member name="F:Hiro.ContainerCompiler._getInstanceMethodImplementor">
+            <summary>
+            The class that will implement the GetInstance method.
+            </summary>
+        </member>
+        <member name="F:Hiro.ContainerCompiler._containsMethodImplementor">
+            <summary>
+            The class that will implement the Contains method.
+            </summary>
+        </member>
+        <member name="F:Hiro.ContainerCompiler._getAllInstancesMethodImplementor">
+            <summary>
+            The class that will implement the GetAllInstances method.
+            </summary>
+        </member>
+        <member name="F:Hiro.ContainerCompiler._createContainerType">
+            <summary>
+            The class that will define the container type.
+            </summary>
+        </member>
+        <member name="F:Hiro.ContainerCompiler._serviceMapBuilder">
+            <summary>
+            The class that will define the service map.
+            </summary>
+        </member>
+        <member name="M:Hiro.ContainerCompiler.#ctor">
+            <summary>
+            Initializes a new instance of the ContainerCompiler class.
+            </summary>
+        </member>
+        <member name="M:Hiro.ContainerCompiler.#ctor(Hiro.Interfaces.IGetInstanceMethodImplementor,Hiro.Interfaces.IContainsMethodImplementor,Hiro.Interfaces.ICreateContainerType,Hiro.Interfaces.IServiceMapBuilder,Hiro.Interfaces.IGetAllInstancesMethodImplementor)">
+            <summary>
+            Initializes a new instance of the ContainerCompiler class.
+            </summary>
+            <param name="getInstanceMethodImplementor">The class that will implement the GetInstance method.</param>
+            <param name="containsMethodImplementor">The class that will implement the Contains method.</param>
+            <param name="createContainerType">The class that will define the container type.</param>
+            <param name="serviceMapBuilder">The class that will define the service map.</param>
+            <param name="getAllInstancesMethodImplementor">The class that will implement the GetAllInstances method.</param>
+        </member>
+        <member name="M:Hiro.ContainerCompiler.Compile(Hiro.Interfaces.IDependencyContainer)">
+            <summary>
+            Compiles a dependency graph into an IOC container.
+            </summary>
+            <param name="dependencyContainer">The <see cref="T:Hiro.Interfaces.IDependencyContainer"/> instance that contains the services that will be instantiated by compiled container.</param>
+            <returns>An assembly containing the compiled IOC container.</returns>
+        </member>
+        <member name="M:Hiro.ContainerCompiler.AddJumpEntries(Mono.Cecil.ModuleDefinition,Mono.Cecil.FieldDefinition,Mono.Cecil.TypeDefinition,Mono.Cecil.MethodReference,System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,Hiro.Interfaces.IImplementation},System.Collections.Generic.IDictionary{Hiro.Interfaces.IDependency,System.Int32})">
+            <summary>
+            Modifies the default constructor of a container type so that the jump labels used in the <see cref="M:Hiro.Containers.IMicroContainer.GetInstance(System.Type,System.String)"/> implementation
+            will be precalculated every time the compiled container is instantiated.
+            </summary>
+            <param name="module">The target module.</param>
+            <param name="jumpTargetField">The field that holds the jump entries.</param>
+            <param name="targetType">The container type.</param>
+            <param name="getServiceHash">The hash calculation method.</param>
+            <param name="serviceMap">The collection that contains the current list of dependencies and their respective implementations.</param>
+            <param name="jumpTargets">A dictionary that maps dependencies to their respective label indexes.</param>
+        </member>
+        <member name="M:Hiro.ContainerCompiler.RemoveLastInstruction(Mono.Cecil.Cil.MethodBody)">
+            <summary>
+            Removes the last instruction from the given method body.
+            </summary>
+            <param name="body">The target method body.</param>
+        </member>
+        <member name="T:Hiro.Dependency">
+            <summary>
+            Represents a service dependency.
+            </summary>
+        </member>
+        <member name="M:Hiro.Dependency.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the Dependency class.
+            </summary>
+            <param name="serviceType">The service type.</param>
+        </member>
+        <member name="M:Hiro.Dependency.#ctor(System.Type,System.String)">
+            <summary>
+            Initializes a new instance of the Dependency class.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="serviceName">The service name.</param>
+        </member>
+        <member name="M:Hiro.Dependency.GetHashCode">
+            <summary>
+            Computes the hash code using the <see cref="P:Hiro.Dependency.ServiceName"/> and <see cref="P:Hiro.Dependency.ServiceType"/>.
+            </summary>
+            <returns>The hash code value.</returns>
+        </member>
+        <member name="M:Hiro.Dependency.Equals(System.Object)">
+            <summary>
+            Determines whether or not the current object is equal to the <paramref name="obj">other object.</paramref>
+            </summary>
+            <param name="obj">The object that will be compared with the current object.</param>
+            <returns><c>true</c> if the objects are equal; otherwise, it will return <c>false</c>.</returns>
+        </member>
+        <member name="M:Hiro.Dependency.ToString">
+            <summary>
+            Displays the dependency as a string.
+            </summary>
+            <returns>A string that displays the contents of the current dependency.</returns>
+        </member>
+        <member name="P:Hiro.Dependency.ServiceName">
+            <summary>
+            Gets the value indicating the name of the service itself.
+            </summary>
+            <value>The service name.</value>
+        </member>
+        <member name="P:Hiro.Dependency.ServiceType">
+            <summary>
+            Gets a value indicating the service type.
+            </summary>
+            <value>The service type.</value>
+        </member>
+        <member name="T:Hiro.DependencyMap">
+            <summary>
+            Represents a class that can map dependencies to implementations.
+            </summary>
+        </member>
+        <member name="M:Hiro.DependencyMap.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Hiro.DependencyMap"/> class.
+            </summary>
+        </member>
+        <member name="M:Hiro.DependencyMap.#ctor(Hiro.Interfaces.IContainerCompiler)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Hiro.DependencyMap"/> class.
+            </summary>
+            <param name="compiler">The compiler that will be used to compile this map into an IOC container.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.op_Addition(Hiro.DependencyMap,Hiro.DependencyMap)">
+            <summary>
+            Merges two dependency maps into a single dependency map.
+            </summary>
+            <param name="left">The left-hand dependency map.</param>
+            <param name="right">The right-hand dependency map.</param>
+            <returns>A combined dependency map.</returns>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddService``2">
+            <summary>
+            Adds a service to the dependency map.
+            </summary>
+            <typeparam name="TService">The service type.</typeparam>
+            <typeparam name="TImplementation">The concrete type that will implement the service type.</typeparam>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddService``2(System.String)">
+            <summary>
+            Adds a service to the dependency map.
+            </summary>
+            <typeparam name="TService">The service type.</typeparam>
+            <typeparam name="TImplementation">The concrete type that will implement the service type.</typeparam>
+            <param name="serviceName">The service name.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddService(System.String,System.Type,System.Type)">
+            <summary>
+            Adds a service to the dependency map.
+            </summary>
+            <param name="serviceName">The service name.</param>
+            <param name="serviceType">The service type.</param>
+            <param name="implementingType">The implementing type.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddService(System.Type,System.Type)">
+            <summary>
+            Adds a service to the dependency map.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="implementingType">The implementing type.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddSingletonService``2">
+            <summary>
+            Adds a service to the dependency map.
+            </summary>
+            <typeparam name="TService">The service type.</typeparam>
+            <typeparam name="TImplementation">The concrete type that will implement the service type.</typeparam>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddSingletonService``2(System.String)">
+            <summary>
+            Adds a service to the dependency map.
+            </summary>
+            <typeparam name="TService">The service type.</typeparam>
+            <typeparam name="TImplementation">The concrete type that will implement the service type.</typeparam>
+            <param name="serviceName">The service name.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddSingletonService(System.Type,System.Type)">
+            <summary>
+            Adds a singleton service to the dependency map.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="implementingType">The implementing type.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddSingletonService(System.String,System.Type,System.Type)">
+            <summary>
+            Adds a singleton service to the dependency map.
+            </summary>
+            <param name="serviceName">The service name.</param>
+            <param name="serviceType">The service type.</param>
+            <param name="implementingType">The implementing type.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddDeferredService``1(System.String)">
+            <summary>
+            Adds a deferred service to the dependency map.
+            </summary>
+            <typeparam name="TService">The service type that will be injected at runtime.</typeparam>
+            <param name="serviceName">The service name.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddDeferredService``1">
+            <summary>
+            Adds a deferred service to the dependency map.
+            </summary>
+            <typeparam name="TService">The service type that will be injected at runtime.</typeparam>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddDeferredService(System.Type)">
+            <summary>
+            Adds a deferred service to the dependency map.
+            </summary>
+            <remarks>This method tells the dependency map that the <paramref name="serviceType"/> will be supplied to the container at runtime.</remarks>
+            <param name="serviceType">The service type that will be injected at runtime.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.AddDeferredService(System.String,System.Type)">
+            <summary>
+            Adds a deferred service to the dependency map.
+            </summary>
+            <remarks>This method tells the dependency map that the <paramref name="serviceType"/> will be supplied to the container at runtime.</remarks>
+            <param name="serviceName">The service name.</param>
+            <param name="serviceType">The service type that will be injected at runtime.</param>
+        </member>
+        <member name="M:Hiro.DependencyMap.Contains(System.Type,System.String)">
+            <summary>
+            Determines whether or not a service exists within the dependency map.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="serviceName">The service name.</param>
+            <returns><c>true</c> if the service exists; otherwise, it will return <c>false</c>.</returns>
+        </member>
+        <member name="M:Hiro.DependencyMap.Contains(System.Type)">
+            <summary>
+            Determines whether or not a service exists within the dependency map.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <returns><c>true</c> if the service exists; otherwise, it will return <c>false</c>.</returns>
+        </member>
+        <member name="M:Hiro.DependencyMap.CreateContainer">
+            <summary>
+            Compiles and instantiates a container instance using the current dependencies in the dependency map.
+            </summary>
+            <returns>A <see cref="T:Hiro.Containers.IMicroContainer"/> instance.</returns>
+        </member>
+        <member name="P:Hiro.DependencyMap.ContainerCompiler">
+            <summary>
+            Gets or sets the value indicating the <see cref="T:Hiro.Interfaces.IContainerCompiler"/> that will be used to convert this map into
+            an IOC container assembly.
+            </summary>
+            <value>The container compiler.</value>
+        </member>
+        <member name="T:Hiro.InstanceContainer">
+            <summary>
+            Represents a <see cref="T:Hiro.Containers.IMicroContainer"/> type that can store object references.
+            </summary>
+        </member>
+        <member name="M:Hiro.InstanceContainer.#ctor(System.Type,System.String,System.Object)">
+            <summary>
+            Initializes a new instance of the InstanceContainer class.
+            </summary>
+            <param name="serviceType">The service type.</param>
+            <param name="serviceName">The service name.</param>
+            <param name="instance">The instance that the container will contain.</param>
+        </member>
+        <member name="M:Hiro.InstanceContainer.Contains(System.Type,System.String)">
+            <summary>
+            Determines whether or not the container holds a particular service implementation.
+            </summary>
+            <param name="serviceType">The service type to be instantiated.</param>
+            <param name="key">The name of the service itself.</param>
+            <returns>A boolean value that specifies whether or not the service exists.</returns>
+        </member>
+        <member name="M:Hiro.InstanceContainer.GetAllInstances(System.Type)">
+            <summary>
+            Returns all object instances that match the given <paramref name="serviceType"/>.
+            </summary>
+            <param name="serviceType">The service type to be instantiated.</param>
+            <returns>A list of objects that match the given service type</returns>
+        </member>
+        <member name="M:Hiro.InstanceContainer.GetInstance(System.Type,System.String)">
+            <summary>
+            Obtains an object instance that matches the given <paramref name="serviceType"/>
+            and <paramref name="key">service name</paramref>.
+            </summary>
+            <param name="serviceType">The service type to be instantiated.</param>
+            <param name="key">The name of the service itself.</param>
+            <returns>An object instance that matches the given service description.</returns>
+        </member>
+        <member name="P:Hiro.InstanceContainer.NextContainer">
+            <summary>
+            Gets or sets the value indicating the <see cref="T:Hiro.Containers.IMicroContainer"/> instance that will be added to the current container chain.
+            </summary>
+            <value>The next container.</value>
+        </member>
+        <member name="T:Hiro.MethodDefinitionExtensions">
+            <summary>
+            A class that extends the <see cref="T:Mono.Cecil.MethodDefinition"/>
+            class with features similar to the features in the
+            System.Reflection.Emit namespace.
+            </summary>
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.GetILGenerator(Mono.Cecil.MethodDefinition)">
+            <summary>
+            Returns the <see cref="T:Mono.Cecil.Cil.CilWorker"/> instance
+            associated with the body of the <paramref name="method">target method</paramref>.
+            </summary>
+            <param name="method">The target method to be modified.</param>
+            <returns>The <see cref="T:Mono.Cecil.Cil.CilWorker"/> instance that points to the instructions of the method body.</returns>
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.AddLocal(Mono.Cecil.MethodDefinition,System.Type)">
+            <summary>
+            Adds a <see cref="T:Mono.Cecil.Cil.VariableDefinition">local variable</see>
+            instance to the target <paramref name="methodDef">method definition</paramref>.
+            </summary>
+            <param name="methodDef">The <paramref name="methodDef"/> instance which will contain the local variable.</param>
+            <param name="localType">The object <see cref="T:System.Type">type</see> that describes the type of objects that will be stored by the local variable.</param>
+            <returns>A <see cref="T:Mono.Cecil.Cil.VariableDefinition"/> that represents the local variable itself.</returns>
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.AddLocal``1(Mono.Cecil.MethodDefinition)">
+            <summary>
+            Adds a <see cref="T:Mono.Cecil.Cil.VariableDefinition">local variable</see>
+            instance to the target <paramref name="methodDef">method definition</paramref>.
+            </summary>
+            <typeparam name="T">The object <see cref="T:System.Type">type</see> that describes the type of objects that will be stored by the local variable.</typeparam>
+            <param name="methodDef">The <paramref name="methodDef"/> instance which will contain the local variable.</param>        
+            <returns>A <see cref="T:Mono.Cecil.Cil.VariableDefinition"/> that represents the local variable itself.</returns>        
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.AddLocal``1(Mono.Cecil.MethodDefinition,System.String)">
+            <summary>
+            Adds a named <see cref="T:Mono.Cecil.Cil.VariableDefinition">local variable</see>
+            instance to the target <paramref name="methodDef">method definition</paramref>.
+            </summary>
+            <typeparam name="T">The object <see cref="T:System.Type">type</see> that describes the type of objects that will be stored by the local variable.</typeparam>
+            <param name="methodDef">The <paramref name="methodDef"/> instance which will contain the local variable.</param>
+            <param name="variableName">The name of the local variable.</param>
+            <returns>A <see cref="T:Mono.Cecil.Cil.VariableDefinition"/> that represents the local variable itself.</returns>        
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.AddLocal(Mono.Cecil.MethodDefinition,System.String,System.Type)">
+            <summary>
+            Adds a named <see cref="T:Mono.Cecil.Cil.VariableDefinition">local variable</see>
+            instance to the target <paramref name="method">method definition</paramref>.
+            </summary>
+            <param name="method">The <paramref name="method"/> instance which will contain the local variable.</param>
+            <param name="variableName">The name of the local variable.</param>
+            <param name="variableType">The object <see cref="T:System.Type">type</see> that describes the type of objects that will be stored by the local variable.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.AddParameters(Mono.Cecil.MethodDefinition,System.Type[])">
+            <summary>
+            Adds a set of parameter types to the target <paramref name="method"/>.
+            </summary>
+            <param name="method">The target method.</param>
+            <param name="parameterTypes">The list of types that describe the method signature.</param>
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.SetReturnType(Mono.Cecil.MethodDefinition,System.Type)">
+            <summary>
+            Assigns the <paramref name="returnType"/> for the target method.
+            </summary>
+            <param name="method">The target method.</param>
+            <param name="returnType">The <see cref="T:System.Type"/> instance that describes the return type.</param>
+        </member>
+        <member name="M:Hiro.MethodDefinitionExtensions.AddGenericParameter(Mono.Cecil.MethodDefinition,System.Type)">
+            <summary>
+            Adds a generic parameter type to the <paramref name="method"/>.
+            </summary>
+            <param name="method">The target method.</param>
+            <param name="parameterType">The parameter type.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeReference"/> that represents the generic parameter type.</returns>
+        </member>
+        <member name="T:Hiro.MicroContainerExtensions">
+            <summary>
+            A helper class that adds syntactic sugar to the <see cref="T:Hiro.Containers.IMicroContainer"/> interface.
+            </summary>
+        </member>
+        <member name="M:Hiro.MicroContainerExtensions.GetInstance``1(Hiro.Containers.IMicroContainer)">
+            <summary>
+            Obtains an object instance that matches the given service type
+            and <paramref name="key">service name</paramref>.
+            </summary>
+            <typeparam name="T">The service type.</typeparam>
+            <param name="container">The target container.</param>
+            <returns>An object instance that matches the given service description.</returns>
+        </member>
+        <member name="M:Hiro.MicroContainerExtensions.GetInstance``1(Hiro.Containers.IMicroContainer,System.String)">
+            <summary>
+            Obtains an object instance that matches the given service type
+            and <paramref name="key">service name</paramref>.
+            </summary>
+            <typeparam name="T">The service type.</typeparam>
+            /// <param name="container">The target container.</param>
+            <param name="key">The name of the service itself.</param>
+            <returns>An object instance that matches the given service description.</returns>
+        </member>
+        <member name="M:Hiro.MicroContainerExtensions.AddService``1(Hiro.Containers.IMicroContainer,``0)">
+            <summary>
+            Adds a service instance to the container.
+            </summary>
+            <typeparam name="T">The service type.</typeparam>
+            <param name="container">The container instance itself.</param>
+            <param name="serviceInstance">The service instance.</param>
+        </member>
+        <member name="M:Hiro.MicroContainerExtensions.AddService``1(Hiro.Containers.IMicroContainer,System.String,``0)">
+            <summary>
+            Adds a service instance to the container.
+            </summary>
+            <typeparam name="T">The service type.</typeparam>
+            <param name="container">The container instance itself.</param>
+            <param name="serviceName">The service name.</param>
+            <param name="serviceInstance">The service instance.</param>
+        </member>
+        <member name="T:Hiro.ModuleDefinitionExtensions">
+            <summary>
+            A class that provides helper extension methods
+            for the <see cref="T:Mono.Cecil.ModuleDefinition"/> class.
+            </summary>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.DefineClass(Mono.Cecil.ModuleDefinition,System.String,System.String,Mono.Cecil.TypeAttributes,Mono.Cecil.TypeReference)">
+            <summary>
+            Defines a new class and adds it to the <paramref name="mainModule"/> module.
+            </summary>
+            <param name="mainModule">The module which will hold the new created type.</param>
+            <param name="typeName">The name of the class to create.</param>
+            <param name="namespaceName">The namespace that will contain the new class.</param>
+            <param name="attributes">The <see cref="T:Mono.Cecil.TypeAttributes"/> for the given type.</param>
+            <param name="baseType">The base class of the new type.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeDefinition"/> representing the new class being created.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportConstructor``1(Mono.Cecil.ModuleDefinition,System.Type[])">
+            <summary>
+            Imports a constructor with the given <paramref name="constructorParameters"/>
+            into the target <paramref name="module"/>.
+            </summary>
+            <typeparam name="T">The type that holds the target constructor</typeparam>
+            <param name="module">The <see cref="T:Mono.Cecil.ModuleDefinition"/> that will import the target constructor.</param>
+            <param name="constructorParameters">The list of <see cref="T:System.Type"/> objects that describe the signature of the constructor.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodReference"/> that represents the constructor itself.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportMethod(Mono.Cecil.ModuleDefinition,System.String,System.Type)">
+            <summary>
+            Imports a method with a particular <paramref name="methodName"/> from the <paramref name="declaringType"/>
+            into the <paramref name="module">target module</paramref>.
+            </summary>
+            <param name="module">The <see cref="T:Mono.Cecil.ModuleDefinition"/> instance that will import the actual method.</param>
+            <param name="methodName">The name of the method being imported.</param>
+            <param name="declaringType">The <see cref="T:System.Type"/> instance that holds the target method.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodReference"/> that represents the method being imported.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportMethod``1(Mono.Cecil.ModuleDefinition,System.String)">
+            <summary>
+            Imports a method with a particular <paramref name="methodName"/> and <see cref="T:System.Reflection.BindingFlags"/> from the <paramref name="declaringType"/>
+            into the <paramref name="module">target module</paramref>.
+            </summary>
+            <typeparam name="T">The target type that holds the target method.</typeparam>
+            <param name="module">The <see cref="T:Mono.Cecil.ModuleDefinition"/> instance that will import the actual method.</param>
+            <param name="methodName">The name of the method being imported.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodReference"/> that represents the method being imported.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportMethod``1(Mono.Cecil.ModuleDefinition,System.String,System.Type[])">
+            <summary>
+            Imports a method with a particular <paramref name="methodName"/>, <paramref name="parameterTypes"/>, and <see cref="T:System.Reflection.BindingFlags"/> from the <paramref name="declaringType"/>
+            into the <paramref name="module">target module</paramref>.
+            </summary>
+            <typeparam name="T">The target type that holds the target method.</typeparam>
+            <param name="parameterTypes">The list of <see cref="T:System.Type"/> objects that describe the method signature.</param>
+            <param name="module">The <see cref="T:Mono.Cecil.ModuleDefinition"/> instance that will import the actual method.</param>
+            <param name="methodName">The name of the method being imported.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodReference"/> that represents the method being imported.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportMethod``1(Mono.Cecil.ModuleDefinition,System.String,System.Reflection.BindingFlags)">
+            <summary>
+            Imports a method with a particular <paramref name="methodName"/> and <see cref="T:System.Reflection.BindingFlags"/> from the <paramref name="declaringType"/>
+            into the <paramref name="module">target module</paramref>.
+            </summary>
+            <typeparam name="T">The target type that holds the target method itself.</typeparam>
+            <param name="module">The <see cref="T:Mono.Cecil.ModuleDefinition"/> instance that will import the actual method.</param>
+            <param name="methodName">The name of the method being imported.</param>
+            <param name="flags">The <see cref="T:System.Reflection.BindingFlags"/> that describes the visibility and behavior of the target method.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodReference"/> that represents the method being imported.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportMethod(Mono.Cecil.ModuleDefinition,System.String,System.Type,System.Reflection.BindingFlags)">
+            <summary>
+            Imports a method with a particular <paramref name="methodName"/> and <see cref="T:System.Reflection.BindingFlags"/> from the <paramref name="declaringType"/>
+            into the <paramref name="module">target module</paramref>.
+            </summary>
+            <param name="module">The <see cref="T:Mono.Cecil.ModuleDefinition"/> instance that will import the actual method.</param>
+            <param name="methodName">The name of the method being imported.</param>
+            <param name="declaringType">The <see cref="T:System.Type"/> instance that holds the target method.</param>
+            <param name="flags">The <see cref="T:System.Reflection.BindingFlags"/> that describes the visibility and behavior of the target method.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodReference"/> that represents the method being imported.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportType``1(Mono.Cecil.ModuleDefinition)">
+            <summary>
+            Imports a target of type <typeparamref name="T"/> into the
+            <paramref name="module"/> instance.
+            </summary>
+            <typeparam name="T">The type that will be imported into the <see cref="T:Mono.Cecil.ModuleDefinition"/> instance itself.</typeparam>
+            <param name="module">The module that will store the imported type.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeReference"/> instance that represents the imported type.</returns>
+        </member>
+        <member name="M:Hiro.ModuleDefinitionExtensions.ImportType(Mono.Cecil.ModuleDefinition,System.Type)">
+            <summary>
+            Imports a <paramref name="targetType">target type</paramref> into the
+            <paramref name="module"/> instance.
+            </summary>
+            <param name="targetType">The type that will be imported into the <see cref="T:Mono.Cecil.ModuleDefinition"/> instance itself.</param>
+            <param name="module">The module that will store the imported type.</param>
+            <returns>A <see cref="T:Mono.Cecil.TypeDefinition"/> instance that represents the imported type.</returns>
+        </member>
+        <member name="T:Hiro.ServiceInfo">
+            <summary>
+            Describes a service that can be created by the container.
+            </summary>
+        </member>
+        <member name="M:Hiro.ServiceInfo.#ctor(System.Type,System.Type,System.String)">
+            <summary>
+            Initializes the class with the given <paramref name="serviceName"/>
+            and <paramref name="serviceType"/>.
+            </summary>        
+            <param name="serviceType">The type of service that can be created.</param>
+            <param name="implementingType">The type that will implement the service type.</param>
+            <param name="serviceName">The name of the service.</param>
+        </member>
+        <member name="M:Hiro.ServiceInfo.Equals(System.Object)">
+            <summary>
+            Determines if the other object is equal to the current <see cref="T:Hiro.Interfaces.IServiceInfo"/> instance.
+            </summary>
+            <param name="obj">The other object that will be used in the comparison.</param>
+            <returns>Returns <c>true</c> if both instances have the same service name, implement the same service type and have the same arguments; otherwise, it will return <c>false</c>.</returns>
+        </member>
+        <member name="M:Hiro.ServiceInfo.GetHashCode">
+            <summary>
+            Calculates the hash code using the service name and service type.
+            </summary>
+            <returns>The service hash code.</returns>
+        </member>
+        <member name="P:Hiro.ServiceInfo.ServiceName">
+            <summary>
+            Gets the value indicating the name of the current service.
+            </summary>
+            <value>The name of the service.</value>
+        </member>
+        <member name="P:Hiro.ServiceInfo.ServiceType">
+            <summary>
+            Gets the value indicating the service type. 
+            </summary>
+            <value>The type that describes the service type to be created.</value>
+        </member>
+        <member name="P:Hiro.ServiceInfo.ImplementingType">
+            <summary>
+            Gets the value indicating the type that will implement the service type.
+            </summary>
+            <value>The implementing type.</value>
+        </member>
+        <member name="T:Hiro.TypeDefinitionExtensions">
+            <summary>
+            A class that extends the <see cref="T:Mono.Cecil.TypeDefinition"/>
+            class with features similar to the features in the
+            System.Reflection.Emit namespace.
+            </summary>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.AddDefaultConstructor(Mono.Cecil.TypeDefinition)">
+            <summary>
+            Adds a default constructor to the target type.
+            </summary>
+            <param name="targetType">The type that will contain the default constructor.</param>
+            <returns>The default constructor.</returns>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.AddDefaultConstructor(Mono.Cecil.TypeDefinition,System.Type)">
+            <summary>
+            Adds a default constructor to the target type.
+            </summary>
+            <param name="parentType">The base class that contains the default constructor that will be used for constructor chaining..</param>
+            <param name="targetType">The type that will contain the default constructor.</param>
+            <returns>The default constructor.</returns>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.DefineMethod(Mono.Cecil.TypeDefinition,System.String,Mono.Cecil.MethodAttributes,System.Type,System.Type[],System.Type[])">
+            <summary>
+            Adds a new method to the <paramref name="typeDef">target type</paramref>.
+            </summary>
+            <param name="typeDef">The type that will hold the newly-created method.</param>
+            <param name="attributes">The <see cref="T:Mono.Cecil.MethodAttributes"/> parameter that describes the characteristics of the method.</param>
+            <param name="methodName">The name to be given to the new method.</param>
+            <param name="returnType">The method return type.</param>        
+            <param name="parameterTypes">The list of argument types that will be used to define the method signature.</param>
+            <param name="genericParameterTypes">The list of generic argument types that will be used to define the method signature.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodDefinition"/> instance that represents the newly-created method.</returns>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.AddProperty(Mono.Cecil.TypeDefinition,System.String,System.Type)">
+            <summary>
+            Adds a rewritable property to the <paramref name="typeDef">target type</paramref>.
+            </summary>
+            <param name="typeDef">The target type that will hold the newly-created property.</param>
+            <param name="propertyName">The name of the property itself.</param>
+            <param name="propertyType">The <see cref="T:System.Type"/> instance that describes the property type.</param>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.AddProperty(Mono.Cecil.TypeDefinition,System.String,Mono.Cecil.TypeReference)">
+            <summary>
+            Adds a rewritable property to the <paramref name="typeDef">target type</paramref>.
+            </summary>
+            <param name="typeDef">The target type that will hold the newly-created property.</param>
+            <param name="propertyName">The name of the property itself.</param>
+            <param name="propertyType">The <see cref="T:Mono.Cecil.TypeReference"/> instance that describes the property type.</param>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.AddProperty(Mono.Cecil.TypeDefinition,System.String,Mono.Cecil.TypeReference,Mono.Cecil.MethodDefinition,Mono.Cecil.MethodDefinition)">
+            <summary>
+            Adds a rewriteable property to the <paramref name="typeDef">target type</paramref>
+            using an existing <paramref name="getter"/> and <paramref name="setter"/>.
+            </summary>
+            <param name="typeDef">The target type that will hold the newly-created property.</param>
+            <param name="propertyName">The name of the property itself.</param>
+            <param name="propertyType">The <see cref="T:Mono.Cecil.TypeReference"/> instance that describes the property type.</param>
+            <param name="getter">The property getter method.</param>
+            <param name="setter">The property setter method.</param>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.AddPropertyGetter(Mono.Cecil.TypeReference,System.String,Mono.Cecil.MethodAttributes,Mono.Cecil.FieldReference)">
+            <summary>
+            Creates a property getter method implementation with the
+            <paramref name="propertyType"/> as the return type.
+            </summary>
+            <param name="propertyType">Represents the <see cref="T:Mono.Cecil.TypeReference">return type</see> for the getter method.</param>
+            <param name="getterName">The getter method name.</param>
+            <param name="attributes">The method attributes associated with the getter method.</param>
+            <param name="backingField">The field that will store the instance that the getter method will retrieve.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodDefinition"/> representing the getter method itself.</returns>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.AddPropertySetter(Mono.Cecil.TypeReference,Mono.Cecil.MethodAttributes,Mono.Cecil.FieldReference,System.String,Mono.Cecil.TypeReference)">
+            <summary>
+            Creates a property setter method implementation with the
+            <paramref name="propertyType"/> as the setter parameter.
+            </summary>
+            <param name="propertyType">Represents the <see cref="T:Mono.Cecil.TypeReference">parameter type</see> for the setter method.</param>
+            <param name="attributes">The method attributes associated with the setter method.</param>
+            <param name="backingField">The field that will store the instance for the setter method.</param>
+            <param name="setterName">The method name of the setter method.</param>
+            <param name="voidType">The <see cref="T:Mono.Cecil.TypeReference"/> that represents <see cref="T:System.Void"/>.</param>
+            <returns>A <see cref="T:Mono.Cecil.MethodDefinition"/> that represents the setter method itself.</returns>
+        </member>
+        <member name="M:Hiro.TypeDefinitionExtensions.GetBackingField(System.String,Mono.Cecil.TypeDefinition,Mono.Cecil.TypeReference)">
+            <summary>
+            Resolves the backing field for a generic type declaration.
+            </summary>
+            <param name="fieldName">The name of the field to reference.</param>
+            <param name="typeDef">The type that holds the actual field.</param>
+            <param name="propertyType">The <see cref="T:Mono.Cecil.TypeReference"/> that describes the property type being referenced.</param>
+            <returns>A <see cref="T:Mono.Cecil.FieldReference"/> that points to the actual backing field.</returns>
+        </member>
+    </members>
+</doc>
