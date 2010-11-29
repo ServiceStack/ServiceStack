@@ -83,6 +83,7 @@
     <Compile Include="Extensions\HttpResponseWrapper.cs" />
     <Compile Include="Extensions\IHttpResponse.cs" />
     <Compile Include="MetadataConfig.cs" />
+    <Compile Include="ServiceStackHttpHandlerFactory.cs" />
     <Compile Include="Soap11MessageSyncReplyHttpHandler.cs" />
     <Compile Include="Soap12MessageAsyncOneWayHttpHandler.cs" />
     <Compile Include="Support\HttpListenerBase.cs" />

@@ -19,10 +19,7 @@
       <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:JsonDataContractSerializer.cs" caret="552" fromTop="22" />
       <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ExpressionTypeFunqContainer.cs" caret="385" fromTop="17" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:AppHostBase.cs" caret="661" fromTop="21" />
-      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:PersistenceProviderCache.cs" caret="559" fromTop="19" />
-      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:OrmLitePersistenceProviderCache.cs" caret="777" fromTop="27" />
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:ContentSerializer.cs" caret="1007" fromTop="33" />
-      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:JsonServiceClient.cs" caret="539" fromTop="24" />
       <File id="BC383081-6CF7-4A78-8384-AE7279A9A063/f:MessageExtensions.cs" caret="799" fromTop="30" />
       <File id="17FEDF77-62F1-48F8-BB82-3BAB5E477BCD/f:ConfigurationResourceManager.cs" caret="506" fromTop="19" />
       <File id="B26FCC95-9FDD-47F3-A920-0948877BA219/f:XmlServiceClient.cs" caret="897" fromTop="36" />
@@ -33,12 +30,43 @@
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11MessageSyncReplyHttpHandler.cs" caret="0" fromTop="0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap12MessageAsyncOneWayHttpHandler.cs" caret="671" fromTop="29" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="716" fromTop="27" />
+      <File id="BC383081-6CF7-4A78-8384-AE7279A9A063/f:TransientMessageHandler.cs" caret="2774" fromTop="22" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Support/f:AdapterBase.cs" caret="803" fromTop="26" />
+      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:FileSystemXmlCacheClient.cs" caret="570" fromTop="21" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:StringMapTypeDeserializer.cs" caret="747" fromTop="21" />
+      <File id="D7C0239C-8885-43F9-B1A6-2C0FC6572B10/f:JsonServiceClient.cs" caret="352" fromTop="16" />
+      <File id="EF5C737D-9D69-4844-AE09-FA706AD7AB91/f:OrmLitePersistenceProviderCacheTests.cs" caret="599" fromTop="16" />
+      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:PersistenceProviderCacheFactory.cs" caret="0" fromTop="0" />
+      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:PersistenceProviderCache.cs" caret="0" fromTop="0" />
+      <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:OrmLitePersistenceProviderCache.cs" caret="777" fromTop="27" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="2463" fromTop="49" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2325" fromTop="31" />
     </RecentFiles>
     <RecentEdits>
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="549" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="775" fromTop="28" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="408" fromTop="17" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="265" fromTop="8" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="10" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="7" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="9" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="26" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="3" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="44" />
+      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="2560" fromTop="49" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2138" fromTop="15" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2138" fromTop="10" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2138" fromTop="15" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="164" fromTop="6" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1386" fromTop="36" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1386" fromTop="34" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="760" fromTop="29" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="498" fromTop="27" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1386" fromTop="40" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1425" fromTop="25" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1799" fromTop="29" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="228" fromTop="3" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2296" fromTop="31" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -46,7 +74,7 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="var" priority="256" />
+      <Item value="var" priority="257" />
       <Item value="typeof" priority="65" />
       <Item value="private" priority="27" />
       <Item value="class" priority="15" />
@@ -56,15 +84,15 @@
       <Item value="TypeDefinition" priority="3" />
       <Item value="Dictionary" priority="10" />
       <Item value="Type" priority="52" />
-      <Item value="new" priority="220" />
+      <Item value="new" priority="221" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
-      <Item value="public" priority="129" />
-      <Item value="string" priority="138" />
-      <Item value="return" priority="159" />
+      <Item value="public" priority="131" />
+      <Item value="string" priority="141" />
+      <Item value="return" priority="161" />
       <Item value="object" priority="44" />
       <Item value="if" priority="163" />
       <Item value="TypeDefinitionMap" priority="0" />
-      <Item value="static" priority="31" />
+      <Item value="static" priority="33" />
       <Item value="T" priority="23" />
       <Item value="GetTypeDefinition" priority="0" />
       <Item value="VALUE_INDEX" priority="0" />
@@ -98,7 +126,7 @@
       <Item value="const" priority="12" />
       <Item value="USAGE_EXAMPLES_BASE_URI" priority="1" />
       <Item value="internal" priority="2" />
-      <Item value="IHttpHandler" priority="0" />
+      <Item value="IHttpHandler" priority="2" />
       <Item value="WsdlTemplateBase" priority="0" />
       <Item value="wsdlTemplate" priority="4" />
       <Item value="xsd" priority="0" />
@@ -163,7 +191,7 @@
       <Item value="baseType" priority="3" />
       <Item value="do" priority="0" />
       <Item value="false" priority="26" />
-      <Item value="true" priority="21" />
+      <Item value="true" priority="22" />
       <Item value="areSameTypes" priority="0" />
       <Item value="propertyDefinition" priority="2" />
       <Item value="GetRefType" priority="0" />
@@ -202,7 +230,7 @@
       <Item value="LogManager" priority="10" />
       <Item value="DateTime" priority="10" />
       <Item value="HttpContext" priority="0" />
-      <Item value="context" priority="2" />
+      <Item value="context" priority="6" />
       <Item value="Execute" priority="0" />
       <Item value="before" priority="0" />
       <Item value="elapsed" priority="0" />
@@ -334,7 +362,7 @@
       <Item value="LogicFacade" priority="0" />
       <Item value="uniqueTypeNames" priority="1" />
       <Item value="serviceModelAssembly" priority="4" />
-      <Item value="ContextBoundObject" priority="0" />
+      <Item value="ContextBoundObject" priority="1" />
       <Item value="continue" priority="4" />
       <Item value="Stack" priority="0" />
       <Item value="typesWithSameName" priority="2" />
@@ -578,7 +606,7 @@
       <Item value="fromDtoType" priority="1" />
       <Item value="basePathName" priority="1" />
       <Item value="translatorTypeName" priority="1" />
-      <Item value="Func" priority="1" />
+      <Item value="Func" priority="2" />
       <Item value="Func&lt;string,bool&gt;" priority="0" />
       <Item value="DeclareParseMethod" priority="0" />
       <Item value="fromModel" priority="2" />
@@ -701,6 +729,8 @@
       <Item value="HashSet" priority="0" />
       <Item value="HashSet&lt;T&gt;" priority="0" />
       <Item value="items" priority="0" />
+      <Item value="GetHttpHandler" priority="0" />
+      <Item value="Dictionary&lt;string,Func&lt;IHttpHandler&gt;&gt;" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="13" />
@@ -1101,6 +1131,8 @@
       <Item value="Length" priority="0" />
       <Item value="CallStatic" priority="0" />
       <Item value="Split" priority="0" />
+      <Item value="Insert" priority="0" />
+      <Item value="IndexOf" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.GC">
       <Item value="SuppressFinalize" priority="1" />
@@ -1525,7 +1557,8 @@
       <Item value="OperationTypes" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Web.HttpRequest">
-      <Item value="Url" priority="0" />
+      <Item value="Url" priority="2" />
+      <Item value="RawUrl" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.Metadata.Soap11WsdlMetadataHandler">
       <Item value="GetWsdlTemplate" priority="0" />
@@ -1612,6 +1645,9 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.ServiceInterface.Session.UserClientSession">
       <Item value="UserClientGlobalId" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.Web.HttpContext">
+      <Item value="Request" priority="2" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>
