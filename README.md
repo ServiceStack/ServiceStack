@@ -31,7 +31,7 @@ Simple web service example
         static long GetFactorial(long n)
         {
             return n > 1 ? n * GetFactorial(n - 1) : 1;
-        }
+        } 
     }
 
 ### Calling the service from any C#/.NET Client
