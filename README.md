@@ -1,6 +1,8 @@
-_Version 1.55 of Service Stack released on 20/09/2010 [http://servicestack.googlecode.com/files/ServiceStack.Examples.zip available here]._
+_Version 1.61 of Service Stack released on 20/09/2010 [available here](https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip)._
 
-Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ that simplifies the development of XML, JSON, JSV and WCF SOAP [ServiceStackWebServices Web Services]. For more info check out [http://www.servicestack.net servicestack.net].
+Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ 
+that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/mythz/ServiceStack/wiki/Service-Stack-Web-Services). 
+For more info check out [servicestack.net](http://www.servicestack.net).
 
 Simple web service example
 ==========================
