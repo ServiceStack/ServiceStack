@@ -69,7 +69,7 @@ If you already have ServiceStack and just want to download the latest release bi
 
 Alternatively if you want keep up with the latest version you can always:
 
-`git clone git://github.com/mythz/ServiceStack.git`
+    git clone git://github.com/mythz/ServiceStack.git
 
 
 ## Getting Started
