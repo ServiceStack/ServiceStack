@@ -62,10 +62,12 @@ Download
 ========
 
 To start developing web services with Service Stack we recommend starting with the ServiceStack.Examples project (includes ServiceStack.dlls):
-  * **[https://github.com/downloads/mythz/ServiceStack.Examples/ServiceStack.Examples-v1.61.zip](https://github.com/downloads/mythz/ServiceStack.Examples/ServiceStack.Examples-v1.61.zip)**
+
+  * **[ServiceStack.Examples-v1.61.zip](https://github.com/downloads/mythz/ServiceStack.Examples/ServiceStack.Examples-v1.61.zip)**
 
 If you already have ServiceStack and just want to download the latest release binaries get them at:
-  * **[https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip)**
+
+  * **[ServiceStack.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip)**
 
 Alternatively if you want keep up with the latest version you can always:
 
