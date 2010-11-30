@@ -40,7 +40,7 @@
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:PersistenceProviderCache.cs" caret="0" fromTop="0" />
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:OrmLitePersistenceProviderCache.cs" caret="777" fromTop="27" />
       <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="2463" fromTop="49" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2325" fromTop="31" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="192" fromTop="6" />
     </RecentFiles>
     <RecentEdits>
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="549" fromTop="15" />
@@ -54,19 +54,19 @@
       <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="3" />
       <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="3099" fromTop="44" />
       <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:C!?src?ServiceStack?build?build.bat" caret="2560" fromTop="49" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2138" fromTop="15" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2138" fromTop="10" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2138" fromTop="15" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2145" fromTop="15" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2145" fromTop="10" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2145" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="164" fromTop="6" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1386" fromTop="36" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1386" fromTop="34" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="760" fromTop="29" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="498" fromTop="27" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1386" fromTop="40" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1425" fromTop="25" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1799" fromTop="29" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="228" fromTop="3" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2296" fromTop="31" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1393" fromTop="36" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1393" fromTop="34" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="767" fromTop="29" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="505" fromTop="27" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1393" fromTop="40" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1432" fromTop="25" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="1806" fromTop="29" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="2303" fromTop="31" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandler.cs" caret="192" fromTop="2" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
