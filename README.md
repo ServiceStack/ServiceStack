@@ -69,7 +69,7 @@ If you already have ServiceStack and just want to download the latest release bi
 
   * **[ServiceStack.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip)**
 
-Alternatively if you want keep up with the latest version you can always:
+Alternatively if you want keep up with the latest version you can always use the power of Git :)
 
     git clone git://github.com/mythz/ServiceStack.git
 
@@ -115,7 +115,7 @@ With Mono on Linux now reaching full-maturity, Service Stack runs on .NET or Lin
 ### Low Coupling for maximum accessibility and testability
 No coupling between the transport's endpoint and your web service's payload. You can re-use your existing strongly-typed web service DTO's with any .NET client using the available Soap, Xml and Json Service Clients - giving you a strongly-typed API while at the same time avoiding the need for any generated code.
 
-  * The most popular web service endpoints are configured by default. With no extra effort, each new web service created is immediately available and [http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Metadata discoverable] on the following end points:
+  * The most popular web service endpoints are configured by default. With no extra effort, each new web service created is immediately available and [discoverable](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Metadata) on the following end points:
     * [XML (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Xml/Metadata?op=GetFactorial)
     * [JSON (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Json/Metadata?op=GetFactorial)
     * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Jsv/Metadata?op=GetFactorial)
@@ -164,10 +164,10 @@ If you have suggestions for new features or want to prioritize the existing ones
 Similar Open source .NET projects for developing or accessing web services include:
 
  * Open Rasta - REST-ful web service framwork:
-     * http://trac.caffeine-it.com/openrasta
+     * [http://trac.caffeine-it.com/openrasta](http://trac.caffeine-it.com/openrasta)
 
  * Rest Sharp - an open source REST client for .NET
-     * http://restsharp.org
+     * [http://restsharp.org](http://restsharp.org)
 
 
 ----
