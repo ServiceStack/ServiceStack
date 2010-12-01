@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	/// </summary>
 	public abstract class WebServicesTestsBase
 	{
-		//All integration tests call the webservices at the following Website url
+		//All integration tests call the Webservices hosted at the following location:
 		protected const string ServiceClientBaseUri = "http://localhost/ServiceStack.WebHost.IntegrationTests/ServiceStack";
 
 		protected abstract IServiceClient CreateNewServiceClient();
