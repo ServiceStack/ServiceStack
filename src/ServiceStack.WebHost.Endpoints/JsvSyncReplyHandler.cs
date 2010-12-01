@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public override void ProcessRequest(HttpContext context)
 		{
 			var response = new HttpResponseWrapper(context.Response);
-			var operationName = context.Request.GetOperationName();
+			var operationName = this.RequestName ?? context.Request.GetOperationName();
 			if (string.IsNullOrEmpty(operationName)) return;
 
 			if (DefaultHandledRequest(context)) return;

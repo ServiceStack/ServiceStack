@@ -4,13 +4,20 @@ using ServiceStack.WebHost.IntegrationTests.Operations;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	public class ReverseService : ServiceBase<Reverse>
+	public class ReverseService 
+		: ServiceBase<Reverse>
 	{
 		protected override object Run(Reverse request)
 		{
-			var valueBytes = request.Value.ToCharArray();
+			return new ReverseResponse { Result = Execute(request.Value) };
+		}
+
+		public static string Execute(string value)
+		{
+			var valueBytes = value.ToCharArray();
 			Array.Reverse(valueBytes);
-			return new ReverseResponse { Result = new string(valueBytes) };
+			return new string(valueBytes);
 		}
 	}
+
 }

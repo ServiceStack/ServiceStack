@@ -1,7 +1,6 @@
 using System;
 using System.Web;
 using ServiceStack.Logging;
-using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -16,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public override void ProcessRequest(HttpContext context)
 		{
 			var response = new HttpResponseWrapper(context.Response);
-			var operationName = context.Request.GetOperationName();
+			var operationName = this.RequestName ?? context.Request.GetOperationName();
 
 			if (DefaultHandledRequest(context)) return;
 

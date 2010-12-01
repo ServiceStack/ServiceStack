@@ -1,6 +1,7 @@
 using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -8,7 +9,7 @@ namespace ServiceStack.ServiceClient.Web
 	{
 		public Soap12ServiceClient(string uri)
 		{
-			this.Uri = uri;
+			this.Uri = uri.WithTrailingSlash() + "Soap12";
 		}
 
 		private WSHttpBinding binding;

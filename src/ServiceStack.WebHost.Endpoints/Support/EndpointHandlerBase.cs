@@ -22,6 +22,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		private static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
 		private static readonly byte[][] NetworkInterfaceIpv6Addresses;
 
+		public string RequestName { get; set; }
+
 		static EndpointHandlerBase()
 		{
 			IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses().ForEach((x, y) => NetworkInterfaceIpv4Addresses[x.GetAddressBytes()] = y.GetAddressBytes());
