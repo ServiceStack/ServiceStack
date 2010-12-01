@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints
 			};
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
-			this.WsdlServiceNamespace = "http://services.servicestack.net/";
+			this.WsdlServiceNamespace = "http://schemas.servicestack.net/types";
 			this.WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types";
 			this.ServiceStackHandlerFactoryPath = "ServiceStack";
 

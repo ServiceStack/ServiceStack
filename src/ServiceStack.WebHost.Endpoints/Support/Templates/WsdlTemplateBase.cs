@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			{
 				return
 	@"<wsdl:operation name=""{0}"">
-      <soap:operation soapAction=""http://services.servicestack.net/{0}"" style=""document"" />
+      <soap:operation soapAction=""http://schemas.servicestack.net/types/{0}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 			{
 				return
 	@"<wsdl:operation name=""{0}"">
-      <soap:operation soapAction=""http://services.servicestack.net/{0}"" style=""document"" />
+      <soap:operation soapAction=""http://schemas.servicestack.net/types/{0}"" style=""document"" />
       <wsdl:input>
         <soap:body use=""literal"" />
       </wsdl:input>
