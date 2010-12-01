@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\tests\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.5.2.9222, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\nunit.framework.dll</HintPath>
@@ -95,7 +99,7 @@
       <DependentUpon>Soap11WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Tests\IntegrationTests.cs" />
+    <Compile Include="Tests\WebServicesTestsBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Funq\Funq.csproj">
@@ -105,6 +109,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
       <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
       <Name>ServiceStack.ServiceClient.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
+      <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>
+      <Name>ServiceStack.ServiceHost</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>

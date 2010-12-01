@@ -21,6 +21,15 @@ namespace ServiceStack.ServiceHost
 			this.ServiceController = new ServiceController();
 		}
 
+		public ServiceManager(bool autoInitialize, params Assembly[] assembliesWithServices)
+			: this(assembliesWithServices)
+		{
+			if (autoInitialize)
+			{
+				this.Init();
+			}
+		}
+
 		public void Init()
 		{
 			this.Container = new Container();
@@ -30,6 +39,11 @@ namespace ServiceStack.ServiceHost
 			this.ServiceController.Register(typeFactory, assembliesWithServices);
 
 			typeFactory.RegisterTypes(this.ServiceController.ServiceTypes);
+		}
+
+		public object Execute(object dto)
+		{
+			return this.ServiceController.Execute(dto, null);
 		}
 
 		public void Dispose()
