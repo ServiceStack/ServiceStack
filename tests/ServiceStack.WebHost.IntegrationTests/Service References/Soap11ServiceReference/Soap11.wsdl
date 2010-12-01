@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:tns="http://schemas.servicestack.net/types" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:svc="http://schemas.servicestack.net/types" name="Soap11" targetNamespace="http://schemas.servicestack.net/types" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xs:schema xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="anyType" nillable="true" type="xs:anyType" />
+      <xs:element name="anyURI" nillable="true" type="xs:anyURI" />
+      <xs:element name="base64Binary" nillable="true" type="xs:base64Binary" />
+      <xs:element name="boolean" nillable="true" type="xs:boolean" />
+      <xs:element name="byte" nillable="true" type="xs:byte" />
+      <xs:element name="dateTime" nillable="true" type="xs:dateTime" />
+      <xs:element name="decimal" nillable="true" type="xs:decimal" />
+      <xs:element name="double" nillable="true" type="xs:double" />
+      <xs:element name="float" nillable="true" type="xs:float" />
+      <xs:element name="int" nillable="true" type="xs:int" />
+      <xs:element name="long" nillable="true" type="xs:long" />
+      <xs:element name="QName" nillable="true" type="xs:QName" />
+      <xs:element name="short" nillable="true" type="xs:short" />
+      <xs:element name="string" nillable="true" type="xs:string" />
+      <xs:element name="unsignedByte" nillable="true" type="xs:unsignedByte" />
+      <xs:element name="unsignedInt" nillable="true" type="xs:unsignedInt" />
+      <xs:element name="unsignedLong" nillable="true" type="xs:unsignedLong" />
+      <xs:element name="unsignedShort" nillable="true" type="xs:unsignedShort" />
+      <xs:element name="char" nillable="true" type="tns:char" />
+      <xs:simpleType name="char">
+        <xs:restriction base="xs:int" />
+      </xs:simpleType>
+      <xs:element name="duration" nillable="true" type="tns:duration" />
+      <xs:simpleType name="duration">
+        <xs:restriction base="xs:duration">
+          <xs:pattern value="\-?P(\d*D)?(T(\d*H)?(\d*M)?(\d*(\.\d*)?S)?)?" />
+          <xs:minInclusive value="-P10675199DT2H48M5.4775808S" />
+          <xs:maxInclusive value="P10675199DT2H48M5.4775807S" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="guid" nillable="true" type="tns:guid" />
+      <xs:simpleType name="guid">
+        <xs:restriction base="xs:string">
+          <xs:pattern value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}" />
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:attribute name="FactoryType" type="xs:QName" />
+      <xs:attribute name="Id" type="xs:ID" />
+      <xs:attribute name="Ref" type="xs:IDREF" />
+    </xs:schema>
+    <xs:schema xmlns:tns="http://schemas.servicestack.net/types" elementFormDefault="qualified" targetNamespace="http://schemas.servicestack.net/types" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:complexType name="AlwaysThrows">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Value" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="AlwaysThrows" nillable="true" type="svc:AlwaysThrows" />
+      <xs:complexType name="AlwaysThrowsResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ResponseStatus" nillable="true" type="svc:ResponseStatus" />
+          <xs:element minOccurs="0" name="Result" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="AlwaysThrowsResponse" nillable="true" type="svc:AlwaysThrowsResponse" />
+      <xs:complexType name="ResponseStatus">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Errors" nillable="true" type="svc:ArrayOfResponseError" />
+          <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="StackTrace" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ResponseStatus" nillable="true" type="svc:ResponseStatus" />
+      <xs:complexType name="ArrayOfResponseError">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="unbounded" name="ResponseError" nillable="true" type="svc:ResponseError" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ArrayOfResponseError" nillable="true" type="svc:ArrayOfResponseError" />
+      <xs:complexType name="ResponseError">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="ErrorCode" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="FieldName" nillable="true" type="xs:string" />
+          <xs:element minOccurs="0" name="Message" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ResponseError" nillable="true" type="svc:ResponseError" />
+      <xs:complexType name="Reverse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Value" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="Reverse" nillable="true" type="svc:Reverse" />
+      <xs:complexType name="ReverseResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Result" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="ReverseResponse" nillable="true" type="svc:ReverseResponse" />
+      <xs:complexType name="Rot13">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Value" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="Rot13" nillable="true" type="svc:Rot13" />
+      <xs:complexType name="Rot13Response">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="Result" nillable="true" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="Rot13Response" nillable="true" type="svc:Rot13Response" />
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="AlwaysThrowsIn">
+    <wsdl:part name="parameters" element="svc:AlwaysThrows" />
+  </wsdl:message>
+  <wsdl:message name="AlwaysThrowsOut">
+    <wsdl:part name="parameters" element="svc:AlwaysThrowsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ReverseIn">
+    <wsdl:part name="parameters" element="svc:Reverse" />
+  </wsdl:message>
+  <wsdl:message name="ReverseOut">
+    <wsdl:part name="parameters" element="svc:ReverseResponse" />
+  </wsdl:message>
+  <wsdl:message name="Rot13In">
+    <wsdl:part name="parameters" element="svc:Rot13" />
+  </wsdl:message>
+  <wsdl:message name="Rot13Out">
+    <wsdl:part name="parameters" element="svc:Rot13Response" />
+  </wsdl:message>
+  <wsdl:portType name="ISyncReply">
+    <wsdl:operation name="AlwaysThrows">
+      <wsdl:input message="svc:AlwaysThrowsIn" />
+      <wsdl:output message="svc:AlwaysThrowsOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Reverse">
+      <wsdl:input message="svc:ReverseIn" />
+      <wsdl:output message="svc:ReverseOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Rot13">
+      <wsdl:input message="svc:Rot13In" />
+      <wsdl:output message="svc:Rot13Out" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="IOneWay" />
+  <wsdl:binding name="BasicHttpBinding_ISyncReply" type="svc:ISyncReply">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="AlwaysThrows">
+      <soap:operation soapAction="http://schemas.servicestack.net/types/AlwaysThrows" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Reverse">
+      <soap:operation soapAction="http://schemas.servicestack.net/types/Reverse" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Rot13">
+      <soap:operation soapAction="http://schemas.servicestack.net/types/Rot13" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="BasicHttpBinding_IOneWay" type="svc:IOneWay">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+  </wsdl:binding>
+  <wsdl:service name="SyncReply">
+    <wsdl:port name="BasicHttpBinding_ISyncReply" binding="svc:BasicHttpBinding_ISyncReply">
+      <soap:address location="http://localhost/ServiceStack.WebHost.IntegrationTests/ServiceStack/Soap11" />
+    </wsdl:port>
+  </wsdl:service>
+  <wsdl:service name="AsyncOneWay">
+    <wsdl:port name="BasicHttpBinding_IOneWay" binding="svc:BasicHttpBinding_IOneWay">
+      <soap:address location="http://localhost/ServiceStack.WebHost.IntegrationTests/ServiceStack/Soap11" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

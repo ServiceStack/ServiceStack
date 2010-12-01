@@ -57,6 +57,9 @@
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Web.Extensions">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -74,6 +77,18 @@
   <ItemGroup>
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
+    <None Include="Service References\Soap11ServiceReference\configuration91.svcinfo" />
+    <None Include="Service References\Soap11ServiceReference\configuration.svcinfo" />
+    <None Include="Service References\Soap11ServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\Soap12ServiceReference\configuration91.svcinfo" />
+    <None Include="Service References\Soap12ServiceReference\configuration.svcinfo" />
+    <None Include="Service References\Soap12ServiceReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
     <Content Include="Soap11WebService.asmx" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -92,6 +107,16 @@
     <Compile Include="Operations\Rot13.cs" />
     <Compile Include="Operations\Reverse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service References\Soap11ServiceReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\Soap12ServiceReference\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Services\AlwaysThrowsService.cs" />
     <Compile Include="Services\Rot13Service.cs" />
     <Compile Include="Services\ReverseService.cs" />
@@ -99,6 +124,8 @@
       <DependentUpon>Soap11WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Tests\Soap12AddServiceReferenceTests.cs" />
+    <Compile Include="Tests\Soap11AddServiceReferenceTests.cs" />
     <Compile Include="Tests\WebServicesTestsBase.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -122,6 +149,18 @@
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack.WebHost.Endpoints</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\Soap11ServiceReference\" />
+    <WCFMetadataStorage Include="Service References\Soap12ServiceReference\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
+    <None Include="Service References\Soap11ServiceReference\Soap11.wsdl" />
+    <None Include="Service References\Soap12ServiceReference\Soap12.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
