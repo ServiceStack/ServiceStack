@@ -69,7 +69,7 @@ If you already have ServiceStack and just want to download the latest release bi
 
   * **[ServiceStack.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip)**
 
-Alternatively if you want keep up with the latest version you can always:
+Alternatively if you want keep up with the latest version you can always use the power of Git :)
 
     git clone git://github.com/mythz/ServiceStack.git
 
