@@ -67,7 +67,7 @@ To start developing web services with Service Stack we recommend starting with t
 
 If you already have ServiceStack and just want to download the latest release binaries get them at:
 
-  * **[ServiceStack.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack-v1.63.zip)**
+  * **[ServiceStack-v1.63.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack-v1.63.zip)**
 
 Alternatively if you want keep up with the latest version you can always use the power of Git :)
 
