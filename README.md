@@ -36,14 +36,14 @@ Simple web service example
 
 ### Calling the service from any C#/.NET Client
     //no code-gen required, can re-use above DTO's
-    var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
+    var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/ServiceStack/");
     var response = this.ServiceClient.Send<GetFactorialResponse>(new GetFactorial { ForNumber = 3 });
     Console.WriteLine("Result: {0}", response.Result);
 
 ### Calling the service from a Java Script client i.e. Ajax
 
-    var serviceClient = new JsonServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
-    serviceClient.getFromService("GetFactorial", { ForNumber: 3 }, function(e) {
+    var serviceClient = new JsonServiceClient("http://localhost/ServiceStack.Examples.Host.Web/ServiceStack/");
+    serviceClient.getFromService({GetFactorial: { ForNumber: 3 }}, function(e) {
       alert(e.Result);
     });
 
