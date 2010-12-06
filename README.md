@@ -1,4 +1,4 @@
-_Version 1.61 of Service Stack released on 20/09/2010 [available here](https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip)._
+_Version 1.63 of Service Stack released on 04/12/2010 [available here](https://github.com/downloads/mythz/ServiceStack/ServiceStack-v1.63.zip)._
 
 Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ 
 that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/mythz/ServiceStack/wiki/Service-Stack-Web-Services). 
@@ -36,14 +36,14 @@ Simple web service example
 
 ### Calling the service from any C#/.NET Client
     //no code-gen required, can re-use above DTO's
-    var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
+    var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/ServiceStack/");
     var response = this.ServiceClient.Send<GetFactorialResponse>(new GetFactorial { ForNumber = 3 });
     Console.WriteLine("Result: {0}", response.Result);
 
 ### Calling the service from a Java Script client i.e. Ajax
 
-    var serviceClient = new JsonServiceClient("http://localhost/ServiceStack.Examples.Host.Web/Public/");
-    serviceClient.getFromService("GetFactorial", { ForNumber: 3 }, function(e) {
+    var serviceClient = new JsonServiceClient("http://localhost/ServiceStack.Examples.Host.Web/ServiceStack/");
+    serviceClient.getFromService({GetFactorial: { ForNumber: 3 }}, function(e) {
       alert(e.Result);
     });
 
@@ -63,11 +63,11 @@ Download
 
 To start developing web services with Service Stack we recommend starting with the ServiceStack.Examples project (includes ServiceStack.dlls):
 
-  * **[ServiceStack.Examples-v1.61.zip](https://github.com/downloads/mythz/ServiceStack.Examples/ServiceStack.Examples-v1.61.zip)**
+  * **[ServiceStack.Examples-v1.63.zip](https://github.com/downloads/mythz/ServiceStack.Examples/ServiceStack.Examples-v1.63.zip)**
 
 If you already have ServiceStack and just want to download the latest release binaries get them at:
 
-  * **[ServiceStack.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack.zip)**
+  * **[ServiceStack-v1.63.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack-v1.63.zip)**
 
 Alternatively if you want keep up with the latest version you can always use the power of Git :)
 
