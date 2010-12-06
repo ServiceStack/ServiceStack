@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints.Metadata;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -30,22 +29,17 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		internal static void SetOperationTypes(IList<Type> operationTypes, IList<Type> allOperationTypes)
+		internal static void SetOperationTypes(ServiceOperations operationTypes, ServiceOperations allOperationTypes)
 		{
-			ServiceOperations = new ServiceOperations(operationTypes);
-			AllServiceOperations = new ServiceOperations(allOperationTypes);
+			ServiceOperations = operationTypes;
+			AllServiceOperations = allOperationTypes;
 		}
 
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
-			AssertConfig();
-			return Config.ServiceController.Execute(request,
+			return config.ServiceController.Execute(request,
 				new HttpRequestContext(request, endpointAttributes));
 		}
 
-		private static void AssertConfig()
-		{
-			if (Config == null) throw new ArgumentNullException("Config");
-		}
 	}
 }

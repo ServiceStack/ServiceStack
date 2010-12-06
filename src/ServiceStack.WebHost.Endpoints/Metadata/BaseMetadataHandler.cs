@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
-using ServiceStack.Logging;
+using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;

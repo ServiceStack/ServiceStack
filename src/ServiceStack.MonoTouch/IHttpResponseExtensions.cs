@@ -5,6 +5,7 @@ using ServiceStack.Common.Extensions;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 

@@ -10,24 +10,7 @@ namespace ServiceStack.ServiceModel.Serialization
 
 		public object Parse(NameValueCollection nameValues, Type returnType)
 		{
-			var map = new Dictionary<string, string>();
-
-			foreach (var key in nameValues.AllKeys)
-			{
-				if (key == null)
-				{
-					//occurs when no value is specified, e.g. 'path/to/page?debug'
-					//throw new ArgumentNullException("key", "nameValues: " + nameValues);
-					continue;
-				}
-
-				var values = nameValues.GetValues(key);
-				if (values != null && values.Length > 0)
-				{
-					map[key] = values[0];
-				}
-			}
-			return Parse(map, returnType);
+			return Parse(nameValues.ToDictionary(), returnType);
 		}
 
 		readonly Dictionary<Type, StringMapTypeDeserializer> typeStringMapSerializerMap

@@ -79,9 +79,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="Serialization\DataContractDeserializer.cs" />
     <Compile Include="Serialization\DataContractSerializer.cs" />
-    <Compile Include="Extensions\XLinqExtensions.cs" />
+    <Compile Include="XLinqExtensions.cs" />
     <Compile Include="Serialization\JsonDataContractDeserializer.cs" />
     <Compile Include="Serialization\JsonDataContractSerializer.cs" />
     <Compile Include="Serialization\KeyValueDataContractDeserializer.cs" />

@@ -1,5 +1,6 @@
 using System.Web;
 using System.Web.UI;
+using ServiceStack.Common.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 {

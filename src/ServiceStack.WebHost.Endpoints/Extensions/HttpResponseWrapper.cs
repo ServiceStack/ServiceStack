@@ -1,9 +1,10 @@
+using System;
 using System.IO;
 using System.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
-	internal class HttpResponseWrapper 
+	internal class HttpResponseWrapper
 		: IHttpResponse
 	{
 		private readonly HttpResponse response;

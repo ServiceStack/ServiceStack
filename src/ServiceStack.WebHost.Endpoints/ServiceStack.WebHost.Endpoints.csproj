@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -70,6 +70,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
+    <Compile Include="Extensions\HttpRequestWrapper.cs" />
+    <Compile Include="Extensions\IHttpRequest.cs" />
     <Compile Include="Ext\AllFilesHandler.cs" />
     <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
@@ -77,7 +79,6 @@
     <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="JsvAsyncOneWayHandler.cs" />
     <Compile Include="JsvSyncReplyHandler.cs" />
-    <Compile Include="EndpointType.cs" />
     <Compile Include="Extensions\IHttpResponseExtensions.cs" />
     <Compile Include="Extensions\HttpListenerResponseWrapper.cs" />
     <Compile Include="Extensions\HttpRequestExtensions.cs" />
@@ -89,14 +90,11 @@
     <Compile Include="Soap12MessageAsyncOneWayHttpHandler.cs" />
     <Compile Include="Support\HttpListenerBase.cs" />
     <Compile Include="AppHostHttpListenerBase.cs" />
-    <Compile Include="Support\ContentType.cs" />
     <Compile Include="Support\JsvHandlerBase.cs" />
     <Compile Include="Support\GzipOptimizationTest.cs" />
     <Compile Include="Soap12MessageSyncReplyHttpHandler.cs" />
-    <Compile Include="XmlSyncReplyHttpListener.cs" />
     <Compile Include="ServiceEndpointsMetadataConfig.cs" />
     <Compile Include="Metadata\Soap12WsdlMetadataHandler.cs" />
-    <Compile Include="XmlSyncReplyHttpListenerBase.cs" />
     <Compile Include="SoapMetadataConfig.cs" />
     <Compile Include="Support\HttpHandlerBase.cs" />
     <Compile Include="Support\Metadata\WsdlMetadataHandlerBase.cs" />
@@ -131,8 +129,6 @@
     <Compile Include="Metadata\XmlMetadataHandler.cs" />
     <Compile Include="Metadata\XsdGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Metadata\Operations.cs" />
-    <Compile Include="Metadata\ServiceOperations.cs" />
     <Compile Include="Support\Metadata\Controls\Soap12OperationControl.cs" />
     <Compile Include="Support\Metadata\Controls\OperationControl.cs" />
     <Compile Include="Support\Metadata\Controls\OperationsControl.cs" />

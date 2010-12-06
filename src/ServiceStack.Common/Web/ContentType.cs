@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.WebHost.Endpoints.Support
+namespace ServiceStack.Common.Web
 {
 	public class ContentType
 	{

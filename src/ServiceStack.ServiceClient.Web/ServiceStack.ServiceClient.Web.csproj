@@ -79,6 +79,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DictionaryExtensions.cs" />
+    <Compile Include="XLinqExtensions.cs" />
     <Compile Include="XmlServiceClient.cs" />
     <Compile Include="JsonServiceClient.cs" />
     <Compile Include="JsvServiceClient.cs" />
@@ -88,14 +90,12 @@
     <Compile Include="IOneWay.cs" />
     <Compile Include="ISyncReply.cs" />
     <Compile Include="IWcfServiceClient.cs" />
-    <Compile Include="Obsolete\JsonServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Soap11ServiceClient.cs" />
     <Compile Include="Soap12ServiceClient.cs" />
     <Compile Include="ServiceClientBase.cs" />
     <Compile Include="WcfServiceClient.cs" />
     <Compile Include="WebRequestUtils.cs" />
-    <Compile Include="Obsolete\XmlServiceClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">

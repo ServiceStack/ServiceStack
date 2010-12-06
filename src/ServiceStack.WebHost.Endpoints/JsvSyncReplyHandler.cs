@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -32,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var isDebugRequest = context.Request.RawUrl.ToLower().Contains("debug");
 				var writeFn = isDebugRequest
 					? (Func<object, string>)JsvFormatter.SerializeAndFormat
-					: TypeSerializer.SerializeToString;
+					: Serialize;
 				var contentType = isDebugRequest ? ContentType.PlainText : ContentType.JsvText;
 
 				response.WriteToResponse(result, writeFn, contentType);

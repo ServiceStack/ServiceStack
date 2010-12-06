@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ServiceStack.Configuration;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common.Web
 {

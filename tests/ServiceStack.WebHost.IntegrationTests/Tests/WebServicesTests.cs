@@ -4,6 +4,7 @@ using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.IntegrationTests.Operations;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -13,13 +14,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	/// This base class executes all Web Services ignorant of the endpoints its hosted on.
 	/// The same tests below are re-used by the Unit and Integration TestFixture's declared below
 	/// </summary>
-	public abstract class WebServicesTestsBase
+	[TestFixture]
+	public abstract class WebServicesTests 
+		: TestsBase
 	{
-		//All integration tests call the Webservices hosted at the following location:
-		protected const string ServiceClientBaseUri = "http://localhost/ServiceStack.WebHost.IntegrationTests/ServiceStack";
-
-		protected abstract IServiceClient CreateNewServiceClient();
-
 		private const string TestString = "ServiceStack";
 
 		[Test]
@@ -63,35 +61,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	/// Unit tests simulates an in-process ServiceStack host where all services 
 	/// are executed all in-memory so DTO's are not even serialized.
 	/// </summary>
-	[TestFixture]
-	public class UnitTests : WebServicesTestsBase
+	public class UnitTests : WebServicesTests
 	{
-		public class DirectServiceClient : IServiceClient
-		{
-			readonly ServiceManager serviceManager = new ServiceManager(true, typeof(ReverseService).Assembly);
-
-			public void SendOneWay(object request)
-			{
-				serviceManager.Execute(request);
-			}
-
-			public TResponse Send<TResponse>(object request)
-			{
-				var response = serviceManager.Execute(request);
-				return (TResponse)response;
-			}
-
-			public void Dispose() { }
-		}
-
 		protected override IServiceClient CreateNewServiceClient()
 		{
-			return new DirectServiceClient();
+			EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(ReverseService).Assembly);
+			return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
 		}
 	}
 
-	[TestFixture]
-	public class XmlIntegrationTests : WebServicesTestsBase
+	public class XmlIntegrationTests : WebServicesTests
 	{
 		protected override IServiceClient CreateNewServiceClient()
 		{
@@ -99,8 +78,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 	}
 
-	[TestFixture]
-	public class JsonIntegrationTests : WebServicesTestsBase
+	public class JsonIntegrationTests : WebServicesTests
 	{
 		protected override IServiceClient CreateNewServiceClient()
 		{
@@ -108,8 +86,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 	}
 
-	[TestFixture]
-	public class JsvIntegrationTests : WebServicesTestsBase
+	public class JsvIntegrationTests : WebServicesTests
 	{
 		protected override IServiceClient CreateNewServiceClient()
 		{
@@ -117,8 +94,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 	}
 
-	[TestFixture]
-	public class Soap11IntegrationTests : WebServicesTestsBase
+	public class Soap11IntegrationTests : WebServicesTests
 	{
 		protected override IServiceClient CreateNewServiceClient()
 		{
@@ -126,8 +102,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 	}
 
-	[TestFixture]
-	public class Soap12IntegrationTests : WebServicesTestsBase
+	public class Soap12IntegrationTests : WebServicesTests
 	{
 		protected override IServiceClient CreateNewServiceClient()
 		{

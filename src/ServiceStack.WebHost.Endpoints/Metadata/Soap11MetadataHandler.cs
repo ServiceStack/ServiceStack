@@ -1,5 +1,6 @@
 using System;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata

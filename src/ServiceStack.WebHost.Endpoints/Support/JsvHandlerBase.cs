@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public abstract class JsvHandlerBase : EndpointHandlerBase, IHttpHandler
     {
-		protected static object CreateRequest(HttpRequest request, string operationName)
+		protected object CreateRequest(HttpRequest request, string operationName)
 		{
 			return CreateRequest(operationName,
 				request.HttpMethod,
@@ -18,9 +18,21 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				request.InputStream);
 		}
 
-		public static object CreateRequest(string operationName, string httpMethod, NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
+		public static string Serialize(object model)
 		{
-			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
+			return TypeSerializer.SerializeToString(model);
+		}
+
+		public override object CreateRequest(string operationName, string httpMethod, 
+			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
+		{
+			return GetRequest(operationName, httpMethod, queryString, requestForm, inputStream);
+		}
+
+		public static object GetRequest(string operationName, string httpMethod,
+			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
+		{
+			var operationType = GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
 			if (httpMethod == "GET" || httpMethod == "OPTIONS")
 			{
@@ -35,9 +47,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						operationType, queryString, ex);
 					throw;
 				}
-            }
+			}
 
-            var formData = new StreamReader(inputStream).ReadToEnd();
+			var formData = new StreamReader(inputStream).ReadToEnd();
 			var isJsv = formData.StartsWith("{");
 
 			try
@@ -53,8 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					operationType, deserializer, formData, ex);
 				throw;
 			}
-
-        }
+		}
 
 		public abstract void ProcessRequest(HttpContext context);
 

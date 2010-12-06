@@ -104,6 +104,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Operations\AlwaysThrows.cs" />
+    <Compile Include="Operations\EchoRequest.cs" />
     <Compile Include="Operations\Rot13.cs" />
     <Compile Include="Operations\Reverse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -118,20 +119,27 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Services\AlwaysThrowsService.cs" />
+    <Compile Include="Services\EchoRequestService.cs" />
     <Compile Include="Services\Rot13Service.cs" />
     <Compile Include="Services\ReverseService.cs" />
     <Compile Include="Soap11WebService.asmx.cs">
       <DependentUpon>Soap11WebService.asmx</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Tests\RequestAndPathResolutionTests.cs" />
     <Compile Include="Tests\Soap12AddServiceReferenceTests.cs" />
     <Compile Include="Tests\Soap11AddServiceReferenceTests.cs" />
-    <Compile Include="Tests\WebServicesTestsBase.cs" />
+    <Compile Include="Tests\TestsBase.cs" />
+    <Compile Include="Tests\WebServicesTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Funq\Funq.csproj">
       <Project>{56656B0F-90BB-44D1-8A70-D004F940E0D2}</Project>
       <Name>Funq</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
       <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
@@ -144,6 +152,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
+      <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
+      <Name>ServiceStack.ServiceModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.WebHost.Endpoints\ServiceStack.WebHost.Endpoints.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>

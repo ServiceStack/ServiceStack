@@ -1,14 +1,13 @@
 using System;
 using System.Xml.Linq;
 using NUnit.Framework;
-using ServiceStack.ServiceModel.Extensions;
 
 namespace ServiceStack.ServiceModel.Tests
 {
 	[TestFixture]
 	public class XlinqExtensionsTests
 	{
-		private const int INT_VALUE = 2147483647;
+		private const int IntValue = 2147483647;
 
 		private static XElement CreateChildElement<T>(T value)
 		{
@@ -23,8 +22,8 @@ namespace ServiceStack.ServiceModel.Tests
 		[Test]
 		public void xelement_get_int_test()
 		{
-			var el = CreateChildElement(INT_VALUE);
-			Assert.AreEqual(INT_VALUE, el.GetInt("child"));
+			var el = CreateChildElement(IntValue);
+			Assert.AreEqual(IntValue, el.GetInt("child"));
 		}
 
 		[Test]
@@ -48,8 +47,8 @@ namespace ServiceStack.ServiceModel.Tests
 		[Test]
 		public void xelement_get_int_or_default_test()
 		{
-			var el = CreateChildElement(INT_VALUE);
-			Assert.AreEqual(INT_VALUE, el.GetIntOrDefault("child"));
+			var el = CreateChildElement(IntValue);
+			Assert.AreEqual(IntValue, el.GetIntOrDefault("child"));
 
 			el = CreateEmptyChildElement();
 			Assert.AreEqual(default(int), el.GetIntOrDefault("child"));
@@ -58,8 +57,8 @@ namespace ServiceStack.ServiceModel.Tests
 		[Test]
 		public void xelement_get_nullable_int_test()
 		{
-			var el = CreateChildElement(INT_VALUE);
-			Assert.AreEqual(INT_VALUE, el.GetNullableInt("child").Value);
+			var el = CreateChildElement(IntValue);
+			Assert.AreEqual(IntValue, el.GetNullableInt("child").Value);
 
 			el = CreateChildElement((int?)null);
 			Assert.AreEqual(null, el.GetNullableInt("child"));

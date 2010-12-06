@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			EndpointHost.Config = new EndpointHostConfig
 			{
 				ServiceName = "ServiceName",
-				ServiceController = new Mock<IServiceController>().Object
+				ServiceManager = new ServiceManager()
 			};
 
 			var mockResponse = new HttpResponseMock();

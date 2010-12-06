@@ -15,6 +15,9 @@ namespace ServiceStack.ServiceHost
 		public ServiceController ServiceController { get; private set; }
 		private readonly Assembly[] assembliesWithServices;
 
+		public ServiceOperations ServiceOperations { get; set; }
+		public ServiceOperations AllServiceOperations { get; set; }
+
 		public ServiceManager(params Assembly[] assembliesWithServices)
 		{
 			this.assembliesWithServices = assembliesWithServices;
@@ -38,9 +41,12 @@ namespace ServiceStack.ServiceHost
 
 			this.ServiceController.Register(typeFactory, assembliesWithServices);
 
+			this.ServiceOperations = new ServiceOperations(this.ServiceController.OperationTypes);
+			this.AllServiceOperations = new ServiceOperations(this.ServiceController.AllOperationTypes);
+
 			typeFactory.RegisterTypes(this.ServiceController.ServiceTypes);
 		}
-
+	
 		public object Execute(object dto)
 		{
 			return this.ServiceController.Execute(dto, null);

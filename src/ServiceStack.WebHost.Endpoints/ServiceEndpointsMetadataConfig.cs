@@ -1,3 +1,5 @@
+using ServiceStack.Common.Web;
+
 namespace ServiceStack.WebHost.Endpoints
 {
 	public class ServiceEndpointsMetadataConfig

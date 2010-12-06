@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.WebHost.Endpoints.Metadata;
 
-namespace ServiceStack.WebHost.Endpoints.Metadata
+namespace ServiceStack.ServiceHost
 {
 	public class ServiceOperations
 	{
@@ -50,13 +51,15 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			OperationTypesMap = new Dictionary<string, Type>();
 			foreach (var operationType in operationTypes)
 			{
-				OperationTypesMap[operationType.Name] = operationType;
+				OperationTypesMap[operationType.Name.ToLower()] = operationType;
 			}
 		}
 
 		public Type GetOperationType(string operationTypeName)
 		{
-			return OperationTypesMap.ContainsKey(operationTypeName) ? OperationTypesMap[operationTypeName] : null;
+			Type operationType;
+			OperationTypesMap.TryGetValue(operationTypeName.ToLower(), out operationType);
+			return operationType;
 		}
 
 		public Operations ReplyOperations { get; private set; }

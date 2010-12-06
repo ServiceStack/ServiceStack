@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			if (MetadataConfig.Json != null)
 				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSON</a>", MetadataConfig.Json.DefaultMetadataUri);
 			if (MetadataConfig.Jsv != null)
-				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSV</a>", MetadataConfig.Jsv.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a class=""last"" href=""../{0}?op={{0}}"">JSV</a>", MetadataConfig.Jsv.DefaultMetadataUri);
 
 			opTemplate.Append("</li>");
 
@@ -97,7 +97,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
             padding-bottom: 2em;
         }}
         UL {{
-            margin: 10px 0 0 20px;
+            margin: 10px 0 0 10px;
+			padding: 0px 0px 0px 10px;
         }}
         LI {{
 			clear: left;
@@ -117,12 +118,15 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		.operations SPAN {{
 			float: left;
 			display: block;
-			width: 15em;
+			width: 27em;
 		}}
 		.operations A {{
-			border-left: solid 1px #ccc;
-			margin-left: 1em;
-			padding-left: 1em;
+			border-right: 1px solid #CCC;
+			margin-right: 1em;
+			padding-right: 1em;
+		}}
+		.operations A.last {{
+			border:none;
 		}}
         </style>
 </head>

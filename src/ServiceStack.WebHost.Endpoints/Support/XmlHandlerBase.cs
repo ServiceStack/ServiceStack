@@ -10,17 +10,30 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	{
 		public abstract void ProcessRequest(HttpContext context);
 
-		protected static object CreateRequest(HttpRequest request, string operationName)
+		public static string Serialize(object model)
+		{
+			return DataContractSerializer.Instance.Parse(model);
+		}
+
+		protected object CreateRequest(HttpRequest request, string operationName)
 		{
 			return CreateRequest(operationName,
 				request.HttpMethod,
 				request.QueryString,
+				null,
 				request.InputStream);
 		}
 
-		public static object CreateRequest(string operationName, string httpMethod, NameValueCollection queryString, Stream inputStream)
+		public override object CreateRequest(string operationName, string httpMethod,
+			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
 		{
-			var operationType = EndpointHost.ServiceOperations.GetOperationType(operationName);
+			return GetRequest(operationName, httpMethod, queryString, requestForm, inputStream);
+		}
+
+		public static object GetRequest(string operationName, string httpMethod,
+			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
+		{
+			var operationType = GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
 			if (httpMethod == "GET" || httpMethod == "OPTIONS")
 			{

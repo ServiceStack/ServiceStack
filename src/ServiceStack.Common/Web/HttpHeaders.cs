@@ -5,6 +5,7 @@ namespace ServiceStack.Common.Web
 		public const string AcceptEncoding = "Accept-Encoding";
 
 		public const string ContentType = "Content-Type";
+
 		public const string ContentEncoding = "Content-Encoding";
 
 		public const string ContentLength = "Content-Length";

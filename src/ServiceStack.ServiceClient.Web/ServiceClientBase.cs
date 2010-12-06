@@ -8,10 +8,14 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
+	/**
+	 * Need to provide async request options
+	 * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+	 */
 	public abstract class ServiceClientBase
 		: IServiceClient
 	{
-		private static ILog log = LogManager.GetLogger(typeof (ServiceClientBase));
+		private static readonly ILog log = LogManager.GetLogger(typeof (ServiceClientBase));
 
 		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
 

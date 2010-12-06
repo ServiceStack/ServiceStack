@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected bool IsStarted = false;
 
 		private readonly DateTime startTime;
-		private readonly ServiceManager serviceManager;
+		//private readonly ServiceManager serviceManager;
 		public static HttpListenerBase Instance { get; protected set; }
 
 		public event DelReceiveWebRequest ReceiveWebRequest;
@@ -39,13 +39,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			this.serviceManager = new ServiceManager(assembliesWithServices);
-
 			SetConfig(new EndpointHostConfig
-			          	{
-			          		ServiceName = serviceName,
-			          		ServiceController = serviceManager.ServiceController,
-			          	});
+				{
+					ServiceName = serviceName,
+					ServiceManager = new ServiceManager(assembliesWithServices),
+				});
 		}
 
 		public void Init()
@@ -57,20 +55,21 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			Instance = this;
 
-			if (this.serviceManager != null)
+			var serviceManager = EndpointHost.Config.ServiceManager;
+			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(serviceManager.Container);
+				Configure(EndpointHost.Config.ServiceManager.Container);
+
+				EndpointHost.SetOperationTypes(
+					serviceManager.ServiceOperations,
+					serviceManager.AllServiceOperations
+				);
 			}
 			else
 			{
 				Configure(null);
 			}
-
-			EndpointHost.SetOperationTypes(
-				EndpointHost.Config.ServiceController.OperationTypes,
-				EndpointHost.Config.ServiceController.AllOperationTypes
-				);
 
 			var elapsed = DateTime.Now - this.startTime;
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
@@ -124,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					throw;
 
 				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request",
-				                RequestThreadAbortedException);
+								RequestThreadAbortedException);
 			}
 			this.Listener = null;
 			this.IsStarted = false;
@@ -155,7 +154,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					throw;
 
 				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request",
-				                RequestThreadAbortedException);
+								RequestThreadAbortedException);
 			}
 		}
 
@@ -168,7 +167,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected void SetConfig(EndpointHostConfig config)
 		{
 			EndpointHost.Config = config;
-			this.serviceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
+			EndpointHost.Config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 		}
 
 		public virtual object ExecuteService(object request, EndpointAttributes endpointAttributes)
@@ -181,9 +180,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			this.Stop();
 
-			if (serviceManager != null)
+			if (EndpointHost.Config.ServiceManager != null)
 			{
-				serviceManager.Dispose();
+				EndpointHost.Config.ServiceManager.Dispose();
 			}
 		}
 	}

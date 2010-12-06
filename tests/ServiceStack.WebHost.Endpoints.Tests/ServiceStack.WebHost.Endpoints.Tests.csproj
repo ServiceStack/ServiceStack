@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -111,9 +111,11 @@
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="MessageSerializationTests.cs" />
     <Compile Include="Mocks\HttpResponseMock.cs" />
+    <Compile Include="PathResolutionTests.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
     <Compile Include="ServiceModel\ServiceClientTestBase.cs" />
     <Compile Include="ServiceModel\ServiceClientTests.cs" />
+    <Compile Include="ServiceStackHttpHandlerFactoryTests.cs" />
     <Compile Include="Support\Host\TestAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
     <Compile Include="Support\Operations\RequestOfComplexTypes.cs" />
@@ -160,6 +162,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
       <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
       <Name>ServiceStack.ServiceClient.Web</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.ServiceHost\ServiceStack.ServiceHost.csproj">
+      <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>
+      <Name>ServiceStack.ServiceHost</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>

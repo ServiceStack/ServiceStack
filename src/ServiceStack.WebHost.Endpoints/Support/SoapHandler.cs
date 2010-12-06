@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel.Channels;
 using System.Web;
 using System.Xml;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
@@ -153,6 +155,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return requestOperationName != null
 					? context.Request.ContentType.Replace(requestOperationName, requestOperationName + "Response")
 					: (SoapType == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
+		}
+
+		public override object CreateRequest(string operationName, string httpMethod, 
+			NameValueCollection queryString, NameValueCollection formData, Stream inputStream)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

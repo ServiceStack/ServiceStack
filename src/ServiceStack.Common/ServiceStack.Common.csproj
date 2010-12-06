@@ -51,6 +51,10 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -61,10 +65,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Expressions\DelegateFactory.cs" />
@@ -109,7 +109,10 @@
     <Compile Include="Web\CompressedFileResult.cs" />
     <Compile Include="Web\CompressedResult.cs" />
     <Compile Include="Web\CompressionTypes.cs" />
+    <Compile Include="Web\ContentType.cs" />
+    <Compile Include="Web\EndpointType.cs" />
     <Compile Include="Web\HttpMethods.cs" />
+    <Compile Include="Web\HttpResult.cs" />
     <Compile Include="Web\TextResult.cs" />
     <Compile Include="Web\EndPoint.cs" />
     <Compile Include="Web\FileResult.cs" />

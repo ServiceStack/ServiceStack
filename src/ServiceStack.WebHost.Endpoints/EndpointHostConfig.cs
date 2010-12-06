@@ -16,12 +16,12 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
 			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig {
-				DefaultMetadataUri = "Public/Metadata",
-				Soap11 = new SoapMetadataConfig("Public/Soap11/SyncReply.svc", "Public/Soap11/AsyncOneWay.svc", "Public/Soap11/Metadata", "Public/Soap11/Wsdl"),
-				Soap12 = new SoapMetadataConfig("Public/Soap12/SyncReply.svc", "Public/Soap12/AsyncOneWay.svc", "Public/Soap12/Metadata", "Public/Soap12/Wsdl"),
-				Xml = new MetadataConfig("Public/Xml/SyncReply", "Public/Xml/AsyncOneWay", "Public/Xml/Metadata"),
-				Json = new MetadataConfig("Public/Json/SyncReply", "Public/Json/AsyncOneWay", "Public/Json/Metadata"),
-				Jsv = new MetadataConfig("Public/Jsv/SyncReply", "Public/Jsv/AsyncOneWay", "Public/Jsv/Metadata"),
+				DefaultMetadataUri = "ServiceStack/Metadata",
+				Soap11 = new SoapMetadataConfig("ServiceStack/Soap11/SyncReply.svc", "ServiceStack/Soap11/AsyncOneWay.svc", "ServiceStack/Soap11/Metadata", "ServiceStack/Soap11/Wsdl"),
+				Soap12 = new SoapMetadataConfig("ServiceStack/Soap12/SyncReply.svc", "ServiceStack/Soap12/AsyncOneWay.svc", "ServiceStack/Soap12/Metadata", "ServiceStack/Soap12/Wsdl"),
+				Xml = new MetadataConfig("ServiceStack/Xml/SyncReply", "ServiceStack/Xml/AsyncOneWay", "ServiceStack/Xml/Metadata"),
+				Json = new MetadataConfig("ServiceStack/Json/SyncReply", "ServiceStack/Json/AsyncOneWay", "ServiceStack/Json/Metadata"),
+				Jsv = new MetadataConfig("ServiceStack/Jsv/SyncReply", "ServiceStack/Jsv/AsyncOneWay", "ServiceStack/Jsv/Metadata"),
 			};
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
@@ -33,7 +33,8 @@ namespace ServiceStack.WebHost.Endpoints
 				{ { "X-Powered-By", Env.ServerUserAgent } };
 		}
 
-		public IServiceController ServiceController { get; set; }
+		public ServiceManager ServiceManager { get; set; }
+		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
 		public string ServiceStackHandlerFactoryPath { get; set; }

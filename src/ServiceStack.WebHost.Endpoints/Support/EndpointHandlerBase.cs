@@ -1,23 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.Serialization;
-using System.ServiceModel.Channels;
 using System.Web;
-using System.Xml;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
-using ServiceStack.Messaging;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
-using DataContractSerializer = ServiceStack.ServiceModel.Serialization.DataContractSerializer;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	public class EndpointHandlerBase
+	public abstract class EndpointHandlerBase
 	{
 		private static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
 		private static readonly byte[][] NetworkInterfaceIpv6Addresses;
@@ -45,6 +39,22 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			return false;
 		}
+
+		public static ServiceManager ServiceManager { get; set; }
+
+		public static Type GetOperationType(string operationName)
+		{
+			return ServiceManager != null 
+				? ServiceManager.ServiceOperations.GetOperationType(operationName) 
+				: EndpointHost.ServiceOperations.GetOperationType(operationName);
+		}
+
+		public abstract object CreateRequest(
+			string operationName, 
+			string httpMethod, 
+			NameValueCollection queryString,
+			NameValueCollection formData, 
+			Stream inputStream);
 
 		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{

@@ -1,8 +1,8 @@
 using System;
 using System.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -30,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				var result = ExecuteService(request, endpointAttributes);
 
-				response.WriteToResponse(result, x => JsonDataContractSerializer.Instance.Parse(x), ContentType.Json);
+				response.WriteToResponse(result, Serialize, ContentType.Json);
 			}
 			catch (Exception ex)
 			{
@@ -40,6 +40,6 @@ namespace ServiceStack.WebHost.Endpoints
 				response.WriteJsonErrorToResponse(operationName, errorMessage, ex);
 			}
 		}
-
 	}
+
 }

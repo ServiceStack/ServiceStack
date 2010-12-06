@@ -5,6 +5,7 @@ using ServiceStack.Redis;
 namespace ServiceStack.CacheAccess.Memcached.Tests
 {
 	[TestFixture]
+	[Ignore("Ignoring integration tests that require infracture")]
 	public class AllCacheClientTests : AllCacheClientsTestBase
 	{
 		[Test]

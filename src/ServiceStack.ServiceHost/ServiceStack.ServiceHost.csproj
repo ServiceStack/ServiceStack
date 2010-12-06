@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExpressionTypeFunqContainer.cs" />
+    <Compile Include="Operations.cs" />
     <Compile Include="RequestAttributes.cs" />
     <Compile Include="HttpRequestContext.cs" />
     <Compile Include="ServiceController.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="ServiceExecOperations.cs" />
     <Compile Include="ServiceManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceOperations.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Funq\Funq.csproj">

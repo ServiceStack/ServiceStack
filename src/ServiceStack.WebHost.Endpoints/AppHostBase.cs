@@ -17,7 +17,6 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 		private readonly DateTime startTime;
-		private readonly ServiceManager serviceManager;
 
 		public static AppHostBase Instance { get; protected set; }
 
@@ -30,11 +29,9 @@ namespace ServiceStack.WebHost.Endpoints
 		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			this.serviceManager = new ServiceManager(assembliesWithServices);
-
 			SetConfig(new EndpointHostConfig {
 				ServiceName = serviceName,
-				ServiceController = serviceManager.ServiceController,
+				ServiceManager = new ServiceManager(assembliesWithServices),
 			});
 		}
 
@@ -42,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get
 			{
-				return this.serviceManager != null ? this.serviceManager.ServiceController : null;
+				return EndpointHost.Config.ServiceController;
 			}
 		}
 
@@ -50,7 +47,8 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get
 			{
-				return this.serviceManager != null ? this.serviceManager.Container : null;
+				return EndpointHost.Config.ServiceManager != null
+					? EndpointHost.Config.ServiceManager.Container : null;
 			}
 		}
 
@@ -63,20 +61,21 @@ namespace ServiceStack.WebHost.Endpoints
 
 			Instance = this;
 
-			if (this.serviceManager != null)
+			var serviceManager = EndpointHost.Config.ServiceManager;
+			if (serviceManager != null)
 			{
 				serviceManager.Init();
-				Configure(serviceManager.Container);
+				Configure(EndpointHost.Config.ServiceManager.Container);
+
+				EndpointHost.SetOperationTypes(
+					serviceManager.ServiceOperations,
+					serviceManager.AllServiceOperations
+				);
 			}
 			else
 			{
 				Configure(null);
 			}
-
-			EndpointHost.SetOperationTypes(
-				EndpointHost.Config.ServiceController.OperationTypes, 
-				EndpointHost.Config.ServiceController.AllOperationTypes
-			);
 
 			var elapsed = DateTime.Now - this.startTime;
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
@@ -89,11 +88,12 @@ namespace ServiceStack.WebHost.Endpoints
 			if (config.ServiceName == null)
 				config.ServiceName = EndpointHost.Config.ServiceName;
 
-			if (config.ServiceController == null)
-				config.ServiceController = EndpointHost.Config.ServiceController;
+			if (config.ServiceManager == null)
+				config.ServiceManager = EndpointHost.Config.ServiceManager;
+
+			config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 
 			EndpointHost.Config = config;
-			this.serviceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
@@ -112,9 +112,9 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public virtual void Dispose()
 		{
-			if (this.serviceManager != null)
+			if (EndpointHost.Config.ServiceManager != null)
 			{
-				this.serviceManager.Dispose();
+				EndpointHost.Config.ServiceManager.Dispose();
 			}
 		}
 	}

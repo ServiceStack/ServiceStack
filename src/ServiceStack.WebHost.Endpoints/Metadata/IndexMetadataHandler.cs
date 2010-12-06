@@ -1,4 +1,5 @@
 using System;
+using ServiceStack.Common.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata
 {

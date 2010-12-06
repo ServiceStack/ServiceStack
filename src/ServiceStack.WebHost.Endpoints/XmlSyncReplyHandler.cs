@@ -1,5 +1,6 @@
 using System;
 using System.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
@@ -30,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				var result = ExecuteService(request, endpointAttributes);
 
-				response.WriteToResponse(result, x => DataContractSerializer.Instance.Parse(x), ContentType.Xml);
+				response.WriteToResponse(result, Serialize, ContentType.Xml);
 			}
 			catch (Exception ex)
 			{

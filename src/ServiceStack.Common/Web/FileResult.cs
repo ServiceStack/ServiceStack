@@ -4,6 +4,7 @@ using System.IO;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Configuration;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Web

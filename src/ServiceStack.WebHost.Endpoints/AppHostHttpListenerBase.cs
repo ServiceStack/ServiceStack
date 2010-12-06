@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
-				var request = JsvHandlerBase.CreateRequest(operationName, httpMethod, queryString, null, inputStream);
+				var request = JsvHandlerBase.GetRequest(operationName, httpMethod, queryString, null, inputStream);
 
 				var isDebugRequest = queryString["debug"] != null;
 				
@@ -94,8 +94,8 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
-				var request = JsonHandlerBase.CreateRequest(operationName,
-				                                            httpMethod, queryString, null, inputStream);
+				var request = JsonHandlerBase.GetRequest(operationName,
+					httpMethod, queryString, null, inputStream);
 
 				if (url.Contains("/json/syncreply/"))
 				{
@@ -118,8 +118,8 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
-				var request = XmlHandlerBase.CreateRequest(operationName, 
-				                                           httpMethod, queryString, inputStream);
+				var request = XmlHandlerBase.GetRequest(operationName, httpMethod, 
+					queryString, null, inputStream);
 
 				if (url.Contains("/xml/syncreply/"))
 				{
