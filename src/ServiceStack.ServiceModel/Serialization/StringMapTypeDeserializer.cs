@@ -11,7 +11,7 @@ namespace ServiceStack.ServiceModel.Serialization
 	/// <summary>
 	/// Serializer cache of delegates required to create a type from a string map (e.g. for REST urls)
 	/// </summary>
-	internal class StringMapTypeDeserializer
+	public class StringMapTypeDeserializer
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(StringMapTypeDeserializer));
 

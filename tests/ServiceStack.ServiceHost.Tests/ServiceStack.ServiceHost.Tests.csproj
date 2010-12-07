@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PerfTests.cs" />
+    <Compile Include="RestPathTests.cs" />
     <Compile Include="ServiceControllerPerfTests.cs" />
     <Compile Include="ServiceControllerTests.cs" />
     <Compile Include="ServiceHostTests.cs" />

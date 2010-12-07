@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace ServiceStack.Common.Web
 {
@@ -12,12 +11,34 @@ namespace ServiceStack.Common.Web
 		: IHttpResult, IStreamWriter
 	{
 		public HttpResult()
+			: this (null, null, HttpStatusCode.OK)
 		{
-			this.Headers = new Dictionary<string, string>();
-			this.StatusCode = HttpStatusCode.OK;
 		}
 
-		public string contentType;
+		public HttpResult(object response)
+			: this(response, null, HttpStatusCode.OK)
+		{
+		}
+
+		public HttpResult(object response, string contentType)
+		{
+			Response = response;
+			this.contentType = contentType;
+		}
+
+		public HttpResult(object response, string contentType, HttpStatusCode statusCode)
+		{
+			this.Headers = new Dictionary<string, string>();
+			this.ResponseFilter = HttpResponseFilter.Instance;
+
+			this.Response = response;
+			this.ContentType = contentType;
+			this.StatusCode = statusCode;
+		}
+
+		public IContentTypeWriter ResponseFilter { get; set; }
+
+		private string contentType;
 		public string ContentType 
 		{ 
 			get
@@ -44,22 +65,12 @@ namespace ServiceStack.Common.Web
 
 		public object Response { get; set; }
 
-		public void WriteTo(Stream stream)
+		public void WriteTo(Stream responseStream)
 		{
-			switch (contentType)
-			{
-				case Web.ContentType.Xml:
-					XmlSerializer.SerializeToStream(Response, stream);
-					break;
-				case Web.ContentType.Json:
-					JsonSerializer.SerializeToStream(Response, stream);
-					break;
-				case Web.ContentType.Jsv:
-					TypeSerializer.SerializeToStream(Response, stream);
-					break;
-				default:
-					throw new NotSupportedException("ContentType not supported: " + contentType);
-			}
+			if (this.ResponseFilter == null)
+				throw new ArgumentNullException("ResponseFilter");
+
+			ResponseFilter.WriteToResponse(contentType, Response, responseStream);
 		}
 	}
 

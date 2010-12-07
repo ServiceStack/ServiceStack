@@ -75,6 +75,7 @@
     <Compile Include="Operations.cs" />
     <Compile Include="RequestAttributes.cs" />
     <Compile Include="HttpRequestContext.cs" />
+    <Compile Include="RestPath.cs" />
     <Compile Include="ServiceController.cs" />
     <Compile Include="ServiceControllerReflection.cs" />
     <Compile Include="ServiceExec.cs" />

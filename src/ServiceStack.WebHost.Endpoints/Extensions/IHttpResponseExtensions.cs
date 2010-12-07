@@ -1,9 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
-using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
-using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
@@ -62,14 +60,18 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			try
 			{
-				if (result == null)
-				{
-					return true;
-				}
+				if (result == null) return true;
 
 				foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
 				{
 					response.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
+				}
+
+				var httpResult = result as IHttpResult;
+				if (httpResult != null)
+				{
+					response.StatusCode = (int)httpResult.StatusCode;
+					response.ContentType = response.ContentType;
 				}
 
 				/* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
@@ -83,15 +85,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						if (responseHeaders.Key.Contains(reservedOptions)) continue;
 
-						if (ContentType.HeaderContentType.Equals(responseHeaders.Key, StringComparison.InvariantCultureIgnoreCase))
-						{
-							response.ContentType = responseHeaders.Value;
-						}
-						else
-						{							
-							Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
-							response.AddHeader(responseHeaders.Key, responseHeaders.Value);
-						}
+						Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
+						response.AddHeader(responseHeaders.Key, responseHeaders.Value);
 					}
 				}
 

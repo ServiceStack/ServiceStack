@@ -81,6 +81,7 @@
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Web\HttpResponseFilter.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />
     <Compile Include="Support\InMemoryLogFactory.cs" />
     <Compile Include="Support\NetDeflateProvider.cs" />
