@@ -74,6 +74,8 @@ namespace ServiceStack.ServiceHost
 
 						Register(requestType, serviceType, serviceFactoryFn);
 
+						RegisterRestPaths(requestType, serviceType);
+
 						this.ServiceTypes.Add(serviceType);
 
 						this.AllOperationTypes.Add(requestType);
@@ -92,6 +94,28 @@ namespace ServiceStack.ServiceHost
 							serviceType.Name, requestType.Name);
 					}
 				}
+			}
+		}
+
+		public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
+
+		public void RegisterRestPaths(Type requestType, Type serviceType)
+		{
+			var attrs = serviceType.GetCustomAttributes(typeof(RestPathAttribute), true);
+			foreach (RestPathAttribute attr in attrs)
+			{
+				var restPath = new RestPath(requestType, attr);
+				if (!restPath.IsValid)
+					throw new NotSupportedException(string.Format(
+						"RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.Name));
+
+				List<RestPath> pathsAtFirstMatch;
+				if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
+				{
+					pathsAtFirstMatch = new List<RestPath>();
+					RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;
+				}
+				pathsAtFirstMatch.Add(restPath);
 			}
 		}
 

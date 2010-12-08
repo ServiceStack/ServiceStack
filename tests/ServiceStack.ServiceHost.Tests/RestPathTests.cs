@@ -65,12 +65,15 @@ namespace ServiceStack.ServiceHost.Tests
 			public string content_type { get; set; }
 		}
 
-		private static void AssertMatch(string definitionPath, string requestPath, BbcMusicRequest expectedRequest)
+		private static void AssertMatch(string definitionPath, string requestPath,
+			string firstMatchHashKey, BbcMusicRequest expectedRequest)
 		{
 			var restPath = new RestPath(typeof(BbcMusicRequest), new RestPathAttribute(definitionPath));
 
-			var reqestTestPath = requestPath.ToLower().Split('/');
-			Assert.That(restPath.IsMatch(reqestTestPath));
+			var reqestTestPath = RestPath.GetPathPartsForMatching(requestPath);
+			Assert.That(restPath.IsMatch("GET", reqestTestPath), Is.True);
+
+			Assert.That(firstMatchHashKey, Is.EqualTo(restPath.FirstMatchHashKey));
 
 			var actualRequest = restPath.CreateRequest(requestPath) as BbcMusicRequest;
 
@@ -81,7 +84,7 @@ namespace ServiceStack.ServiceHost.Tests
 		}
 
 		[Test]
-		public void Can_support_BBC_Rest_Apis()
+		public void Can_support_BBC_REST_Apis()
 		{
 			/*
 				/music/artists/:mbz_guid.[xml|yaml|json]
@@ -93,19 +96,87 @@ namespace ServiceStack.ServiceHost.Tests
 
 			AssertMatch("/music/artists/{mbz_guid}.{content_type}",
 				"/music/artists/E0A387F5-48F0-40E0-AAEA-483DD7EE7484.xml",
+				"3/music",
 				new BbcMusicRequest { mbz_guid = mbz, content_type = "xml" });
 
 			AssertMatch("/music/artists/{mbz_guid}/promotions.{content_type}",
 				"/music/artists/E0A387F5-48F0-40E0-AAEA-483DD7EE7484/promotions.json",
-				new BbcMusicRequest { mbz_guid = mbz, content_type = "xml" });
+				"4/music",
+				new BbcMusicRequest { mbz_guid = mbz, content_type = "json" });
 
 			AssertMatch("/music/artists/{mbz_guid}/releases.{content_type}",
 				"/music/artists/E0A387F5-48F0-40E0-AAEA-483DD7EE7484/releases.yaml",
+                "4/music",
 				new BbcMusicRequest { mbz_guid = mbz, content_type = "yaml" });
 
-			AssertMatch("/music/artists/{mbz_guid}/releases.{content_type}",
-				"/music/artists/E0A387F5-48F0-40E0-AAEA-483DD7EE7484/releases/eps.json",
-				new BbcMusicRequest { mbz_guid = mbz, content_type = "json" });
+			AssertMatch("/music/artists/{mbz_guid}/releases/{release_type}.{content_type}",
+				"/music/artists/E0A387F5-48F0-40E0-AAEA-483DD7EE7484/releases/albums.json",
+                "5/music",
+				new BbcMusicRequest { mbz_guid = mbz, release_type = "albums", content_type = "json" });
+		}
+
+		public class RackSpaceRequest
+		{
+			public string version { get; set; }
+
+			public string id { get; set; }
+
+			public string resource_type { get; set; }
+
+			public string action { get; set; }
+
+			public string content_type { get; set; }
+		}
+
+
+		private static void AssertMatch(string definitionPath, string requestPath,
+			string firstMatchHashKey, RackSpaceRequest expectedRequest)
+		{
+			var restPath = new RestPath(typeof(RackSpaceRequest), new RestPathAttribute(definitionPath));
+
+			var reqestTestPath = RestPath.GetPathPartsForMatching(requestPath);
+			Assert.That(restPath.IsMatch("GET", reqestTestPath), Is.True);
+
+			Assert.That(firstMatchHashKey, Is.EqualTo(restPath.FirstMatchHashKey));
+
+			var actualRequest = restPath.CreateRequest(requestPath) as RackSpaceRequest;
+
+			Assert.That(actualRequest, Is.Not.Null);
+			Assert.That(actualRequest.version, Is.EqualTo(expectedRequest.version));
+			Assert.That(actualRequest.id, Is.EqualTo(expectedRequest.id));
+			Assert.That(actualRequest.resource_type, Is.EqualTo(expectedRequest.resource_type));
+			Assert.That(actualRequest.action, Is.EqualTo(expectedRequest.action));
+		}
+
+		[Test]
+		public void Can_support_Rackspace_REST_Apis()
+		{
+			/*
+			 * /v1.0/214412/images
+			 * /v1.0/214412/images.xml
+			 * /servers/id/action
+			 * /images/detail 
+			 */
+
+			AssertMatch("/{version}/{id}/images", "/v1.0/214412/images", 
+				"3/images",
+				new RackSpaceRequest { version = "v1.0", id = "214412" });
+
+			AssertMatch("/{version}/{id}/images.{content_type}", "/v1.0/214412/images.xml",
+				"3/images",
+				new RackSpaceRequest { version = "v1.0", id = "214412", content_type = "xml" });
+
+			AssertMatch("/servers/{id}/{action}", "/servers/214412/delete",
+                "3/servers",
+				new RackSpaceRequest { id = "214412", action = "delete" });
+
+			AssertMatch("/images/{action}", "/images/detail", 
+				"2/images",
+				new RackSpaceRequest { action = "detail" });
+
+			AssertMatch("/images/detail", "/images/detail",
+				"2/images",
+				new RackSpaceRequest { });
 		}
 
 	}
