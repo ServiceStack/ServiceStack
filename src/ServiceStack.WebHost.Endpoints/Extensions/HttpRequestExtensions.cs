@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
@@ -35,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	 * */
 	public static class HttpRequestExtensions
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (HttpRequestExtensions));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpRequestExtensions));
 
 		public static string GetOperationName(this HttpRequest request)
 		{
@@ -55,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		private static string GetLastPathInfoFromRawUrl(string rawUrl)
 		{
 			var pathInfo = rawUrl.IndexOf("?") != -1
-				? rawUrl.Substring(0, rawUrl.IndexOf("?")) 
+				? rawUrl.Substring(0, rawUrl.IndexOf("?"))
 				: rawUrl;
 
 			pathInfo = pathInfo.Substring(pathInfo.LastIndexOf("/"));
@@ -70,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				pathInfo = GetLastPathInfoFromRawUrl(request.RawUrl);
 			}
-			
+
 			//Log.DebugFormat("Request.PathInfo: {0}, Request.RawUrl: {1}, pathInfo:{2}",
 			//    request.PathInfo, request.RawUrl, pathInfo);
 
@@ -87,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			catch (Exception ex)
 			{
 				Log.ErrorFormat("Error trying to get 'Request.Url.Host'", ex);
-	
+
 				return request.UserHostName;
 			}
 		}
@@ -129,5 +131,26 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			return GetLastPathInfoFromRawUrl(request.RawUrl);
 		}
+
+		public static Dictionary<string, string> GetRequestParams(this HttpRequest request)
+		{
+			var map = new Dictionary<string, string>();
+
+			foreach (var name in request.QueryString.AllKeys)
+			{
+				map[name] = request.QueryString[name];
+			}
+
+			if (request.HttpMethod == HttpMethods.Post)
+			{
+				foreach (var name in request.Form.AllKeys)
+				{
+					map[name] = request.QueryString[name];
+				}
+			}
+
+			return map;
+		}
 	}
+
 }

@@ -101,8 +101,8 @@ namespace ServiceStack.ServiceHost
 
 		public void RegisterRestPaths(Type requestType, Type serviceType)
 		{
-			var attrs = serviceType.GetCustomAttributes(typeof(RestPathAttribute), true);
-			foreach (RestPathAttribute attr in attrs)
+			var attrs = requestType.GetCustomAttributes(typeof(RestServiceAttribute), true);
+			foreach (RestServiceAttribute attr in attrs)
 			{
 				var restPath = new RestPath(requestType, attr);
 				if (!restPath.IsValid)
@@ -117,6 +117,29 @@ namespace ServiceStack.ServiceHost
 				}
 				pathsAtFirstMatch.Add(restPath);
 			}
+		}
+
+		public IRestPath GetRestPathForRequest(string httpMethod, string pathInfo)
+		{
+			var matchUsingPathParts = RestPath.GetPathPartsForMatching(pathInfo);
+
+			List<RestPath> firstMatches;
+
+			var yieldedHashMatches = RestPath.GetFirstMatchHashKeys(matchUsingPathParts);
+			foreach (var potentialHashMatch in yieldedHashMatches)
+			{
+				if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
+
+				foreach (var restPath in firstMatches)
+				{
+					if (restPath.IsMatch(httpMethod, matchUsingPathParts))
+					{
+						return restPath;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		internal class TypeFactoryWrapper : ITypeFactory

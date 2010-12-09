@@ -9,6 +9,7 @@ using ServiceStack.Text;
 namespace ServiceStack.ServiceHost
 {
 	public class RestPath
+		: IRestPath
 	{
 		private const char PathSeperator = '/';
 		private const char ComponentSeperator = '.';
@@ -16,6 +17,7 @@ namespace ServiceStack.ServiceHost
 
 		readonly bool[] componentsWithSeparators = new bool[0];
 
+		public string DefaultContentType { get; private set; }
 		private readonly string restPath;
 		private readonly string allowedVerbs;
 		private readonly bool allowsAllVerbs;
@@ -53,11 +55,12 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public RestPath(Type requestType, RestPathAttribute attr)
+		public RestPath(Type requestType, RestServiceAttribute attr)
 		{
 			this.RequestType = requestType;
 
 			this.restPath = attr.Path;
+			this.DefaultContentType = attr.DefaultContentType;
 			this.allowsAllVerbs = attr.Verbs == null || attr.Verbs == "*";
 			if (!this.allowsAllVerbs)
 			{

@@ -23,7 +23,7 @@ namespace ServiceStack.Common.Web
 		public HttpResult(object response, string contentType)
 		{
 			Response = response;
-			this.contentType = contentType;
+			this.ContentType = contentType;
 		}
 
 		public HttpResult(object response, string contentType, HttpStatusCode statusCode)
@@ -38,21 +38,7 @@ namespace ServiceStack.Common.Web
 
 		public IContentTypeWriter ResponseFilter { get; set; }
 
-		private string contentType;
-		public string ContentType 
-		{ 
-			get
-			{
-				if (contentType != null) return contentType;
-				this.Headers.TryGetValue(HttpHeaders.ContentType, out contentType);
-				return contentType;
-			}
-			set
-			{
-				contentType = value;
-				this.Headers[HttpHeaders.ContentType] = contentType;
-			}
-		}
+		public string ContentType { get; set; }
 
 		public Dictionary<string, string> Headers { get; private set; }
 		
@@ -70,7 +56,7 @@ namespace ServiceStack.Common.Web
 			if (this.ResponseFilter == null)
 				throw new ArgumentNullException("ResponseFilter");
 
-			ResponseFilter.WriteToResponse(contentType, Response, responseStream);
+			ResponseFilter.WriteToResponse(this.ContentType, this.Response, responseStream);
 		}
 	}
 

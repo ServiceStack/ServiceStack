@@ -42,6 +42,24 @@ namespace ServiceStack.Common.Web
 					throw new NotSupportedException("ContentType not supported: " + contentType);
 			}
 		}
+
+		public string Serialize(string contentType, object response)
+		{
+			switch (contentType)
+			{
+				case ContentType.Xml:
+					return XmlSerializer.SerializeToString(response);
+
+				case ContentType.Json:
+					return JsonSerializer.SerializeToString(response);
+
+				case ContentType.Jsv:
+					return TypeSerializer.SerializeToString(response);
+
+				default:
+					throw new NotSupportedException("ContentType not supported: " + contentType);
+			}
+		}
 	}
 
 }

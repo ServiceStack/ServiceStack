@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
+    <Compile Include="RestHandler.cs" />
     <Compile Include="Extensions\HttpRequestWrapper.cs" />
     <Compile Include="Extensions\IHttpRequest.cs" />
     <Compile Include="Ext\AllFilesHandler.cs" />
