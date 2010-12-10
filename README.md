@@ -119,8 +119,8 @@ No coupling between the transport's endpoint and your web service's payload. You
     * [XML (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Xml/Metadata?op=GetFactorial)
     * [JSON (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Json/Metadata?op=GetFactorial)
     * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/Metadata?op=GetFactorial)
-    * [SOAP 1.1](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Soap11/Metadata?op=GetFactorial)
-    * [SOAP 1.2](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Soap12/Metadata?op=GetFactorial)
+    * SOAP 1.1
+    * SOAP 1.2
   * View the [ServiceStackWebServices Service Stack endpoints page] for our recommendations on which endpoint to use and when.
 
 # High Performance Sub Projects
