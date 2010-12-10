@@ -121,7 +121,7 @@ No coupling between the transport's endpoint and your web service's payload. You
     * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/Metadata?op=GetFactorial)
     * SOAP 1.1
     * SOAP 1.2
-  * View the [ServiceStackWebServices Service Stack endpoints page] for our recommendations on which endpoint to use and when.
+  * View the [Service Stack endpoints page](https://github.com/mythz/ServiceStack/wiki/Service-Stack-Web-Services) for our recommendations on which endpoint to use and when.
 
 # High Performance Sub Projects
 Also included in ServiceStack are libraries that are useful in the development of high performance web services:
