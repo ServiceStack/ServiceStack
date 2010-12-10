@@ -51,9 +51,9 @@ Simple web service example
 That's all the application code required to create a simple web service.
 
 Preview links using just the above code sample with (live demo running on Linux):
-[XML](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Xml/SyncReply/GetFactorial?ForNumber=3),
-[JSON](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Json/SyncReply/GetFactorial?ForNumber=3),
-[JSV](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Jsv/SyncReply/GetFactorial?ForNumber=3&debug) 
+[XML](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Xml/SyncReply/GetFactorial?ForNumber=3),
+[JSON](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Json/SyncReply/GetFactorial?ForNumber=3),
+[JSV](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/SyncReply/GetFactorial?ForNumber=3&debug) 
 Check out the [live demo](http://www.servicestack.net/ServiceStack.Examples.Clients/Default.htm) with
 [full source code](http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples).
 
@@ -115,12 +115,12 @@ With Mono on Linux now reaching full-maturity, Service Stack runs on .NET or Lin
 ### Low Coupling for maximum accessibility and testability
 No coupling between the transport's endpoint and your web service's payload. You can re-use your existing strongly-typed web service DTO's with any .NET client using the available Soap, Xml and Json Service Clients - giving you a strongly-typed API while at the same time avoiding the need for any generated code.
 
-  * The most popular web service endpoints are configured by default. With no extra effort, each new web service created is immediately available and [discoverable](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Metadata) on the following end points:
-    * [XML (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Xml/Metadata?op=GetFactorial)
-    * [JSON (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Json/Metadata?op=GetFactorial)
-    * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Jsv/Metadata?op=GetFactorial)
-    * [SOAP 1.1](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Soap11/Metadata?op=GetFactorial)
-    * [SOAP 1.2](http://www.servicestack.net/ServiceStack.Examples.Host.Web/Public/Soap12/Metadata?op=GetFactorial)
+  * The most popular web service endpoints are configured by default. With no extra effort, each new web service created is immediately available and [discoverable](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Metadata) on the following end points:
+    * [XML (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Xml/Metadata?op=GetFactorial)
+    * [JSON (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Json/Metadata?op=GetFactorial)
+    * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/Metadata?op=GetFactorial)
+    * [SOAP 1.1](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Soap11/Metadata?op=GetFactorial)
+    * [SOAP 1.2](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Soap12/Metadata?op=GetFactorial)
   * View the [ServiceStackWebServices Service Stack endpoints page] for our recommendations on which endpoint to use and when.
 
 # High Performance Sub Projects
