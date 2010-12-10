@@ -1,3 +1,4 @@
+using System;
 using System.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -7,19 +8,17 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class JsvAsyncOneWayHandler : JsvHandlerBase
 	{
-		public override void ProcessRequest(HttpContext context)
+		public override EndpointAttributes HandlerAttributes
 		{
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
-			if (string.IsNullOrEmpty(operationName)) return;
+			get { return EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv; }
+		}
 
-			if (DefaultHandledRequest(context)) return;
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
+			var request = CreateRequest(httpReq, operationName);
 
-			var request = CreateRequest(context.Request, operationName);
-
-			var endpointAttributes = EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv
-				| GetEndpointAttributes(context.Request);
-
-			var response = ExecuteService(request, endpointAttributes);
+			var response = ExecuteService(request, 
+				HandlerAttributes | GetEndpointAttributes(httpReq));
 		}
 
 	}

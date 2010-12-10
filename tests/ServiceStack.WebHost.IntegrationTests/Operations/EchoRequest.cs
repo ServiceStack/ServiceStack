@@ -1,9 +1,11 @@
 using System;
 using System.Runtime.Serialization;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Operations
 {
 	[DataContract]
+	[RestService("/echo/{Id}/{String}")]
 	public class EchoRequest
 	{
 		[DataMember]

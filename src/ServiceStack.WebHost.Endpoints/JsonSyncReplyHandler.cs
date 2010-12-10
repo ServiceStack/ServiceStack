@@ -12,32 +12,28 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(JsonSyncReplyHandler));
 
-		public override void ProcessRequest(HttpContext context)
+		public override EndpointAttributes HandlerAttributes
 		{
-			var response = new HttpResponseWrapper(context.Response);
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
+			get { return EndpointAttributes.SyncReply | EndpointAttributes.Json; }
+		}
 
-			if (string.IsNullOrEmpty(operationName)) return;
-
-			if (DefaultHandledRequest(context)) return;
-
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
 			try
 			{
-				var request = CreateRequest(context.Request, operationName);
+				var request = CreateRequest(httpReq, operationName);
 
-				var endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Json
-					| GetEndpointAttributes(context.Request);
+				var response = ExecuteService(request,
+					HandlerAttributes | GetEndpointAttributes(httpReq));
 
-				var result = ExecuteService(request, endpointAttributes);
-
-				response.WriteToResponse(result, Serialize, ContentType.Json);
+				httpRes.WriteToResponse(response, Serialize, ContentType.Json);
 			}
 			catch (Exception ex)
 			{
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
 
-				response.WriteJsonErrorToResponse(operationName, errorMessage, ex);
+				httpRes.WriteJsonErrorToResponse(operationName, errorMessage, ex);
 			}
 		}
 	}

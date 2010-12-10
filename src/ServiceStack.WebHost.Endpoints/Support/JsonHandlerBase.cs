@@ -3,20 +3,12 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Web;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public abstract class JsonHandlerBase : EndpointHandlerBase, IHttpHandler
     {
-		protected object CreateRequest(HttpRequest request, string operationName)
-		{
-			return CreateRequest(operationName,
-				request.HttpMethod,
-				request.QueryString,
-				request.Form,
-				request.InputStream);
-		}
-
 		public static string Serialize(object model)
 		{
 			return JsonDataContractSerializer.Instance.Parse(model);
@@ -66,8 +58,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
         }
-
-		public abstract void ProcessRequest(HttpContext context);
 
 		public bool IsReusable
         {

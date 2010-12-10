@@ -127,6 +127,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Tests\RequestAndPathResolutionTests.cs" />
+    <Compile Include="Tests\RestWebServiceTests.cs" />
     <Compile Include="Tests\Soap12AddServiceReferenceTests.cs" />
     <Compile Include="Tests\Soap11AddServiceReferenceTests.cs" />
     <Compile Include="Tests\TestsBase.cs" />

@@ -71,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				if (httpResult != null)
 				{
 					response.StatusCode = (int)httpResult.StatusCode;
-					response.ContentType = response.ContentType;
+					response.ContentType = httpResult.ContentType;
 				}
 
 				/* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */

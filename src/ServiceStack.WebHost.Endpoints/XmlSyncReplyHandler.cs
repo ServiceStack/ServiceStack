@@ -1,9 +1,7 @@
 using System;
-using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -13,32 +11,30 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (XmlSyncReplyHandler));
 
-		public override void ProcessRequest(HttpContext context)
+		public override EndpointAttributes HandlerAttributes
 		{
-			var response = new HttpResponseWrapper(context.Response);
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
+			get { return EndpointAttributes.SyncReply | EndpointAttributes.Xml; }
+		}
 
-			if (DefaultHandledRequest(context)) return;
-
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
 			try
 			{
 				if (string.IsNullOrEmpty(operationName)) return;
 
-				var request = CreateRequest(context.Request, operationName);
+				var request = CreateRequest(httpReq, operationName);
 
-				var endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Xml
-					 | GetEndpointAttributes(context.Request);
+				var response = ExecuteService(request,
+					HandlerAttributes | GetEndpointAttributes(httpReq));
 
-				var result = ExecuteService(request, endpointAttributes);
-
-				response.WriteToResponse(result, Serialize, ContentType.Xml);
+				httpRes.WriteToResponse(response, Serialize, ContentType.Xml);
 			}
 			catch (Exception ex)
 			{
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
 
-				response.WriteXmlErrorToResponse(operationName, errorMessage, ex);
+				httpRes.WriteXmlErrorToResponse(operationName, errorMessage, ex);
 			}
 		}
 	}

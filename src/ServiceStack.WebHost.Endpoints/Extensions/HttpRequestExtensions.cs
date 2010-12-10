@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Common.Web;
@@ -132,7 +135,17 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			return GetLastPathInfoFromRawUrl(request.RawUrl);
 		}
 
-		public static Dictionary<string, string> GetRequestParams(this HttpRequest request)
+		public static IHttpRequest GetHttpRequest(this HttpRequest request)
+		{
+			return new HttpRequestWrapper(null, request);
+		}
+
+		public static IHttpRequest GetHttpRequest(this HttpListenerRequest request)
+		{
+			return new HttpListenerRequestWrapper(null, request);
+		}
+
+		public static Dictionary<string, string> GetRequestParams(this IHttpRequest request)
 		{
 			var map = new Dictionary<string, string>();
 
@@ -141,16 +154,17 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				map[name] = request.QueryString[name];
 			}
 
-			if (request.HttpMethod == HttpMethods.Post)
+			if (request.HttpMethod == HttpMethods.Post && request.FormData != null)
 			{
-				foreach (var name in request.Form.AllKeys)
+				foreach (var name in request.FormData.AllKeys)
 				{
-					map[name] = request.QueryString[name];
+					map[name] = request.FormData[name];
 				}
 			}
 
 			return map;
 		}
 	}
+
 
 }

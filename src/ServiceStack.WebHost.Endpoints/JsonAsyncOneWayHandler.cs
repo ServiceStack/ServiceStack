@@ -7,19 +7,17 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class JsonAsyncOneWayHandler : JsonHandlerBase
 	{
-		public override void ProcessRequest(HttpContext context)
+		public override EndpointAttributes HandlerAttributes
 		{
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
-			if (string.IsNullOrEmpty(operationName)) return;
+			get { return EndpointAttributes.AsyncOneWay | EndpointAttributes.Json; }
+		}
 
-			if (DefaultHandledRequest(context)) return;
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
+			var request = CreateRequest(httpReq, operationName);
 
-			var request = CreateRequest(context.Request, operationName);
-
-			var endpointAttributes = EndpointAttributes.AsyncOneWay | EndpointAttributes.Json 
-				| GetEndpointAttributes(context.Request);
-
-			var response = ExecuteService(request, endpointAttributes);
+			var response = ExecuteService(request,
+				HandlerAttributes | GetEndpointAttributes(httpReq));
 		}
 
 	}

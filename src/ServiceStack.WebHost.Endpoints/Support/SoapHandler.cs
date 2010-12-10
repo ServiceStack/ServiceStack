@@ -15,6 +15,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public class SoapHandler : EndpointHandlerBase, IOneWay, ISyncReply
 	{
+		public override EndpointAttributes HandlerAttributes
+		{
+			get { return this.SoapType; }
+		}
+
 		public virtual EndpointAttributes SoapType
 		{
 			get { return EndpointAttributes.Soap12; }

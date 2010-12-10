@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.ServiceHost;
@@ -28,6 +29,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.WsdlServiceNamespace = "http://schemas.servicestack.net/types";
 			this.WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types";
 			this.ServiceStackHandlerFactoryPath = "ServiceStack";
+			this.DefaultContentType = ContentType.Json;
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> 
 				{ { "X-Powered-By", Env.ServerUserAgent } };
@@ -37,6 +39,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
+		public string DefaultContentType { get; set; }
 		public string ServiceStackHandlerFactoryPath { get; set; }
 		public string WsdlServiceNamespace { get; set; }
 		public string WsdlServiceTypesNamespace { get; set; }

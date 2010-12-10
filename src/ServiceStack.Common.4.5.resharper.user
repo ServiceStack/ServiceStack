@@ -14,19 +14,6 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="B26FCC95-9FDD-47F3-A920-0948877BA219/f:EndpointType.cs" caret="0" fromTop="0" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:EndpointType.cs" caret="33" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:JsvMetadataHandler.cs" caret="644" fromTop="17" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceEndpointsMetadataConfig.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="836" fromTop="22" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap11OperationControl.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:Soap12OperationControl.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:XmlMetadataHandler.cs" caret="270" fromTop="8" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:JsonMetadataHandler.cs" caret="1117" fromTop="30" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11MetadataHandler.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap12MetadataHandler.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:IndexMetadataHandler.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:SoapHandler.cs" caret="0" fromTop="0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Metadata/d:Controls/f:OperationControl.cs" caret="0" fromTop="0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="0" fromTop="0" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpHeaders.cs" caret="190" fromTop="7" />
@@ -42,40 +29,53 @@
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="1287" fromTop="37" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlAsyncOneWayHandler.cs" caret="784" fromTop="24" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlSyncReplyHandler.cs" caret="531" fromTop="9" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:IHttpResponseExtensions.cs" caret="6185" fromTop="21" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="985" fromTop="26" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/f:HttpResponseFilter.cs" caret="599" fromTop="16" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:IHttpResponseExtensions.cs" caret="2422" fromTop="6" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHost.cs" caret="728" fromTop="29" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:AppHostBase.cs" caret="994" fromTop="27" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ServiceManager.cs" caret="608" fromTop="4" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="1196" fromTop="18" />
+      <File id="B26FCC95-9FDD-47F3-A920-0948877BA219/f:KeyValueDataContractDeserializer.cs" caret="191" fromTop="6" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:KeyValueDataContractDeserializer.cs" caret="0" fromTop="0" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:ReflectionUtils.cs" caret="357" fromTop="14" />
+      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Utils/f:IdUtils.cs" caret="2695" fromTop="14" />
+      <File id="B26FCC95-9FDD-47F3-A920-0948877BA219/f:StringMapTypeDeserializer.cs" caret="933" fromTop="26" />
+      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:StringMapTypeDeserializer.cs" caret="2118" fromTop="16" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="7564" fromTop="59" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ServiceController.cs" caret="3026" fromTop="23" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="5675" fromTop="13" />
     </RecentFiles>
     <RecentEdits>
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="1345" fromTop="40" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:IHttpResponseExtensions.cs" caret="3292" fromTop="20" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:IHttpResponseExtensions.cs" caret="4407" fromTop="40" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:IHttpResponseExtensions.cs" caret="4407" fromTop="26" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="736" fromTop="22" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="433" fromTop="6" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="632" fromTop="13" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="735" fromTop="18" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:IHttpResponseExtensions.cs" caret="3222" fromTop="15" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:IHttpResponseExtensions.cs" caret="4407" fromTop="16" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="1491" fromTop="41" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpHeaders.cs" caret="190" fromTop="7" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:ContentType.cs" caret="1192" fromTop="54" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:EndpointType.cs" caret="316" fromTop="0" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:EndpointType.cs" caret="33" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseMetadataHandler.cs" caret="106" fromTop="4" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="85" fromTop="2" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="1489" fromTop="37" />
-      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractDeserializer.cs" caret="1237" fromTop="39" />
-      <File id="5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8/d:Serialization/f:DataContractDeserializer.cs" caret="1340" fromTop="40" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="1165" fromTop="26" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:TextResult.cs" caret="268" fromTop="10" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HtmlResult.cs" caret="264" fromTop="9" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:FileResult.cs" caret="326" fromTop="12" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:CompressedResult.cs" caret="271" fromTop="11" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:CompressedFileResult.cs" caret="333" fromTop="12" />
-      <File id="B26FCC95-9FDD-47F3-A920-0948877BA219/f:IHttpResponseExtensions.cs" caret="2471" fromTop="20" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="245" fromTop="11" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="922" fromTop="27" />
-      <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Web/f:HttpResult.cs" caret="1500" fromTop="34" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="4391" fromTop="11" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="5649" fromTop="32" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="1971" fromTop="14" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="2097" fromTop="18" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="2398" fromTop="31" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="3164" fromTop="36" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="2404" fromTop="13" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="3249" fromTop="32" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="6091" fromTop="38" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="5469" fromTop="23" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="4761" fromTop="15" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="1951" fromTop="8" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="3673" fromTop="31" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="3937" fromTop="36" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="2231" fromTop="12" />
+      <File id="94A33BC4-AC22-49A3-A38E-2ABFCD997ABA/f:RestPathTests.cs" caret="3202" fromTop="36" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="1488" fromTop="33" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="4192" fromTop="18" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="7564" fromTop="37" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="7558" fromTop="39" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="7401" fromTop="35" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ServiceController.cs" caret="2343" fromTop="18" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="1691" fromTop="26" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="6209" fromTop="18" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="4694" fromTop="21" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:RestPath.cs" caret="575" fromTop="17" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ServiceController.cs" caret="3191" fromTop="34" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ServiceController.cs" caret="3845" fromTop="38" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ServiceController.cs" caret="3853" fromTop="38" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:ServiceController.cs" caret="3129" fromTop="20" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -83,47 +83,47 @@
   </UnitTestRunner>
   <CompletionStatisticsManager>
     <ItemStatistics item="Default">
-      <Item value="var" priority="290" />
-      <Item value="typeof" priority="68" />
-      <Item value="private" priority="29" />
-      <Item value="class" priority="19" />
+      <Item value="var" priority="321" />
+      <Item value="typeof" priority="70" />
+      <Item value="private" priority="35" />
+      <Item value="class" priority="23" />
       <Item value="log" priority="14" />
       <Item value="Load" priority="0" />
       <Item value="type" priority="87" />
       <Item value="TypeDefinition" priority="3" />
-      <Item value="Dictionary" priority="13" />
-      <Item value="Type" priority="55" />
-      <Item value="new" priority="252" />
+      <Item value="Dictionary" priority="17" />
+      <Item value="Type" priority="57" />
+      <Item value="new" priority="284" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
-      <Item value="public" priority="160" />
-      <Item value="string" priority="181" />
-      <Item value="return" priority="190" />
-      <Item value="object" priority="48" />
-      <Item value="if" priority="177" />
+      <Item value="public" priority="189" />
+      <Item value="string" priority="229" />
+      <Item value="return" priority="206" />
+      <Item value="object" priority="50" />
+      <Item value="if" priority="206" />
       <Item value="TypeDefinitionMap" priority="0" />
-      <Item value="static" priority="40" />
+      <Item value="static" priority="44" />
       <Item value="T" priority="23" />
       <Item value="GetTypeDefinition" priority="0" />
       <Item value="VALUE_INDEX" priority="0" />
       <Item value="value" priority="46" />
       <Item value="StringConverterUtils" priority="2" />
       <Item value="enum" priority="4" />
-      <Item value="bool" priority="16" />
+      <Item value="bool" priority="23" />
       <Item value="ConfigUtils" priority="2" />
       <Item value="OBJECTS_SECTION_NAME" priority="6" />
       <Item value="MemberwiseClone" priority="0" />
       <Item value="IResourceManager" priority="1" />
       <Item value="resourceManager" priority="1" />
-      <Item value="this" priority="178" />
+      <Item value="this" priority="222" />
       <Item value="factoryProvider" priority="4" />
       <Item value="configSectionName" priority="1" />
-      <Item value="name" priority="13" />
+      <Item value="name" priority="16" />
       <Item value="key" priority="32" />
       <Item value="stringValue" priority="3" />
       <Item value="defaultValue" priority="1" />
-      <Item value="null" priority="114" />
-      <Item value="throw" priority="28" />
-      <Item value="ArgumentNullException" priority="5" />
+      <Item value="null" priority="127" />
+      <Item value="throw" priority="31" />
+      <Item value="ArgumentNullException" priority="6" />
       <Item value="request" priority="11" />
       <Item value="AssemblyLoadEventArgs" priority="5" />
       <Item value="ModuleResolveEventHandler" priority="1" />
@@ -134,7 +134,7 @@
       <Item value="protected" priority="9" />
       <Item value="const" priority="17" />
       <Item value="USAGE_EXAMPLES_BASE_URI" priority="1" />
-      <Item value="internal" priority="3" />
+      <Item value="internal" priority="4" />
       <Item value="IHttpHandler" priority="2" />
       <Item value="WsdlTemplateBase" priority="0" />
       <Item value="wsdlTemplate" priority="4" />
@@ -143,16 +143,16 @@
       <Item value="AllOperations" priority="2" />
       <Item value="Operations" priority="3" />
       <Item value="dtoTypes" priority="2" />
-      <Item value="foreach" priority="48" />
+      <Item value="foreach" priority="56" />
       <Item value="Names" priority="2" />
-      <Item value="List&lt;string&gt;" priority="0" />
+      <Item value="List&lt;string&gt;" priority="1" />
       <Item value="types" priority="1" />
       <Item value="x" priority="6" />
       <Item value="ReplyOperations" priority="3" />
       <Item value="typeNames" priority="1" />
       <Item value="hasResponse" priority="0" />
-      <Item value="void" priority="50" />
-      <Item value="else" priority="14" />
+      <Item value="void" priority="56" />
+      <Item value="else" priority="18" />
       <Item value="OneWayOperations" priority="1" />
       <Item value="RequestContext" priority="1" />
       <Item value="System" priority="3" />
@@ -164,11 +164,11 @@
       <Item value="ServiceClient" priority="1" />
       <Item value="TestFixture" priority="2" />
       <Item value="factory" priority="13" />
-      <Item value="Assert" priority="34" />
+      <Item value="Assert" priority="40" />
       <Item value="gateway" priority="3" />
-      <Item value="as" priority="9" />
+      <Item value="as" priority="12" />
       <Item value="xmlServiceClient" priority="0" />
-      <Item value="Is" priority="19" />
+      <Item value="Is" priority="24" />
       <Item value="constructorArgDefinition" priority="5" />
       <Item value="TypeLoadException" priority="0" />
       <Item value="constructorValueTypes" priority="0" />
@@ -183,15 +183,15 @@
       <Item value="AssemblyUtils" priority="1" />
       <Item value="objectTypes" priority="6" />
       <Item value="objectName" priority="4" />
-      <Item value="Length" priority="16" />
-      <Item value="int" priority="29" />
+      <Item value="Length" priority="23" />
+      <Item value="int" priority="33" />
       <Item value="constructorValueType" priority="1" />
       <Item value="argValuesCount" priority="1" />
       <Item value="Create" priority="3" />
       <Item value="objectTypeDefinition" priority="3" />
       <Item value="refTypesCount" priority="2" />
       <Item value="ref" priority="0" />
-      <Item value="List" priority="18" />
+      <Item value="List" priority="25" />
       <Item value="constructorArgValues" priority="0" />
       <Item value="argValue" priority="0" />
       <Item value="t" priority="1" />
@@ -199,8 +199,8 @@
       <Item value="superType" priority="1" />
       <Item value="baseType" priority="3" />
       <Item value="do" priority="0" />
-      <Item value="false" priority="26" />
-      <Item value="true" priority="22" />
+      <Item value="false" priority="35" />
+      <Item value="true" priority="24" />
       <Item value="areSameTypes" priority="0" />
       <Item value="propertyDefinition" priority="2" />
       <Item value="GetRefType" priority="0" />
@@ -215,7 +215,7 @@
       <Item value="disposable" priority="4" />
       <Item value="IDisposable" priority="2" />
       <Item value="List&lt;IDisposable&gt;" priority="0" />
-      <Item value="NotSupportedException" priority="7" />
+      <Item value="NotSupportedException" priority="9" />
       <Item value="GetObjectFactoryFromConfig" priority="0" />
       <Item value="CreateObjectFactoryFromConfig" priority="0" />
       <Item value="GetObjectFactory" priority="0" />
@@ -225,7 +225,7 @@
       <Item value="ReflectionUtils" priority="2" />
       <Item value="paramType" priority="0" />
       <Item value="toType" priority="3" />
-      <Item value="AmbiguousMatchException" priority="1" />
+      <Item value="AmbiguousMatchException" priority="3" />
       <Item value="matchingTypes" priority="3" />
       <Item value="default" priority="20" />
       <Item value="provider" priority="30" />
@@ -263,7 +263,7 @@
       <Item value="valueMap" priority="0" />
       <Item value="casValues" priority="1" />
       <Item value="Dictionary&lt;string,ulong&gt;" priority="0" />
-      <Item value="out" priority="8" />
+      <Item value="out" priority="9" />
       <Item value="lastModifiedTicks" priority="1" />
       <Item value="lostModifiedValue" priority="0" />
       <Item value="FactoryProviderTests" priority="0" />
@@ -276,8 +276,8 @@
       <Item value="FindTypeLookup" priority="0" />
       <Item value="HttpResponseTemplate" priority="0" />
       <Item value="EndpointHostConfig" priority="1" />
-      <Item value="version" priority="6" />
-      <Item value="requestType" priority="0" />
+      <Item value="version" priority="7" />
+      <Item value="requestType" priority="3" />
       <Item value="requestContext" priority="1" />
       <Item value="service" priority="0" />
       <Item value="IServiceController" priority="0" />
@@ -285,7 +285,7 @@
       <Item value="requiredField" priority="1" />
       <Item value="fieldsNotProvided" priority="2" />
       <Item value="requiredFields" priority="0" />
-      <Item value="ArgumentException" priority="2" />
+      <Item value="ArgumentException" priority="5" />
       <Item value="config" priority="16" />
       <Item value="serializer" priority="1" />
       <Item value="Exception" priority="2" />
@@ -294,7 +294,7 @@
       <Item value="entity" priority="15" />
       <Item value="TypeFilter" priority="1" />
       <Item value="returnType" priority="3" />
-      <Item value="id" priority="2" />
+      <Item value="id" priority="3" />
       <Item value="ids" priority="10" />
       <Item value="GetByIds" priority="1" />
       <Item value="oIds" priority="0" />
@@ -305,7 +305,7 @@
       <Item value="IList" priority="5" />
       <Item value="IObjectSet" priority="0" />
       <Item value="list" priority="4" />
-      <Item value="result" priority="6" />
+      <Item value="result" priority="7" />
       <Item value="orderBy" priority="1" />
       <Item value="Db4oPersistenceProvider" priority="5" />
       <Item value="Dispose" priority="3" />
@@ -320,18 +320,18 @@
       <Item value="Id" priority="1" />
       <Item value="customer" priority="2" />
       <Item value="IServiceProvider" priority="4" />
-      <Item value="override" priority="1" />
+      <Item value="override" priority="2" />
       <Item value="googleFounderIds" priority="2" />
       <Item value="ConvertToList" priority="3" />
       <Item value="FindAllByValue" priority="0" />
-      <Item value="Where" priority="1" />
+      <Item value="Where" priority="3" />
       <Item value="allSteveIds" priority="0" />
       <Item value="Contains" priority="1" />
       <Item value="ICollection" priority="7" />
       <Item value="ArrayList" priority="0" />
       <Item value="OrderBy" priority="0" />
-      <Item value="for" priority="3" />
-      <Item value="i" priority="2" />
+      <Item value="for" priority="6" />
+      <Item value="i" priority="3" />
       <Item value="orderedCustomers" priority="1" />
       <Item value="newCustomer" priority="1" />
       <Item value="storedCustomer" priority="2" />
@@ -372,7 +372,7 @@
       <Item value="uniqueTypeNames" priority="1" />
       <Item value="serviceModelAssembly" priority="4" />
       <Item value="ContextBoundObject" priority="2" />
-      <Item value="continue" priority="4" />
+      <Item value="continue" priority="8" />
       <Item value="Stack" priority="0" />
       <Item value="typesWithSameName" priority="2" />
       <Item value="OperationTypes" priority="2" />
@@ -396,12 +396,12 @@
       <Item value="outDirPath" priority="1" />
       <Item value="Environment" priority="0" />
       <Item value="Path" priority="1" />
-      <Item value="attr" priority="38" />
+      <Item value="attr" priority="46" />
       <Item value="File" priority="4" />
       <Item value="outPath" priority="7" />
       <Item value="FileMode" priority="0" />
-      <Item value="Stream" priority="0" />
-      <Item value="stream" priority="5" />
+      <Item value="Stream" priority="1" />
+      <Item value="stream" priority="6" />
       <Item value="TranslatorClass" priority="0" />
       <Item value="writer" priority="12" />
       <Item value="CodeCompileUnit" priority="0" />
@@ -455,7 +455,7 @@
       <Item value="expression" priority="2" />
       <Item value="CodeArgumentReferenceExpression" priority="9" />
       <Item value="CodePropertyReferenceExpression" priority="3" />
-      <Item value="propertyName" priority="0" />
+      <Item value="propertyName" priority="1" />
       <Item value="CodeThisReferenceExpression" priority="4" />
       <Item value="from" priority="12" />
       <Item value="CodeFieldReferenceExpression" priority="0" />
@@ -501,7 +501,7 @@
       <Item value="example" priority="0" />
       <Item value="comparer" priority="0" />
       <Item value="Extent" priority="1" />
-      <Item value="in" priority="5" />
+      <Item value="in" priority="6" />
       <Item value="entities" priority="3" />
       <Item value="EmptyObjectFactory" priority="0" />
       <Item value="providers" priority="0" />
@@ -510,9 +510,9 @@
       <Item value="CodeBinaryOperatorExpression" priority="0" />
       <Item value="CodeBinaryOperatorType" priority="0" />
       <Item value="CodePrimitiveExpression" priority="0" />
-      <Item value="propertyInfo" priority="1" />
+      <Item value="propertyInfo" priority="4" />
       <Item value="attributeType" priority="0" />
-      <Item value="yield return" priority="0" />
+      <Item value="yield return" priority="1" />
       <Item value="KeyValuePair&lt;PropertyInfo,T&gt;" priority="0" />
       <Item value="attribute" priority="0" />
       <Item value="entityIdValue" priority="0" />
@@ -531,7 +531,7 @@
       <Item value="CustomEqualityComparer" priority="0" />
       <Item value="_AppDomain" priority="0" />
       <Item value="xx" priority="0" />
-      <Item value="NotImplementedException" priority="3" />
+      <Item value="NotImplementedException" priority="4" />
       <Item value="AssertOperationExists" priority="0" />
       <Item value="operationName" priority="14" />
       <Item value="operationType" priority="4" />
@@ -565,7 +565,7 @@
       <Item value="All" priority="1" />
       <Item value="KEY_SEPERATOR" priority="2" />
       <Item value="pair" priority="9" />
-      <Item value="sb" priority="7" />
+      <Item value="sb" priority="10" />
       <Item value="Collections" priority="0" />
       <Item value="valueItem" priority="1" />
       <Item value="stringValueItem" priority="1" />
@@ -582,7 +582,7 @@
       <Item value="isSupported" priority="1" />
       <Item value="SelectMany" priority="0" />
       <Item value="isDictionary" priority="0" />
-      <Item value="Guid" priority="3" />
+      <Item value="Guid" priority="5" />
       <Item value="UserSessionId" priority="1" />
       <Item value="ExampleModel1" priority="0" />
       <Item value="Model" priority="1" />
@@ -615,7 +615,7 @@
       <Item value="fromDtoType" priority="1" />
       <Item value="basePathName" priority="1" />
       <Item value="translatorTypeName" priority="1" />
-      <Item value="Func" priority="2" />
+      <Item value="Func" priority="3" />
       <Item value="Func&lt;string,bool&gt;" priority="0" />
       <Item value="DeclareParseMethod" priority="0" />
       <Item value="fromModel" priority="2" />
@@ -759,7 +759,7 @@
       <Item value="IServiceClient" priority="0" />
       <Item value="Send" priority="0" />
       <Item value="TResponse" priority="0" />
-      <Item value="response" priority="4" />
+      <Item value="response" priority="9" />
       <Item value="ServiceController" priority="1" />
       <Item value="serviceController" priority="0" />
       <Item value="ExpressionTypeFunqContainer" priority="0" />
@@ -777,11 +777,11 @@
       <Item value="Soap11MetadataHandler" priority="0" />
       <Item value="TestsBase" priority="0" />
       <Item value="DirectServiceClient" priority="0" />
-      <Item value="pathInfo" priority="6" />
+      <Item value="pathInfo" priority="9" />
       <Item value="GetHandlerForPathInfo" priority="0" />
       <Item value="httpHandler" priority="4" />
       <Item value="IHttpRequest" priority="0" />
-      <Item value="CreateRequest" priority="0" />
+      <Item value="CreateRequest" priority="1" />
       <Item value="GetRequest" priority="0" />
       <Item value="httpMethod" priority="0" />
       <Item value="queryString" priority="1" />
@@ -793,7 +793,7 @@
       <Item value="map" priority="1" />
       <Item value="NameValueCollection" priority="2" />
       <Item value="nameValues" priority="1" />
-      <Item value="Dictionary&lt;string,string&gt;" priority="1" />
+      <Item value="Dictionary&lt;string,string&gt;" priority="2" />
       <Item value="requestBody" priority="1" />
       <Item value="MemoryStream" priority="0" />
       <Item value="EchoRequest" priority="1" />
@@ -805,26 +805,82 @@
       <Item value="qsIndex" priority="1" />
       <Item value="qs" priority="0" />
       <Item value="kvp" priority="0" />
-      <Item value="parts" priority="2" />
+      <Item value="parts" priority="4" />
       <Item value="ServiceBase" priority="0" />
       <Item value="TRequest" priority="0" />
       <Item value="HttpResult" priority="0" />
-      <Item value="httpResult" priority="5" />
-      <Item value="IHttpResult" priority="0" />
+      <Item value="httpResult" priority="8" />
+      <Item value="IHttpResult" priority="1" />
       <Item value="resonse" priority="0" />
       <Item value="HttpHeaders" priority="1" />
-      <Item value="contentType" priority="2" />
-      <Item value="Response" priority="1" />
+      <Item value="contentType" priority="5" />
+      <Item value="Response" priority="2" />
       <Item value="Net" priority="0" />
+      <Item value="HttpResponseFilter" priority="1" />
+      <Item value="Action" priority="0" />
+      <Item value="Dictionary&lt;string,Action&lt;object,Stream&gt;&gt;" priority="0" />
+      <Item value="responseWriter" priority="3" />
+      <Item value="responseOptions" priority="0" />
+      <Item value="defaultContentType" priority="0" />
+      <Item value="HttpStatusCode" priority="0" />
+      <Item value="CopyTo" priority="0" />
+      <Item value="component" priority="15" />
+      <Item value="HashKey" priority="0" />
+      <Item value="serviceType" priority="2" />
+      <Item value="StringMapTypeDeserializer" priority="0" />
+      <Item value="propertyNamesMap" priority="0" />
+      <Item value="requestComponents" priority="1" />
+      <Item value="variableName" priority="2" />
+      <Item value="requestKeyValuesMap" priority="1" />
+      <Item value="RestPath" priority="2" />
+      <Item value="SimpleType" priority="1" />
+      <Item value="RestPathAttribute" priority="3" />
+      <Item value="restPath" priority="12" />
+      <Item value="nguid" priority="1" />
+      <Item value="withPath" priority="0" />
+      <Item value="literalToMatch" priority="1" />
+      <Item value="withPathInfoParts" priority="1" />
+      <Item value="requestPath" priority="0" />
+      <Item value="BbcMusicRequest" priority="2" />
+      <Item value="reqestTestPath" priority="0" />
+      <Item value="actualRequest" priority="1" />
+      <Item value="expectedRequest" priority="0" />
+      <Item value="content_type" priority="1" />
+      <Item value="mbz_guid" priority="0" />
+      <Item value="RequestType" priority="0" />
+      <Item value="char" priority="0" />
+      <Item value="componentsList" priority="1" />
+      <Item value="ToString" priority="0" />
+      <Item value="hasVariables" priority="0" />
+      <Item value="VariablePrefix" priority="0" />
+      <Item value="index" priority="0" />
+      <Item value="ComponentSeperator" priority="1" />
+      <Item value="components" priority="0" />
+      <Item value="ExplodeComponents" priority="0" />
+      <Item value="AssertMatch" priority="0" />
+      <Item value="RackSpaceRequest" priority="0" />
+      <Item value="resource_type" priority="0" />
+      <Item value="action" priority="1" />
+      <Item value="totalComponents" priority="0" />
+      <Item value="FieldAccessException" priority="0" />
+      <Item value="firstMatchHashKey" priority="0" />
+      <Item value="pathPartsForMatching" priority="0" />
+      <Item value="part" priority="1" />
+      <Item value="hashPrefix" priority="0" />
+      <Item value="subPart" priority="0" />
+      <Item value="queryStringAndFormData" priority="1" />
+      <Item value="Dictionary&lt;string,List&lt;string&gt;&gt;" priority="0" />
+      <Item value="pathsAtFirstMatch" priority="3" />
+      <Item value="RestPathMap" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="13" />
       <Item value="Values" priority="2" />
-      <Item value="Add" priority="4" />
+      <Item value="Add" priority="6" />
       <Item value="Where" priority="0" />
       <Item value="Clear" priority="0" />
       <Item value="Remove" priority="1" />
-      <Item value="TryGetValue" priority="2" />
+      <Item value="TryGetValue" priority="6" />
       <Item value="ToNameValueCollection" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Common.Utils.StringConverterUtils+TypeDefinition">
@@ -858,7 +914,7 @@
     <ItemStatistics item="Qualified:System.Type">
       <Item value="FullName" priority="12" />
       <Item value="Assembly" priority="8" />
-      <Item value="Name" priority="53" />
+      <Item value="Name" priority="56" />
       <Item value="IsInstanceOfType" priority="0" />
       <Item value="IsInterface" priority="0" />
       <Item value="FindInterfaces" priority="2" />
@@ -869,7 +925,7 @@
       <Item value="GetFields" priority="0" />
       <Item value="GetProperties" priority="2" />
       <Item value="Namespace" priority="5" />
-      <Item value="GetCustomAttributes" priority="7" />
+      <Item value="GetCustomAttributes" priority="8" />
       <Item value="Param" priority="2" />
       <Item value="New" priority="1" />
       <Item value="DeclareVar" priority="2" />
@@ -885,6 +941,7 @@
       <Item value="GetGenericArguments" priority="2" />
       <Item value="IsArray" priority="0" />
       <Item value="ContainsGenericParameters" priority="0" />
+      <Item value="nguid" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.CallContext.AppContext">
       <Item value="ResourceManager" priority="0" />
@@ -969,20 +1026,21 @@
       <Item value="GetEnumerator" priority="1" />
       <Item value="All" priority="0" />
       <Item value="ToDictionary" priority="0" />
+      <Item value="ToArray" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.List`1">
-      <Item value="Add" priority="21" />
+      <Item value="Add" priority="26" />
       <Item value="Sort" priority="2" />
       <Item value="Select" priority="1" />
       <Item value="Count" priority="16" />
       <Item value="Contains" priority="4" />
       <Item value="Clear" priority="0" />
       <Item value="Where" priority="0" />
-      <Item value="ToArray" priority="4" />
+      <Item value="ToArray" priority="8" />
       <Item value="ConvertAll" priority="6" />
       <Item value="ForEach" priority="0" />
       <Item value="Any" priority="0" />
-      <Item value="AddRange" priority="2" />
+      <Item value="AddRange" priority="4" />
       <Item value="Reverse" priority="1" />
       <Item value="ToPhoneNumbers" priority="1" />
     </ItemStatistics>
@@ -994,8 +1052,8 @@
       <Item value="OneWayOperations" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.String">
-      <Item value="IsNullOrEmpty" priority="9" />
-      <Item value="Format" priority="17" />
+      <Item value="IsNullOrEmpty" priority="13" />
+      <Item value="Format" priority="19" />
       <Item value="Join" priority="3" />
       <Item value="Empty" priority="1" />
       <Item value="Intern" priority="1" />
@@ -1004,7 +1062,7 @@
       <Item value="Instance" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Assert">
-      <Item value="That" priority="32" />
+      <Item value="That" priority="38" />
       <Item value="Fail" priority="2" />
       <Item value="IsNotNull" priority="0" />
     </ItemStatistics>
@@ -1069,7 +1127,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Reflection.PropertyInfo">
       <Item value="PropertyType" priority="10" />
-      <Item value="Name" priority="17" />
+      <Item value="Name" priority="20" />
       <Item value="GetCustomAttributes" priority="0" />
       <Item value="CanWrite" priority="0" />
       <Item value="CanRead" priority="0" />
@@ -1103,14 +1161,15 @@
       <Item value="Debug" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.KeyValuePair`2">
-      <Item value="Key" priority="12" />
-      <Item value="Value" priority="11" />
+      <Item value="Key" priority="13" />
+      <Item value="Value" priority="12" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Common.Utils.ReflectionUtils">
       <Item value="IsAssignableToType" priority="1" />
       <Item value="CanCast" priority="0" />
       <Item value="SetProperty" priority="0" />
       <Item value="GetPropertyAttributes" priority="0" />
+      <Item value="CreateInstance" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.DateTime">
       <Item value="Now" priority="5" />
@@ -1209,22 +1268,24 @@
       <Item value="Ext" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.String">
-      <Item value="Contains" priority="4" />
-      <Item value="ToLower" priority="5" />
-      <Item value="StartsWith" priority="2" />
+      <Item value="Contains" priority="7" />
+      <Item value="ToLower" priority="11" />
+      <Item value="StartsWith" priority="3" />
       <Item value="RefProperty" priority="2" />
       <Item value="ThisProperty" priority="3" />
       <Item value="Call" priority="0" />
       <Item value="RefArgument" priority="2" />
       <Item value="DeclareGenericVar" priority="1" />
       <Item value="ToArray" priority="0" />
-      <Item value="Length" priority="0" />
+      <Item value="Length" priority="1" />
       <Item value="CallStatic" priority="0" />
-      <Item value="Split" priority="3" />
+      <Item value="Split" priority="9" />
       <Item value="Insert" priority="0" />
-      <Item value="IndexOf" priority="1" />
+      <Item value="IndexOf" priority="3" />
       <Item value="TrimStart" priority="0" />
-      <Item value="Substring" priority="1" />
+      <Item value="Substring" priority="2" />
+      <Item value="GetHashCode" priority="0" />
+      <Item value="ToUpper" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.GC">
       <Item value="SuppressFinalize" priority="1" />
@@ -1302,10 +1363,10 @@
       <Item value="SoapServiceConfig" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Text.StringBuilder">
-      <Item value="AppendFormat" priority="5" />
+      <Item value="AppendFormat" priority="6" />
       <Item value="Append" priority="4" />
-      <Item value="ToString" priority="4" />
-      <Item value="Length" priority="1" />
+      <Item value="ToString" priority="5" />
+      <Item value="Length" priority="2" />
       <Item value="Replace" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.ServiceEndpointsMetadataConfig">
@@ -1559,7 +1620,7 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Int32">
       <Item value="CompareTo" priority="0" />
-      <Item value="ToString" priority="1" />
+      <Item value="ToString" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Validation.Tests.ValidateSessionTests+ExampleModel1">
       <Item value="UserId" priority="1" />
@@ -1762,8 +1823,9 @@
       <Item value="Result" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@NUnit.Framework.Is">
-      <Item value="EqualTo" priority="2" />
-      <Item value="Not" priority="0" />
+      <Item value="EqualTo" priority="5" />
+      <Item value="Not" priority="2" />
+      <Item value="True" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.WebHost.IntegrationTests.Services.ReverseService">
       <Item value="Execute" priority="0" />
@@ -1843,7 +1905,7 @@
       <Item value="GetBytes" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:NUnit.Framework.Constraints.ConstraintExpression">
-      <Item value="Null" priority="0" />
+      <Item value="Null" priority="2" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.Support.EndpointHandlerBase">
       <Item value="ServiceManager" priority="0" />
@@ -1861,15 +1923,16 @@
       <Item value="StatusCode" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.Net.HttpStatusCode">
-      <Item value="OK" priority="0" />
+      <Item value="OK" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.WebHost.Endpoints.Extensions.IHttpResponse">
-      <Item value="StatusCode" priority="0" />
-      <Item value="ContentType" priority="0" />
+      <Item value="StatusCode" priority="1" />
+      <Item value="ContentType" priority="1" />
       <Item value="WriteHttpResultToResponse" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.Common.Web.HttpResult">
       <Item value="Headers" priority="1" />
+      <Item value="ResponseFilter" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.Common.Web.HttpHeaders">
       <Item value="ContentType" priority="1" />
@@ -1884,6 +1947,70 @@
     <ItemStatistics item="Qualified:@ServiceStack.Text.XmlSerializer">
       <Item value="SerializeToString" priority="0" />
       <Item value="SerializeToStream" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.Common.Web.HttpResponseFilter">
+      <Item value="Instance" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Common.Web.IResponseFilter">
+      <Item value="WriteTo" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.Common.Web.HttpResponseFilter">
+      <Item value="ContentTypeFilters" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.IHttpResult">
+      <Item value="StatusCode" priority="0" />
+      <Item value="Headers" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.RestPathAttribute">
+      <Item value="Path" priority="3" />
+      <Item value="Verbs" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.RestPath">
+      <Item value="Parts" priority="0" />
+      <Item value="ComponentsCount" priority="5" />
+      <Item value="Literals" priority="3" />
+      <Item value="Variables" priority="1" />
+      <Item value="IsValid" priority="1" />
+      <Item value="HashKey" priority="0" />
+      <Item value="ServiceType" priority="0" />
+      <Item value="RequestType" priority="3" />
+      <Item value="typeDeserializer" priority="1" />
+      <Item value="restPath" priority="1" />
+      <Item value="variablesNames" priority="0" />
+      <Item value="propertyNamesMap" priority="0" />
+      <Item value="CreateRequest" priority="1" />
+      <Item value="literalsToMatch" priority="0" />
+      <Item value="IsMatch" priority="0" />
+      <Item value="componentsWithPeriodSeparators" priority="0" />
+      <Item value="PathComponentsCount" priority="1" />
+      <Item value="componentsWithSeparators" priority="1" />
+      <Item value="TotalComponentsCount" priority="4" />
+      <Item value="FirstMatchHashKey" priority="2" />
+      <Item value="allowedVerbs" priority="1" />
+      <Item value="allowsAllVerbs" priority="2" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceModel.Serialization.StringMapTypeDeserializer">
+      <Item value="CreateFromMap" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.Tests.RestPathTests+SimpleType">
+      <Item value="Name" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.Tests.RestPathTests+ComplexType">
+      <Item value="Name" priority="0" />
+      <Item value="UniqueId" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.Tests.RestPathTests+BbcMusicRequest">
+      <Item value="mbz_guid" priority="1" />
+      <Item value="type" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.ServiceHost.RestPath">
+      <Item value="PathSeperators" priority="0" />
+      <Item value="GetPathPartsForMatches" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.Tests.RestPathTests+RackSpaceRequest">
+      <Item value="id" priority="1" />
+      <Item value="resource_type" priority="1" />
+      <Item value="action" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

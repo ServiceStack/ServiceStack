@@ -8,8 +8,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public abstract class XmlHandlerBase : EndpointHandlerBase, IHttpHandler
 	{
-		public abstract void ProcessRequest(HttpContext context);
-
 		public static string Serialize(object model)
 		{
 			return DataContractSerializer.Instance.Parse(model);

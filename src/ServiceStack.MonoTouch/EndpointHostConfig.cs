@@ -4,6 +4,7 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -25,6 +26,7 @@ namespace ServiceStack.WebHost.Endpoints
 			};
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
+			this.DefaultContentType = ContentType.Json;
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> 
 				{ { "X-Powered-By", Env.ServerUserAgent } };
@@ -33,6 +35,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public IServiceController ServiceController { get; set; }
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
+		public string DefaultContentType { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
 		public bool EnableAccessRestrictions { get; set; }

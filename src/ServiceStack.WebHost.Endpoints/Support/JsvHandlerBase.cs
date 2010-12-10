@@ -9,15 +9,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public abstract class JsvHandlerBase : EndpointHandlerBase, IHttpHandler
     {
-		protected object CreateRequest(HttpRequest request, string operationName)
-		{
-			return CreateRequest(operationName,
-				request.HttpMethod,
-				request.QueryString,
-				request.Form,
-				request.InputStream);
-		}
-
 		public static string Serialize(object model)
 		{
 			return TypeSerializer.SerializeToString(model);
@@ -66,8 +57,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				throw;
 			}
 		}
-
-		public abstract void ProcessRequest(HttpContext context);
 
 		public bool IsReusable
         {

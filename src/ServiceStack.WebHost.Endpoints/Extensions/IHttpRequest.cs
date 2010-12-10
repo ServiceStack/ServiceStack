@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -13,5 +14,18 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		NameValueCollection FormData { get; }
 
 		string RawBody { get; }
+
+		string RawUrl { get; }
+
+		string UserHostAddress { get; }
+
+		bool IsSecureConnection { get; }
+
+		string[] AcceptTypes { get; }
+
+		string PathInfo { get; }
+
+		Stream InputStream { get; }
 	}
+
 }

@@ -7,19 +7,18 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class XmlAsyncOneWayHandler : XmlHandlerBase
 	{
-		public override void ProcessRequest(HttpContext context)
+		public override EndpointAttributes HandlerAttributes
 		{
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
-			if (string.IsNullOrEmpty(operationName)) return;
+			get { return EndpointAttributes.AsyncOneWay | EndpointAttributes.Xml; }
+		}
 
-			if (DefaultHandledRequest(context)) return;
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
+			var request = CreateRequest(httpReq, operationName);
 
-			var request = CreateRequest(context.Request, operationName);
-			
-			var endpointAttributes = EndpointAttributes.AsyncOneWay | EndpointAttributes.Xml 
-				| GetEndpointAttributes(context.Request);
-			
-			var result = ExecuteService(request, endpointAttributes);
+			var response = ExecuteService(request,
+				HandlerAttributes | GetEndpointAttributes(httpReq));
 		}
 	}
+
 }

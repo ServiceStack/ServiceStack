@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Configuration;
+using System.Net;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common.Web
 {
 	public class CompressedResult
-		: IStreamWriter, IHasOptions
+		: IStreamWriter, IHttpResult
 	{
 		public const int Adler32ChecksumLength = 4;
 
@@ -16,7 +16,17 @@ namespace ServiceStack.Common.Web
 
 		public byte[] Contents { get; private set; }
 
+		public string ContentType { get; set; }
+
 		public Dictionary<string, string> Headers { get; private set; }
+
+		public HttpStatusCode StatusCode { get; set; }
+
+		public object Response
+		{
+			get { return this.Contents; }
+			set { throw new NotImplementedException(); }
+		}
 
 		public IDictionary<string, string> Options
 		{
@@ -36,9 +46,11 @@ namespace ServiceStack.Common.Web
 				throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
 			}
 
+			this.StatusCode = HttpStatusCode.OK;
+			this.ContentType = contentMimeType;
+
 			this.Contents = contents;
 			this.Headers = new Dictionary<string, string> {
-				{ HttpHeaders.ContentType, contentMimeType },
 				{ HttpHeaders.ContentEncoding, compressionType },
 			};
 		}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Web;
@@ -41,6 +42,36 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					return reader.ReadToEnd();
 				}
 			}
+		}
+
+		public string RawUrl
+		{
+			get { return request.RawUrl; }
+		}
+
+		public string UserHostAddress
+		{
+			get { return request.UserHostAddress; }
+		}
+
+		public bool IsSecureConnection
+		{
+			get { return request.IsSecureConnection; }
+		}
+
+		public string[] AcceptTypes
+		{
+			get { return request.AcceptTypes; }
+		}
+
+		public string PathInfo
+		{
+			get { return request.PathInfo; }
+		}
+
+		public Stream InputStream
+		{
+			get { return request.InputStream; }
 		}
 	}
 }

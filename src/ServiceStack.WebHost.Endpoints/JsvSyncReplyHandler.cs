@@ -13,37 +13,34 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(JsvSyncReplyHandler));
 
-		public override void ProcessRequest(HttpContext context)
+		public override EndpointAttributes HandlerAttributes
 		{
-			var response = new HttpResponseWrapper(context.Response);
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
-			if (string.IsNullOrEmpty(operationName)) return;
+			get { return EndpointAttributes.SyncReply | EndpointAttributes.Jsv; }
+		}
 
-			if (DefaultHandledRequest(context)) return;
-
+		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
 			try
 			{
-				var request = CreateRequest(context.Request, operationName);
+				var request = CreateRequest(httpReq, operationName);
 
-				var endpointAttributes = EndpointAttributes.SyncReply | EndpointAttributes.Jsv
-					| GetEndpointAttributes(context.Request);
+				var response = ExecuteService(request,
+					HandlerAttributes | GetEndpointAttributes(httpReq));
 
-				var result = ExecuteService(request, endpointAttributes);
-
-				var isDebugRequest = context.Request.RawUrl.ToLower().Contains("debug");
+				var isDebugRequest = httpReq.RawUrl.ToLower().Contains("debug");
 				var writeFn = isDebugRequest
 					? (Func<object, string>)JsvFormatter.SerializeAndFormat
 					: Serialize;
 				var contentType = isDebugRequest ? ContentType.PlainText : ContentType.JsvText;
 
-				response.WriteToResponse(result, writeFn, contentType);
+				httpRes.WriteToResponse(response, writeFn, contentType);
 			}
 			catch (Exception ex)
 			{
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
 
-				response.WriteJsvErrorToResponse(operationName, errorMessage, ex);
+				httpRes.WriteJsvErrorToResponse(operationName, errorMessage, ex);
 			}
 		}
 

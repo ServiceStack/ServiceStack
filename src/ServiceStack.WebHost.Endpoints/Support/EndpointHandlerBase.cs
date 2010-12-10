@@ -8,6 +8,7 @@ using System.Web;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -25,6 +26,37 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			NetworkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
 		}
 
+		public abstract EndpointAttributes HandlerAttributes { get; }
+
+		protected object CreateRequest(IHttpRequest request, string operationName)
+		{
+			return CreateRequest(operationName,
+				request.HttpMethod,
+				request.QueryString,
+				request.FormData,
+				request.InputStream);
+		}
+
+		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected static bool DefaultHandledRequest(HttpListenerContext context)
+		{
+			if (context.Request.HttpMethod == HttpMethods.Options)
+			{
+				foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+				{
+					context.Response.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
 		protected static bool DefaultHandledRequest(HttpContext context)
 		{
 			if (context.Request.HttpMethod == HttpMethods.Options)
@@ -38,6 +70,34 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			return false;
+		}
+
+		public virtual void ProcessRequest(HttpContext context)
+		{
+			var operationName = this.RequestName ?? context.Request.GetOperationName();
+
+			if (string.IsNullOrEmpty(operationName)) return;
+
+			if (DefaultHandledRequest(context)) return;
+
+			ProcessRequest(
+				new HttpRequestWrapper(operationName, context.Request),
+				new HttpResponseWrapper(context.Response),
+				operationName);
+		}
+
+		public virtual void ProcessRequest(HttpListenerContext context)
+		{
+			var operationName = this.RequestName ?? context.Request.GetOperationName();
+
+			if (string.IsNullOrEmpty(operationName)) return;
+
+			if (DefaultHandledRequest(context)) return;
+
+			ProcessRequest(
+				new HttpListenerRequestWrapper(operationName, context.Request),
+				new HttpListenerResponseWrapper(context.Response),
+				operationName);
 		}
 
 		public static ServiceManager ServiceManager { get; set; }
@@ -93,11 +153,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return null;
 		}
 
-		public EndpointAttributes GetEndpointAttributes(HttpRequest request)
+		public EndpointAttributes GetEndpointAttributes(IHttpRequest request)
 		{
 			var portRestrictions = EndpointAttributes.None;
 
-			portRestrictions |= HttpMethods.GetEndpointAttribute(request.RequestType);
+			portRestrictions |= HttpMethods.GetEndpointAttribute(request.HttpMethod);
 			portRestrictions |= request.IsSecureConnection ? EndpointAttributes.Secure : EndpointAttributes.InSecure;
 
 			var ipAddress = IPAddress.Parse(request.UserHostAddress);

@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Dictionary<string, string> formData,
 			string requestBody)
 		{
-			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(pathInfo) as EndpointHandlerBase;
+			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, pathInfo) as EndpointHandlerBase;
 			if (httpHandler == null)
 				throw new NotSupportedException(pathInfo);
 			
