@@ -132,10 +132,18 @@ namespace ServiceStack.ServiceHost
 
 				foreach (var restPath in firstMatches)
 				{
-					if (restPath.IsMatch(httpMethod, matchUsingPathParts))
-					{
-						return restPath;
-					}
+					if (restPath.IsMatch(httpMethod, matchUsingPathParts)) return restPath;
+				}
+			}
+
+			var yieldedWildcardMatches = RestPath.GetFirstMatchWildCardHashKeys(matchUsingPathParts);
+			foreach (var potentialHashMatch in yieldedWildcardMatches)
+			{
+				if (!this.RestPathMap.TryGetValue(potentialHashMatch, out firstMatches)) continue;
+
+				foreach (var restPath in firstMatches)
+				{
+					if (restPath.IsMatch(httpMethod, matchUsingPathParts)) return restPath;
 				}
 			}
 

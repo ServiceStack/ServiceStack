@@ -1,9 +1,23 @@
 using System;
+using System.Runtime.Serialization;
 using ServiceStack.ServiceInterface;
-using ServiceStack.WebHost.IntegrationTests.Operations;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
+	[DataContract]
+	public class Reverse
+	{
+		[DataMember]
+		public string Value { get; set; }
+	}
+
+	[DataContract]
+	public class ReverseResponse
+	{
+		[DataMember]
+		public string Result { get; set; }
+	}
+
 	public class ReverseService 
 		: ServiceBase<Reverse>
 	{

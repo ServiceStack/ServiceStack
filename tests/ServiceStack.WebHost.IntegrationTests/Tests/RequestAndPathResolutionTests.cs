@@ -2,7 +2,6 @@ using NUnit.Framework;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Support;
-using ServiceStack.WebHost.IntegrationTests.Operations;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
@@ -45,5 +44,4 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Assert.That(request.String, Is.EqualTo("Value"));
 		}
 	}
-
 }

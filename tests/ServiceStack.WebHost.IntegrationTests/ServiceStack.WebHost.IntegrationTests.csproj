@@ -103,10 +103,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Operations\AlwaysThrows.cs" />
-    <Compile Include="Operations\EchoRequest.cs" />
-    <Compile Include="Operations\Rot13.cs" />
-    <Compile Include="Operations\Reverse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service References\Soap11ServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
@@ -119,6 +115,7 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Services\AlwaysThrowsService.cs" />
+    <Compile Include="Services\WildCardRequestService.cs" />
     <Compile Include="Services\EchoRequestService.cs" />
     <Compile Include="Services\Rot13Service.cs" />
     <Compile Include="Services\ReverseService.cs" />
@@ -127,6 +124,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Tests\RequestAndPathResolutionTests.cs" />
+    <Compile Include="Tests\RestPathResolutionUnitTests.cs" />
+    <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
     <Compile Include="Tests\Soap12AddServiceReferenceTests.cs" />
     <Compile Include="Tests\Soap11AddServiceReferenceTests.cs" />

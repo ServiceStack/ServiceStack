@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.ComponentModel;
-using System.Data;
-using System.Linq;
-using System.Web;
+﻿using System.ComponentModel;
 using System.Web.Services;
-using System.Web.Services.Protocols;
-using System.Xml.Linq;
-using ServiceStack.WebHost.IntegrationTests.Operations;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests

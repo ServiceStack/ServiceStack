@@ -7,6 +7,8 @@ namespace ServiceStack.Common.Web
 	{
 		public const string HeaderContentType = "Content-Type";
 
+		public const string FormUrlEncoded = "application/x-www-form-urlencoded";
+
 		public const string MultiPartFormData = "multipart/form-data";
 
 		public const string Html = "text/html";

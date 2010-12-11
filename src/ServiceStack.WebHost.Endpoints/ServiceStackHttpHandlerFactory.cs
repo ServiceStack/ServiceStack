@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
 			if (restPath == null) return new NotFoundHttpHandler();
 
-			return new RestHandler { RestPath = restPath };
+			return new RestHandler { RestPath = restPath, RequestName = pathInfo };
 		}
 
 		public static IHttpHandler GetHandlerForPath(string httpMethod, string fullPath)

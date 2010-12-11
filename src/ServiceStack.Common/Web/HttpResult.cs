@@ -11,19 +11,18 @@ namespace ServiceStack.Common.Web
 		: IHttpResult, IStreamWriter
 	{
 		public HttpResult()
-			: this (null, null, HttpStatusCode.OK)
+			: this (null, null)
 		{
 		}
 
 		public HttpResult(object response)
-			: this(response, null, HttpStatusCode.OK)
+			: this(response, null)
 		{
 		}
 
 		public HttpResult(object response, string contentType)
+			: this(response, contentType, HttpStatusCode.OK)
 		{
-			Response = response;
-			this.ContentType = contentType;
 		}
 
 		public HttpResult(object response, string contentType, HttpStatusCode statusCode)

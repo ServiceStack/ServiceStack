@@ -11,7 +11,10 @@ namespace ServiceStack.ServiceHost
 	public class RestPath
 		: IRestPath
 	{
-		private const char PathSeperator = '/';
+		private const string WildCard = "*";
+		private const char WildCardChar = '*';
+		private const string PathSeperator = "/";
+		private const char PathSeperatorChar = '/';
 		private const char ComponentSeperator = '.';
 		private const string VariablePrefix = "{";
 
@@ -21,13 +24,22 @@ namespace ServiceStack.ServiceHost
 		private readonly string restPath;
 		private readonly string allowedVerbs;
 		private readonly bool allowsAllVerbs;
+		private readonly bool isWildCardPath;
 
 		private readonly string[] literalsToMatch = new string[0];
 
 		private readonly string[] variablesNames = new string[0];
 
+		/// <summary>
+		/// The number of segments separated by '/' determinable by path.Split('/').Length
+		/// e.g. /path/to/here.ext == 3
+		/// </summary>
 		public int PathComponentsCount { get; set; }
 
+		/// <summary>
+		/// The total number of segments after subparts have been exploded ('.') 
+		/// e.g. /path/to/here.ext == 4
+		/// </summary>
 		public int TotalComponentsCount { get; set; }
 
 		public string[] Verbs = new string[0];
@@ -36,18 +48,31 @@ namespace ServiceStack.ServiceHost
 
 		public static string[] GetPathPartsForMatching(string pathInfo)
 		{
-			var parts = pathInfo.ToLower().Split(PathSeperator)
+			var parts = pathInfo.ToLower().Split(PathSeperatorChar)
 				.Where(x => !string.IsNullOrEmpty(x)).ToArray();
 			return parts;
 		}
 
 		public static IEnumerable<string> GetFirstMatchHashKeys(string[] pathPartsForMatching)
 		{
-			var hashPrefix = pathPartsForMatching.Length + "/";
+			var hashPrefix = pathPartsForMatching.Length + PathSeperator;
+			return GetPotentialMatchesWithPrefix(hashPrefix, pathPartsForMatching);
+		}
+
+		public static IEnumerable<string> GetFirstMatchWildCardHashKeys(string[] pathPartsForMatching)
+		{
+			const string hashPrefix = WildCard + PathSeperator;
+			return GetPotentialMatchesWithPrefix(hashPrefix, pathPartsForMatching);
+		}
+
+		private static IEnumerable<string> GetPotentialMatchesWithPrefix(string hashPrefix, string[] pathPartsForMatching)
+		{
 			foreach (var part in pathPartsForMatching)
 			{
 				yield return hashPrefix + part;
 				var subParts = part.Split(ComponentSeperator);
+				if (subParts.Length == 1) continue;
+
 				foreach (var subPart in subParts)
 				{
 					yield return hashPrefix + subPart;
@@ -61,7 +86,7 @@ namespace ServiceStack.ServiceHost
 
 			this.restPath = attr.Path;
 			this.DefaultContentType = attr.DefaultContentType;
-			this.allowsAllVerbs = attr.Verbs == null || attr.Verbs == "*";
+			this.allowsAllVerbs = attr.Verbs == null || attr.Verbs == WildCard;
 			if (!this.allowsAllVerbs)
 			{
 				this.allowedVerbs = attr.Verbs.ToUpper();
@@ -71,7 +96,7 @@ namespace ServiceStack.ServiceHost
 
 			//We only split on '.' if the restPath has them. Allows for /{action}.{type}
 			var hasSeparators = new List<bool>();
-			foreach (var component in this.restPath.Split(PathSeperator))
+			foreach (var component in this.restPath.Split(PathSeperatorChar))
 			{
 				if (string.IsNullOrEmpty(component)) continue;
 
@@ -95,6 +120,8 @@ namespace ServiceStack.ServiceHost
 			this.variablesNames = new string[this.TotalComponentsCount];
 			this.componentsWithSeparators = hasSeparators.ToArray();
 			this.PathComponentsCount = this.componentsWithSeparators.Length;
+			string firstLiteralMatch = null;
+			var lastVariableMatchPos = -1;
 
 			var sbHashKey = new StringBuilder();
 			for (var i = 0; i < components.Length; i++)
@@ -104,18 +131,34 @@ namespace ServiceStack.ServiceHost
 				if (component.StartsWith(VariablePrefix))
 				{
 					this.variablesNames[i] = component.Substring(1, component.Length - 2);
+					lastVariableMatchPos = i;
 				}
 				else
 				{
 					this.literalsToMatch[i] = component.ToLower();
-					sbHashKey.Append(i + "/" + this.literalsToMatch);
+					sbHashKey.Append(i + PathSeperatorChar.ToString() + this.literalsToMatch);
 
-					if (this.FirstMatchHashKey == null)
+					if (firstLiteralMatch == null)
 					{
-						this.FirstMatchHashKey = this.PathComponentsCount + "/" + this.literalsToMatch[i];
+						firstLiteralMatch = this.literalsToMatch[i];
 					}
 				}
 			}
+
+			if (lastVariableMatchPos != -1)
+			{
+				var lastVariableMatch = this.variablesNames[lastVariableMatchPos];
+				this.isWildCardPath = lastVariableMatch[lastVariableMatch.Length - 1] == WildCardChar;
+				if (this.isWildCardPath)
+				{
+					this.variablesNames[lastVariableMatchPos] = lastVariableMatch.Substring(0, lastVariableMatch.Length - 1);
+				}
+			}
+
+			this.FirstMatchHashKey = !this.isWildCardPath
+				? this.PathComponentsCount + PathSeperator + firstLiteralMatch
+				: WildCardChar + PathSeperator + firstLiteralMatch;
+
 			this.IsValid = sbHashKey.Length > 0;
 			this.UniqueMatchHashKey = sbHashKey.ToString();
 
@@ -163,11 +206,11 @@ namespace ServiceStack.ServiceHost
 		/// <returns></returns>
 		public bool IsMatch(string httpMethod, string[] withPathInfoParts)
 		{
-			if (withPathInfoParts.Length != this.PathComponentsCount) return false;
+			if (withPathInfoParts.Length != this.PathComponentsCount && !this.isWildCardPath) return false;
 			if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod)) return false;
 
 			if (!ExplodeComponents(ref withPathInfoParts)) return false;
-			if (this.TotalComponentsCount != withPathInfoParts.Length) return false;
+			if (this.TotalComponentsCount != withPathInfoParts.Length && !this.isWildCardPath) return false;
 
 			for (var i = 0; i < this.TotalComponentsCount; i++)
 			{
@@ -212,15 +255,21 @@ namespace ServiceStack.ServiceHost
 
 		public object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData)
 		{
-			var requestComponents = pathInfo.Split(PathSeperator)
+			var requestComponents = pathInfo.Split(PathSeperatorChar)
 				.Where(x => !string.IsNullOrEmpty(x)).ToArray();
 
 			ExplodeComponents(ref requestComponents);
 
 			if (requestComponents.Length != this.TotalComponentsCount)
-				throw new ArgumentException(string.Format(
-					"Path Mismatch: Request Path '{0}' has invalid number of components compared to: '{1}'",
-					pathInfo, this.restPath));
+			{
+				var isValidWildCardPath = this.isWildCardPath 
+					&& requestComponents.Length >= this.TotalComponentsCount;
+
+				if (!isValidWildCardPath)
+					throw new ArgumentException(string.Format(
+						"Path Mismatch: Request Path '{0}' has invalid number of components compared to: '{1}'",
+						pathInfo, this.restPath));
+			}
 
 			var requestKeyValuesMap = new Dictionary<string, string>();
 			for (var i = 0; i < this.TotalComponentsCount; i++)
@@ -234,7 +283,19 @@ namespace ServiceStack.ServiceHost
 					throw new ArgumentException("Could not find property "
 						+ variableName + " on " + RequestType.Name);
 				}
-				requestKeyValuesMap[propertyNameOnRequest] = requestComponents[i];
+
+				var value = requestComponents[i]; ;
+				if (i == this.TotalComponentsCount - 1)
+				{
+					var sb = new StringBuilder(value);
+					for (var j = i + 1; j < requestComponents.Length; j++)
+					{
+						sb.Append(PathSeperatorChar + requestComponents[j]);
+					}
+					value = sb.ToString();
+				}
+
+				requestKeyValuesMap[propertyNameOnRequest] = value;
 			}
 
 			if (queryStringAndFormData != null)

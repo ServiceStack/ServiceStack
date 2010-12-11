@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Web;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceModel.Extensions;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -65,26 +68,22 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			var httpMethod = httpReq.HttpMethod;
-			var pathInfo = httpReq.PathInfo;
-			var requestAttributes = GetEndpointAttributes(httpReq);
-			var acceptTypes = httpReq.AcceptTypes;
 
 			try
 			{
-				var restPath = GetRestPath(httpMethod, pathInfo);
+				var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
 				if (restPath == null)
-					throw new NotSupportedException("No RestPath found for: " + httpMethod + " " + pathInfo);
+					throw new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo);
 
-				var defaultContentType = GetDefaultContentType(acceptTypes, restPath.DefaultContentType);
+				var defaultContentType = GetDefaultContentType(httpReq.AcceptTypes, restPath.DefaultContentType);
 
 				var requestParams = httpReq.GetRequestParams();
-				var request = restPath.CreateRequest(pathInfo, requestParams);
+				var request = restPath.CreateRequest(httpReq.PathInfo, requestParams);
 
 				var attrEndpointType = ContentType.GetEndpointAttributes(defaultContentType);
 
 				var result = ExecuteService(request,
-					HandlerAttributes | attrEndpointType | requestAttributes);
+					HandlerAttributes | attrEndpointType | GetEndpointAttributes(httpReq));
 
 				httpRes.WriteToResponse(result,
 					(dto) => HttpResponseFilter.Instance.Serialize(defaultContentType, dto),
@@ -104,9 +103,20 @@ namespace ServiceStack.WebHost.Endpoints
 			get { return false; }
 		}
 
-		public override object CreateRequest(string operationName, string httpMethod, NameValueCollection queryString, NameValueCollection formData, Stream inputStream)
+		/// <summary>
+		/// Used in Unit tests
+		/// </summary>
+		/// <returns></returns>
+		public override object CreateRequest(string pathInfo, string httpMethod, NameValueCollection queryString, NameValueCollection formData, Stream inputStream)
 		{
-			throw new NotImplementedException();
+			if (this.RestPath == null)
+				throw new ArgumentNullException("No RestPath found");
+
+			var requestParams = queryString.ToDictionary();
+			formData.ToDictionary().ForEach(x => requestParams.Add(x.Key, x.Value));
+
+			var request = this.RestPath.CreateRequest(pathInfo, requestParams);
+			return request;
 		}
 	}
 

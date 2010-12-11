@@ -1,10 +1,23 @@
-using System;
+using System.Runtime.Serialization;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
-using ServiceStack.WebHost.IntegrationTests.Operations;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
+	[DataContract]
+	public class Rot13
+	{
+		[DataMember]
+		public string Value { get; set; }
+	}
+
+	[DataContract]
+	public class Rot13Response
+	{
+		[DataMember]
+		public string Result { get; set; }
+	}
+
 	public class Rot13Service 
 		: ServiceBase<Rot13>
 	{

@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Reflection;
-using System.Web;
-using System.Web.Security;
-using System.Web.SessionState;
-using System.Xml.Linq;
 using Funq;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.IntegrationTests.Operations;
+using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests
 {
