@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Web;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -12,10 +13,14 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
 		{
-			var pathInfo = context.Request.PathInfo;
-			return !string.IsNullOrEmpty(pathInfo)
-				? GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo)
-				: GetHandlerForPath(context.Request.HttpMethod, context.Request.Path);
+			var pathInfo = context.Request.GetPathInfo();
+
+			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
+			{
+				return new IndexPageHttpHandler();
+			}
+
+			return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo);
 		}
 
 		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
@@ -30,36 +35,6 @@ namespace ServiceStack.WebHost.Endpoints
 			if (restPath == null) return new NotFoundHttpHandler();
 
 			return new RestHandler { RestPath = restPath, RequestName = pathInfo };
-		}
-
-		public static IHttpHandler GetHandlerForPath(string httpMethod, string fullPath)
-		{
-			var mappedPathRoot = EndpointHost.Config.ServiceStackHandlerFactoryPath;
-			var pathParts = new List<string>();
-
-			var sbPathInfo = new StringBuilder();
-			var fullPathParts = fullPath.Split('/');
-			var pathRootFound = false;
-			foreach (var fullPathPart in fullPathParts)
-			{
-				if (pathRootFound)
-				{
-					sbPathInfo.Append("/" + fullPathPart);
-					pathParts.Add(fullPathPart);
-				}
-				else
-				{
-					pathRootFound = fullPathPart == mappedPathRoot;
-				}
-			}
-
-			var handler = GetHandlerForPathParts(pathParts.ToArray());
-			if (handler != null) return handler;
-
-			var restPath = RestHandler.FindMatchingRestPath(httpMethod, sbPathInfo.ToString());
-			if (restPath == null) return new NotFoundHttpHandler();
-
-			return new RestHandler { RestPath = restPath };
 		}
 
 		private static IHttpHandler GetHandlerForPathParts(string[] pathParts)

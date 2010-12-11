@@ -100,6 +100,7 @@
     <Compile Include="SoapMetadataConfig.cs" />
     <Compile Include="Support\HttpHandlerBase.cs" />
     <Compile Include="Support\Metadata\WsdlMetadataHandlerBase.cs" />
+    <Compile Include="Support\IndexPageHttpHandler.cs" />
     <Compile Include="Support\Templates\Soap12WsdlTemplate.cs" />
     <Compile Include="Metadata\Soap11WsdlMetadataHandler.cs" />
     <Compile Include="Support\Templates\Soap11WsdlTemplate.cs" />

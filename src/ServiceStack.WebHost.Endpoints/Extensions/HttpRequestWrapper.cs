@@ -66,7 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public string PathInfo
 		{
-			get { return request.PathInfo; }
+			get { return request.GetPathInfo(); }
 		}
 
 		public Stream InputStream

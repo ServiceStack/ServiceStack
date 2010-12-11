@@ -17,12 +17,12 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
 			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig {
-				DefaultMetadataUri = "ServiceStack/Metadata",
-				Soap11 = new SoapMetadataConfig("ServiceStack/Soap11/SyncReply.svc", "ServiceStack/Soap11/AsyncOneWay.svc", "ServiceStack/Soap11/Metadata", "ServiceStack/Soap11/Wsdl"),
-				Soap12 = new SoapMetadataConfig("ServiceStack/Soap12/SyncReply.svc", "ServiceStack/Soap12/AsyncOneWay.svc", "ServiceStack/Soap12/Metadata", "ServiceStack/Soap12/Wsdl"),
-				Xml = new MetadataConfig("ServiceStack/Xml/SyncReply", "ServiceStack/Xml/AsyncOneWay", "ServiceStack/Xml/Metadata"),
-				Json = new MetadataConfig("ServiceStack/Json/SyncReply", "ServiceStack/Json/AsyncOneWay", "ServiceStack/Json/Metadata"),
-				Jsv = new MetadataConfig("ServiceStack/Jsv/SyncReply", "ServiceStack/Jsv/AsyncOneWay", "ServiceStack/Jsv/Metadata"),
+				DefaultMetadataUri = "servicestack/metadata",
+				Soap11 = new SoapMetadataConfig("servicestack/soap11/syncreply.svc", "servicestack/soap11/asynconeway.svc", "servicestack/soap11/metadata", "soap11/wsdl"),
+				Soap12 = new SoapMetadataConfig("servicestack/soap12/syncreply.svc", "servicestack/soap12/asynconeway.svc", "servicestack/soap12/metadata", "soap12/wsdl"),
+				Xml = new MetadataConfig("servicestack/xml/syncreply", "servicestack/xml/asynconeway", "servicestack/xml/metadata"),
+				Json = new MetadataConfig("servicestack/json/syncreply", "servicestack/json/asynconeway", "servicestack/json/metadata"),
+				Jsv = new MetadataConfig("servicestack/jsv/syncreply", "servicestack/jsv/asynconeway", "servicestack/jsv/metadata"),
 			};
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;

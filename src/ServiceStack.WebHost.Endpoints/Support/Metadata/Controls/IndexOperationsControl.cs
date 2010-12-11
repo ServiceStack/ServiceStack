@@ -50,13 +50,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 				if (MetadataConfig.Soap11 != null)
 				{
 					wsdlTemplate.AppendFormat(
-						@"<li><a href=""{0}"">SOAP 1.1</a>, <a href=""{0}?flash=true&includeAllTypes=true"">Optimized for flash</a></li>",
+						@"<li><a href=""{0}"">{0}</a></li>",
 						MetadataConfig.Soap11.WsdlMetadataUri);
 				}
 				if (MetadataConfig.Soap12 != null)
 				{
 					wsdlTemplate.AppendFormat(
-						@"<li><a href=""{0}"">SOAP 1.2</a>, <a href=""{0}?flash=true&includeAllTypes=true"">Optimized for flash</a></li>",
+						@"<li><a href=""{0}"">{0}</a></li>",
 						MetadataConfig.Soap12.WsdlMetadataUri);
 				}
 				wsdlTemplate.AppendLine("<ul>");

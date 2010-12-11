@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -133,6 +134,34 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public static string GetLastPathInfo(this HttpListenerRequest request)
 		{
 			return GetLastPathInfoFromRawUrl(request.RawUrl);
+		}
+
+		public static string GetPathInfo(this HttpRequest request)
+		{
+			return GetPathInfo(request.PathInfo, request.Path);
+		}
+
+		private static string GetPathInfo(string pathInfo, string fullPath)
+		{
+			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+
+			var mappedPathRoot = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+
+			var sbPathInfo = new StringBuilder();
+			var fullPathParts = fullPath.Split('/');
+			var pathRootFound = false;
+			foreach (var fullPathPart in fullPathParts)
+			{
+				if (pathRootFound)
+				{
+					sbPathInfo.Append("/" + fullPathPart);
+				}
+				else
+				{
+					pathRootFound = string.Equals(fullPathPart, mappedPathRoot, StringComparison.InvariantCultureIgnoreCase);
+				}
+			}
+			return sbPathInfo.ToString();
 		}
 
 		public static IHttpRequest GetHttpRequest(this HttpRequest request)

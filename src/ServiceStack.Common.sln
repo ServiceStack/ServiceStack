@@ -29,8 +29,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Funq", "Funq\Funq.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Messaging", "ServiceStack.Messaging\ServiceStack.Messaging.csproj", "{BC383081-6CF7-4A78-8384-AE7279A9A063}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.MonoTouch", "ServiceStack.MonoTouch\ServiceStack.MonoTouch.csproj", "{B26FCC95-9FDD-47F3-A920-0948877BA219}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.CacheAccess.Memcached.Tests", "..\tests\ServiceStack.CacheAccess.Memcached.Tests\ServiceStack.CacheAccess.Memcached.Tests.csproj", "{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}"
@@ -148,14 +146,6 @@ Global
 		{BC383081-6CF7-4A78-8384-AE7279A9A063}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC383081-6CF7-4A78-8384-AE7279A9A063}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BC383081-6CF7-4A78-8384-AE7279A9A063}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = STATIC_ONLY NO_EXPRESSIONS|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
-		{B26FCC95-9FDD-47F3-A920-0948877BA219}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EEF88B9-14A0-466D-B364-24D5D0E9BE75}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
