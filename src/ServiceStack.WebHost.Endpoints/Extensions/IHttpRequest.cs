@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Specialized;
 using System.IO;
 
@@ -7,13 +8,15 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	{
 		string OperationName { get; }
 
+		string ContentType { get; }
+
 		string HttpMethod { get; }
 
 		NameValueCollection QueryString { get; }
 
 		NameValueCollection FormData { get; }
 
-		string RawBody { get; }
+		string GetRawBody();
 
 		string RawUrl { get; }
 
@@ -27,5 +30,4 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		Stream InputStream { get; }
 	}
-
 }

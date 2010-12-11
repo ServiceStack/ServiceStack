@@ -71,12 +71,14 @@
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
     <Compile Include="Extensions\HttpListenerRequestWrapper.cs" />
+    <Compile Include="Support\MockHttpRequest.cs" />
     <Compile Include="RestHandler.cs" />
     <Compile Include="Extensions\HttpRequestWrapper.cs" />
     <Compile Include="Extensions\IHttpRequest.cs" />
     <Compile Include="Ext\AllFilesHandler.cs" />
     <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
+    <Compile Include="Support\IServiceStackHttpHandler.cs" />
     <Compile Include="Support\NotFoundHttpHandler.cs" />
     <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="JsvAsyncOneWayHandler.cs" />

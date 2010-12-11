@@ -107,15 +107,15 @@ namespace ServiceStack.WebHost.Endpoints
 		/// Used in Unit tests
 		/// </summary>
 		/// <returns></returns>
-		public override object CreateRequest(string pathInfo, string httpMethod, NameValueCollection queryString, NameValueCollection formData, Stream inputStream)
+		public override object CreateRequest(IHttpRequest httpReq, string operationName)
 		{
 			if (this.RestPath == null)
 				throw new ArgumentNullException("No RestPath found");
 
-			var requestParams = queryString.ToDictionary();
-			formData.ToDictionary().ForEach(x => requestParams.Add(x.Key, x.Value));
+			var requestParams = httpReq.QueryString.ToDictionary();
+			httpReq.FormData.ToDictionary().ForEach(x => requestParams.Add(x.Key, x.Value));
 
-			var request = this.RestPath.CreateRequest(pathInfo, requestParams);
+			var request = this.RestPath.CreateRequest(httpReq.PathInfo, requestParams);
 			return request;
 		}
 	}

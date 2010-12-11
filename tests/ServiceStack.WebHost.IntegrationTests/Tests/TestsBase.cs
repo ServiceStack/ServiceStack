@@ -77,12 +77,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			
 			var httpMethod = formData == null ? HttpMethods.Get : HttpMethods.Post;
 
-			var response = httpHandler.CreateRequest(
-				httpHandler.RequestName,
-				httpMethod,
-				queryString.ToNameValueCollection(),
-				formData.ToNameValueCollection(),
-				requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)));
+			var httpReq = new MockHttpRequest(
+					httpHandler.RequestName, httpMethod,
+					pathInfo,
+					queryString.ToNameValueCollection(),
+					requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)), 
+					formData.ToNameValueCollection()
+				);
+
+			var response = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
 
 			return response;
 		}

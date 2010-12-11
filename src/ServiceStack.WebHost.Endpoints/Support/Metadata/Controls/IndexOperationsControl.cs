@@ -17,16 +17,16 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		protected override void Render(HtmlTextWriter output)
 		{
 			var opTemplate = new StringBuilder("<li><span>{0}</span>");
-			if (MetadataConfig.Soap11 != null)
-				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">SOAP 1.1</a>", MetadataConfig.Soap11.DefaultMetadataUri);
-			if (MetadataConfig.Soap12 != null)
-				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">SOAP 1.2</a>", MetadataConfig.Soap12.DefaultMetadataUri);
 			if (MetadataConfig.Xml != null)
 				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">XML</a>", MetadataConfig.Xml.DefaultMetadataUri);
 			if (MetadataConfig.Json != null)
 				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSON</a>", MetadataConfig.Json.DefaultMetadataUri);
 			if (MetadataConfig.Jsv != null)
-				opTemplate.AppendFormat(@"<a class=""last"" href=""../{0}?op={{0}}"">JSV</a>", MetadataConfig.Jsv.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSV</a>", MetadataConfig.Jsv.DefaultMetadataUri);
+			if (MetadataConfig.Soap11 != null)
+				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">SOAP 1.1</a>", MetadataConfig.Soap11.DefaultMetadataUri);
+			if (MetadataConfig.Soap12 != null)
+				opTemplate.AppendFormat(@"<a class=""last"" href=""../{0}?op={{0}}"">SOAP 1.2</a>", MetadataConfig.Soap12.DefaultMetadataUri);
 
 			opTemplate.Append("</li>");
 
@@ -62,14 +62,15 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 				wsdlTemplate.AppendLine("<ul>");
 			}
 
-			var renderedTemplate = string.Format(PAGE_TEMPLATE,
-												 this.Title, this.UsageExamplesBaseUri, this.XsdServiceTypesIndex,
-												 operationsPart, xsdsPart, wsdlTemplate);
+			var renderedTemplate = string.Format(
+				PageTemplate, this.Title, this.UsageExamplesBaseUri, this.XsdServiceTypesIndex,
+				operationsPart, xsdsPart, wsdlTemplate);
+
 			output.Write(renderedTemplate);
 		}
 
 		#region Page Template
-		private const string PAGE_TEMPLATE = @"
+		private const string PageTemplate = @"
 <!DOCTYPE html PUBLIC ""-//W3C//DTD XHTML 1.0 Transitional//EN"" ""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"">
 
 <html xmlns=""http://www.w3.org/1999/xhtml"" >

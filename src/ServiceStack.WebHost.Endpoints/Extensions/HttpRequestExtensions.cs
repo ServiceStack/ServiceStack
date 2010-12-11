@@ -164,6 +164,20 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			return sbPathInfo.ToString();
 		}
 
+		public static bool IsContentType(this IHttpRequest request, string contentType)
+		{
+			return request.ContentType.StartsWith(contentType, StringComparison.InvariantCultureIgnoreCase);
+		}
+
+		public static bool HasAnyOfContentTypes(this IHttpRequest request, params string[] contentTypes)
+		{
+			foreach (var contentType in contentTypes)
+			{
+				if (IsContentType(request, contentType)) return true;
+			}
+			return false;
+		}
+
 		public static IHttpRequest GetHttpRequest(this HttpRequest request)
 		{
 			return new HttpRequestWrapper(null, request);

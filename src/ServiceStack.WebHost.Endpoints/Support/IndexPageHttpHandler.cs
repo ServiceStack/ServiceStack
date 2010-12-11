@@ -1,10 +1,42 @@
-using System;
+using System.Net;
 using System.Web;
+using ServiceStack.Common.Web;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	public class IndexPageHttpHandler : IHttpHandler
+	public class IndexPageHttpHandler
+		: IServiceStackHttpHandler, IHttpHandler
 	{
+
+		/// <summary>
+		/// Non ASP.NET requests
+		/// </summary>
+		/// <param name="request"></param>
+		/// <param name="response"></param>
+		/// <param name="operationName"></param>
+		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		{
+			var defaultUrl = EndpointHost.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
+
+			if (request.PathInfo == "/")
+			{
+				var relativeUrl = defaultUrl.Substring(defaultUrl.IndexOf('/'));
+				var absoluteUrl = request.RawUrl.TrimEnd('/') + relativeUrl;
+				response.StatusCode = (int) HttpStatusCode.Redirect;
+				response.AddHeader(HttpHeaders.Location, absoluteUrl);
+			}
+			else
+			{
+				response.StatusCode = (int)HttpStatusCode.Redirect;
+				response.AddHeader(HttpHeaders.Location, defaultUrl);
+			}
+		}
+
+        /// <summary>
+        /// ASP.NET requests
+        /// </summary>
+        /// <param name="context"></param>
 		public void ProcessRequest(HttpContext context)
 		{
 			var defaultUrl = EndpointHost.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;

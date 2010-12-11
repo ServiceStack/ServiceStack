@@ -2,7 +2,9 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -13,33 +15,26 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return DataContractSerializer.Instance.Parse(model);
 		}
 
-		protected object CreateRequest(HttpRequest request, string operationName)
+		public override object CreateRequest(IHttpRequest request, string operationName)
 		{
-			return CreateRequest(operationName,
-				request.HttpMethod,
-				request.QueryString,
-				null,
-				request.InputStream);
+			return GetRequest(request, operationName);
 		}
 
-		public override object CreateRequest(string operationName, string httpMethod,
-			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
-		{
-			return GetRequest(operationName, httpMethod, queryString, requestForm, inputStream);
-		}
-
-		public static object GetRequest(string operationName, string httpMethod,
-			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
+		public static object GetRequest(IHttpRequest httpReq, string operationName)
 		{
 			var operationType = GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
+			
+			var httpMethod = httpReq.HttpMethod;
+			var queryString = httpReq.QueryString;
+
 			if (httpMethod == "GET" || httpMethod == "OPTIONS")
 			{
 				try
 				{
 					return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
 				}
-				catch (System.Exception ex)
+				catch (Exception ex)
 				{
 					var log = EndpointHost.Config.LogFactory.GetLogger(typeof(XmlHandlerBase));
 					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'.\nError: '{2}'",
@@ -48,8 +43,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 			}
 
-			var xml = new StreamReader(inputStream).ReadToEnd();
+			var isFormData = httpReq.HasAnyOfContentTypes(ContentType.FormUrlEncoded, ContentType.MultiPartFormData);
 
+			if (isFormData)
+			{
+				return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType);
+			}
+			
+			var xml = httpReq.GetRawBody();
 			try
 			{
 				return DataContractDeserializer.Instance.Parse(xml, operationType);

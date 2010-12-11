@@ -162,10 +162,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					: (SoapType == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
 		}
 
-		public override object CreateRequest(string operationName, string httpMethod, 
-			NameValueCollection queryString, NameValueCollection formData, Stream inputStream)
+		public override object CreateRequest(Extensions.IHttpRequest request, string operationName)
 		{
 			throw new NotImplementedException();
 		}
+
 	}
 }

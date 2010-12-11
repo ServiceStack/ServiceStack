@@ -56,7 +56,13 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public string OperationName { get; set; }
 
-		public string RawBody { get; set; }
+		public string GetRawBody()
+		{
+			using (var reader = new StreamReader(request.InputStream))
+			{
+				return reader.ReadToEnd();
+			}
+		}
 		
 		public string RawUrl
 		{

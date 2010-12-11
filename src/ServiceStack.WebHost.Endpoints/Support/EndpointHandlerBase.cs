@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Web;
@@ -12,7 +10,8 @@ using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	public abstract class EndpointHandlerBase
+	public abstract class EndpointHandlerBase 
+		: IServiceStackHttpHandler, IHttpHandler
 	{
 		private static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
 		private static readonly byte[][] NetworkInterfaceIpv6Addresses;
@@ -26,16 +25,20 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			NetworkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
 		}
 
-		public abstract EndpointAttributes HandlerAttributes { get; }
-
-		protected object CreateRequest(IHttpRequest request, string operationName)
+		public virtual EndpointAttributes HandlerAttributes
 		{
-			return CreateRequest(operationName,
-				request.HttpMethod,
-				request.QueryString,
-				request.FormData,
-				request.InputStream);
+			get
+			{
+				throw new NotImplementedException();
+			}
 		}
+
+		public bool IsReusable
+		{
+			get { return false; }
+		}
+
+		public abstract object CreateRequest(IHttpRequest request, string operationName);
 
 		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
@@ -104,17 +107,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public static Type GetOperationType(string operationName)
 		{
-			return ServiceManager != null 
-				? ServiceManager.ServiceOperations.GetOperationType(operationName) 
+			return ServiceManager != null
+				? ServiceManager.ServiceOperations.GetOperationType(operationName)
 				: EndpointHost.ServiceOperations.GetOperationType(operationName);
 		}
-
-		public abstract object CreateRequest(
-			string operationName, 
-			string httpMethod, 
-			NameValueCollection queryString,
-			NameValueCollection formData, 
-			Stream inputStream);
 
 		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes)
 		{
@@ -172,8 +168,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (IPAddress.IsLoopback(ipAddress))
 				return EndpointAttributes.Localhost;
 
-			return IsInLocalSubnet(ipAddress) 
-				? EndpointAttributes.LocalSubnet 
+			return IsInLocalSubnet(ipAddress)
+				? EndpointAttributes.LocalSubnet
 				: EndpointAttributes.External;
 		}
 

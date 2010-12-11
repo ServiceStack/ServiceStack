@@ -1,9 +1,24 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	public class NotFoundHttpHandler : IHttpHandler
+	public class NotFoundHttpHandler
+		: IServiceStackHttpHandler, IHttpHandler
 	{
+		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		{
+			response.ContentType = "text/plain";
+			response.StatusCode = 404;
+			response.Write("Handler for Request not found: \n\n");
+
+			response.Write("\nRequest.HttpMethod: " + request.HttpMethod);
+			response.Write("\nRequest.PathInfo: " + request.PathInfo);
+			response.Write("\nRequest.QueryString: " + request.QueryString);
+			response.Write("\nRequest.RawUrl: " + request.RawUrl);
+		}
+
 		public void ProcessRequest(HttpContext context)
 		{
 			var request = context.Request;
@@ -19,7 +34,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			response.Write("\nRequest.HttpMethod: " + request.HttpMethod);
 			response.Write("\nRequest.MapPath('~'): " + request.MapPath("~"));
 			response.Write("\nRequest.Path: " + request.Path);
-			response.Write("\nRequest.PathInfo: " + request.PathInfo);
 			response.Write("\nRequest.PathInfo: " + request.PathInfo);
 			response.Write("\nRequest.PhysicalPath: " + request.PhysicalPath);
 			response.Write("\nRequest.PhysicalApplicationPath: " + request.PhysicalApplicationPath);

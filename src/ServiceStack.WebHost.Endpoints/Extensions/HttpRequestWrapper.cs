@@ -17,6 +17,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		}
 
 		public string OperationName { get; set; }
+		
+		public string ContentType
+		{
+			get { return request.ContentType; }
+		}
 
 		public string HttpMethod
 		{
@@ -33,14 +38,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.Form; }
 		}
 
-		public string RawBody
+		public string GetRawBody()
 		{
-			get
+			using (var reader = new StreamReader(request.InputStream))
 			{
-				using (var reader = new StreamReader(request.InputStream))
-				{
-					return reader.ReadToEnd();
-				}
+				return reader.ReadToEnd();
 			}
 		}
 

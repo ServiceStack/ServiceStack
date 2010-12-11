@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
@@ -14,17 +15,19 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return JsonDataContractSerializer.Instance.Parse(model);
 		}
 
-		public override object CreateRequest(string operationName, string httpMethod, 
-			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
+		public override object CreateRequest(IHttpRequest request, string operationName)
 		{
-			return GetRequest(operationName, httpMethod, queryString, requestForm, inputStream);
+			return GetRequest(request, operationName);
 		}
-
-		public static object GetRequest(string operationName, string httpMethod,
-			NameValueCollection queryString, NameValueCollection requestForm, Stream inputStream)
+	
+		public static object GetRequest(IHttpRequest httpReq, string operationName)
 		{
 			var operationType = GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
+
+			var httpMethod = httpReq.HttpMethod;
+			var queryString = httpReq.QueryString;
+
 			if (httpMethod == "GET" || httpMethod == "OPTIONS")
 			{
 				try
@@ -40,20 +43,24 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
             }
 
-            var formData = new StreamReader(inputStream).ReadToEnd();
-			var isJson = formData.StartsWith("{");
+			var isFormData = httpReq.HasAnyOfContentTypes(ContentType.FormUrlEncoded, ContentType.MultiPartFormData);
+
+			if (isFormData)
+			{
+				return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType);
+			}
+
+			var json = httpReq.GetRawBody();
 
 			try
 			{
-				return isJson ? JsonDataContractDeserializer.Instance.Parse(formData, operationType)
-							  : KeyValueDataContractDeserializer.Instance.Parse(requestForm, operationType);
+				return JsonDataContractDeserializer.Instance.Parse(json, operationType);
 			}
 			catch (Exception ex)
 			{
 				var log = EndpointHost.Config.LogFactory.GetLogger(typeof(JsonHandlerBase));
-				var deserializer = isJson ? "JsonDataContractDeserializer" : "KeyValueDataContractDeserializer";
-				log.ErrorFormat("Could not deserialize '{0}' request using {1}: '{2}'\nError: {3}",
-					operationType, deserializer, formData, ex);
+				log.ErrorFormat("Could not deserialize 'JsonDataContractDeserializer' request using {0}: '{1}'\nError: {2}",
+					operationType, json, ex);
 				throw;
 			}
 
