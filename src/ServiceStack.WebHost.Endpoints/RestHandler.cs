@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.IO;
-using System.Web;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -14,7 +10,7 @@ using ServiceStack.WebHost.Endpoints.Support;
 namespace ServiceStack.WebHost.Endpoints
 {
 	public class RestHandler 
-		: EndpointHandlerBase, IHttpHandler
+		: EndpointHandlerBase
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(RestHandler));
 
@@ -68,7 +64,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-
 			try
 			{
 				var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
@@ -96,11 +91,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 				httpRes.WriteJsonErrorToResponse(operationName, errorMessage, ex);
 			}
-		}
-
-		public bool IsReusable
-		{
-			get { return false; }
 		}
 
 		/// <summary>

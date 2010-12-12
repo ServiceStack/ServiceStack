@@ -1,7 +1,5 @@
-
 bin/
 obj/
-_ReSharper.ServiceStack.Common/
 .idea/
 latest/
 /env-vars.bat
@@ -30,6 +28,7 @@ Thumbs.db
 [Dd]ebug*/
 *.lib
 *.sbr
+*.resharper.user
 obj/
 [Rr]elease*/
 _ReSharper*/
