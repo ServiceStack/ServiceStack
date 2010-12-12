@@ -75,8 +75,10 @@ Alternatively if you want keep up with the latest version you can always use the
 
 
 ## Getting Started
-An online tutorial that walks you through developing and calling web services is available here:
- * [http://www.servicestack.net/monotouch/remote-info/](http://www.servicestack.net/monotouch/remote-info/)
+Online tutorials that walks you through developing and calling web services is available here:
+
+ * [Creating a Hello World Web service](http://www.servicestack.net/ServiceStack.Hello/Default.htm)
+ * [Calling Web Services from MonoTouch](http://www.servicestack.net/monotouch/remote-info/)
 
 
 # Features of a modern web services framework
