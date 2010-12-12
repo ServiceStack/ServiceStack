@@ -1,5 +1,3 @@
-_Version 1.65 of Service Stack released on 12/12/2010 [available here](https://github.com/downloads/mythz/ServiceStack/ServiceStack-v1.65.zip)._
-
 Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ 
 that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/mythz/ServiceStack/wiki/Service-Stack-Web-Services). 
 For more info check out [servicestack.net](http://www.servicestack.net).
@@ -63,11 +61,11 @@ Download
 
 To start developing web services with Service Stack we recommend starting with the ServiceStack.Examples project (includes ServiceStack.dlls):
 
-  * **[ServiceStack.Examples-v1.63.zip](https://github.com/downloads/mythz/ServiceStack.Examples/ServiceStack.Examples-v1.63.zip)**
+  * **[ServiceStack.Examples/downloads/](https://github.com/mythz/ServiceStack.Examples/downloads)**
 
 If you already have ServiceStack and just want to download the latest release binaries get them at:
 
-  * **[ServiceStack-v1.64.zip](https://github.com/downloads/mythz/ServiceStack/ServiceStack-v1.64.zip)**
+  * **[ServiceStack/downloads/](https://github.com/mythz/ServiceStack/downloads)**
 
 Alternatively if you want keep up with the latest version you can always use the power of Git :)
 
