@@ -2,13 +2,25 @@ using System;
 using System.IO;
 using System.Linq.Expressions;
 using ServiceStack.Common.Reflection;
+using ServiceStack.Common.Utils;
 using ServiceStack.DesignPatterns.Model;
+
+namespace ServiceStack
+{
+	public class ModelConfig<T>
+	{
+		public static void Id(Func<T, object> getIdFn)
+		{
+			IdUtils<T>.CanGetId = getIdFn;
+		}
+	}
+}
 
 namespace ServiceStack.Common.Utils
 {
 	public static class IdUtils<T>
 	{
-		private static readonly Func<T, object> CanGetId;
+		internal static Func<T, object> CanGetId;
 
 		static IdUtils()
 		{

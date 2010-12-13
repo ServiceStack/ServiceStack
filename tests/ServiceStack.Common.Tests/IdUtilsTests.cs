@@ -51,6 +51,21 @@ namespace ServiceStack.Common.Tests
 			}
 		}
 
+		public class HasIdCustomStringProperty
+		{
+			public string CustomId
+			{
+				get { return StringValue; }
+			}
+		}
+
+		public class HasIdCustomIntProperty
+		{
+			public int CustomId
+			{
+				get { return IntValue; }
+			}
+		}
 
 		[Test]
 		public void Can_get_if_HasIntId()
@@ -80,6 +95,22 @@ namespace ServiceStack.Common.Tests
 		public void Can_get_if_HasIdStringProperty()
 		{
 			Assert.That(new HasIdStringProperty().GetId(), Is.EqualTo(StringValue));
+		}
+
+		[Test]
+		public void Can_get_if_HasIdCustomStringProperty()
+		{
+			ModelConfig<HasIdCustomStringProperty>.Id(x => x.CustomId);
+
+			Assert.That(new HasIdCustomStringProperty().GetId(), Is.EqualTo(StringValue));
+		}
+
+		[Test]
+		public void Can_get_if_HasIdCustomIntProperty()
+		{
+			ModelConfig<HasIdCustomIntProperty>.Id(x => x.CustomId);
+
+			Assert.That(new HasIdCustomIntProperty().GetId(), Is.EqualTo(IntValue));
 		}
 	}
 }

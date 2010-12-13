@@ -17,10 +17,16 @@ namespace ServiceStack.WebHost.Endpoints
 
 			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
 			{
-				return new IndexPageHttpHandler();
+				var rawUrl = context.Request.RawUrl.ToLower();
+				if (rawUrl.Contains(EndpointHost.Config.ServiceStackHandlerFactoryPath))
+				{
+					return new IndexPageHttpHandler();
+				}
+				return new DefaultHttpHandler();
 			}
 
-			return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo);
+			return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo)
+				?? new DefaultHttpHandler();
 		}
 
 		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
@@ -32,9 +38,9 @@ namespace ServiceStack.WebHost.Endpoints
 			if (handler != null) return handler;
 
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
-			if (restPath == null) return new NotFoundHttpHandler();
-
-			return new RestHandler { RestPath = restPath, RequestName = pathInfo };
+			return restPath != null 
+				? new RestHandler { RestPath = restPath, RequestName = pathInfo } 
+				: null;
 		}
 
 		private static IHttpHandler GetHandlerForPathParts(string[] pathParts)

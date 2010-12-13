@@ -156,9 +156,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			portRestrictions |= HttpMethods.GetEndpointAttribute(request.HttpMethod);
 			portRestrictions |= request.IsSecureConnection ? EndpointAttributes.Secure : EndpointAttributes.InSecure;
 
-			var ipAddress = IPAddress.Parse(request.UserHostAddress);
+			if (request.UserHostAddress != null)
+			{
+				var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1;
+				var ipAddressNumber = isIpv4Address
+                    ? request.UserHostAddress.Split(':')[0]
+					: request.UserHostAddress;
 
-			portRestrictions |= GetIpAddressEndpointAttributes(ipAddress);
+				var ipAddress = IPAddress.Parse(ipAddressNumber);
+
+				portRestrictions |= GetIpAddressEndpointAttributes(ipAddress);
+			}
 
 			return portRestrictions;
 		}

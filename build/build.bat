@@ -47,6 +47,8 @@ COPY *.dll ..\release\latest
 
 REM COPY *.dll %SERVICESTACK_DEPLOY_PATH%
 
+COPY ..\src\ServiceStack.Common\bin\%BUILD%\ServiceStack.Common.dll ..\release\lib\
+COPY ..\src\ServiceStack.Messaging\bin\%BUILD%\ServiceStack.Messaging.dll ..\release\lib\
 
 COPY ServiceStack.dll ..\..\ServiceStack.Examples\Lib
 COPY ..\release\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Examples\Lib
@@ -58,4 +60,10 @@ COPY ..\release\lib\ServiceStack.Interfaces.dll ..\..\MonoTouch.Examples\src\Ser
 COPY ServiceStack.dll ..\..\ServiceStack.RedisWebServices\Lib
 COPY ..\release\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.RedisWebServices\Lib
 COPY ..\release\latest\ServiceStack.ServiceInterface.dll ..\..\ServiceStack.RedisWebServices\Lib
+
+COPY ..\release\lib\ServiceStack.Interfaces.dll ..\..\ServiceStack.Redis\Lib
+COPY ..\release\lib\ServiceStack.Common.dll ..\..\ServiceStack.Redis\Lib
+COPY ..\release\lib\ServiceStack.Messaging.dll ..\..\ServiceStack.Redis\Lib
+COPY ..\release\lib\ServiceStack.Text.dll ..\..\ServiceStack.Redis\Lib
+
 

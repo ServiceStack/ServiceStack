@@ -18,8 +18,8 @@ namespace ServiceStack.WebHost.Endpoints
 			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
 			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig {
 				DefaultMetadataUri = "servicestack/metadata",
-				Soap11 = new SoapMetadataConfig("servicestack/soap11/syncreply.svc", "servicestack/soap11/asynconeway.svc", "servicestack/soap11/metadata", "soap11/wsdl"),
-				Soap12 = new SoapMetadataConfig("servicestack/soap12/syncreply.svc", "servicestack/soap12/asynconeway.svc", "servicestack/soap12/metadata", "soap12/wsdl"),
+				Soap11 = new SoapMetadataConfig("servicestack/soap11/syncreply.svc", "servicestack/soap11/asynconeway.svc", "servicestack/soap11/metadata", "soap11"),
+				Soap12 = new SoapMetadataConfig("servicestack/soap12/syncreply.svc", "servicestack/soap12/asynconeway.svc", "servicestack/soap12/metadata", "soap12"),
 				Xml = new MetadataConfig("servicestack/xml/syncreply", "servicestack/xml/asynconeway", "servicestack/xml/metadata"),
 				Json = new MetadataConfig("servicestack/json/syncreply", "servicestack/json/asynconeway", "servicestack/json/metadata"),
 				Jsv = new MetadataConfig("servicestack/jsv/syncreply", "servicestack/jsv/asynconeway", "servicestack/jsv/metadata"),
@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.EnableAccessRestrictions = true;
 			this.WsdlServiceNamespace = "http://schemas.servicestack.net/types";
 			this.WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types";
-			this.ServiceStackHandlerFactoryPath = "ServiceStack";
+			this.ServiceStackHandlerFactoryPath = "servicestack";
 			this.DefaultContentType = ContentType.Json;
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> 
@@ -40,7 +40,14 @@ namespace ServiceStack.WebHost.Endpoints
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
 		public string DefaultContentType { get; set; }
-		public string ServiceStackHandlerFactoryPath { get; set; }
+		
+		private string serviceStackHandlerFactoryPath;
+		public string ServiceStackHandlerFactoryPath
+		{
+			get { return serviceStackHandlerFactoryPath; }
+			set { serviceStackHandlerFactoryPath = value != null ? value.ToLower() : null; }
+		}
+
 		public string WsdlServiceNamespace { get; set; }
 		public string WsdlServiceTypesNamespace { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
