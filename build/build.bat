@@ -34,16 +34,16 @@ SET PROJ_LIBS=%PROJ_LIBS% ..\release\lib\ServiceStack.OrmLite.SqlServer.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\release\lib\ServiceStack.Redis.dll
 SET PROJ_LIBS=%PROJ_LIBS% ..\release\lib\ServiceStack.Text.dll
 
-REM SET PROJ_LIBS=%PROJ_LIBS% ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.ServiceInterface.dll
-
 ILMERGE.exe /ndebug /t:library /out:ServiceStack.dll %PROJ_LIBS%
 
 REM Deploy the memcached server as well
 COPY ..\ServiceStack.CacheAccess.Memcached\bin\%BUILD%\ServiceStack.CacheAccess.Memcached.dll .
-COPY ..\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.ServiceInterface.dll .
+COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.ServiceInterface.* .
 
 REM COPY *.dll ..\lib\tests
 COPY *.dll ..\release\latest
+COPY *.pdb ..\release\latest
+COPY *.dll ..\lib
 
 REM COPY *.dll %SERVICESTACK_DEPLOY_PATH%
 

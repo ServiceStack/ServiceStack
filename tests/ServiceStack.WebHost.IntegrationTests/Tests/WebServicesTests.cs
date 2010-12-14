@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using NUnit.Framework;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
@@ -6,6 +7,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.IntegrationTests.Services;
+using TestsBase = ServiceStack.WebHost.IntegrationTests.Testing.TestsBase;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -18,6 +20,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		: TestsBase
 	{
 		private const string TestString = "ServiceStack";
+
+		protected WebServicesTests()
+			: base("http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack", typeof(ReverseService).Assembly)
+		{
+		}
 
 		[Test]
 		public void Does_Execute_ReverseService()

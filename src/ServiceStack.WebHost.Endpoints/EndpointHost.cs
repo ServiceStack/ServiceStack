@@ -9,6 +9,17 @@ namespace ServiceStack.WebHost.Endpoints
 		public static ServiceOperations ServiceOperations { get; private set; }
 		public static ServiceOperations AllServiceOperations { get; private set; }
 
+		public static ServiceManager ServiceManager
+		{
+			get { return config.ServiceManager; }
+			set
+			{
+				config.ServiceManager = value;
+				ServiceOperations = value.ServiceOperations;
+				AllServiceOperations = value.AllServiceOperations;
+			}
+		}
+
 		private static EndpointHostConfig config;
 
 		public static EndpointHostConfig Config

@@ -3,9 +3,10 @@ using System.IO;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
-using ServiceStack.Service;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.IntegrationTests.Services;
+using TestsBase = ServiceStack.WebHost.IntegrationTests.Testing.TestsBase;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -13,6 +14,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		: TestsBase
 	{
 		readonly EndpointHostConfig defaultConfig = new EndpointHostConfig();
+
+		public RestsTestBase()
+			: base("http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack/", typeof(HelloService).Assembly)
+		{
+		}
 
 		public HttpWebResponse GetWebResponse(string uri, string acceptContentTypes)
 		{
@@ -65,9 +71,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			customAssert(result);
 		}
 
-		protected override IServiceClient CreateNewServiceClient()
-		{
-			throw new NotImplementedException();
-		}
+
 	}
 }

@@ -1,7 +1,9 @@
+using System.Reflection;
 using NUnit.Framework;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.IntegrationTests.Services;
+using TestsBase = ServiceStack.WebHost.IntegrationTests.Testing.TestsBase;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -9,10 +11,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	public class RestPathResolutionUnitTests
 		: TestsBase
 	{
+		public RestPathResolutionUnitTests()
+			: base(typeof(ReverseService).Assembly)
+		{
+		}
+
 		[SetUp]
 		public void OnBeforeTest()
 		{
-			EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(ReverseService).Assembly);
+			base.OnBeforeEachTest();
 		}
 
 		[Test]
