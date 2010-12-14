@@ -52,7 +52,7 @@ Preview links using just the above code sample with (live demo running on Linux)
 [XML](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Xml/SyncReply/GetFactorial?ForNumber=3),
 [JSON](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Json/SyncReply/GetFactorial?ForNumber=3),
 [JSV](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/SyncReply/GetFactorial?ForNumber=3&debug) 
-Check out the [live demo](http://www.servicestack.net/ServiceStack.Examples.Clients/Default.htm) with
+Check out the [live demo](http://www.servicestack.net/ServiceStack.Examples.Clients/) with
 [full source code](http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples).
 
 
@@ -119,8 +119,8 @@ No coupling between the transport's endpoint and your web service's payload. You
     * [XML (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Xml/Metadata?op=GetFactorial)
     * [JSON (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Json/Metadata?op=GetFactorial)
     * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/Metadata?op=GetFactorial)
-    * SOAP 1.1
-    * SOAP 1.2
+    * [SOAP 1.1](http://www.servicestack.net/ServiceStack.Hello/servicestack/soap11)
+    * [SOAP 1.2](http://www.servicestack.net/ServiceStack.Hello/servicestack/soap12)
   * View the [Service Stack endpoints page](https://github.com/mythz/ServiceStack/wiki/Service-Stack-Web-Services) for our recommendations on which endpoint to use and when.
 
 # High Performance Sub Projects
