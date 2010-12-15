@@ -182,7 +182,7 @@ Which will change your urls will now look like:
 
 
 
-==========
+***
 
 Runs on both Mono and .NET 3.5. _(Live preview hosted on Mono / CentOS)_
 
