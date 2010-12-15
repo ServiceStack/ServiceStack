@@ -177,6 +177,10 @@ For IIS 6.0-only web servers (i.e. without IIS 7 and compatibility-mode) IIS and
 	<remove verb="*" path="*.ashx"/>
 	<add path="*.ashx" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
 
+Which will change your urls will now look like:
+
+	http://localhost/servicestack.ashx/xml/syncreply/Hello?Name=World
+
 Alternatively you can create your own in which case you will also need to register the new mapping in IIS 6.0 manager i.e.
 
 	<add path="*.ss" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
