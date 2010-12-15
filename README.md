@@ -179,7 +179,6 @@ For IIS 6.0-only web servers (i.e. without IIS 7 and compatibility-mode) IIS and
 
 Alternatively you can create your own in which case you will also need to register the new mapping in IIS 6.0 manager i.e.
 
-	<remove verb="*" path="*.ashx"/>
 	<add path="*.ss" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
 
 
