@@ -13,6 +13,11 @@ namespace ServiceStack.ServiceInterface
 	{
 		public IRequestContext RequestContext { get; set; }
 
+		protected override object Run(TRequest request)
+		{
+			throw new NotImplementedException();
+		}
+
 		public virtual object Get(TRequest request)
 		{
 			throw new NotImplementedException();
