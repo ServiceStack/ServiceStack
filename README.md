@@ -175,12 +175,12 @@ Similar Open source .NET projects for developing or accessing web services inclu
 For IIS 6.0-only web servers (i.e. without IIS 7 and compatibility-mode) IIS and ASP.NET requires mapping an extension in order to embed ServiceStack. You can use a default handled ASP.NET extension like *.ashx e.g.
 
 	<remove verb="*" path="*.ashx"/>
-	<add path="*.ashx" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack.WebHost.Endpoints" verb="*"/>
+	<add path="*.ashx" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
 
 Alternatively you can create your own in which case you will also need to register the new mapping in IIS 6.0 manager i.e.
 
 	<remove verb="*" path="*.ashx"/>
-	<add path="*.ss" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack.WebHost.Endpoints" verb="*"/>
+	<add path="*.ss" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
 
 
 
