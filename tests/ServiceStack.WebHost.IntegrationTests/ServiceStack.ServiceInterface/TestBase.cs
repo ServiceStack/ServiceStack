@@ -8,10 +8,11 @@ using ServiceStack.Common.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 
-namespace ServiceStack.WebHost.IntegrationTests.Testing
+namespace ServiceStack.ServiceInterface.Testing
 {
 	public abstract class TestsBase
 	{
@@ -25,7 +26,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Testing
 			ServiceClientBaseUri = serviceClientBaseUri;
 			ServiceAssemblies = serviceAssemblies;
 
-			EndpointHost.Config = new EndpointHostConfig {
+			EndpointHost.Config = new EndpointHostConfig
+			{
 				ServiceName = GetType().Name,
 				ServiceManager = new ServiceManager(true, ServiceAssemblies),
 			};
@@ -75,6 +77,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Testing
 
 		public object ExecutePath(string pathInfo)
 		{
+			return ExecutePath(HttpMethods.Get, pathInfo);
+		}
+
+		public object ExecutePath(string httpMethod, string pathInfo)
+		{
 			var qsIndex = pathInfo.IndexOf("?");
 			if (qsIndex != -1)
 			{
@@ -89,24 +96,35 @@ namespace ServiceStack.WebHost.IntegrationTests.Testing
 					map[parts[0]] = parts.Length > 1 ? parts[1] : null;
 				}
 
-				return ExecutePath(pathInfo, map, null, null);
+				return ExecutePath(httpMethod, pathInfo, map, null, null);
 			}
 
-			return ExecutePath(pathInfo, null, null, null);
+			return ExecutePath(httpMethod, pathInfo, null, null, null);
 		}
 
-		public object ExecutePath(string pathInfo,
+		public object ExecutePath<T>(
+			string httpMethod,
+			string pathInfo,
+			Dictionary<string, string> queryString,
+			Dictionary<string, string> formData,
+			T requestBody) where T : class
+		{
+			var json = requestBody != null ? JsonSerializer.SerializeToString(requestBody) : null;
+			return ExecutePath(httpMethod, pathInfo, queryString, formData, json);
+		}
+
+		public object ExecutePath(
+			string httpMethod,
+			string pathInfo,
 			Dictionary<string, string> queryString,
 			Dictionary<string, string> formData,
 			string requestBody)
 		{
-			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, pathInfo) as EndpointHandlerBase;
+			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo) as EndpointHandlerBase;
 			if (httpHandler == null)
 				throw new NotSupportedException(pathInfo);
 
-			var httpMethod = formData == null ? HttpMethods.Get : HttpMethods.Post;
-
-			var httpReq = new WebHost.IntegrationTests.Testing.MockHttpRequest(
+			var httpReq = new MockHttpRequest(
 					httpHandler.RequestName, httpMethod,
 					pathInfo,
 					queryString.ToNameValueCollection(),
@@ -118,6 +136,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Testing
 
 			return response;
 		}
-
 	}
+
 }

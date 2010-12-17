@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints
 				if (pathController == "metadata")
 					return new IndexMetadataHandler();
 				if (pathController == "soap11")
-					return new Soap11MessageSyncReplyHttpHandler();
+					return new Soap11Handlers();
 				if (pathController == "soap12")
 					return new Soap12MessageSyncReplyHttpHandler();
 
@@ -82,7 +82,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				case "jsv":
 					if (pathAction == "syncreply")
-						return new JsvSyncReplyHandler { RequestName = requestName };
+						return new JsvHttpHandlers { RequestName = requestName };
 					if (pathAction == "asynconeway")
 						return new JsvAsyncOneWayHandler { RequestName = requestName };
 					if (pathAction == "metadata")

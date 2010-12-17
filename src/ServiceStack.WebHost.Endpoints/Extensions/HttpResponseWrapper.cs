@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -71,31 +71,26 @@
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
     <Compile Include="Extensions\HttpListenerRequestWrapper.cs" />
+    <Compile Include="GenericHandler.cs" />
     <Compile Include="RestHandler.cs" />
     <Compile Include="Extensions\HttpRequestWrapper.cs" />
-    <Compile Include="Extensions\IHttpRequest.cs" />
     <Compile Include="Ext\AllFilesHandler.cs" />
     <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
     <Compile Include="Support\IServiceStackHttpHandler.cs" />
     <Compile Include="Support\NotFoundHttpHandler.cs" />
     <Compile Include="RequestContextExtensions.cs" />
-    <Compile Include="JsvAsyncOneWayHandler.cs" />
     <Compile Include="JsvSyncReplyHandler.cs" />
     <Compile Include="Extensions\IHttpResponseExtensions.cs" />
     <Compile Include="Extensions\HttpListenerResponseWrapper.cs" />
     <Compile Include="Extensions\HttpRequestExtensions.cs" />
     <Compile Include="Extensions\HttpResponseWrapper.cs" />
-    <Compile Include="Extensions\IHttpResponse.cs" />
     <Compile Include="MetadataConfig.cs" />
     <Compile Include="ServiceStackHttpHandlerFactory.cs" />
-    <Compile Include="Soap11MessageSyncReplyHttpHandler.cs" />
-    <Compile Include="Soap12MessageAsyncOneWayHttpHandler.cs" />
+    <Compile Include="Soap11Handlers.cs" />
     <Compile Include="Support\HttpListenerBase.cs" />
     <Compile Include="AppHostHttpListenerBase.cs" />
-    <Compile Include="Support\JsvHandlerBase.cs" />
     <Compile Include="Support\GzipOptimizationTest.cs" />
-    <Compile Include="Soap12MessageSyncReplyHttpHandler.cs" />
     <Compile Include="ServiceEndpointsMetadataConfig.cs" />
     <Compile Include="Metadata\Soap12WsdlMetadataHandler.cs" />
     <Compile Include="SoapMetadataConfig.cs" />
@@ -106,21 +101,14 @@
     <Compile Include="Metadata\Soap11WsdlMetadataHandler.cs" />
     <Compile Include="Support\Templates\Soap11WsdlTemplate.cs" />
     <Compile Include="Support\Templates\WsdlTemplateBase.cs" />
-    <Compile Include="Soap12AsyncOneWayHandler.cs" />
-    <Compile Include="Soap12SyncReplyHandler.cs" />
-    <Compile Include="JsonAsyncOneWayHandler.cs" />
+    <Compile Include="Soap12Handlers.cs" />
     <Compile Include="JsonSyncReplyHandler.cs" />
-    <Compile Include="Soap11AsyncOneWayHandler.cs" />
-    <Compile Include="Support\JsonHandlerBase.cs" />
     <Compile Include="Support\EndpointHandlerBase.cs" />
-    <Compile Include="Soap11SyncReplyHandler.cs" />
     <Compile Include="EndpointHost.cs" />
     <Compile Include="EndpointHostConfig.cs" />
     <Compile Include="Support\SoapHandler.cs" />
-    <Compile Include="XmlAsyncOneWayHandler.cs" />
-    <Compile Include="Support\XmlHandlerBase.cs" />
-    <Compile Include="XmlRequestDto.cs" />
     <Compile Include="XmlSyncReplyHandler.cs" />
+    <Compile Include="XmlRequestDto.cs" />
     <Compile Include="Metadata\IndexMetadataHandler.cs" />
     <Compile Include="Metadata\Soap11MetadataHandler.cs" />
     <Compile Include="Metadata\Soap12MetadataHandler.cs" />

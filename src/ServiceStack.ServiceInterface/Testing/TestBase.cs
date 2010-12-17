@@ -75,6 +75,11 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public object ExecutePath(string pathInfo)
 		{
+			return ExecutePath(HttpMethods.Get, pathInfo);
+		}
+
+		public object ExecutePath(string httpMethod, string pathInfo)
+		{
 			var qsIndex = pathInfo.IndexOf("?");
 			if (qsIndex != -1)
 			{
@@ -89,22 +94,22 @@ namespace ServiceStack.ServiceInterface.Testing
 					map[parts[0]] = parts.Length > 1 ? parts[1] : null;
 				}
 
-				return ExecutePath(pathInfo, map, null, null);
+				return ExecutePath(httpMethod, pathInfo, map, null, null);
 			}
 
-			return ExecutePath(pathInfo, null, null, null);
+			return ExecutePath(httpMethod, pathInfo, null, null, null);
 		}
 
-		public object ExecutePath(string pathInfo,
+		public object ExecutePath(
+			string httpMethod,
+			string pathInfo,
 			Dictionary<string, string> queryString,
 			Dictionary<string, string> formData,
 			string requestBody)
 		{
-			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, pathInfo) as EndpointHandlerBase;
+			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo) as EndpointHandlerBase;
 			if (httpHandler == null)
 				throw new NotSupportedException(pathInfo);
-
-			var httpMethod = formData == null ? HttpMethods.Get : HttpMethods.Post;
 
 			var httpReq = new MockHttpRequest(
 					httpHandler.RequestName, httpMethod,
@@ -118,6 +123,6 @@ namespace ServiceStack.ServiceInterface.Testing
 
 			return response;
 		}
-
 	}
+
 }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 {

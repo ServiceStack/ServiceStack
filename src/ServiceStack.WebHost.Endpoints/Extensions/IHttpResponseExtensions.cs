@@ -31,8 +31,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 			return false;
 		}
-
-
+        
 		/// <summary>
 		/// Writes to response.
 		/// </summary>
@@ -56,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// <param name="defaultAction">The default action.</param>
 		/// <param name="defaultContentType">Default response ContentType.</param>
 		/// <returns></returns>
-		public static bool WriteToResponse(this IHttpResponse response, object result, Func<object, string> defaultAction, string defaultContentType)
+		public static bool WriteToResponse(this IHttpResponse response, object result, StreamSerializerDelegate defaultAction, string defaultContentType)
 		{
 			try
 			{
@@ -109,7 +108,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						result.GetType().Name));
 				}
 
-				WriteTextToResponse(response, defaultAction(result), defaultContentType);
+				//ContentType='text/html' is the default for a HttpResponse
+				//Do not override if another has been set
+				if (response.ContentType == null || response.ContentType == ContentType.Html)
+				{
+					response.ContentType = defaultContentType;
+				}
+
+				defaultAction(result, response.OutputStream);
 				return false;
 			}
 			catch (Exception ex)
@@ -171,7 +177,28 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
-		public static void WriteXmlErrorToResponse(this IHttpResponse response,
+		public static void WriteErrorToResponse(this IHttpResponse response,
+			EndpointAttributes contentType, string operationName, string errorMessage, Exception ex)
+		{
+			switch (contentType)
+			{
+				case EndpointAttributes.Xml:
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					break;
+
+				case EndpointAttributes.Json:
+					WriteJsonErrorToResponse(response, operationName, errorMessage, ex);
+					break;
+
+				case EndpointAttributes.Jsv:
+					WriteJsvErrorToResponse(response, operationName, errorMessage, ex);
+					break;
+			}
+
+			WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+		}
+
+		private static void WriteXmlErrorToResponse(this IHttpResponse response,
 			string operationName, string errorMessage, Exception ex)
 		{
 			var sb = new StringBuilder();
@@ -188,7 +215,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			WriteTextToResponse(response, sb.ToString(), ContentType.Xml);
 		}
 
-		public static void WriteJsonErrorToResponse(this IHttpResponse response,
+		private static void WriteJsonErrorToResponse(this IHttpResponse response,
 			string operationName, string errorMessage, Exception ex)
 		{
 			var sb = new StringBuilder();
@@ -204,7 +231,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			WriteTextToResponse(response, sb.ToString(), ContentType.Json);
 		}
 
-		public static void WriteJsvErrorToResponse(this IHttpResponse response,
+		private static void WriteJsvErrorToResponse(this IHttpResponse response,
 			string operationName, string errorMessage, Exception ex)
 		{
 			var sb = new StringBuilder();

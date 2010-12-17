@@ -12,11 +12,12 @@ namespace ServiceStack.WebHost.Endpoints
 	public class RestHandler 
 		: EndpointHandlerBase
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(RestHandler));
+		public RestHandler()
+		{
+			this.HandlerAttributes = EndpointAttributes.SyncReply;
+		}
 
-		public static string[] PreferredContentTypes = new[] {
-			ContentType.Json, ContentType.Xml, ContentType.Jsv
-		};
+		private static readonly ILog Log = LogManager.GetLogger(typeof(RestHandler));
 
 		public static IRestPath FindMatchingRestPath(string httpMethod, string pathInfo)
 		{
@@ -25,25 +26,6 @@ namespace ServiceStack.WebHost.Endpoints
 				: EndpointHost.Config.ServiceController;
 
 			return controller.GetRestPathForRequest(httpMethod, pathInfo);
-		}
-
-		public static string GetDefaultContentType(string[] acceptContentType, string defaultContentType)
-		{
-			var acceptsAnything = false;
-			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
-			foreach (var contentType in acceptContentType)
-			{
-				acceptsAnything = acceptsAnything || contentType == "*/*";
-				if (acceptsAnything && hasDefaultContentType) return defaultContentType;
-
-				foreach (var preferredContentType in PreferredContentTypes)
-				{
-					if (contentType.StartsWith(preferredContentType)) return preferredContentType;
-				}
-			}
-
-			//We could also send a '406 Not Acceptable', but this is allowed also
-			return EndpointHost.Config.DefaultContentType;
 		}
 
 		public IRestPath GetRestPath(string httpMethod, string pathInfo)
@@ -57,39 +39,43 @@ namespace ServiceStack.WebHost.Endpoints
 
 		internal IRestPath RestPath { get; set; }
 
-		public override EndpointAttributes HandlerAttributes
-		{
-			get { return EndpointAttributes.SyncReply; }
-		}
-
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
+			var attrEndpointType = EndpointAttributes.Json;
 			try
 			{
 				var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
 				if (restPath == null)
 					throw new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo);
 
-				var defaultContentType = GetDefaultContentType(httpReq.AcceptTypes, restPath.DefaultContentType);
+				var contentType = httpReq.GetContentType();
+
+				attrEndpointType = ContentType.GetEndpointAttributes(contentType);
+
+				var callback = httpReq.QueryString["callback"];
+				var doJsonp = EndpointHost.Config.AllowJsonpRequests
+							  && !string.IsNullOrEmpty(callback);
 
 				var requestParams = httpReq.GetRequestParams();
 				var request = restPath.CreateRequest(httpReq.PathInfo, requestParams);
 
-				var attrEndpointType = ContentType.GetEndpointAttributes(defaultContentType);
+				var response = ExecuteService(request,
+					HandlerAttributes | attrEndpointType | GetEndpointAttributes(httpReq), httpReq);
 
-				var result = ExecuteService(request,
-					HandlerAttributes | attrEndpointType | GetEndpointAttributes(httpReq));
+				var serializer = EndpointHost.Config.ContentTypeFilter.GetStreamSerializer(contentType);
 
-				httpRes.WriteToResponse(result,
-					(dto) => HttpResponseFilter.Instance.Serialize(defaultContentType, dto),
-					defaultContentType);
+				if (doJsonp) httpRes.Write(callback + "(");
+
+				httpRes.WriteToResponse(response, serializer, contentType);
+
+				if (doJsonp) httpRes.Write(")");
 			}
 			catch (Exception ex)
 			{
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
 
-				httpRes.WriteJsonErrorToResponse(operationName, errorMessage, ex);
+				httpRes.WriteErrorToResponse(attrEndpointType, operationName, errorMessage, ex);
 			}
 		}
 

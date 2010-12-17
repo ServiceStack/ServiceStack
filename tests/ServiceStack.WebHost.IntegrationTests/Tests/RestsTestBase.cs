@@ -3,10 +3,10 @@ using System.IO;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
-using TestsBase = ServiceStack.WebHost.IntegrationTests.Testing.TestsBase;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {

@@ -1,46 +1,53 @@
 using System;
-using System.Web;
+using System.IO;
+using System.Text;
 using ServiceStack.Common.Web;
-using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
-	public class JsvSyncReplyHandler : JsvHandlerBase
+	public class JsvAsyncOneWayHandler : GenericHandler
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(JsvSyncReplyHandler));
+		public JsvAsyncOneWayHandler()
+			: base(ContentType.Jsv, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv) {}
+	}
 
-		public override EndpointAttributes HandlerAttributes
+	public class JsvHttpHandlers : GenericHandler
+	{
+		public JsvHttpHandlers()
+			: base(ContentType.JsvText, EndpointAttributes.SyncReply | EndpointAttributes.Jsv) {}
+
+		public void WriteDebugRequest(object dto, Stream stream)
 		{
-			get { return EndpointAttributes.SyncReply | EndpointAttributes.Jsv; }
+			var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
+			stream.Write(bytes, 0, bytes.Length);
 		}
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
+			var isDebugRequest = httpReq.RawUrl.ToLower().Contains("debug");
+			if (!isDebugRequest)
+			{
+				base.ProcessRequest(httpReq, httpRes, operationName);
+				return;
+			}
+
 			try
 			{
 				var request = CreateRequest(httpReq, operationName);
 
 				var response = ExecuteService(request,
-					HandlerAttributes | GetEndpointAttributes(httpReq));
+					HandlerAttributes | GetEndpointAttributes(httpReq), httpReq);
 
-				var isDebugRequest = httpReq.RawUrl.ToLower().Contains("debug");
-				var writeFn = isDebugRequest
-					? (Func<object, string>)JsvFormatter.SerializeAndFormat
-					: Serialize;
-				var contentType = isDebugRequest ? ContentType.PlainText : ContentType.JsvText;
-
-				httpRes.WriteToResponse(response, writeFn, contentType);
+				httpRes.WriteToResponse(response, WriteDebugRequest, ContentType.PlainText);
 			}
 			catch (Exception ex)
 			{
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
-				Log.Error(errorMessage, ex);
 
-				httpRes.WriteJsvErrorToResponse(operationName, errorMessage, ex);
+				httpRes.WriteErrorToResponse(EndpointAttributes.Jsv, operationName, errorMessage, ex);
 			}
 		}
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -46,10 +45,10 @@ namespace ServiceStack.WebHost.Endpoints
 			AllServiceOperations = allOperationTypes;
 		}
 
-		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes)
+		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq)
 		{
 			return config.ServiceController.Execute(request,
-				new HttpRequestContext(request, endpointAttributes));
+				new HttpRequestContext(httpReq, request, endpointAttributes));
 		}
 
 	}

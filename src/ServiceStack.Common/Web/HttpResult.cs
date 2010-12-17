@@ -55,7 +55,7 @@ namespace ServiceStack.Common.Web
 			if (this.ResponseFilter == null)
 				throw new ArgumentNullException("ResponseFilter");
 
-			ResponseFilter.WriteToResponse(this.ContentType, this.Response, responseStream);
+			ResponseFilter.SerializeToStream(this.ContentType, this.Response, responseStream);
 		}
 	}
 

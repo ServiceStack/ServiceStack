@@ -6,6 +6,8 @@ using System.Web;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
@@ -25,13 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			NetworkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
 		}
 
-		public virtual EndpointAttributes HandlerAttributes
-		{
-			get
-			{
-				throw new NotImplementedException();
-			}
-		}
+		public EndpointAttributes HandlerAttributes { get; set; }
 
 		public bool IsReusable
 		{
@@ -43,6 +39,59 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
 			throw new NotImplementedException();
+		}
+
+		protected static object DeserializeContentType(Type operationType, IHttpRequest httpReq, EndpointAttributes contentType)
+		{
+			var httpMethod = httpReq.HttpMethod;
+			var queryString = httpReq.QueryString;
+
+			if (httpMethod == "GET" || httpMethod == "OPTIONS")
+			{
+				try
+				{
+					return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
+				}
+				catch (Exception ex)
+				{
+					var log = EndpointHost.Config.LogFactory.GetLogger(typeof(EndpointHandlerBase));
+					log.ErrorFormat("Could not deserialize '{0}' request using KeyValueDataContractDeserializer: '{1}'.\nError: '{2}'",
+									operationType, queryString, ex);
+					throw;
+				}
+			}
+
+			var isFormData = httpReq.HasAnyOfContentTypes(ContentType.FormUrlEncoded, ContentType.MultiPartFormData);
+			if (isFormData)
+			{
+				return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType);
+			}
+
+			var requestBody = httpReq.GetRawBody();
+
+			try
+			{
+				switch (contentType)
+				{
+					case EndpointAttributes.Json:
+						return JsonDataContractDeserializer.Instance.Parse(requestBody, operationType);
+
+					case EndpointAttributes.Xml:
+						return DataContractDeserializer.Instance.Parse(requestBody, operationType);
+
+					case EndpointAttributes.Jsv:
+						return TypeSerializer.DeserializeFromString(requestBody, operationType);
+				}
+
+				throw new NotSupportedException("Cannot Deserialize ContentType" + contentType);
+			}
+			catch (Exception ex)
+			{
+				var log = EndpointHost.Config.LogFactory.GetLogger(typeof(EndpointHandlerBase));
+				log.ErrorFormat("Could not deserialize '{0}' request using {1}: '{2}'\nError: {3}",
+								contentType, operationType, requestBody, ex);
+				throw;
+			}
 		}
 
 		protected static bool DefaultHandledRequest(HttpListenerContext context)
@@ -112,9 +161,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				: EndpointHost.ServiceOperations.GetOperationType(operationName);
 		}
 
-		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes)
+		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq)
 		{
-			return EndpointHost.ExecuteService(request, endpointAttributes);
+			return EndpointHost.ExecuteService(request, endpointAttributes, httpReq);
 		}
 
 		public EndpointAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)

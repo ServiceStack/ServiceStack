@@ -40,6 +40,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {

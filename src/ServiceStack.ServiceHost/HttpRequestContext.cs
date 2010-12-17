@@ -5,9 +5,11 @@ using ServiceStack.Configuration;
 
 namespace ServiceStack.ServiceHost
 {
-	public class HttpRequestContext 
+	public class HttpRequestContext
 		: IRequestContext
 	{
+		private readonly IHttpRequest httpReq;
+
 		public HttpRequestContext(object dto)
 			: this(dto, null)
 		{
@@ -16,6 +18,12 @@ namespace ServiceStack.ServiceHost
 		public HttpRequestContext(object dto, EndpointAttributes endpointAttributes)
 			: this(dto, endpointAttributes, null)
 		{
+		}
+
+		public HttpRequestContext(IHttpRequest httpReq, object dto, EndpointAttributes endpointAttributes)
+			: this(dto, endpointAttributes, null)
+		{
+			this.httpReq = httpReq;
 		}
 
 		public HttpRequestContext(object requestDto, IFactoryProvider factory)
@@ -84,6 +92,14 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
+		public string RawUrl
+		{
+			get
+			{
+				return this.httpReq != null ? this.httpReq.RawUrl : null;
+			}
+		}
+
 		private string ipAddress;
 		public string IpAddress
 		{
@@ -99,8 +115,8 @@ namespace ServiceStack.ServiceHost
 
 		public static string GetIpAddress()
 		{
-			return HttpContext.Current != null 
-				? HttpContext.Current.Request.UserHostAddress 
+			return HttpContext.Current != null
+				? HttpContext.Current.Request.UserHostAddress
 				: null;
 		}
 

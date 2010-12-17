@@ -30,6 +30,8 @@ namespace ServiceStack.WebHost.Endpoints
 			this.WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types";
 			this.ServiceStackHandlerFactoryPath = "servicestack";
 			this.DefaultContentType = ContentType.Json;
+			this.ContentTypeFilter = HttpResponseFilter.Instance;
+			this.AllowJsonpRequests = true;
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> 
 				{ { "X-Powered-By", Env.ServerUserAgent } };
@@ -40,6 +42,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
 		public string DefaultContentType { get; set; }
+		public IContentTypeFilter ContentTypeFilter { get; set; }
+		public bool AllowJsonpRequests { get; set; }
 		
 		private string serviceStackHandlerFactoryPath;
 		public string ServiceStackHandlerFactoryPath

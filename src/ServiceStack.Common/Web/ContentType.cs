@@ -41,7 +41,11 @@ namespace ServiceStack.Common.Web
 
 		public static EndpointAttributes GetEndpointAttributes(string contentType)
 		{
-			switch (contentType)
+			if (contentType == null)
+				throw new ArgumentNullException("contentType");
+
+			var realContentType = contentType.Split(';')[0].Trim();
+			switch (realContentType)
 			{
 				case Json:
 				case JsonText:

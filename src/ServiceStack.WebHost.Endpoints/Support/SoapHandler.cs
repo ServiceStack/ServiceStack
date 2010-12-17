@@ -15,26 +15,21 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public class SoapHandler : EndpointHandlerBase, IOneWay, ISyncReply
 	{
-		public override EndpointAttributes HandlerAttributes
+		public SoapHandler(EndpointAttributes soapType)
 		{
-			get { return this.SoapType; }
-		}
-
-		public virtual EndpointAttributes SoapType
-		{
-			get { return EndpointAttributes.Soap12; }
+			this.HandlerAttributes = soapType;
 		}
 
 		public void SendOneWay(Message requestMsg)
 		{
-			var endpointAttributes = EndpointAttributes.AsyncOneWay | SoapType;
+			var endpointAttributes = EndpointAttributes.AsyncOneWay | this.HandlerAttributes;
 
 			ExecuteMessage(requestMsg, endpointAttributes);
 		}
 
 		public Message Send(Message requestMsg)
 		{
-			var endpointAttributes = EndpointAttributes.SyncReply | SoapType;
+			var endpointAttributes = EndpointAttributes.SyncReply | this.HandlerAttributes;
 
 			return ExecuteMessage(requestMsg, endpointAttributes);
 		}
@@ -51,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			try
 			{
 				var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
-				var response = ExecuteService(request, endpointAttributes);
+				var response = ExecuteService(request, endpointAttributes, null);
 
 				return requestMsg.Headers.Action == null
 					? Message.CreateMessage(requestMsg.Version, null, response)
@@ -159,10 +154,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var requestOperationName = GetAction(context);
 			return requestOperationName != null
 					? context.Request.ContentType.Replace(requestOperationName, requestOperationName + "Response")
-					: (SoapType == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
+					: (this.HandlerAttributes == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
 		}
 
-		public override object CreateRequest(Extensions.IHttpRequest request, string operationName)
+		public override object CreateRequest(IHttpRequest request, string operationName)
 		{
 			throw new NotImplementedException();
 		}

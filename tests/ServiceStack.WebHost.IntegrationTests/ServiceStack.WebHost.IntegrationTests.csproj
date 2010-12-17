@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Mono.Data.Sqlite.dll</HintPath>
+    </Reference>
     <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\Moq.dll</HintPath>
@@ -41,6 +45,14 @@
     <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.Sqlite, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\tests\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Redis, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -79,6 +91,10 @@
     <Reference Include="System.Web.Mobile" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\lib\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
     <None Include="Service References\Soap11ServiceReference\configuration91.svcinfo" />
@@ -129,6 +145,9 @@
     <Compile Include="ServiceStack.ServiceInterface\ServiceBase.cs" />
     <Compile Include="ServiceStack.ServiceInterface\ServiceResponseException.cs" />
     <Compile Include="Services\AlwaysThrowsService.cs" />
+    <Compile Include="Services\MovieService.cs" />
+    <Compile Include="Services\VerbMatch2Service.cs" />
+    <Compile Include="Services\VerbMatch1Service.cs" />
     <Compile Include="Services\HelloService.cs" />
     <Compile Include="Services\WildCardRequestService.cs" />
     <Compile Include="Services\EchoRequestService.cs" />
@@ -140,6 +159,7 @@
     </Compile>
     <Compile Include="ServiceStack.ServiceInterface\MockHttpRequest.cs" />
     <Compile Include="ServiceStack.ServiceInterface\TestBase.cs" />
+    <Compile Include="Tests\MovieServiceTests.cs" />
     <Compile Include="Tests\RequestAndPathResolutionTests.cs" />
     <Compile Include="Tests\RestPathResolutionUnitTests.cs" />
     <Compile Include="Tests\RestsTestBase.cs" />
@@ -212,6 +232,9 @@
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://localhost/ServiceStack.WebHost.IntegrationTests</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>

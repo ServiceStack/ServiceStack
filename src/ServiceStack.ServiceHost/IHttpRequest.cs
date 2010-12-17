@@ -2,7 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 
-namespace ServiceStack.WebHost.Endpoints.Extensions
+namespace ServiceStack.ServiceHost
 {
 	public interface IHttpRequest
 	{

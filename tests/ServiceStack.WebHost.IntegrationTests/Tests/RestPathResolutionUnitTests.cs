@@ -1,9 +1,7 @@
-using System.Reflection;
 using NUnit.Framework;
-using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.Common.Web;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.WebHost.IntegrationTests.Services;
-using TestsBase = ServiceStack.WebHost.IntegrationTests.Testing.TestsBase;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -70,6 +68,46 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Assert.That(request.Path, Is.Null);
 			Assert.That(request.Action, Is.EqualTo("edit"));
 			Assert.That(request.RemainingPath, Is.EqualTo("remaining/path/to/here"));
+		}
+
+		[Test]
+		public void Can_call_GET_on_VerbMatch_Services()
+		{
+			var request = (VerbMatch1)ExecutePath(HttpMethods.Get, "/verbmatch");
+			Assert.That(request.Name, Is.Null);
+
+			var request2 = (VerbMatch1)ExecutePath(HttpMethods.Get, "/verbmatch/arg");
+			Assert.That(request2.Name, Is.EqualTo("arg"));
+		}
+
+		[Test]
+		public void Can_call_POST_on_VerbMatch_Services()
+		{
+			var request = (VerbMatch2)ExecutePath(HttpMethods.Post, "/verbmatch");
+			Assert.That(request.Name, Is.Null);
+
+			var request2 = (VerbMatch2)ExecutePath(HttpMethods.Post, "/verbmatch/arg");
+			Assert.That(request2.Name, Is.EqualTo("arg"));
+		}
+
+		[Test]
+		public void Can_call_DELETE_on_VerbMatch_Services()
+		{
+			var request = (VerbMatch1)ExecutePath(HttpMethods.Delete, "/verbmatch");
+			Assert.That(request.Name, Is.Null);
+
+			var request2 = (VerbMatch1)ExecutePath(HttpMethods.Delete, "/verbmatch/arg");
+			Assert.That(request2.Name, Is.EqualTo("arg"));
+		}
+
+		[Test]
+		public void Can_call_PUT_on_VerbMatch_Services()
+		{
+			var request = (VerbMatch2)ExecutePath(HttpMethods.Put, "/verbmatch");
+			Assert.That(request.Name, Is.Null);
+
+			var request2 = (VerbMatch2)ExecutePath(HttpMethods.Put, "/verbmatch/arg");
+			Assert.That(request2.Name, Is.EqualTo("arg"));
 		}
 
 	}

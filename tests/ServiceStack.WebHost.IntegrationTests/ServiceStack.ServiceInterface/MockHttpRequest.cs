@@ -1,8 +1,8 @@
 using System.Collections.Specialized;
 using System.IO;
-using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.ServiceHost;
 
-namespace ServiceStack.WebHost.IntegrationTests.Testing
+namespace ServiceStack.ServiceInterface.Testing
 {
 	public class MockHttpRequest : IHttpRequest
 	{

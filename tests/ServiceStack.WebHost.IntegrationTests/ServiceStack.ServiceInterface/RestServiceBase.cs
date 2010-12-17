@@ -9,9 +9,14 @@ namespace ServiceStack.ServiceInterface
 		IRestPutService<TRequest>,
 		IRestPostService<TRequest>,
 		IRestDeleteService<TRequest>,
-		IRequiresRequestContext 
+		IRequiresRequestContext
 	{
 		public IRequestContext RequestContext { get; set; }
+
+		protected override object Run(TRequest request)
+		{
+			throw new NotImplementedException();
+		}
 
 		public virtual object Get(TRequest request)
 		{

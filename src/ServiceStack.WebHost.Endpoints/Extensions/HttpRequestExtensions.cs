@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -206,6 +204,51 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 
 			return map;
+		}
+
+		public static string GetQueryStringContentType(this IHttpRequest httpReq)
+		{
+			var callback = httpReq.QueryString["callback"];
+			if (!string.IsNullOrEmpty(callback)) return ContentType.Json;
+
+			var format = httpReq.QueryString["format"];
+			if (format == null) return null;
+
+			format = format.ToLower();
+			if (format.Contains("json")) return ContentType.Json;
+			if (format.Contains("xml")) return ContentType.Xml;
+			if (format.Contains("jsv")) return ContentType.Jsv;
+
+			return null;
+		}
+
+		public static string[] PreferredContentTypes = new[] {
+			ContentType.Json, ContentType.Xml, ContentType.Jsv
+		};
+
+		public static string GetContentType(this IHttpRequest httpReq)
+		{
+			var specifiedContentType = GetQueryStringContentType(httpReq);
+			if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
+
+			var acceptContentType = httpReq.AcceptTypes;
+			var defaultContentType = httpReq.ContentType;
+
+			var acceptsAnything = false;
+			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
+			foreach (var contentType in acceptContentType)
+			{
+				acceptsAnything = acceptsAnything || contentType == "*/*";
+				if (acceptsAnything && hasDefaultContentType) return defaultContentType;
+
+				foreach (var preferredContentType in PreferredContentTypes)
+				{
+					if (contentType.StartsWith(preferredContentType)) return preferredContentType;
+				}
+			}
+
+			//We could also send a '406 Not Acceptable', but this is allowed also
+			return EndpointHost.Config.DefaultContentType;
 		}
 	}
 

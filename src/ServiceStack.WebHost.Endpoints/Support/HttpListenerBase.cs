@@ -170,12 +170,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			EndpointHost.Config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 		}
 
-		public virtual object ExecuteService(object request, EndpointAttributes endpointAttributes)
-		{
-			return EndpointHost.Config.ServiceController.Execute(
-				request, new HttpRequestContext(request, endpointAttributes));
-		}
-
 		public virtual void Dispose()
 		{
 			this.Stop();
