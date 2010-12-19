@@ -41,32 +41,30 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			var attrEndpointType = EndpointAttributes.Json;
+			var responseContentType = EndpointHost.Config.DefaultContentType;
 			try
 			{
 				var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
 				if (restPath == null)
 					throw new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo);
 
-				var contentType = httpReq.GetContentType();
-
-				attrEndpointType = ContentType.GetEndpointAttributes(contentType);
+				operationName = restPath.RequestType.Name;
 
 				var callback = httpReq.QueryString["callback"];
 				var doJsonp = EndpointHost.Config.AllowJsonpRequests
 							  && !string.IsNullOrEmpty(callback);
 
-				var requestParams = httpReq.GetRequestParams();
-				var request = restPath.CreateRequest(httpReq.PathInfo, requestParams);
+				responseContentType = httpReq.GetResponseContentType();
 
-				var response = ExecuteService(request,
-					HandlerAttributes | attrEndpointType | GetEndpointAttributes(httpReq), httpReq);
+				var request = GetRequest(httpReq, restPath);
 
-				var serializer = EndpointHost.Config.ContentTypeFilter.GetStreamSerializer(contentType);
+				var response = GetResponse(httpReq, request);
+
+				var serializer = GetContentFilters().GetStreamSerializer(responseContentType);
 
 				if (doJsonp) httpRes.Write(callback + "(");
 
-				httpRes.WriteToResponse(response, serializer, contentType);
+				httpRes.WriteToResponse(response, serializer, responseContentType);
 
 				if (doJsonp) httpRes.Write(")");
 			}
@@ -75,8 +73,35 @@ namespace ServiceStack.WebHost.Endpoints
 				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
 				Log.Error(errorMessage, ex);
 
+				var attrEndpointType = ContentType.GetEndpointAttributes(responseContentType);
 				httpRes.WriteErrorToResponse(attrEndpointType, operationName, errorMessage, ex);
 			}
+		}
+
+		public override object GetResponse(IHttpRequest httpReq, object request)
+		{
+			var requestContentType = ContentType.GetEndpointAttributes(httpReq.ContentType);
+
+			return ExecuteService(request,
+				HandlerAttributes | requestContentType | GetEndpointAttributes(httpReq), httpReq);
+		}
+
+		private object GetRequest(IHttpRequest httpReq, IRestPath restPath)
+		{
+			var requestParams = httpReq.GetRequestParams();
+
+			object requestDto = null;
+
+			if (httpReq.ContentType != null)
+			{
+				var requestDeserializer = GetContentFilters().GetStreamDeserializer(httpReq.ContentType);
+				if (requestDeserializer != null)
+				{
+					requestDto = requestDeserializer(restPath.RequestType, httpReq.InputStream);
+				}
+			}
+
+			return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
 		}
 
 		/// <summary>
@@ -88,11 +113,7 @@ namespace ServiceStack.WebHost.Endpoints
 			if (this.RestPath == null)
 				throw new ArgumentNullException("No RestPath found");
 
-			var requestParams = httpReq.QueryString.ToDictionary();
-			httpReq.FormData.ToDictionary().ForEach(x => requestParams.Add(x.Key, x.Value));
-
-			var request = this.RestPath.CreateRequest(httpReq.PathInfo, requestParams);
-			return request;
+			return GetRequest(httpReq, this.RestPath);
 		}
 	}
 

@@ -136,6 +136,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.InputStream; }
 		}
 
+		public long ContentLength
+		{
+			get { return request.ContentLength64; }
+		}
+
 		static Stream GetSubStream(Stream stream)
 		{
 			if (stream is MemoryStream)

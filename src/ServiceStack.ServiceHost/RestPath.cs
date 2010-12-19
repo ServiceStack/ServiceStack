@@ -250,10 +250,10 @@ namespace ServiceStack.ServiceHost
 
 		public object CreateRequest(string pathInfo)
 		{
-			return CreateRequest(pathInfo, null);
+			return CreateRequest(pathInfo, null, null);
 		}
 
-		public object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData)
+		public object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData, object fromInstance)
 		{
 			var requestComponents = pathInfo.Split(PathSeperatorChar)
 				.Where(x => !string.IsNullOrEmpty(x)).ToArray();
@@ -284,7 +284,7 @@ namespace ServiceStack.ServiceHost
 						+ variableName + " on " + RequestType.Name);
 				}
 
-				var value = requestComponents[i]; ;
+				var value = requestComponents[i];
 				if (i == this.TotalComponentsCount - 1)
 				{
 					var sb = new StringBuilder(value);
@@ -308,7 +308,7 @@ namespace ServiceStack.ServiceHost
 				}
 			}
 
-			return this.typeDeserializer.CreateFromMap(requestKeyValuesMap);
+			return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap);
 		}
 
 		public override int GetHashCode()

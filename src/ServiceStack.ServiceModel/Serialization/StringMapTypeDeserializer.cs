@@ -44,11 +44,12 @@ namespace ServiceStack.ServiceModel.Serialization
 			}
 		}
 
-		public object CreateFromMap(IDictionary<string, string> keyValuePairs)
+		public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs)
 		{
 			try
 			{
-				var result = ReflectionUtils.CreateInstance(type);
+				if (instance == null) instance = ReflectionUtils.CreateInstance(type);
+
 				foreach (var pair in keyValuePairs)
 				{
 					var propertyName = pair.Key;
@@ -65,18 +66,23 @@ namespace ServiceStack.ServiceModel.Serialization
 					if (value == null)
 					{
 						Log.WarnFormat("Could not create instance on '{0}' for property '{1}' with text value '{2}'",
-						               result, propertyName, propertyTextValue);
+									   instance, propertyName, propertyTextValue);
 						continue;
 					}
-					propertySerializerEntry.PropertySetFn(result, value);
+					propertySerializerEntry.PropertySetFn(instance, value);
 				}
-				return result;
+				return instance;
 
 			}
 			catch (Exception ex)
 			{
 				throw new SerializationException("KeyValueDataContractDeserializer: Error converting to type: " + ex.Message, ex);
 			}
+		}
+
+		public object CreateFromMap(IDictionary<string, string> keyValuePairs)
+		{
+			return PopulateFromMap(null, keyValuePairs);
 		}
 	}
 }

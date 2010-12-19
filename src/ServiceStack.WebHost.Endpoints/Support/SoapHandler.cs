@@ -162,5 +162,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			throw new NotImplementedException();
 		}
 
+		public override object GetResponse(IHttpRequest httpReq, object request)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

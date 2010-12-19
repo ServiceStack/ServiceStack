@@ -193,9 +193,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				case EndpointAttributes.Jsv:
 					WriteJsvErrorToResponse(response, operationName, errorMessage, ex);
 					break;
-			}
 
-			WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+				default:
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					break;
+			}
 		}
 
 		private static void WriteXmlErrorToResponse(this IHttpResponse response,

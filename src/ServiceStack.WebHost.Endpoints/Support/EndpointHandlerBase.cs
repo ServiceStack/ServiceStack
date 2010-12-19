@@ -7,7 +7,6 @@ using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
@@ -35,13 +34,23 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		}
 
 		public abstract object CreateRequest(IHttpRequest request, string operationName);
+		public abstract object GetResponse(IHttpRequest httpReq, object request);
 
 		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
 			throw new NotImplementedException();
 		}
 
-		protected static object DeserializeContentType(Type operationType, IHttpRequest httpReq, EndpointAttributes contentType)
+		public IContentTypeFilter ContentTypeFilter { get; set; }
+
+		public IContentTypeFilter GetContentFilters()
+		{
+			return ContentTypeFilter != null
+				? this.ContentTypeFilter
+				: EndpointHost.Config.ContentTypeFilter;
+		}
+
+		protected object DeserializeContentType(Type operationType, IHttpRequest httpReq, string contentType)
 		{
 			var httpMethod = httpReq.HttpMethod;
 			var queryString = httpReq.QueryString;
@@ -67,29 +76,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType);
 			}
 
-			var requestBody = httpReq.GetRawBody();
-
 			try
 			{
-				switch (contentType)
-				{
-					case EndpointAttributes.Json:
-						return JsonDataContractDeserializer.Instance.Parse(requestBody, operationType);
-
-					case EndpointAttributes.Xml:
-						return DataContractDeserializer.Instance.Parse(requestBody, operationType);
-
-					case EndpointAttributes.Jsv:
-						return TypeSerializer.DeserializeFromString(requestBody, operationType);
-				}
-
-				throw new NotSupportedException("Cannot Deserialize ContentType" + contentType);
+				var deserializer = GetContentFilters().GetStreamDeserializer(contentType);
+				return deserializer(operationType, httpReq.InputStream);
 			}
 			catch (Exception ex)
 			{
 				var log = EndpointHost.Config.LogFactory.GetLogger(typeof(EndpointHandlerBase));
-				log.ErrorFormat("Could not deserialize '{0}' request using {1}: '{2}'\nError: {3}",
-								contentType, operationType, requestBody, ex);
+				log.ErrorFormat("Could not deserialize '{0}' request using {1}'\nError: {2}",
+								contentType, operationType, ex);
 				throw;
 			}
 		}

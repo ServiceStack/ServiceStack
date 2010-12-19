@@ -146,6 +146,7 @@
     <Compile Include="ServiceStack.ServiceInterface\ServiceResponseException.cs" />
     <Compile Include="Services\AlwaysThrowsService.cs" />
     <Compile Include="Services\MovieService.cs" />
+    <Compile Include="Services\ResetMovies.cs" />
     <Compile Include="Services\VerbMatch2Service.cs" />
     <Compile Include="Services\VerbMatch1Service.cs" />
     <Compile Include="Services\HelloService.cs" />

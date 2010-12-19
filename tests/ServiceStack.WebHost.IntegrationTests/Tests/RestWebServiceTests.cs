@@ -105,6 +105,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			});
 		}
 
+		[Test]
+		public void Can_call_ResetMovies_mapping_with_empty_Xml_post()
+		{
+			var response = GetWebResponse(ServiceClientBaseUri + "/reset-movies", ContentType.Xml, HttpMethods.Post);
+			AssertResponse<ResetMoviesResponse>(response, ContentType.Xml, x =>
+			{
+			});
+		}
+
 	}
 
 }

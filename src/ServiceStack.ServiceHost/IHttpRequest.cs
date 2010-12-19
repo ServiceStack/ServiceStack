@@ -29,5 +29,7 @@ namespace ServiceStack.ServiceHost
 		string PathInfo { get; }
 
 		Stream InputStream { get; }
+
+		long ContentLength { get; }
 	}
 }

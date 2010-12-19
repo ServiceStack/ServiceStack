@@ -195,7 +195,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				map[name] = request.QueryString[name];
 			}
 
-			if (request.HttpMethod == HttpMethods.Post && request.FormData != null)
+			if ((request.HttpMethod == HttpMethods.Post || request.HttpMethod == HttpMethods.Put) 
+				&& request.FormData != null)
 			{
 				foreach (var name in request.FormData.AllKeys)
 				{
@@ -226,7 +227,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			ContentType.Json, ContentType.Xml, ContentType.Jsv
 		};
 
-		public static string GetContentType(this IHttpRequest httpReq)
+		public static string GetResponseContentType(this IHttpRequest httpReq)
 		{
 			var specifiedContentType = GetQueryStringContentType(httpReq);
 			if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
@@ -236,14 +237,17 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 			var acceptsAnything = false;
 			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
-			foreach (var contentType in acceptContentType)
+			if (acceptContentType != null)
 			{
-				acceptsAnything = acceptsAnything || contentType == "*/*";
-				if (acceptsAnything && hasDefaultContentType) return defaultContentType;
-
-				foreach (var preferredContentType in PreferredContentTypes)
+				foreach (var contentType in acceptContentType)
 				{
-					if (contentType.StartsWith(preferredContentType)) return preferredContentType;
+					acceptsAnything = acceptsAnything || contentType == "*/*";
+					if (acceptsAnything && hasDefaultContentType) return defaultContentType;
+
+					foreach (var preferredContentType in PreferredContentTypes)
+					{
+						if (contentType.StartsWith(preferredContentType)) return preferredContentType;
+					}
 				}
 			}
 

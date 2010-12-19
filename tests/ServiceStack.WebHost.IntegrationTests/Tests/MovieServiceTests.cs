@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
+using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
@@ -41,10 +44,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test]
-		public void Can_create_new_Movie()
+		public void Can_create_new_Movie_from_dto()
 		{
 			var response = ExecutePath(HttpMethods.Put, "/movies", null, null, NewMovie);
-			
+
 			this.DbFactory.Exec(dbCmd =>
 			{
 				var lastInsertId = dbCmd.GetLastInsertId();
@@ -53,6 +56,23 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				Assert.That(createdMovie, Is.EqualTo(NewMovie));
 			});
 		}
+
+		[Test]
+		public void Can_create_new_Movie_from_FormData()
+		{
+			var formData = NewMovie.ToStringDictionary();
+
+			var response = ExecutePath(HttpMethods.Put, "/movies", null, formData, null);
+
+			this.DbFactory.Exec(dbCmd =>
+			{
+				var lastInsertId = dbCmd.GetLastInsertId();
+				var createdMovie = dbCmd.GetById<Movie>(lastInsertId);
+				Assert.That(createdMovie, Is.Not.Null);
+				Assert.That(createdMovie, Is.EqualTo(NewMovie));
+			});
+		}
+
 	}
 
 }

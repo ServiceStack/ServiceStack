@@ -42,7 +42,7 @@ namespace ServiceStack.Common.Web
 		public static EndpointAttributes GetEndpointAttributes(string contentType)
 		{
 			if (contentType == null)
-				throw new ArgumentNullException("contentType");
+				return EndpointAttributes.None;
 
 			var realContentType = contentType.Split(';')[0].Trim();
 			switch (realContentType)
@@ -70,7 +70,7 @@ namespace ServiceStack.Common.Web
 					return EndpointAttributes.Csv;
 			}
 
-			throw new NotSupportedException(contentType);
+			return EndpointAttributes.None;
 		}
 
 		public static string GetContentType(EndpointType endpointType)

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Security.Policy;
 using System.Text;
+using System.Web;
 using Funq;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;
@@ -80,26 +82,35 @@ namespace ServiceStack.ServiceInterface.Testing
 			return ExecutePath(HttpMethods.Get, pathInfo);
 		}
 
-		public object ExecutePath(string httpMethod, string pathInfo)
+		private class UrlParts
 		{
-			var qsIndex = pathInfo.IndexOf("?");
-			if (qsIndex != -1)
+			public UrlParts(string pathInfo)
 			{
-				var qs = pathInfo.Substring(qsIndex + 1);
-				pathInfo = pathInfo.Substring(0, qsIndex);
-				var kvps = qs.Split('&');
-
-				var map = new Dictionary<string, string>();
-				foreach (var kvp in kvps)
+				this.PathInfo = pathInfo;
+				var qsIndex = pathInfo.IndexOf("?");
+				if (qsIndex != -1)
 				{
-					var parts = kvp.Split('=');
-					map[parts[0]] = parts.Length > 1 ? parts[1] : null;
-				}
+					var qs = pathInfo.Substring(qsIndex + 1);
+					this.PathInfo = pathInfo.Substring(0, qsIndex);
+					var kvps = qs.Split('&');
 
-				return ExecutePath(httpMethod, pathInfo, map, null, null);
+					this.QueryString = new Dictionary<string, string>();
+					foreach (var kvp in kvps)
+					{
+						var parts = kvp.Split('=');
+						this.QueryString[parts[0]] = parts.Length > 1 ? parts[1] : null;
+					}
+				}
 			}
 
-			return ExecutePath(httpMethod, pathInfo, null, null, null);
+			public string PathInfo { get; private set; }
+			public Dictionary<string, string> QueryString { get; private set; }
+		}
+
+		public object ExecutePath(string httpMethod, string pathInfo)
+		{
+			var urlParts = new UrlParts(pathInfo);
+			return ExecutePath(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, null);
 		}
 
 		public object ExecutePath<T>(
@@ -120,21 +131,69 @@ namespace ServiceStack.ServiceInterface.Testing
 			Dictionary<string, string> formData,
 			string requestBody)
 		{
-			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo) as EndpointHandlerBase;
-			if (httpHandler == null)
-				throw new NotSupportedException(pathInfo);
+			var httpHandler = GetHandler(httpMethod, pathInfo);
+
+			var contentType = (formData != null && formData.Count > 0)
+				? ContentType.FormUrlEncoded
+				: requestBody != null ? ContentType.Json : null;
 
 			var httpReq = new MockHttpRequest(
-					httpHandler.RequestName, httpMethod,
+					httpHandler.RequestName, httpMethod, contentType,
 					pathInfo,
 					queryString.ToNameValueCollection(),
 					requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
 					formData.ToNameValueCollection()
 				);
 
-			var response = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+			var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+			var response = httpHandler.GetResponse(httpReq, request);
 
 			return response;
+		}
+
+		public object GetRequest(string pathInfo)
+		{
+			var urlParts = new UrlParts(pathInfo);
+			return GetRequest(HttpMethods.Get, urlParts.PathInfo, urlParts.QueryString, null, null);
+		}
+
+		public object GetRequest(string httpMethod, string pathInfo)
+		{
+			var urlParts = new UrlParts(pathInfo);
+			return GetRequest(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, null);
+		}
+
+		public object GetRequest(
+				string httpMethod,
+				string pathInfo,
+				Dictionary<string, string> queryString,
+				Dictionary<string, string> formData,
+				string requestBody)
+		{
+			var httpHandler = GetHandler(httpMethod, pathInfo);
+
+			var contentType = (formData != null && formData.Count > 0)
+				? ContentType.FormUrlEncoded
+				: requestBody != null ? ContentType.Json : null;
+			
+			var httpReq = new MockHttpRequest(
+					httpHandler.RequestName, httpMethod, contentType,
+					pathInfo,
+					queryString.ToNameValueCollection(),
+					requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
+					formData.ToNameValueCollection()
+				);
+
+			var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+			return request;
+		}
+
+		private static EndpointHandlerBase GetHandler(string httpMethod, string pathInfo)
+		{
+			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo) as EndpointHandlerBase;
+			if (httpHandler == null)
+				throw new NotSupportedException(pathInfo);
+			return httpHandler;
 		}
 	}
 

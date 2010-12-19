@@ -1,5 +1,7 @@
 ﻿using System;
 using Funq;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -17,6 +19,13 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 			public override void Configure(Container container)
 			{
+				this.Container.Register<IDbConnectionFactory>(c =>
+					new OrmLiteConnectionFactory(
+						":memory:", false,
+						SqliteOrmLiteDialectProvider.Instance));
+
+				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();
+				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));
 			}
 		}               
 

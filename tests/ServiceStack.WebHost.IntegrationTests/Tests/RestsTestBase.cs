@@ -27,6 +27,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			return (HttpWebResponse)webRequest.GetResponse();
 		}
 
+		public HttpWebResponse GetWebResponse(string uri, string acceptContentTypes, string httpMethod)
+		{
+			var webRequest = (HttpWebRequest)WebRequest.Create(uri);
+			webRequest.Accept = acceptContentTypes;
+			webRequest.Method = HttpMethods.Post;
+			webRequest.ContentLength = 0;
+			return (HttpWebResponse)webRequest.GetResponse();
+		}
+
 		public string GetContents(WebResponse webResponse)
 		{
 			using (var stream = webResponse.GetResponseStream())

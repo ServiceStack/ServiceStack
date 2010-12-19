@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 	{
 		public IRequestContext RequestContext { get; set; }
 
-		public IDbConnectionFactory ConnectionFactory { get; set; }
+		public IDbConnectionFactory DbFactory { get; set; }
 
 		public object Execute(Movies request)
 		{
@@ -29,8 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		{
 			var response = new MoviesResponse();
 
-			using (var dbConn = ConnectionFactory.OpenDbConnection())
-			using (var dbCmd = dbConn.CreateCommand())
+			DbFactory.Exec(dbCmd =>
 			{
 				if (request.Id != null)
 				{
@@ -44,41 +43,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				{
 					response.Movies = dbCmd.Select<Movie>();
 				}
-			}
+			});
 
 			return response;
 		}
 
 		public object Put(Movies request)
 		{
-			using (var dbConn = ConnectionFactory.OpenDbConnection())
-			using (var dbCmd = dbConn.CreateCommand())
-			{
-				dbCmd.Insert(request.Movie);
-			}
-
+			DbFactory.Exec(dbCmd => dbCmd.Save(request.Movie));
 			return new MoviesResponse();
 		}
 
 		public object Delete(Movies request)
 		{
-			using (var dbConn = ConnectionFactory.OpenDbConnection())
-			using (var dbCmd = dbConn.CreateCommand())
-			{
-				dbCmd.DeleteById<Movie>(request.Id);
-			}
-
+			DbFactory.Exec(dbCmd => dbCmd.DeleteById<Movie>(request.Id));
 			return new MoviesResponse();
 		}
 
 		public object Post(Movies request)
 		{
-			using (var dbConn = ConnectionFactory.OpenDbConnection())
-			using (var dbCmd = dbConn.CreateCommand())
-			{
-				dbCmd.Update(request.Movie);
-			}
-
+			DbFactory.Exec(dbCmd => dbCmd.Update(request.Movie));
 			return new MoviesResponse();
 		}
 	}

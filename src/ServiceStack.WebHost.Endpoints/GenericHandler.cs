@@ -27,12 +27,20 @@ namespace ServiceStack.WebHost.Endpoints
 			return GetRequest(request, operationName);
 		}
 
+		public override object GetResponse(IHttpRequest httpReq, object request)
+		{
+			var response = ExecuteService(request,
+				HandlerAttributes | GetEndpointAttributes(httpReq), httpReq);
+			
+			return response;
+		}
+
 		public object GetRequest(IHttpRequest httpReq, string operationName)
 		{
 			var operationType = GetOperationType(operationName);
 			AssertOperationExists(operationName, operationType);
 
-			return DeserializeContentType(operationType, httpReq, ContentTypeAttribute);
+			return DeserializeContentType(operationType, httpReq, HandlerContentType);
 		}
         
 		public StreamSerializerDelegate GetStreamSerializer(string contentType)
@@ -51,11 +59,9 @@ namespace ServiceStack.WebHost.Endpoints
 
 				var request = CreateRequest(httpReq, operationName);
 
-				var response = ExecuteService(request,
-					HandlerAttributes | GetEndpointAttributes(httpReq), httpReq);
+				var response = GetResponse(httpReq, request);
 
 				var serializer = GetStreamSerializer(contentType);
-
 				
 				if (doJsonp) httpRes.Write(callback + "(");
 				

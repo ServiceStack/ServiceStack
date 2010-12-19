@@ -76,5 +76,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			get { return request.InputStream; }
 		}
+
+		public long ContentLength
+		{
+			get { return request.ContentLength; }
+		}
 	}
 }

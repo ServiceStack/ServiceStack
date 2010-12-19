@@ -143,10 +143,9 @@ namespace ServiceStack.Common.Web
 
 				case EndpointAttributes.Jsv:
 					return TypeSerializer.DeserializeFromStream;
-
-				default:
-					throw new NotSupportedException("ContentType not supported: " + contentType);
 			}
+
+			return null;
 		}
 	}
 
