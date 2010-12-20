@@ -45,6 +45,12 @@ namespace ServiceStack.ServiceInterface.Testing
 		}
 
 		public string RawUrl { get; set; }
+
+		public string AbsoluteUri
+		{
+			get { return "http://localhost" + this.PathInfo; }
+		}
+
 		public string UserHostAddress { get; set; }
 		public bool IsSecureConnection { get; set; }
 		public string[] AcceptTypes { get; set; }

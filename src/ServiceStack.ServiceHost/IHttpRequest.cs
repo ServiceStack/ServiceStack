@@ -20,6 +20,8 @@ namespace ServiceStack.ServiceHost
 
 		string RawUrl { get; }
 
+		string AbsoluteUri { get; }
+
 		string UserHostAddress { get; }
 
 		bool IsSecureConnection { get; }

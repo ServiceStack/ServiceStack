@@ -70,6 +70,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.RawUrl; }
 		}
 
+		public string AbsoluteUri
+		{
+			get { return request.Url.AbsoluteUri; }
+		}
+
 		public string UserHostAddress
 		{
 			get { return request.UserHostAddress; }

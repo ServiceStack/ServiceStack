@@ -234,6 +234,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 			var acceptContentType = httpReq.AcceptTypes;
 			var defaultContentType = httpReq.ContentType;
+			if (httpReq.HasAnyOfContentTypes(ContentType.FormUrlEncoded, ContentType.MultiPartFormData))
+			{
+				defaultContentType = EndpointHost.Config.DefaultContentType;
+			}
 
 			var acceptsAnything = false;
 			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);

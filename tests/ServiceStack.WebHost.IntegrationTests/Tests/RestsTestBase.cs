@@ -27,12 +27,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			return (HttpWebResponse)webRequest.GetResponse();
 		}
 
-		public HttpWebResponse GetWebResponse(string uri, string acceptContentTypes, string httpMethod)
+		public HttpWebResponse GetWebResponse(string httpMethod, string uri, string contentType, int contentLength)
 		{
 			var webRequest = (HttpWebRequest)WebRequest.Create(uri);
-			webRequest.Accept = acceptContentTypes;
+			webRequest.Accept = contentType;
+			webRequest.ContentType = contentType;
 			webRequest.Method = HttpMethods.Post;
-			webRequest.ContentLength = 0;
+			webRequest.ContentLength = contentLength;
 			return (HttpWebResponse)webRequest.GetResponse();
 		}
 
@@ -47,7 +48,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 		public void AssertResponse(HttpWebResponse response, string contentType)
 		{
-			Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+			Assert.That(response.StatusCode, Is.GreaterThanOrEqualTo(HttpStatusCode.OK));
+			Assert.That(response.StatusCode, Is.LessThan(HttpStatusCode.Redirect));
 			Assert.That(response.ContentType.StartsWith(contentType));
 		}
 

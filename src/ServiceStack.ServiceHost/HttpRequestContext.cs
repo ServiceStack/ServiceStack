@@ -92,11 +92,11 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public string RawUrl
+		public string AbsoluteUri
 		{
 			get
 			{
-				return this.httpReq != null ? this.httpReq.RawUrl : null;
+				return this.httpReq != null ? this.httpReq.AbsoluteUri : null;
 			}
 		}
 

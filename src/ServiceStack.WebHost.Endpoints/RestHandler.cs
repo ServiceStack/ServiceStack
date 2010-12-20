@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			object requestDto = null;
 
-			if (httpReq.ContentType != null)
+			if (!string.IsNullOrEmpty(httpReq.ContentType) && httpReq.ContentLength > 0)
 			{
 				var requestDeserializer = GetContentFilters().GetStreamDeserializer(httpReq.ContentType);
 				if (requestDeserializer != null)
