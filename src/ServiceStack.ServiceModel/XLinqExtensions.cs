@@ -23,6 +23,12 @@ namespace ServiceStack.ServiceModel
 			return el == null ? null : GetElementValueOrDefault(el, name, x => x.Value);
 		}
 
+		public static string GetStringAttributeOrDefault(this XElement element, string name)
+		{
+			var attr = AnyAttribute(element, name);
+			return attr == null ? null : GetAttributeValueOrDefault(attr, name, x => x.Value);
+		}
+
 		public static bool GetBool(this XElement el, string name)
 		{
 			AssertElementHasValue(el, name);
@@ -48,13 +54,13 @@ namespace ServiceStack.ServiceModel
 
 		public static int GetIntOrDefault(this XElement el, string name)
 		{
-			return GetElementValueOrDefault(el, name, x => (int) x);
+			return GetElementValueOrDefault(el, name, x => (int)x);
 		}
 
 		public static int? GetNullableInt(this XElement el, string name)
 		{
 			var childEl = GetElement(el, name);
-			return childEl == null || string.IsNullOrEmpty(childEl.Value) ? null : (int?) childEl;
+			return childEl == null || string.IsNullOrEmpty(childEl.Value) ? null : (int?)childEl;
 		}
 
 		public static long GetLong(this XElement el, string name)
@@ -165,6 +171,25 @@ namespace ServiceStack.ServiceModel
 			return element.AnyElement(name);
 		}
 
+		public static T GetAttributeValueOrDefault<T>(this XAttribute attr, string name, Func<XAttribute, T> converter)
+		{
+			if (converter == null)
+			{
+				throw new ArgumentNullException("converter");
+			}
+			return attr == null || string.IsNullOrEmpty(attr.Value) ? default(T) : converter(attr);
+		}
+
+		public static void AssertExactlyOneResult(this XElement queryListItems, string referenceNumber, string formType)
+		{
+			int count = Convert.ToInt32(queryListItems.AnyAttribute("ItemCount").Value);
+			if (count == 0)
+				throw new InvalidOperationException(string.Format("There is no {0} for with a deal reference number {1}", formType, referenceNumber));
+			if (count > 1)
+				throw new InvalidOperationException(
+					string.Format("There are more than one {0}s with deal reference number {1}", formType, referenceNumber));
+		}
+
 		public static void AssertElementHasValue(this XElement element, string name)
 		{
 			if (element == null)
@@ -262,7 +287,7 @@ namespace ServiceStack.ServiceModel
 		{
 			if (element.FirstNode.NodeType == XmlNodeType.Element)
 			{
-				return (XElement) element.FirstNode;
+				return (XElement)element.FirstNode;
 			}
 			return null;
 		}

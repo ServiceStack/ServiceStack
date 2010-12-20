@@ -103,7 +103,7 @@ namespace ServiceStack.Common.Extensions
 				if (!otherEnum.MoveNext()) return false;
 				
 				var thisIsDefault = Equals(item, default(T));
-				var otherIsDefault = Equals(item, default(T));
+				var otherIsDefault = Equals(otherEnum.Current, default(T));
 				if (thisIsDefault || otherIsDefault)
 				{
 					return thisIsDefault && otherIsDefault;

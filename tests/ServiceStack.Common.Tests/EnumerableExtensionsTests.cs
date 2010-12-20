@@ -15,6 +15,9 @@ namespace ServiceStack.Common.Tests
 		readonly int[] LessIntValues = new[] { 1, 2 };
 		readonly int[] UnorderedIntValues = new[] { 3, 2, 1 };
 
+		readonly string[] StringValues = new[] { "A", "B", "C" };
+		readonly string[] NoStringValues = new string[] { };
+
 		[Test]
 		public void Can_Join()
 		{
@@ -67,6 +70,18 @@ namespace ServiceStack.Common.Tests
 		public void Not_EquivalentTo_null()
 		{
 			Assert.That(IntValues.EquivalentTo(null), Is.False);
+		}
+
+		[Test]
+		public void EquivalentTo_StringValues()
+		{
+			Assert.That(StringValues.EquivalentTo(NoStringValues), Is.False);
+			Assert.That(NoStringValues.EquivalentTo(StringValues), Is.False);
+			Assert.That(NoStringValues.EquivalentTo(NoStringValues), Is.True);
+			Assert.That(StringValues.EquivalentTo(StringValues), Is.True);
+
+			Assert.That(StringValues.EquivalentTo(new string[] { null }), Is.False);
+			Assert.That(new string[] { null }.EquivalentTo(StringValues), Is.False);
 		}
 
 	}
