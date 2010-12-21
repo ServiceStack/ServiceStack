@@ -47,6 +47,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public string DefaultContentType { get; set; }
 		public IContentTypeFilter ContentTypeFilter { get; set; }
 		public bool AllowJsonpRequests { get; set; }
+		public bool DebugMode { get; set; }
 		public List<string> DefaultDocuments { get; private set; }
 
 		private string serviceStackHandlerFactoryPath;

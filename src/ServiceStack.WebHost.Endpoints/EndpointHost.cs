@@ -19,6 +19,14 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+		public static class UserConfig
+		{
+			public static bool DebugMode
+			{
+				get { return Config != null ? Config.DebugMode : false; }
+			}
+		}
+
 		private static EndpointHostConfig config;
 
 		public static EndpointHostConfig Config
