@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;

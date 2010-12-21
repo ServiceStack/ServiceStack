@@ -77,6 +77,7 @@
     <Compile Include="Ext\AllFilesHandler.cs" />
     <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
+    <Compile Include="Support\RedirectHttpHandler.cs" />
     <Compile Include="Support\IServiceStackHttpHandler.cs" />
     <Compile Include="Support\NotFoundHttpHandler.cs" />
     <Compile Include="RequestContextExtensions.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Support\HttpHandlerBase.cs" />
     <Compile Include="Support\Metadata\WsdlMetadataHandlerBase.cs" />
     <Compile Include="Support\IndexPageHttpHandler.cs" />
+    <Compile Include="Support\StaticFileHandler.cs" />
     <Compile Include="Support\Templates\Soap12WsdlTemplate.cs" />
     <Compile Include="Metadata\Soap11WsdlMetadataHandler.cs" />
     <Compile Include="Support\Templates\Soap11WsdlTemplate.cs" />

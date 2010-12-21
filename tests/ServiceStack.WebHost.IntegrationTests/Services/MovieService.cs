@@ -13,7 +13,7 @@ using ServiceStack.Text;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 
-	[RestService("/movies")]
+	[RestService("/movies","POST,PUT")]
 	[RestService("/movies/{Id}")]
 	[DataContract]
 	public class Movie

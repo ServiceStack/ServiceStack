@@ -38,7 +38,8 @@ namespace ServiceStack.Common.Web
 		public static string GetMimeType(string fileExt)
 		{
 			fileExt.ThrowIfNullOrEmpty();
-			fileExt = fileExt.TrimStart('.');
+			var parts = fileExt.Split('.');
+			fileExt = parts[parts.Length - 1];
 
 			switch (fileExt)
 			{
@@ -107,7 +108,7 @@ namespace ServiceStack.Common.Web
 					return "application/x-compressed";
 
 				default:
-					throw new NotSupportedException("Unknown fileExt: " + fileExt);
+					return "application/" + fileExt;
 			}
 		}
 	}

@@ -11,12 +11,13 @@ namespace ServiceStack.WebHost.Endpoints
 	public class EndpointHostConfig
 	{
 		private const string DefaultUsageExamplesBaseUri =
-	    		"http://code.google.com/p/servicestack/source/browse/trunk/doc/UsageExamples";
+				"http://code.google.com/p/servicestack/source/browse/trunk/doc/UsageExamples";
 
 		public EndpointHostConfig()
 		{
 			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
-			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig {
+			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig
+			{
 				DefaultMetadataUri = "servicestack/metadata",
 				Soap11 = new SoapMetadataConfig("servicestack/soap11/syncreply.svc", "servicestack/soap11/asynconeway.svc", "servicestack/soap11/metadata", "soap11"),
 				Soap12 = new SoapMetadataConfig("servicestack/soap12/syncreply.svc", "servicestack/soap12/asynconeway.svc", "servicestack/soap12/metadata", "soap12"),
@@ -32,9 +33,11 @@ namespace ServiceStack.WebHost.Endpoints
 			this.DefaultContentType = ContentType.Json;
 			this.ContentTypeFilter = HttpResponseFilter.Instance;
 			this.AllowJsonpRequests = true;
+			this.DefaultDocuments = new List<string> {
+            		"default.htm", "default.html", "index.htm", "index.html", "default.aspx", "default.ashx", 
+            	};
 
-			this.GlobalResponseHeaders = new Dictionary<string, string> 
-				{ { "X-Powered-By", Env.ServerUserAgent } };
+			this.GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } };
 		}
 
 		public ServiceManager ServiceManager { get; set; }
@@ -44,7 +47,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public string DefaultContentType { get; set; }
 		public IContentTypeFilter ContentTypeFilter { get; set; }
 		public bool AllowJsonpRequests { get; set; }
-		
+		public List<string> DefaultDocuments { get; private set; }
+
 		private string serviceStackHandlerFactoryPath;
 		public string ServiceStackHandlerFactoryPath
 		{

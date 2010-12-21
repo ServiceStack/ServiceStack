@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Web;
+using ServiceStack.Common.Utils;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -11,6 +11,39 @@ namespace ServiceStack.WebHost.Endpoints
 	public class ServiceStackHttpHandlerFactory
 		: IHttpHandlerFactory
 	{
+		static readonly List<string> WebHostRootFileNames = new List<string>();
+		static private readonly string WebHostPhysicalPath = null;
+		static private readonly string DefaultRootFileName = null;
+		static private readonly IHttpHandler DefaultHttpHandler = null;
+
+		static ServiceStackHttpHandlerFactory()
+		{
+			//DefaultHttpHandler not supported in IntegratedPipeline mode
+			if (!HttpRuntime.UsingIntegratedPipeline)
+				DefaultHttpHandler = new DefaultHttpHandler();
+
+			WebHostPhysicalPath = "~".MapHostAbsolutePath();
+			foreach (var fileName in Directory.GetFiles(WebHostPhysicalPath))
+			{
+				var fileNameLower = Path.GetFileName(fileName).ToLower();
+				if (DefaultRootFileName == null && EndpointHost.Config.DefaultDocuments.Contains(fileNameLower))
+				{
+					DefaultRootFileName = fileNameLower;
+					if (DefaultHttpHandler == null)
+						DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
+				}
+				WebHostRootFileNames.Add(Path.GetFileName(fileNameLower));
+			}
+			foreach (var dirName in Directory.GetDirectories(WebHostPhysicalPath))
+			{
+				var dirNameLower = Path.GetFileName(dirName).ToLower();
+				WebHostRootFileNames.Add(Path.GetFileName(dirNameLower));
+			}
+
+			if (DefaultHttpHandler == null)
+				DefaultHttpHandler = new NotFoundHttpHandler();
+		}
+
 		public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
 		{
 			var pathInfo = context.Request.GetPathInfo();
@@ -18,15 +51,20 @@ namespace ServiceStack.WebHost.Endpoints
 			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
 			{
 				var rawUrl = context.Request.RawUrl.ToLower();
-				if (rawUrl.Contains(EndpointHost.Config.ServiceStackHandlerFactoryPath))
+				if (rawUrl.Contains(EndpointHost.Config.ServiceStackHandlerFactoryPath + "/")
+					|| rawUrl.EndsWith(EndpointHost.Config.ServiceStackHandlerFactoryPath))
 				{
-					return new IndexPageHttpHandler();
+					if (context.Request.PhysicalPath != WebHostPhysicalPath
+						|| !File.Exists(Path.Combine(context.Request.PhysicalPath, DefaultRootFileName)))
+					{
+						return new IndexPageHttpHandler();
+					}
 				}
-				return new DefaultHttpHandler();
+				return DefaultHttpHandler;
 			}
 
 			return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo)
-				?? new DefaultHttpHandler();
+				?? DefaultHttpHandler;
 		}
 
 		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
@@ -37,9 +75,18 @@ namespace ServiceStack.WebHost.Endpoints
 			var handler = GetHandlerForPathParts(pathParts);
 			if (handler != null) return handler;
 
+			var existingFile = pathParts[0].ToLower();
+			if (WebHostRootFileNames.Contains(existingFile))
+			{
+				//Avoid recursive redirections
+				return !HttpRuntime.UsingIntegratedPipeline
+					? DefaultHttpHandler
+					: new StaticFileHandler();
+			}
+
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
-			return restPath != null 
-				? new RestHandler { RestPath = restPath, RequestName = pathInfo } 
+			return restPath != null
+				? new RestHandler { RestPath = restPath, RequestName = pathInfo }
 				: null;
 		}
 

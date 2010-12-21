@@ -37,11 +37,11 @@ namespace ServiceStack.ServiceInterface.Testing
 		{
 			if (rawBody != null) return rawBody;
 			if (InputStream == null) return null;
-			using (var reader = new StreamReader(InputStream))
-			{
-				rawBody = reader.ReadToEnd();
-				return rawBody;
-			}
+
+			//Keep the stream alive in-case it needs to be read twice (i.e. ContentLength)
+			rawBody = new StreamReader(InputStream).ReadToEnd();
+			InputStream.Position = 0;
+			return rawBody;
 		}
 
 		public string RawUrl { get; set; }

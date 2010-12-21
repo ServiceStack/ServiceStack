@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
+using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
@@ -40,6 +42,13 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	public static class HttpRequestExtensions
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpRequestExtensions));
+
+		private static string WebHostDirectoryName = "";
+
+		static HttpRequestExtensions()
+		{
+			WebHostDirectoryName = Path.GetFileName("~".MapHostAbsolutePath());
+		}
 
 		public static string GetOperationName(this HttpRequest request)
 		{
@@ -145,6 +154,16 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 			var mappedPathRoot = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 
+			pathInfo = ResolvePathInfoFromMappedPath(fullPath, mappedPathRoot);
+			if (string.IsNullOrEmpty(pathInfo))
+			{
+				pathInfo = ResolvePathInfoFromMappedPath(fullPath, WebHostDirectoryName);
+			}
+			return pathInfo;
+		}
+
+		private static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
+		{
 			var sbPathInfo = new StringBuilder();
 			var fullPathParts = fullPath.Split('/');
 			var pathRootFound = false;
@@ -159,6 +178,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					pathRootFound = string.Equals(fullPathPart, mappedPathRoot, StringComparison.InvariantCultureIgnoreCase);
 				}
 			}
+
 			return sbPathInfo.ToString();
 		}
 
