@@ -54,7 +54,18 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public string AbsoluteUri
 		{
-			get { return request.Url.AbsoluteUri; }
+			get
+			{
+				try
+				{
+					return request.Url.AbsoluteUri;
+				}
+				catch (Exception ex)
+				{
+					//fastcgi mono, do a 2nd rounds best efforts
+					return "http://" + request.UserHostName + request.RawUrl;
+				}
+			}
 		}
 
 		public string UserHostAddress
