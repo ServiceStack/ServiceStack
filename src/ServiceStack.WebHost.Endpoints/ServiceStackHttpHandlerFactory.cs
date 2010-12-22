@@ -78,11 +78,10 @@ namespace ServiceStack.WebHost.Endpoints
 			var existingFile = pathParts[0].ToLower();
 			if (WebHostRootFileNames.Contains(existingFile))
 			{
-				return new StaticFileHandler();
 				//Avoid recursive redirections
-				//return !HttpRuntime.UsingIntegratedPipeline
-				//    ? DefaultHttpHandler
-				//    : new StaticFileHandler();
+				return !HttpRuntime.UsingIntegratedPipeline
+					? DefaultHttpHandler
+					: new StaticFileHandler();
 			}
 
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
