@@ -14,12 +14,12 @@ namespace ServiceStack.WebHost.Endpoints
 			: base(ContentType.Jsv, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv) {}
 	}
 
-	public class JsvHttpHandlers : GenericHandler
+	public class JsvSyncReplyHandler : GenericHandler
 	{
-		public JsvHttpHandlers()
+		public JsvSyncReplyHandler()
 			: base(ContentType.JsvText, EndpointAttributes.SyncReply | EndpointAttributes.Jsv) {}
 
-		public void WriteDebugRequest(object dto, Stream stream)
+		private static void WriteDebugRequest(object dto, Stream stream)
 		{
 			var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
 			stream.Write(bytes, 0, bytes.Length);
@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var response = ExecuteService(request,
 					HandlerAttributes | GetEndpointAttributes(httpReq), httpReq);
 
-				httpRes.WriteToResponse(response, WriteDebugRequest, ContentType.PlainText);
+				WriteDebugResponse(httpRes, response);
 			}
 			catch (Exception ex)
 			{
@@ -51,5 +51,9 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+		public static void WriteDebugResponse(IHttpResponse httpRes, object response)
+		{
+			httpRes.WriteToResponse(response, WriteDebugRequest, ContentType.PlainText);
+		}
 	}
 }

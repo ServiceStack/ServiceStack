@@ -61,6 +61,12 @@ namespace ServiceStack.WebHost.Endpoints
 
 				var response = GetResponse(httpReq, request);
 
+				if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
+				{
+					JsvSyncReplyHandler.WriteDebugResponse(httpRes, response);
+					return;
+				}
+
 				var serializer = GetContentFilters().GetStreamSerializer(responseContentType);
 
 				if (doJsonp) httpRes.Write(callback + "(");

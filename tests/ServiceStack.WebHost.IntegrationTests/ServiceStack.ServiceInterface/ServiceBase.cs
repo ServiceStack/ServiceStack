@@ -108,8 +108,11 @@ namespace ServiceStack.ServiceInterface
 		{
 			var responseStatus = ResponseStatusTranslator.Instance.Parse(ex);
 
-			// View stack trace in tests and on the client
-			responseStatus.StackTrace = GetRequestErrorBody() + ex;
+			if (EndpointHost.UserConfig.DebugMode)
+			{
+				// View stack trace in tests and on the client
+				responseStatus.StackTrace = GetRequestErrorBody() + ex;
+			}
 
 			Log.Error("ServiceBase<TRequest>::Service Exception", ex);
 

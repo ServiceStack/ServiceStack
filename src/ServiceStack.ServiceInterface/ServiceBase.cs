@@ -108,8 +108,11 @@ namespace ServiceStack.ServiceInterface
 		{
 			var responseStatus = ResponseStatusTranslator.Instance.Parse(ex);
 
-			// View stack trace in tests and on the client
-			responseStatus.StackTrace = GetRequestErrorBody() + ex;
+			if (EndpointHost.UserConfig.DebugMode)
+			{
+				// View stack trace in tests and on the client
+				responseStatus.StackTrace = GetRequestErrorBody() + ex;
+			}
 
 			Log.Error("ServiceBase<TRequest>::Service Exception", ex);
 
@@ -158,8 +161,8 @@ namespace ServiceStack.ServiceInterface
 
 		protected T TryResolve<T>()
 		{
-			return AppHostBase.Instance == null 
-				? default(T) 
+			return AppHostBase.Instance == null
+				? default(T)
 				: AppHostBase.Instance.Container.TryResolve<T>();
 		}
 
@@ -176,7 +179,7 @@ namespace ServiceStack.ServiceInterface
 			var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
 			var responseDto = CreateResponseDto(request);
 
-			if (responseDto == null) 
+			if (responseDto == null)
 				return null;
 
 			// For faster serialization of exceptions, services should implement IHasResponseStatus

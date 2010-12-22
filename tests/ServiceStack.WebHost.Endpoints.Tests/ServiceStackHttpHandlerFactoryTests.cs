@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{"Xml/AsyncOneWay", typeof(XmlAsyncOneWayHandler)},
 			{"Xml/Metadata", typeof(XmlMetadataHandler)},
 
-			{"Jsv/SyncReply", typeof(JsvHttpHandlers)},
+			{"Jsv/SyncReply", typeof(JsvSyncReplyHandler)},
 			{"Jsv/AsyncOneWay", typeof(JsvAsyncOneWayHandler)},
 			{"Jsv/Metadata", typeof(JsvMetadataHandler)},
 

@@ -78,10 +78,11 @@ namespace ServiceStack.WebHost.Endpoints
 			var existingFile = pathParts[0].ToLower();
 			if (WebHostRootFileNames.Contains(existingFile))
 			{
+				return new StaticFileHandler();
 				//Avoid recursive redirections
-				return !HttpRuntime.UsingIntegratedPipeline
-					? DefaultHttpHandler
-					: new StaticFileHandler();
+				//return !HttpRuntime.UsingIntegratedPipeline
+				//    ? DefaultHttpHandler
+				//    : new StaticFileHandler();
 			}
 
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
@@ -129,7 +130,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				case "jsv":
 					if (pathAction == "syncreply")
-						return new JsvHttpHandlers { RequestName = requestName };
+						return new JsvSyncReplyHandler { RequestName = requestName };
 					if (pathAction == "asynconeway")
 						return new JsvAsyncOneWayHandler { RequestName = requestName };
 					if (pathAction == "metadata")
