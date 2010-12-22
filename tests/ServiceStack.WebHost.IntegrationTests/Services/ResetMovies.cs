@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -13,7 +14,17 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	public class ResetMovies { }
 
 	[DataContract]
-	public class ResetMoviesResponse { }
+	public class ResetMoviesResponse
+		: IHasResponseStatus
+	{
+		public ResetMoviesResponse()
+		{
+			this.ResponseStatus = new ResponseStatus();
+		}
+
+		[DataMember]
+		public ResponseStatus ResponseStatus { get; set; }
+	}
 
 	public class ResetMoviesService : RestServiceBase<ResetMovies>
 	{
@@ -28,7 +39,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		public IDbConnectionFactory DbFactory { get; set; }
 
-		public override object Post(ResetMovies request)
+		public override object OnPost(ResetMovies request)
 		{
 			DbFactory.Exec(dbCmd =>
 			{

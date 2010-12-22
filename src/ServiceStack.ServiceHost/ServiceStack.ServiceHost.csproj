@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExpressionTypeFunqContainer.cs" />
+    <Compile Include="HttpFile.cs" />
     <Compile Include="IHttpRequest.cs" />
     <Compile Include="IHttpResponse.cs" />
     <Compile Include="Operations.cs" />

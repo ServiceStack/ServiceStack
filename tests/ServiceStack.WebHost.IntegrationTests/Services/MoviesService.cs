@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// GET /movies 
 		/// GET /movies/genres/{Genre}
 		/// </summary>
-		public override object Get(Movies request)
+		public override object OnGet(Movies request)
 		{
 			return new MoviesResponse
 			{

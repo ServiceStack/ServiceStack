@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// <summary>
 		/// GET /movies/{Id} 
 		/// </summary>
-		public override object Get(Movie movie)
+		public override object OnGet(Movie movie)
 		{
 			return new MovieResponse
 			{
@@ -103,7 +103,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// <summary>
 		/// POST /movies
 		/// </summary>
-		public override object Post(Movie movie)
+		public override object OnPost(Movie movie)
 		{
 			var newMovieId = DbFactory.Exec(dbCmd =>
 			{
@@ -127,7 +127,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// <summary>
 		/// PUT /movies
 		/// </summary>
-		public override object Put(Movie movie)
+		public override object OnPut(Movie movie)
 		{
 			DbFactory.Exec(dbCmd => dbCmd.Save(movie));
 			return new MovieResponse();
@@ -136,7 +136,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// <summary>
 		/// DELETE /movies/{Id}
 		/// </summary>
-		public override object Delete(Movie request)
+		public override object OnDelete(Movie request)
 		{
 			DbFactory.Exec(dbCmd => dbCmd.DeleteById<Movie>(request.Id));
 			return new MovieResponse();

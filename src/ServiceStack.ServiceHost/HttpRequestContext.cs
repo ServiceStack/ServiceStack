@@ -24,6 +24,10 @@ namespace ServiceStack.ServiceHost
 			: this(dto, endpointAttributes, null)
 		{
 			this.httpReq = httpReq;
+			if (this.httpReq != null)
+			{
+				this.Files = httpReq.Files;
+			}
 		}
 
 		public HttpRequestContext(object requestDto, IFactoryProvider factory)
@@ -37,6 +41,7 @@ namespace ServiceStack.ServiceHost
 			this.EndpointAttributes = endpointAttributes;
 			this.Factory = factory;
 			this.RequestAttributes = new RequestAttributes(HttpContext.Current);
+			this.Files = new IFile[0];
 		}
 
 		public bool AutoDispose { get; set; }
@@ -99,6 +104,8 @@ namespace ServiceStack.ServiceHost
 				return this.httpReq != null ? this.httpReq.AbsoluteUri : null;
 			}
 		}
+
+		public IFile[] Files { get; set; }
 
 		private string ipAddress;
 		public string IpAddress

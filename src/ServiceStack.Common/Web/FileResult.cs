@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using ServiceStack.Common.Extensions;
-using ServiceStack.Configuration;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -12,9 +9,7 @@ namespace ServiceStack.Common.Web
 	public class FileResult
 		: IStreamWriter, IHasOptions
 	{
-		public const string DefaultContentType = MimeTypes.Xml;
-
-		public string FilePath { get; private set; }
+		public FileInfo FileInfo { get; private set; }
 
 		public Dictionary<string, string> HttpHeaders { get; private set; }
 
@@ -24,19 +19,32 @@ namespace ServiceStack.Common.Web
 		}
 
 		public FileResult(string filePath)
-			: this(filePath, DefaultContentType) { }
+			: this(new FileInfo(filePath)) { }
 
-		public FileResult(string filePath, string contentType)
+		public FileResult(FileInfo fileInfo)
+			: this(fileInfo, MimeTypes.GetMimeType(fileInfo.Name)) { }
+
+		public FileResult(FileInfo fileInfo, string contentType)
 		{
-			this.FilePath = filePath;
+			this.FileInfo = fileInfo;
+
+			var headerValue =
+				"attachment; " +
+				"filename=\"" + fileInfo.Name + "\"; " +
+				"size=" + fileInfo.Length + "; " +
+				"creation-date=" + fileInfo.CreationTimeUtc.ToString("R") + "; " +
+				"modification-date=" + fileInfo.LastWriteTimeUtc.ToString("R") + "; " +
+				"read-date=" + fileInfo.LastAccessTimeUtc.ToString("R");
+
 			this.HttpHeaders = new Dictionary<string, string> {
 				{ Web.HttpHeaders.ContentType, contentType },
+				{ Web.HttpHeaders.ContentDisposition, headerValue },
 			};
 		}
 
 		public void WriteTo(Stream stream)
 		{
-			using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
+			using (var fs = this.FileInfo.OpenRead())
 			{
 				fs.WriteTo(stream);
 				stream.Flush();

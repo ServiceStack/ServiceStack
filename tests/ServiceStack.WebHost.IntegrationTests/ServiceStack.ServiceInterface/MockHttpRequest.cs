@@ -65,5 +65,7 @@ namespace ServiceStack.ServiceInterface.Testing
 				return body != null ? body.Length : 0;
 			}
 		}
+
+		public IFile[] Files { get; set; }
 	}
 }

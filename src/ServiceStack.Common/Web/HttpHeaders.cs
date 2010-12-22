@@ -12,6 +12,8 @@ namespace ServiceStack.Common.Web
 
 		public const string ContentLength = "Content-Length";
 
+		public const string ContentDisposition = "Content-Disposition";
+
 		public const string Location = "Location";
 	}
 }

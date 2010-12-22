@@ -33,5 +33,7 @@ namespace ServiceStack.ServiceHost
 		Stream InputStream { get; }
 
 		long ContentLength { get; }
+
+		IFile[] Files { get; }
 	}
 }

@@ -136,8 +136,8 @@ namespace ServiceStack.CacheAccess.Providers
 			try
 			{
 				var filePath = Path.Combine(this.baseCachePath, cacheKey);
-				return File.Exists(filePath) 
-					? new FileResult(filePath, this.ContentType)
+				return File.Exists(filePath)
+					? new FileResult(new FileInfo(filePath), this.ContentType)
 					: null;
 			}
 			catch (Exception ignore)

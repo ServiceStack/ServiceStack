@@ -1,5 +1,6 @@
 ﻿using System;
 using Funq;
+using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.WebHost.Endpoints;
@@ -21,7 +22,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 			{
 				this.Container.Register<IDbConnectionFactory>(c =>
 					new OrmLiteConnectionFactory(
-						":memory:", false,
+						"~/App_Data/db.sqlite".MapHostAbsolutePath(),
 						SqliteOrmLiteDialectProvider.Instance));
 
 				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();

@@ -35,11 +35,11 @@ namespace ServiceStack.Common.Web
 			}
 		}
 
-		public static string GetMimeType(string fileExt)
+		public static string GetMimeType(string fileNameOrExt)
 		{
-			fileExt.ThrowIfNullOrEmpty();
-			var parts = fileExt.Split('.');
-			fileExt = parts[parts.Length - 1];
+			fileNameOrExt.ThrowIfNullOrEmpty();
+			var parts = fileNameOrExt.Split('.');
+			var fileExt = parts[parts.Length - 1];
 
 			switch (fileExt)
 			{

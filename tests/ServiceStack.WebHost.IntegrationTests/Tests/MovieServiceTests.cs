@@ -73,6 +73,25 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			});
 		}
 
+		[Test]
+		public void Can_POST_to_resetmovies()
+		{
+			var response = ExecutePath(HttpMethods.Post, "/reset-movies");
+
+			this.DbFactory.Exec(dbCmd =>
+			{
+				var movies = dbCmd.Select<Movie>();
+				Assert.That(movies.Count, Is.EqualTo(ResetMoviesService.Top5Movies.Count));
+			});
+		}
+
+		[Test]
+		public void Error_calling_GET_on_resetmovies()
+		{
+			var response = (ResetMoviesResponse)ExecutePath(HttpMethods.Get, "/reset-movies");
+			Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo(typeof(NotImplementedException).Name));
+		}
+
 	}
 
 }

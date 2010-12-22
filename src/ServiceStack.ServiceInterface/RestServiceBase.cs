@@ -9,7 +9,7 @@ namespace ServiceStack.ServiceInterface
 		IRestPutService<TRequest>,
 		IRestPostService<TRequest>,
 		IRestDeleteService<TRequest>,
-		IRequiresRequestContext 
+		IRequiresRequestContext
 	{
 		public IRequestContext RequestContext { get; set; }
 
@@ -18,24 +18,72 @@ namespace ServiceStack.ServiceInterface
 			throw new NotImplementedException();
 		}
 
-		public virtual object Get(TRequest request)
+		public virtual object OnGet(TRequest request)
 		{
 			throw new NotImplementedException();
 		}
 
-		public virtual object Put(TRequest request)
+		public object Get(TRequest request)
+		{
+			try
+			{
+				return OnGet(request);
+			}
+			catch (Exception ex)
+			{
+				return HandleException(request, ex);
+			}
+		}
+
+		public virtual object OnPut(TRequest request)
 		{
 			throw new NotImplementedException();
 		}
 
-		public virtual object Post(TRequest request)
+		public object Put(TRequest request)
+		{
+			try
+			{
+				return OnPut(request);
+			}
+			catch (Exception ex)
+			{
+				return HandleException(request, ex);
+			}
+		}
+
+		public virtual object OnPost(TRequest request)
 		{
 			throw new NotImplementedException();
 		}
 
-		public virtual object Delete(TRequest request)
+		public object Post(TRequest request)
+		{
+			try
+			{
+				return OnPost(request);
+			}
+			catch (Exception ex)
+			{
+				return HandleException(request, ex);
+			}
+		}
+
+		public virtual object OnDelete(TRequest request)
 		{
 			throw new NotImplementedException();
+		}
+
+		public object Delete(TRequest request)
+		{
+			try
+			{
+				return OnDelete(request);
+			}
+			catch (Exception ex)
+			{
+				return HandleException(request, ex);
+			}
 		}
 	}
 }

@@ -155,11 +155,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var mappedPathRoot = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 
 			pathInfo = ResolvePathInfoFromMappedPath(fullPath, mappedPathRoot);
-			if (string.IsNullOrEmpty(pathInfo))
-			{
-				pathInfo = ResolvePathInfoFromMappedPath(fullPath, WebHostDirectoryName);
-			}
-			return pathInfo;
+			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+
+			pathInfo = ResolvePathInfoFromMappedPath(fullPath, WebHostDirectoryName);
+			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+
+			return fullPath;
 		}
 
 		private static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)

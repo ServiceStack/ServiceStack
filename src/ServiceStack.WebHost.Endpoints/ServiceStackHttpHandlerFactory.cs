@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			var pathInfo = context.Request.GetPathInfo();
 
-			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
+			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/" || pathInfo.EndsWith(EndpointHost.Config.ServiceStackHandlerFactoryPath))
 			{
 				var rawUrl = context.Request.RawUrl.ToLower();
 				if (rawUrl.Contains(EndpointHost.Config.ServiceStackHandlerFactoryPath + "/")

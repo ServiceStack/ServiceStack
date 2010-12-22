@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		}
 
 		public string OperationName { get; set; }
-		
+
 		public string ContentType
 		{
 			get { return request.ContentType; }
@@ -97,5 +97,32 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			get { return request.ContentLength; }
 		}
+
+		private IFile[] files;
+		public IFile[] Files
+		{
+			get
+			{
+				if (files == null)
+				{
+					files = new IFile[request.Files.Count];
+					for (var i = 0; i < request.Files.Count; i++)
+					{
+						var reqFile = request.Files[i];
+
+						files[i] = new HttpFile
+						{
+                            ContentType = reqFile.ContentType,
+							ContentLength = reqFile.ContentLength,
+                            FileName = reqFile.FileName,
+							InputStream = reqFile.InputStream,
+						};
+					}
+				}
+				return files;
+			}
+		}
+
 	}
+
 }

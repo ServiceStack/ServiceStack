@@ -3,6 +3,8 @@ using System.IO;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.Logging;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -13,10 +15,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	public class RestsTestBase
 		: TestsBase
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof (RestsTestBase));
+
 		readonly EndpointHostConfig defaultConfig = new EndpointHostConfig();
 
 		public RestsTestBase()
-			: base("http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack/", typeof(HelloService).Assembly)
+			: base("http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack", typeof(HelloService).Assembly)
+			//: base("http://localhost:4000", typeof(HelloService).Assembly) //Uncomment to test on dev web server
 		{
 		}
 
@@ -37,7 +42,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			return (HttpWebResponse)webRequest.GetResponse();
 		}
 
-		public string GetContents(WebResponse webResponse)
+		public static string GetContents(WebResponse webResponse)
 		{
 			using (var stream = webResponse.GetResponseStream())
 			{
@@ -46,11 +51,94 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 		}
 
+		public T DeserializeContents<T>(WebResponse webResponse)
+		{
+			var contentType = webResponse.ContentType ?? defaultConfig.DefaultContentType;
+			return DeserializeContents<T>(webResponse, contentType);
+		}
+
+		private static T DeserializeContents<T>(WebResponse webResponse, string contentType)
+		{
+			try
+			{
+				var contents = GetContents(webResponse);
+				var result = DeserializeResult<T>(webResponse, contents, contentType);
+				return result;
+			}
+			catch (WebException webEx)
+			{
+				if (webEx.Status == WebExceptionStatus.ProtocolError)
+				{
+					var errorResponse = ((HttpWebResponse)webEx.Response);
+					Log.Error(webEx);
+					Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
+					Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+
+					try
+					{
+						using (var stream = errorResponse.GetResponseStream())
+						{
+							var response = HttpResponseFilter.Instance.DeserializeFromStream(contentType, typeof(T), stream);
+							return (T)response;
+						}
+					}
+					catch (WebException ex)
+					{
+						// Oh, well, we tried
+						throw;
+					}
+				}
+
+				throw;
+			}
+		}
+
 		public void AssertResponse(HttpWebResponse response, string contentType)
 		{
-			Assert.That(response.StatusCode, Is.GreaterThanOrEqualTo(HttpStatusCode.OK));
-			Assert.That(response.StatusCode, Is.LessThan(HttpStatusCode.Redirect));
+			var statusCode = (int)response.StatusCode;
+			Assert.That(statusCode, Is.LessThan(400));
 			Assert.That(response.ContentType.StartsWith(contentType));
+		}
+
+		public void AssertErrorResponse<T>(HttpWebResponse webResponse, HttpStatusCode statusCode, Func<T, ResponseStatus> responseStatusFn)
+		{
+			Assert.That(webResponse.StatusCode, Is.EqualTo(statusCode));
+			var response = DeserializeContents<T>(webResponse);
+			Assert.That(responseStatusFn(response).ErrorCode, Is.Not.Null);
+		}
+
+		public void AssertErrorResponse<T>(HttpWebResponse webResponse, HttpStatusCode statusCode, Func<T, ResponseStatus> responseStatusFn, string errorCode)
+		{
+			Assert.That(webResponse.StatusCode, Is.EqualTo(statusCode));
+			var response = DeserializeContents<T>(webResponse);
+			Assert.That(responseStatusFn(response).ErrorCode, Is.EqualTo(errorCode));
+		}
+
+		public void AssertErrorResponse<T>(HttpWebResponse webResponse, HttpStatusCode statusCode)
+			where T : IHasResponseStatus
+		{
+			Assert.That(webResponse.StatusCode, Is.EqualTo(statusCode));
+			var response = DeserializeContents<T>(webResponse);
+			Assert.That(response.ResponseStatus.ErrorCode, Is.Not.Null);
+		}
+
+		public void AssertErrorResponse<T>(HttpWebResponse webResponse, HttpStatusCode statusCode, string errorCode)
+			where T : IHasResponseStatus
+		{
+			Assert.That(webResponse.StatusCode, Is.EqualTo(statusCode));
+			var response = DeserializeContents<T>(webResponse);
+			Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo(errorCode));
+		}
+
+		public void AssertResponse<T>(HttpWebResponse response, Action<T> customAssert)
+		{
+			var contentType = response.ContentType ?? defaultConfig.DefaultContentType;
+
+			AssertResponse(response, contentType);
+
+			var result = DeserializeContents<T>(response, contentType);
+
+			customAssert(result);
 		}
 
 		public void AssertResponse<T>(HttpWebResponse response, string contentType, Action<T> customAssert)
@@ -58,8 +146,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			contentType = contentType ?? defaultConfig.DefaultContentType;
 
 			AssertResponse(response, contentType);
-			var contents = GetContents(response);
 
+			var result = DeserializeContents<T>(response, contentType);
+
+			customAssert(result);
+		}
+
+		private static T DeserializeResult<T>(WebResponse response, string contents, string contentType)
+		{
 			T result;
 			switch (contentType)
 			{
@@ -78,10 +172,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				default:
 					throw new NotSupportedException(response.ContentType);
 			}
-
-			customAssert(result);
+			return result;
 		}
-
 
 	}
 }

@@ -146,6 +146,31 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.ContentLength64; }
 		}
 
+		private IFile[] _files;
+		public IFile[] Files
+		{
+			get
+			{
+				if (_files == null)
+				{
+					_files = new IFile[files.Count];
+					for (var i = 0; i < files.Count; i++)
+					{
+						var reqFile = files[i];
+
+						_files[i] = new HttpFile
+						{
+							ContentType = reqFile.ContentType,
+							ContentLength = reqFile.ContentLength,
+							FileName = reqFile.FileName,
+							InputStream = reqFile.InputStream,
+						};
+					}
+				}
+				return _files;
+			}
+		}
+
 		static Stream GetSubStream(Stream stream)
 		{
 			if (stream is MemoryStream)
