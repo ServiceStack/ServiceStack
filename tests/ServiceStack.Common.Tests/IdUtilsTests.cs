@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Utils;
 using ServiceStack.DesignPatterns.Model;
 
@@ -112,5 +113,6 @@ namespace ServiceStack.Common.Tests
 
 			Assert.That(new HasIdCustomIntProperty().GetId(), Is.EqualTo(IntValue));
 		}
+
 	}
 }

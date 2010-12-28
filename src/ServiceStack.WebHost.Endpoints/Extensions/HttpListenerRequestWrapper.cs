@@ -153,6 +153,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				if (_files == null)
 				{
+					if (files == null)
+						return _files = new IFile[0];
+
 					_files = new IFile[files.Count];
 					for (var i = 0; i < files.Count; i++)
 					{
