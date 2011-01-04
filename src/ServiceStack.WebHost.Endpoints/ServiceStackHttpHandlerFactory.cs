@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
@@ -15,11 +16,21 @@ namespace ServiceStack.WebHost.Endpoints
 		static private readonly string WebHostPhysicalPath = null;
 		static private readonly string DefaultRootFileName = null;
 		static private readonly IHttpHandler DefaultHttpHandler = null;
+		private static readonly bool UsingIntegratedPipeline = false;
 
 		static ServiceStackHttpHandlerFactory()
 		{
+			try
+			{
+				UsingIntegratedPipeline = HttpRuntime.UsingIntegratedPipeline;
+			}
+			catch (Exception ignore)
+			{
+				//XSP does not implement this property
+			}
+
 			//DefaultHttpHandler not supported in IntegratedPipeline mode
-			if (!HttpRuntime.UsingIntegratedPipeline)
+			if (!UsingIntegratedPipeline)
 				DefaultHttpHandler = new DefaultHttpHandler();
 
 			WebHostPhysicalPath = "~".MapHostAbsolutePath();
@@ -79,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints
 			if (WebHostRootFileNames.Contains(existingFile))
 			{
 				//Avoid recursive redirections
-				return !HttpRuntime.UsingIntegratedPipeline
+				return !UsingIntegratedPipeline
 					? DefaultHttpHandler
 					: new StaticFileHandler();
 			}
