@@ -34,7 +34,5 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 App_Data/
-
 build/*.dll
 *.user
-build/*.dll

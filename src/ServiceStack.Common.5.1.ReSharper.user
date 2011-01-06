@@ -14,14 +14,8 @@
   </NAntValidationSettings>
   <RecentFiles>
     <RecentFiles>
-      <File id="B26FCC95-9FDD-47F3-A920-0948877BA219/f:XmlServiceClient.cs" caret="897" fromTop="36" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceResponseException.cs" caret="721" fromTop="28" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/d:ServiceModel/f:ResponseStatusTranslator.cs" caret="735" fromTop="19" />
-      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceBase.cs" caret="5826" fromTop="32" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap12MessageSyncReplyHttpHandler.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11MessageSyncReplyHttpHandler.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap12MessageAsyncOneWayHttpHandler.cs" caret="671" fromTop="29" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:Soap11AsyncOneWayHandler.cs" caret="716" fromTop="27" />
       <File id="BC383081-6CF7-4A78-8384-AE7279A9A063/f:TransientMessageHandler.cs" caret="2774" fromTop="22" />
       <File id="982416DB-C143-4028-A0C3-CF41892D18D3/d:Support/f:AdapterBase.cs" caret="803" fromTop="26" />
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:FileSystemXmlCacheClient.cs" caret="570" fromTop="21" />
@@ -33,20 +27,25 @@
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:OrmLitePersistenceProviderCache.cs" caret="777" fromTop="27" />
       <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:F!?Projects?ServiceStack?build?build.bat" caret="1593" fromTop="1" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:HttpRequestExtensions.cs" caret="1121" fromTop="29" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:NotFoundHttpHandler.cs" caret="842" fromTop="21" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11WsdlMetadataHandler.cs" caret="322" fromTop="9" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseWsdlPage.cs" caret="0" fromTop="0" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:XmlHandlerBase.cs" caret="1391" fromTop="22" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:EndpointHostConfig.cs" caret="1432" fromTop="13" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap11WsdlTemplate.cs" caret="346" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap12WsdlTemplate.cs" caret="346" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:WsdlTemplateBase.cs" caret="1143" fromTop="20" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="2349" fromTop="37" />
       <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="4770" fromTop="20" />
+      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/d:ServiceStack.ServiceInterface/f:RestServiceBase.cs" caret="0" fromTop="0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlSyncReplyHandler.cs" caret="301" fromTop="11" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="0" fromTop="0" />
+      <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:ServiceStackHttpHandlerFactoryTests.cs" caret="0" fromTop="0" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="609" fromTop="6" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:RestHandler.cs" caret="1873" fromTop="17" />
+      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/d:ServiceStack.ServiceInterface/f:ServiceBase.cs" caret="7440" fromTop="37" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceBase.cs" caret="1238" fromTop="8" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:NotFoundHttpHandler.cs" caret="837" fromTop="19" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="1403" fromTop="21" />
     </RecentFiles>
     <RecentEdits>
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="209" fromTop="15" />
-      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="209" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="301" fromTop="3" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="209" fromTop="2" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:NotFoundHttpHandler.cs" caret="1597" fromTop="37" />
@@ -67,6 +66,16 @@
       <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="4885" fromTop="27" />
       <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="4033" fromTop="23" />
       <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="6979" fromTop="32" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="457" fromTop="8" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="1318" fromTop="21" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="1688" fromTop="23" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:RestHandler.cs" caret="2089" fromTop="23" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="609" fromTop="6" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="3019" fromTop="19" />
+      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/d:ServiceStack.ServiceInterface/f:ServiceBase.cs" caret="3646" fromTop="27" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceBase.cs" caret="0" fromTop="37" />
+      <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceBase.cs" caret="7662" fromTop="37" />
+      <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="3019" fromTop="18" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -84,11 +93,11 @@
       <Item value="TypeDefinition" priority="3" />
       <Item value="Dictionary" priority="10" />
       <Item value="Type" priority="52" />
-      <Item value="new" priority="227" />
+      <Item value="new" priority="228" />
       <Item value="Dictionary&lt;Type,TypeDefinition&gt;" priority="0" />
       <Item value="public" priority="133" />
-      <Item value="string" priority="142" />
-      <Item value="return" priority="164" />
+      <Item value="string" priority="143" />
+      <Item value="return" priority="166" />
       <Item value="object" priority="44" />
       <Item value="if" priority="164" />
       <Item value="TypeDefinitionMap" priority="0" />
@@ -734,7 +743,7 @@
       <Item value="WebMethod" priority="0" />
       <Item value="ReverseResponse`0" priority="0" />
       <Item value="IHttpHandler`0" priority="0" />
-      <Item value="response" priority="1" />
+      <Item value="response" priority="2" />
       <Item value="GetHandlerForPath`0" priority="0" />
       <Item value="EndpointHostConfig`0" priority="0" />
       <Item value="AppHostHttpListenerBase`0" priority="0" />
@@ -747,6 +756,13 @@
       <Item value="StreamWriter`0" priority="0" />
       <Item value="WebClient`0" priority="0" />
       <Item value="BaseAddress" priority="0" />
+      <Item value="ErrorEventArgs`0" priority="0" />
+      <Item value="responseContentType" priority="0" />
+      <Item value="httpReq" priority="1" />
+      <Item value="JsvSyncReplyHandler`0" priority="0" />
+      <Item value="StaticFileHandler`0" priority="0" />
+      <Item value="responseStatus" priority="0" />
+      <Item value="EndpointHost`0" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="13" />
@@ -839,10 +855,11 @@
       <Item value="ServiceModelAssembly" priority="2" />
       <Item value="GetOperationTypeFullName" priority="0" />
       <Item value="ExecuteService" priority="0" />
-      <Item value="Config" priority="16" />
+      <Item value="Config" priority="17" />
       <Item value="GetOperationType" priority="0" />
       <Item value="OperationTypes" priority="3" />
       <Item value="ServiceOperations" priority="2" />
+      <Item value="UserConfig`0" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:ServiceStack.ServiceModel.ServiceModelInfo">
       <Item value="Equals" priority="0" />
@@ -927,7 +944,7 @@
       <Item value="Format" priority="17" />
       <Item value="Join" priority="3" />
       <Item value="Empty" priority="1" />
-      <Item value="IsNullOrEmpty`0" priority="0" />
+      <Item value="IsNullOrEmpty`0" priority="1" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@ServiceStack.ServiceInterface.OperationContext">
       <Item value="Instance" priority="0" />
@@ -1153,6 +1170,7 @@
       <Item value="Insert" priority="0" />
       <Item value="IndexOf" priority="0" />
       <Item value="Split`0" priority="0" />
+      <Item value="Contains`0" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.GC">
       <Item value="SuppressFinalize" priority="1" />
@@ -1687,6 +1705,15 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Net.WebClient">
       <Item value="UploadString`0" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:ServiceStack.ServiceHost.IHttpRequest">
+      <Item value="QueryString" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.JsvSyncReplyHandler">
+      <Item value="WriteDebugRequest`0" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@ServiceStack.WebHost.Endpoints.EndpointHost+UserConfig">
+      <Item value="DebugMode" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
   <UnitTestRunnerNUnit>
