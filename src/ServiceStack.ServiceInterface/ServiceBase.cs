@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Net;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
@@ -156,7 +158,7 @@ namespace ServiceStack.ServiceInterface
 				throw ex;
 			}
 
-			return responseDto;
+			return new HttpResult(responseDto, null, HttpStatusCode.InternalServerError);
 		}
 
 		protected T TryResolve<T>()
