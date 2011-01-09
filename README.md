@@ -101,7 +101,7 @@ Without any code changes unit tests written can be re-used and run as integratio
 
 ### Built-in Funq IOC container
 Configured to auto-wire all of your web services with your registered dependencies.
-[http://funq.codeplex.com Funq] was chosen for it's high-performance, low footprint and intuitive full-featured minimalistic API.
+[Funq](http://funq.codeplex.com) was chosen for it's [high-performance](http://www.codeproject.com/Articles/43296/Introduction-to-Munq-IOC-Container-for-ASP-NET.aspx), low footprint and intuitive full-featured minimalistic API.
 
 ### Encourages development of message-style, re-usable and batch-full web services
 Entire POCO types are used to define the request and response DTO's to promote the creation well-defined coarse-grained web services. Message-based interfaces are best-practices when dealing with out-of-process calls as they are can batch more work using less network calls and are ultimately more re-usable as the same operation can be called using different calling semantics. This is in stark contrast to WCF's Operation or Service contracts which encourage RPC-style, application-specific web services by using method signatures to define each operation.
