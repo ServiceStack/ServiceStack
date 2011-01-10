@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Web;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
+using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -14,16 +15,24 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	public abstract class EndpointHandlerBase 
 		: IServiceStackHttpHandler, IHttpHandler
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(EndpointHandlerBase));
 		private static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
-		private static readonly byte[][] NetworkInterfaceIpv6Addresses;
+		private static readonly byte[][] NetworkInterfaceIpv6Addresses = new byte[0][];
 
 		public string RequestName { get; set; }
 
 		static EndpointHandlerBase()
 		{
-			IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses().ForEach((x, y) => NetworkInterfaceIpv4Addresses[x.GetAddressBytes()] = y.GetAddressBytes());
+			try
+			{
+				IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses().ForEach((x, y) => NetworkInterfaceIpv4Addresses[x.GetAddressBytes()] = y.GetAddressBytes());
 
-			NetworkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
+				NetworkInterfaceIpv6Addresses = IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses().ConvertAll(x => x.GetAddressBytes()).ToArray();
+			}
+			catch (Exception ex)
+			{
+				Log.Warn("Failed to retrieve IP Addresses, some security restriction features may not work: " + ex.Message, ex);
+			}
 		}
 
 		public EndpointAttributes HandlerAttributes { get; set; }
