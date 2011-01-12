@@ -1,4 +1,4 @@
-[Join in the mailing list](http://groups.google.com/group/servicestack) or
+[Join the new google group](http://groups.google.com/group/servicestack) or
 follow [@demisbellot](http://twitter.com/demisbellot) and [@ServiceStack](http://twitter.com/servicestack)
 for twitter updates.
 
@@ -91,11 +91,11 @@ Online tutorials that walks you through developing and calling web services is a
 Unlike other web services frameworks ServiceStack let's you develop web services using strongly-typed models and DTO's.
 This lets ServiceStack and other tools to have a greater intelligence about your services allowing:
 
-- [Available in multiple serialization formats (JSON, XML, JSV and SOAP with extensible plugin model for more)](http://servicestack.net/ServiceStack.Hello/servicestack/metadata)
+- [Multiple serialization formats (JSON, XML, JSV and SOAP with extensible plugin model for more)](http://servicestack.net/ServiceStack.Hello/servicestack/metadata)
 - [A single re-usable C# Generic Client (In JSON, JSV, XML and SOAP flavours) that can talk to all your services.](https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
-- [No code-gen required, re-use your Web Service DTOs on your client applications so you're never out-of-sync](https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
+- [Re-use your Web Service DTOs (i.e. no code-gen) on your client applications so you're never out-of-sync](https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
 - [Automatic serialization of Exceptions in your DTOs ResponseStatus](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L154)
-- [Possibility of a base class for all your services to put high-level application logic (i.e security, logging, etc)](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L24)
+- [The possibility of a base class for all your services to put high-level application logic (i.e security, logging, etc)](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L24)
 - [Highly testable, your in-memory unit tests for your service can also be used as integration tests](https://github.com/mythz/ServiceStack/blob/master/tests/ServiceStack.WebHost.IntegrationTests/Tests/WebServicesTests.cs)
 - [Built-in rolling web service error logging (if Redis is Configured in your AppHost)](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L122)
 - [Rich REST and HTML support on all web services with x-www-form-urlencoded & multipart/form-data (i.e. FORM posts and file uploads)](http://servicestack.net/ServiceStack.Hello/)
