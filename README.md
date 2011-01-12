@@ -91,6 +91,7 @@ Online tutorials that walks you through developing and calling web services is a
 ### A DRY, strongly-typed 'pure model' REST Web Services Framework
 Unlike other web services frameworks ServiceStack let's you develop web services using strongly-typed models and DTO's.
 This lets ServiceStack and other tools to have a greater intelligence about your services allowing:
+
 - [Available in multiple serialization formats (JSON, XML, JSV and SOAP with extensible plugin model for more)](http://servicestack.net/ServiceStack.Hello/servicestack/metadata)
 - [A single re-usable C# Generic Client (In JSON, JSV, XML and SOAP flavours) that can talk to all your services.](https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
 - [No code-gen required, re-use your Web Service DTOs on your client applications so you're never out-of-sync](https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
