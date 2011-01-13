@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncServiceClientBase.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="XLinqExtensions.cs" />
     <Compile Include="XmlServiceClient.cs" />
