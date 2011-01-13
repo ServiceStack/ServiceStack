@@ -14,8 +14,8 @@ namespace ServiceStack.ServiceClient.Web
 	 * Need to provide async request options
 	 * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
 	 */
-	public abstract class AsyncServiceClientBase
-		: IAsyncServiceClient
+
+	public abstract class AsyncServiceClientBase : IAsyncServiceClient
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClientBase));
 
@@ -53,7 +53,7 @@ namespace ServiceStack.ServiceClient.Web
 
 			public Action<TResponse> OnSuccess;
 
-			public Action<TResponse> OnError;
+			public Action<TResponse, Exception> OnError;
 
 			public void StartTimer(TimeSpan timeOut)
 			{
@@ -117,7 +117,7 @@ namespace ServiceStack.ServiceClient.Web
 			SendAsync(request, onSuccess, null);
 		}
 
-		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse> onError)
+		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
 			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
 
@@ -213,7 +213,7 @@ namespace ServiceStack.ServiceClient.Web
 				catch (Exception ex)
 				{
 					Log.Debug(string.Format("Error Reading Response Error: {0}", ex.Message), ex);
-					if (requestState.OnError != null) requestState.OnError(default(T));
+					if (requestState.OnError != null) requestState.OnError(default(T), ex);
 				}
 				finally
 				{
@@ -232,7 +232,7 @@ namespace ServiceStack.ServiceClient.Web
 			//allDone.Set();
 		}
 
-		public void SendOneWay<TResponse>(object request, Action<TResponse> error)
+		public void SendOneWay<TResponse>(object request, Action<TResponse, Exception> error)
 		{
 			throw new NotImplementedException();
 		}
@@ -254,14 +254,14 @@ namespace ServiceStack.ServiceClient.Web
 					using (var stream = errorResponse.GetResponseStream())
 					{
 						var response = DeserializeFromStream<TResponse>(stream);
-						requestState.OnError(response);
+						requestState.OnError(response, new Exception("Web Service Exception"));
 					}
 				}
 				catch (WebException ex)
 				{
 					// Oh, well, we tried
 					Log.Debug(string.Format("WebException Reading Response Error: {0}", ex.Message), ex);
-					requestState.OnError(default(TResponse));
+					requestState.OnError(default(TResponse), ex);
 				}
 				return;
 			}
@@ -272,11 +272,11 @@ namespace ServiceStack.ServiceClient.Web
 				var customEx = WebRequestUtils.CreateCustomException(requestState.Url, authEx);
 
 				Log.Debug(string.Format("AuthenticationException: {0}", customEx.Message), customEx);
-				if (requestState.OnError != null) requestState.OnError(default(TResponse));
+				if (requestState.OnError != null) requestState.OnError(default(TResponse), authEx);
 			}
 
 			Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
-			if (requestState.OnError != null) requestState.OnError(default(TResponse));
+			if (requestState.OnError != null) requestState.OnError(default(TResponse), exception);
 		}
 
 		public void SendOneWay(object request)
