@@ -4,10 +4,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-	public class XmlServiceClient
-		: ServiceClientBase
+	public class XmlAsyncServiceClient
+		: AsyncServiceClientBase
 	{
-		public XmlServiceClient()
+		public XmlAsyncServiceClient()
 		{
 		}
 
@@ -15,12 +15,12 @@ namespace ServiceStack.ServiceClient.Web
 		/// Base Url of Service Stack's Web Service endpoints, i.e. http://localhost/ServiceStack/
 		/// </summary>
 		/// <param name="baseUri"></param>
-		public XmlServiceClient(string baseUri) 
+		public XmlAsyncServiceClient(string baseUri) 
 		{
 			this.BaseUri = baseUri.WithTrailingSlash() + "Xml/";
 		}
 
-		public XmlServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
+		public XmlAsyncServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
 			: base(syncReplyBaseUri, asyncOneWayBaseUri)
 		{
 		}

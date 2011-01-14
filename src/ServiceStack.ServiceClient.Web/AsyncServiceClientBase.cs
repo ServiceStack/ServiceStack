@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Authentication;
@@ -25,19 +26,35 @@ namespace ServiceStack.ServiceClient.Web
 
 		const int BufferSize = 1024;
 
-		internal class RequestState<TResponse>
+		internal class RequestState<TResponse> : IDisposable
 		{
+			private static readonly Dictionary<int, IDisposable> ActiveStates
+				= new Dictionary<int, IDisposable>();
+
+			internal int IdSequence = 0;
+
 			public RequestState()
 			{
 				BufferRead = new byte[BufferSize];
-				RequestData = new StringBuilder();
+				TextData = new StringBuilder();
+				BytesData = new MemoryStream(BufferSize);
 				Request = null;
 				ResponseStream = null;
+
+				Interlocked.Increment(ref Id);
+				lock (ActiveStates)
+				{
+					ActiveStates.Add(Id, this);
+				}
 			}
+
+			public readonly int Id;
 
 			public string Url;
 
-			public StringBuilder RequestData;
+			public StringBuilder TextData;
+
+			public MemoryStream BytesData;
 
 			public byte[] BufferRead;
 
@@ -71,6 +88,19 @@ namespace ServiceStack.ServiceClient.Web
 				}
 				this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
 				this.Timer.Dispose();
+				this.Dispose();
+			}
+
+			public void Dispose()
+			{
+				lock (ActiveStates)
+				{
+					ActiveStates.Remove(Id);
+				}
+
+				if (this.BytesData == null) return;
+				this.BytesData.Dispose();
+				this.BytesData = null;
 			}
 		}
 
@@ -119,6 +149,13 @@ namespace ServiceStack.ServiceClient.Web
 
 		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
+			var requestState = SendWebRequest(request, onSuccess, onError);
+
+			var result = requestState.Request.BeginGetResponse(ResponseCallback<TResponse>, requestState);
+		}
+
+		private RequestState<TResponse> SendWebRequest<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
 			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
 
 			var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
@@ -160,7 +197,8 @@ namespace ServiceStack.ServiceClient.Web
 					SerializeToStream(request, requestStream);
 				}
 			}
-			var result = webRequest.BeginGetResponse(ResponseCallback<TResponse>, requestState);
+
+			return requestState;
 		}
 
 		private void ResponseCallback<T>(IAsyncResult asyncResult)
@@ -196,19 +234,28 @@ namespace ServiceStack.ServiceClient.Web
 				if (read > 0)
 				{
 
-					requestState.RequestData.Append(Encoding.UTF8.GetString(requestState.BufferRead, 0, read));
+					requestState.BytesData.Write(requestState.BufferRead, 0, read);
 					var nextAsyncResult = responseStream.BeginRead(
 						requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
 
 					return;
 				}
-				
+
 				Interlocked.Increment(ref requestState.Completed);
 
 				var response = default(T);
 				try
 				{
-					response = DeserializeFromStream<T>(responseStream);
+					requestState.BytesData.Position = 0;
+					using (var reader = requestState.BytesData)
+					{
+						response = DeserializeFromStream<T>(reader);
+					}
+
+					if (requestState.OnSuccess != null)
+					{
+						requestState.OnSuccess(response);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -219,11 +266,6 @@ namespace ServiceStack.ServiceClient.Web
 				{
 					responseStream.Close();
 				}
-
-				if (requestState.OnSuccess != null)
-				{
-					requestState.OnSuccess(response);
-				}
 			}
 			catch (Exception ex)
 			{
@@ -232,9 +274,9 @@ namespace ServiceStack.ServiceClient.Web
 			//allDone.Set();
 		}
 
-		public void SendOneWay<TResponse>(object request, Action<TResponse, Exception> error)
+		public void SendOneWay<TResponse>(object request, Action<TResponse, Exception> onError)
 		{
-			throw new NotImplementedException();
+			var requestState = SendWebRequest(request, null, onError);
 		}
 
 		private void HandleResponseError<TResponse>(Exception exception, RequestState<TResponse> requestState)

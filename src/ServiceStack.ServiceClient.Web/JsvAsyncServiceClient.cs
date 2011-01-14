@@ -4,10 +4,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-	public class JsvServiceClient
-		: ServiceClientBase
+	public class JsvAsyncServiceClient
+		: AsyncServiceClientBase
 	{
-		public JsvServiceClient()
+		public JsvAsyncServiceClient()
 		{
 		}
 
@@ -15,12 +15,12 @@ namespace ServiceStack.ServiceClient.Web
 		/// Base Url of Service Stack's Web Service endpoints, i.e. http://localhost/ServiceStack/
 		/// </summary>
 		/// <param name="baseUri"></param>
-		public JsvServiceClient(string baseUri) 
+		public JsvAsyncServiceClient(string baseUri) 
 		{
 			this.BaseUri = baseUri.WithTrailingSlash() + "Jsv/";
 		}
 
-		public JsvServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
+		public JsvAsyncServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
 			: base(syncReplyBaseUri, asyncOneWayBaseUri)
 		{
 		}

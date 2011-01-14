@@ -80,6 +80,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncServiceClientBase.cs" />
+    <Compile Include="XmlAsyncServiceClient.cs" />
+    <Compile Include="JsonAsyncServiceClient.cs" />
+    <Compile Include="JsvAsyncServiceClient.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="XLinqExtensions.cs" />
     <Compile Include="XmlServiceClient.cs" />
