@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
-<Properties><Property Name="Solution" Value="ServiceStack.Common">
-</Property><Property Name="Solution File" Value="C:\src\ServiceStack\src\ServiceStack.Common.sln">
-</Property><Property Name="Date" Value="04 December 2010">
-</Property><Property Name="Time" Value="15:49:14">
-</Property></Properties><Event ErrorLevel="0" Project="SilverlightStack" Source="SilverlightStack\SilverlightStack.csproj" Description="Project converted successfully">
-</Event><Event ErrorLevel="3" Project="SilverlightStack" Source="SilverlightStack\SilverlightStack.csproj" Description="Converted">
-</Event><Event ErrorLevel="0" Project="SilverlightStack" Source="SilverlightStack\SilverlightStack.csproj" Description="Scan complete: Upgrade not required for project files.">
-</Event></UpgradeLog>
