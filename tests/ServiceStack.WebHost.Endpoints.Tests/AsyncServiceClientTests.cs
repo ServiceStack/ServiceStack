@@ -1,58 +1,81 @@
 using System;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
+using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-	[TestFixture]
-	public class AsyncServiceClientTests
+	public abstract class AsyncServiceClientTests
 	{
-		static AsyncServiceClientTests()
+		protected const string ListeningOn = "http://localhost:82/";
+
+		ExampleAppHostHttpListener appHost;
+
+		[TestFixtureSetUp]
+		public void OnTestFixtureSetUp()
 		{
-			LogManager.LogFactory = new ConsoleLogFactory();
-		}
-
-		private const string ListeningOn = "http://localhost:82/";
-		private const string BaseUri = ListeningOn + "ServiceStack/";
-
-		private readonly GetFactorial requestDto = new GetFactorial { ForNumber = 3 };
-
-		ExampleAppHost appHost;
-
-		[SetUp]
-		public void OnBeforeEachTest()
-		{
-			if (appHost != null)
-			{
-				appHost.Dispose();
-				appHost = null;
-			}
-			appHost = new ExampleAppHost();
+			appHost = new ExampleAppHostHttpListener();
 			appHost.Init();
 			appHost.Start(ListeningOn);
 		}
 
-		[Test]
-		public void Can_call_using_JsonAsyncServiceClient()
+		[TestFixtureTearDown]
+		public void OnTestFixtureTearDown()
 		{
-			var jsonClient = new JsonAsyncServiceClient(BaseUri);
-
-			GetFactorialResponse response = null;
-			jsonClient.SendAsync<GetFactorialResponse>(requestDto, r => response = r, 
-				(r, ex) => {
-					Console.WriteLine(ex.Message);
-					Assert.Fail(ex.Message);
-				});
-
-			Thread.Sleep(1);
-
-			Assert.That(response, Is.Not.Null);
-			Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(requestDto.ForNumber)));
+			appHost.Dispose();
 		}
 
+		protected abstract IServiceClient CreateServiceClient();
+
+		private static void FailOnAsyncError<T>(T response, Exception ex)
+		{
+			Assert.Fail(ex.Message);
+		}
+
+		[Test]
+		public void Can_call_SendAsync_on_ServiceClient()
+		{
+			var jsonClient = new JsonServiceClient(ListeningOn);
+
+			var request = new GetFactorial { ForNumber = 3 };
+			GetFactorialResponse response = null;
+			jsonClient.SendAsync<GetFactorialResponse>(request, r => response = r, FailOnAsyncError);
+
+			Thread.Sleep(1000);
+
+			Assert.That(response, Is.Not.Null, "No response received");
+			Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(request.ForNumber)));
+		}
+
+		[TestFixture]
+		public class JsonAsyncServiceClientTests : AsyncServiceClientTests
+		{
+			protected override IServiceClient CreateServiceClient()
+			{
+				return new JsonServiceClient(ListeningOn);
+			}
+		}
+
+		[TestFixture]
+		public class JsvAsyncServiceClientTests : AsyncServiceClientTests
+		{
+			protected override IServiceClient CreateServiceClient()
+			{
+				return new JsvServiceClient(ListeningOn);
+			}
+		}
+
+		[TestFixture]
+		public class XmlAsyncServiceClientTests : AsyncServiceClientTests
+		{
+			protected override IServiceClient CreateServiceClient()
+			{
+				return new XmlServiceClient(ListeningOn);
+			}
+		}
 	}
+
+
 }

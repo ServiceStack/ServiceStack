@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Can_start_Listener_and_call_GetFactorial_WebService()
 		{
-			var appHost = new ExampleAppHost();
+			var appHost = new ExampleAppHostHttpListener();
 			appHost.Init();
 			appHost.Start(ListeningOn);
 
@@ -25,6 +25,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var response = client.Send<GetFactorialResponse>(request);
 
 			Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(request.ForNumber)));
+
+			appHost.Dispose();
 		}
 	}
 }

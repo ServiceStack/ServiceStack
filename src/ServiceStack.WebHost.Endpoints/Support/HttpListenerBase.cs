@@ -213,6 +213,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				EndpointHost.Config.ServiceManager.Dispose();
 			}
+
+			Instance = null;
 		}
 	}
 }

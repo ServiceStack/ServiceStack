@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
@@ -46,5 +47,9 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
+		public override StreamDeserializerDelegate StreamDeserializer
+		{
+			get { return TypeSerializer.DeserializeFromStream; }
+		}
 	}
 }

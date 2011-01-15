@@ -79,10 +79,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncServiceClientBase.cs" />
-    <Compile Include="XmlAsyncServiceClient.cs" />
-    <Compile Include="JsonAsyncServiceClient.cs" />
-    <Compile Include="JsvAsyncServiceClient.cs" />
+    <Compile Include="AsyncServiceClient.cs" />
+    <Compile Include="XmlRestClientAsync.cs" />
+    <Compile Include="JsvRestClientAsync.cs" />
+    <Compile Include="JsonRestClientAsync.cs" />
+    <Compile Include="XmlRestServiceClient.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="XLinqExtensions.cs" />
     <Compile Include="XmlServiceClient.cs" />

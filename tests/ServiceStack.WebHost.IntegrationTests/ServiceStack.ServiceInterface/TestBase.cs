@@ -74,6 +74,25 @@ namespace ServiceStack.ServiceInterface.Testing
 				return (TResponse)response;
 			}
 
+			public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+			{
+				var response = default(TResponse);
+				try
+				{
+					response = this.Send<TResponse>(request);
+					onSuccess(response);
+				}
+				catch (Exception ex)
+				{
+					if (onError != null)
+					{
+						onError(response, ex);
+						return;
+					}
+					Console.WriteLine("Error: " + ex.Message);
+				}
+			}
+
 			public void Dispose() { }
 		}
 

@@ -98,10 +98,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostListenerBaseTests.cs" />
+    <Compile Include="AsyncRestServiceClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
-    <Compile Include="Support\Host\ExampleAppHost.cs" />
+    <Compile Include="Support\Host\ExampleAppHostHttpListener.cs" />
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="HttpRequestExtensionsTests.cs" />
     <Compile Include="IntegrationTests\ConfigureDatabase.cs" />

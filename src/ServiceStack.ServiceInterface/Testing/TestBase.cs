@@ -73,6 +73,12 @@ namespace ServiceStack.ServiceInterface.Testing
 				return (TResponse)response;
 			}
 
+			public void SendAsync<TResponse>(object request, 
+				Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+			{
+				throw new NotImplementedException();
+			}
+
 			public void Dispose() { }
 		}
 

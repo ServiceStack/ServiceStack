@@ -4,6 +4,7 @@ using System.Net;
 using System.Security.Authentication;
 using ServiceStack.Logging;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
@@ -15,15 +16,22 @@ namespace ServiceStack.ServiceClient.Web
 	public abstract class ServiceClientBase
 		: IServiceClient
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof (ServiceClientBase));
+		private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
 		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
 
 		public const string DefaultHttpMethod = "POST";
 
+		readonly AsyncServiceClient asyncClient;
+
 		protected ServiceClientBase()
 		{
 			this.HttpMethod = DefaultHttpMethod;
+			asyncClient = new AsyncServiceClient {
+				ContentType = ContentType,
+				StreamSerializer = SerializeToStream,
+				StreamDeserializer = StreamDeserializer
+			};
 		}
 
 		protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
@@ -56,6 +64,8 @@ namespace ServiceStack.ServiceClient.Web
 		public abstract void SerializeToStream(object request, Stream stream);
 
 		public abstract T DeserializeFromStream<T>(Stream stream);
+
+		public abstract StreamDeserializerDelegate StreamDeserializer { get; }
 
 		public virtual TResponse Send<TResponse>(object request)
 		{
@@ -129,7 +139,7 @@ namespace ServiceStack.ServiceClient.Web
 				if (!isHttpGet)
 				{
 					client.ContentType = ContentType;
-				
+
 					using (var requestStream = client.GetRequestStream())
 					{
 						SerializeToStream(request, requestStream);
@@ -148,6 +158,12 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
 			var client = SendRequest(request, requestUri);
+		}
+
+		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
+			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
+			asyncClient.SendAsync("POST", requestUri, request, onSuccess, onError);
 		}
 
 		public void Dispose() { }

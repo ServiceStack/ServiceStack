@@ -11,6 +11,7 @@ using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
 
+	[RestService("/factorial/{ForNumber}")]
 	[DataContract]
 	public class GetFactorial
 	{
@@ -40,16 +41,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-	public class ExampleAppHost
+	public class ExampleAppHostHttpListener
 		: AppHostHttpListenerBase
 	{
 		private static ILog log;
 
-		public ExampleAppHost()
+		public ExampleAppHostHttpListener()
 			: base("ServiceStack Examples", typeof(GetFactorialService).Assembly)
 		{
 			LogManager.LogFactory = new DebugLogFactory();
-			log = LogManager.GetLogger(typeof(ExampleAppHost));
+			log = LogManager.GetLogger(typeof(ExampleAppHostHttpListener));
 		}
 
 		public override void Configure(Container container)

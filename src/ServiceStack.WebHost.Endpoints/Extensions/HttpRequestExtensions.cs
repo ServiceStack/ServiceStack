@@ -190,6 +190,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static bool HasAnyOfContentTypes(this IHttpRequest request, params string[] contentTypes)
 		{
+			if (contentTypes == null || request.ContentType == null) return false;
 			foreach (var contentType in contentTypes)
 			{
 				if (IsContentType(request, contentType)) return true;

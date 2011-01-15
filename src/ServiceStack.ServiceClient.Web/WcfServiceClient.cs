@@ -3,7 +3,6 @@ using System.Xml;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
-using ServiceStack.ServiceClient.Web;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -120,6 +119,11 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				client.Proxy.SendOneWay(message);
 			}
+		}
+
+		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void Dispose()

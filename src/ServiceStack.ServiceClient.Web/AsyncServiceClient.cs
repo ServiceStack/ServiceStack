@@ -6,7 +6,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using ServiceStack.Logging;
-using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
@@ -16,34 +16,33 @@ namespace ServiceStack.ServiceClient.Web
 	 * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
 	 */
 
-	public abstract class AsyncServiceClientBase : IAsyncServiceClient
+	public class AsyncServiceClient
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClientBase));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
 
 		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
 
-		public const string DefaultHttpMethod = "POST";
+		const int BufferSize = 4096;
 
-		const int BufferSize = 1024;
+		internal static int IdSequence;
 
 		internal class RequestState<TResponse> : IDisposable
 		{
 			private static readonly Dictionary<int, IDisposable> ActiveStates
 				= new Dictionary<int, IDisposable>();
 
-			internal int IdSequence = 0;
-
 			public RequestState()
 			{
 				BufferRead = new byte[BufferSize];
 				TextData = new StringBuilder();
 				BytesData = new MemoryStream(BufferSize);
-				Request = null;
+				WebRequest = null;
 				ResponseStream = null;
 
-				Interlocked.Increment(ref Id);
 				lock (ActiveStates)
 				{
+					Interlocked.Increment(ref IdSequence);
+					Id = IdSequence;
 					ActiveStates.Add(Id, this);
 				}
 			}
@@ -58,9 +57,11 @@ namespace ServiceStack.ServiceClient.Web
 
 			public byte[] BufferRead;
 
-			public HttpWebRequest Request;
+			public object Request;
 
-			public HttpWebResponse Response;
+			public HttpWebRequest WebRequest;
+
+			public HttpWebResponse WebResponse;
 
 			public Stream ResponseStream;
 
@@ -81,9 +82,9 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				if (Interlocked.Increment(ref Completed) == 1)
 				{
-					if (this.Request != null)
+					if (this.WebRequest != null)
 					{
-						this.Request.Abort();
+						this.WebRequest.Abort();
 					}
 				}
 				this.Timer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
@@ -104,62 +105,34 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
-		protected AsyncServiceClientBase()
+		public AsyncServiceClient()
 		{
-			this.HttpMethod = DefaultHttpMethod;
 			this.Timeout = TimeSpan.FromSeconds(60);
 		}
 
-		protected AsyncServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
-			: this()
-		{
-			this.SyncReplyBaseUri = syncReplyBaseUri;
-			this.AsyncOneWayBaseUri = asyncOneWayBaseUri;
-		}
-
-		public string BaseUri
-		{
-			set
-			{
-				var baseUri = value.WithTrailingSlash();
-				this.SyncReplyBaseUri = baseUri + "SyncReply/";
-				this.AsyncOneWayBaseUri = baseUri + "AsyncOneWay/";
-			}
-		}
-
-		public string SyncReplyBaseUri { get; set; }
-
-		public string AsyncOneWayBaseUri { get; set; }
-
 		public TimeSpan Timeout { get; set; }
 
-		public abstract string ContentType { get; }
+		public string ContentType { get; set; }
 
-		public string HttpMethod { get; set; }
+		public StreamSerializerDelegate StreamSerializer { get; set; }
 
-		public abstract void SerializeToStream(object request, Stream stream);
+		public StreamDeserializerDelegate StreamDeserializer { get; set; }
 
-		public abstract T DeserializeFromStream<T>(Stream stream);
-
-
-		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess)
+		public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
+			Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
-			SendAsync(request, onSuccess, null);
+			var requestState = SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
 		}
 
-		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		private RequestState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
+			Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
-			var requestState = SendWebRequest(request, onSuccess, onError);
+			if (httpMethod == null) throw new ArgumentNullException("httpMethod");
 
-			var result = requestState.Request.BeginGetResponse(ResponseCallback<TResponse>, requestState);
-		}
-
-		private RequestState<TResponse> SendWebRequest<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-		{
-			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
-
-			var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
-			if (isHttpGet)
+			var requestUri = absoluteUrl;
+			var httpGetOrDelete = (httpMethod == "GET" || httpMethod == "DELETE");
+			var hasQueryString = request != null && httpGetOrDelete;
+			if (hasQueryString)
 			{
 				var queryString = QueryStringSerializer.SerializeToString(request);
 				if (!string.IsNullOrEmpty(queryString))
@@ -173,32 +146,52 @@ namespace ServiceStack.ServiceClient.Web
 			var requestState = new RequestState<TResponse>
 			{
 				Url = requestUri,
-				Request = webRequest,
+				WebRequest = webRequest,
+				Request = request,
 				OnSuccess = onSuccess,
 				OnError = onError,
 			};
 			requestState.StartTimer(this.Timeout);
 
 			webRequest.Accept = string.Format("{0}, */*", ContentType);
-			webRequest.Method = HttpMethod ?? DefaultHttpMethod;
+			webRequest.Method = httpMethod;
 
 			if (HttpWebRequestFilter != null)
 			{
 				HttpWebRequestFilter(webRequest);
 			}
 
-			if (!isHttpGet)
+			if (!httpGetOrDelete && request != null)
 			{
 				webRequest.ContentType = ContentType;
-
-				//TODO: change to use: webRequest.BeginGetRequestStream()
-				using (var requestStream = webRequest.GetRequestStream())
-				{
-					SerializeToStream(request, requestStream);
-				}
+				webRequest.BeginGetRequestStream(RequestCallback<TResponse>, requestState);
+			}
+			else
+			{
+				var result = requestState.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, requestState);
 			}
 
 			return requestState;
+		}
+
+		private void RequestCallback<T>(IAsyncResult asyncResult)
+		{
+			var requestState = (RequestState<T>)asyncResult.AsyncState;
+			try
+			{
+				var req = requestState.WebRequest;
+				var postStream = req.EndGetRequestStream(asyncResult);
+
+				StreamSerializer(requestState.Request, postStream);
+
+				postStream.Close();
+
+				var result = requestState.WebRequest.BeginGetResponse(ResponseCallback<T>, requestState);
+			}
+			catch (Exception ex)
+			{
+				HandleResponseError(ex, requestState);
+			}
 		}
 
 		private void ResponseCallback<T>(IAsyncResult asyncResult)
@@ -206,11 +199,11 @@ namespace ServiceStack.ServiceClient.Web
 			var requestState = (RequestState<T>)asyncResult.AsyncState;
 			try
 			{
-				var webRequest = requestState.Request;
-				requestState.Response = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
+				var webRequest = requestState.WebRequest;
+				requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
 
 				// Read the response into a Stream object.
-				var responseStream = requestState.Response.GetResponseStream();
+				var responseStream = requestState.WebResponse.GetResponseStream();
 				requestState.ResponseStream = responseStream;
 
 				var asyncRead = responseStream.BeginRead(requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
@@ -249,7 +242,7 @@ namespace ServiceStack.ServiceClient.Web
 					requestState.BytesData.Position = 0;
 					using (var reader = requestState.BytesData)
 					{
-						response = DeserializeFromStream<T>(reader);
+						response = (T)this.StreamDeserializer(typeof(T), reader);
 					}
 
 					if (requestState.OnSuccess != null)
@@ -274,11 +267,6 @@ namespace ServiceStack.ServiceClient.Web
 			//allDone.Set();
 		}
 
-		public void SendOneWay<TResponse>(object request, Action<TResponse, Exception> onError)
-		{
-			var requestState = SendWebRequest(request, null, onError);
-		}
-
 		private void HandleResponseError<TResponse>(Exception exception, RequestState<TResponse> requestState)
 		{
 			var webEx = exception as WebException;
@@ -295,7 +283,7 @@ namespace ServiceStack.ServiceClient.Web
 				{
 					using (var stream = errorResponse.GetResponseStream())
 					{
-						var response = DeserializeFromStream<TResponse>(stream);
+						var response = (TResponse)this.StreamDeserializer(typeof(TResponse), stream);
 						requestState.OnError(response, new Exception("Web Service Exception"));
 					}
 				}
@@ -319,11 +307,6 @@ namespace ServiceStack.ServiceClient.Web
 
 			Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
 			if (requestState.OnError != null) requestState.OnError(default(TResponse), exception);
-		}
-
-		public void SendOneWay(object request)
-		{
-			throw new NotImplementedException();
 		}
 
 		public void Dispose() { }

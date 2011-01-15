@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 
@@ -34,6 +36,11 @@ namespace ServiceStack.ServiceClient.Web
 		public override T DeserializeFromStream<T>(Stream stream)
 		{
 			return JsonDataContractDeserializer.Instance.DeserializeFromStream<T>(stream);
+		}
+
+		public override StreamDeserializerDelegate StreamDeserializer
+		{
+			get { return JsonSerializer.DeserializeFromStream; }
 		}
 	}
 }
