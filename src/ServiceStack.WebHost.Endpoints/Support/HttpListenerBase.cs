@@ -178,7 +178,30 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
 				Log.ErrorFormat(error);
-				throw;
+
+				try
+				{
+					var sb = new StringBuilder();
+					sb.AppendLine("{");
+					sb.AppendLine("\"ResponseStatus\":{");
+					sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
+					sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
+					sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
+					sb.AppendLine("}");
+					sb.AppendLine("}");
+
+					context.Response.StatusCode = 500;
+					context.Response.ContentType = ContentType.Json;
+					var sbBytes = sb.ToString().ToUtf8Bytes();
+					context.Response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
+					context.Response.Close();
+				}
+				catch (Exception errorEx)
+				{
+					error = string.Format("Error this.ProcessRequest(context)(Excetption): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
+					Log.ErrorFormat(error);
+
+				}
 			}			
 
 			//System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.Now);

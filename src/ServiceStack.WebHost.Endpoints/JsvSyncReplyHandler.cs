@@ -54,6 +54,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public static void WriteDebugResponse(IHttpResponse httpRes, object response)
 		{
 			httpRes.WriteToResponse(response, WriteDebugRequest, ContentType.PlainText);
+			httpRes.OutputStream.Close();
 		}
 	}
 }
