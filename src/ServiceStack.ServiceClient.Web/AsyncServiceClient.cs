@@ -73,6 +73,21 @@ namespace ServiceStack.ServiceClient.Web
 
 			public Action<TResponse, Exception> OnError;
 
+			public void HandleError(TResponse response, Exception ex)
+			{
+				try
+				{
+					if (OnError != null)
+					{
+						OnError(response, ex);
+					}
+				}
+				finally
+				{
+					UnRegister();
+				} 
+			}
+
 			public void StartTimer(TimeSpan timeOut)
 			{
 				this.Timer = new Timer(this.TimedOut, this, (int)timeOut.TotalMilliseconds, System.Threading.Timeout.Infinite);
@@ -94,14 +109,19 @@ namespace ServiceStack.ServiceClient.Web
 
 			public void Dispose()
 			{
-				lock (ActiveStates)
-				{
-					ActiveStates.Remove(Id);
-				}
+				UnRegister();
 
 				if (this.BytesData == null) return;
 				this.BytesData.Dispose();
 				this.BytesData = null;
+			}
+
+			private void UnRegister()
+			{
+				lock (ActiveStates)
+				{
+					ActiveStates.Remove(Id);
+				}
 			}
 		}
 
@@ -253,7 +273,7 @@ namespace ServiceStack.ServiceClient.Web
 				catch (Exception ex)
 				{
 					Log.Debug(string.Format("Error Reading Response Error: {0}", ex.Message), ex);
-					if (requestState.OnError != null) requestState.OnError(default(T), ex);
+					requestState.HandleError(default(T), ex);
 				}
 				finally
 				{
@@ -277,21 +297,19 @@ namespace ServiceStack.ServiceClient.Web
 				Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
 				Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-				if (requestState.OnError == null) return;
-
 				try
 				{
 					using (var stream = errorResponse.GetResponseStream())
 					{
 						var response = (TResponse)this.StreamDeserializer(typeof(TResponse), stream);
-						requestState.OnError(response, new Exception("Web Service Exception"));
+						requestState.HandleError(response, new Exception("Web Service Exception"));
 					}
 				}
 				catch (WebException ex)
 				{
 					// Oh, well, we tried
 					Log.Debug(string.Format("WebException Reading Response Error: {0}", ex.Message), ex);
-					requestState.OnError(default(TResponse), ex);
+					requestState.HandleError(default(TResponse), ex);
 				}
 				return;
 			}
@@ -302,11 +320,11 @@ namespace ServiceStack.ServiceClient.Web
 				var customEx = WebRequestUtils.CreateCustomException(requestState.Url, authEx);
 
 				Log.Debug(string.Format("AuthenticationException: {0}", customEx.Message), customEx);
-				if (requestState.OnError != null) requestState.OnError(default(TResponse), authEx);
+				requestState.HandleError(default(TResponse), authEx);
 			}
 
 			Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
-			if (requestState.OnError != null) requestState.OnError(default(TResponse), exception);
+			requestState.HandleError(default(TResponse), exception);
 		}
 
 		public void Dispose() { }

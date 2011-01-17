@@ -2,10 +2,14 @@
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using Funq;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -18,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	/// </summary>
 	public abstract class HttpListenerBase : IDisposable
 	{
-		private readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
+		private static readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
 
 		private const int RequestThreadAbortedException = 995;
 
@@ -28,6 +32,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		private readonly DateTime startTime;
 		//private readonly ServiceManager serviceManager;
 		public static HttpListenerBase Instance { get; protected set; }
+
+		private static readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
 
 		public event DelReceiveWebRequest ReceiveWebRequest;
 
@@ -40,7 +46,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			SetConfig(new EndpointHostConfig {
+			SetConfig(new EndpointHostConfig
+			{
 				ServiceName = serviceName,
 				ServiceManager = new ServiceManager(assembliesWithServices),
 			});
@@ -102,9 +109,81 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			this.IsStarted = true;
 			this.Listener.Start();
 
-			var result = this.Listener.BeginGetContext(
-				WebRequestCallback, this.Listener);
+			ThreadPool.QueueUserWorkItem(Listen);
 		}
+
+		// Loop here to begin processing of new requests.
+		private void Listen(object state)
+		{
+			while (this.Listener.IsListening)
+			{
+				this.Listener.BeginGetContext(ListenerCallback, this.Listener);
+				listenForNextRequest.WaitOne();
+
+				if (this.Listener == null) return;
+			}
+		}
+
+		private static int requestCounter = 0;
+
+		// Handle the processing of a request in here.
+		private void ListenerCallback(IAsyncResult asyncResult)
+		{
+			var listener = asyncResult.AsyncState as HttpListener;
+			HttpListenerContext context = null;
+
+			int requestNumber = Interlocked.Increment(ref requestCounter);
+
+			if (listener == null) return;
+
+			try
+			{
+				// The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
+				// blocks until there is a request to be processed or some type of data is available.
+				context = listener.EndGetContext(asyncResult);
+			}
+			catch (Exception ex)
+			{
+				// You will get an exception when httpListener.Stop() is called
+				// because there will be a thread stopped waiting on the .EndGetContext()
+				// method, and again, that is just the way most Begin/End asynchronous
+				// methods of the .NET Framework work.
+				System.Diagnostics.Debug.WriteLine(ex.ToString());
+				return;
+			}
+			finally
+			{
+				// Once we know we have a request (or exception), we signal the other thread
+				// so that it calls the BeginGetContext() (or possibly exits if we're not
+				// listening any more) method to start handling the next incoming request
+				// while we continue to process this request on a different thread.
+				listenForNextRequest.Set();
+			}
+
+			if (context == null) return;
+
+			//System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.Now);
+			var request = context.Request;
+
+			//if (request.HasEntityBody)
+
+			if (this.ReceiveWebRequest != null)
+				this.ReceiveWebRequest(context);
+
+			try
+			{
+				this.ProcessRequest(context);
+			}
+			catch (Exception ex)
+			{
+				var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
+				log.ErrorFormat(error);
+				throw;
+			}			
+
+			//System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.Now);
+		}
+
 
 		/// <summary>
 		/// Shut down the Web Service
@@ -119,68 +198,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 			catch (HttpListenerException ex)
 			{
-				if (ex.ErrorCode != RequestThreadAbortedException)
-					throw;
+				if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request",
-								RequestThreadAbortedException);
+				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
 			}
 			this.Listener = null;
 			this.IsStarted = false;
-		}
-
-		private void WriteException(HttpListenerContext context, Exception ex)
-		{
-			if (context == null) throw ex;
-
-			try
-			{
-				using (var sw = new StreamWriter(context.Response.OutputStream))
-				{
-					sw.WriteLine("Error: " + ex.Message + "\r\nStackTrace:" + ex.StackTrace);
-				}
-				context.Response.Close();
-			}
-			catch(Exception writeEx)
-			{
-				log.Error("Error writing Exception to the response: " + writeEx.Message, writeEx);
-			}
-		}
-
-		protected void WebRequestCallback(IAsyncResult result)
-		{
-			if (this.Listener == null)
-				return;
-
-			HttpListenerContext context = null;
-			try
-			{
-				// Get out the context object
-				context = this.Listener.EndGetContext(result);
-
-				// *** Immediately set up the next context
-				this.Listener.BeginGetContext(WebRequestCallback, this.Listener);
-
-				if (this.ReceiveWebRequest != null)
-					this.ReceiveWebRequest(context);
-
-				this.ProcessRequest(context);
-
-			}
-			catch (HttpListenerException ex)
-			{
-				//if (ex.ErrorCode != RequestThreadAbortedException)
-				//    throw;
-
-				log.Error(string.Format("Swallowing HttpListenerException({0}) Thread exit or aborted request",
-								RequestThreadAbortedException), ex);
-				WriteException(context, ex);
-			}
-			catch (Exception ex)
-			{
-				log.Error("Swallowing Exception: " + ex.Message, ex);
-				WriteException(context, ex);
-			}
 		}
 
 		/// <summary>

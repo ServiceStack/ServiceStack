@@ -124,7 +124,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+				var errorMessage = string.Format("Error occured while Processing Request: [{0}] {1}", 
+					ex.GetType().Name, ex.Message);
 				Log.Error(errorMessage, ex);
 
 				var operationName = result != null
