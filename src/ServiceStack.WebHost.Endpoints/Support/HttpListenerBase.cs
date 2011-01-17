@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	/// </summary>
 	public abstract class HttpListenerBase : IDisposable
 	{
-		private static readonly ILog log = LogManager.GetLogger(typeof(HttpListenerBase));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 
 		private const int RequestThreadAbortedException = 995;
 
@@ -30,17 +30,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected bool IsStarted = false;
 
 		private readonly DateTime startTime;
-		//private readonly ServiceManager serviceManager;
+
 		public static HttpListenerBase Instance { get; protected set; }
 
-		private static readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
+		private static readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
 		public event DelReceiveWebRequest ReceiveWebRequest;
 
 		protected HttpListenerBase()
 		{
 			this.startTime = DateTime.Now;
-			log.Info("Begin Initializing Application...");
+			Log.Info("Begin Initializing Application...");
 		}
 
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			var elapsed = DateTime.Now - this.startTime;
-			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
+			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
 		public abstract void Configure(Container container);
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			while (this.Listener.IsListening)
 			{
 				this.Listener.BeginGetContext(ListenerCallback, this.Listener);
-				listenForNextRequest.WaitOne();
+				ListenForNextRequest.WaitOne();
 
 				if (this.Listener == null) return;
 			}
@@ -132,7 +132,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var listener = asyncResult.AsyncState as HttpListener;
 			HttpListenerContext context = null;
 
-			int requestNumber = Interlocked.Increment(ref requestCounter);
+			//int requestNumber = Interlocked.Increment(ref requestCounter);
 
 			if (listener == null) return;
 
@@ -157,7 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// so that it calls the BeginGetContext() (or possibly exits if we're not
 				// listening any more) method to start handling the next incoming request
 				// while we continue to process this request on a different thread.
-				listenForNextRequest.Set();
+				ListenForNextRequest.Set();
 			}
 
 			if (context == null) return;
@@ -177,7 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			catch (Exception ex)
 			{
 				var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-				log.ErrorFormat(error);
+				Log.ErrorFormat(error);
 				throw;
 			}			
 
@@ -200,7 +200,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-				log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
+				Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
 			}
 			this.Listener = null;
 			this.IsStarted = false;

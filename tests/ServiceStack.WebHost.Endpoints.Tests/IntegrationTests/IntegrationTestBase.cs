@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		private static ILog log;
 
 		public IntegrationTestBase()
-			: base("ServiceStack Examples", typeof(MovieRestService).Assembly)
+			: base("ServiceStack Examples", typeof(RestMovieService).Assembly)
 		{
 			LogManager.LogFactory = new DebugLogFactory();
 			log = LogManager.GetLogger(GetType());

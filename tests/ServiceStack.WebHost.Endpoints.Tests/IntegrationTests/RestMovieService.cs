@@ -8,32 +8,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 	/// <summary>
 	/// An example of a very basic web service
 	/// </summary>
-	public class MovieRestService
-		: IService<Movies>
-		  , IRestGetService<Movies>
-		  , IRestPutService<Movies>
-		  , IRestPostService<Movies>
-		  , IRestDeleteService<Movies>
+	public class RestMovieService
+		: IService<RestMovies>
+		  , IRestGetService<RestMovies>
+		  , IRestPutService<RestMovies>
+		  , IRestPostService<RestMovies>
+		  , IRestDeleteService<RestMovies>
 		  , IRequiresRequestContext
 	{
 		public IRequestContext RequestContext { get; set; }
 
 		public IDbConnectionFactory DbFactory { get; set; }
 
-		public object Execute(Movies request)
+		public object Execute(RestMovies request)
 		{
 			return Get(request);
 		}
 
-		public object Get(Movies request)
+		public object Get(RestMovies request)
 		{
-			var response = new MoviesResponse();
+			var response = new RestMoviesResponse();
 
 			DbFactory.Exec(dbCmd =>
 			{
 				if (request.Id != null)
 				{
-					var movie = dbCmd.GetByIdOrDefault<Movie>(request.Id);
+					var movie = dbCmd.GetByIdOrDefault<RestMovie>(request.Id);
 					if (movie != null)
 					{
 						response.Movies.Add(movie);
@@ -41,29 +41,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				}
 				else
 				{
-					response.Movies = dbCmd.Select<Movie>();
+					response.Movies = dbCmd.Select<RestMovie>();
 				}
 			});
 
 			return response;
 		}
 
-		public object Put(Movies request)
+		public object Put(RestMovies request)
 		{
 			DbFactory.Exec(dbCmd => dbCmd.Save(request.Movie));
-			return new MoviesResponse();
+			return new RestMoviesResponse();
 		}
 
-		public object Delete(Movies request)
+		public object Delete(RestMovies request)
 		{
-			DbFactory.Exec(dbCmd => dbCmd.DeleteById<Movie>(request.Id));
-			return new MoviesResponse();
+			DbFactory.Exec(dbCmd => dbCmd.DeleteById<RestMovie>(request.Id));
+			return new RestMoviesResponse();
 		}
 
-		public object Post(Movies request)
+		public object Post(RestMovies request)
 		{
 			DbFactory.Exec(dbCmd => dbCmd.Update(request.Movie));
-			return new MoviesResponse();
+			return new RestMoviesResponse();
 		}
 	}
 }

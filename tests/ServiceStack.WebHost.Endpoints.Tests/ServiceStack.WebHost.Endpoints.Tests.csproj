@@ -108,8 +108,8 @@
     <Compile Include="IntegrationTests\ConfigureDatabase.cs" />
     <Compile Include="IntegrationTests\ExampleConfig.cs" />
     <Compile Include="IntegrationTests\IntegrationTestBase.cs" />
-    <Compile Include="IntegrationTests\Movie.cs" />
-    <Compile Include="IntegrationTests\MovieRestService.cs" />
+    <Compile Include="IntegrationTests\RestMovie.cs" />
+    <Compile Include="IntegrationTests\RestMovieService.cs" />
     <Compile Include="IntegrationTests\MovieRestTests.cs" />
     <Compile Include="IntegrationTests\ResetMovieDatabase.cs" />
     <Compile Include="IntegrationTests\ResetMovieDatabaseService.cs" />

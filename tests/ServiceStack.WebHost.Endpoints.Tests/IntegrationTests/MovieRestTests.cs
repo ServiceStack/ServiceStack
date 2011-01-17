@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		[Test]
 		public void Can_list_all_movies()
 		{
-			SendToEachEndpoint<MoviesResponse>(new Movies(), HttpMethods.Get, response =>
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies(), HttpMethods.Get, response =>
 				Assert.That(response.Movies, Has.Count.EqualTo(ConfigureDatabase.Top5Movies.Count))
 			);
 		}
@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		public void Can_get_single_movie()
 		{
 			var topMovie = ConfigureDatabase.Top5Movies[0];
-			SendToEachEndpoint<MoviesResponse>(new Movies { Id = topMovie.Id }, HttpMethods.Get, response =>
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Id = topMovie.Id }, HttpMethods.Get, response =>
 				Assert.That(topMovie.Equals(response.Movies[0]), Is.True)
 			);
 		}
@@ -34,9 +34,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 			var updatedMovie = TypeSerializer.Clone(topMovie);
 			updatedMovie.Title = "Updated Movie";
 
-			SendToEachEndpoint<MoviesResponse>(new Movies { Movie = updatedMovie }, HttpMethods.Post, null);
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Movie = updatedMovie }, HttpMethods.Post, null);
 
-			SendToEachEndpoint<MoviesResponse>(new Movies { Id = topMovie.Id }, HttpMethods.Get, response =>
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Id = topMovie.Id }, HttpMethods.Get, response =>
 				Assert.That(updatedMovie.Equals(response.Movies[0]), Is.True)
 			);
 		}
@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		[Test]
 		public void Can_add_movie()
 		{
-			var newMovie = new Movie
+			var newMovie = new RestMovie
            	{
            		Id = "tt0110912",
            		Title = "Pulp Fiction",
@@ -55,9 +55,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
            		Genres = new List<string> { "Crime", "Drama", "Thriller" },
            	};
 
-			SendToEachEndpoint<MoviesResponse>(new Movies { Movie = newMovie }, HttpMethods.Put, null);
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Movie = newMovie }, HttpMethods.Put, null);
 
-			SendToEachEndpoint<MoviesResponse>(new Movies { Id = newMovie.Id }, HttpMethods.Get, response =>
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Id = newMovie.Id }, HttpMethods.Get, response =>
 				Assert.That(newMovie.Equals(response.Movies[0]), Is.True)
 			);
 		}
@@ -67,9 +67,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		{
 			var topMovie = ConfigureDatabase.Top5Movies[0];
 
-			SendToEachEndpoint<MoviesResponse>(new Movies { Id = topMovie.Id }, HttpMethods.Delete, null);
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Id = topMovie.Id }, HttpMethods.Delete, null);
 
-			SendToEachEndpoint<MoviesResponse>(new Movies { Id = topMovie.Id }, HttpMethods.Get, response =>
+			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Id = topMovie.Id }, HttpMethods.Get, response =>
 				Assert.That(response.Movies, Has.Count.EqualTo(0))
 			);
 		}
