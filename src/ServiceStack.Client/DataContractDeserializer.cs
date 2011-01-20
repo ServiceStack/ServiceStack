@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace ServiceStack.Client
+namespace ServiceStack.ServiceClient.Web
 {
 	public class DataContractDeserializer
 	{

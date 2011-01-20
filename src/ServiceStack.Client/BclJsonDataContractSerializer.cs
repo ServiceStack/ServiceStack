@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 
-namespace ServiceStack.Client
+namespace ServiceStack.ServiceClient.Web
 {
 	public class BclJsonDataContractSerializer
 	{
@@ -31,5 +31,12 @@ namespace ServiceStack.Client
 				throw new SerializationException("BclJsonDataContractSerializer: Error converting type: " + ex.Message, ex);
 			}
 		}
+
+		public void SerializeToStream<T>(T value, Stream stream)
+		{
+			var serializer = new DataContractJsonSerializer(typeof(T));
+			serializer.WriteObject(stream, value);
+		}
+
 	}
 }

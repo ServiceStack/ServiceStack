@@ -1,6 +1,6 @@
 using System.Security.Authentication;
 
-namespace ServiceStack.Client
+namespace ServiceStack.ServiceClient.Web
 {
 	internal static class WebRequestUtils
 	{

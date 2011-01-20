@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 
-namespace ServiceStack.Client
+namespace ServiceStack.ServiceClient.Web
 {
 	public class DataContractSerializer
 	{

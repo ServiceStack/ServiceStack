@@ -64,16 +64,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncServiceClient.cs" />
     <Compile Include="BinaryFormatterDeserializer.cs" />
     <Compile Include="BinaryFormatterSerializer.cs" />
     <Compile Include="DataContractDeserializer.cs" />
     <Compile Include="DataContractSerializer.cs" />
-    <Compile Include="IServiceClient.cs" />
+    <Compile Include="JsonRestClientAsync.cs" />
+    <Compile Include="ServiceStack.Interfaces\Delegates.cs" />
+    <Compile Include="ServiceStack.Interfaces\IRestClient.cs" />
+    <Compile Include="ServiceStack.Interfaces\IRestClientAsync.cs" />
+    <Compile Include="ServiceStack.Interfaces\IServiceClient.cs" />
     <Compile Include="BclJsonDataContractDeserializer.cs" />
     <Compile Include="BclJsonDataContractSerializer.cs" />
     <Compile Include="JsonServiceClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceStack.Interfaces\ConsoleLogFactory.cs" />
+    <Compile Include="ServiceStack.Interfaces\ConsoleLogger.cs" />
+    <Compile Include="ServiceStack.Interfaces\DebugLogFactory.cs" />
+    <Compile Include="ServiceStack.Interfaces\DebugLogger.cs" />
+    <Compile Include="ServiceStack.Interfaces\ILog.cs" />
+    <Compile Include="ServiceStack.Interfaces\ILogFactory.cs" />
+    <Compile Include="ServiceStack.Interfaces\IServiceClientAsync.cs" />
+    <Compile Include="ServiceStack.Interfaces\LogManager.cs" />
+    <Compile Include="ServiceStack.Text\JsDelegates.cs" />
+    <Compile Include="ServiceStack.Text\QueryStringSerializer.cs" />
+    <Compile Include="ServiceStack.Text\XmlSerializer.cs" />
     <Compile Include="WebRequestUtils.cs" />
+    <Compile Include="XmlRestClientAsync.cs" />
+    <Compile Include="XmlRestServiceClient.cs" />
     <Compile Include="XmlServiceClient.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

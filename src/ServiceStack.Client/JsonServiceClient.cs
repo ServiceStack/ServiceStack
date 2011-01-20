@@ -2,8 +2,9 @@ using System;
 using System.IO;
 using System.Net;
 using System.Security.Authentication;
+using ServiceStack.Service;
 
-namespace ServiceStack.Client
+namespace ServiceStack.ServiceClient.Web
 {
 	public class JsonServiceClient : IServiceClient
 	{
