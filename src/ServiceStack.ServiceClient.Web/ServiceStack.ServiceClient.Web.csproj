@@ -80,10 +80,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncServiceClient.cs" />
+    <Compile Include="HttpMethod.cs" />
     <Compile Include="XmlRestClientAsync.cs" />
     <Compile Include="JsvRestClientAsync.cs" />
     <Compile Include="JsonRestClientAsync.cs" />
-    <Compile Include="XmlRestServiceClient.cs" />
     <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="XLinqExtensions.cs" />
     <Compile Include="XmlServiceClient.cs" />

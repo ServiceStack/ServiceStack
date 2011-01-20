@@ -38,26 +38,24 @@ namespace ServiceStack.ServiceClient.Web
 
 		public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
-			this.client.SendAsync("GET", GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+			this.client.SendAsync(HttpMethod.Get, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
 		}
 
 		public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
-			this.client.SendAsync("DELETE", GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+			this.client.SendAsync(HttpMethod.Delete, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
 		}
 
 		public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
-			this.client.SendAsync("POST", GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+			this.client.SendAsync(HttpMethod.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
 		}
 
 		public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
-			this.client.SendAsync("PUT", GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+			this.client.SendAsync(HttpMethod.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
 		}
 
-		public void Dispose()
-		{
-		}
+		public void Dispose() {}
 	}
 }

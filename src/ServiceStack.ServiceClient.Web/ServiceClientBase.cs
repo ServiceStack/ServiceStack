@@ -154,6 +154,14 @@ namespace ServiceStack.ServiceClient.Web
 			return client;
 		}
 
+		private string GetUrl(string relativeOrAbsoluteUrl)
+		{
+			return relativeOrAbsoluteUrl.StartsWith("http:")
+				|| relativeOrAbsoluteUrl.StartsWith("https:")
+					 ? relativeOrAbsoluteUrl
+					 : this.SyncReplyBaseUri + relativeOrAbsoluteUrl;
+		}
+
 		public void SendOneWay(object request)
 		{
 			var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
@@ -163,7 +171,27 @@ namespace ServiceStack.ServiceClient.Web
 		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
 			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
-			asyncClient.SendAsync("POST", requestUri, request, onSuccess, onError);
+			asyncClient.SendAsync(Web.HttpMethod.Post, requestUri, request, onSuccess, onError);
+		}
+
+		public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
+			asyncClient.SendAsync(Web.HttpMethod.Get, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+		}
+
+		public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
+			asyncClient.SendAsync(Web.HttpMethod.Delete, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+		}
+
+		public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
+			asyncClient.SendAsync(Web.HttpMethod.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+		}
+
+		public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
+			asyncClient.SendAsync(Web.HttpMethod.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
 		}
 
 		public void Dispose() { }

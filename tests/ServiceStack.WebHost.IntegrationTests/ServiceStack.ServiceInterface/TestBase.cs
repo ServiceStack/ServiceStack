@@ -92,6 +92,25 @@ namespace ServiceStack.ServiceInterface.Testing
 					Console.WriteLine("Error: " + ex.Message);
 				}
 			}
+			public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+			{
+				throw new NotImplementedException();
+			}
 
 			public void Dispose() { }
 		}
