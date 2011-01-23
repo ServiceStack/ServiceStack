@@ -10,23 +10,31 @@ namespace ServiceStack.WebHost.Endpoints
 		public MetadataConfig Xml { get; set; }
 		public MetadataConfig Json { get; set; }
 		public MetadataConfig Jsv { get; set; }
+		public MetadataConfig Custom { get; set; }
 
-		public MetadataConfig GetEndpointConfig(EndpointType endpointType)
+		public MetadataConfig GetEndpointConfig(string contentType)
 		{
-			switch (endpointType)
+			switch (contentType)
 			{
-				case EndpointType.Soap11:
+				case ContentType.Soap11:
 					return this.Soap11;
-				case EndpointType.Soap12:
+				case ContentType.Soap12:
 					return this.Soap12;
-				case EndpointType.Xml:
+				case ContentType.Xml:
 					return this.Xml;
-				case EndpointType.Json:
+				case ContentType.Json:
 					return this.Json;
-				case EndpointType.Jsv:
+				case ContentType.Jsv:
 					return this.Jsv;
 			}
-			return null;
+
+			var format = ContentType.GetContentFormat(contentType);
+			return new MetadataConfig
+				(
+					string.Format(Custom.SyncReplyUri, format),
+					string.Format(Custom.AsyncOneWayUri, format),
+					string.Format(Custom.DefaultMetadataUri, format)
+				);
 		}
 	}
 }

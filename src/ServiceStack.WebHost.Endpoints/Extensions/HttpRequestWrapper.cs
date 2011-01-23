@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Net;
 using System.Web;
 using ServiceStack.ServiceHost;
 
@@ -27,6 +29,57 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public string HttpMethod
 		{
 			get { return request.HttpMethod; }
+		}
+
+		private Dictionary<string, object> items;
+		public Dictionary<string, object> Items
+		{
+			get
+			{
+				if (items == null)
+				{
+					items = new Dictionary<string, object>();
+				}
+				return items;
+			}
+		}
+
+		private string responseContentType;
+		public string ResponseContentType
+		{
+			get
+			{
+				if (responseContentType == null)
+				{
+					responseContentType = this.GetResponseContentType();
+				}
+				return responseContentType;
+			}
+		}
+
+		private Dictionary<string, Cookie> cookies;
+		public IDictionary<string, Cookie> Cookies
+		{
+			get
+			{
+				if (cookies == null)
+				{
+					cookies = new Dictionary<string, Cookie>();
+					for (var i = 0; i < this.request.Cookies.Count; i++)
+					{
+						var httpCookie = this.request.Cookies[i];
+						var cookie = new Cookie(
+							httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
+							{                                
+								HttpOnly = httpCookie.HttpOnly,
+								Secure = httpCookie.Secure,
+								Expires = httpCookie.Expires,
+							};
+						cookies[httpCookie.Name] = cookie;
+					}
+				}
+				return cookies;
+			}
 		}
 
 		public NameValueCollection QueryString
@@ -112,9 +165,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 						files[i] = new HttpFile
 						{
-                            ContentType = reqFile.ContentType,
+							ContentType = reqFile.ContentType,
 							ContentLength = reqFile.ContentLength,
-                            FileName = reqFile.FileName,
+							FileName = reqFile.FileName,
 							InputStream = reqFile.InputStream,
 						};
 					}

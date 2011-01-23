@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -62,6 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			Instance = this;
 
+			RegisterCustomFormats();
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{
@@ -249,6 +251,45 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+		}
+
+		private void RegisterCustomFormats()
+		{
+			this.ContentTypeFilters.Register(ContentType.Csv,
+				CsvSerializer.SerializeToStream, CsvSerializer.DeserializeFromStream);
+
+			this.ResponseFilters.Add((req, res, dto) =>
+			{
+				if (req.ResponseContentType == ContentType.Csv)
+				{
+					res.AddHeader(HttpHeaders.ContentDisposition,
+					string.Format("attachment;filename={0}.csv", req.OperationName));
+				}
+			});
+		}
+
+		public IContentTypeFilter ContentTypeFilters
+		{
+			get
+			{
+				return EndpointHost.Config.ContentTypeFilter;
+			}
+		}
+
+		public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters
+		{
+			get
+			{
+				return EndpointHost.Config.RequestFilters;
+			}
+		}
+
+		public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters
+		{
+			get
+			{
+				return EndpointHost.Config.RequestFilters;
+			}
 		}
 
 		public virtual void Dispose()

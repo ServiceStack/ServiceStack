@@ -1,10 +1,7 @@
 using System;
-using System.IO;
-using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Extensions;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -55,11 +52,13 @@ namespace ServiceStack.WebHost.Endpoints
 				var doJsonp = EndpointHost.Config.AllowJsonpRequests
 							  && !string.IsNullOrEmpty(callback);
 
-				responseContentType = httpReq.GetResponseContentType();
+				responseContentType = httpReq.ResponseContentType;
 
 				var request = GetRequest(httpReq, restPath);
+				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
 				var response = GetResponse(httpReq, request);
+				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
 				if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
 				{
@@ -73,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				httpRes.WriteToResponse(response, serializer, responseContentType);
 
-				if (doJsonp) httpRes.Write(")");
+				if (doJsonp) httpRes.Write(")\n");
 			}
 			catch (Exception ex)
 			{

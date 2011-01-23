@@ -56,6 +56,25 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				throw;
 			}
 		}
+
+		public void Close()
+		{
+			this.IsClosed = true;
+			try
+			{
+				response.Close();
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Exception closing HttpListenerResponseWrapper: " + ex.Message, ex);
+			}
+		}
+
+		public bool IsClosed
+		{
+			get;
+			private set;
+		}
 	}
 
 }

@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 	[DataContract]
-	public class AlwaysThrows {}
+	public class AlwaysThrows { }
 
 	[DataContract]
 	public class AlwaysThrowsResponse : IHasResponseStatus
@@ -240,7 +240,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 					? DbFactory.Exec(dbCmd => dbCmd.Select<Movie>())
 					: DbFactory.Exec(dbCmd => dbCmd.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
 			};
-			
+
 			return response;
 		}
 	}
@@ -305,16 +305,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		{
 			//Signal advanced web browsers what HTTP Methods you accept
 			base.SetConfig(new EndpointHostConfig
-		   {
-			   GlobalResponseHeaders =
-	           {
-				   { "Access-Control-Allow-Origin", "*" },
-				   { "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
-               },
-			   WsdlServiceNamespace = "http://www.servicestack.net/types",
-			   WsdlServiceTypesNamespace = "http://www.servicestack.net/types",
-               LogFactory = new ConsoleLogFactory()
-		   });
+			{
+				GlobalResponseHeaders =
+				{
+					{ "Access-Control-Allow-Origin", "*" },
+					{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
+				},
+				WsdlServiceNamespace = "http://www.servicestack.net/types",
+				WsdlServiceTypesNamespace = "http://www.servicestack.net/types",
+				LogFactory = new ConsoleLogFactory()
+			});
 
 			container.Register<IResourceManager>(new ConfigurationResourceManager());
 

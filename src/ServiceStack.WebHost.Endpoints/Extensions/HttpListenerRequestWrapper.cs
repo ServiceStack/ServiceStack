@@ -90,6 +90,32 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.AcceptTypes; }
 		}
 
+		private Dictionary<string, object> items;
+		public Dictionary<string, object> Items
+		{
+			get
+			{
+				if (items == null)
+				{
+					items = new Dictionary<string, object>();
+				}
+				return items;
+			}
+		}
+
+		private string responseContentType;
+		public string ResponseContentType
+		{
+			get
+			{
+				if (responseContentType == null)
+				{
+					responseContentType = this.GetResponseContentType();
+				}
+				return responseContentType;
+			}
+		}
+
 		private string pathInfo;
 		public string PathInfo
 		{
@@ -103,6 +129,25 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						: request.RawUrl;
 				}
 				return this.pathInfo;
+			}
+		}
+
+		private Dictionary<string, Cookie> cookies;
+		public IDictionary<string, Cookie> Cookies
+		{
+			get
+			{
+				if (cookies == null)
+				{
+					cookies = new Dictionary<string, Cookie>();
+					for (var i = 0; i < this.request.Cookies.Count; i++)
+					{
+						var httpCookie = this.request.Cookies[i];
+						cookies[httpCookie.Name] = httpCookie;
+					}
+				}
+
+				return cookies;
 			}
 		}
 

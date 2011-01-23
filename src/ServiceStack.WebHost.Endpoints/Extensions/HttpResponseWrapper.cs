@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Web;
+using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
@@ -8,6 +9,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	internal class HttpResponseWrapper
 		: IHttpResponse
 	{
+		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));
+
 		private readonly HttpResponse response;
 
 		public HttpResponseWrapper(HttpResponse response)
@@ -39,6 +42,25 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public void Write(string text)
 		{
 			response.Write(text);
+		}
+
+		public void Close()
+		{
+			this.IsClosed = true;
+			try
+			{
+				response.Close();
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Exception closing HttpResponse: " + ex.Message, ex);
+			}
+		}
+
+		public bool IsClosed
+		{
+			get;
+			private set;
 		}
 	}
 }

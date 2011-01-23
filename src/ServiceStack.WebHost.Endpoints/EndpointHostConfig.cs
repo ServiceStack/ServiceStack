@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Web;
@@ -11,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class EndpointHostConfig
 	{
 		private const string DefaultUsageExamplesBaseUri =
-				"http://code.google.com/p/servicestack/source/browse/trunk/doc/UsageExamples";
+				"https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
 		public EndpointHostConfig()
 		{
@@ -24,6 +25,7 @@ namespace ServiceStack.WebHost.Endpoints
 				Xml = new MetadataConfig("servicestack/xml/syncreply", "servicestack/xml/asynconeway", "servicestack/xml/metadata"),
 				Json = new MetadataConfig("servicestack/json/syncreply", "servicestack/json/asynconeway", "servicestack/json/metadata"),
 				Jsv = new MetadataConfig("servicestack/jsv/syncreply", "servicestack/jsv/asynconeway", "servicestack/jsv/metadata"),
+				Custom = new MetadataConfig("servicestack/{0}/syncreply", "servicestack/{0}/asynconeway", "servicestack/{0}/metadata")
 			};
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
@@ -32,6 +34,8 @@ namespace ServiceStack.WebHost.Endpoints
 			this.ServiceStackHandlerFactoryPath = "servicestack";
 			this.DefaultContentType = ContentType.Json;
 			this.ContentTypeFilter = HttpResponseFilter.Instance;
+			this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+			this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			this.AllowJsonpRequests = true;
 			this.DefaultDocuments = new List<string> {
             		"default.htm", "default.html", "index.htm", "index.html", "default.aspx", "default.ashx", 
@@ -39,6 +43,10 @@ namespace ServiceStack.WebHost.Endpoints
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } };
 		}
+
+		public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
+
+		public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; private set; }
 
 		public ServiceManager ServiceManager { get; set; }
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }

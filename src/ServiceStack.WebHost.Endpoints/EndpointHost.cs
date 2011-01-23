@@ -47,6 +47,38 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+		/// <summary>
+		/// Applies the request filters. Returns whether or not the request has been handled 
+		/// and no more processing should be done.
+		/// </summary>
+		/// <returns></returns>
+		public static bool ApplyRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes, object requestDto)
+		{
+			foreach (var requestFilter in Config.RequestFilters)
+			{
+				requestFilter(httpReq, httpRes, requestDto);
+				if (httpRes.IsClosed) break;
+			}
+
+			return httpRes.IsClosed;
+		}
+
+		/// <summary>
+		/// Applies the response filters. Returns whether or not the request has been handled 
+		/// and no more processing should be done.
+		/// </summary>
+		/// <returns></returns>
+		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object responseDto)
+		{
+			foreach (var responseFilter in Config.ResponseFilters)
+			{
+				responseFilter(httpReq, httpRes, responseDto);
+				if (httpRes.IsClosed) break;
+			}
+
+			return httpRes.IsClosed;
+		}
+
 		internal static void SetOperationTypes(ServiceOperations operationTypes, ServiceOperations allOperationTypes)
 		{
 			ServiceOperations = operationTypes;

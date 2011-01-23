@@ -7,7 +7,19 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 	public class OperationControl 
 	{
 		public ServiceEndpointsMetadataConfig MetadataConfig { get; set; }
-		public EndpointType EndpointType { get; set; }
+		
+		public EndpointType EndpointType
+		{
+			set
+			{
+				this.ContentType = Common.Web.ContentType.GetContentType(value);
+				this.ContentFormat = Common.Web.ContentType.GetContentFormat(value);
+			}
+		}
+
+		public string ContentType { get; set; }
+		public string ContentFormat { get; set; }
+
 		public string Title { get; set; }
 		public string OperationName { get; set; }
 		public string HostName { get; set; }
@@ -18,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		{
 			get
 			{
-				var endpointConfig = MetadataConfig.GetEndpointConfig(EndpointType);
+				var endpointConfig = MetadataConfig.GetEndpointConfig(ContentType);
 				var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
 				return string.Format("/{0}/{1}", endpontPath, OperationName);
 			}
@@ -26,10 +38,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 		public void Render(HtmlTextWriter output)
 		{
-			var renderedTemplate = string.Format(PAGE_TEMPLATE, 
+			var renderedTemplate = string.Format(PageTemplate, 
 				Title, 
-				MetadataConfig.DefaultMetadataUri, 
-				EndpointType, 
+				MetadataConfig.DefaultMetadataUri,
+				ContentFormat.ToUpper(), 
 				OperationName,
 				HttpRequestTemplate, 
 				ResponseTemplate);
@@ -37,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			output.Write(renderedTemplate);
 		}
 
-		protected const string PAGE_TEMPLATE =
+		protected const string PageTemplate =
 @"<!DOCTYPE html PUBLIC ""-//W3C//DTD XHTML 1.0 Transitional//EN"" ""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"">
 <html xmlns=""http://www.w3.org/1999/xhtml"" >
 <head>
@@ -143,7 +155,7 @@ Host: {1}
 Content-Type: {2}
 Content-Length: <span class=""value"">length</span>
 
-{3}", RequestUri, HostName, ContentType.GetContentType(EndpointType), HttpUtility.HtmlEncode(RequestMessage));
+{3}", RequestUri, HostName, ContentType, HttpUtility.HtmlEncode(RequestMessage));
 			}
 		}
 
@@ -172,7 +184,7 @@ Content-Length: <span class=""value"">length</span>
 Content-Type: {0}
 Content-Length: length
 
-{1}", ContentType.GetContentType(EndpointType), HttpUtility.HtmlEncode(ResponseMessage));
+{1}", ContentType, HttpUtility.HtmlEncode(ResponseMessage));
 			}
 		}
 

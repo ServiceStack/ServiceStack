@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Net;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Testing
@@ -22,15 +24,29 @@ namespace ServiceStack.ServiceInterface.Testing
 			this.QueryString = queryString;
 			this.FormData = formData;
 			this.InputStream = inputStream;
+			this.Cookies = new Dictionary<string, Cookie>();
+			this.Items = new Dictionary<string, object>();
 		}
 
 		public string OperationName { get; set; }
 		public string ContentType { get; set; }
 		public string HttpMethod { get; set; }
+
+		public IDictionary<string, Cookie> Cookies { get; set; }
 		
+		public string ResponseContentType
+		{
+			get { return this.ContentType; }
+		}
+
 		public NameValueCollection QueryString { get; set; }
 
 		public NameValueCollection FormData { get; set; }
+
+		public Dictionary<string, object> Items
+		{
+			get; private set;
+		}
 
 		private string rawBody;
 		public string GetRawBody()

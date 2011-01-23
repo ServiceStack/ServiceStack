@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -14,6 +15,10 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
         const string ResponseSuffix = "Response";
 
 		public abstract EndpointType EndpointType { get; }
+
+		public string ContentType { get; set; }
+		public string ContentFormat { get; set; }
+		
 		protected HttpRequest Request { get; set; }
 
         public override void Execute(HttpContext context)
@@ -54,13 +59,22 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		{
 			var operationControl = new OperationControl {
 				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
-				Title = EndpointHost.Config.ServiceName,
-                EndpointType = this.EndpointType,
+				Title = EndpointHost.Config.ServiceName,				
+                EndpointType = this.EndpointType,				
 				OperationName = operationName,
 				HostName = this.Request.GetUrlHostName(),
 				RequestMessage = requestMessage,
 				ResponseMessage = responseMessage,
 			};
+			if (!this.ContentType.IsNullOrEmpty())
+			{
+				operationControl.ContentType = this.ContentType;
+			}
+			if (!this.ContentFormat.IsNullOrEmpty())
+			{
+				operationControl.ContentFormat = this.ContentFormat;
+			}
+
 			operationControl.Render(writer);
 		}
 

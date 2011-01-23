@@ -15,5 +15,9 @@ namespace ServiceStack.Common.Web
 		public const string ContentDisposition = "Content-Disposition";
 
 		public const string Location = "Location";
+
+		public const string SetCookie = "Set-Cookie";
+
+		public const string ETag = "ETag";
 	}
 }

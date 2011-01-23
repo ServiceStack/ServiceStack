@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Net;
 
 namespace ServiceStack.ServiceHost
 {
@@ -11,6 +13,15 @@ namespace ServiceStack.ServiceHost
 		string ContentType { get; }
 
 		string HttpMethod { get; }
+
+		IDictionary<string, Cookie> Cookies { get; }
+
+		string ResponseContentType { get; }
+
+		/// <summary>
+		/// Attach any data to this request that all filters and services can access.
+		/// </summary>
+		Dictionary<string, object> Items { get; }
 
 		NameValueCollection QueryString { get; }
 

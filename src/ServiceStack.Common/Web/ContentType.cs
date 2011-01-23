@@ -73,6 +73,18 @@ namespace ServiceStack.Common.Web
 			return EndpointAttributes.None;
 		}
 
+		public static string GetContentFormat(EndpointType endpointType)
+		{
+			return endpointType.ToString().ToLower();
+		}
+
+		public static string GetContentFormat(string contentType)
+		{
+			if (contentType == null) return contentType;
+			var parts = contentType.Split('/');
+			return parts[parts.Length - 1];
+		}
+
 		public static string GetContentType(EndpointType endpointType)
 		{
 			switch (endpointType)
@@ -92,8 +104,9 @@ namespace ServiceStack.Common.Web
 					return ProtoBuf;
 				
 				default:
-					throw new NotSupportedException(endpointType.ToString());
+					return null;
 			}
 		}
 	}
+
 }

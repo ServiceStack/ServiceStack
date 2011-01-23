@@ -17,13 +17,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
                 ListItems = this.OperationNames,
                 ListItemTemplate = @"<li><a href=""?op={0}"">{0}</a></li>"
             }.ToString();
-            var renderedTemplate = string.Format(PAGE_TEMPLATE, 
+            var renderedTemplate = string.Format(PageTemplate, 
                 this.Title, this.UsageExamplesBaseUri, operationsPart);
             output.Write(renderedTemplate);
         }
 
         #region Page Template
-        private const string PAGE_TEMPLATE = 
+        private const string PageTemplate = 
 @"<!DOCTYPE html PUBLIC ""-//W3C//DTD XHTML 1.0 Transitional//EN"" ""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"">
 
 <html xmlns=""http://www.w3.org/1999/xhtml"" >

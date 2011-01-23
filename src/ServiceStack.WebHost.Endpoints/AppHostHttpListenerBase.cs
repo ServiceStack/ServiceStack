@@ -48,6 +48,5 @@ namespace ServiceStack.WebHost.Endpoints
 			throw new NotImplementedException("Cannot execute handler: " + handler);
 		}
 
-
 	}
 }

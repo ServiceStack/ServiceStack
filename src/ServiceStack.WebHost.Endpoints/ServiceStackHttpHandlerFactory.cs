@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using ServiceStack.Common.Utils;
+using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -159,6 +160,22 @@ namespace ServiceStack.WebHost.Endpoints
 						return new Soap12WsdlMetadataHandler();
 					if (pathAction == "metadata")
 						return new Soap12MetadataHandler();
+					break;
+
+				default:
+
+					string contentType;
+					if (EndpointHost.Config.ContentTypeFilter
+						.ContentTypeFormats.TryGetValue(pathController, out contentType))
+					{
+						var format = Common.Web.ContentType.GetContentFormat(contentType);
+						if (pathAction == "syncreply")
+							return new GenericHandler(contentType, EndpointAttributes.SyncReply);
+						if (pathAction == "asynconeway")
+							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay);
+						if (pathAction == "metadata")
+							return new CustomMetadataHandler(contentType, format);
+					}
 					break;
 			}
 

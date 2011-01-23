@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System.ServiceModel.Channels;
+using System.Web;
 using System.Xml;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;

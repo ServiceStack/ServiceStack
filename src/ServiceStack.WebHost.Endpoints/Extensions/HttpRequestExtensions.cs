@@ -217,7 +217,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				map[name] = request.QueryString[name];
 			}
 
-			if ((request.HttpMethod == HttpMethods.Post || request.HttpMethod == HttpMethods.Put) 
+			if ((request.HttpMethod == HttpMethods.Post || request.HttpMethod == HttpMethods.Put)
 				&& request.FormData != null)
 			{
 				foreach (var name in request.FormData.AllKeys)
@@ -242,30 +242,52 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			if (format.Contains("xml")) return ContentType.Xml;
 			if (format.Contains("jsv")) return ContentType.Jsv;
 
-			return null;
+			string contentType;
+			EndpointHost.Config.ContentTypeFilter.ContentTypeFormats.TryGetValue(format, out contentType);
+
+			return contentType;
 		}
 
 		public static string[] PreferredContentTypes = new[] {
 			ContentType.Json, ContentType.Xml, ContentType.Jsv
 		};
 
+		/// <summary>
+		/// Use this to treat Request.Items[] as a cache by returning pre-computed items to save 
+		/// calculating them multiple times.
+		/// </summary>
+		public static object ResolveItem(this IHttpRequest httpReq, 
+			string itemKey, Func<IHttpRequest, object> resolveFn)
+		{
+			object cachedItem;
+			if (httpReq.Items.TryGetValue(itemKey, out cachedItem))
+				return cachedItem;
+
+			var item = resolveFn(httpReq);
+			httpReq.Items[itemKey] = item;
+
+			return item;
+		}
+
 		public static string GetResponseContentType(this IHttpRequest httpReq)
 		{
 			var specifiedContentType = GetQueryStringContentType(httpReq);
 			if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
 
-			var acceptContentType = httpReq.AcceptTypes;
+			var acceptContentTypes = httpReq.AcceptTypes;
 			var defaultContentType = httpReq.ContentType;
 			if (httpReq.HasAnyOfContentTypes(ContentType.FormUrlEncoded, ContentType.MultiPartFormData))
 			{
 				defaultContentType = EndpointHost.Config.DefaultContentType;
 			}
 
+			var customContentTypes = EndpointHost.Config.ContentTypeFilter.ContentTypeFormats.Values;
+
 			var acceptsAnything = false;
 			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
-			if (acceptContentType != null)
+			if (acceptContentTypes != null)
 			{
-				foreach (var contentType in acceptContentType)
+				foreach (var contentType in acceptContentTypes)
 				{
 					acceptsAnything = acceptsAnything || contentType == "*/*";
 					if (acceptsAnything && hasDefaultContentType) return defaultContentType;
@@ -273,6 +295,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					foreach (var preferredContentType in PreferredContentTypes)
 					{
 						if (contentType.StartsWith(preferredContentType)) return preferredContentType;
+					}
+					foreach (var customContentType in customContentTypes)
+					{
+						if (contentType.StartsWith(customContentType)) return customContentType;
 					}
 				}
 			}

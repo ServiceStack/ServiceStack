@@ -65,5 +65,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 		{
 			this.TextWritten.Append(text);
 		}
+
+		public void Close()
+		{
+			this.IsClosed = true;
+		}
+
+		public bool IsClosed
+		{
+			get; private set;
+		}
 	}
 }

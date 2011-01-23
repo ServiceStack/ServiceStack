@@ -1,9 +1,12 @@
 ﻿using System;
 using Funq;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests
@@ -27,8 +30,11 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();
 				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));
+
+				var resetMovies = this.Container.Resolve<ResetMoviesService>();
+				resetMovies.Post(null);
 			}
-		}               
+		}
 
 		protected void Application_Start(object sender, EventArgs e)
 		{
@@ -36,34 +42,5 @@ namespace ServiceStack.WebHost.IntegrationTests
 			appHost.Init();
 		}
 
-		protected void Session_Start(object sender, EventArgs e)
-		{
-
-		}
-
-		protected void Application_BeginRequest(object sender, EventArgs e)
-		{
-
-		}
-
-		protected void Application_AuthenticateRequest(object sender, EventArgs e)
-		{
-
-		}
-
-		protected void Application_Error(object sender, EventArgs e)
-		{
-
-		}
-
-		protected void Session_End(object sender, EventArgs e)
-		{
-
-		}
-
-		protected void Application_End(object sender, EventArgs e)
-		{
-
-		}
 	}
 }

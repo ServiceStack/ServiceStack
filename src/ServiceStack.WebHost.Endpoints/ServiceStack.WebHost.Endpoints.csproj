@@ -72,6 +72,7 @@
     <Compile Include="AppHostBase.cs" />
     <Compile Include="Extensions\HttpListenerRequestWrapper.cs" />
     <Compile Include="GenericHandler.cs" />
+    <Compile Include="Metadata\CustomMetadataHandler.cs" />
     <Compile Include="RestHandler.cs" />
     <Compile Include="Extensions\HttpRequestWrapper.cs" />
     <Compile Include="Ext\AllFilesHandler.cs" />
@@ -110,7 +111,6 @@
     <Compile Include="EndpointHostConfig.cs" />
     <Compile Include="Support\SoapHandler.cs" />
     <Compile Include="XmlSyncReplyHandler.cs" />
-    <Compile Include="XmlRequestDto.cs" />
     <Compile Include="Metadata\IndexMetadataHandler.cs" />
     <Compile Include="Metadata\Soap11MetadataHandler.cs" />
     <Compile Include="Metadata\Soap12MetadataHandler.cs" />

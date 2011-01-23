@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
@@ -47,6 +49,11 @@ namespace ServiceStack.ServiceHost
 		public bool AutoDispose { get; set; }
 
 		public object Dto { get; set; }
+
+		public IDictionary<string, Cookie> Cookies
+		{
+			get { return this.httpReq.Cookies; }
+		}
 
 		public EndpointAttributes EndpointAttributes { get; private set; }
 

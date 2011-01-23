@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Funq;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -29,7 +32,8 @@ namespace ServiceStack.WebHost.Endpoints
 		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			SetConfig(new EndpointHostConfig {
+			SetConfig(new EndpointHostConfig
+			{
 				ServiceName = serviceName,
 				ServiceManager = new ServiceManager(assembliesWithServices),
 			});
@@ -61,6 +65,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 			Instance = this;
 
+			RegisterCustomFormats();
+
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{
@@ -81,6 +87,21 @@ namespace ServiceStack.WebHost.Endpoints
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
+		private void RegisterCustomFormats()
+		{
+			this.ContentTypeFilters.Register(ContentType.Csv,
+				CsvSerializer.SerializeToStream, CsvSerializer.DeserializeFromStream);
+
+			this.ResponseFilters.Add((req, res, dto) =>
+				{
+					if (req.ResponseContentType == ContentType.Csv)
+					{
+						res.AddHeader(HttpHeaders.ContentDisposition,
+							string.Format("attachment;filename={0}.csv", req.OperationName));
+					}
+				});
+		}
+
 		public abstract void Configure(Container container);
 
 		public void SetConfig(EndpointHostConfig config)
@@ -97,6 +118,30 @@ namespace ServiceStack.WebHost.Endpoints
 
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+		}
+
+		public IContentTypeFilter ContentTypeFilters
+		{
+			get
+			{
+				return EndpointHost.Config.ContentTypeFilter;
+			}
+		}
+
+		public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters
+		{
+			get
+			{
+				return EndpointHost.Config.RequestFilters;
+			}
+		}
+
+		public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters
+		{
+			get
+			{
+				return EndpointHost.Config.RequestFilters;
+			}
 		}
 
 		public virtual object ExecuteService(object requestDto)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -16,14 +17,41 @@ namespace ServiceStack.Common.Web
 		public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers
 			= new Dictionary<string, StreamDeserializerDelegate>();
 
-		public void AddContentTypeSerializer(string contentType, StreamSerializerDelegate streamSerializer)
+		public HttpResponseFilter()
 		{
-			this.ContentTypeSerializers.Add(contentType, streamSerializer);
+			this.ContentTypeFormats = new Dictionary<string, string>();
 		}
 
-		public void AddContentTypeDeserializer(string contentType, StreamDeserializerDelegate streamDeserializer)
+		public void ClearCustomFilters()
 		{
-			this.ContentTypeDeserializers.Add(contentType, streamDeserializer);
+			this.ContentTypeFormats = new Dictionary<string, string>();
+			this.ContentTypeSerializers = new Dictionary<string, StreamSerializerDelegate>();
+			this.ContentTypeDeserializers = new Dictionary<string, StreamDeserializerDelegate>();
+		}
+
+		public Dictionary<string, string> ContentTypeFormats { get; set; }
+
+		public void Register(string contentType, StreamSerializerDelegate streamSerializer, StreamDeserializerDelegate streamDeserializer)
+		{
+			if (contentType.IsNullOrEmpty())
+				throw new ArgumentNullException("contentType");
+
+			var parts = contentType.Split('/');
+			var format = parts[parts.Length - 1];
+			this.ContentTypeFormats[format] = contentType;
+
+			SetContentTypeSerializer(contentType, streamSerializer);
+			SetContentTypeDeserializer(contentType, streamDeserializer);
+		}
+
+		public void SetContentTypeSerializer(string contentType, StreamSerializerDelegate streamSerializer)
+		{
+			this.ContentTypeSerializers[contentType] = streamSerializer;
+		}
+
+		public void SetContentTypeDeserializer(string contentType, StreamDeserializerDelegate streamDeserializer)
+		{
+			this.ContentTypeDeserializers[contentType] = streamDeserializer;
 		}
 
 		public string Serialize(string contentType, object response)

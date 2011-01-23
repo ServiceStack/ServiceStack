@@ -101,6 +101,7 @@
     <Compile Include="AsyncRestServiceClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="Support\Host\ExampleAppHostHttpListener.cs" />
     <Compile Include="HtmlResultTests.cs" />

@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (GenericHandler));
 
-		protected GenericHandler(string contentType, EndpointAttributes handlerAttributes)
+		public GenericHandler(string contentType, EndpointAttributes handlerAttributes)
 		{
 			this.HandlerContentType = contentType;
 			this.ContentTypeAttribute = ContentType.GetEndpointAttributes(contentType);
@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints
         
 		public StreamSerializerDelegate GetStreamSerializer(string contentType)
 		{
-			return EndpointHost.Config.ContentTypeFilter.GetStreamSerializer(contentType);
+			return GetContentFilters().GetStreamSerializer(contentType);
 		}
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
@@ -58,8 +58,10 @@ namespace ServiceStack.WebHost.Endpoints
 							  && !string.IsNullOrEmpty(callback);
 
 				var request = CreateRequest(httpReq, operationName);
+				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
 				var response = GetResponse(httpReq, request);
+				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
 				var serializer = GetStreamSerializer(contentType);
 				
@@ -68,7 +70,6 @@ namespace ServiceStack.WebHost.Endpoints
 				httpRes.WriteToResponse(response, serializer, contentType);
 	
 				if (doJsonp) httpRes.Write(")");
-
 			}
 			catch (Exception ex)
 			{
