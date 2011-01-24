@@ -110,14 +110,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			var req = (HttpWebRequest)WebRequest.Create("http://localhost:82/movies");
 			req.Accept = ContentType.Csv;
-			
+
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
-			
+
 			var csvRows = new StreamReader(res.GetResponseStream()).ReadLines().ToList();
 
 			Assert.That(csvRows, Has.Count.EqualTo(HeaderRowCount + ResetMoviesService.Top5Movies.Count));
 			//Console.WriteLine(csvRows.Join("\n"));
+		}
+
+		[Test]
+		public void Can_download_CSV_Hello_using_csv_syncreply_endpoint()
+		{
+			var req = (HttpWebRequest)WebRequest.Create("http://localhost:82/csv/syncreply/Hello?Name=World!");
+
+			var res = req.GetResponse();
+			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
+
+			var csv = new StreamReader(res.GetResponseStream()).ReadToEnd();
+			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
+
+			Console.WriteLine(csv);
+		}
+
+		[Test]
+		public void Can_download_CSV_Hello_using_csv_Accept_and_RestPath()
+		{
+			var req = (HttpWebRequest)WebRequest.Create("http://localhost:82/hello/World!");
+			req.Accept = ContentType.Csv;
+
+			var res = req.GetResponse();
+			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
+
+			var csv = new StreamReader(res.GetResponseStream()).ReadToEnd();
+			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
+
+			Console.WriteLine(csv);
 		}
 
 	}

@@ -170,9 +170,15 @@ namespace ServiceStack.WebHost.Endpoints
 					{
 						var format = Common.Web.ContentType.GetContentFormat(contentType);
 						if (pathAction == "syncreply")
-							return new GenericHandler(contentType, EndpointAttributes.SyncReply);
+							return new GenericHandler(contentType, EndpointAttributes.SyncReply)
+							{
+								RequestName = requestName
+							};
 						if (pathAction == "asynconeway")
-							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay);
+							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay)
+							{
+								RequestName = requestName
+							};
 						if (pathAction == "metadata")
 							return new CustomMetadataHandler(contentType, format);
 					}
