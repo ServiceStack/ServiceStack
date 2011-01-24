@@ -75,6 +75,7 @@ Alternatively if you want keep up with the latest version you can always use the
 
     git clone git://github.com/mythz/ServiceStack.git
 
+[Release notes for major releases](https://github.com/mythz/ServiceStack/wiki/Release-Notes)
 
 ## Getting Started
 Online tutorials that walks you through developing and calling web services is available here:
