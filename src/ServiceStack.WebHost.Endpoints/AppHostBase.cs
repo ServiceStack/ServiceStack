@@ -89,9 +89,11 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private void RegisterCustomFormats()
 		{
+			//Register the 'text/csv' content-type and serializers (format is inferred from the last part of the content-type)
 			this.ContentTypeFilters.Register(ContentType.Csv,
 				CsvSerializer.SerializeToStream, CsvSerializer.DeserializeFromStream);
 
+			//Add a response filter to add a 'Content-Disposition' header so browsers treat it natively as a .csv file
 			this.ResponseFilters.Add((req, res, dto) =>
 				{
 					if (req.ResponseContentType == ContentType.Csv)
@@ -117,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints
 			EndpointHost.Config = config;
 
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
-			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;			
 		}
 
 		public IContentTypeFilter ContentTypeFilters
