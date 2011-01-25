@@ -25,7 +25,6 @@
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:PersistenceProviderCacheFactory.cs" caret="0" fromTop="0" />
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:PersistenceProviderCache.cs" caret="0" fromTop="0" />
       <File id="3F22FE6E-7E15-4561-8BC7-2CABF37B46CE/f:OrmLitePersistenceProviderCache.cs" caret="777" fromTop="27" />
-      <File id="EB65E771-6C97-4D64-8E11-FD88AE48A41A/f:build.bat/l:F!?Projects?ServiceStack?build?build.bat" caret="1593" fromTop="1" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Extensions/f:HttpRequestExtensions.cs" caret="1121" fromTop="29" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:Soap11WsdlMetadataHandler.cs" caret="322" fromTop="9" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Metadata/f:BaseWsdlPage.cs" caret="0" fromTop="0" />
@@ -33,17 +32,15 @@
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap11WsdlTemplate.cs" caret="346" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap12WsdlTemplate.cs" caret="346" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:WsdlTemplateBase.cs" caret="1143" fromTop="20" />
-      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="4770" fromTop="20" />
-      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/d:ServiceStack.ServiceInterface/f:RestServiceBase.cs" caret="0" fromTop="0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:XmlSyncReplyHandler.cs" caret="301" fromTop="11" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsonSyncReplyHandler.cs" caret="0" fromTop="0" />
       <File id="55C5C6DA-1834-4BA8-8D2F-19C091B6FC81/f:ServiceStackHttpHandlerFactoryTests.cs" caret="0" fromTop="0" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="609" fromTop="6" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:RestHandler.cs" caret="1873" fromTop="17" />
-      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/d:ServiceStack.ServiceInterface/f:ServiceBase.cs" caret="7440" fromTop="37" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceBase.cs" caret="1238" fromTop="8" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/f:NotFoundHttpHandler.cs" caret="837" fromTop="19" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="1403" fromTop="21" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:HttpRequestAuthentication.cs" caret="297" fromTop="5" />
     </RecentFiles>
     <RecentEdits>
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="301" fromTop="3" />
@@ -63,19 +60,16 @@
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap11WsdlTemplate.cs" caret="346" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:Soap12WsdlTemplate.cs" caret="346" fromTop="15" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/d:Support/d:Templates/f:WsdlTemplateBase.cs" caret="0" fromTop="0" />
-      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="4885" fromTop="27" />
-      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="4033" fromTop="23" />
-      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/f:Web.config" caret="6979" fromTop="32" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="457" fromTop="8" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="1318" fromTop="21" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="1688" fromTop="23" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:RestHandler.cs" caret="2089" fromTop="23" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:JsvSyncReplyHandler.cs" caret="609" fromTop="6" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="3019" fromTop="19" />
-      <File id="2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B/d:ServiceStack.ServiceInterface/f:ServiceBase.cs" caret="3646" fromTop="27" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceBase.cs" caret="0" fromTop="37" />
       <File id="5A315F92-80D2-4C60-A5A4-22E027AC7E7E/f:ServiceBase.cs" caret="7662" fromTop="37" />
       <File id="680A1709-25EB-4D52-A87F-EE03FFD94BAA/f:ServiceStackHttpHandlerFactory.cs" caret="3019" fromTop="18" />
+      <File id="C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59/f:HttpRequestAuthentication.cs" caret="872" fromTop="20" />
     </RecentEdits>
   </RecentFiles>
   <UnitTestRunner>
@@ -763,6 +757,7 @@
       <Item value="StaticFileHandler`0" priority="0" />
       <Item value="responseStatus" priority="0" />
       <Item value="EndpointHost`0" priority="0" />
+      <Item value="userPass" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:System.Collections.Generic.Dictionary`2">
       <Item value="ContainsKey" priority="13" />
@@ -1169,7 +1164,7 @@
       <Item value="Split" priority="0" />
       <Item value="Insert" priority="0" />
       <Item value="IndexOf" priority="0" />
-      <Item value="Split`0" priority="0" />
+      <Item value="Split`0" priority="1" />
       <Item value="Contains`0" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:@System.GC">
