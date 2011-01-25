@@ -73,8 +73,10 @@
   <ItemGroup>
     <Compile Include="ExpressionTypeFunqContainer.cs" />
     <Compile Include="HttpFile.cs" />
+    <Compile Include="HttpRequestAuthentication.cs" />
     <Compile Include="IHttpRequest.cs" />
     <Compile Include="IHttpResponse.cs" />
+    <Compile Include="HttpResponseExtensions.cs" />
     <Compile Include="Operations.cs" />
     <Compile Include="RequestAttributes.cs" />
     <Compile Include="HttpRequestContext.cs" />

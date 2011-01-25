@@ -19,5 +19,9 @@ namespace ServiceStack.Common.Web
 		public const string SetCookie = "Set-Cookie";
 
 		public const string ETag = "ETag";
+
+		public const string Authorization = "Authorization";
+
+		public const string WwwAuthenticate = "WWW-Authenticate";
 	}
 }

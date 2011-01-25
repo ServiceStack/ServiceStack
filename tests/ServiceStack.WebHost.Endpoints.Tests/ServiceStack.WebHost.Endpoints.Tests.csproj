@@ -103,6 +103,8 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
+    <Compile Include="RequestFiltersTests.cs" />
+    <Compile Include="Support\DirectServiceClient.cs" />
     <Compile Include="Support\Host\ExampleAppHostHttpListener.cs" />
     <Compile Include="HtmlResultTests.cs" />
     <Compile Include="HttpRequestExtensionsTests.cs" />

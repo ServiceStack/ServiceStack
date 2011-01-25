@@ -23,6 +23,8 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		Dictionary<string, object> Items { get; }
 
+		NameValueCollection Headers { get; }
+
 		NameValueCollection QueryString { get; }
 
 		NameValueCollection FormData { get; }

@@ -82,6 +82,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+		public NameValueCollection Headers
+		{
+			get { return request.Headers; }
+		}
+
 		public NameValueCollection QueryString
 		{
 			get { return request.QueryString; }

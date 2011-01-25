@@ -39,6 +39,8 @@ namespace ServiceStack.ServiceInterface.Testing
 			get { return this.ContentType; }
 		}
 
+		public NameValueCollection Headers { get; set; }
+
 		public NameValueCollection QueryString { get; set; }
 
 		public NameValueCollection FormData { get; set; }

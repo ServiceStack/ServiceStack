@@ -42,4 +42,5 @@ using System.Runtime.Serialization;
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "ServiceStack.WebHost.Endpoints.Tests.Support.Operations")]
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "ServiceStack.WebHost.Endpoints.Tests.IntegrationTests")]
 [assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "ServiceStack.WebHost.Endpoints.Tests.Support.Host")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types", ClrNamespace = "ServiceStack.WebHost.Endpoints.Tests")]
 
