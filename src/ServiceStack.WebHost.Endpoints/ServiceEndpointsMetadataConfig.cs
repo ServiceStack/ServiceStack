@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static ServiceEndpointsMetadataConfig GetDefault()
 		{
-			return CreateFor(SupportedHandlerMappings.ServiceStackAshxForIis6);
+			return CreateFor(SupportedHandlerMappings.ServiceStack);
 		}
 
 		public static ServiceEndpointsMetadataConfig GetForIis6ServiceStackAshx()

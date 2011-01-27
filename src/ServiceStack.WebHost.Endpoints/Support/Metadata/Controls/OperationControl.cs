@@ -129,6 +129,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
         <p>Click <a href=""../../{1}"">here</a> for a complete list of operations.</p>
         <h2>{3}</h2>
         <div class=""example"">
+<!-- REST Examples -->
+{6}
+
             <h3>HTTP + {2}</h3>
             <p> The following is a sample HTTP requests and responses. 
                 The placeholders shown need to be replaced with actual values.</p>
@@ -140,8 +143,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 </div>
 
 {5}
-
-{6}
 
         </div>
     </div>
