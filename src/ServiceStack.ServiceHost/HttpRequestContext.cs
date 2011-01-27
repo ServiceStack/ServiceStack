@@ -65,6 +65,11 @@ namespace ServiceStack.ServiceHost
 			return isDto ?? (this.Factory != null ? this.Factory.Resolve<T>() : null);
 		}
 
+		public string GetHeader(string headerName)
+		{
+			return this.httpReq.Headers.Get(headerName);
+		}
+
 		public IFactoryProvider Factory { get; set; }
 
 		public string MimeType

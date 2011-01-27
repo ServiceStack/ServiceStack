@@ -77,7 +77,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					if (dto is Secure)
 					{
 						var sessionId = req.GetCookieValue("ss-session");
-						if (sessionId == null || sessionId.SplitFirst('/')[0] != AllowedUser)
+						if (sessionId == null || sessionId.SplitOnFirst('/')[0] != AllowedUser)
 						{
 							res.ReturnAuthRequired();
 						}

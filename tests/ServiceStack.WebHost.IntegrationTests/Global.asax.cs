@@ -1,9 +1,11 @@
 ﻿using System;
 using Funq;
+using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -23,6 +25,26 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 			public override void Configure(Container container)
 			{
+				this.RequestFilters.Add((req, res, dto) =>
+				{
+					var requestFilter = dto as RequestFilter;
+					if (requestFilter != null)
+					{
+						res.StatusCode = requestFilter.StatusCode;
+						if (!requestFilter.HeaderName.IsNullOrEmpty())
+						{
+							res.AddHeader(requestFilter.HeaderName, requestFilter.HeaderValue);
+						}
+						res.Close();
+					}
+
+					var secureRequests = dto as IRequiresSession;
+					if (secureRequests != null)
+					{
+						res.ReturnAuthRequired();
+					}
+				});
+
 				this.Container.Register<IDbConnectionFactory>(c =>
 					new OrmLiteConnectionFactory(
 						"~/App_Data/db.sqlite".MapHostAbsolutePath(),

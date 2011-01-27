@@ -1,0 +1,73 @@
+using System.Net;
+using NUnit.Framework;
+using ServiceStack.Common.Web;
+using ServiceStack.Text;
+
+namespace ServiceStack.WebHost.IntegrationTests.Tests
+{
+	[TestFixture]
+	public class RequestFilterTests
+	{
+		private const string ServiceClientBaseUri = "http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack";
+
+		[Test]
+		public void Does_return_bare_401_StatusCode()
+		{
+			try
+			{
+				var webRequest = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri 
+					+ "/json/syncreply/RequestFilter?StatusCode=401");
+
+				var webResponse = (HttpWebResponse)webRequest.GetResponse();
+
+				Assert.Fail("Should throw 401 WebException");
+			}
+			catch (WebException ex)
+			{
+				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+			}
+		}
+
+		[Test]
+		public void Does_return_bare_401_with_AuthRequired_header()
+		{
+			try
+			{
+				var webRequest = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri
+					+ "/json/syncreply/RequestFilter?StatusCode=401"
+					+ "&HeaderName=" + HttpHeaders.WwwAuthenticate
+					+ "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());
+
+				var webResponse = (HttpWebResponse)webRequest.GetResponse();
+
+				Assert.Fail("Should throw 401 WebException");
+			}
+			catch (WebException ex)
+			{
+				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+
+				Assert.That(ex.Response.Headers[HttpHeaders.WwwAuthenticate],
+					Is.EqualTo("Basic realm=\"Auth Required\""));
+			}
+		}
+
+
+		[Test]
+		public void Does_return_send_401_for_access_to_ISecure_requests()
+		{
+			try
+			{
+				var webRequest = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri
+					+ "/json/syncreply/Secure?SessionId=175BEA29-DC79-4555-BD42-C4DD5D57A004");
+
+				var webResponse = (HttpWebResponse)webRequest.GetResponse();
+
+				Assert.Fail("Should throw 401 WebException");
+			}
+			catch (WebException ex)
+			{
+				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+			}
+		}
+	}
+}
