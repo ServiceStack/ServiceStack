@@ -80,6 +80,7 @@ Alternatively if you want keep up with the latest version you can always use the
 ## Getting Started
 Online tutorials that walks you through developing and calling web services is available here:
 
+ * **[Read the documentation on the ServiceStack Wiki](https://github.com/mythz/ServiceStack/wiki)**
  * [Creating a Hello World Web service](http://www.servicestack.net/ServiceStack.Hello/)
  * [Calling Web Services from MonoTouch](http://www.servicestack.net/monotouch/remote-info/)
 

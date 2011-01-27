@@ -140,9 +140,11 @@
     <Compile Include="ServiceStack.ServiceInterface\ServiceBase.cs" />
     <Compile Include="ServiceStack.ServiceInterface\ServiceResponseException.cs" />
     <Compile Include="Services\AlwaysThrowsService.cs" />
+    <Compile Include="Services\Secure.cs" />
     <Compile Include="Services\FileUploadService.cs" />
     <Compile Include="Services\MovieService.cs" />
     <Compile Include="Services\MoviesService.cs" />
+    <Compile Include="Services\RequestFilter.cs" />
     <Compile Include="Services\ResetMovies.cs" />
     <Compile Include="Services\VerbMatch2Service.cs" />
     <Compile Include="Services\VerbMatch1Service.cs" />
@@ -160,6 +162,7 @@
     <Compile Include="Tests\FileUploadTests.cs" />
     <Compile Include="Tests\MovieServiceTests.cs" />
     <Compile Include="Tests\RequestAndPathResolutionTests.cs" />
+    <Compile Include="Tests\RequestFilterTests.cs" />
     <Compile Include="Tests\RestPathResolutionUnitTests.cs" />
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />

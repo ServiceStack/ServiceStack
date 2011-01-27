@@ -17,16 +17,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public EndpointHostConfig()
 		{
 			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
-			this.ServiceEndpointsMetadataConfig = new ServiceEndpointsMetadataConfig
-			{
-				DefaultMetadataUri = "servicestack/metadata",
-				Soap11 = new SoapMetadataConfig("servicestack/soap11/syncreply.svc", "servicestack/soap11/asynconeway.svc", "servicestack/soap11/metadata", "soap11"),
-				Soap12 = new SoapMetadataConfig("servicestack/soap12/syncreply.svc", "servicestack/soap12/asynconeway.svc", "servicestack/soap12/metadata", "soap12"),
-				Xml = new MetadataConfig("servicestack/xml/syncreply", "servicestack/xml/asynconeway", "servicestack/xml/metadata"),
-				Json = new MetadataConfig("servicestack/json/syncreply", "servicestack/json/asynconeway", "servicestack/json/metadata"),
-				Jsv = new MetadataConfig("servicestack/jsv/syncreply", "servicestack/jsv/asynconeway", "servicestack/jsv/metadata"),
-				Custom = new MetadataConfig("servicestack/{0}/syncreply", "servicestack/{0}/asynconeway", "servicestack/{0}/metadata")
-			};
+			this.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.GetDefault();
 			this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
 			this.WsdlServiceNamespace = "http://schemas.servicestack.net/types";

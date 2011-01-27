@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using ServiceStack.Common.Web;
 
 namespace ServiceStack.ServiceHost
@@ -18,6 +19,7 @@ namespace ServiceStack.ServiceHost
 
 		public static void ReturnAuthRequired(this IHttpResponse httpRes, string authRealm)
 		{
+			httpRes.StatusCode = (int) HttpStatusCode.Unauthorized;
 			httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "Basic realm=\"" + authRealm + "\"");
 			httpRes.Close();
 		}

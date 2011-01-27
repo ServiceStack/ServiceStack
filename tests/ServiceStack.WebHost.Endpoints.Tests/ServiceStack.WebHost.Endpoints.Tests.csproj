@@ -103,6 +103,7 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
+    <Compile Include="RequestContextTests.cs" />
     <Compile Include="RequestFiltersTests.cs" />
     <Compile Include="Support\DirectServiceClient.cs" />
     <Compile Include="Support\Host\ExampleAppHostHttpListener.cs" />
@@ -126,6 +127,8 @@
     <Compile Include="Support\Host\TestAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
     <Compile Include="Support\Operations\RequestOfComplexTypes.cs" />
+    <Compile Include="Support\Services\RequestFilter.cs" />
+    <Compile Include="Support\Services\HeadersService.cs" />
     <Compile Include="Support\Services\GetCustomerService.cs" />
     <Compile Include="Support\Services\HelloService.cs" />
     <Compile Include="Support\Services\TestAsyncService.cs" />

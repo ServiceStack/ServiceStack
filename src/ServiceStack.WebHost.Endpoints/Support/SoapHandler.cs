@@ -10,6 +10,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -46,7 +47,26 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			try
 			{
 				var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
+
+				IHttpRequest httpReq = null;
+				IHttpResponse httpRes = null;
+				var hasRequestFilters = EndpointHost.Config.RequestFilters.Count > 0;
+				var hasResponseFilters = EndpointHost.Config.ResponseFilters.Count > 0;
+				if (hasRequestFilters || hasResponseFilters)
+				{
+					httpReq = HttpContext.Current != null
+						? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
+						: null;
+					httpRes = HttpContext.Current != null
+						? new HttpResponseWrapper(HttpContext.Current.Response)
+						: null;
+				}
+
+				EndpointHost.ApplyRequestFilters(httpReq, httpRes, request);
+
 				var response = ExecuteService(request, endpointAttributes, null);
+
+				EndpointHost.ApplyResponseFilters(httpReq, httpRes, response);
 
 				return requestMsg.Headers.Action == null
 					? Message.CreateMessage(requestMsg.Version, null, response)

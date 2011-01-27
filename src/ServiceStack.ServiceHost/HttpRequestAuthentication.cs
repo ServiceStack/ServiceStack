@@ -24,7 +24,7 @@ namespace ServiceStack.ServiceHost
 			var userPassBase64 = httpReq.GetBasicAuth();
 			if (userPassBase64 == null) return null;
 			var userPass = Encoding.UTF8.GetString(Convert.FromBase64String(userPassBase64));
-			var parts = userPass.SplitFirst(':');
+			var parts = userPass.SplitOnFirst(':');
 			return new KeyValuePair<string, string>(parts[0], parts[1]);
 		}
 
