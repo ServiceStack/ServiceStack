@@ -25,6 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		public string HostName { get; set; }
 		public string RequestMessage { get; set; }
 		public string ResponseMessage { get; set; }
+		public string RestPaths { get; set; }
 
 		public virtual string RequestUri
 		{
@@ -44,7 +45,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 				ContentFormat.ToUpper(), 
 				OperationName,
 				HttpRequestTemplate, 
-				ResponseTemplate);
+				ResponseTemplate,
+				RestPathsTemplate);
 
 			output.Write(renderedTemplate);
 		}
@@ -134,10 +136,12 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 <div class=""request"">
 <pre>
 {4}
-</pre>       
+</pre>
 </div>
 
 {5}
+
+{6}
 
         </div>
     </div>
@@ -168,7 +172,7 @@ Content-Length: <span class=""value"">length</span>
 <div class=""response"">
 <pre>
 {0}
-</pre>            
+</pre>
 </div>
 ", httpResponse);
 			}
@@ -188,5 +192,21 @@ Content-Length: length
 			}
 		}
 
+		public virtual string RestPathsTemplate
+		{
+			get
+			{
+				return string.IsNullOrEmpty(RestPaths) ? null : string.Format(
+@"
+<h3>REST Paths</h3>
+<p>The following REST paths are available for this service.</p>
+<div class=""restpaths"">
+<pre>
+{0}
+</pre>
+</div>
+", RestPaths);
+			}
+		}
 	}
 }

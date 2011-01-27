@@ -46,6 +46,12 @@ namespace ServiceStack.ServiceHost
 
 		public Type RequestType { get; private set; }
 
+		public string Path { get { return this.restPath; } }
+
+		public bool AllowsAllVerbs { get { return this.allowsAllVerbs; } }
+
+		public string AllowedVerbs { get { return this.allowedVerbs; } }
+
 		public static string[] GetPathPartsForMatching(string pathInfo)
 		{
 			var parts = pathInfo.ToLower().Split(PathSeperatorChar)
