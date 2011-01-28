@@ -263,19 +263,27 @@ namespace ServiceStack.ServiceClient.Web
 				Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
 				Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
+				var serviceEx = new WebServiceException(errorResponse.StatusDescription)
+				{
+					StatusCode = (int)errorResponse.StatusCode,
+				};
+
 				try
 				{
 					using (var stream = errorResponse.GetResponseStream())
 					{
-						var response = (TResponse)this.StreamDeserializer(typeof(TResponse), stream);
-						requestState.HandleError(response, new Exception("Web Service Exception"));
+						serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
+						requestState.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
 					}
 				}
-				catch (WebException ex)
+				catch (Exception innerEx)
 				{
 					// Oh, well, we tried
-					Log.Debug(string.Format("WebException Reading Response Error: {0}", ex.Message), ex);
-					requestState.HandleError(default(TResponse), ex);
+					Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
+					requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx)
+						{
+							StatusCode = (int)errorResponse.StatusCode,
+						});
 				}
 				return;
 			}

@@ -97,6 +97,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
+			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
 			
 			var csvRows = new StreamReader(res.GetResponseStream()).ReadLines().ToList();
 
@@ -113,6 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
+			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
 
 			var csvRows = new StreamReader(res.GetResponseStream()).ReadLines().ToList();
 
@@ -127,6 +129,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
+			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
 
 			var csv = new StreamReader(res.GetResponseStream()).ReadToEnd();
 			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
@@ -142,6 +145,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
+			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
 
 			var csv = new StreamReader(res.GetResponseStream()).ReadToEnd();
 			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
@@ -149,5 +153,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Console.WriteLine(csv);
 		}
 
+		[Test]
+		public void Can_download_CSV_movies_using_csv_SyncReply_Path()
+		{
+			var req = (HttpWebRequest)WebRequest.Create("http://localhost:82/csv/syncreply/Movies");
+			req.Accept = "application/xml";
+
+			var res = req.GetResponse();
+			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
+			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
+
+			var csvRows = new StreamReader(res.GetResponseStream()).ReadLines().ToList();
+
+			Assert.That(csvRows, Has.Count.EqualTo(HeaderRowCount + ResetMoviesService.Top5Movies.Count));
+		}
 	}
 }

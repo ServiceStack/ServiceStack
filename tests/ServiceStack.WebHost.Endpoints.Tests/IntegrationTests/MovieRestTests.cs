@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		public void Can_ResetMovieDatabase()
 		{
 			SendToEachEndpoint<ResetMovieDatabaseResponse>(new ResetMovieDatabase(), HttpMethods.Post, response =>
-				Assert.That(response.ResponseStatus.IsSuccess, Is.True)
+				Assert.That(response.ResponseStatus.ErrorCode, Is.Null)
 			);
 		}
 

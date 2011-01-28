@@ -5,17 +5,23 @@ using System.IO;
 using System.Net;
 using ServiceStack.ServiceHost;
 
-namespace ServiceStack.ServiceInterface.Testing
+namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 {
-	public class MockHttpRequest : IHttpRequest
+	public class HttpRequestMock : IHttpRequest
 	{
-		public MockHttpRequest()
+		public HttpRequestMock()
 		{
+			this.Headers = new NameValueCollection();
+			this.Cookies = new Dictionary<string, Cookie>();
+			this.FormData = new NameValueCollection();
+			this.QueryString = new NameValueCollection();
+			this.Items = new Dictionary<string, object>();
 		}
 
-		public MockHttpRequest(string operationName, string httpMethod, 
-			string contentType, string pathInfo,  
-			NameValueCollection queryString, Stream inputStream, NameValueCollection formData)
+		public HttpRequestMock(string operationName, string httpMethod, 
+		                       string contentType, string pathInfo,  
+		                       NameValueCollection queryString, Stream inputStream, NameValueCollection formData)
+			: this()
 		{
 			this.OperationName = operationName;
 			this.HttpMethod = httpMethod;
@@ -24,8 +30,6 @@ namespace ServiceStack.ServiceInterface.Testing
 			this.QueryString = queryString;
 			this.FormData = formData;
 			this.InputStream = inputStream;
-			this.Cookies = new Dictionary<string, Cookie>();
-			this.Items = new Dictionary<string, object>();
 		}
 
 		public string OperationName { get; set; }

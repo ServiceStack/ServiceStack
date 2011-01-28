@@ -119,7 +119,6 @@
     <Compile Include="IntegrationTests\ResetMovieDatabaseService.cs" />
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="MessageSerializationTests.cs" />
-    <Compile Include="Mocks\HttpResponseMock.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
     <Compile Include="ServiceModel\ServiceClientTestBase.cs" />
     <Compile Include="ServiceModel\ServiceClientTests.cs" />
@@ -150,6 +149,7 @@
     <Compile Include="Support\Host\TestAppHost.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="Support\Services\TestService.cs" />
+    <Compile Include="WebServiceExceptionTests.cs" />
     <Compile Include="WsdlMetadataTests.cs" />
     <Compile Include="OperationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -189,6 +189,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.WebHost.Endpoints\ServiceStack.WebHost.Endpoints.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack.WebHost.Endpoints</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj">
+      <Project>{A5646013-C243-453F-A2B6-3B6870A9637D}</Project>
+      <Name>ServiceStack.ServiceModel.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

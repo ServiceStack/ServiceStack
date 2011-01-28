@@ -8,6 +8,7 @@ using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -235,7 +236,15 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			if (!string.IsNullOrEmpty(callback)) return ContentType.Json;
 
 			var format = httpReq.QueryString["format"];
-			if (format == null) return null;
+			if (format == null)
+			{
+				const int formatMaxLength = 4;
+				var pi = httpReq.PathInfo;
+				if (pi == null || pi.Length <= formatMaxLength) return null;
+				if (pi[0] == '/') pi = pi.Substring(1);
+				format = pi.SplitOnFirst('/')[0];
+				if (format.Length > formatMaxLength) return null;
+			}
 
 			format = format.ToLower();
 			if (format.Contains("json")) return ContentType.Json;

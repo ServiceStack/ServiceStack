@@ -79,6 +79,8 @@
     <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
     <Compile Include="SupportedHandlerMappings.cs" />
+    <Compile Include="Support\Mocks\HttpRequestMock.cs" />
+    <Compile Include="Support\Mocks\HttpResponseMock.cs" />
     <Compile Include="Support\RedirectHttpHandler.cs" />
     <Compile Include="Support\IServiceStackHttpHandler.cs" />
     <Compile Include="Support\NotFoundHttpHandler.cs" />

@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints
 					: new StaticFileHandler();
 			}
 
-			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
+			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);			
 			return restPath != null
 				? new RestHandler { RestPath = restPath, RequestName = pathInfo }
 				: null;

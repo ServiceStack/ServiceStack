@@ -27,7 +27,8 @@ namespace ServiceStack.ServiceClient.Web
 		protected ServiceClientBase()
 		{
 			this.HttpMethod = DefaultHttpMethod;
-			asyncClient = new AsyncServiceClient {
+			asyncClient = new AsyncServiceClient
+			{
 				ContentType = ContentType,
 				StreamSerializer = SerializeToStream,
 				StreamDeserializer = StreamDeserializer
@@ -80,32 +81,53 @@ namespace ServiceStack.ServiceClient.Web
 					return response;
 				}
 			}
-			catch (WebException webEx)
+			catch (Exception ex)
 			{
-				if (webEx.Status == WebExceptionStatus.ProtocolError)
-				{
-					var errorResponse = ((HttpWebResponse)webEx.Response);
-					log.Error(webEx);
-					log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-					log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
-
-					try
-					{
-						using (var stream = errorResponse.GetResponseStream())
-						{
-							var response = DeserializeFromStream<TResponse>(stream);
-							return response;
-						}
-					}
-					catch (WebException ex)
-					{
-						// Oh, well, we tried
-						throw;
-					}
-				}
-
+				HandleResponseException<TResponse>(ex, requestUri);
 				throw;
 			}
+		}
+
+		private void HandleResponseException<TResponse>(Exception ex, string requestUri)
+		{
+			var webEx = ex as WebException;
+			if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+			{
+				var errorResponse = ((HttpWebResponse)webEx.Response);
+				log.Error(webEx);
+				log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
+				log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+
+				var serviceEx = new WebServiceException(errorResponse.StatusDescription)
+				{
+					StatusCode = (int)errorResponse.StatusCode,
+				};
+
+				try
+				{
+					using (var stream = errorResponse.GetResponseStream())
+					{
+						serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
+						throw serviceEx;
+					}
+				}
+				catch (Exception innerEx)
+				{
+					// Oh, well, we tried
+					throw new WebServiceException(errorResponse.StatusDescription, innerEx)
+					{
+						StatusCode = (int)errorResponse.StatusCode,
+					}; 
+				}
+			}
+
+			var authEx = ex as AuthenticationException;
+			if (authEx != null)
+			{
+				throw WebRequestUtils.CreateCustomException(requestUri, authEx);
+			}
+
+			throw ex;
 		}
 
 		private WebRequest SendRequest(object request, string requestUri)
@@ -145,7 +167,6 @@ namespace ServiceStack.ServiceClient.Web
 						SerializeToStream(request, requestStream);
 					}
 				}
-
 			}
 			catch (AuthenticationException ex)
 			{

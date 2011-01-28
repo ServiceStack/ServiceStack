@@ -13,6 +13,7 @@ using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Endpoints.Support.Mocks;
 
 namespace ServiceStack.ServiceInterface.Testing
 {
@@ -175,7 +176,7 @@ namespace ServiceStack.ServiceInterface.Testing
 				? ContentType.FormUrlEncoded
 				: requestBody != null ? ContentType.Json : null;
 
-			var httpReq = new MockHttpRequest(
+			var httpReq = new HttpRequestMock(
 					httpHandler.RequestName, httpMethod, contentType,
 					pathInfo,
 					queryString.ToNameValueCollection(),
@@ -214,7 +215,7 @@ namespace ServiceStack.ServiceInterface.Testing
 				? ContentType.FormUrlEncoded
 				: requestBody != null ? ContentType.Json : null;
 			
-			var httpReq = new MockHttpRequest(
+			var httpReq = new HttpRequestMock(
 					httpHandler.RequestName, httpMethod, contentType,
 					pathInfo,
 					queryString.ToNameValueCollection(),

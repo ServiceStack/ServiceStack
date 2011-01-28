@@ -1,13 +1,13 @@
 using System;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
@@ -16,6 +16,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[DataContract]
+	[RestService("/secure")]
 	public class Secure
 	{
 		[DataMember]
@@ -40,6 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 	}
 
+	[TestFixture]
 	public abstract class RequestFiltersTests
 	{
 		private const string ListeningOn = "http://localhost:82/";
@@ -58,18 +60,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				this.RequestFilters.Add((req, res, dto) =>
 				{
-                	var userPass = req.GetBasicAuthUserAndPassword();
-					if (userPass != null)
+					var userPass = req.GetBasicAuthUserAndPassword();
+					if (userPass == null)
 					{
-						var userName = userPass.Value.Key;
-						if (userName == AllowedUser && userPass.Value.Value == AllowedPass)
-						{
-							res.SetPermanentCookie("ss-session", userName + "/" + Guid.NewGuid().ToString("N"));
-						}
-						else
-						{
-							res.ReturnAuthRequired();
-						}
+						res.ReturnAuthRequired();
+						return;
+					}
+
+					var userName = userPass.Value.Key;
+					if (userName == AllowedUser && userPass.Value.Value == AllowedPass)
+					{
+						res.SetPermanentCookie("ss-session", userName + "/" + Guid.NewGuid().ToString("N"));
+					}
+					else
+					{
+						res.ReturnAuthRequired();
 					}
 				});
 				this.RequestFilters.Add((req, res, dto) =>
@@ -103,9 +108,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		protected abstract IServiceClient CreateNewServiceClient();
+		protected abstract IRestClientAsync CreateNewRestClientAsync();
+
+		private static void Assert401(IServiceClient client, WebServiceException ex)
+		{
+			if (client is Soap11ServiceClient || client is Soap12ServiceClient)
+			{
+				if (ex.StatusCode != 401)
+				{
+					Console.WriteLine("WARNING: SOAP clients returning 500 instead of 401");
+				}
+				return;
+			}
+
+			Console.WriteLine(ex);
+			Assert.That(ex.StatusCode, Is.EqualTo(401));
+		}
+
+		private static bool Assert401(object response, Exception ex)
+		{
+			var webEx = (WebServiceException)ex;
+			Assert.That(webEx.StatusCode, Is.EqualTo(401));
+			return true;
+		}
+
 
 		[Test]
-		public void Get_401_When_accessing_Secure_without_Authorization()
+		public void Get_401_When_accessing_Secure_using_ServiceClient_without_Authorization()
 		{
 			var client = CreateNewServiceClient();
 
@@ -114,16 +143,79 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				var response = client.Send<SecureResponse>(new Secure());
 				Console.WriteLine(response.Dump());
 			}
-			catch (Exception ex)
+			catch (WebServiceException ex)
 			{
-				Console.WriteLine(ex);
+				Assert401(client, ex);
 				return;
 			}
-			Assert.Fail("Should throw");
+			Assert.Fail("Should throw WebServiceException.StatusCode == 401");
+		}
+
+		[Test]
+		public void Get_401_When_accessing_Secure_using_RestClient_GET_without_Authorization()
+		{
+			var client = CreateNewRestClientAsync();
+			if (client == null) return;
+
+			SecureResponse response = null;
+			var wasError = false;
+			client.GetAsync<SecureResponse>(ServiceClientBaseUri + "secure",
+				r => response = r, (r, ex) => wasError = Assert401(r, ex));
+
+			Thread.Sleep(1000);
+			Assert.That(wasError, Is.True,
+				"Should throw WebServiceException.StatusCode == 401");
+		}
+
+		[Test]
+		public void Get_401_When_accessing_Secure_using_RestClient_DELETE_without_Authorization()
+		{
+			var client = CreateNewRestClientAsync();
+			if (client == null) return;
+
+			SecureResponse response = null;
+			var wasError = false;
+			client.DeleteAsync<SecureResponse>(ServiceClientBaseUri + "secure",
+				r => response = r, (r, ex) => wasError = Assert401(r, ex));
+
+			Thread.Sleep(1000);
+			Assert.That(wasError, Is.True,
+				"Should throw WebServiceException.StatusCode == 401");
+		}
+
+		[Test]
+		public void Get_401_When_accessing_Secure_using_RestClient_POST_without_Authorization()
+		{
+			var client = CreateNewRestClientAsync();
+			if (client == null) return;
+
+			SecureResponse response = null;
+			var wasError = false;
+			client.PostAsync<SecureResponse>(ServiceClientBaseUri + "secure", new Secure(),
+				r => response = r, (r, ex) => wasError = Assert401(r, ex));
+
+			Thread.Sleep(1000);
+			Assert.That(wasError, Is.True,
+				"Should throw WebServiceException.StatusCode == 401");
+		}
+
+		[Test]
+		public void Get_401_When_accessing_Secure_using_RestClient_PUT_without_Authorization()
+		{
+			var client = CreateNewRestClientAsync();
+			if (client == null) return;
+
+			SecureResponse response = null;
+			var wasError = false;
+			client.PutAsync<SecureResponse>(ServiceClientBaseUri + "secure", new Secure(),
+			                                r => response = r, (r, ex) => wasError = Assert401(r, ex));
+
+			Thread.Sleep(1000);
+			Assert.That(wasError, Is.True,
+			            "Should throw WebServiceException.StatusCode == 401");
 		}
 
 
-		[TestFixture]
 		public class UnitTests : RequestFiltersTests
 		{
 			protected override IServiceClient CreateNewServiceClient()
@@ -131,14 +223,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).Assembly);
 				return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
 			}
+
+			protected override IRestClientAsync CreateNewRestClientAsync()
+			{
+				return null; //TODO implement REST calls with DirectServiceClient (i.e. Unit Tests)
+				//EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).Assembly);
+				//return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
+			}
 		}
 
-		[TestFixture]
 		public class XmlIntegrationTests : RequestFiltersTests
 		{
 			protected override IServiceClient CreateNewServiceClient()
 			{
 				return new XmlServiceClient(ServiceClientBaseUri);
+			}
+
+			protected override IRestClientAsync CreateNewRestClientAsync()
+			{
+				return new XmlRestClientAsync(ServiceClientBaseUri);
 			}
 		}
 
@@ -149,6 +252,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				return new JsonServiceClient(ServiceClientBaseUri);
 			}
+
+			protected override IRestClientAsync CreateNewRestClientAsync()
+			{
+				return new JsonRestClientAsync(ServiceClientBaseUri);
+			}
 		}
 
 		[TestFixture]
@@ -157,6 +265,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			protected override IServiceClient CreateNewServiceClient()
 			{
 				return new JsvServiceClient(ServiceClientBaseUri);
+			}
+
+			protected override IRestClientAsync CreateNewRestClientAsync()
+			{
+				return new JsvRestClientAsync(ServiceClientBaseUri);
 			}
 		}
 
@@ -167,6 +280,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				return new Soap11ServiceClient(ServiceClientBaseUri);
 			}
+
+			protected override IRestClientAsync CreateNewRestClientAsync()
+			{
+				return null;
+			}
 		}
 
 		[TestFixture]
@@ -175,6 +293,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			protected override IServiceClient CreateNewServiceClient()
 			{
 				return new Soap12ServiceClient(ServiceClientBaseUri);
+			}
+
+			protected override IRestClientAsync CreateNewRestClientAsync()
+			{
+				return null;
 			}
 		}
 	}

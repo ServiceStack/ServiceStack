@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Xml;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
@@ -94,8 +95,28 @@ namespace ServiceStack.ServiceClient.Web
 
 		public T Send<T>(object request)
 		{
-			var response = Send(request);
-			return response.GetBody<T>();
+			try
+			{
+				var response = Send(request);
+				return response.GetBody<T>();
+			}
+			catch (Exception ex)
+			{
+				var webEx = ex as WebException ?? ex.InnerException as WebException;
+				if (webEx == null)
+				{
+					throw new WebServiceException(ex.Message, ex)
+					{
+						StatusCode = 500,
+					};
+				}
+
+				var httpEx = webEx.Response as HttpWebResponse;
+				throw new WebServiceException(webEx.Message, webEx)
+				{
+					StatusCode = httpEx != null ? (int) httpEx.StatusCode : 500
+				};
+			}
 		}
 
 		public void SendOneWay(object request)
