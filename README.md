@@ -104,7 +104,7 @@ This lets ServiceStack and other tools to have a greater intelligence about your
 
 ### Define your web services in a code-first approach using convention-based DTO's
 
-Service Stack was heavily influenced by [Martin Fowlers Data Transfer Object Pattern](http://martinfowler.com/eaaCatalog/dataTransferObject.html):
+Service Stack was heavily influenced by [**Martin Fowlers Data Transfer Object Pattern**](http://martinfowler.com/eaaCatalog/dataTransferObject.html):
 
 >When you're working with a remote interface, such as Remote Facade (388), each call to it is expensive. 
 >As a result you need to reduce the number of calls, and that means that you need to transfer more data 
