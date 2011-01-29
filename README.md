@@ -102,14 +102,23 @@ This lets ServiceStack and other tools to have a greater intelligence about your
 - [Built-in rolling web service error logging (if Redis is Configured in your AppHost)](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L122)
 - [Rich REST and HTML support on all web services with x-www-form-urlencoded & multipart/form-data (i.e. FORM posts and file uploads)](http://servicestack.net/ServiceStack.Hello/)
 
-### Define your web services in a code-first approach using DSL-like POCO's
-Service Stack was designed with a top-down view, i.e. we identified the minimum amount of effort required to implement a web service and ensured it remained that way.
+### Define your web services in a code-first approach using convention-based DTO's
 
-What are the minimum number or artefacts required to implement a web service? From our point of view it is the `Request` and `Response` DTO's (which on their own define the web service contract or interface) and the actual implementation of the web service which would take in a `Request` and in most cases return the `Response`. As it turns out these remain the only classes required to create a functional web service in Service Stack.
+Service Stack was heavily influenced by [Martin Fowlers Data Transfer Object Pattern](http://martinfowler.com/eaaCatalog/dataTransferObject.html):
+
+	When you're working with a remote interface, such as Remote Facade (388), each call to it is expensive. As a result you need to reduce the number of calls, and that means that you need to transfer more data with each call. One way to do this is to use lots of parameters. However, this is often awkward to program - indeed, it's often impossible with languages such as Java that return only a single value.
+
+	The solution is to create a Data Transfer Object that can hold all the data for the call. It needs to be serializable to go across the connection. Usually an assembler is used on the server side to transfer data between the DTO and any domain objects.
 
 The Request and Response DTO's are standard `DataContract` POCO's while the implementation just needs to inherit from a testable and dependency-free `IService<TRequestDto>`. As a bonus for keeping your DTO's in a separate dependency-free .dll, you're able to re-use them in your C#/.NET clients providing a strongly-typed API without any code-gen what-so-ever. Also your DTO's *define everything* Service Stack does not pollute your web services with any additional custom artefacts or markup.
 
 Service Stack re-uses the custom artefacts above and with zero-config and without imposing any extra burden on the developer adds discover-ability and provides hosting of your web service on a number of different physical end-points which as of today includes: XML (+REST), JSON (+REST), JSV (+REST) and SOAP 1.1 / SOAP 1.2.
+
+### WCF the anti-DTO Web Services Framework
+Unfortunately this best-practices convention is effectively discouraged by Microsoft's WCF SOAP Web Services framework as they encourage you to develop API-specific RPC method calls by insisting the use method signatures to define your web services. This results in less re-usable, more client-sepcfic APIs that encourages more remote method calls. 
+
+Unhappy with this perceived anit-pattern in WCF, ServiceStack was born providing a Web Sevice framework that embraces best-practices for calling remote services, using config-free, convention-based DTO's.
+
 
 ### Full support for unit and integration tests
 Your application logic should not be tied to a third party vendor's web service host platform.
