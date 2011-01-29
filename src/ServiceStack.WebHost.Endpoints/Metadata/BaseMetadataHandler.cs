@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -50,7 +51,23 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 					var operationResponseType = allTypes.Single(x => x.Name == operationName + ResponseSuffix);
 					responseMessage = CreateMessage(operationResponseType);
 				}
-				RenderOperation(writer, operationName, requestMessage, responseMessage, restPaths);
+				string description = "";
+				var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
+				if (descAttrs.Length > 0)
+				{
+					foreach (DescriptionAttribute descAttr in descAttrs)
+					{
+						if (descAttr.Description.IsNullOrEmpty()) continue;
+						description += "<p>" + descAttr.Description
+								.Replace("<", "&lt;")
+								.Replace(">", "&rt;")
+							+ "</p>";
+
+					}
+					description = "<div id='desc'>" + description + "</div>";
+				}
+
+				RenderOperation(writer, operationName, requestMessage, responseMessage, restPaths, description);
 				return;
 			}
 
@@ -59,8 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		protected abstract string CreateMessage(Type dtoType);
 
-		protected virtual void RenderOperation(HtmlTextWriter writer, string operationName,
-			string requestMessage, string responseMessage, string restPaths)
+		protected virtual void RenderOperation(HtmlTextWriter writer, string operationName, string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
 		{
 			var operationControl = new OperationControl
 			{
@@ -71,7 +87,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				HostName = this.Request.GetUrlHostName(),
 				RequestMessage = requestMessage,
 				ResponseMessage = responseMessage,
-				RestPaths = restPaths
+				RestPaths = restPaths,
+				DescriptionHtml = descriptionHtml,
 			};
 			if (!this.ContentType.IsNullOrEmpty())
 			{

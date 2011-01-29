@@ -27,6 +27,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		public string ResponseMessage { get; set; }
 		public string RestPaths { get; set; }
 
+		public string DescriptionHtml { get; set; }
+
 		public virtual string RequestUri
 		{
 			get
@@ -46,7 +48,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 				OperationName,
 				HttpRequestTemplate, 
 				ResponseTemplate,
-				RestPathsTemplate);
+				RestPathsTemplate,
+				DescriptionHtml);
 
 			output.Write(renderedTemplate);
 		}
@@ -63,6 +66,15 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
             font-family:Verdana;
             margin: 0;
         }}
+		#desc{{
+			margin: 0;
+			padding: 0 0 15px 20px;
+			font-size: 16px;
+		}}
+		#desc P {{
+			margin: 5px 0;
+			padding: 0;
+		}}
         H1 {{
             background-color: #036;
             color: #FFF;
@@ -126,9 +138,12 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     
     <form>
     <div>
-        <p>Click <a href=""../../{1}"">here</a> for a complete list of operations.</p>
+        <p><a href=""../../{1}"">&lt;back to index</a></p>
         <h2>{3}</h2>
-        <div class=""example"">
+
+		{7}
+
+		<div class=""example"">
 <!-- REST Examples -->
 {6}
 
@@ -197,16 +212,20 @@ Content-Length: length
 		{
 			get
 			{
+				var jsonp = ContentFormat == "json"
+		            ? "<p>To embed the response in a <b>jsonp</b> callback, append <b>?callback=myCallback</b></p>"
+		            : "";
+
 				return string.IsNullOrEmpty(RestPaths) ? null : string.Format(
 @"
 <h3>REST Paths</h3>
 <p>The following REST paths are available for this service.</p>
 <div class=""restpaths"">
-<pre>
-{0}
-</pre>
+<pre>{0}</pre>
+<p>To override the Content-type in your clients <b>Accept</b> HTTP Header, append <b>?format={1}</b></p>
+{2}
 </div>
-", RestPaths);
+", RestPaths, ContentFormat, jsonp);
 			}
 		}
 	}

@@ -1,9 +1,11 @@
+using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
+	[Description("ServiceStack's Hello World web service.")]
 	[RestService("/hello/{Name}")]
 	public class Hello
 	{

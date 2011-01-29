@@ -97,7 +97,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
-			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
+			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
 
 			var csv = new StreamReader(res.GetResponseStream()).ReadToEnd();
 			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));
@@ -113,7 +113,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));
-			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Movies.csv"));
+			Assert.That(res.Headers[HttpHeaders.ContentDisposition], Is.EqualTo("attachment;filename=Hello.csv"));
 
 			var csv = new StreamReader(res.GetResponseStream()).ReadToEnd();
 			Assert.That(csv, Is.EqualTo("Result\r\n\"Hello, World!\"\r\n"));

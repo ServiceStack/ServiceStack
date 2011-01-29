@@ -35,5 +35,12 @@ namespace ServiceStack.ServiceHost
 			return cookie != null ? cookie.Value : null;
 		}
 
+		public static string GetItemStringValue(this IHttpRequest httpReq, string itemName)
+		{
+			object val;
+			if (!httpReq.Items.TryGetValue(itemName, out val)) return null;
+			return val as string;
+		}
+
 	}
 }

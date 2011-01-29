@@ -280,7 +280,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				return EndpointHost.Config.RequestFilters;
+				return EndpointHost.RequestFilters;
 			}
 		}
 
@@ -288,7 +288,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				return EndpointHost.Config.RequestFilters;
+				return EndpointHost.ResponseFilters;
 			}
 		}
 

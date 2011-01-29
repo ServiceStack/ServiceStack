@@ -50,8 +50,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				IHttpRequest httpReq = null;
 				IHttpResponse httpRes = null;
-				var hasRequestFilters = EndpointHost.Config.RequestFilters.Count > 0;
-				var hasResponseFilters = EndpointHost.Config.ResponseFilters.Count > 0;
+				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0;
+				var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0;
 				if (hasRequestFilters || hasResponseFilters)
 				{
 					httpReq = HttpContext.Current != null

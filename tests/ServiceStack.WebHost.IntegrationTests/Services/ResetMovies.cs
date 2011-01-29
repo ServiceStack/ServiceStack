@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.Serialization;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceHost;
@@ -10,6 +11,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 
 	[DataContract]
+	[Description("Resets the database back to the original Top 5 movies.")]
 	[RestService("/reset-movies")]
 	public class ResetMovies { }
 

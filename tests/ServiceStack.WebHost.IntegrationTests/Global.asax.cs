@@ -2,13 +2,10 @@
 using Funq;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
-using ServiceStack.Common.Web;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests

@@ -334,7 +334,7 @@ namespace ServiceStack.ServiceHost
 				failedScenarios.AppendFormat("\n -[{0}]", failed);
 			}
 
-			string internalDebugMsg = (EndpointAttributes.InternalNetworkAccess & actualAttributes) != 0
+			var internalDebugMsg = (EndpointAttributes.InternalNetworkAccess & actualAttributes) != 0
 				? "\n Unauthorized call was made from: " + actualAttributes
 				: "";
 

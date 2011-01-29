@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get
 			{
-				return EndpointHost.Config.RequestFilters;
+				return EndpointHost.RequestFilters;
 			}
 		}
 
@@ -142,7 +142,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get
 			{
-				return EndpointHost.Config.RequestFilters;
+				return EndpointHost.ResponseFilters;
 			}
 		}
 

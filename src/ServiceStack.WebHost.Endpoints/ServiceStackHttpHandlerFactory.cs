@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);			
 			return restPath != null
-				? new RestHandler { RestPath = restPath, RequestName = pathInfo }
+				? new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name }
 				: null;
 		}
 

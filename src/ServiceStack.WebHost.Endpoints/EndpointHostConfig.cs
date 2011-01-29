@@ -25,8 +25,6 @@ namespace ServiceStack.WebHost.Endpoints
 			this.ServiceStackHandlerFactoryPath = "servicestack";
 			this.DefaultContentType = ContentType.Json;
 			this.ContentTypeFilter = HttpResponseFilter.Instance;
-			this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-			this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			this.AllowJsonpRequests = true;
 			this.DefaultDocuments = new List<string> {
             		"default.htm", "default.html", "index.htm", "index.html", "default.aspx", "default.ashx", 
@@ -34,10 +32,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } };
 		}
-
-		public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
-
-		public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; private set; }
 
 		public ServiceManager ServiceManager { get; set; }
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }

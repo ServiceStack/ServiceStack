@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -7,6 +8,16 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		public static ServiceOperations ServiceOperations { get; private set; }
 		public static ServiceOperations AllServiceOperations { get; private set; }
+
+		public static List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
+
+		public static List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; private set; }
+
+		static EndpointHost()
+		{
+			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+		}
 
 		public static ServiceManager ServiceManager
 		{
@@ -54,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static bool ApplyRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes, object requestDto)
 		{
-			foreach (var requestFilter in Config.RequestFilters)
+			foreach (var requestFilter in RequestFilters)
 			{
 				requestFilter(httpReq, httpRes, requestDto);
 				if (httpRes.IsClosed) break;
@@ -70,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object responseDto)
 		{
-			foreach (var responseFilter in Config.ResponseFilters)
+			foreach (var responseFilter in ResponseFilters)
 			{
 				responseFilter(httpReq, httpRes, responseDto);
 				if (httpRes.IsClosed) break;

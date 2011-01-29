@@ -1,9 +1,12 @@
 using System;
+using System.IO;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Common.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -47,11 +50,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		private const string ListeningOn = "http://localhost:82/";
 		private const string ServiceClientBaseUri = "http://localhost:82/";
 
+		private const string AllowedUser = "user";
+		private const string AllowedPass = "p@55word";
+
 		public class RequestFiltersAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
-			private const string AllowedUser = "user";
-			private const string AllowedPass = "p@55word";
 
 			public RequestFiltersAppHostHttpListener()
 				: base("Request Filters Tests", typeof(GetFactorialService).Assembly) { }
@@ -71,6 +75,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					if (userName == AllowedUser && userPass.Value.Value == AllowedPass)
 					{
 						res.SetPermanentCookie("ss-session", userName + "/" + Guid.NewGuid().ToString("N"));
+						//set session for this request (as no cookies will be set on this request)
+						req.Items["ss-session"] = userName + "/" + Guid.NewGuid().ToString("N");
 					}
 					else
 					{
@@ -81,7 +87,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				{
 					if (dto is Secure)
 					{
-						var sessionId = req.GetCookieValue("ss-session");
+						var sessionId = req.GetCookieValue("ss-session")
+							?? req.GetItemStringValue("ss-session");
 						if (sessionId == null || sessionId.SplitOnFirst('/')[0] != AllowedUser)
 						{
 							res.ReturnAuthRequired();
@@ -110,6 +117,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		protected abstract IServiceClient CreateNewServiceClient();
 		protected abstract IRestClientAsync CreateNewRestClientAsync();
 
+		protected virtual string GetFormat()
+		{
+			return null;
+		}
+
 		private static void Assert401(IServiceClient client, WebServiceException ex)
 		{
 			if (client is Soap11ServiceClient || client is Soap12ServiceClient)
@@ -130,6 +142,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var webEx = (WebServiceException)ex;
 			Assert.That(webEx.StatusCode, Is.EqualTo(401));
 			return true;
+		}
+
+		[Test]
+		public void Can_login_with_Basic_auth_to_access_Secure_service()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var req = (HttpWebRequest)WebRequest.Create(
+				string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+
+			req.Headers[HttpHeaders.Authorization]
+				= "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
+
+			var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+			Assert.That(dtoString.Contains("Confidential"));
+			Console.WriteLine(dtoString);
 		}
 
 
@@ -234,6 +263,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		public class XmlIntegrationTests : RequestFiltersTests
 		{
+			protected override string GetFormat()
+			{
+				return "xml";
+			}
+
 			protected override IServiceClient CreateNewServiceClient()
 			{
 				return new XmlServiceClient(ServiceClientBaseUri);
@@ -248,6 +282,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[TestFixture]
 		public class JsonIntegrationTests : RequestFiltersTests
 		{
+			protected override string GetFormat()
+			{
+				return "json";
+			}
+
 			protected override IServiceClient CreateNewServiceClient()
 			{
 				return new JsonServiceClient(ServiceClientBaseUri);
@@ -262,6 +301,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[TestFixture]
 		public class JsvIntegrationTests : RequestFiltersTests
 		{
+			protected override string GetFormat()
+			{
+				return "jsv";
+			}
+
 			protected override IServiceClient CreateNewServiceClient()
 			{
 				return new JsvServiceClient(ServiceClientBaseUri);

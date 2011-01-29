@@ -17,8 +17,6 @@ namespace ServiceStack.WebHost.Endpoints
 	public abstract class AppHostHttpListenerBase 
 		: HttpListenerBase
 	{
-		private readonly ILog log = LogManager.GetLogger(typeof(AppHostHttpListenerBase));
-
 		protected AppHostHttpListenerBase()
 		{
 		}
@@ -41,6 +39,11 @@ namespace ServiceStack.WebHost.Endpoints
 			var serviceStackHandler = handler as IServiceStackHttpHandler;
 			if (serviceStackHandler != null)
 			{
+				var restHandler = serviceStackHandler as RestHandler;
+				if (restHandler != null)
+				{
+					httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
+				}
 				serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
 				return;
 			}
