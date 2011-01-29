@@ -102,7 +102,7 @@ This lets ServiceStack and other tools to have a greater intelligence about your
 - [Built-in rolling web service error logging (if Redis is Configured in your AppHost)](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L122)
 - [Rich REST and HTML support on all web services with x-www-form-urlencoded & multipart/form-data (i.e. FORM posts and file uploads)](http://servicestack.net/ServiceStack.Hello/)
 
-### Define web services following Martin Fowlers Data Transfer Object Pattern:
+## Define web services following Martin Fowlers Data Transfer Object Pattern:
 
 Service Stack was heavily influenced by [**Martin Fowlers Data Transfer Object Pattern**](http://martinfowler.com/eaaCatalog/dataTransferObject.html):
 
