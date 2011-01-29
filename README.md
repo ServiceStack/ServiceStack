@@ -111,6 +111,7 @@ Service Stack was heavily influenced by [**Martin Fowlers Data Transfer Object P
 >with each call. One way to do this is to use lots of parameters. 
 >However, this is often awkward to program - indeed, it's often impossible with languages such as Java 
 >that return only a single value.
+>
 >The solution is to create a Data Transfer Object that can hold all the data for the call. It needs to be serializable to go across the connection. 
 >Usually an assembler is used on the server side to transfer data between the DTO and any domain objects.
 
