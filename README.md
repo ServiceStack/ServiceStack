@@ -106,9 +106,13 @@ This lets ServiceStack and other tools to have a greater intelligence about your
 
 Service Stack was heavily influenced by [Martin Fowlers Data Transfer Object Pattern](http://martinfowler.com/eaaCatalog/dataTransferObject.html):
 
-	When you're working with a remote interface, such as Remote Facade (388), each call to it is expensive. As a result you need to reduce the number of calls, and that means that you need to transfer more data with each call. One way to do this is to use lots of parameters. However, this is often awkward to program - indeed, it's often impossible with languages such as Java that return only a single value.
-
-	The solution is to create a Data Transfer Object that can hold all the data for the call. It needs to be serializable to go across the connection. Usually an assembler is used on the server side to transfer data between the DTO and any domain objects.
+>When you're working with a remote interface, such as Remote Facade (388), each call to it is expensive. 
+>As a result you need to reduce the number of calls, and that means that you need to transfer more data 
+>with each call. One way to do this is to use lots of parameters. 
+>However, this is often awkward to program - indeed, it's often impossible with languages such as Java 
+>that return only a single value.
+>The solution is to create a Data Transfer Object that can hold all the data for the call. It needs to be serializable to go across the connection. 
+>Usually an assembler is used on the server side to transfer data between the DTO and any domain objects.
 
 The Request and Response DTO's are standard `DataContract` POCO's while the implementation just needs to inherit from a testable and dependency-free `IService<TRequestDto>`. As a bonus for keeping your DTO's in a separate dependency-free .dll, you're able to re-use them in your C#/.NET clients providing a strongly-typed API without any code-gen what-so-ever. Also your DTO's *define everything* Service Stack does not pollute your web services with any additional custom artefacts or markup.
 
