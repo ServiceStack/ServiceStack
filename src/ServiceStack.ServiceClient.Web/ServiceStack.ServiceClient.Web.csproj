@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="AsyncServiceClient.cs" />
     <Compile Include="HttpMethod.cs" />
+    <Compile Include="WebRequestExtensions.cs" />
     <Compile Include="WebServiceException.cs" />
     <Compile Include="XmlRestClientAsync.cs" />
     <Compile Include="JsvRestClientAsync.cs" />

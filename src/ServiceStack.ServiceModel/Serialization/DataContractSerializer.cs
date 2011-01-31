@@ -10,6 +10,7 @@ namespace ServiceStack.ServiceModel.Serialization
 {
 	public class DataContractSerializer : IStringSerializer 
 	{
+		private static readonly Encoding Encoding = Encoding.UTF8;// new UTF8Encoding(true);
 		public static DataContractSerializer Instance = new DataContractSerializer();
 
 		public string Parse<XmlDto>(XmlDto from, bool indentXml)
@@ -18,7 +19,7 @@ namespace ServiceStack.ServiceModel.Serialization
 			{
 				using (var ms = new MemoryStream())
 				{
-					using (var xw = new XmlTextWriter(ms, Encoding.UTF8))
+					using (var xw = new XmlTextWriter(ms, Encoding))
 					{
 						if (indentXml)
 						{
@@ -50,7 +51,7 @@ namespace ServiceStack.ServiceModel.Serialization
 		public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
 		{
 			using (var deflateStream = new DeflateStream(stream, CompressionMode.Compress))
-			using (var xw = new XmlTextWriter(deflateStream, Encoding.UTF8))
+			using (var xw = new XmlTextWriter(deflateStream, Encoding))
 			{
 				var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
 				serializer.WriteObject(xw, from);
@@ -60,7 +61,7 @@ namespace ServiceStack.ServiceModel.Serialization
 
 		public void SerializeToStream(object obj, Stream stream)
 		{
-			using (var xw = new XmlTextWriter(stream, Encoding.UTF8))
+			using (var xw = new XmlTextWriter(stream, Encoding))
 			{
 				var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
 				serializer.WriteObject(xw, obj);

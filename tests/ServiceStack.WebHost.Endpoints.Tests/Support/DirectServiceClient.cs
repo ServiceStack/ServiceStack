@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -66,6 +67,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			if (ApplyResponseFilters(response)) return (TResponse)response;
 
 			return (TResponse)response;
+		}
+
+		public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)

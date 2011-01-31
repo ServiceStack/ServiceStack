@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Common.Extensions;
 using ServiceStack.DesignPatterns.Translator;
+using ServiceStack.ServiceHost;
 using ServiceStack.Validation;
 
 namespace ServiceStack.ServiceInterface.ServiceModel
@@ -28,9 +29,15 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ResponseStatus Parse(Exception exception)
 		{
 			var validationException = exception as ValidationException;
-			return validationException != null
-					? this.Parse(validationException)
-					: CreateErrorResponse(exception.GetType().Name, exception.Message);
+			if (validationException != null)
+			{
+				return this.Parse(validationException); 
+			}
+
+			var httpError = exception as IHttpError;
+			return httpError != null 
+				? CreateErrorResponse(httpError.ErrorCode, httpError.Message) 
+				: CreateErrorResponse(exception.GetType().Name, exception.Message);
 		}
 
 		public ResponseStatus Parse(ValidationException validationException)

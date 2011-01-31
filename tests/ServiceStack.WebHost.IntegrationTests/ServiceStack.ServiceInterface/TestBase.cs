@@ -75,6 +75,11 @@ namespace ServiceStack.ServiceInterface.Testing
 				return (TResponse)response;
 			}
 
+			public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+			{
+				throw new NotImplementedException();
+			}
+
 			public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 			{
 				var response = default(TResponse);

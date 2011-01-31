@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Xml;
 using System.ServiceModel;
@@ -117,6 +118,11 @@ namespace ServiceStack.ServiceClient.Web
 					StatusCode = httpEx != null ? (int) httpEx.StatusCode : 500
 				};
 			}
+		}
+
+		public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+		{
+			throw new NotImplementedException();
 		}
 
 		public void SendOneWay(object request)

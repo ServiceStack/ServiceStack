@@ -12,19 +12,13 @@ namespace ServiceStack.ServiceClient.Web
 		{
 		}
 
-		/// <summary>
-		/// Base Url of Service Stack's Web Service endpoints, i.e. http://localhost/ServiceStack/
-		/// </summary>
-		/// <param name="baseUri"></param>
 		public XmlServiceClient(string baseUri) 
 		{
-			this.BaseUri = baseUri.WithTrailingSlash() + "Xml/";
+			SetBaseUri(baseUri, "xml");
 		}
 
 		public XmlServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
-			: base(syncReplyBaseUri, asyncOneWayBaseUri)
-		{
-		}
+			: base(syncReplyBaseUri, asyncOneWayBaseUri) {}
 
 		public override string ContentType
 		{

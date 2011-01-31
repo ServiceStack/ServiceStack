@@ -74,6 +74,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		#desc P {{
 			margin: 5px 0;
 			padding: 0;
+			line-height: 20px;
+			color: #444;
 		}}
         H1 {{
             background-color: #036;
@@ -138,7 +140,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     
     <form>
     <div>
-        <p><a href=""../../{1}"">&lt;back to index</a></p>
+        <p><a href=""../../{1}"">&lt;back to all web services</a></p>
         <h2>{3}</h2>
 
 		{7}
@@ -222,7 +224,7 @@ Content-Length: length
 <p>The following REST paths are available for this service.</p>
 <div class=""restpaths"">
 <pre>{0}</pre>
-<p>To override the Content-type in your clients <b>Accept</b> HTTP Header, append <b>?format={1}</b></p>
+<p>To override the Content-type in your clients HTTP <b>Accept</b> Header, append <b>?format={1}</b></p>
 {2}
 </div>
 ", RestPaths, ContentFormat, jsonp);

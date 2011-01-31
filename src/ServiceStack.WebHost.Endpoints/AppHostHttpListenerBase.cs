@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Reflection;
-using ServiceStack.Logging;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 

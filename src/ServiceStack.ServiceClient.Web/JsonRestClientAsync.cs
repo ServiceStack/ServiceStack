@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using ServiceStack.Service;
 using ServiceStack.Text;
 

@@ -11,7 +11,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-	public abstract class AsyncRestServiceClientTests
+	public abstract class AsyncRestClientTests
 	{
 		private const string ListeningOn = "http://localhost:82/";
 
@@ -145,7 +145,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[TestFixture]
-		public class JsonAsyncRestServiceClientTests : AsyncRestServiceClientTests
+		public class JsonAsyncRestServiceClientTests : AsyncRestClientTests
 		{
 			protected override IRestClientAsync CreateAsyncRestClient()
 			{
@@ -154,7 +154,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[TestFixture]
-		public class JsvAsyncRestServiceClientTests : AsyncRestServiceClientTests
+		public class JsvAsyncRestServiceClientTests : AsyncRestClientTests
 		{
 			protected override IRestClientAsync CreateAsyncRestClient()
 			{
@@ -163,7 +163,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[TestFixture]
-		public class XmlAsyncRestServiceClientTests : AsyncRestServiceClientTests
+		public class XmlAsyncRestServiceClientTests : AsyncRestClientTests
 		{
 			protected override IRestClientAsync CreateAsyncRestClient()
 			{

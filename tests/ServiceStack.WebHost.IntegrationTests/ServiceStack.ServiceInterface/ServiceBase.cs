@@ -96,7 +96,14 @@ namespace ServiceStack.ServiceInterface
 			try
 			{
 				//Run the request in a managed scope serializing all 
-				return Run(request);
+				var response = Run(request);
+				var hasResponseStatus = response as IHasResponseStatus;
+				if (hasResponseStatus != null
+					&& hasResponseStatus.ResponseStatus == null)
+				{
+					hasResponseStatus.ResponseStatus = new ResponseStatus();
+				}
+				return response;
 			}
 			catch (Exception ex)
 			{

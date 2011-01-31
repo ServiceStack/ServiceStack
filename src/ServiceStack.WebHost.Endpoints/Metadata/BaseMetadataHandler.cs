@@ -51,20 +51,21 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 					var operationResponseType = allTypes.Single(x => x.Name == operationName + ResponseSuffix);
 					responseMessage = CreateMessage(operationResponseType);
 				}
-				string description = "";
+				var description = "";
 				var descAttrs = operationType.GetCustomAttributes(typeof(DescriptionAttribute), true);
 				if (descAttrs.Length > 0)
 				{
-					foreach (DescriptionAttribute descAttr in descAttrs)
+					var descAttr = (DescriptionAttribute) descAttrs[0]; 
+					if (!descAttr.Description.IsNullOrEmpty())
 					{
-						if (descAttr.Description.IsNullOrEmpty()) continue;
-						description += "<p>" + descAttr.Description
+						description = "<div id='desc'>" 
+							+ "<p>" + descAttr.Description
 								.Replace("<", "&lt;")
-								.Replace(">", "&rt;")
-							+ "</p>";
-
+								.Replace(">", "&gt;")
+								.Replace("\n", "<br />\n")
+							+ "</p>"
+							+ "</div>";
 					}
-					description = "<div id='desc'>" + description + "</div>";
 				}
 
 				RenderOperation(writer, operationName, requestMessage, responseMessage, restPaths, description);

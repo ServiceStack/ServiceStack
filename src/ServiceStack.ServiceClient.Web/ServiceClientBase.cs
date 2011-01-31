@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceClient.Web
 	 * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
 	 */
 	public abstract class ServiceClientBase
-		: IServiceClient
+		: IServiceClient, IRestClient
 	{
 		private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
@@ -42,15 +42,14 @@ namespace ServiceStack.ServiceClient.Web
 			this.AsyncOneWayBaseUri = asyncOneWayBaseUri;
 		}
 
-		public string BaseUri
+		public void SetBaseUri(string baseUri, string format)
 		{
-			set
-			{
-				var baseUri = value.WithTrailingSlash();
-				this.SyncReplyBaseUri = baseUri + "SyncReply/";
-				this.AsyncOneWayBaseUri = baseUri + "AsyncOneWay/";
-			}
+			this.BaseUri = baseUri;
+			this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + format + "/syncreply/";
+			this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
 		}
+
+		public string BaseUri { get; set; }
 
 		public string SyncReplyBaseUri { get; set; }
 
@@ -71,7 +70,7 @@ namespace ServiceStack.ServiceClient.Web
 		public virtual TResponse Send<TResponse>(object request)
 		{
 			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
-			var client = SendRequest(request, requestUri);
+			var client = SendRequest(requestUri, request);
 
 			try
 			{
@@ -108,7 +107,6 @@ namespace ServiceStack.ServiceClient.Web
 					using (var stream = errorResponse.GetResponseStream())
 					{
 						serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
-						throw serviceEx;
 					}
 				}
 				catch (Exception innerEx)
@@ -119,6 +117,9 @@ namespace ServiceStack.ServiceClient.Web
 						StatusCode = (int)errorResponse.StatusCode,
 					}; 
 				}
+				
+				//Escape deserialize exception handling and throw here
+				throw serviceEx;
 			}
 
 			var authEx = ex as AuthenticationException;
@@ -130,7 +131,7 @@ namespace ServiceStack.ServiceClient.Web
 			throw ex;
 		}
 
-		private WebRequest SendRequest(object request, string requestUri)
+		private WebRequest SendRequest(string requestUri, object request)
 		{
 			var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
 			if (isHttpGet)
@@ -142,6 +143,14 @@ namespace ServiceStack.ServiceClient.Web
 				}
 			}
 
+			return SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request);
+		}
+
+		private WebRequest SendRequest(string httpMethod, string requestUri, object request)
+		{
+			if (httpMethod == null)
+				throw new ArgumentNullException("httpMethod");
+
 			var client = (HttpWebRequest)WebRequest.Create(requestUri);
 			try
 			{
@@ -151,14 +160,15 @@ namespace ServiceStack.ServiceClient.Web
 				}
 
 				client.Accept = string.Format("{0}, */*", ContentType);
-				client.Method = HttpMethod ?? DefaultHttpMethod;
+				client.Method = httpMethod;
 
 				if (HttpWebRequestFilter != null)
 				{
 					HttpWebRequestFilter(client);
 				}
 
-				if (!isHttpGet)
+				if (httpMethod != Web.HttpMethod.Get
+					&& httpMethod != Web.HttpMethod.Delete)
 				{
 					client.ContentType = ContentType;
 
@@ -180,13 +190,13 @@ namespace ServiceStack.ServiceClient.Web
 			return relativeOrAbsoluteUrl.StartsWith("http:")
 				|| relativeOrAbsoluteUrl.StartsWith("https:")
 					 ? relativeOrAbsoluteUrl
-					 : this.SyncReplyBaseUri + relativeOrAbsoluteUrl;
+					 : this.BaseUri + relativeOrAbsoluteUrl;
 		}
 
 		public void SendOneWay(object request)
 		{
 			var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-			var client = SendRequest(request, requestUri);
+			var client = SendRequest(requestUri, request);
 		}
 
 		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
@@ -213,6 +223,70 @@ namespace ServiceStack.ServiceClient.Web
 		public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
 			asyncClient.SendAsync(Web.HttpMethod.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+		}
+
+
+		public virtual TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
+		{
+			var requestUri = GetUrl(relativeOrAbsoluteUrl);
+			var client = SendRequest(httpMethod, requestUri, request);
+
+			try
+			{
+				using (var responseStream = client.GetResponse().GetResponseStream())
+				{
+					var response = DeserializeFromStream<TResponse>(responseStream);
+					return response;
+				}
+			}
+			catch (Exception ex)
+			{
+				HandleResponseException<TResponse>(ex, requestUri);
+				throw;
+			}
+		}
+
+		public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+		{
+			return Send<TResponse>(Web.HttpMethod.Get, relativeOrAbsoluteUrl, null);
+		}
+
+		public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
+		{
+			return Send<TResponse>(Web.HttpMethod.Delete, relativeOrAbsoluteUrl, null);
+		}
+
+		public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
+		{
+			return Send<TResponse>(Web.HttpMethod.Post, relativeOrAbsoluteUrl, request);
+		}
+
+		public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
+		{
+			return Send<TResponse>(Web.HttpMethod.Put, relativeOrAbsoluteUrl, request);
+		}
+
+		public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+		{
+			var requestUri = GetUrl(relativeOrAbsoluteUrl);
+			var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+			webRequest.Method = Web.HttpMethod.Post;
+			webRequest.Accept = string.Format("{0}, */*", ContentType);
+
+			try
+			{
+				var webResponse = webRequest.UploadFile(fileToUpload, mimeType);
+				using (var responseStream = webResponse.GetResponseStream())
+				{
+					var response = DeserializeFromStream<TResponse>(responseStream);
+					return response;
+				}
+			}
+			catch (Exception ex)
+			{
+				HandleResponseException<TResponse>(ex, requestUri);
+				throw;
+			}
 		}
 
 		public void Dispose() { }

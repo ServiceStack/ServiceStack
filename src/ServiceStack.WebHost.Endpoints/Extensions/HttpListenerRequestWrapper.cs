@@ -41,6 +41,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -266,8 +267,24 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			if (boundary == null)
 				return;
 
-			Stream input = GetSubStream(InputStream);
-			HttpMultipart multi_part = new HttpMultipart(input, boundary, ContentEncoding);
+			var input = GetSubStream(InputStream);
+
+			//DB: 30/01/11 - Hack to get around non-seekable stream and received HTTP request
+			//Not ending with \r\n?
+			var ms = new MemoryStream(32 * 1024);
+			input.CopyTo(ms);
+			input = ms;
+			ms.WriteByte((byte)'\r');
+			ms.WriteByte((byte)'\n');
+
+			input.Position = 0;
+
+			//Uncomment to debug
+			//var content = new StreamReader(ms).ReadToEnd();
+			//Console.WriteLine(boundary + "::" + content);
+			//input.Position = 0;
+
+			var multi_part = new HttpMultipart(input, boundary, ContentEncoding);
 
 			HttpMultipart.Element e;
 			while ((e = multi_part.ReadNextElement()) != null)
@@ -868,6 +885,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			public HttpMultipart(Stream data, string b, Encoding encoding)
 			{
 				this.data = data;
+				//DB: 30/01/11: cannot set or read the Position in HttpListener in Win.NET
+				//var ms = new MemoryStream(32 * 1024);
+				//data.CopyTo(ms);
+				//this.data = ms;
+
 				boundary = b;
 				boundary_bytes = encoding.GetBytes(b);
 				buffer = new byte[boundary_bytes.Length + 2]; // CRLF or '--'
@@ -1083,7 +1105,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					}
 				}
 
-				long start = data.Position;
+				long start = 0;
+				start = data.Position;
 				elem.Start = start;
 				long pos = MoveToNextBoundary();
 				if (pos == -1)

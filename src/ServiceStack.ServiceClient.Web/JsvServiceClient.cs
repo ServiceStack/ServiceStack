@@ -12,13 +12,9 @@ namespace ServiceStack.ServiceClient.Web
 		{
 		}
 
-		/// <summary>
-		/// Base Url of Service Stack's Web Service endpoints, i.e. http://localhost/ServiceStack/
-		/// </summary>
-		/// <param name="baseUri"></param>
 		public JsvServiceClient(string baseUri) 
 		{
-			this.BaseUri = baseUri.WithTrailingSlash() + "Jsv/";
+			SetBaseUri(baseUri, "jsv");
 		}
 
 		public JsvServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
@@ -28,7 +24,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		public override string ContentType
 		{
-			get { return "text/jsv"; }
+			get { return "application/jsv"; }
 		}
 
 		public override void SerializeToStream(object request, Stream stream)

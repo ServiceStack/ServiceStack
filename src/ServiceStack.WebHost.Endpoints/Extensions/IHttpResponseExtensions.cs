@@ -98,6 +98,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					return true;
 				}
 
+				if (httpResult != null)
+				{
+					result = httpResult.Response;
+				}
+
 				var responseText = result as string;
 				if (responseText != null)
 				{

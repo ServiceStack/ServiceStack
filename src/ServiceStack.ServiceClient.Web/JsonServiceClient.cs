@@ -14,8 +14,8 @@ namespace ServiceStack.ServiceClient.Web
 		}
 
 		public JsonServiceClient(string baseUri) 
-		{
-			this.BaseUri = baseUri.WithTrailingSlash() + "Json/";
+		{			
+			SetBaseUri(baseUri, "json");
 		}
 
 		public JsonServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 

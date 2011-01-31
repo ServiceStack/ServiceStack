@@ -98,11 +98,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostListenerBaseTests.cs" />
-    <Compile Include="AsyncRestServiceClientTests.cs" />
+    <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="SyncRestClientTests.cs" />
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
+    <Compile Include="FileUploadTests.cs" />
+    <Compile Include="HttpErrorTests.cs" />
     <Compile Include="RequestContextTests.cs" />
     <Compile Include="RequestFiltersTests.cs" />
     <Compile Include="Support\DirectServiceClient.cs" />
@@ -126,6 +129,8 @@
     <Compile Include="Support\Host\TestAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
     <Compile Include="Support\Operations\RequestOfComplexTypes.cs" />
+    <Compile Include="Support\Services\FileUploadService.cs" />
+    <Compile Include="Support\Services\HttpErrorService.cs" />
     <Compile Include="Support\Services\RequestFilter.cs" />
     <Compile Include="Support\Services\HeadersService.cs" />
     <Compile Include="Support\Services\GetCustomerService.cs" />
@@ -200,6 +205,8 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestExistingDir\default.html" />
+    <Content Include="TestExistingDir\upload.html" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

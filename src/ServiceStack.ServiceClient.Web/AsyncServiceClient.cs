@@ -272,6 +272,11 @@ namespace ServiceStack.ServiceClient.Web
 				{
 					using (var stream = errorResponse.GetResponseStream())
 					{
+						//Uncomment to Debug exceptions:
+						//var strResponse = new StreamReader(stream).ReadToEnd();
+						//Console.WriteLine("Response: " + strResponse);
+						//stream.Position = 0;
+
 						serviceEx.ResponseDto = this.StreamDeserializer(typeof(TResponse), stream);
 						requestState.HandleError((TResponse)serviceEx.ResponseDto, serviceEx);
 					}

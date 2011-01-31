@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Net;
+using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -156,6 +158,13 @@ namespace ServiceStack.ServiceInterface
 			if (responseDto == null)
 			{
 				throw ex;
+			}
+
+			var httpError = ex as IHttpError;
+			if (httpError != null)
+			{
+				httpError.Response = responseDto;
+				return httpError;
 			}
 
 			return new HttpResult(responseDto, null, HttpStatusCode.InternalServerError);
