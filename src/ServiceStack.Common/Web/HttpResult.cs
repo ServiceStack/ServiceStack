@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Web
 {
@@ -35,6 +36,38 @@ namespace ServiceStack.Common.Web
 			this.StatusCode = statusCode;
 		}
 
+		public HttpResult(FileInfo fileResponse, bool asAttachment)
+			: this(fileResponse, asAttachment, MimeTypes.GetMimeType(fileResponse.Name)) { }
+
+		public HttpResult(FileInfo fileResponse, bool asAttachment, string contentType)
+		{
+			this.StatusCode = HttpStatusCode.OK;
+			this.FileInfo = fileResponse;
+
+			if (!asAttachment)
+			{
+				this.Headers = new Dictionary<string, string> {
+					{ Web.HttpHeaders.ContentType, contentType },
+				};
+				return;
+			}
+
+			var headerValue =
+				"attachment; " +
+				"filename=\"" + fileResponse.Name + "\"; " +
+				"size=" + fileResponse.Length + "; " +
+				"creation-date=" + fileResponse.CreationTimeUtc.ToString("R") + "; " +
+				"modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R") + "; " +
+				"read-date=" + fileResponse.LastAccessTimeUtc.ToString("R");
+
+			this.Headers = new Dictionary<string, string> {
+				{ HttpHeaders.ContentType, contentType },
+				{ HttpHeaders.ContentDisposition, headerValue },
+			};
+		}
+
+		public FileInfo FileInfo { get; private set; }
+
 		public IContentTypeWriter ResponseFilter { get; set; }
 
 		public string ContentType { get; set; }
@@ -52,6 +85,16 @@ namespace ServiceStack.Common.Web
 
 		public void WriteTo(Stream responseStream)
 		{
+			if (this.FileInfo != null)
+			{
+				using (var fs = this.FileInfo.OpenRead())
+				{
+					fs.WriteTo(responseStream);
+					responseStream.Flush();
+				}
+				return;
+			}
+
 			if (this.ResponseFilter == null)
 				throw new ArgumentNullException("ResponseFilter");
 
