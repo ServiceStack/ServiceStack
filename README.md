@@ -3,7 +3,7 @@ follow [@demisbellot](http://twitter.com/demisbellot) and [@ServiceStack](http:/
 for twitter updates.
 
 Service Stack is a high-performance .NET web services framework _(including a number of high-performance sub-components: see below)_ 
-that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/mythz/ServiceStack/wiki/Service-Stack-Web-Services). 
+that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
 For more info check out [servicestack.net](http://www.servicestack.net).
 
 Simple web service example
@@ -65,22 +65,22 @@ Download
 
 To start developing web services with Service Stack we recommend starting with the ServiceStack.Examples project (includes ServiceStack.dlls):
 
-  * **[ServiceStack.Examples/downloads/](https://github.com/mythz/ServiceStack.Examples/downloads)**
+  * **[ServiceStack.Examples/downloads/](https://github.com/ServiceStack/ServiceStack.Examples/downloads)**
 
 If you already have ServiceStack and just want to download the latest release binaries get them at:
 
-  * **[ServiceStack/downloads/](https://github.com/mythz/ServiceStack/downloads)**
+  * **[ServiceStack/downloads/](https://github.com/ServiceStack/ServiceStack/downloads)**
 
 Alternatively if you want keep up with the latest version you can always use the power of Git :)
 
-    git clone git://github.com/mythz/ServiceStack.git
+    git clone git://github.com/ServiceStack/ServiceStack.git
 
-[Release notes for major releases](https://github.com/mythz/ServiceStack/wiki/Release-Notes)
+[Release notes for major releases](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
 
 ## Getting Started
 Online tutorials that walks you through developing and calling web services is available here:
 
- * **[Read the documentation on the ServiceStack Wiki](https://github.com/mythz/ServiceStack/wiki)**
+ * **[Read the documentation on the ServiceStack Wiki](https://github.com/ServiceStack/ServiceStack/wiki)**
  * [Creating a Hello World Web service](http://www.servicestack.net/ServiceStack.Hello/)
  * [Calling Web Services from MonoTouch](http://www.servicestack.net/monotouch/remote-info/)
 
@@ -94,12 +94,12 @@ Unlike other web services frameworks ServiceStack let's you develop web services
 This lets ServiceStack and other tools to have a greater intelligence about your services allowing:
 
 - [Multiple serialization formats (JSON, XML, JSV and SOAP with extensible plugin model for more)](http://servicestack.net/ServiceStack.Hello/servicestack/metadata)
-- [A single re-usable C# Generic Client (In JSON, JSV, XML and SOAP flavours) that can talk to all your services.](https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
-- [Re-use your Web Service DTOs (i.e. no code-gen) on your client applications so you're never out-of-sync](https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
-- [Automatic serialization of Exceptions in your DTOs ResponseStatus](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L154)
-- [The possibility of a base class for all your services to put high-level application logic (i.e security, logging, etc)](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L24)
-- [Highly testable, your in-memory unit tests for your service can also be used as integration tests](https://github.com/mythz/ServiceStack/blob/master/tests/ServiceStack.WebHost.IntegrationTests/Tests/WebServicesTests.cs)
-- [Built-in rolling web service error logging (if Redis is Configured in your AppHost)](https://github.com/mythz/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L122)
+- [A single re-usable C# Generic Client (In JSON, JSV, XML and SOAP flavours) that can talk to all your services.](https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
+- [Re-use your Web Service DTOs (i.e. no code-gen) on your client applications so you're never out-of-sync](https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples/UsingServiceClients.cs)
+- [Automatic serialization of Exceptions in your DTOs ResponseStatus](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L154)
+- [The possibility of a base class for all your services to put high-level application logic (i.e security, logging, etc)](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L24)
+- [Highly testable, your in-memory unit tests for your service can also be used as integration tests](https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.IntegrationTests/Tests/WebServicesTests.cs)
+- [Built-in rolling web service error logging (if Redis is Configured in your AppHost)](https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.ServiceInterface/ServiceBase.cs#L122)
 - [Rich REST and HTML support on all web services with x-www-form-urlencoded & multipart/form-data (i.e. FORM posts and file uploads)](http://servicestack.net/ServiceStack.Hello/)
 
 ## Define web services following Martin Fowlers Data Transfer Object Pattern:
@@ -154,24 +154,24 @@ No coupling between the transport's endpoint and your web service's payload. You
     * [JSV (+REST)](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/Metadata?op=GetFactorial)
     * [SOAP 1.1](http://www.servicestack.net/ServiceStack.Hello/servicestack/soap11)
     * [SOAP 1.2](http://www.servicestack.net/ServiceStack.Hello/servicestack/soap12)
-  * View the [Service Stack endpoints page](https://github.com/mythz/ServiceStack/wiki/Service-Stack-Web-Services) for our recommendations on which endpoint to use and when.
+  * View the [Service Stack endpoints page](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services) for our recommendations on which endpoint to use and when.
 
 # High Performance Sub Projects
 Also included in ServiceStack are libraries that are useful in the development of high performance web services:
 
- * [ServiceStack.Text](https://github.com/mythz/ServiceStack.Text) - The home of ServiceStack's JSON and JSV text serializers, the fastest text serializers for .NET
+ * [ServiceStack.Text](https://github.com/ServiceStack/ServiceStack.Text) - The home of ServiceStack's JSON and JSV text serializers, the fastest text serializers for .NET
    * [JsonSerializer](http://www.servicestack.net/mythz_blog/?p=344) - The fastest JSON Serializer for .NET. Over 3 times faster than other .NET JSON serialisers.
-   * [TypeSerializer](https://github.com/mythz/ServiceStack.Text) - The JSV-format, a fast, compact text serializer that is very resilient to schema changes and is:
+   * [TypeSerializer](https://github.com/ServiceStack/ServiceStack.Text) - The JSV-format, a fast, compact text serializer that is very resilient to schema changes and is:
        * 3.5x quicker and 2.6x smaller than the .NET XML DataContractSerializer and
        * 5.3x quicker and 1.3x smaller than the .NET JSON DataContractSerializer - _[view the detailed benchmarks](http://www.servicestack.net/benchmarks/NorthwindDatabaseRowsSerialization.1000000-times.2010-02-06.html)_
 
- * [ServiceStack.Redis](https://github.com/mythz/ServiceStack.Redis) - An API complete C# [Redis](http://code.google.com/p/redis/) client with native support for persisting C# POCO objects.
+ * [ServiceStack.Redis](https://github.com/ServiceStack/ServiceStack.Redis) - An API complete C# [Redis](http://code.google.com/p/redis/) client with native support for persisting C# POCO objects.
    *  You can download the latest [RedisWindowsDownload Windows build for the Redis Server here].
    * [Redis Admin UI](http://www.servicestack.net/mythz_blog/?p=381) - An Ajax GUI admin tool to help visualize your Redis data.
 
- * [OrmLite](https://github.com/mythz/ServiceStack.OrmLite) - A convention-based, configuration free lightweight ORM that uses attributes from DataAnnotations to infer the table schema. Currently supports both Sqlite and SqlServer.
+ * [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite) - A convention-based, configuration free lightweight ORM that uses attributes from DataAnnotations to infer the table schema. Currently supports both Sqlite and SqlServer.
 
- * [Caching](https://github.com/mythz/ServiceStack/wiki/Caching) - A common interface for caching with providers for:
+ * [Caching](https://github.com/ServiceStack/ServiceStack/wiki/Caching) - A common interface for caching with providers for:
    * Memcached
    * In Memory Cache
    * Redis
@@ -218,5 +218,4 @@ Which will change your urls will now look like:
 ***
 
 Runs on both Mono and .NET 3.5. _(Live preview hosted on Mono / CentOS)_
-
 
