@@ -23,6 +23,8 @@ namespace ServiceStack.ServiceClient.Web
 
 		const int BufferSize = 4096;
 
+		public ICredentials Credentials { get; set; }
+
 		internal class RequestState<TResponse> : IDisposable
 		{
 			public RequestState()
@@ -143,6 +145,11 @@ namespace ServiceStack.ServiceClient.Web
 
 			webRequest.Accept = string.Format("{0}, */*", ContentType);
 			webRequest.Method = httpMethod;
+
+			if (this.Credentials != null)
+			{
+				webRequest.Credentials = this.Credentials;
+			}
 
 			if (HttpWebRequestFilter != null)
 			{

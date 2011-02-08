@@ -27,8 +27,7 @@ namespace ServiceStack.ServiceClient.Web
 		protected ServiceClientBase()
 		{
 			this.HttpMethod = DefaultHttpMethod;
-			asyncClient = new AsyncServiceClient
-			{
+			asyncClient = new AsyncServiceClient {
 				ContentType = ContentType,
 				StreamSerializer = SerializeToStream,
 				StreamDeserializer = StreamDeserializer
@@ -60,6 +59,16 @@ namespace ServiceStack.ServiceClient.Web
 		public abstract string ContentType { get; }
 
 		public string HttpMethod { get; set; }
+
+		private ICredentials credentials;
+		public ICredentials Credentials
+		{
+			set
+			{
+				this.credentials = value;
+				this.asyncClient.Credentials = value;
+			}
+		}
 
 		public abstract void SerializeToStream(object request, Stream stream);
 
@@ -97,8 +106,7 @@ namespace ServiceStack.ServiceClient.Web
 				log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
 				log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
-				var serviceEx = new WebServiceException(errorResponse.StatusDescription)
-				{
+				var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
 					StatusCode = (int)errorResponse.StatusCode,
 				};
 
@@ -112,12 +120,11 @@ namespace ServiceStack.ServiceClient.Web
 				catch (Exception innerEx)
 				{
 					// Oh, well, we tried
-					throw new WebServiceException(errorResponse.StatusDescription, innerEx)
-					{
+					throw new WebServiceException(errorResponse.StatusDescription, innerEx) {
 						StatusCode = (int)errorResponse.StatusCode,
-					}; 
+					};
 				}
-				
+
 				//Escape deserialize exception handling and throw here
 				throw serviceEx;
 			}
@@ -161,6 +168,10 @@ namespace ServiceStack.ServiceClient.Web
 
 				client.Accept = string.Format("{0}, */*", ContentType);
 				client.Method = httpMethod;
+				if (this.credentials != null)
+				{
+					client.Credentials = this.credentials;
+				}
 
 				if (HttpWebRequestFilter != null)
 				{
