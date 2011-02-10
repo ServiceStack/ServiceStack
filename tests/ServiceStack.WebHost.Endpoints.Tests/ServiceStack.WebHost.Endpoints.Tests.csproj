@@ -101,6 +101,9 @@
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="CustomRequestDataTests.cs" />
+    <Compile Include="Support\Operations\CustomFormData.cs" />
+    <Compile Include="Support\Services\CustomFormDataService.cs" />
     <Compile Include="SyncRestClientTests.cs" />
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />

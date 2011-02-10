@@ -223,6 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				foreach (var name in request.FormData.AllKeys)
 				{
+					if (name == null) continue; //thank you ASP.NET
 					map[name] = request.FormData[name];
 				}
 			}

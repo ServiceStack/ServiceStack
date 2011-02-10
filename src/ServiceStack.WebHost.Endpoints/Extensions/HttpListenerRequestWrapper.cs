@@ -166,9 +166,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			get
 			{
-				return IsContentType(Common.Web.ContentType.MultiPartFormData, true)
-					? this.Form
-					: null;
+				return this.Form;
 			}
 		}
 

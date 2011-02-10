@@ -61,6 +61,9 @@ namespace ServiceStack.ServiceHost
 
 		public T Get<T>() where T : class
 		{
+			if (typeof(T) == typeof(IHttpRequest))
+				return (T) this.httpReq;
+
 			var isDto = this.Dto as T;
 			return isDto ?? (this.Factory != null ? this.Factory.Resolve<T>() : null);
 		}

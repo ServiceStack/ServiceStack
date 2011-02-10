@@ -115,6 +115,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\CustomFormDataService.cs" />
     <Compile Include="Tests\CsvContentTypeFilterTests.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -159,6 +160,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ServiceStack.ServiceInterface\TestBase.cs" />
+    <Compile Include="Tests\CustomRequestDataTests.cs" />
     <Compile Include="Tests\FileUploadTests.cs" />
     <Compile Include="Tests\MovieServiceTests.cs" />
     <Compile Include="Tests\RequestAndPathResolutionTests.cs" />

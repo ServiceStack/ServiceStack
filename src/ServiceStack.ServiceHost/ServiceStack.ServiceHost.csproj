@@ -75,6 +75,7 @@
     <Compile Include="FileExtensions.cs" />
     <Compile Include="HttpFile.cs" />
     <Compile Include="HttpRequestAuthentication.cs" />
+    <Compile Include="HttpRequestExtensions.cs" />
     <Compile Include="IHttpRequest.cs" />
     <Compile Include="IHttpResponse.cs" />
     <Compile Include="HttpResponseExtensions.cs" />
