@@ -60,9 +60,7 @@ DT {{
   right: 10px;
 }}
 </style>
-<script>
-  var dto = ""{0}"";
-</script>
+<script id='dto' type='text/json'>{0}</script>
 </head>
 <body>
 <div id=""body"">
@@ -140,7 +138,8 @@ function arr(m) {{
   return sb;
 }}
 
-var model = JSON.parse(dto);
+var jsonDto = $('dto').innerHTML;
+var model = JSON.parse(jsonDto);
 $(""content"").innerHTML = val(model);  
 
 </script>
@@ -166,10 +165,10 @@ $(""content"").innerHTML = val(model);
 			}
 
 			var json = JsonSerializer.SerializeToString(obj);
-			var jsonVar = json != null ? json.Replace("\"", "\\\"") : null;
+			//var jsonVar = json != null ? json.Replace("\"", "\\\"") : null;
 
 			var html = string.Format(Template,
-			  jsonVar,
+			  json,
 			  title,
 			  DateTime.UtcNow);
 
