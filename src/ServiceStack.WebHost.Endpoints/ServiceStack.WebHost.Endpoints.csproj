@@ -70,8 +70,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHostBase.cs" />
+    <Compile Include="Formats\CsvFormat.cs" />
     <Compile Include="Extensions\HttpListenerRequestWrapper.cs" />
     <Compile Include="GenericHandler.cs" />
+    <Compile Include="Formats\HtmlFormat.cs" />
+    <Compile Include="IAppHost.cs" />
     <Compile Include="Metadata\CustomMetadataHandler.cs" />
     <Compile Include="RestHandler.cs" />
     <Compile Include="Extensions\HttpRequestWrapper.cs" />

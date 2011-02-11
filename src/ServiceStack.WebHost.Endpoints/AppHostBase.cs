@@ -8,6 +8,7 @@ using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -16,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// ASP.NET application.
 	/// </summary>
 	public abstract class AppHostBase
-		: IFunqlet, IDisposable
+		: IFunqlet, IDisposable, IAppHost
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
 		private readonly DateTime startTime;
@@ -64,8 +65,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			Instance = this;
-
-			RegisterCustomFormats();
+			EndpointHost.ConfigureHost(this);
 
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
@@ -87,23 +87,6 @@ namespace ServiceStack.WebHost.Endpoints
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
-		private void RegisterCustomFormats()
-		{
-			//Register the 'text/csv' content-type and serializers (format is inferred from the last part of the content-type)
-			this.ContentTypeFilters.Register(ContentType.Csv,
-				CsvSerializer.SerializeToStream, CsvSerializer.DeserializeFromStream);
-
-			//Add a response filter to add a 'Content-Disposition' header so browsers treat it natively as a .csv file
-			this.ResponseFilters.Add((req, res, dto) =>
-				{
-					if (req.ResponseContentType == ContentType.Csv)
-					{
-						res.AddHeader(HttpHeaders.ContentDisposition,
-							string.Format("attachment;filename={0}.csv", req.OperationName));
-					}
-				});
-		}
-
 		public abstract void Configure(Container container);
 
 		public void SetConfig(EndpointHostConfig config)
@@ -120,6 +103,11 @@ namespace ServiceStack.WebHost.Endpoints
 
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;			
+		}
+
+		public T TryResolve<T>()
+		{
+			return this.Container.TryResolve<T>();
 		}
 
 		public IContentTypeFilter ContentTypeFilters

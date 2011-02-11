@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.ServiceHost;
+using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -8,6 +9,15 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		public static ServiceOperations ServiceOperations { get; private set; }
 		public static ServiceOperations AllServiceOperations { get; private set; }
+
+		public static IAppHost AppHost { get; internal set; }
+
+		internal static void ConfigureHost(IAppHost appHost)
+		{
+			AppHost = appHost;
+			HtmlFormat.Register(appHost);
+			CsvFormat.Register(appHost);
+		}
 
 		public static List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
 

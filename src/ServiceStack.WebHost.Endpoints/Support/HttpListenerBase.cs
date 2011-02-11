@@ -11,6 +11,7 @@ using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -21,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	/// server, for start and stop management and event routing of the actual
 	/// inbound requests.
 	/// </summary>
-	public abstract class HttpListenerBase : IDisposable
+	public abstract class HttpListenerBase : IDisposable, IAppHost
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpListenerBase));
 
@@ -62,8 +63,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			Instance = this;
+			EndpointHost.ConfigureHost(this);
 
-			RegisterCustomFormats();
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{
@@ -253,19 +254,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
-		private void RegisterCustomFormats()
+		public T TryResolve<T>()
 		{
-			this.ContentTypeFilters.Register(ContentType.Csv,
-				CsvSerializer.SerializeToStream, CsvSerializer.DeserializeFromStream);
-
-			this.ResponseFilters.Add((req, res, dto) =>
-			{
-				if (req.ResponseContentType == ContentType.Csv)
-				{
-					res.AddHeader(HttpHeaders.ContentDisposition,
-					string.Format("attachment;filename={0}.csv", req.OperationName));
-				}
-			});
+			return EndpointHost.Config.ServiceManager.Container.TryResolve<T>();
 		}
 
 		public IContentTypeFilter ContentTypeFilters
