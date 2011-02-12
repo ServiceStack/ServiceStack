@@ -142,9 +142,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			finally
 			{
-				//Both seem to throw an exception??
-				//Do not use response.Close(); does not have the same effect
-				//response.End();
+				try
+				{
+					response.Close();
+				}
+				catch (Exception ignore) {}
 			}
 		}
 

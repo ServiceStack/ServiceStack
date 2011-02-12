@@ -87,7 +87,6 @@
     <Compile Include="Support\RedirectHttpHandler.cs" />
     <Compile Include="Support\IServiceStackHttpHandler.cs" />
     <Compile Include="Support\NotFoundHttpHandler.cs" />
-    <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="JsvSyncReplyHandler.cs" />
     <Compile Include="Extensions\IHttpResponseExtensions.cs" />
     <Compile Include="Extensions\HttpListenerResponseWrapper.cs" />

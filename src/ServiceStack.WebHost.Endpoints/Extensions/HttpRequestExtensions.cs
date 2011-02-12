@@ -259,14 +259,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		}
 
 		public static string[] PreferredContentTypes = new[] {
-			ContentType.Json, ContentType.Xml, ContentType.Jsv
+			ContentType.Html, ContentType.Json, ContentType.Xml, ContentType.Jsv
 		};
 
 		/// <summary>
 		/// Use this to treat Request.Items[] as a cache by returning pre-computed items to save 
 		/// calculating them multiple times.
 		/// </summary>
-		public static object ResolveItem(this IHttpRequest httpReq, 
+		public static object ResolveItem(this IHttpRequest httpReq,
 			string itemKey, Func<IHttpRequest, object> resolveFn)
 		{
 			object cachedItem;
@@ -297,15 +297,26 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
 			if (acceptContentTypes != null)
 			{
+				var hasPreferredContentTypes = new bool[PreferredContentTypes.Length];
 				foreach (var contentType in acceptContentTypes)
 				{
 					acceptsAnything = acceptsAnything || contentType == "*/*";
 					if (acceptsAnything && hasDefaultContentType) return defaultContentType;
 
-					foreach (var preferredContentType in PreferredContentTypes)
+					for (var i = 0; i < PreferredContentTypes.Length; i++)
 					{
-						if (contentType.StartsWith(preferredContentType)) return preferredContentType;
+						if (hasPreferredContentTypes[i]) continue;
+						var preferredContentType = PreferredContentTypes[i];
+						hasPreferredContentTypes[i] = contentType.StartsWith(preferredContentType);
 					}
+				}
+				for (var i = 0; i < PreferredContentTypes.Length; i++)
+				{
+					if (hasPreferredContentTypes[i]) return PreferredContentTypes[i];
+				}
+
+				foreach (var contentType in acceptContentTypes)
+				{
 					foreach (var customContentType in customContentTypes)
 					{
 						if (contentType.StartsWith(customContentType)) return customContentType;

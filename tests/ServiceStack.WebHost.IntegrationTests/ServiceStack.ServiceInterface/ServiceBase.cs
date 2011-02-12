@@ -54,6 +54,27 @@ namespace ServiceStack.ServiceInterface
 		}
 
 		/// <summary>
+		/// Access to the Applications ServiceStack AppHost Instance
+		/// </summary>
+		public virtual IAppHost AppHost
+		{
+			get
+			{
+				return EndpointHost.AppHost;
+			}
+		}
+
+		/// <summary>
+		/// Resolve an alternate Web Service from ServiceStack's IOC container.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T ResolveService<T>()
+		{
+			return this.AppHost.TryResolve<T>();
+		}
+
+		/// <summary>
 		/// Maintains the current request DTO in this property
 		/// </summary>
 		protected TRequest CurrentRequestDto;

@@ -49,6 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			this.IsClosed = true;
 			try
 			{
+				response.Flush();
 				response.Close();
 			}
 			catch (Exception ex)
