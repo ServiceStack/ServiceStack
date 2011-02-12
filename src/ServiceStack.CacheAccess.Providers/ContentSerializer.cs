@@ -79,13 +79,19 @@ namespace ServiceStack.CacheAccess.Providers
 			switch (mimeType)
 			{
 				case MimeTypes.Xml:
+				case ContentType.Xml:
 					return DataContractSerializer.Instance.Parse(result);
 
 				case MimeTypes.Json:
+				case ContentType.Json:
 					return JsonDataContractSerializer.Instance.Parse(result);
 
 				case MimeTypes.Jsv:
+				case ContentType.Jsv:
 					return TypeSerializer.SerializeToString(result);
+
+				case MimeTypes.Csv:
+					return CsvSerializer.SerializeToString(result);
 
 				default:
 					throw new NotSupportedException(mimeType);

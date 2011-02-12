@@ -1,5 +1,7 @@
 ﻿using System;
 using Funq;
+using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite;
@@ -46,6 +48,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 					new OrmLiteConnectionFactory(
 						"~/App_Data/db.sqlite".MapHostAbsolutePath(),
 						SqliteOrmLiteDialectProvider.Instance));
+
+				this.Container.Register<ICacheClient>(new MemoryCacheClient());
 
 				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();
 				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));

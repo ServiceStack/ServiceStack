@@ -29,8 +29,9 @@ namespace ServiceStack.ServiceHost
 			Func<T> factoryFn)
 			where T : class
 		{
+			var httpReq = requestContext.Get<IHttpRequest>();
 			return ContentCacheManager.Resolve(
-				factoryFn, requestContext.MimeType, requestContext.CompressionType,
+				factoryFn, httpReq.ResponseContentType, requestContext.CompressionType,
 				cacheClient, cacheKey, null);
 		}
 
@@ -44,8 +45,9 @@ namespace ServiceStack.ServiceHost
 			TimeSpan? expireCacheIn, Func<T> factoryFn)
 			where T : class
 		{
+			var httpReq = requestContext.Get<IHttpRequest>();
 			return ContentCacheManager.Resolve(
-				factoryFn, requestContext.MimeType, requestContext.CompressionType,
+				factoryFn, httpReq.ResponseContentType, requestContext.CompressionType,
 				cacheClient, cacheKey, expireCacheIn);
 		}
 

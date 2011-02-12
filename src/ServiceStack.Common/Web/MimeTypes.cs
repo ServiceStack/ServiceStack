@@ -18,21 +18,15 @@ namespace ServiceStack.Common.Web
 		{
 			switch (mimeType)
 			{
-				case Html:
-					return ".html";
-				case Xml:
-					return ".xml";
-				case Json:
-					return ".js";
-				case Jsv:
-					return ".jsv";
-				case Csv:
-					return ".csv";
 				case ProtoBuf:
 					return ".pbuf";
-				default:
-					throw new NotSupportedException("Unknown mimeType: " + mimeType);
 			}
+
+			var parts = mimeType.Split('/');
+			if (parts.Length == 1) return "." + parts[0];
+			if (parts.Length == 2) return "." + parts[1];
+
+			throw new NotSupportedException("Unknown mimeType: " + mimeType);
 		}
 
 		public static string GetMimeType(string fileNameOrExt)
