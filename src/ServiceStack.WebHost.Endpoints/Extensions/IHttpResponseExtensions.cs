@@ -158,7 +158,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				try
 				{
-					response.Close();
+					//response.Close();
 				}
 				catch (Exception ignore) {}
 			}
