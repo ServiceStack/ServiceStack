@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Formats;
 
@@ -15,6 +16,7 @@ namespace ServiceStack.WebHost.Endpoints
 		internal static void ConfigureHost(IAppHost appHost)
 		{
 			AppHost = appHost;
+			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
 			HtmlFormat.Register(appHost);
 			CsvFormat.Register(appHost);
 		}

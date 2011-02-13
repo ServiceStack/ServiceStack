@@ -20,6 +20,7 @@ namespace ServiceStack.ServiceInterface.Testing
 			this.OperationName = operationName;
 			this.HttpMethod = httpMethod;
 			this.ContentType = contentType;
+			this.ResponseContentType = contentType;
 			this.PathInfo = pathInfo;
 			this.QueryString = queryString;
 			this.FormData = formData;
@@ -34,9 +35,11 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public IDictionary<string, Cookie> Cookies { get; set; }
 
+		private string responseContentType;
 		public string ResponseContentType
 		{
-			get { return this.ContentType; }
+			get { return responseContentType ?? this.ContentType; }
+			set { responseContentType = value; }
 		}
 
 		public NameValueCollection Headers { get; set; }

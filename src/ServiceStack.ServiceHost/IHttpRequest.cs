@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceHost
 
 		IDictionary<string, Cookie> Cookies { get; }
 
-		string ResponseContentType { get; }
+		string ResponseContentType { get; set; }
 
 		/// <summary>
 		/// Attach any data to this request that all filters and services can access.

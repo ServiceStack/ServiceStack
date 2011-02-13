@@ -50,15 +50,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			throw new NotImplementedException();
 		}
 
-		public IContentTypeFilter ContentTypeFilter { get; set; }
-
-		public IContentTypeFilter GetContentFilters()
-		{
-			return ContentTypeFilter != null
-				? this.ContentTypeFilter
-				: EndpointHost.Config.ContentTypeFilter;
-		}
-
 		protected object DeserializeContentType(Type operationType, IHttpRequest httpReq, string contentType)
 		{
 			var httpMethod = httpReq.HttpMethod;
@@ -87,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			try
 			{
-				var deserializer = GetContentFilters().GetStreamDeserializer(contentType);
+				var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(contentType);
 				return deserializer(operationType, httpReq.InputStream);
 			}
 			catch (Exception ex)

@@ -27,7 +27,7 @@ namespace ServiceStack.ServiceClient.Web
 			get { return "application/jsv"; }
 		}
 
-		public override void SerializeToStream(object request, Stream stream)
+		public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
 		{
 			using (var writer = new StreamWriter(stream))
 			{

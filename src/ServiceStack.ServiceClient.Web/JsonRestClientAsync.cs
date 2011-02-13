@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ServiceStack.Service;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
@@ -20,9 +21,14 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			this.client = new AsyncServiceClient {
 				ContentType = ContentType,
-				StreamSerializer = JsonSerializer.SerializeToStream,
+				StreamSerializer = SerializeToStream,
 				StreamDeserializer = JsonSerializer.DeserializeFromStream
 			};
+		}
+
+		private static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
+		{
+			JsonSerializer.SerializeToStream(dto, stream);
 		}
 
 		private readonly AsyncServiceClient client;

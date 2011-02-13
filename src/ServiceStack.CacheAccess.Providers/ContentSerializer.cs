@@ -1,6 +1,9 @@
 using System;
+using System.IO;
+using System.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 
@@ -15,21 +18,28 @@ namespace ServiceStack.CacheAccess.Providers
 	{
 		public Func<T> FactoryFn { get; private set; }
 		public string CompressionType { get; private set; }
-		public string MimeType { get; private set; }
+		public string ContentType { get; private set; }
+		public IRequestContext SerializationContext { get; private set; }
 
-		public ContentSerializer(Func<T> factoryFn, string mimeType)
-			: this(factoryFn, mimeType, null)
+		public ContentSerializer(Func<T> factoryFn, string contentType)
 		{
-		}
-
-		public ContentSerializer(Func<T> factoryFn, string mimeType, string compressionType)
-		{
-			factoryFn.ThrowIfNull("FactoryFn");
-			mimeType.ThrowIfNull("MimeType");
+			factoryFn.ThrowIfNull("factoryFn");
+			contentType.ThrowIfNull("contentType");
 
 			this.FactoryFn = factoryFn;
-			this.MimeType = mimeType;
-			this.CompressionType = compressionType;
+			this.ContentType = contentType;
+			this.SerializationContext = new SerializationContext(contentType);
+		}
+
+		public ContentSerializer(Func<T> factoryFn, IRequestContext serializationContext)
+		{
+			factoryFn.ThrowIfNull("factoryFn");
+			serializationContext.ThrowIfNull("serializationContext");
+
+			this.FactoryFn = factoryFn;
+			this.ContentType = serializationContext.ResponseContentType;
+			this.CompressionType = serializationContext.CompressionType;
+			this.SerializationContext = serializationContext;
 		}
 
 		public bool DoCompress
@@ -42,25 +52,26 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public object ToSerializedResult()
 		{
-			return ToSerializedString(FactoryFn(), MimeType);
+			return ToSerializedString(FactoryFn(), this.SerializationContext);
 		}
 
 		public string ToSerializedString()
 		{
-			return ToSerializedString(FactoryFn(), MimeType);
+			return ToSerializedString(FactoryFn(), this.SerializationContext);
 		}
 
 		public byte[] ToCompressedResult()
 		{
-			return ToCompressedResult(FactoryFn(), MimeType, CompressionType);
+			return ToCompressedResult(FactoryFn(), ContentType, CompressionType);
 		}
 
-		public static byte[] ToCompressedResult(object result, string mimeType, string compressionType)
+		public static byte[] ToCompressedResult(object result, string contentType, string compressionType)
 		{
 			result.ThrowIfNull("result");
-			mimeType.ThrowIfNull("MimeType");
+			contentType.ThrowIfNull("MimeType");
 
-			return ToCompressedResult(ToSerializedString(result, mimeType), compressionType);
+			var serializeCtx = new SerializationContext(contentType) { CompressionType = compressionType };
+			return ToCompressedResult(ToSerializedString(result, serializeCtx), compressionType);
 		}
 
 		public static byte[] ToCompressedResult(string serializedResult, string compressionType)
@@ -72,37 +83,61 @@ namespace ServiceStack.CacheAccess.Providers
 			return compressedResult;
 		}
 
-		public static string ToSerializedString(object result, string mimeType)
+		public static string ToSerializedString(object result, IRequestContext requestContext)
 		{
 			if (result == null) return null;
 
-			switch (mimeType)
+			var contentType = requestContext.ResponseContentType;
+			var contentFilters = ContentCacheManager.ContentTypeFilter;
+			if (contentFilters != null)
+			{
+				var serializer = contentFilters.GetStreamSerializer(contentType);
+				if (serializer != null)
+				{
+					try
+					{
+						using (var ms = new MemoryStream())
+						{
+							serializer(requestContext, result, ms);
+							var bytes = ms.ToArray();
+							return Encoding.UTF8.GetString(bytes);
+						}
+					}
+					catch (Exception ex)
+					{
+						throw ex;
+					}
+				}
+			}
+
+			switch (contentType)
 			{
 				case MimeTypes.Xml:
-				case ContentType.Xml:
+				case Common.Web.ContentType.Xml:
 					return DataContractSerializer.Instance.Parse(result);
 
 				case MimeTypes.Json:
-				case ContentType.Json:
+				case Common.Web.ContentType.Json:
 					return JsonDataContractSerializer.Instance.Parse(result);
 
 				case MimeTypes.Jsv:
-				case ContentType.Jsv:
+				case Common.Web.ContentType.Jsv:
 					return TypeSerializer.SerializeToString(result);
 
 				case MimeTypes.Csv:
 					return CsvSerializer.SerializeToString(result);
 
 				default:
-					throw new NotSupportedException(mimeType);
+					throw new NotSupportedException(contentType);
 			}
 		}
 
-		public static object ToOptimizedResult(string mimeType, string compressionType, T result)
+		public static object ToOptimizedResult(string contentType, string compressionType, T result)
 		{
+			var serializeCtx = new SerializationContext(contentType) { CompressionType = compressionType };
 			return compressionType == null
-		       	? (object) ToSerializedString(result, mimeType)
-		       	: ToCompressedResult(result, mimeType, compressionType);
+				? (object)ToSerializedString(result, serializeCtx)
+				: ToCompressedResult(result, contentType, compressionType);
 		}
 
 	}

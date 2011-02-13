@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			var asyncClient = new AsyncServiceClient
 			{
 				ContentType = ContentType.Csv,
-				StreamSerializer = CsvSerializer.SerializeToStream,
+				StreamSerializer = (r, o, s) => CsvSerializer.SerializeToStream(o, s),
 				StreamDeserializer = CsvSerializer.DeserializeFromStream,
 			};
 

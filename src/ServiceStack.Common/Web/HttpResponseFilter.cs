@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -9,6 +10,8 @@ namespace ServiceStack.Common.Web
 {
 	public class HttpResponseFilter : IContentTypeFilter
 	{
+		private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(false);
+
 		public static HttpResponseFilter Instance = new HttpResponseFilter();
 
 		public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers
@@ -72,8 +75,23 @@ namespace ServiceStack.Common.Web
 			}
 		}
 
-		public string SerializeToString(string contentType, object response)
+		public string SerializeToString(IRequestContext requestContext, object response)
 		{
+			var contentType = requestContext.ContentType;
+
+			StreamSerializerDelegate responseWriter;
+			if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter))
+			{
+				using (var ms = new MemoryStream())
+				{
+					responseWriter(requestContext, responseWriter, ms);
+					
+					ms.Position = 0;
+					var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
+					return result;
+				}
+			}
+
 			var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
 			switch (contentTypeAttr)
 			{
@@ -85,19 +103,19 @@ namespace ServiceStack.Common.Web
 
 				case EndpointAttributes.Jsv:
 					return TypeSerializer.SerializeToString(response);
-
-				default:
-					throw new NotSupportedException("ContentType not supported: " + contentType);
 			}
+
+			throw new NotSupportedException("ContentType not supported: " + contentType);
 		}
 
-		public void SerializeToStream(string contentType, object response, Stream responseStream)
+		public void SerializeToStream(IRequestContext requestContext, object response, Stream responseStream)
 		{
+			var contentType = requestContext.ContentType;
 			var serializer = GetStreamSerializer(contentType);
 			if (serializer == null)
 				throw new NotSupportedException("ContentType not supported: " + contentType);
 
-			serializer(response, responseStream);
+			serializer(requestContext, response, responseStream);
 		}
 
 		public StreamSerializerDelegate GetStreamSerializer(string contentType)
@@ -112,13 +130,13 @@ namespace ServiceStack.Common.Web
 			switch (contentTypeAttr)
 			{
 				case EndpointAttributes.Xml:
-					return XmlSerializer.SerializeToStream;
+					return (r, o, s) => XmlSerializer.SerializeToStream(o, s);
 
 				case EndpointAttributes.Json:
-					return JsonSerializer.SerializeToStream;
+					return (r, o, s) => JsonSerializer.SerializeToStream(o, s);
 
 				case EndpointAttributes.Jsv:
-					return TypeSerializer.SerializeToStream;
+					return (r, o, s) => TypeSerializer.SerializeToStream(o, s);
 			}
 
 			return null;
@@ -137,7 +155,7 @@ namespace ServiceStack.Common.Web
 
 				case EndpointAttributes.Jsv:
 					return TypeSerializer.DeserializeFromString(request, type);
-				
+
 				default:
 					throw new NotSupportedException("ContentType not supported: " + contentType);
 			}

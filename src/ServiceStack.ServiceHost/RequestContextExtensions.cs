@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceHost
 			where T : class
 		{
 			return ContentSerializer<T>.ToOptimizedResult(
-				requestContext.MimeType, requestContext.CompressionType, dto);
+				requestContext.ResponseContentType, requestContext.CompressionType, dto);
 		}
 
 		/// <summary>
@@ -29,10 +29,8 @@ namespace ServiceStack.ServiceHost
 			Func<T> factoryFn)
 			where T : class
 		{
-			var httpReq = requestContext.Get<IHttpRequest>();
 			return ContentCacheManager.Resolve(
-				factoryFn, httpReq.ResponseContentType, requestContext.CompressionType,
-				cacheClient, cacheKey, null);
+				factoryFn, requestContext, cacheClient, cacheKey, null);
 		}
 
 		/// <summary>
@@ -45,9 +43,8 @@ namespace ServiceStack.ServiceHost
 			TimeSpan? expireCacheIn, Func<T> factoryFn)
 			where T : class
 		{
-			var httpReq = requestContext.Get<IHttpRequest>();
 			return ContentCacheManager.Resolve(
-				factoryFn, httpReq.ResponseContentType, requestContext.CompressionType,
+				factoryFn, requestContext,
 				cacheClient, cacheKey, expireCacheIn);
 		}
 

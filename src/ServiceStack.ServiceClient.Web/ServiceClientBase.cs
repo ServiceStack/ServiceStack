@@ -70,7 +70,7 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
-		public abstract void SerializeToStream(object request, Stream stream);
+		public abstract void SerializeToStream(IRequestContext requestContext, object request, Stream stream);
 
 		public abstract T DeserializeFromStream<T>(Stream stream);
 
@@ -185,7 +185,7 @@ namespace ServiceStack.ServiceClient.Web
 
 					using (var requestStream = client.GetRequestStream())
 					{
-						SerializeToStream(request, requestStream);
+						SerializeToStream(null, request, requestStream);
 					}
 				}
 			}

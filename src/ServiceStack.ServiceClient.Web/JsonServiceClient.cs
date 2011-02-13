@@ -28,7 +28,7 @@ namespace ServiceStack.ServiceClient.Web
 			get { return "application/json"; }
 		}
 
-		public override void SerializeToStream(object request, Stream stream)
+		public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
 		{
 			JsonDataContractSerializer.Instance.SerializeToStream(request, stream);
 		}

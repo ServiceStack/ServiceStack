@@ -115,6 +115,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				}
 				return responseContentType;
 			}
+			set
+			{
+				this.responseContentType = value;
+			}
 		}
 
 		private string pathInfo;

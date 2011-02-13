@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public JsvSyncReplyHandler()
 			: base(ContentType.JsvText, EndpointAttributes.SyncReply | EndpointAttributes.Jsv) {}
 
-		private static void WriteDebugRequest(object dto, Stream stream)
+		private static void WriteDebugRequest(IRequestContext requestContext, object dto, Stream stream)
 		{
 			var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
 			stream.Write(bytes, 0, bytes.Length);
@@ -53,8 +53,10 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static void WriteDebugResponse(IHttpResponse httpRes, object response)
 		{
-			httpRes.WriteToResponse(response, WriteDebugRequest, ContentType.PlainText);
-			httpRes.OutputStream.Close();
+			httpRes.WriteToResponse(response, WriteDebugRequest,
+				new SerializationContext(ContentType.PlainText));
+
+			httpRes.Close();
 		}
 	}
 }

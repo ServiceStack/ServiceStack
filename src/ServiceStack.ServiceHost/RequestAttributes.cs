@@ -1,5 +1,7 @@
 using System;
 using System.Web;
+using ServiceStack.Common.Extensions;
+using ServiceStack.Common.Web;
 
 namespace ServiceStack.ServiceHost
 {
@@ -7,9 +9,20 @@ namespace ServiceStack.ServiceHost
 	{
 		private readonly HttpContext httpContext;
 
+		public RequestAttributes(IHttpRequest httpRequest)
+		{
+			this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
+			if (this.acceptEncoding.IsNullOrEmpty())
+			{
+				this.acceptEncoding = "none";
+				return;
+			}
+			this.acceptEncoding = this.acceptEncoding.ToLower();
+		}
+
 		public RequestAttributes(HttpContext httpContext)
 		{
-			this.httpContext = httpContext;			
+			this.httpContext = httpContext;
 		}
 
 		public static HttpWorkerRequest GetWorker(HttpContext context)

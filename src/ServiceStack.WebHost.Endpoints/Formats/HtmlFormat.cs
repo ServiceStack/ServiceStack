@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
@@ -119,6 +121,12 @@ DD {{
   display: block;
   float: left;
 }}
+DL DL DT {{ 
+  font: bold 16px Arial;
+}}
+DL DL DD {{
+  font: 16px Arial;
+}}
 HR {{
     display:none;
 }}
@@ -136,18 +144,21 @@ TD DL
     height:100%;
     max-width: 700px;
 }}
-TD DT {{
+DL TD DL DT {{
   padding: 2px;
   margin: 0 10px 0 0;
   font-weight: bold;
-  width: 100px;
+  font-size: 13px;
+  width: 120px;
+  overflow: hidden;
   clear: left;
   float: left;
   display:block;
 }}
-TD DD {{  
+DL TD DL DD {{  
   margin: 0;
   padding: 2px;
+  font-size: 13px;
   display: block;
   float: left;
 }}
@@ -231,7 +242,6 @@ H3 {{
   padding: 5px 10px;
   clear: left;
 }}
-
 </style>
 </head>
 <body>
@@ -381,34 +391,35 @@ function enc(html) {{
 		public static void Register(IAppHost appHost)
 		{
 			//Register this in ServiceStack with the custom formats
-			appHost.ContentTypeFilters.ContentTypeFormats["html"] = ContentType.Html;
-			appHost.ContentTypeFilters.ContentTypeFormats["shtm"] = ContentType.ServerHtml;
+			appHost.ContentTypeFilters.Register(ContentType.Html, SerializeToStream, null);
+			appHost.ContentTypeFilters.Register(ContentType.ServerHtml, SerializeToStream, null);
+		}
 
-			//using ResponseFilter to 
-			appHost.ResponseFilters.Add((httpReq, httpRes, dto) => 
-			{
-				if (httpReq.ResponseContentType != ContentType.Html
-					&& httpReq.ResponseContentType != ContentType.ServerHtml) return;
+		public static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
+		{
+			var httpReq = requestContext.Get<IHttpRequest>();
+			if (requestContext.ResponseContentType != ContentType.Html
+				&& httpReq.ResponseContentType != ContentType.ServerHtml) return;
 
-				var json = JsonSerializer.SerializeToString(dto);
+			var json = JsonSerializer.SerializeToString(dto);
 
-				var url = httpReq.AbsoluteUri
-					.Replace("format=html","")
-					.Replace("format=shtm", "")
-					.TrimEnd('?', '&');
+			var url = httpReq.AbsoluteUri
+				.Replace("format=html", "")
+				.Replace("format=shtm", "")
+				.TrimEnd('?', '&');
 
-				var now = DateTime.UtcNow;
+			var now = DateTime.UtcNow;
 
-				var requestName = httpReq.OperationName ?? dto.GetType().Name;
+			var requestName = httpReq.OperationName ?? dto.GetType().Name;
 
-				var html = string.Format(Template,
-				  json,
-				  string.Format(TitleFormat, requestName, now),
-				  string.Format(HtmlTitleFormat, requestName, now),
-				  url);
+			var html = string.Format(Template,
+			  json,
+			  string.Format(TitleFormat, requestName, now),
+			  string.Format(HtmlTitleFormat, requestName, now),
+			  url);
 
-				httpRes.WriteToResponse(html, null, ContentType.Html);
-			});
+			var utf8Bytes = html.ToUtf8Bytes();
+			stream.Write(utf8Bytes, 0, utf8Bytes.Length);
 		}
 
 	}

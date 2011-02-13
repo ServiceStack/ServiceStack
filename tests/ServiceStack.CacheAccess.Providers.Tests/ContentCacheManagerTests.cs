@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.CacheAccess.Providers.Tests
@@ -12,6 +13,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		ICacheClient cacheClient;
 		ModelWithIdAndName model;
 		string xmlModel;
+		private IRequestContext serializationContext;
 
 		[SetUp]
 		public void OnBeforeEachTest()
@@ -21,6 +23,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 			cacheClient.FlushAll();
 			model = ModelWithIdAndName.Create(1);
 			xmlModel = DataContractSerializer.Instance.Parse(model);
+			serializationContext = new SerializationContext(MimeTypes.Xml);
 		}
 
 		[Test]
@@ -28,10 +31,9 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		{
 			var xmlResult = ContentCacheManager.Resolve(
 				() => model,
-				MimeTypes.Xml,
-				null,
+				serializationContext,
 				cacheClient,
-				CacheKey, 
+				CacheKey,
 				null);
 
 			Assert.That(xmlResult, Is.EqualTo(xmlModel));
@@ -51,20 +53,18 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		{
 			var xmlResult = ContentCacheManager.Resolve(
 				() => model,
-				MimeTypes.Xml,
-				null,
+				serializationContext,
 				cacheClient,
-				CacheKey, 
+				CacheKey,
 				null);
 
 			Assert.That(xmlResult, Is.EqualTo(xmlModel));
 
 			xmlResult = ContentCacheManager.Resolve(
 				() => model,
-				MimeTypes.Xml,
-				null,
+				serializationContext,
 				cacheClient,
-				CacheKey, 
+				CacheKey,
 				null);
 
 			Assert.That(xmlResult, Is.EqualTo(xmlModel));
@@ -84,10 +84,9 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		{
 			ContentCacheManager.Resolve(
 				() => model,
-				MimeTypes.Xml,
-				null,
+				serializationContext,
 				cacheClient,
-				CacheKey, 
+				CacheKey,
 				null);
 
 			ContentCacheManager.Clear(cacheClient, CacheKey);
@@ -98,12 +97,15 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		[Test]
 		public void Clear_after_Resolve_with_MimeType_and_CompressionType_clears_all_cached_results()
 		{
+			var serializationContext = new SerializationContext(MimeTypes.Xml)
+			{
+				CompressionType = CompressionTypes.Deflate
+			};
 			ContentCacheManager.Resolve(
 				() => model,
-				MimeTypes.Xml,
-				CompressionTypes.Deflate,
+				serializationContext,
 				cacheClient,
-				CacheKey, 
+				CacheKey,
 				null);
 
 			ContentCacheManager.Clear(cacheClient, CacheKey);
@@ -116,17 +118,16 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		{
 			var xmlResult = ContentCacheManager.Resolve<ModelWithIdAndName>(
 				() => null,
-				MimeTypes.Xml,
-				CompressionTypes.Default,
+				serializationContext,
 				cacheClient,
-				CacheKey, 
+				CacheKey,
 				null);
 
 			Assert.That(xmlResult, Is.Null);
 
 			var cachedResult = cacheClient.Get<ModelWithIdAndName>(CacheKey);
 			Assert.That(cachedResult, Is.Null);
-			
+
 			var serializedCacheKey = ContentCacheManager.GetSerializedCacheKey(CacheKey, MimeTypes.Xml);
 			var serializedCachedResult = cacheClient.Get<string>(serializedCacheKey);
 			Assert.That(serializedCachedResult, Is.Null);
@@ -153,7 +154,7 @@ namespace ServiceStack.CacheAccess.Providers.Tests
 		private static void AssertNoSerializedResults(
 			ICacheClient cacheClient, string cacheKey)
 		{
-			foreach (var mimeType in ContentCacheManager.AllCachedMimeTypes)
+			foreach (var mimeType in ContentCacheManager.AllCachedContentTypes)
 			{
 				var serializedCacheKey = ContentCacheManager.GetSerializedCacheKey(
 					cacheKey, mimeType);

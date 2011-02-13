@@ -66,11 +66,9 @@ namespace ServiceStack.WebHost.Endpoints
 					return;
 				}
 
-				var serializer = GetContentFilters().GetStreamSerializer(responseContentType);
-
 				if (doJsonp) httpRes.Write(callback + "(");
 
-				httpRes.WriteToResponse(response, serializer, responseContentType);
+				httpRes.WriteToResponse(httpReq, response);
 
 				if (doJsonp) httpRes.Write(")\n");
 			}
@@ -86,13 +84,13 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public override object GetResponse(IHttpRequest httpReq, object request)
 		{
-			var requestContentType = ContentType.GetEndpointAttributes(httpReq.ContentType);
+			var requestContentType = ContentType.GetEndpointAttributes(httpReq.ResponseContentType);
 
 			return ExecuteService(request,
 				HandlerAttributes | requestContentType | GetEndpointAttributes(httpReq), httpReq);
 		}
 
-		private object GetRequest(IHttpRequest httpReq, IRestPath restPath)
+		private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)
 		{
 			var requestParams = httpReq.GetRequestParams();
 
@@ -100,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			if (!string.IsNullOrEmpty(httpReq.ContentType) && httpReq.ContentLength > 0)
 			{
-				var requestDeserializer = GetContentFilters().GetStreamDeserializer(httpReq.ContentType);
+				var requestDeserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(httpReq.ContentType);
 				if (requestDeserializer != null)
 				{
 					requestDto = requestDeserializer(restPath.RequestType, httpReq.InputStream);

@@ -22,6 +22,11 @@ namespace ServiceStack.ServiceHost
 		{
 		}
 
+		public HttpRequestContext(IHttpRequest httpReq, object dto)
+			: this(httpReq, dto, EndpointAttributes.None)
+		{
+		}
+
 		public HttpRequestContext(IHttpRequest httpReq, object dto, EndpointAttributes endpointAttributes)
 			: this(dto, endpointAttributes, null)
 		{
@@ -29,6 +34,10 @@ namespace ServiceStack.ServiceHost
 			if (this.httpReq != null)
 			{
 				this.Files = httpReq.Files;
+			}
+			if (HttpContext.Current == null)
+			{
+				this.RequestAttributes = new RequestAttributes(httpReq);
 			}
 		}
 
@@ -58,6 +67,16 @@ namespace ServiceStack.ServiceHost
 		public EndpointAttributes EndpointAttributes { get; private set; }
 
 		public IRequestAttributes RequestAttributes { get; private set; }
+		
+		public string ContentType
+		{
+			get { return this.httpReq.ContentType; }
+		}
+
+		public string ResponseContentType
+		{
+			get { return this.httpReq.ResponseContentType; }
+		}
 
 		public T Get<T>() where T : class
 		{
@@ -118,6 +137,11 @@ namespace ServiceStack.ServiceHost
 			{
 				return this.httpReq != null ? this.httpReq.AbsoluteUri : null;
 			}
+		}
+
+		public string PathInfo
+		{
+			get { throw new NotImplementedException(); }
 		}
 
 		public IFile[] Files { get; set; }

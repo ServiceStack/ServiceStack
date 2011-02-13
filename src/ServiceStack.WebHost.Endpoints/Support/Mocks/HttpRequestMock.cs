@@ -37,10 +37,12 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		public string HttpMethod { get; set; }
 
 		public IDictionary<string, Cookie> Cookies { get; set; }
-		
+
+		private string responseContentType;
 		public string ResponseContentType
 		{
-			get { return this.ContentType; }
+			get { return responseContentType ?? this.ContentType; }
+			set { responseContentType = value; }
 		}
 
 		public NameValueCollection Headers { get; set; }

@@ -68,8 +68,6 @@ namespace ServiceStack.Common.Web
 
 		public FileInfo FileInfo { get; private set; }
 
-		public IContentTypeWriter ResponseFilter { get; set; }
-
 		public string ContentType { get; set; }
 
 		public Dictionary<string, string> Headers { get; private set; }
@@ -82,6 +80,10 @@ namespace ServiceStack.Common.Web
 		public HttpStatusCode StatusCode { get; set; }
 
 		public object Response { get; set; }
+
+		public IContentTypeWriter ResponseFilter { get; set; }
+
+		public IRequestContext RequestContext { get; set; }
 
 		public void WriteTo(Stream responseStream)
 		{
@@ -97,9 +99,10 @@ namespace ServiceStack.Common.Web
 
 			if (this.ResponseFilter == null)
 				throw new ArgumentNullException("ResponseFilter");
+			if (this.RequestContext == null)
+				throw new ArgumentNullException("RequestContext");
 
-			ResponseFilter.SerializeToStream(this.ContentType, this.Response, responseStream);
+			ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
 		}
 	}
-
 }

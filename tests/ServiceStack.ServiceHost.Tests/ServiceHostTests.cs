@@ -91,7 +91,7 @@ namespace ServiceStack.ServiceHost.Tests
 
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
-				new HttpRequestContext(null, EndpointAttributes.HttpGet)) as RestTestResponse;
+				new HttpRequestContext((object)null, EndpointAttributes.HttpGet)) as RestTestResponse;
 
 			Assert.That(result, Is.Not.Null);
 			Assert.That(result.MethodName, Is.EqualTo("Get"));
@@ -104,7 +104,7 @@ namespace ServiceStack.ServiceHost.Tests
 
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
-				new HttpRequestContext(null, EndpointAttributes.HttpPut)) as RestTestResponse;
+				new HttpRequestContext((object)null, EndpointAttributes.HttpPut)) as RestTestResponse;
 
 			Assert.That(result, Is.Not.Null);
 			Assert.That(result.MethodName, Is.EqualTo("Put"));
@@ -117,7 +117,7 @@ namespace ServiceStack.ServiceHost.Tests
 
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
-				new HttpRequestContext(null, EndpointAttributes.HttpPost)) as RestTestResponse;
+				new HttpRequestContext((object)null, EndpointAttributes.HttpPost)) as RestTestResponse;
 
 			Assert.That(result, Is.Not.Null);
 			Assert.That(result.MethodName, Is.EqualTo("Post"));
@@ -130,7 +130,7 @@ namespace ServiceStack.ServiceHost.Tests
 
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
-				new HttpRequestContext(null, EndpointAttributes.HttpDelete)) as RestTestResponse;
+				new HttpRequestContext((object)null, EndpointAttributes.HttpDelete)) as RestTestResponse;
 
 			Assert.That(result, Is.Not.Null);
 			Assert.That(result.MethodName, Is.EqualTo("Delete"));

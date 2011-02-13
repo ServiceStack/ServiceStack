@@ -177,7 +177,7 @@ namespace ServiceStack.ServiceClient.Web
 				var req = requestState.WebRequest;
 				var postStream = req.EndGetRequestStream(asyncResult);
 
-				StreamSerializer(requestState.Request, postStream);
+				StreamSerializer(null, requestState.Request, postStream);
 
 				postStream.Close();
 

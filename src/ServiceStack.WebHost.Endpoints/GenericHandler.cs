@@ -43,16 +43,16 @@ namespace ServiceStack.WebHost.Endpoints
 			return DeserializeContentType(operationType, httpReq, HandlerContentType);
 		}
         
-		public StreamSerializerDelegate GetStreamSerializer(string contentType)
-		{
-			return GetContentFilters().GetStreamSerializer(contentType);
-		}
+		//public StreamSerializerDelegate GetStreamSerializer(string contentType)
+		//{
+		//    return GetContentFilters().GetStreamSerializer(contentType);
+		//}
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
 			try
 			{
-				var contentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
+				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 				var callback = httpReq.QueryString["callback"];
 				var doJsonp = EndpointHost.Config.AllowJsonpRequests
 							  && !string.IsNullOrEmpty(callback);
@@ -62,12 +62,9 @@ namespace ServiceStack.WebHost.Endpoints
 
 				var response = GetResponse(httpReq, request);
 				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
-
-				var serializer = GetStreamSerializer(contentType);
-				
 				if (doJsonp) httpRes.Write(callback + "(");
 				
-				httpRes.WriteToResponse(response, serializer, contentType);
+				httpRes.WriteToResponse(httpReq, response);
 	
 				if (doJsonp) httpRes.Write(")");
 			}

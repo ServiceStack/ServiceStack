@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceClient.Web
 			get { return "application/xml"; }
 		}
 
-		public override void SerializeToStream(object request, Stream stream)
+		public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
 		{
 			DataContractSerializer.Instance.SerializeToStream(request, stream);
 		}

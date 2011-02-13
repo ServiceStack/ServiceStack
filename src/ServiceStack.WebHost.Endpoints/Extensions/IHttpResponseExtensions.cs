@@ -31,32 +31,46 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 			return false;
 		}
-        
-		/// <summary>
-		/// Writes to response.
-		/// </summary>
-		/// <param name="response">The response.</param>
-		/// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
-		/// <param name="defaultContentType">Default response ContentType.</param>
-		/// <returns></returns>
-		public static bool WriteToResponse(this IHttpResponse response, object result, string defaultContentType)
+
+		public static bool WriteToResponse(this IHttpResponse httpRes, object result, string contentType)
 		{
-			return WriteToResponse(response, result, null, defaultContentType);
+			var serializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamSerializer(contentType);
+			return httpRes.WriteToResponse(result, serializer, new SerializationContext(contentType));
+		}
+
+		public static bool WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result)
+		{
+			if (result == null) return true;
+
+			var serializationContext = new HttpRequestContext(httpReq, result);
+			var httpResult = result as HttpResult;
+			if (httpResult != null)
+			{
+				if (httpResult.ResponseFilter == null)
+				{
+					httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeFilters;
+				}
+				httpResult.RequestContext = new HttpRequestContext(httpReq, result);
+				var httpResSerializer = httpResult.ResponseFilter.GetStreamSerializer(httpReq.ResponseContentType);
+				return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext);
+			}
+
+			var serializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamSerializer(httpReq.ResponseContentType);
+			return httpRes.WriteToResponse(result, serializer, serializationContext);
 		}
 
 		/// <summary>
 		/// Writes to response.
-		/// 
 		/// Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
-		/// 
 		/// </summary>
 		/// <param name="response">The response.</param>
 		/// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
 		/// <param name="defaultAction">The default action.</param>
-		/// <param name="defaultContentType">Default response ContentType.</param>
+		/// <param name="serializerCtx">The serialization context.</param>
 		/// <returns></returns>
-		public static bool WriteToResponse(this IHttpResponse response, object result, StreamSerializerDelegate defaultAction, string defaultContentType)
+		public static bool WriteToResponse(this IHttpResponse response, object result, StreamSerializerDelegate defaultAction, IRequestContext serializerCtx)
 		{
+			var defaultContentType = serializerCtx.ResponseContentType;
 			try
 			{
 				if (result == null) return true;
@@ -124,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					response.ContentType = defaultContentType;
 				}
 
-				defaultAction(result, response.OutputStream);
+				defaultAction(serializerCtx, result, response.OutputStream);
 				return false;
 			}
 			catch (Exception ex)

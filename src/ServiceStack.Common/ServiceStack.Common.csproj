@@ -114,6 +114,7 @@
     <Compile Include="Web\EndpointType.cs" />
     <Compile Include="Web\HttpMethods.cs" />
     <Compile Include="Web\HttpResult.cs" />
+    <Compile Include="Web\SerializationContext.cs" />
     <Compile Include="Web\TextResult.cs" />
     <Compile Include="Web\EndPoint.cs" />
     <Compile Include="Web\FileResult.cs" />
