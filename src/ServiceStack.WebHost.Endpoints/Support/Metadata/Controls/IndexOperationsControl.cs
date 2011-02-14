@@ -16,18 +16,21 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 		protected override void Render(HtmlTextWriter output)
 		{
+			var ignoreFormats = EndpointHost.Config.IgnoreFormatsInMetadata;
 			var opTemplate = new StringBuilder("<li><span>{0}</span>");
-			if (MetadataConfig.Xml != null)
+			if (MetadataConfig.Xml != null && !ignoreFormats.Contains("xml"))
 				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">XML</a>", MetadataConfig.Xml.DefaultMetadataUri);
-			if (MetadataConfig.Json != null)
+			if (MetadataConfig.Json != null && !ignoreFormats.Contains("json"))
 				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSON</a>", MetadataConfig.Json.DefaultMetadataUri);
-			if (MetadataConfig.Jsv != null)
+			if (MetadataConfig.Jsv != null && !ignoreFormats.Contains("jsv"))
 				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSV</a>", MetadataConfig.Jsv.DefaultMetadataUri);
 
 			if (MetadataConfig.Custom != null)
 			{
 				foreach (var format in EndpointHost.Config.ContentTypeFilter.ContentTypeFormats.Keys)
 				{
+					if (ignoreFormats.Contains(format)) continue;
+
 					var uri = string.Format(MetadataConfig.Custom.DefaultMetadataUri, format);
 					opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">{1}</a>", uri, format.ToUpper());
 				}

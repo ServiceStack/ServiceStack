@@ -145,6 +145,11 @@ namespace ServiceStack.WebHost.Endpoints
 				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 
+		public EndpointHostConfig Config
+		{
+			get { return EndpointHost.Config; }
+		}
+
 		public virtual void Dispose()
 		{
 			if (EndpointHost.Config.ServiceManager != null)

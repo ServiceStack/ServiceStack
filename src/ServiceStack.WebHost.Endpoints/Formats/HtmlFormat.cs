@@ -3,7 +3,6 @@ using System.IO;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Formats
 {
@@ -393,6 +392,9 @@ function enc(html) {{
 			//Register this in ServiceStack with the custom formats
 			appHost.ContentTypeFilters.Register(ContentType.Html, SerializeToStream, null);
 			appHost.ContentTypeFilters.Register(ContentType.ServerHtml, SerializeToStream, null);
+
+			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.Html.ToContentFormat());
+			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.ServerHtml.ToContentFormat());
 		}
 
 		public static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)

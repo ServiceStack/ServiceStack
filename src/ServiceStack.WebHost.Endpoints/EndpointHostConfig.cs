@@ -31,6 +31,7 @@ namespace ServiceStack.WebHost.Endpoints
             	};
 
 			this.GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } };
+			this.IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 		}
 
 		public ServiceManager ServiceManager { get; set; }
@@ -42,6 +43,24 @@ namespace ServiceStack.WebHost.Endpoints
 		public bool AllowJsonpRequests { get; set; }
 		public bool DebugMode { get; set; }
 		public List<string> DefaultDocuments { get; private set; }
+
+		public HashSet<string> IgnoreFormatsInMetadata { get; set; }
+
+		private ServiceHostEnvironment serviceHostEnvironment;
+		public ServiceHostEnvironment ServiceHostEnvironment
+		{
+			get { return serviceHostEnvironment; }
+			set
+			{
+				serviceHostEnvironment = value;
+				if (serviceHostEnvironment == null) return;
+
+				if (serviceHostEnvironment.WebServer == WebServerType.IIS6)
+				{
+					this.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.GetForIis6ServiceStackAshx();
+				}
+			}
+		}
 
 		private string serviceStackHandlerFactoryPath;
 		public string ServiceStackHandlerFactoryPath

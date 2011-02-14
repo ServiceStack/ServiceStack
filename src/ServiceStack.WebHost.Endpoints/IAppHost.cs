@@ -13,5 +13,7 @@ namespace ServiceStack.WebHost.Endpoints
 		List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; }
 		
 		List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; }
+
+		EndpointHostConfig Config { get; }
 	}
 }

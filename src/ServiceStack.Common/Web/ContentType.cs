@@ -3,7 +3,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common.Web
 {
-	public class ContentType
+	public static class ContentType
 	{
 		public const string HeaderContentType = "Content-Type";
 
@@ -85,6 +85,11 @@ namespace ServiceStack.Common.Web
 			if (contentType == null) return contentType;
 			var parts = contentType.Split('/');
 			return parts[parts.Length - 1];
+		}
+
+		public static string ToContentFormat(this string contentType)
+		{
+			return GetContentFormat(contentType);
 		}
 
 		public static string GetContentType(EndpointType endpointType)

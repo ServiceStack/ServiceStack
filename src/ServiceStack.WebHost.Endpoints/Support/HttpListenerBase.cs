@@ -283,6 +283,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
+		public EndpointHostConfig Config
+		{
+			get { return EndpointHost.Config; }
+		}
+
 		public virtual void Dispose()
 		{
 			this.Stop();
