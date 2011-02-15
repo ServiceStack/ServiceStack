@@ -1,6 +1,10 @@
 ﻿using System;
+using System.IO;
+using System.Net;
+using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
@@ -20,7 +24,7 @@ namespace ServiceStack.ServiceInterface
 	/// </summary>
 	/// <typeparam name="TRequest"></typeparam>
 	public abstract class ServiceBase<TRequest>
-		: IService<TRequest>
+		: IService<TRequest>, IRequiresRequestContext
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
 
@@ -64,6 +68,8 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
+		public IRequestContext RequestContext { get; set; }
+
 		/// <summary>
 		/// Resolve an alternate Web Service from ServiceStack's IOC container.
 		/// </summary>
@@ -71,7 +77,13 @@ namespace ServiceStack.ServiceInterface
 		/// <returns></returns>
 		public T ResolveService<T>()
 		{
-			return this.AppHost.TryResolve<T>();
+			var service = this.AppHost.TryResolve<T>();
+			var requiresContext = service as IRequiresRequestContext;
+			if (requiresContext != null)
+			{
+				requiresContext.RequestContext = this.RequestContext;
+			}
+			return service;
 		}
 
 		/// <summary>
@@ -117,14 +129,7 @@ namespace ServiceStack.ServiceInterface
 			try
 			{
 				//Run the request in a managed scope serializing all 
-				var response = Run(request);
-				var hasResponseStatus = response as IHasResponseStatus;
-				if (hasResponseStatus != null
-					&& hasResponseStatus.ResponseStatus == null)
-				{
-					hasResponseStatus.ResponseStatus = new ResponseStatus();
-				}
-				return response;
+				return Run(request);
 			}
 			catch (Exception ex)
 			{
@@ -184,13 +189,20 @@ namespace ServiceStack.ServiceInterface
 				throw ex;
 			}
 
-			return responseDto;
+			var httpError = ex as IHttpError;
+			if (httpError != null)
+			{
+				httpError.Response = responseDto;
+				return httpError;
+			}
+
+			return new HttpResult(responseDto, null, HttpStatusCode.InternalServerError);
 		}
 
 		protected T TryResolve<T>()
 		{
-			return AppHostBase.Instance == null 
-				? default(T) 
+			return AppHostBase.Instance == null
+				? default(T)
 				: AppHostBase.Instance.Container.TryResolve<T>();
 		}
 
@@ -207,7 +219,7 @@ namespace ServiceStack.ServiceInterface
 			var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
 			var responseDto = CreateResponseDto(request);
 
-			if (responseDto == null) 
+			if (responseDto == null)
 				return null;
 
 			// For faster serialization of exceptions, services should implement IHasResponseStatus
@@ -255,8 +267,9 @@ namespace ServiceStack.ServiceInterface
 
 		protected static string GetResponseDtoName(TRequest request)
 		{
-			return request.GetType().FullName + ResponseDtoSuffix;
+			return typeof(TRequest).FullName + ResponseDtoSuffix;
 		}
+
 	}
 
 }

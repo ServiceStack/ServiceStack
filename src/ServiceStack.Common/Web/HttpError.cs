@@ -48,6 +48,10 @@ namespace ServiceStack.Common.Web
 
 		public object Response { get; set; }
 
+		public IContentTypeWriter ResponseFilter { get; set; }
+		
+		public IRequestContext RequestContext { get; set; }
+
 		public IDictionary<string, string> Options
 		{
 			get { return this.Headers; }

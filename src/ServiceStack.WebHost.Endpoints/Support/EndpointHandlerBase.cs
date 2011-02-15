@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var httpMethod = httpReq.HttpMethod;
 			var queryString = httpReq.QueryString;
 
-			if (httpMethod == "GET" || httpMethod == "OPTIONS")
+			if (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options)
 			{
 				try
 				{

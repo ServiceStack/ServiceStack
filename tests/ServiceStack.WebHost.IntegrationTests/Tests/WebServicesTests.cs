@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using NUnit.Framework;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
@@ -50,14 +51,22 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_Handle_Exception_from_AlwaysThrowService()
 		{
 			var client = CreateNewServiceClient();
-			var response = client.Send<AlwaysThrowsResponse>(
-				new AlwaysThrows { Value = TestString });
+			try
+			{
+				var response = client.Send<AlwaysThrowsResponse>(
+					new AlwaysThrows { Value = TestString });
 
-			var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
-			Assert.That(response.ResponseStatus.ErrorCode,
-				Is.EqualTo(typeof(NotImplementedException).Name));
-			Assert.That(response.ResponseStatus.Message,
-				Is.EqualTo(expectedError));
+				Assert.Fail("Should throw HTTP errors");
+			}
+			catch (WebServiceException webEx)
+			{
+				var response = (AlwaysThrowsResponse) webEx.ResponseDto;
+				var expectedError = AlwaysThrowsService.GetErrorMessage(TestString);
+				Assert.That(response.ResponseStatus.ErrorCode,
+					Is.EqualTo(typeof(NotImplementedException).Name));
+				Assert.That(response.ResponseStatus.Message,
+					Is.EqualTo(expectedError));
+			}
 		}
 	}
 

@@ -21,9 +21,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[TestFixtureSetUp]
 		public void TextFixtureSetUp()
 		{
-			appHost = new ExampleAppHostHttpListener();
-			appHost.Init();
-			appHost.Start(ListeningOn);
+			try
+			{
+				appHost = new ExampleAppHostHttpListener();
+				appHost.Init();
+				appHost.Start(ListeningOn);
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
 		}
 
 		[TestFixtureTearDown]

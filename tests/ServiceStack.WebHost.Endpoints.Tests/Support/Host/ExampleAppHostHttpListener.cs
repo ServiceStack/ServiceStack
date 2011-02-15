@@ -313,7 +313,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				},
 				WsdlServiceNamespace = "http://www.servicestack.net/types",
 				WsdlServiceTypesNamespace = "http://www.servicestack.net/types",
-				LogFactory = new ConsoleLogFactory()
+				LogFactory = new ConsoleLogFactory(),
+				DebugMode = true,
 			});
 
 			container.Register<IResourceManager>(new ConfigurationResourceManager());

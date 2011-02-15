@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public abstract class SyncRestClientTests
 	{
-		private const string ListeningOn = "http://localhost:82/";
+		private const string ListeningOn = "http://localhost:85/";
 
 		ExampleAppHostHttpListener appHost;
 

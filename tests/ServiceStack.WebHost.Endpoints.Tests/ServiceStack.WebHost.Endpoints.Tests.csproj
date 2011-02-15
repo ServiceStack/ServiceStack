@@ -52,6 +52,10 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\Mono.Data.Sqlite.dll</HintPath>
+    </Reference>
     <Reference Include="Moq, Version=2.6.1014.1, Culture=neutral, PublicKeyToken=69f491c39445e920">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\Moq.dll</HintPath>
@@ -186,10 +190,6 @@
       <Project>{C5CAF9E9-1D01-486B-B813-8CD9B2F6EC59}</Project>
       <Name>ServiceStack.ServiceHost</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
-      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
-      <Name>ServiceStack.ServiceInterface</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceModel\ServiceStack.ServiceModel.csproj">
       <Project>{5B5C5AD6-6A6D-42C3-9C02-AC7FEBBCDFA8}</Project>
       <Name>ServiceStack.ServiceModel</Name>
@@ -201,6 +201,10 @@
     <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj">
       <Project>{A5646013-C243-453F-A2B6-3B6870A9637D}</Project>
       <Name>ServiceStack.ServiceModel.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.WebHost.IntegrationTests\ServiceStack.WebHost.IntegrationTests.csproj">
+      <Project>{2A632D57-2260-4AB7-96F6-AF8FBB5D0E5B}</Project>
+      <Name>ServiceStack.WebHost.IntegrationTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

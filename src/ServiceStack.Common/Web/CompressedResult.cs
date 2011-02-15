@@ -28,6 +28,10 @@ namespace ServiceStack.Common.Web
 			set { throw new NotImplementedException(); }
 		}
 
+		public IContentTypeWriter ResponseFilter { get; set; }
+
+		public IRequestContext RequestContext { get; set; }
+
 		public IDictionary<string, string> Options
 		{
 			get { return this.Headers; }

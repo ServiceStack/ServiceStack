@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Security.Policy;
 using System.Text;
@@ -8,6 +9,7 @@ using System.Web;
 using Funq;
 using ServiceStack.Common.Web;
 using ServiceStack.Service;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
@@ -192,6 +194,19 @@ namespace ServiceStack.ServiceInterface.Testing
 			var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
 			var response = httpHandler.GetResponse(httpReq, request);
 
+			var httpResult = response as IHttpResult;
+			if (httpResult != null)
+			{
+				var httpError = response as IHttpError;
+				if (httpError != null)
+					throw new WebServiceException(httpError.Message) { ResponseDto = httpError.Response };
+
+				if (httpResult.StatusCode >= HttpStatusCode.Unauthorized)
+					throw new WebServiceException { ResponseDto = httpResult.Response };
+
+				return httpResult.Response;
+			}
+
 			return response;
 		}
 
@@ -219,7 +234,7 @@ namespace ServiceStack.ServiceInterface.Testing
 			var contentType = (formData != null && formData.Count > 0)
 				? ContentType.FormUrlEncoded
 				: requestBody != null ? ContentType.Json : null;
-			
+
 			var httpReq = new HttpRequestMock(
 					httpHandler.RequestName, httpMethod, contentType,
 					pathInfo,
@@ -237,7 +252,30 @@ namespace ServiceStack.ServiceInterface.Testing
 			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo) as EndpointHandlerBase;
 			if (httpHandler == null)
 				throw new NotSupportedException(pathInfo);
+
+			EndpointHost.ConfigureHost(new AppHostMock());
+
 			return httpHandler;
+		}
+
+		public class AppHostMock : IAppHost
+		{
+			public AppHostMock()
+			{
+				this.ContentTypeFilters = new HttpResponseFilter();
+				this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+			}
+
+			public T TryResolve<T>()
+			{
+				throw new NotImplementedException();
+			}
+
+			public IContentTypeFilter ContentTypeFilters { get; private set; }
+			public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
+			public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; private set; }
+			public EndpointHostConfig Config { get { return new EndpointHostConfig(); } }
 		}
 	}
 

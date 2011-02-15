@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static IAppHost AppHost { get; internal set; }
 
-		internal static void ConfigureHost(IAppHost appHost)
+		public static void ConfigureHost(IAppHost appHost)
 		{
 			AppHost = appHost;
 			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;

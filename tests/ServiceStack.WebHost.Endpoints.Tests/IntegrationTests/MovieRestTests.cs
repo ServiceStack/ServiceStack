@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		{
 			var topMovie = ConfigureDatabase.Top5Movies[0];
 
-			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Id = topMovie.Id }, HttpMethods.Delete, null);
+			DeleteOnEachEndpoint<RestMoviesResponse>("restmovies/" + topMovie.Id, null);
 
 			SendToEachEndpoint<RestMoviesResponse>(new RestMovies { Id = topMovie.Id }, HttpMethods.Get, response =>
 				Assert.That(response.Movies, Has.Count.EqualTo(0))

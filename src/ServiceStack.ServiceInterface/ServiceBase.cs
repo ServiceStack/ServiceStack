@@ -24,7 +24,7 @@ namespace ServiceStack.ServiceInterface
 	/// </summary>
 	/// <typeparam name="TRequest"></typeparam>
 	public abstract class ServiceBase<TRequest>
-		: IService<TRequest>
+		: IService<TRequest>, IRequiresRequestContext
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
 
@@ -68,6 +68,8 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
+		public IRequestContext RequestContext { get; set; }
+
 		/// <summary>
 		/// Resolve an alternate Web Service from ServiceStack's IOC container.
 		/// </summary>
@@ -75,7 +77,13 @@ namespace ServiceStack.ServiceInterface
 		/// <returns></returns>
 		public T ResolveService<T>()
 		{
-			return this.AppHost.TryResolve<T>();
+			var service = this.AppHost.TryResolve<T>();
+			var requiresContext = service as IRequiresRequestContext;
+			if (requiresContext != null)
+			{
+				requiresContext.RequestContext = this.RequestContext;
+			}
+			return service;
 		}
 
 		/// <summary>
@@ -259,8 +267,9 @@ namespace ServiceStack.ServiceInterface
 
 		protected static string GetResponseDtoName(TRequest request)
 		{
-			return request.GetType().FullName + ResponseDtoSuffix;
+			return typeof(TRequest).FullName + ResponseDtoSuffix;
 		}
+
 	}
 
 }

@@ -6,6 +6,7 @@ using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
@@ -88,8 +89,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Error_calling_GET_on_resetmovies()
 		{
-			var response = (ResetMoviesResponse)ExecutePath(HttpMethods.Get, "/reset-movies");
-			Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo(typeof(NotImplementedException).Name));
+			try
+			{
+				var response = (ResetMoviesResponse)ExecutePath(HttpMethods.Get, "/reset-movies");
+				Assert.Fail("Should throw HTTP errors");
+			}
+			catch (WebServiceException webEx)
+			{
+				var response = (ResetMoviesResponse)webEx.ResponseDto;
+				Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo(typeof(NotImplementedException).Name));
+			}
 		}
 
 	}

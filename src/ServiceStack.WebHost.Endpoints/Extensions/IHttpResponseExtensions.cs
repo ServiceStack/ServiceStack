@@ -43,14 +43,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			if (result == null) return true;
 
 			var serializationContext = new HttpRequestContext(httpReq, result);
-			var httpResult = result as HttpResult;
+			var httpResult = result as IHttpResult;
 			if (httpResult != null)
 			{
 				if (httpResult.ResponseFilter == null)
 				{
 					httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeFilters;
 				}
-				httpResult.RequestContext = new HttpRequestContext(httpReq, result);
+				httpResult.RequestContext = serializationContext;
 				var httpResSerializer = httpResult.ResponseFilter.GetStreamSerializer(httpReq.ResponseContentType);
 				return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext);
 			}
@@ -158,7 +158,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				try
 				{
-					//response.Close();
+					response.Close();
 				}
 				catch (Exception ignore) {}
 			}

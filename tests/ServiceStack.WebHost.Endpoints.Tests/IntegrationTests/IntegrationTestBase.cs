@@ -86,5 +86,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 			}
 		}
 
+		public void DeleteOnEachEndpoint<TRes>(string relativePathOrAbsoluteUri, Action<TRes> validate)
+		{
+			using (var xmlClient = new XmlServiceClient(BaseUrl))
+			using (var jsonClient = new JsonServiceClient(BaseUrl))
+			using (var jsvClient = new JsvServiceClient(BaseUrl))
+			{
+				var xmlResponse = xmlClient.Delete<TRes>(relativePathOrAbsoluteUri);
+				if (validate != null) validate(xmlResponse);
+
+				var jsonResponse = jsonClient.Delete<TRes>(relativePathOrAbsoluteUri);
+				if (validate != null) validate(jsonResponse);
+
+				var jsvResponse = jsvClient.Delete<TRes>(relativePathOrAbsoluteUri);
+				if (validate != null) validate(jsvResponse);
+			}
+		}
 	}
 }

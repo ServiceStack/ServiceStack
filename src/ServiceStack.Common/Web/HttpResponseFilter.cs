@@ -77,7 +77,7 @@ namespace ServiceStack.Common.Web
 
 		public string SerializeToString(IRequestContext requestContext, object response)
 		{
-			var contentType = requestContext.ContentType;
+			var contentType = requestContext.ResponseContentType;
 
 			StreamSerializerDelegate responseWriter;
 			if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter))
@@ -110,7 +110,7 @@ namespace ServiceStack.Common.Web
 
 		public void SerializeToStream(IRequestContext requestContext, object response, Stream responseStream)
 		{
-			var contentType = requestContext.ContentType;
+			var contentType = requestContext.ResponseContentType;
 			var serializer = GetStreamSerializer(contentType);
 			if (serializer == null)
 				throw new NotSupportedException("ContentType not supported: " + contentType);

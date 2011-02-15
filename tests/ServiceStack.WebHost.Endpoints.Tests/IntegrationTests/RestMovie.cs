@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Extensions;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Tests.DataContracts;
 
 /*
@@ -10,6 +11,7 @@ using ServiceStack.ServiceModel.Tests.DataContracts;
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
 	[DataContract(Namespace = ExampleConfig.DefaultNamespace)]
+	[RestService("restmovies/{Id}")]
 	public class RestMovies
 	{
 		[DataMember(EmitDefaultValue = false)]
