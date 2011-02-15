@@ -53,7 +53,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				//Don't close for MonoFastCGI as it outputs random 4-letters at the start
 				if (!Env.IsMono)
 				{
-					response.Close();
+					response.OutputStream.Flush();
+					response.OutputStream.Close();
+					//response.Close(); //This kills .NET Development Web Server
 				}
 			}
 			catch (Exception ex)
