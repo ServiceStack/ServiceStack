@@ -3,6 +3,7 @@ using System.IO;
 using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
@@ -49,8 +50,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			this.IsClosed = true;
 			try
 			{
-				response.Flush();
-				response.Close();
+				//Don't close for MonoFastCGI as it outputs random 4-letters at the start
+				if (!Env.IsMono)
+				{
+					response.Close();
+				}
 			}
 			catch (Exception ex)
 			{
