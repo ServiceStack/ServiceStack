@@ -393,6 +393,7 @@ function enc(html) {{
 			appHost.ContentTypeFilters.Register(ContentType.Html, SerializeToStream, null);
 			appHost.ContentTypeFilters.Register(ContentType.ServerHtml, SerializeToStream, null);
 
+			appHost.Config.DefaultContentType = ContentType.Html;
 			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.Html.ToContentFormat());
 			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.ServerHtml.ToContentFormat());
 		}

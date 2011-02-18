@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -81,6 +81,7 @@
     <Compile Include="Ext\AllFilesHandler.cs" />
     <Compile Include="HttpWebRequestConfig.cs" />
     <Compile Include="Metadata\JsvMetadataHandler.cs" />
+    <Compile Include="Routes.cs" />
     <Compile Include="ServiceHostEnvironment.cs" />
     <Compile Include="SupportedHandlerMappings.cs" />
     <Compile Include="Support\Mocks\HttpRequestMock.cs" />
