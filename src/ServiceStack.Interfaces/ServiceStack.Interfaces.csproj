@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack</RootNamespace>
+    <AssemblyName>ServiceStack.Interfaces</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CacheAccess\ICacheClearable.cs" />
+    <Compile Include="CacheAccess\ICacheClient.cs" />
+    <Compile Include="CacheAccess\ICacheHasContentType.cs" />
+    <Compile Include="CacheAccess\ICacheManager.cs" />
+    <Compile Include="CacheAccess\ICacheTextManager.cs" />
+    <Compile Include="CacheAccess\ICacheTextManagerFactory.cs" />
+    <Compile Include="CacheAccess\ICompressableCacheTextManager.cs" />
+    <Compile Include="CacheAccess\ICompressableCacheTextManagerFactory.cs" />
+    <Compile Include="CacheAccess\IDeflateProvider.cs" />
+    <Compile Include="CacheAccess\IGZipProvider.cs" />
+    <Compile Include="CacheAccess\IHasCacheClient.cs" />
+    <Compile Include="CacheAccess\IMemcachedClient.cs" />
+    <Compile Include="CacheAccess\IPersistenceProviderCache.cs" />
+    <Compile Include="CacheAccess\IPersistenceProviderCacheFactory.cs" />
+    <Compile Include="Configuration\IFactoryProvider.cs" />
+    <Compile Include="Configuration\IFactoryResolver.cs" />
+    <Compile Include="Configuration\IResourceManager.cs" />
+    <Compile Include="Configuration\ITypeFactory.cs" />
+    <Compile Include="DataAccess\Criteria\ICriteria.cs" />
+    <Compile Include="DataAccess\Criteria\IOrderAscendingCriteria.cs" />
+    <Compile Include="DataAccess\Criteria\IOrderDescendingCriteria.cs" />
+    <Compile Include="DataAccess\Criteria\IPagingCriteria.cs" />
+    <Compile Include="DataAccess\Criteria\PagingCriteria.cs" />
+    <Compile Include="DataAccess\DataAccessException.cs" />
+    <Compile Include="DataAccess\IAggregatable.cs" />
+    <Compile Include="DataAccess\IBasicPersistenceProvider.cs" />
+    <Compile Include="DataAccess\IBasicPersistenceProvider.Generic.cs" />
+    <Compile Include="DataAccess\IPersistenceProvider.cs" />
+    <Compile Include="DataAccess\IPersistenceProviderManager.cs" />
+    <Compile Include="DataAccess\IPersistenceProviderManagerFactory.cs" />
+    <Compile Include="DataAccess\IQueryable.cs" />
+    <Compile Include="DataAccess\IQueryableByComparer.cs" />
+    <Compile Include="DataAccess\IQueryableByExample.cs" />
+    <Compile Include="DataAccess\IQueryableByPredicate.cs" />
+    <Compile Include="DataAccess\IQueryablePersistenceProvider.cs" />
+    <Compile Include="DataAccess\IResultSet.cs" />
+    <Compile Include="DataAccess\ITransactionContext.cs" />
+    <Compile Include="DataAnnotations\AliasAttribute.cs" />
+    <Compile Include="DataAnnotations\AutoIncrementAttribute.cs" />
+    <Compile Include="DataAnnotations\CompositeIndexAttribute.cs" />
+    <Compile Include="DataAnnotations\DefaultAttribute.cs" />
+    <Compile Include="DataAnnotations\IndexAttribute.cs" />
+    <Compile Include="DataAnnotations\ReferencesAttribute.cs" />
+    <Compile Include="DesignPatterns\Command\ICommand.cs" />
+    <Compile Include="DesignPatterns\Command\ICommandExec.cs" />
+    <Compile Include="DesignPatterns\Command\ICommandIEnumerable.cs" />
+    <Compile Include="DesignPatterns\Command\ICommandIList.cs" />
+    <Compile Include="DesignPatterns\Command\ICommandList.cs" />
+    <Compile Include="DesignPatterns\Command\ICommandVoid.cs" />
+    <Compile Include="DesignPatterns\Model\IHasGuidId.cs" />
+    <Compile Include="DesignPatterns\Model\IHasId.cs" />
+    <Compile Include="DesignPatterns\Model\IHasIntId.cs" />
+    <Compile Include="DesignPatterns\Model\IHasLongId.cs" />
+    <Compile Include="DesignPatterns\Model\IHasNamed.cs" />
+    <Compile Include="DesignPatterns\Model\IHasNamedCollection.cs" />
+    <Compile Include="DesignPatterns\Model\IHasNamedList.cs" />
+    <Compile Include="DesignPatterns\Model\IHasStringId.cs" />
+    <Compile Include="DesignPatterns\Model\IHasUserId.cs" />
+    <Compile Include="DesignPatterns\Model\IHasUserSession.cs" />
+    <Compile Include="DesignPatterns\Serialization\IStringDeserializer.cs" />
+    <Compile Include="DesignPatterns\Serialization\IStringSerializer.cs" />
+    <Compile Include="DesignPatterns\Translator\ITranslator.cs" />
+    <Compile Include="Logging\ILog.cs" />
+    <Compile Include="Logging\ILogFactory.cs" />
+    <Compile Include="Logging\LogManager.cs" />
+    <Compile Include="Logging\Support\Logging\ConsoleLogFactory.cs" />
+    <Compile Include="Logging\Support\Logging\ConsoleLogger.cs" />
+    <Compile Include="Logging\Support\Logging\DebugLogFactory.cs" />
+    <Compile Include="Logging\Support\Logging\DebugLogger.cs" />
+    <Compile Include="Logging\Support\Logging\NullDebugLogger.cs" />
+    <Compile Include="Logging\Support\Logging\NullLogFactory.cs" />
+    <Compile Include="LogicFacade\IApplicationContext.cs" />
+    <Compile Include="LogicFacade\IInitContext.cs" />
+    <Compile Include="LogicFacade\ILogicFacade.cs" />
+    <Compile Include="LogicFacade\InitOptions.cs" />
+    <Compile Include="LogicFacade\IOperationContext.cs" />
+    <Compile Include="LogicFacade\IServiceModelFinder.cs" />
+    <Compile Include="LogicFacade\IXmlRequest.cs" />
+    <Compile Include="Messaging\IMessage.cs" />
+    <Compile Include="Messaging\IMessageFactory.cs" />
+    <Compile Include="Messaging\IMessageProducer.cs" />
+    <Compile Include="Messaging\IMessageQueueClient.cs" />
+    <Compile Include="Messaging\IMessageQueueClientFactory.cs" />
+    <Compile Include="Messaging\IMessageService.cs" />
+    <Compile Include="Messaging\Message.cs" />
+    <Compile Include="Messaging\MessageError.cs" />
+    <Compile Include="Messaging\MessagingException.cs" />
+    <Compile Include="Messaging\QueueNames.cs" />
+    <Compile Include="Messaging\UnRetryableMessagingException.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Redis\Generic\IRedisHash.Generic.cs" />
+    <Compile Include="Redis\Generic\IRedisList.Generic.cs" />
+    <Compile Include="Redis\Generic\IRedisSet.Generic.cs" />
+    <Compile Include="Redis\Generic\IRedisSortedSet.Generic.cs" />
+    <Compile Include="Redis\Generic\IRedisTransaction.cs" />
+    <Compile Include="Redis\Generic\IRedisTypedClient.cs" />
+    <Compile Include="Redis\Generic\IRedisTypedPipeline.cs" />
+    <Compile Include="Redis\Generic\IRedisTypedQueueableOperation.cs" />
+    <Compile Include="Redis\IRedisClient.cs" />
+    <Compile Include="Redis\IRedisClientCacheManager.cs" />
+    <Compile Include="Redis\IRedisClientsManager.cs" />
+    <Compile Include="Redis\IRedisHash.cs" />
+    <Compile Include="Redis\IRedisList.cs" />
+    <Compile Include="Redis\IRedisNativeClient.cs" />
+    <Compile Include="Redis\IRedisSet.cs" />
+    <Compile Include="Redis\IRedisSortedSet.cs" />
+    <Compile Include="Redis\IRedisSubscription.cs" />
+    <Compile Include="Redis\Pipeline\IRedisPipeline.cs" />
+    <Compile Include="Redis\Pipeline\IRedisPipelineShared.cs" />
+    <Compile Include="Redis\Pipeline\IRedisQueueableOperation.cs" />
+    <Compile Include="Redis\Pipeline\IRedisQueueCompletableOperation.cs" />
+    <Compile Include="Redis\RedisKeyType.cs" />
+    <Compile Include="Redis\SortOptions.cs" />
+    <Compile Include="Redis\IRedisTransaction.cs" />
+    <Compile Include="Redis\IRedisTransactionBase.cs" />
+    <Compile Include="SearchIndex\FullTextIndexAttribute.cs" />
+    <Compile Include="SearchIndex\FullTextIndexDocumentAttribute.cs" />
+    <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs" />
+    <Compile Include="ServiceHost\EndpointAttributes.cs" />
+    <Compile Include="ServiceHost\IAsyncService.cs" />
+    <Compile Include="ServiceHost\IContentTypeFilter.cs" />
+    <Compile Include="ServiceHost\IContentTypeReader.cs" />
+    <Compile Include="ServiceHost\IContentTypeWriter.cs" />
+    <Compile Include="ServiceHost\IFile.cs" />
+    <Compile Include="ServiceHost\IHasOptions.cs" />
+    <Compile Include="ServiceHost\IHttpError.cs" />
+    <Compile Include="ServiceHost\IHttpResult.cs" />
+    <Compile Include="ServiceHost\IRequestAttributes.cs" />
+    <Compile Include="ServiceHost\IRequestContext.cs" />
+    <Compile Include="ServiceHost\IRequiresRequestContext.cs" />
+    <Compile Include="ServiceHost\IRestDeleteService.cs" />
+    <Compile Include="ServiceHost\IRestGetService.cs" />
+    <Compile Include="ServiceHost\IRestPath.cs" />
+    <Compile Include="ServiceHost\IRestPostService.cs" />
+    <Compile Include="ServiceHost\IRestPutService.cs" />
+    <Compile Include="ServiceHost\IRestService.cs" />
+    <Compile Include="ServiceHost\IService.cs" />
+    <Compile Include="ServiceHost\IServiceController.cs" />
+    <Compile Include="ServiceHost\RestServiceAttribute.cs" />
+    <Compile Include="ServiceHost\ServiceAttribute.cs" />
+    <Compile Include="Service\IOneWayClient.cs" />
+    <Compile Include="Service\IReplyClient.cs" />
+    <Compile Include="Service\IResponseBase.cs" />
+    <Compile Include="Service\IResponseStatus.cs" />
+    <Compile Include="Service\IRestClient.cs" />
+    <Compile Include="Service\IRestClientAsync.cs" />
+    <Compile Include="Service\IServiceClient.cs" />
+    <Compile Include="Service\IServiceClientAsync.cs" />
+    <Compile Include="Service\IStreamWriter.cs" />
+    <Compile Include="Translators\TranslateAttribute.cs" />
+    <Compile Include="Translators\TranslateExtensionAttribute.cs" />
+    <Compile Include="Translators\TranslateMemberAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="ServiceStack">
+</Property><Property Name="Solution File" Value="C:\src\ServiceStack\src\ServiceStack.sln">
+</Property><Property Name="Date" Value="19 February 2011">
+</Property><Property Name="Time" Value="03:28:00">
+</Property><Property Name="Log Number" Value="2">
+</Property></Properties><Event ErrorLevel="0" Project="ServiceStack.WebHost.IntegrationTests" Source="..\tests\ServiceStack.WebHost.IntegrationTests\ServiceStack.WebHost.IntegrationTests.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="ServiceStack.WebHost.IntegrationTests" Source="..\tests\ServiceStack.WebHost.IntegrationTests\ServiceStack.WebHost.IntegrationTests.csproj" Description="Converted">
+</Event><Event ErrorLevel="2" Project="" Source="..\tests\ServiceStack.WebHost.IntegrationTests\ServiceStack.WebHost.IntegrationTests.csproj" Description="The project file 'C:\src\ServiceStack\tests\ServiceStack.WebHost.IntegrationTests\ServiceStack.WebHost.IntegrationTests.csproj' cannot be opened.&#xA;&#xA;The project type is not supported by this installation.">
+</Event></UpgradeLog>

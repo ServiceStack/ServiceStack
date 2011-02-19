@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ServiceStack</RootNamespace>
+    <AssemblyName>ServiceStack</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;MONO</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DEBUG MONO|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CacheAccess.Providers\BasicPersistenceProviderCacheBase.cs" />
+    <Compile Include="CacheAccess.Providers\CacheManager.cs" />
+    <Compile Include="CacheAccess.Providers\CacheTextManagerFactory.cs" />
+    <Compile Include="CacheAccess.Providers\CompressableFileAndCacheTextManagerFactory.cs" />
+    <Compile Include="CacheAccess.Providers\ContentCacheManager.cs" />
+    <Compile Include="CacheAccess.Providers\ContentSerializer.cs" />
+    <Compile Include="CacheAccess.Providers\FileAndCacheTextManager.cs" />
+    <Compile Include="CacheAccess.Providers\FileSystemXmlCacheClient.cs" />
+    <Compile Include="CacheAccess.Providers\JsonCacheManager.cs" />
+    <Compile Include="CacheAccess.Providers\JsvCacheManager.cs" />
+    <Compile Include="CacheAccess.Providers\MemoryCacheClient.cs" />
+    <Compile Include="CacheAccess.Providers\MultiCacheClient.cs" />
+    <Compile Include="CacheAccess.Providers\PersistenceProviderCache.cs" />
+    <Compile Include="CacheAccess.Providers\XmlCacheManager.cs" />
+    <Compile Include="Configuration\ConfigurationResourceManager.cs" />
+    <Compile Include="Configuration\ConfigUtils.cs" />
+    <Compile Include="Funq\Action.cs" />
+    <Compile Include="Funq\Container.cs" />
+    <Compile Include="Funq\Container.Overloads.cs">
+      <DependentUpon>Container.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Funq\Func.cs" />
+    <Compile Include="Funq\IFluentInterface.cs" />
+    <Compile Include="Funq\IFunqlet.cs" />
+    <Compile Include="Funq\Owner.cs" />
+    <Compile Include="Funq\ResolutionException.cs" />
+    <Compile Include="Funq\ReuseScope.cs" />
+    <Compile Include="Funq\ServiceEntry.cs" />
+    <Compile Include="Funq\ServiceEntry.Generic.cs" />
+    <Compile Include="Funq\ServiceKey.cs" />
+    <Compile Include="Funq\Syntax.cs" />
+    <Compile Include="Messaging\IMessageHandler.cs" />
+    <Compile Include="Messaging\IMessageHandlerFactory.cs" />
+    <Compile Include="Messaging\InMemoryMessageQueueClient.cs" />
+    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
+    <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
+    <Compile Include="Messaging\MessageExtensions.cs" />
+    <Compile Include="Messaging\MessageQueueClientFactory.cs" />
+    <Compile Include="Messaging\TransientMessageHandler.cs" />
+    <Compile Include="Messaging\TransientMessageHandlerFactory.cs" />
+    <Compile Include="Messaging\TransientMessageServiceBase.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
+    <Compile Include="ServiceHost\ExpressionTypeFunqContainer.cs" />
+    <Compile Include="ServiceHost\FileExtensions.cs" />
+    <Compile Include="ServiceHost\HttpFile.cs" />
+    <Compile Include="ServiceHost\HttpRequestAuthentication.cs" />
+    <Compile Include="ServiceHost\HttpRequestContext.cs" />
+    <Compile Include="ServiceHost\HttpRequestExtensions.cs" />
+    <Compile Include="ServiceHost\HttpResponseExtensions.cs" />
+    <Compile Include="ServiceHost\IHttpRequest.cs" />
+    <Compile Include="ServiceHost\IHttpResponse.cs" />
+    <Compile Include="ServiceHost\Operations.cs" />
+    <Compile Include="ServiceHost\RequestAttributes.cs" />
+    <Compile Include="ServiceHost\RequestContextExtensions.cs" />
+    <Compile Include="ServiceHost\RestPath.cs" />
+    <Compile Include="ServiceHost\ServiceController.cs" />
+    <Compile Include="ServiceHost\ServiceControllerReflection.cs" />
+    <Compile Include="ServiceHost\ServiceExec.cs" />
+    <Compile Include="ServiceHost\ServiceExecOperations.cs" />
+    <Compile Include="ServiceHost\ServiceManager.cs" />
+    <Compile Include="ServiceHost\ServiceOperations.cs" />
+    <Compile Include="WebHost.EndPoints\AppHostBase.cs" />
+    <Compile Include="WebHost.EndPoints\Formats\CsvFormat.cs" />
+    <Compile Include="WebHost.EndPoints\Extensions\HttpListenerRequestWrapper.cs" />
+    <Compile Include="WebHost.EndPoints\GenericHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Formats\HtmlFormat.cs" />
+    <Compile Include="WebHost.EndPoints\IAppHost.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\CustomMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\RestHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Extensions\HttpRequestWrapper.cs" />
+    <Compile Include="WebHost.EndPoints\Ext\AllFilesHandler.cs" />
+    <Compile Include="WebHost.EndPoints\HttpWebRequestConfig.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\JsvMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Routes.cs" />
+    <Compile Include="WebHost.EndPoints\ServiceHostEnvironment.cs" />
+    <Compile Include="WebHost.EndPoints\SupportedHandlerMappings.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Mocks\HttpRequestMock.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Mocks\HttpResponseMock.cs" />
+    <Compile Include="WebHost.EndPoints\Support\RedirectHttpHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Support\IServiceStackHttpHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Support\NotFoundHttpHandler.cs" />
+    <Compile Include="WebHost.EndPoints\JsvSyncReplyHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Extensions\IHttpResponseExtensions.cs" />
+    <Compile Include="WebHost.EndPoints\Extensions\HttpListenerResponseWrapper.cs" />
+    <Compile Include="WebHost.EndPoints\Extensions\HttpRequestExtensions.cs" />
+    <Compile Include="WebHost.EndPoints\Extensions\HttpResponseWrapper.cs" />
+    <Compile Include="WebHost.EndPoints\MetadataConfig.cs" />
+    <Compile Include="WebHost.EndPoints\ServiceStackHttpHandlerFactory.cs" />
+    <Compile Include="WebHost.EndPoints\Soap11Handlers.cs" />
+    <Compile Include="WebHost.EndPoints\Support\HttpListenerBase.cs" />
+    <Compile Include="WebHost.EndPoints\AppHostHttpListenerBase.cs" />
+    <Compile Include="WebHost.EndPoints\Support\GzipOptimizationTest.cs" />
+    <Compile Include="WebHost.EndPoints\ServiceEndpointsMetadataConfig.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\Soap12WsdlMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\SoapMetadataConfig.cs" />
+    <Compile Include="WebHost.EndPoints\Support\HttpHandlerBase.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\WsdlMetadataHandlerBase.cs" />
+    <Compile Include="WebHost.EndPoints\Support\IndexPageHttpHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Support\StaticFileHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Templates\Soap12WsdlTemplate.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\Soap11WsdlMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Templates\Soap11WsdlTemplate.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Templates\WsdlTemplateBase.cs" />
+    <Compile Include="WebHost.EndPoints\Soap12Handlers.cs" />
+    <Compile Include="WebHost.EndPoints\JsonSyncReplyHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Support\EndpointHandlerBase.cs" />
+    <Compile Include="WebHost.EndPoints\EndpointHost.cs" />
+    <Compile Include="WebHost.EndPoints\EndpointHostConfig.cs" />
+    <Compile Include="WebHost.EndPoints\Support\SoapHandler.cs" />
+    <Compile Include="WebHost.EndPoints\WebServerType.cs" />
+    <Compile Include="WebHost.EndPoints\XmlSyncReplyHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\IndexMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\Soap11MetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\Soap12MetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\BaseSoapMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\JsonMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\BaseMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\BaseWsdlPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="WebHost.EndPoints\Metadata\XmlMetadataHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Metadata\XsdGenerator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\Controls\Soap12OperationControl.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\Controls\OperationControl.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\Controls\OperationsControl.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\Controls\Soap11OperationControl.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\Controls\IndexOperationsControl.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\XsdTypeNames.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Metadata\XsdTypes.cs" />
+    <Compile Include="WebHost.EndPoints\Utils\XsdUtils.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Templates\ListTemplate.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
+      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
+      <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceClient.Web\ServiceStack.ServiceClient.Web.csproj">
+      <Project>{D7C0239C-8885-43F9-B1A6-2C0FC6572B10}</Project>
+      <Name>ServiceStack.ServiceClient.Web</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Funq\Container.xdoc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Funq\License.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
