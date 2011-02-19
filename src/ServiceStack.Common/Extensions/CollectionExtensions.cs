@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Proxy = ServiceStack.Common;
 
 namespace ServiceStack.Common.Extensions
 {
@@ -10,7 +11,7 @@ namespace ServiceStack.Common.Extensions
 		{
 			return collection == null || collection.Count == 0;
 		}
-
+		
 		public static List<To> ConvertAll<To>(this ICollection items, Func<object, To> converter)
 		{
 			var list = new List<To>();

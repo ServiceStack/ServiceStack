@@ -2,56 +2,72 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using Proxy = ServiceStack.Common.AssertExtensions;
-
-namespace ServiceStack.Common.Extensions
+namespace ServiceStack.Common
 {
 	public static class AssertExtensions
 	{
 		public static void ThrowOnFirstNull(params object[] objs)
 		{
-			Proxy.ThrowOnFirstNull(objs);
+			foreach (var obj in objs)
+			{
+				ThrowIfNull(obj);
+			}
 		}
 
 		public static void ThrowIfNull(this object obj)
 		{
-			Proxy.ThrowIfNull(obj);
+			ThrowIfNull(obj, null);
 		}
 
 		public static void ThrowIfNull(this object obj, string varName)
 		{
-			Proxy.ThrowIfNull(obj, varName);
+			if (obj == null)
+				throw new ArgumentNullException(varName ?? "object");
 		}
 
 		public static void ThrowIfNullOrEmpty(this string strValue)
 		{
-			Proxy.ThrowIfNullOrEmpty(strValue);
+			ThrowIfNullOrEmpty(strValue, null);
 		}
 
 		public static void ThrowIfNullOrEmpty(this string strValue, string varName)
 		{
-			Proxy.ThrowIfNullOrEmpty(strValue, varName);
+			if (string.IsNullOrEmpty(strValue))
+				throw new ArgumentNullException(varName ?? "string");
 		}
 
 		public static void ThrowIfNullOrEmpty(this ICollection collection)
 		{
-			Proxy.ThrowIfNullOrEmpty(collection);
+			ThrowIfNullOrEmpty(collection, null);
 		}
 
 		public static void ThrowIfNullOrEmpty(this ICollection collection, string varName)
 		{
-			Proxy.ThrowIfNullOrEmpty(collection, varName);
+			var fieldName = varName ?? "collection";
+
+			if (collection == null)
+				throw new ArgumentNullException(fieldName);
+
+			if (collection.Count == 0)
+				throw new ArgumentException(fieldName + " is empty");
 		}
 
 		public static void ThrowIfNullOrEmpty<T>(this ICollection<T> collection)
 		{
-			Proxy.ThrowIfNullOrEmpty(collection);
+			ThrowIfNullOrEmpty(collection, null);
 		}
 
 		public static void ThrowIfNullOrEmpty<T>(this ICollection<T> collection, string varName)
 		{
-			Proxy.ThrowIfNullOrEmpty(collection, varName);
+			var fieldName = varName ?? "collection";
+
+			if (collection == null)
+				throw new ArgumentNullException(fieldName);
+
+			if (collection.Count == 0)
+				throw new ArgumentException(fieldName + " is empty");
 		}
-		 
+
 	}
+
 }

@@ -1,72 +1,45 @@
 using System;
 using System.Collections.Generic;
 
+using Proxy = ServiceStack.Common.IntExtensions;
+
 namespace ServiceStack.Common.Extensions
 {
 	public static class IntExtensions
 	{
 		public static IEnumerable<int> Times(this int times)
 		{
-			for (var i=0; i < times; i++)
-			{
-				yield return i;
-			}
+			return Proxy.Times(times);
 		}
 
 		public static void Times(this int times, Action<int> actionFn)
 		{
-			for (var i = 0; i < times; i++)
-			{
-				actionFn(i);
-			}
+			Proxy.Times(times, actionFn);
 		}
 
 		public static void Times(this int times, Action actionFn)
 		{
-			for (var i = 0; i < times; i++)
-			{
-				actionFn();
-			}
+			Proxy.Times(times, actionFn);
 		}
 
 		public static List<IAsyncResult> TimesAsync(this int times, Action<int> actionFn)
 		{
-			var asyncResults = new List<IAsyncResult>(times);
-			for (var i = 0; i < times; i++)
-			{
-				asyncResults.Add(actionFn.BeginInvoke(i, null, null));				
-			}
-			return asyncResults;
+			return Proxy.TimesAsync(times, actionFn);
 		}
 
 		public static List<IAsyncResult> TimesAsync(this int times, Action actionFn)
 		{
-			var asyncResults = new List<IAsyncResult>(times);
-			for (var i = 0; i < times; i++)
-			{
-				asyncResults.Add(actionFn.BeginInvoke(null, null));
-			}
-			return asyncResults;
+			return Proxy.TimesAsync(times, actionFn);
 		}
 
 		public static List<T> Times<T>(this int times, Func<T> actionFn)
 		{
-			var list = new List<T>();
-			for (var i=0; i < times; i++)
-			{
-				list.Add(actionFn());
-			}
-			return list;
+			return Proxy.Times(times, actionFn);
 		}
 
 		public static List<T> Times<T>(this int times, Func<int, T> actionFn)
 		{
-			var list = new List<T>();
-			for (var i=0; i < times; i++)
-			{
-				list.Add(actionFn(i));
-			}
-			return list;
+			return Proxy.Times(times, actionFn);
 		}
 	}
 }

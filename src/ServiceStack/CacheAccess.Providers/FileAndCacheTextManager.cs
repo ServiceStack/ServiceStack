@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 

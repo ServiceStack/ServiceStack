@@ -2,6 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using Moq;
 using NUnit.Framework;
+using ServiceStack.Common;
 using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;

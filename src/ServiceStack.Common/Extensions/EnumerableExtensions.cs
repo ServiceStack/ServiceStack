@@ -1,26 +1,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using ServiceStack.Text;
+
+using Proxy = ServiceStack.Common.EnumerableExtensions;
 
 namespace ServiceStack.Common.Extensions
 {
+	/// <summary>
+	/// These extensions have a potential to conflict with the LINQ extensions methods so
+	/// leaving the implmentation in the 'Extensions' sub-namespace to force explicit opt-in
+	/// </summary>
 	public static class EnumerableExtensions
 	{
-		public static List<To> ConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
+		public static void ForEach<T>(this IEnumerable<T> values, Action<T> action)
 		{
-			var list = new List<To>();
-			foreach (var item in items)
+			foreach (var value in values)
 			{
-				list.Add(converter(item));
+				action(value);
 			}
-			return list;
-		}
-
-		public static List<To> SafeConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
-		{
-			return items == null ? new List<To>() : ConvertAll(items, converter);
 		}
 
 		public static List<To> ConvertAll<To>(this IEnumerable items, Func<object, To> converter)
@@ -52,9 +49,24 @@ namespace ServiceStack.Common.Extensions
 			return list;
 		}
 
+		public static List<To> ConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
+		{
+			var list = new List<To>();
+			foreach (var item in items)
+			{
+				list.Add(converter(item));
+			}
+			return list;
+		}
+
 		public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items)
 		{
-			return new HashSet<T>(items);
+			return Proxy.ToHashSet(items);
+		}
+
+		public static List<To> SafeConvertAll<To, From>(this IEnumerable<From> items, Func<From, To> converter)
+		{
+			return Proxy.SafeConvertAll(items, converter);
 		}
 
 		public static List<object> ToObjects<T>(this IEnumerable<T> items)
@@ -83,14 +95,6 @@ namespace ServiceStack.Common.Extensions
 				if (!Equals(value, default(T))) return value;
 			}
 			return default(T);
-		}
-
-		public static void ForEach<T>(this IEnumerable<T> values, Action<T> action)
-		{
-			foreach (var value in values)
-			{
-				action(value);
-			}
 		}
 
 		public static bool EquivalentTo<T>(this IEnumerable<T> thisList, IEnumerable<T> otherList)

@@ -6,6 +6,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using StreamExtensions = ServiceStack.Common.StreamExtensions;
 
 namespace ServiceStack.CacheAccess.Providers
 {
@@ -78,7 +79,7 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			if (serializedResult == null) return null;
 
-			var compressedResult = serializedResult.Compress(compressionType);
+			var compressedResult = StreamExtensions.Compress(serializedResult, compressionType);
 
 			return compressedResult;
 		}
