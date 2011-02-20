@@ -119,16 +119,6 @@
     <Compile Include="Funq\ServiceEntry.Generic.cs" />
     <Compile Include="Funq\ServiceKey.cs" />
     <Compile Include="Funq\Syntax.cs" />
-    <Compile Include="Messaging\IMessageHandler.cs" />
-    <Compile Include="Messaging\IMessageHandlerFactory.cs" />
-    <Compile Include="Messaging\InMemoryMessageQueueClient.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
-    <Compile Include="Messaging\MessageExtensions.cs" />
-    <Compile Include="Messaging\MessageQueueClientFactory.cs" />
-    <Compile Include="Messaging\TransientMessageHandler.cs" />
-    <Compile Include="Messaging\TransientMessageHandlerFactory.cs" />
-    <Compile Include="Messaging\TransientMessageServiceBase.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="ServiceHost\ExpressionTypeFunqContainer.cs" />
     <Compile Include="ServiceHost\FileExtensions.cs" />
