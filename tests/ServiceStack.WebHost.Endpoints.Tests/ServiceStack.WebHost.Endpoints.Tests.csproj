@@ -95,9 +95,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.ServiceInterface, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\tests\ServiceStack.ServiceInterface.dll</HintPath>
+    <Reference Include="ServiceStack.ServiceInterface">
+      <HintPath>..\..\lib\ServiceStack.ServiceInterface.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -129,6 +128,7 @@
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CustomRequestDataTests.cs" />
+    <Compile Include="IntegrationTests\ResetMovies.cs" />
     <Compile Include="Support\Operations\CustomFormData.cs" />
     <Compile Include="Support\Services\CustomFormDataService.cs" />
     <Compile Include="SyncRestClientTests.cs" />

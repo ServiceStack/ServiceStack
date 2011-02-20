@@ -86,6 +86,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\ServiceStack.Redis.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.ServiceInterface, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -114,10 +118,6 @@
     <Compile Include="DataContracts\Customer.cs" />
     <Compile Include="DataContracts\Operations\GetCustomers.cs" />
     <Compile Include="DataContracts\Operations\GetCustomersResponse.cs" />
-    <Compile Include="DataContracts\Properties.cs" />
-    <Compile Include="DataContracts\Property.cs" />
-    <Compile Include="DataContracts\ResponseError.cs" />
-    <Compile Include="DataContracts\ResponseStatus.cs" />
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringConverterUtilsTests.cs" />

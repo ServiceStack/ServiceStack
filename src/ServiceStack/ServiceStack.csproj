@@ -223,6 +223,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Funq\Container.xdoc" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />

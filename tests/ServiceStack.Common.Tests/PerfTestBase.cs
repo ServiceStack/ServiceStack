@@ -6,7 +6,6 @@ using System.Text;
 namespace ServiceStack.Common.Tests
 {
 	public class PerfTestBase
-		: TestBase
 	{
 		protected int DefaultIterations { get; set; }
 		protected List<int> MultipleIterations { get; set; }
@@ -19,7 +18,7 @@ namespace ServiceStack.Common.Tests
 
 		protected StringBuilder SbLog = new StringBuilder();
 
-		public override void Log(string message, params object[] args)
+		public void Log(string message, params object[] args)
 		{
 			Console.WriteLine(message, args);
 

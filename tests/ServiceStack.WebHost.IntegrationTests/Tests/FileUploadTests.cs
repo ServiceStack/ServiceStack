@@ -22,6 +22,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var httpWebRequest = (HttpWebRequest)WebRequest.Create(base.ServiceClientBaseUri + pathInfo);
 			httpWebRequest.ContentType = "multipart/form-data; boundary=" + boundary;
+			httpWebRequest.Accept = ContentType.Json;
 			httpWebRequest.Method = "POST";
 			httpWebRequest.AllowAutoRedirect = false;
 			httpWebRequest.KeepAlive = false;

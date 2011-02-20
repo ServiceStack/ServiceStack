@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Tests.DataContracts;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 /*
  * Examples of preliminery REST method support in ServiceStack
@@ -47,6 +47,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
 		[DataMember]
 		public string Id { get; set; }
+
+		[DataMember]
+		public string ImdbId { get; set; }
 
 		[DataMember]
 		public string Title { get; set; }

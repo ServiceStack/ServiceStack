@@ -92,6 +92,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			try
 			{
 				var response = (ResetMoviesResponse)ExecutePath(HttpMethods.Get, "/reset-movies");
+				Console.WriteLine(response.Dump());
 				Assert.Fail("Should throw HTTP errors");
 			}
 			catch (WebServiceException webEx)

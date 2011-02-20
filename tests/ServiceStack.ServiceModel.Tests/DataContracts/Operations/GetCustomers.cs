@@ -1,3 +1,4 @@
+using ServiceStack.ServiceInterface.ServiceModel;
 using System.Runtime.Serialization;
 
 namespace ServiceStack.ServiceModel.Tests.DataContracts.Operations

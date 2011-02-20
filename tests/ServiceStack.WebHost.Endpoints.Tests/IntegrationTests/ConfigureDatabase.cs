@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				using (var dbConn = connectionFactory.OpenDbConnection())
 				using (var dbCmd = dbConn.CreateCommand())
 				{
-					dbCmd.CreateTable<RestMovie>(false);
+					dbCmd.CreateTable<RestMovie>(true);
 					dbCmd.SaveAll(Top5Movies);
 				}
 			}

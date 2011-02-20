@@ -17,11 +17,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_call_EchoRequest_with_AcceptAll()
 		{
 			var response = GetWebResponse(ServiceClientBaseUri + "/echo/1/One", "*/*");
-			AssertResponse<EchoRequest>(response, null, x =>
-			{
-				Assert.That(x.Id, Is.EqualTo(1));
-				Assert.That(x.String, Is.EqualTo("One"));
-			});
+			var contents = GetContents(response);
+
+			Assert.That(contents, Is.Not.Null);
+			Assert.That(contents.Contains("\"Id\":1"));
+			Assert.That(contents.Contains("\"String\":\"One\""));
 		}
 
 		[Test]

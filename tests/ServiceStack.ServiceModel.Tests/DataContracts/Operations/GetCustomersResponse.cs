@@ -1,3 +1,4 @@
+using ServiceStack.ServiceInterface.ServiceModel;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 

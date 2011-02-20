@@ -145,7 +145,6 @@
     <Compile Include="Perf\TextSerializerComparisons.cs" />
     <Compile Include="ReflectionExtensionsTests.cs" />
     <Compile Include="Reflection\PropertyAccessorTests.cs" />
-    <Compile Include="TestBase.cs" />
     <Compile Include="Expressions\DelegateFactoryTests.cs" />
     <Compile Include="Expressions\ExpressionTests.cs" />
     <Compile Include="Models\ModelWithComplexTypes.cs" />

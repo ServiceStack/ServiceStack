@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
@@ -10,6 +12,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 	public class MovieRestTests
 		: IntegrationTestBase
 	{
+		[SetUp]
+		public void OnBeforeEachTest()
+		{
+			var jsonClient = new JsonServiceClient(BaseUrl);
+			jsonClient.Post<ResetMoviesResponse>("reset-movies", new ResetMovies());
+		}
+
 		[Test]
 		public void Can_list_all_movies()
 		{
@@ -63,6 +72,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		}
 
 		[Test]
+		public void Can_ResetMovieDatabase()
+		{
+			SendToEachEndpoint<ResetMovieDatabaseResponse>(new ResetMovieDatabase(), HttpMethods.Post, response =>
+				Assert.That(response.ResponseStatus.ErrorCode, Is.Null)
+			);
+		}
+
+		[Test]
 		public void Can_delete_movie()
 		{
 			var topMovie = ConfigureDatabase.Top5Movies[0];
@@ -73,14 +90,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 				Assert.That(response.Movies, Has.Count.EqualTo(0))
 			);
 		}
-
-		[Test]
-		public void Can_ResetMovieDatabase()
-		{
-			SendToEachEndpoint<ResetMovieDatabaseResponse>(new ResetMovieDatabase(), HttpMethods.Post, response =>
-				Assert.That(response.ResponseStatus.ErrorCode, Is.Null)
-			);
-		}
-
 	}
 }
