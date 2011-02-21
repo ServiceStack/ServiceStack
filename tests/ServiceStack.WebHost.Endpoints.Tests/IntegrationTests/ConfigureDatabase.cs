@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 					dbCmd.SaveAll(Top5Movies);
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				throw;
 			}

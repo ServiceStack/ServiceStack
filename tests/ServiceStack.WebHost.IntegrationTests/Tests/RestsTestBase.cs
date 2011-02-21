@@ -82,7 +82,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 							return (T)response;
 						}
 					}
-					catch (WebException ex)
+					catch (WebException)
 					{
 						// Oh, well, we tried
 						throw;

@@ -58,5 +58,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 			       && this.StringIntMap.EquivalentTo(other.StringIntMap)
 			       && this.RequestOfAllTypes.Equals(other.RequestOfAllTypes);
 		}
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
 	}
 }

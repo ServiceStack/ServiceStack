@@ -45,7 +45,7 @@ namespace ServiceStack.ServiceHost.Tests.Examples
 			var c = new Container();
 			c.EasyRegister<IFoo, Foo>();
 
-			Assert.IsInstanceOfType(typeof(Foo), c.Resolve<IFoo>());
+			Assert.IsInstanceOf<Foo>(c.Resolve<IFoo>());
 		}
 
 		[Test]

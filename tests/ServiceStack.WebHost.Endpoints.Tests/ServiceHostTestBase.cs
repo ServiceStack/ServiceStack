@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				action();
 			}
-			catch (T ex)
+			catch (T)
 			{
 				return;
 			}
@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				action();
 			}
-			catch (T ex)
+			catch (T)
 			{
 				Assert.Fail(errorMessageIfThrows);
 			}

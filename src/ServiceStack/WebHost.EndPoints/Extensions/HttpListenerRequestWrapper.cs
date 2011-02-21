@@ -349,8 +349,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		}
 
 
-		bool validate_cookies, validate_query_string, validate_form;
-		bool checked_cookies, checked_query_string, checked_form;
+		protected bool validate_cookies, validate_query_string, validate_form;
+		protected bool checked_cookies, checked_query_string, checked_form;
 		
 		static void ThrowValidationException(string name, string key, string value)
 		{

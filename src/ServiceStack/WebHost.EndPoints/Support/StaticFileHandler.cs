@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.ContentType = MimeTypes.GetMimeType(fileName);
 				response.TransmitFile(fileName);
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				throw new HttpException(403, "Forbidden.");
 			}

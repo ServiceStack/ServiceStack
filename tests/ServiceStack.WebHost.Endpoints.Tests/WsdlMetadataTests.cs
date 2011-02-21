@@ -37,6 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void XsdUtils_strips_all_xml_declarations()
 		{
+#if no
 			const string xsd = "<?xml version=\"1.0\" encoding=\"utf-16\"?>"
 							   + "<xs:schema xmlns:tns=\"http://schemas.sericestack.net/examples/types\" elementFormDefault=\"qualified\" targetNamespace=\"http://schemas.sericestack.net/examples/types\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
 							   + "<xs:complexType name=\"ArrayOfLong\">"
@@ -44,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 							   + "</xs:complexType>";
 
 			const string xsds = xsd + xsd + xsd;
-
+#endif 
 			//var strippedXsd = XsdUtils.StripXmlDeclaration(xsds);
 
 			//Assert.That(strippedXsd.IndexOf("<?"), Is.EqualTo(-1));

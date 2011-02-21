@@ -44,10 +44,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			Log.Info("Begin Initializing Application...");
 		}
 
-		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
+        protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
+            : this(serviceName, "servicestack", assembliesWithServices) { }
+
+	    protected HttpListenerBase(string serviceName, string serviceRoot, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			SetConfig(new EndpointHostConfig
+			SetConfig(new EndpointHostConfig(serviceRoot)
 			{
 				ServiceName = serviceName,
 				ServiceManager = new ServiceManager(assembliesWithServices),
@@ -126,7 +129,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		private static int requestCounter = 0;
+		//private static int requestCounter = 0;
 
 		// Handle the processing of a request in here.
 		private void ListenerCallback(IAsyncResult asyncResult)

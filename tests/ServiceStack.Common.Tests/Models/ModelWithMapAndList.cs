@@ -26,7 +26,7 @@ namespace ServiceStack.Common.Tests.Models
 
 		public List<T> List { get; set; }
 
-		public static ModelWithMapAndList<T> Create<T>(int id)
+		public static ModelWithMapAndList<T> Create<U>(int id)
 		{
 			return new ModelWithMapAndList<T>(id);
 		}

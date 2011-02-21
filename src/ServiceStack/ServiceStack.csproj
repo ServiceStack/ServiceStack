@@ -41,6 +41,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -153,7 +154,7 @@
     <Compile Include="WebHost.EndPoints\Metadata\JsvMetadataHandler.cs" />
     <Compile Include="WebHost.EndPoints\Routes.cs" />
     <Compile Include="WebHost.EndPoints\ServiceHostEnvironment.cs" />
-    <Compile Include="WebHost.EndPoints\SupportedHandlerMappings.cs" />
+    <Compile Include="WebHost.EndPoints\Support\ForbiddenHttpHandler.cs" />
     <Compile Include="WebHost.EndPoints\Support\Mocks\HttpRequestMock.cs" />
     <Compile Include="WebHost.EndPoints\Support\Mocks\HttpResponseMock.cs" />
     <Compile Include="WebHost.EndPoints\Support\RedirectHttpHandler.cs" />

@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			{
 				var endpointConfig = MetadataConfig.GetEndpointConfig(ContentType);
 				var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
-				return string.Format("/{0}/{1}", endpontPath, OperationName);
+				return string.Format("{0}/{1}", endpontPath, OperationName);
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     
     <form>
     <div>
-        <p><a href=""../../{1}"">&lt;back to all web services</a></p>
+        <p><a href=""../..{1}"">&lt;back to all web services</a></p>
         <h2>{3}</h2>
 
 		{7}
@@ -150,7 +150,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 {6}
 
             <h3>HTTP + {2}</h3>
-            <p> The following is a sample HTTP requests and responses. 
+            <p> The following are sample HTTP requests and responses. 
                 The placeholders shown need to be replaced with actual values.</p>
 
 <div class=""request"">

@@ -16,6 +16,7 @@ namespace ServiceStack.WebHost.Endpoints
 		static private readonly string WebHostPhysicalPath = null;
 		static private readonly string DefaultRootFileName = null;
 		static private readonly IHttpHandler DefaultHttpHandler = null;
+        static private readonly IHttpHandler ForbiddenHttpHandler = null;
 		private static readonly bool IsIntegratedPipeline = false;
 
 		static ServiceStackHttpHandlerFactory()
@@ -30,6 +31,8 @@ namespace ServiceStack.WebHost.Endpoints
 			//DefaultHttpHandler not supported in IntegratedPipeline mode
 			if (!IsIntegratedPipeline)
 				DefaultHttpHandler = new DefaultHttpHandler();
+
+		    ForbiddenHttpHandler = new ForbiddenHttpHandler();
 
 			WebHostPhysicalPath = "~".MapHostAbsolutePath();
 			foreach (var fileName in Directory.GetFiles(WebHostPhysicalPath))
@@ -53,30 +56,55 @@ namespace ServiceStack.WebHost.Endpoints
 				DefaultHttpHandler = new NotFoundHttpHandler();
 		}
 
-		public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
-		{
-			var pathInfo = context.Request.GetPathInfo();
+        public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
+        {
+            var pathInfo = context.Request.GetPathInfo();
 
-			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/" || pathInfo.EndsWith(EndpointHost.Config.ServiceStackHandlerFactoryPath))
-			{
-				var rawUrl = context.Request.RawUrl.ToLower();
-				if (rawUrl.Contains(EndpointHost.Config.ServiceStackHandlerFactoryPath + "/")
-					|| rawUrl.EndsWith(EndpointHost.Config.ServiceStackHandlerFactoryPath))
-				{
-					if (context.Request.PhysicalPath != WebHostPhysicalPath
-						|| !File.Exists(Path.Combine(context.Request.PhysicalPath, DefaultRootFileName)))
-					{
-						return new IndexPageHttpHandler();
-					}
-				}
-				return DefaultHttpHandler;
-			}
+            if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/" ||
+                (!string.IsNullOrEmpty(EndpointHost.Config.ServiceStackHandlerFactoryPath) &&
+                 pathInfo.EndsWith(EndpointHost.Config.ServiceStackHandlerFactoryPath)))
+            {
+                var requestPath = context.Request.Path.ToLower();
+                var handlerPath = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+                if ((requestPath == "/" + handlerPath) || (requestPath == handlerPath) ||
+                    (requestPath == handlerPath + "/"))
+                {
+                    if (context.Request.PhysicalPath != WebHostPhysicalPath
+                        || !File.Exists(Path.Combine(context.Request.PhysicalPath, DefaultRootFileName ?? "")))
+                    {
+                        return new IndexPageHttpHandler();
+                    }
+                }
 
-			return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo)
-				?? DefaultHttpHandler;
-		}
+                // no handler registered 
+                // serve the file from the filesystem, restricting to a safelist of extensions
 
-		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
+                var filePath = context.Request.FilePath;
+                var filename = System.IO.Path.GetFileName(filePath);
+                string[] extensions = { ".js", ".css", ".ico", ".htm", ".html" };
+                bool okToServe = false;
+
+                if (!filename.StartsWith("."))
+                {
+                    foreach (var extension in extensions)
+                    {
+                        if (filePath.EndsWith(extension))
+                        {
+                            okToServe = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (okToServe) return DefaultHttpHandler;
+                else return ForbiddenHttpHandler;
+            }
+
+            return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo)
+                   ?? DefaultHttpHandler;
+        }
+
+	    public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
 		{
 			var pathParts = pathInfo.TrimStart('/').Split('/');
 			if (pathParts.Length == 0) return new NotFoundHttpHandler();

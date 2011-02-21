@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	{
 		public WebResponse UploadFile(string pathInfo, FileInfo fileInfo)
 		{
-			long length = 0;
+			//long length = 0;
 			string boundary = "----------------------------" +
 			DateTime.Now.Ticks.ToString("x");
 

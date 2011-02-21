@@ -28,14 +28,18 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
-			: this()
-		{
-			SetConfig(new EndpointHostConfig
-			{
-				ServiceName = serviceName,
-				ServiceManager = new ServiceManager(assembliesWithServices),
-			});
-		}
+			: this(serviceName, "servicestack", assembliesWithServices) { }
+
+        protected AppHostBase(string serviceName, string serviceRoot, params Assembly[] assembliesWithServices)
+            : this()
+        {
+            SetConfig(new EndpointHostConfig(serviceRoot)
+            {
+                ServiceName = serviceName,
+                ServiceManager = new ServiceManager(assembliesWithServices),
+            });
+        }
+
 
 		protected IServiceController ServiceController
 		{

@@ -16,7 +16,6 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;
-using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {

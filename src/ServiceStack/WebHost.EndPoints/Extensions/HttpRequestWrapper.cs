@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				{
 					return request.Url.AbsoluteUri;
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
 					//fastcgi mono, do a 2nd rounds best efforts
 					return "http://" + request.UserHostName + request.RawUrl;

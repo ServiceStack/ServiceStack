@@ -9,9 +9,11 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		/// <param name="servicestackHandlerPrefix"></param>
 		/// <returns></returns>
-		public static ServiceEndpointsMetadataConfig CreateFor(string servicestackHandlerPrefix)
+		public static ServiceEndpointsMetadataConfig Create(string serviceStackHandlerPrefix)
 		{
-			var prefix = servicestackHandlerPrefix;
+			var prefix = serviceStackHandlerPrefix;
+            if (!string.IsNullOrEmpty(prefix)) prefix = "/" + prefix;
+
 			return new ServiceEndpointsMetadataConfig
 			{
 				DefaultMetadataUri = prefix + "/metadata",
@@ -22,16 +24,6 @@ namespace ServiceStack.WebHost.Endpoints
 				Jsv = new MetadataConfig(prefix + "/jsv/syncreply", prefix + "/jsv/asynconeway", prefix + "/jsv/metadata"),
 				Custom = new MetadataConfig(prefix + "/{0}/syncreply", prefix + "/{0}/asynconeway", prefix + "/{0}/metadata")
 			};
-		}
-
-		public static ServiceEndpointsMetadataConfig GetDefault()
-		{
-			return CreateFor(SupportedHandlerMappings.ServiceStack);
-		}
-
-		public static ServiceEndpointsMetadataConfig GetForIis6ServiceStackAshx()
-		{
-			return CreateFor(SupportedHandlerMappings.ServiceStackAshxForIis6);
 		}
 
 		public string DefaultMetadataUri { get; set; }
