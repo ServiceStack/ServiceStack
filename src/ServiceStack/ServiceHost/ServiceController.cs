@@ -258,7 +258,7 @@ namespace ServiceStack.ServiceHost
 				return executeFunc;
 
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				//problems with MONO, using reflection for temp fix
 				return delegate(object request, object service, EndpointAttributes attrs)

@@ -14,15 +14,18 @@ namespace ServiceStack.WebHost.Endpoints
 		private const string DefaultUsageExamplesBaseUri =
 				"https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
-		public EndpointHostConfig()
+        public EndpointHostConfig() :
+            this("servicestack") { }
+
+	    public EndpointHostConfig(string serviceStackHandlerFactoryPath)
 		{
 			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
-			this.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.GetDefault();
-			this.LogFactory = new NullLogFactory();
+            this.ServiceStackHandlerFactoryPath = serviceStackHandlerFactoryPath;
+            this.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(serviceStackHandlerFactoryPath);
+            this.LogFactory = new NullLogFactory();
 			this.EnableAccessRestrictions = true;
 			this.WsdlServiceNamespace = "http://schemas.servicestack.net/types";
 			this.WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types";
-			this.ServiceStackHandlerFactoryPath = "servicestack";
 			this.DefaultContentType = ContentType.Json;
 			this.ContentTypeFilter = HttpResponseFilter.Instance;
 			this.AllowJsonpRequests = true;
@@ -46,28 +49,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 
-		private ServiceHostEnvironment serviceHostEnvironment;
-		public ServiceHostEnvironment ServiceHostEnvironment
-		{
-			get { return serviceHostEnvironment; }
-			set
-			{
-				serviceHostEnvironment = value;
-				if (serviceHostEnvironment == null) return;
-
-				if (serviceHostEnvironment.WebServer == WebServerType.IIS6)
-				{
-					this.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.GetForIis6ServiceStackAshx();
-				}
-			}
-		}
-
-		private string serviceStackHandlerFactoryPath;
-		public string ServiceStackHandlerFactoryPath
-		{
-			get { return serviceStackHandlerFactoryPath; }
-			set { serviceStackHandlerFactoryPath = value != null ? value.ToLower() : null; }
-		}
+	    public string ServiceStackHandlerFactoryPath { get; set; }
 
 		public string WsdlServiceNamespace { get; set; }
 		public string WsdlServiceTypesNamespace { get; set; }

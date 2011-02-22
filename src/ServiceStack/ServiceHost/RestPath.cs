@@ -183,7 +183,7 @@ namespace ServiceStack.ServiceHost
 					propertyNamesMap.Add(propertyName.ToLower(), propertyName);
 				}
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				throw new AmbiguousMatchException("Property names are case-insensitive: "
 					+ this.RequestType.Name + "." + propertyName);

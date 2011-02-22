@@ -160,7 +160,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				{
 					response.Close();
 				}
-				catch (Exception ignore) {}
+				catch (Exception) {}
 			}
 		}
 

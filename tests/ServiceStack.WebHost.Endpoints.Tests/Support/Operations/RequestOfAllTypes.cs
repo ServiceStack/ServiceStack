@@ -88,6 +88,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 				   && this.UInt == other.UInt
 				   && this.ULong == other.ULong;
 		}
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
 	}
 
 	[DataContract]

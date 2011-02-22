@@ -19,11 +19,11 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			var ignoreFormats = EndpointHost.Config.IgnoreFormatsInMetadata;
 			var opTemplate = new StringBuilder("<li><span>{0}</span>");
 			if (MetadataConfig.Xml != null && !ignoreFormats.Contains("xml"))
-				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">XML</a>", MetadataConfig.Xml.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">XML</a>", MetadataConfig.Xml.DefaultMetadataUri);
 			if (MetadataConfig.Json != null && !ignoreFormats.Contains("json"))
-				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSON</a>", MetadataConfig.Json.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">JSON</a>", MetadataConfig.Json.DefaultMetadataUri);
 			if (MetadataConfig.Jsv != null && !ignoreFormats.Contains("jsv"))
-				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">JSV</a>", MetadataConfig.Jsv.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">JSV</a>", MetadataConfig.Jsv.DefaultMetadataUri);
 
 			if (MetadataConfig.Custom != null)
 			{
@@ -32,14 +32,14 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 					if (ignoreFormats.Contains(format)) continue;
 
 					var uri = string.Format(MetadataConfig.Custom.DefaultMetadataUri, format);
-					opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">{1}</a>", uri, format.ToUpper());
+					opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">{1}</a>", uri, format.ToUpper());
 				}
 			}
 
 			if (MetadataConfig.Soap11 != null)
-				opTemplate.AppendFormat(@"<a href=""../{0}?op={{0}}"">SOAP 1.1</a>", MetadataConfig.Soap11.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">SOAP 1.1</a>", MetadataConfig.Soap11.DefaultMetadataUri);
 			if (MetadataConfig.Soap12 != null)
-				opTemplate.AppendFormat(@"<a class=""last"" href=""../{0}?op={{0}}"">SOAP 1.2</a>", MetadataConfig.Soap12.DefaultMetadataUri);
+				opTemplate.AppendFormat(@"<a class=""last"" href=""{0}?op={{0}}"">SOAP 1.2</a>", MetadataConfig.Soap12.DefaultMetadataUri);
 
 			opTemplate.Append("</li>");
 

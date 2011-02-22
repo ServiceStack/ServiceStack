@@ -76,10 +76,10 @@ namespace ServiceStack.Text
 				{
 					using (var xw = new XmlTextWriter(ms, Encoding.UTF8))
 					{
-						if (false)
-						{
-							xw.Formatting = Formatting.Indented;
-						}
+//						if (false)
+//						{
+//							xw.Formatting = Formatting.Indented;
+//						}
 
 						var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
 						serializer.WriteObject(xw, from);

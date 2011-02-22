@@ -107,7 +107,7 @@ namespace ServiceStack.CacheAccess.Providers
 				{
 					File.Delete(filePath);
 				}
-				catch (Exception ignore) { }
+				catch (Exception) { }
 			}
 		}
 
@@ -141,7 +141,7 @@ namespace ServiceStack.CacheAccess.Providers
 					? new FileResult(new FileInfo(filePath), this.ContentType)
 					: null;
 			}
-			catch (Exception ignore)
+			catch (Exception)
 			{
 				return null;
 			}

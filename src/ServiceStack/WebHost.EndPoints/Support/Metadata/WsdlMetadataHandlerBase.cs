@@ -38,8 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			wsdlTemplate.ReplyOperationNames = operations.ReplyOperations.Names;
 			wsdlTemplate.OneWayOperationNames = operations.OneWayOperations.Names;
 
-
-			if (rawUrl.ToLower().Contains("servicestack"))
+			if (rawUrl.ToLower().StartsWith(baseUri))
 			{
 				//var qsPos = rawUrl.IndexOf('?');
 				//var urlWithoutQueryString = qsPos != -1 ? rawUrl.Substring(0, qsPos) : rawUrl;
@@ -51,7 +50,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 				wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
 				wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";
 			}
-
 
 			return wsdlTemplate;
 		}

@@ -27,7 +27,7 @@ namespace ServiceStack.Messaging.Tests
 			{
 				var fromMessageString = TypeSerializer.DeserializeFromString<IMessage<Greet>>(messageString);
 			}
-			catch (NotSupportedException expectedException)
+			catch (NotSupportedException)
 			{
 				return;
 			}
