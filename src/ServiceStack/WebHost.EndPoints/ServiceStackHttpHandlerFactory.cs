@@ -76,35 +76,29 @@ namespace ServiceStack.WebHost.Endpoints
                     }
                 }
 
-                // no handler registered 
-                // serve the file from the filesystem, restricting to a safelist of extensions
-
-                var filePath = context.Request.FilePath;
-                var filename = System.IO.Path.GetFileName(filePath);
-                string[] extensions = { ".js", ".css", ".ico", ".htm", ".html" };
-                bool okToServe = false;
-
-                if (!filename.StartsWith("."))
-                {
-                    foreach (var extension in extensions)
-                    {
-                        if (filePath.EndsWith(extension))
-                        {
-                            okToServe = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (okToServe) return DefaultHttpHandler;
-                else return ForbiddenHttpHandler;
+                var okToServe = ShouldAllow(context.Request.FilePath);
+            	return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
             }
 
             return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo)
                    ?? DefaultHttpHandler;
         }
 
-	    public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
+		// no handler registered 
+		// serve the file from the filesystem, restricting to a safelist of extensions
+		private static bool ShouldAllow(string filePath)
+		{
+			var fileName = Path.GetFileName(filePath);
+			if (fileName == null || fileName[0] == '.') return false;
+
+			int pos;
+			if ((pos = fileName.LastIndexOf('.')) == -1) return false;
+
+			var fileExt = fileName.Substring(pos + 1);
+			return EndpointHost.Config.AllowFileExtensions.Contains(fileExt);
+		}
+
+		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
 		{
 			var pathParts = pathInfo.TrimStart('/').Split('/');
 			if (pathParts.Length == 0) return new NotFoundHttpHandler();
@@ -190,7 +184,7 @@ namespace ServiceStack.WebHost.Endpoints
 				default:
 
 					string contentType;
-					if (EndpointHost.Config.ContentTypeFilter
+					if (EndpointHost.ContentTypeFilter
 						.ContentTypeFormats.TryGetValue(pathController, out contentType))
 					{
 						var format = Common.Web.ContentType.GetContentFormat(contentType);

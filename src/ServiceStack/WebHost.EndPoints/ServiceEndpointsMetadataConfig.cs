@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <summary>
 		/// Changes the links for the servicestack/metadata page
 		/// </summary>
-		/// <param name="servicestackHandlerPrefix"></param>
+		/// <param name="serviceStackHandlerPrefix"></param>
 		/// <returns></returns>
 		public static ServiceEndpointsMetadataConfig Create(string serviceStackHandlerPrefix)
 		{

@@ -253,7 +253,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			if (format.Contains("jsv")) return ContentType.Jsv;
 
 			string contentType;
-			EndpointHost.Config.ContentTypeFilter.ContentTypeFormats.TryGetValue(format, out contentType);
+			EndpointHost.ContentTypeFilter.ContentTypeFormats.TryGetValue(format, out contentType);
 
 			return contentType;
 		}
@@ -291,7 +291,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				defaultContentType = EndpointHost.Config.DefaultContentType;
 			}
 
-			var customContentTypes = EndpointHost.Config.ContentTypeFilter.ContentTypeFormats.Values;
+			var customContentTypes = EndpointHost.ContentTypeFilter.ContentTypeFormats.Values;
 
 			var acceptsAnything = false;
 			var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
