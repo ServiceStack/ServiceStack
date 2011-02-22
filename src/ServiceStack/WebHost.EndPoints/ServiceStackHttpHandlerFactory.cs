@@ -182,6 +182,9 @@ namespace ServiceStack.WebHost.Endpoints
 						return new Soap12MetadataHandler();
 					break;
 
+				case RequestInfoHandler.RestPath:
+					return new RequestInfoHandler();
+
 				default:
 
 					string contentType;

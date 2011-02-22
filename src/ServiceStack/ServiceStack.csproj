@@ -177,6 +177,7 @@
     <Compile Include="WebHost.EndPoints\Support\HttpHandlerBase.cs" />
     <Compile Include="WebHost.EndPoints\Support\Metadata\WsdlMetadataHandlerBase.cs" />
     <Compile Include="WebHost.EndPoints\Support\IndexPageHttpHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Support\RequestInfoHandler.cs" />
     <Compile Include="WebHost.EndPoints\Support\StaticFileHandler.cs" />
     <Compile Include="WebHost.EndPoints\Support\Templates\Soap12WsdlTemplate.cs" />
     <Compile Include="WebHost.EndPoints\Metadata\Soap11WsdlMetadataHandler.cs" />
