@@ -1,10 +1,12 @@
 using NUnit.Framework;
+using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
-namespace ServiceStack.WebHost.Endpoints.Tests.ServiceModel
+namespace ServiceStack.WebHost.Endpoints.Tests
 {
-	public class ServiceClientTests
+	[TestFixture]
+	public class _ServiceClientTests
 		: ServiceClientTestBase
 	{
 		/// <summary>

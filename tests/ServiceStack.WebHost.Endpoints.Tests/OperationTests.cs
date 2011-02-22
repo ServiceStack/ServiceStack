@@ -2,6 +2,7 @@ using System.Net;
 using NUnit.Framework;
 using ServiceStack.WebHost.Endpoints.Metadata;
 using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Endpoints.Tests.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {

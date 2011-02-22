@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests.Support
 {
 	public abstract class TestBase
 	{

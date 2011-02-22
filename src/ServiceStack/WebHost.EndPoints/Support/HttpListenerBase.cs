@@ -137,12 +137,18 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			//int requestNumber = Interlocked.Increment(ref requestCounter);
 
 			if (listener == null) return;
+			var isListening = listener.IsListening;
 
 			try
 			{
+				if (!isListening)
+				{
+					Log.DebugFormat("Ignoring ListenerCallback() as HttpListener is no longer listening");
+					return;
+				}
 				// The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
 				// blocks until there is a request to be processed or some type of data is available.
-				context = listener.EndGetContext(asyncResult);
+				context = listener.EndGetContext(asyncResult);				
 			}
 			catch (Exception ex)
 			{
@@ -150,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// because there will be a thread stopped waiting on the .EndGetContext()
 				// method, and again, that is just the way most Begin/End asynchronous
 				// methods of the .NET Framework work.
-				System.Diagnostics.Debug.WriteLine(ex.ToString());
+				Log.Warn(ex.ToString() + ": " + isListening);
 				return;
 			}
 			finally

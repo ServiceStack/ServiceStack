@@ -131,7 +131,7 @@
     <Compile Include="IntegrationTests\ResetMovies.cs" />
     <Compile Include="Support\Operations\CustomFormData.cs" />
     <Compile Include="Support\Services\CustomFormDataService.cs" />
-    <Compile Include="SyncRestClientTests.cs" />
+    <Compile Include="_SyncRestClientTests.cs" />
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="FileUploadTests.cs" />
@@ -153,8 +153,8 @@
     <Compile Include="KeyValueDataContractDeserializerTests.cs" />
     <Compile Include="MessageSerializationTests.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
-    <Compile Include="ServiceModel\ServiceClientTestBase.cs" />
-    <Compile Include="ServiceModel\ServiceClientTests.cs" />
+    <Compile Include="Support\ServiceClientTestBase.cs" />
+    <Compile Include="_ServiceClientTests.cs" />
     <Compile Include="ServiceStackHttpHandlerFactoryTests.cs" />
     <Compile Include="Support\Host\TestAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
@@ -182,7 +182,7 @@
     <Compile Include="Support\Operations\StoreCustomer.cs" />
     <Compile Include="Support\Services\TestServiceBase.cs" />
     <Compile Include="Support\Host\TestAppHost.cs" />
-    <Compile Include="TestBase.cs" />
+    <Compile Include="Support\TestBase.cs" />
     <Compile Include="Support\Services\TestService.cs" />
     <Compile Include="WebServiceExceptionTests.cs" />
     <Compile Include="WsdlMetadataTests.cs" />
@@ -234,6 +234,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ServiceModel\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

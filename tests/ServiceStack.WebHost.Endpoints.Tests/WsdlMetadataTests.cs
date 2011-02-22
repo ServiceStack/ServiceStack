@@ -2,6 +2,7 @@ using NUnit.Framework;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Metadata;
+using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
