@@ -14,64 +14,27 @@ namespace ServiceStack.WebHost.Endpoints
 		private const string DefaultUsageExamplesBaseUri =
 				"https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
-		private static EndpointHostConfig instance;
-		public static EndpointHostConfig Instance
-		{
-			get
-			{
-				if (instance == null)
-				{
-					instance = new EndpointHostConfig
-					{
-						UsageExamplesBaseUri = DefaultUsageExamplesBaseUri,
-						LogFactory = new NullLogFactory(),
-						EnableAccessRestrictions = true,
-						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-						WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types",
-						ServiceStackHandlerFactoryPath = "servicestack",
-						DefaultContentType = ContentType.Json,
-						AllowJsonpRequests = true,
-						DefaultDocuments = new List<string> {
-							"default.htm",
-							"default.html",
-							"index.htm",
-							"index.html",
-							"default.aspx",
-							"default.ashx",
-						},
-						GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } },
-						IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase),
-						AllowFileExtensions = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase)
-						{
-							"js", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", 
-							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", 
-							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
-							"flv", "xap", "xaml"
-						}
-					};
-				}
-				return instance;
-			}
-		}
+        public EndpointHostConfig() :
+            this("servicestack") { }
 
-		public EndpointHostConfig()
+	    public EndpointHostConfig(string serviceStackHandlerFactoryPath)
 		{
-			if (instance == null) return;
+			this.UsageExamplesBaseUri = DefaultUsageExamplesBaseUri;
+            this.ServiceStackHandlerFactoryPath = serviceStackHandlerFactoryPath;
+            this.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(serviceStackHandlerFactoryPath);
+            this.LogFactory = new NullLogFactory();
+			this.EnableAccessRestrictions = true;
+			this.WsdlServiceNamespace = "http://schemas.servicestack.net/types";
+			this.WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types";
+			this.DefaultContentType = ContentType.Json;
+			this.ContentTypeFilter = HttpResponseFilter.Instance;
+			this.AllowJsonpRequests = true;
+			this.DefaultDocuments = new List<string> {
+            		"default.htm", "default.html", "index.htm", "index.html", "default.aspx", "default.ashx", 
+            	};
 
-			//Get a copy of the singleton already partially configured
-			this.UsageExamplesBaseUri = instance.UsageExamplesBaseUri;
-			this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
-			this.LogFactory = instance.LogFactory;
-			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
-			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
-			this.WsdlServiceTypesNamespace = instance.WsdlServiceTypesNamespace;
-			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
-			this.DefaultContentType = instance.DefaultContentType;
-			this.AllowJsonpRequests = instance.AllowJsonpRequests;
-			this.DefaultDocuments = instance.DefaultDocuments;
-			this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
-			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
-			this.AllowFileExtensions = instance.AllowFileExtensions;
+			this.GlobalResponseHeaders = new Dictionary<string, string> { { "X-Powered-By", Env.ServerUserAgent } };
+			this.IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 		}
 
 		public ServiceManager ServiceManager { get; set; }
@@ -79,15 +42,14 @@ namespace ServiceStack.WebHost.Endpoints
 		public string UsageExamplesBaseUri { get; set; }
 		public string ServiceName { get; set; }
 		public string DefaultContentType { get; set; }
+		public IContentTypeFilter ContentTypeFilter { get; set; }
 		public bool AllowJsonpRequests { get; set; }
 		public bool DebugMode { get; set; }
 		public List<string> DefaultDocuments { get; private set; }
 
 		public HashSet<string> IgnoreFormatsInMetadata { get; set; }
 
-		public HashSet<string> AllowFileExtensions { get; set; }
-
-		public string ServiceStackHandlerFactoryPath { get; set; }
+	    public string ServiceStackHandlerFactoryPath { get; set; }
 
 		public string WsdlServiceNamespace { get; set; }
 		public string WsdlServiceTypesNamespace { get; set; }

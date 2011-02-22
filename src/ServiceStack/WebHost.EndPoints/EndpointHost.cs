@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using ServiceStack.CacheAccess.Providers;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -16,7 +13,13 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static IAppHost AppHost { get; internal set; }
 
-		public static IContentTypeFilter ContentTypeFilter { get; set; }
+		public static void ConfigureHost(IAppHost appHost)
+		{
+			AppHost = appHost;
+			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
+			HtmlFormat.Register(appHost);
+			CsvFormat.Register(appHost);
+		}
 
 		public static List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
 
@@ -24,37 +27,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		static EndpointHost()
 		{
-			ContentTypeFilter = HttpResponseFilter.Instance;
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-		}
-
-		// Pre user config
-		public static void ConfigureHost(IAppHost appHost, string serviceName, string serviceStackHandlerPath, Assembly[] assembliesWithServices)
-		{
-			AppHost = appHost;
-
-			EndpointHostConfig.Instance.ServiceName = serviceName;
-			EndpointHostConfig.Instance.ServiceManager = new ServiceManager(assembliesWithServices);
-			Config = EndpointHostConfig.Instance;
-
-			if (serviceStackHandlerPath != null)
-			{
-				Config.ServiceStackHandlerFactoryPath = serviceStackHandlerPath;
-			}
-
-			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
-			HtmlFormat.Register(appHost);
-			CsvFormat.Register(appHost);
-
-			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
-			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
-		}
-
-		// Post user config
-		private static void ApplyConfigChanges()
-		{
-			config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
 		}
 
 		public static ServiceManager ServiceManager
@@ -72,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			public static bool DebugMode
 			{
-				get { return Config != null && Config.DebugMode; }
+				get { return Config != null ? Config.DebugMode : false; }
 			}
 		}
 
@@ -93,7 +67,6 @@ namespace ServiceStack.WebHost.Endpoints
 					throw new ArgumentNullException("ServiceController");
 
 				config = value;
-				ApplyConfigChanges();
 			}
 		}
 

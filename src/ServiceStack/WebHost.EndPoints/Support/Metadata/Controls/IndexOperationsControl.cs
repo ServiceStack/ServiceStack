@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Web.UI;
 using ServiceStack.WebHost.Endpoints.Support.Templates;
@@ -28,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 
 			if (MetadataConfig.Custom != null)
 			{
-				foreach (var format in EndpointHost.ContentTypeFilter.ContentTypeFormats.Keys)
+				foreach (var format in EndpointHost.Config.ContentTypeFilter.ContentTypeFormats.Keys)
 				{
 					if (ignoreFormats.Contains(format)) continue;
 

@@ -44,13 +44,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			Log.Info("Begin Initializing Application...");
 		}
 
-		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: this(serviceName, null, assembliesWithServices) {}
+        protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
+            : this(serviceName, "servicestack", assembliesWithServices) { }
 
-		protected HttpListenerBase(string serviceName, string rootHandlerPath, params Assembly[] assembliesWithServices)
+	    protected HttpListenerBase(string serviceName, string serviceRoot, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			EndpointHost.ConfigureHost(this, serviceName, rootHandlerPath, assembliesWithServices);
+			SetConfig(new EndpointHostConfig(serviceRoot)
+			{
+				ServiceName = serviceName,
+				ServiceManager = new ServiceManager(assembliesWithServices),
+			});
 		}
 
 		public void Init()
@@ -61,6 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			Instance = this;
+			EndpointHost.ConfigureHost(this);
 
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
@@ -124,11 +129,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
+		//private static int requestCounter = 0;
+
 		// Handle the processing of a request in here.
 		private void ListenerCallback(IAsyncResult asyncResult)
 		{
 			var listener = asyncResult.AsyncState as HttpListener;
 			HttpListenerContext context = null;
+
+			//int requestNumber = Interlocked.Increment(ref requestCounter);
 
 			if (listener == null) return;
 			var isListening = listener.IsListening;
@@ -262,7 +271,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			get
 			{
-				return EndpointHost.ContentTypeFilter;
+				return EndpointHost.Config.ContentTypeFilter;
 			}
 		}
 

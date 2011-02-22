@@ -28,13 +28,18 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
-			: this(serviceName, null, assembliesWithServices) {}
+			: this(serviceName, "servicestack", assembliesWithServices) { }
 
-		protected AppHostBase(string serviceName, string rootHandlerPath, params Assembly[] assembliesWithServices)
-			: this()
-		{
-			EndpointHost.ConfigureHost(this, serviceName, rootHandlerPath, assembliesWithServices);
-		}
+        protected AppHostBase(string serviceName, string serviceRoot, params Assembly[] assembliesWithServices)
+            : this()
+        {
+            SetConfig(new EndpointHostConfig(serviceRoot)
+            {
+                ServiceName = serviceName,
+                ServiceManager = new ServiceManager(assembliesWithServices),
+            });
+        }
+
 
 		protected IServiceController ServiceController
 		{
@@ -61,6 +66,7 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			Instance = this;
+			EndpointHost.ConfigureHost(this);
 
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
@@ -87,14 +93,17 @@ namespace ServiceStack.WebHost.Endpoints
 		public void SetConfig(EndpointHostConfig config)
 		{
 			if (config.ServiceName == null)
-				config.ServiceName = EndpointHostConfig.Instance.ServiceName;
+				config.ServiceName = EndpointHost.Config.ServiceName;
 
 			if (config.ServiceManager == null)
-				config.ServiceManager = EndpointHostConfig.Instance.ServiceManager;
+				config.ServiceManager = EndpointHost.Config.ServiceManager;
 
 			config.ServiceManager.ServiceController.EnableAccessRestrictions = config.EnableAccessRestrictions;
 
 			EndpointHost.Config = config;
+
+			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
+			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;			
 		}
 
 		public T TryResolve<T>()
@@ -106,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			get
 			{
-				return EndpointHost.ContentTypeFilter;
+				return EndpointHost.Config.ContentTypeFilter;
 			}
 		}
 

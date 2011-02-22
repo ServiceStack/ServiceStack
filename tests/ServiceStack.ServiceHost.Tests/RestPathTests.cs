@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests
 {
@@ -30,17 +29,6 @@ namespace ServiceStack.ServiceHost.Tests
 
 			Assert.That(request, Is.Not.Null);
 			Assert.That(request.Name, Is.EqualTo("HelloWorld!"));
-		}
-
-		[Test]
-		public void ShowAllow()
-		{
-			var config = EndpointHostConfig.Instance;
-
-			const string fileName = "/path/to/image.GIF";
-			var fileExt = fileName.Substring(fileName.LastIndexOf('.') + 1);
-			Console.WriteLine(fileExt);
-			Assert.That(config.AllowFileExtensions.Contains(fileExt));
 		}
 
 

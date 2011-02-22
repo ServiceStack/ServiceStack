@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 				using (var ms = new MemoryStream())
 				{
-					EndpointHost.ContentTypeFilter.SerializeToStream(
+					EndpointHost.Config.ContentTypeFilter.SerializeToStream(
 						new SerializationContext(this.ContentType), requestObj, ms);
 
 					return Encoding.UTF8.GetString(ms.ToArray());
