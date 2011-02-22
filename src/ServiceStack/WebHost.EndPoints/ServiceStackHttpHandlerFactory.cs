@@ -93,6 +93,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			int pos;
 			if ((pos = fileName.LastIndexOf('.')) == -1) return false;
+			if (pos == fileName.Length - 1) return false; //avoid exception when at end of string
 
 			var fileExt = fileName.Substring(pos + 1);
 			return EndpointHost.Config.AllowFileExtensions.Contains(fileExt);
