@@ -88,15 +88,9 @@ namespace ServiceStack.WebHost.Endpoints
 		// serve the file from the filesystem, restricting to a safelist of extensions
 		private static bool ShouldAllow(string filePath)
 		{
-			var fileName = Path.GetFileName(filePath);
-			if (fileName == null || fileName[0] == '.') return false;
-
-			int pos;
-			if ((pos = fileName.LastIndexOf('.')) == -1) return false;
-			if (pos == fileName.Length - 1) return false; //avoid exception when at end of string
-
-			var fileExt = fileName.Substring(pos + 1);
-			return EndpointHost.Config.AllowFileExtensions.Contains(fileExt);
+			var fileExt = Path.GetExtension(filePath);
+            if (string.IsNullOrEmpty(fileExt)) return false;
+			return EndpointHost.Config.AllowFileExtensions.Contains(fileExt.Substring(1));
 		}
 
 		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
