@@ -66,6 +66,10 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="start_vs2010_webserver20.bat" />
+    <None Include="start_vs2010_webserver40.bat" />
+    <None Include="Web.config.location-none-wildcard" />
+    <None Include="Web.config.location-api-wildcard" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -94,12 +98,11 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>False</UseIIS>
+          <UseIIS>True</UseIIS>
           <AutoAssignPort>False</AutoAssignPort>
           <DevelopmentServerPort>5000</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>
-          </IISUrl>
+          <IISUrl>http://localhost/ServiceStack.HostTests</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

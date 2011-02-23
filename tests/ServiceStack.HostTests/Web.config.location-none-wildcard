@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"?>
+<configuration>
+    <location>
+        <system.web>
+            <httpHandlers>
+                <add path="*" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
+            </httpHandlers>
+            <compilation debug="true" targetFramework="4.0" />
+        </system.web>
+
+        <system.webServer>
+            <modules runAllManagedModulesForAllRequests="true"/>
+            <validation validateIntegratedModeConfiguration="false" />
+            <handlers>
+                <add path="*" name="ServiceStack.Factory" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified" allowPathInfo="true" />
+            </handlers>
+        </system.webServer>
+    </location>
+</configuration>

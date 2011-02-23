@@ -19,6 +19,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public string Id { get; set; }
 
 		[DataMember]
+		public decimal Version { get; set; }
+
+		[DataMember]
 		public string UserHostAddress { get; set; }
 
 		[DataMember]
@@ -84,6 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var response = new RequestInfoResponse
 			{
 				Id = EndpointHost.Config.ServiceName,
+				Version = Env.ServiceStackVersion,
 				UserHostAddress = httpReq.UserHostAddress,
 				HttpMethod = httpReq.HttpMethod,
 				AbsoluteUri = httpReq.AbsoluteUri,
