@@ -13,10 +13,12 @@
           </sectionGroup>
         </sectionGroup>
       </sectionGroup>
-    </configSections>  
+    </configSections>
 
-    <appSettings />
-    <connectionStrings />
+	<appSettings>
+		<add key="ServiceName" value="location-none-ss" />
+	</appSettings>
+	<connectionStrings />
 
 	<location>
 		<system.web>

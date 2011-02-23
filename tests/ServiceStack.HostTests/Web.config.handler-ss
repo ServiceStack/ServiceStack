@@ -15,7 +15,9 @@
       </sectionGroup>
     </configSections>  
 
-    <appSettings />
+	<appSettings>
+		<add key="ServiceName" value="handler-ss" />
+	</appSettings>
     <connectionStrings />
     <system.web>
         <compilation debug="true">

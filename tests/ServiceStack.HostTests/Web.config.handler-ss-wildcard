@@ -13,10 +13,12 @@
           </sectionGroup>
         </sectionGroup>
       </sectionGroup>
-    </configSections>  
+    </configSections>
 
-    <appSettings />
-    <connectionStrings />
+	<appSettings>
+		<add key="ServiceName" value="handler-ss-wildcard" />
+	</appSettings>
+	<connectionStrings />
     <system.web>
         <compilation debug="true">
 

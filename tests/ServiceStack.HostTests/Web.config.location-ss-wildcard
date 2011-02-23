@@ -13,10 +13,12 @@
           </sectionGroup>
         </sectionGroup>
       </sectionGroup>
-    </configSections>  
+    </configSections>
 
-    <appSettings />
-    <connectionStrings />
+	<appSettings>
+		<add key="ServiceName" value="location-ss-wildcard" />
+	</appSettings>
+	<connectionStrings />
 
 	<location path="servicestack">
 		<system.web>
