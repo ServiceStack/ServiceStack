@@ -158,7 +158,7 @@
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack.WebHost.Endpoints</Name>
+      <Name>ServiceStack</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

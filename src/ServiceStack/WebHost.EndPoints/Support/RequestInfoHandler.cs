@@ -16,17 +16,43 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	public class RequestInfoResponse
 	{
 		[DataMember]
-		public List<RequestInfoItem> Results { get; set; }
-	}
-
-	[DataContract]
-	public class RequestInfoItem
-	{
-		[DataMember]
-		public string Name { get; set; }
+		public string UserHostAddress { get; set; }
 
 		[DataMember]
-		public string Value { get; set; }
+		public string HttpMethod { get; set; }
+
+		[DataMember]
+		public string AbsoluteUri { get; set; }
+
+		[DataMember]
+		public string RawUrl { get; set; }
+
+		[DataMember]
+		public string PathInfo { get; set; }
+
+		[DataMember]
+		public string ContentType { get; set; }
+
+		[DataMember]
+		public Dictionary<string, string> Headers { get; set; }
+
+		[DataMember]
+		public Dictionary<string, string> QueryString { get; set; }
+
+		[DataMember]
+		public Dictionary<string, string> FormData { get; set; }
+
+		[DataMember]
+		public List<string> AcceptTypes { get; set; }
+
+		[DataMember]
+		public long ContentLength { get; set; }
+
+		[DataMember]
+		public string OperationName { get; set; }
+
+		[DataMember]
+		public string ResponseContentType { get; set; }
 	}
 
 	public class RequestInfoHandler
@@ -37,12 +63,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public Dictionary<string, string> ToDictionary(NameValueCollection nvc)
 		{
 			var map = new Dictionary<string, string>();
-
 			for (var i = 0; i < nvc.Count; i++)
 			{
 				map[nvc.GetKey(i)] = nvc.Get(i);
 			}
-
 			return map;
 		}
 
@@ -56,21 +80,19 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var response = new RequestInfoResponse
 			{
-				Results = new List<RequestInfoItem>
-				{
-					new RequestInfoItem { Name = "UserHostAddress", Value = httpReq.UserHostAddress },
-					new RequestInfoItem { Name = "HttpMethod", Value = httpReq.HttpMethod },
-					new RequestInfoItem { Name = "AbsoluteUri", Value = httpReq.AbsoluteUri },
-					new RequestInfoItem { Name = "RawUrl", Value = httpReq.RawUrl },
-					new RequestInfoItem { Name = "PathInfo", Value = httpReq.PathInfo },
-					new RequestInfoItem { Name = "ContentType", Value = httpReq.ContentType },
-					new RequestInfoItem { Name = "QueryString", Value = ToString(httpReq.QueryString) },
-					new RequestInfoItem { Name = "Headers", Value = ToString(httpReq.Headers) },
-					new RequestInfoItem { Name = "AcceptTypes", Value = TypeSerializer.SerializeToString(httpReq.AcceptTypes) },
-					new RequestInfoItem { Name = "ContentLength", Value = httpReq.ContentLength.ToString() },
-					new RequestInfoItem { Name = "OperationName", Value = httpReq.OperationName },
-					new RequestInfoItem { Name = "ResponseContentType", Value = httpReq.ResponseContentType },
-				}
+				UserHostAddress = httpReq.UserHostAddress,
+				HttpMethod = httpReq.HttpMethod,
+				AbsoluteUri = httpReq.AbsoluteUri,
+				RawUrl = httpReq.RawUrl,
+				PathInfo = httpReq.PathInfo,
+				ContentType = httpReq.ContentType,
+				Headers = ToDictionary(httpReq.Headers),
+				QueryString = ToDictionary(httpReq.QueryString),
+				FormData = ToDictionary(httpReq.FormData),
+				AcceptTypes = new List<string>(httpReq.AcceptTypes),
+				ContentLength = httpReq.ContentLength,
+				OperationName = httpReq.OperationName,
+				ResponseContentType = httpReq.ResponseContentType,
 			};
 
 			var json = JsonSerializer.SerializeToString(response);
