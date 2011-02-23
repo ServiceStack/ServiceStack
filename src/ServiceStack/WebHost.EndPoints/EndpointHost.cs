@@ -36,12 +36,13 @@ namespace ServiceStack.WebHost.Endpoints
 
 			EndpointHostConfig.Instance.ServiceName = serviceName;
 			EndpointHostConfig.Instance.ServiceManager = new ServiceManager(assembliesWithServices);
-			Config = EndpointHostConfig.Instance;
 
+            var config = EndpointHostConfig.Instance;
 			if (serviceStackHandlerPath != null)
 			{
-				Config.ServiceStackHandlerFactoryPath = serviceStackHandlerPath;
+				config.ServiceStackHandlerFactoryPath = serviceStackHandlerPath;
 			}
+		    Config = config; // avoid cross-dependency on Config setter
 
 			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
 			HtmlFormat.Register(appHost);
