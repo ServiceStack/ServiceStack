@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class EndpointHostConfig
 	{
 		private const string DefaultUsageExamplesBaseUri =
-				"https://github.com/mythz/ServiceStack.Extras/blob/master/doc/UsageExamples";
+				"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
 		private static EndpointHostConfig instance;
 		public static EndpointHostConfig Instance

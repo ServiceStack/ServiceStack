@@ -111,6 +111,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HostTests\HostMappingIntegrationTests.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />
     <Compile Include="Services\CustomFormDataService.cs" />
     <Compile Include="Tests\CachedServiceTests.cs" />

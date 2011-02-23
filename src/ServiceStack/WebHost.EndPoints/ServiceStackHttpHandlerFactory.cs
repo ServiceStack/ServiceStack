@@ -133,6 +133,8 @@ namespace ServiceStack.WebHost.Endpoints
 					return new Soap11Handlers();
 				if (pathController == "soap12")
 					return new Soap12MessageSyncReplyHttpHandler();
+				if (pathController == RequestInfoHandler.RestPath)
+					return new RequestInfoHandler();
 
 				return null;
 			}

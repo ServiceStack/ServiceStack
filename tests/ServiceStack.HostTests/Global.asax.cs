@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.Configuration;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
@@ -34,12 +35,12 @@ namespace ServiceStack.HostTests
 	public class AppHost 
 		: AppHostBase
 	{
-		public AppHost()
-			: base("Host Tests", typeof(HelloService).Assembly) { }
+		static readonly ConfigurationResourceManager AppSettings = new ConfigurationResourceManager();
 
-		public override void Configure(Funq.Container container)
-		{
-		}
+		public AppHost()
+			: base(AppSettings.GetString("ServiceName") ?? "Host Tests", typeof(HelloService).Assembly) { }
+
+		public override void Configure(Funq.Container container) {}
 	}
 
 	public class Global : System.Web.HttpApplication
