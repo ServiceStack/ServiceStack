@@ -49,8 +49,8 @@ namespace MasterHost
 				throw new ArgumentNullException("RunType");
 
 			var runType = request.RunType.ToLower();
-			if (runType != "runall" && runType != "pathsonly" && runType != "portsonly")
-				throw new ArgumentException("RunType=[runall|runpaths|runports]", "RunType");
+			if (runType != "all" && runType != "pathsonly" && runType != "portsonly")
+				throw new ArgumentException("RunType=[all|pathsonly|portsonly]", "RunType");
 
 			var runPaths = runType == "all" || runType == "pathsonly";
 			if (runPaths)
