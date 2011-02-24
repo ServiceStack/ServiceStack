@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	public class RequestInfoResponse
 	{
 		[DataMember]
-		public string Id { get; set; }
+		public string ServiceName { get; set; }
 
 		[DataMember]
 		public decimal Version { get; set; }
@@ -86,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var response = new RequestInfoResponse
 			{
-				Id = EndpointHost.Config.ServiceName,
+				ServiceName = EndpointHost.Config.ServiceName,
 				Version = Env.ServiceStackVersion,
 				UserHostAddress = httpReq.UserHostAddress,
 				HttpMethod = httpReq.HttpMethod,
