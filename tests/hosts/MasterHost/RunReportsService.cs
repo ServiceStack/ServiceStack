@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net;
 using System.Runtime.Serialization;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
@@ -36,7 +38,7 @@ namespace MasterHost
 		[DataMember]
 		public ResponseStatus ResponseStatus { get; set; }
 	}
-	
+
 	public class RunReportsService : RestServiceBase<RunReports>
 	{
 		public AppConfig Config { get; set; }
@@ -60,11 +62,12 @@ namespace MasterHost
 					if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
 
 					DoRequestInfo(new Report
-					{
-						Id = Config.PathsHostEnvironment + "-" + path,
-						HostEnvironment = Config.PathsHostEnvironment,
-						BaseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, path),
-					});
+						{
+							Id = Config.PathsHostEnvironment + "-" + path,
+							HostEnvironment = Config.PathsHostEnvironment,
+							BaseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, path),
+						},
+						Config.GetPathsForPath(path));
 				}
 			}
 
@@ -76,11 +79,12 @@ namespace MasterHost
 					if (!request.Filter.IsNullOrEmpty() && port != request.Filter) continue;
 
 					DoRequestInfo(new Report
-					{
-						Id = Config.PortsHostEnvironment + "-" + port,
-						HostEnvironment = Config.PortsHostEnvironment,
-						BaseUrl = Config.RunOnBaseUrl + ":" + port,
-					});
+						{
+							Id = Config.PortsHostEnvironment + "-" + port,
+							HostEnvironment = Config.PortsHostEnvironment,
+							BaseUrl = Config.RunOnBaseUrl + ":" + port,
+						},
+						Config.GetPathsForPort(port));
 				}
 			}
 
@@ -88,42 +92,52 @@ namespace MasterHost
 				new Reports { FilterHost = request.Filter });
 		}
 
-		private void DoRequestInfo(Report report)
+		private void DoRequestInfo(Report report, IEnumerable<string> testPaths)
 		{
 			report.LastModified = DateTime.UtcNow;
 			var restClient = new JsonServiceClient(report.BaseUrl);
 
-			foreach (var pathComponent in Config.TestPathComponents)
+			report.MaxStatusCode = 0;
+			foreach (var testPath in testPaths)
 			{
+				var test = new ReportTest { RequestPath = testPath };
+				report.Tests.Add(test);
 				try
 				{
-					report.Id += "/" + pathComponent;
-					report.RequestPath = pathComponent;
+					var requestInfo = restClient.Get<RequestInfoResponse>(testPath);
 
-					var requestInfo = restClient.Get<RequestInfoResponse>(pathComponent);
-					report.StatusCode = 200;
-					report.AbsoluteUri = requestInfo.AbsoluteUri;
-					report.PathInfo = requestInfo.PathInfo;
-					report.RawUrl = requestInfo.RawUrl;
-					report.ServiceName = requestInfo.ServiceName;
-					report.UserHostAddress = requestInfo.UserHostAddress;
-					report.Version = requestInfo.Version;
-					report.ResponseContentType = requestInfo.ResponseContentType;
+					if (report.ServiceName == null)
+					{
+						report.ServiceName = requestInfo.ServiceName;
+						report.UserHostAddress = requestInfo.UserHostAddress;
+						report.Version = requestInfo.Version;
+					}
+
+					report.MaxStatusCode = Math.Max(report.MaxStatusCode, (int)HttpStatusCode.OK);
+
+					test.StatusCode = 200;
+					test.AbsoluteUri = requestInfo.AbsoluteUri;
+					test.PathInfo = requestInfo.PathInfo;
+					test.RawUrl = requestInfo.RawUrl;
+					test.ResponseContentType = requestInfo.ResponseContentType;
 				}
 				catch (Exception ex)
 				{
 					var webEx = ex as WebServiceException;
 					if (webEx != null)
 					{
-						report.StatusCode = webEx.StatusCode;
-						report.ErrorCode = webEx.ErrorCode;
-						report.ErrorMessage = webEx.ErrorMessage;
+						report.MaxStatusCode = Math.Max(report.MaxStatusCode, webEx.StatusCode);
+						test.StatusCode = webEx.StatusCode;
+						test.ErrorCode = webEx.ErrorCode;
+						test.ErrorMessage = webEx.ErrorMessage;
 						//report.StackTrace = webEx.ServerStackTrace;
 					}
 					else
 					{
-						report.ErrorCode = ex.GetType().Name;
-						report.ErrorMessage = ex.Message;
+						report.MaxStatusCode = Math.Max(report.MaxStatusCode, 600);
+
+						test.ErrorCode = ex.GetType().Name;
+						test.ErrorMessage = ex.Message;
 						//report.StackTrace = ex.StackTrace;
 					}
 				}

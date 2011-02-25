@@ -11,10 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "location.all.wildcard40", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "location.all.wildcard35", "location.all.wildcard35\location.all.wildcard35.csproj", "{7F85AD92-B129-4E3B-BA6A-2B91D002831E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "handler.wildcard35", "handler.wildcard35\handler.wildcard35.csproj", "{AE86F370-0156-4AE5-952D-796CFA630139}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "handler.wildcard40", "handler.wildcard40\handler.wildcard40.csproj", "{F22152DD-9750-4AD7-93AF-7E168247F16B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "handler.servicestack.wildcard40", "handler.servicestack.wildcard40\handler.servicestack.wildcard40.csproj", "{3EC7BB6B-631D-4F56-95EC-8DCB8B63668E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "handler.servicestack.wildcard35", "handler.servicestack.wildcard35\handler.servicestack.wildcard35.csproj", "{8EAE0420-9EC4-46A5-BE3E-F3EEC007E229}"
@@ -26,6 +22,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterHost", "MasterHost\MasterHost.csproj", "{12FA52E0-E648-42B3-9F67-782011AD20C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "location.api.wildcard35", "location.api.wildcard35\location.api.wildcard35.csproj", "{EBB23D97-ABCA-49E5-B6E3-F12B4EEFFCDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "handler.all35", "handler.all35\handler.all35.csproj", "{AE86F370-0156-4AE5-952D-796CFA630139}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "handler.all40", "handler.all40\handler.all40.csproj", "{F22152DD-9750-4AD7-93AF-7E168247F16B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,14 +53,6 @@ Global
 		{7F85AD92-B129-4E3B-BA6A-2B91D002831E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F85AD92-B129-4E3B-BA6A-2B91D002831E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F85AD92-B129-4E3B-BA6A-2B91D002831E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE86F370-0156-4AE5-952D-796CFA630139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE86F370-0156-4AE5-952D-796CFA630139}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE86F370-0156-4AE5-952D-796CFA630139}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE86F370-0156-4AE5-952D-796CFA630139}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3EC7BB6B-631D-4F56-95EC-8DCB8B63668E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EC7BB6B-631D-4F56-95EC-8DCB8B63668E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EC7BB6B-631D-4F56-95EC-8DCB8B63668E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -85,6 +77,14 @@ Global
 		{EBB23D97-ABCA-49E5-B6E3-F12B4EEFFCDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBB23D97-ABCA-49E5-B6E3-F12B4EEFFCDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBB23D97-ABCA-49E5-B6E3-F12B4EEFFCDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE86F370-0156-4AE5-952D-796CFA630139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE86F370-0156-4AE5-952D-796CFA630139}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE86F370-0156-4AE5-952D-796CFA630139}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE86F370-0156-4AE5-952D-796CFA630139}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F22152DD-9750-4AD7-93AF-7E168247F16B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

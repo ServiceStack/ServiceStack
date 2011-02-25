@@ -94,7 +94,6 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="reports.sqlite" />
     <None Include="start_vs2010_webserver20.bat" />
     <None Include="start_vs2010_webserver40.bat" />
   </ItemGroup>

@@ -7,7 +7,7 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 
-namespace handler.wildcard40
+namespace handler.all40
 {
 	[DataContract]
 	[Description("ServiceStack's Hello World web service.")]

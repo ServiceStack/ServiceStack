@@ -39,6 +39,11 @@ namespace MasterHost
 	[DataContract]
 	public class Report
 	{
+		public Report()
+		{
+			this.Tests = new List<ReportTest>();
+		}
+
 		//[DataMember]
 		public string Id { get; set; }
 
@@ -47,9 +52,6 @@ namespace MasterHost
 
 		[DataMember]
 		public string BaseUrl { get; set; }
-
-		[DataMember]
-		public string RequestPath { get; set; }
 
 		[DataMember]
 		public DateTime LastModified { get; set; }
@@ -62,6 +64,19 @@ namespace MasterHost
 
 		[DataMember]
 		public string UserHostAddress { get; set; }
+
+		[DataMember]
+		public int MaxStatusCode { get; set; }
+
+		[DataMember]		
+		public List<ReportTest> Tests { get; set; }
+	}
+
+	[DataContract]
+	public class ReportTest
+	{
+		[DataMember]
+		public string RequestPath { get; set; }
 
 		[DataMember]
 		public string AbsoluteUri { get; set; }
@@ -86,8 +101,8 @@ namespace MasterHost
 
 		[DataMember]
 		public string StackTrace { get; set; }
-
 	}
+
 
 	public class ReportsService : RestServiceBase<Reports>
 	{

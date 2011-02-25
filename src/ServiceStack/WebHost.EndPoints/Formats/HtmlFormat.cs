@@ -169,7 +169,7 @@ THEAD
   -moz-user-select:none;
 }}
 .desc, .asc {{
-  background-color: #ffc;
+  background-color: #FAFAD2;
 }}
 .desc {{
   background-color: #D4EDC9;

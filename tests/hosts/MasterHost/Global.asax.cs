@@ -45,15 +45,56 @@ namespace MasterHost
 			this.PortsHostEnvironment = appSettings.GetString("PortsHostEnvironment");
 			this.PathsHostEnvironment = appSettings.GetString("PathsHostEnvironment");
 			this.RunOnBaseUrl = appSettings.GetString("RunOnBaseUrl");
-			this.TestPathComponents = appSettings.GetList("TestPathComponents");
+
+			this.AllPaths = appSettings.GetList("AllPaths");
+			this.ApiPaths = appSettings.GetList("ApiPaths");
+			this.ServiceStackPaths = appSettings.GetList("ServiceStackPaths");
+
+			this.AllPorts = appSettings.GetList("AllPorts");
+			this.ApiPorts = appSettings.GetList("ApiPorts");
+			this.ServiceStackPorts = appSettings.GetList("ServiceStackPorts");
+
 			this.RunOnPorts = appSettings.GetList("RunOnPorts");
 			this.RunOnPaths = appSettings.GetList("RunOnPaths");
 		}
 
+		public IList<string> GetPathsForPath(string virtualPath)
+		{
+			var vpath = virtualPath.ToLower();
+			if (vpath.Contains("all"))
+				return this.AllPaths;
+			if (vpath.Contains("api"))
+				return this.ApiPaths;
+			if (vpath.Contains("servicestack"))
+				return this.ServiceStackPaths;
+
+			throw new ArgumentException("Unrecognized path: " + virtualPath);
+		}
+
+		public IList<string> GetPathsForPort(string portNo)
+		{
+			if (AllPorts.Contains(portNo))
+				return this.AllPaths;
+			if (ApiPorts.Contains(portNo))
+				return this.ApiPaths;
+			if (ServiceStackPorts.Contains(portNo))
+				return this.ServiceStackPaths;
+
+			throw new ArgumentException("Unrecognized port: " + portNo);
+		}
+
+		public IList<string> AllPorts { get; set; }
+		public IList<string> ApiPorts { get; set; }
+		public IList<string> ServiceStackPorts { get; set; }
+
 		public string PortsHostEnvironment { get; set; }
 		public string PathsHostEnvironment { get; set; }
 		public string RunOnBaseUrl { get; set; }
-		public IList<string> TestPathComponents { get; set; }
+
+		public IList<string> AllPaths { get; set; }
+		public IList<string> ApiPaths { get; set; }
+		public IList<string> ServiceStackPaths { get; set; }
+
 		public IList<string> RunOnPorts { get; set; }
 		public IList<string> RunOnPaths { get; set; }
 	}
