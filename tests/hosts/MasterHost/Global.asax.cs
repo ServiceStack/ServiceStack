@@ -46,44 +46,52 @@ namespace MasterHost
 			this.PathsHostEnvironment = appSettings.GetString("PathsHostEnvironment");
 			this.RunOnBaseUrl = appSettings.GetString("RunOnBaseUrl");
 
-			this.AllPaths = appSettings.GetList("AllPaths");
-			this.ApiPaths = appSettings.GetList("ApiPaths");
-			this.ServiceStackPaths = appSettings.GetList("ServiceStackPaths");
-
-			this.AllPorts = appSettings.GetList("AllPorts");
+			this.RootPorts = appSettings.GetList("RootPorts");
 			this.ApiPorts = appSettings.GetList("ApiPorts");
 			this.ServiceStackPorts = appSettings.GetList("ServiceStackPorts");
 
-			this.RunOnPorts = appSettings.GetList("RunOnPorts");
-			this.RunOnPaths = appSettings.GetList("RunOnPaths");
+			this.AllPaths = appSettings.GetList("AllPaths");
+
+			this.RootUrlTests = appSettings.GetList("RootUrlTests");
+			this.ApiUrlTests = appSettings.GetList("ApiUrlTests");
+			this.ServiceStackUrlTests = appSettings.GetList("ServiceStackUrlTests");
+
+			var allPorts = new List<string>();
+			allPorts.AddRange(this.RootPorts);
+			allPorts.AddRange(this.ApiPorts);
+			allPorts.AddRange(this.ServiceStackPorts);
+			this.AllPorts = allPorts;
 		}
 
 		public IList<string> GetPathsForPath(string virtualPath)
 		{
 			var vpath = virtualPath.ToLower();
 			if (vpath.Contains("all"))
-				return this.AllPaths;
+				return this.RootUrlTests;
 			if (vpath.Contains("api"))
-				return this.ApiPaths;
+				return this.ApiUrlTests;
 			if (vpath.Contains("servicestack"))
-				return this.ServiceStackPaths;
+				return this.ServiceStackUrlTests;
 
 			throw new ArgumentException("Unrecognized path: " + virtualPath);
 		}
 
 		public IList<string> GetPathsForPort(string portNo)
 		{
-			if (AllPorts.Contains(portNo))
-				return this.AllPaths;
+			if (RootPorts.Contains(portNo))
+				return this.RootUrlTests;
 			if (ApiPorts.Contains(portNo))
-				return this.ApiPaths;
+				return this.ApiUrlTests;
 			if (ServiceStackPorts.Contains(portNo))
-				return this.ServiceStackPaths;
+				return this.ServiceStackUrlTests;
 
 			throw new ArgumentException("Unrecognized port: " + portNo);
 		}
 
+		public IList<string> AllPaths { get; set; }
+
 		public IList<string> AllPorts { get; set; }
+		public IList<string> RootPorts { get; set; }
 		public IList<string> ApiPorts { get; set; }
 		public IList<string> ServiceStackPorts { get; set; }
 
@@ -91,12 +99,10 @@ namespace MasterHost
 		public string PathsHostEnvironment { get; set; }
 		public string RunOnBaseUrl { get; set; }
 
-		public IList<string> AllPaths { get; set; }
-		public IList<string> ApiPaths { get; set; }
-		public IList<string> ServiceStackPaths { get; set; }
+		public IList<string> RootUrlTests { get; set; }
+		public IList<string> ApiUrlTests { get; set; }
+		public IList<string> ServiceStackUrlTests { get; set; }
 
-		public IList<string> RunOnPorts { get; set; }
-		public IList<string> RunOnPaths { get; set; }
 	}
 
 	public class AppHost

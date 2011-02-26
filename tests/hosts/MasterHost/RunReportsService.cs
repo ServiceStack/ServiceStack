@@ -5,6 +5,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.OrmLite;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -57,7 +58,7 @@ namespace MasterHost
 			var runPaths = runType == "all" || runType == "pathsonly";
 			if (runPaths)
 			{
-				foreach (var path in Config.RunOnPaths)
+				foreach (var path in Config.AllPaths)
 				{
 					if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
 
@@ -74,7 +75,7 @@ namespace MasterHost
 			var runPorts = runType == "all" || runType == "portsonly";
 			if (runPorts)
 			{
-				foreach (var port in Config.RunOnPorts)
+				foreach (var port in Config.AllPorts)
 				{
 					if (!request.Filter.IsNullOrEmpty() && port != request.Filter) continue;
 
@@ -104,33 +105,52 @@ namespace MasterHost
 				report.Tests.Add(test);
 				try
 				{
-					var requestInfo = restClient.Get<RequestInfoResponse>(testPath);
-
-					if (report.ServiceName == null)
+					if (testPath.Contains("_requestinfo"))
 					{
-						report.ServiceName = requestInfo.ServiceName;
-						report.UserHostAddress = requestInfo.UserHostAddress;
-						report.Version = requestInfo.Version;
+						var requestInfo = restClient.Get<RequestInfoResponse>(testPath);
+
+						if (report.ServiceName == null)
+						{
+							report.ServiceName = requestInfo.ServiceName;
+							report.UserHostAddress = requestInfo.UserHostAddress;
+							report.Version = requestInfo.Version;
+						}
+
+						test.StatusCode = 200;
+						test.AbsoluteUri = requestInfo.AbsoluteUri;
+						test.PathInfo = requestInfo.PathInfo;
+						test.RawUrl = requestInfo.RawUrl;
+						test.ResponseContentType = requestInfo.ResponseContentType;
+					}
+					else
+					{
+						var webReq = (HttpWebRequest)WebRequest.Create(report.BaseUrl + testPath);
+						webReq.Accept = ContentType.Json;
+
+						var webRes = (HttpWebResponse)webReq.GetResponse();
+						test.ResponseContentType = webRes.ContentType;
+						test.StatusCode = (int)webRes.StatusCode;
 					}
 
 					report.MaxStatusCode = Math.Max(report.MaxStatusCode, (int)HttpStatusCode.OK);
-
-					test.StatusCode = 200;
-					test.AbsoluteUri = requestInfo.AbsoluteUri;
-					test.PathInfo = requestInfo.PathInfo;
-					test.RawUrl = requestInfo.RawUrl;
-					test.ResponseContentType = requestInfo.ResponseContentType;
+				}
+				catch (WebServiceException webEx)
+				{
+					report.MaxStatusCode = Math.Max(report.MaxStatusCode, webEx.StatusCode);
+					test.StatusCode = webEx.StatusCode;
+					test.ErrorCode = webEx.ErrorCode;
+					test.ErrorMessage = webEx.ErrorMessage;
+					//report.StackTrace = webEx.ServerStackTrace;
 				}
 				catch (Exception ex)
 				{
-					var webEx = ex as WebServiceException;
+					var webEx = ex as WebException;
 					if (webEx != null)
 					{
-						report.MaxStatusCode = Math.Max(report.MaxStatusCode, webEx.StatusCode);
-						test.StatusCode = webEx.StatusCode;
-						test.ErrorCode = webEx.ErrorCode;
-						test.ErrorMessage = webEx.ErrorMessage;
-						//report.StackTrace = webEx.ServerStackTrace;
+						report.MaxStatusCode = Math.Max(report.MaxStatusCode, (int)webEx.Status);
+
+						test.ErrorCode = ex.GetType().Name;
+						test.ErrorMessage = ex.Message;
 					}
 					else
 					{
@@ -138,8 +158,8 @@ namespace MasterHost
 
 						test.ErrorCode = ex.GetType().Name;
 						test.ErrorMessage = ex.Message;
-						//report.StackTrace = ex.StackTrace;
 					}
+					//report.StackTrace = ex.StackTrace;
 				}
 				finally
 				{

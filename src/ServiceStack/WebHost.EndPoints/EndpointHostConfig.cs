@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Runtime.Serialization;
+using System.Web.Configuration;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -49,6 +51,31 @@ namespace ServiceStack.WebHost.Endpoints
 							"flv", "xap", "xaml"
 						}
 					};
+
+					try
+					{
+						//Read the user-defined path in the Web.Config
+						var config = WebConfigurationManager.OpenWebConfiguration("~/");
+						foreach (ConfigurationLocation location in config.Locations)
+						{
+							var locationPath = (location.Path ?? "").ToLower();
+
+							System.Configuration.Configuration locConfig = location.OpenConfiguration();
+							var handlersSection = locConfig.GetSection("system.web/httpHandlers") as HttpHandlersSection;
+							if (handlersSection == null) continue;
+							
+							for (var i = 0; i < handlersSection.Handlers.Count; i++)
+							{
+								var httpHandler = handlersSection.Handlers[i];
+								if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
+									
+								instance.ServiceStackHandlerFactoryPath = locationPath;
+								break;
+							}
+						}
+					}
+					catch (Exception) {}			
+				
 				}
 				return instance;
 			}

@@ -80,6 +80,9 @@
     <Content Include="testreports\2011-02-24\All.htm" />
     <Content Include="testreports\2011-02-24\IIS7.htm" />
     <Content Include="testreports\2011-02-24\WebServer20.EXE.htm" />
+    <Content Include="testreports\2011-02-25\All.htm" />
+    <Content Include="testreports\2011-02-25\IIS7.htm" />
+    <Content Include="testreports\2011-02-25\WebServer20.htm" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -92,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="testreports\2011-02-26\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="start_vs2010_webserver20.bat" />
