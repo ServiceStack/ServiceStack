@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			var appHost = new TestAppHost();
 			appHost.Init();
-			
+
 			return appHost;
 		}
 

@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints
 	public class EndpointHostConfig
 	{
 		private const string DefaultUsageExamplesBaseUri =
-				"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
+			"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
 		private static EndpointHostConfig instance;
 		public static EndpointHostConfig Instance
@@ -32,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
 						WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types",
 						ServiceStackHandlerFactoryPath = "servicestack",
-						DefaultRedirectPath = "servicestack/metadata",
+						MetadataRedirectPath = "servicestack/metadata",
 						DefaultContentType = ContentType.Json,
 						AllowJsonpRequests = true,
 						DefaultDocuments = new List<string> {
@@ -62,6 +62,27 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+		public EndpointHostConfig()
+		{
+			if (instance == null) return;
+
+			//Get a copy of the singleton already partially configured
+			this.UsageExamplesBaseUri = instance.UsageExamplesBaseUri;
+			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
+			this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
+			this.LogFactory = instance.LogFactory;
+			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
+			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
+			this.WsdlServiceTypesNamespace = instance.WsdlServiceTypesNamespace;
+			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
+			this.DefaultContentType = instance.DefaultContentType;
+			this.AllowJsonpRequests = instance.AllowJsonpRequests;
+			this.DefaultDocuments = instance.DefaultDocuments;
+			this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
+			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
+			this.AllowFileExtensions = instance.AllowFileExtensions;
+		}
+
 		private static void InferHttpHandlerPath()
 		{
 			try
@@ -81,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints
 						if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
 
 						instance.ServiceStackHandlerFactoryPath = locationPath;
-						instance.DefaultRedirectPath = PathUtils.CombinePaths(
+						instance.MetadataRedirectPath = PathUtils.CombinePaths(
 							instance.ServiceStackHandlerFactoryPath, "metadata");
 					
 						break;
@@ -99,7 +120,7 @@ namespace ServiceStack.WebHost.Endpoints
 							if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
 
 							var handlerPath = httpHandler.Path.Replace("*", "");
-							instance.DefaultRedirectPath = PathUtils.CombinePaths(
+							instance.MetadataRedirectPath = PathUtils.CombinePaths(
 								handlerPath, "metadata");
 							instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath) 
 								? null : handlerPath;
@@ -110,26 +131,6 @@ namespace ServiceStack.WebHost.Endpoints
 				}
 			}
 			catch (Exception) { }
-		}
-
-		public EndpointHostConfig()
-		{
-			if (instance == null) return;
-
-			//Get a copy of the singleton already partially configured
-			this.UsageExamplesBaseUri = instance.UsageExamplesBaseUri;
-			this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
-			this.LogFactory = instance.LogFactory;
-			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
-			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
-			this.WsdlServiceTypesNamespace = instance.WsdlServiceTypesNamespace;
-			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
-			this.DefaultContentType = instance.DefaultContentType;
-			this.AllowJsonpRequests = instance.AllowJsonpRequests;
-			this.DefaultDocuments = instance.DefaultDocuments;
-			this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
-			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
-			this.AllowFileExtensions = instance.AllowFileExtensions;
 		}
 
 		public ServiceManager ServiceManager { get; set; }
@@ -151,6 +152,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public string ServiceStackHandlerFactoryPath { get; set; }
 		public string DefaultRedirectPath { get; set; }
+		public string MetadataRedirectPath { get; set; }
 		public string NotFoundRedirectPath { get; set; }
 
 		public string WsdlServiceNamespace { get; set; }

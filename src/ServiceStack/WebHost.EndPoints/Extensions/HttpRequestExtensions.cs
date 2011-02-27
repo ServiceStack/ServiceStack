@@ -307,7 +307,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				foreach (var contentType in acceptContentTypes)
 				{
 					acceptsAnything = acceptsAnything || contentType == "*/*";
-					if (acceptsAnything && hasDefaultContentType) return defaultContentType;
 
 					for (var i = 0; i < PreferredContentTypes.Length; i++)
 					{
@@ -320,6 +319,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				{
 					if (hasPreferredContentTypes[i]) return PreferredContentTypes[i];
 				}
+				if (acceptsAnything && hasDefaultContentType) return defaultContentType;
 
 				foreach (var contentType in acceptContentTypes)
 				{

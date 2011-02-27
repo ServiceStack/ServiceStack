@@ -61,6 +61,9 @@ namespace ServiceStack.WebHost.Endpoints
 			if (!string.IsNullOrEmpty(EndpointHost.Config.DefaultRedirectPath))
 				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.DefaultRedirectPath };
 
+			if (DefaultHttpHandler == null && !string.IsNullOrEmpty(EndpointHost.Config.MetadataRedirectPath))
+				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.MetadataRedirectPath };
+
 			if (DefaultHttpHandler == null)
 				DefaultHttpHandler = NotFoundHttpHandler;
 		}

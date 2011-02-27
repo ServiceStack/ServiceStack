@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -31,6 +32,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				throw ex;
 			}
+		}
+
+		[Test]
+		[Ignore("Helps debugging when you need to find out WTF is going on")]
+		public void Run_for_30secs()
+		{
+			Thread.Sleep(30000);
 		}
 
 		[TestFixtureTearDown]
@@ -88,6 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapAbsolutePath());
 
 			var webRequest = (HttpWebRequest)WebRequest.Create(ListeningOn + "/fileuploads");
+			webRequest.Accept = ContentType.Json;
 			var webResponse = webRequest.UploadFile(uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
 			AssertResponse<FileUploadResponse>((HttpWebResponse)webResponse, r =>

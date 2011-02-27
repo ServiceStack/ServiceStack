@@ -34,6 +34,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Dispose();
 		}
 
+		[Test]
+		[Ignore("Helps debugging when you need to find out WTF is going on")]
+		public void Run_for_30secs()
+		{
+			Thread.Sleep(30000);
+		}
+
 		private static void FailOnAsyncError<T>(T response, Exception ex)
 		{
 			Assert.Fail(ex.Message);
@@ -63,12 +70,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var csv = CsvSerializer.SerializeToString(request);
 			var csvRows = csv.Split('\n').Where(x => !x.IsNullOrEmpty()).ToArray();
 			Assert.That(csvRows.Length, Is.EqualTo(HeaderRowCount + ResetMoviesService.Top5Movies.Count));
-		}
-
-		[Test][Ignore("Helps debugging when you need to find out WTF is going on")]
-		public void Run_for_30secs()
-		{
-			Thread.Sleep(30000);
 		}
 
 		[Test][Ignore("Fails because CSV Deserializer is not implemented")]

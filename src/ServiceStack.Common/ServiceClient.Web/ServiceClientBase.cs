@@ -166,7 +166,7 @@ namespace ServiceStack.ServiceClient.Web
 					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
 				}
 
-				client.Accept = string.Format("{0}, */*", ContentType);
+				client.Accept = ContentType;
 				client.Method = httpMethod;
 				if (this.credentials != null)
 				{
@@ -282,7 +282,7 @@ namespace ServiceStack.ServiceClient.Web
 			var requestUri = GetUrl(relativeOrAbsoluteUrl);
 			var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
 			webRequest.Method = Web.HttpMethod.Post;
-			webRequest.Accept = string.Format("{0}, */*", ContentType);
+			webRequest.Accept = ContentType;
 
 			try
 			{

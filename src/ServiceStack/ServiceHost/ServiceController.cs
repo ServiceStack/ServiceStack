@@ -21,6 +21,7 @@ namespace ServiceStack.ServiceHost
 			this.AllOperationTypes = new List<Type>();
 			this.OperationTypes = new List<Type>();
 			this.ServiceTypes = new HashSet<Type>();
+			this.EnableAccessRestrictions = true;
 		}
 
 		readonly Dictionary<Type, Func<IRequestContext, object, object>> requestExecMap

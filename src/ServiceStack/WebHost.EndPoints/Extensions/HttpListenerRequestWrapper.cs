@@ -133,10 +133,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					if (pos != -1)
 					{
 						var path = request.RawUrl.Substring(0, pos);
+						var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 						this.pathInfo = HttpRequestExtensions.GetPathInfo(
 							path,
-							EndpointHost.Config.ServiceStackHandlerFactoryPath,
-							path.Split('/').First(x => x != ""));
+							mode,
+							mode ?? "");
 					}
 					else
 					{
