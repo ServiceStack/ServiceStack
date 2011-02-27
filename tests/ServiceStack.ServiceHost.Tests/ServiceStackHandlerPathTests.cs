@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost.Tests
 		public string ResolvePath(string mode, string path)
 		{
 			return WebHost.Endpoints.Extensions.HttpRequestExtensions.
-				GetPathInfo(path, mode);
+				GetPathInfo(path, mode, path.Split('/').First(x => x != ""));
 		}
 
 		[Test]

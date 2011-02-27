@@ -37,6 +37,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
@@ -129,11 +130,18 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				if (this.pathInfo == null)
 				{
 					var pos = request.RawUrl.IndexOf("?");
-					this.pathInfo = pos != -1
-						? HttpRequestExtensions.GetPathInfo(
-							request.RawUrl.Substring(0, pos), 
-							EndpointHost.Config.ServiceStackHandlerFactoryPath)
-						: request.RawUrl.TrimEnd('/');
+					if (pos != -1)
+					{
+						var path = request.RawUrl.Substring(0, pos);
+						this.pathInfo = HttpRequestExtensions.GetPathInfo(
+							path,
+							EndpointHost.Config.ServiceStackHandlerFactoryPath,
+							path.Split('/').First(x => x != ""));
+					}
+					else
+					{
+						this.pathInfo = request.RawUrl.TrimEnd('/');						
+					}
 				}
 				return this.pathInfo;
 			}

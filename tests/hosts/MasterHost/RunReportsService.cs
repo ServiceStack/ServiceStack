@@ -17,6 +17,7 @@ namespace MasterHost
 {
 	[DataContract]
 	[Description("RunType=[all|pathsonly|portsonly], Filter=[PathHostNameFilter|PortFilter], e.g [handler.wildcard35|5000]")]
+	[RestService("/runreports")]
 	[RestService("/runreports/{RunType}")]
 	[RestService("/runreports/{RunType}/{Filter}")]
 	public class RunReports
@@ -48,44 +49,44 @@ namespace MasterHost
 
 		public override object OnGet(RunReports request)
 		{
-			if (request.RunType.IsNullOrEmpty())
-				throw new ArgumentNullException("RunType");
-
-			var runType = request.RunType.ToLower();
-			if (runType != "all" && runType != "pathsonly" && runType != "portsonly")
-				throw new ArgumentException("RunType=[all|pathsonly|portsonly]", "RunType");
-
-			var runPaths = runType == "all" || runType == "pathsonly";
-			if (runPaths)
+			if (!request.RunType.IsNullOrEmpty())
 			{
-				foreach (var path in Config.AllPaths)
-				{
-					if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
+				var runType = request.RunType.ToLower();
+				if (runType != "all" && runType != "pathsonly" && runType != "portsonly")
+					throw new ArgumentException("RunType=[all|pathsonly|portsonly]", "RunType");
 
-					DoRequestInfo(new Report
+				var runPaths = runType == "all" || runType == "pathsonly";
+				if (runPaths)
+				{
+					foreach (var path in Config.AllPaths)
+					{
+						if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
+
+						DoRequestInfo(new Report
 						{
 							Id = Config.PathsHostEnvironment + "-" + path,
 							HostEnvironment = Config.PathsHostEnvironment,
 							BaseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, path),
 						},
-						Config.GetPathsForPath(path));
+							Config.GetPathsForPath(path));
+					}
 				}
-			}
 
-			var runPorts = runType == "all" || runType == "portsonly";
-			if (runPorts)
-			{
-				foreach (var port in Config.AllPorts)
+				var runPorts = runType == "all" || runType == "portsonly";
+				if (runPorts)
 				{
-					if (!request.Filter.IsNullOrEmpty() && port != request.Filter) continue;
+					foreach (var port in Config.AllPorts)
+					{
+						if (!request.Filter.IsNullOrEmpty() && port != request.Filter) continue;
 
-					DoRequestInfo(new Report
+						DoRequestInfo(new Report
 						{
 							Id = Config.PortsHostEnvironment + "-" + port,
 							HostEnvironment = Config.PortsHostEnvironment,
 							BaseUrl = Config.RunOnBaseUrl + ":" + port,
 						},
-						Config.GetPathsForPort(port));
+							Config.GetPathsForPort(port));
+					}
 				}
 			}
 

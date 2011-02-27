@@ -145,9 +145,8 @@ namespace ServiceStack.WebHost.Endpoints
 			if (WebHostRootFileNames.Contains(existingFile))
 			{
 				//Avoid recursive redirections
-				return !IsIntegratedPipeline
-					? DefaultHttpHandler
-					: new StaticFileHandler();
+				//return !IsIntegratedPipeline ? DefaultHttpHandler : new StaticFileHandler();
+				return new StaticFileHandler();
 			}
 
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);

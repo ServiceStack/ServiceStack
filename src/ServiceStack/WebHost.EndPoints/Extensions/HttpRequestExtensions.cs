@@ -149,22 +149,20 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			if (!string.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
 
 			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
-			return GetPathInfo(request.Path, mode);
+			var appPath = string.IsNullOrEmpty(request.ApplicationPath)
+			              ? WebHostDirectoryName
+			              : request.ApplicationPath.TrimStart('/');
+			
+			return GetPathInfo(request.Path, mode, appPath);
 		}
 
-		public static string GetPathInfo(string fullPath, string mode)
+		public static string GetPathInfo(string fullPath, string mode, string appPath)
 		{
-			if (mode == null)
-			{
-				var pos = fullPath.IndexOf('/', 1);
-				var path = pos == -1 ? "" : fullPath.Substring(pos);
-				return path.Length > 1 ? path.TrimEnd('/') : "/";
-			}
-
 			var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
 			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
 			
-			pathInfo = ResolvePathInfoFromMappedPath(fullPath, WebHostDirectoryName);
+			//Wildcard mode relies on this to find work out the handlerPath
+			pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
 			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
 			
 			return fullPath;

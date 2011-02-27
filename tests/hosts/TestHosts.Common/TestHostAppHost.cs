@@ -45,8 +45,8 @@ namespace TestHosts.Common
 		public TestHostAppHost()
 			: base(AppSettings.GetString("ServiceName") ?? "TestHosts", typeof(HelloService).Assembly)
 		{
-			//EndpointHostConfig.Instance.DebugAspNetHostEnvironment = "WebDev.WebServer";
-			EndpointHostConfig.Instance.DebugOnlyReturnRequestInfo = true;
+			EndpointHostConfig.Instance.DebugAspNetHostEnvironment = "WebDev.WebServer";
+			//EndpointHostConfig.Instance.DebugOnlyReturnRequestInfo = true;
 		}
 
 		public override void Configure(Funq.Container container) { }
