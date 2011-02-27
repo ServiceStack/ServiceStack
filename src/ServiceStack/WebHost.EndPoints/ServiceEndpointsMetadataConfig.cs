@@ -11,18 +11,15 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static ServiceEndpointsMetadataConfig Create(string serviceStackHandlerPrefix)
 		{
-			var prefix = serviceStackHandlerPrefix;
-            if (!string.IsNullOrEmpty(prefix)) prefix = "/" + prefix;
-
 			return new ServiceEndpointsMetadataConfig
 			{
-				DefaultMetadataUri = prefix + "/metadata",
-				Soap11 = new SoapMetadataConfig(prefix + "/soap11/syncreply.svc", prefix + "/soap11/asynconeway.svc", prefix + "/soap11/metadata", "soap11"),
-				Soap12 = new SoapMetadataConfig(prefix + "/soap12/syncreply.svc", prefix + "/soap12/asynconeway.svc", prefix + "/soap12/metadata", "soap12"),
-				Xml = new MetadataConfig(prefix + "/xml/syncreply", prefix + "/xml/asynconeway", prefix + "/xml/metadata"),
-				Json = new MetadataConfig(prefix + "/json/syncreply", prefix + "/json/asynconeway", prefix + "/json/metadata"),
-				Jsv = new MetadataConfig(prefix + "/jsv/syncreply", prefix + "/jsv/asynconeway", prefix + "/jsv/metadata"),
-				Custom = new MetadataConfig(prefix + "/{0}/syncreply", prefix + "/{0}/asynconeway", prefix + "/{0}/metadata")
+				DefaultMetadataUri = "/metadata",
+				Soap11 = new SoapMetadataConfig("/soap11/syncreply.svc", "/soap11/asynconeway.svc", "/soap11/metadata", "soap11"),
+				Soap12 = new SoapMetadataConfig("/soap12/syncreply.svc", "/soap12/asynconeway.svc", "/soap12/metadata", "soap12"),
+				Xml = new MetadataConfig("/xml/syncreply", "/xml/asynconeway", "/xml/metadata"),
+				Json = new MetadataConfig("/json/syncreply", "/json/asynconeway", "/json/metadata"),
+				Jsv = new MetadataConfig("/jsv/syncreply", "/jsv/asynconeway", "/jsv/metadata"),
+				Custom = new MetadataConfig("/{0}/syncreply", "/{0}/asynconeway", "/{0}/metadata")
 			};
 		}
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.Serialization;
@@ -16,10 +17,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	public class RequestInfoResponse
 	{
 		[DataMember]
+		public string Host { get; set; }
+
+		[DataMember]
+		public DateTime Date { get; set; }
+
+		[DataMember]
 		public string ServiceName { get; set; }
 
 		[DataMember]
-		public decimal Version { get; set; }
+		public string HandlerPath { get; set; }
 
 		[DataMember]
 		public string UserHostAddress { get; set; }
@@ -28,16 +35,34 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public string HttpMethod { get; set; }
 
 		[DataMember]
+		public string PathInfo { get; set; }
+
+		[DataMember]
+		public string ResolvedPathInfo { get; set; }
+
+		[DataMember]
+		public string Path { get; set; }
+
+		[DataMember]
 		public string AbsoluteUri { get; set; }
+
+		[DataMember]
+		public string ApplicationPath { get; set; }
 
 		[DataMember]
 		public string RawUrl { get; set; }
 
 		[DataMember]
-		public string PathInfo { get; set; }
+		public string Url { get; set; }
 
 		[DataMember]
 		public string ContentType { get; set; }
+
+		[DataMember]
+		public int Status { get; set; }
+
+		[DataMember]
+		public long ContentLength { get; set; }
 
 		[DataMember]
 		public Dictionary<string, string> Headers { get; set; }
@@ -52,13 +77,22 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public List<string> AcceptTypes { get; set; }
 
 		[DataMember]
-		public long ContentLength { get; set; }
-
-		[DataMember]
 		public string OperationName { get; set; }
 
 		[DataMember]
 		public string ResponseContentType { get; set; }
+
+		//[DataMember]
+		//public string FactoryUrl { get; set; }
+
+		//[DataMember]
+		//public string FactoryPathTranslated { get; set; }
+
+		[DataMember]
+		public string ErrorCode { get; set; }
+
+		[DataMember]
+		public string ErrorMessage { get; set; }
 	}
 
 	public class RequestInfoHandler
@@ -66,42 +100,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	{
 		public const string RestPath = "_requestinfo";
 
-		public Dictionary<string, string> ToDictionary(NameValueCollection nvc)
-		{
-			var map = new Dictionary<string, string>();
-			for (var i = 0; i < nvc.Count; i++)
-			{
-				map[nvc.GetKey(i)] = nvc.Get(i);
-			}
-			return map;
-		}
-
-		public string ToString(NameValueCollection nvc)
-		{
-			var map = ToDictionary(nvc);
-			return TypeSerializer.SerializeToString(map);
-		}
+		public RequestInfoResponse RequestInfo { get; set; }
 
 		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			var response = new RequestInfoResponse
-			{
-				ServiceName = EndpointHost.Config.ServiceName,
-				Version = Env.ServiceStackVersion,
-				UserHostAddress = httpReq.UserHostAddress,
-				HttpMethod = httpReq.HttpMethod,
-				AbsoluteUri = httpReq.AbsoluteUri,
-				RawUrl = httpReq.RawUrl,
-				PathInfo = httpReq.PathInfo,
-				ContentType = httpReq.ContentType,
-				Headers = ToDictionary(httpReq.Headers),
-				QueryString = ToDictionary(httpReq.QueryString),
-				FormData = ToDictionary(httpReq.FormData),
-				AcceptTypes = new List<string>(httpReq.AcceptTypes),
-				ContentLength = httpReq.ContentLength,
-				OperationName = httpReq.OperationName,
-				ResponseContentType = httpReq.ResponseContentType,
-			};
+			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
 
 			var json = JsonSerializer.SerializeToString(response);
 			httpRes.ContentType = ContentType.Json;
@@ -116,9 +119,49 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				typeof(RequestInfo).Name);
 		}
 
+		public static Dictionary<string, string> ToDictionary(NameValueCollection nvc)
+		{
+			var map = new Dictionary<string, string>();
+			for (var i = 0; i < nvc.Count; i++)
+			{
+				map[nvc.GetKey(i)] = nvc.Get(i);
+			}
+			return map;
+		}
+
+		public static string ToString(NameValueCollection nvc)
+		{
+			var map = ToDictionary(nvc);
+			return TypeSerializer.SerializeToString(map);
+		}
+
+		public static RequestInfoResponse GetRequestInfo(IHttpRequest httpReq)
+		{
+			var response = new RequestInfoResponse
+			{
+				Host = EndpointHost.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + EndpointHost.Config.ServiceName,
+				Date = DateTime.UtcNow,
+				ServiceName = EndpointHost.Config.ServiceName,
+				UserHostAddress = httpReq.UserHostAddress,
+				HttpMethod = httpReq.HttpMethod,
+				AbsoluteUri = httpReq.AbsoluteUri,
+				RawUrl = httpReq.RawUrl,
+				ResolvedPathInfo = httpReq.PathInfo,
+				ContentType = httpReq.ContentType,
+				Headers = ToDictionary(httpReq.Headers),
+				QueryString = ToDictionary(httpReq.QueryString),
+				FormData = ToDictionary(httpReq.FormData),
+				AcceptTypes = new List<string>(httpReq.AcceptTypes),
+				ContentLength = httpReq.ContentLength,
+				OperationName = httpReq.OperationName,
+				ResponseContentType = httpReq.ResponseContentType,
+			};
+			return response;
+		}
+
 		public bool IsReusable
 		{
-			get { return true; }
+			get { return false; }
 		}
 	}
 }

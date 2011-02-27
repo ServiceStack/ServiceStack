@@ -32,10 +32,10 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			var writer = new HtmlTextWriter(context.Response.Output);
 			context.Response.ContentType = "text/html";
 
-			ProcessOperations(writer);
+			ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request));
 		}
 
-		protected virtual void ProcessOperations(HtmlTextWriter writer)
+		protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq)
 		{
 			var operations = EndpointHost.ServiceOperations;
 			var operationName = Request.QueryString["op"];
@@ -68,19 +68,21 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 					}
 				}
 
-				RenderOperation(writer, operationName, requestMessage, responseMessage, restPaths, description);
+				RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage, restPaths, description);
 				return;
 			}
 
-			RenderOperations(writer, operations.AllOperations);
+			RenderOperations(writer, httpReq, operations.AllOperations);
 		}
 
 		protected abstract string CreateMessage(Type dtoType);
 
-		protected virtual void RenderOperation(HtmlTextWriter writer, string operationName, string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
+		protected virtual void RenderOperation(HtmlTextWriter writer, IHttpRequest httpReq, string operationName, 
+			string requestMessage, string responseMessage, string restPaths, string descriptionHtml)
 		{
 			var operationControl = new OperationControl
 			{
+				HttpRequest = httpReq,
 				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
 				Title = EndpointHost.Config.ServiceName,
 				EndpointType = this.EndpointType,
@@ -103,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			operationControl.Render(writer);
 		}
 
-		protected abstract void RenderOperations(HtmlTextWriter writer, Operations allOperations);
+		protected abstract void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations);
 
 		protected virtual string CreateRestPaths(Type operationType)
 		{

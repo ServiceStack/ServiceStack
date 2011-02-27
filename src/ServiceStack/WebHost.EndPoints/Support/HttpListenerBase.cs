@@ -45,12 +45,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		}
 
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: this(serviceName, null, assembliesWithServices) {}
-
-		protected HttpListenerBase(string serviceName, string rootHandlerPath, params Assembly[] assembliesWithServices)
-			: this()
 		{
-			EndpointHost.ConfigureHost(this, serviceName, rootHandlerPath, assembliesWithServices);
+			EndpointHost.ConfigureHost(this, serviceName, assembliesWithServices);			
 		}
 
 		public void Init()

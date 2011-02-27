@@ -62,7 +62,12 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\TestHosts.Common\TestHosts.Common.csproj">
+      <Project>{1436CB09-38BE-44F5-860D-70D6D39FE880}</Project>
+      <Name>TestHosts.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
   </ItemGroup>

@@ -103,6 +103,8 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="user-notfound.htm" />
+    <Content Include="user-default.htm" />
     <Content Include="Global.asax" />
     <Content Include="Soap11WebService.asmx" />
     <Content Include="default.html" />
@@ -183,7 +185,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>False</UseIIS>
+          <UseIIS>True</UseIIS>
           <AutoAssignPort>False</AutoAssignPort>
           <DevelopmentServerPort>4000</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>

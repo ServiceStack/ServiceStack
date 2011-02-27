@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
+using ServiceStack.Common.Utils;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
 
@@ -94,6 +96,20 @@ namespace ServiceStack.Common
 		public static string Join(this List<string> items, string delimeter)
 		{
 			return string.Join(delimeter, items.ToArray());
+		}
+
+		public static string CombineWith(this string path, params string[] thesePaths)
+		{
+			return PathUtils.CombinePaths(new StringBuilder(path), thesePaths);
+		}
+
+		public static string ToParentPath(this string path)
+		{
+			var pos = path.LastIndexOf('/');
+			if (pos == -1) return "/";
+
+			var parentPath = path.Substring(0, pos);
+			return parentPath;
 		}
 		
 	}

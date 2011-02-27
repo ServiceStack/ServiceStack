@@ -1,6 +1,8 @@
 using System.Web;
 using System.Web.UI;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 {
@@ -17,6 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			}
 		}
 
+		public IHttpRequest HttpRequest { get; set; }
 		public string ContentType { get; set; }
 		public string ContentFormat { get; set; }
 
@@ -34,7 +37,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			get
 			{
 				var endpointConfig = MetadataConfig.GetEndpointConfig(ContentType);
-				var endpontPath = ResponseMessage != null ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
+				var endpontPath = ResponseMessage != null 
+					? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
 				return string.Format("{0}/{1}", endpontPath, OperationName);
 			}
 		}
@@ -43,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		{
 			var renderedTemplate = string.Format(PageTemplate, 
 				Title, 
-				MetadataConfig.DefaultMetadataUri,
+				HttpRequest.GetParentAbsolutePath().ToParentPath() + MetadataConfig.DefaultMetadataUri,
 				ContentFormat.ToUpper(), 
 				OperationName,
 				HttpRequestTemplate, 
@@ -140,7 +144,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     
     <form>
     <div>
-        <p><a href=""../..{1}"">&lt;back to all web services</a></p>
+        <p><a href=""{1}"">&lt;back to all web services</a></p>
         <h2>{3}</h2>
 
 		{7}

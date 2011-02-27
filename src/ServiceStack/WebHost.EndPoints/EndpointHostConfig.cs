@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Runtime.Serialization;
 using System.Web.Configuration;
+using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -31,6 +32,7 @@ namespace ServiceStack.WebHost.Endpoints
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
 						WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types",
 						ServiceStackHandlerFactoryPath = "servicestack",
+						DefaultRedirectPath = "servicestack/metadata",
 						DefaultContentType = ContentType.Json,
 						AllowJsonpRequests = true,
 						DefaultDocuments = new List<string> {
@@ -49,36 +51,65 @@ namespace ServiceStack.WebHost.Endpoints
 							"jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", 
 							"avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv", 
 							"flv", "xap", "xaml"
-						}
+						},
+						DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
+						DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
 					};
 
-					try
-					{
-						//Read the user-defined path in the Web.Config
-						var config = WebConfigurationManager.OpenWebConfiguration("~/");
-						foreach (ConfigurationLocation location in config.Locations)
-						{
-							var locationPath = (location.Path ?? "").ToLower();
-
-							System.Configuration.Configuration locConfig = location.OpenConfiguration();
-							var handlersSection = locConfig.GetSection("system.web/httpHandlers") as HttpHandlersSection;
-							if (handlersSection == null) continue;
-							
-							for (var i = 0; i < handlersSection.Handlers.Count; i++)
-							{
-								var httpHandler = handlersSection.Handlers[i];
-								if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
-									
-								instance.ServiceStackHandlerFactoryPath = locationPath;
-								break;
-							}
-						}
-					}
-					catch (Exception) {}			
-				
+					InferHttpHandlerPath();
 				}
 				return instance;
 			}
+		}
+
+		private static void InferHttpHandlerPath()
+		{
+			try
+			{
+				//Read the user-defined path in the Web.Config
+				var config = WebConfigurationManager.OpenWebConfiguration("~/");
+				foreach (ConfigurationLocation location in config.Locations)
+				{
+					var locationPath = (location.Path ?? "").ToLower();
+					System.Configuration.Configuration locConfig = location.OpenConfiguration();
+					var handlersSection = locConfig.GetSection("system.web/httpHandlers") as HttpHandlersSection;
+					if (handlersSection == null) continue;
+
+					for (var i = 0; i < handlersSection.Handlers.Count; i++)
+					{
+						var httpHandler = handlersSection.Handlers[i];
+						if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
+
+						instance.ServiceStackHandlerFactoryPath = locationPath;
+						instance.DefaultRedirectPath = PathUtils.CombinePaths(
+							instance.ServiceStackHandlerFactoryPath, "metadata");
+					
+						break;
+					}
+				}
+				//No location set
+				if (config.Locations.Count == 0)
+				{
+					var handlersSection = config.GetSection("system.web/httpHandlers") as HttpHandlersSection;
+					if (handlersSection != null)
+					{
+						for (var i = 0; i < handlersSection.Handlers.Count; i++)
+						{
+							var httpHandler = handlersSection.Handlers[i];
+							if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
+
+							var handlerPath = httpHandler.Path.Replace("*", "");
+							instance.DefaultRedirectPath = PathUtils.CombinePaths(
+								handlerPath, "metadata");
+							instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath) 
+								? null : handlerPath;
+						
+							break;
+						}
+					}
+				}
+			}
+			catch (Exception) { }
 		}
 
 		public EndpointHostConfig()
@@ -104,10 +135,14 @@ namespace ServiceStack.WebHost.Endpoints
 		public ServiceManager ServiceManager { get; set; }
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
 		public string UsageExamplesBaseUri { get; set; }
+
 		public string ServiceName { get; set; }
 		public string DefaultContentType { get; set; }
 		public bool AllowJsonpRequests { get; set; }
 		public bool DebugMode { get; set; }
+		public bool DebugOnlyReturnRequestInfo { get; set; }
+		public string DebugAspNetHostEnvironment { get; set; }
+		public string DebugHttpListenerHostEnvironment { get; set; }
 		public List<string> DefaultDocuments { get; private set; }
 
 		public HashSet<string> IgnoreFormatsInMetadata { get; set; }
@@ -115,6 +150,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public HashSet<string> AllowFileExtensions { get; set; }
 
 		public string ServiceStackHandlerFactoryPath { get; set; }
+		public string DefaultRedirectPath { get; set; }
+		public string NotFoundRedirectPath { get; set; }
 
 		public string WsdlServiceNamespace { get; set; }
 		public string WsdlServiceTypesNamespace { get; set; }

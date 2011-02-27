@@ -30,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		// Pre user config
-		public static void ConfigureHost(IAppHost appHost, string serviceName, string serviceStackHandlerPath, Assembly[] assembliesWithServices)
+		public static void ConfigureHost(IAppHost appHost, string serviceName, Assembly[] assembliesWithServices)
 		{
 			AppHost = appHost;
 
@@ -38,10 +38,6 @@ namespace ServiceStack.WebHost.Endpoints
 			EndpointHostConfig.Instance.ServiceManager = new ServiceManager(assembliesWithServices);
 
             var config = EndpointHostConfig.Instance;
-			if (serviceStackHandlerPath != null)
-			{
-				config.ServiceStackHandlerFactoryPath = serviceStackHandlerPath;
-			}
 		    Config = config; // avoid cross-dependency on Config setter
 
 			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;

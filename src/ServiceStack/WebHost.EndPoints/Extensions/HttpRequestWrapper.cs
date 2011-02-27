@@ -13,10 +13,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	{
 		private readonly HttpRequest request;
 
-		public HttpRequestWrapper(string operationName, HttpRequest response)
+		public HttpRequestWrapper(string operationName, HttpRequest request)
 		{
 			this.OperationName = operationName;
-			this.request = response;
+			this.request = request;
 		}
 
 		public string OperationName { get; set; }
@@ -120,7 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{
 				try
 				{
-					return request.Url.AbsoluteUri;
+					return request.Url.AbsoluteUri.TrimEnd('/');
 				}
 				catch (Exception)
 				{

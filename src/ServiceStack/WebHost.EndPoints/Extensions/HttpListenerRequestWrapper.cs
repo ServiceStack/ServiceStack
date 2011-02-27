@@ -73,7 +73,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public string AbsoluteUri
 		{
-			get { return request.Url.AbsoluteUri; }
+			get { return request.Url.AbsoluteUri.TrimEnd('/'); }
 		}
 
 		public string UserHostAddress
@@ -125,13 +125,15 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public string PathInfo
 		{
 			get
-			{
+			{				
 				if (this.pathInfo == null)
 				{
 					var pos = request.RawUrl.IndexOf("?");
 					this.pathInfo = pos != -1
-						? request.RawUrl.Substring(0, pos)
-						: request.RawUrl;
+						? HttpRequestExtensions.GetPathInfo(
+							request.RawUrl.Substring(0, pos), 
+							EndpointHost.Config.ServiceStackHandlerFactoryPath)
+						: request.RawUrl.TrimEnd('/');
 				}
 				return this.pathInfo;
 			}

@@ -16,15 +16,10 @@ namespace ServiceStack.WebHost.Endpoints
 	public abstract class AppHostHttpListenerBase 
 		: HttpListenerBase
 	{
-		protected AppHostHttpListenerBase()
-		{
-		}
+		protected AppHostHttpListenerBase() {}
 
 		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: base(serviceName, assembliesWithServices) { }
-
-		protected AppHostHttpListenerBase(string serviceName, string rootHandlerPath, params Assembly[] assembliesWithServices)
-			: base(serviceName, rootHandlerPath, assembliesWithServices) { }
 
 		protected override void ProcessRequest(HttpListenerContext context)
 		{

@@ -57,10 +57,10 @@ namespace MasterHost
 		public DateTime LastModified { get; set; }
 
 		[DataMember]
-		public string ServiceName { get; set; }
+		public string Host { get; set; }
 
 		[DataMember]
-		public decimal Version { get; set; }
+		public string ServiceName { get; set; }
 
 		[DataMember]
 		public string UserHostAddress { get; set; }

@@ -146,25 +146,31 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static string GetPathInfo(this HttpRequest request)
 		{
-			return GetPathInfo(request.PathInfo, request.Path);
+			if (!string.IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
+
+			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+			return GetPathInfo(request.Path, mode);
 		}
 
-		private static string GetPathInfo(string pathInfo, string fullPath)
+		public static string GetPathInfo(string fullPath, string mode)
 		{
+			if (mode == null)
+			{
+				var pos = fullPath.IndexOf('/', 1);
+				var path = pos == -1 ? "" : fullPath.Substring(pos);
+				return path.Length > 1 ? path.TrimEnd('/') : "/";
+			}
+
+			var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
 			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
-
-			var mappedPathRoot = EndpointHost.Config.ServiceStackHandlerFactoryPath;
-
-			pathInfo = ResolvePathInfoFromMappedPath(fullPath, mappedPathRoot);
-			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
-
+			
 			pathInfo = ResolvePathInfoFromMappedPath(fullPath, WebHostDirectoryName);
 			if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
-
+			
 			return fullPath;
 		}
 
-		private static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
+		public static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
 		{
 			var sbPathInfo = new StringBuilder();
 			var fullPathParts = fullPath.Split('/');
@@ -180,8 +186,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					pathRootFound = string.Equals(fullPathPart, mappedPathRoot, StringComparison.InvariantCultureIgnoreCase);
 				}
 			}
+			if (!pathRootFound) return null;
 
-			return sbPathInfo.ToString();
+			var path = sbPathInfo.ToString();
+			return path.Length > 1 ? path.TrimEnd('/') : "/";
 		}
 
 		public static bool IsContentType(this IHttpRequest request, string contentType)
@@ -327,6 +335,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			//We could also send a '406 Not Acceptable', but this is allowed also
 			return EndpointHost.Config.DefaultContentType;
 		}
+
 	}
 
 

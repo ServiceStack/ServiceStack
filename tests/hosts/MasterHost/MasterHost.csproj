@@ -55,6 +55,7 @@
     <Reference Include="ServiceStack.ServiceInterface">
       <HintPath>..\..\..\lib\ServiceStack.ServiceInterface.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
@@ -86,6 +87,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RunRequestInfoService.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -95,11 +97,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="testreports\2011-02-26\" />
+    <Folder Include="testreports\2011-02-27\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="start_vs2010_webserver20.bat" />
-    <None Include="start_vs2010_webserver40.bat" />
+    <None Include="start_vs2010_webserver.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

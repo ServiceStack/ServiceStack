@@ -83,6 +83,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.Text, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -110,6 +111,8 @@
     <Compile Include="ServiceControllerTests.cs" />
     <Compile Include="ServiceHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceStackHandlerPathTests.cs" />
+    <Compile Include="ServiceStackHandlerUrlTests.cs" />
     <Compile Include="Support\BasicService.cs" />
     <Compile Include="Support\AutoWireService.cs" />
     <Compile Include="Support\RestTestService.cs" />

@@ -111,9 +111,9 @@ namespace MasterHost
 
 						if (report.ServiceName == null)
 						{
+							report.Host = requestInfo.Host;
 							report.ServiceName = requestInfo.ServiceName;
 							report.UserHostAddress = requestInfo.UserHostAddress;
-							report.Version = requestInfo.Version;
 						}
 
 						test.StatusCode = 200;
@@ -147,7 +147,8 @@ namespace MasterHost
 					var webEx = ex as WebException;
 					if (webEx != null)
 					{
-						report.MaxStatusCode = Math.Max(report.MaxStatusCode, (int)webEx.Status);
+						report.MaxStatusCode = Math.Max(report.MaxStatusCode, 
+							(int)webEx.Status == default(int) ? 600 : (int)webEx.Status);
 
 						test.ErrorCode = ex.GetType().Name;
 						test.ErrorMessage = ex.Message;

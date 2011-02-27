@@ -33,18 +33,22 @@ namespace ServiceStack.Common.Utils
 			return mapPath;
 		}
 
-		public static string CombinePaths(params string[] paths)
+		internal static string CombinePaths(StringBuilder sb, params string[] paths)
 		{
-			var sb = new StringBuilder();
 			foreach (var path in paths)
 			{
 				if (sb.Length > 0)
 					sb.Append("/");
-				
-				sb.Append(path.TrimStart('/','\\'));
+
+				sb.Append(path.TrimStart('/', '\\'));
 			}
 
 			return sb.ToString();
+		}
+
+		public static string CombinePaths(params string[] paths)
+		{
+			return CombinePaths(new StringBuilder(), paths);
 		}
 	}
 

@@ -1,4 +1,6 @@
+using System;
 using System.Net;
+using ServiceStack.Common;
 
 namespace ServiceStack.ServiceHost
 {
@@ -42,6 +44,40 @@ namespace ServiceStack.ServiceHost
 			if (httpReq.Items.TryGetValue(name, out oValue)) return oValue.ToString();
 
 			return null;
+		}
+
+		public static string GetParentAbsolutePath(this IHttpRequest httpReq)
+		{
+			return httpReq.GetAbsolutePath().ToParentPath();
+		}
+
+		public static string GetAbsolutePath(this IHttpRequest httpReq)
+		{
+			var resolvedPathInfo = httpReq.PathInfo;
+
+			var pos = httpReq.RawUrl.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
+			if (pos == -1)
+				throw new ArgumentException(
+					string.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+
+			return httpReq.RawUrl.Substring(0, pos + resolvedPathInfo.Length);
+		}
+
+		public static string GetParentPathUrl(this IHttpRequest httpReq)
+		{
+			return httpReq.GetPathUrl().ToParentPath();
+		}
+
+		public static string GetPathUrl(this IHttpRequest httpReq)
+		{
+			var resolvedPathInfo = httpReq.PathInfo;
+
+			var pos = httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
+			if (pos == -1)
+				throw new ArgumentException(
+					string.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+
+			return httpReq.AbsoluteUri.Substring(0, pos + resolvedPathInfo.Length);
 		}
 
 	}

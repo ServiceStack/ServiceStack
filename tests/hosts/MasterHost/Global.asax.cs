@@ -8,7 +8,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Formats;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace MasterHost
 {
@@ -124,7 +124,10 @@ namespace MasterHost
 
 			//Create Report table if not exists
 			container.Resolve<IDbConnectionFactory>().Exec(dbCmd =>
-				dbCmd.CreateTable<Report>(false));
+			{
+				dbCmd.CreateTable<Report>(false);
+				dbCmd.CreateTable<RequestInfoResponse>(false);
+			});
 		}
 	}
 

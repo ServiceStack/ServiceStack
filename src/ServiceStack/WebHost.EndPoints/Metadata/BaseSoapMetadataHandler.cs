@@ -2,6 +2,8 @@ using System;
 using System.Web;
 using System.Web.UI;
 using System.Xml.Schema;
+using ServiceStack.ServiceHost;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support.Metadata;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 using ServiceStack.WebHost.Endpoints.Utils;
@@ -37,15 +39,17 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
     		var writer = new HtmlTextWriter(context.Response.Output);
     		context.Response.ContentType = "text/html";
-    		ProcessOperations(writer);
+    		ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request));
     	}
 
-    	protected override void RenderOperations(HtmlTextWriter writer, Operations allOperations)
+    	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)
     	{
 			var defaultPage = new IndexOperationsControl {
+				HttpRequest = httpReq,
 				MetadataConfig = EndpointHost.Config.ServiceEndpointsMetadataConfig,
 				Title = EndpointHost.Config.ServiceName,
 				Xsds = XsdTypes.Xsds,
+				XsdServiceTypesIndex = 1,
 				OperationNames = allOperations.Names,
 				UsageExamplesBaseUri = EndpointHost.Config.UsageExamplesBaseUri,
 			};

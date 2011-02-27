@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			if (!string.IsNullOrEmpty(RelativeUrl))
 			{
-				var absoluteUrl = request.RawUrl.WithTrailingSlash() + this.RelativeUrl;
+				var absoluteUrl = request.ApplicationPath.WithTrailingSlash() + this.RelativeUrl;
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
