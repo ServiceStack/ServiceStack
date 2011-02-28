@@ -33,6 +33,7 @@ using System.Globalization;
 using System.IO;
 using System.Web;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -85,7 +86,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.AddHeader("Last-Modified", lastWT.ToString("r"));
 
 				response.ContentType = MimeTypes.GetMimeType(fileName);
-				response.TransmitFile(fileName);
+
+				if (!Env.IsMono)
+				{
+					response.TransmitFile(fileName);
+				}
+				else
+				{
+					response.WriteFile(fileName);
+				}
 			}
 			catch (Exception)
 			{
