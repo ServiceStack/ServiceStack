@@ -1,5 +1,9 @@
+SET MSBUILD=C:\Windows\Microsoft.NET\Framework\v3.5\MSBuild.exe
+
 REM SET BUILD=Debug
 SET BUILD=Release
+
+%MSBUILD% build.msbuild
 
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\release\latest\
 

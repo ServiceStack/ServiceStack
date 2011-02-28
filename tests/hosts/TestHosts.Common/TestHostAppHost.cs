@@ -10,9 +10,7 @@ namespace TestHosts.Common
 {
 	[DataContract]
 	[Description("ServiceStack's Hello World web service.")]
-	[RestService("/hello")]
-	[RestService("/hello/{Name}")]
-	[RestService("/hi/{Name}")]
+	[RestService("/hello/{Name*}")]
 	public class Hello
 	{
 		[DataMember]
