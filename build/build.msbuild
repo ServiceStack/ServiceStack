@@ -1,5 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <Target Name="Build">
-        <MSBuild Projects="../src/ServiceStack.sln" Properties="Configuration=Release"/>
+        <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=Release"/>
+        <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.csproj" Properties="Configuration=Release"/>
+        <MSBuild Projects="../src/ServiceStack/ServiceStack.csproj" Properties="Configuration=Release"/>
     </Target>
 </Project>
