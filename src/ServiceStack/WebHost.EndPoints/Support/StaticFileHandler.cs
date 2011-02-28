@@ -73,6 +73,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					var ftime = fi.LastWriteTime.ToUniversalTime();
 					if (ftime <= dtIfModifiedSince)
 					{
+						response.ContentType = MimeTypes.GetMimeType(fileName);
 						response.StatusCode = 304;
 						return;
 					}
