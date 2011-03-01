@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Net;
 using System.Security.Authentication;
+using System.Text;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
@@ -48,6 +50,16 @@ namespace ServiceStack.ServiceClient.Web
 			this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
 		}
 
+		public string UserName { get; set; }
+		
+		public string Password { get; set; }
+
+		public void SetCredentials(string userName, string password)
+		{
+			this.UserName = userName;
+			this.Password = password;
+		}
+
 		public string BaseUri { get; set; }
 
 		public string SyncReplyBaseUri { get; set; }
@@ -91,9 +103,34 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			catch (Exception ex)
 			{
-				HandleResponseException<TResponse>(ex, requestUri);
-				throw;
+				return HandleResponseException<TResponse>(ex, Web.HttpMethod.Post, requestUri, request);
 			}
+		}
+
+		private TResponse HandleResponseException<TResponse>(Exception ex, string httpMethod, string requestUri, object request)
+		{
+			try
+			{
+				if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
+				{
+					var client = SendRequest(httpMethod, requestUri, request);
+					client.AddBasicAuth(this.UserName, this.Password);
+
+					using (var responseStream = client.GetResponse().GetResponseStream())
+					{
+						var response = DeserializeFromStream<TResponse>(responseStream);
+						return response;
+					}
+				}
+
+				HandleResponseException<TResponse>(ex, requestUri);
+			}
+			catch (Exception subEx)
+			{
+				HandleResponseException<TResponse>(ex, requestUri);
+			}
+
+			throw ex;
 		}
 
 		private void HandleResponseException<TResponse>(Exception ex, string requestUri)
@@ -252,8 +289,7 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			catch (Exception ex)
 			{
-				HandleResponseException<TResponse>(ex, requestUri);
-				throw;
+				return HandleResponseException<TResponse>(ex, httpMethod, requestUri, request);
 			}
 		}
 

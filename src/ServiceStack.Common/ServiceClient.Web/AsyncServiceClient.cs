@@ -36,6 +36,8 @@ namespace ServiceStack.ServiceClient.Web
 				ResponseStream = null;
 			}
 
+			public string HttpMethod;
+
 			public string Url;
 
 			public StringBuilder TextData;
@@ -53,6 +55,8 @@ namespace ServiceStack.ServiceClient.Web
 			public Stream ResponseStream;
 
 			public int Completed;
+
+			public int RequestCount;
 
 			public Timer Timer;
 
@@ -100,6 +104,16 @@ namespace ServiceStack.ServiceClient.Web
 			this.Timeout = TimeSpan.FromSeconds(60);
 		}
 
+		public string UserName { get; set; }
+	
+		public string Password { get; set; }
+
+		public void SetCredentials(string userName, string password)
+		{
+			this.UserName = userName;
+			this.Password = password;
+		}
+
 		public TimeSpan Timeout { get; set; }
 
 		public string ContentType { get; set; }
@@ -135,6 +149,7 @@ namespace ServiceStack.ServiceClient.Web
 
 			var requestState = new RequestState<TResponse>
 			{
+				HttpMethod = httpMethod,
 				Url = requestUri,
 				WebRequest = webRequest,
 				Request = request,
@@ -143,6 +158,15 @@ namespace ServiceStack.ServiceClient.Web
 			};
 			requestState.StartTimer(this.Timeout);
 
+			SendWebRequestAsync(httpMethod, request, requestState, webRequest);
+
+			return requestState;
+		}
+
+		private void SendWebRequestAsync<TResponse>(string httpMethod, object request, 
+			RequestState<TResponse> requestState, HttpWebRequest webRequest)
+		{
+			var httpGetOrDelete = (httpMethod == "GET" || httpMethod == "DELETE");
 			webRequest.Accept = string.Format("{0}, */*", ContentType);
 			webRequest.Method = httpMethod;
 
@@ -150,6 +174,7 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				webRequest.Credentials = this.Credentials;
 			}
+
 
 			if (HttpWebRequestFilter != null)
 			{
@@ -165,8 +190,6 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				var result = requestState.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, requestState);
 			}
-
-			return requestState;
 		}
 
 		private void RequestCallback<T>(IAsyncResult asyncResult)
@@ -175,12 +198,10 @@ namespace ServiceStack.ServiceClient.Web
 			try
 			{
 				var req = requestState.WebRequest;
+
 				var postStream = req.EndGetRequestStream(asyncResult);
-
 				StreamSerializer(null, requestState.Request, postStream);
-
 				postStream.Close();
-
 				var result = requestState.WebRequest.BeginGetResponse(ResponseCallback<T>, requestState);
 			}
 			catch (Exception ex)
@@ -204,9 +225,30 @@ namespace ServiceStack.ServiceClient.Web
 				var asyncRead = responseStream.BeginRead(requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
 				return;
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				HandleResponseError(e, requestState);
+				var firstCall = Interlocked.Increment(ref requestState.RequestCount) == 1;
+				if (firstCall && WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
+				{
+					try
+					{
+						requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
+
+						requestState.WebRequest.AddBasicAuth(this.UserName, this.Password);
+
+						SendWebRequestAsync(
+							requestState.HttpMethod, requestState.Request,
+							requestState, requestState.WebRequest);
+
+					}
+					catch (Exception subEx)
+					{
+						HandleResponseError(ex, requestState);
+					}
+					return;
+				}
+
+				HandleResponseError(ex, requestState);
 			}
 		}
 

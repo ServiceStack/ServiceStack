@@ -1,4 +1,8 @@
+using System;
+using System.Net;
 using System.Security.Authentication;
+using System.Text;
+using ServiceStack.Common.Web;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -14,5 +18,22 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			return null;
 		}
+
+		internal static bool ShouldAuthenticate(Exception ex, string userName, string password)
+		{
+			var webEx = ex as WebException;
+			return (webEx != null
+			        && ((HttpWebResponse) webEx.Response).StatusCode == HttpStatusCode.Unauthorized
+			        && !string.IsNullOrEmpty(userName)
+			        && !string.IsNullOrEmpty(password));
+		}
+
+		internal static void AddBasicAuth(this WebRequest client, string userName, string password)
+		{
+			client.Headers[HttpHeaders.Authorization]
+				= "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(userName + ":" + password));
+		}
+
 	}
+
 }

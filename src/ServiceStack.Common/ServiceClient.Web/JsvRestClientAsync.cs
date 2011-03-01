@@ -35,6 +35,11 @@ namespace ServiceStack.ServiceClient.Web
 
 		public string BaseUri { get; set; }
 
+		public void SetCredentials(string userName, string password)
+		{
+			this.client.SetCredentials(userName, password);
+		}
+
 		private string GetUrl(string relativeOrAbsoluteUrl)
 		{
 			return relativeOrAbsoluteUrl.StartsWith("http:")

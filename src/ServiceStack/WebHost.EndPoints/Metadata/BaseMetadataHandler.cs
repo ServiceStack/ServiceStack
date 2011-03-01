@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request));
 		}
 
-		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
 			using (var sw = new StreamWriter(httpRes.OutputStream))
 			{

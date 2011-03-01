@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				OperationName);
     	}
 
-		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		public new void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
     	{
 			var operations = EndpointHost.ServiceOperations;
 
