@@ -122,6 +122,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			}
 		}
 
+		public void SetCredentials(string userName, string password)
+		{
+			throw new NotImplementedException();
+		}
+
 		public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
 			throw new NotImplementedException();

@@ -74,9 +74,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					var userName = userPass.Value.Key;
 					if (userName == AllowedUser && userPass.Value.Value == AllowedPass)
 					{
-						res.SetPermanentCookie("ss-session", userName + "/" + Guid.NewGuid().ToString("N"));
+						var sessionKey = userName + "/" + Guid.NewGuid().ToString("N");
+
 						//set session for this request (as no cookies will be set on this request)
-						req.Items["ss-session"] = userName + "/" + Guid.NewGuid().ToString("N");
+						req.Items["ss-session"] = sessionKey;
+						res.SetPermanentCookie("ss-session", sessionKey);
 					}
 					else
 					{
@@ -87,8 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				{
 					if (dto is Secure)
 					{
-						var sessionId = req.GetCookieValue("ss-session")
-							?? req.GetItemStringValue("ss-session");
+						var sessionId = req.GetItemOrCookie("ss-session");
 						if (sessionId == null || sessionId.SplitOnFirst('/')[0] != AllowedUser)
 						{
 							res.ReturnAuthRequired();
@@ -137,6 +138,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(ex.StatusCode, Is.EqualTo(401));
 		}
 
+		private static void FailOnAsyncError<T>(T response, Exception ex)
+		{
+			Assert.Fail(ex.Message);
+		}
+
 		private static bool Assert401(object response, Exception ex)
 		{
 			var webEx = (WebServiceException)ex;
@@ -161,6 +167,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Console.WriteLine(dtoString);
 		}
 
+		[Test]
+		public void Can_login_with_Basic_auth_to_access_Secure_service_using_ServiceClient()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var client = CreateNewServiceClient();
+			client.SetCredentials(AllowedUser, AllowedPass);
+
+			var response = client.Send<SecureResponse>(new Secure());
+
+			Assert.That(response.Result, Is.EqualTo("Confidential"));
+		} 
+
+		[Test]
+		public void Can_login_with_Basic_auth_to_access_Secure_service_using_RestClientAsync()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var client = CreateNewRestClientAsync();
+			client.SetCredentials(AllowedUser, AllowedPass);
+
+			SecureResponse response = null;
+			client.GetAsync<SecureResponse>(ServiceClientBaseUri + "secure",
+				r => response = r, FailOnAsyncError);
+
+			Thread.Sleep(2000);
+			Assert.That(response.Result, Is.EqualTo("Confidential"));
+		}
 
 		[Test]
 		public void Get_401_When_accessing_Secure_using_ServiceClient_without_Authorization()

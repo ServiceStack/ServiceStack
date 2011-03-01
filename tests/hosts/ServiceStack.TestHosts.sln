@@ -1,10 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "location.servicestack.wildcard35", "location.servicestack.wildcard35\location.servicestack.wildcard35.csproj", "{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "location.servicestack.wildcard40", "location.servicestack.wildcard40\location.servicestack.wildcard40.csproj", "{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "location.api.wildcard40", "location.api.wildcard40\location.api.wildcard40.csproj", "{9BCD8BB6-8E0A-426D-8060-A99C8CB5B50C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterHost", "MasterHost\MasterHost.csproj", "{12FA52E0-E648-42B3-9F67-782011AD20C4}"
@@ -27,26 +23,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{ED5198A3-21D6-40F3-8920-44FCB24DBFEF}.Release|x86.ActiveCfg = Release|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C3BDCDAF-E563-4FC1-BEE9-D3158DA10794}.Release|x86.ActiveCfg = Release|Any CPU
 		{9BCD8BB6-8E0A-426D-8060-A99C8CB5B50C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9BCD8BB6-8E0A-426D-8060-A99C8CB5B50C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BCD8BB6-8E0A-426D-8060-A99C8CB5B50C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
