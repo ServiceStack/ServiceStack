@@ -1,25 +1,41 @@
 using System;
+using System.IO;
 using System.Web;
 using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Metadata;
 using ServiceStack.WebHost.Endpoints.Support.Metadata.Controls;
 using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Metadata
 {
-    public abstract class BaseSoapMetadataHandler : BaseMetadataHandler
+    public abstract class BaseSoapMetadataHandler : BaseMetadataHandler, IServiceStackHttpHandler
     {
+		protected BaseSoapMetadataHandler()
+		{
+			OperationName = GetType().Name.Replace("Handler", "");
+		}
+		
+		public string OperationName { get; set; }
+    	
     	public override void Execute(HttpContext context)
     	{
-			Request = context.Request;
+			ProcessRequest(
+				new HttpRequestWrapper(OperationName, context.Request),
+				new HttpResponseWrapper(context.Response), 
+				OperationName);
+    	}
+
+		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+    	{
 			var operations = EndpointHost.ServiceOperations;
 
-    		if (context.Request.QueryString["xsd"] != null)
+    		if (httpReq.QueryString["xsd"] != null)
     		{
-    			var xsdNo = Convert.ToInt32(context.Request.QueryString["xsd"]);
+				var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
     			var schemaSet = XsdUtils.GetXmlSchemaSet(operations.AllOperations.Types);
     			var schemas = schemaSet.Schemas();
     			var i = 0;
@@ -27,19 +43,22 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
     			{
     				throw new ArgumentOutOfRangeException("xsd");
     			}
-    			context.Response.ContentType = "text/xml";
+    			httpRes.ContentType = "text/xml";
     			foreach (XmlSchema schema in schemaSet.Schemas())
     			{
     				if (xsdNo != i++) continue;
-    				schema.Write(context.Response.Output);
+    				schema.Write(httpRes.OutputStream);
     				break;
     			}
     			return;
     		}
 
-    		var writer = new HtmlTextWriter(context.Response.Output);
-    		context.Response.ContentType = "text/html";
-    		ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request));
+			using (var sw = new StreamWriter(httpRes.OutputStream))
+			{
+				var writer = new HtmlTextWriter(sw);
+				httpRes.ContentType = "text/html";
+				ProcessOperations(writer, httpReq);
+			}
     	}
 
     	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)

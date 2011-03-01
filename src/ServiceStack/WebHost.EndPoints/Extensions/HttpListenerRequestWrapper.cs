@@ -439,6 +439,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		bool IsContentType(string ct, bool starts_with)
 		{
+			if (ct == null || ContentType == null) return false;
+
 			if (starts_with)
 				return StrUtils.StartsWith(ContentType, ct, true);
 

@@ -19,7 +19,10 @@ namespace ServiceStack.WebHost.Endpoints
 		protected AppHostHttpListenerBase() {}
 
 		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-			: base(serviceName, assembliesWithServices) { }
+			: base(serviceName, assembliesWithServices)
+		{
+			
+		}
 
 		protected override void ProcessRequest(HttpListenerContext context)
 		{
@@ -43,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints
 				return;
 			}
 
-			throw new NotImplementedException("Cannot execute handler: " + handler);
+			throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
 		}
 
 	}

@@ -1,6 +1,8 @@
 using System;
 using System.Net;
+using System.Web;
 using ServiceStack.Common;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceHost
 {
@@ -78,6 +80,23 @@ namespace ServiceStack.ServiceHost
 					string.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
 
 			return httpReq.AbsoluteUri.Substring(0, pos + resolvedPathInfo.Length);
+		}
+
+		public static string GetUrlHostName(this IHttpRequest httpReq)
+		{
+			var aspNetReq = httpReq as HttpRequestWrapper;
+			if (aspNetReq != null)
+			{
+				return aspNetReq.UrlHostName;
+			}
+			var uri = httpReq.AbsoluteUri;
+
+			var pos = uri.IndexOf("://") + "://".Length;
+			var partialUrl = uri.Substring(pos);
+			var endPos = partialUrl.IndexOf('/');
+			if (endPos == -1) endPos = partialUrl.Length;
+			var hostName = partialUrl.Substring(0, endPos).Split(':')[0];
+			return hostName;
 		}
 
 	}

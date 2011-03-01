@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -15,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 	using System.Text;
 	using ServiceHost;
 
-	public abstract class BaseMetadataHandler : HttpHandlerBase
+	public abstract class BaseMetadataHandler : HttpHandlerBase, IServiceStackHttpHandler
 	{
 		const string ResponseSuffix = "Response";
 
@@ -24,21 +25,28 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		public string ContentType { get; set; }
 		public string ContentFormat { get; set; }
 
-		protected HttpRequest Request { get; set; }
-
 		public override void Execute(HttpContext context)
 		{
-			this.Request = context.Request;
 			var writer = new HtmlTextWriter(context.Response.Output);
 			context.Response.ContentType = "text/html";
 
 			ProcessOperations(writer, new HttpRequestWrapper(GetType().Name, context.Request));
 		}
 
+		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+		{
+			using (var sw = new StreamWriter(httpRes.OutputStream))
+			{
+				var writer = new HtmlTextWriter(sw);
+				httpRes.ContentType = "text/html";
+				ProcessOperations(writer, httpReq);
+			}
+		}
+
 		protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq)
 		{
 			var operations = EndpointHost.ServiceOperations;
-			var operationName = Request.QueryString["op"];
+			var operationName = httpReq.QueryString["op"];
 			if (operationName != null)
 			{
 				var allTypes = operations.AllOperations.Types;
@@ -87,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				Title = EndpointHost.Config.ServiceName,
 				EndpointType = this.EndpointType,
 				OperationName = operationName,
-				HostName = this.Request.GetUrlHostName(),
+				HostName = httpReq.GetUrlHostName(),
 				RequestMessage = requestMessage,
 				ResponseMessage = responseMessage,
 				RestPaths = restPaths,
@@ -123,5 +131,6 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			}
 			return restPaths.ToString();
 		}
+
 	}
 }

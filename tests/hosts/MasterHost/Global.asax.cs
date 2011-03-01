@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.Serialization;
 using ServiceStack.Common.Utils;
 using ServiceStack.Configuration;
@@ -46,9 +47,9 @@ namespace MasterHost
 			this.PathsHostEnvironment = appSettings.GetString("PathsHostEnvironment");
 			this.RunOnBaseUrl = appSettings.GetString("RunOnBaseUrl");
 
-			this.RootPorts = appSettings.GetList("RootPorts");
-			this.ApiPorts = appSettings.GetList("ApiPorts");
-			this.ServiceStackPorts = appSettings.GetList("ServiceStackPorts");
+			this.RootPorts = appSettings.GetList("RootPorts").Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
+			this.ApiPorts = appSettings.GetList("ApiPorts").Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
+			this.ServiceStackPorts = appSettings.GetList("ServiceStackPorts").Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
 
 			this.AllPaths = appSettings.GetList("AllPaths");
 

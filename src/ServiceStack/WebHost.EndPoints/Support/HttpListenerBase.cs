@@ -42,9 +42,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			this.startTime = DateTime.Now;
 			Log.Info("Begin Initializing Application...");
+
+			EndpointHostConfig.SkipPathValidation = true;
 		}
 
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
+			: this()
 		{
 			EndpointHost.ConfigureHost(this, serviceName, assembliesWithServices);			
 		}

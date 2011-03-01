@@ -151,7 +151,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				Headers = ToDictionary(httpReq.Headers),
 				QueryString = ToDictionary(httpReq.QueryString),
 				FormData = ToDictionary(httpReq.FormData),
-				AcceptTypes = new List<string>(httpReq.AcceptTypes),
+				AcceptTypes = new List<string>(httpReq.AcceptTypes ?? new string[0]),
 				ContentLength = httpReq.ContentLength,
 				OperationName = httpReq.OperationName,
 				ResponseContentType = httpReq.ResponseContentType,

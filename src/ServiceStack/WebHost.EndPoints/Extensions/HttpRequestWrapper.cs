@@ -150,6 +150,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.GetPathInfo(); }
 		}
 
+		public string UrlHostName
+		{
+			get { return request.GetUrlHostName(); }
+		}
+
 		public Stream InputStream
 		{
 			get { return request.InputStream; }

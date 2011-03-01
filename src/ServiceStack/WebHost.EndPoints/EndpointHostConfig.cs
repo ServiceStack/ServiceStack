@@ -14,6 +14,9 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class EndpointHostConfig
 	{
+		public static bool SkipPathValidation = false;
+		public static string ServiceStackPath = null;
+
 		private const string DefaultUsageExamplesBaseUri =
 			"https://github.com/ServiceStack/ServiceStack.Extras/blob/master/doc/UsageExamples";
 
@@ -31,8 +34,8 @@ namespace ServiceStack.WebHost.Endpoints
 						EnableAccessRestrictions = true,
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
 						WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types",
-						ServiceStackHandlerFactoryPath = "servicestack",
-						MetadataRedirectPath = "servicestack/metadata",
+						ServiceStackHandlerFactoryPath = ServiceStackPath,
+						MetadataRedirectPath = null,
 						DefaultContentType = ContentType.Json,
 						AllowJsonpRequests = true,
 						DefaultDocuments = new List<string> {
@@ -56,7 +59,10 @@ namespace ServiceStack.WebHost.Endpoints
 						DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
 					};
 
-					InferHttpHandlerPath();
+					if (instance.ServiceStackHandlerFactoryPath == null)
+					{
+						InferHttpHandlerPath();
+					}
 				}
 				return instance;
 			}
@@ -89,48 +95,56 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				//Read the user-defined path in the Web.Config
 				var config = WebConfigurationManager.OpenWebConfiguration("~/");
-				foreach (ConfigurationLocation location in config.Locations)
+				var handlersSection = config.GetSection("system.web/httpHandlers") as HttpHandlersSection;
+				if (handlersSection != null)
 				{
-					var locationPath = (location.Path ?? "").ToLower();
-					System.Configuration.Configuration locConfig = location.OpenConfiguration();
-					var handlersSection = locConfig.GetSection("system.web/httpHandlers") as HttpHandlersSection;
-					if (handlersSection == null) continue;
-
 					for (var i = 0; i < handlersSection.Handlers.Count; i++)
 					{
 						var httpHandler = handlersSection.Handlers[i];
 						if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
 
-						instance.ServiceStackHandlerFactoryPath = locationPath;
+						var handlerPath = httpHandler.Path.Replace("*", "");
 						instance.MetadataRedirectPath = PathUtils.CombinePaths(
-							instance.ServiceStackHandlerFactoryPath, "metadata");
-					
+							handlerPath, "metadata");
+						instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
+							? null : handlerPath;
+
 						break;
 					}
 				}
-				//No location set
-				if (config.Locations.Count == 0)
+
+				if (instance.MetadataRedirectPath == null)
 				{
-					var handlersSection = config.GetSection("system.web/httpHandlers") as HttpHandlersSection;
-					if (handlersSection != null)
+					foreach (ConfigurationLocation location in config.Locations)
 					{
+						var locationPath = (location.Path ?? "").ToLower();
+						System.Configuration.Configuration locConfig = location.OpenConfiguration();
+						handlersSection = locConfig.GetSection("system.web/httpHandlers") as HttpHandlersSection;
+						if (handlersSection == null) continue;
+
 						for (var i = 0; i < handlersSection.Handlers.Count; i++)
 						{
 							var httpHandler = handlersSection.Handlers[i];
 							if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
 
-							var handlerPath = httpHandler.Path.Replace("*", "");
+							instance.ServiceStackHandlerFactoryPath = locationPath;
 							instance.MetadataRedirectPath = PathUtils.CombinePaths(
-								handlerPath, "metadata");
-							instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath) 
-								? null : handlerPath;
-						
+								instance.ServiceStackHandlerFactoryPath, "metadata");
+
 							break;
 						}
 					}
 				}
+
+				if (!SkipPathValidation && instance.MetadataRedirectPath == null)
+				{
+					throw new ConfigurationErrorsException(
+						"Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"
+						+ "Check with http://www.servicestack.net/ServiceStack.Hello/ to ensure you have configured ServiceStack properly.\n"
+						+ "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
+				}
 			}
-			catch (Exception) { }
+			catch (Exception) {}
 		}
 
 		public ServiceManager ServiceManager { get; set; }

@@ -36,7 +36,11 @@ namespace ServiceStack.WebHost.Endpoints
 
 			ForbiddenHttpHandler = new ForbiddenHttpHandler();
 
-			WebHostPhysicalPath = "~".MapHostAbsolutePath();
+			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
+			WebHostPhysicalPath = isAspNetHost
+				? "~".MapHostAbsolutePath()
+				: "~".MapAbsolutePath();
+
 			foreach (var fileName in Directory.GetFiles(WebHostPhysicalPath))
 			{
 				var fileNameLower = Path.GetFileName(fileName).ToLower();

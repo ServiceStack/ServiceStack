@@ -20,6 +20,8 @@ namespace ServiceStack.ServiceHost.Tests
 
 		public class MockUrlHttpRequest : IHttpRequest
 		{
+			public MockUrlHttpRequest() { }
+
 			public MockUrlHttpRequest(string mode, string path, string rawUrl)
 			{
 				this.PathInfo = ResolvePath(mode, path);
@@ -43,7 +45,7 @@ namespace ServiceStack.ServiceHost.Tests
 			}
 
 			public string RawUrl { get; private set; }
-			public string AbsoluteUri { get; private set; }
+			public string AbsoluteUri { get; set; }
 			public string UserHostAddress { get; private set; }
 			public bool IsSecureConnection { get; private set; }
 			public string[] AcceptTypes { get; private set; }
@@ -105,6 +107,20 @@ namespace ServiceStack.ServiceHost.Tests
 			pathUrls = serviceStacksResults.ConvertAll(x => x.GetParentPathUrl());
 			Assert.That(absolutePaths.All(x => x == "/location.servicestack.wildcard35/servicestack/json"));
 			Assert.That(pathUrls.All(x => x == "http://localhost/location.servicestack.wildcard35/servicestack/json"));
+		}
+
+		[Test]
+		public void Can_Get_UrlHostName()
+		{
+			var urls = new List<string> { "http://localhost/a", "https://localhost/a", 
+				"http://localhost:81", "http://localhost:81/", "http://localhost" };
+
+			var httpReqs = urls.ConvertAll(x => new MockUrlHttpRequest { AbsoluteUri = x });
+			var hostNames = httpReqs.ConvertAll(x => x.GetUrlHostName());
+
+			Console.WriteLine(hostNames.Dump());
+
+			Assert.That(hostNames.All(x => x == "localhost"));
 		}
 
 	}
