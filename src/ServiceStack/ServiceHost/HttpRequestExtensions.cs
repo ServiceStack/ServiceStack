@@ -69,7 +69,7 @@ namespace ServiceStack.ServiceHost
 		{
 			return httpReq.GetPathUrl().ToParentPath();
 		}
-
+		
 		public static string GetPathUrl(this IHttpRequest httpReq)
 		{
 			var resolvedPathInfo = httpReq.PathInfo;
@@ -97,6 +97,18 @@ namespace ServiceStack.ServiceHost
 			if (endPos == -1) endPos = partialUrl.Length;
 			var hostName = partialUrl.Substring(0, endPos).Split(':')[0];
 			return hostName;
+		}
+
+		public static string GetFilePath(this IHttpRequest httpRequest)
+		{
+			var aspNetReq = httpRequest as HttpRequestWrapper;
+			if (aspNetReq != null)
+			{
+				return aspNetReq.Request.FilePath;
+			}
+
+			var filePath = httpRequest.ApplicationFilePath.CombineWith(httpRequest.PathInfo);
+			return filePath;
 		}
 
 	}

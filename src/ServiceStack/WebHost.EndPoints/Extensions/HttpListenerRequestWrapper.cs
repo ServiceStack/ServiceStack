@@ -41,6 +41,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
+using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -49,6 +50,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	public class HttpListenerRequestWrapper 
 		: IHttpRequest
 	{
+		private static readonly string physicalFilePath;
+		static HttpListenerRequestWrapper()
+		{
+			physicalFilePath = "~".MapAbsolutePath();
+		}
+
 		private readonly HttpListenerRequest request;
 
 		public HttpListenerRequestWrapper(string operationName, HttpListenerRequest request)
@@ -208,6 +215,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public long ContentLength
 		{
 			get { return request.ContentLength64; }
+		}
+
+		public string ApplicationFilePath
+		{
+			get { return physicalFilePath; }
 		}
 
 		private IFile[] _files;

@@ -48,5 +48,7 @@ namespace ServiceStack.ServiceHost
 		long ContentLength { get; }
 
 		IFile[] Files { get; }
+
+		string ApplicationFilePath { get; }
 	}
 }

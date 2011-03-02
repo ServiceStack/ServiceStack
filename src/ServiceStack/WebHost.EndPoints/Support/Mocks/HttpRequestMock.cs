@@ -91,5 +91,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		}
 
 		public IFile[] Files { get; set; }
+
+		public string ApplicationFilePath
+		{
+			get { throw new NotImplementedException(); }
+		}
 	}
 }

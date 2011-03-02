@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
@@ -11,6 +12,17 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	internal class HttpRequestWrapper
 		: IHttpRequest
 	{
+		private static readonly string physicalFilePath;
+		static HttpRequestWrapper()
+		{
+			physicalFilePath = "~".MapHostAbsolutePath();
+		}
+
+		public HttpRequest Request
+		{
+			get { return request; }
+		}
+
 		private readonly HttpRequest request;
 
 		public HttpRequestWrapper(string operationName, HttpRequest request)
@@ -74,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						var httpCookie = this.request.Cookies[i];
 						var cookie = new Cookie(
 							httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
-							{                                
+							{
 								HttpOnly = httpCookie.HttpOnly,
 								Secure = httpCookie.Secure,
 								Expires = httpCookie.Expires,
@@ -190,6 +202,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+		public string ApplicationFilePath
+		{
+			get { return physicalFilePath; }
+		}
 	}
 
 }

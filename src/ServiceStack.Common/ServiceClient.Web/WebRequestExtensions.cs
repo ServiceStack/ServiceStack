@@ -7,6 +7,17 @@ namespace ServiceStack.ServiceClient.Web
 {
 	public static class WebRequestExtensions
 	{
+		public static string DownloadString(string url)
+		{
+			var webReq = WebRequest.Create(url);
+			using (var webRes = webReq.GetResponse())
+			using (var stream = webRes.GetResponseStream())
+			using (var reader = new StreamReader(stream))
+			{
+				return reader.ReadToEnd();
+			}
+		}
+
 		public static WebResponse UploadFile(this WebRequest webRequest, 
 			FileInfo uploadFileInfo, string uploadFileMimeType)
 		{

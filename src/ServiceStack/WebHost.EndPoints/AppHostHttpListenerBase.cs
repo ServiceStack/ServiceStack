@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Reflection;
+using ServiceStack.Common.Utils;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -21,7 +22,18 @@ namespace ServiceStack.WebHost.Endpoints
 		protected AppHostHttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: base(serviceName, assembliesWithServices)
 		{
-			
+			EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = null;
+			EndpointHostConfig.Instance.MetadataRedirectPath = "metadata";
+		}
+
+		protected AppHostHttpListenerBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
+			: base(serviceName, assembliesWithServices)
+		{
+			EndpointHostConfig.Instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
+				? null : handlerPath;			
+			EndpointHostConfig.Instance.MetadataRedirectPath = handlerPath == null 
+				? "metadata"
+				: PathUtils.CombinePaths(handlerPath, "metadata");
 		}
 
 		protected override void ProcessRequest(HttpListenerContext context)
@@ -32,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var httpReq = new HttpListenerRequestWrapper(operationName, context.Request);
 			var httpRes = new HttpListenerResponseWrapper(context.Response);
-			var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpReq.HttpMethod, httpReq.PathInfo);
+			var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
 
 			var serviceStackHandler = handler as IServiceStackHttpHandler;
 			if (serviceStackHandler != null)

@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			if (!string.IsNullOrEmpty(RelativeUrl))
 			{
-				var absoluteUrl = request.RawUrl.WithTrailingSlash() + this.RelativeUrl;
+				var absoluteUrl = request.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
@@ -36,6 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
 			}
+			response.Close();
 		}
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
 			}
-
+			response.Close();
 		}
 
 		public bool IsReusable

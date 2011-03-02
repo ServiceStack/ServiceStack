@@ -19,6 +19,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			this.response = response;
 		}
 
+		public HttpResponse Response
+		{
+			get { return response; }
+		}
+
 		public int StatusCode
 		{
 			set { this.response.StatusCode = value; }

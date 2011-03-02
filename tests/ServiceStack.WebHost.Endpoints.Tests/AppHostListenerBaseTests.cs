@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using NUnit.Framework;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.ServiceClient.Web;
@@ -36,6 +38,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			appHost.Dispose();
 			appHost = null;
+		}
+
+		[Test]
+		public void Root_path_redirects_to_metadata_page()
+		{
+			var webReq = (HttpWebRequest)WebRequest.Create(ListeningOn);
+
+			var webRes = (HttpWebResponse)webReq.GetResponse();
+
+			var html = new StreamReader(webRes.GetResponseStream()).ReadToEnd();
+
+			Assert.That(html.Contains("The following operations are supported."));
+		}
+
+		[Test]
+		public void Can_download_default_html_page()
+		{
+			var webReq = (HttpWebRequest)WebRequest.Create(ListeningOn + "default.html");
+
+			var webRes = (HttpWebResponse)webReq.GetResponse();
+
+			var html = new StreamReader(webRes.GetResponseStream()).ReadToEnd();
+
+			Assert.That(html.Contains("Default index ServiceStack.WebHost.Endpoints.Tests page"));
 		}
 
 		[Test]

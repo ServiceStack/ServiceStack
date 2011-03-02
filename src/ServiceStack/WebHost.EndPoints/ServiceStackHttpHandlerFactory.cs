@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Web;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
@@ -72,9 +73,10 @@ namespace ServiceStack.WebHost.Endpoints
 				DefaultHttpHandler = NotFoundHttpHandler;
 		}
 
+		// Entry point for ASP.NET
 		public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
 		{
-			var reqInfo = ReturnRequestInfo(context);
+			var reqInfo = ReturnRequestInfo(context.Request);
 			if (reqInfo != null) return reqInfo;
 
 			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
@@ -105,24 +107,76 @@ namespace ServiceStack.WebHost.Endpoints
 				   ?? NotFoundHttpHandler;
 		}
 
+		// Entry point for HttpListener
+		public static IHttpHandler GetHandler(IHttpRequest httpReq)
+		{
+			var reqInfo = ReturnRequestInfo(httpReq);
+			if (reqInfo != null) return reqInfo;
+
+			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+			var pathInfo = httpReq.PathInfo;
+
+			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
+				return DefaultHttpHandler;
+
+			if (mode != null && pathInfo.EndsWith(mode))
+			{
+				var requestPath = pathInfo;
+				if (requestPath == "/" + mode
+					|| requestPath == mode
+					|| requestPath == mode + "/")
+				{
+					//TODO: write test for this
+					if (httpReq.GetFilePath() != WebHostPhysicalPath
+						|| !File.Exists(Path.Combine(httpReq.ApplicationFilePath, DefaultRootFileName ?? "")))
+					{
+						return new IndexPageHttpHandler();
+					}
+				}
+
+				var okToServe = ShouldAllow(httpReq.GetFilePath());
+				return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
+			}
+
+			return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo)
+				   ?? NotFoundHttpHandler;
+		}
+		
+
 		/// <summary>
-		/// If enabled, just returns the Request Info as it understa
+		/// If enabled, just returns the Request Info as it understands
 		/// </summary>
 		/// <param name="context"></param>
 		/// <returns></returns>
-		private static RequestInfoHandler ReturnRequestInfo(HttpContext context)
+		private static RequestInfoHandler ReturnRequestInfo(HttpRequest request)
 		{
 			if (EndpointHost.Config.DebugOnlyReturnRequestInfo)
 			{
 				var reqInfo = RequestInfoHandler.GetRequestInfo(
-					new HttpRequestWrapper(typeof(RequestInfo).Name, context.Request));
+					new HttpRequestWrapper(typeof(RequestInfo).Name, request));
 
 				reqInfo.Host = EndpointHost.Config.DebugAspNetHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + EndpointHost.Config.ServiceName;
 				//reqInfo.FactoryUrl = url; //Just RawUrl without QueryString 
 				//reqInfo.FactoryPathTranslated = pathTranslated; //Local path on filesystem
-				reqInfo.Path = context.Request.Path;
-				reqInfo.PathInfo = context.Request.PathInfo;
-				reqInfo.ApplicationPath = context.Request.ApplicationPath;
+				reqInfo.PathInfo = request.PathInfo;
+				reqInfo.Path = request.Path;
+				reqInfo.ApplicationPath = request.ApplicationPath;
+
+				return new RequestInfoHandler { RequestInfo = reqInfo };
+			}
+
+			return null;
+		}
+
+		private static RequestInfoHandler ReturnRequestInfo(IHttpRequest httpReq)
+		{
+			if (EndpointHost.Config.DebugOnlyReturnRequestInfo)
+			{
+				var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
+
+				reqInfo.Host = EndpointHost.Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + EndpointHost.Config.ServiceName;
+				reqInfo.PathInfo = httpReq.PathInfo;
+				reqInfo.Path = httpReq.GetPathUrl();
 
 				return new RequestInfoHandler { RequestInfo = reqInfo };
 			}
@@ -139,7 +193,6 @@ namespace ServiceStack.WebHost.Endpoints
 			return EndpointHost.Config.AllowFileExtensions.Contains(fileExt.Substring(1));
 		}
 
-		// Entry point for HttpListener
 		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo)
 		{
 			var pathParts = pathInfo.TrimStart('/').Split('/');

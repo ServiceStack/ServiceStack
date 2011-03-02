@@ -53,6 +53,8 @@ namespace ServiceStack.ServiceHost.Tests
 			public Stream InputStream { get; private set; }
 			public long ContentLength { get; private set; }
 			public IFile[] Files { get; private set; }
+
+			public string ApplicationFilePath { get; private set; }
 		}
 
 		readonly List<MockUrlHttpRequest> allResults = new List<MockUrlHttpRequest> {

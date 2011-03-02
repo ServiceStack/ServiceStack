@@ -29,21 +29,29 @@
 //
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Web;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	class StaticFileHandler : IHttpHandler
+	class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
 	{
 		public void ProcessRequest(HttpContext context)
 		{
-			var request = context.Request;
-			var response = context.Response;
-			var fileName = request.PhysicalPath;
+			ProcessRequest(
+			new HttpRequestWrapper(null, context.Request),
+			new HttpResponseWrapper(context.Response), 
+			null);
+		}
+
+		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+		{
+			var fileName = request.GetFilePath();
+
 			var fi = new FileInfo(fileName);
 			if (!fi.Exists)
 			{
@@ -54,13 +62,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						var defaultFileName = Path.Combine(fi.FullName, defaultDoc);
 						var defaultFileInfo = new FileInfo(defaultFileName);
 						if (!defaultFileInfo.Exists) continue;
-						response.Redirect(request.Path + '/' + defaultDoc);
+						response.Redirect(request.GetPathUrl() + '/' + defaultDoc);
 						return;
 					}
 				}
 
 				if (!fi.Exists)
-					throw new HttpException(404, "File '" + request.FilePath + "' not found.");
+					throw new HttpException(404, "File '" + request.PathInfo + "' not found.");
 			}
 
 

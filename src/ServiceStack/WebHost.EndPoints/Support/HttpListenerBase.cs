@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
 			: this()
 		{
-			EndpointHost.ConfigureHost(this, serviceName, assembliesWithServices);			
+			EndpointHost.ConfigureHost(this, serviceName, assembliesWithServices);
 		}
 
 		public void Init()

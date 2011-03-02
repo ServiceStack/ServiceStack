@@ -80,6 +80,8 @@ namespace ServiceStack.WebHost.Endpoints
 			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
 			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
 			this.WsdlServiceTypesNamespace = instance.WsdlServiceTypesNamespace;
+			this.DefaultRedirectPath = instance.DefaultRedirectPath;
+			this.MetadataRedirectPath = instance.MetadataRedirectPath;
 			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
 			this.DefaultContentType = instance.DefaultContentType;
 			this.AllowJsonpRequests = instance.AllowJsonpRequests;

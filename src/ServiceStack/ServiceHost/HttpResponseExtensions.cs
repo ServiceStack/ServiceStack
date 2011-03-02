@@ -1,12 +1,56 @@
 using System;
+using System.IO;
 using System.Net;
+using System.Web;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceHost
 {
 	public static class HttpResponseExtensions
 	{
 		public static void RedirectToUrl(this IHttpResponse httpRes, string url)
+		{
+			httpRes.AddHeader(HttpHeaders.Location, url);
+			httpRes.Close();
+		}
+
+		public static void TransmitFile(this IHttpResponse httpRes, string filePath)
+		{
+			var aspNetRes = httpRes as HttpResponseWrapper;
+			if (aspNetRes != null)
+			{
+				aspNetRes.Response.TransmitFile(filePath);
+				return;
+			}
+
+			using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+			{
+				fs.WriteTo(httpRes.OutputStream);
+			}
+
+			httpRes.Close();
+		}
+
+		public static void WriteFile(this IHttpResponse httpRes, string filePath)
+		{
+			var aspNetRes = httpRes as HttpResponseWrapper;
+			if (aspNetRes != null)
+			{
+				aspNetRes.Response.WriteFile(filePath);
+				return;
+			}
+
+			using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+			{
+				fs.WriteTo(httpRes.OutputStream);
+			}
+
+			httpRes.Close();
+		}
+
+		public static void Redirect(this IHttpResponse httpRes, string url)
 		{
 			httpRes.AddHeader(HttpHeaders.Location, url);
 			httpRes.Close();
