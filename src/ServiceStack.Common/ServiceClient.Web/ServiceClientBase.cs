@@ -122,15 +122,14 @@ namespace ServiceStack.ServiceClient.Web
 						return response;
 					}
 				}
-
-				HandleResponseException<TResponse>(ex, requestUri);
 			}
 			catch (Exception subEx)
 			{
 				HandleResponseException<TResponse>(ex, requestUri);
 			}
 
-			throw ex;
+			HandleResponseException<TResponse>(ex, requestUri);
+			throw ex; //Doesn't get galled
 		}
 
 		private void HandleResponseException<TResponse>(Exception ex, string requestUri)
