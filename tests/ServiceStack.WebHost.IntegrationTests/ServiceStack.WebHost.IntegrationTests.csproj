@@ -111,10 +111,12 @@
     <Content Include="TestExistingDir\default.html" />
     <Content Include="TestExistingDir\upload.html" />
     <Content Include="Web.config" />
+    <Content Include="webpage.html" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Services\CachedMoviesService.cs" />
     <Compile Include="Services\CustomFormDataService.cs" />
+    <Compile Include="Tests\AppHostBaseTests.cs" />
     <Compile Include="Tests\CachedServiceTests.cs" />
     <Compile Include="Tests\CsvContentTypeFilterTests.cs" />
     <Compile Include="Global.asax.cs">
@@ -168,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
+    <None Include="webpage.forbidden" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

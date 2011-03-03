@@ -219,7 +219,8 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="default.html" />
+    <None Include="webpage.forbidden" />
+    <Content Include="webpage.html" />
     <Content Include="TestExistingDir\default.html" />
     <Content Include="TestExistingDir\upload.html" />
   </ItemGroup>

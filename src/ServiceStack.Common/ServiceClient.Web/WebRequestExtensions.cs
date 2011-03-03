@@ -7,14 +7,35 @@ namespace ServiceStack.ServiceClient.Web
 {
 	public static class WebRequestExtensions
 	{
-		public static string DownloadString(string url)
+		public static string DownloadUrl(this string url)
 		{
 			var webReq = WebRequest.Create(url);
 			using (var webRes = webReq.GetResponse())
+			return DownloadText(webRes);
+		}
+
+		public static string DownloadText(this WebResponse webRes)
+		{
 			using (var stream = webRes.GetResponseStream())
 			using (var reader = new StreamReader(stream))
 			{
 				return reader.ReadToEnd();
+			}
+		}
+
+		public static HttpWebResponse GetErrorResponse(this string url)
+		{
+			try
+			{
+				var webReq = WebRequest.Create(url);
+				var webRes = webReq.GetResponse();
+				var strRes = webRes.DownloadText();
+				Console.WriteLine("Expected error, got: " + strRes);
+				return null;
+			}
+			catch (WebException webEx)
+			{
+				return (HttpWebResponse) webEx.Response;
 			}
 		}
 

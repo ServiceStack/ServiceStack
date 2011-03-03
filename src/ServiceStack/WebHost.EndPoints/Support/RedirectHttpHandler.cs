@@ -25,16 +25,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
 				throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
 
-			if (!string.IsNullOrEmpty(RelativeUrl))
+			if (!string.IsNullOrEmpty(AbsoluteUrl))
+			{
+				response.StatusCode = (int)HttpStatusCode.Redirect;
+				response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
+			}
+			else
 			{
 				var absoluteUrl = request.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
-			}
-			else
-			{
-				response.StatusCode = (int)HttpStatusCode.Redirect;
-				response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
 			}
 			response.Close();
 		}
@@ -51,17 +51,18 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
 				throw new ArgumentNullException("RelativeUrl or AbsoluteUrl");
 
-			if (!string.IsNullOrEmpty(RelativeUrl))
-			{
-				var absoluteUrl = request.ApplicationPath.WithTrailingSlash() + this.RelativeUrl;
-				response.StatusCode = (int)HttpStatusCode.Redirect;
-				response.AddHeader(HttpHeaders.Location, absoluteUrl);
-			}
-			else
+			if (!string.IsNullOrEmpty(AbsoluteUrl))
 			{
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, this.AbsoluteUrl);
 			}
+			else
+			{
+				var absoluteUrl = request.Url.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
+				response.StatusCode = (int)HttpStatusCode.Redirect;
+				response.AddHeader(HttpHeaders.Location, absoluteUrl);
+			}
+			response.Flush();
 			response.Close();
 		}
 

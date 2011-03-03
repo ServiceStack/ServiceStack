@@ -43,25 +43,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Root_path_redirects_to_metadata_page()
 		{
-			var webReq = (HttpWebRequest)WebRequest.Create(ListeningOn);
-
-			var webRes = (HttpWebResponse)webReq.GetResponse();
-
-			var html = new StreamReader(webRes.GetResponseStream()).ReadToEnd();
-
+			var html = ListeningOn.DownloadUrl();
 			Assert.That(html.Contains("The following operations are supported."));
 		}
 
 		[Test]
-		public void Can_download_default_html_page()
+		public void Can_download_webpage_html_page()
 		{
-			var webReq = (HttpWebRequest)WebRequest.Create(ListeningOn + "default.html");
-
-			var webRes = (HttpWebResponse)webReq.GetResponse();
-
-			var html = new StreamReader(webRes.GetResponseStream()).ReadToEnd();
-
+			var html = (ListeningOn + "webpage.html").DownloadUrl();
 			Assert.That(html.Contains("Default index ServiceStack.WebHost.Endpoints.Tests page"));
+		}
+
+		[Test]
+		public void Gets_404_on_non_existant_page()
+		{
+			var webRes = (ListeningOn + "nonexistant.html").GetErrorResponse();
+			Assert.That(webRes.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+		}
+
+		[Test]
+		public void Gets_403_on_page_with_non_whitelisted_extension()
+		{
+			var webRes = (ListeningOn + "webpage.forbidden").GetErrorResponse();
+			Assert.That(webRes.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
 		}
 
 		[Test]
@@ -88,10 +92,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Calling_missing_web_service_does_not_break_HttpListener()
 		{
+			var missingUrl = ListeningOn + "missing.html";
 			int errorCount = 0;
 			try
 			{
-				var call1 = new StreamReader(WebRequest.Create(ListeningOn).GetResponse().GetResponseStream()).ReadToEnd();
+				var call1 = new StreamReader(WebRequest.Create(missingUrl).GetResponse().GetResponseStream()).ReadToEnd();
 			}
 			catch (Exception ex)
 			{
@@ -100,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 			try
 			{
-				var call2 = new StreamReader(WebRequest.Create(ListeningOn).GetResponse().GetResponseStream()).ReadToEnd();
+				var call2 = new StreamReader(WebRequest.Create(missingUrl).GetResponse().GetResponseStream()).ReadToEnd();
 			}
 			catch (Exception ex)
 			{

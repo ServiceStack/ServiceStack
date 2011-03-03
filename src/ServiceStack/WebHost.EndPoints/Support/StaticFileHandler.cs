@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
-			var fileName = request.GetFilePath();
+			var fileName = request.GetPhysicalPath();
 
 			var fi = new FileInfo(fileName);
 			if (!fi.Exists)

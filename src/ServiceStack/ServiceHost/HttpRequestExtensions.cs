@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Common;
@@ -99,17 +100,25 @@ namespace ServiceStack.ServiceHost
 			return hostName;
 		}
 
-		public static string GetFilePath(this IHttpRequest httpRequest)
+		public static string GetPhysicalPath(this IHttpRequest httpReq)
 		{
-			var aspNetReq = httpRequest as HttpRequestWrapper;
+			var aspNetReq = httpReq as HttpRequestWrapper;
 			if (aspNetReq != null)
 			{
-				return aspNetReq.Request.FilePath;
+				return aspNetReq.Request.PhysicalPath;
 			}
 
-			var filePath = httpRequest.ApplicationFilePath.CombineWith(httpRequest.PathInfo);
+			var filePath = httpReq.ApplicationFilePath.CombineWith(httpReq.PathInfo);
 			return filePath;
 		}
 
+		public static string GetApplicationUrl(this HttpRequest httpReq)
+		{
+			var appPath = httpReq.ApplicationPath;
+			var baseUrl = httpReq.Url.Scheme + "://" + httpReq.Url.Host;
+			if (httpReq.Url.Port != 80) baseUrl += ":" + httpReq.Url.Port;
+			var appUrl = baseUrl.CombineWith(appPath);
+			return appUrl;
+		}
 	}
 }
