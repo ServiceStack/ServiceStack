@@ -241,7 +241,7 @@ namespace ServiceStack.ServiceClient.Web
 							requestState, requestState.WebRequest);
 
 					}
-					catch (Exception subEx)
+					catch (Exception /*subEx*/)
 					{
 						HandleResponseError(ex, requestState);
 					}

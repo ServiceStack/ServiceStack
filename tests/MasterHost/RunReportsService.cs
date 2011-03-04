@@ -56,37 +56,28 @@ namespace MasterHost
 					throw new ArgumentException("RunType=[all|pathsonly|portsonly]", "RunType");
 
 				var runPaths = runType == "all" || runType == "pathsonly";
-				if (runPaths)
-				{
-					foreach (var path in Config.AllPaths)
-					{
-						if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
-
-						DoRequestInfo(new Report
-						{
-							Id = Config.PathsHostEnvironment + "-" + path,
-							HostEnvironment = Config.PathsHostEnvironment,
-							BaseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, path),
-						},
-							Config.GetPathsForPath(path));
-					}
-				}
-
 				var runPorts = runType == "all" || runType == "portsonly";
-				if (runPorts)
-				{
-					foreach (var port in Config.AllPorts)
-					{
-						if (!request.Filter.IsNullOrEmpty() && port != request.Filter) continue;
 
-						DoRequestInfo(new Report
-						{
-							Id = Config.PortsHostEnvironment + "-" + port,
-							HostEnvironment = Config.PortsHostEnvironment,
-							BaseUrl = Config.RunOnBaseUrl + ":" + port,
-						},
-							Config.GetPathsForPort(port));
-					}
+				for (var i = 0; i < Config.HandlerHosts.Count; i++)
+				{
+					var hostPath = Config.HandlerHosts[i];
+					var hostName = Config.HandlerHostNames[i];
+
+					if (!request.Filter.IsNullOrEmpty() && hostPath != request.Filter) continue;
+
+					var isPort = hostPath.Contains(":");
+					var isPath = !isPort;
+					if (isPort && !runPorts) continue;
+					if (isPath && !runPaths) continue;
+
+					var baseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, hostPath);
+					DoRequestInfo(new Report
+					{
+						Id = hostName + "-" + hostPath,
+						HostEnvironment = hostName,
+						BaseUrl = baseUrl,
+					},
+					Config.TestPaths);
 				}
 			}
 

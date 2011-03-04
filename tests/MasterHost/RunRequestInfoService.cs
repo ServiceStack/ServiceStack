@@ -67,30 +67,20 @@ namespace MasterHost
 				if (runType != "all" && runType != "pathsonly" && runType != "portsonly")
 					throw new ArgumentException("Required [ all | pathsonly | portsonly ]", "RunType");
 
-				//DbFactory.Exec(dbCmd => dbCmd.CreateTable<RequestInfoResponse>(true));
-
 				var runPaths = runType == "all" || runType == "pathsonly";
-				if (runPaths)
-				{
-					foreach (var path in Config.AllPaths)
-					{
-						if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
-
-						var baseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, path);
-						DoRequestInfo(baseUrl, Config.GetPathsForPath(path));
-					}
-				}
-
 				var runPorts = runType == "all" || runType == "portsonly";
-				if (runPorts)
-				{
-					foreach (var port in Config.AllPorts)
-					{
-						if (!request.Filter.IsNullOrEmpty() && port != request.Filter) continue;
 
-						var baseUrl = Config.RunOnBaseUrl + ":" + port;
-						DoRequestInfo(baseUrl, Config.GetPathsForPort(port));
-					}
+				foreach (var path in Config.HandlerHosts)
+				{
+					if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
+
+					var isPort = path.Contains(":");
+					var isPath = !isPort;
+					if (isPort && !runPorts) continue;
+					if (isPath && !runPaths) continue;
+
+					var baseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, path);
+					DoRequestInfo(baseUrl, Config.TestPaths);
 				}
 			}
 
@@ -155,4 +145,5 @@ namespace MasterHost
 			}
 		}
 	}
+
 }

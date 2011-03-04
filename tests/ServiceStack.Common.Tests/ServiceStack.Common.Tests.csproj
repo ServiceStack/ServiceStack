@@ -173,6 +173,7 @@
     <Compile Include="Support\ModelWithFieldsOfDifferentTypes.cs" />
     <Compile Include="Support\ModelWithOnlyStringFields.cs" />
     <Compile Include="Support\PathInfoTests.cs" />
+    <Compile Include="Text\AdhocJsTests.cs" />
     <Compile Include="Xlinq\XlinqExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -192,7 +193,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\DdnContentIngest\" />
-    <Folder Include="Text\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

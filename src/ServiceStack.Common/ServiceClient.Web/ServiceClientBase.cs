@@ -123,7 +123,7 @@ namespace ServiceStack.ServiceClient.Web
 					}
 				}
 			}
-			catch (Exception subEx)
+			catch (Exception /*subEx*/)
 			{
 				HandleResponseException<TResponse>(ex, requestUri);
 			}
