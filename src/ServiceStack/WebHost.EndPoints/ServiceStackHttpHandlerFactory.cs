@@ -19,6 +19,7 @@ namespace ServiceStack.WebHost.Endpoints
 		static private readonly string DefaultRootFileName = null;
 		static private string ApplicationBaseUrl = null;
 		static private readonly IHttpHandler DefaultHttpHandler = null;
+		static private readonly RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
 		static private readonly IHttpHandler ForbiddenHttpHandler = null;
 		static private readonly IHttpHandler NotFoundHttpHandler = null;
 		static private readonly IHttpHandler StaticFileHandler = new StaticFileHandler();
@@ -75,6 +76,9 @@ namespace ServiceStack.WebHost.Endpoints
 			if (DefaultHttpHandler == null && !string.IsNullOrEmpty(EndpointHost.Config.MetadataRedirectPath))
 				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.MetadataRedirectPath };
 
+			if (!string.IsNullOrEmpty(EndpointHost.Config.MetadataRedirectPath))
+				NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.MetadataRedirectPath };
+
 			if (DefaultHttpHandler == null)
 				DefaultHttpHandler = NotFoundHttpHandler;
 		}
@@ -91,18 +95,9 @@ namespace ServiceStack.WebHost.Endpoints
 			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
 			{
 				if (ApplicationBaseUrl == null)
-				{
-					ApplicationBaseUrl = context.Request.GetApplicationUrl();
+					SetApplicationBaseUrl(context.Request.GetApplicationUrl());
 
-					var defaultRedirectUrl = DefaultHttpHandler as RedirectHttpHandler;
-					if (defaultRedirectUrl != null && defaultRedirectUrl.AbsoluteUrl == null)
-					{
-						defaultRedirectUrl.AbsoluteUrl = ApplicationBaseUrl.CombineWith(
-							defaultRedirectUrl.RelativeUrl);
-					}
-				}
-
-				return DefaultHttpHandler;
+				return mode == null ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
 			}
 
 			if (mode != null && pathInfo.EndsWith(mode))
@@ -127,6 +122,20 @@ namespace ServiceStack.WebHost.Endpoints
 				   ?? NotFoundHttpHandler;
 		}
 
+		private static void SetApplicationBaseUrl(string absoluteUrl)
+		{
+			ApplicationBaseUrl = absoluteUrl;
+
+			var defaultRedirectUrl = DefaultHttpHandler as RedirectHttpHandler;
+			if (defaultRedirectUrl != null && defaultRedirectUrl.AbsoluteUrl == null)
+				defaultRedirectUrl.AbsoluteUrl = ApplicationBaseUrl.CombineWith(
+				defaultRedirectUrl.RelativeUrl);
+
+			if (NonRootModeDefaultHttpHandler.AbsoluteUrl == null)
+				NonRootModeDefaultHttpHandler.AbsoluteUrl = ApplicationBaseUrl.CombineWith(
+				NonRootModeDefaultHttpHandler.RelativeUrl);
+		}
+
 		// Entry point for HttpListener
 		public static IHttpHandler GetHandler(IHttpRequest httpReq)
 		{
@@ -137,7 +146,12 @@ namespace ServiceStack.WebHost.Endpoints
 			var pathInfo = httpReq.PathInfo;
 
 			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
-				return DefaultHttpHandler;
+			{
+				if (ApplicationBaseUrl == null)
+					SetApplicationBaseUrl(httpReq.GetPathUrl());
+
+				return mode == null ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
+			}
 
 			if (mode != null && pathInfo.EndsWith(mode))
 			{
@@ -161,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints
 			return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath())
 				   ?? NotFoundHttpHandler;
 		}
-		
+
 
 		/// <summary>
 		/// If enabled, just returns the Request Info as it understands

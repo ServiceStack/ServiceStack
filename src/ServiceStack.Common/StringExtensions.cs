@@ -100,7 +100,7 @@ namespace ServiceStack.Common
 
 		public static string CombineWith(this string path, params string[] thesePaths)
 		{
-			return PathUtils.CombinePaths(new StringBuilder(path), thesePaths);
+			return PathUtils.CombinePaths(new StringBuilder(path.TrimEnd('/','\\')), thesePaths);
 		}
 
 		public static string ToParentPath(this string path)

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -15,9 +15,9 @@ namespace MasterHost
 		private readonly AppConfig Config = new AppConfig
 		{
 			RunOnBaseUrl = "http://localhost",
-			TestPaths = TypeSerializer.DeserializeFromString<List<string>>("/,/metadata,/metadata/,/hello,/hello/,/hello/world,/hello/world/1,/hello/world/2,/hello/world/2/3"),
-			HandlerHosts = TypeSerializer.DeserializeFromString<List<string>>("/CustomPath35/api,/CustomPath40/api,/RootPath35,/RootPath40,:82,:83,:5001/api,:5002/api,:5003,:5004"),
-			HandlerHostNames = TypeSerializer.DeserializeFromString<List<string>>("IIS7+3.5,IIS7+4.0,IIS7+3.5,IIS7+4.0,ConsoleApp,WindowsService,WebServer20,WebServer40,WebServer20,WebServer40"),
+			TestPaths = "/,/metadata,/metadata/,/hello,/hello/,/hello/world,/hello/world/1,/hello/world/2,/hello/world/2/3".To<List<string>>(),
+			HandlerHosts = "/CustomPath35/api,/CustomPath40/api,/RootPath35,/RootPath40,:82,:83,:5001/api,:5002/api,:5003,:5004".To<List<string>>(),
+			HandlerHostNames = "IIS7+3.5,IIS7+4.0,IIS7+3.5,IIS7+4.0,ConsoleApp,WindowsService,WebServer20,WebServer40,WebServer20,WebServer40".To<List<string>>(),
 		};
 
 		private const string DbPath = @"C:\src\ServiceStack\tests\MasterHost\\reports.sqlite";
@@ -38,13 +38,16 @@ namespace MasterHost
 		[Test]
 		public void Run_RunReportsService()
 		{
+			var appHost = new BasicAppHost();
+			appHost.Container.Register(c => new ReportsService { DbFactory = DbFactory });
 			var service = new RunReportsService
-			{				
+			{
 				Config = Config,
-				DbFactory = DbFactory,								
+				DbFactory = DbFactory,
+				AppHost = appHost,
 			};
 
-			var response = service.Get(new RunReports { RunType = "pathsonly" });
+			var response = service.Get(new RunReports { RunType = "all" });
 
 			Console.WriteLine(response.Dump());
 		}

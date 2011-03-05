@@ -133,8 +133,10 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CustomRequestDataTests.cs" />
     <Compile Include="IntegrationTests\ResetMovies.cs" />
+    <Compile Include="Support\Host\TestConfigAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\CustomFormData.cs" />
     <Compile Include="Support\Services\CustomFormDataService.cs" />
+    <Compile Include="AppHostConfigTests.cs" />
     <Compile Include="_SyncRestClientTests.cs" />
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />

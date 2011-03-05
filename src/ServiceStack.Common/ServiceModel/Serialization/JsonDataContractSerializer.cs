@@ -14,6 +14,11 @@ namespace ServiceStack.ServiceModel.Serialization
 
 		public string Parse<T>(T obj)
 		{
+			return SerializeToString(obj);
+		}
+
+		public string SerializeToString<T>(T obj)
+		{
 			if (!UseBcl)
 			{
 				return JsonSerializer.SerializeToString(obj);

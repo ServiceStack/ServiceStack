@@ -70,7 +70,7 @@ namespace MasterHost
 					if (isPort && !runPorts) continue;
 					if (isPath && !runPaths) continue;
 
-					var baseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, hostPath);
+					var baseUrl = Config.RunOnBaseUrl + hostPath;
 					DoRequestInfo(new Report
 					{
 						Id = hostName + "-" + hostPath,

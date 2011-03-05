@@ -43,15 +43,15 @@ namespace ServiceStack.WebHost.Endpoints
 			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
 			HtmlFormat.Register(appHost);
 			CsvFormat.Register(appHost);
-
-			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
-			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
 		// Post user config
 		private static void ApplyConfigChanges()
 		{
 			config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
+
+			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
+			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
 		public static ServiceManager ServiceManager

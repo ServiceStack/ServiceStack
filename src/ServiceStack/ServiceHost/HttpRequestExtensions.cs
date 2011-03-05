@@ -75,7 +75,10 @@ namespace ServiceStack.ServiceHost
 		{
 			var resolvedPathInfo = httpReq.PathInfo;
 
-			var pos = httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
+			var pos = resolvedPathInfo == string.Empty
+				? httpReq.AbsoluteUri.Length
+				: httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
+
 			if (pos == -1)
 				throw new ArgumentException(
 					string.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));

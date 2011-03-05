@@ -70,17 +70,20 @@ namespace MasterHost
 				var runPaths = runType == "all" || runType == "pathsonly";
 				var runPorts = runType == "all" || runType == "portsonly";
 
-				foreach (var path in Config.HandlerHosts)
+				for (var i = 0; i < Config.HandlerHosts.Count; i++)
 				{
-					if (!request.Filter.IsNullOrEmpty() && path != request.Filter) continue;
+					var hostPath = Config.HandlerHosts[i];
+					var hostName = Config.HandlerHostNames[i];
 
-					var isPort = path.Contains(":");
+					if (!request.Filter.IsNullOrEmpty() && hostPath != request.Filter) continue;
+
+					var isPort = hostPath.Contains(":");
 					var isPath = !isPort;
 					if (isPort && !runPorts) continue;
 					if (isPath && !runPaths) continue;
 
-					var baseUrl = PathUtils.CombinePaths(Config.RunOnBaseUrl, path);
-					DoRequestInfo(baseUrl, Config.TestPaths);
+					var baseUrl = Config.RunOnBaseUrl + hostPath;
+					DoRequestInfo(hostName, hostPath, baseUrl, new[] { "/_requestinfo" });
 				}
 			}
 
@@ -90,7 +93,7 @@ namespace MasterHost
 			};
 		}
 
-		public void DoRequestInfo(string baseUrl, IEnumerable<string> testPaths)
+		public void DoRequestInfo(string hostName, string hostPath, string baseUrl, IEnumerable<string> testPaths)
 		{
 			foreach (var testPath in testPaths)
 			{
@@ -112,7 +115,7 @@ namespace MasterHost
 					else
 					{
 						requestInfo = new RequestInfoResponse
-						{
+						{												
 							Host = requestUrl,
 							Path = testPath,
 							ContentType = webRes.ContentType,
@@ -135,7 +138,7 @@ namespace MasterHost
 					var webEx = ex as WebException;
 					if (webEx != null)
 					{
-						requestInfo.Status = (int) webEx.Status;
+						requestInfo.Status = (int)webEx.Status;
 					}
 				}
 				finally

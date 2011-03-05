@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Web
@@ -65,7 +66,7 @@ namespace ServiceStack.Common.Web
 					return XmlSerializer.SerializeToString(response);
 
 				case ContentType.Json:
-					return JsonSerializer.SerializeToString(response);
+					return JsonDataContractSerializer.Instance.SerializeToString(response);
 
 				case ContentType.Jsv:
 					return TypeSerializer.SerializeToString(response);
@@ -99,7 +100,7 @@ namespace ServiceStack.Common.Web
 					return XmlSerializer.SerializeToString(response);
 
 				case EndpointAttributes.Json:
-					return JsonSerializer.SerializeToString(response);
+					return JsonDataContractSerializer.Instance.SerializeToString(response);
 
 				case EndpointAttributes.Jsv:
 					return TypeSerializer.SerializeToString(response);
@@ -133,7 +134,7 @@ namespace ServiceStack.Common.Web
 					return (r, o, s) => XmlSerializer.SerializeToStream(o, s);
 
 				case EndpointAttributes.Json:
-					return (r, o, s) => JsonSerializer.SerializeToStream(o, s);
+					return (r, o, s) => JsonDataContractSerializer.Instance.SerializeToStream(o, s);
 
 				case EndpointAttributes.Jsv:
 					return (r, o, s) => TypeSerializer.SerializeToStream(o, s);
@@ -151,7 +152,7 @@ namespace ServiceStack.Common.Web
 					return XmlSerializer.DeserializeFromString(request, type);
 
 				case EndpointAttributes.Json:
-					return JsonSerializer.DeserializeFromString(request, type);
+					return JsonDataContractDeserializer.Instance.DeserializeFromString(request, type);
 
 				case EndpointAttributes.Jsv:
 					return TypeSerializer.DeserializeFromString(request, type);
@@ -185,7 +186,7 @@ namespace ServiceStack.Common.Web
 					return XmlSerializer.DeserializeFromStream;
 
 				case EndpointAttributes.Json:
-					return JsonSerializer.DeserializeFromStream;
+					return JsonDataContractDeserializer.Instance.DeserializeFromStream;
 
 				case EndpointAttributes.Jsv:
 					return TypeSerializer.DeserializeFromStream;

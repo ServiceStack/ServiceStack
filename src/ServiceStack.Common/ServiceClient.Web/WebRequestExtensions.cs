@@ -1,17 +1,41 @@
 using System;
 using System.IO;
 using System.Net;
+using ServiceStack.Common.Web;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
 	public static class WebRequestExtensions
 	{
+		public static string DownloadJsonFromUrl(this string url)
+		{
+			return url.DownloadUrl(ContentType.Json);
+		}
+
+		public static string DownloadXmlFromUrl(this string url)
+		{
+			return url.DownloadUrl(ContentType.Xml);
+		}
+
+		public static string DownloadCsvFromUrl(this string url)
+		{
+			return url.DownloadUrl(ContentType.Csv);
+		}
+
+		public static string DownloadUrl(this string url, string acceptContentType)
+		{
+			var webReq = (HttpWebRequest)WebRequest.Create(url);
+			webReq.Accept = acceptContentType;
+			using (var webRes = webReq.GetResponse())
+				return DownloadText(webRes);
+		}
+
 		public static string DownloadUrl(this string url)
 		{
 			var webReq = WebRequest.Create(url);
 			using (var webRes = webReq.GetResponse())
-			return DownloadText(webRes);
+				return DownloadText(webRes);
 		}
 
 		public static string DownloadText(this WebResponse webRes)
@@ -35,11 +59,11 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			catch (WebException webEx)
 			{
-				return (HttpWebResponse) webEx.Response;
+				return (HttpWebResponse)webEx.Response;
 			}
 		}
 
-		public static WebResponse UploadFile(this WebRequest webRequest, 
+		public static WebResponse UploadFile(this WebRequest webRequest,
 			FileInfo uploadFileInfo, string uploadFileMimeType)
 		{
 			var boundary = "----------------------------" +
@@ -81,7 +105,7 @@ namespace ServiceStack.ServiceClient.Web
 			requestStream.Close();
 
 			return httpWebRequest.GetResponse();
-		}		
+		}
 
 	}
 

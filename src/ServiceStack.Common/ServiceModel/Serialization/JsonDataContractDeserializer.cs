@@ -15,6 +15,11 @@ namespace ServiceStack.ServiceModel.Serialization
 
 		public object Parse(string json, Type returnType)
 		{
+			return DeserializeFromString(json, returnType);			
+		}
+
+		public object DeserializeFromString(string json, Type returnType)
+		{
 			if (!UseBcl)
 			{
 				return JsonSerializer.DeserializeFromString(json, returnType);
@@ -36,14 +41,19 @@ namespace ServiceStack.ServiceModel.Serialization
 				throw new SerializationException("JsonDataContractDeserializer: Error converting to type: " + ex.Message, ex);
 			}
 		}
-		
-		public T Parse<T>(string json)
+
+		public T DeserializeFromString<T>(string json)
 		{
 			if (UseBcl)
 			{
 				return (T)Parse(json, typeof(T));
 			}
 			return JsonSerializer.DeserializeFromString<T>(json);
+		}
+		
+		public T Parse<T>(string json)
+		{
+			return DeserializeFromString<T>(json);
 		}
 
 		public T DeserializeFromStream<T>(Stream stream)
@@ -54,6 +64,16 @@ namespace ServiceStack.ServiceModel.Serialization
 				return (T)serializer.ReadObject(stream);				
 			}
 			return JsonSerializer.DeserializeFromStream<T>(stream);
+		}
+
+		public object DeserializeFromStream(Type type, Stream stream)
+		{
+			if (UseBcl)
+			{
+				var serializer = new DataContractJsonSerializer(type);
+				return serializer.ReadObject(stream);
+			}
+			return JsonSerializer.DeserializeFromStream(type, stream);
 		}
 	}
 }
