@@ -55,6 +55,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
+		public void Can_download_requestinfo_json()
+		{
+			var html = (ListeningOn + "_requestinfo").DownloadUrl();
+			Assert.That(html.Contains("\"Host\":"));
+		}
+
+		[Test]
 		public void Gets_404_on_non_existant_page()
 		{
 			var webRes = (ListeningOn + "nonexistant.html").GetErrorResponse();

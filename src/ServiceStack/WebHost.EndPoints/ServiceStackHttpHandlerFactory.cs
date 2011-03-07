@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
@@ -24,6 +25,10 @@ namespace ServiceStack.WebHost.Endpoints
 		static private readonly IHttpHandler NotFoundHttpHandler = null;
 		static private readonly IHttpHandler StaticFileHandler = new StaticFileHandler();
 		private static readonly bool IsIntegratedPipeline = false;
+		private static readonly bool ServeDefaultHandler = false;
+
+		[ThreadStatic]
+		public static string DebugLastHandlerArgs = "";
 
 		static ServiceStackHttpHandlerFactory()
 		{
@@ -34,19 +39,19 @@ namespace ServiceStack.WebHost.Endpoints
 				IsIntegratedPipeline = (bool)pi.GetGetMethod().Invoke(null, new object[0]);
 			}
 
-			ForbiddenHttpHandler = new ForbiddenHttpHandler();
-
 			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
 			WebHostPhysicalPath = isAspNetHost
 				? "~".MapHostAbsolutePath()
 				: "~".MapAbsolutePath();
 
 			//DefaultHttpHandler not supported in IntegratedPipeline mode
-			if (!IsIntegratedPipeline && isAspNetHost)
+			if (!IsIntegratedPipeline && isAspNetHost && !Env.IsMono)
 				DefaultHttpHandler = new DefaultHttpHandler();
 
+			//Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
 			var hostedAtRootPath = EndpointHost.Config.ServiceStackHandlerFactoryPath == null;
-			if (hostedAtRootPath)
+			ServeDefaultHandler = hostedAtRootPath || Env.IsMono;
+			if (ServeDefaultHandler)
 			{
 				foreach (var fileName in Directory.GetFiles(WebHostPhysicalPath))
 				{
@@ -66,10 +71,6 @@ namespace ServiceStack.WebHost.Endpoints
 				}
 			}
 
-			NotFoundHttpHandler = string.IsNullOrEmpty(EndpointHost.Config.NotFoundRedirectPath)
-				? (IHttpHandler)new NotFoundHttpHandler()
-				: new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.NotFoundRedirectPath };
-
 			if (!string.IsNullOrEmpty(EndpointHost.Config.DefaultRedirectPath))
 				DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.DefaultRedirectPath };
 
@@ -81,11 +82,39 @@ namespace ServiceStack.WebHost.Endpoints
 
 			if (DefaultHttpHandler == null)
 				DefaultHttpHandler = NotFoundHttpHandler;
+
+			var defaultRedirectHanlder = DefaultHttpHandler as RedirectHttpHandler;
+			var debugDefaultHandler = defaultRedirectHanlder != null
+				? defaultRedirectHanlder.RelativeUrl
+				: typeof(DefaultHttpHandler).Name;
+
+			ForbiddenHttpHandler = new ForbiddenHttpHandler
+			{
+				IsIntegratedPipeline = IsIntegratedPipeline,
+				WebHostPhysicalPath = WebHostPhysicalPath,
+				WebHostRootFileNames = WebHostRootFileNames,
+				ApplicationBaseUrl = ApplicationBaseUrl,
+				DefaultRootFileName = DefaultRootFileName,
+				DefaultHandler = debugDefaultHandler,
+			};
+
+			NotFoundHttpHandler = string.IsNullOrEmpty(EndpointHost.Config.NotFoundRedirectPath)
+				? (IHttpHandler)new NotFoundHttpHandler
+				{
+					IsIntegratedPipeline = IsIntegratedPipeline,
+					WebHostPhysicalPath = WebHostPhysicalPath,
+					WebHostRootFileNames = WebHostRootFileNames,
+					ApplicationBaseUrl = ApplicationBaseUrl,
+					DefaultRootFileName = DefaultRootFileName,
+					DefaultHandler = debugDefaultHandler,
+				}
+				: new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.NotFoundRedirectPath };
 		}
 
 		// Entry point for ASP.NET
 		public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
 		{
+			DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
 			var reqInfo = ReturnRequestInfo(context.Request);
 			if (reqInfo != null) return reqInfo;
 
@@ -94,10 +123,12 @@ namespace ServiceStack.WebHost.Endpoints
 
 			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
 			{
+				//Exception calling context.Request.Url on Apache+mod_mono
+				var absoluteUrl = Env.IsMono ? url.ToParentPath() : context.Request.GetApplicationUrl();
 				if (ApplicationBaseUrl == null)
-					SetApplicationBaseUrl(context.Request.GetApplicationUrl());
+					SetApplicationBaseUrl(absoluteUrl);
 
-				return mode == null ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
+				return ServeDefaultHandler ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
 			}
 
 			if (mode != null && pathInfo.EndsWith(mode))
@@ -150,7 +181,7 @@ namespace ServiceStack.WebHost.Endpoints
 				if (ApplicationBaseUrl == null)
 					SetApplicationBaseUrl(httpReq.GetPathUrl());
 
-				return mode == null ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
+				return ServeDefaultHandler ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
 			}
 
 			if (mode != null && pathInfo.EndsWith(mode))
@@ -182,7 +213,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		/// <param name="context"></param>
 		/// <returns></returns>
-		private static RequestInfoHandler ReturnRequestInfo(HttpRequest request)
+		private static IHttpHandler ReturnRequestInfo(HttpRequest request)
 		{
 			if (EndpointHost.Config.DebugOnlyReturnRequestInfo)
 			{
@@ -202,7 +233,7 @@ namespace ServiceStack.WebHost.Endpoints
 			return null;
 		}
 
-		private static RequestInfoHandler ReturnRequestInfo(IHttpRequest httpReq)
+		private static IHttpHandler ReturnRequestInfo(IHttpRequest httpReq)
 		{
 			if (EndpointHost.Config.DebugOnlyReturnRequestInfo)
 			{

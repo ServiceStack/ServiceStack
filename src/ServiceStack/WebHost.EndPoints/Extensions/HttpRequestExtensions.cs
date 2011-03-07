@@ -152,8 +152,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var appPath = string.IsNullOrEmpty(request.ApplicationPath)
 			              ? WebHostDirectoryName
 			              : request.ApplicationPath.TrimStart('/');
-			
-			return GetPathInfo(request.Path, mode, appPath);
+
+			//mod_mono: /CustomPath35/api//default.htm
+			var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
+			return GetPathInfo(path, mode, appPath);
 		}
 
 		public static string GetPathInfo(string fullPath, string mode, string appPath)

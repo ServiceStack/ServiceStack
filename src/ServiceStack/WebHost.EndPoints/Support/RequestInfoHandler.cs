@@ -50,6 +50,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public string ApplicationPath { get; set; }
 
 		[DataMember]
+		public string HandlerFactoryArgs { get; set; }
+
+		[DataMember]
 		public string RawUrl { get; set; }
 
 		[DataMember]
@@ -82,12 +85,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		[DataMember]
 		public string ResponseContentType { get; set; }
 
-		//[DataMember]
-		//public string FactoryUrl { get; set; }
-
-		//[DataMember]
-		//public string FactoryPathTranslated { get; set; }
-
 		[DataMember]
 		public string ErrorCode { get; set; }
 
@@ -105,6 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
 			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
+			response.HandlerFactoryArgs = ServiceStackHttpHandlerFactory.DebugLastHandlerArgs;
 
 			var json = JsonSerializer.SerializeToString(response);
 			httpRes.ContentType = ContentType.Json;
