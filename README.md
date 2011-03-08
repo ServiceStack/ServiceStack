@@ -10,6 +10,7 @@ Simple web service example
 ==========================
 
     [DataContract]
+    [RestService("/factorial/{Result}")]
     public class GetFactorial
     {
         [DataMember]
@@ -36,16 +37,15 @@ Simple web service example
         } 
     }
 
-### Calling the service from any C#/.NET Client
+### Calling the factorial service from any C#/.NET Client
     //no code-gen required, can re-use above DTO's
-    var serviceClient = new XmlServiceClient("http://localhost/ServiceStack.Examples.Host.Web/ServiceStack/");
-    var response = this.ServiceClient.Send<GetFactorialResponse>(new GetFactorial { ForNumber = 3 });
+    var serviceClient = new JsonServiceClient("http://localhost/myservice/");
+    var response = serviceClient.Get<GetFactorialResponse>("factorial/3");
     Console.WriteLine("Result: {0}", response.Result);
 
-### Calling the service from a Java Script client i.e. Ajax
+### Calling the factorial service from jQuery
 
-    var serviceClient = new JsonServiceClient("http://localhost/ServiceStack.Examples.Host.Web/ServiceStack/");
-    serviceClient.getFromService({GetFactorial: { ForNumber: 3 }}, function(e) {
+    $.getJSON("http://localhost/myservice/factorial/3", function(e) {
       alert(e.Result);
     });
 
