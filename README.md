@@ -10,7 +10,7 @@ Simple web service example
 ==========================
 
     [DataContract]
-    [RestService("/factorial/{Result}")]
+    [RestService("/factorial/{ForNumber}")]
     public class GetFactorial
     {
         [DataMember]
