@@ -16,8 +16,8 @@ namespace MasterHost
 		{
 			RunOnBaseUrl = "http://localhost",
 			TestPaths = "/,/metadata,/metadata/,/hello,/hello/,/hello/world,/hello/world/1,/hello/world/2,/hello/world/2/3".To<List<string>>(),
-			HandlerHosts = "/CustomPath35/api,/CustomPath40/api,/RootPath35,/RootPath40,:82,:83,:5001/api,:5002/api,:5003,:5004".To<List<string>>(),
-			HandlerHostNames = "IIS7+3.5,IIS7+4.0,IIS7+3.5,IIS7+4.0,ConsoleApp,WindowsService,WebServer20,WebServer40,WebServer20,WebServer40".To<List<string>>(),
+			HandlerHosts = "/ApiPath35/api,/CustomPath35/api,/CustomPath40/api,/RootPath35,/RootPath40,:82,:83,:5001/api,:5002/api,:5003,:5004".To<List<string>>(),
+			HandlerHostNames = "IIS7+3.5,IIS7+3.5,IIS7+4.0,IIS7+3.5,IIS7+4.0,ConsoleApp,WindowsService,WebServer20,WebServer40,WebServer20,WebServer40".To<List<string>>(),
 		};
 
 		private const string DbPath = @"C:\src\ServiceStack\tests\MasterHost\\reports.sqlite";

@@ -19,8 +19,8 @@
 		<add key="RunOnBaseUrl" value="http://localhost" />
 		<add key="TestPaths" value="/,/metadata,/metadata/,/hello,/hello/,/hello/world,/hello/world/1,/hello/world/2,/hello/world/2/3" />
 
-		<add key="HandlerHosts" value="/ApiPath35/api,/CustomPath35/api,/CustomPath40/api,/RootPath35,/RootPath40,:82,:83,:5001/api,:5002/api,:5003,:5004" />
-		<add key="HandlerHostNames" value="IIS7+3.5,IIS7+3.5,IIS7+4.0,IIS7+3.5,IIS7+4.0,ConsoleApp,WindowsService,WebServer20,WebServer40,WebServer20,WebServer40" />
+		<add key="HandlerHosts" value="/ApiPath35/api,/CustomPath35/api,/CustomPath40/api,/RootPath35,/RootPath40" />
+		<add key="HandlerHostNames" value="IIS7+3.5,IIS7+3.5,IIS7+4.0,IIS7+3.5,IIS7+4.0" />
 	</appSettings>
 	
     <connectionStrings />
