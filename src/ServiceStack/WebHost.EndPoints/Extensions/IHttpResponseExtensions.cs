@@ -156,11 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			finally
 			{
-				try
-				{
-					response.Close();
-				}
-				catch (Exception) {}
+				response.Close();
 			}
 		}
 
@@ -226,6 +222,13 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+		private static void WriteErrorTextToResponse(this IHttpResponse response, StringBuilder sb, string contentType)
+		{
+			response.StatusCode = 500;
+			WriteTextToResponse(response, sb.ToString(), contentType);
+			response.Close();
+		}
+
 		private static void WriteXmlErrorToResponse(this IHttpResponse response,
 			string operationName, string errorMessage, Exception ex)
 		{
@@ -239,8 +242,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("</ResponseStatus>");
 			sb.AppendFormat("</{0}Response>", operationName);
 
-			response.StatusCode = 500;
-			WriteTextToResponse(response, sb.ToString(), ContentType.Xml);
+			response.WriteErrorTextToResponse(sb, ContentType.Xml);
 		}
 
 		private static void WriteJsonErrorToResponse(this IHttpResponse response,
@@ -255,8 +257,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("}");
 			sb.AppendLine("}");
 
-			response.StatusCode = 500;
-			WriteTextToResponse(response, sb.ToString(), ContentType.Json);
+			response.WriteErrorTextToResponse(sb, ContentType.Json);
 		}
 
 		private static void WriteJsvErrorToResponse(this IHttpResponse response,
@@ -271,8 +272,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.Append("}");
 			sb.Append("}");
 
-			response.StatusCode = 500;
-			WriteTextToResponse(response, sb.ToString(), ContentType.Jsv);
+			response.WriteErrorTextToResponse(sb, ContentType.Jsv);
 		}
 
 	}

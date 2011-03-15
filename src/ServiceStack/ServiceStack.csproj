@@ -141,6 +141,7 @@
     <Compile Include="ServiceHost\ServiceManager.cs" />
     <Compile Include="ServiceHost\ServiceOperations.cs" />
     <Compile Include="WebHost.EndPoints\AppHostBase.cs" />
+    <Compile Include="WebHost.EndPoints\Extensions\HttpResponseStreamExtensions.cs" />
     <Compile Include="WebHost.EndPoints\Formats\CsvFormat.cs" />
     <Compile Include="WebHost.EndPoints\Extensions\HttpListenerRequestWrapper.cs" />
     <Compile Include="WebHost.EndPoints\GenericHandler.cs" />

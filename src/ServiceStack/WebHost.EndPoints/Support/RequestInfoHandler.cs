@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
 using ServiceStack.Common.Web;
@@ -90,6 +91,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		[DataMember]
 		public string ErrorMessage { get; set; }
+
+		[DataMember]
+		public string DebugString { get; set; }
 	}
 
 	public class RequestInfoHandler
@@ -103,6 +107,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			var response = this.RequestInfo ?? GetRequestInfo(httpReq);
 			response.HandlerFactoryArgs = ServiceStackHttpHandlerFactory.DebugLastHandlerArgs;
+			response.DebugString = "";
+			if (HttpContext.Current != null)
+			{
+				response.DebugString += HttpContext.Current.Request.GetType().FullName
+					+ "|" + HttpContext.Current.Response.GetType().FullName;
+			}
 
 			var json = JsonSerializer.SerializeToString(response);
 			httpRes.ContentType = ContentType.Json;

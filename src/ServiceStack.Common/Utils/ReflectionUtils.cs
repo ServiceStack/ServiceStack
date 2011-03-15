@@ -273,8 +273,6 @@ namespace ServiceStack.Common.Utils
 				var argValues = CreateDefaultValues(args);
 
 				methodInfo.Invoke(genericObj, argValues);
-
-				Log.DebugFormat("Added value '{0}' to type '{1}", argValues, genericObj.GetType());
 			}
 		}
 

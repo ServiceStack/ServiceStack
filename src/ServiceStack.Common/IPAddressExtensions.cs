@@ -128,7 +128,7 @@ namespace ServiceStack.Common.Extensions
 			}
 			catch (NotImplementedException ex)
 			{
-				log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
+				//log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
 			} 
 			return map;
 		}
@@ -155,7 +155,7 @@ namespace ServiceStack.Common.Extensions
 			}
 			catch (NotImplementedException ex)
 			{
-				log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
+				//log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
 			}
 			
 			return list;

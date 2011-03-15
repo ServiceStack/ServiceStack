@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 				var outputStream = response.OutputStream;
 				outputStream.Write(bOutput, 0, bOutput.Length);
-				outputStream.Close();
+				Close();
 			}
 			catch (Exception ex)
 			{
@@ -60,16 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public void Close()
 		{
 			this.IsClosed = true;
-			try
-			{
-				response.OutputStream.Flush();
-				response.OutputStream.Close();
-				response.Close();
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Exception closing HttpListenerResponseWrapper: " + ex.Message, ex);
-			}
+			this.response.CloseOutputStream();
 		}
 
 		public bool IsClosed

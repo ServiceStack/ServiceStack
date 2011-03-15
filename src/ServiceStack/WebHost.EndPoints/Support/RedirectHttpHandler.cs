@@ -4,6 +4,7 @@ using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -62,8 +63,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
-			response.Flush();
-			response.Close();
+
+        	response.CloseOutputStream();
 		}
 
 		public bool IsReusable

@@ -53,20 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public void Close()
 		{
 			this.IsClosed = true;
-			try
-			{
-				//Don't close for MonoFastCGI as it outputs random 4-letters at the start
-				if (!Env.IsMono)
-				{
-					response.OutputStream.Flush();
-					response.OutputStream.Close();
-					//response.Close(); //This kills .NET Development Web Server
-				}
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Exception closing HttpResponse: " + ex.Message, ex);
-			}
+			response.CloseOutputStream();
 		}
 
 		public bool IsClosed
