@@ -33,7 +33,6 @@ namespace ServiceStack.WebHost.Endpoints
 						LogFactory = new NullLogFactory(),
 						EnableAccessRestrictions = true,
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-						WsdlServiceTypesNamespace = "http://schemas.servicestack.net/types",
 						ServiceStackHandlerFactoryPath = ServiceStackPath,
 						MetadataRedirectPath = null,
 						DefaultContentType = ContentType.Json,
@@ -79,7 +78,6 @@ namespace ServiceStack.WebHost.Endpoints
 			this.LogFactory = instance.LogFactory;
 			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
 			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
-			this.WsdlServiceTypesNamespace = instance.WsdlServiceTypesNamespace;
 			this.DefaultRedirectPath = instance.DefaultRedirectPath;
 			this.MetadataRedirectPath = instance.MetadataRedirectPath;
 			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
@@ -172,7 +170,6 @@ namespace ServiceStack.WebHost.Endpoints
 		public string NotFoundRedirectPath { get; set; }
 
 		public string WsdlServiceNamespace { get; set; }
-		public string WsdlServiceTypesNamespace { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
 		public ILogFactory LogFactory { get; set; }
 		public bool EnableAccessRestrictions { get; set; }

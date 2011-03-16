@@ -98,12 +98,12 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 		protected abstract string ReplyEndpointUriTemplate { get; }
 		protected abstract string OneWayEndpointUriTemplate { get; }
 
-		private const string Template = 
+		private const string Template =
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <wsdl:definitions name=""{0}"" 
-    targetNamespace=""http://schemas.servicestack.net/types"" 
-    xmlns:svc=""http://schemas.servicestack.net/types"" 
-    xmlns:tns=""http://schemas.servicestack.net/types"" 
+    targetNamespace=""{10}"" 
+    xmlns:svc=""{10}"" 
+    xmlns:tns=""{10}"" 
     
     xmlns:wsdl=""http://schemas.xmlsoap.org/wsdl/"" 
     xmlns:soap=""http://schemas.xmlsoap.org/wsdl/soap/"" 
@@ -181,7 +181,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Templates
 				replyBindings, 
 				oneWayBindings, 
 				replyEndpointUri, 
-				oneWayEndpointUri);
+				oneWayEndpointUri,
+				EndpointHost.Config.WsdlServiceNamespace);
             
 			return wsdl;
 		}

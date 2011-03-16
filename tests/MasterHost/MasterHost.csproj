@@ -82,7 +82,9 @@
     <Content Include="default.htm" />
     <Content Include="Global.asax" />
     <Content Include="testreports\2011-03-05\RunReports-Windows.htm" />
+    <Content Include="testreports\2011-03-09\RunReports-Linux.htm" />
     <Content Include="testreports\2011-03-09\RunReports-Windows.htm" />
+    <Content Include="testreports\2011-03-15\RunReports-Linux.htm" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
