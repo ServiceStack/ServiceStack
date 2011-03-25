@@ -84,9 +84,9 @@ host of functionality for free, out of the box without any configuration require
     [JSON](http://www.servicestack.net/Backbone.Todos/todos?format=json), [JSV](http://www.servicestack.net/Backbone.Todos/todos?format=jsv),
     [CSV](http://www.servicestack.net/Backbone.Todos/todos?format=csv) 
     
-  * [http://www.servicestack.net/Backbone.Todos/todos?format=html](A HTML5 Report format to view your webservics data in a human-friendly view)
+  * [A HTML5 Report format to view your webservics data in a human-friendly view](http://www.servicestack.net/Backbone.Todos/todos?format=html)
   
-  * [http://www.servicestack.net/Backbone.Todos/metadata](An auto generated api metadata page, with links to your web service XSD's and WSDL's)
+  * [An auto generated api metadata page, with links to your web service XSD's and WSDL's](http://www.servicestack.net/Backbone.Todos/metadata)
   
 
 
