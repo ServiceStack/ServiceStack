@@ -6,58 +6,82 @@ Service Stack is a high-performance .NET web services framework _(including a nu
 that simplifies the development of XML, JSON, JSV and WCF SOAP [Web Services](https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services). 
 For more info check out [servicestack.net](http://www.servicestack.net).
 
-Simple web service example
-==========================
+Simple REST service example
+===========================
 
-    [DataContract]
-    [RestService("/factorial/{ForNumber}")]
-    public class GetFactorial
-    {
-        [DataMember]
-        public long ForNumber { get; set; }
-    }
+	//Register REST Paths
+	[RestService("/todos")]
+	[RestService("/todos/{Id}")]
+	public class Todo //REST Resource DTO
+	{
+		public long Id { get; set; }
+		public string Content { get; set; }
+		public int Order { get; set; }
+		public bool Done { get; set; }
+	}
 
-    [DataContract]
-    public class GetFactorialResponse
-    {
-        [DataMember]
-        public long Result { get; set; }
-    }
+	//Todo REST Service implementation
+	public class TodoService : RestServiceBase<Todo>
+	{
+		public TodoRepository Repository { get; set; }  //Injected by IOC
 
-    public class GetFactorialService : IService<GetFactorial>
-    {
-        public object Execute(GetFactorial request)
-        {
-            return new GetFactorialResponse { Result = GetFactorial(request.ForNumber) };
-        }
+		public override object OnGet(Todo request)
+		{
+			if (request.Id == default(long))
+				return Repository.GetAll();
 
-        static long GetFactorial(long n)
-        {
-            return n > 1 ? n * GetFactorial(n - 1) : 1;
-        } 
-    }
+			return Repository.GetById(request.Id);
+		}
+
+		//Called for new and update
+		public override object OnPost(Todo todo)
+		{
+			return Repository.Store(todo);
+		}
+
+		public override object OnDelete(Todo request)
+		{
+			Repository.DeleteById(request.Id);
+			return null;
+		}
+	}
 
 ### Calling the factorial service from any C#/.NET Client
     //no code-gen required, can re-use above DTO's
-    var serviceClient = new JsonServiceClient("http://localhost/myservice/");
-    var response = serviceClient.Get<GetFactorialResponse>("factorial/3");
-    Console.WriteLine("Result: {0}", response.Result);
+
+    var restClient = new JsonServiceClient("http://localhost/Backbone.Todo");
+    var all = restClient.Get<List<Todo>>("/todos"); // Count = 0
+
+    var todo = restClient.Post<Todo>("/todos", new Todo { Content = "New TODO", Order = 1 }); //todo.Id = 1
+    all = restClient.Get<List<Todo>>("/todos"); // Count = 1
+
+    todo.Content = "Updated TODO";
+    todo = restClient.Post<Todo>("/todos", todo); // todo.Content = Updated TODO
+    
+    restClient.Delete<Todo>("/todos/" + todo.Id);
+    all = restClient.Get<List<Todo>>("/todos"); // Count = 0
+
 
 ### Calling the factorial service from jQuery
 
-    $.getJSON("http://localhost/myservice/factorial/3", function(e) {
-      alert(e.Result);
+    $.getJSON("http://localhost/Backbone.Todo/todos", function(todos) {
+    	alert(todos.length == 1);
     });
 
 
-That's all the application code required to create a simple web service.
+That's all the application code required to create a simple REST web service.
+
+##Live Demo of Backbone TODO app (running on Linux/MONO):
+
+**[http://www.servicestack.net/Backbone.Todos/](http://www.servicestack.net/Backbone.Todos/)**
 
 Preview links using just the above code sample with (live demo running on Linux):
-[XML](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Xml/SyncReply/GetFactorial?ForNumber=3),
-[JSON](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Json/SyncReply/GetFactorial?ForNumber=3),
-[JSV](http://www.servicestack.net/ServiceStack.Examples.Host.Web/ServiceStack/Jsv/SyncReply/GetFactorial?ForNumber=3&debug) 
-Check out the [live demo](http://www.servicestack.net/ServiceStack.Examples.Clients/) with
-[full source code](http://code.google.com/p/servicestack/source/browse/#svn/trunk/ServiceStack.Examples).
+
+  * [XML](http://www.servicestack.net/Backbone.Todos/todos?format=xml),
+  * [JSON](http://www.servicestack.net/Backbone.Todos/todos?format=json)
+  * [HTML](http://www.servicestack.net/Backbone.Todos/todos?format=html) 
+  * [JSV](http://www.servicestack.net/Backbone.Todos/todos?format=jsv) 
+  * [CSV](http://www.servicestack.net/Backbone.Todos/todos?format=csv) 
 
 
 Download

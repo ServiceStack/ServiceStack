@@ -271,7 +271,7 @@ H3 {{
 
 </div>
 
-<script>!window.JSON && document.write(unescape('%3Cscript src=""https://github.com/douglascrockford/JSON-js/raw/master/json2.js""%3E%3C/script%3E'))</script>
+<script>!window.JSON && document.write(unescape('%3Cscript src=""http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js""%3E%3C/script%3E'))</script>
 
 <script type=""text/javascript"">
 // <![CDATA[

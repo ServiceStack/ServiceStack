@@ -56,8 +56,12 @@ namespace ServiceStack.Redis.Generic
 		long IncrementValueBy(string key, int count);
 		long DecrementValue(string key);
 		long DecrementValueBy(string key, int count);
+
+		bool ExpireIn(object id, TimeSpan expiresAt);
+		bool ExpireAt(object id, DateTime dateTime);
 		bool ExpireEntryIn(string key, TimeSpan expiresAt);
 		bool ExpireEntryAt(string key, DateTime dateTime);
+
 		TimeSpan GetTimeToLive(string key);
 		void Save();
 		void SaveAsync();
