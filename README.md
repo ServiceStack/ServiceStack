@@ -33,7 +33,7 @@ Simple REST service example
 			return Repository.GetById(request.Id);
 		}
 
-		//Called for new and update
+		//Called for both new and updated TODOs
 		public override object OnPost(Todo todo)
 		{
 			return Repository.Store(todo);
@@ -46,7 +46,7 @@ Simple REST service example
 		}
 	}
 
-### Calling the factorial service from any C#/.NET Client
+### Calling the above TODO REST service from any C#/.NET Client
     //no code-gen required, can re-use above DTO's
 
     var restClient = new JsonServiceClient("http://localhost/Backbone.Todo");
@@ -62,7 +62,7 @@ Simple REST service example
     all = restClient.Get<List<Todo>>("/todos"); // Count = 0
 
 
-### Calling the factorial service from jQuery
+### Calling the TODO REST service from jQuery
 
     $.getJSON("http://localhost/Backbone.Todo/todos", function(todos) {
     	alert(todos.length == 1);
