@@ -110,7 +110,9 @@
     <Content Include="default.html" />
     <Content Include="TestExistingDir\default.html" />
     <Content Include="TestExistingDir\upload.html" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="webpage.html" />
   </ItemGroup>
   <ItemGroup>

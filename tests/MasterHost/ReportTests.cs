@@ -54,21 +54,21 @@ namespace MasterHost
 			});
 		}
 
-		[Test]
-		public void Run_RunReportsService()
-		{
-			var appHost = new BasicAppHost();
-			appHost.Container.Register(c => new ReportsService { DbFactory = DbFactory });
-			var service = new RunReportsService
-			{
-				Config = Config,
-				DbFactory = DbFactory,
-				AppHost = appHost,
-			};
+		//[Test]
+		//public void Run_RunReportsService()
+		//{
+		//    var appHost = new BasicAppHost();
+		//    appHost.Container.Register(c => new ReportsService { DbFactory = DbFactory });
+		//    var service = new RunReportsService
+		//    {
+		//        Config = Config,
+		//        DbFactory = DbFactory,
+		//        AppHost = appHost,
+		//    };
 
-			var response = service.Get(new RunReports { RunType = "all" });
+		//    var response = service.Get(new RunReports { RunType = "all" });
 
-			Console.WriteLine(response.Dump());
-		}
+		//    Console.WriteLine(response.Dump());
+		//}
 	}
 }
