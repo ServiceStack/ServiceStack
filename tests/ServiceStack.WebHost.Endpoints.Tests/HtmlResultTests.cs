@@ -2,6 +2,7 @@ using System.Text;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
@@ -9,8 +10,13 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[TestFixture]
-	public class HtmlResultTests : TestBase
+	public class HtmlResultMetadataTests : TestsBase
 	{
+		[TestFixtureSetUp]
+		public void TestFixtureSetUp()
+		{
+			//EndpointHost.AppHost = new AppHostMock();
+		}
 
 		public static class Html
 		{

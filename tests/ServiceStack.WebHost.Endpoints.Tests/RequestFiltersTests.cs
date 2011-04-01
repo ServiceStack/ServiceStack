@@ -84,6 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					{
 						res.ReturnAuthRequired();
 					}
+					
 				});
 				this.RequestFilters.Add((req, res, dto) =>
 				{

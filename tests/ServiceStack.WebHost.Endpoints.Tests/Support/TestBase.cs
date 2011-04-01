@@ -5,13 +5,13 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support
 {
-	public abstract class TestBase
+	public abstract class MetadataTestBase
 	{
 		protected List<Type> ReplyOperations { get; set; }
 		protected List<Type> OneWayOperations { get; set; }
 		protected List<Type> AllOperations { get; set; }
 
-		protected TestBase()
+		protected MetadataTestBase()
 		{
 			this.ReplyOperations = new[] { typeof(GetCustomer), typeof(GetCustomers) }.ToList();
 			this.OneWayOperations = new[] { typeof(StoreCustomer) }.ToList();

@@ -8,7 +8,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[TestFixture]
-	public class WsdlMetadataTests : TestBase
+	public class WsdlMetadataTests : MetadataTestBase
 	{
 		private static ILog log = LogManager.GetLogger(typeof(WsdlMetadataTests));
 

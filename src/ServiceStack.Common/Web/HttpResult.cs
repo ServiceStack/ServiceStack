@@ -12,7 +12,7 @@ namespace ServiceStack.Common.Web
 		: IHttpResult, IStreamWriter
 	{
 		public HttpResult()
-			: this (null, null)
+			: this((object)null, null)
 		{
 		}
 
@@ -66,12 +66,36 @@ namespace ServiceStack.Common.Web
 			};
 		}
 
+		public HttpResult(Stream responseStream, string contentType)
+		{
+			this.StatusCode = HttpStatusCode.OK;
+			this.ResponseStream = responseStream;
+
+			this.Headers = new Dictionary<string, string> {
+				{ HttpHeaders.ContentType, contentType },
+			};
+		}
+
+		public HttpResult(string responseText, string contentType)
+		{
+			this.StatusCode = HttpStatusCode.OK;
+			this.ResponseText = responseText;
+
+			this.Headers = new Dictionary<string, string> {
+				{ HttpHeaders.ContentType, contentType },
+			};
+		}
+
+		public string ResponseText { get; private set; }
+
+		public Stream ResponseStream { get; private set; }
+
 		public FileInfo FileInfo { get; private set; }
 
 		public string ContentType { get; set; }
 
 		public Dictionary<string, string> Headers { get; private set; }
-		
+
 		public IDictionary<string, string> Options
 		{
 			get { return this.Headers; }
@@ -97,12 +121,39 @@ namespace ServiceStack.Common.Web
 				return;
 			}
 
+			if (this.ResponseStream != null)
+			{
+				this.ResponseStream.WriteTo(responseStream);
+				responseStream.Flush();
+				return;
+			}
+
+			if (this.ResponseText != null)
+			{
+				var bytes = System.Text.Encoding.UTF8.GetBytes(this.ResponseText);
+				responseStream.Write(bytes, 0, bytes.Length);
+				responseStream.Flush();
+				return;
+			}
+
 			if (this.ResponseFilter == null)
 				throw new ArgumentNullException("ResponseFilter");
 			if (this.RequestContext == null)
 				throw new ArgumentNullException("RequestContext");
 
 			ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
+		}
+
+		public static HttpResult Status201Created(object response, string newLocationUri)
+		{
+			return new HttpResult(response)
+			{
+				StatusCode = HttpStatusCode.Created,
+				Headers =
+				{
+					{ HttpHeaders.Location, newLocationUri },
+				}
+			};
 		}
 	}
 }

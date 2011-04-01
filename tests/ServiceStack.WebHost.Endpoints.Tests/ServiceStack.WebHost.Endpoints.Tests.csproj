@@ -132,6 +132,7 @@
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CustomRequestDataTests.cs" />
+    <Compile Include="HttpResultTests.cs" />
     <Compile Include="IntegrationTests\ResetMovies.cs" />
     <Compile Include="Support\Host\TestConfigAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\CustomFormData.cs" />

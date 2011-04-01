@@ -7,7 +7,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[TestFixture]
-	public class OperationTests : TestBase
+	public class OperationTests : MetadataTestBase
 	{
 		[Test]
 		public void Sorts_operations_into_correct_operation_groups()
@@ -17,6 +17,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(groupedOperations.ReplyOperations.Names.Count, Is.EqualTo(base.ReplyOperations.Count));
 			Assert.That(groupedOperations.OneWayOperations.Names.Count, Is.EqualTo(base.OneWayOperations.Count));
 		}
-
 	}
 }
