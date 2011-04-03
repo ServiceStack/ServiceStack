@@ -45,6 +45,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		protected virtual void ProcessOperations(HtmlTextWriter writer, IHttpRequest httpReq)
 		{
+			EndpointHost.Config.AssertFeatures(Feature.Metadata);
+
 			var operations = EndpointHost.ServiceOperations;
 			var operationName = httpReq.QueryString["op"];
 			if (operationName != null)

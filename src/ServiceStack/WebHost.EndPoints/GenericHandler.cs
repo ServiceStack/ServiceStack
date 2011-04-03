@@ -11,13 +11,15 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (GenericHandler));
 
-		public GenericHandler(string contentType, EndpointAttributes handlerAttributes)
+		public GenericHandler(string contentType, EndpointAttributes handlerAttributes, Feature usesFeature)
 		{
 			this.HandlerContentType = contentType;
 			this.ContentTypeAttribute = ContentType.GetEndpointAttributes(contentType);
 			this.HandlerAttributes = handlerAttributes;
+			this.usesFeature = usesFeature;
 		}
 
+		private Feature usesFeature;
 		public string HandlerContentType { get; set; }
 
 		public EndpointAttributes ContentTypeAttribute { get; set; }
@@ -52,6 +54,8 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
+				EndpointHost.Config.AssertFeatures(usesFeature);
+
 				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 				var callback = httpReq.QueryString["callback"];
 				var doJsonp = EndpointHost.Config.AllowJsonpRequests

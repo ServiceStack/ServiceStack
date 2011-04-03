@@ -2,7 +2,7 @@
 using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
-using ServiceStack.Common.Extensions;
+using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
@@ -54,8 +54,17 @@ namespace ServiceStack.WebHost.IntegrationTests
 				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();
 				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));
 
+				Routes
+					.Add<Movies>("/custom-movies", "GET")
+					.Add<Movies>("/custom-movies/genres/{Genre}")
+					.Add<Movie>("/custom-movies", "POST,PUT")
+					.Add<Movie>("/custom-movies/{Id}");
+
 				var resetMovies = this.Container.Resolve<ResetMoviesService>();
 				resetMovies.Post(null);
+
+				//var allButMetadata = Feature.All.Remove(Feature.Metadata | Feature.Html);
+				//SetConfig(new EndpointHostConfig { EnableFeatures = allButMetadata });
 			}
 		}
 

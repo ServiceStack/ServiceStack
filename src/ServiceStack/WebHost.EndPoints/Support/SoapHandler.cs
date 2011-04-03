@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -37,6 +36,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected Message ExecuteMessage(Message requestMsg, EndpointAttributes endpointAttributes)
 		{
+			if ((EndpointAttributes.Soap11 & this.HandlerAttributes) == EndpointAttributes.Soap11)
+				EndpointHost.Config.AssertFeatures(Feature.Soap11);
+			else if ((EndpointAttributes.Soap12 & this.HandlerAttributes) == EndpointAttributes.Soap12)
+				EndpointHost.Config.AssertFeatures(Feature.Soap12);
+
 			string requestXml;
 			using (var reader = requestMsg.GetReaderAtBodyContents())
 			{

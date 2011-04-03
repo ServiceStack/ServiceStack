@@ -286,7 +286,7 @@ namespace ServiceStack.WebHost.Endpoints
 				if (pathController == "metadata")
 					return new IndexMetadataHandler();
 				if (pathController == "soap11")
-					return new Soap11Handlers();
+					return new Soap11MessageSyncReplyHttpHandler();
 				if (pathController == "soap12")
 					return new Soap12MessageSyncReplyHttpHandler();
 				if (pathController == RequestInfoHandler.RestPath)
@@ -349,14 +349,17 @@ namespace ServiceStack.WebHost.Endpoints
 					if (EndpointHost.ContentTypeFilter
 						.ContentTypeFormats.TryGetValue(pathController, out contentType))
 					{
+						var feature = Common.Web.ContentType.GetFeature(contentType);
+						if (feature == Feature.None) feature = Feature.CustomFormat;
+
 						var format = Common.Web.ContentType.GetContentFormat(contentType);
 						if (pathAction == "syncreply")
-							return new GenericHandler(contentType, EndpointAttributes.SyncReply)
+							return new GenericHandler(contentType, EndpointAttributes.SyncReply, feature)
 							{
 								RequestName = requestName
 							};
 						if (pathAction == "asynconeway")
-							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay)
+							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay, feature)
 							{
 								RequestName = requestName
 							};

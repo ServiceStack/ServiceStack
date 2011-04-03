@@ -30,6 +30,11 @@ namespace ServiceStack.ServiceHost
 		IRestPath GetRestPathForRequest(string httpMethod, string pathInfo);
 
 		/// <summary>
+		/// Allow the registration of custom routes
+		/// </summary>
+		IServiceRoutes Routes { get; }
+
+		/// <summary>
 		/// Executes the DTO request under the supplied requestContext.
 		/// </summary>
 		/// <param name="request"></param>

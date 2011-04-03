@@ -187,6 +187,7 @@
     <Compile Include="SearchIndex\FullTextIndexDocumentAttribute.cs" />
     <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs" />
     <Compile Include="ServiceHost\EndpointAttributes.cs" />
+    <Compile Include="ServiceHost\Feature.cs" />
     <Compile Include="ServiceHost\IAsyncService.cs" />
     <Compile Include="ServiceHost\IContentTypeFilter.cs" />
     <Compile Include="ServiceHost\IContentTypeReader.cs" />
@@ -206,6 +207,7 @@
     <Compile Include="ServiceHost\IRestService.cs" />
     <Compile Include="ServiceHost\IService.cs" />
     <Compile Include="ServiceHost\IServiceController.cs" />
+    <Compile Include="ServiceHost\IServiceRoutes.cs" />
     <Compile Include="ServiceHost\RestServiceAttribute.cs" />
     <Compile Include="ServiceHost\ServiceAttribute.cs" />
     <Compile Include="Service\IOneWayClient.cs" />

@@ -86,16 +86,18 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public RestPath(Type requestType, RestServiceAttribute attr)
+		public RestPath(Type requestType, string path) : this(requestType, path, null, null) {}
+
+			public RestPath(Type requestType, string path, string verbs, string defaultContentType)
 		{
 			this.RequestType = requestType;
 
-			this.restPath = attr.Path;
-			this.DefaultContentType = attr.DefaultContentType;
-			this.allowsAllVerbs = attr.Verbs == null || attr.Verbs == WildCard;
+			this.restPath = path;
+			this.DefaultContentType = defaultContentType;
+			this.allowsAllVerbs = verbs == null || verbs == WildCard;
 			if (!this.allowsAllVerbs)
 			{
-				this.allowedVerbs = attr.Verbs.ToUpper();
+				this.allowedVerbs = verbs.ToUpper();
 			}
 
 			var componentsList = new List<string>();

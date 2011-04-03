@@ -318,6 +318,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				DebugMode = true,
 			});
 
+			Routes
+				.Add<Movies>("/custom-movies", "GET")
+				.Add<Movies>("/custom-movies/genres/{Genre}")
+				.Add<Movie>("/custom-movies", "POST,PUT")
+				.Add<Movie>("/custom-movies/{Id}")
+				.Add<GetFactorial>("/fact/{ForNumber}");
+
 			container.Register<IResourceManager>(new ConfigurationResourceManager());
 
 			var appSettings = container.Resolve<IResourceManager>();

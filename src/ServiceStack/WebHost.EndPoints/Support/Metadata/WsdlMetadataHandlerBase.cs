@@ -13,6 +13,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 		public override void Execute(HttpContext context)
 		{
+			EndpointHost.Config.AssertFeatures(Feature.Metadata);
+
 			context.Response.ContentType = "text/xml";
 
 			var baseUri = context.Request.GetParentBaseUrl();

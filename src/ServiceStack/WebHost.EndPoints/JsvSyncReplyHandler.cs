@@ -11,13 +11,13 @@ namespace ServiceStack.WebHost.Endpoints
 	public class JsvAsyncOneWayHandler : GenericHandler
 	{
 		public JsvAsyncOneWayHandler()
-			: base(ContentType.Jsv, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv) {}
+			: base(ContentType.Jsv, EndpointAttributes.AsyncOneWay | EndpointAttributes.Jsv, Feature.Jsv) {}
 	}
 
 	public class JsvSyncReplyHandler : GenericHandler
 	{
 		public JsvSyncReplyHandler()
-			: base(ContentType.JsvText, EndpointAttributes.SyncReply | EndpointAttributes.Jsv) {}
+			: base(ContentType.JsvText, EndpointAttributes.SyncReply | EndpointAttributes.Jsv, Feature.Jsv) { }
 
 		private static void WriteDebugRequest(IRequestContext requestContext, object dto, Stream stream)
 		{

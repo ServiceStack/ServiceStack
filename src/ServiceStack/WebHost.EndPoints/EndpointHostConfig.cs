@@ -56,6 +56,7 @@ namespace ServiceStack.WebHost.Endpoints
 						},
 						DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
 						DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
+						EnableFeatures = Feature.All,
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -87,6 +88,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
 			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
 			this.AllowFileExtensions = instance.AllowFileExtensions;
+			this.EnableFeatures = instance.EnableFeatures;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -175,6 +177,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public bool EnableAccessRestrictions { get; set; }
 		public bool UseBclJsonSerializers { get; set; }
 		public Dictionary<string, string> GlobalResponseHeaders { get; set; }
+		public Feature EnableFeatures { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace
@@ -213,6 +216,30 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			return null;
+		}
+
+		public bool HasFeature(Feature feature)
+		{
+			return (feature & EndpointHost.Config.EnableFeatures) == feature;
+		}
+
+		public void AssertFeatures(Feature usesFeatures)
+		{
+			if (EndpointHost.Config.EnableFeatures == Feature.All) return;
+
+			if (!HasFeature(usesFeatures))
+			{
+				throw new NotSupportedException(
+					string.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+			}
+		}
+
+		public void AssertContentType(string contentType)
+		{
+			if (EndpointHost.Config.EnableFeatures == Feature.All) return;
+
+			var contentTypeFeature = ContentType.GetFeature(contentType);
+			AssertFeatures(contentTypeFeature);
 		}
 
 	}

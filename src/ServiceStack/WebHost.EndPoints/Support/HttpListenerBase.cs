@@ -77,6 +77,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				Configure(null);
 			}
 
+			EndpointHost.AfterInit();
+
 			var elapsed = DateTime.Now - this.startTime;
 			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
@@ -255,6 +257,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public T TryResolve<T>()
 		{
 			return EndpointHost.Config.ServiceManager.Container.TryResolve<T>();
+		}
+
+		public IServiceRoutes Routes
+		{
+			get { return EndpointHost.Config.ServiceController.Routes; }
 		}
 
 		public IContentTypeFilter ContentTypeFilters

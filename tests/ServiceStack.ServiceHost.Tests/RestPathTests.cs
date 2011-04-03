@@ -15,7 +15,7 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_deserialize_SimpleType_path()
 		{
-			var restPath = new RestPath(typeof(SimpleType), new RestServiceAttribute("/simple/{Name}"));
+			var restPath = new RestPath(typeof(SimpleType), "/simple/{Name}");
 			var request = restPath.CreateRequest("/simple/HelloWorld!") as SimpleType;
 
 			Assert.That(request, Is.Not.Null);
@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_deserialize_SimpleType_in_middle_of_path()
 		{
-			var restPath = new RestPath(typeof(SimpleType), new RestServiceAttribute("/simple/{Name}/some-other-literal"));
+			var restPath = new RestPath(typeof(SimpleType), "/simple/{Name}/some-other-literal");
 			var request = restPath.CreateRequest("/simple/HelloWorld!/some-other-literal") as SimpleType;
 
 			Assert.That(request, Is.Not.Null);
@@ -58,7 +58,7 @@ namespace ServiceStack.ServiceHost.Tests
 		{
 
 			var restPath = new RestPath(typeof(ComplexType),
-				new RestServiceAttribute("/Complex/{Id}/{Name}/Unique/{UniqueId}"));
+				"/Complex/{Id}/{Name}/Unique/{UniqueId}");
 			var request = restPath.CreateRequest(
 				"/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547") as ComplexType;
 
@@ -80,7 +80,7 @@ namespace ServiceStack.ServiceHost.Tests
 		private static void AssertMatch(string definitionPath, string requestPath,
 			string firstMatchHashKey, BbcMusicRequest expectedRequest)
 		{
-			var restPath = new RestPath(typeof(BbcMusicRequest), new RestServiceAttribute(definitionPath));
+			var restPath = new RestPath(typeof(BbcMusicRequest), definitionPath);
 
 			var reqestTestPath = RestPath.GetPathPartsForMatching(requestPath);
 			Assert.That(restPath.IsMatch("GET", reqestTestPath), Is.True);
@@ -144,7 +144,7 @@ namespace ServiceStack.ServiceHost.Tests
 		private static void AssertMatch(string definitionPath, string requestPath,
 			string firstMatchHashKey, RackSpaceRequest expectedRequest)
 		{
-			var restPath = new RestPath(typeof(RackSpaceRequest), new RestServiceAttribute(definitionPath));
+			var restPath = new RestPath(typeof(RackSpaceRequest), definitionPath);
 
 			var reqestTestPath = RestPath.GetPathPartsForMatching(requestPath);
 			Assert.That(restPath.IsMatch("GET", reqestTestPath), Is.True);

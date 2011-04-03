@@ -53,6 +53,7 @@ namespace ServiceStack.WebHost.Endpoints
 							  && !string.IsNullOrEmpty(callback);
 
 				responseContentType = httpReq.ResponseContentType;
+				EndpointHost.Config.AssertContentType(responseContentType);
 
 				var request = GetRequest(httpReq, restPath);
 				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;

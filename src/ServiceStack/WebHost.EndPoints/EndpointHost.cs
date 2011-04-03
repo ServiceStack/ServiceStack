@@ -45,13 +45,19 @@ namespace ServiceStack.WebHost.Endpoints
 			CsvFormat.Register(appHost);
 		}
 
-		// Post user config
+		// Config has changed
 		private static void ApplyConfigChanges()
 		{
 			config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
 
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+		}
+
+		//After configure called
+		public static void AfterInit()
+		{
+			config.ServiceManager.AfterInit();
 		}
 
 		public static ServiceManager ServiceManager

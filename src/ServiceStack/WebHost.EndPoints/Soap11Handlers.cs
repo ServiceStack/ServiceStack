@@ -31,9 +31,9 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 	}
 
-	public class Soap11Handlers : SoapHandler, IHttpHandler
+	public class Soap11MessageSyncReplyHttpHandler : SoapHandler, IHttpHandler
 	{
-		public Soap11Handlers() : base(EndpointAttributes.Soap11) {}
+		public Soap11MessageSyncReplyHttpHandler() : base(EndpointAttributes.Soap11) {}
 
 		public new void ProcessRequest(HttpContext context)
 		{

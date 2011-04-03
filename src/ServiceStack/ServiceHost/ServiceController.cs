@@ -22,6 +22,7 @@ namespace ServiceStack.ServiceHost
 			this.OperationTypes = new List<Type>();
 			this.ServiceTypes = new HashSet<Type>();
 			this.EnableAccessRestrictions = true;
+			this.routes = new ServiceRoutes();
 		}
 
 		readonly Dictionary<Type, Func<IRequestContext, object, object>> requestExecMap
@@ -29,6 +30,8 @@ namespace ServiceStack.ServiceHost
 
 		readonly Dictionary<Type, ServiceAttribute> requestServiceAttrs
 			= new Dictionary<Type, ServiceAttribute>();
+
+		private readonly ServiceRoutes routes;
 
 		public bool EnableAccessRestrictions { get; set; }
 
@@ -39,6 +42,8 @@ namespace ServiceStack.ServiceHost
 		public HashSet<Type> ServiceTypes { get; protected set; }
 
 		public string DefaultOperationsNamespace { get; set; }
+
+		public IServiceRoutes Routes { get { return routes; } }
 
 		public void Register<TReq>(Func<IService<TReq>> invoker)
 		{
@@ -55,7 +60,6 @@ namespace ServiceStack.ServiceHost
 			};
 
 			requestExecMap.Add(requestType, handlerFn);
-
 		}
 
 		public void Register(ITypeFactory serviceFactoryFn, params Assembly[] assembliesWithServices)
@@ -75,7 +79,7 @@ namespace ServiceStack.ServiceHost
 
 						Register(requestType, serviceType, serviceFactoryFn);
 
-						RegisterRestPaths(requestType, serviceType);
+						RegisterRestPaths(requestType);
 
 						this.ServiceTypes.Add(serviceType);
 
@@ -100,23 +104,36 @@ namespace ServiceStack.ServiceHost
 
 		public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
 
-		public void RegisterRestPaths(Type requestType, Type serviceType)
+		public void RegisterRestPaths(Type requestType)
 		{
 			var attrs = requestType.GetCustomAttributes(typeof(RestServiceAttribute), true);
 			foreach (RestServiceAttribute attr in attrs)
 			{
-				var restPath = new RestPath(requestType, attr);
+				var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.DefaultContentType);
 				if (!restPath.IsValid)
 					throw new NotSupportedException(string.Format(
 						"RestPath '{0}' on Type '{1}' is not Valid", attr.Path, requestType.Name));
 
-				List<RestPath> pathsAtFirstMatch;
-				if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
-				{
-					pathsAtFirstMatch = new List<RestPath>();
-					RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;
-				}
-				pathsAtFirstMatch.Add(restPath);
+				RegisterRestPath(restPath);
+			}
+		}
+
+		public void RegisterRestPath(RestPath restPath)
+		{
+			List<RestPath> pathsAtFirstMatch;
+			if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
+			{
+				pathsAtFirstMatch = new List<RestPath>();
+				RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;
+			}
+			pathsAtFirstMatch.Add(restPath);
+		}
+
+		public void AfterInit()
+		{
+			foreach (var restPath in this.routes.RestPaths)
+			{
+				RegisterRestPath(restPath);
 			}
 		}
 
