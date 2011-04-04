@@ -27,10 +27,10 @@ Simple REST service example
 
 		public override object OnGet(Todo request)
 		{
-			if (request.Id == default(long))
-				return Repository.GetAll();
+			if (request.Id != default(long))
+				return Repository.GetById(request.Id);
 
-			return Repository.GetById(request.Id);
+			return Repository.GetAll();
 		}
 
 		//Called for both new and updated TODOs
