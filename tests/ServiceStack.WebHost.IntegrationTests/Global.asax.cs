@@ -63,8 +63,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 				var resetMovies = this.Container.Resolve<ResetMoviesService>();
 				resetMovies.Post(null);
 
-				//var allButMetadata = Feature.All.Remove(Feature.Metadata | Feature.Html);
-				//SetConfig(new EndpointHostConfig { EnableFeatures = allButMetadata });
+				//var partialFeatures = Feature.All.Remove(Feature.Soap11);
+				//SetConfig(new EndpointHostConfig { EnableFeatures = partialFeatures });
 			}
 		}
 
