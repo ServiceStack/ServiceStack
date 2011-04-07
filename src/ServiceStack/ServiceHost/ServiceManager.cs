@@ -59,6 +59,11 @@ namespace ServiceStack.ServiceHost
 				this.Container.Dispose();
 			}
 		}
+
+		public void AfterInit()
+		{
+			this.ServiceController.AfterInit();
+		}
 	}
 
 }

@@ -31,6 +31,8 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		public new void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
     	{
+			EndpointHost.Config.AssertFeatures(Feature.Metadata);
+
 			var operations = EndpointHost.ServiceOperations;
 
     		if (httpReq.QueryString["xsd"] != null)

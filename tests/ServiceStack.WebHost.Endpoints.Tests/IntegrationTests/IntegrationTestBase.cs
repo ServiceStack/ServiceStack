@@ -6,6 +6,7 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.ServiceClient.Web;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
@@ -13,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		: AppHostHttpListenerBase
 	{
 		protected const string BaseUrl = "http://localhost:8080/";
-		
+
 		//Fiddler can debug local HTTP requests when using the hostname
 		//private const string BaseUrl = "http://io:8080/";
 
@@ -49,6 +50,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 					":memory:",			//Use an in-memory database instead
 					false,				//keep the same in-memory db connection open
 					SqliteOrmLiteDialectProvider.Instance));
+
+			Routes.Add<Movies>("/custom-movies", "GET")
+				  .Add<Movies>("/custom-movies/genres/{Genre}")
+				  .Add<Movie>("/custom-movies", "POST,PUT")
+				  .Add<Movie>("/custom-movies/{Id}");
 
 			ConfigureDatabase.Init(container.Resolve<IDbConnectionFactory>());
 		}

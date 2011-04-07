@@ -45,13 +45,37 @@ namespace ServiceStack.WebHost.Endpoints
 			CsvFormat.Register(appHost);
 		}
 
-		// Post user config
+		// Config has changed
 		private static void ApplyConfigChanges()
 		{
 			config.ServiceEndpointsMetadataConfig = ServiceEndpointsMetadataConfig.Create(config.ServiceStackHandlerFactoryPath);
 
 			JsonDataContractSerializer.Instance.UseBcl = config.UseBclJsonSerializers;
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
+		}
+
+		//After configure called
+		public static void AfterInit()
+		{
+			if (config.EnableFeatures != Feature.All)
+			{
+				if ((Feature.Xml & config.EnableFeatures) != Feature.Xml)
+					config.IgnoreFormatsInMetadata.Add("xml");
+				if ((Feature.Json & config.EnableFeatures) != Feature.Json)
+					config.IgnoreFormatsInMetadata.Add("json");
+				if ((Feature.Jsv & config.EnableFeatures) != Feature.Jsv)
+					config.IgnoreFormatsInMetadata.Add("jsv");
+				if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
+					config.IgnoreFormatsInMetadata.Add("csv");
+				if ((Feature.Html & config.EnableFeatures) != Feature.Html)
+					config.IgnoreFormatsInMetadata.Add("html");
+				if ((Feature.Soap11 & config.EnableFeatures) != Feature.Soap11)
+					config.IgnoreFormatsInMetadata.Add("soap11");
+				if ((Feature.Soap12 & config.EnableFeatures) != Feature.Soap12)
+					config.IgnoreFormatsInMetadata.Add("soap12");
+			}
+
+			config.ServiceManager.AfterInit();
 		}
 
 		public static ServiceManager ServiceManager

@@ -40,9 +40,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 				}
 			}
 
-			if (MetadataConfig.Soap11 != null)
+			if (MetadataConfig.Soap11 != null && !ignoreFormats.Contains("soap11"))
 				opTemplate.AppendFormat(@"<a href=""{0}?op={{0}}"">SOAP 1.1</a>", parentPath + MetadataConfig.Soap11.DefaultMetadataUri);
-			if (MetadataConfig.Soap12 != null)
+			if (MetadataConfig.Soap12 != null && !ignoreFormats.Contains("soap12"))
 				opTemplate.AppendFormat(@"<a class=""last"" href=""{0}?op={{0}}"">SOAP 1.2</a>", parentPath + MetadataConfig.Soap12.DefaultMetadataUri);
 
 			opTemplate.Append("</li>");

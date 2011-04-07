@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Backbone Demo: Todos</title>
+    <script>window.JSON || document.write('<script src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js">\x3C/script>')</script>
+    <!-- see: https://github.com/AjaxStack/AjaxStack -->
+    <script src="jqunback-1.51.min.js"></script>
+    <script type="text/javascript">
+        // An example Backbone application contributed by
+        // [Jérôme Gravel-Niquet](http://jgn.me/). This demo uses a simple
+        // [LocalStorage adapter](backbone-localstorage.html)
+        // to persist Backbone models within your browser.
+
+        // Load the application once the DOM is ready, using `jQuery.ready`:
+        var todosUrl = "todos";
+        $(function () {
+
+            // Todo Model
+            // ----------
+
+            // Our basic **Todo** model has `content`, `order`, and `done` attributes.
+            window.Todo = Backbone.Model.extend({
+
+                // Default attributes for the todo.
+                defaults: {
+                    Content: "empty todo...",
+                    Done: false
+                },
+
+                // Ensure that each todo created has `content`.
+                initialize: function () {
+                    if (!this.get("Content")) {
+                        this.set({ "Content": this.defaults.Content });
+                    }
+                },
+
+                // Toggle the `done` state of this todo item.
+                toggle: function () {
+                    this.save({ Done: !this.get("Done") });
+                },
+
+                url: function () {
+                    return this.get("Id") ? todosUrl + '/' + this.get("Id") : todosUrl;
+                },
+
+                // Remove this Todo from *localStorage* and delete its view.
+                clear: function () {
+                    this.destroy();
+                    this.view.remove();
+                }
+
+            });
+
+            // Todo Collection
+            // ---------------
+
+            // The collection of todos is backed by *localStorage* instead of a remote
+            // server.
+            window.TodoList = Backbone.Collection.extend({
+
+                // Reference to this collection's model.
+                model: Todo,
+
+                // Save all of the todo items under the `"todos"` namespace.
+                //localStorage: new Store("todos"),
+                url: todosUrl,
+
+                // Filter down the list of all todo items that are finished.
+                done: function () {
+                    return this.filter(function (todo) { return todo.get('Done'); });
+                },
+
+                // Filter down the list to only todo items that are still not finished.
+                remaining: function () {
+                    return this.without.apply(this, this.done());
+                },
+
+                // We keep the Todos in sequential order, despite being saved by unordered
+                // GUID in the database. This generates the next order number for new items.
+                nextOrder: function () {
+                    if (!this.length) return 1;
+                    return this.last().get('Order') + 1;
+                },
+
+                // Todos are sorted by their original insertion order.
+                comparator: function (todo) {
+                    return todo.get('Order');
+                }
+
+            });
+
+            // Create our global collection of **Todos**.
+            window.Todos = new TodoList;
+
+            // Todo Item View
+            // --------------
+
+            // The DOM element for a todo item...
+            window.TodoView = Backbone.View.extend({
+
+                //... is a list tag.
+                tagName: "li",
+
+                // Cache the template function for a single item.
+                template: _.template($('#item-template').html()),
+
+                // The DOM events specific to an item.
+                events: {
+                    "click .check": "toggleDone",
+                    "dblclick div.todo-content": "edit",
+                    "click span.todo-destroy": "clear",
+                    "keypress .todo-input": "updateOnEnter"
+                },
+
+                // The TodoView listens for changes to its model, re-rendering. Since there's
+                // a one-to-one correspondence between a **Todo** and a **TodoView** in this
+                // app, we set a direct reference on the model for convenience.
+                initialize: function () {
+                    _.bindAll(this, 'render', 'close');
+                    this.model.bind('change', this.render);
+                    this.model.view = this;
+                },
+
+                // Re-render the contents of the todo item.
+                render: function () {
+                    $(this.el).html(this.template(this.model.toJSON()));
+                    this.setContent();
+                    return this;
+                },
+
+                // To avoid XSS (not that it would be harmful in this particular app),
+                // we use `jQuery.text` to set the contents of the todo item.
+                setContent: function () {
+                    var content = this.model.get('Content');
+                    this.$('.todo-content').text(content);
+                    this.input = this.$('.todo-input');
+                    this.input.bind('blur', this.close);
+                    this.input.val(content);
+                },
+
+                // Toggle the `"done"` state of the model.
+                toggleDone: function () {
+                    this.model.toggle();
+                },
+
+                // Switch this view into `"editing"` mode, displaying the input field.
+                edit: function () {
+                    $(this.el).addClass("editing");
+                    this.input.focus();
+                },
+
+                // Close the `"editing"` mode, saving changes to the todo.
+                close: function () {
+                    this.model.save({ Content: this.input.val() });
+                    $(this.el).removeClass("editing");
+                },
+
+                // If you hit `enter`, we're through editing the item.
+                updateOnEnter: function (e) {
+                    if (e.keyCode == 13) this.close();
+                },
+
+                // Remove this view from the DOM.
+                remove: function () {
+                    $(this.el).remove();
+                },
+
+                // Remove the item, destroy the model.
+                clear: function () {
+                    this.model.clear();
+                }
+
+            });
+
+            // The Application
+            // ---------------
+
+            // Our overall **AppView** is the top-level piece of UI.
+            window.AppView = Backbone.View.extend({
+
+                // Instead of generating a new element, bind to the existing skeleton of
+                // the App already present in the HTML.
+                el: $("#todoapp"),
+
+                // Our template for the line of statistics at the bottom of the app.
+                statsTemplate: _.template($('#stats-template').html()),
+
+                // Delegated events for creating new items, and clearing completed ones.
+                events: {
+                    "keypress #new-todo": "createOnEnter",
+                    "keyup #new-todo": "showTooltip",
+                    "click .todo-clear a": "clearCompleted"
+                },
+
+                // At initialization we bind to the relevant events on the `Todos`
+                // collection, when items are added or changed. Kick things off by
+                // loading any preexisting todos that might be saved in *localStorage*.
+                initialize: function () {
+                    _.bindAll(this, 'addOne', 'addAll', 'render');
+
+                    this.input = this.$("#new-todo");
+
+                    Todos.bind('add', this.addOne);
+                    Todos.bind('refresh', this.addAll);
+                    Todos.bind('all', this.render);
+
+                    Todos.fetch();
+                },
+
+                // Re-rendering the App just means refreshing the statistics -- the rest
+                // of the app doesn't change.
+                render: function () {
+                    var done = Todos.done().length;
+                    this.$('#todo-stats').html(this.statsTemplate({
+                        Total: Todos.length,
+                        Done: Todos.done().length,
+                        Remaining: Todos.remaining().length
+                    }));
+                },
+
+                // Add a single todo item to the list by creating a view for it, and
+                // appending its element to the `<ul>`.
+                addOne: function (todo) {
+                    var view = new TodoView({ model: todo });
+                    this.$("#todo-list").append(view.render().el);
+                },
+
+                // Add all items in the **Todos** collection at once.
+                addAll: function () {
+                    Todos.each(this.addOne);
+                },
+
+                // Generate the attributes for a new Todo item.
+                newAttributes: function () {
+                    return {
+                        Content: this.input.val(),
+                        Order: Todos.nextOrder(),
+                        Done: false
+                    };
+                },
+
+                // If you hit return in the main input field, create new **Todo** model,
+                // persisting it to *localStorage*.
+                createOnEnter: function (e) {
+                    if (e.keyCode != 13) return;
+                    Todos.create(this.newAttributes());
+                    this.input.val('');
+                },
+
+                // Clear all done todo items, destroying their models.
+                clearCompleted: function () {
+                    _.each(Todos.done(), function (todo) { todo.clear(); });
+                    return false;
+                },
+
+                // Lazily show the tooltip that tells you to press `enter` to save
+                // a new todo item, after one second.
+                showTooltip: function (e) {
+                    var tooltip = this.$(".ui-tooltip-top");
+                    var val = this.input.val();
+                    tooltip.fadeOut();
+                    if (this.tooltipTimeout) clearTimeout(this.tooltipTimeout);
+                    if (val == '' || val == this.input.attr('placeholder')) return;
+                    var show = function () { tooltip.show().fadeIn(); };
+                    this.tooltipTimeout = _.delay(show, 1000);
+                }
+
+            });
+
+            // Finally, we kick things off by creating the **App**.
+            window.App = new AppView;
+
+        });
+    </script>
+
+    <style type="text/css">
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
+}
+body {
+  line-height: 1;
+  color: black;
+  background: white;
+}
+ol, ul {
+  list-style: none;
+}
+a img {
+  border: none;
+}
+
+html {
+  background: #eeeeee;
+}
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4em;
+    background: #eeeeee;
+    color: #333333;
+  }
+
+#todoapp {
+  width: 480px;
+  margin: 0 auto 40px;
+  background: white;
+  padding: 20px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+  -o-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+  box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
+}
+  #todoapp h1 {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    padding: 20px 0 30px 0;
+    line-height: 1;
+  }
+
+#create-todo {
+  position: relative;
+}
+  #create-todo input {
+    width: 466px;
+    font-size: 24px;
+    font-family: inherit;
+    line-height: 1.4em;
+    border: 0;
+    outline: none;
+    padding: 6px;
+    border: 1px solid #999999;
+    -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+    -o-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+  }
+    #create-todo input::-webkit-input-placeholder {
+      font-style: italic;
+    }
+  #create-todo span {
+    position: absolute;
+    z-index: 999;
+    width: 170px;
+    left: 50%;
+    margin-left: -85px;
+  }
+
+#todo-list {
+  margin-top: 10px;
+}
+  #todo-list li {
+    padding: 12px 20px 11px 0;
+    position: relative;
+    font-size: 24px;
+    line-height: 1.1em;
+    border-bottom: 1px solid #cccccc;
+  }
+    #todo-list li:after {
+      content: "\0020";
+      display: block;
+      height: 0;
+      clear: both;
+      overflow: hidden;
+      visibility: hidden;
+    }
+    #todo-list li.editing {
+      padding: 0;
+      border-bottom: 0;
+    }
+  #todo-list .editing .display,
+  #todo-list .edit {
+    display: none;
+  }
+    #todo-list .editing .edit {
+      display: block;
+    }
+    #todo-list .editing input {
+      width: 444px;
+      font-size: 24px;
+      font-family: inherit;
+      margin: 0;
+      line-height: 1.6em;
+      border: 0;
+      outline: none;
+      padding: 10px 7px 0px 27px;
+      border: 1px solid #999999;
+      -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+      -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+      -o-box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+      box-shadow: rgba(0, 0, 0, 0.2) 0 1px 2px 0 inset;
+    }
+  #todo-list .check {
+    position: relative;
+    top: 9px;
+    margin: 0 10px 0 7px;
+    float: left;
+  }
+  #todo-list .done .todo-content {
+    text-decoration: line-through;
+    color: #777777;
+  }
+  #todo-list .todo-destroy {
+    position: absolute;
+    right: 5px;
+    top: 14px;
+    display: none;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAoCAYAAAD+MdrbAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAc1JREFUeNrMVsFKw0AQTWIR+gdCrwUFQZSEgv5CQRAEwYPgKfdCC4JHvRTsR3gTAoLQn5AEvSgKxZwEv6EQ0jdlLJtld5OYFfrgHTqbebubmcyrG8exo8AGeAyegtvgPsdfwU8wAp/ATE5sKcRI4B7sKdZ85jn4DF7wBit4UsIAfNGIyejxswOd4Bi8A9tOdbQ5ZywLnoFD5+8YssZScJN3aYob0vK4kh3VE77vV4oxuqRFgn2TmCigiknou+jDD26VyqdJkkQnmNIJt3SrqkSDGKHjOXYxJ8Ef3WrNohC+STApE6Nrilc1iCYkODW9P1FIFZMwpSpTY79xHzVBCu7QCefgtYWCXP0WhfAAThqITVijMG1GfNJ5nTbhnJFqfNH0vQX3eHiWgZ454JzMNLFpAh+BJzw4ujylHW6xlK/3qLSAMAx1J8iEhEy65uq37Enr5ylBENj3FIja9xSILj3FxYdOn96XzgZqYAbuGj2FNqwYK/cUIdEtiRU8xROaVkYuCbmaNRGHRk/RJObr4yk1i2L2FMU7yyuI6j1FEMhLYgVP8fjf6MxCUWisRVY9BaPMnqdA7H88paXwlMgwYGVPucTJ3ssmdiNPWQgwAJAGndsKbcIpAAAAAElFTkSuQmCC) no-repeat 0 0;
+  }
+    #todo-list li:hover .todo-destroy {
+      display: block;
+    }
+    #todo-list .todo-destroy:hover {
+      background-position: 0 -20px;
+    }
+
+#todo-stats {
+  *zoom: 1;
+  margin-top: 10px;
+  color: #777777;
+}
+  #todo-stats:after {
+    content: "\0020";
+    display: block;
+    height: 0;
+    clear: both;
+    overflow: hidden;
+    visibility: hidden;
+  }
+  #todo-stats .todo-count {
+    float: left;
+  }
+    #todo-stats .todo-count .number {
+      font-weight: bold;
+      color: #333333;
+    }
+  #todo-stats .todo-clear {
+    float: right;
+  }
+    #todo-stats .todo-clear a {
+      color: #777777;
+      font-size: 12px;
+    }
+      #todo-stats .todo-clear a:visited {
+        color: #777777;
+      }
+      #todo-stats .todo-clear a:hover {
+        color: #336699;
+      }
+
+#instructions {
+  width: 520px;
+  margin: 10px auto;
+  color: #777777;
+  text-shadow: rgba(255, 255, 255, 0.8) 0 1px 0;
+  text-align: center;
+}
+  #instructions a {
+    color: #336699;
+  }
+
+#credits {
+  width: 520px;
+  margin: 30px auto;
+  color: #999;
+  text-shadow: rgba(255, 255, 255, 0.8) 0 1px 0;
+  text-align: center;
+}
+  #credits a {
+    color: #888;
+  }
+
+
+/*
+ *  François 'cahnory' Germain
+ */
+.ui-tooltip, .ui-tooltip-top, .ui-tooltip-right, .ui-tooltip-bottom, .ui-tooltip-left {
+  color:#ffffff;
+  cursor:normal;
+  display:-moz-inline-stack;
+  display:inline-block;
+  font-size:12px;
+  font-family:arial;
+  padding:.5em 1em;
+  position:relative;
+  text-align:center;
+  text-shadow:0 -1px 1px #111111;
+  -webkit-border-top-left-radius:4px ;
+  -webkit-border-top-right-radius:4px ;
+  -webkit-border-bottom-right-radius:4px ;
+  -webkit-border-bottom-left-radius:4px ;
+  -khtml-border-top-left-radius:4px ;
+  -khtml-border-top-right-radius:4px ;
+  -khtml-border-bottom-right-radius:4px ;
+  -khtml-border-bottom-left-radius:4px ;
+  -moz-border-radius-topleft:4px ;
+  -moz-border-radius-topright:4px ;
+  -moz-border-radius-bottomright:4px ;
+  -moz-border-radius-bottomleft:4px ;
+  border-top-left-radius:4px ;
+  border-top-right-radius:4px ;
+  border-bottom-right-radius:4px ;
+  border-bottom-left-radius:4px ;
+  -o-box-shadow:0 1px 2px #000000, inset 0 0 0 1px #222222, inset 0 2px #666666, inset 0 -2px 2px #444444;
+  -moz-box-shadow:0 1px 2px #000000, inset 0 0 0 1px #222222, inset 0 2px #666666, inset 0 -2px 2px #444444;
+  -khtml-box-shadow:0 1px 2px #000000, inset 0 0 0 1px #222222, inset 0 2px #666666, inset 0 -2px 2px #444444;
+  -webkit-box-shadow:0 1px 2px #000000, inset 0 0 0 1px #222222, inset 0 2px #666666, inset 0 -2px 2px #444444;
+  box-shadow:0 1px 2px #000000, inset 0 0 0 1px #222222, inset 0 2px #666666, inset 0 -2px 2px #444444;
+  background-color:#3b3b3b;
+  background-image:-moz-linear-gradient(top,#555555,#222222);
+  background-image:-webkit-gradient(linear,left top,left bottom,color-stop(0,#555555),color-stop(1,#222222));
+  filter:progid:DXImageTransform.Microsoft.gradient(startColorStr=#555555,EndColorStr=#222222);
+  -ms-filter:progid:DXImageTransform.Microsoft.gradient(startColorStr=#555555,EndColorStr=#222222);
+}
+.ui-tooltip:after, .ui-tooltip-top:after, .ui-tooltip-right:after, .ui-tooltip-bottom:after, .ui-tooltip-left:after {
+  content:"\25B8";
+  display:block;
+  font-size:2em;
+  height:0;
+  line-height:0;
+  position:absolute;
+}
+.ui-tooltip:after, .ui-tooltip-bottom:after {
+  color:#2a2a2a;
+  bottom:0;
+  left:1px;
+  text-align:center;
+  text-shadow:1px 0 2px #000000;
+  -o-transform:rotate(90deg);
+  -moz-transform:rotate(90deg);
+  -khtml-transform:rotate(90deg);
+  -webkit-transform:rotate(90deg);
+  width:100%;
+}
+.ui-tooltip-top:after {
+  bottom:auto;
+  color:#4f4f4f;
+  left:-2px;
+  top:0;
+  text-align:center;
+  text-shadow:none;
+  -o-transform:rotate(-90deg);
+  -moz-transform:rotate(-90deg);
+  -khtml-transform:rotate(-90deg);
+  -webkit-transform:rotate(-90deg);
+  width:100%;
+}
+.ui-tooltip-right:after {
+  color:#222222;
+  right:-0.375em;
+  top:50%;
+  margin-top:-.05em;
+  text-shadow:0 1px 2px #000000;
+  -o-transform:rotate(0);
+  -moz-transform:rotate(0);
+  -khtml-transform:rotate(0);
+  -webkit-transform:rotate(0);
+}
+.ui-tooltip-left:after {
+  color:#222222;
+  left:-0.375em;
+  top:50%;
+  margin-top:.1em;
+  text-shadow:0 -1px 2px #000000;
+  -o-transform:rotate(180deg);
+  -moz-transform:rotate(180deg);
+  -khtml-transform:rotate(180deg);
+  -webkit-transform:rotate(180deg);
+}
+    </style>
+  </head>
+
+  <body>
+
+    <!-- Todo App Interface -->
+
+    <div id="todoapp">
+
+      <div class="title">
+        <h1>Todos</h1>
+      </div>
+
+      <div class="content">
+
+        <div id="create-todo">
+          <input id="new-todo" placeholder="What needs to be done?" type="text" />
+          <span class="ui-tooltip-top" style="display:none;">Press Enter to save this task</span>
+        </div>
+
+        <div id="todos">
+          <ul id="todo-list"></ul>
+        </div>
+
+        <div id="todo-stats"></div>
+
+      </div>
+
+    </div>
+
+    <ul id="instructions">
+      <li>Double-click to edit a todo.</li>
+      <li><a href="https://github.com/ServiceStack/ServiceStack/blob/master/NuGet/ServiceStack/content/App_Start/ServiceStackFramework.cs.pp">Source code of C# TODO REST Service</a> | <a href="http://documentcloud.github.com/backbone/examples/todos/index.html">Backbone.js TODO app</a> </li>
+    </ul>
+
+    <div id="credits">
+      Created by
+      <br />
+      <a href="http://jgn.me/">J&eacute;r&ocirc;me Gravel-Niquet</a>
+      <br />
+      <br />
+      Powered By Open Source
+      <br />
+      <a href="http://servicestack.net">servicestack.net</a>
+      | <a href="http://redis.io">redis</a>
+      | <a href="http://www.mono-project.com">mono</a>
+    </div>
+
+    <!-- Templates -->
+
+    <script type="text/template" id="item-template">
+      <div class="todo <%= Done ? 'Done' : '' %>">
+        <div class="display">
+          <input class="check" type="checkbox" <%= Done ? 'checked="checked"' : '' %> />
+          <div class="todo-content"></div>
+          <span class="todo-destroy"></span>
+        </div>
+        <div class="edit">
+          <input class="todo-input" type="text" value="" />
+        </div>
+      </div>
+    </script>
+
+    <script type="text/template" id="stats-template">
+      <% if (Total) { %>
+        <span class="todo-count">
+          <span class="number"><%= Remaining %></span>
+          <span class="word"><%= Remaining == 1 ? 'item' : 'items' %></span> left.
+        </span>
+      <% } %>
+      <% if (Done) { %>
+        <span class="todo-clear">
+          <a href="#">
+            Clear <span class="number-done"><%= Done %></span>
+            completed <span class="word-done"><%= Done == 1 ? 'item' : 'items' %></span>
+          </a>
+        </span>
+      <% } %>
+    </script>
+
+
+
+<script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-7722718-7']);
+    _gaq.push(['_trackPageview']);
+
+    (function () {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+</script>
+
+  </body>
+
+</html>

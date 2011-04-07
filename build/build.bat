@@ -5,7 +5,7 @@ SET BUILD=Release
 
 %MSBUILD% build.msbuild
 
-COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\release\latest\
+COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\NuGet\ServiceStack\lib
 
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib
 COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\..\ServiceStack.Contrib\lib

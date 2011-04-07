@@ -39,6 +39,11 @@ namespace ServiceStack.WebHost.Endpoints
 				return EndpointHost.Config.ServiceController;
 			}
 		}
+		
+		public IServiceRoutes Routes
+		{
+			get { return EndpointHost.Config.ServiceController.Routes; }
+		}
 
 		public Container Container
 		{
@@ -73,6 +78,8 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				Configure(null);
 			}
+
+			EndpointHost.AfterInit();
 
 			var elapsed = DateTime.Now - this.startTime;
 			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
@@ -121,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints
 				return EndpointHost.ResponseFilters;
 			}
 		}
-
+		
 		public virtual object ExecuteService(object requestDto)
 		{
 			return ExecuteService(requestDto, EndpointAttributes.None);

@@ -44,12 +44,13 @@ namespace ServiceStack.WebHost.Endpoints
 				? "~".MapHostAbsolutePath()
 				: "~".MapAbsolutePath();
 
-			//DefaultHttpHandler not supported in IntegratedPipeline mode
-			if (!IsIntegratedPipeline && isAspNetHost && !Env.IsMono)
-				DefaultHttpHandler = new DefaultHttpHandler();
-
 			//Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
 			var hostedAtRootPath = EndpointHost.Config.ServiceStackHandlerFactoryPath == null;
+
+			//DefaultHttpHandler not supported in IntegratedPipeline mode
+			if (!IsIntegratedPipeline && isAspNetHost && !hostedAtRootPath && !Env.IsMono)
+				DefaultHttpHandler = new DefaultHttpHandler();
+
 			ServeDefaultHandler = hostedAtRootPath || Env.IsMono;
 			if (ServeDefaultHandler)
 			{
@@ -58,9 +59,13 @@ namespace ServiceStack.WebHost.Endpoints
 					var fileNameLower = Path.GetFileName(fileName).ToLower();
 					if (DefaultRootFileName == null && EndpointHost.Config.DefaultDocuments.Contains(fileNameLower))
 					{
-						DefaultRootFileName = fileNameLower;
-						if (DefaultHttpHandler == null)
-							DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
+						//Can't serve Default.aspx pages when hostedAtRootPath so ignore and allow for next default document
+						if (!(hostedAtRootPath && fileNameLower.EndsWith(".aspx")))
+						{
+							DefaultRootFileName = fileNameLower;
+							if (DefaultHttpHandler == null)
+								DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
+						}
 					}
 					WebHostRootFileNames.Add(Path.GetFileName(fileNameLower));
 				}
@@ -120,6 +125,10 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 			var pathInfo = context.Request.GetPathInfo();
+
+			//WebDev Server auto requests '/default.aspx' so recorrect path to different default document
+			if (mode == null && (url == "/default.aspx" || url == "/Default.aspx"))
+				pathInfo = "/";
 
 			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
 			{
@@ -286,7 +295,7 @@ namespace ServiceStack.WebHost.Endpoints
 				if (pathController == "metadata")
 					return new IndexMetadataHandler();
 				if (pathController == "soap11")
-					return new Soap11Handlers();
+					return new Soap11MessageSyncReplyHttpHandler();
 				if (pathController == "soap12")
 					return new Soap12MessageSyncReplyHttpHandler();
 				if (pathController == RequestInfoHandler.RestPath)
@@ -349,14 +358,17 @@ namespace ServiceStack.WebHost.Endpoints
 					if (EndpointHost.ContentTypeFilter
 						.ContentTypeFormats.TryGetValue(pathController, out contentType))
 					{
+						var feature = Common.Web.ContentType.GetFeature(contentType);
+						if (feature == Feature.None) feature = Feature.CustomFormat;
+
 						var format = Common.Web.ContentType.GetContentFormat(contentType);
 						if (pathAction == "syncreply")
-							return new GenericHandler(contentType, EndpointAttributes.SyncReply)
+							return new GenericHandler(contentType, EndpointAttributes.SyncReply, feature)
 							{
 								RequestName = requestName
 							};
 						if (pathAction == "asynconeway")
-							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay)
+							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay, feature)
 							{
 								RequestName = requestName
 							};

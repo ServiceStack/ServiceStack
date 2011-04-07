@@ -70,9 +70,51 @@ namespace ServiceStack.Common.Web
 
 				case Csv:
 					return EndpointAttributes.Csv;
+
+				case Soap11:
+					return EndpointAttributes.Soap11;
+
+				case Soap12:
+					return EndpointAttributes.Soap12;
 			}
 
 			return EndpointAttributes.None;
+		}
+
+		public static Feature GetFeature(string contentType)
+		{
+			if (contentType == null)
+				return Feature.None;
+
+			var realContentType = contentType.Split(';')[0].Trim();
+			switch (realContentType)
+			{
+				case Json:
+				case JsonText:
+					return Feature.Json;
+
+				case Xml:
+				case XmlText:
+					return Feature.Xml;
+
+				case Html:
+					return Feature.Html;
+
+				case Jsv:
+				case JsvText:
+					return Feature.Jsv;
+
+				case Csv:
+					return Feature.Csv;
+
+				case Soap11:
+					return Feature.Soap11;
+
+				case Soap12:
+					return Feature.Soap12;
+			}
+
+			return Feature.None;
 		}
 
 		public static string GetContentFormat(EndpointType endpointType)
