@@ -83,7 +83,7 @@
     <Compile Include="CacheAccess\IPersistenceProviderCache.cs" />
     <Compile Include="CacheAccess\IPersistenceProviderCacheFactory.cs" />
     <Compile Include="Configuration\IFactoryProvider.cs" />
-    <Compile Include="Configuration\IFactoryResolver.cs" />
+    <Compile Include="Configuration\IContainerAdapter.cs" />
     <Compile Include="Configuration\IResourceManager.cs" />
     <Compile Include="Configuration\ITypeFactory.cs" />
     <Compile Include="DataAccess\Criteria\ICriteria.cs" />

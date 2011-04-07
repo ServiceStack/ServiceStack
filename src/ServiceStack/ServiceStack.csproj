@@ -225,6 +225,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Funq\Container.Adapter.cs" />
     <None Include="Funq\Container.xdoc" />
     <None Include="README.md" />
   </ItemGroup>

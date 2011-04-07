@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.Configuration
 {
 	public interface IFactoryProvider 
-		: IFactoryResolver, IDisposable
+		: IContainerAdapter, IDisposable
 	{
 		void Register<T>(T provider);
 

@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		protected override IServiceClient CreateNewServiceClient()
 		{
 			EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(ReverseService).Assembly);
-			return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
+			return new DirectServiceClient(this, EndpointHandlerBase.ServiceManager);
 		}
 	}
 
