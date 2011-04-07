@@ -1,0 +1,1 @@
+nuget pack ServiceStack\servicestack.nuget
