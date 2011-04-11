@@ -11,6 +11,18 @@ namespace ServiceStack.Common.Tests
 	[TestFixture]
 	public class ReflectionUtilTests
 	{
+        public enum TestClassType
+        {
+            One = 1,
+            Two = 2,
+            Three = 3
+        }
+
+        public class TestClass2
+        {
+            public TestClassType Type { get; set; }
+        }
+
 		public class TestClass
 		{
 			[Required]
@@ -24,6 +36,13 @@ namespace ServiceStack.Common.Tests
 			[StringLength(1)]
 			public string Member4 { get; set; }
 		}
+
+        [Test]
+        public void PopulateObject_UsesDefinedEnum()
+        {
+			var requestObj = (TestClass2)ReflectionUtils.PopulateObject(Activator.CreateInstance(typeof(TestClass2)));
+            Assert.True(Enum.IsDefined(typeof(TestClassType), requestObj.Type));
+        }
 
 		[Test]
 		public void GetTest()

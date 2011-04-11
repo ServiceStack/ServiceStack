@@ -222,6 +222,11 @@ namespace ServiceStack.Common.Utils
 				return type.Name;
 			}
 
+            if (type.IsEnum)
+            {
+                return Enum.GetValues(type).GetValue(0);
+            }
+
 			if (type.IsValueType)
 			{
 				return Activator.CreateInstance(type);
