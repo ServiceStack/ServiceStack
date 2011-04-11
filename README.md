@@ -16,7 +16,13 @@ Simple REST service example
 
 		public override void Configure(Funq.Container container)
 		{
+			//Register Web Service dependencies
 			container.Register(new TodoRepository());
+
+			//Register user-defined REST-ful routes			
+			Routes
+			  .Add<Todo>("/todos")
+			  .Add<Todo>("/todos/{Id}");
 		}
 	}
 	
