@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Utils
 {
@@ -36,7 +38,7 @@ namespace ServiceStack.Common.Utils
 			return obj;
 		}
 
-		private static readonly Dictionary<Type, object> DefaultValueTypes 
+		private static readonly Dictionary<Type, object> DefaultValueTypes
 			= new Dictionary<Type, object>();
 
 		public static object GetDefaultValue(Type type)
@@ -51,12 +53,12 @@ namespace ServiceStack.Common.Utils
 					defaultValue = Activator.CreateInstance(type);
 					DefaultValueTypes[type] = defaultValue;
 				}
-			} 
+			}
 
 			return defaultValue;
 		}
 
-		private static readonly Dictionary<string, AssignmentDefinition> AssignmentDefinitionCache 
+		private static readonly Dictionary<string, AssignmentDefinition> AssignmentDefinitionCache
 			= new Dictionary<string, AssignmentDefinition>();
 
 		public static AssignmentDefinition GetAssignmentDefinition(Type toType, Type fromType)
@@ -71,7 +73,8 @@ namespace ServiceStack.Common.Utils
 					return definition;
 				}
 
-				definition = new AssignmentDefinition {
+				definition = new AssignmentDefinition
+				{
 					ToType = toType,
 					FromType = fromType,
 				};
@@ -129,7 +132,7 @@ namespace ServiceStack.Common.Utils
 			return to;
 		}
 
-		public static To PopulateFromPropertiesWithAttribute<To, From>(To to, From from, 
+		public static To PopulateFromPropertiesWithAttribute<To, From>(To to, From from,
 			Type attributeType)
 		{
 			if (Equals(to, default(To)) || Equals(from, default(From))) return default(To);
@@ -222,10 +225,10 @@ namespace ServiceStack.Common.Utils
 				return type.Name;
 			}
 
-            if (type.IsEnum)
-            {
-                return Enum.GetValues(type).GetValue(0);
-            }
+			if (type.IsEnum)
+			{
+				return Enum.GetValues(type).GetValue(0);
+			}
 
 			if (type.IsValueType)
 			{
@@ -250,7 +253,14 @@ namespace ServiceStack.Common.Utils
 
 				bool isGenericCollection = interfaces.Length > 0;
 
-				if (isGenericCollection)
+				var isDictionary = type.IsAssignableFrom(typeof(IDictionary))
+					|| type.HasInterface(typeof(IDictionary));
+
+				if (isDictionary)
+				{
+					SetDictionary(type, value);
+				}
+				else if (isGenericCollection)
 				{
 					SetGenericCollection(interfaces[0], type, value);
 				}
@@ -258,6 +268,24 @@ namespace ServiceStack.Common.Utils
 				return value;
 			}
 			return null;
+		}
+
+		private static void SetDictionary(Type type, object value)
+		{
+			var mapInterface = type.GetTypeWithGenericInterfaceOf(typeof(IDictionary<,>));
+			if (mapInterface != null)
+			{
+				var dictionaryArgs = mapInterface.GetGenericArguments();
+				var keyArg = CreateDefaultValue(dictionaryArgs[0]);
+				var valArg = CreateDefaultValue(dictionaryArgs[1]);
+
+				var methodInfo = type.GetMethod("Add");
+				if (methodInfo != null)
+				{
+					var argValues = new[] { keyArg, valArg };
+					methodInfo.Invoke(value, argValues);
+				}
+			}
 		}
 
 		public static void SetGenericCollection(Type realisedListType, Type type, object genericObj)
@@ -272,11 +300,9 @@ namespace ServiceStack.Common.Utils
 			}
 
 			var methodInfo = type.GetMethod("Add");
-
 			if (methodInfo != null)
 			{
 				var argValues = CreateDefaultValues(args);
-
 				methodInfo.Invoke(genericObj, argValues);
 			}
 		}
@@ -408,7 +434,7 @@ namespace ServiceStack.Common.Utils
 			ilgen.Emit(OpCodes.Newobj, emptyCtor);
 			ilgen.Emit(OpCodes.Ret);
 
-			Func<object> ctorFn = ((CtorDelegate) dm.CreateDelegate(typeof (CtorDelegate))).Invoke;
+			Func<object> ctorFn = ((CtorDelegate)dm.CreateDelegate(typeof(CtorDelegate))).Invoke;
 			return ctorFn;
 		}
 

@@ -42,8 +42,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			if (rawUrl.ToLower().StartsWith(baseUri))
 			{
-				//var qsPos = rawUrl.IndexOf('?');
-				//var urlWithoutQueryString = qsPos != -1 ? rawUrl.Substring(0, qsPos) : rawUrl;
 				wsdlTemplate.ReplyEndpointUri = rawUrl;
 				wsdlTemplate.OneWayEndpointUri = rawUrl;
 			}
