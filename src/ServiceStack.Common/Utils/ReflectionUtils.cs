@@ -227,9 +227,17 @@ namespace ServiceStack.Common.Utils
                 return Enum.GetValues(type).GetValue(0);
             }
 
+            //when using KeyValuePair<TKey, TValue>, TKey must be non-default to stuff in a Dictionary
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+            {
+                var genericTypes = type.GetGenericArguments();
+                var valueType = Activator.CreateInstance(type, CreateDefaultValue(genericTypes[0]), CreateDefaultValue(genericTypes[1]));
+                return PopulateObject(valueType);
+            }
+
 			if (type.IsValueType)
 			{
-				return Activator.CreateInstance(type);
+				return Activator.CreateInstance(type);                
 			}
 
 			if (type.IsArray)
@@ -252,15 +260,16 @@ namespace ServiceStack.Common.Utils
 
 				if (isGenericCollection)
 				{
-					SetGenericCollection(interfaces[0], type, value);
+					SetGenericCollection(interfaces[0], value);
 				}
 
-				return value;
+                //when the object might have nested properties such as enums with non-0 values, etc
+				return PopulateObject(value);
 			}
 			return null;
 		}
 
-		public static void SetGenericCollection(Type realisedListType, Type type, object genericObj)
+		public static void SetGenericCollection(Type realisedListType, object genericObj)
 		{
 			var args = realisedListType.GetGenericArguments();
 
@@ -271,7 +280,7 @@ namespace ServiceStack.Common.Utils
 				return;
 			}
 
-			var methodInfo = type.GetMethod("Add");
+            var methodInfo = realisedListType.GetMethod("Add");
 
 			if (methodInfo != null)
 			{
