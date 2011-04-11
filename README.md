@@ -8,11 +8,21 @@ For more info check out [servicestack.net](http://www.servicestack.net).
 
 Simple REST service example
 ===========================
+	
+	//Web Service Host Configuration
+	public class AppHost : AppHostBase
+	{
+		public AppHost() : base("Backbone.js TODO", typeof(TodoService).Assembly) {}
 
-	//Register REST Paths
-	[RestService("/todos")]
-	[RestService("/todos/{Id}")]
-	public class Todo //REST Resource DTO
+		public override void Configure(Funq.Container container)
+		{
+			container.Register(new TodoRepository());
+		}
+	}
+	
+
+	//REST Resource DTO
+	public class Todo 
 	{
 		public long Id { get; set; }
 		public string Content { get; set; }
@@ -45,6 +55,7 @@ Simple REST service example
 			return null;
 		}
 	}
+
 
 ### Calling the above TODO REST service from any C#/.NET Client
     //no code-gen required, can re-use above DTO's
