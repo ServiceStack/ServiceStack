@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Web;
 using ServiceStack.Common;
@@ -43,6 +44,11 @@ namespace ServiceStack.WebHost.Endpoints
 			WebHostPhysicalPath = isAspNetHost
 				? "~".MapHostAbsolutePath()
 				: "~".MapAbsolutePath();
+
+			if (null == EndpointHost.Config)
+			{
+				throw new ConfigurationErrorsException("ServiceStack: An EndpointHost.Config is not setup.  Typically this is performed by deriving from AppHostBase and calling SetConfig.  Either the call is not implemented, or for instance, global.asax has not been deployed");
+			}
 
 			//Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
 			var hostedAtRootPath = EndpointHost.Config.ServiceStackHandlerFactoryPath == null;
