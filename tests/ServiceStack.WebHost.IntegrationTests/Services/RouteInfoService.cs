@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
-using DeliveryService.Model.Operations;
 using DeliveryService.Model.Types;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
@@ -32,8 +31,8 @@ namespace DeliveryService.Model.Operations
 			this.ResponseStatus = new ResponseStatus();
 			this.Customers = new List<Customer>();
 			this.Outcomes = new List<Outcome>();
-			//this.DD = new Dictionary<string, Dictionary<string, string>>();
-			//this.Tweak = new Dictionary<string, int>();
+			this.DD = new Dictionary<string, Dictionary<string, string>>();
+			this.Tweak = new Dictionary<string, int>();
 		}
 
 		[DataMember]
