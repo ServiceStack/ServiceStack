@@ -5,23 +5,24 @@ using NUnit.Framework;
 using ServiceStack.Common.Tests.Support;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAnnotations;
+using System.Collections.Generic;
 
 namespace ServiceStack.Common.Tests
 {
 	[TestFixture]
 	public class ReflectionUtilTests
 	{
-        public enum TestClassType
-        {
-            One = 1,
-            Two = 2,
-            Three = 3
-        }
+		public enum TestClassType
+		{
+			One = 1,
+			Two = 2,
+			Three = 3
+		}
 
-        public class TestClass2
-        {
-            public TestClassType Type { get; set; }
-        }
+		public class TestClass2
+		{
+			public TestClassType Type { get; set; }
+		}
 
 		public class TestClass
 		{
@@ -37,12 +38,19 @@ namespace ServiceStack.Common.Tests
 			public string Member4 { get; set; }
 		}
 
-        [Test]
-        public void PopulateObject_UsesDefinedEnum()
-        {
+		[Test]
+		public void PopulateObject_UsesDefinedEnum()
+		{
 			var requestObj = (TestClass2)ReflectionUtils.PopulateObject(Activator.CreateInstance(typeof(TestClass2)));
-            Assert.True(Enum.IsDefined(typeof(TestClassType), requestObj.Type));
-        }
+			Assert.True(Enum.IsDefined(typeof(TestClassType), requestObj.Type));
+		}
+
+		[Test]
+		public void PopulateObject_UsesDefinedEnum_OnNestedTypes()
+		{
+			var requestObj = (Dictionary<string, TestClass2>)ReflectionUtils.CreateDefaultValue(typeof(Dictionary<string,TestClass2>));
+			Assert.True(Enum.IsDefined(typeof(TestClassType), requestObj.First().Value.Type));
+		}
 
 		[Test]
 		public void GetTest()
