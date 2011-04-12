@@ -45,9 +45,12 @@ namespace ServiceStack.WebHost.Endpoints
 				? "~".MapHostAbsolutePath()
 				: "~".MapAbsolutePath();
 
-			if (null == EndpointHost.Config)
+			if (EndpointHost.Config == null)
 			{
-				throw new ConfigurationErrorsException("ServiceStack: An EndpointHost.Config is not setup.  Typically this is performed by deriving from AppHostBase and calling SetConfig.  Either the call is not implemented, or for instance, global.asax has not been deployed");
+				throw new ConfigurationErrorsException(
+					"ServiceStack: AppHost does not exist or has not been initialized. "
+					+ "Make sure you have created an AppHost and started it with 'new AppHost().Init();' in your Global.asax Application_Start()",
+					new ArgumentNullException("EndpointHost.Config"));
 			}
 
 			//Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
