@@ -118,9 +118,18 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			while (this.Listener.IsListening)
 			{
-				this.Listener.BeginGetContext(ListenerCallback, this.Listener);
-				ListenForNextRequest.WaitOne();
+				if (this.Listener == null) return;
 
+				try
+				{
+					this.Listener.BeginGetContext(ListenerCallback, this.Listener);
+					ListenForNextRequest.WaitOne();
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Listen()", ex);
+					return;
+				}
 				if (this.Listener == null) return;
 			}
 		}

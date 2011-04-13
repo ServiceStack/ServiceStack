@@ -77,7 +77,7 @@ namespace Funq
 		private ServiceEntry<TService, TFunc> RegisterImpl<TService, TFunc>(string name, TFunc factory)
 		{
 			if (typeof(TService) == typeof(Container))
-				throw new ArgumentException(Properties.Resources.Registration_CantRegisterContainer);
+				throw new ArgumentException(ServiceStack.Properties.Resources.Registration_CantRegisterContainer);
 
 			var entry = new ServiceEntry<TService, TFunc>(factory)
 			{
@@ -253,10 +253,23 @@ namespace Funq
 					services[key] = entry;
 				}
 			}
-			else if (throwIfMissing)
+			else
 			{
-				ThrowMissing<TService>(serviceName);
-			}
+				if (throwIfMissing) //if called Resolve<> i.e. ctor
+				{
+					if (Adapter != null)
+					{
+						return new ServiceEntry<TService, TFunc>(
+							(TFunc)(object)(Func<Container, TService>)(c => Adapter.Resolve<TService>()));
+					}
+					ThrowMissing<TService>(serviceName);
+				}
+				else
+				{
+					return new ServiceEntry<TService, TFunc>(
+						(TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()));
+				}
+			} 
 
 			return (ServiceEntry<TService, TFunc>)entry;
 		}

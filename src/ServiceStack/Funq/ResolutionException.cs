@@ -16,8 +16,8 @@ namespace Funq
 		/// </summary>
 		public ResolutionException(Type missingServiceType)
 			: base(String.Format(
-				CultureInfo.CurrentCulture, 
-				Properties.Resources.ResolutionException_MissingType, 
+				CultureInfo.CurrentCulture,
+				ServiceStack.Properties.Resources.ResolutionException_MissingType, 
 				missingServiceType.FullName))
 		{ }
 
@@ -27,7 +27,7 @@ namespace Funq
 		public ResolutionException(Type missingServiceType, string missingServiceName)
 			: base(String.Format(
 				CultureInfo.CurrentCulture,
-				Properties.Resources.ResolutionException_MissingNamedType,
+				ServiceStack.Properties.Resources.ResolutionException_MissingNamedType,
 				missingServiceType.FullName, missingServiceName))
 		{ }
 		
