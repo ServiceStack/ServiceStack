@@ -255,7 +255,8 @@ namespace Funq
 			}
 			else
 			{
-				if (throwIfMissing) //if called Resolve<> i.e. ctor
+				//i.e. if called Resolve<> for Constructor injection
+				if (throwIfMissing) 
 				{
 					if (Adapter != null)
 					{
@@ -266,8 +267,11 @@ namespace Funq
 				}
 				else
 				{
-					return new ServiceEntry<TService, TFunc>(
-						(TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()));
+					if (Adapter != null)
+					{
+						return new ServiceEntry<TService, TFunc>(
+							(TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()));
+					}
 				}
 			} 
 

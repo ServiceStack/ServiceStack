@@ -104,6 +104,10 @@ namespace ServiceStack.ServiceHost
 		{
 			foreach (var serviceType in serviceTypes)
 			{
+				//Don't try to register base service classes
+				if (serviceType.IsGenericType)
+					continue;
+
 				var methodInfo = GetType().GetMethod("Register", new Type[0]);
 				var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
 				registerMethodInfo.Invoke(this, new object[0]);
