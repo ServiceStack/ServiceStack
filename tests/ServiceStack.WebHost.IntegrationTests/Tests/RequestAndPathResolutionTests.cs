@@ -6,7 +6,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
 	[TestFixture]
 	public class RequestAndPathResolutionTests
-		: TestsBase
+		: TestBase
 	{
 		public RequestAndPathResolutionTests()
 			: base(typeof(ReverseService).Assembly)

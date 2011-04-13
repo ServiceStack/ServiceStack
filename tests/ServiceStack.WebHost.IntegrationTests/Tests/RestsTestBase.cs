@@ -13,7 +13,7 @@ using ServiceStack.WebHost.IntegrationTests.Services;
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
 	public class RestsTestBase
-		: TestsBase
+		: TestBase
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (RestsTestBase));
 

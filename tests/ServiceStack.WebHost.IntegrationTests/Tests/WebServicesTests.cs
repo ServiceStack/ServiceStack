@@ -16,8 +16,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	/// The same tests below are re-used by the Unit and Integration TestFixture's declared below
 	/// </summary>
 	[TestFixture]
-	public abstract class WebServicesTests 
-		: TestsBase
+	public abstract class WebServicesTests
+		: TestBase
 	{
 		private const string TestString = "ServiceStack";
 

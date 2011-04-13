@@ -11,7 +11,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[TestFixture]
-	public class HttpResultTests : TestsBase
+	public class HttpResultTests : TestBase
 	{
 		[Test]
 		public void Can_send_ResponseText_test_with_Custom_Header()

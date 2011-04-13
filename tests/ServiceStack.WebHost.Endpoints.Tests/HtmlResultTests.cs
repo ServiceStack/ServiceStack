@@ -10,7 +10,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[TestFixture]
-	public class HtmlResultMetadataTests : TestsBase
+	public class HtmlResultMetadataTests : TestBase
 	{
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
