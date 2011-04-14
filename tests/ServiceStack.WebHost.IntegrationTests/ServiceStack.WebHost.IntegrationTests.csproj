@@ -124,6 +124,7 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Services\BatchWidgetValidationService.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />
     <Compile Include="Services\CustomFormDataService.cs" />
     <Compile Include="Services\RouteInfoService.cs" />

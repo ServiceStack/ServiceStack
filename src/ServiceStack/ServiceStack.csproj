@@ -145,6 +145,8 @@
     <Compile Include="WebHost.EndPoints\Extensions\HttpResponseStreamExtensions.cs" />
     <Compile Include="WebHost.EndPoints\Formats\CsvFormat.cs" />
     <Compile Include="WebHost.EndPoints\Extensions\HttpListenerRequestWrapper.cs" />
+    <Compile Include="WebHost.EndPoints\Formats\Markdown.cs" />
+    <Compile Include="WebHost.EndPoints\Formats\MarkdownFormat.cs" />
     <Compile Include="WebHost.EndPoints\GenericHandler.cs" />
     <Compile Include="WebHost.EndPoints\Formats\HtmlFormat.cs" />
     <Compile Include="WebHost.EndPoints\IAppHost.cs" />

@@ -292,11 +292,12 @@ namespace ServiceStack.Common.Utils
 
 		public static Array PopulateArray(Type type)
 		{
-			var objArray = Array.CreateInstance(type, 1);
-			var elementType = objArray.GetType().GetElementType();
+			var elementType = type.GetElementType();
+			var objArray = Array.CreateInstance(elementType, 1);
 			var objElementType = PopulateType(elementType);
 			objArray.SetValue(objElementType, 0);
 			PopulateObject(objElementType);
+
 			return objArray;
 		}
 
