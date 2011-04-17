@@ -13,6 +13,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class HttpResultTests : TestBase
 	{
+		protected override void Configure(Funq.Container container) { }
+
 		[Test]
 		public void Can_send_ResponseText_test_with_Custom_Header()
 		{

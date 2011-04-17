@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Moq;
 using NUnit.Framework;
@@ -12,11 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class HtmlResultMetadataTests : TestBase
 	{
-		[TestFixtureSetUp]
-		public void TestFixtureSetUp()
-		{
-			//EndpointHost.AppHost = new AppHostMock();
-		}
+		protected override void Configure(Funq.Container container) {}
 
 		public static class Html
 		{
@@ -52,6 +49,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(writtenString, Is.EqualTo(expectedOutput));
 			Assert.That(mockResponse.Headers["Location"], Is.EqualTo(url));
 		}
-
 	}
 }

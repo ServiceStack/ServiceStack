@@ -1,3 +1,4 @@
+using Funq;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceInterface.Testing;
@@ -12,6 +13,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public RestPathResolutionUnitTests()
 			: base(typeof(ReverseService).Assembly)
 		{
+		}
+
+		protected override void Configure(Funq.Container container)
+		{
+			
 		}
 
 		[SetUp]

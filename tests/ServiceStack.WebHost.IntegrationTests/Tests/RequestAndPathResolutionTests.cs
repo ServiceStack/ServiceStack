@@ -13,6 +13,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 		}
 
+		protected override void Configure(Funq.Container container) { }
+
 		[SetUp]
 		public void OnBeforeTest()
 		{

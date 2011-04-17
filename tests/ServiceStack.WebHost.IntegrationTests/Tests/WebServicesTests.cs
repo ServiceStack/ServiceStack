@@ -26,6 +26,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 		}
 
+		protected override void Configure(Funq.Container container) { }
+
 		[Test]
 		public void Does_Execute_ReverseService()
 		{

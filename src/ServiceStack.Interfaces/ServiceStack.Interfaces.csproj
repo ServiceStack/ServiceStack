@@ -58,6 +58,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -210,6 +211,11 @@
     <Compile Include="ServiceHost\IServiceRoutes.cs" />
     <Compile Include="ServiceHost\RestServiceAttribute.cs" />
     <Compile Include="ServiceHost\ServiceAttribute.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\CollectionTypes.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\IHasResponseStatus.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\Property.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\ResponseError.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\ResponseStatus.cs" />
     <Compile Include="Service\IOneWayClient.cs" />
     <Compile Include="Service\IReplyClient.cs" />
     <Compile Include="Service\IResponseBase.cs" />

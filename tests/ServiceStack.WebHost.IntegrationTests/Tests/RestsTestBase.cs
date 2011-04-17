@@ -25,6 +25,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 		}
 
+		protected override void Configure(Funq.Container container) { }
+
 		public HttpWebResponse GetWebResponse(string uri, string acceptContentTypes)
 		{
 			var webRequest = (HttpWebRequest)WebRequest.Create(uri);
