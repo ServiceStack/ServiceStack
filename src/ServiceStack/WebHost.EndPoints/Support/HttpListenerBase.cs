@@ -175,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (context == null) return;
 
 			//System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.Now);
-			var request = context.Request;
+			//var request = context.Request;
 
 			//if (request.HasEntityBody)
 

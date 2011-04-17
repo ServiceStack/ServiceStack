@@ -21,7 +21,7 @@ namespace ServiceStack.Common.Tests.Expressions
 
 			for (var i=0; i < Times; i++)
 			{
-				var result = action();
+				action();
 			}
 
 			stopWatch.Stop();
@@ -36,7 +36,7 @@ namespace ServiceStack.Common.Tests.Expressions
 
 			for (var i=0; i < Times; i++)
 			{
-				var result = TextValue.ToUpper();
+				TextValue.ToUpper();
 			}
 
 			stopWatch.Stop();
@@ -53,7 +53,7 @@ namespace ServiceStack.Common.Tests.Expressions
 
 			for (var i=0; i < Times; i++)
 			{
-				var result = methodInfo.Invoke(TextValue, new object[] { });
+				methodInfo.Invoke(TextValue, new object[] { });
 			}
 
 			stopWatch.Stop();
@@ -71,7 +71,7 @@ namespace ServiceStack.Common.Tests.Expressions
 
 			for (var i=0; i < Times; i++)
 			{
-				var result = delMethod(TextValue, new object[] { });
+				delMethod(TextValue, new object[] { });
 			}
 
 			stopWatch.Stop();

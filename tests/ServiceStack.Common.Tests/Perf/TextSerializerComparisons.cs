@@ -36,7 +36,7 @@ namespace ServiceStack.Common.Tests.Perf
 			var seraializedStringDto = TypeSerializer.DeserializeFromString<T>(stringStr);
 			Assert.That(seraializedStringDto.Equals(dto), Is.True);
 
-			var seraializedTextDto = TextSerializer.DeserializeFromString<T>(textStr);
+			TextSerializer.DeserializeFromString<T>(textStr);
 			//Assert.That(seraializedTextDto.Equals(dto), Is.True);
 		}
 

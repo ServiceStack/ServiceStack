@@ -9,7 +9,7 @@ namespace ServiceStack.ServiceHost
 	public class ServiceManager
 		: IDisposable
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (ServiceManager));
+		//private static readonly ILog Log = LogManager.GetLogger(typeof (ServiceManager));
 
 		public Container Container { get; private set; }
 		public ServiceController ServiceController { get; private set; }

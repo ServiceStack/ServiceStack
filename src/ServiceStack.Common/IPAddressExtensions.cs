@@ -14,8 +14,6 @@ namespace ServiceStack.Common.Extensions
 	/// </summary>
 	public static class IPAddressExtensions
 	{
-		private static ILog log = LogManager.GetLogger(typeof (IPAddressExtensions));
-
 		public static IPAddress GetBroadcastAddress(this IPAddress address, IPAddress subnetMask)
 		{
 			var ipAdressBytes = address.GetAddressBytes();

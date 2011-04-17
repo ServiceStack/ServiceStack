@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	internal class HttpResponseWrapper
 		: IHttpResponse
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));
+		//private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));
 
 		private readonly HttpResponse response;
 

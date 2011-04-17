@@ -125,7 +125,7 @@ namespace ServiceStack.ServiceClient.Web
 		public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
 			Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
-			var requestState = SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
+			SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
 		}
 
 		private RequestState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
@@ -188,7 +188,7 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			else
 			{
-				var result = requestState.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, requestState);
+				requestState.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, requestState);
 			}
 		}
 
@@ -202,7 +202,7 @@ namespace ServiceStack.ServiceClient.Web
 				var postStream = req.EndGetRequestStream(asyncResult);
 				StreamSerializer(null, requestState.Request, postStream);
 				postStream.Close();
-				var result = requestState.WebRequest.BeginGetResponse(ResponseCallback<T>, requestState);
+				requestState.WebRequest.BeginGetResponse(ResponseCallback<T>, requestState);
 			}
 			catch (Exception ex)
 			{
@@ -222,7 +222,7 @@ namespace ServiceStack.ServiceClient.Web
 				var responseStream = requestState.WebResponse.GetResponseStream();
 				requestState.ResponseStream = responseStream;
 
-				var asyncRead = responseStream.BeginRead(requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
+				responseStream.BeginRead(requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
 				return;
 			}
 			catch (Exception ex)
@@ -264,7 +264,7 @@ namespace ServiceStack.ServiceClient.Web
 				{
 
 					requestState.BytesData.Write(requestState.BufferRead, 0, read);
-					var nextAsyncResult = responseStream.BeginRead(
+					responseStream.BeginRead(
 						requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
 
 					return;

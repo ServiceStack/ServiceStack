@@ -243,7 +243,7 @@ namespace ServiceStack.ServiceClient.Web
 		public void SendOneWay(object request)
 		{
 			var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-			var client = SendRequest(requestUri, request);
+			SendRequest(requestUri, request);
 		}
 
 		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
