@@ -67,6 +67,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_DynamicPage()
 		{
 			var person = new Person { FirstName = "Demis", LastName = "Bellot" };
+			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
+
+			var html = markdownFormat.RenderDynamicPage("Dynamic", person);
 		}
 	}
 }

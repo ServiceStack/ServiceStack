@@ -107,7 +107,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="AppData\NoTemplate\Static.md" />
+    <None Include="AppData\NoTemplate\Dynamic.md" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
+    <Compile Include="Formats\TemplateTests.cs" />
     <Compile Include="PerfTests.cs" />
     <Compile Include="RestPathTests.cs" />
     <Compile Include="ServiceControllerPerfTests.cs" />
@@ -137,7 +140,7 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="App_Data\Template\default.htm" />
+    <Content Include="AppData\Template\default.htm" />
     <Content Include="lib\Funq.dll" />
     <Content Include="lib\hiro\Hiro.Containers.dll" />
     <Content Include="lib\hiro\Hiro.Containers.XML" />
@@ -180,11 +183,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App_Data\NoTemplate\Dynamic.md" />
-    <None Include="App_Data\NoTemplate\Static.md" />
-    <None Include="App_Data\Template\DynamicTpl.md" />
-    <None Include="App_Data\Template\StaticTpl.md" />
+    <None Include="AppData\Template\DynamicTpl.md" />
+    <None Include="AppData\Template\StaticTpl.md" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

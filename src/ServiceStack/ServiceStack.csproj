@@ -145,8 +145,13 @@
     <Compile Include="WebHost.EndPoints\Extensions\HttpResponseStreamExtensions.cs" />
     <Compile Include="WebHost.EndPoints\Formats\CsvFormat.cs" />
     <Compile Include="WebHost.EndPoints\Extensions\HttpListenerRequestWrapper.cs" />
-    <Compile Include="WebHost.EndPoints\Formats\Markdown.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Markdown\ITemplateWriter.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Markdown\Markdown.cs" />
     <Compile Include="WebHost.EndPoints\Formats\MarkdownFormat.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Markdown\MarkdownPage.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Markdown\MarkdownTemplate.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Markdown\TemplateExtensions.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Markdown\TextBlock.cs" />
     <Compile Include="WebHost.EndPoints\GenericHandler.cs" />
     <Compile Include="WebHost.EndPoints\Formats\HtmlFormat.cs" />
     <Compile Include="WebHost.EndPoints\IAppHost.cs" />
@@ -255,6 +260,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

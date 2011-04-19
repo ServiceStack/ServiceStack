@@ -1,19 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using MarkdownSharp;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;
+using ServiceStack.WebHost.EndPoints.Support.Markdown;
 
 namespace ServiceStack.WebHost.EndPoints.Formats
 {
 	public class MarkdownFormat
 	{
 		public static string TemplateName = "default.htm";
-		public static string TemplatePlaceHolder = "<!--Response-->";
+		public static string TemplatePlaceHolder = "<!--@Response-->";
 
 		public static MarkdownFormat Instance = new MarkdownFormat();
 
@@ -23,52 +27,11 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		public Dictionary<string, MarkdownTemplate> PageTemplates = new Dictionary<string, MarkdownTemplate>(
 			StringComparer.CurrentCultureIgnoreCase);
 
-		private Markdown markdown;
+		private readonly Markdown markdown;
 
 		public MarkdownFormat()
 		{
 			markdown = new Markdown();
-		}
-
-		public class MarkdownPage
-		{
-			public MarkdownPage() { }
-
-			public MarkdownPage(string fullPath, string name, string contents)
-			{
-				Path = fullPath;
-				Name = name;
-				Contents = contents;
-			}
-
-			public string Path { get; set; }
-			public string Name { get; set; }
-			public string Contents { get; set; }
-
-			public string GetTemplatePath()
-			{
-				var tplName = System.IO.Path.Combine(
-					System.IO.Path.GetDirectoryName(this.Path),
-					TemplateName);
-
-				return tplName;
-			}
-		}
-
-		public class MarkdownTemplate
-		{
-			public MarkdownTemplate() { }
-
-			public MarkdownTemplate(string fullPath, string name, string contents)
-			{
-				Path = fullPath;
-				Name = name;
-				Contents = contents;
-			}
-
-			public string Path { get; set; }
-			public string Name { get; set; }
-			public string Contents { get; set; }
 		}
 
 		public void Register(IAppHost appHost)
@@ -150,6 +113,61 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				TemplatePlaceHolder, pageHtml);
 			
 			return htmlPage;
+		}
+
+		public string Transform(string markdownText)
+		{
+			var pageHtml = markdown.Transform(markdownText);
+			return pageHtml;
+		}
+
+		public string RenderDynamicPage(string pageName, object model)
+		{
+			throw new NotImplementedException();
+		}
+
+		static Func<object, string> CompileDataBinder(Type type, string expr)
+		{
+			var param = Expression.Parameter(typeof(object), "model");
+			Expression body = Expression.Convert(param, type);
+			var members = expr.Split('.');
+			for (int i = 0; i < members.Length; i++)
+			{
+				body = Expression.PropertyOrField(body, members[i]);
+			}
+			var method = typeof(Convert).GetMethod("ToString", BindingFlags.Static | BindingFlags.Public,
+				null, new Type[] { body.Type }, null);
+			if (method == null)
+			{
+				method = typeof(Convert).GetMethod("ToString", BindingFlags.Static | BindingFlags.Public,
+					null, new Type[] { typeof(object) }, null);
+				body = Expression.Call(method, Expression.Convert(body, typeof(object)));
+			}
+			else
+			{
+				body = Expression.Call(method, body);
+			}
+
+			return Expression.Lambda<Func<object, string>>(body, param).Compile();
+		}
+
+		static Func<TModel, TProp> CompileDataBinder<TModel, TProp>(string expression)
+		{
+			var propNames = expression.Split('.');
+
+			var model = Expression.Parameter(typeof(TModel), "model");
+
+			Expression body = model;
+			foreach (string propName in propNames.Skip(1))
+				body = Expression.Property(body, propName);
+			//Debug.WriteLine(prop);
+
+			if (body.Type != typeof(TProp))
+				body = Expression.Convert(body, typeof(TProp));
+
+			Func<TModel, TProp> func = Expression.Lambda<Func<TModel, TProp>>(body, model).Compile();
+			//TODO: cache funcs
+			return func;
 		}
 	}
 }
