@@ -1,17 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using MarkdownSharp;
 using ServiceStack.Common;
+using ServiceStack.Common.Utils;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Formats
 {
 	public class MarkdownFormat
 	{
 		public static string TemplateName = "default.htm";
+		public static string TemplatePlaceHolder = "<!--Response-->";
+
+		public static MarkdownFormat Instance = new MarkdownFormat();
+
+		public Dictionary<string, MarkdownPage> Pages = new Dictionary<string, MarkdownPage>(
+			StringComparer.CurrentCultureIgnoreCase);
+
+		public Dictionary<string, MarkdownTemplate> PageTemplates = new Dictionary<string, MarkdownTemplate>(
+			StringComparer.CurrentCultureIgnoreCase);
+
+		private Markdown markdown;
+
+		public MarkdownFormat()
+		{
+			markdown = new Markdown();
+		}
 
 		public class MarkdownPage
 		{
-			public MarkdownPage() {}
+			public MarkdownPage() { }
 
 			public MarkdownPage(string fullPath, string name, string contents)
 			{
@@ -36,7 +57,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public class MarkdownTemplate
 		{
-			public MarkdownTemplate() {}
+			public MarkdownTemplate() { }
 
 			public MarkdownTemplate(string fullPath, string name, string contents)
 			{
@@ -50,13 +71,23 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			public string Contents { get; set; }
 		}
 
-		public static MarkdownFormat Instance = new MarkdownFormat();
+		public void Register(IAppHost appHost)
+		{
+			RegisterMarkdownPages("~".MapHostAbsolutePath());
 
-		public Dictionary<string, MarkdownPage> Pages = new Dictionary<string, MarkdownPage>(
-			StringComparer.CurrentCultureIgnoreCase);
+			HtmlFormat.ContentResolvers.Add((requestContext, dto, stream) => {
+				var pageName = dto.GetType().Name;
 
-		public Dictionary<string, MarkdownTemplate> PageTemplates = new Dictionary<string, MarkdownTemplate>(
-			StringComparer.CurrentCultureIgnoreCase);
+				MarkdownPage markdownPage;
+				if (!Pages.TryGetValue(pageName, out markdownPage))
+					return false;
+
+				var html = RenderStaticPage(markdownPage);
+				var htmlBytes = html.ToUtf8Bytes();
+				stream.Write(htmlBytes, 0, htmlBytes.Length);
+				return true;
+			});
+		}
 
 		public void RegisterMarkdownPages(string dirPath)
 		{
@@ -66,7 +97,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			foreach (var markDownFile in markDownFiles)
 			{
 				var fileInfo = new FileInfo(markDownFile);
-				var pageName = fileInfo.Name;
+				var pageName = fileInfo.Name.SplitOnFirst('.')[0];
 				var pageContents = File.ReadAllText(markDownFile);
 
 				AddPage(new MarkdownPage(markDownFile, pageName, pageContents));
@@ -78,14 +109,14 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			Pages.Add(page.Name, page);
 
 			var templatePath = page.GetTemplatePath();
-			
+
 			if (!PageTemplates.ContainsKey(templatePath))
 			{
 				var templateFile = new FileInfo(templatePath);
-				
+
 				if (!templateFile.Exists)
 				{
-					PageTemplates.Add(templateFile.FullName, null);	
+					PageTemplates.Add(templateFile.FullName, null);
 					return;
 				}
 
@@ -97,9 +128,28 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			}
 		}
 
-		public void Init()
+		public string RenderStaticPage(string pageName)
 		{
-			//Load all markdown templates and cache
+			MarkdownPage markdownPage;
+			if (!Pages.TryGetValue(pageName, out markdownPage))
+				throw new KeyNotFoundException(pageName);
+
+			return RenderStaticPage(markdownPage);
+		}
+
+		private string RenderStaticPage(MarkdownPage markdownPage)
+		{
+			var pageHtml = markdown.Transform(markdownPage.Contents);
+			var templatePath = markdownPage.GetTemplatePath();
+			
+			MarkdownTemplate markdownTemplate;
+			PageTemplates.TryGetValue(templatePath, out markdownTemplate);
+			if (markdownTemplate == null) return pageHtml;
+			
+			var htmlPage = markdownTemplate.Contents.ReplaceFirst(
+				TemplatePlaceHolder, pageHtml);
+			
+			return htmlPage;
 		}
 	}
 }

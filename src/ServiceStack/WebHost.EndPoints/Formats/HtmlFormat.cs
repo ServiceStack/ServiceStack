@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -398,8 +400,12 @@ function enc(html) {{
 			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.ServerHtml.ToContentFormat());
 		}
 
+		public static List<StreamSerializerResolverDelegate> ContentResolvers = new List<StreamSerializerResolverDelegate>();
+
 		public static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
 		{
+			if (ContentResolvers.Any(x => x(requestContext, dto, stream))) return;
+
 			var httpReq = requestContext.Get<IHttpRequest>();
 			if (requestContext.ResponseContentType != ContentType.Html
 				&& httpReq.ResponseContentType != ContentType.ServerHtml) return;

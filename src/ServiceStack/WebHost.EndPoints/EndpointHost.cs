@@ -5,6 +5,7 @@ using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -41,8 +42,10 @@ namespace ServiceStack.WebHost.Endpoints
 		    Config = config; // avoid cross-dependency on Config setter
 
 			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
-			HtmlFormat.Register(appHost);
 			CsvFormat.Register(appHost);
+
+			HtmlFormat.Register(appHost);
+			MarkdownFormat.Instance.Register(appHost);
 		}
 
 		// Config has changed

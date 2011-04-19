@@ -15,4 +15,5 @@ namespace ServiceStack.ServiceHost
 
 	public delegate void StreamSerializerDelegate(IRequestContext requestContext, object dto, Stream toStream);
 
+	public delegate bool StreamSerializerResolverDelegate(IRequestContext requestContext, object dto, Stream toStream);
 }

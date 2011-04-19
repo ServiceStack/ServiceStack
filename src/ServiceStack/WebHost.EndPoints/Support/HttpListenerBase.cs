@@ -263,6 +263,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			JsonDataContractDeserializer.Instance.UseBcl = config.UseBclJsonSerializers;
 		}
 
+		public Container Container
+		{
+			get
+			{
+				return EndpointHost.Config.ServiceManager.Container;
+			}
+		}
+
 		public T TryResolve<T>()
 		{
 			return EndpointHost.Config.ServiceManager.Container.TryResolve<T>();
