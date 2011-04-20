@@ -1,9 +1,15 @@
 # Static Markdown template
 
-Dear @model.FirstName @model.LastName,
+paragraph
 
-## Header 2
+# heading 1
 
 para
 
-[ServiceStack Link](http://www.servicestack.net)
+## heading 2
+
+This is a [servicestack.net link](http://www.servicestack.net)
+
+### heading 3
+
+

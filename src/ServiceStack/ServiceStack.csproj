@@ -150,6 +150,7 @@
     <Compile Include="WebHost.EndPoints\Formats\MarkdownFormat.cs" />
     <Compile Include="WebHost.EndPoints\Support\Markdown\MarkdownPage.cs" />
     <Compile Include="WebHost.EndPoints\Support\Markdown\MarkdownTemplate.cs" />
+    <Compile Include="WebHost.EndPoints\Support\Markdown\DataBinder.cs" />
     <Compile Include="WebHost.EndPoints\Support\Markdown\TemplateExtensions.cs" />
     <Compile Include="WebHost.EndPoints\Support\Markdown\TextBlock.cs" />
     <Compile Include="WebHost.EndPoints\GenericHandler.cs" />

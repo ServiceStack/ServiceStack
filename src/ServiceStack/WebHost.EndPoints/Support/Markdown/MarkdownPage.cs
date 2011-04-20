@@ -11,20 +11,20 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public MarkdownPage(string fullPath, string name, string contents)
 		{
-			Path = fullPath;
+			FilePath = fullPath;
 			Name = name;
 			Contents = contents;
 		}
 
-		public string Path { get; set; }
+		public string FilePath { get; set; }
 		public string Name { get; set; }
 		public string Contents { get; set; }
 		public string HtmlContents { get; set; }
 
 		public string GetTemplatePath()
 		{
-			var tplName = System.IO.Path.Combine(
-				System.IO.Path.GetDirectoryName(this.Path),
+			var tplName = Path.Combine(
+				Path.GetDirectoryName(this.FilePath),
 				MarkdownFormat.TemplateName);
 
 			return tplName;
@@ -35,11 +35,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public void Prepare()
 		{
 			this.HtmlContents = MarkdownFormat.Instance.Transform(this.Contents);
+			this.Blocks = this.HtmlContents.CreateTemplateBlocks();
 		}
 
 		public void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
-			throw new NotImplementedException();
+			foreach (var block in Blocks)
+			{
+				block.Write(textWriter, scopeArgs);
+			}
 		}
 	}
 }

@@ -7,6 +7,7 @@ using System.Reflection;
 using MarkdownSharp;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;
@@ -16,6 +17,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 {
 	public class MarkdownFormat
 	{
+		private static ILog log = LogManager.GetLogger(typeof (MarkdownFormat));
+
 		public static string TemplateName = "default.htm";
 		public static string TemplatePlaceHolder = "<!--@Response-->";
 
@@ -38,7 +41,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		{
 			RegisterMarkdownPages("~".MapHostAbsolutePath());
 
-			HtmlFormat.ContentResolvers.Add((requestContext, dto, stream) => {
+			HtmlFormat.ContentResolvers.Add((requestContext, dto, stream) =>
+			{
 				var pageName = dto.GetType().Name;
 
 				MarkdownPage markdownPage;
@@ -69,7 +73,15 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		private void AddPage(MarkdownPage page)
 		{
-			Pages.Add(page.Name, page);
+			try
+			{
+				page.Prepare();
+				Pages.Add(page.Name, page);
+			}
+			catch (Exception ex)
+			{
+				log.Error("AddPage() page.Prepare(): " + ex.Message, ex);
+			}
 
 			var templatePath = page.GetTemplatePath();
 
@@ -87,7 +99,15 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				var template = new MarkdownTemplate(
 					templatePath, templateFile.Name, pageContents);
 
-				PageTemplates.Add(template.Path, template);
+				try
+				{
+					template.Prepare();
+					PageTemplates.Add(template.FilePath, template);
+				}
+				catch (Exception ex)
+				{
+					log.Error("AddPage() template.Prepare(): " + ex.Message, ex);
+				}
 			}
 		}
 
@@ -104,14 +124,17 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		{
 			var pageHtml = markdown.Transform(markdownPage.Contents);
 			var templatePath = markdownPage.GetTemplatePath();
-			
+
+			return RenderInTemplateIfAny(templatePath, pageHtml);
+		}
+
+		private string RenderInTemplateIfAny(string templatePath, string pageHtml)
+		{
 			MarkdownTemplate markdownTemplate;
 			PageTemplates.TryGetValue(templatePath, out markdownTemplate);
 			if (markdownTemplate == null) return pageHtml;
-			
 			var htmlPage = markdownTemplate.Contents.ReplaceFirst(
-				TemplatePlaceHolder, pageHtml);
-			
+			TemplatePlaceHolder, pageHtml);
 			return htmlPage;
 		}
 
@@ -123,51 +146,17 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public string RenderDynamicPage(string pageName, object model)
 		{
-			throw new NotImplementedException();
-		}
+			MarkdownPage markdownPage;
+			if (!Pages.TryGetValue(pageName, out markdownPage))
+				throw new KeyNotFoundException(pageName);
 
-		static Func<object, string> CompileDataBinder(Type type, string expr)
-		{
-			var param = Expression.Parameter(typeof(object), "model");
-			Expression body = Expression.Convert(param, type);
-			var members = expr.Split('.');
-			for (int i = 0; i < members.Length; i++)
-			{
-				body = Expression.PropertyOrField(body, members[i]);
-			}
-			var method = typeof(Convert).GetMethod("ToString", BindingFlags.Static | BindingFlags.Public,
-				null, new Type[] { body.Type }, null);
-			if (method == null)
-			{
-				method = typeof(Convert).GetMethod("ToString", BindingFlags.Static | BindingFlags.Public,
-					null, new Type[] { typeof(object) }, null);
-				body = Expression.Call(method, Expression.Convert(body, typeof(object)));
-			}
-			else
-			{
-				body = Expression.Call(method, body);
-			}
+			var scopeArgs = new Dictionary<string, object> { { "model", model } };
 
-			return Expression.Lambda<Func<object, string>>(body, param).Compile();
-		}
+			var htmlPage = markdownPage.RenderToString(scopeArgs);
 
-		static Func<TModel, TProp> CompileDataBinder<TModel, TProp>(string expression)
-		{
-			var propNames = expression.Split('.');
+			var html = RenderInTemplateIfAny(markdownPage.GetTemplatePath(), htmlPage);
 
-			var model = Expression.Parameter(typeof(TModel), "model");
-
-			Expression body = model;
-			foreach (string propName in propNames.Skip(1))
-				body = Expression.Property(body, propName);
-			//Debug.WriteLine(prop);
-
-			if (body.Type != typeof(TProp))
-				body = Expression.Convert(body, typeof(TProp));
-
-			Func<TModel, TProp> func = Expression.Lambda<Func<TModel, TProp>>(body, model).Compile();
-			//TODO: cache funcs
-			return func;
+			return html;
 		}
 	}
 }

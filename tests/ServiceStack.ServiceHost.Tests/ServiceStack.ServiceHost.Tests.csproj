@@ -110,6 +110,7 @@
     <None Include="AppData\NoTemplate\Static.md" />
     <None Include="AppData\NoTemplate\Dynamic.md" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
+    <Compile Include="Formats\TemplateExtentionTests.cs" />
     <Compile Include="Formats\TemplateTests.cs" />
     <Compile Include="PerfTests.cs" />
     <Compile Include="RestPathTests.cs" />
@@ -183,6 +184,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="AppData\Template\DynamicListTpl.md" />
     <None Include="AppData\Template\DynamicTpl.md" />
     <None Include="AppData\Template\StaticTpl.md" />
   </ItemGroup>

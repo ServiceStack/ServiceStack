@@ -19,7 +19,7 @@ namespace ServiceStack.Common
 
 		public static T ToEnumOrDefault<T>(this string value, T defaultValue)
 		{
-			if (string.IsNullOrEmpty(value)) return defaultValue;
+			if (String.IsNullOrEmpty(value)) return defaultValue;
 			return (T)Enum.Parse(typeof(T), value, true);
 		}
 
@@ -36,17 +36,17 @@ namespace ServiceStack.Common
 
 		public static bool IsEmpty(this string value)
 		{
-			return string.IsNullOrEmpty(value);
+			return String.IsNullOrEmpty(value);
 		}
 
 		public static bool IsNullOrEmpty(this string value)
 		{
-			return string.IsNullOrEmpty(value);
+			return String.IsNullOrEmpty(value);
 		}
 
 		public static bool EqualsIgnoreCase(this string value, string other)
 		{
-			return string.Equals(value, other, StringComparison.CurrentCultureIgnoreCase);
+			return String.Equals(value, other, StringComparison.CurrentCultureIgnoreCase);
 		}
 
 		public static string ReplaceFirst(this string haystack, string needle, string replacement)
@@ -84,18 +84,18 @@ namespace ServiceStack.Common
 
 		public static string SafeVarName(this string text)
 		{
-			if (string.IsNullOrEmpty(text)) return null;
+			if (String.IsNullOrEmpty(text)) return null;
 			return InvalidVarCharsRegEx.Replace(text, "_");
 		}
 
 		public static string Join(this List<string> items)
 		{
-			return string.Join(JsWriter.ItemSeperatorString, items.ToArray());
+			return String.Join(JsWriter.ItemSeperatorString, items.ToArray());
 		}
 
 		public static string Join(this List<string> items, string delimeter)
 		{
-			return string.Join(delimeter, items.ToArray());
+			return String.Join(delimeter, items.ToArray());
 		}
 
 		public static string CombineWith(this string path, params string[] thesePaths)
@@ -111,7 +111,23 @@ namespace ServiceStack.Common
 			var parentPath = path.Substring(0, pos);
 			return parentPath;
 		}
-		
+
+		public static string RemoveCharFlags(this string text, bool[] charFlags)
+		{
+			if (text == null) return null;
+
+			var copy = text.ToCharArray();
+			var nonWsPos = 0;
+
+			for (var i = 0; i < text.Length; i++)
+			{
+				var @char = text[i];
+				if (@char < charFlags.Length && charFlags[@char]) continue;
+				copy[nonWsPos++] = @char;
+			}
+
+			return new String(copy, 0, nonWsPos);
+		}
 	}
 
 }

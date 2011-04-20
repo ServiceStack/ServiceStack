@@ -10,12 +10,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public MarkdownTemplate(string fullPath, string name, string contents)
 		{
-			Path = fullPath;
+			FilePath = fullPath;
 			Name = name;
 			Contents = contents;
 		}
 
-		public string Path { get; set; }
+		public string FilePath { get; set; }
 		public string Name { get; set; }
 		public string Contents { get; set; }
 

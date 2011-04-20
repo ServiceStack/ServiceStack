@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
@@ -19,6 +20,26 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 		private MarkdownFormat markdownFormat;
 
+		string staticTemplatePath;
+		string staticTemplateContent;
+		string dynamicPagePath;
+		string dynamicPageContent;
+		string dynamicListPagePath;
+		string dynamicListPageContent;
+
+		[TestFixtureSetUp]
+		public void TestFixtureSetUp()
+		{
+			staticTemplatePath = "~/AppData/Template/default.htm".MapAbsolutePath();
+			staticTemplateContent = File.ReadAllText(staticTemplatePath);
+
+			dynamicPagePath = "~/AppData/Template/DynamicTpl.md".MapAbsolutePath();
+			dynamicPageContent = File.ReadAllText(dynamicPagePath);
+
+			dynamicListPagePath = "~/AppData/Template/DynamicListTpl.md".MapAbsolutePath();
+			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
+		}
+
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
@@ -26,7 +47,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		}
 		
 		[Test]
-		public void Can_load_all_markdown_files()
+		public void 
+			Can_load_all_markdown_files()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
 
@@ -70,6 +92,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
 
 			var html = markdownFormat.RenderDynamicPage("Dynamic", person);
+
+			var expectedHtml = markdownFormat.Transform(dynamicPageContent)
+				.Replace("@model.FirstName", person.FirstName)
+				.Replace("@model.LastName", person.LastName);
+
+			Console.WriteLine("Template: " + html);
+			Assert.That(html, Is.EqualTo(expectedHtml));
 		}
 	}
 }

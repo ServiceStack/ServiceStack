@@ -1,9 +1,15 @@
 # @model.FirstName Dynamic Markdown Template
 
-Dear @model.FirstName @model.LastName,
+Hello @model.FirstName,
 
-## Header 2
+# heading 1
 
-para
+  * @model.LastName
+  * @model.FirstName
 
-[ServiceStack Link](http://www.servicestack.net)
+## heading 2
+
+This is a [servicestack.net link](http://www.servicestack.net)
+
+### heading 3
+

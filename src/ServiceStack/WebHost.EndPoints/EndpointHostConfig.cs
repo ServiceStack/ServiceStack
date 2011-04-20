@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Runtime.Serialization;
 using System.Web.Configuration;
+using MarkdownSharp;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -57,6 +58,8 @@ namespace ServiceStack.WebHost.Endpoints
 						DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
 						DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
 						EnableFeatures = Feature.All,
+						MarkdownOptions = new MarkdownOptions(),
+						MarkdownSearchPath = "~/",
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -89,6 +92,8 @@ namespace ServiceStack.WebHost.Endpoints
 			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
 			this.AllowFileExtensions = instance.AllowFileExtensions;
 			this.EnableFeatures = instance.EnableFeatures;
+			this.MarkdownOptions = instance.MarkdownOptions;
+			this.MarkdownSearchPath = instance.MarkdownSearchPath;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -178,6 +183,9 @@ namespace ServiceStack.WebHost.Endpoints
 		public bool UseBclJsonSerializers { get; set; }
 		public Dictionary<string, string> GlobalResponseHeaders { get; set; }
 		public Feature EnableFeatures { get; set; }
+
+		public MarkdownOptions MarkdownOptions { get; set; }
+		public string MarkdownSearchPath { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace
