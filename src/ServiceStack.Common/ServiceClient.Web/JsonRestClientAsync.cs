@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -24,6 +25,12 @@ namespace ServiceStack.ServiceClient.Web
 				StreamSerializer = SerializeToStream,
 				StreamDeserializer = JsonSerializer.DeserializeFromStream
 			};
+		}
+
+		public TimeSpan? Timeout
+		{
+			get { return this.client.Timeout; }
+			set { this.client.Timeout = value; }
 		}
 
 		private static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)

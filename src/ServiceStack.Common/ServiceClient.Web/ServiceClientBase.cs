@@ -51,7 +51,7 @@ namespace ServiceStack.ServiceClient.Web
 		}
 
 		public string UserName { get; set; }
-		
+
 		public string Password { get; set; }
 
 		public void SetCredentials(string userName, string password)
@@ -66,7 +66,16 @@ namespace ServiceStack.ServiceClient.Web
 
 		public string AsyncOneWayBaseUri { get; set; }
 
-		public TimeSpan? Timeout { get; set; }
+		private TimeSpan? timeout;
+		public TimeSpan? Timeout
+		{
+			get { return this.timeout; }
+			set
+			{
+				this.timeout = value;
+				this.asyncClient.Timeout = value;
+			}
+		}
 
 		public abstract string ContentType { get; }
 

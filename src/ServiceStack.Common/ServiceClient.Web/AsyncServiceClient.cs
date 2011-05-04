@@ -18,6 +18,7 @@ namespace ServiceStack.ServiceClient.Web
 	public class AsyncServiceClient
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
+		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
 
 		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
 
@@ -99,11 +100,6 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
-		public AsyncServiceClient()
-		{
-			this.Timeout = TimeSpan.FromSeconds(60);
-		}
-
 		public string UserName { get; set; }
 	
 		public string Password { get; set; }
@@ -114,7 +110,7 @@ namespace ServiceStack.ServiceClient.Web
 			this.Password = password;
 		}
 
-		public TimeSpan Timeout { get; set; }
+		public TimeSpan? Timeout { get; set; }
 
 		public string ContentType { get; set; }
 
@@ -156,7 +152,7 @@ namespace ServiceStack.ServiceClient.Web
 				OnSuccess = onSuccess,
 				OnError = onError,
 			};
-			requestState.StartTimer(this.Timeout);
+			requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
 			SendWebRequestAsync(httpMethod, request, requestState, webRequest);
 

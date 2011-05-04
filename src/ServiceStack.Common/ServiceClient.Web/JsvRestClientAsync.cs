@@ -26,6 +26,12 @@ namespace ServiceStack.ServiceClient.Web
 			};
 		}
 
+		public TimeSpan? Timeout
+		{
+			get { return this.client.Timeout; }
+			set { this.client.Timeout = value; }
+		}
+
 		private static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
 		{
 			TypeSerializer.SerializeToStream(dto, stream);
