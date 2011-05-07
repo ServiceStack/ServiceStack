@@ -1,9 +1,16 @@
 using System;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ServiceStack.Common.Reflection
 {
+
+#if MONOTOUCH || SILVERLIGHT
+	public static class StaticAccessors
+	{
+	}
+#else
+	using System.Linq.Expressions;
+	
 	public static class StaticAccessors
 	{
 		public static Func<object, object> GetValueGetter(Type type, PropertyInfo propertyInfo)
@@ -52,8 +59,9 @@ namespace ServiceStack.Common.Reflection
 					setterCall, instance, argument
 				).Compile();
 		}
-
 	}
+
+#endif
 
 	public static class StaticAccessors<TEntity>
 	{
@@ -81,7 +89,7 @@ namespace ServiceStack.Common.Reflection
 			var genericMi = mi.MakeGenericMethod(pi.PropertyType);
 			var typedGetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
-#if NO_EXPRESSIONS
+#if MONOTOUCH || SILVERLIGHT
 			return x => typedGetPropertyFn.Method.Invoke(x, new object[] { });
 #else
 			var typedMi = typedGetPropertyFn.Method;
@@ -130,13 +138,13 @@ namespace ServiceStack.Common.Reflection
 			var genericMi = mi.MakeGenericMethod(pi.PropertyType);
 			var typedSetPropertyFn = (Delegate)genericMi.Invoke(null, new[] { pi });
 
-#if NO_EXPRESSIONS
+#if MONOTOUCH || SILVERLIGHT
 			return (x, y) => typedSetPropertyFn.Method.Invoke(x, new[] { y });
 #else
 			var typedMi = typedSetPropertyFn.Method;
 			var paramFunc = Expression.Parameter(typeof(object), "oFunc");
 			var paramValue = Expression.Parameter(typeof(object), "oValue");
-			var expr = Expression.Lambda<Action<TEntity, object>> (
+			var expr = Expression.Lambda<Action<TEntity, object>>(
 					Expression.Call(
 						Expression.Convert(paramFunc, typedMi.DeclaringType),
 						typedMi,

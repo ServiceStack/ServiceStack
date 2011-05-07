@@ -1,10 +1,25 @@
 using System;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
-using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
+
+
+#if MONOTOUCH
+
+	public class Soap12ServiceClient 
+	{
+		public Soap12ServiceClient(string uri)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+#else
+
+	using System.ServiceModel;
+	using System.ServiceModel.Channels;
+	using ServiceStack.Text;
+
 	public class Soap12ServiceClient : WcfServiceClient
 	{
 		public Soap12ServiceClient(string uri)
@@ -51,4 +66,6 @@ namespace ServiceStack.ServiceClient.Web
 			return;
 		}
 	}
+
+#endif
 }

@@ -389,47 +389,9 @@ namespace ServiceStack.Common.Utils
 			while ((baseType = baseType.BaseType) != null);
 		}
 
-		public delegate object CtorDelegate();
-
-		static readonly Dictionary<Type, Func<object>> ConstructorMethods = new Dictionary<Type, Func<object>>();
-		public static Func<object> GetConstructorMethod(Type type)
-		{
-			lock (ConstructorMethods)
-			{
-				Func<object> ctorFn;
-				if (!ConstructorMethods.TryGetValue(type, out ctorFn))
-				{
-					ctorFn = GetConstructorMethodToCache(type);
-					ConstructorMethods[type] = ctorFn;
-				}
-				return ctorFn;
-			}
-		}
-
-		public static Func<object> GetConstructorMethodToCache(Type type)
-		{
-			var emptyCtor = type.GetConstructor(Type.EmptyTypes);
-			if (emptyCtor == null)
-				throw new ArgumentException(type.FullName + " does not have an empty constructor");
-
-			var dm = new DynamicMethod("MyCtor", type, Type.EmptyTypes, typeof(ReflectionUtils).Module, true);
-			var ilgen = dm.GetILGenerator();
-			ilgen.Emit(OpCodes.Nop);
-			ilgen.Emit(OpCodes.Newobj, emptyCtor);
-			ilgen.Emit(OpCodes.Ret);
-
-			Func<object> ctorFn = ((CtorDelegate) dm.CreateDelegate(typeof (CtorDelegate))).Invoke;
-			return ctorFn;
-		}
-
 		public static object CreateInstance(Type type)
 		{
-#if NO_EMIT
-			return Activator.CreateInstance(type);
-#else
-			var ctorFn = GetConstructorMethod(type);
-			return ctorFn();
-#endif
+			return Text.ReflectionExtensions.CreateInstance(type);
 		}
 	}
 }

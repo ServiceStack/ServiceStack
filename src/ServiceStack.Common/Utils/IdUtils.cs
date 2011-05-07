@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq.Expressions;
 using ServiceStack.Common.Reflection;
 using ServiceStack.Common.Utils;
 using ServiceStack.DesignPatterns.Model;
@@ -74,7 +73,6 @@ namespace ServiceStack.Common.Utils
 
 	internal static class HasPropertyId<TEntity>
 	{
-
 		private static readonly Func<TEntity, object> GetIdFn;
 
 		static HasPropertyId()
@@ -95,25 +93,30 @@ namespace ServiceStack.Common.Utils
 
 		static HasId()
 		{
+
+#if MONOTOUCH || SILVERLIGHT
+			GetIdFn = HasPropertyId<TEntity>.GetId;
+#else
 			var hasIdInterfaces = typeof(TEntity).FindInterfaces(
 				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
 
 			var genericArg = hasIdInterfaces[0].GetGenericArguments()[0];
 			var genericType = typeof(HasIdGetter<,>).MakeGenericType(typeof(TEntity), genericArg);
 
-			var oInstanceParam = Expression.Parameter(typeof(TEntity), "oInstanceParam");
-			var exprCallStaticMethod = Expression.Call
+			var oInstanceParam = System.Linq.Expressions.Expression.Parameter(typeof(TEntity), "oInstanceParam");
+			var exprCallStaticMethod = System.Linq.Expressions.Expression.Call
 				(
 					genericType,
 					"GetId",
 					new Type[0],
 					oInstanceParam
 				);
-			GetIdFn = Expression.Lambda<Func<TEntity, object>>
+			GetIdFn = System.Linq.Expressions.Expression.Lambda<Func<TEntity, object>>
 				(
 					exprCallStaticMethod,
 					oInstanceParam
 				).Compile();
+#endif
 		}
 
 		public static object GetId(TEntity entity)

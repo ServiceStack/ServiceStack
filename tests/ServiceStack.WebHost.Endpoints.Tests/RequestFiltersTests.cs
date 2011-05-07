@@ -354,6 +354,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 
+#if !MONOTOUCH
+
 		[TestFixture]
 		public class Soap11IntegrationTests : RequestFiltersTests
 		{
@@ -381,5 +383,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				return null;
 			}
 		}
+
+#endif
+
 	}
 }
