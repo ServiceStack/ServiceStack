@@ -104,7 +104,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static EndpointHostConfig Config
 		{
-			internal get
+			get
 			{
 				return config;
 			}
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints
 			return httpRes.IsClosed;
 		}
 
-		internal static void SetOperationTypes(ServiceOperations operationTypes, ServiceOperations allOperationTypes)
+		public static void SetOperationTypes(ServiceOperations operationTypes, ServiceOperations allOperationTypes)
 		{
 			ServiceOperations = operationTypes;
 			AllServiceOperations = allOperationTypes;
