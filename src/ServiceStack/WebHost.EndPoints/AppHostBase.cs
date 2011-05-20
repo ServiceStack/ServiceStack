@@ -54,7 +54,12 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		public void Init()
+        public void Init()
+        {
+            Init(null);
+        }
+
+		public void Init(IServiceImplementationsLocator locator)
 		{
 			if (Instance != null)
 			{
@@ -66,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{
-				serviceManager.Init();
+                serviceManager.Init(locator ?? serviceManager.ServiceController);
 				Configure(EndpointHost.Config.ServiceManager.Container);
 
 				EndpointHost.SetOperationTypes(

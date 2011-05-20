@@ -33,13 +33,18 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public void Init()
+        public void Init()
+        {
+            Init(ServiceController);
+        }
+
+		public void Init(IServiceImplementationsLocator locator)
 		{
 			this.Container = new Container();
 
 			var typeFactory = new ExpressionTypeFunqContainer(this.Container);
 
-			this.ServiceController.Register(typeFactory, assembliesWithServices);
+			this.ServiceController.Register(locator, typeFactory, assembliesWithServices);
 
 			this.ServiceOperations = new ServiceOperations(this.ServiceController.OperationTypes);
 			this.AllServiceOperations = new ServiceOperations(this.ServiceController.AllOperationTypes);

@@ -11,7 +11,7 @@ using ServiceStack.Text;
 namespace ServiceStack.ServiceHost
 {
 	public class ServiceController
-		: IServiceController
+		: IServiceController, IServiceImplementationsLocator
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceController));
 		private const string ResponseDtoSuffix = "Response";
@@ -62,45 +62,65 @@ namespace ServiceStack.ServiceHost
 			requestExecMap.Add(requestType, handlerFn);
 		}
 
-		public void Register(ITypeFactory serviceFactoryFn, params Assembly[] assembliesWithServices)
-		{
-			foreach (var assembly in assembliesWithServices)
-			{
-				foreach (var serviceType in assembly.GetTypes())
-				{
-					foreach (var service in serviceType.GetInterfaces())
-					{
-						if (serviceType.IsAbstract
-							|| !service.IsGenericType
-							|| service.GetGenericTypeDefinition() != typeof(IService<>)
-							) continue;
+        public IEnumerable<ServiceImplementation> GetServiceImplementations(Assembly[] assembliesWithServices)
+        {
+            foreach (var assembly in assembliesWithServices)
+            {
+                foreach (var serviceType in assembly.GetTypes())
+                {
+                    if (serviceType.IsAbstract
+                        || serviceType.IsGenericTypeDefinition // Guards against a construct like: class A<T> { class BService : IService<T> { ... } }
+                        ) continue;
 
-						var requestType = service.GetGenericArguments()[0];
+                    foreach (var service in serviceType.GetInterfaces())
+                    {
+                        if (!service.IsGenericType
+                            || service.GetGenericTypeDefinition() != typeof(IService<>)
+                            ) continue;
 
-						Register(requestType, serviceType, serviceFactoryFn);
+                        var requestType = service.GetGenericArguments()[0];
 
-						RegisterRestPaths(requestType);
+                        yield return new ServiceImplementation()
+                        {
+                            RequestType = requestType,
+                            ServiceType = serviceType
+                        };
+                    }
+                }
+            }
+        }
 
-						this.ServiceTypes.Add(serviceType);
+        public void Register(ITypeFactory serviceFactoryFn, params Assembly[] assembliesWithServices)
+        {
+            Register(this, serviceFactoryFn, assembliesWithServices);
+        }
 
-						this.AllOperationTypes.Add(requestType);
-						this.OperationTypes.Add(requestType);
+        public void Register(IServiceImplementationsLocator locator, ITypeFactory serviceFactoryFn, params Assembly[] assembliesWithServices)
+        {
+            foreach (var i in locator.GetServiceImplementations(assembliesWithServices))
+            {
+                Register(i.RequestType, i.ServiceType, serviceFactoryFn);
 
-						var responseTypeName = requestType.FullName + ResponseDtoSuffix;
-						var responseType = AssemblyUtils.FindType(responseTypeName);
-						if (responseType != null)
-						{
-							this.AllOperationTypes.Add(responseType);
-							this.OperationTypes.Add(responseType);
-						}
+                RegisterRestPaths(i.RequestType);
 
-						Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
-							(responseType != null ? "SyncReply" : "OneWay"),
-							serviceType.Name, requestType.Name);
-					}
-				}
-			}
-		}
+                this.ServiceTypes.Add(i.ServiceType);
+
+                this.AllOperationTypes.Add(i.RequestType);
+                this.OperationTypes.Add(i.RequestType);
+
+                var responseTypeName = i.RequestType.FullName + ResponseDtoSuffix;
+                var responseType = AssemblyUtils.FindType(responseTypeName);
+                if (responseType != null)
+                {
+                    this.AllOperationTypes.Add(responseType);
+                    this.OperationTypes.Add(responseType);
+                }
+
+                Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
+                    (responseType != null ? "SyncReply" : "OneWay"),
+                    i.ServiceType.Name, i.RequestType.Name);
+            }
+        }
 
 		public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
 
@@ -219,7 +239,7 @@ namespace ServiceStack.ServiceHost
 				catch (TargetInvocationException tex)
 				{
 					//Mono invokes using reflection
-					throw tex.InnerException ?? tex;
+					throw (tex.InnerException ?? tex).PreserveStackTrace();
 				}
 			};
 
