@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Common;
 using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
@@ -34,8 +35,14 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public void Prepare()
 		{
-			this.HtmlContents = MarkdownFormat.Instance.Transform(this.Contents);
-			this.Blocks = this.HtmlContents.CreateTemplateBlocks();
+			if (this.Contents.IsNullOrEmpty()) return;
+
+			var contents = this.Contents;
+			var statementBlocks = StatementExprBlock.Parse(ref contents);
+			this.Contents = contents;
+
+			this.HtmlContents = MarkdownFormat.Instance.Transform(contents);
+			this.Blocks = this.HtmlContents.CreateTemplateBlocks(statementBlocks);
 		}
 
 		public void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)

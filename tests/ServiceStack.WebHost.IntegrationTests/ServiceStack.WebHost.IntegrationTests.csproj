@@ -127,6 +127,7 @@
     <Compile Include="Services\BatchWidgetValidationService.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />
     <Compile Include="Services\CustomFormDataService.cs" />
+    <Compile Include="Services\GeoInfoService.cs" />
     <Compile Include="Services\RouteInfoService.cs" />
     <Compile Include="Tests\AppHostBaseTests.cs" />
     <Compile Include="Tests\CachedServiceTests.cs" />

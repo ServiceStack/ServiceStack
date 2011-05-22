@@ -66,7 +66,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'MonoTouch|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\MonoTouch\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;STATIC_ONLY NO_EXPRESSIONS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;MONOTOUCH</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>

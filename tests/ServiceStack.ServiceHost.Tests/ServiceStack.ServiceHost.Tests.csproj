@@ -112,6 +112,7 @@
     <Compile Include="Formats\MarkdownFormatTests.cs" />
     <Compile Include="Formats\TemplateExtentionTests.cs" />
     <Compile Include="Formats\TemplateTests.cs" />
+    <Compile Include="Formats\TextBlockTests.cs" />
     <Compile Include="PerfTests.cs" />
     <Compile Include="RestPathTests.cs" />
     <Compile Include="ServiceControllerPerfTests.cs" />

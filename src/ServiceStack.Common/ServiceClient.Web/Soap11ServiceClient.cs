@@ -1,13 +1,69 @@
 using System;
+using System.IO;
+using ServiceStack.Service;
 
 namespace ServiceStack.ServiceClient.Web
 {
 
 #if MONOTOUCH
 
-	public class Soap11ServiceClient
+	public class Soap11ServiceClient : IServiceClient
 	{
 		public Soap11ServiceClient(string uri)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Dispose()
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SetCredentials(string userName, string password)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, 
+			Action<TResponse, Exception> onError)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, 
+			Action<TResponse, Exception> onError)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, 
+			Action<TResponse> onSuccess, Action<TResponse,Exception> onError)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, 
+			Action<TResponse,Exception> onError)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void SendOneWay(object request)
+		{
+			throw new NotImplementedException();
+		}
+
+		public TResponse Send<TResponse>(object request)
+		{
+			throw new NotImplementedException();
+		}
+
+		public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
 		{
 			throw new NotImplementedException();
 		}

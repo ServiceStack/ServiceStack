@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -7,7 +8,16 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
 	public static class TemplateExtensions
 	{
+		private const char EscapeChar = '\\';
+		private const char QuoteChar = '"';
+		private const char StatementPlaceholderChar = '`';
+		private const char BeginStatementChar = '{';
+		private const char EndStatementChar = '}';
 		static readonly char[] WhiteSpaceChars = new[] { ' ', '\t', '\r', '\n' };
+		static readonly char[] WhiteSpaceAndSymbolChars = new[] {
+			' ', '\t', '\r', '\n', '(', ')', '!', '+', '-'
+		};
+
 		static readonly bool[] AlphaNumericFlags = new bool[128];
 		static readonly bool[] MemberExprFlags = new bool[128];
 		static readonly bool[] StatementFlags = new bool[128];
@@ -51,6 +61,33 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			{
 				StatementFlags[tokenChar] = true;
 			}
+		}
+
+		public static string[] SplitOnWhiteSpace(this string text)
+		{
+			return text.SplitAndTrimOn(WhiteSpaceChars);
+		}
+
+		public static string[] SplitOnWhiteSpaceAndSymbols(this string text)
+		{
+			return text.SplitAndTrimOn(WhiteSpaceAndSymbolChars);
+		}
+
+		public static string[] SplitAndTrimOn(this string text, char[] chars)
+		{
+			if (text == null) return new string[0];
+			var parts = text.Split(chars);
+			var results = new List<string>();
+
+			foreach (var part in parts)
+			{
+				var val = part.Trim();
+				if (string.IsNullOrEmpty(val)) continue;
+
+				results.Add(part);
+			}
+
+			return results.ToArray();
 		}
 
 		public static string RenderToString(this ITemplateWriter templateWriter, Dictionary<string, object> scopeArgs)
@@ -101,12 +138,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return blocks;
 		}
 
-		public static List<TemplateBlock> CreateTemplateBlocks(this string content)
+		public static List<TemplateBlock> CreateTemplateBlocks(this string content, List<StatementExprBlock> statementBlocks)
 		{
 			var blocks = new List<TemplateBlock>();
 			if (content.IsNullOrEmpty()) return blocks;
 
-			var pos = 0;
+			int pos;
 			var lastPos = 0;
 			while ((pos = content.IndexOf('@', lastPos)) != -1)
 			{
@@ -114,10 +151,30 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				blocks.Add(new TextBlock(contentBlock));
 
 				pos++; //@
-				var memberExpr = GetNextMemberExpr(content, ref pos);
-				if (memberExpr != null)
+
+				if (content[pos] == StatementPlaceholderChar)
 				{
-					blocks.Add(new MemberExprBlock(memberExpr));
+					pos++; //`
+					var index = content.GetNextAlphaNumericExpr(ref pos);
+					int statementNo;
+					if (int.TryParse(index, out statementNo))
+					{
+						var statementIndex = statementNo - 1;
+						if (statementIndex >= statementBlocks.Count)
+							throw new ArgumentOutOfRangeException(
+								"Expected < " + statementBlocks.Count + " but was " + statementIndex);
+						
+						var statement = statementBlocks[statementIndex];
+						blocks.Add(statement);
+					}
+				}
+				else
+				{
+					var memberExpr = content.GetNextMemberExpr(ref pos);
+					if (memberExpr != null)
+					{
+						blocks.Add(new MemberExprBlock(memberExpr));
+					}
 				}
 
 				lastPos = pos;
@@ -132,6 +189,111 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return blocks;
 		}
 
+		public static StatementExprBlock GetNextStatementExpr(this string content, ref int fromPos)
+		{
+			var varExpr = content.GetNextAlphaNumericExpr(ref fromPos);
+			if (varExpr != null)
+			{
+				if (varExpr == "foreach" || varExpr == "if")
+				{
+					//fromPos += varExpr.Length;
+
+					var conditionEndPos = content.IndexOf(BeginStatementChar, fromPos);
+					if (conditionEndPos == -1)
+						throw new InvalidDataException(varExpr + " at index: " + fromPos);
+
+					var condition = content.Substring(fromPos, conditionEndPos - fromPos)
+						.Trim('(', ')', ' ');
+
+					fromPos = conditionEndPos;
+					var statement = content.EatStatementExpr(ref fromPos);
+
+					if (varExpr == "foreach")
+						return new ForEachStatementExprBlock(condition, statement);
+
+					if (varExpr == "if")
+						return new IfStatementExprBlock(condition, statement);
+				}
+			}
+			return null;
+		}
+
+		public static void EatWhitespace(this string content, ref int index)
+		{
+			int c;
+			for (; index < content.Length; index++)
+			{
+				c = content[index];
+				if (c >= WhiteSpaceFlags.Length || !WhiteSpaceFlags[c])
+				{
+					break;
+				}
+			}
+		}
+
+		public static void EatRestOfLine(this string content, ref int index)
+		{
+			int c;
+			for (; index < content.Length; index++)
+			{
+				c = content[index];
+				if (c >= WhiteSpaceFlags.Length || !WhiteSpaceFlags[c])
+				{
+					return;
+				}
+				if (c != '\n') continue;
+
+				index++;
+				return;
+			}
+		}
+
+		private static string EatStatementExpr(this string content, ref int fromPos)
+		{
+			content.EatWhitespace(ref fromPos);
+			if (content[fromPos++] != BeginStatementChar)
+				throw new InvalidDataException("Expected { at: " + fromPos);
+			content.EatRestOfLine(ref fromPos);
+
+			var startPos = fromPos;
+			
+			var withinQuotes = false;
+			var endsToEat = 1;
+			while (++fromPos < content.Length && endsToEat > 0)
+			{
+				var c = content[fromPos];
+
+				if (c == QuoteChar
+					&& content[fromPos - 1] != EscapeChar)
+					withinQuotes = !withinQuotes;
+
+				if (withinQuotes)
+					continue;
+
+				if (c == BeginStatementChar)
+					endsToEat++;
+
+				if (c == EndStatementChar)
+					endsToEat--;
+			}
+
+			//content.EatRestOfLine(ref fromPos);
+
+			return content.Substring(startPos, fromPos - startPos - 1);
+		}
+
+		public static string GetNextAlphaNumericExpr(this string content, ref int fromPos)
+		{
+			var startPos = fromPos;
+			for (; fromPos < content.Length; fromPos++)
+			{
+				var exprChar = content[fromPos];
+				if (exprChar >= AlphaNumericFlags.Length) return null;
+				if (!MemberExprFlags[exprChar]) break;
+			}
+			return content.Substring(startPos, fromPos - startPos);
+		}
+
 		public static string GetNextMemberExpr(this string content, ref int fromPos)
 		{
 			var startPos = fromPos;
@@ -141,6 +303,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				if (exprChar >= MemberExprFlags.Length) return null;
 				if (!MemberExprFlags[exprChar]) break;
 			}
+			
+			if (fromPos == startPos) return null;
+
 			return content.Substring(startPos, fromPos - startPos);
 		}
 

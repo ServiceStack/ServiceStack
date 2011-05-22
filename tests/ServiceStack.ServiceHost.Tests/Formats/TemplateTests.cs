@@ -70,12 +70,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			var person = new Person { FirstName = "Demis", LastName = "Bellot" };
 
-			var dynamicPage = new MarkdownPage(dynamicPageContent, "DynamicTpl", dynamicListPageContent);
+			var dynamicPage = new MarkdownPage(dynamicPageContent, "DynamicTpl", dynamicPageContent);
 			dynamicPage.Prepare();
 
 			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(9));
 
-			var expectedHtml = MarkdownFormat.Instance.Transform(dynamicListPageContent)
+			var expectedHtml = MarkdownFormat.Instance.Transform(dynamicPageContent)
 				.Replace("@model.FirstName", person.FirstName)
 				.Replace("@model.LastName", person.LastName);
 
@@ -106,10 +106,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			var dynamicPage = new MarkdownPage(
 				dynamicListPagePath, "DynamicListTpl", dynamicListPageContent);
-
 			dynamicPage.Prepare();
 
-			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(9));
+			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(11));
 
 			var expectedHtml = markdownHtml
 				.Replace("@model.FirstName", person.FirstName)
