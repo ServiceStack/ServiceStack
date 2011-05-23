@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Interface Name="ServiceStack.Redis.IRedisClient" HideInheritanceLine="true">
+    <Position X="5.25" Y="0.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <InheritanceLine Type="ServiceStack.DataAccess.IBasicPersistenceProvider" IsHidden="true" />
+    <InheritanceLine Type="ServiceStack.CacheAccess.ICacheClient" IsHidden="true" />
+    <TypeIdentifier>
+      <HashCode>ZQJ6V6QlNEAUoxyFOxEgj8kBmoIrySiDgx+gT8mgrjo=</HashCode>
+      <FileName>Redis\IRedisClient.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisList">
+    <Position X="8" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAABEAggAAAAAAgAIAAAACABQAAIogAgAAACAA=</HashCode>
+      <FileName>Redis\IRedisList.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisClientsManager">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAEAAAAAAAAAAAAAAAAAAAAAAQAAAABAAAA=</HashCode>
+      <FileName>Redis\IRedisClientsManager.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisSet">
+    <Position X="8" Y="5.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>IAAAAIAAAMABAAAAAAAEAAAAAACACAAAAgAAAQgAAAA=</HashCode>
+      <FileName>Redis\IRedisSet.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisSortedSet">
+    <Position X="8" Y="8.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AQAAAIAgAAAAIAAAAAAAAAAAAABAAAAGAggAAIAABAA=</HashCode>
+      <FileName>Redis\IRedisSortedSet.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisHash">
+    <Position X="8" Y="12.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>Redis\IRedisHash.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisNativeClient">
+    <Position X="3" Y="0.5" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>0ABBSJwiEWQIBAvUMsUZAZIcSBQCMTYMSC4CqlEAgwg=</HashCode>
+      <FileName>Redis\IRedisNativeClient.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.Generic.IRedisTypedClient&lt;T&gt;">
+    <Position X="10.5" Y="0.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>JYI6V6QNNCAUoxyBOxBgz8EBMIArQTijIx+iD8ggrjA=</HashCode>
+      <FileName>Redis\Generic\IRedisTypedClient.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.Generic.IRedisList&lt;T&gt;">
+    <Position X="13.25" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAABEAggAAAAAAgAIAAAACABQAAIogAgAAECAA=</HashCode>
+      <FileName>Redis\Generic\IRedisList.Generic.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.Generic.IRedisSet&lt;T&gt;">
+    <Position X="13.25" Y="5.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAQAAACAAAIQiAAAgAAAAAAEAA=</HashCode>
+      <FileName>Redis\Generic\IRedisSet.Generic.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.Generic.IRedisSortedSet&lt;T&gt;">
+    <Position X="13.25" Y="8.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AUAAAIAAAAAAAAAAAgAAAAAAgAAAAAIEAggAAI0AFAA=</HashCode>
+      <FileName>Redis\Generic\IRedisSortedSet.Generic.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.Generic.IRedisHash&lt;TKey, TValue&gt;">
+    <Position X="13.25" Y="12.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>Redis\Generic\IRedisHash.Generic.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisTransaction">
+    <Position X="0.5" Y="8.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Redis\IRedisTransaction.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.Pipeline.IRedisPipelineShared">
+    <Position X="0.5" Y="5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAIAAA=</HashCode>
+      <FileName>Redis\Pipeline\IRedisPipelineShared.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.Pipeline.IRedisQueueableOperation">
+    <Position X="0.5" Y="7.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Redis\Pipeline\IRedisQueueableOperation.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.CacheAccess.ICacheClient">
+    <Position X="0.5" Y="14.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAgACAABABAIAAABAAAAAAAIAAAIgAAAAAAACA=</HashCode>
+      <FileName>CacheAccess\ICacheClient.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.DataAccess.IBasicPersistenceProvider">
+    <Position X="0.5" Y="18.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAhAAAAAAEAACEAAAAAAAAAAQAAAIA=</HashCode>
+      <FileName>DataAccess\IBasicPersistenceProvider.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ServiceStack.Redis.IRedisSubscription">
+    <Position X="0.5" Y="11" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>BABCAAAAAAAgAAAAABAAAAAAAAAAACAIAACEAAAAAAA=</HashCode>
+      <FileName>Redis\IRedisSubscription.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="ServiceStack.Redis.RedisKeyType">
+    <Position X="0.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIABAAAQAAAAAAAAAAAAAAAAAAAAAkAAAI=</HashCode>
+      <FileName>Redis\RedisKeyType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
