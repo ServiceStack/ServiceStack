@@ -72,5 +72,18 @@ namespace ServiceStack.ServiceHost.Tests
 			Assert.That(response, Is.Not.Null);
 		}
 
+        [Test]
+        public void Generic_Service_should_not_get_registered_with_generic_parameter()
+        {
+            var serviceManager = new ServiceManager(typeof(GenericService<>).Assembly);
+            serviceManager.Init();
+
+            // We should definately *not* be able to call the generic service with a "T" request object :)
+            var serviceController = serviceManager.ServiceController;
+            var requestType = typeof(GenericService<>).GetGenericArguments()[0];
+            var exception = Assert.Throws<System.NotImplementedException>(() => serviceController.GetService(requestType));
+
+            Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+        }
 	}
 }
