@@ -124,6 +124,7 @@
     <Compile Include="ServiceStackHandlerUrlTests.cs" />
     <Compile Include="Support\BasicService.cs" />
     <Compile Include="Support\AutoWireService.cs" />
+    <Compile Include="Support\GenericService.cs" />
     <Compile Include="Support\RestTestService.cs" />
     <Compile Include="Support\RequiresContextService.cs" />
     <Compile Include="TypeFactory\ReflectionTypeFunqContainer.cs" />
