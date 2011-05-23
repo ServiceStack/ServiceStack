@@ -68,10 +68,11 @@ namespace ServiceStack.ServiceHost
 			{
 				foreach (var serviceType in assembly.GetTypes())
 				{
+					if (serviceType.IsAbstract || serviceType.IsGenericTypeDefinition) continue;
+
 					foreach (var service in serviceType.GetInterfaces())
 					{
-						if (serviceType.IsAbstract
-							|| !service.IsGenericType
+						if (!service.IsGenericType
 							|| service.GetGenericTypeDefinition() != typeof(IService<>)
 							) continue;
 
