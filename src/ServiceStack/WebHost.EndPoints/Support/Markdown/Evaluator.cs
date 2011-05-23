@@ -23,9 +23,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 
 		public Evaluator(Type returnType, string expression, string name)
-			: this(returnType, expression, name, null) {}
+			: this(returnType, expression, name, null) { }
 
-		public Evaluator(Type returnType, string expression, string name, SortedDictionary<string,Type> exprParams)
+		public Evaluator(Type returnType, string expression, string name, SortedDictionary<string, Type> exprParams)
 		{
 			EvaluatorItem[] items = 
 			{
@@ -47,10 +47,19 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		private void ConstructEvaluator(IEnumerable<EvaluatorItem> items)
 		{
-			ICodeCompiler codeCompiler = (new CSharpCodeProvider().CreateCompiler());
+			var codeCompiler = CodeDomProvider.CreateProvider("CSharp");
 			var cp = new CompilerParameters();
-			cp.ReferencedAssemblies.Add("system.dll");
-			cp.ReferencedAssemblies.Add("system.xml.dll");
+
+			var assemblies = new List<string> {
+				"system.dll",
+				"system.xml.dll",
+				"ServiceStack.dll",
+				"ServiceStack.Text.dll",
+				"ServiceStack.Interfaces.dll",
+				"ServiceStack.Common.dll"
+			};
+			assemblies.ForEach(x => cp.ReferencedAssemblies.Add(x));
+			
 			cp.GenerateExecutable = false;
 			cp.GenerateInMemory = true;
 
@@ -58,7 +67,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			code.AppendLine("using System;");
 			code.AppendLine("using System.Text;");
 			code.AppendLine("using System.Xml;");
+			code.AppendLine("using System.Collections;");
 			code.AppendLine("using System.Collections.Generic;");
+			code.AppendLine("using ServiceStack.Text;");
+
 			code.AppendLine("namespace CSharpEval { ");
 			code.AppendLine("  public class _Expr { ");
 
@@ -70,7 +82,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					if (sbParams.Length > 0)
 						sbParams.Append(", ");
 
-					sbParams.AppendFormat("{0} {1}", param.Value.FullName, param.Key);
+					var typeName = param.Value.FullName.Replace('+', '.'); //Inner classes?
+					sbParams.AppendFormat("{0} {1}", typeName, param.Key);
+
+					var typeAssembly = param.Value.Assembly.ManifestModule.ScopeName;
+					if (!assemblies.Contains(typeAssembly))
+					{
+						assemblies.Add(typeAssembly);
+						cp.ReferencedAssemblies.Add(typeAssembly);
+					}
 				}
 
 				code.AppendFormat("    public {0} {1}({2})",
@@ -79,14 +99,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					sbParams);
 
 				code.AppendLine("    {");
-				code.AppendFormat("      return ({0}); ", item.Expression);
+				code.AppendFormat("      return ({0}); \n", item.Expression);
 				code.AppendLine("    }");
 			}
 
 			code.AppendLine("  }");
 			code.AppendLine("}");
 
-			var compilerResults = codeCompiler.CompileAssemblyFromSource(cp, code.ToString());
+			var src = code.ToString();
+			var compilerResults = codeCompiler.CompileAssemblyFromSource(cp, src);
 			if (compilerResults.Errors.HasErrors)
 			{
 				var error = new StringBuilder();

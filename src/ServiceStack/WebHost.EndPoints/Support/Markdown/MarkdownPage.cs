@@ -8,9 +8,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
 	public class MarkdownPage : ITemplateWriter
 	{
-		public MarkdownPage() { }
+		public MarkdownPage()
+		{
+			this.Statements = new List<StatementExprBlock>();			
+		}
 
-		public MarkdownPage(string fullPath, string name, string contents)
+		public MarkdownPage(string fullPath, string name, string contents) : this()
 		{
 			FilePath = fullPath;
 			Name = name;
@@ -32,17 +35,16 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 
 		public List<TemplateBlock> Blocks { get; set; }
+		public List<StatementExprBlock> Statements { get; set; }
 
 		public void Prepare()
 		{
 			if (this.Contents.IsNullOrEmpty()) return;
 
-			var contents = this.Contents;
-			var statementBlocks = StatementExprBlock.Parse(ref contents);
-			this.Contents = contents;
+			this.Contents = StatementExprBlock.Extract(this.Contents, this.Statements);
 
-			this.HtmlContents = MarkdownFormat.Instance.Transform(contents);
-			this.Blocks = this.HtmlContents.CreateTemplateBlocks(statementBlocks);
+			this.HtmlContents = MarkdownFormat.Instance.Transform(this.Contents);
+			this.Blocks = this.HtmlContents.CreateTemplateBlocks(this.Statements);
 		}
 
 		public void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)

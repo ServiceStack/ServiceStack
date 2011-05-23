@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
@@ -24,21 +25,17 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			var content = (string)dynamicListPageContent.Clone();
 
-			var startPos = content.IndexOf("@foreach");
-			var endPos = content.IndexOf("}", startPos);
+			var expected = content.ReplaceForeach("@^1");;
 
-			var expected = content.Substring(0, startPos)
-			               + "@`1"
-						   + content.Substring(endPos + 1);
+			var statements = new List<StatementExprBlock>();
+			var parsedContent = StatementExprBlock.Extract(content, statements);
 
-			var statements = StatementExprBlock.Parse(ref content);
+			Console.WriteLine(parsedContent);
 
-			Console.WriteLine(content);
-
-			Assert.That(content, Is.EqualTo(expected));
+			Assert.That(parsedContent, Is.EqualTo(expected));
 			Assert.That(statements.Count, Is.EqualTo(1));
 			Assert.That(statements[0].Condition, Is.EqualTo("var link in model.Links"));
-			Assert.That(statements[0].Statement, Is.EqualTo("\r\n  - @link.Name - @link.Href\r\n\r\n"));
+			Assert.That(statements[0].Statement, Is.EqualTo("  - @link.Name - @link.Href\r\n"));
 		}
 
 		[Test]
@@ -70,20 +67,19 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			const string expected = @"
 ## Statement 1
 
-@`1
+@^1
 
-@`2
+@^2
 
 ## Statement 2
 
-@`3
+@^3
 
-@`4
+@^4
 
 # EOF";
-			var content = template;
-
-			var statements = StatementExprBlock.Parse(ref content);
+			var statements = new List<StatementExprBlock>();
+			var content = StatementExprBlock.Extract(template, statements);
 
 			Console.WriteLine(content);
 
@@ -128,21 +124,20 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			const string expected = @"
 ## Statement 1
 
-@`1
+@^1
 
-@`2
+@^2
 
 ## Statement 2
 
-@`3
+@^3
 
-@`4
+@^4
 
 # EOF";
 
-			var content = template;
-
-			var statements = StatementExprBlock.Parse(ref content);
+			var statements = new List<StatementExprBlock>();
+			var content = StatementExprBlock.Extract(template, statements);
 
 			Console.WriteLine(content);
 
@@ -152,7 +147,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var stat1 = (IfStatementExprBlock)statements[0];
 			Assert.That(stat1.Condition, Is.EqualTo("model.IsValid"));
 			Assert.That(stat1.Statement, Is.EqualTo("### This is valid\r\n"));
-			Assert.That(stat1.ParamNames[0], Is.EqualTo("model.IsValid"));
+			Assert.That(stat1.ParamNames[0], Is.EqualTo("model"));
 
 			var stat2 = (ForEachStatementExprBlock)statements[1];
 			Assert.That(stat2.Condition, Is.EqualTo("var link in model.Links"));
@@ -169,8 +164,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var stat4 = (IfStatementExprBlock)statements[3];
 			Assert.That(stat4.Condition, Is.EqualTo("!model.IsValid"));
 			Assert.That(stat4.Statement, Is.EqualTo("### This is not valid\r\n"));
-			Assert.That(stat4.ParamNames[0], Is.EqualTo("model.IsValid"));
+			Assert.That(stat4.ParamNames[0], Is.EqualTo("model"));
 		}
-
 	}
 }

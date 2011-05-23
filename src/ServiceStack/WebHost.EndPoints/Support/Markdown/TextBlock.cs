@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common;
 using ServiceStack.Logging;
-using ServiceStack.Text;
+using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
@@ -62,7 +64,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		{
 			if (valueFn == null)
 			{
-				valueFn = DataBinder.CompileDataBinder(type, modelMemberExpr);
+				valueFn = DataBinder.CompileToString(type, modelMemberExpr);
 			}
 			return valueFn;
 		}
@@ -75,7 +77,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				textWriter.Write(modelMemberExpr);
 				return;
 			}
-			
+
 			if (memberExprValue == null) return;
 
 			try
@@ -102,21 +104,36 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public string Condition { get; set; }
 		public string Statement { get; set; }
 
-		public List<StatementExprBlock> AllExprBlocks { get; set; }
-
 		public List<TemplateBlock> ChildBlocks { get; set; }
+
+		protected void Prepare(List<StatementExprBlock> allStatements)
+		{
+			if (this.Statement.IsNullOrEmpty()) return;
+
+			var parsedStatement = Extract(this.Statement, allStatements);
+
+			this.ChildBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
+			this.ChildBlocks.ForEach(x => x.IsNested = true);
+		}
 
 		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
-			throw new NotImplementedException();
+			WriteImpl(textWriter, scopeArgs);
 		}
 
-		public static List<StatementExprBlock> Parse(ref string content)
+		private void WriteImpl(TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
-			var blocks = new List<StatementExprBlock>();
+			foreach (var templateBlock in ChildBlocks)
+			{
+				templateBlock.Write(textWriter, scopeArgs);
+			}
+		}
 
+		public static string Extract(string content, List<StatementExprBlock> allStatements)
+		{
 			var sb = new StringBuilder();
 
+			var initialCount = allStatements.Count;
 			int pos;
 			var lastPos = 0;
 			while ((pos = content.IndexOf('@', lastPos)) != -1)
@@ -127,11 +144,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				var startPos = pos;
 				pos++; //@
 
-				var statementExpr = content.GetNextStatementExpr(ref pos);				
+				var statementExpr = content.GetNextStatementExpr(ref pos);
 				if (statementExpr != null)
 				{
-					blocks.Add(statementExpr);
-					var placeholder = "@`" + blocks.Count;
+					statementExpr.Prepare(allStatements);
+					allStatements.Add(statementExpr);
+					var placeholder = "@" + TemplateExtensions.StatementPlaceholderChar + allStatements.Count;
 					sb.Append(placeholder);
 					lastPos = pos;
 				}
@@ -148,10 +166,29 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				sb.Append(lastBlock);
 			}
 
-			if (blocks.Count > 0)
-				content = sb.ToString();
+			return allStatements.Count > initialCount ? sb.ToString() : content;
+		}
 
-			return blocks;
+		protected void WriteStatement(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			if (IsNested)
+			{
+				//Write Markdown
+				WriteImpl(textWriter, scopeArgs);
+			}
+			else
+			{
+				//Buffer Markdown output before converting and writing HTML
+				var sb = new StringBuilder();
+				using (var sw = new StringWriter(sb))
+				{
+					WriteImpl(sw, scopeArgs);
+				}
+
+				var markdown = sb.ToString();
+				var html = MarkdownFormat.Instance.Transform(markdown);
+				textWriter.Write(html);
+			}
 		}
 	}
 
@@ -165,6 +202,17 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public string EnumeratorName { get; set; }
 		public string MemberExpr { get; set; }
+		public string MemberVarName { get; set; }
+
+		private Func<object, object> memberExprFn;
+		private Func<object, object> GetMemberExprFn(Type type)
+		{
+			if (memberExprFn == null)
+			{
+				memberExprFn = DataBinder.Compile(type, MemberExpr);
+			}
+			return memberExprFn;
+		}
 
 		private void Prepare()
 		{
@@ -178,6 +226,47 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				throw new InvalidDataException("Invalid foreach 'in' condition: " + Condition);
 
 			this.MemberExpr = parts[i++];
+			this.MemberVarName = this.MemberExpr.GetVarName();
+		}
+
+		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			object model;
+			if (!scopeArgs.TryGetValue(this.MemberVarName, out model))
+				throw new ArgumentException(this.MemberVarName + " does not exist");
+
+			var getMemberFn = GetMemberExprFn(model.GetType());
+			var memberExprEnumerator = getMemberFn(model) as IEnumerable;
+
+			if (memberExprEnumerator == null)
+				throw new ArgumentException(this.MemberExpr + " is not an IEnumerable");
+
+			if (IsNested)
+			{
+				//Write Markdown
+				foreach (var item in memberExprEnumerator)
+				{
+					scopeArgs[this.EnumeratorName] = item;
+					base.Write(textWriter, scopeArgs);
+				}
+			}
+			else
+			{
+				//Buffer Markdown output before converting and writing HTML
+				var sb = new StringBuilder();
+				using (var sw = new StringWriter(sb))
+				{
+					foreach (var item in memberExprEnumerator)
+					{
+						scopeArgs[this.EnumeratorName] = item;
+						base.Write(sw, scopeArgs);
+					}
+				}
+
+				var markdown = sb.ToString();
+				var html = MarkdownFormat.Instance.Transform(markdown);
+				textWriter.Write(html);
+			}
 		}
 	}
 
@@ -190,8 +279,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			Prepare();
 		}
 
-		public List<string> ParamNames { get; set; } 
-		public MethodInfo CompiledCondition { get; set; }
+		public List<string> ParamNames { get; set; }
+		private Evaluator evaluator;
 
 		private void Prepare()
 		{
@@ -201,14 +290,60 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				var isLowerCase = part[0] >= 'a' && part[0] <= 'z';
 				if (isLowerCase)
 				{
-					this.ParamNames.Add(part);
+					var varName = part.GetVarName();
+					this.ParamNames.Add(varName);
 				}
 			}
+		}
+
+		public Evaluator GetEvaluator(List<object> paramValues)
+		{
+			if (this.evaluator == null)
+			{
+				var exprParams = new SortedDictionary<string, Type>();
+
+				for (var i = 0; i < this.ParamNames.Count; i++)
+				{
+					var paramName = this.ParamNames[i];
+					var paramValue = paramValues[i];
+
+					exprParams[paramName] = paramValue.GetType();
+				}
+
+				this.evaluator = new Evaluator(typeof(bool), Condition, "IfCondition", exprParams);
+			}
+			return this.evaluator;
+		}
+
+		private List<object> GetParamValues(IDictionary<string, object> scopeArgs)
+		{
+			var results = new List<object>();
+			foreach (var paramName in this.ParamNames)
+			{
+				object paramValue;
+				if (!scopeArgs.TryGetValue(paramName, out paramValue))
+					throw new ArgumentException("Unresolved param " + paramName + " in " + Condition);
+
+				results.Add(paramValue);
+			}
+			return results;
+		}
+
+		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			var paramValues = GetParamValues(scopeArgs);
+			var eval = GetEvaluator(paramValues);
+			var resultCondition = eval.Eval<bool>("IfCondition", paramValues.ToArray());
+			if (!resultCondition) return;
+
+			WriteStatement(textWriter, scopeArgs);
 		}
 	}
 
 	public abstract class TemplateBlock : ITemplateWriter
 	{
+		public bool IsNested { get; set; }
+
 		public const string ModelVarName = "model";
 
 		public abstract void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs);

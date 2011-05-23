@@ -113,6 +113,7 @@
     <Compile Include="Formats\TemplateExtentionTests.cs" />
     <Compile Include="Formats\TemplateTests.cs" />
     <Compile Include="Formats\TextBlockTests.cs" />
+    <Compile Include="Formats\TextBlockUtils.cs" />
     <Compile Include="PerfTests.cs" />
     <Compile Include="RestPathTests.cs" />
     <Compile Include="ServiceControllerPerfTests.cs" />
@@ -185,6 +186,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="AppData\Template\DynamicNestedTpl.md" />
     <None Include="AppData\Template\DynamicListTpl.md" />
     <None Include="AppData\Template\DynamicTpl.md" />
     <None Include="AppData\Template\StaticTpl.md" />

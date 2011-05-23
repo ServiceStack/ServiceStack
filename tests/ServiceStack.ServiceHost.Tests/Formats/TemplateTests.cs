@@ -61,9 +61,26 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 		public class Link
 		{
+			public Link()
+			{
+				this.Labels = new List<string>();
+			}
 			public string Name { get; set; }
 			public string Href { get; set; }
+			public List<string> Labels { get; set; }
 		}
+
+		Person person = new Person
+		{
+			FirstName = "Demis",
+			LastName = "Bellot",
+			Links = new List<Link>
+				{
+					new Link { Name = "ServiceStack", Href = "http://www.servicestack.net", Labels = {"REST","JSON","XML"} },
+					new Link { Name = "AjaxStack", Href = "http://www.ajaxstack.net", Labels = {"HTML5", "AJAX", "SPA"} },
+				},
+		};
+
 
 		[Test]
 		public void Can_Render_MarkdownPage()
@@ -90,35 +107,66 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Can_Render_MarkdownPage_with_foreach()
 		{
-			var person = new Person
-			{
-				FirstName = "Demis",
-				LastName = "Bellot",
-				Links = new List<Link>
-				{
-					new Link { Name = "ServiceStack", Href = "http://www.servicestack.net" },
-					new Link { Name = "AjaxStack", Href = "http://www.ajaxstack.net" },
-				},
-			};
-
-			var markdownHtml = MarkdownFormat.Instance.Transform(dynamicListPageContent);
-			Console.WriteLine(markdownHtml);
-
 			var dynamicPage = new MarkdownPage(
 				dynamicListPagePath, "DynamicListTpl", dynamicListPageContent);
 			dynamicPage.Prepare();
 
 			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(11));
 
-			var expectedHtml = markdownHtml
+			var expectedMarkdown = dynamicListPageContent
 				.Replace("@model.FirstName", person.FirstName)
 				.Replace("@model.LastName", person.LastName);
+
+			var foreachLinks = "  - ServiceStack - http://www.servicestack.net\r\n"
+							 + "  - AjaxStack - http://www.ajaxstack.net\r\n";
+
+			expectedMarkdown = expectedMarkdown.ReplaceForeach(foreachLinks);
+
+			var expectedHtml = MarkdownFormat.Instance.Transform(expectedMarkdown);
+
+			Console.WriteLine("ExpectedHtml: " + expectedHtml);
 
 			var templateArgs = new Dictionary<string, object> { { "model", person } };
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
 
 			Console.WriteLine("Template Output: " + templateOutput);
 
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_Render_MarkdownPage_with_IF_statement()
+		{
+			var template = @"# Dynamic If Markdown Template
+
+Hello @model.FirstName,
+
+@if (model.FirstName == ""Bellot"") {
+  * @model.FirstName
+}
+@if (model.LastName == ""Bellot"") {
+  * @model.LastName
+}
+
+### heading 3";
+
+			var expected = @"# Dynamic If Markdown Template
+
+Hello Demis,
+
+  * Bellot
+
+### heading 3";
+
+			var expectedHtml = MarkdownFormat.Instance.Transform(expected);
+
+			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicIfTpl", template);
+			dynamicPage.Prepare();
+
+			var templateArgs = new Dictionary<string, object> { { "model", person } };
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+
+			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 

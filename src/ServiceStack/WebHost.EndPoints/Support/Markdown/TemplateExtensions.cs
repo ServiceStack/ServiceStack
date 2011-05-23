@@ -8,9 +8,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
 	public static class TemplateExtensions
 	{
+		private const string UnwantedPrefix = "<p>";
+		private const string UnwantedSuffix = "</p>";
 		private const char EscapeChar = '\\';
 		private const char QuoteChar = '"';
-		private const char StatementPlaceholderChar = '`';
+		public const char StatementPlaceholderChar = '^';
 		private const char BeginStatementChar = '{';
 		private const char EndStatementChar = '}';
 		static readonly char[] WhiteSpaceChars = new[] { ' ', '\t', '\r', '\n' };
@@ -138,6 +140,44 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return blocks;
 		}
 
+		public static string CaptureOutput(this List<TemplateBlock> childBlocks, 
+			TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			var sb = new StringBuilder();
+			using (var sw = new StringWriter(sb))
+			{
+				foreach (var templateBlock in childBlocks)
+				{
+					templateBlock.Write(sw, scopeArgs);
+				}
+			}
+
+			var output = sb.ToString();
+			return output;
+		}
+
+		public static void RemoveIfEndingWith(this TextBlock textBlock, string text)
+		{
+			if (textBlock == null) return;
+			if (textBlock.Content.EndsWith(text))
+			{
+				textBlock.Content = textBlock.Content.Substring(
+					0, textBlock.Content.Length - text.Length);
+			}
+		}
+
+		public static void SkipIfNextIs(this string content, ref int pos, string text)
+		{
+			if (content == null || text == null) return;
+
+			if (content.Length < pos + text.Length) return;
+
+			var test = content.Substring(pos, text.Length);
+			if (test != text) return;
+
+			pos += text.Length;
+		}
+
 		public static List<TemplateBlock> CreateTemplateBlocks(this string content, List<StatementExprBlock> statementBlocks)
 		{
 			var blocks = new List<TemplateBlock>();
@@ -148,13 +188,14 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			while ((pos = content.IndexOf('@', lastPos)) != -1)
 			{
 				var contentBlock = content.Substring(lastPos, pos - lastPos);
-				blocks.Add(new TextBlock(contentBlock));
+				var prevTextBlock = new TextBlock(contentBlock);
+				blocks.Add(prevTextBlock);
 
 				pos++; //@
 
 				if (content[pos] == StatementPlaceholderChar)
 				{
-					pos++; //`
+					pos++; //^
 					var index = content.GetNextAlphaNumericExpr(ref pos);
 					int statementNo;
 					if (int.TryParse(index, out statementNo))
@@ -167,6 +208,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 						var statement = statementBlocks[statementIndex];
 						blocks.Add(statement);
 					}
+
+					prevTextBlock.RemoveIfEndingWith(UnwantedPrefix);
+					content.SkipIfNextIs(ref pos, UnwantedSuffix);
+					content.SkipIfNextIs(ref pos, "\n");
 				}
 				else
 				{

@@ -45,24 +45,27 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			markdownFormat = new MarkdownFormat();
 		}
-		
+
 		[Test]
-		public void 
+		public void
 			Can_load_all_markdown_files()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
 
-			Assert.That(markdownFormat.Pages.Count, Is.EqualTo(4));
+			var expectedPageNames = new[] {
+				"Dynamic", "Static", "DynamicListTpl", "DynamicNestedTpl", "DynamicTpl", "StaticTpl" 
+			};
+
+			Assert.That(markdownFormat.Pages.Count, Is.EqualTo(expectedPageNames.Length));
 			Assert.That(markdownFormat.PageTemplates.Count, Is.EqualTo(2));
 
 			var pageNames = new List<string>();
 			markdownFormat.Pages.ForEach((k, v) => pageNames.Add(k));
 
 			Console.WriteLine(pageNames.Dump());
-			Assert.That(pageNames.EquivalentTo(
-				new[] {"Dynamic", "Static", "DynamicTpl", "StaticTpl"}));
+			Assert.That(pageNames.EquivalentTo(expectedPageNames));
 		}
-		
+
 		[Test]
 		public void Can_Render_StaticPage()
 		{
