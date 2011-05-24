@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel.Serialization;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -29,7 +29,15 @@ namespace ServiceStack.WebHost.Endpoints
 
 		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
 		{
-			EndpointHost.ConfigureHost(this, serviceName, assembliesWithServices);
+			EndpointHost.ConfigureHost(this, serviceName, CreateServiceManager(assembliesWithServices));
+		}
+
+		protected virtual ServiceManager CreateServiceManager(params Assembly[] assembliesWithServices)
+		{		
+			return new ServiceManager(assembliesWithServices);
+			//Alternative way to inject Container + Service Resolver strategy
+			//return new ServiceManager(new Container(),
+			//    new ServiceController(() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes())));
 		}
 
 		protected IServiceController ServiceController

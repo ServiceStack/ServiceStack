@@ -1405,6 +1405,11 @@
             <param name="serializerCtx">The serialization context.</param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.ServiceHost.ServiceManager.#ctor(Funq.Container,ServiceStack.ServiceHost.ServiceController)">
+            <summary>
+            Inject alternative container and strategy for resolving Service Types
+            </summary>
+        </member>
         <member name="T:ServiceStack.ServiceHost.ServiceControllerReflection">
             <summary>
             Keeping around just to compare how slow it is

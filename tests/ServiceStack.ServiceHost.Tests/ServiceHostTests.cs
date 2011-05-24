@@ -11,12 +11,17 @@ namespace ServiceStack.ServiceHost.Tests
 	[TestFixture]
 	public class ServiceHostTests
 	{
-	
+		private ServiceController serviceController;
+
+		[SetUp]
+		public void OnBeforeEachTest()
+		{
+			serviceController = new ServiceController(null);
+		}
+
 		[Test]
 		public void Can_execute_BasicService()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new BasicService());
 			var result = serviceController.Execute(new BasicRequest()) as BasicRequestResponse;
 
@@ -28,7 +33,6 @@ namespace ServiceStack.ServiceHost.Tests
 		{
 			var requestType = typeof(BasicRequest);
 
-			var serviceController = new ServiceController();
 			serviceController.Register(requestType, typeof(BasicService));
 
 			object request = Activator.CreateInstance(requestType);
@@ -77,8 +81,6 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_execute_RestTestService()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest()) as RestTestResponse;
 
@@ -89,8 +91,6 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_RestTestService_GET()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
 				new HttpRequestContext((object)null, EndpointAttributes.HttpGet)) as RestTestResponse;
@@ -102,8 +102,6 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_RestTestService_PUT()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
 				new HttpRequestContext((object)null, EndpointAttributes.HttpPut)) as RestTestResponse;
@@ -115,8 +113,6 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_RestTestService_POST()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
 				new HttpRequestContext((object)null, EndpointAttributes.HttpPost)) as RestTestResponse;
@@ -128,8 +124,6 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void Can_RestTestService_DELETE()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new RestTestService());
 			var result = serviceController.Execute(new RestTest(),
 				new HttpRequestContext((object)null, EndpointAttributes.HttpDelete)) as RestTestResponse;

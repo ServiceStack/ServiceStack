@@ -227,6 +227,45 @@ Hello Demis,
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
+		[Test]
+		public void Can_Render_Markdown_with_StaticMethods()
+		{
+			var template = @"# @model.FirstName Dynamic Static Methods Markdown Template
+
+    @Html.Partial(""Breadcrumbs"", model)
+
+	@Html.LabelFor(model => model.FirstName) @Html.TextboxFor(model => model.FirstName)
+
+	@Combine("" / "", model.FirstName, model.LastName)
+
+	@Capitalize(model.LastName)
+
+	@Html.Raw(Html.Table(model.Links))
+
+	@Raw(Table(model.Links))
+
+### heading 3";
+
+			var expected = @"# Dynamic If Markdown Template
+
+Hello Demis,
+
+  * Bellot
+
+### heading 3";
+
+			var expectedHtml = MarkdownFormat.Instance.Transform(expected);
+
+			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicIfTpl", template);
+			dynamicPage.Prepare();
+
+			var templateArgs = new Dictionary<string, object> { { "model", person } };
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
 	}
 
 }

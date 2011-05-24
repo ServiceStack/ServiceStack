@@ -31,12 +31,12 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		// Pre user config
-		public static void ConfigureHost(IAppHost appHost, string serviceName, Assembly[] assembliesWithServices)
+		public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
 			AppHost = appHost;
 
 			EndpointHostConfig.Instance.ServiceName = serviceName;
-			EndpointHostConfig.Instance.ServiceManager = new ServiceManager(assembliesWithServices);
+			EndpointHostConfig.Instance.ServiceManager = serviceManager;
 
             var config = EndpointHostConfig.Instance;
 		    Config = config; // avoid cross-dependency on Config setter

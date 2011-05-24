@@ -29,6 +29,13 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		}
 
 		public const bool UseCache = false;
+		private ServiceController serviceController;
+
+		[SetUp]
+		public void OnBeforeEachTest()
+		{
+			serviceController = new ServiceController(null);
+		}
 
 		[Test]
 		public void Perf_All_IOC()
@@ -37,11 +44,10 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 			NativeFunq_Perf();
 		}
 
+
 		[Test]
 		public void NativeFunq_Perf()
 		{
-			var serviceController = new ServiceController();
-
 			RegisterServices(serviceController, GetNativeFunqTypeFactory());
 
 			StoreAndGetCustomers(serviceController);
@@ -53,8 +59,6 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		[Test]
 		public void AutoWiredFunq_Perf()
 		{
-			var serviceController = new ServiceController();
-
 			RegisterServices(serviceController, GetAutoWiredFunqTypeFactory());
 
 			StoreAndGetCustomers(serviceController);
@@ -79,8 +83,6 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		[Test]
 		public void Using_NativeFunq()
 		{
-			var serviceController = new ServiceController();
-
 			RegisterServices(serviceController, GetNativeFunqTypeFactory());
 
 			StoreAndGetCustomers(serviceController);
@@ -89,8 +91,6 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		[Test]
 		public void Using_AutoWiredFunq()
 		{
-			var serviceController = new ServiceController();
-
 			RegisterServices(serviceController, GetAutoWiredFunqTypeFactory());
 
 			StoreAndGetCustomers(serviceController);

@@ -11,6 +11,13 @@ namespace ServiceStack.ServiceHost.Tests
 	public class PerfTests
 	{
 		private const int Times = 100000;
+		private ServiceController serviceController;
+
+		[SetUp]
+		public void OnBeforeEachTest()
+		{
+			serviceController = new ServiceController(null);
+		}
 
 		[Test]
 		public void RunAll()
@@ -47,8 +54,6 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void With_ServiceStackFunq()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new BasicService());
 			var request = new BasicRequest();
 
@@ -58,8 +63,6 @@ namespace ServiceStack.ServiceHost.Tests
 		[Test]
 		public void With_TypedArguments()
 		{
-			var serviceController = new ServiceController();
-
 			serviceController.Register(() => new BasicService());
 			var request = new BasicRequest();
 
@@ -70,7 +73,6 @@ namespace ServiceStack.ServiceHost.Tests
 		public void With_Expressions()
 		{
 			var requestType = typeof(BasicRequest);
-			var serviceController = new ServiceController();
 
 			serviceController.Register(requestType, typeof(BasicService));
 			var request = new BasicRequest();
@@ -82,7 +84,6 @@ namespace ServiceStack.ServiceHost.Tests
 		public void With_CustomFunc()
 		{
 			var requestType = typeof(BasicRequest);
-			var serviceController = new ServiceController();
 
 			serviceController.Register(requestType, typeof(BasicService), type => new BasicService());
 
@@ -103,8 +104,6 @@ namespace ServiceStack.ServiceHost.Tests
 		public void With_TypeFactory()
 		{
 			var requestType = typeof(BasicRequest);
-			var serviceController = new ServiceController();
-
 			serviceController.Register(requestType, typeof(BasicService), new BasicServiceTypeFactory());
 
 			var request = new BasicRequest();
