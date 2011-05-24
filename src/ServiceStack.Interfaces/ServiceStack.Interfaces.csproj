@@ -249,6 +249,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="Redis\Redis.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Redis\Redis-annotated.png" />
+    <Content Include="Redis\Redis.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -166,6 +166,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
+		public static string TrimIfEndingWith(this string content, string text)
+		{
+			if (content == null || !content.EndsWith(text)) return content;
+			return content.Substring(0, content.Length - text.Length);
+		}
+
 		public static void SkipIfNextIs(this string content, ref int pos, string text)
 		{
 			if (content == null || text == null) return;
@@ -176,6 +182,16 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (test != text) return;
 
 			pos += text.Length;
+		}
+
+		public static string TrimLineIfOnlyHasWhitespace(this string text)
+		{
+			var pos = text.LastIndexOf('\n') + 1; //after \n or at start if not found
+			if (pos == text.Length) return text;
+			var startPos = pos;
+			text.EatWhitespace(ref pos);
+			if (pos == text.Length) return text.Substring(0, startPos);
+			return text;
 		}
 
 		public static List<TemplateBlock> CreateTemplateBlocks(this string content, List<StatementExprBlock> statementBlocks)
@@ -209,6 +225,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 						blocks.Add(statement);
 					}
 
+					//Strip everything but @^1 in <p>@^1</p>\n
 					prevTextBlock.RemoveIfEndingWith(UnwantedPrefix);
 					content.SkipIfNextIs(ref pos, UnwantedSuffix);
 					content.SkipIfNextIs(ref pos, "\n");
@@ -241,8 +258,6 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			{
 				if (varExpr == "foreach" || varExpr == "if")
 				{
-					//fromPos += varExpr.Length;
-
 					var conditionEndPos = content.IndexOf(BeginStatementChar, fromPos);
 					if (conditionEndPos == -1)
 						throw new InvalidDataException(varExpr + " at index: " + fromPos);
@@ -252,6 +267,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 					fromPos = conditionEndPos;
 					var statement = content.EatStatementExpr(ref fromPos);
+					statement = statement.TrimLineIfOnlyHasWhitespace();
 
 					if (varExpr == "foreach")
 						return new ForEachStatementExprBlock(condition, statement);

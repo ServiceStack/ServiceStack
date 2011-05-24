@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.WebHost.EndPoints.Formats;
@@ -53,10 +54,24 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		private readonly string modelMemberExpr;
 		private readonly string varName;
 
+		private bool ReferencesSelf
+		{
+			get { return this.modelMemberExpr == null; }
+		}
+
 		public MemberExprBlock(string memberExpr)
 		{
-			this.varName = memberExpr.GetVarName();
-			this.modelMemberExpr = memberExpr.Substring(this.varName.Length + 1);
+			try
+			{
+				this.varName = memberExpr.GetVarName();
+				this.modelMemberExpr = varName != memberExpr 
+					? memberExpr.Substring(this.varName.Length + 1)
+					: null;
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
 		}
 
 		public Func<object, string> valueFn;
@@ -64,7 +79,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		{
 			if (valueFn == null)
 			{
-				valueFn = DataBinder.CompileToString(type, modelMemberExpr);
+				valueFn = this.ReferencesSelf 
+					? Convert.ToString 
+					: DataBinder.CompileToString(type, modelMemberExpr);
 			}
 			return valueFn;
 		}
@@ -83,8 +100,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			try
 			{
 				var valueFn = GetValueFn(memberExprValue.GetType());
-				var strValue = valueFn(memberExprValue);
-				textWriter.Write(strValue);
+
+				var strValue = this.ReferencesSelf 
+					? Convert.ToString(memberExprValue) 
+					: valueFn(memberExprValue);
+
+				textWriter.Write(HttpUtility.HtmlEncode(strValue));
 			}
 			catch (Exception ex)
 			{
@@ -114,14 +135,32 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			this.ChildBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
 			this.ChildBlocks.ForEach(x => x.IsNested = true);
+
+			RemoveTrailingNewLineIfProceedsStatement();
+		}
+
+		private void RemoveTrailingNewLineIfProceedsStatement()
+		{
+			if (this.ChildBlocks.Count < 2) return;
+			
+			var lastIndex = this.ChildBlocks.Count - 1;
+			if (!(this.ChildBlocks[lastIndex - 1] is StatementExprBlock)) return;
+			
+			var textBlock = this.ChildBlocks[lastIndex] as TextBlock;
+			if (textBlock == null) return;
+			
+			if (textBlock.Content == "\r\n")
+			{
+				this.ChildBlocks.RemoveAt(lastIndex);
+			}
 		}
 
 		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
-			WriteImpl(textWriter, scopeArgs);
+			WriteInternal(textWriter, scopeArgs);
 		}
 
-		private void WriteImpl(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		private void WriteInternal(TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			foreach (var templateBlock in ChildBlocks)
 			{
@@ -139,7 +178,6 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			while ((pos = content.IndexOf('@', lastPos)) != -1)
 			{
 				var contentBlock = content.Substring(lastPos, pos - lastPos);
-				sb.Append(contentBlock);
 
 				var startPos = pos;
 				pos++; //@
@@ -147,6 +185,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				var statementExpr = content.GetNextStatementExpr(ref pos);
 				if (statementExpr != null)
 				{
+					contentBlock = contentBlock.TrimLineIfOnlyHasWhitespace();
+					sb.Append(contentBlock);
+
 					statementExpr.Prepare(allStatements);
 					allStatements.Add(statementExpr);
 					var placeholder = "@" + TemplateExtensions.StatementPlaceholderChar + allStatements.Count;
@@ -155,6 +196,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				}
 				else
 				{
+					sb.Append(contentBlock);
+
 					sb.Append('@');
 					lastPos = startPos + 1;
 				}
@@ -174,7 +217,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (IsNested)
 			{
 				//Write Markdown
-				WriteImpl(textWriter, scopeArgs);
+				WriteInternal(textWriter, scopeArgs);
 			}
 			else
 			{
@@ -182,7 +225,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				var sb = new StringBuilder();
 				using (var sw = new StringWriter(sb))
 				{
-					WriteImpl(sw, scopeArgs);
+					WriteInternal(sw, scopeArgs);
 				}
 
 				var markdown = sb.ToString();

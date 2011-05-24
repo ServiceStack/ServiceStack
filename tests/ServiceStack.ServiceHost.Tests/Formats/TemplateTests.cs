@@ -170,6 +170,63 @@ Hello Demis,
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
+		[Test]
+		public void Can_Render_Markdown_with_Nested_Statements()
+		{
+			var template = @"# @model.FirstName Dynamic Nested Markdown Template
+
+# heading 1
+
+@foreach (var link in model.Links) {
+  @if (link.Name == ""AjaxStack"") {
+  - @link.Name - @link.Href
+  }
+}
+
+@if (model.Links.Count == 2) {
+## Haz 2 links
+
+  @foreach (var link in model.Links) {
+  - @link.Name - @link.Href
+    @foreach (var label in link.Labels) { 
+    - @label
+	}
+  }
+}
+
+### heading 3";
+
+			var expected = @"# Demis Dynamic Nested Markdown Template
+
+# heading 1
+
+  - AjaxStack - http://www.ajaxstack.net
+
+## Haz 2 links
+
+  - ServiceStack - http://www.servicestack.net
+    - REST
+    - JSON
+    - XML
+  - AjaxStack - http://www.ajaxstack.net
+    - HTML5
+    - AJAX
+    - SPA
+
+### heading 3";
+
+			var expectedHtml = MarkdownFormat.Instance.Transform(expected);
+
+			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicNestedTpl", template);
+			dynamicPage.Prepare();
+
+			var templateArgs = new Dictionary<string, object> { { "model", person } };
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
 	}
 
 }

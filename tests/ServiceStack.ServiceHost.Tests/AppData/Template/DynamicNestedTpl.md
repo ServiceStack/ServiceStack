@@ -1,9 +1,4 @@
-# @model.FirstName Dynamic Markdown Template
-
-Hello @model.FirstName,
-
-  * @model.LastName
-  * @model.FirstName
+# @model.FirstName Dynamic Nested Markdown Template
 
 # heading 1
 
@@ -23,9 +18,4 @@ Hello @model.FirstName,
   }
 }
 
-## heading 2
-
-This is a [servicestack.net link](http://www.servicestack.net)
-
 ### heading 3
-
