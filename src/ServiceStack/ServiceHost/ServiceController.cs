@@ -207,39 +207,25 @@ namespace ServiceStack.ServiceHost
 			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) =>
 			{
 				var service = serviceFactoryFn.CreateInstance(serviceType);
-				InjectRequestContext(service, requestContext);
+                using (service as IDisposable) // using is happy if this expression evals to null
+                {
+                    InjectRequestContext(service, requestContext);
 
-				var endpointAttrs = requestContext != null
-					? requestContext.EndpointAttributes
-					: EndpointAttributes.None;
+                    var endpointAttrs = requestContext != null
+                        ? requestContext.EndpointAttributes
+                        : EndpointAttributes.None;
 
-				object response;
-
-				try
-				{
-					//Executes the service and returns the result
-					response = typeFactoryFn(dto, service, endpointAttrs);
-				}
-				catch (TargetInvocationException tex)
-				{
-					//Mono invokes using reflection
-					throw tex.InnerException ?? tex;
-				}
-
-				try
-				{
-					var isDispoable = service as IDisposable;
-					if (isDispoable != null)
-					{
-						isDispoable.Dispose();
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Unable to disponse service: " + service.GetType().Name, ex);
-				}
-
-				return response;
+                    try
+                    {
+                        //Executes the service and returns the result
+                        return typeFactoryFn(dto, service, endpointAttrs);
+                    }
+                    catch (TargetInvocationException tex)
+                    {
+                        //Mono invokes using reflection
+                        throw tex.InnerException ?? tex;
+                    }
+                }
 			};
 
 			try

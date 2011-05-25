@@ -59,8 +59,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public void Close()
 		{
-			this.IsClosed = true;
-			this.response.CloseOutputStream();
+            if (!this.IsClosed)
+            {
+                this.IsClosed = true;
+                this.response.CloseOutputStream();
+            }
 		}
 
 		public bool IsClosed

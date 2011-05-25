@@ -62,11 +62,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void Does_dispose_service()
 		{
 			IocService.DisposedCount = 0;
+            IocService.ThrowErrors = false;
+
 			var restClient = new JsonServiceClient(ListeningOn);
 			var response = restClient.Get<IocResponse>("ioc");
 
 			Assert.That(IocService.DisposedCount, Is.EqualTo(1));
 		}
 
+        [Test]
+        public void Does_dispose_service_when_there_is_an_error()
+        {
+            IocService.DisposedCount = 0;
+            IocService.ThrowErrors = true;
+
+            var restClient = new JsonServiceClient(ListeningOn);
+            Assert.Throws<WebServiceException>(() => restClient.Get<IocResponse>("ioc"));
+
+            Assert.That(IocService.DisposedCount, Is.EqualTo(1));
+        }
 	}
 }
