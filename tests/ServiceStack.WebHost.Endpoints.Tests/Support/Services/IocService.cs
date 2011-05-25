@@ -54,10 +54,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 					response.Results.Add(dep.GetType().Name);
 			}
 
+            if (ThrowErrors) throw new ArgumentException("This service has intentionally failed");
+
 			return response;
 		}
 
 		public static int DisposedCount = 0;
+        public static bool ThrowErrors = false;
 
 		public void Dispose()
 		{
