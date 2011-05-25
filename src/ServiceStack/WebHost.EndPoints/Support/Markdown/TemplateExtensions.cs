@@ -15,6 +15,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public const char StatementPlaceholderChar = '^';
 		private const char BeginStatementChar = '{';
 		private const char EndStatementChar = '}';
+		private const char BeginMethodChar = '(';
+		private const char EndMethodChar = ')';
+
 		static readonly char[] WhiteSpaceChars = new[] { ' ', '\t', '\r', '\n' };
 		static readonly char[] WhiteSpaceAndSymbolChars = new[] {
 			' ', '\t', '\r', '\n', '(', ')', '!', '+', '-'
@@ -27,19 +30,19 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		static TemplateExtensions()
 		{
-			for (int i = 'A'; i < 'Z'; i++)
+			for (int i = 'A'; i <= 'Z'; i++)
 			{
 				AlphaNumericFlags[i] = true;
 				MemberExprFlags[i] = true;
 				StatementFlags[i] = true;
 			}
-			for (int i = 'a'; i < 'z'; i++)
+			for (int i = 'a'; i <= 'z'; i++)
 			{
 				AlphaNumericFlags[i] = true;
 				MemberExprFlags[i] = true;
 				StatementFlags[i] = true;
 			}
-			for (int i = '0'; i < '9'; i++)
+			for (int i = '0'; i <= '9'; i++)
 			{
 				AlphaNumericFlags[i] = true;
 				MemberExprFlags[i] = true;
@@ -275,8 +278,30 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					if (varExpr == "if")
 						return new IfStatementExprBlock(condition, statement);
 				}
+			} 
+
+			var nextToken = PeekAfterWhitespace(content, fromPos);
+			if (nextToken == BeginMethodChar)
+			{
+				var methodParamsExpr = content.EatMethodExpr(ref fromPos);
+				return new MethodStatementExprBlock(methodParamsExpr, null);
 			}
+
 			return null;
+		}
+
+		public static char PeekAfterWhitespace(this string content, int index)
+		{
+			int c;
+			for (; index < content.Length; index++)
+			{
+				c = content[index];
+				if (c >= WhiteSpaceFlags.Length || !WhiteSpaceFlags[c])
+				{
+					break;
+				}
+			}
+			return index == content.Length ? '\0' : content[index];
 		}
 
 		public static void EatWhitespace(this string content, ref int index)
@@ -309,18 +334,19 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		private static string EatStatementExpr(this string content, ref int fromPos)
+		private static string EatBlockExpr(this string content, ref int fromPos, 
+			char beginChar, char endChar)
 		{
 			content.EatWhitespace(ref fromPos);
-			if (content[fromPos++] != BeginStatementChar)
-				throw new InvalidDataException("Expected { at: " + fromPos);
+			if (content[fromPos++] != beginChar)
+				throw new InvalidDataException("Expected " + beginChar + " at: " + fromPos);
 			content.EatRestOfLine(ref fromPos);
 
 			var startPos = fromPos;
-			
+
 			var withinQuotes = false;
 			var endsToEat = 1;
-			while (++fromPos < content.Length && endsToEat > 0)
+			while (fromPos < content.Length && endsToEat > 0)
 			{
 				var c = content[fromPos];
 
@@ -328,19 +354,29 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					&& content[fromPos - 1] != EscapeChar)
 					withinQuotes = !withinQuotes;
 
-				if (withinQuotes)
-					continue;
+				if (!withinQuotes)
+				{
+					if (c == beginChar)
+						endsToEat++;
 
-				if (c == BeginStatementChar)
-					endsToEat++;
+					if (c == endChar)
+						endsToEat--;
+				}
 
-				if (c == EndStatementChar)
-					endsToEat--;
+				fromPos++;
 			}
 
-			//content.EatRestOfLine(ref fromPos);
-
 			return content.Substring(startPos, fromPos - startPos - 1);
+		}
+
+		private static string EatStatementExpr(this string content, ref int fromPos)
+		{
+			return EatBlockExpr(content, ref fromPos, BeginStatementChar, EndStatementChar);
+		}
+
+		private static string EatMethodExpr(this string content, ref int fromPos)
+		{
+			return EatBlockExpr(content, ref fromPos, BeginMethodChar, EndMethodChar);
 		}
 
 		public static string GetNextAlphaNumericExpr(this string content, ref int fromPos)

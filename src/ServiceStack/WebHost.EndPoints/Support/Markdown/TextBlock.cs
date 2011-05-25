@@ -187,6 +187,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				{
 					contentBlock = contentBlock.TrimLineIfOnlyHasWhitespace();
 					sb.Append(contentBlock);
+					
+					if (statementExpr is MethodStatementExprBlock)
+						sb.Append(' '); //ensure a spacer between method blocks
 
 					statementExpr.Prepare(allStatements);
 					allStatements.Add(statementExpr);
@@ -380,6 +383,28 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (!resultCondition) return;
 
 			WriteStatement(textWriter, scopeArgs);
+		}
+	}
+
+	public class MethodStatementExprBlock : StatementExprBlock
+	{
+		public MethodStatementExprBlock(string condition, string statement)
+			: base(condition, statement)
+		{
+			this.ParamNames = new List<string>();
+			Prepare();
+		}
+
+		public List<string> ParamNames { get; set; }
+		private Evaluator evaluator;
+
+		private void Prepare()
+		{
+		}
+
+		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			//base.Write(textWriter, scopeArgs);
 		}
 	}
 
