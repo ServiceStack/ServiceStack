@@ -58,5 +58,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 
+		[Test]
+		public void Does_dispose_service()
+		{
+			IocService.DisposedCount = 0;
+			var restClient = new JsonServiceClient(ListeningOn);
+			var response = restClient.Get<IocResponse>("ioc");
+
+			Assert.That(IocService.DisposedCount, Is.EqualTo(1));
+		}
+
 	}
 }

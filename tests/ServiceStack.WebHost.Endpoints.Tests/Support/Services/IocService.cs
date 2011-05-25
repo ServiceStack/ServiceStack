@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -25,7 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class IocService : IService<Ioc>
+	public class IocService : IService<Ioc>, IDisposable 
 	{
 		private readonly FunqDepCtor funqDepCtor;
 		private readonly AltDepCtor altDepCtor;
@@ -54,6 +55,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 			}
 
 			return response;
+		}
+
+		public static int DisposedCount = 0;
+
+		public void Dispose()
+		{
+			DisposedCount++;
 		}
 	}
 

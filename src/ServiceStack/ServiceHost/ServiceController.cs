@@ -213,15 +213,33 @@ namespace ServiceStack.ServiceHost
 					? requestContext.EndpointAttributes
 					: EndpointAttributes.None;
 
+				object response;
+
 				try
 				{
-					return typeFactoryFn(dto, service, endpointAttrs);
+					//Executes the service and returns the result
+					response = typeFactoryFn(dto, service, endpointAttrs);
 				}
 				catch (TargetInvocationException tex)
 				{
 					//Mono invokes using reflection
 					throw tex.InnerException ?? tex;
 				}
+
+				try
+				{
+					var isDispoable = service as IDisposable;
+					if (isDispoable != null)
+					{
+						isDispoable.Dispose();
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Unable to disponse service: " + service.GetType().Name, ex);
+				}
+
+				return response;
 			};
 
 			try
