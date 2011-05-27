@@ -147,7 +147,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var stat1 = (IfStatementExprBlock)statements[0];
 			Assert.That(stat1.Condition, Is.EqualTo("model.IsValid"));
 			Assert.That(stat1.Statement, Is.EqualTo("### This is valid\r\n"));
-			Assert.That(stat1.ParamNames[0], Is.EqualTo("model"));
 
 			var stat2 = (ForEachStatementExprBlock)statements[1];
 			Assert.That(stat2.Condition, Is.EqualTo("var link in model.Links"));
@@ -164,7 +163,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var stat4 = (IfStatementExprBlock)statements[3];
 			Assert.That(stat4.Condition, Is.EqualTo("!model.IsValid"));
 			Assert.That(stat4.Statement, Is.EqualTo("### This is not valid\r\n"));
-			Assert.That(stat4.ParamNames[0], Is.EqualTo("model"));
 		}
 	}
 }

@@ -8,6 +8,7 @@ using MarkdownSharp;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Markdown;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;
@@ -17,10 +18,10 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 {
 	public class MarkdownFormat
 	{
-		private static ILog log = LogManager.GetLogger(typeof (MarkdownFormat));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(MarkdownFormat));
 
 		public static string TemplateName = "default.htm";
-		public static string TemplatePlaceHolder = "<!--@Response-->";
+		public static string TemplatePlaceHolder = "<!--@Content-->";
 
 		public static MarkdownFormat Instance = new MarkdownFormat();
 
@@ -30,19 +31,24 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		public Dictionary<string, MarkdownTemplate> PageTemplates = new Dictionary<string, MarkdownTemplate>(
 			StringComparer.CurrentCultureIgnoreCase);
 
-		private readonly Markdown markdown;
+		public Type MarkdownBaseType { get; set; }
+		public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
+
+		private readonly MarkdownSharp.Markdown markdown;
 
 		public MarkdownFormat()
 		{
-			markdown = new Markdown();
+			markdown = new MarkdownSharp.Markdown();
+
+			this.MarkdownBaseType = typeof(MarkdownViewBase);
+			this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
 		}
 
 		public void Register(IAppHost appHost)
 		{
 			RegisterMarkdownPages("~".MapHostAbsolutePath());
 
-			HtmlFormat.ContentResolvers.Add((requestContext, dto, stream) =>
-			{
+			HtmlFormat.ContentResolvers.Add((requestContext, dto, stream) => {
 				var pageName = dto.GetType().Name;
 
 				MarkdownPage markdownPage;
@@ -71,6 +77,11 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			}
 		}
 
+		public void RegisterMarkdownPage(MarkdownPage markdownPage)
+		{
+			AddPage(markdownPage);
+		}
+
 		private void AddPage(MarkdownPage page)
 		{
 			try
@@ -80,7 +91,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			}
 			catch (Exception ex)
 			{
-				log.Error("AddPage() page.Prepare(): " + ex.Message, ex);
+				Log.Error("AddPage() page.Prepare(): " + ex.Message, ex);
 			}
 
 			var templatePath = page.GetTemplatePath();
@@ -106,7 +117,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				}
 				catch (Exception ex)
 				{
-					log.Error("AddPage() template.Prepare(): " + ex.Message, ex);
+					Log.Error("AddPage() template.Prepare(): " + ex.Message, ex);
 				}
 			}
 		}

@@ -21,8 +21,8 @@ namespace ServiceStack.ServiceHost
 		public ServiceManager(params Assembly[] assembliesWithServices)
 		{
 			this.Container = new Container();
-			Func<IEnumerable<Type>> resolveServicesFn = () => assembliesWithServices.ToList().SelectMany(x => x.GetTypes());
-			this.ServiceController = new ServiceController(resolveServicesFn);
+			this.ServiceController = new ServiceController(
+				() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
 		}
 
 		public ServiceManager(bool autoInitialize, params Assembly[] assembliesWithServices)

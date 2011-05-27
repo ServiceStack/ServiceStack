@@ -8,6 +8,7 @@ using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
+using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -59,6 +60,8 @@ namespace ServiceStack.WebHost.Endpoints
 						DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
 						EnableFeatures = Feature.All,
 						MarkdownOptions = new MarkdownOptions(),
+						MarkdownBaseType = typeof(MarkdownViewBase),
+						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
 						MarkdownSearchPath = "~/",
 					};
 
@@ -93,6 +96,8 @@ namespace ServiceStack.WebHost.Endpoints
 			this.AllowFileExtensions = instance.AllowFileExtensions;
 			this.EnableFeatures = instance.EnableFeatures;
 			this.MarkdownOptions = instance.MarkdownOptions;
+			this.MarkdownBaseType = instance.MarkdownBaseType;
+			this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
 			this.MarkdownSearchPath = instance.MarkdownSearchPath;
 		}
 
@@ -185,6 +190,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public Feature EnableFeatures { get; set; }
 
 		public MarkdownOptions MarkdownOptions { get; set; }
+		public Type MarkdownBaseType { get; set; }
+		public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
 		public string MarkdownSearchPath { get; set; }
 
 		private string defaultOperationNamespace;

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Markdown;
 using ServiceStack.Text;
 using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.EndPoints.Support.Markdown;
@@ -70,14 +72,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public List<string> Labels { get; set; }
 		}
 
-		Person person = new Person
-		{
+		Person person = new Person {
 			FirstName = "Demis",
 			LastName = "Bellot",
 			Links = new List<Link>
 				{
 					new Link { Name = "ServiceStack", Href = "http://www.servicestack.net", Labels = {"REST","JSON","XML"} },
-					new Link { Name = "AjaxStack", Href = "http://www.ajaxstack.net", Labels = {"HTML5", "AJAX", "SPA"} },
+					new Link { Name = "AjaxStack", Href = "http://www.ajaxstack.com", Labels = {"HTML5", "AJAX", "SPA"} },
 				},
 		};
 
@@ -118,7 +119,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				.Replace("@model.LastName", person.LastName);
 
 			var foreachLinks = "  - ServiceStack - http://www.servicestack.net\r\n"
-							 + "  - AjaxStack - http://www.ajaxstack.net\r\n";
+							 + "  - AjaxStack - http://www.ajaxstack.com\r\n";
 
 			expectedMarkdown = expectedMarkdown.ReplaceForeach(foreachLinks);
 
@@ -200,7 +201,7 @@ Hello Demis,
 
 # heading 1
 
-  - AjaxStack - http://www.ajaxstack.net
+  - AjaxStack - http://www.ajaxstack.com
 
 ## Haz 2 links
 
@@ -208,7 +209,7 @@ Hello Demis,
     - REST
     - JSON
     - XML
-  - AjaxStack - http://www.ajaxstack.net
+  - AjaxStack - http://www.ajaxstack.com
     - HTML5
     - AJAX
     - SPA
@@ -227,40 +228,117 @@ Hello Demis,
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
+		public class CustomMarkdownViewBase : MarkdownViewBase
+		{
+			public string Table(Person model)
+			{
+				var sb = new StringBuilder();
+
+				sb.AppendFormat("<table><caption>{0}'s Links</caption>", model.FirstName);
+				sb.AppendLine("<thead><tr><th>Name</th><th>Link</th></tr></thead>");
+				sb.AppendLine("<tbody>");
+				foreach (var link in model.Links)
+				{
+					sb.AppendFormat("<tr><td>{0}</td><td>{1}</td></tr>", link.Name, link.Href);
+				}
+				sb.AppendLine("</tbody>");
+				sb.AppendLine("</table>");
+
+				return sb.ToString();
+			}
+		}
+
 		[Test]
 		public void Can_Render_Markdown_with_StaticMethods()
 		{
-			var template = @"# @model.FirstName Dynamic Static Methods Markdown Template
+			var headerTemplate = @"## Header Links!
+  - [Google](http://google.com)
+  - [Bing](http://bing.com)";
 
-    @Html.Partial(""Breadcrumbs"", model)
+			var template = @"## Welcome to Razor!
 
-	@Html.LabelFor(model => model.FirstName) @Html.TextboxFor(model => model.FirstName)
+@Html.Partial(""HeaderLinks"", Model)
 
-	@Combine("" / "", model.FirstName, model.LastName)
+Hello @Upper(Model.LastName), @Model.FirstName
 
-	@Capitalize(model.LastName)
+### Breadcrumbs
+@Combine("" / "", Model.FirstName, Model.LastName)
 
-	@Html.Raw(Html.Table(model.Links))
+### Menus
+@foreach (var link in Model.Links) {
+  - @link.Name - @link.Href
+  @foreach (var label in link.Labels) { 
+    - @label
+  }
+}
 
-	@Raw(Table(model.Links))
+### HTML Table 
+#### Encoded	
+@Table(Model)
 
-### heading 3";
+#### Raw
+@Html.Raw(Table(Model))
+";
 
-			var expected = @"# Dynamic If Markdown Template
+			var expectedHtml = @"<h2>Welcome to Razor!</h2>
 
-Hello Demis,
+<h2>Header Links!</h2>
 
-  * Bellot
+<ul>
+<li><a href=""http://google.com"">Google</a></li>
+<li><a href=""http://bing.com"">Bing</a></li>
+</ul>
 
-### heading 3";
+<p>Hello  BELLOT, Demis</p>
 
-			var expectedHtml = MarkdownFormat.Instance.Transform(expected);
+<h3>Breadcrumbs</h3>
+
+Demis / Bellot
+<h3>Menus</h3>
+
+<ul>
+<li>ServiceStack - http://www.servicestack.net
+<ul>
+<li>REST</li>
+<li>JSON</li>
+<li>XML</li>
+</ul></li>
+<li>AjaxStack - http://www.ajaxstack.com
+<ul>
+<li>HTML5</li>
+<li>AJAX</li>
+<li>SPA</li>
+</ul></li>
+</ul>
+
+<h3>HTML Table</h3>
+
+<h4>Encoded</h4>
+
+&lt;table&gt;&lt;caption&gt;Demis's Links&lt;/caption&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Link&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;ServiceStack&lt;/td&gt;&lt;td&gt;http://www.servicestack.net&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;AjaxStack&lt;/td&gt;&lt;td&gt;http://www.ajaxstack.com&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;
+&lt;/table&gt;
+
+<h4>Raw</h4>
+
+<table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
+<tbody>
+<tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
+</table>
+".Replace("\r\n", "\n");
+
+
+			MarkdownFormat.Instance.MarkdownBaseType = typeof(CustomMarkdownViewBase);
+			MarkdownFormat.Instance.RegisterMarkdownPage(new MarkdownPage(
+				"/path/to/page", "HeaderLinks", headerTemplate));
 
 			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Prepare();
 
-			var templateArgs = new Dictionary<string, object> { { "model", person } };
+			var templateArgs = new Dictionary<string, object> { { "Model", person } };
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));

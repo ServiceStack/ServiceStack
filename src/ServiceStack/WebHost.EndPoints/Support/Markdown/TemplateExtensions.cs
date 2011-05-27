@@ -284,7 +284,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (nextToken == BeginMethodChar)
 			{
 				var methodParamsExpr = content.EatMethodExpr(ref fromPos);
-				return new MethodStatementExprBlock(methodParamsExpr, null);
+				return new MethodStatementExprBlock(varExpr, methodParamsExpr, null);
 			}
 
 			return null;
