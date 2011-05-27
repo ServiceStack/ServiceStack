@@ -38,6 +38,34 @@ namespace ServiceStack.Common.Tests
 			public string Member4 { get; set; }
 		}
 
+        public class DtoWithStringArray
+        {
+            public string[] Data { get; set; }
+        }
+
+        public class DtoWithEnumArray
+        {
+            public TestClassType[] Data { get; set; }
+        }
+
+        [Test]
+        public void Can_PopulateObjectWithStringArray()
+        {
+            var obj = (DtoWithStringArray)ReflectionUtils.PopulateObject(new DtoWithStringArray());
+            Assert.IsNotNull(obj.Data);
+            Assert.Greater(obj.Data.Length, 0);
+            Assert.IsNotNull(obj.Data[0]);
+        }
+
+        [Test]
+        public void Can_PopulateObjectWithNonZeroEnumArray()
+        {
+            var obj = (DtoWithEnumArray)ReflectionUtils.PopulateObject(new DtoWithEnumArray());
+            Assert.IsNotNull(obj.Data);
+            Assert.Greater(obj.Data.Length, 0);
+            Assert.That(Enum.IsDefined(typeof(TestClassType), obj.Data[0]), "Values in created array should be valid for the enum");
+        }
+
 		[Test]
 		public void PopulateObject_UsesDefinedEnum()
 		{
