@@ -48,6 +48,80 @@ namespace ServiceStack.Common.Tests
             public TestClassType[] Data { get; set; }
         }
 
+        public class RecursiveDto
+        {
+            public string Name { get; set; }
+            public RecursiveDto Child { get; set; }
+        }
+
+        public class DtoWithRecursiveArray
+        {
+            public RecursiveDto[] Paths { get; set; }
+        }
+
+        public class RecursiveArrayDto
+        {
+            public string Name { get; set; }
+            public RecursiveArrayDto[] Nodes { get; set; }
+        }
+
+        public class MindTwister
+        {
+            public string Name { get; set; }
+            public RecursiveArrayDto[] Arrays { get; set; }
+            public Vortex Vortex { get; set; }
+        }
+
+        public class Vortex
+        {
+            public int Id { get; set; }
+            public RecursiveArrayDto Arrays { get; set; }
+            public MindTwister[] Twisters { get; set; }
+        }
+
+        [Test]
+        public void Can_PopulateRecursiveDto()
+        {
+            var obj = (RecursiveDto)ReflectionUtils.PopulateObject(new RecursiveDto());
+            Assert.IsNotNullOrEmpty(obj.Name);
+            Assert.IsNotNull(obj.Child);
+            Assert.IsNotNullOrEmpty(obj.Child.Name);
+        }
+
+        [Test]
+        public void Can_PopulateArrayOfRecursiveDto()
+        {
+            var obj = (DtoWithRecursiveArray)ReflectionUtils.PopulateObject(new DtoWithRecursiveArray());
+            Assert.IsNotNull(obj.Paths);
+            Assert.Greater(obj.Paths.Length, 0);
+            Assert.IsNotNull(obj.Paths[0]);
+            Assert.IsNotNullOrEmpty(obj.Paths[0].Name);
+            Assert.IsNotNull(obj.Paths[0].Child);
+            Assert.IsNotNullOrEmpty(obj.Paths[0].Child.Name);
+        }
+
+        [Test]
+        public void Can_PopulateRecursiveArrayDto()
+        {
+            var obj = (RecursiveArrayDto)ReflectionUtils.PopulateObject(new RecursiveArrayDto());
+            Assert.IsNotNullOrEmpty(obj.Name);
+            Assert.IsNotNull(obj.Nodes[0]);
+            Assert.IsNotNullOrEmpty(obj.Nodes[0].Name);
+            Assert.IsNotNull(obj.Nodes[0].Nodes);
+            Assert.IsNotNullOrEmpty(obj.Nodes[0].Nodes[0].Name);
+        }
+
+        [Test]
+        public void Can_PopulateTheVortex()
+        {
+            var obj = (MindTwister)ReflectionUtils.PopulateObject(new MindTwister());
+            Console.WriteLine("Mindtwister = " + ServiceStack.Text.XmlSerializer.SerializeToString(obj)); // TypeSerializer and JsonSerializer blow up on this structure with a Null Reference Exception!
+            Assert.IsNotNull(obj);
+            Assert.IsNotNull(obj.Name);
+            Assert.IsNotNull(obj.Arrays);
+            Assert.IsNotNull(obj.Vortex);
+        }
+
         [Test]
         public void Can_PopulateObjectWithStringArray()
         {
@@ -76,7 +150,7 @@ namespace ServiceStack.Common.Tests
 		[Test]
 		public void PopulateObject_UsesDefinedEnum_OnNestedTypes()
 		{
-			var requestObj = (Dictionary<string, TestClass2>)ReflectionUtils.CreateDefaultValue(typeof(Dictionary<string,TestClass2>));
+			var requestObj = (Dictionary<string, TestClass2>)ReflectionUtils.CreateDefaultValue(typeof(Dictionary<string,TestClass2>), new Dictionary<Type,int>());
 			Assert.True(Enum.IsDefined(typeof(TestClassType), requestObj.First().Value.Type));
 		}
 
