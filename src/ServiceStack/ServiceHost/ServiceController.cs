@@ -273,7 +273,7 @@ namespace ServiceStack.ServiceHost
 				var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
 
 				Expression callExecute = Expression.Call(
-					serviceStrong, mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
+					mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
 
 				var executeFunc = Expression.Lambda<Func<object, object, EndpointAttributes, object>>
 					(callExecute, requestDtoParam, serviceParam, attrsParam).Compile();
