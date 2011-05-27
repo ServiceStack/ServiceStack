@@ -294,9 +294,8 @@ namespace ServiceStack.Common.Utils
 		{
 			var elementType = type.GetElementType();
 			var objArray = Array.CreateInstance(elementType, 1);
-			var objElementType = PopulateType(elementType);
+			var objElementType = CreateDefaultValue(elementType);
 			objArray.SetValue(objElementType, 0);
-			PopulateObject(objElementType);
 
 			return objArray;
 		}
