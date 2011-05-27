@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceModel.Serialization
@@ -11,19 +12,17 @@ namespace ServiceStack.ServiceModel.Serialization
 	{
 		public static JsonDataContractDeserializer Instance = new JsonDataContractDeserializer();
 
-		public bool UseBcl { get; set; }
+		public ITextSerializer TextSerializer { get; set; }
 
-		public object Parse(string json, Type returnType)
-		{
-			return DeserializeFromString(json, returnType);			
-		}
+		public bool UseBcl { get; set; }
 
 		public object DeserializeFromString(string json, Type returnType)
 		{
+			if (TextSerializer != null)
+				return TextSerializer.DeserializeFromString(json, returnType);
+
 			if (!UseBcl)
-			{
 				return JsonSerializer.DeserializeFromString(json, returnType);
-			}
 
 			try
 			{
@@ -44,20 +43,20 @@ namespace ServiceStack.ServiceModel.Serialization
 
 		public T DeserializeFromString<T>(string json)
 		{
+			if (TextSerializer != null)
+				return TextSerializer.DeserializeFromString<T>(json);
+
 			if (UseBcl)
-			{
-				return (T)Parse(json, typeof(T));
-			}
+				return (T)DeserializeFromString(json, typeof(T));
+
 			return JsonSerializer.DeserializeFromString<T>(json);
-		}
-		
-		public T Parse<T>(string json)
-		{
-			return DeserializeFromString<T>(json);
 		}
 
 		public T DeserializeFromStream<T>(Stream stream)
 		{
+			if (TextSerializer != null)
+				return TextSerializer.DeserializeFromStream<T>(stream);
+
 			if (UseBcl)
 			{
 				var serializer = new DataContractJsonSerializer(typeof(T));
@@ -68,6 +67,9 @@ namespace ServiceStack.ServiceModel.Serialization
 
 		public object DeserializeFromStream(Type type, Stream stream)
 		{
+			if (TextSerializer != null)
+				return TextSerializer.DeserializeFromStream(type, stream);
+
 			if (UseBcl)
 			{
 				var serializer = new DataContractJsonSerializer(type);

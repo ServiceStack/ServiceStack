@@ -26,7 +26,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 			var cacheValue = createCacheFn();
 
-			var cacheValueText = JsonDataContractSerializer.Instance.Parse(cacheValue);
+			var cacheValueText = JsonDataContractSerializer.Instance.SerializeToString(cacheValue);
 
 			if (expiresIn.HasValue)
 				this.CacheClient.Set(cacheKey, cacheValueText, expiresIn.Value);

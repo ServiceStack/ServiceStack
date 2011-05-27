@@ -131,6 +131,7 @@
     <Compile Include="DesignPatterns\Model\IHasUserSession.cs" />
     <Compile Include="DesignPatterns\Serialization\IStringDeserializer.cs" />
     <Compile Include="DesignPatterns\Serialization\IStringSerializer.cs" />
+    <Compile Include="DesignPatterns\Serialization\ITextSerializer.cs" />
     <Compile Include="DesignPatterns\Translator\ITranslator.cs" />
     <Compile Include="Logging\ILog.cs" />
     <Compile Include="Logging\ILogFactory.cs" />

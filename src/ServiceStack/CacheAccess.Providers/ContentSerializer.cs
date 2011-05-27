@@ -119,7 +119,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 				case MimeTypes.Json:
 				case Common.Web.ContentType.Json:
-					return JsonDataContractSerializer.Instance.Parse(result);
+					return JsonDataContractSerializer.Instance.SerializeToString(result);
 
 				case MimeTypes.Jsv:
 				case Common.Web.ContentType.Jsv:
