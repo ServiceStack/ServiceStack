@@ -31,6 +31,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -107,9 +108,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="AppData\NoTemplate\Static.md" />
     <None Include="AppData\NoTemplate\Dynamic.md" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
+    <Compile Include="Formats\MockClass.cs" />
     <Compile Include="Formats\TemplateExtentionTests.cs" />
     <Compile Include="Formats\TemplateTests.cs" />
     <Compile Include="Formats\TextBlockTests.cs" />

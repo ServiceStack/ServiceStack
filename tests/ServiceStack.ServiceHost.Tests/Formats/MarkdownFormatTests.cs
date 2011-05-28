@@ -97,8 +97,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var html = markdownFormat.RenderDynamicPage("Dynamic", person);
 
 			var expectedHtml = markdownFormat.Transform(dynamicPageContent)
-				.Replace("@model.FirstName", person.FirstName)
-				.Replace("@model.LastName", person.LastName);
+				.Replace("@Model.FirstName", person.FirstName)
+				.Replace("@Model.LastName", person.LastName);
 
 			Console.WriteLine("Template: " + html);
 			Assert.That(html, Is.EqualTo(expectedHtml));

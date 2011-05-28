@@ -161,7 +161,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			if (!Pages.TryGetValue(pageName, out markdownPage))
 				throw new KeyNotFoundException(pageName);
 
-			var scopeArgs = new Dictionary<string, object> { { "model", model } };
+			var scopeArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, model } };
 
 			var htmlPage = markdownPage.RenderToString(scopeArgs);
 

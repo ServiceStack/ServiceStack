@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			var sb = new StringBuilder();
 			using (var writer = new StringWriter(sb))
 			{
-				templateWriter.Write(writer, scopeArgs);
+				templateWriter.Write(null, writer, scopeArgs);
 			}
 			return sb.ToString();
 		}
@@ -112,7 +112,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			{
 				foreach (var templateWriter in templateWriters)
 				{
-					templateWriter.Write(writer, scopeArgs);
+					templateWriter.Write(null, writer, scopeArgs);
 				}
 			}
 			return sb.ToString();
@@ -141,22 +141,6 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 
 			return blocks;
-		}
-
-		public static string CaptureOutput(this List<TemplateBlock> childBlocks, 
-			TextWriter textWriter, Dictionary<string, object> scopeArgs)
-		{
-			var sb = new StringBuilder();
-			using (var sw = new StringWriter(sb))
-			{
-				foreach (var templateBlock in childBlocks)
-				{
-					templateBlock.Write(sw, scopeArgs);
-				}
-			}
-
-			var output = sb.ToString();
-			return output;
 		}
 
 		public static void RemoveIfEndingWith(this TextBlock textBlock, string text)
@@ -277,6 +261,14 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 					if (varExpr == "if")
 						return new IfStatementExprBlock(condition, statement);
+				}
+				else if (varExpr == "model" || varExpr == "inherits")
+				{
+					var pos = content.IndexOf('\n');
+					var restOfLine = content.Substring(fromPos, pos - fromPos);
+					fromPos = pos;
+
+					return new DirectiveBlock(varExpr, restOfLine);
 				}
 			} 
 

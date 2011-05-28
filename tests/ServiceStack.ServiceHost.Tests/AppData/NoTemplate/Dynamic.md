@@ -1,11 +1,11 @@
-# @model.FirstName Dynamic Markdown Template
+# @Model.FirstName Dynamic Markdown Template
 
-Hello @model.FirstName,
+Hello @Model.FirstName,
 
 # heading 1
 
-  * @model.LastName
-  * @model.FirstName
+  * @Model.LastName
+  * @Model.FirstName
 
 ## heading 2
 

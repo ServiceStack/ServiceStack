@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Markdown;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
 	public interface ITemplateWriter
 	{
-		void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs);
+		void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs);
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Markdown;
 using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
@@ -31,18 +32,18 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.Blocks.Add(blocks[0]);
 			if (blocks.Count == 1) return;
 			
-			this.Blocks.Add(new VariableBlock(TemplateBlock.ModelVarName));
+			this.Blocks.Add(new VariableBlock(MarkdownPage.ModelName));
 			for (var i = 1; i < blocks.Count; i++)
 			{
 				this.Blocks.Add(blocks[i]);	
 			}
 		}
 
-		public void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			foreach (var block in Blocks)
 			{
-				block.Write(textWriter, scopeArgs);
+				block.Write(instance, textWriter, scopeArgs);
 			}
 		}
 	}

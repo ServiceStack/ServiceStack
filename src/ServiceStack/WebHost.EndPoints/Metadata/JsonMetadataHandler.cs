@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 		protected override string CreateMessage(Type dtoType)
         {
             var requestObj = ReflectionUtils.PopulateObject(Activator.CreateInstance(dtoType));
-            return JsonDataContractSerializer.Instance.Parse(requestObj);
+            return JsonDataContractSerializer.Instance.SerializeToString(requestObj);
         }
 
         protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)

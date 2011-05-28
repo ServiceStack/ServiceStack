@@ -1,13 +1,13 @@
-# @model.FirstName Dynamic Markdown Template
+# @Model.FirstName Dynamic Markdown Template
 
-Hello @model.FirstName,
+Hello @Model.FirstName,
 
-  * @model.LastName
-  * @model.FirstName
+  * @Model.LastName
+  * @Model.FirstName
 
 # heading 1
 
-@foreach (var link in model.Links) {
+@foreach (var link in Model.Links) {
   - @link.Name - @link.Href
 }
 

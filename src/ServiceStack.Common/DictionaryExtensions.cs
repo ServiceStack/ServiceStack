@@ -40,5 +40,19 @@ namespace ServiceStack.Common
 			map.ForEach((kvp) => list.Add(createFn(kvp.Key, kvp.Value)));
 			return list;
 		}
+		
+		public static V GetOrAdd<K, V>(this Dictionary<K, V> map, K key, Func<K,V> createFn)
+		{
+			//simulate ConcurrentDictionary.GetOrAdd
+			lock (map)
+			{
+				V val;
+				if (!map.TryGetValue(key, out val))
+					map[key] = val = createFn(key);
+
+				return val;
+			}
+		}
+
 	}
 }

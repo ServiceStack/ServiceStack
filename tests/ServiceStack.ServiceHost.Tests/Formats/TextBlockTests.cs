@@ -34,7 +34,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			Assert.That(parsedContent, Is.EqualTo(expected));
 			Assert.That(statements.Count, Is.EqualTo(1));
-			Assert.That(statements[0].Condition, Is.EqualTo("var link in model.Links"));
+			Assert.That(statements[0].Condition, Is.EqualTo("var link in Model.Links"));
 			Assert.That(statements[0].Statement, Is.EqualTo("  - @link.Name - @link.Href\r\n"));
 		}
 
@@ -44,22 +44,22 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			const string template = @"
 ## Statement 1
 
-@if (model.IsValid) {
+@if (Model.IsValid) {
 ### This is valid
 }
 
-@foreach (var link in model.Links) {
+@foreach (var link in Model.Links) {
   - @link.Name - @link.Href
 }
 
 ## Statement 2
 
-@foreach (var text in model.Texts) {
+@foreach (var text in Model.Texts) {
 ### @text.Name
 @text.body
 }
 
-@if (!model.IsValid) {
+@if (!Model.IsValid) {
 ### This is not valid
 }
 
@@ -85,13 +85,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			Assert.That(content, Is.EqualTo(expected));
 			Assert.That(statements.Count, Is.EqualTo(4));
-			Assert.That(statements[0].Condition, Is.EqualTo("model.IsValid"));
+			Assert.That(statements[0].Condition, Is.EqualTo("Model.IsValid"));
 			Assert.That(statements[0].Statement, Is.EqualTo("### This is valid\r\n"));
-			Assert.That(statements[1].Condition, Is.EqualTo("var link in model.Links"));
+			Assert.That(statements[1].Condition, Is.EqualTo("var link in Model.Links"));
 			Assert.That(statements[1].Statement, Is.EqualTo("  - @link.Name - @link.Href\r\n"));
-			Assert.That(statements[2].Condition, Is.EqualTo("var text in model.Texts"));
+			Assert.That(statements[2].Condition, Is.EqualTo("var text in Model.Texts"));
 			Assert.That(statements[2].Statement, Is.EqualTo("### @text.Name\r\n@text.body\r\n"));
-			Assert.That(statements[3].Condition, Is.EqualTo("!model.IsValid"));
+			Assert.That(statements[3].Condition, Is.EqualTo("!Model.IsValid"));
 			Assert.That(statements[3].Statement, Is.EqualTo("### This is not valid\r\n"));
 		}
 
@@ -101,22 +101,22 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			const string template = @"
 ## Statement 1
 
-@if model.IsValid {
+@if Model.IsValid {
 ### This is valid
 }
 
-@foreach var link in model.Links {
+@foreach var link in Model.Links {
   - @link.Name - @link.Href
 }
 
 ## Statement 2
 
-@foreach text in model.Texts {
+@foreach text in Model.Texts {
 ### @text.Name
 @text.body
 }
 
-@if !model.IsValid{
+@if !Model.IsValid{
 ### This is not valid
 }
 
@@ -145,23 +145,23 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(statements.Count, Is.EqualTo(4));
 
 			var stat1 = (IfStatementExprBlock)statements[0];
-			Assert.That(stat1.Condition, Is.EqualTo("model.IsValid"));
+			Assert.That(stat1.Condition, Is.EqualTo("Model.IsValid"));
 			Assert.That(stat1.Statement, Is.EqualTo("### This is valid\r\n"));
 
 			var stat2 = (ForEachStatementExprBlock)statements[1];
-			Assert.That(stat2.Condition, Is.EqualTo("var link in model.Links"));
+			Assert.That(stat2.Condition, Is.EqualTo("var link in Model.Links"));
 			Assert.That(stat2.Statement, Is.EqualTo("  - @link.Name - @link.Href\r\n"));
 			Assert.That(stat2.EnumeratorName, Is.EqualTo("link"));
-			Assert.That(stat2.MemberExpr, Is.EqualTo("model.Links"));
+			Assert.That(stat2.MemberExpr, Is.EqualTo("Model.Links"));
 
 			var stat3 = (ForEachStatementExprBlock)statements[2];
-			Assert.That(stat3.Condition, Is.EqualTo("text in model.Texts"));
+			Assert.That(stat3.Condition, Is.EqualTo("text in Model.Texts"));
 			Assert.That(stat3.Statement, Is.EqualTo("### @text.Name\r\n@text.body\r\n"));
 			Assert.That(stat3.EnumeratorName, Is.EqualTo("text"));
-			Assert.That(stat3.MemberExpr, Is.EqualTo("model.Texts"));
+			Assert.That(stat3.MemberExpr, Is.EqualTo("Model.Texts"));
 
 			var stat4 = (IfStatementExprBlock)statements[3];
-			Assert.That(stat4.Condition, Is.EqualTo("!model.IsValid"));
+			Assert.That(stat4.Condition, Is.EqualTo("!Model.IsValid"));
 			Assert.That(stat4.Statement, Is.EqualTo("### This is not valid\r\n"));
 		}
 	}

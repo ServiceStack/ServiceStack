@@ -24,8 +24,6 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public bool WriteRawHtml { get; set; }
 
-		public const string ModelVarName = "model";
-
 		public virtual void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
 		{
 			this.Page = markdownPage;
@@ -47,7 +45,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return MarkdownFormat.Instance.Transform(markdownText);
 		}
 
-		public abstract void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs);
+		public abstract void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs);
 	}
 
 	public class TextBlock : TemplateBlock
@@ -59,7 +57,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public string Content { get; set; }
 
-		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			textWriter.Write(Content);
 		}
@@ -74,7 +72,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.varName = varName;
 		}
 
-		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			object value = null;
 			scopeArgs.TryGetValue(varName, out value);
@@ -128,7 +126,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			object memberExprValue;
 			if (!scopeArgs.TryGetValue(this.varName, out memberExprValue))
@@ -205,7 +203,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			else
 				base.BeginFirstRun(markdownPage, scopeArgs);
 		}
-		
+
 		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
 		{
 			base.BeginFirstRun(markdownPage, scopeArgs);
@@ -228,16 +226,16 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
-			WriteInternal(textWriter, scopeArgs);
+			WriteInternal(instance, textWriter, scopeArgs);
 		}
 
-		private void WriteInternal(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		private void WriteInternal(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			foreach (var templateBlock in ChildBlocks)
 			{
-				templateBlock.Write(textWriter, scopeArgs);
+				templateBlock.Write(instance, textWriter, scopeArgs);
 			}
 		}
 
@@ -288,12 +286,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return allStatements.Count > initialCount ? sb.ToString() : content;
 		}
 
-		protected void WriteStatement(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		protected void WriteStatement(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			if (IsNested)
 			{
 				//Write Markdown
-				WriteInternal(textWriter, scopeArgs);
+				WriteInternal(instance, textWriter, scopeArgs);
 			}
 			else
 			{
@@ -301,7 +299,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				var sb = new StringBuilder();
 				using (var sw = new StringWriter(sb))
 				{
-					WriteInternal(sw, scopeArgs);
+					WriteInternal(instance, sw, scopeArgs);
 				}
 
 				var markdown = sb.ToString();
@@ -310,6 +308,67 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 	}
+
+	public class DirectiveBlock : StatementExprBlock
+	{
+		public Type BaseType { get; set; }
+
+		public Type[] GenericArgs { get; set; }
+
+		public Type GetType(string typeName)
+		{
+			var type = AssemblyUtils.FindType(typeName);
+			if (type == null)
+				throw new TypeLoadException("Could not load type: " + typeName);
+			
+			return type;
+		}
+
+		public DirectiveBlock(string directive, string line)
+			: base(directive, null)
+		{
+			if (directive == null)
+				throw new ArgumentNullException("directive");
+			if (line == null)
+				throw new ArgumentNullException("line");
+
+			directive = directive.ToLower();
+			line = line.Trim();
+
+			if (directive == "model")
+			{
+				this.BaseType = typeof(MarkdownViewBase<>);
+				this.GenericArgs = new[] { GetType(line) };
+			}
+			else if (directive == "inherits")
+			{
+				var parts = line.Split(new[] { '<', '>' });
+				this.BaseType = Type.GetType(parts[0], true, true);
+
+				var hasGenericArg = parts.Length >= 4;
+				if (hasGenericArg)
+				{
+					if (parts[1] != "<" && parts[2] != ">")
+						throw new ArgumentException("Expected @inherits directive got: " + line);
+
+					this.GenericArgs = new[] { GetType(parts[2]) };
+				}
+			}
+		}
+
+		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		{
+			base.BeginFirstRun(markdownPage, scopeArgs);
+
+			if (this.BaseType != null)
+				markdownPage.ExecutionContext.BaseType = this.BaseType;
+
+			markdownPage.ExecutionContext.GenericArgs = this.GenericArgs;
+		}
+
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs) { }
+	}
+
 
 	public class ForEachStatementExprBlock : StatementExprBlock
 	{
@@ -343,6 +402,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			object model;
 			if (!scopeArgs.TryGetValue(this.MemberVarName, out model))
 				throw new ArgumentException(this.MemberVarName + " does not exist");
+
 			return model;
 		}
 
@@ -373,7 +433,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			var model = GetModel(scopeArgs);
 			var memberExprEnumerator = GetMemberExprEnumerator(model);
@@ -384,7 +444,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				foreach (var item in memberExprEnumerator)
 				{
 					scopeArgs[this.EnumeratorName] = item;
-					base.Write(textWriter, scopeArgs);
+					base.Write(instance, textWriter, scopeArgs);
 				}
 			}
 			else
@@ -396,7 +456,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					foreach (var item in memberExprEnumerator)
 					{
 						scopeArgs[this.EnumeratorName] = item;
-						base.Write(sw, scopeArgs);
+						base.Write(instance, sw, scopeArgs);
 					}
 				}
 
@@ -473,12 +533,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.ReturnType = typeof(bool);
 		}
 
-		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			var resultCondition = Evaluate<bool>(scopeArgs);
 			if (!resultCondition) return;
 
-			WriteStatement(textWriter, scopeArgs);
+			WriteStatement(instance, textWriter, scopeArgs);
 		}
 	}
 
@@ -507,12 +567,18 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			var parts = methodExpr.Split('.');
 			if (parts.Length > 2)
 				throw argEx;
-			 
+
 			var usesBaseType = parts.Length == 1;
 			var typePropertyName = parts[0];
 			var methodName = usesBaseType ? parts[0] : parts[1];
 
-			var type = typePropertyName == "Html" ? typeof(HtmlHelper) : null;
+			Type type = null;
+			if (typePropertyName == "Html")
+			{
+				type = Common.ReflectionExtensions.IsGenericType(markdownPage.ExecutionContext.BaseType)
+				       ? typeof (HtmlHelper<>)
+				       : typeof (HtmlHelper);
+			}
 			if (type == null)
 			{
 				type = usesBaseType
@@ -526,24 +592,39 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					typePropertyName));
 
 			var mi = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
-			if (mi == null) throw argEx;
+			if (mi == null)
+			{
+				mi = HtmlHelper.GetMethod(methodName);
+				if (mi == null) throw argEx;
+			}
 
 			base.ReturnType = mi.ReturnType;
 
 			var isMemberExpr = Condition.IndexOf('(') != -1;
 			if (!isMemberExpr)
 			{
-				base.Condition = methodName + "(" + Condition + ")";
+				base.Condition = methodExpr + "(" + Condition + ")";
 			}
 		}
 
-		public override void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			var paramValues = GetParamValues(scopeArgs);
-			var result = Evaluator.Evaluate(codeGenMethodName, paramValues.ToArray());
+			var result = Evaluator.Evaluate(instance, codeGenMethodName, paramValues.ToArray());
 			if (result == null) return;
 
-			var strResult = result as string ?? Convert.ToString(result);
+			string strResult;
+
+			var mvcString = result as MvcHtmlString;
+			if (mvcString != null)
+			{
+				WriteRawHtml = true;
+				strResult = mvcString.ToHtmlString();
+			}
+			else
+			{
+				strResult = result as string ?? Convert.ToString(result);
+			}
 
 			if (!WriteRawHtml)
 				strResult = HttpUtility.HtmlEncode(strResult);

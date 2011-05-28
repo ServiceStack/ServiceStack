@@ -55,8 +55,8 @@ namespace ServiceStack.ServiceModel.Tests
 			var deserializedXml = DataContractDeserializer.Instance.Parse(serializedXml, typeof(T));
 			Assert.That(deserializedXml, Is.Not.Null, "XML serialization error for: " + typeof(T).Name);
 
-			var serializedJson = JsonDataContractSerializer.Instance.Parse(model);
-			var deserializedJson = JsonDataContractDeserializer.Instance.Parse(serializedJson, typeof(T));
+			var serializedJson = JsonDataContractSerializer.Instance.SerializeToString(model);
+			var deserializedJson = JsonDataContractDeserializer.Instance.DeserializeFromString(serializedJson, typeof(T));
 			Assert.That(deserializedJson, Is.Not.Null, "JSON serialization error for: " + typeof(T).Name);
 
 			var serializedJsv = TypeSerializer.SerializeToString(model);

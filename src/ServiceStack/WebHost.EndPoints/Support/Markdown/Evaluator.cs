@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml;
 using Microsoft.CSharp;
@@ -17,15 +18,20 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public EvaluatorExecutionContext()
 		{
 			this.Items = new List<EvaluatorItem>();
+			this.TypeProperties = new Dictionary<string, Type>();
 		}
+
+		public Type BaseType { get; set; }
+		public Type[] GenericArgs { get; set; }
+		public IDictionary<string, Type> TypeProperties { get; set; }
 
 		public List<EvaluatorItem> Items { get; private set; }
 
-		public Evaluator Build(Type baseType, IDictionary<string, Type> typeProperties)
+		public Evaluator Build()
 		{
 			return Items.Count == 0
 				? null
-				: new Evaluator(Items, baseType, typeProperties);
+				: new Evaluator(Items, BaseType, GenericArgs, TypeProperties);
 		}
 	}
 
@@ -36,21 +42,24 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 	public class Evaluator
 	{
 		const string staticMethodName = "__tmp";
+		Assembly compiledAssembly;
 		Type compiledType = null;
 		object compiled = null;
 
 		private Type BaseType { get; set; }
+		private Type[] GenericArgs { get; set; }
 		private IDictionary<string, Type> TypeProperties { get; set; }
 
 		public Evaluator(IEnumerable<EvaluatorItem> items)
-			: this(items, null, null)
+			: this(items, null, null, null)
 		{
 		}
 
 		public Evaluator(IEnumerable<EvaluatorItem> items,
-			Type baseType, IDictionary<string, Type> typeProperties)
+			Type baseType, Type[] genericArgs, IDictionary<string, Type> typeProperties)
 		{
 			this.BaseType = baseType;
+			this.GenericArgs = genericArgs ?? new Type[0];
 			this.TypeProperties = typeProperties;
 
 			ConstructEvaluator(items);
@@ -82,26 +91,32 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public string GetTypeName(Type type)
 		{
 			//Inner classes?
-			return type == null ? null : type.FullName.Replace('+', '.');
+			return type == null
+				? null
+				: type.FullName.Replace('+', '.').SplitOnFirst('`')[0];
 		}
 
 		private void ConstructEvaluator(IEnumerable<EvaluatorItem> items)
 		{
+			//var codeCompiler = new CSharpCodeProvider(new Dictionary<string, string> { { "CompilerVersion", "v3.5" } });
 			var codeCompiler = CodeDomProvider.CreateProvider("CSharp");
-			var cp = new CompilerParameters();
 
 			var assemblies = new List<Assembly> {
 				typeof(string).Assembly,       //"system.dll",
 				typeof(XmlDocument).Assembly,  //"system.xml.dll",
+				typeof(Expression).Assembly,   //"system.core.dll",
 				typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
 				typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
 				typeof(IService<>).Assembly,   //"ServiceStack.Interfaces.dll",
 				typeof(IdUtils).Assembly,      //"ServiceStack.Common.dll"
 			};
+			var cp = new CompilerParameters  //(new[] { "mscorlib.dll", "system.core.dll" })
+			{
+				GenerateExecutable = false,
+				GenerateInMemory = true,
+			};
 			assemblies.ForEach(x => cp.ReferencedAssemblies.Add(x.Location));
 
-			cp.GenerateExecutable = false;
-			cp.GenerateInMemory = true;
 
 			var code = new StringBuilder();
 			code.Append(
@@ -110,6 +125,11 @@ using System.Text;
 using System.Xml;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+
+using ServiceStack.Markdown;
+using ServiceStack.Markdown.Html;
 
 namespace CSharpEval 
 {
@@ -117,7 +137,22 @@ namespace CSharpEval
 ");
 
 			if (this.BaseType != null)
-				code.AppendLine("   : " + GetTypeName(this.BaseType));
+			{
+				code.Append("   : " + GetTypeName(this.BaseType));
+
+				if (GenericArgs.Length > 0)
+				{
+					code.Append("<");
+					var i = 0;
+					foreach (var genericArg in GenericArgs)
+					{
+						if (i++ > 0) code.Append(", ");
+
+						code.Append(GetTypeName(genericArg));
+					}
+					code.AppendLine(">");
+				}
+			}
 
 			code.AppendLine("  {");
 
@@ -165,7 +200,7 @@ namespace CSharpEval
 				throw new Exception("Error Compiling Expression: " + error);
 			}
 
-			var compiledAssembly = compilerResults.CompiledAssembly;
+			compiledAssembly = compilerResults.CompiledAssembly;
 			compiled = compiledAssembly.CreateInstance("CSharpEval._Expr");
 			compiledType = compiled.GetType();
 		}
@@ -199,6 +234,11 @@ namespace CSharpEval
 			return (T)compiled;
 		}
 
+		public object CreateInstance()
+		{
+			return compiledAssembly.CreateInstance("CSharpEval._Expr");
+		}
+
 		public MethodInfo GetCompiledMethodInfo(string name)
 		{
 			return compiledType.GetMethod(name);
@@ -206,8 +246,21 @@ namespace CSharpEval
 
 		public object Evaluate(string name, params object[] exprParams)
 		{
-			var mi = compiledType.GetMethod(name);
-			return mi.Invoke(compiled, exprParams);
+			return Evaluate(compiled, name, exprParams);
+		}
+
+		public object Evaluate(object instance, string name, params object[] exprParams)
+		{
+			try
+			{
+				var mi = compiledType.GetMethod(name);
+				return mi.Invoke(instance, exprParams);
+			}
+			catch (TargetInvocationException ex)
+			{
+				Console.WriteLine(ex.InnerException);
+				throw ex.InnerException;
+			}
 		}
 
 		public T Eval<T>(string name, params object[] exprParams)

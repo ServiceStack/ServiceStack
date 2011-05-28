@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Markdown;
@@ -11,6 +12,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
 	public class MarkdownPage : ITemplateWriter
 	{
+		public const string ModelName = "Model";
+
 		public MarkdownPage()
 		{
 			this.Statements = new List<StatementExprBlock>();
@@ -89,14 +92,16 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.Blocks = this.HtmlContents.CreateTemplateBlocks(this.Statements);
 		}
 
-		public void Write(TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			if (Interlocked.Increment(ref timesRun) == 1)
 			{
+				this.ExecutionContext.BaseType = Markdown.MarkdownBaseType;
+				this.ExecutionContext.TypeProperties = Markdown.MarkdownGlobalHelpers;
+
 				this.Blocks.ForEach(x => x.BeginFirstRun(this, scopeArgs));
 				
-				this.evaluator = this.ExecutionContext.Build(
-					Markdown.MarkdownBaseType, Markdown.MarkdownGlobalHelpers);
+				this.evaluator = this.ExecutionContext.Build();
 
 				this.Blocks.ForEach(x => x.EndFirstRun(evaluator));
 				
@@ -106,9 +111,18 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (!hasCompletedFirstRun)
 				throw new InvalidOperationException("Page hasn't finished initializing yet");
 
+			if (this.evaluator != null)
+			{
+				instance = (MarkdownViewBase)(instance ?? this.evaluator.CreateInstance());
+
+				object model;
+				if (scopeArgs.TryGetValue(ModelName, out model))
+					instance.Model = model;
+			}
+
 			foreach (var block in Blocks)
 			{
-				block.Write(textWriter, scopeArgs);
+				block.Write(instance, textWriter, scopeArgs);
 			}
 		}
 	}

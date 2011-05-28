@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Markdown;
+using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.EndPoints.Support.Markdown;
@@ -21,7 +23,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		string dynamicPageContent;
 		string dynamicListPagePath;
 		string dynamicListPageContent;
-
+		
+		Dictionary<string, object> templateArgs;
+		
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
@@ -33,6 +37,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			dynamicListPagePath = "~/AppData/Template/DynamicListTpl.md".MapAbsolutePath();
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
+
+			templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
 		}
 
 		[Test]
@@ -46,8 +52,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			const string mockResponse = "[Replaced with Template]";
 			var expectedHtml = staticTemplateContent.ReplaceFirst(MarkdownFormat.TemplatePlaceHolder, mockResponse);
 
-			var templateArgs = new Dictionary<string, object> { { "model", mockResponse } };
-			var templateOutput = template.RenderToString(templateArgs);
+			var mockArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, mockResponse } };
+			var templateOutput = template.RenderToString(mockArgs);
 
 			Console.WriteLine("Template Output: " + templateOutput);
 
@@ -86,18 +92,15 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Can_Render_MarkdownPage()
 		{
-			var person = new Person { FirstName = "Demis", LastName = "Bellot" };
-
 			var dynamicPage = new MarkdownPage(dynamicPageContent, "DynamicTpl", dynamicPageContent);
 			dynamicPage.Prepare();
 
 			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(9));
 
 			var expectedHtml = MarkdownFormat.Instance.Transform(dynamicPageContent)
-				.Replace("@model.FirstName", person.FirstName)
-				.Replace("@model.LastName", person.LastName);
+				.Replace("@Model.FirstName", person.FirstName)
+				.Replace("@Model.LastName", person.LastName);
 
-			var templateArgs = new Dictionary<string, object> { { "model", person } };
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
 
 			Console.WriteLine("Template Output: " + templateOutput);
@@ -115,8 +118,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(11));
 
 			var expectedMarkdown = dynamicListPageContent
-				.Replace("@model.FirstName", person.FirstName)
-				.Replace("@model.LastName", person.LastName);
+				.Replace("@Model.FirstName", person.FirstName)
+				.Replace("@Model.LastName", person.LastName);
 
 			var foreachLinks = "  - ServiceStack - http://www.servicestack.net\r\n"
 							 + "  - AjaxStack - http://www.ajaxstack.com\r\n";
@@ -127,7 +130,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			Console.WriteLine("ExpectedHtml: " + expectedHtml);
 
-			var templateArgs = new Dictionary<string, object> { { "model", person } };
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
 
 			Console.WriteLine("Template Output: " + templateOutput);
@@ -140,13 +142,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			var template = @"# Dynamic If Markdown Template
 
-Hello @model.FirstName,
+Hello @Model.FirstName,
 
-@if (model.FirstName == ""Bellot"") {
-  * @model.FirstName
+@if (Model.FirstName == ""Bellot"") {
+  * @Model.FirstName
 }
-@if (model.LastName == ""Bellot"") {
-  * @model.LastName
+@if (Model.LastName == ""Bellot"") {
+  * @Model.LastName
 }
 
 ### heading 3";
@@ -164,7 +166,6 @@ Hello Demis,
 			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Prepare();
 
-			var templateArgs = new Dictionary<string, object> { { "model", person } };
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
 
 			Console.WriteLine(templateOutput);
@@ -174,20 +175,20 @@ Hello Demis,
 		[Test]
 		public void Can_Render_Markdown_with_Nested_Statements()
 		{
-			var template = @"# @model.FirstName Dynamic Nested Markdown Template
+			var template = @"# @Model.FirstName Dynamic Nested Markdown Template
 
 # heading 1
 
-@foreach (var link in model.Links) {
+@foreach (var link in Model.Links) {
   @if (link.Name == ""AjaxStack"") {
   - @link.Name - @link.Href
   }
 }
 
-@if (model.Links.Count == 2) {
+@if (Model.Links.Count == 2) {
 ## Haz 2 links
 
-  @foreach (var link in model.Links) {
+  @foreach (var link in Model.Links) {
   - @link.Name - @link.Href
     @foreach (var label in link.Labels) { 
     - @label
@@ -221,7 +222,6 @@ Hello Demis,
 			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicNestedTpl", template);
 			dynamicPage.Prepare();
 
-			var templateArgs = new Dictionary<string, object> { { "model", person } };
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
 
 			Console.WriteLine(templateOutput);
@@ -245,6 +245,16 @@ Hello Demis,
 				sb.AppendLine("</table>");
 
 				return sb.ToString();
+			}
+		}
+
+		public class CustomMarkdownHelper
+		{
+			public CustomMarkdownHelper Instance = new CustomMarkdownHelper();
+
+			public string Wrap(string content, string id)
+			{
+				return "<div id=\"" + id + "\">" + content + "</div>";
 			}
 		}
 
@@ -330,15 +340,49 @@ Demis / Bellot
 
 
 			MarkdownFormat.Instance.MarkdownBaseType = typeof(CustomMarkdownViewBase);
+			MarkdownFormat.Instance.MarkdownGlobalHelpers = new Dictionary<string, Type> 
+				{
+					{"Ext", typeof(CustomMarkdownHelper)}
+				};
+
 			MarkdownFormat.Instance.RegisterMarkdownPage(new MarkdownPage(
 				"/path/to/page", "HeaderLinks", headerTemplate));
 
 			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Prepare();
 
-			var templateArgs = new Dictionary<string, object> { { "Model", person } };
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_inherit_from_Generic_view_page_from_model_directive()
+		{
+			var template = @"@model ServiceStack.ServiceHost.Tests.Formats.TemplateTests+Person
+# Generic View Page
+
+## TextBox
+@Html.TextBoxFor(m => m.FirstName)
+"; 
+
+			var expectedHtml = @"
+<h1>Generic View Page</h1>
+
+<h2>TextBox</h2>
+
+<input name=""FirstName"" type=""text"" value="""" />".Replace("\r\n", "\n");
+
+
+			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicModelTpl", template);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			templateOutput = templateOutput.Replace("\r\n", "\n");
+
+			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase<>)));
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));

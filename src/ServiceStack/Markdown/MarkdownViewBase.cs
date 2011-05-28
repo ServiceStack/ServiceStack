@@ -1,14 +1,44 @@
-﻿using ServiceStack.WebHost.EndPoints.Formats;
+﻿using System;
+using ServiceStack.Markdown.Html;
 
 namespace ServiceStack.Markdown
 {
 	public abstract class MarkdownViewBase<T> : MarkdownViewBase
-	{		
+	{
+		public new HtmlHelper<T> Html;
+
+		protected MarkdownViewBase()
+		{
+			Html = new HtmlHelper<T>();
+		}
+
+		public override object Model
+		{
+			set
+			{
+				var typedModel = (T)value;
+				Html.ViewData = new ViewDataDictionary<T>(typedModel);
+				((HtmlHelper)Html).ViewData = Html.ViewData;
+			}
+		}
 	}
 
 	public abstract class MarkdownViewBase
 	{
-		public static HtmlHelper Html = HtmlHelper.Instance;
+		public HtmlHelper Html;
+
+		protected MarkdownViewBase()
+		{
+			Html = HtmlHelper.Instance;
+		}
+
+		public virtual object Model
+		{
+			set
+			{
+				Html.ViewData = new ViewDataDictionary(value);
+			}
+		}
 
 		public virtual void InitHelpers()
 		{
