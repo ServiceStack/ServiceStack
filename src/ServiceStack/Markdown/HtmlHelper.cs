@@ -19,6 +19,7 @@ using System.Reflection;
 using System.Web;
 using ServiceStack.Markdown.Html;
 using ServiceStack.WebHost.EndPoints.Formats;
+using ServiceStack.WebHost.EndPoints.Support.Markdown;
 
 namespace ServiceStack.Markdown
 {
@@ -43,10 +44,10 @@ namespace ServiceStack.Markdown
 
 	public class HtmlHelper<TModel> : HtmlHelper
 	{
+		private ViewDataDictionary<TModel> viewData;
 		public new ViewDataDictionary<TModel> ViewData
 		{
-			get { return (ViewDataDictionary<TModel>) base.ViewData; }
-			set { base.ViewData = value; }
+			get { return viewData ?? (viewData = (ViewDataDictionary<TModel>) base.ViewData); }
 		}
 	}
 
@@ -75,9 +76,19 @@ namespace ServiceStack.Markdown
 		private delegate string HtmlEncoder(object value);
 		private static readonly HtmlEncoder htmlEncoder = GetHtmlEncoder();
 
-		//Get's injected
-		public MarkdownFormat Markdown { get; set; }
-		public virtual ViewDataDictionary ViewData { get; set; }
+		public bool RenderHtml { get; protected set; }
+		public MarkdownFormat Markdown { get; protected set; }
+		public MarkdownPage MarkdownPage { get; protected set; }
+		public virtual ViewDataDictionary ViewData { get; protected set; }
+
+		public void Init(MarkdownPage markdownPage, bool renderHtml, ViewDataDictionary viewData)
+		{
+			this.Markdown = markdownPage.Markdown;
+			this.RenderHtml = renderHtml;
+			this.MarkdownPage = markdownPage;
+			this.ViewData = viewData;
+			this.ViewData.PopulateModelState();
+		}
 		
 		public MvcHtmlString Partial(string viewName, object model)
 		{

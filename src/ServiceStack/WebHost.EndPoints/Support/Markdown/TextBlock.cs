@@ -14,25 +14,58 @@ using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
+	public class PageContext
+	{
+		public PageContext() {}
+
+		public PageContext(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, bool renderHtml)
+		{
+			MarkdownPage = markdownPage;
+			ScopeArgs = scopeArgs;
+			RenderHtml = renderHtml;
+		}
+
+		public MarkdownPage MarkdownPage { get; set; }
+		public Dictionary<string, object> ScopeArgs { get; set; }
+		public bool RenderHtml { get; set; }
+	}
+
+
 	public abstract class TemplateBlock : ITemplateWriter
 	{
-		public MarkdownPage Page { get; set; }
+		protected MarkdownPage Page { get; set; }
 
 		protected Evaluator Evaluator { get; set; }
 
 		public bool IsNested { get; set; }
 
-		public bool WriteRawHtml { get; set; }
+		protected bool WriteRawHtml { get; set; }
 
-		public virtual void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		protected bool RenderHtml { get; set; }
+
+		protected PageContext PageContext { get; set; }
+
+		protected Dictionary<string, object> ScopeArgs { get; set; }
+
+		public void DoFirstRun(PageContext pageContext)
 		{
-			this.Page = markdownPage;
+			this.PageContext = pageContext;
+			this.Page = pageContext.MarkdownPage;
+			this.RenderHtml = pageContext.RenderHtml;
+			this.ScopeArgs = pageContext.ScopeArgs;
+
+			OnFirstRun();
 		}
 
-		public virtual void EndFirstRun(Evaluator evaluator)
+		public void AfterFirstRun(Evaluator evaluator)
 		{
 			this.Evaluator = evaluator;
+
+			OnAfterFirstRun();
 		}
+
+		protected virtual void OnFirstRun() {}
+		protected virtual void OnAfterFirstRun() { }
 
 		public void AddEvalItem(EvaluatorItem evalItem)
 		{
@@ -41,8 +74,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public string Transform(string markdownText)
 		{
-			//TODO: call instance var of Page
-			return MarkdownFormat.Instance.Transform(markdownText);
+			return this.RenderHtml 
+				? Page.Markdown.Transform(markdownText)
+				: markdownText;
 		}
 
 		public abstract void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs);
@@ -111,14 +145,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		public Func<object, string> valueFn;
-
-		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		private Func<object, string> valueFn;
+		protected override void OnFirstRun()
 		{
-			base.BeginFirstRun(markdownPage, scopeArgs);
+			base.OnFirstRun();
 
 			object memberExprValue;
-			if (scopeArgs.TryGetValue(this.varName, out memberExprValue))
+			if (ScopeArgs.TryGetValue(this.varName, out memberExprValue))
 			{
 				valueFn = this.ReferencesSelf
 					? Convert.ToString
@@ -196,33 +229,33 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public int Id { get; set; }
 
-		public void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, bool applyToChildren)
+		protected void OnFirstRun(bool applyToChildren)
 		{
 			if (applyToChildren)
-				this.BeginFirstRun(markdownPage, scopeArgs);
+				this.OnFirstRun();
 			else
-				base.BeginFirstRun(markdownPage, scopeArgs);
+				base.OnFirstRun();
 		}
 
-		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		protected override void OnFirstRun()
 		{
-			base.BeginFirstRun(markdownPage, scopeArgs);
+			base.OnFirstRun();
 
 			this.Id = Page.GetNextId();
 
 			foreach (var templateBlock in ChildBlocks)
 			{
-				templateBlock.BeginFirstRun(markdownPage, scopeArgs);
+				templateBlock.DoFirstRun(this.PageContext);
 			}
 		}
 
-		public override void EndFirstRun(Evaluator evaluator)
+		protected override void OnAfterFirstRun()
 		{
-			base.EndFirstRun(evaluator);
+			base.OnAfterFirstRun();
 
 			foreach (var templateBlock in ChildBlocks)
 			{
-				templateBlock.EndFirstRun(evaluator);
+				templateBlock.AfterFirstRun(this.Evaluator);
 			}
 		}
 
@@ -380,20 +413,20 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		protected override void OnFirstRun()
 		{
-			base.BeginFirstRun(markdownPage, scopeArgs);
+			base.OnFirstRun();
 
 			if (this.BaseType != null)
-				markdownPage.ExecutionContext.BaseType = this.BaseType;
+				Page.ExecutionContext.BaseType = this.BaseType;
 
-			markdownPage.ExecutionContext.GenericArgs = this.GenericArgs;
+			Page.ExecutionContext.GenericArgs = this.GenericArgs;
 
 			if (this.Helpers != null)
 			{
 				foreach (var helper in this.Helpers)
 				{
-					markdownPage.ExecutionContext.TypeProperties[helper.Key] = helper.Value;
+					Page.ExecutionContext.TypeProperties[helper.Key] = helper.Value;
 				}
 			}
 		}
@@ -447,20 +480,20 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 
 		private Func<object, object> getMemberFn;
-		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		protected override void OnFirstRun()
 		{
-			base.BeginFirstRun(markdownPage, scopeArgs, false);
-			var model = GetModel(scopeArgs);
+			base.OnFirstRun(false);
+			var model = GetModel(ScopeArgs);
 
 			getMemberFn = DataBinder.Compile(model.GetType(), MemberExpr);
 			var memberExprEnumerator = GetMemberExprEnumerator(model);
 
 			foreach (var item in memberExprEnumerator)
 			{
-				scopeArgs[this.EnumeratorName] = item;
+				ScopeArgs[this.EnumeratorName] = item;
 				foreach (var templateBlock in ChildBlocks)
 				{
-					templateBlock.BeginFirstRun(markdownPage, scopeArgs);
+					templateBlock.DoFirstRun(PageContext);
 				}
 			}
 		}
@@ -493,8 +526,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				}
 
 				var markdown = sb.ToString();
-				var html = Transform(markdown);
-				textWriter.Write(html);
+				var renderedMarkup = Transform(markdown);
+				textWriter.Write(renderedMarkup);
 			}
 		}
 	}
@@ -508,23 +541,23 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		protected Type ReturnType = typeof(string);
 		private string[] paramNames;
-		protected string codeGenMethodName;
+		protected string CodeGenMethodName { get; set; }
 
 		public string[] GetParamNames(Dictionary<string, object> scopeArgs)
 		{
 			return this.paramNames ?? (this.paramNames = scopeArgs.Keys.ToArray());
 		}
 
-		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		protected override void OnFirstRun()
 		{
-			base.BeginFirstRun(markdownPage, scopeArgs);
+			base.OnFirstRun();
 
-			codeGenMethodName = "EvalExpr_" + this.Id;
+			CodeGenMethodName = "EvalExpr_" + this.Id;
 
 			var exprParams = new Dictionary<string, Type>();
 
-			paramNames = GetParamNames(scopeArgs);
-			var paramValues = GetParamValues(scopeArgs);
+			paramNames = GetParamNames(ScopeArgs);
+			var paramValues = GetParamValues(ScopeArgs);
 			for (var i = 0; i < paramNames.Length; i++)
 			{
 				var paramName = paramNames[i];
@@ -533,7 +566,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				exprParams[paramName] = paramValue.GetType();
 			}
 
-			AddEvalItem(new EvaluatorItem(ReturnType, codeGenMethodName, Condition, exprParams));
+			AddEvalItem(new EvaluatorItem(ReturnType, CodeGenMethodName, Condition, exprParams));
 		}
 
 		protected List<object> GetParamValues(IDictionary<string, object> scopeArgs)
@@ -553,7 +586,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public T Evaluate<T>(Dictionary<string, object> scopeArgs)
 		{
 			var paramValues = GetParamValues(scopeArgs);
-			return (T)Evaluator.Evaluate(codeGenMethodName, paramValues.ToArray());
+			return (T)Evaluator.Evaluate(CodeGenMethodName, paramValues.ToArray());
 		}
 	}
 
@@ -583,10 +616,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 
 		private readonly string methodExpr;
-		public override void BeginFirstRun(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		protected override void OnFirstRun()
 		{
-			Prepare(markdownPage);
-			base.BeginFirstRun(markdownPage, scopeArgs);
+			Prepare(Page);
+			base.OnFirstRun();
 		}
 
 		private void Prepare(MarkdownPage markdownPage)
@@ -641,7 +674,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			var paramValues = GetParamValues(scopeArgs);
-			var result = Evaluator.Evaluate(instance, codeGenMethodName, paramValues.ToArray());
+			var result = Evaluator.Evaluate(instance, CodeGenMethodName, paramValues.ToArray());
 			if (result == null) return;
 
 			string strResult;

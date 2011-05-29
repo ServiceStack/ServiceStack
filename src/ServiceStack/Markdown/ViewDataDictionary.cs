@@ -107,7 +107,7 @@ namespace ServiceStack.Markdown
 			}
 		}
 
-		public void PopulateModelState()
+		public virtual void PopulateModelState()
 		{
 			var strModel = TypeSerializer.SerializeToString(model);
 			var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(strModel);

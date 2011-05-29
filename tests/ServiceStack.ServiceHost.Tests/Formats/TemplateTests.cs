@@ -99,7 +99,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var dynamicPage = new MarkdownPage(markdownFormat, dynamicPageContent, "DynamicTpl", dynamicPageContent);
 			dynamicPage.Prepare();
 
-			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(9));
+			Assert.That(dynamicPage.HtmlBlocks.Count, Is.EqualTo(9));
 
 			var expectedHtml = markdownFormat.Transform(dynamicPageContent)
 				.Replace("@Model.FirstName", person.FirstName)
@@ -119,7 +119,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				dynamicListPagePath, "DynamicListTpl", dynamicListPageContent);
 			dynamicPage.Prepare();
 
-			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(11));
+			Assert.That(dynamicPage.HtmlBlocks.Count, Is.EqualTo(11));
 
 			var expectedMarkdown = dynamicListPageContent
 				.Replace("@Model.FirstName", person.FirstName)
@@ -479,8 +479,69 @@ Demis / Bellot
  <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".Replace("\r\n", "\n");
 
 
-			//markdownFormat.MarkdownGlobalHelpers.Add("Ext", typeof(CustomMarkdownHelper));
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			templateOutput = templateOutput.Replace("\r\n", "\n");
+
+			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_Render_page_to_Markdown_only()
+		{
+			var headerTemplate = @"## Header Links!
+  - [Google](http://google.com)
+  - [Bing](http://bing.com)
+";
+
+			var template = @"## Welcome to Razor!
+
+@Html.Partial(""HeaderLinks"", Model)
+
+Hello @Upper(Model.LastName), @Model.FirstName
+
+### Breadcrumbs
+@Combine("" / "", Model.FirstName, Model.LastName)
+
+### Menus
+@foreach (var link in Model.Links) {
+  - @link.Name - @link.Href
+  @foreach (var label in link.Labels) { 
+    - @label
+  }
+}";
+			var expectedHtml = @"## Welcome to Razor!
+
+ ## Header Links!
+  - [Google](http://google.com)
+  - [Bing](http://bing.com)
+
+Hello  BELLOT, Demis
+
+### Breadcrumbs
+ Demis / Bellot
+
+### Menus
+  - ServiceStack - http://www.servicestack.net
+    - REST
+    - JSON
+    - XML
+  - AjaxStack - http://www.ajaxstack.com
+    - HTML5
+    - AJAX
+    - SPA
+".Replace("\r\n", "\n"); 
+
+			var renderHtml = false; //i.e. renderMarkdown
+			markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
+				"/path/to/page", "HeaderLinks", headerTemplate, renderHtml));
+
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template, false);
 			dynamicPage.Prepare();
 
 			var templateOutput = dynamicPage.RenderToString(templateArgs);

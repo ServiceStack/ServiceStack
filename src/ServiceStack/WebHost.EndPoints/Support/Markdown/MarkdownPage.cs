@@ -18,6 +18,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		{
 			this.Statements = new List<StatementExprBlock>();
 			this.ExecutionContext = new EvaluatorExecutionContext();
+			this.RenderHtml = true;
 		}
 
 		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents)
@@ -29,6 +30,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			Contents = contents;
 		}
 
+		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents, bool renderHtml)
+			: this(markdown, fullPath, name, contents)
+		{
+			this.RenderHtml = renderHtml;
+		}
+
 		public MarkdownFormat Markdown { get; set; }
 
 		private int timesRun = 0;
@@ -38,6 +45,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public string Name { get; set; }
 		public string Contents { get; set; }
 		public string HtmlContents { get; set; }
+		public bool RenderHtml { get; set; }
 		public EvaluatorExecutionContext ExecutionContext { get; private set; }
 
 		private Evaluator evaluator;
@@ -68,7 +76,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return tplName;
 		}
 
-		public List<TemplateBlock> Blocks { get; set; }
+		public List<TemplateBlock> MarkdownBlocks { get; set; }
+		public List<TemplateBlock> HtmlBlocks { get; set; }
 		public List<StatementExprBlock> Statements { get; set; }
 
 		public void Prepare()
@@ -83,22 +92,27 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			this.Contents = StatementExprBlock.Extract(this.Contents, this.Statements);
 
+			this.MarkdownBlocks = this.Contents.CreateTemplateBlocks(this.Statements);
+
 			this.HtmlContents = Markdown.Transform(this.Contents);
-			this.Blocks = this.HtmlContents.CreateTemplateBlocks(this.Statements);
+			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(this.Statements);
 		}
 
 		public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
+			var blocks = this.RenderHtml ? this.HtmlBlocks : this.MarkdownBlocks;
+
 			if (Interlocked.Increment(ref timesRun) == 1)
 			{
 				this.ExecutionContext.BaseType = Markdown.MarkdownBaseType;
 				this.ExecutionContext.TypeProperties = Markdown.MarkdownGlobalHelpers;
 
-				this.Blocks.ForEach(x => x.BeginFirstRun(this, scopeArgs));
+				var pageContext = new PageContext(this, scopeArgs, RenderHtml);
+				blocks.ForEach(x => x.DoFirstRun(pageContext));
 				
 				this.evaluator = this.ExecutionContext.Build();
 
-				this.Blocks.ForEach(x => x.EndFirstRun(evaluator));
+				blocks.ForEach(x => x.AfterFirstRun(evaluator));
 				
 				hasCompletedFirstRun = true;
 			}
@@ -109,14 +123,14 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (this.evaluator != null)
 			{
 				instance = (MarkdownViewBase)(instance ?? this.evaluator.CreateInstance());
-				instance.Markdown = Markdown;
 
 				object model;
-				if (scopeArgs.TryGetValue(ModelName, out model))
-					instance.Model = model;
+				scopeArgs.TryGetValue(ModelName, out model);
+				
+				instance.Init(this, model, this.RenderHtml);
 			}
 
-			foreach (var block in Blocks)
+			foreach (var block in blocks)
 			{
 				block.Write(instance, textWriter, scopeArgs);
 			}

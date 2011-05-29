@@ -1,14 +1,13 @@
-﻿using ServiceStack.WebHost.EndPoints.Formats;
+﻿using ServiceStack.WebHost.EndPoints.Support.Markdown;
 
 namespace ServiceStack.Markdown
 {
 	public abstract class MarkdownViewBase<T> : MarkdownViewBase
 	{
-		public new HtmlHelper<T> Html;
-
-		protected MarkdownViewBase()
+		private HtmlHelper<T> html;
+		public new HtmlHelper<T> Html
 		{
-			Html = (HtmlHelper<T>) GetHtmlHelper();
+			get { return html ?? (html = (HtmlHelper<T>) base.Html); }
 		}
 
 		protected override HtmlHelper GetHtmlHelper()
@@ -16,55 +15,45 @@ namespace ServiceStack.Markdown
 			return base.Html ?? new HtmlHelper<T>();
 		}
 
-		public override object Model
+		public override void Init(MarkdownPage markdownPage, object model, bool renderHtml)
 		{
-			set
-			{
-				var typedModel = (T)value;
-				Html.ViewData = new ViewDataDictionary<T>(typedModel);
-				Html.ViewData.PopulateModelState();
-			}
+			this.RenderHtml = renderHtml;
+			var typedModel = (T)model;
+			Html.Init(markdownPage, renderHtml, new ViewDataDictionary<T>(typedModel));
+
+			InitHelpers();
 		}
-	} 
+	}  
 
 	public abstract class MarkdownViewBase
 	{
-		public HtmlHelper Html;
+		public MarkdownPage MarkdownPage { get; protected set; }
+		public HtmlHelper Html { get; protected set; }
+		public bool RenderHtml { get; protected set; }
+		public object Model { get; protected set; }
 
 		protected MarkdownViewBase()
-		{
+		{ 
 			Html = GetHtmlHelper();
 		}
 
+		/// <summary>
+		/// Ensure the same instance is used for subclasses
+		/// </summary>
 		protected virtual HtmlHelper GetHtmlHelper()
 		{
 			return Html ?? new HtmlHelper();
 		}
 
-		public virtual object Model
+		public virtual void Init(MarkdownPage markdownPage, object model, bool renderHtml)
 		{
-			set
-			{
-				Html.ViewData = new ViewDataDictionary(value);
-				Html.ViewData.PopulateModelState();
-			}
+			this.RenderHtml = renderHtml;
+			Html.Init(markdownPage, renderHtml, new ViewDataDictionary(model));
+
+			InitHelpers();
 		}
 
-		public virtual MarkdownFormat Markdown
-		{
-			get
-			{
-				return Html.Markdown;
-			}
-			set
-			{
-				Html.Markdown = value;
-			}
-		}
-
-		public virtual void InitHelpers()
-		{
-		}
+		public virtual void InitHelpers() {}
 
 		public string Raw(string content)
 		{
