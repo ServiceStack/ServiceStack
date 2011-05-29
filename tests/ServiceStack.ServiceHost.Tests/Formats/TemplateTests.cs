@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Markdown;
-using ServiceStack.ServiceModel.Serialization;
-using ServiceStack.Text;
 using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.EndPoints.Support.Markdown;
 
@@ -23,7 +20,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		string dynamicPageContent;
 		string dynamicListPagePath;
 		string dynamicListPageContent;
-		
+
+		private MarkdownFormat markdownFormat;
 		Dictionary<string, object> templateArgs;
 		
 		[TestFixtureSetUp]
@@ -39,6 +37,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 
 			templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
+		}
+
+		[SetUp]
+		public void OnBeforeEachTest()
+		{
+			markdownFormat = new MarkdownFormat();
 		}
 
 		[Test]
@@ -92,12 +96,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Can_Render_MarkdownPage()
 		{
-			var dynamicPage = new MarkdownPage(dynamicPageContent, "DynamicTpl", dynamicPageContent);
+			var dynamicPage = new MarkdownPage(markdownFormat, dynamicPageContent, "DynamicTpl", dynamicPageContent);
 			dynamicPage.Prepare();
 
 			Assert.That(dynamicPage.Blocks.Count, Is.EqualTo(9));
 
-			var expectedHtml = MarkdownFormat.Instance.Transform(dynamicPageContent)
+			var expectedHtml = markdownFormat.Transform(dynamicPageContent)
 				.Replace("@Model.FirstName", person.FirstName)
 				.Replace("@Model.LastName", person.LastName);
 
@@ -111,7 +115,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Can_Render_MarkdownPage_with_foreach()
 		{
-			var dynamicPage = new MarkdownPage(
+			var dynamicPage = new MarkdownPage(markdownFormat, 
 				dynamicListPagePath, "DynamicListTpl", dynamicListPageContent);
 			dynamicPage.Prepare();
 
@@ -126,7 +130,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			expectedMarkdown = expectedMarkdown.ReplaceForeach(foreachLinks);
 
-			var expectedHtml = MarkdownFormat.Instance.Transform(expectedMarkdown);
+			var expectedHtml = markdownFormat.Transform(expectedMarkdown);
 
 			Console.WriteLine("ExpectedHtml: " + expectedHtml);
 
@@ -161,9 +165,9 @@ Hello Demis,
 
 ### heading 3";
 
-			var expectedHtml = MarkdownFormat.Instance.Transform(expected);
+			var expectedHtml = markdownFormat.Transform(expected);
 
-			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicIfTpl", template);
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Prepare();
 
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
@@ -217,20 +221,28 @@ Hello Demis,
 
 ### heading 3";
 
-			var expectedHtml = MarkdownFormat.Instance.Transform(expected);
+			var expectedHtml = markdownFormat.Transform(expected);
 
-			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicNestedTpl", template);
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicNestedTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToString(templateArgs); 
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
+		public class CustomMarkdownViewBase<T> : MarkdownViewBase<T>
+		{
+			public MvcHtmlString Table(Person model)
+			{
+				return new CustomMarkdownViewBase().Table(model);
+			}
+		}
+
 		public class CustomMarkdownViewBase : MarkdownViewBase
 		{
-			public string Table(Person model)
+			public MvcHtmlString Table(Person model)
 			{
 				var sb = new StringBuilder();
 
@@ -244,17 +256,18 @@ Hello Demis,
 				sb.AppendLine("</tbody>");
 				sb.AppendLine("</table>");
 
-				return sb.ToString();
+				return MvcHtmlString.Create(sb.ToString());
 			}
 		}
 
 		public class CustomMarkdownHelper
 		{
-			public CustomMarkdownHelper Instance = new CustomMarkdownHelper();
+			public static CustomMarkdownHelper Instance = new CustomMarkdownHelper();
 
-			public string Wrap(string content, string id)
+			public MvcHtmlString InlineBlock(string content, string id)
 			{
-				return "<div id=\"" + id + "\">" + content + "</div>";
+				return MvcHtmlString.Create(
+					"<div id=\"" + id + "\"><div class=\"inner inline-block\">" + content + "</div></div>");
 			}
 		}
 
@@ -283,11 +296,7 @@ Hello @Upper(Model.LastName), @Model.FirstName
 }
 
 ### HTML Table 
-#### Encoded	
 @Table(Model)
-
-#### Raw
-@Html.Raw(Table(Model))
 ";
 
 			var expectedHtml = @"<h2>Welcome to Razor!</h2>
@@ -323,15 +332,6 @@ Demis / Bellot
 
 <h3>HTML Table</h3>
 
-<h4>Encoded</h4>
-
-&lt;table&gt;&lt;caption&gt;Demis's Links&lt;/caption&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Link&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;&lt;td&gt;ServiceStack&lt;/td&gt;&lt;td&gt;http://www.servicestack.net&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;AjaxStack&lt;/td&gt;&lt;td&gt;http://www.ajaxstack.com&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;
-&lt;/table&gt;
-
-<h4>Raw</h4>
-
 <table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
 <tbody>
 <tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
@@ -339,16 +339,16 @@ Demis / Bellot
 ".Replace("\r\n", "\n");
 
 
-			MarkdownFormat.Instance.MarkdownBaseType = typeof(CustomMarkdownViewBase);
-			MarkdownFormat.Instance.MarkdownGlobalHelpers = new Dictionary<string, Type> 
+			markdownFormat.MarkdownBaseType = typeof(CustomMarkdownViewBase);
+			markdownFormat.MarkdownGlobalHelpers = new Dictionary<string, Type> 
 				{
 					{"Ext", typeof(CustomMarkdownHelper)}
 				};
 
-			MarkdownFormat.Instance.RegisterMarkdownPage(new MarkdownPage(
+			markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat, 
 				"/path/to/page", "HeaderLinks", headerTemplate));
 
-			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicIfTpl", template);
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Prepare();
 
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
@@ -364,25 +364,129 @@ Demis / Bellot
 			var template = @"@model ServiceStack.ServiceHost.Tests.Formats.TemplateTests+Person
 # Generic View Page
 
-## TextBox
-@Html.TextBoxFor(m => m.FirstName)
+## Form fields
+@Html.LabelFor(m => m.FirstName) @Html.TextBoxFor(m => m.FirstName)
 "; 
 
 			var expectedHtml = @"
 <h1>Generic View Page</h1>
 
-<h2>TextBox</h2>
+<h2>Form fields</h2>
 
-<input name=""FirstName"" type=""text"" value="""" />".Replace("\r\n", "\n");
+<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />".Replace("\r\n", "\n");
 
 
-			var dynamicPage = new MarkdownPage("/path/to/tpl", "DynamicModelTpl", template);
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
 			var templateOutput = dynamicPage.RenderToString(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase<>)));
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_inherit_from_CustomViewPage_using_inherits_directive()
+		{
+			var template = @"@inherits ServiceStack.ServiceHost.Tests.Formats.TemplateTests+CustomMarkdownViewBase<ServiceStack.ServiceHost.Tests.Formats.TemplateTests+Person>
+# Generic View Page
+
+## Form fields
+@Html.LabelFor(m => m.FirstName) @Html.TextBoxFor(m => m.FirstName)
+
+## Person Table
+@Table(Model)
+";
+
+			var expectedHtml = @"
+<h1>Generic View Page</h1>
+
+<h2>Form fields</h2>
+
+<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />
+<h2>Person Table</h2>
+
+<table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
+<tbody>
+<tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
+</table>
+".Replace("\r\n", "\n");
+
+
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			templateOutput = templateOutput.Replace("\r\n", "\n");
+
+			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(CustomMarkdownViewBase<>)));
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_Render_MarkdownPage_with_external_helper()
+		{
+			var template = @"# View Page with Custom Helper
+
+## External Helper 
+<img src='path/to/img' class='inline-block' />
+@Ext.InlineBlock(Model.FirstName, ""first-name"")
+";
+
+			var expectedHtml = @"<h1>View Page with Custom Helper</h1>
+
+<h2>External Helper</h2>
+
+<p><img src='path/to/img' class='inline-block' />
+ <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".Replace("\r\n", "\n");
+
+
+			markdownFormat.MarkdownGlobalHelpers.Add("Ext", typeof(CustomMarkdownHelper));
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			templateOutput = templateOutput.Replace("\r\n", "\n");
+
+			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_Render_MarkdownPage_with_external_helper_using_usehelper_directive()
+		{
+			var template = @"@usehelper Ext: ServiceStack.ServiceHost.Tests.Formats.TemplateTests+CustomMarkdownHelper
+# View Page with Custom Helper
+
+## External Helper 
+<img src='path/to/img' class='inline-block' />
+@Ext.InlineBlock(Model.FirstName, ""first-name"")
+";
+
+			var expectedHtml = @"
+<h1>View Page with Custom Helper</h1>
+
+<h2>External Helper</h2>
+
+<p><img src='path/to/img' class='inline-block' />
+ <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".Replace("\r\n", "\n");
+
+
+			//markdownFormat.MarkdownGlobalHelpers.Add("Ext", typeof(CustomMarkdownHelper));
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			templateOutput = templateOutput.Replace("\r\n", "\n");
+
+			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));

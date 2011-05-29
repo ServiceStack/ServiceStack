@@ -262,7 +262,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					if (varExpr == "if")
 						return new IfStatementExprBlock(condition, statement);
 				}
-				else if (varExpr == "model" || varExpr == "inherits")
+				else if (varExpr == "model" 
+					|| varExpr == "inherits" 
+					|| varExpr == "usehelper")
 				{
 					var pos = content.IndexOf('\n');
 					var restOfLine = content.Substring(fromPos, pos - fromPos);

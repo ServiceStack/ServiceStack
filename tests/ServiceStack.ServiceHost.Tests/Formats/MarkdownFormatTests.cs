@@ -47,8 +47,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		}
 
 		[Test]
-		public void
-			Can_load_all_markdown_files()
+		public void Can_load_all_markdown_files()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
 

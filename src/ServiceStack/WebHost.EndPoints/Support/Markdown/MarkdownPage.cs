@@ -20,21 +20,16 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.ExecutionContext = new EvaluatorExecutionContext();
 		}
 
-		public MarkdownPage(string fullPath, string name, string contents)
+		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents)
 			: this()
 		{
+			Markdown = markdown;
 			FilePath = fullPath;
 			Name = name;
 			Contents = contents;
 		}
 
-		//some mockable love...
-		private MarkdownFormat markdown;
-		public MarkdownFormat Markdown
-		{
-			get { return markdown ?? MarkdownFormat.Instance; }
-			set { markdown = value; }
-		}
+		public MarkdownFormat Markdown { get; set; }
 
 		private int timesRun = 0;
 		private bool hasCompletedFirstRun;
@@ -114,6 +109,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (this.evaluator != null)
 			{
 				instance = (MarkdownViewBase)(instance ?? this.evaluator.CreateInstance());
+				instance.Markdown = Markdown;
 
 				object model;
 				if (scopeArgs.TryGetValue(ModelName, out model))

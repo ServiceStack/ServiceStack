@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using ServiceStack.Text;
 
 namespace ServiceStack.Markdown
 {
@@ -15,7 +16,7 @@ namespace ServiceStack.Markdown
 		private readonly ModelStateDictionary modelState = new ModelStateDictionary();
 		//private TemplateInfo _templateMetadata;
 
-		public ViewDataDictionary() : this((object)null) {}
+		public ViewDataDictionary() : this((object)null) { }
 
 		public ViewDataDictionary(object model)
 		{
@@ -103,6 +104,19 @@ namespace ServiceStack.Markdown
 			get
 			{
 				return modelState;
+			}
+		}
+
+		public void PopulateModelState()
+		{
+			var strModel = TypeSerializer.SerializeToString(model);
+			var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(strModel);
+			foreach (var kvp in map)
+			{
+				var valueState = new ModelState {
+					Value = new ValueProviderResult(kvp.Value, kvp.Value, CultureInfo.CurrentCulture)
+				};
+				modelState.Add(kvp.Key, valueState);
 			}
 		}
 

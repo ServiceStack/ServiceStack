@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml;
-using Microsoft.CSharp;
 using System.Text;
-using ServiceStack.Common.Utils;
+using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -35,16 +34,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 	}
 
-	/// <summary>
-	/// Expression Evaluator based from:
-	/// http://www.codeproject.com/KB/cs/runtime_eval.aspx
-	/// </summary>
 	public class Evaluator
 	{
-		const string staticMethodName = "__tmp";
+		const string StaticMethodName = "__tmp";
 		Assembly compiledAssembly;
 		Type compiledType = null;
 		object compiled = null;
+		EmptyCtorDelegate compiledTypeCtorFn;
 
 		private Type BaseType { get; set; }
 		private Type[] GenericArgs { get; set; }
@@ -108,7 +104,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
 				typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
 				typeof(IService<>).Assembly,   //"ServiceStack.Interfaces.dll",
-				typeof(IdUtils).Assembly,      //"ServiceStack.Common.dll"
+				typeof(UrnId).Assembly,        //"ServiceStack.Common.dll"
 			};
 			var cp = new CompilerParameters  //(new[] { "mscorlib.dll", "system.core.dll" })
 			{
@@ -203,6 +199,7 @@ namespace CSharpEval
 			compiledAssembly = compilerResults.CompiledAssembly;
 			compiled = compiledAssembly.CreateInstance("CSharpEval._Expr");
 			compiledType = compiled.GetType();
+			compiledTypeCtorFn = Text.ReflectionExtensions.GetConstructorMethodToCache(compiledType);
 		}
 
 		private void AddPropertiesToTypeIfAny(StringBuilder code)
@@ -223,7 +220,7 @@ namespace CSharpEval
 									 : "new " + typeName + "()";
 
 					code.AppendFormat(
-					"    public {0} {1} {{ get {{ return {2}; }} }}\n",
+					"    public {0} {1} = {2};\n",
 					typeName, name, returnExpr);
 				}
 			}
@@ -236,7 +233,7 @@ namespace CSharpEval
 
 		public object CreateInstance()
 		{
-			return compiledAssembly.CreateInstance("CSharpEval._Expr");
+			return compiledTypeCtorFn();
 		}
 
 		public MethodInfo GetCompiledMethodInfo(string name)
@@ -270,14 +267,14 @@ namespace CSharpEval
 
 		public static object Eval(string code)
 		{
-			var eval = new Evaluator(typeof(object), code, staticMethodName);
-			return eval.Evaluate(staticMethodName);
+			var eval = new Evaluator(typeof(object), code, StaticMethodName);
+			return eval.Evaluate(StaticMethodName);
 		}
 
 		public static T Eval<T>(string code)
 		{
-			var eval = new Evaluator(typeof(T), code, staticMethodName);
-			return (T)eval.Evaluate(staticMethodName);
+			var eval = new Evaluator(typeof(T), code, StaticMethodName);
+			return (T)eval.Evaluate(StaticMethodName);
 		}
 	}
 

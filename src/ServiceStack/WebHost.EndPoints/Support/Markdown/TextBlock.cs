@@ -315,6 +315,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public Type[] GenericArgs { get; set; }
 
+		public Dictionary<string, Type> Helpers { get; set; } 
+
 		public Type GetType(string typeName)
 		{
 			var type = AssemblyUtils.FindType(typeName);
@@ -342,16 +344,38 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 			else if (directive == "inherits")
 			{
-				var parts = line.Split(new[] { '<', '>' });
-				this.BaseType = Type.GetType(parts[0], true, true);
+				var parts = line.Split(new[] { '<', '>' })
+					.Where(x => !x.IsNullOrEmpty()).ToArray();
 
-				var hasGenericArg = parts.Length >= 4;
-				if (hasGenericArg)
+				var isGenericType = parts.Length >= 2;
+
+				this.BaseType = isGenericType ? GetType(parts[0] + "`1") : GetType(parts[0]);
+
+				if (isGenericType)
 				{
-					if (parts[1] != "<" && parts[2] != ">")
-						throw new ArgumentException("Expected @inherits directive got: " + line);
+					this.GenericArgs = new[] { GetType(parts[1]) };
+				}
+			}
+			else if (directive == "usehelper")
+			{
+				var helpers = line.Split(',');
+				this.Helpers = new Dictionary<string, Type>();
+				
+				foreach (var helper in helpers)
+				{
+					var parts = helper.Split(':');
+					if (parts.Length != 2)
+						throw new InvalidDataException(
+							"Invalid usehelper directive, should be 'TagName: Helper.Namespace.And.Type'");
 
-					this.GenericArgs = new[] { GetType(parts[2]) };
+					var tagName = parts[0].Trim();
+					var typeName = parts[1].Trim();
+
+					var helperType = GetType(typeName);
+					if (helperType == null)
+						throw new InvalidDataException("Unable to resolve helper type: " + typeName);
+
+					this.Helpers[tagName] = helperType;
 				}
 			}
 		}
@@ -364,6 +388,14 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				markdownPage.ExecutionContext.BaseType = this.BaseType;
 
 			markdownPage.ExecutionContext.GenericArgs = this.GenericArgs;
+
+			if (this.Helpers != null)
+			{
+				foreach (var helper in this.Helpers)
+				{
+					markdownPage.ExecutionContext.TypeProperties[helper.Key] = helper.Value;
+				}
+			}
 		}
 
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs) { }
@@ -560,13 +592,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		private void Prepare(MarkdownPage markdownPage)
 		{
 			var rawMethodExpr = methodExpr.Replace("Html.", "");
-			this.WriteRawHtml = rawMethodExpr == "Raw" || rawMethodExpr == "Partial";
-
-			var argEx = new ArgumentException("Unable to resolve method: " + methodExpr);
+			this.WriteRawHtml = rawMethodExpr == "Raw";
 
 			var parts = methodExpr.Split('.');
 			if (parts.Length > 2)
-				throw argEx;
+				throw new ArgumentException("Unable to resolve method: " + methodExpr);
 
 			var usesBaseType = parts.Length == 1;
 			var typePropertyName = parts[0];
@@ -582,7 +612,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (type == null)
 			{
 				type = usesBaseType
-					? markdownPage.Markdown.MarkdownBaseType
+					? markdownPage.ExecutionContext.BaseType
 					: markdownPage.Markdown.MarkdownGlobalHelpers.TryGetValue(typePropertyName, out type) ? type : null;
 			}
 
@@ -595,13 +625,14 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (mi == null)
 			{
 				mi = HtmlHelper.GetMethod(methodName);
-				if (mi == null) throw argEx;
+				if (mi == null) 
+					throw new ArgumentException("Unable to resolve method '" + methodExpr + "' on type " + type.Name);
 			}
 
 			base.ReturnType = mi.ReturnType;
 
 			var isMemberExpr = Condition.IndexOf('(') != -1;
-			if (!isMemberExpr)
+			if (!isMemberExpr || this.WriteRawHtml)
 			{
 				base.Condition = methodExpr + "(" + Condition + ")";
 			}

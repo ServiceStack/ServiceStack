@@ -1,5 +1,4 @@
-﻿using System;
-using ServiceStack.Markdown.Html;
+﻿using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.Markdown
 {
@@ -9,7 +8,12 @@ namespace ServiceStack.Markdown
 
 		protected MarkdownViewBase()
 		{
-			Html = new HtmlHelper<T>();
+			Html = (HtmlHelper<T>) GetHtmlHelper();
+		}
+
+		protected override HtmlHelper GetHtmlHelper()
+		{
+			return base.Html ?? new HtmlHelper<T>();
 		}
 
 		public override object Model
@@ -18,10 +22,10 @@ namespace ServiceStack.Markdown
 			{
 				var typedModel = (T)value;
 				Html.ViewData = new ViewDataDictionary<T>(typedModel);
-				((HtmlHelper)Html).ViewData = Html.ViewData;
+				Html.ViewData.PopulateModelState();
 			}
 		}
-	}
+	} 
 
 	public abstract class MarkdownViewBase
 	{
@@ -29,7 +33,12 @@ namespace ServiceStack.Markdown
 
 		protected MarkdownViewBase()
 		{
-			Html = HtmlHelper.Instance;
+			Html = GetHtmlHelper();
+		}
+
+		protected virtual HtmlHelper GetHtmlHelper()
+		{
+			return Html ?? new HtmlHelper();
 		}
 
 		public virtual object Model
@@ -37,6 +46,19 @@ namespace ServiceStack.Markdown
 			set
 			{
 				Html.ViewData = new ViewDataDictionary(value);
+				Html.ViewData.PopulateModelState();
+			}
+		}
+
+		public virtual MarkdownFormat Markdown
+		{
+			get
+			{
+				return Html.Markdown;
+			}
+			set
+			{
+				Html.Markdown = value;
 			}
 		}
 
@@ -49,7 +71,7 @@ namespace ServiceStack.Markdown
 			return Html.Raw(content);
 		}
 
-		public string Partial(string viewName, object model)
+		public MvcHtmlString Partial(string viewName, object model)
 		{
 			return Html.Partial(viewName, model);
 		}

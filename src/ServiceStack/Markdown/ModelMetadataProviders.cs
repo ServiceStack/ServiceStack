@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using ServiceStack.Text;
 
 namespace ServiceStack.Markdown
 {
@@ -449,6 +450,34 @@ namespace ServiceStack.Markdown
 		}
 	}
 
+	public class PocoMetadataProvider : ModelMetadataProvider
+	{
+		protected virtual ModelMetadata CreateMetadata(IEnumerable<Attribute> attributes, Type containerType, Func<object> modelAccessor, Type modelType, string propertyName)
+		{
+			return new ModelMetadata(this, containerType, modelAccessor, modelType, propertyName);
+		}
+
+		public override IEnumerable<ModelMetadata> GetMetadataForProperties(object container, Type containerType)
+		{
+			return new List<ModelMetadata>();
+		}
+
+		public override ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, Type containerType, string propertyName)
+		{
+			var modelType = containerType; //FIX?
+			return new ModelMetadata(this, containerType, modelAccessor, modelType, propertyName);
+		}
+
+		public override ModelMetadata GetMetadataForType(Func<object> modelAccessor, Type modelType)
+		{
+			return new ModelMetadata(this, null, modelAccessor, modelType, null);
+		}
+	}
+
+	//public class PocoMetadataProvider<T> {
+	//    static PocoMetadataProvider() {
+	//        var propertyInfos = TypeConfig<T>.Properties;  } }
+
 	public class ModelMetadataProviders
 	{
 		private ModelMetadataProvider currentProvider;
@@ -456,7 +485,7 @@ namespace ServiceStack.Markdown
 
 		internal ModelMetadataProviders()
 		{
-			currentProvider = new EmptyModelMetadataProvider();
+			currentProvider = new PocoMetadataProvider();
 		}
 
 		public static ModelMetadataProvider Current

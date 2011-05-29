@@ -43,7 +43,11 @@ namespace ServiceStack.Markdown
 
 	public class HtmlHelper<TModel> : HtmlHelper
 	{
-		public new ViewDataDictionary<TModel> ViewData { get; set; }
+		public new ViewDataDictionary<TModel> ViewData
+		{
+			get { return (ViewDataDictionary<TModel>) base.ViewData; }
+			set { base.ViewData = value; }
+		}
 	}
 
 	public class HtmlHelper
@@ -69,29 +73,23 @@ namespace ServiceStack.Markdown
 		}
 
 		private delegate string HtmlEncoder(object value);
-		private static readonly HtmlEncoder _htmlEncoder = GetHtmlEncoder();
+		private static readonly HtmlEncoder htmlEncoder = GetHtmlEncoder();
 
-		//some mockable love...
-		private MarkdownFormat markdown;
-		public MarkdownFormat Markdown
-		{
-			get { return markdown ?? MarkdownFormat.Instance; }
-			set { markdown = value; }
-		}
-
-		public static HtmlHelper Instance = new HtmlHelper();
-
+		//Get's injected
+		public MarkdownFormat Markdown { get; set; }
 		public virtual ViewDataDictionary ViewData { get; set; }
-
-		public string Partial(string viewName, object model)
+		
+		public MvcHtmlString Partial(string viewName, object model)
 		{
 			var result = Markdown.RenderDynamicPage(viewName, model);
-			return result;
+			return MvcHtmlString.Create(result);
 		}
 
-		public string Raw(string content)
+		public string Raw(object content)
 		{
-			return content;
+			if (content == null) return null;
+			var strContent = content as string;
+			return strContent ?? content.ToString(); //MvcHtmlString
 		}
 
 		public static RouteValueDictionary AnonymousObjectToHtmlAttributes(object htmlAttributes)
@@ -126,7 +124,7 @@ namespace ServiceStack.Markdown
 
 		public string Encode(object value)
 		{
-			return _htmlEncoder(value);
+			return htmlEncoder(value);
 		}
 
 		internal object GetModelStateValue(string key, Type destinationType)

@@ -73,7 +73,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				var pageName = fileInfo.Name.SplitOnFirst('.')[0];
 				var pageContents = File.ReadAllText(markDownFile);
 
-				AddPage(new MarkdownPage(markDownFile, pageName, pageContents));
+				AddPage(new MarkdownPage(this, markDownFile, pageName, pageContents));
 			}
 		}
 
@@ -145,7 +145,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			PageTemplates.TryGetValue(templatePath, out markdownTemplate);
 			if (markdownTemplate == null) return pageHtml;
 			var htmlPage = markdownTemplate.Contents.ReplaceFirst(
-			TemplatePlaceHolder, pageHtml);
+			TemplatePlaceHolder, pageHtml); 
 			return htmlPage;
 		}
 
