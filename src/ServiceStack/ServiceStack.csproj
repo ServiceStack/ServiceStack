@@ -129,7 +129,6 @@
     <Compile Include="Markdown\Html\InputExtensions.cs" />
     <Compile Include="Markdown\Html\LabelExtensions.cs" />
     <Compile Include="Markdown\Html\TextAreaExtensions.cs" />
-    <Compile Include="Markdown\HttpRequestExtensions.cs" />
     <Compile Include="Markdown\MarkdownViewBase.cs" />
     <Compile Include="Markdown\ModelMetadata.cs" />
     <Compile Include="Markdown\ModelMetadataProvider.cs" />

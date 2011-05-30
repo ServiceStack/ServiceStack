@@ -102,31 +102,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		private Dictionary<string, object> items;
 		public Dictionary<string, object> Items
 		{
-			get
-			{
-				if (items == null)
-				{
-					items = new Dictionary<string, object>();
-				}
-				return items;
-			}
+			get { return items ?? (items = new Dictionary<string, object>()); }
 		}
 
 		private string responseContentType;
 		public string ResponseContentType
 		{
-			get
-			{
-				if (responseContentType == null)
-				{
-					responseContentType = this.GetResponseContentType();
-				}
-				return responseContentType;
-			}
-			set
-			{
-				this.responseContentType = value;
-			}
+			get { return responseContentType ?? (responseContentType = this.GetResponseContentType()); }
+			set { this.responseContentType = value; }
 		}
 
 		private string pathInfo;
@@ -186,10 +169,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public NameValueCollection FormData
 		{
-			get
-			{
-				return this.Form;
-			}
+			get { return this.Form; }
 		}
 
 		public string HttpMethod

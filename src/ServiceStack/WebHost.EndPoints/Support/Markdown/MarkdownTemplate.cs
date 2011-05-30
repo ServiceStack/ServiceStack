@@ -32,7 +32,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.Blocks.Add(blocks[0]);
 			if (blocks.Count == 1) return;
 			
-			this.Blocks.Add(new VariableBlock(MarkdownPage.ModelName));
+			this.Blocks.Add(new VarReferenceBlock(MarkdownPage.ModelName));
 			for (var i = 1; i < blocks.Count; i++)
 			{
 				this.Blocks.Add(blocks[i]);	

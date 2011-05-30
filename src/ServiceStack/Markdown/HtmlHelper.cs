@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using ServiceStack.Common.Web;
 using ServiceStack.Markdown.Html;
 using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.EndPoints.Support.Markdown;
@@ -92,7 +93,7 @@ namespace ServiceStack.Markdown
 		
 		public MvcHtmlString Partial(string viewName, object model)
 		{
-			var result = Markdown.RenderDynamicPage(viewName, model);
+			var result = Markdown.RenderDynamicPage(viewName, model, this.RenderHtml);
 			return MvcHtmlString.Create(result);
 		}
 
@@ -229,7 +230,7 @@ namespace ServiceStack.Markdown
 
 			var tagBuilder = new TagBuilder("input");
 			tagBuilder.Attributes["type"] = "hidden";
-			tagBuilder.Attributes["name"] = HttpRequestExtensions.XHttpMethodOverrideKey;
+			tagBuilder.Attributes["name"] = HttpHeaders.XHttpMethodOverrideKey;
 			tagBuilder.Attributes["value"] = httpMethod;
 
 			return tagBuilder.ToMvcHtmlString(TagRenderMode.SelfClosing);

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;
@@ -44,6 +46,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		{
 			RegisterMarkdownPages("~".MapHostAbsolutePath());
 
+			//Render HTML
 			HtmlFormat.ContentResolvers.Add((requestContext, dto, stream) => {
 				var pageName = dto.GetType().Name;
 
@@ -51,11 +54,31 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				if (!Pages.TryGetValue(pageName, out markdownPage))
 					return false;
 
-				var html = RenderStaticPage(markdownPage);
-				var htmlBytes = html.ToUtf8Bytes();
-				stream.Write(htmlBytes, 0, htmlBytes.Length);
+				var markup = RenderStaticPage(markdownPage, true);
+				var markupBytes = markup.ToUtf8Bytes();
+				stream.Write(markupBytes, 0, markupBytes.Length);
 				return true;
 			});
+
+			appHost.ContentTypeFilters.Register(ContentType.MarkdownText, SerializeToStream, null);
+			appHost.ContentTypeFilters.Register(ContentType.PlainText, SerializeToStream, null);
+		}
+
+		/// <summary>
+		/// Render Markdown for text/markdown and text/plain ContentTypes
+		/// </summary>
+		public void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
+		{
+			var pageName = dto.GetType().Name;
+
+			MarkdownPage markdownPage;
+			if (!Pages.TryGetValue(pageName, out markdownPage))
+				throw new InvalidDataException("Could not find markdown page");
+
+			const bool renderHtml = false; //i.e. render Markdown
+			var markup = RenderStaticPage(markdownPage, renderHtml);
+			var markupBytes = markup.ToUtf8Bytes();
+			stream.Write(markupBytes, 0, markupBytes.Length);
 		}
 
 		public void RegisterMarkdownPages(string dirPath)
@@ -92,44 +115,58 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 			var templatePath = page.GetTemplatePath();
 
-			if (!PageTemplates.ContainsKey(templatePath))
+			if (PageTemplates.ContainsKey(templatePath)) return;
+
+			var templateFile = new FileInfo(templatePath);
+
+			if (!templateFile.Exists)
 			{
-				var templateFile = new FileInfo(templatePath);
+				PageTemplates.Add(templateFile.FullName, null);
+				return;
+			}
 
-				if (!templateFile.Exists)
-				{
-					PageTemplates.Add(templateFile.FullName, null);
-					return;
-				}
+			var pageContents = File.ReadAllText(templatePath);
+			var template = new MarkdownTemplate(
+			templatePath, templateFile.Name, pageContents);
 
-				var pageContents = File.ReadAllText(templatePath);
-				var template = new MarkdownTemplate(
-					templatePath, templateFile.Name, pageContents);
-
-				try
-				{
-					template.Prepare();
-					PageTemplates.Add(template.FilePath, template);
-				}
-				catch (Exception ex)
-				{
-					Log.Error("AddPage() template.Prepare(): " + ex.Message, ex);
-				}
+			try
+			{
+				template.Prepare();
+				PageTemplates.Add(template.FilePath, template);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("AddPage() template.Prepare(): " + ex.Message, ex);
 			}
 		}
 
-		public string RenderStaticPage(string pageName)
+		public string Transform(string template)
+		{
+			return markdown.Transform(template);
+		}
+
+		public string Transform(string template, bool renderHtml)
+		{
+			return renderHtml ? markdown.Transform(template) : template;
+		}
+
+		public string RenderStaticPageHtml(string pageName)
+		{
+			return RenderStaticPage(pageName, true);
+		}
+
+		public string RenderStaticPage(string pageName, bool renderHtml)
 		{
 			MarkdownPage markdownPage;
 			if (!Pages.TryGetValue(pageName, out markdownPage))
 				throw new KeyNotFoundException(pageName);
 
-			return RenderStaticPage(markdownPage);
+			return RenderStaticPage(markdownPage, renderHtml);
 		}
 
-		private string RenderStaticPage(MarkdownPage markdownPage)
+		private string RenderStaticPage(MarkdownPage markdownPage, bool renderHtml)
 		{
-			var pageHtml = markdown.Transform(markdownPage.Contents);
+			var pageHtml = Transform(markdownPage.Contents, renderHtml);
 			var templatePath = markdownPage.GetTemplatePath();
 
 			return RenderInTemplateIfAny(templatePath, pageHtml);
@@ -145,13 +182,12 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			return htmlPage;
 		}
 
-		public string Transform(string markdownText)
+		public string RenderDynamicPageHtml(string pageName, object model)
 		{
-			var pageHtml = markdown.Transform(markdownText);
-			return pageHtml;
+			return RenderDynamicPage(pageName, model, true);
 		}
 
-		public string RenderDynamicPage(string pageName, object model)
+		public string RenderDynamicPage(string pageName, object model, bool renderHtml)
 		{
 			MarkdownPage markdownPage;
 			if (!Pages.TryGetValue(pageName, out markdownPage))
@@ -159,7 +195,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 			var scopeArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, model } };
 
-			var htmlPage = markdownPage.RenderToString(scopeArgs);
+			var htmlPage = markdownPage.RenderToString(scopeArgs, renderHtml);
 
 			var html = RenderInTemplateIfAny(markdownPage.GetTemplatePath(), htmlPage);
 

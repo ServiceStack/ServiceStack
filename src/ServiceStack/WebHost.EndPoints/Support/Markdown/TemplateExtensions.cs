@@ -95,6 +95,27 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return results.ToArray();
 		}
 
+		public static string RenderToMarkdown(this MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		{
+			return RenderToString(markdownPage, scopeArgs, false);
+		}
+
+		public static string RenderToHtml(this MarkdownPage markdownPage, Dictionary<string, object> scopeArgs)
+		{
+			return RenderToString(markdownPage, scopeArgs, true);
+		}
+
+		public static string RenderToString(this MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, bool renderHtml)
+		{
+			var sb = new StringBuilder();
+			using (var writer = new StringWriter(sb))
+			{
+				var pageContext = new PageContext(markdownPage, scopeArgs, renderHtml);
+				markdownPage.Write(writer, pageContext);
+			}
+			return sb.ToString();
+		}
+
 		public static string RenderToString(this ITemplateWriter templateWriter, Dictionary<string, object> scopeArgs)
 		{
 			var sb = new StringBuilder();
@@ -262,13 +283,17 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					if (varExpr == "if")
 						return new IfStatementExprBlock(condition, statement);
 				}
-				else if (varExpr == "model" 
+				else if (varExpr == "var" 
+					|| varExpr == "model" 
 					|| varExpr == "inherits" 
 					|| varExpr == "usehelper")
 				{
-					var pos = content.IndexOf('\n');
+					var pos = content.IndexOf('\n', fromPos);
 					var restOfLine = content.Substring(fromPos, pos - fromPos);
 					fromPos = pos;
+
+					if (varExpr == "var")
+						return new VarStatementExprBlock(varExpr, restOfLine);
 
 					return new DirectiveBlock(varExpr, restOfLine);
 				}

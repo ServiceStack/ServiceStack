@@ -69,7 +69,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_StaticPage()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
-			var html = markdownFormat.RenderStaticPage("Static");
+			var html = markdownFormat.RenderStaticPageHtml("Static");
 
 			Assert.That(html, Is.Not.Null);
 			Assert.That(html, Is.StringStarting("<h1>Static Markdown template</h1>"));
@@ -79,7 +79,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_StaticPage_WithTemplate()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
-			var html = markdownFormat.RenderStaticPage("StaticTpl");
+			var html = markdownFormat.RenderStaticPageHtml("StaticTpl");
 
 			Console.WriteLine(html);
 
@@ -93,7 +93,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var person = new Person { FirstName = "Demis", LastName = "Bellot" };
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
 
-			var html = markdownFormat.RenderDynamicPage("Dynamic", person);
+			var html = markdownFormat.RenderDynamicPageHtml("Dynamic", person);
 
 			var expectedHtml = markdownFormat.Transform(dynamicPageContent)
 				.Replace("@Model.FirstName", person.FirstName)

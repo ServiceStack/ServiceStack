@@ -10,7 +10,6 @@ using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Text;
-using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
@@ -97,11 +96,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 	}
 
-	public class VariableBlock : TemplateBlock
+	public class VarReferenceBlock : TemplateBlock
 	{
 		private readonly string varName;
 
-		public VariableBlock(string varName)
+		public VarReferenceBlock(string varName)
 		{
 			this.varName = varName;
 		}
@@ -281,6 +280,17 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			var lastPos = 0;
 			while ((pos = content.IndexOf('@', lastPos)) != -1)
 			{
+				var peekChar = content.Substring(pos+1, 1);
+				var isComment = peekChar == "*";
+				if (isComment)
+				{
+					var endPos = content.IndexOf("*@", pos);
+					if (endPos == -1)
+						throw new InvalidDataException("Unterminated Comment at charIndex: " + pos);
+					lastPos = endPos + 2;
+					continue;
+				}
+
 				var contentBlock = content.Substring(lastPos, pos - lastPos);
 
 				var startPos = pos;
@@ -348,7 +358,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public Type[] GenericArgs { get; set; }
 
-		public Dictionary<string, Type> Helpers { get; set; } 
+		public Dictionary<string, Type> Helpers { get; set; }
+
+		protected Dictionary<string, Func<object, object>> VarDeclarations { get; set; }
 
 		public Type GetType(string typeName)
 		{
@@ -431,7 +443,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs) { }
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs) {}
 	}
 
 
@@ -554,8 +566,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			CodeGenMethodName = "EvalExpr_" + this.Id;
 
-			var exprParams = new Dictionary<string, Type>();
+			var exprParams = GetExprParams();
+			var evalItem = new EvaluatorItem(ReturnType, CodeGenMethodName, Condition, exprParams);
 
+			AddEvalItem(evalItem);
+		}
+
+		protected Dictionary<string, Type> GetExprParams()
+		{
+			var exprParams = new Dictionary<string, Type>();
 			paramNames = GetParamNames(ScopeArgs);
 			var paramValues = GetParamValues(ScopeArgs);
 			for (var i = 0; i < paramNames.Length; i++)
@@ -565,8 +584,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 				exprParams[paramName] = paramValue.GetType();
 			}
-
-			AddEvalItem(new EvaluatorItem(ReturnType, CodeGenMethodName, Condition, exprParams));
+			return exprParams;
 		}
 
 		protected List<object> GetParamValues(IDictionary<string, object> scopeArgs)
@@ -587,6 +605,56 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		{
 			var paramValues = GetParamValues(scopeArgs);
 			return (T)Evaluator.Evaluate(CodeGenMethodName, paramValues.ToArray());
+		}
+	}
+
+	public class VarStatementExprBlock : EvalExprStatementBase
+	{
+		private string varName;
+		private string memberExpr;
+
+		public VarStatementExprBlock(string directive, string line)
+			: base(line, null)
+		{
+			if (directive != "var")
+				throw new ArgumentException("Expected 'var' got: " + directive);
+
+			this.ReturnType = typeof(object);
+		}
+		
+		protected override void OnFirstRun()
+		{
+			if (varName != null)
+				return;
+
+			var declaration = Condition.TrimEnd().TrimEnd(';');
+
+			var parts = declaration.Split('=');
+			if (parts.Length != 2)
+				throw new InvalidDataException(
+					"Invalid var declaration, should be '@var varName = {MemberExpression} [, {VarDeclaration}]' was: " + declaration);
+
+			varName = parts[0].Trim();
+			memberExpr = parts[1].Trim();
+
+			this.Condition = memberExpr;
+
+			const string methodName = "resolveVarType";
+			var exprParams = GetExprParams();
+			var evaluator = new Evaluator(ReturnType, Condition, methodName, exprParams);
+			var result = evaluator.Evaluate(methodName, GetParamValues(ScopeArgs).ToArray());
+			ScopeArgs[varName] = result; 
+			if (result != null)
+				this.ReturnType = result.GetType();
+
+			base.OnFirstRun();
+		}
+
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			//Resolve and add to ScopeArgs
+			var resultCondition = Evaluate<object>(scopeArgs);
+			scopeArgs[varName] = resultCondition;
 		}
 	}
 

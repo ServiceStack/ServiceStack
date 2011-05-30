@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml;
 using System.Text;
-using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -86,10 +85,41 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public string GetTypeName(Type type)
 		{
-			//Inner classes?
-			return type == null
-				? null
-				: type.FullName.Replace('+', '.').SplitOnFirst('`')[0];
+			try
+			{
+				//Inner classes?
+				var typeName = type == null 
+					//|| type.FullName == null
+					? null
+					: type.FullName.Replace('+', '.').SplitOnFirst('`')[0];
+
+				if (typeName == null) return null;
+
+				if (type.IsGenericType()
+					//FIX: support GenericTypeDefinition properly
+					&& !type.IsGenericTypeDefinition 
+				)
+				{
+					var genericArgs = type.GetGenericArguments();
+
+					typeName += "<";
+					var i = 0;
+					foreach (var genericArg in genericArgs)
+					{
+						if (i++ > 0)
+							typeName += ", ";
+						typeName += GetTypeName(genericArg);
+					}
+					typeName += ">";
+				}
+
+				return typeName;
+			}
+			catch (Exception ex)
+			{
+				//Console.WriteLine(ex);
+				throw;
+			}
 		}
 
 		private void ConstructEvaluator(IEnumerable<EvaluatorItem> items)
@@ -104,7 +134,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
 				typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
 				typeof(IService<>).Assembly,   //"ServiceStack.Interfaces.dll",
-				typeof(UrnId).Assembly,        //"ServiceStack.Common.dll"
+				typeof(Common.UrnId).Assembly,        //"ServiceStack.Common.dll"
 			};
 			var cp = new CompilerParameters  //(new[] { "mscorlib.dll", "system.core.dll" })
 			{
@@ -162,7 +192,8 @@ namespace CSharpEval
 					if (sbParams.Length > 0)
 						sbParams.Append(", ");
 
-					sbParams.AppendFormat("{0} {1}", GetTypeName(param.Value), param.Key);
+					var typeName = GetTypeName(param.Value);
+					sbParams.AppendFormat("{0} {1}", typeName, param.Key);
 
 					var typeAssembly = param.Value.Assembly;
 					if (!assemblies.Contains(typeAssembly))
@@ -173,7 +204,7 @@ namespace CSharpEval
 				}
 
 				code.AppendFormat("    public {0} {1}({2})",
-					item.ReturnType.Name, item.Name, sbParams);
+					GetTypeName(item.ReturnType), item.Name, sbParams);
 
 				code.AppendLine("    {");
 				code.AppendFormat("      return ({0}); \n", item.Expression);

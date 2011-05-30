@@ -315,6 +315,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						if (hasPreferredContentTypes[i]) continue;
 						var preferredContentType = PreferredContentTypes[i];
 						hasPreferredContentTypes[i] = contentType.StartsWith(preferredContentType);
+
+						//Prefer Request.ContentType if it is also a preferredContentType
+						if (hasPreferredContentTypes[i] && preferredContentType == defaultContentType)
+							return preferredContentType;
 					}
 				}
 				for (var i = 0; i < PreferredContentTypes.Length; i++)

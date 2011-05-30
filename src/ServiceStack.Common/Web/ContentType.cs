@@ -39,6 +39,8 @@ namespace ServiceStack.Common.Web
 
 		public const string PlainText = "text/plain";
 
+		public const string MarkdownText = "text/markdown";
+
 		public const string ProtoBuf = "application/x-protobuf";
 
 		public static EndpointAttributes GetEndpointAttributes(string contentType)

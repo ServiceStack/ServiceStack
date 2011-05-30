@@ -2,6 +2,8 @@ namespace ServiceStack.Common.Web
 {
 	public static class HttpHeaders
 	{
+		public const string XHttpMethodOverrideKey = "X-HTTP-Method-Override";
+
 		public const string Accept = "Accept";
 
 		public const string AcceptEncoding = "Accept-Encoding";

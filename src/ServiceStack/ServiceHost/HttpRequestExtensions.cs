@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceHost
@@ -61,7 +62,7 @@ namespace ServiceStack.ServiceHost
 			var pos = httpReq.RawUrl.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
 			if (pos == -1)
 				throw new ArgumentException(
-					string.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+					String.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
 
 			return httpReq.RawUrl.Substring(0, pos + resolvedPathInfo.Length);
 		}
@@ -75,13 +76,13 @@ namespace ServiceStack.ServiceHost
 		{
 			var resolvedPathInfo = httpReq.PathInfo;
 
-			var pos = resolvedPathInfo == string.Empty
+			var pos = resolvedPathInfo == String.Empty
 				? httpReq.AbsoluteUri.Length
 				: httpReq.AbsoluteUri.IndexOf(resolvedPathInfo, StringComparison.InvariantCultureIgnoreCase);
 
 			if (pos == -1)
 				throw new ArgumentException(
-					string.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
+					String.Format("PathInfo '{0}' is not in Url '{1}'", resolvedPathInfo, httpReq.RawUrl));
 
 			return httpReq.AbsoluteUri.Substring(0, pos + resolvedPathInfo.Length);
 		}
@@ -123,5 +124,27 @@ namespace ServiceStack.ServiceHost
 			var appUrl = baseUrl.CombineWith(appPath);
 			return appUrl;
 		}
+
+		public static string GetHttpMethodOverride(this IHttpRequest request)
+		{
+			var httpMethod = request.HttpMethod;
+
+			if (httpMethod != HttpMethods.Post)
+				return httpMethod;			
+
+			var overrideHttpMethod = 
+				request.Headers[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
+				?? request.FormData[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
+				?? request.QueryString[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty();
+
+			if (overrideHttpMethod != null)
+			{
+				if (overrideHttpMethod != HttpMethods.Get && overrideHttpMethod != HttpMethods.Post)
+					httpMethod = overrideHttpMethod;
+			}
+
+			return httpMethod;
+		}
+
 	}
 }

@@ -10,7 +10,7 @@ using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
-	public class MarkdownPage : ITemplateWriter
+	public class MarkdownPage 
 	{
 		public const string ModelName = "Model";
 
@@ -98,16 +98,23 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(this.Statements);
 		}
 
-		public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		public void Write(TextWriter textWriter, PageContext pageContext)
 		{
-			var blocks = this.RenderHtml ? this.HtmlBlocks : this.MarkdownBlocks;
+			if (textWriter == null)
+				throw new ArgumentNullException("textWriter");
+
+			if (pageContext == null)
+				pageContext = new PageContext(this, new Dictionary<string, object>(), this.RenderHtml);
+
+
+			var blocks = pageContext.RenderHtml ? this.HtmlBlocks : this.MarkdownBlocks;
 
 			if (Interlocked.Increment(ref timesRun) == 1)
 			{
 				this.ExecutionContext.BaseType = Markdown.MarkdownBaseType;
 				this.ExecutionContext.TypeProperties = Markdown.MarkdownGlobalHelpers;
 
-				var pageContext = new PageContext(this, scopeArgs, RenderHtml);
+				pageContext.MarkdownPage = this;
 				blocks.ForEach(x => x.DoFirstRun(pageContext));
 				
 				this.evaluator = this.ExecutionContext.Build();
@@ -117,22 +124,23 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				hasCompletedFirstRun = true;
 			}
 
-			if (!hasCompletedFirstRun)
+			if (!hasCompletedFirstRun) //TODO: Add lock/waits if it's a noticeable problem
 				throw new InvalidOperationException("Page hasn't finished initializing yet");
 
+			MarkdownViewBase instance = null;
 			if (this.evaluator != null)
 			{
-				instance = (MarkdownViewBase)(instance ?? this.evaluator.CreateInstance());
+				instance = (MarkdownViewBase)this.evaluator.CreateInstance();
 
 				object model;
-				scopeArgs.TryGetValue(ModelName, out model);
+				pageContext.ScopeArgs.TryGetValue(ModelName, out model);
 				
 				instance.Init(this, model, this.RenderHtml);
 			}
 
 			foreach (var block in blocks)
 			{
-				block.Write(instance, textWriter, scopeArgs);
+				block.Write(instance, textWriter, pageContext.ScopeArgs);
 			}
 		}
 	}

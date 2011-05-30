@@ -105,7 +105,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				.Replace("@Model.FirstName", person.FirstName)
 				.Replace("@Model.LastName", person.LastName);
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
 			Console.WriteLine("Template Output: " + templateOutput);
 
@@ -134,7 +134,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			Console.WriteLine("ExpectedHtml: " + expectedHtml);
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
 			Console.WriteLine("Template Output: " + templateOutput);
 
@@ -170,7 +170,7 @@ Hello Demis,
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
@@ -226,7 +226,7 @@ Hello Demis,
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicNestedTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs); 
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs); 
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
@@ -351,7 +351,7 @@ Demis / Bellot
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Console.WriteLine(templateOutput);
@@ -379,7 +379,7 @@ Demis / Bellot
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase<>)));
@@ -419,7 +419,7 @@ Demis / Bellot
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(CustomMarkdownViewBase<>)));
@@ -450,7 +450,7 @@ Demis / Bellot
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
@@ -482,7 +482,7 @@ Demis / Bellot
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
@@ -537,17 +537,107 @@ Hello  BELLOT, Demis
     - SPA
 ".Replace("\r\n", "\n"); 
 
-			var renderHtml = false; //i.e. renderMarkdown
 			markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
-				"/path/to/page", "HeaderLinks", headerTemplate, renderHtml));
+				"/path/to/page", "HeaderLinks", headerTemplate));
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template, false);
 			dynamicPage.Prepare();
 
-			var templateOutput = dynamicPage.RenderToString(templateArgs);
+			var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
 			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+
+		[Test]
+		public void Can_Render_Markdown_with_variable_statements()
+		{
+			var template = @"## Welcome to Razor!
+
+@var lastName = Model.LastName;
+
+Hello @Upper(lastName), @Model.FirstName
+
+### Breadcrumbs
+@Combine("" / "", Model.FirstName, lastName)
+
+@var links = Model.Links
+### Menus
+@foreach (var link in links) {
+  - @link.Name - @link.Href
+  @var labels = link.Labels
+  @foreach (var label in labels) { 
+    - @label
+  }
+}";
+			var expectedHtml = @"## Welcome to Razor!
+
+
+Hello  BELLOT, Demis
+
+### Breadcrumbs
+ Demis / Bellot
+
+### Menus
+  - ServiceStack - http://www.servicestack.net
+    - REST
+    - JSON
+    - XML
+  - AjaxStack - http://www.ajaxstack.com
+    - HTML5
+    - AJAX
+    - SPA
+".Replace("\r\n", "\n");
+
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template, false);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
+			templateOutput = templateOutput.Replace("\r\n", "\n");
+
+			Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_Render_MarkdownPage_with_comments()
+		{
+			var template = @"# Dynamic If Markdown Template
+Hello @Model.FirstName,
+
+@if (Model.FirstName == ""Bellot"") {
+  * @Model.FirstName
+}
+@*
+@if (Model.LastName == ""Bellot"") {
+  * @Model.LastName
+}
+*@
+
+@*
+Plain text in a comment
+*@
+
+### heading 3";
+
+			var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
+
+<p>Hello Demis,</p>
+
+
+<h3>heading 3</h3>
+".Replace("\r\n", "\n");
+
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));

@@ -128,6 +128,11 @@ namespace ServiceStack.Common
 
 			return new String(copy, 0, nonWsPos);
 		}
+
+		public static string ToNullIfEmpty(this string text)
+		{
+			return string.IsNullOrEmpty(text) ? null : text;
+		}
 	}
 
 }
