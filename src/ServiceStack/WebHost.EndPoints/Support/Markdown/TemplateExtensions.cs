@@ -228,7 +228,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 						if (statementIndex >= statementBlocks.Count)
 							throw new ArgumentOutOfRangeException(
 								"Expected < " + statementBlocks.Count + " but was " + statementIndex);
-						
+
 						var statement = statementBlocks[statementIndex];
 						blocks.Add(statement);
 					}
@@ -283,9 +283,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					if (varExpr == "if")
 						return new IfStatementExprBlock(condition, statement);
 				}
-				else if (varExpr == "var" 
-					|| varExpr == "model" 
-					|| varExpr == "inherits" 
+				else if (varExpr == "var"
+					|| varExpr == "model"
+					|| varExpr == "inherits"
 					|| varExpr == "usehelper")
 				{
 					var pos = content.IndexOf('\n', fromPos);
@@ -297,7 +297,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 					return new DirectiveBlock(varExpr, restOfLine);
 				}
-			} 
+			}
 
 			var nextToken = PeekAfterWhitespace(content, fromPos);
 			if (nextToken == BeginMethodChar)
@@ -353,8 +353,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		private static string EatBlockExpr(this string content, ref int fromPos, 
-			char beginChar, char endChar)
+		private static string EatBlockExpr(this string content, ref int fromPos,
+			char beginChar, char endChar, bool allowDoubleEscaping)
 		{
 			content.EatWhitespace(ref fromPos);
 			if (content[fromPos++] != beginChar)
@@ -363,6 +363,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			var startPos = fromPos;
 
+			var hasDoubleEscaping = false;
 			var withinQuotes = false;
 			var endsToEat = 1;
 			while (fromPos < content.Length && endsToEat > 0)
@@ -375,27 +376,48 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 				if (!withinQuotes)
 				{
-					if (c == beginChar)
-						endsToEat++;
+					var nextChar = content.SafePeekAt(fromPos);
+					var isEscaped = allowDoubleEscaping
+						&& (c == beginChar && nextChar == beginChar 
+						    || c == endChar && nextChar == endChar);
+					if (isEscaped)
+					{
+						hasDoubleEscaping = true;
+						fromPos++;
+					}
+					else
+					{
+						if (c == beginChar)
+							endsToEat++;
 
-					if (c == endChar)
-						endsToEat--;
+						if (c == endChar)
+							endsToEat--;
+					}
 				}
 
 				fromPos++;
 			}
 
-			return content.Substring(startPos, fromPos - startPos - 1);
+			var result = content.Substring(startPos, fromPos - startPos - 1);
+			if (!hasDoubleEscaping) return result;
+
+			return result.Replace(beginChar.ToString() + beginChar, beginChar.ToString())
+				.Replace(endChar.ToString() + endChar, endChar.ToString());
+		}
+
+		public static char SafePeekAt(this string content, int fromPos)
+		{
+			return fromPos + 1 >= content.Length ? '\0' : content[fromPos + 1];
 		}
 
 		private static string EatStatementExpr(this string content, ref int fromPos)
 		{
-			return EatBlockExpr(content, ref fromPos, BeginStatementChar, EndStatementChar);
+			return EatBlockExpr(content, ref fromPos, BeginStatementChar, EndStatementChar, true);
 		}
 
 		private static string EatMethodExpr(this string content, ref int fromPos)
 		{
-			return EatBlockExpr(content, ref fromPos, BeginMethodChar, EndMethodChar);
+			return EatBlockExpr(content, ref fromPos, BeginMethodChar, EndMethodChar, false);
 		}
 
 		public static string GetNextAlphaNumericExpr(this string content, ref int fromPos)
@@ -419,7 +441,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				if (exprChar >= MemberExprFlags.Length) return null;
 				if (!MemberExprFlags[exprChar]) break;
 			}
-			
+
 			if (fromPos == startPos) return null;
 
 			return content.Substring(startPos, fromPos - startPos);

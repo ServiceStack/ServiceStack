@@ -643,6 +643,51 @@ Plain text in a comment
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
+		[Test]
+		public void Can_Render_MarkdownPage_with_unmatching_escaped_braces()
+		{
+			var template = @"# Dynamic If Markdown Template 
+Hello @Model.FirstName, { -- unmatched, leave unescaped outside statement
+
+{ -- inside matching braces, outside statement -- }
+
+@if (Model.LastName == ""Bellot"") {
+  * @Model.LastName
+
+{{ -- inside matching braces, escape inside statement -- }}
+
+{{ -- unmatched
+
+}
+
+### heading 3";
+
+			var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
+
+<p>Hello Demis, { -- unmatched, leave unescaped outside statement</p>
+
+<p>{ -- inside matching braces, outside statement -- }</p>
+
+<ul>
+<li>Bellot</li>
+</ul>
+
+<p>{ -- inside matching braces, escape inside statement -- }</p>
+
+<p>{ -- unmatched</p>
+
+<h3>heading 3</h3>
+".Replace("\r\n", "\n");
+
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
+			dynamicPage.Prepare();
+
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
 	}
 
 }
