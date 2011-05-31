@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints
 		private static readonly bool ServeDefaultHandler = false;
 
 		[ThreadStatic]
-		public static string DebugLastHandlerArgs = "";
+		public static string DebugLastHandlerArgs;
 
 		static ServiceStackHttpHandlerFactory()
 		{
@@ -40,11 +40,6 @@ namespace ServiceStack.WebHost.Endpoints
 				IsIntegratedPipeline = (bool)pi.GetGetMethod().Invoke(null, new object[0]);
 			}
 
-			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
-			WebHostPhysicalPath = isAspNetHost
-				? "~".MapHostAbsolutePath()
-				: "~".MapAbsolutePath();
-
 			if (EndpointHost.Config == null)
 			{
 				throw new ConfigurationErrorsException(
@@ -52,6 +47,9 @@ namespace ServiceStack.WebHost.Endpoints
 					+ "Make sure you have created an AppHost and started it with 'new AppHost().Init();' in your Global.asax Application_Start()",
 					new ArgumentNullException("EndpointHost.Config"));
 			}
+
+			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
+			WebHostPhysicalPath = EndpointHost.Config.WebHostPhysicalPath;
 
 			//Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
 			var hostedAtRootPath = EndpointHost.Config.ServiceStackHandlerFactoryPath == null;

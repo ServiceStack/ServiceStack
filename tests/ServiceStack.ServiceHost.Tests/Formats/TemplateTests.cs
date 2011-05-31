@@ -27,13 +27,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/AppData/Template/default.htm".MapAbsolutePath();
+			staticTemplatePath = "~/Views/Template/default.htm".MapAbsolutePath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
-			dynamicPagePath = "~/AppData/Template/DynamicTpl.md".MapAbsolutePath();
+			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapAbsolutePath();
 			dynamicPageContent = File.ReadAllText(dynamicPagePath);
 
-			dynamicListPagePath = "~/AppData/Template/DynamicListTpl.md".MapAbsolutePath();
+			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 
 			templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
@@ -686,7 +686,7 @@ Hello @Model.FirstName, { -- unmatched, leave unescaped outside statement
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		}
+		} 
 
 	}
 

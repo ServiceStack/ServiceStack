@@ -27,16 +27,27 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		string dynamicListPagePath;
 		string dynamicListPageContent;
 
+		readonly string[] viewPageNames = new[] {
+				"Dynamic", "DynamicListTpl", "DynamicNestedTpl", "DynamicTpl",
+			};
+		readonly string[] sharedViewPageNames = new[] {
+				"DynamicShared", "DynamicTplShared",
+			};
+		readonly string[] contentPageNames = new[] {
+				"Static", "StaticTpl",
+			};
+
+
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
 			staticTemplatePath = "~/AppData/Template/default.htm".MapAbsolutePath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
-			dynamicPagePath = "~/AppData/Template/DynamicTpl.md".MapAbsolutePath();
+			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapAbsolutePath();
 			dynamicPageContent = File.ReadAllText(dynamicPagePath);
 
-			dynamicListPagePath = "~/AppData/Template/DynamicListTpl.md".MapAbsolutePath();
+			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 		}
 
@@ -51,25 +62,23 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
 
-			var expectedPageNames = new[] {
-				"Dynamic", "Static", "DynamicListTpl", "DynamicNestedTpl", "DynamicTpl", "StaticTpl" 
-			};
-
-			Assert.That(markdownFormat.Pages.Count, Is.EqualTo(expectedPageNames.Length));
+			Assert.That(markdownFormat.ViewPages.Count, Is.EqualTo(viewPageNames.Length));
+			Assert.That(markdownFormat.ViewSharedPages.Count, Is.EqualTo(sharedViewPageNames.Length));
+			Assert.That(markdownFormat.ContentPages.Count, Is.EqualTo(contentPageNames.Length));
 			Assert.That(markdownFormat.PageTemplates.Count, Is.EqualTo(2));
 
 			var pageNames = new List<string>();
-			markdownFormat.Pages.ForEach((k, v) => pageNames.Add(k));
+			markdownFormat.ViewPages.ForEach((k, v) => pageNames.Add(k));
 
 			Console.WriteLine(pageNames.Dump());
-			Assert.That(pageNames.EquivalentTo(expectedPageNames));
+			Assert.That(pageNames.EquivalentTo(viewPageNames));
 		}
 
 		[Test]
 		public void Can_Render_StaticPage()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
-			var html = markdownFormat.RenderStaticPageHtml("Static");
+			var html = markdownFormat.RenderStaticPageHtml("~/AppData/NoTemplate/Static".MapAbsolutePath());
 
 			Assert.That(html, Is.Not.Null);
 			Assert.That(html, Is.StringStarting("<h1>Static Markdown template</h1>"));
@@ -79,7 +88,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_StaticPage_WithTemplate()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
-			var html = markdownFormat.RenderStaticPageHtml("StaticTpl");
+			var html = markdownFormat.RenderStaticPageHtml("~/AppData/Template/StaticTpl".MapAbsolutePath());
 
 			Console.WriteLine(html);
 

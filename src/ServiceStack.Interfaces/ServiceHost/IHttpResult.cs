@@ -5,13 +5,30 @@ namespace ServiceStack.ServiceHost
 {
 	public interface IHttpResult : IHasOptions
 	{
-		string ContentType { get; set; }
-
-		Dictionary<string, string> Headers { get; }
-
+		/// <summary>
+		/// The HTTP Response Status Code
+		/// </summary>
 		HttpStatusCode StatusCode { get; set; }
 
+		/// <summary>
+		/// The HTTP Response ContentType
+		/// </summary>
+		string ContentType { get; set; }
+
+		/// <summary>
+		/// Additional HTTP Headers
+		/// </summary>
+		Dictionary<string, string> Headers { get; }
+
+		/// <summary>
+		/// Response DTO
+		/// </summary>
 		object Response { get; set; }
+
+		/// <summary>
+		/// A specific template, if not the default (for HTML, Markdown, etc. ContentTypes)
+		/// </summary>
+		string TemplateName { get; set; }
 
 		/// <summary>
 		/// if not provided, get's injected by ServiceStack

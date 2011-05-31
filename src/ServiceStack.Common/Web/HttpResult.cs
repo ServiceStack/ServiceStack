@@ -109,6 +109,8 @@ namespace ServiceStack.Common.Web
 
 		public IRequestContext RequestContext { get; set; }
 
+		public string TemplateName { get; set; }
+
 		public void WriteTo(Stream responseStream)
 		{
 			if (this.FileInfo != null)

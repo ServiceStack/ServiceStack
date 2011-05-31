@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Markdown;
@@ -22,30 +21,38 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 
 		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents)
+			: this(markdown, fullPath, name, contents, MarkdownPageType.ViewPage)
+		{
+		}
+
+		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents, MarkdownPageType pageType)
 			: this()
 		{
 			Markdown = markdown;
 			FilePath = fullPath;
 			Name = name;
 			Contents = contents;
+			PageType = pageType;
 		}
 
 		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents, bool renderHtml)
-			: this(markdown, fullPath, name, contents)
+			: this(markdown, fullPath, name, contents, MarkdownPageType.ViewPage)
 		{
 			this.RenderHtml = renderHtml;
 		}
 
 		public MarkdownFormat Markdown { get; set; }
 
-		private int timesRun = 0;
+		private int timesRun;
 		private bool hasCompletedFirstRun;
 
+		public MarkdownPageType PageType { get; set; }
 		public string FilePath { get; set; }
 		public string Name { get; set; }
 		public string Contents { get; set; }
 		public string HtmlContents { get; set; }
 		public bool RenderHtml { get; set; }
+		public string TemplatePath { get; set; }
 		public EvaluatorExecutionContext ExecutionContext { get; private set; }
 
 		private Evaluator evaluator;
@@ -65,15 +72,6 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public int GetNextId()
 		{
 			return exprSeq++;
-		}
-
-		public string GetTemplatePath()
-		{
-			var tplName = Path.Combine(
-				Path.GetDirectoryName(this.FilePath),
-				MarkdownFormat.TemplateName);
-
-			return tplName;
 		}
 
 		public List<TemplateBlock> MarkdownBlocks { get; set; }

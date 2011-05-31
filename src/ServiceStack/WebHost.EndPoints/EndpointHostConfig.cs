@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Runtime.Serialization;
+using System.Web;
 using System.Web.Configuration;
 using MarkdownSharp;
 using ServiceStack.Common.Utils;
@@ -11,6 +12,7 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -29,12 +31,15 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				if (instance == null)
 				{
+					var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
+
 					instance = new EndpointHostConfig
 					{
 						UsageExamplesBaseUri = DefaultUsageExamplesBaseUri,
 						LogFactory = new NullLogFactory(),
 						EnableAccessRestrictions = true,
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
+					    WebHostPhysicalPath = isAspNetHost ? "~".MapHostAbsolutePath() : "~".MapAbsolutePath(),
 						ServiceStackHandlerFactoryPath = ServiceStackPath,
 						MetadataRedirectPath = null,
 						DefaultContentType = ContentType.Json,
@@ -176,6 +181,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public HashSet<string> AllowFileExtensions { get; set; }
 
+		public string WebHostPhysicalPath { get; set; }
 		public string ServiceStackHandlerFactoryPath { get; set; }
 		public string DefaultRedirectPath { get; set; }
 		public string MetadataRedirectPath { get; set; }

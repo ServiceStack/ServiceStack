@@ -28,6 +28,8 @@ namespace ServiceStack.Common.Web
 			set { throw new NotImplementedException(); }
 		}
 
+		public string TemplateName { get; set; }
+
 		public IContentTypeWriter ResponseFilter { get; set; }
 
 		public IRequestContext RequestContext { get; set; }

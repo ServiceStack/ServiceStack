@@ -214,6 +214,9 @@
     <Compile Include="ServiceHost\RestServiceAttribute.cs" />
     <Compile Include="ServiceHost\ServiceAttribute.cs" />
     <Compile Include="ServiceInterface.ServiceModel\CollectionTypes.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\ICacheByDateModified.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\ICacheByEtag.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\IHasAction.cs" />
     <Compile Include="ServiceInterface.ServiceModel\IHasResponseStatus.cs" />
     <Compile Include="ServiceInterface.ServiceModel\Property.cs" />
     <Compile Include="ServiceInterface.ServiceModel\ResponseError.cs" />

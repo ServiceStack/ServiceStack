@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				if (typeName == null) return null;
 
 				if (type.IsGenericType()
-					//FIX: support GenericTypeDefinition properly
+					//TODO: support GenericTypeDefinition properly
 					&& !type.IsGenericTypeDefinition 
 				)
 				{

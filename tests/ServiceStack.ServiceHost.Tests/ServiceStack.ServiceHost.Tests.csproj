@@ -110,7 +110,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="AppData\NoTemplate\Static.md" />
-    <None Include="AppData\NoTemplate\Dynamic.md" />
+    <None Include="Views\NoTemplate\Dynamic.md" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
     <Compile Include="Formats\MockClass.cs" />
     <Compile Include="Formats\TemplateExtentionTests.cs" />
@@ -148,6 +148,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AppData\Template\default.htm" />
+    <Content Include="Views\Template\default.htm" />
     <Content Include="lib\Funq.dll" />
     <Content Include="lib\hiro\Hiro.Containers.dll" />
     <Content Include="lib\hiro\Hiro.Containers.XML" />
@@ -190,9 +191,11 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="AppData\Template\DynamicNestedTpl.md" />
-    <None Include="AppData\Template\DynamicListTpl.md" />
-    <None Include="AppData\Template\DynamicTpl.md" />
+    <None Include="Views\Shared\DynamicShared.md" />
+    <None Include="Views\Shared\DynamicTplShared.md" />
+    <None Include="Views\Template\DynamicNestedTpl.md" />
+    <None Include="Views\Template\DynamicListTpl.md" />
+    <None Include="Views\Template\DynamicTpl.md" />
     <None Include="AppData\Template\StaticTpl.md" />
   </ItemGroup>
   <ItemGroup />
