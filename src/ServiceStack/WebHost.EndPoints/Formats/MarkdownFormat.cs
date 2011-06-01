@@ -68,13 +68,23 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			RegisterMarkdownPages(appHost.Config.WebHostPhysicalPath);
 
 			//Render HTML
-			HtmlFormat.ContentResolvers.Add((requestContext, dto, stream) => {
+			appHost.HtmlProviders.Add((requestContext, dto, stream) => {
 
+			    var httpReq = requestContext.Get<IHttpRequest>();
 				MarkdownPage markdownPage;
-				if ((markdownPage = GetViewPageByResponse(dto, requestContext.Get<IHttpRequest>())) == null)
+				if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
 					return false;
 
-				var markup = RenderStaticPage(markdownPage, true);
+				var renderInTemplate = true;
+				var renderHtml = true;
+				string format;
+				if (httpReq != null && (format = httpReq.QueryString["format"]) != null)
+				{
+					renderHtml = !format.StartsWithIgnoreCase("markdown");
+					renderInTemplate = !httpReq.GetFormatModifier().StartsWithIgnoreCase("bare");
+				}
+
+				var markup = RenderDynamicPage(markdownPage, dto, renderHtml, renderInTemplate);
 				var markupBytes = markup.ToUtf8Bytes();
 				stream.Write(markupBytes, 0, markupBytes.Length);
 				return true;
@@ -94,7 +104,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, requestContext)));
 
 			const bool renderHtml = false; //i.e. render Markdown
-			var markup = RenderStaticPage(markdownPage, renderHtml);
+			var markup = RenderStaticPage(markdownPage, renderHtml);	
 			var markupBytes = markup.ToUtf8Bytes();
 			stream.Write(markupBytes, 0, markupBytes.Length);
 		}
@@ -323,15 +333,21 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		public string RenderDynamicPage(string pageName, object model, bool renderHtml)
 		{
 			var markdownPage = GetViewPage(pageName);
+			return RenderDynamicPage(markdownPage, model, renderHtml, true);
+		}
+
+		private string RenderDynamicPage(MarkdownPage markdownPage, object model, bool renderHtml, bool renderTemplate)
+		{
 			if (markdownPage == null)
-				throw new InvalidDataException(ErrorPageNotFound.FormatWith(pageName));
+				throw new InvalidDataException(ErrorPageNotFound.FormatWith(markdownPage.Name));
 
 			var scopeArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, model } };
-
+			
 			var htmlPage = markdownPage.RenderToString(scopeArgs, renderHtml);
+			if (!renderTemplate) return htmlPage;
 
 			var html = RenderInTemplateIfAny(markdownPage.TemplatePath, htmlPage);
-
+			
 			return html;
 		}
 	}

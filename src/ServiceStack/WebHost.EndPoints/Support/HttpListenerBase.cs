@@ -310,6 +310,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
+		public List<StreamSerializerResolverDelegate> HtmlProviders
+		{
+			get
+			{
+				return EndpointHost.HtmlProviders;
+			}
+		}
+
 		public EndpointHostConfig Config
 		{
 			get { return EndpointHost.Config; }

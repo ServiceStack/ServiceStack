@@ -14,6 +14,8 @@ namespace ServiceStack.WebHost.Endpoints
 		
 		List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; }
 
+		List<StreamSerializerResolverDelegate> HtmlProviders { get; }
+
 		EndpointHostConfig Config { get; }
 	}
 }

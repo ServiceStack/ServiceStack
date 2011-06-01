@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Text;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -125,17 +126,17 @@ namespace ServiceStack.ServiceHost
 			return appUrl;
 		}
 
-		public static string GetHttpMethodOverride(this IHttpRequest request)
+		public static string GetHttpMethodOverride(this IHttpRequest httpReq)
 		{
-			var httpMethod = request.HttpMethod;
+			var httpMethod = httpReq.HttpMethod;
 
 			if (httpMethod != HttpMethods.Post)
 				return httpMethod;			
 
 			var overrideHttpMethod = 
-				request.Headers[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
-				?? request.FormData[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
-				?? request.QueryString[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty();
+				httpReq.Headers[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
+				?? httpReq.FormData[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
+				?? httpReq.QueryString[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty();
 
 			if (overrideHttpMethod != null)
 			{
@@ -144,6 +145,14 @@ namespace ServiceStack.ServiceHost
 			}
 
 			return httpMethod;
+		}
+
+		public static string GetFormatModifier(this IHttpRequest httpReq)
+		{
+			var format = httpReq.QueryString["format"];
+			if (format == null) return null;
+			var parts = format.SplitOnFirst('.');
+			return parts.Length > 1 ? parts[1] : null;
 		}
 
 	}

@@ -84,6 +84,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.ServiceInterface">
+      <HintPath>..\MasterHost\bin\ServiceStack.ServiceInterface.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -111,12 +114,16 @@
     <None Include="App.config" />
     <None Include="AppData\NoTemplate\Static.md" />
     <None Include="Views\NoTemplate\Dynamic.md" />
+    <Compile Include="AppData\NorthwindCustomers.cs" />
+    <Compile Include="AppData\FormatHelpers.cs" />
+    <Compile Include="AppData\NorthwindHelpers.cs" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
     <Compile Include="Formats\MockClass.cs" />
     <Compile Include="Formats\TemplateExtentionTests.cs" />
     <Compile Include="Formats\TemplateTests.cs" />
     <Compile Include="Formats\TextBlockTests.cs" />
     <Compile Include="Formats\TextBlockUtils.cs" />
+    <Compile Include="Formats\ViewTests.cs" />
     <Compile Include="PerfTests.cs" />
     <Compile Include="RestPathTests.cs" />
     <Compile Include="ServiceControllerPerfTests.cs" />
@@ -147,6 +154,8 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="AppData\ALFKI.json" />
+    <None Include="Views\Template\CustomerDetailsResponse.md" />
     <Content Include="AppData\Template\default.htm" />
     <Content Include="Views\Template\default.htm" />
     <Content Include="lib\Funq.dll" />
@@ -198,7 +207,9 @@
     <None Include="Views\Template\DynamicTpl.md" />
     <None Include="AppData\Template\StaticTpl.md" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="AppData\TestsResults\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

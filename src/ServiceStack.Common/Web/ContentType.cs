@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Web
 
 		public const string Html = "text/html";
 
-		public const string ServerHtml = "text/shtm";
+		public const string JsonReport = "text/jsonreport";
 
 		public const string Xml = "application/xml";
 

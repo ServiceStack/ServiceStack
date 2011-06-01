@@ -390,26 +390,26 @@ function enc(html) {{
 </body>
 </html>";
 
+		private static IAppHost AppHost { get; set; }
 		public static void Register(IAppHost appHost)
 		{
+			AppHost = appHost;
 			//Register this in ServiceStack with the custom formats
 			appHost.ContentTypeFilters.Register(ContentType.Html, SerializeToStream, null);
-			appHost.ContentTypeFilters.Register(ContentType.ServerHtml, SerializeToStream, null);
+			appHost.ContentTypeFilters.Register(ContentType.JsonReport, SerializeToStream, null);
 
 			appHost.Config.DefaultContentType = ContentType.Html;
 			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.Html.ToContentFormat());
-			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.ServerHtml.ToContentFormat());
+			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.JsonReport.ToContentFormat());
 		}
-
-		public static List<StreamSerializerResolverDelegate> ContentResolvers = new List<StreamSerializerResolverDelegate>();
 
 		public static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
 		{
-			if (ContentResolvers.Any(x => x(requestContext, dto, stream))) return;
+			if (AppHost.HtmlProviders.Any(x => x(requestContext, dto, stream))) return;
 
 			var httpReq = requestContext.Get<IHttpRequest>();
 			if (requestContext.ResponseContentType != ContentType.Html
-				&& httpReq.ResponseContentType != ContentType.ServerHtml) return;
+				&& httpReq.ResponseContentType != ContentType.JsonReport) return;
 
 			var json = JsonSerializer.SerializeToString(dto);
 

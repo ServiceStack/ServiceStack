@@ -136,7 +136,15 @@ namespace ServiceStack.WebHost.Endpoints
 				return EndpointHost.ResponseFilters;
 			}
 		}
-		
+
+		public List<StreamSerializerResolverDelegate> HtmlProviders
+		{
+			get
+			{
+				return EndpointHost.HtmlProviders;
+			}
+		}
+
 		public virtual object ExecuteService(object requestDto)
 		{
 			return ExecuteService(requestDto, EndpointAttributes.None);

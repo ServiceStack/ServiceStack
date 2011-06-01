@@ -255,7 +255,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				if (format.Length > formatMaxLength) return null;
 			}
 
-			format = format.ToLower();
+			format = format.SplitOnFirst('.')[0].ToLower();
 			if (format.Contains("json")) return ContentType.Json;
 			if (format.Contains("xml")) return ContentType.Xml;
 			if (format.Contains("jsv")) return ContentType.Jsv;
