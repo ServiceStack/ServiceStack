@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using ServiceStack.Markdown;
-using ServiceStack.WebHost.EndPoints.Formats;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
@@ -19,32 +21,101 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public string FilePath { get; set; }
 		public string Name { get; set; }
 		public string Contents { get; set; }
+		public DateTime? LastModified { get; set; }
 
-		public List<TemplateBlock> Blocks { get; set; }
+		public string[] TextBlocks { get; set; }
+		public string[] VarRefBlocks { get; set; }
+
+		public static string BodyPlaceHolder = "Body";
+		public static string PlaceHolderPrefix = "<!--@";
+		public static string PlaceHolderSuffix = "-->";
 
 		public void Prepare()
 		{
-			var blocks = this.Contents.SplitIntoBlocks(MarkdownFormat.TemplatePlaceHolder);
-			this.Blocks = new List<TemplateBlock>();
-			
-			if (blocks.Count == 0) return;
-			
-			this.Blocks.Add(blocks[0]);
-			if (blocks.Count == 1) return;
-			
-			this.Blocks.Add(new VarReferenceBlock(MarkdownPage.ModelName));
-			for (var i = 1; i < blocks.Count; i++)
+			if (this.Contents == null)
+				throw new ArgumentNullException("Contents");
+
+			var textBlocks = new List<string>();
+			var variablePositions = new Dictionary<int, string>();
+			int pos;
+			var lastPos = 0;
+			while ((pos = this.Contents.IndexOf(PlaceHolderPrefix, lastPos)) != -1)
 			{
-				this.Blocks.Add(blocks[i]);	
+				var contentBlock = this.Contents.Substring(lastPos, pos - lastPos);
+
+				textBlocks.Add(contentBlock);
+
+				var endPos = this.Contents.IndexOf(PlaceHolderSuffix, pos);
+				if (endPos == -1)
+					throw new InvalidDataException("Unterminated PlaceHolder expecting -->");
+
+				var varRef = this.Contents.Substring(
+					pos + PlaceHolderPrefix.Length, endPos - (pos + PlaceHolderPrefix.Length));
+
+				var index = textBlocks.Count;
+				variablePositions[index] = varRef;
+
+				lastPos = endPos + PlaceHolderSuffix.Length;
 			}
+			if (lastPos != this.Contents.Length - 1)
+			{
+				var lastBlock = this.Contents.Substring(lastPos);
+				textBlocks.Add(lastBlock);
+			}
+
+			this.TextBlocks = textBlocks.ToArray();
+			this.VarRefBlocks = new string[this.TextBlocks.Length];
+
+			foreach (var varPos in variablePositions)
+			{
+				this.VarRefBlocks[varPos.Key] = varPos.Value;
+			}
+		}
+
+		public string RenderToString(Dictionary<string, object> scopeArgs)
+		{
+			if (TextBlocks == null || VarRefBlocks == null)
+				throw new InvalidDataException("Template has not been Initialized.");
+
+			var sb = new StringBuilder();
+			for (var i = 0; i < TextBlocks.Length; i++)
+			{
+				var textBlock = TextBlocks[i];
+				var varName = VarRefBlocks[i];
+				if (varName != null && scopeArgs != null)
+				{
+					object varValue;
+					if (scopeArgs.TryGetValue(varName, out varValue))
+					{
+						sb.Append(varValue);
+					}
+				}
+				sb.Append(textBlock);
+			}
+			return sb.ToString();
 		}
 
 		public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
-			foreach (var block in Blocks)
+			if (TextBlocks == null || VarRefBlocks == null)
+				throw new InvalidDataException("Template has not been Initialized.");
+
+			for (var i = 0; i < TextBlocks.Length; i++)
 			{
-				block.Write(instance, textWriter, scopeArgs);
+				var textBlock = TextBlocks[i];
+				var varName = VarRefBlocks[i];
+				if (varName != null)
+				{
+					object varValue;
+					if (scopeArgs.TryGetValue(varName, out varValue))
+					{
+						textWriter.Write(varValue);
+					}
+				}
+				textWriter.Write(textBlock);
 			}
 		}
+
 	}
+
 }

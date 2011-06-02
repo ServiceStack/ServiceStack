@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Web;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -24,6 +25,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
 
+		public static List<HttpHandlerResolverDelegate> CatchAll { get; set; }
+
 		static EndpointHost()
 		{
 			ContentTypeFilter = HttpResponseFilter.Instance;
@@ -36,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
 			AppHost = appHost;
-
+			
 			EndpointHostConfig.Instance.ServiceName = serviceName;
 			EndpointHostConfig.Instance.ServiceManager = serviceManager;
 

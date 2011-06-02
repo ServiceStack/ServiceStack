@@ -240,10 +240,18 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				}
 				else
 				{
-					var memberExpr = content.GetNextMemberExpr(ref pos);
-					if (memberExpr != null)
+					var charBeforeAtSymbol = content.SafePeekAt(pos - 3);
+					if (!charBeforeAtSymbol.IsAlphaNumeric())
 					{
-						blocks.Add(new MemberExprBlock(memberExpr));
+						var memberExpr = content.GetNextMemberExpr(ref pos);
+						if (memberExpr != null)
+						{
+							blocks.Add(new MemberExprBlock(memberExpr));
+						}
+					}
+					else
+					{
+						prevTextBlock.Content += "@";
 					}
 				}
 
@@ -264,7 +272,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			var varExpr = content.GetNextAlphaNumericExpr(ref fromPos);
 			if (varExpr != null)
 			{
-				if (varExpr == "foreach" || varExpr == "if")
+				if (varExpr == "foreach" || varExpr == "if" || varExpr == "section")
 				{
 					var conditionEndPos = content.IndexOf(BeginStatementChar, fromPos);
 					if (conditionEndPos == -1)
@@ -281,7 +289,23 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 						return new ForEachStatementExprBlock(condition, statement);
 
 					if (varExpr == "if")
-						return new IfStatementExprBlock(condition, statement);
+					{
+						string elseStatement = null;
+						var nextWord = content.PeekWordAfterWhitespace(fromPos);
+						if (nextWord == "else")
+						{
+							//Skip past else
+							content.EatWhitespace(ref fromPos);
+							content.GetNextAlphaNumericExpr(ref fromPos);
+
+							elseStatement = content.EatStatementExpr(ref fromPos);
+						}
+
+						return new IfStatementExprBlock(condition, statement, elseStatement);
+					}
+
+					if (varExpr == "section")
+						return new SectionStatementExprBlock(condition, statement);
 				}
 				else if (varExpr == "var"
 					|| varExpr == "model"
@@ -321,6 +345,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				}
 			}
 			return index == content.Length ? '\0' : content[index];
+		}
+
+		public static string PeekWordAfterWhitespace(this string content, int index)
+		{
+			content.EatWhitespace(ref index);
+			var word = content.GetNextAlphaNumericExpr(ref index);
+			return word;
 		}
 
 		public static void EatWhitespace(this string content, ref int index)
@@ -410,6 +441,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return fromPos + 1 >= content.Length ? '\0' : content[fromPos + 1];
 		}
 
+		public static bool IsAlphaNumeric(this char c)
+		{
+			return c < AlphaNumericFlags.Length && AlphaNumericFlags[c];
+		}
+
 		private static string EatStatementExpr(this string content, ref int fromPos)
 		{
 			return EatBlockExpr(content, ref fromPos, BeginStatementChar, EndStatementChar, true);
@@ -444,7 +480,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			if (fromPos == startPos) return null;
 
-			return content.Substring(startPos, fromPos - startPos);
+			var memberExpr = content.Substring(startPos, fromPos - startPos);
+			if (memberExpr[memberExpr.Length-1] == '.')
+			{
+				memberExpr = memberExpr.Substring(0, memberExpr.Length - 1);
+				fromPos--;
+			}
+			return memberExpr;
 		}
 
 		public static string RemoveAllWhiteSpace(this string content)

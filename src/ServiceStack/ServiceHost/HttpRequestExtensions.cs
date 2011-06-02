@@ -155,5 +155,23 @@ namespace ServiceStack.ServiceHost
 			return parts.Length > 1 ? parts[1] : null;
 		}
 
+		public static bool HasNotModifiedSince(this IHttpRequest httpReq, DateTime dateTime)
+		{
+			var strHeader = httpReq.Headers[HttpHeaders.IfModifiedSince];
+			try
+			{
+				if (strHeader != null)
+				{
+					var dateIfModifiedSince = DateTime.ParseExact(strHeader, "r", null);
+					var utcFromDate = dateTime.ToUniversalTime();
+					return utcFromDate <= dateIfModifiedSince;
+				}
+				return false;
+			}
+			catch
+			{
+				return false;
+			}
+		}
 	}
 }

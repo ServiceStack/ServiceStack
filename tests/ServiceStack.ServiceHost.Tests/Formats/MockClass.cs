@@ -12,11 +12,11 @@ using ServiceStack.Markdown.Html;
 namespace CSharpEval
 {
 	public class _Expr
-	 : ServiceStack.Markdown.MarkdownViewBase<ServiceStack.ServiceHost.Tests.Formats.TemplateTests.Person>
+	 : ServiceStack.Markdown.MarkdownViewBase
 	{
-		public MvcHtmlString EvalExpr_1(ServiceStack.ServiceHost.Tests.Formats.TemplateTests.Person Model)
+		public System.Boolean EvalExpr_0(System.Collections.Generic.List<ServiceStack.ServiceHost.Tests.Formats.Product> products)
 		{
-			return (Html.TextBoxFor(m => m.FirstName));
+			return (products.Count == 0);
 		}
 	}
 }

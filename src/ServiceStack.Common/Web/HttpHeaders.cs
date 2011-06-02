@@ -4,6 +4,10 @@ namespace ServiceStack.Common.Web
 	{
 		public const string XHttpMethodOverrideKey = "X-HTTP-Method-Override";
 
+		public const string IfModifiedSince = "If-Modified-Since";
+
+		public const string LastModified = "Last-Modified";
+
 		public const string Accept = "Accept";
 
 		public const string AcceptEncoding = "Accept-Encoding";

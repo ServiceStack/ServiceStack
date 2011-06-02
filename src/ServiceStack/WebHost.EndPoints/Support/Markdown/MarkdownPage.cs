@@ -53,6 +53,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public string HtmlContents { get; set; }
 		public bool RenderHtml { get; set; }
 		public string TemplatePath { get; set; }
+		public DateTime? LastModified { get; set; }
 		public EvaluatorExecutionContext ExecutionContext { get; private set; }
 
 		private Evaluator evaluator;

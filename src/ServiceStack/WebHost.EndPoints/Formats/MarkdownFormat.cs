@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		private const string ErrorPageNotFound = "Could not find Markdown page '{0}'";
 
 		public static string TemplateName = "default.htm";
-		public static string TemplatePlaceHolder = "<!--@Content-->";
+		public static string TemplatePlaceHolder = "<!--@Body-->";
 
 		public static MarkdownFormat Instance = new MarkdownFormat();
 
@@ -198,6 +198,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 				yield return new MarkdownPage(this, markDownFile, pageName, pageContents, pageType) {
 					TemplatePath = templatePath,
+					LastModified = fileInfo.LastWriteTime,
 				};
 			}
 		}
@@ -232,7 +233,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			AddPage(markdownPage);
 		}
 
-		private void AddPage(MarkdownPage page)
+		public void AddPage(MarkdownPage page)
 		{
 			try
 			{
@@ -260,12 +261,17 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			
 			if (PageTemplates.ContainsKey(templatePath)) return;
 
-			var templateName = Path.GetFileName(templatePath).WithoutExtension();
-			var pageContents = File.ReadAllText(templatePath);
-			var template = new MarkdownTemplate(templatePath, templateName, pageContents);
-			
-			PageTemplates.Add(templatePath, template);
+			AddTemplate(templatePath, File.ReadAllText(templatePath));
+		}
 
+		public void AddTemplate(string templatePath, string templateContents)
+		{
+			var templateFile = new FileInfo(templatePath);
+			var templateName = templateFile.FullName.WithoutExtension();
+			var template = new MarkdownTemplate(templatePath, templateName, templateContents) {
+				LastModified = templateFile.LastWriteTime
+			};
+			PageTemplates.Add(templatePath, template);
 			try
 			{
 				template.Prepare();
@@ -311,16 +317,19 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			var pageHtml = Transform(markdownPage.Contents, renderHtml);
 			var templatePath = markdownPage.TemplatePath;
 
-			return RenderInTemplateIfAny(templatePath, pageHtml);
+			return RenderInTemplateIfAny(templatePath, null, pageHtml);
 		}
 
-		private string RenderInTemplateIfAny(string templatePath, string pageHtml)
+		private string RenderInTemplateIfAny(string templatePath, Dictionary<string, object> scopeArgs, string pageHtml)
 		{
 			if (templatePath == null) return pageHtml;
 
 			var markdownTemplate = PageTemplates[templatePath];
 
-			var htmlPage = markdownTemplate.Contents.ReplaceFirst(TemplatePlaceHolder, pageHtml);
+			if (scopeArgs != null)
+				scopeArgs[MarkdownTemplate.BodyPlaceHolder] = pageHtml;
+
+			var htmlPage = markdownTemplate.RenderToString(scopeArgs);
 
 			return htmlPage;
 		}
@@ -330,10 +339,14 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			return RenderDynamicPage(pageName, model, true);
 		}
 
+		public string RenderDynamicPageHtml(string pageName, Dictionary<string, object> scopeArgs)
+		{
+			return RenderDynamicPage(GetViewPage(pageName), scopeArgs, true, true);
+		}
+
 		public string RenderDynamicPage(string pageName, object model, bool renderHtml)
 		{
-			var markdownPage = GetViewPage(pageName);
-			return RenderDynamicPage(markdownPage, model, renderHtml, true);
+			return RenderDynamicPage(GetViewPage(pageName), model, renderHtml, true);
 		}
 
 		private string RenderDynamicPage(MarkdownPage markdownPage, object model, bool renderHtml, bool renderTemplate)
@@ -342,12 +355,16 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				throw new InvalidDataException(ErrorPageNotFound.FormatWith(markdownPage.Name));
 
 			var scopeArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, model } };
-			
+
+			return RenderDynamicPage(markdownPage, scopeArgs, renderHtml, renderTemplate);
+		}
+
+		public string RenderDynamicPage(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
+			bool renderHtml, bool renderTemplate)
+		{
 			var htmlPage = markdownPage.RenderToString(scopeArgs, renderHtml);
 			if (!renderTemplate) return htmlPage;
-
-			var html = RenderInTemplateIfAny(markdownPage.TemplatePath, htmlPage);
-			
+			var html = RenderInTemplateIfAny(markdownPage.TemplatePath, scopeArgs, htmlPage);
 			return html;
 		}
 	}

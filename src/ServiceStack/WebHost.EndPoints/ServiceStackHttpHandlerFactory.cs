@@ -100,8 +100,7 @@ namespace ServiceStack.WebHost.Endpoints
 				? defaultRedirectHanlder.RelativeUrl
 				: typeof(DefaultHttpHandler).Name;
 
-			ForbiddenHttpHandler = new ForbiddenHttpHandler
-			{
+			ForbiddenHttpHandler = new ForbiddenHttpHandler {
 				IsIntegratedPipeline = IsIntegratedPipeline,
 				WebHostPhysicalPath = WebHostPhysicalPath,
 				WebHostRootFileNames = WebHostRootFileNames,
@@ -111,8 +110,7 @@ namespace ServiceStack.WebHost.Endpoints
 			};
 
 			NotFoundHttpHandler = string.IsNullOrEmpty(EndpointHost.Config.NotFoundRedirectPath)
-				? (IHttpHandler)new NotFoundHttpHandler
-				{
+				? (IHttpHandler)new NotFoundHttpHandler {
 					IsIntegratedPipeline = IsIntegratedPipeline,
 					WebHostPhysicalPath = WebHostPhysicalPath,
 					WebHostRootFileNames = WebHostRootFileNames,
@@ -289,9 +287,10 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
-			return restPath != null
-				? new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name }
-				: null;
+			if (restPath != null)
+				return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name };
+
+			return null;
 		}
 
 		private static IHttpHandler GetHandlerForPathParts(string[] pathParts)
@@ -370,13 +369,11 @@ namespace ServiceStack.WebHost.Endpoints
 
 						var format = Common.Web.ContentType.GetContentFormat(contentType);
 						if (pathAction == "syncreply")
-							return new GenericHandler(contentType, EndpointAttributes.SyncReply, feature)
-							{
+							return new GenericHandler(contentType, EndpointAttributes.SyncReply, feature) {
 								RequestName = requestName
 							};
 						if (pathAction == "asynconeway")
-							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay, feature)
-							{
+							return new GenericHandler(contentType, EndpointAttributes.AsyncOneWay, feature) {
 								RequestName = requestName
 							};
 						if (pathAction == "metadata")

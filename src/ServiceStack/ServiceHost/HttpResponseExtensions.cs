@@ -81,7 +81,7 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public static void SetSessionCookie(this IHttpResponse httpRes, string cookieName, string cookieValue)
 		{
-			var cookie = string.Format("{0}={1};path=/", cookieName, cookieValue);
+			var cookie = String.Format("{0}={1};path=/", cookieName, cookieValue);
 			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
 		}
 
@@ -101,7 +101,7 @@ namespace ServiceStack.ServiceHost
 			string cookieValue, DateTime expiresAt, string path)
 		{
 			path = path ?? "/";
-			var cookie = string.Format("{0}={1};expires={2};path={3}", cookieName, cookieValue, expiresAt.ToString("R"), path);
+			var cookie = String.Format("{0}={1};expires={2};path={3}", cookieName, cookieValue, expiresAt.ToString("R"), path);
 			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
 		}
 
@@ -110,9 +110,15 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public static void DeleteCookie(this IHttpResponse httpRes, string cookieName)
 		{
-			var cookie = string.Format("{0}=;expires={1};path=/",
+			var cookie = String.Format("{0}=;expires={1};path=/",
 				cookieName, DateTime.UtcNow.AddDays(-1).ToString("R"));
 			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
+		}
+
+		public static void AddHeaderLastModified(this IHttpResponse httpRes, DateTime lastModified)
+		{
+			var lastWt = lastModified.ToUniversalTime();
+			httpRes.AddHeader(HttpHeaders.LastModified, lastWt.ToString("r"));
 		}
 	}
 }

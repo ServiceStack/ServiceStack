@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -118,7 +117,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var html = GetHtml(response, "markdown");
 
 			Console.WriteLine(html);
-			File.WriteAllText("~/AppData/TestsResults/CustomerDetailsResponse.md".MapAbsolutePath(), html);
+			File.WriteAllText("~/AppData/TestsResults/CustomerDetailsResponse.txt".MapAbsolutePath(), html);
 
 			Assert.That(html.StartsWith("<!doctype html>"));
 			Assert.That(html.Contains("# Maria Anders Customer Details (Berlin, Germany)"));

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml;
@@ -195,12 +196,9 @@ namespace CSharpEval
 					var typeName = GetTypeName(param.Value);
 					sbParams.AppendFormat("{0} {1}", typeName, param.Key);
 
-					var typeAssembly = param.Value.Assembly;
-					if (!assemblies.Contains(typeAssembly))
-					{
-						assemblies.Add(typeAssembly);
-						cp.ReferencedAssemblies.Add(typeAssembly.Location);
-					}
+					var paramType = param.Value;
+
+					ReferenceAssembliesIfNotExists(cp, paramType, assemblies);
 				}
 
 				code.AppendFormat("    public {0} {1}({2})",
@@ -231,6 +229,27 @@ namespace CSharpEval
 			compiled = compiledAssembly.CreateInstance("CSharpEval._Expr");
 			compiledType = compiled.GetType();
 			compiledTypeCtorFn = Text.ReflectionExtensions.GetConstructorMethodToCache(compiledType);
+		}
+
+		private static void ReferenceAssembliesIfNotExists(CompilerParameters cp, Type paramType, List<Assembly> assemblies)
+		{
+			var typeAssemblies = new List<Assembly>();
+
+			var typeAssembly = paramType.Assembly;
+			if (!assemblies.Contains(typeAssembly))
+				typeAssemblies.Add(typeAssembly);
+
+			if (paramType.IsGenericType)
+			{
+				var genericArgs = paramType.GetGenericArguments();
+				typeAssemblies.AddRange(genericArgs.Select(x => x.Assembly));
+			}
+
+			foreach (var assembly in typeAssemblies)
+			{
+				assemblies.Add(assembly);
+				cp.ReferencedAssemblies.Add(assembly.Location);
+			}
 		}
 
 		private void AddPropertiesToTypeIfAny(StringBuilder code)

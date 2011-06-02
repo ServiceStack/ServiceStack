@@ -109,6 +109,7 @@ namespace ServiceStack.Markdown
 
 		public virtual void PopulateModelState()
 		{
+			if (model == null) return;
 			var strModel = TypeSerializer.SerializeToString(model);
 			var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(strModel);
 			foreach (var kvp in map)

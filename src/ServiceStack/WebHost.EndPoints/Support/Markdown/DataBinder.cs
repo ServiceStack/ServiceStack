@@ -18,10 +18,17 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				body = Expression.PropertyOrField(body, members[i]);
 			}
 
+			body = CallConvertToString(body);
+
+			return Expression.Lambda<Func<object, string>>(body, param).Compile();
+		}
+
+		private static Expression CallConvertToString(Expression body)
+		{
 			var method = typeof(Convert).GetMethod("ToString",
 				BindingFlags.Static | BindingFlags.Public,
 				null, new[] { body.Type }, null);
-
+			
 			if (method == null)
 			{
 				method = typeof(Convert).GetMethod("ToString",
@@ -35,7 +42,36 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				body = Expression.Call(method, body);
 			}
 
-			return Expression.Lambda<Func<object, string>>(body, param).Compile();
+			return body;
+		}
+
+		private static Type GetStaticType(string typeName)
+		{
+			var type = Type.GetType("System." + typeName);
+			return type;
+		}
+
+		public static Func<string> CompileStaticAccessToString(string expr)
+		{
+			if (string.IsNullOrEmpty(expr)) return null;
+
+			var members = expr.Split('.');
+
+			var type = GetStaticType(members[0]);
+			if (type == null || members.Length <= 1) return null;
+
+			var firstPropertyAccess = members[1];
+			Expression body = Expression.Property(null, type.GetProperty(firstPropertyAccess));
+			for (var i = 2; i < members.Length; i++)
+			{
+				body = Expression.PropertyOrField(body, members[i]);
+			}
+			
+			body = Expression.Convert(body, typeof(object));
+			body = CallConvertToString(body);
+			
+			var fn = Expression.Lambda<Func<string>>(body).Compile();
+			return fn;
 		}
 
 		public static Func<object, object> Compile(Type type, string expr)

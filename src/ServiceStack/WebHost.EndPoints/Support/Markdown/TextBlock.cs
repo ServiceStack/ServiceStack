@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Web;
@@ -121,6 +122,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 	{
 		private static ILog Log = LogManager.GetLogger(typeof(MemberExprBlock));
 
+		private string memberExpr;
 		private readonly string modelMemberExpr;
 		private readonly string varName;
 
@@ -133,6 +135,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		{
 			try
 			{
+				this.memberExpr = memberExpr;
 				this.varName = memberExpr.GetVarName();
 				this.modelMemberExpr = varName != memberExpr
 					? memberExpr.Substring(this.varName.Length + 1)
@@ -145,6 +148,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 
 		private Func<object, string> valueFn;
+		private Func<string> staticValueFn;
+
 		protected override void OnFirstRun()
 		{
 			base.OnFirstRun();
@@ -156,6 +161,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					? Convert.ToString
 					: DataBinder.CompileToString(memberExprValue.GetType(), modelMemberExpr);
 			}
+			else
+			{
+				staticValueFn = DataBinder.CompileStaticAccessToString(memberExpr);
+			}
 		}
 
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
@@ -163,7 +172,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			object memberExprValue;
 			if (!scopeArgs.TryGetValue(this.varName, out memberExprValue))
 			{
-				textWriter.Write(modelMemberExpr);
+				if (staticValueFn != null)
+				{
+					var strValue = this.staticValueFn();
+					textWriter.Write(HttpUtility.HtmlEncode(strValue));
+				}
+				else
+				{
+					textWriter.Write(this.memberExpr);
+				}
 				return;
 			}
 
@@ -171,6 +188,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			try
 			{
+				if (memberExprValue is MvcHtmlString)
+				{
+					textWriter.Write(memberExprValue);
+					return;
+				}
+
 				var strValue = this.ReferencesSelf
 					? Convert.ToString(memberExprValue)
 					: valueFn(memberExprValue);
@@ -198,7 +221,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public List<TemplateBlock> ChildBlocks { get; set; }
 
-		protected void Prepare(List<StatementExprBlock> allStatements)
+		protected virtual void Prepare(List<StatementExprBlock> allStatements)
 		{
 			if (this.Statement.IsNullOrEmpty()) return;
 
@@ -207,22 +230,22 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			this.ChildBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
 			this.ChildBlocks.ForEach(x => x.IsNested = true);
 
-			RemoveTrailingNewLineIfProceedsStatement();
+			RemoveTrailingNewLineIfProceedsStatement(this.ChildBlocks);
 		}
 
-		private void RemoveTrailingNewLineIfProceedsStatement()
+		internal static void RemoveTrailingNewLineIfProceedsStatement(List<TemplateBlock> childBlocks)
 		{
-			if (this.ChildBlocks.Count < 2) return;
+			if (childBlocks.Count < 2) return;
 
-			var lastIndex = this.ChildBlocks.Count - 1;
-			if (!(this.ChildBlocks[lastIndex - 1] is StatementExprBlock)) return;
+			var lastIndex = childBlocks.Count - 1;
+			if (!(childBlocks[lastIndex - 1] is StatementExprBlock)) return;
 
-			var textBlock = this.ChildBlocks[lastIndex] as TextBlock;
+			var textBlock = childBlocks[lastIndex] as TextBlock;
 			if (textBlock == null) return;
 
 			if (textBlock.Content == "\r\n")
 			{
-				this.ChildBlocks.RemoveAt(lastIndex);
+				childBlocks.RemoveAt(lastIndex);
 			}
 		}
 
@@ -544,6 +567,37 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		}
 	}
 
+	public class SectionStatementExprBlock : StatementExprBlock
+	{
+		public string SectionName { get; set; }
+
+		public SectionStatementExprBlock(string condition, string statement) 
+			: base(condition, statement)
+		{
+			Prepare();
+		}
+
+		public void Prepare()
+		{
+			this.SectionName = Condition.Trim();
+		}
+
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			//Don't output anything, capture all output and store it in scopeArgs[SectionName]
+			var sb = new StringBuilder();
+			using (var sw = new StringWriter(sb))
+			{
+				base.Write(instance, sw, scopeArgs);
+			}
+
+			var markdown = sb.ToString();
+			var renderedMarkup = Transform(markdown);
+			scopeArgs[SectionName] = MvcHtmlString.Create(renderedMarkup);
+		}
+	}
+
+
 	public abstract class EvalExprStatementBase : StatementExprBlock
 	{
 		protected EvalExprStatementBase(string condition, string statement)
@@ -660,18 +714,73 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 	public class IfStatementExprBlock : EvalExprStatementBase
 	{
-		public IfStatementExprBlock(string condition, string statement)
+		public string ElseStatement { get; set; }
+
+		public IfStatementExprBlock(string condition, string statement, string elseStatement)
 			: base(condition, statement)
 		{
 			this.ReturnType = typeof(bool);
+			this.ElseStatement = elseStatement;
 		}
 
+		public List<TemplateBlock> ElseChildBlocks { get; set; }
+
+		protected override void Prepare(List<StatementExprBlock> allStatements)
+		{
+			base.Prepare(allStatements);
+
+			if (this.ElseStatement.IsNullOrEmpty()) return;
+
+			var parsedStatement = Extract(this.ElseStatement, allStatements);
+
+			this.ElseChildBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
+			this.ElseChildBlocks.ForEach(x => x.IsNested = true);
+
+			RemoveTrailingNewLineIfProceedsStatement(this.ElseChildBlocks);
+		}
+		
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			var resultCondition = Evaluate<bool>(scopeArgs);
-			if (!resultCondition) return;
+			if (resultCondition)
+			{
+				WriteStatement(instance, textWriter, scopeArgs);
+			}
+			else
+			{
+				if (ElseStatement != null && this.ElseChildBlocks.Count > 0)
+				{
+					WriteElseStatement(instance, textWriter, scopeArgs);
+				}
+			}
+		}
 
-			WriteStatement(instance, textWriter, scopeArgs);
+		protected void WriteElseStatement(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
+		{
+			if (IsNested)
+			{
+				//Write Markdown
+				foreach (var templateBlock in ElseChildBlocks)
+				{
+					templateBlock.Write(instance, textWriter, scopeArgs);
+				}
+			}
+			else
+			{
+				//Buffer Markdown output before converting and writing HTML
+				var sb = new StringBuilder();
+				using (var sw = new StringWriter(sb))
+				{
+					foreach (var templateBlock in ElseChildBlocks)
+					{
+						templateBlock.Write(instance, sw, scopeArgs);
+					}
+				}
+
+				var markdown = sb.ToString();
+				var html = Transform(markdown);
+				textWriter.Write(html);
+			}
 		}
 	}
 

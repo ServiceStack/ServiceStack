@@ -117,7 +117,10 @@
     <Compile Include="AppData\NorthwindCustomers.cs" />
     <Compile Include="AppData\FormatHelpers.cs" />
     <Compile Include="AppData\NorthwindHelpers.cs" />
+    <Compile Include="Formats\ExpressionTests.cs" />
+    <Compile Include="Formats\IntroductionExampleTests.cs" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
+    <Compile Include="Formats\MarkdownTestBase.cs" />
     <Compile Include="Formats\MockClass.cs" />
     <Compile Include="Formats\TemplateExtentionTests.cs" />
     <Compile Include="Formats\TemplateTests.cs" />

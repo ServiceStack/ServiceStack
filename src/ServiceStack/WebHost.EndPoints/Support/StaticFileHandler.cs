@@ -71,29 +71,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					throw new HttpException(404, "File '" + request.PathInfo + "' not found.");
 			}
 
-
-			var strHeader = request.Headers["If-Modified-Since"];
-			try
+			if (request.HasNotModifiedSince(fi.LastWriteTime))
 			{
-				if (strHeader != null)
-				{
-					var dtIfModifiedSince = DateTime.ParseExact(strHeader, "r", null);
-					var ftime = fi.LastWriteTime.ToUniversalTime();
-					if (ftime <= dtIfModifiedSince)
-					{
-						response.ContentType = MimeTypes.GetMimeType(fileName);
-						response.StatusCode = 304;
-						return;
-					}
-				}
+				response.ContentType = MimeTypes.GetMimeType(fileName);
+				response.StatusCode = 304;
+				return;
 			}
-			catch { }
 
 			try
 			{
-				var lastWT = fi.LastWriteTime.ToUniversalTime();
-				response.AddHeader("Last-Modified", lastWT.ToString("r"));
-
+				response.AddHeaderLastModified(fi.LastWriteTime);
 				response.ContentType = MimeTypes.GetMimeType(fileName);
 
 				if (!Env.IsMono)
