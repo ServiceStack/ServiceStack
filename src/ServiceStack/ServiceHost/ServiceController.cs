@@ -69,7 +69,7 @@ namespace ServiceStack.ServiceHost
 		{
 			foreach (var serviceType in ResolveServicesFn())
 			{
-				if (serviceType.IsAbstract || serviceType.IsGenericTypeDefinition) continue;
+				if (serviceType.IsAbstract || serviceType.ContainsGenericParameters) continue;
 
 				foreach (var service in serviceType.GetInterfaces())
 				{

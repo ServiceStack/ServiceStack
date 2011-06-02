@@ -4,26 +4,26 @@ using System;
 
 namespace ServiceStack.ServiceHost.Tests.Support
 {
-    [DataContract]
     public class Generic1 { }
 
-    [DataContract]
-    public class Generic1Response { }
+    public class Generic1Response
+    {
+        public string Data { get; set; }
+    }
 
-    [DataContract]
     public class Generic2 { }
 
     [DataContract]
-    public class Generic2Response { }
+    public class Generic3<T>
+    {
+        public T Data { get; set; }
+    }
 
 	public class GenericService<T> : IService<T>
 	{
         public object Execute(T request)
         {
-            // Find the rewsponse type within the same namespace and assembly as the request
-            var responseType = typeof(T).Assembly.GetType(typeof(T).FullName + "Response");
-
-            return Activator.CreateInstance(responseType);
+            return new Generic1Response() { Data = request.GetType().FullName };
         }
     }
 }
