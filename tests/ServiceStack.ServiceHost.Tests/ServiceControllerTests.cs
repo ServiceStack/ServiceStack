@@ -85,5 +85,41 @@ namespace ServiceStack.ServiceHost.Tests
 
             Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
         }
+
+        [Test]
+        public void Generic_service_with_recursive_ceneric_type_should_not_get_registered()
+        {
+            // Tell manager to register GenericService<Generic3<>>, which should not be possible since Generic3<> is an open type
+            var serviceManager = new ServiceManager(null, new ServiceController(() => new[] { typeof(GenericService<>).MakeGenericType(new[] { typeof(Generic3<>) }) }));
+
+            serviceManager.Init();
+
+            var serviceController = serviceManager.ServiceController;
+            var exception = Assert.Throws<System.NotImplementedException>(() => serviceController.GetService(typeof(Generic3<>)));
+
+            Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+        }
+
+        [Test]
+        public void Generic_service_can_be_registered_with_closed_types()
+        {
+            var serviceManager = new ServiceManager(null, new ServiceController(() => new[]
+            {
+                typeof(GenericService<Generic1>),
+                typeof(GenericService<>).MakeGenericType(new[] { typeof (Generic2) }), // GenericService<Generic2> created through reflection
+                typeof(GenericService<Generic3<string>>),
+                typeof(GenericService<Generic3<int>>),
+                typeof(GenericService<>).MakeGenericType(new[] { typeof (Generic3<>).MakeGenericType(new[] { typeof(double) }) }), // GenericService<Generic3<double>> created through reflection
+            }));
+
+            serviceManager.Init();
+            var serviceController = serviceManager.ServiceController;
+
+            Assert.AreEqual(typeof(Generic1).FullName, ((Generic1Response)serviceController.Execute(new Generic1())).Data);
+            Assert.AreEqual(typeof(Generic2).FullName, ((Generic1Response)serviceController.Execute(new Generic2())).Data);
+            Assert.AreEqual(typeof(Generic3<string>).FullName, ((Generic1Response)serviceController.Execute(new Generic3<string>())).Data);
+            Assert.AreEqual(typeof(Generic3<int>).FullName, ((Generic1Response)serviceController.Execute(new Generic3<int>())).Data);
+            Assert.AreEqual(typeof(Generic3<double>).FullName, ((Generic1Response)serviceController.Execute(new Generic3<double>())).Data);
+        }
 	}
 }
