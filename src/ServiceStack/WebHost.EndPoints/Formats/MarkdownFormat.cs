@@ -9,7 +9,6 @@ using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.EndPoints.Support.Markdown;
 
 namespace ServiceStack.WebHost.EndPoints.Formats
@@ -264,7 +263,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			AddTemplate(templatePath, File.ReadAllText(templatePath));
 		}
 
-		public void AddTemplate(string templatePath, string templateContents)
+		public MarkdownTemplate AddTemplate(string templatePath, string templateContents)
 		{
 			var templateFile = new FileInfo(templatePath);
 			var templateName = templateFile.FullName.WithoutExtension();
@@ -275,11 +274,12 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			try
 			{
 				template.Prepare();
-				PageTemplates.Add(template.FilePath, template);
+				return template;
 			}
 			catch (Exception ex)
 			{
 				Log.Error("AddViewPage() template.Prepare(): " + ex.Message, ex);
+				return null;
 			}
 		}
 
@@ -315,16 +315,33 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		private string RenderStaticPage(MarkdownPage markdownPage, bool renderHtml)
 		{
 			var pageHtml = Transform(markdownPage.Contents, renderHtml);
-			var templatePath = markdownPage.TemplatePath;
 
-			return RenderInTemplateIfAny(templatePath, null, pageHtml);
+			return RenderInTemplateIfAny(markdownPage, null, pageHtml);
 		}
 
-		private string RenderInTemplateIfAny(string templatePath, Dictionary<string, object> scopeArgs, string pageHtml)
+		private string RenderInTemplateIfAny(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, string pageHtml)
 		{
-			if (templatePath == null) return pageHtml;
+			MarkdownTemplate markdownTemplate = null;
+			var directiveTemplatePath = markdownPage.DirectiveTemplatePath;
+			if (directiveTemplatePath != null)
+			{
+				if (!PageTemplates.TryGetValue(directiveTemplatePath, out markdownTemplate))
+				{
+					if (!File.Exists(directiveTemplatePath))
+						throw new FileNotFoundException("Could not find template: " + directiveTemplatePath);
 
-			var markdownTemplate = PageTemplates[templatePath];
+					var templateContents = File.ReadAllText(directiveTemplatePath);
+					markdownTemplate = AddTemplate(directiveTemplatePath, templateContents);
+				}
+			}
+
+			if (markdownTemplate == null)
+			{
+				var templatePath = markdownPage.TemplatePath;
+				if (templatePath == null) return pageHtml;
+
+				markdownTemplate = PageTemplates[templatePath];
+			}
 
 			if (scopeArgs != null)
 				scopeArgs[MarkdownTemplate.BodyPlaceHolder] = pageHtml;
@@ -337,6 +354,11 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		public string RenderDynamicPageHtml(string pageName, object model)
 		{
 			return RenderDynamicPage(pageName, model, true);
+		}
+
+		public string RenderDynamicPageHtml(string pageName)
+		{
+			return RenderDynamicPage(GetViewPage(pageName), new Dictionary<string, object>(), true, true);
 		}
 
 		public string RenderDynamicPageHtml(string pageName, Dictionary<string, object> scopeArgs)
@@ -362,9 +384,13 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		public string RenderDynamicPage(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
 			bool renderHtml, bool renderTemplate)
 		{
+			scopeArgs = scopeArgs ?? new Dictionary<string, object>();
 			var htmlPage = markdownPage.RenderToString(scopeArgs, renderHtml);
 			if (!renderTemplate) return htmlPage;
-			var html = RenderInTemplateIfAny(markdownPage.TemplatePath, scopeArgs, htmlPage);
+
+			var html = RenderInTemplateIfAny(
+				markdownPage, scopeArgs, htmlPage);
+
 			return html;
 		}
 	}

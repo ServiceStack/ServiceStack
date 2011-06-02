@@ -1,5 +1,8 @@
 using System.IO;
+using System.Web;
+using ServiceStack.Common.Utils;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.ServiceHost
 {
@@ -16,6 +19,21 @@ namespace ServiceStack.ServiceHost
 		public static void WriteTo(this IFile file, Stream stream)
 		{
 			file.InputStream.WriteTo(stream);
+		}
+
+		public static string MapServerPath(this string relativePath)
+		{
+			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
+			return isAspNetHost
+			       ? relativePath.MapHostAbsolutePath()
+			       : relativePath.MapAbsolutePath();
+		}
+
+		public static bool IsRelativePath(this string relativeOrAbsolutePath)
+		{
+			return !relativeOrAbsolutePath.Contains(":")
+				&& !relativeOrAbsolutePath.StartsWith("/") 
+				&& !relativeOrAbsolutePath.StartsWith("\\");
 		}
 	}
 }

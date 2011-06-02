@@ -28,7 +28,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		string dynamicListPageContent;
 
 		readonly string[] viewPageNames = new[] {
-				"Dynamic", "CustomerDetailsResponse", "DynamicListTpl", "DynamicNestedTpl", "DynamicTpl", 
+				"Dynamic", "Customer", "CustomerDetailsResponse", "DynamicListTpl", 
+				"DynamicNestedTpl", "DynamicTpl", 
 			};
 		readonly string[] sharedViewPageNames = new[] {
 				"DynamicShared", "DynamicTplShared",

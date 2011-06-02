@@ -460,9 +460,9 @@ Demis / Bellot
 		}
 
 		[Test]
-		public void Can_Render_MarkdownPage_with_external_helper_using_usehelper_directive()
+		public void Can_Render_MarkdownPage_with_external_helper_using_helper_directive()
 		{
-			var template = @"@usehelper Ext: ServiceStack.ServiceHost.Tests.Formats.TemplateTests+CustomMarkdownHelper
+			var template = @"@helper Ext: ServiceStack.ServiceHost.Tests.Formats.TemplateTests+CustomMarkdownHelper
 # View Page with Custom Helper
 
 ## External Helper 

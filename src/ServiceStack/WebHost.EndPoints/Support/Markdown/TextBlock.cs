@@ -16,12 +16,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
 	public class PageContext
 	{
-		public PageContext() {}
+		public PageContext() { }
 
 		public PageContext(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, bool renderHtml)
 		{
 			MarkdownPage = markdownPage;
-			ScopeArgs = scopeArgs;
+			ScopeArgs = scopeArgs ?? new Dictionary<string, object>();
 			RenderHtml = renderHtml;
 		}
 
@@ -64,7 +64,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			OnAfterFirstRun();
 		}
 
-		protected virtual void OnFirstRun() {}
+		protected virtual void OnFirstRun() { }
 		protected virtual void OnAfterFirstRun() { }
 
 		public void AddEvalItem(EvaluatorItem evalItem)
@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public string Transform(string markdownText)
 		{
-			return this.RenderHtml 
+			return this.RenderHtml
 				? Page.Markdown.Transform(markdownText)
 				: markdownText;
 		}
@@ -303,7 +303,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			var lastPos = 0;
 			while ((pos = content.IndexOf('@', lastPos)) != -1)
 			{
-				var peekChar = content.Substring(pos+1, 1);
+				var peekChar = content.Substring(pos + 1, 1);
 				var isComment = peekChar == "*";
 				if (isComment)
 				{
@@ -383,14 +383,32 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public Dictionary<string, Type> Helpers { get; set; }
 
+		public string TemplatePath { get; set; }
+
 		protected Dictionary<string, Func<object, object>> VarDeclarations { get; set; }
 
 		public Type GetType(string typeName)
 		{
 			var type = AssemblyUtils.FindType(typeName);
 			if (type == null)
-				throw new TypeLoadException("Could not load type: " + typeName);
-			
+			{
+				var parts = typeName.Split(new[] { '<', '>' });
+				if (parts.Length > 1)
+				{
+					var genericTypeName = parts[0];
+					var genericArgNames = parts[1].Split(',');
+					var genericDefinitionName = genericTypeName + "`" + genericArgNames.Length;
+					var genericDefinition = Type.GetType(genericDefinitionName);
+					var argTypes = genericArgNames.Select(AssemblyUtils.FindType).ToArray();
+					var concreteType = genericDefinition.MakeGenericType(argTypes);
+					type = concreteType;
+				}
+				else
+				{
+					throw new TypeLoadException("Could not load type: " + typeName);
+				}
+			}
+
 			return type;
 		}
 
@@ -424,17 +442,17 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					this.GenericArgs = new[] { GetType(parts[1]) };
 				}
 			}
-			else if (directive == "usehelper")
+			else if (directive == "helper")
 			{
 				var helpers = line.Split(',');
 				this.Helpers = new Dictionary<string, Type>();
-				
+
 				foreach (var helper in helpers)
 				{
 					var parts = helper.Split(':');
 					if (parts.Length != 2)
 						throw new InvalidDataException(
-							"Invalid usehelper directive, should be 'TagName: Helper.Namespace.And.Type'");
+							"Invalid helper directive, should be 'TagName: Helper.Namespace.And.Type'");
 
 					var tagName = parts[0].Trim();
 					var typeName = parts[1].Trim();
@@ -445,6 +463,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 					this.Helpers[tagName] = helperType;
 				}
+			}
+			else if (directive == "template" || directive == "layoutpage")
+			{
+				this.TemplatePath = line.Trim();
 			}
 		}
 
@@ -466,7 +488,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
-		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs) {}
+		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs) { }
 	}
 
 
@@ -571,7 +593,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 	{
 		public string SectionName { get; set; }
 
-		public SectionStatementExprBlock(string condition, string statement) 
+		public SectionStatementExprBlock(string condition, string statement)
 			: base(condition, statement)
 		{
 			Prepare();
@@ -675,7 +697,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			this.ReturnType = typeof(object);
 		}
-		
+
 		protected override void OnFirstRun()
 		{
 			if (varName != null)
@@ -697,7 +719,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			var exprParams = GetExprParams();
 			var evaluator = new Evaluator(ReturnType, Condition, methodName, exprParams);
 			var result = evaluator.Evaluate(methodName, GetParamValues(ScopeArgs).ToArray());
-			ScopeArgs[varName] = result; 
+			ScopeArgs[varName] = result;
 			if (result != null)
 				this.ReturnType = result.GetType();
 
@@ -738,7 +760,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			RemoveTrailingNewLineIfProceedsStatement(this.ElseChildBlocks);
 		}
-		
+
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			var resultCondition = Evaluate<bool>(scopeArgs);
@@ -755,6 +777,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 		}
 
+		//TODO: DRY IT
 		protected void WriteElseStatement(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			if (IsNested)
@@ -816,8 +839,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (typePropertyName == "Html")
 			{
 				type = Common.ReflectionExtensions.IsGenericType(markdownPage.ExecutionContext.BaseType)
-				       ? typeof (HtmlHelper<>)
-				       : typeof (HtmlHelper);
+					   ? typeof(HtmlHelper<>)
+					   : typeof(HtmlHelper);
 			}
 			if (type == null)
 			{
@@ -835,7 +858,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (mi == null)
 			{
 				mi = HtmlHelper.GetMethod(methodName);
-				if (mi == null) 
+				if (mi == null)
 					throw new ArgumentException("Unable to resolve method '" + methodExpr + "' on type " + type.Name);
 			}
 

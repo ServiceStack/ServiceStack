@@ -110,6 +110,14 @@ namespace ServiceStack.Markdown
 		public virtual void PopulateModelState()
 		{
 			if (model == null) return;
+
+			//Skip non-poco's, i.e. List
+			var modelType = model.GetType();
+			var listType = modelType.IsGenericType 
+				? modelType.GetTypeWithGenericInterfaceOf(typeof(IList<>))
+				: null;
+			if (listType != null || model.GetType().IsArray) return;
+			
 			var strModel = TypeSerializer.SerializeToString(model);
 			var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(strModel);
 			foreach (var kvp in map)

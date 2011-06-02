@@ -1,6 +1,6 @@
 ﻿@model ServiceStack.ServiceHost.Tests.AppData.CustomerDetailsResponse
-@usehelper Fmt: ServiceStack.ServiceHost.Tests.AppData.FormatHelpers
-@usehelper Nwnd: ServiceStack.ServiceHost.Tests.AppData.NorthwindHelpers
+@helper Fmt: ServiceStack.ServiceHost.Tests.AppData.FormatHelpers
+@helper Nwnd: ServiceStack.ServiceHost.Tests.AppData.NorthwindHelpers
 
 @var customer = Model.Customer
 

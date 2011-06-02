@@ -6,7 +6,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 {
 	public class MarkdownTestBase
 	{
-		private const string PageName = "Page";
+		private const string TemplateName = "Template";
+		protected const string PageName = "Page";
 
 		public MarkdownFormat Create(string pageTemplate)
 		{
@@ -18,6 +19,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		}
 
 		public string RenderToHtml(string pageTemplate, Dictionary<string, object> scopeArgs)
+		{
+			var markdown = Create(pageTemplate);
+			var html = markdown.RenderDynamicPageHtml(PageName, scopeArgs);
+			return html;
+		}
+
+		public string RenderToHtml(string pageTemplate, Dictionary<string, object> scopeArgs, string websiteTemplate)
 		{
 			var markdown = Create(pageTemplate);
 			var html = markdown.RenderDynamicPageHtml(PageName, scopeArgs);

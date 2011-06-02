@@ -240,6 +240,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				}
 				else
 				{
+					//ignore email addresses with @ in it
 					var charBeforeAtSymbol = content.SafePeekAt(pos - 3);
 					if (!charBeforeAtSymbol.IsAlphaNumeric())
 					{
@@ -310,7 +311,8 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				else if (varExpr == "var"
 					|| varExpr == "model"
 					|| varExpr == "inherits"
-					|| varExpr == "usehelper")
+					|| varExpr == "helper"
+					|| varExpr == "template" || varExpr == "LayoutPage")
 				{
 					var pos = content.IndexOf('\n', fromPos);
 					var restOfLine = content.Substring(fromPos, pos - fromPos);
@@ -480,6 +482,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			if (fromPos == startPos) return null;
 
+			//Remove trailing '.' if any
 			var memberExpr = content.Substring(startPos, fromPos - startPos);
 			if (memberExpr[memberExpr.Length-1] == '.')
 			{

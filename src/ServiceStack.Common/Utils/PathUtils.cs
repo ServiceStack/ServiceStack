@@ -10,10 +10,10 @@ namespace ServiceStack.Common.Utils
 		{
 			if (relativePath.StartsWith("~"))
 			{
-				string assemblyDirectoryPath = Path.GetDirectoryName(new Uri(typeof(PathUtils).Assembly.EscapedCodeBase).LocalPath);
+				var assemblyDirectoryPath = Path.GetDirectoryName(new Uri(typeof(PathUtils).Assembly.EscapedCodeBase).LocalPath);
 
 				// Escape the assembly bin directory to the hostname directory
-				string hostDirectoryPath = assemblyDirectoryPath + appendPartialPathModifier;
+				var hostDirectoryPath = assemblyDirectoryPath + appendPartialPathModifier;
 
 				return Path.GetFullPath(relativePath.Replace("~", hostDirectoryPath));
 			}

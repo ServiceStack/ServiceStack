@@ -6,12 +6,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 {
 	public class Product
 	{
+		public Product(){}
 		public Product(string name, decimal price)
 		{
 			Name = name;
 			Price = price;
 		}
 
+		public int ProductID { get; set; }
 		public string Name { get; set; }
 		public decimal Price { get; set; }
 	}
@@ -188,7 +190,7 @@ Your Message: @message
 			var html = RenderToHtml(template, productArgs);
 
 			Console.WriteLine(html);
-			Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 20)));
+			Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
 		}
 
 
@@ -214,7 +216,7 @@ the date: 02/06/2011 06:42:45</p>
 			var html = RenderToHtml(template, productArgs);
 
 			Console.WriteLine(html);
-			Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 20)));
+			Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
 		}
 
 		[Test]

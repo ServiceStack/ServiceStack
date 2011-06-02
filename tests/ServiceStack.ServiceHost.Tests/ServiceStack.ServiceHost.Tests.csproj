@@ -117,8 +117,8 @@
     <Compile Include="AppData\NorthwindCustomers.cs" />
     <Compile Include="AppData\FormatHelpers.cs" />
     <Compile Include="AppData\NorthwindHelpers.cs" />
-    <Compile Include="Formats\ExpressionTests.cs" />
     <Compile Include="Formats\IntroductionExampleTests.cs" />
+    <Compile Include="Formats\IntroductionLayoutTests.cs" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
     <Compile Include="Formats\MarkdownTestBase.cs" />
     <Compile Include="Formats\MockClass.cs" />
@@ -158,8 +158,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="AppData\ALFKI.json" />
+    <None Include="Views\Template\Customer.md" />
     <None Include="Views\Template\CustomerDetailsResponse.md" />
     <Content Include="AppData\Template\default.htm" />
+    <Content Include="Views\Template\alt-template.htm" />
     <Content Include="Views\Template\default.htm" />
     <Content Include="lib\Funq.dll" />
     <Content Include="lib\hiro\Hiro.Containers.dll" />

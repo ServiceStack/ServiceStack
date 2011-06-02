@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Markdown;
+using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
-	public class MarkdownPage 
+	public class MarkdownPage
 	{
 		public const string ModelName = "Model";
 
@@ -53,8 +56,14 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public string HtmlContents { get; set; }
 		public bool RenderHtml { get; set; }
 		public string TemplatePath { get; set; }
+		public string DirectiveTemplatePath { get; set; }
 		public DateTime? LastModified { get; set; }
 		public EvaluatorExecutionContext ExecutionContext { get; private set; }
+
+		public string GetTemplatePath()
+		{
+			return this.DirectiveTemplatePath ?? this.TemplatePath;
+		}
 
 		private Evaluator evaluator;
 		public Evaluator Evaluator
@@ -86,7 +95,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				throw new ConfigurationErrorsException(
 					"Config.MarkdownBaseType should derive from MarkdownViewBase");
 			}
-			
+
 			if (this.Contents.IsNullOrEmpty()) return;
 
 			this.Contents = StatementExprBlock.Extract(this.Contents, this.Statements);
@@ -95,6 +104,29 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			this.HtmlContents = Markdown.Transform(this.Contents);
 			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(this.Statements);
+
+			SetTemplateDirectivePath();
+		}
+
+		private void SetTemplateDirectivePath()
+		{
+			var templateDirective = this.HtmlBlocks.FirstOrDefault(
+				x => x is DirectiveBlock && ((DirectiveBlock)x).TemplatePath != null);
+			if (templateDirective == null) return;
+
+			var fileDir = Path.GetDirectoryName(this.FilePath);
+			var templatePath = ((DirectiveBlock)templateDirective).TemplatePath;
+			if (templatePath.StartsWith("~"))
+			{
+				this.DirectiveTemplatePath = Path.GetFullPath(templatePath.ReplaceFirst("~", fileDir));
+			}
+			else
+			{
+				if (templatePath.IsRelativePath())
+				{
+					this.DirectiveTemplatePath = Path.GetFullPath(Path.Combine(fileDir, templatePath));
+				}
+			}
 		}
 
 		public void Write(TextWriter textWriter, PageContext pageContext)
@@ -115,11 +147,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 				pageContext.MarkdownPage = this;
 				blocks.ForEach(x => x.DoFirstRun(pageContext));
-				
+
 				this.evaluator = this.ExecutionContext.Build();
 
 				blocks.ForEach(x => x.AfterFirstRun(evaluator));
-				
+
 				hasCompletedFirstRun = true;
 			}
 
@@ -133,7 +165,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 				object model;
 				pageContext.ScopeArgs.TryGetValue(ModelName, out model);
-				
+
 				instance.Init(this, model, this.RenderHtml);
 			}
 

@@ -99,7 +99,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(html.Contains("Customer Orders Total:  &#163;4,596.20"));
 		}
 
-
 		[Test]
 		public void Does_server_dynamic_view_HTML_page_without_template()
 		{
@@ -133,6 +132,20 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			Assert.That(html.TrimStart().StartsWith("# Maria Anders Customer Details (Berlin, Germany)"));
 			Assert.That(html.Contains("Customer Orders Total:  &#163;4,596.20"));
+		}
+
+
+		[Test]
+		public void Does_server_dynamic_view_HTML_page_with_ALT_template()
+		{
+			var html = GetHtml(response.Customer);
+
+			Console.WriteLine(html);
+			File.WriteAllText("~/AppData/TestsResults/Customer.htm".MapAbsolutePath(), html);
+
+			Assert.That(html.StartsWith("<!doctype html>"));
+			Assert.That(html.Contains("ALT Template"));
+			Assert.That(html.Contains("<li><strong>Address:</strong> Obere Str. 57</li>"));
 		}
 
 	}
