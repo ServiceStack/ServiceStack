@@ -22,13 +22,13 @@ namespace ServiceStack.ServiceHost
 			MethodInfo mi;
 			lock (ServiceExecCache)
 			{
-				if (!ServiceExecCache.TryGetValue(serviceType, out mi))
+				if (!ServiceExecCache.TryGetValue(requestType /*serviceType */, out mi))
 				{
 					var genericType = typeof(ServiceExec<>).MakeGenericType(requestType);
 					
 					mi = genericType.GetMethod("Execute", BindingFlags.Public | BindingFlags.Static);
 
-					ServiceExecCache.Add(serviceType, mi);
+					ServiceExecCache.Add(requestType /* serviceType */, mi);
 				}
 			}
 
