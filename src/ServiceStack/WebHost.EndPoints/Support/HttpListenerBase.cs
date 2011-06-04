@@ -318,6 +318,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
+		public List<HttpHandlerResolverDelegate> CatchAllHandlers
+		{
+			get { return EndpointHost.CatchAllHandlers; }
+		}
+
 		public EndpointHostConfig Config
 		{
 			get { return EndpointHost.Config; }

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
-using ServiceStack.Logging;
 
 namespace ServiceStack.ServiceHost
 {
@@ -20,6 +18,11 @@ namespace ServiceStack.ServiceHost
 
 		public ServiceManager(params Assembly[] assembliesWithServices)
 		{
+			if (assembliesWithServices == null || assembliesWithServices.Length == 0)
+				throw new ArgumentException(
+					"No Assemblies provided in your AppHost's base constructor.\n"
+					+ "To register your services, please provide the assemblies where your web services are defined.");
+
 			this.Container = new Container();
 			this.ServiceController = new ServiceController(
 				() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));

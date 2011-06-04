@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
 
-		public static List<HttpHandlerResolverDelegate> CatchAll { get; set; }
+		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
 		static EndpointHost()
 		{
@@ -33,6 +33,7 @@ namespace ServiceStack.WebHost.Endpoints
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			HtmlProviders = new List<StreamSerializerResolverDelegate>();
+			CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 		}
 
 		// Pre user config
@@ -47,10 +48,6 @@ namespace ServiceStack.WebHost.Endpoints
 		    Config = config; // avoid cross-dependency on Config setter
 
 			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
-			CsvFormat.Register(appHost);
-
-			HtmlFormat.Register(appHost);
-			MarkdownFormat.Instance.Register(appHost);
 		}
 
 		// Config has changed
@@ -81,6 +78,19 @@ namespace ServiceStack.WebHost.Endpoints
 					config.IgnoreFormatsInMetadata.Add("soap11");
 				if ((Feature.Soap12 & config.EnableFeatures) != Feature.Soap12)
 					config.IgnoreFormatsInMetadata.Add("soap12");
+			}
+
+			if ((Feature.Html & config.EnableFeatures) == Feature.Html)
+				HtmlFormat.Register(AppHost);
+
+			if ((Feature.Csv & config.EnableFeatures) == Feature.Csv)
+				CsvFormat.Register(AppHost);
+
+			if ((Feature.Markdown & config.EnableFeatures) == Feature.Markdown)
+			{
+				MarkdownFormat.Instance.MarkdownBaseType = config.MarkdownBaseType;
+				MarkdownFormat.Instance.MarkdownGlobalHelpers = config.MarkdownGlobalHelpers;
+				MarkdownFormat.Instance.Register(AppHost);
 			}
 
 			config.ServiceManager.AfterInit();

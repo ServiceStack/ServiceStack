@@ -163,7 +163,8 @@ namespace ServiceStack.WebHost.Endpoints
 				return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
 			}
 
-			return GetHandlerForPathInfo(context.Request.HttpMethod, pathInfo, context.Request.FilePath)
+			return GetHandlerForPathInfo(
+				context.Request.HttpMethod, pathInfo, context.Request.FilePath, pathTranslated)
 				   ?? NotFoundHttpHandler;
 		}
 
@@ -217,7 +218,7 @@ namespace ServiceStack.WebHost.Endpoints
 				return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
 			}
 
-			return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath())
+			return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, pathInfo, httpReq.GetPhysicalPath())
 				   ?? NotFoundHttpHandler;
 		}
 
@@ -272,7 +273,7 @@ namespace ServiceStack.WebHost.Endpoints
 			return EndpointHost.Config.AllowFileExtensions.Contains(fileExt.Substring(1));
 		}
 
-		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo, string filePath)
+		public static IHttpHandler GetHandlerForPathInfo(string httpMethod, string pathInfo, string requestPath, string filePath)
 		{
 			var pathParts = pathInfo.TrimStart('/').Split('/');
 			if (pathParts.Length == 0) return new NotFoundHttpHandler();
@@ -283,12 +284,31 @@ namespace ServiceStack.WebHost.Endpoints
 			var existingFile = pathParts[0].ToLower();
 			if (WebHostRootFileNames.Contains(existingFile))
 			{
-				return ShouldAllow(filePath) ? StaticFileHandler : ForbiddenHttpHandler;
+				//e.g. CatchAllHandler to Process Markdown files
+				var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
+				if (catchAllHandler != null) return catchAllHandler;
+
+				return ShouldAllow(requestPath) ? StaticFileHandler : ForbiddenHttpHandler;
 			}
 
 			var restPath = RestHandler.FindMatchingRestPath(httpMethod, pathInfo);
 			if (restPath != null)
 				return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.Name };
+
+			return GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
+		}
+
+		private static IHttpHandler GetCatchAllHandlerIfAny(string httpMethod, string pathInfo, string filePath)
+		{
+			if (EndpointHost.CatchAllHandlers != null)
+			{
+				foreach (var httpHandlerResolver in EndpointHost.CatchAllHandlers)
+				{
+					var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
+					if (httpHandler != null)
+						return httpHandler;
+				}
+			}
 
 			return null;
 		}

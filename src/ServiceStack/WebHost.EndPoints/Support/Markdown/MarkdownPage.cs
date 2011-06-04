@@ -166,7 +166,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				object model;
 				pageContext.ScopeArgs.TryGetValue(ModelName, out model);
 
-				instance.Init(this, model, this.RenderHtml);
+				instance.Init(this, pageContext.ScopeArgs, model, this.RenderHtml);
 			}
 
 			foreach (var block in blocks)

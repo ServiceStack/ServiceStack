@@ -12,11 +12,11 @@ using ServiceStack.Markdown.Html;
 namespace CSharpEval
 {
 	public class _Expr
-	 : ServiceStack.Markdown.MarkdownViewBase
+	 : ServiceStack.ServiceHost.Tests.Formats.TemplateTests.CustomMarkdownViewBase
 	{
-		public System.Boolean EvalExpr_0(System.Collections.Generic.List<ServiceStack.ServiceHost.Tests.Formats.Product> products)
+		public ServiceStack.Markdown.MvcHtmlString EvalExpr_0()
 		{
-			return (products.Count == 0);
+			return null;
 		}
 	}
 }

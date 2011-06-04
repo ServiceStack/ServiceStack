@@ -64,33 +64,50 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public void Register(IAppHost appHost)
 		{
-			RegisterMarkdownPages(appHost.Config.WebHostPhysicalPath);
+			RegisterMarkdownPages(appHost.Config.MarkdownSearchPath);
 
 			//Render HTML
 			appHost.HtmlProviders.Add((requestContext, dto, stream) => {
 
-			    var httpReq = requestContext.Get<IHttpRequest>();
+				var httpReq = requestContext.Get<IHttpRequest>();
 				MarkdownPage markdownPage;
 				if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
 					return false;
 
-				var renderInTemplate = true;
-				var renderHtml = true;
-				string format;
-				if (httpReq != null && (format = httpReq.QueryString["format"]) != null)
-				{
-					renderHtml = !format.StartsWithIgnoreCase("markdown");
-					renderInTemplate = !httpReq.GetFormatModifier().StartsWithIgnoreCase("bare");
-				}
+				return ProcessMarkdownPage(httpReq, markdownPage, dto, stream);
+			});
 
-				var markup = RenderDynamicPage(markdownPage, dto, renderHtml, renderInTemplate);
-				var markupBytes = markup.ToUtf8Bytes();
-				stream.Write(markupBytes, 0, markupBytes.Length);
-				return true;
+			appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
+				MarkdownPage markdownPage;
+				if (filePath == null || (markdownPage = GetContentPage(filePath.WithoutExtension())) == null) return null;
+				return new MarkdownHandler 
+				{
+					MarkdownFormat = this,
+					MarkdownPage = markdownPage,
+					RequestName = "MarkdownPage",
+					PathInfo = pathInfo,
+					FilePath = filePath
+				};
 			});
 
 			appHost.ContentTypeFilters.Register(ContentType.MarkdownText, SerializeToStream, null);
 			appHost.ContentTypeFilters.Register(ContentType.PlainText, SerializeToStream, null);
+		}
+
+		public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, Stream stream)
+		{
+			var renderInTemplate = true;
+			var renderHtml = true;
+			string format;
+			if (httpReq != null && (format = httpReq.QueryString["format"]) != null)
+			{
+				renderHtml = !format.StartsWithIgnoreCase("markdown");
+				renderInTemplate = !httpReq.GetFormatModifier().StartsWithIgnoreCase("bare");
+			}
+			var markup = RenderDynamicPage(markdownPage, dto, renderHtml, renderInTemplate);
+			var markupBytes = markup.ToUtf8Bytes();
+			stream.Write(markupBytes, 0, markupBytes.Length);
+			return true;
 		}
 
 		/// <summary>
@@ -103,7 +120,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, requestContext)));
 
 			const bool renderHtml = false; //i.e. render Markdown
-			var markup = RenderStaticPage(markdownPage, renderHtml);	
+			var markup = RenderStaticPage(markdownPage, renderHtml);
 			var markupBytes = markup.ToUtf8Bytes();
 			stream.Write(markupBytes, 0, markupBytes.Length);
 		}
@@ -153,10 +170,10 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			return markdownPage;
 		}
 
-		public MarkdownPage GetContentPage(string pageName)
+		public MarkdownPage GetContentPage(string pageFilePath)
 		{
 			MarkdownPage markdownPage;
-			ContentPages.TryGetValue(pageName, out markdownPage);
+			ContentPages.TryGetValue(pageFilePath, out markdownPage);
 
 			return markdownPage;
 		}
@@ -210,19 +227,19 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			string templatePath;
 			while (templateDirPath != null && !File.Exists(Path.Combine(templateDirPath, TemplateName)))
 			{
-				if (templatePathsFound.TryGetValue(templateDirPath, out templatePath)) 
+				if (templatePathsFound.TryGetValue(templateDirPath, out templatePath))
 					return templatePath;
 
 				templateDirPath = templateDirPath.ParentDirectory();
 			}
-			
+
 			if (templateDirPath != null)
 			{
 				templatePath = Path.Combine(templateDirPath, TemplateName);
 				templatePathsFound[templateDirPath] = templatePath;
 				return templatePath;
 			}
-			
+
 			templatePathsNotFound.Add(fileDirPath);
 			return null;
 		}
@@ -257,7 +274,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 			var templatePath = page.TemplatePath;
 			if (page.TemplatePath == null) return;
-			
+
 			if (PageTemplates.ContainsKey(templatePath)) return;
 
 			AddTemplate(templatePath, File.ReadAllText(templatePath));
@@ -314,9 +331,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		private string RenderStaticPage(MarkdownPage markdownPage, bool renderHtml)
 		{
-			var pageHtml = Transform(markdownPage.Contents, renderHtml);
-
-			return RenderInTemplateIfAny(markdownPage, null, pageHtml);
+			//TODO: Optimize if contains no dynamic elements
+			return RenderDynamicPage(markdownPage, new Dictionary<string, object>(), renderHtml, true);
 		}
 
 		private string RenderInTemplateIfAny(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, string pageHtml)
@@ -381,7 +397,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			return RenderDynamicPage(markdownPage, scopeArgs, renderHtml, renderTemplate);
 		}
 
-		public string RenderDynamicPage(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
+		public string RenderDynamicPage(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs,
 			bool renderHtml, bool renderTemplate)
 		{
 			scopeArgs = scopeArgs ?? new Dictionary<string, object>();

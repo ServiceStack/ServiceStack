@@ -16,6 +16,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		List<StreamSerializerResolverDelegate> HtmlProviders { get; }
 
+		List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
+
 		EndpointHostConfig Config { get; }
 	}
 }

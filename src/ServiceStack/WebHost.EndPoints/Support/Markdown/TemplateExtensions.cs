@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				StatementFlags[i] = true;
 			}
 
-			var exprChars = new[] { '.', '[', ']' };
+			var exprChars = new[] { '.' }; //removed: '[', ']' 
 			var tokenChars = new[] { '(', ')', '{', '}' };
 
 			foreach (var exprChar in exprChars)
@@ -464,7 +464,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			for (; fromPos < content.Length; fromPos++)
 			{
 				var exprChar = content[fromPos];
-				if (exprChar >= AlphaNumericFlags.Length) return null;
+				if (exprChar >= MemberExprFlags.Length) return null;
 				if (!MemberExprFlags[exprChar]) break;
 			}
 			return content.Substring(startPos, fromPos - startPos);

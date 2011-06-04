@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -9,6 +10,7 @@ using ServiceStack.ServiceHost.Tests.AppData;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.EndPoints.Formats;
+using ServiceStack.WebHost.EndPoints.Support.Markdown;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
@@ -45,6 +47,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				this.ContentTypeFilters = HttpResponseFilter.Instance;
 				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 				this.HtmlProviders = new List<StreamSerializerResolverDelegate>();
+				this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 			}
 
 			public T TryResolve<T>()
@@ -59,6 +62,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
 
 			public List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
+
+			public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
 			public EndpointHostConfig Config { get; set; }
 		}
@@ -88,7 +93,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		}
 
 		[Test]
-		public void Does_server_dynamic_view_HTML_page_with_template()
+		public void Does_serve_dynamic_view_HTML_page_with_template()
 		{
 			var html = GetHtml(response);
 
@@ -100,7 +105,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		}
 
 		[Test]
-		public void Does_server_dynamic_view_HTML_page_without_template()
+		public void Does_serve_dynamic_view_HTML_page_without_template()
 		{
 			var html = GetHtml(response, "html.bare");
 
@@ -111,7 +116,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		}
 
 		[Test]
-		public void Does_server_dynamic_view_Markdown_page_with_template()
+		public void Does_serve_dynamic_view_Markdown_page_with_template()
 		{
 			var html = GetHtml(response, "markdown");
 
@@ -124,7 +129,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		}
 
 		[Test]
-		public void Does_server_dynamic_view_Markdown_page_without_template()
+		public void Does_serve_dynamic_view_Markdown_page_without_template()
 		{
 			var html = GetHtml(response, "markdown.bare");
 
@@ -136,7 +141,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 
 		[Test]
-		public void Does_server_dynamic_view_HTML_page_with_ALT_template()
+		public void Does_serve_dynamic_view_HTML_page_with_ALT_template()
 		{
 			var html = GetHtml(response.Customer);
 
@@ -146,6 +151,66 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(html.StartsWith("<!doctype html>"));
 			Assert.That(html.Contains("ALT Template"));
 			Assert.That(html.Contains("<li><strong>Address:</strong> Obere Str. 57</li>"));
+		}
+
+		public class MockHttpResponse : IHttpResponse
+		{
+			public MemoryStream MemoryStream { get; set; }
+
+			public MockHttpResponse()
+			{
+				this.Headers = new Dictionary<string, string>();
+				MemoryStream = new MemoryStream();
+			}
+
+			public int StatusCode { set; private get; }
+
+			public string ContentType { get; set; }
+
+			private Dictionary<string, string> Headers { get; set; }
+
+			public void AddHeader(string name, string value)
+			{
+				this.Headers.Add(name, value);
+			}
+
+			public Stream OutputStream { get { return MemoryStream; } }
+
+			public void Write(string text)
+			{
+				var bytes = Encoding.UTF8.GetBytes(text);
+				MemoryStream.Write(bytes, 0, bytes.Length);
+			}
+
+			public string Contents { get; set; }
+
+			public void Close()
+			{
+				this.Contents = Encoding.UTF8.GetString(MemoryStream.ToArray());
+				MemoryStream.Close();
+				this.IsClosed = true;
+			}
+
+			public bool IsClosed { get; private set; }
+		}
+
+		[Test]
+		public void Does_process_Markdown_pages()
+		{
+			var markdownHandler = new MarkdownHandler {
+				MarkdownFormat = markdownFormat,
+				PathInfo = "/AppData/NoTemplate/Static.md",
+				FilePath = "~/AppData/NoTemplate/Static.md".MapAbsolutePath(),
+			};
+			var httpReq = new MockHttpRequest { QueryString = new NameValueCollection() };
+			var httpRes = new MockHttpResponse();
+			markdownHandler.ProcessRequest(httpReq, httpRes, "Static");
+
+			var expectedHtml = markdownFormat.Transform(
+				File.ReadAllText("~/AppData/NoTemplate/Static.md".MapAbsolutePath()));
+
+			httpRes.Close();
+			Assert.That(httpRes.Contents, Is.EqualTo(expectedHtml));
 		}
 
 	}

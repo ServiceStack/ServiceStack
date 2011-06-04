@@ -80,13 +80,16 @@ namespace ServiceStack.Markdown
 		public bool RenderHtml { get; protected set; }
 		public MarkdownFormat Markdown { get; protected set; }
 		public MarkdownPage MarkdownPage { get; protected set; }
+		public Dictionary<string, object> ScopeArgs { get; protected set; }
 		public virtual ViewDataDictionary ViewData { get; protected set; }
 
-		public void Init(MarkdownPage markdownPage, bool renderHtml, ViewDataDictionary viewData)
+		public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
+			bool renderHtml, ViewDataDictionary viewData)
 		{
 			this.Markdown = markdownPage.Markdown;
 			this.RenderHtml = renderHtml;
 			this.MarkdownPage = markdownPage;
+			this.ScopeArgs = scopeArgs;
 			this.ViewData = viewData;
 			this.ViewData.PopulateModelState();
 		}

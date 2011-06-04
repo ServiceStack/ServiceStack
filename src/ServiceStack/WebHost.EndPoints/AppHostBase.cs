@@ -145,6 +145,11 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+		public List<HttpHandlerResolverDelegate> CatchAllHandlers
+		{
+			get { return EndpointHost.CatchAllHandlers; }
+		}
+
 		public virtual object ExecuteService(object requestDto)
 		{
 			return ExecuteService(requestDto, EndpointAttributes.None);

@@ -18,5 +18,6 @@ namespace ServiceStack.ServiceHost
 		Html         = 1 << 6,
 		CustomFormat = 1 << 7,
 		Metadata     = 1 << 8,
+		Markdown     = 1 << 9,
 	}
 }

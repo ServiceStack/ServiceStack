@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			foreach (var item in pathInfoMap)
 			{
 				var expectedType = item.Value;
-				var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, item.Key, null);
+				var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, item.Key, null, null);
 				Assert.That(handler.GetType(), Is.EqualTo(expectedType));
 			}
 		}
@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				var expectedType = item.Value;
 				var lowerPathInfo = item.Key.ToLower();
-				var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, lowerPathInfo, null);
+				var handler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(null, lowerPathInfo, null, null);
 				Assert.That(handler.GetType(), Is.EqualTo(expectedType));
 			}
 		}

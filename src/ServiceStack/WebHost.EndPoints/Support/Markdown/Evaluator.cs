@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			try
 			{
 				//Inner classes?
-				var typeName = type == null 
+				var typeName = type == null
 					//|| type.FullName == null
 					? null
 					: type.FullName.Replace('+', '.').SplitOnFirst('`')[0];
@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 				if (type.IsGenericType()
 					//TODO: support GenericTypeDefinition properly
-					&& !type.IsGenericTypeDefinition 
+					&& !type.IsGenericTypeDefinition
 				)
 				{
 					var genericArgs = type.GetGenericArguments();
@@ -176,9 +176,12 @@ namespace CSharpEval
 						if (i++ > 0) code.Append(", ");
 
 						code.Append(GetTypeName(genericArg));
+						ReferenceTypesIfNotExist(cp, assemblies, genericArg);
 					}
 					code.AppendLine(">");
 				}
+				
+				ReferenceTypesIfNotExist(cp, assemblies, this.BaseType);
 			}
 
 			code.AppendLine("  {");
@@ -201,11 +204,21 @@ namespace CSharpEval
 					ReferenceAssembliesIfNotExists(cp, paramType, assemblies);
 				}
 
+				var isVoid = item.ReturnType == typeof(void);
+
+				var returnType = isVoid ? "void" : GetTypeName(item.ReturnType);
 				code.AppendFormat("    public {0} {1}({2})",
-					GetTypeName(item.ReturnType), item.Name, sbParams);
+					returnType, item.Name, sbParams);
 
 				code.AppendLine("    {");
-				code.AppendFormat("      return ({0}); \n", item.Expression);
+				if (isVoid)
+				{
+					code.AppendFormat("      {0}; \n", item.Expression);
+				}
+				else
+				{
+					code.AppendFormat("      return ({0}); \n", item.Expression);
+				}
 				code.AppendLine("    }");
 			}
 
@@ -229,6 +242,18 @@ namespace CSharpEval
 			compiled = compiledAssembly.CreateInstance("CSharpEval._Expr");
 			compiledType = compiled.GetType();
 			compiledTypeCtorFn = Text.ReflectionExtensions.GetConstructorMethodToCache(compiledType);
+		}
+
+		private static void ReferenceTypesIfNotExist(CompilerParameters cp, List<Assembly> assemblies, params Type[] paramTypes)
+		{
+			foreach (var paramType in paramTypes)
+			{
+				if (!assemblies.Contains(paramType.Assembly))
+				{
+					assemblies.Add(paramType.Assembly);
+					cp.ReferencedAssemblies.Add(paramType.Assembly.Location);
+				}
+			}
 		}
 
 		private static void ReferenceAssembliesIfNotExists(CompilerParameters cp, Type paramType, List<Assembly> assemblies)
@@ -269,9 +294,7 @@ namespace CSharpEval
 									 ? typeName + ".Instance"
 									 : "new " + typeName + "()";
 
-					code.AppendFormat(
-					"    public {0} {1} = {2};\n",
-					typeName, name, returnExpr);
+					code.AppendFormat("    public {0} {1} = {2};\n", typeName, name, returnExpr);
 				}
 			}
 		}

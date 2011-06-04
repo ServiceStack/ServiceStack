@@ -31,15 +31,13 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				if (instance == null)
 				{
-					var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
-
 					instance = new EndpointHostConfig
 					{
 						UsageExamplesBaseUri = DefaultUsageExamplesBaseUri,
 						LogFactory = new NullLogFactory(),
 						EnableAccessRestrictions = true,
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-					    WebHostPhysicalPath = isAspNetHost ? "~".MapHostAbsolutePath() : "~".MapAbsolutePath(),
+					    WebHostPhysicalPath = "~".MapServerPath(),
 						ServiceStackHandlerFactoryPath = ServiceStackPath,
 						MetadataRedirectPath = null,
 						DefaultContentType = ContentType.Json,
@@ -67,13 +65,13 @@ namespace ServiceStack.WebHost.Endpoints
 						MarkdownOptions = new MarkdownOptions(),
 						MarkdownBaseType = typeof(MarkdownViewBase),
 						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
-						MarkdownSearchPath = "~/",
+						MarkdownSearchPath = "~".MapServerPath(),
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
 					{
 						InferHttpHandlerPath();
-					}
+					} 
 				}
 				return instance;
 			}
@@ -90,6 +88,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.LogFactory = instance.LogFactory;
 			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
 			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
+			this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
 			this.DefaultRedirectPath = instance.DefaultRedirectPath;
 			this.MetadataRedirectPath = instance.MetadataRedirectPath;
 			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;

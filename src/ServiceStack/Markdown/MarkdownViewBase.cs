@@ -1,4 +1,5 @@
-﻿using ServiceStack.WebHost.EndPoints.Support.Markdown;
+﻿using System.Collections.Generic;
+using ServiceStack.WebHost.EndPoints.Support.Markdown;
 
 namespace ServiceStack.Markdown
 {
@@ -15,11 +16,11 @@ namespace ServiceStack.Markdown
 			return base.Html ?? new HtmlHelper<T>();
 		}
 
-		public override void Init(MarkdownPage markdownPage, object model, bool renderHtml)
+		public override void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, object model, bool renderHtml)
 		{
 			this.RenderHtml = renderHtml;
 			var typedModel = (T)model;
-			Html.Init(markdownPage, renderHtml, new ViewDataDictionary<T>(typedModel));
+			Html.Init(markdownPage, scopeArgs, renderHtml, new ViewDataDictionary<T>(typedModel));
 
 			InitHelpers();
 		}
@@ -29,6 +30,7 @@ namespace ServiceStack.Markdown
 	{
 		public MarkdownPage MarkdownPage { get; protected set; }
 		public HtmlHelper Html { get; protected set; }
+		public Dictionary<string,object> ScopeArgs { get; protected set; }
 		public bool RenderHtml { get; protected set; }
 		public object Model { get; protected set; }
 
@@ -45,10 +47,11 @@ namespace ServiceStack.Markdown
 			return Html ?? new HtmlHelper();
 		}
 
-		public virtual void Init(MarkdownPage markdownPage, object model, bool renderHtml)
+		public virtual void Init(MarkdownPage markdownPage, Dictionary<string,object> scopeArgs, object model, bool renderHtml)
 		{
 			this.RenderHtml = renderHtml;
-			Html.Init(markdownPage, renderHtml, new ViewDataDictionary(model));
+			this.ScopeArgs = scopeArgs;
+			Html.Init(markdownPage, scopeArgs, renderHtml, new ViewDataDictionary(model));
 
 			InitHelpers();
 		}

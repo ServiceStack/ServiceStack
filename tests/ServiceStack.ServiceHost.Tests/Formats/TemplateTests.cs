@@ -258,6 +258,21 @@ Hello Demis,
 
 				return MvcHtmlString.Create(sb.ToString());
 			}
+
+			private static string[] MenuItems = new[] { "About Us", "Blog", "Links", "Contact" };
+
+			public void Menu(string selectedId)
+			{
+				var sb = new StringBuilder();
+				sb.Append("<ul>\n");
+				foreach (var menuItem in MenuItems)
+				{
+					var cls = menuItem == selectedId ? " class='selected'" : "";
+					sb.AppendFormat("<li><a href='{0}'{1}>{0}</a></li>\n", menuItem, cls);
+				}
+				sb.Append("</ul>\n");
+				ScopeArgs.Add("Menu", MvcHtmlString.Create(sb.ToString()));
+			}
 		}
 
 		public class CustomMarkdownHelper
@@ -883,6 +898,90 @@ Hello @Upper(lastName), @Model.FirstName,
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
-	}
+		[Test]
+		public void Can_Render_Static_ContentPage_that_populates_variable_and_displayed_on_website_template()
+		{
 
+			var websiteTemplate = @"<!doctype html>
+<html lang=""en-us"">
+<head>
+    <title>Static page</title>
+</head>
+<body>
+    <header>
+      <!--@Header-->
+    </header>
+
+    <div id='menus'>
+        <!--@Menu-->
+    </div>
+
+    <h1>Website Template</h1>
+
+    <div id=""content""><!--@Body--></div>
+
+</body>
+</html>".NormalizeNewLines();
+
+			var template = @"# Static Markdown Template
+@Menu(""Links"")
+
+@section Header {
+### Static Page Title  
+}
+
+### heading 3
+paragraph";
+
+			var expectedHtml = @"<!doctype html>
+<html lang=""en-us"">
+<head>
+    <title>Static page</title>
+</head>
+<body>
+    <header>
+      <h3>Static Page Title</h3>
+
+    </header>
+
+    <div id='menus'>
+        <ul>
+<li><a href='About Us'>About Us</a></li>
+<li><a href='Blog'>Blog</a></li>
+<li><a href='Links' class='selected'>Links</a></li>
+<li><a href='Contact'>Contact</a></li>
+</ul>
+
+    </div>
+
+    <h1>Website Template</h1>
+
+    <div id=""content""><h1>Static Markdown Template</h1>
+
+
+
+<h3>heading 3</h3>
+
+<p>paragraph</p>
+</div>
+
+</body>
+</html>".NormalizeNewLines();
+
+			markdownFormat.MarkdownBaseType = typeof(CustomMarkdownViewBase);
+
+			markdownFormat.AddTemplate("/path/to/tpl", websiteTemplate);
+
+			markdownFormat.RegisterMarkdownPage(
+				new MarkdownPage(markdownFormat, "/path/to/pagetpl", "StaticTpl", template, MarkdownPageType.ContentPage) {
+					TemplatePath = "/path/to/tpl"
+				});
+
+			var templateOutput = markdownFormat.RenderStaticPage("/path/to/pagetpl", true);
+
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+	}
 }
