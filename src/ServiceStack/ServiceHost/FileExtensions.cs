@@ -1,7 +1,9 @@
+using System;
 using System.IO;
 using System.Web;
 using ServiceStack.Common.Utils;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.ServiceHost
@@ -24,6 +26,12 @@ namespace ServiceStack.ServiceHost
 		public static string MapServerPath(this string relativePath)
 		{
 			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
+			var appHost = EndpointHost.AppHost;
+			if (appHost != null)
+			{
+				isAspNetHost = !(appHost is HttpListenerBase);
+			}
+
 			return isAspNetHost
 			       ? relativePath.MapHostAbsolutePath()
 			       : relativePath.MapAbsolutePath();

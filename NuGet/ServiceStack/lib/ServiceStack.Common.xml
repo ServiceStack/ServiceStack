@@ -258,11 +258,12 @@
             <param name="obj"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Common.Utils.ReflectionUtils.PopulateType(System.Type)">
+        <member name="M:ServiceStack.Common.Utils.ReflectionUtils.PopulateObjectInternal(System.Object,System.Collections.Generic.Dictionary{System.Type,System.Int32})">
             <summary>
-            Populate an instance of the type with Example data.
+            Populates the object with example data.
             </summary>
-            <param name="type"></param>
+            <param name="obj"></param>
+            <param name="recursionInfo">Tracks how deeply nested we are</param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.Common.Utils.FuncUtils.TryExec(System.Action)">

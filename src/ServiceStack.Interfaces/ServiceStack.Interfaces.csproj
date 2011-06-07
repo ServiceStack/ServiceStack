@@ -198,6 +198,8 @@
     <Compile Include="ServiceHost\IFile.cs" />
     <Compile Include="ServiceHost\IHasOptions.cs" />
     <Compile Include="ServiceHost\IHttpError.cs" />
+    <Compile Include="ServiceHost\IHttpRequest.cs" />
+    <Compile Include="ServiceHost\IHttpResponse.cs" />
     <Compile Include="ServiceHost\IHttpResult.cs" />
     <Compile Include="ServiceHost\IRequestAttributes.cs" />
     <Compile Include="ServiceHost\IRequestContext.cs" />

@@ -19,10 +19,10 @@ namespace ServiceStack.WebHost.Endpoints
 		public JsvSyncReplyHandler()
 			: base(ContentType.JsvText, EndpointAttributes.SyncReply | EndpointAttributes.Jsv, Feature.Jsv) { }
 
-		private static void WriteDebugRequest(IRequestContext requestContext, object dto, Stream stream)
+		private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)
 		{
 			var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
-			stream.Write(bytes, 0, bytes.Length);
+			httpRes.OutputStream.Write(bytes, 0, bytes.Length);
 		}
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)

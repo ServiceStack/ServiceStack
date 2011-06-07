@@ -88,6 +88,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.LogFactory = instance.LogFactory;
 			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
 			this.WsdlServiceNamespace = instance.WsdlServiceNamespace;
+			this.WebHostUrl = instance.WebHostUrl;
 			this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
 			this.DefaultRedirectPath = instance.DefaultRedirectPath;
 			this.MetadataRedirectPath = instance.MetadataRedirectPath;
@@ -180,6 +181,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public HashSet<string> AllowFileExtensions { get; set; }
 
+		public string WebHostUrl { get; set; }
 		public string WebHostPhysicalPath { get; set; }
 		public string ServiceStackHandlerFactoryPath { get; set; }
 		public string DefaultRedirectPath { get; set; }

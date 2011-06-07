@@ -125,6 +125,7 @@
     <Compile Include="Messaging\TransientMessageHandler.cs" />
     <Compile Include="Messaging\TransientMessageHandlerFactory.cs" />
     <Compile Include="Messaging\TransientMessageServiceBase.cs" />
+    <Compile Include="Web\HttpResponseStreamWrapper.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="TypeExtensions.cs" />
     <Compile Include="ServiceClient.Web\AsyncServiceClient.cs" />
@@ -167,8 +168,6 @@
     <Compile Include="ServiceModel\Validation\Validators\ValidationErrorCodes.cs" />
     <Compile Include="ServiceModel\Validation\Validators\ValidEmailAttribute.cs" />
     <Compile Include="ServiceModel\XLinqExtensions.cs" />
-    <Compile Include="Web\HttpError.cs" />
-    <Compile Include="Web\HttpResponseFilter.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />
     <Compile Include="Support\InMemoryLogFactory.cs" />
     <Compile Include="Support\NetDeflateProvider.cs" />
@@ -197,7 +196,9 @@
     <Compile Include="Web\CompressionTypes.cs" />
     <Compile Include="Web\ContentType.cs" />
     <Compile Include="Web\EndpointType.cs" />
+    <Compile Include="Web\HttpError.cs" />
     <Compile Include="Web\HttpMethods.cs" />
+    <Compile Include="Web\HttpResponseFilter.cs" />
     <Compile Include="Web\HttpResult.cs" />
     <Compile Include="Web\SerializationContext.cs" />
     <Compile Include="Web\TextResult.cs" />

@@ -42,7 +42,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/AppData/Template/default.htm".MapAbsolutePath();
+			staticTemplatePath = "~/AppData/Template/default.shtml".MapAbsolutePath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
 			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapAbsolutePath();

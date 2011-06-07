@@ -92,21 +92,22 @@ namespace ServiceStack.CacheAccess.Providers
 			var contentFilters = ContentCacheManager.ContentTypeFilter;
 			if (contentFilters != null)
 			{
-				var serializer = contentFilters.GetStreamSerializer(contentType);
+				var serializer = contentFilters.GetResponseSerializer(contentType);
 				if (serializer != null)
 				{
 					try
 					{
 						using (var ms = new MemoryStream())
 						{
-							serializer(requestContext, result, ms);
+							var httpRes = new HttpResponseStreamWrapper(ms);
+							serializer(requestContext, result, httpRes);
 							var bytes = ms.ToArray();
 							return Encoding.UTF8.GetString(bytes);
 						}
 					}
 					catch (Exception ex)
 					{
-						throw ex;
+						throw;
 					}
 				}
 			}

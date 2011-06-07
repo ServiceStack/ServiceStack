@@ -15,7 +15,7 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
-	[TestFixture]
+	[TestFixture] 
 	public class ViewTests
 	{
 		private CustomerDetailsResponse response;
@@ -42,7 +42,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public AppHost()
 			{
 				this.Config = new EndpointHostConfig {
-					WebHostPhysicalPath = "~".MapAbsolutePath(), //Registers all .md;.markdown files from here
+					MarkdownSearchPath = "~".MapAbsolutePath(), 
 				};
 				this.ContentTypeFilters = HttpResponseFilter.Instance;
 				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -76,10 +76,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				QueryString = new NameValueCollection(),
 			};
 			httpReq.QueryString.Add("format", format);
-			var requestContext = new HttpRequestContext(httpReq, dto);
+			var requestContext = new HttpRequestContext((IHttpRequest)httpReq, dto);
 			using (var ms = new MemoryStream())
 			{
-				appHost.HtmlProviders[0](requestContext, dto, ms);
+				var httpRes = new HttpResponseStreamWrapper(ms);
+				appHost.HtmlProviders[0](requestContext, dto, httpRes);
 
 				var utf8Bytes = ms.ToArray();
 				var html = utf8Bytes.FromUtf8Bytes();

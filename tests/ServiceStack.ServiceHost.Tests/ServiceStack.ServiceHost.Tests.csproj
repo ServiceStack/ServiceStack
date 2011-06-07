@@ -85,7 +85,7 @@
       <HintPath>..\..\lib\tests\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.ServiceInterface">
-      <HintPath>..\MasterHost\bin\ServiceStack.ServiceInterface.dll</HintPath>
+      <HintPath>..\..\lib\ServiceStack.ServiceInterface.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
@@ -161,9 +161,9 @@
     <None Include="AppData\ALFKI.json" />
     <None Include="Views\Template\Customer.md" />
     <None Include="Views\Template\CustomerDetailsResponse.md" />
-    <Content Include="AppData\Template\default.htm" />
+    <Content Include="AppData\Template\default.shtml" />
     <Content Include="Views\Template\alt-template.htm" />
-    <Content Include="Views\Template\default.htm" />
+    <Content Include="Views\Template\default.shtml" />
     <Content Include="lib\Funq.dll" />
     <Content Include="lib\hiro\Hiro.Containers.dll" />
     <Content Include="lib\hiro\Hiro.Containers.XML" />

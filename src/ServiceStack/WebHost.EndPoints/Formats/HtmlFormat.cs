@@ -403,9 +403,9 @@ function enc(html) {{
 			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.JsonReport.ToContentFormat());
 		}
 
-		public static void SerializeToStream(IRequestContext requestContext, object dto, Stream stream)
+		public static void SerializeToStream(IRequestContext requestContext, object dto, IHttpResponse httpRes)
 		{
-			if (AppHost.HtmlProviders.Any(x => x(requestContext, dto, stream))) return;
+			if (AppHost.HtmlProviders.Any(x => x(requestContext, dto, httpRes))) return;
 
 			var httpReq = requestContext.Get<IHttpRequest>();
 			if (requestContext.ResponseContentType != ContentType.Html
@@ -429,7 +429,7 @@ function enc(html) {{
 			  url);
 
 			var utf8Bytes = html.ToUtf8Bytes();
-			stream.Write(utf8Bytes, 0, utf8Bytes.Length);
+			httpRes.OutputStream.Write(utf8Bytes, 0, utf8Bytes.Length);
 		}
 
 	}

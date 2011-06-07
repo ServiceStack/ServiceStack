@@ -7,13 +7,15 @@ namespace ServiceStack.ServiceHost
 		string SerializeToString(IRequestContext requestContext, object response);
 
 		void SerializeToStream(IRequestContext requestContext, object response, Stream toStream);
+		
+		void SerializeToResponse(IRequestContext requestContext, object response, IHttpResponse httpRes);
 
-		StreamSerializerDelegate GetStreamSerializer(string contentType);
+		ResponseSerializerDelegate GetResponseSerializer(string contentType);
 	}
 
 	public delegate string TextSerializerDelegate(object dto);
 
-	public delegate void StreamSerializerDelegate(IRequestContext requestContext, object dto, Stream toStream);
+	public delegate void StreamSerializerDelegate(IRequestContext requestContext, object dto, Stream outputStream);
 
-	public delegate bool StreamSerializerResolverDelegate(IRequestContext requestContext, object dto, Stream toStream);
+	public delegate void ResponseSerializerDelegate(IRequestContext requestContext, object dto, IHttpResponse httpRes);
 }

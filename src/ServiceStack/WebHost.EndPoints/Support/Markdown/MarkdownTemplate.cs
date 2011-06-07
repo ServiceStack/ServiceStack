@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using ServiceStack.Markdown;
-using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
@@ -37,6 +36,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			var textBlocks = new List<string>();
 			var variablePositions = new Dictionary<int, string>();
+
 			int pos;
 			var lastPos = 0;
 			while ((pos = this.Contents.IndexOf(PlaceHolderPrefix, lastPos)) != -1)

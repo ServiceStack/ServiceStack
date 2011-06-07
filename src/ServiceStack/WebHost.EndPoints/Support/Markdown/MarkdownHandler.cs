@@ -30,7 +30,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				return;
 			}
 
-			MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, null, httpRes.OutputStream);
+			if (httpReq.DidReturn304NotModified(contentPage.LastModified, httpRes))
+				return;
+
+			MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, null, httpRes);
 		}
 
 		public override object CreateRequest(IHttpRequest request, string operationName)

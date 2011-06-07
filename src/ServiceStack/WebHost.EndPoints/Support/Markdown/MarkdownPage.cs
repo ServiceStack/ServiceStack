@@ -7,7 +7,6 @@ using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
@@ -18,7 +17,6 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public MarkdownPage()
 		{
-			this.Statements = new List<StatementExprBlock>();
 			this.ExecutionContext = new EvaluatorExecutionContext();
 			this.RenderHtml = true;
 		}
@@ -84,9 +82,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return exprSeq++;
 		}
 
-		public List<TemplateBlock> MarkdownBlocks { get; set; }
-		public List<TemplateBlock> HtmlBlocks { get; set; }
-		public List<StatementExprBlock> Statements { get; set; }
+		public TemplateBlock[] MarkdownBlocks { get; set; }
+		public TemplateBlock[] HtmlBlocks { get; set; }
+		public StatementExprBlock[] Statements { get; set; }
 
 		public void Prepare()
 		{
@@ -98,12 +96,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			if (this.Contents.IsNullOrEmpty()) return;
 
-			this.Contents = StatementExprBlock.Extract(this.Contents, this.Statements);
+			var statements = new List<StatementExprBlock>();
+			this.Contents = StatementExprBlock.Extract(this.Contents, statements);
 
-			this.MarkdownBlocks = this.Contents.CreateTemplateBlocks(this.Statements);
+			this.MarkdownBlocks = this.Contents.CreateTemplateBlocks(statements).ToArray();
 
 			this.HtmlContents = Markdown.Transform(this.Contents);
-			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(this.Statements);
+			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(statements).ToArray();
+
+			this.Statements = statements.ToArray();
 
 			SetTemplateDirectivePath();
 		}
@@ -146,11 +147,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				this.ExecutionContext.TypeProperties = Markdown.MarkdownGlobalHelpers;
 
 				pageContext.MarkdownPage = this;
-				blocks.ForEach(x => x.DoFirstRun(pageContext));
+				foreach (var block in blocks) block.DoFirstRun(pageContext);
 
 				this.evaluator = this.ExecutionContext.Build();
 
-				blocks.ForEach(x => x.AfterFirstRun(evaluator));
+				foreach (var block in blocks) block.AfterFirstRun(evaluator);
 
 				hasCompletedFirstRun = true;
 			}
@@ -166,12 +167,17 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				object model;
 				pageContext.ScopeArgs.TryGetValue(ModelName, out model);
 
-				instance.Init(this, pageContext.ScopeArgs, model, this.RenderHtml);
+				instance.Init(this, pageContext.ScopeArgs, model, this.RenderHtml);				
 			}
 
 			foreach (var block in blocks)
 			{
 				block.Write(instance, textWriter, pageContext.ScopeArgs);
+			}
+
+			if (instance != null)
+			{
+				instance.OnLoad();
 			}
 		}
 	}

@@ -28,9 +28,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public Evaluator Build()
 		{
-			return Items.Count == 0
-				? null
-				: new Evaluator(Items, BaseType, GenericArgs, TypeProperties);
+			return new Evaluator(Items, BaseType, GenericArgs, TypeProperties);
 		}
 	}
 

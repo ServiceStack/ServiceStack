@@ -27,7 +27,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/Views/Template/default.htm".MapAbsolutePath();
+			staticTemplatePath = "~/Views/Template/default.shtml".MapAbsolutePath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
 			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapAbsolutePath();
@@ -99,7 +99,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var dynamicPage = new MarkdownPage(markdownFormat, dynamicPageContent, "DynamicTpl", dynamicPageContent);
 			dynamicPage.Prepare();
 
-			Assert.That(dynamicPage.HtmlBlocks.Count, Is.EqualTo(9));
+			Assert.That(dynamicPage.HtmlBlocks.Length, Is.EqualTo(9));
 
 			var expectedHtml = markdownFormat.Transform(dynamicPageContent)
 				.Replace("@Model.FirstName", person.FirstName)
@@ -119,7 +119,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				dynamicListPagePath, "DynamicListTpl", dynamicListPageContent);
 			dynamicPage.Prepare();
 
-			Assert.That(dynamicPage.HtmlBlocks.Count, Is.EqualTo(11));
+			Assert.That(dynamicPage.HtmlBlocks.Length, Is.EqualTo(11));
 
 			var expectedMarkdown = dynamicListPageContent
 				.Replace("@Model.FirstName", person.FirstName)

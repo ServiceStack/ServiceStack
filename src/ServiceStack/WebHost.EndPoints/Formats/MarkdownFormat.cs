@@ -20,14 +20,15 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		SharedViewPage = 3,
 	}
 
-	public class MarkdownFormat
+	public class MarkdownFormat 
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(MarkdownFormat));
 
 		private const string ErrorPageNotFound = "Could not find Markdown page '{0}'";
 
-		public static string TemplateName = "default.htm";
+		public static string TemplateName = "default.shtml";
 		public static string TemplatePlaceHolder = "<!--@Body-->";
+		public static string WebHostUrlPlaceHolder = "~/";
 
 		public static MarkdownFormat Instance = new MarkdownFormat();
 
@@ -53,6 +54,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		private readonly MarkdownSharp.Markdown markdown;
 
+		public string WebHostUrl { get; set; }
+
 		public MarkdownFormat()
 		{
 			markdown = new MarkdownSharp.Markdown();
@@ -64,17 +67,18 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public void Register(IAppHost appHost)
 		{
+			this.WebHostUrl = appHost.Config.WebHostUrl;
 			RegisterMarkdownPages(appHost.Config.MarkdownSearchPath);
 
 			//Render HTML
-			appHost.HtmlProviders.Add((requestContext, dto, stream) => {
+			appHost.HtmlProviders.Add((requestContext, dto, httpRes) => {
 
 				var httpReq = requestContext.Get<IHttpRequest>();
 				MarkdownPage markdownPage;
 				if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
 					return false;
 
-				return ProcessMarkdownPage(httpReq, markdownPage, dto, stream);
+				return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
 			});
 
 			appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
@@ -94,8 +98,10 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			appHost.ContentTypeFilters.Register(ContentType.PlainText, SerializeToStream, null);
 		}
 
-		public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, Stream stream)
+		public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)
 		{
+			httpRes.AddHeaderLastModified(markdownPage.LastModified);
+
 			var renderInTemplate = true;
 			var renderHtml = true;
 			string format;
@@ -106,7 +112,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			}
 			var markup = RenderDynamicPage(markdownPage, dto, renderHtml, renderInTemplate);
 			var markupBytes = markup.ToUtf8Bytes();
-			stream.Write(markupBytes, 0, markupBytes.Length);
+			httpRes.OutputStream.Write(markupBytes, 0, markupBytes.Length);
 			return true;
 		}
 
@@ -284,8 +290,14 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		{
 			var templateFile = new FileInfo(templatePath);
 			var templateName = templateFile.FullName.WithoutExtension();
+
+			if (!string.IsNullOrEmpty(this.WebHostUrl))
+			{
+				templateContents = templateContents.Replace(WebHostUrlPlaceHolder, WebHostUrl.WithTrailingSlash());
+			}
+
 			var template = new MarkdownTemplate(templatePath, templateName, templateContents) {
-				LastModified = templateFile.LastWriteTime
+				LastModified = templateFile.LastWriteTime,
 			};
 			PageTemplates.Add(templatePath, template);
 			try
@@ -401,7 +413,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			bool renderHtml, bool renderTemplate)
 		{
 			scopeArgs = scopeArgs ?? new Dictionary<string, object>();
-			var htmlPage = markdownPage.RenderToString(scopeArgs, renderHtml);
+			var htmlPage = markdownPage.RenderToString(scopeArgs, renderHtml);			
 			if (!renderTemplate) return htmlPage;
 
 			var html = RenderInTemplateIfAny(

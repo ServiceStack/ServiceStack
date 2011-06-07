@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static bool WriteToResponse(this IHttpResponse httpRes, object result, string contentType)
 		{
-			var serializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamSerializer(contentType);
+			var serializer = EndpointHost.AppHost.ContentTypeFilters.GetResponseSerializer(contentType);
 			return httpRes.WriteToResponse(result, serializer, new SerializationContext(contentType));
 		}
 
@@ -51,11 +51,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeFilters;
 				}
 				httpResult.RequestContext = serializationContext;
-				var httpResSerializer = httpResult.ResponseFilter.GetStreamSerializer(httpReq.ResponseContentType);
+				var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(httpReq.ResponseContentType);
 				return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext);
 			}
 
-			var serializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamSerializer(httpReq.ResponseContentType);
+			var serializer = EndpointHost.AppHost.ContentTypeFilters.GetResponseSerializer(httpReq.ResponseContentType);
 			return httpRes.WriteToResponse(result, serializer, serializationContext);
 		}
 
@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// <param name="defaultAction">The default action.</param>
 		/// <param name="serializerCtx">The serialization context.</param>
 		/// <returns></returns>
-		public static bool WriteToResponse(this IHttpResponse response, object result, StreamSerializerDelegate defaultAction, IRequestContext serializerCtx)
+		public static bool WriteToResponse(this IHttpResponse response, object result, ResponseSerializerDelegate defaultAction, IRequestContext serializerCtx)
 		{
 			var defaultContentType = serializerCtx.ResponseContentType;
 			try
@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					response.ContentType = defaultContentType;
 				}
 
-				defaultAction(serializerCtx, result, response.OutputStream);
+				defaultAction(serializerCtx, result, response);
 				return false;
 			}
 			catch (Exception ex)

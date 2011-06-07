@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Web;
@@ -213,13 +212,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		{
 			this.Condition = condition;
 			this.Statement = statement;
-			this.ChildBlocks = new List<TemplateBlock>();
+			this.ChildBlocks = new TemplateBlock[0];
 		}
 
 		public string Condition { get; set; }
 		public string Statement { get; set; }
 
-		public List<TemplateBlock> ChildBlocks { get; set; }
+		public TemplateBlock[] ChildBlocks { get; set; }
 
 		protected virtual void Prepare(List<StatementExprBlock> allStatements)
 		{
@@ -227,10 +226,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			var parsedStatement = Extract(this.Statement, allStatements);
 
-			this.ChildBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
-			this.ChildBlocks.ForEach(x => x.IsNested = true);
+			var childBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
+			childBlocks.ForEach(x => x.IsNested = true);
 
-			RemoveTrailingNewLineIfProceedsStatement(this.ChildBlocks);
+			RemoveTrailingNewLineIfProceedsStatement(childBlocks);
+
+			this.ChildBlocks = childBlocks.ToArray();
 		}
 
 		internal static void RemoveTrailingNewLineIfProceedsStatement(List<TemplateBlock> childBlocks)
@@ -743,9 +744,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		{
 			this.ReturnType = typeof(bool);
 			this.ElseStatement = elseStatement;
+			this.ElseChildBlocks = new TemplateBlock[0];
 		}
 
-		public List<TemplateBlock> ElseChildBlocks { get; set; }
+		public TemplateBlock[] ElseChildBlocks { get; set; }
 
 		protected override void Prepare(List<StatementExprBlock> allStatements)
 		{
@@ -755,10 +757,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			var parsedStatement = Extract(this.ElseStatement, allStatements);
 
-			this.ElseChildBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
-			this.ElseChildBlocks.ForEach(x => x.IsNested = true);
+			var elseChildBlocks = parsedStatement.CreateTemplateBlocks(allStatements);
+			elseChildBlocks.ForEach(x => x.IsNested = true);
 
-			RemoveTrailingNewLineIfProceedsStatement(this.ElseChildBlocks);
+			RemoveTrailingNewLineIfProceedsStatement(elseChildBlocks);
+			
+			this.ElseChildBlocks = elseChildBlocks.ToArray();
 		}
 
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
@@ -770,7 +774,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 			else
 			{
-				if (ElseStatement != null && this.ElseChildBlocks.Count > 0)
+				if (ElseStatement != null && this.ElseChildBlocks.Length > 0)
 				{
 					WriteElseStatement(instance, textWriter, scopeArgs);
 				}

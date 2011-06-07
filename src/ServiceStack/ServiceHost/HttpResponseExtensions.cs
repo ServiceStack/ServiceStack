@@ -115,9 +115,10 @@ namespace ServiceStack.ServiceHost
 			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
 		}
 
-		public static void AddHeaderLastModified(this IHttpResponse httpRes, DateTime lastModified)
+		public static void AddHeaderLastModified(this IHttpResponse httpRes, DateTime? lastModified)
 		{
-			var lastWt = lastModified.ToUniversalTime();
+			if (!lastModified.HasValue) return;
+			var lastWt = lastModified.Value.ToUniversalTime();
 			httpRes.AddHeader(HttpHeaders.LastModified, lastWt.ToString("r"));
 		}
 	}

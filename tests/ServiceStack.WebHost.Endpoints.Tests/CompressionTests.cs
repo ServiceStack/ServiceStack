@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using Funq;
 using Moq;
 using NUnit.Framework;
 using ServiceStack.Common;
@@ -7,6 +8,7 @@ using ServiceStack.Common.Extensions;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Tests.Mocks;
@@ -71,8 +73,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			EndpointHost.Config = new EndpointHostConfig
 			{
 				ServiceName = "ServiceName",
-				ServiceManager = new ServiceManager()
+				ServiceManager = new ServiceManager(GetType().Assembly)
 			};
+
+			var assembly = typeof (CompressionTests).Assembly;
+			EndpointHost.ConfigureHost(
+				new TestAppHost(new Container(), assembly), "Name", new ServiceManager(assembly));
 
 			var mockResponse = new HttpResponseMock();
 

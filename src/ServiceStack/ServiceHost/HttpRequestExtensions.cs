@@ -155,15 +155,22 @@ namespace ServiceStack.ServiceHost
 			return parts.Length > 1 ? parts[1] : null;
 		}
 
-		public static bool HasNotModifiedSince(this IHttpRequest httpReq, DateTime dateTime)
+		public static bool HasNotModifiedSince(this IHttpRequest httpReq, DateTime? dateTime)
 		{
+			if (!dateTime.HasValue) return false;
 			var strHeader = httpReq.Headers[HttpHeaders.IfModifiedSince];
 			try
 			{
 				if (strHeader != null)
 				{
 					var dateIfModifiedSince = DateTime.ParseExact(strHeader, "r", null);
-					var utcFromDate = dateTime.ToUniversalTime();
+					var utcFromDate = dateTime.Value.ToUniversalTime();
+					//strip ms
+					utcFromDate = new DateTime(
+						utcFromDate.Ticks - (utcFromDate.Ticks % TimeSpan.TicksPerSecond),
+						utcFromDate.Kind
+					);
+
 					return utcFromDate <= dateIfModifiedSince;
 				}
 				return false;
@@ -172,6 +179,16 @@ namespace ServiceStack.ServiceHost
 			{
 				return false;
 			}
+		}
+
+		public static bool DidReturn304NotModified(this IHttpRequest httpReq, DateTime? dateTime, IHttpResponse httpRes)
+		{
+			if (httpReq.HasNotModifiedSince(dateTime))
+			{
+				httpRes.StatusCode = (int) HttpStatusCode.NotModified;
+				return true;
+			}
+			return false;
 		}
 	}
 }

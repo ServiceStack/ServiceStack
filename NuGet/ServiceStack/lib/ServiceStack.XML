@@ -4,16 +4,16 @@
         <name>ServiceStack</name>
     </assembly>
     <members>
-        <member name="P:ServiceStack.ServiceHost.IHttpRequest.Items">
-            <summary>
-            Attach any data to this request that all filters and services can access.
-            </summary>
-        </member>
         <member name="M:ServiceStack.WebHost.Endpoints.RestHandler.CreateRequest(ServiceStack.ServiceHost.IHttpRequest,System.String)">
             <summary>
             Used in Unit tests
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.GetHtmlHelper">
+            <summary>
+            Ensure the same instance is used for subclasses
+            </summary>
         </member>
         <member name="M:ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory.ReturnRequestInfo(System.Web.HttpRequest)">
             <summary>
@@ -46,16 +46,6 @@
         <member name="P:ServiceStack.ServiceHost.RestPath.FirstMatchHashKey">
             <summary>
             Provide for quick lookups based on hashes that can be determined from a request url
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.IHttpResponse.Close">
-            <summary>
-            Signal that this response has been handled and no more processing should be done
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResponse.IsClosed">
-            <summary>
-            Gets a value indicating whether this instance is closed.
             </summary>
         </member>
         <member name="M:ServiceStack.WebHost.Endpoints.EndpointHost.ApplyRequestFilters(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.Object)">
@@ -1218,6 +1208,11 @@
             Summary description for $codebehindclassname$
             </summary>
         </member>
+        <member name="M:ServiceStack.WebHost.EndPoints.Formats.MarkdownFormat.SerializeToStream(ServiceStack.ServiceHost.IRequestContext,System.Object,System.IO.Stream)">
+            <summary>
+            Render Markdown for text/markdown and text/plain ContentTypes
+            </summary>
+        </member>
         <member name="M:ServiceStack.ServiceHost.ServiceOperations.GetBaseTypeWithTheSameName(System.Type)">
             <summary>
             Gets the name of the base most type in the heirachy tree with the same.
@@ -1369,12 +1364,6 @@
             Default owner, which equals <see cref="F:Funq.Owner.Container"/>.
             </summary>
         </member>
-        <member name="T:ServiceStack.WebHost.EndPoints.Support.Markdown.Evaluator">
-            <summary>
-            Expression Evaluator based from:
-            http://www.codeproject.com/KB/cs/runtime_eval.aspx
-            </summary>
-        </member>
         <member name="M:ServiceStack.CacheAccess.Providers.MemoryCacheClient.CacheAdd(System.String,System.Object,System.DateTime)">
             <summary>
             Stores The value with key only if such key doesn't exist at the server yet. 
@@ -1394,7 +1383,7 @@
             <param name="checkLastModified">The check last modified.</param>
             <returns>True; if it succeeded</returns>
         </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions.WriteToResponse(ServiceStack.ServiceHost.IHttpResponse,System.Object,ServiceStack.ServiceHost.StreamSerializerDelegate,ServiceStack.ServiceHost.IRequestContext)">
+        <member name="M:ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions.WriteToResponse(ServiceStack.ServiceHost.IHttpResponse,System.Object,ServiceStack.ServiceHost.ResponseSerializerDelegate,ServiceStack.ServiceHost.IRequestContext)">
             <summary>
             Writes to response.
             Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.

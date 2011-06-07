@@ -124,7 +124,7 @@ namespace ServiceStack.Markdown
 
 		public string AttributeEncode(string value)
 		{
-			return (!String.IsNullOrEmpty(value)) ? HttpUtility.HtmlAttributeEncode(value) : String.Empty;
+			return !string.IsNullOrEmpty(value) ? HttpUtility.HtmlAttributeEncode(value) : String.Empty;
 		}
 
 		public string AttributeEncode(object value)
@@ -134,7 +134,7 @@ namespace ServiceStack.Markdown
 
 		public string Encode(string value)
 		{
-			return (!String.IsNullOrEmpty(value)) ? HttpUtility.HtmlEncode(value) : String.Empty;
+			return !string.IsNullOrEmpty(value) ? HttpUtility.HtmlEncode(value) : String.Empty;
 		}
 
 		public string Encode(object value)
@@ -169,7 +169,7 @@ namespace ServiceStack.Markdown
 		private static string EncodeLegacy(object value)
 		{
 			var stringVal = Convert.ToString(value, CultureInfo.CurrentCulture);
-			return (!String.IsNullOrEmpty(stringVal)) ? HttpUtility.HtmlEncode(stringVal) : String.Empty;
+			return !string.IsNullOrEmpty(stringVal) ? HttpUtility.HtmlEncode(stringVal) : String.Empty;
 		}
 
 		// selects the v3.5 (legacy) or v4 HTML encoder

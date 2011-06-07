@@ -147,8 +147,6 @@
     <Compile Include="ServiceHost\HttpRequestContext.cs" />
     <Compile Include="ServiceHost\HttpRequestExtensions.cs" />
     <Compile Include="ServiceHost\HttpResponseExtensions.cs" />
-    <Compile Include="ServiceHost\IHttpRequest.cs" />
-    <Compile Include="ServiceHost\IHttpResponse.cs" />
     <Compile Include="ServiceHost\Operations.cs" />
     <Compile Include="ServiceHost\RequestAttributes.cs" />
     <Compile Include="ServiceHost\RequestContextExtensions.cs" />

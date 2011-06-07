@@ -18,6 +18,9 @@ namespace ServiceStack.Common.Web
 		public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers
 			= new Dictionary<string, StreamSerializerDelegate>();
 
+		public Dictionary<string, ResponseSerializerDelegate> ContentTypeResponseSerializers
+			= new Dictionary<string, ResponseSerializerDelegate>();
+
 		public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers
 			= new Dictionary<string, StreamDeserializerDelegate>();
 
@@ -45,6 +48,20 @@ namespace ServiceStack.Common.Web
 			this.ContentTypeFormats[format] = contentType;
 
 			SetContentTypeSerializer(contentType, streamSerializer);
+			SetContentTypeDeserializer(contentType, streamDeserializer);
+		}
+
+		public void Register(string contentType, ResponseSerializerDelegate responseSerializer,
+							 StreamDeserializerDelegate streamDeserializer)
+		{
+			if (contentType.IsNullOrEmpty())
+				throw new ArgumentNullException("contentType");
+
+			var parts = contentType.Split('/');
+			var format = parts[parts.Length - 1];
+			this.ContentTypeFormats[format] = contentType;
+
+			this.ContentTypeResponseSerializers[contentType] = responseSerializer;
 			SetContentTypeDeserializer(contentType, streamDeserializer);
 		}
 
@@ -80,18 +97,33 @@ namespace ServiceStack.Common.Web
 		{
 			var contentType = requestContext.ResponseContentType;
 
-			StreamSerializerDelegate responseWriter;
-			if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter))
+			StreamSerializerDelegate responseStreamWriter;
+			if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter))
 			{
 				using (var ms = new MemoryStream())
 				{
-					responseWriter(requestContext, responseWriter, ms);
-					
+					responseStreamWriter(requestContext, responseStreamWriter, ms);
+
 					ms.Position = 0;
 					var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
 					return result;
 				}
 			}
+
+			ResponseSerializerDelegate responseWriter;
+			if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter))
+			{
+				using (var ms = new MemoryStream())
+				{
+					var httpRes = new HttpResponseStreamWrapper(ms);
+					responseWriter(requestContext, responseWriter, httpRes);
+
+					ms.Position = 0;
+					var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
+					return result;
+				}
+			}
+
 
 			var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
 			switch (contentTypeAttr)
@@ -112,11 +144,36 @@ namespace ServiceStack.Common.Web
 		public void SerializeToStream(IRequestContext requestContext, object response, Stream responseStream)
 		{
 			var contentType = requestContext.ResponseContentType;
-			var serializer = GetStreamSerializer(contentType);
+			var serializer = GetResponseSerializer(contentType);
 			if (serializer == null)
 				throw new NotSupportedException("ContentType not supported: " + contentType);
 
-			serializer(requestContext, response, responseStream);
+			var httpRes = new HttpResponseStreamWrapper(responseStream);
+			serializer(requestContext, response, httpRes);
+		}
+
+		public void SerializeToResponse(IRequestContext requestContext, object response, IHttpResponse httpResponse)
+		{
+			var contentType = requestContext.ResponseContentType;
+			var serializer = GetResponseSerializer(contentType);
+			if (serializer == null)
+				throw new NotSupportedException("ContentType not supported: " + contentType);
+
+			serializer(requestContext, response, httpResponse);
+		}
+
+		public ResponseSerializerDelegate GetResponseSerializer(string contentType)
+		{
+			ResponseSerializerDelegate responseWriter;
+			if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter))
+			{
+				return responseWriter;
+			}
+
+			var serializer = GetStreamSerializer(contentType);
+			if (serializer == null) return null;
+
+			return (httpReq, dto, httpRes) => serializer(httpReq, dto, httpRes.OutputStream);
 		}
 
 		public StreamSerializerDelegate GetStreamSerializer(string contentType)
@@ -195,5 +252,4 @@ namespace ServiceStack.Common.Web
 			return null;
 		}
 	}
-
 }

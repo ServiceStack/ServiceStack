@@ -19,6 +19,9 @@ namespace ServiceStack.Markdown
 		public override void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, object model, bool renderHtml)
 		{
 			this.RenderHtml = renderHtml;
+			this.ScopeArgs = scopeArgs;
+			this.MarkdownPage = markdownPage;
+
 			var typedModel = (T)model;
 			Html.Init(markdownPage, scopeArgs, renderHtml, new ViewDataDictionary<T>(typedModel));
 
@@ -51,12 +54,16 @@ namespace ServiceStack.Markdown
 		{
 			this.RenderHtml = renderHtml;
 			this.ScopeArgs = scopeArgs;
+			this.MarkdownPage = markdownPage;
+
 			Html.Init(markdownPage, scopeArgs, renderHtml, new ViewDataDictionary(model));
 
 			InitHelpers();
 		}
 
 		public virtual void InitHelpers() {}
+
+		public virtual void OnLoad() { }
 
 		public string Raw(string content)
 		{
