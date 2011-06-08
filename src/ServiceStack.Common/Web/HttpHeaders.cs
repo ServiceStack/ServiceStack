@@ -4,6 +4,8 @@ namespace ServiceStack.Common.Web
 	{
 		public const string XHttpMethodOverrideKey = "X-HTTP-Method-Override";
 
+		public const string CacheControl = "Cache-Control";
+
 		public const string IfModifiedSince = "If-Modified-Since";
 
 		public const string LastModified = "Last-Modified";

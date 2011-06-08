@@ -555,7 +555,7 @@ Hello  BELLOT, Demis
 			markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
 				"/path/to/page", "HeaderLinks", headerTemplate));
 
-			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template, false);
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
 			var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
@@ -608,7 +608,7 @@ Hello  BELLOT, Demis
     - SPA
 ".Replace("\r\n", "\n");
 
-			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template, false);
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
 			var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
@@ -775,7 +775,7 @@ Hello @Upper(lastName), @Model.FirstName
 </p>
 ".Replace("\r\n", "\n");
 
-			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template, true);
+			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Prepare();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
@@ -886,7 +886,7 @@ Hello @Upper(lastName), @Model.FirstName,
 			markdownFormat.AddTemplate("/path/to/tpl", websiteTemplate);
 
 			markdownFormat.AddPage(
-				new MarkdownPage(markdownFormat, "/path/to/page-tpl", "DynamicModelTpl", template, true) {
+				new MarkdownPage(markdownFormat, "/path/to/page-tpl", "DynamicModelTpl", template) {
 					TemplatePath = "/path/to/tpl"
 				});
 

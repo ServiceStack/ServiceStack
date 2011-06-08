@@ -78,6 +78,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
 					return false;
 
+				ReloadModifiedPageAndTemplates(markdownPage);
+
 				return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
 			});
 
@@ -100,20 +102,64 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)
 		{
-			httpRes.AddHeaderLastModified(markdownPage.LastModified);
+			httpRes.AddHeaderLastModified(markdownPage.GetLastModified());
 
 			var renderInTemplate = true;
 			var renderHtml = true;
 			string format;
 			if (httpReq != null && (format = httpReq.QueryString["format"]) != null)
 			{
-				renderHtml = !format.StartsWithIgnoreCase("markdown");
+				renderHtml = !(format.StartsWithIgnoreCase("markdown")
+					|| format.StartsWithIgnoreCase("text")
+					|| format.StartsWithIgnoreCase("plain"));
 				renderInTemplate = !httpReq.GetFormatModifier().StartsWithIgnoreCase("bare");
 			}
+
+			if (!renderHtml)
+			{
+				httpRes.ContentType = ContentType.PlainText;
+			}
+
 			var markup = RenderDynamicPage(markdownPage, dto, renderHtml, renderInTemplate);
 			var markupBytes = markup.ToUtf8Bytes();
 			httpRes.OutputStream.Write(markupBytes, 0, markupBytes.Length);
+
 			return true;
+		}
+
+		public void ReloadModifiedPageAndTemplates(MarkdownPage markdownPage)
+		{
+			var lastWriteTime = File.GetLastWriteTime(markdownPage.FilePath);
+			if (lastWriteTime > markdownPage.LastModified)
+			{
+				markdownPage.Reload();
+			}
+
+			MarkdownTemplate template;
+			if (markdownPage.DirectiveTemplatePath != null
+				&& this.PageTemplates.TryGetValue(markdownPage.DirectiveTemplatePath, out template))
+			{
+				lastWriteTime = File.GetLastWriteTime(markdownPage.DirectiveTemplatePath);
+				if (lastWriteTime > template.LastModified)
+					ReloadTemplate(template);
+			}
+			if (markdownPage.TemplatePath != null
+				&& this.PageTemplates.TryGetValue(markdownPage.TemplatePath, out template))
+			{
+				lastWriteTime = File.GetLastWriteTime(markdownPage.TemplatePath);
+				if (lastWriteTime > template.LastModified)
+					ReloadTemplate(template);
+			}
+		}
+
+		private void ReloadTemplate(MarkdownTemplate template)
+		{
+			var contents = File.ReadAllText(template.FilePath);
+			if (!string.IsNullOrEmpty(this.WebHostUrl))
+			{
+				contents = contents.Replace(WebHostUrlPlaceHolder, WebHostUrl.WithTrailingSlash());
+			}
+			template.Reload(contents);
 		}
 
 		/// <summary>
@@ -124,6 +170,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			MarkdownPage markdownPage;
 			if ((markdownPage = GetViewPageByResponse(dto, requestContext.Get<IHttpRequest>())) == null)
 				throw new InvalidDataException(ErrorPageNotFound.FormatWith(GetPageName(dto, requestContext)));
+
+			ReloadModifiedPageAndTemplates(markdownPage);
 
 			const bool renderHtml = false; //i.e. render Markdown
 			var markup = RenderStaticPage(markdownPage, renderHtml);

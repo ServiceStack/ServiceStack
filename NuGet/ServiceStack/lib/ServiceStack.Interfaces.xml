@@ -64,6 +64,11 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpRequest.Items">
+            <summary>
+            Attach any data to this request that all filters and services can access.
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.IRedisSubscription.SubscribeToChannels(System.String[])">
             <summary>
             Subscribe to channels by name
@@ -316,6 +321,41 @@
         <member name="T:ServiceStack.ServiceHost.IRequiresRequestContext">
             <summary>
             Implement on services that need access to the RequestContext
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResult.StatusCode">
+            <summary>
+            The HTTP Response Status Code
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResult.ContentType">
+            <summary>
+            The HTTP Response ContentType
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResult.Headers">
+            <summary>
+            Additional HTTP Headers
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResult.Response">
+            <summary>
+            Response DTO
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResult.TemplateName">
+            <summary>
+            A specific template, if not the default (for HTML, Markdown, etc. ContentTypes)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResult.ResponseFilter">
+            <summary>
+            if not provided, get's injected by ServiceStack
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResult.RequestContext">
+            <summary>
+            Holds the request call context
             </summary>
         </member>
         <member name="T:ServiceStack.Redis.Generic.IRedisTypedPipeline`1">
@@ -593,6 +633,16 @@
             to generate to and from that type.
             
             The source type is what the type the attribute is decorated on which can only be resolved at runtime.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.IHttpResponse.Close">
+            <summary>
+            Signal that this response has been handled and no more processing should be done
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.IHttpResponse.IsClosed">
+            <summary>
+            Gets a value indicating whether this instance is closed.
             </summary>
         </member>
         <member name="M:ServiceStack.Redis.IRedisClientsManager.GetClient">
@@ -947,56 +997,6 @@
             Logs the specified message.
             </summary>
             <param name="message">The message.</param>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResult.StatusCode">
-            <summary>
-            The HTTP Response Status Code
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResult.ContentType">
-            <summary>
-            The HTTP Response ContentType
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResult.Headers">
-            <summary>
-            Additional HTTP Headers
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResult.Response">
-            <summary>
-            Response DTO
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResult.TemplateName">
-            <summary>
-            A specific template, if not the default (for HTML, Markdown, etc. ContentTypes)
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResult.ResponseFilter">
-            <summary>
-            if not provided, get's injected by ServiceStack
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResult.RequestContext">
-            <summary>
-            Holds the request call context
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.IHttpResponse.Close">
-            <summary>
-            Signal that this response has been handled and no more processing should be done
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpResponse.IsClosed">
-            <summary>
-            Gets a value indicating whether this instance is closed.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.IHttpRequest.Items">
-            <summary>
-            Attach any data to this request that all filters and services can access.
-            </summary>
         </member>
     </members>
 </doc>

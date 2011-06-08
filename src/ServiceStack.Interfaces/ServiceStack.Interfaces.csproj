@@ -195,6 +195,7 @@
     <Compile Include="ServiceHost\IContentTypeFilter.cs" />
     <Compile Include="ServiceHost\IContentTypeReader.cs" />
     <Compile Include="ServiceHost\IContentTypeWriter.cs" />
+    <Compile Include="ServiceHost\IExpirable.cs" />
     <Compile Include="ServiceHost\IFile.cs" />
     <Compile Include="ServiceHost\IHasOptions.cs" />
     <Compile Include="ServiceHost\IHttpError.cs" />

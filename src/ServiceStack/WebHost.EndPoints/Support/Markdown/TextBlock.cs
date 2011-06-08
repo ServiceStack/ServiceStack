@@ -27,6 +27,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public MarkdownPage MarkdownPage { get; set; }
 		public Dictionary<string, object> ScopeArgs { get; set; }
 		public bool RenderHtml { get; set; }
+
+		public PageContext Create(MarkdownPage markdownPage, bool renderHtml)
+		{
+			return new PageContext(markdownPage, ScopeArgs, renderHtml);
+		}
 	}
 
 
@@ -42,13 +47,18 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		protected bool RenderHtml { get; set; }
 
-		protected PageContext PageContext { get; set; }
+		//protected PageContext PageContext { get; set; }
 
 		protected Dictionary<string, object> ScopeArgs { get; set; }
 
+		protected PageContext CreatePageContext()
+		{
+			return new PageContext(Page, ScopeArgs, RenderHtml);
+		}
+
 		public void DoFirstRun(PageContext pageContext)
 		{
-			this.PageContext = pageContext;
+			//this.PageContext = pageContext;
 			this.Page = pageContext.MarkdownPage;
 			this.RenderHtml = pageContext.RenderHtml;
 			this.ScopeArgs = pageContext.ScopeArgs;
@@ -266,9 +276,10 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			this.Id = Page.GetNextId();
 
+			var pageContext = CreatePageContext();
 			foreach (var templateBlock in ChildBlocks)
 			{
-				templateBlock.DoFirstRun(this.PageContext);
+				templateBlock.DoFirstRun(pageContext);
 			}
 		}
 
@@ -546,12 +557,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			getMemberFn = DataBinder.Compile(model.GetType(), MemberExpr);
 			var memberExprEnumerator = GetMemberExprEnumerator(model);
 
+			var pageContext = CreatePageContext();
 			foreach (var item in memberExprEnumerator)
 			{
 				ScopeArgs[this.EnumeratorName] = item;
 				foreach (var templateBlock in ChildBlocks)
 				{
-					templateBlock.DoFirstRun(PageContext);
+					templateBlock.DoFirstRun(pageContext);
 				}
 			}
 		}
@@ -664,13 +676,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return exprParams;
 		}
 
-		protected List<object> GetParamValues(IDictionary<string, object> scopeArgs)
+		protected List<object> GetParamValues(IDictionary<string, object> scopeArgs, bool defaultToNullValues)
 		{
 			var results = new List<object>();
 			foreach (var paramName in paramNames)
 			{
 				object paramValue;
-				if (!scopeArgs.TryGetValue(paramName, out paramValue))
+				if (!scopeArgs.TryGetValue(paramName, out paramValue) && !defaultToNullValues)
 					throw new ArgumentException("Unresolved param " + paramName + " in " + Condition);
 
 				results.Add(paramValue);
@@ -678,10 +690,20 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return results;
 		}
 
+		protected List<object> GetParamValues(IDictionary<string, object> scopeArgs)
+		{
+			return GetParamValues(scopeArgs, false);
+		}
+
+		public T Evaluate<T>(Dictionary<string, object> scopeArgs, bool defaultToNullValues)
+		{
+			var paramValues = GetParamValues(scopeArgs, defaultToNullValues);
+			return (T)Evaluator.Evaluate(CodeGenMethodName, paramValues.ToArray());
+		}
+
 		public T Evaluate<T>(Dictionary<string, object> scopeArgs)
 		{
-			var paramValues = GetParamValues(scopeArgs);
-			return (T)Evaluator.Evaluate(CodeGenMethodName, paramValues.ToArray());
+			return Evaluate<T>(scopeArgs, false);
 		}
 	}
 
@@ -730,7 +752,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public override void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
 			//Resolve and add to ScopeArgs
-			var resultCondition = Evaluate<object>(scopeArgs);
+			var resultCondition = Evaluate<object>(scopeArgs, true);
 			scopeArgs[varName] = resultCondition;
 		}
 	}
@@ -826,9 +848,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			base.OnFirstRun();
 		}
 
+		public string DependentPageName { get; private set; }
+
 		private void Prepare(MarkdownPage markdownPage)
 		{
 			var rawMethodExpr = methodExpr.Replace("Html.", "");
+			if (rawMethodExpr == "Partial")
+			{
+				this.DependentPageName = this.Condition.ExtractContents("\"", "\"");
+			}
 			this.WriteRawHtml = rawMethodExpr == "Raw";
 
 			var parts = methodExpr.Split('.');

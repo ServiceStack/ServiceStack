@@ -31,13 +31,12 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				if (instance == null)
 				{
-					instance = new EndpointHostConfig
-					{
+					instance = new EndpointHostConfig {
 						UsageExamplesBaseUri = DefaultUsageExamplesBaseUri,
 						LogFactory = new NullLogFactory(),
 						EnableAccessRestrictions = true,
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
-					    WebHostPhysicalPath = "~".MapServerPath(),
+						WebHostPhysicalPath = "~".MapServerPath(),
 						ServiceStackHandlerFactoryPath = ServiceStackPath,
 						MetadataRedirectPath = null,
 						DefaultContentType = ContentType.Json,
@@ -66,12 +65,17 @@ namespace ServiceStack.WebHost.Endpoints
 						MarkdownBaseType = typeof(MarkdownViewBase),
 						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
 						MarkdownSearchPath = "~".MapServerPath(),
+						AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
+							{ "image/gif", TimeSpan.FromHours(1) },
+							{ "image/png", TimeSpan.FromHours(1) },
+							{ "image/jpeg", TimeSpan.FromHours(1) },
+						}
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
 					{
 						InferHttpHandlerPath();
-					} 
+					}
 				}
 				return instance;
 			}
@@ -104,6 +108,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.MarkdownBaseType = instance.MarkdownBaseType;
 			this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
 			this.MarkdownSearchPath = instance.MarkdownSearchPath;
+			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -161,7 +166,7 @@ namespace ServiceStack.WebHost.Endpoints
 						+ "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
 				}
 			}
-			catch (Exception) {}
+			catch (Exception) { }
 		}
 
 		public ServiceManager ServiceManager { get; set; }
@@ -200,6 +205,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public Type MarkdownBaseType { get; set; }
 		public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
 		public string MarkdownSearchPath { get; set; }
+
+		public Dictionary<string, TimeSpan> AddMaxAgeForStaticMimeTypes { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace

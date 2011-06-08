@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 using ServiceStack.Markdown;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
-	public class MarkdownTemplate : ITemplateWriter
+	public class MarkdownTemplate : ITemplateWriter, IExpirable
 	{
 		public MarkdownTemplate() { }
 
@@ -28,6 +29,34 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public static string BodyPlaceHolder = "Body";
 		public static string PlaceHolderPrefix = "<!--@";
 		public static string PlaceHolderSuffix = "-->";
+
+		private Exception initException;
+		readonly object readWriteLock = new object();
+		private bool isBusy;
+		public void Reload(string templateContents)
+		{
+			var fi = new FileInfo(this.FilePath);
+			var lastModified = fi.LastWriteTime;
+
+			lock (readWriteLock)
+			{
+				try
+				{
+					isBusy = true;
+
+					this.Contents = templateContents;
+					this.LastModified = lastModified;
+					initException = null;
+					Prepare();
+				}
+				catch (Exception ex)
+				{
+					initException = ex;
+				}
+				isBusy = false;
+				Monitor.PulseAll(readWriteLock);
+			}
+		}
 
 		public void Prepare()
 		{
@@ -74,6 +103,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public string RenderToString(Dictionary<string, object> scopeArgs)
 		{
+			lock (readWriteLock)
+			{
+				while (isBusy)
+					Monitor.Wait(readWriteLock);
+			}
+
 			if (TextBlocks == null || VarRefBlocks == null)
 				throw new InvalidDataException("Template has not been Initialized.");
 
@@ -97,6 +132,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public void Write(MarkdownViewBase instance, TextWriter textWriter, Dictionary<string, object> scopeArgs)
 		{
+			lock (readWriteLock)
+			{
+				while (isBusy)
+					Monitor.Wait(readWriteLock);
+			}
+
 			if (TextBlocks == null || VarRefBlocks == null)
 				throw new InvalidDataException("Template has not been Initialized.");
 

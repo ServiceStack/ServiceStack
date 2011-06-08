@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Web
 		public const string ProtoBuf = "application/x-protobuf";
 
 		public const string JavaScript = "text/javascript";
-
+		
 		public static string GetExtension(string mimeType)
 		{
 			switch (mimeType)

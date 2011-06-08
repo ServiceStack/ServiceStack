@@ -60,8 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					foreach (var defaultDoc in EndpointHost.Config.DefaultDocuments)
 					{
 						var defaultFileName = Path.Combine(fi.FullName, defaultDoc);
-						var defaultFileInfo = new FileInfo(defaultFileName);
-						if (!defaultFileInfo.Exists) continue;
+						if (!File.Exists(defaultFileName)) continue;
 						response.Redirect(request.GetPathUrl() + '/' + defaultDoc);
 						return;
 					}
@@ -69,6 +68,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				if (!fi.Exists)
 					throw new HttpException(404, "File '" + request.PathInfo + "' not found.");
+			}
+
+			TimeSpan maxAge;
+			if (EndpointHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(response.ContentType, out maxAge))
+			{
+				response.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
 			}
 
 			if (request.HasNotModifiedSince(fi.LastWriteTime))

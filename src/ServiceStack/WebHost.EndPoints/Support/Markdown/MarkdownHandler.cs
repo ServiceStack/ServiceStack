@@ -30,7 +30,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				return;
 			}
 
-			if (httpReq.DidReturn304NotModified(contentPage.LastModified, httpRes))
+			MarkdownFormat.ReloadModifiedPageAndTemplates(contentPage);
+
+			if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
 				return;
 
 			MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, null, httpRes);

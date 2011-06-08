@@ -11,14 +11,14 @@ using ServiceStack.WebHost.EndPoints.Formats;
 
 namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 {
-	public class MarkdownPage
+	public class MarkdownPage : IExpirable
 	{
 		public const string ModelName = "Model";
 
 		public MarkdownPage()
 		{
 			this.ExecutionContext = new EvaluatorExecutionContext();
-			this.RenderHtml = true;
+			this.Dependents = new List<IExpirable>();
 		}
 
 		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents)
@@ -36,12 +36,6 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			PageType = pageType;
 		}
 
-		public MarkdownPage(MarkdownFormat markdown, string fullPath, string name, string contents, bool renderHtml)
-			: this(markdown, fullPath, name, contents, MarkdownPageType.ViewPage)
-		{
-			this.RenderHtml = renderHtml;
-		}
-
 		public MarkdownFormat Markdown { get; set; }
 
 		private int timesRun;
@@ -52,11 +46,27 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public string Name { get; set; }
 		public string Contents { get; set; }
 		public string HtmlContents { get; set; }
-		public bool RenderHtml { get; set; }
 		public string TemplatePath { get; set; }
 		public string DirectiveTemplatePath { get; set; }
-		public DateTime? LastModified { get; set; }
 		public EvaluatorExecutionContext ExecutionContext { get; private set; }
+
+		public DateTime? LastModified { get; set; }
+		public List<IExpirable> Dependents { get; private set; }
+
+		public DateTime? GetLastModified()
+		{
+			if (!hasCompletedFirstRun) return null;
+			var lastModified = this.LastModified;
+			foreach (var expirable in this.Dependents)
+			{
+				if (!expirable.LastModified.HasValue) continue;
+				if (!lastModified.HasValue || expirable.LastModified > lastModified)
+				{
+					lastModified = expirable.LastModified;
+				}
+			}
+			return lastModified;
+		}
 
 		public string GetTemplatePath()
 		{
@@ -84,7 +94,38 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public TemplateBlock[] MarkdownBlocks { get; set; }
 		public TemplateBlock[] HtmlBlocks { get; set; }
-		public StatementExprBlock[] Statements { get; set; }
+
+		private Exception initException;
+		readonly object readWriteLock = new object();
+		private bool isBusy;
+		public void Reload()
+		{
+			var fi = new FileInfo(this.FilePath);
+			var lastModified = fi.LastWriteTime;
+			var contents = File.ReadAllText(this.FilePath);
+
+			lock (readWriteLock)
+			{
+				try
+				{
+					isBusy = true;
+
+					this.Contents = contents;
+					this.LastModified = lastModified;
+					initException = null;
+					exprSeq = 0;
+					timesRun = 0;
+					ExecutionContext = new EvaluatorExecutionContext();
+					Prepare();
+				}
+				catch (Exception ex)
+				{
+					initException = ex;
+				}				
+				isBusy = false;
+				Monitor.PulseAll(readWriteLock);
+			}
+		}
 
 		public void Prepare()
 		{
@@ -96,15 +137,17 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 			if (this.Contents.IsNullOrEmpty()) return;
 
-			var statements = new List<StatementExprBlock>();
-			this.Contents = StatementExprBlock.Extract(this.Contents, statements);
+			var markdownStatements = new List<StatementExprBlock>();
 
-			this.MarkdownBlocks = this.Contents.CreateTemplateBlocks(statements).ToArray();
+			var markdownContents = StatementExprBlock.Extract(this.Contents, markdownStatements);
 
-			this.HtmlContents = Markdown.Transform(this.Contents);
-			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(statements).ToArray();
+			this.MarkdownBlocks = markdownContents.CreateTemplateBlocks(markdownStatements).ToArray();
 
-			this.Statements = statements.ToArray();
+			var htmlStatements = new List<StatementExprBlock>();
+			var htmlContents = StatementExprBlock.Extract(this.Contents, htmlStatements);
+
+			this.HtmlContents = Markdown.Transform(htmlContents);
+			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(htmlStatements).ToArray();
 
 			SetTemplateDirectivePath();
 		}
@@ -136,28 +179,61 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				throw new ArgumentNullException("textWriter");
 
 			if (pageContext == null)
-				pageContext = new PageContext(this, new Dictionary<string, object>(), this.RenderHtml);
-
+				pageContext = new PageContext(this, new Dictionary<string, object>(), true);
 
 			var blocks = pageContext.RenderHtml ? this.HtmlBlocks : this.MarkdownBlocks;
 
 			if (Interlocked.Increment(ref timesRun) == 1)
 			{
-				this.ExecutionContext.BaseType = Markdown.MarkdownBaseType;
-				this.ExecutionContext.TypeProperties = Markdown.MarkdownGlobalHelpers;
+				lock (readWriteLock)
+				{
+					try
+					{
+						isBusy = true;
 
-				pageContext.MarkdownPage = this;
-				foreach (var block in blocks) block.DoFirstRun(pageContext);
+						this.ExecutionContext.BaseType = Markdown.MarkdownBaseType;
+						this.ExecutionContext.TypeProperties = Markdown.MarkdownGlobalHelpers;
 
-				this.evaluator = this.ExecutionContext.Build();
+						pageContext.MarkdownPage = this;
+						var initHtmlContext = pageContext.Create(this, true);
+						var initMarkdownContext = pageContext.Create(this, false);
 
-				foreach (var block in blocks) block.AfterFirstRun(evaluator);
+						foreach (var block in this.HtmlBlocks) block.DoFirstRun(initHtmlContext);
+						foreach (var block in this.MarkdownBlocks) block.DoFirstRun(initMarkdownContext);
 
-				hasCompletedFirstRun = true;
+						this.evaluator = this.ExecutionContext.Build();
+
+						foreach (var block in this.HtmlBlocks) block.AfterFirstRun(evaluator);
+						foreach (var block in this.MarkdownBlocks) block.AfterFirstRun(evaluator);
+
+						AddDependentPages(blocks);
+
+						initException = null;
+						hasCompletedFirstRun = true;
+					}
+					catch (Exception ex)
+					{
+						initException = ex;
+						throw;
+					}
+					finally
+					{
+						isBusy = false;
+					}
+				}
 			}
 
-			if (!hasCompletedFirstRun) //TODO: Add lock/waits if it's a noticeable problem
-				throw new InvalidOperationException("Page hasn't finished initializing yet");
+			lock (readWriteLock)
+			{
+				while (isBusy)
+					Monitor.Wait(readWriteLock);
+			}
+
+			if (initException != null)
+			{
+				timesRun = 0;
+				throw initException;
+			}
 
 			MarkdownViewBase instance = null;
 			if (this.evaluator != null)
@@ -167,7 +243,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				object model;
 				pageContext.ScopeArgs.TryGetValue(ModelName, out model);
 
-				instance.Init(this, pageContext.ScopeArgs, model, this.RenderHtml);				
+				instance.Init(this, pageContext.ScopeArgs, model, pageContext.RenderHtml);
 			}
 
 			foreach (var block in blocks)
@@ -179,6 +255,31 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			{
 				instance.OnLoad();
 			}
+		}
+
+		private void AddDependentPages(IEnumerable<TemplateBlock> blocks)
+		{
+			foreach (var block in blocks)
+			{
+				var exprBlock = block as MethodStatementExprBlock;
+				if (exprBlock == null || exprBlock.DependentPageName == null) continue;
+				var page = Markdown.GetViewPage(exprBlock.DependentPageName);
+				if (page != null)
+					Dependents.Add(page);
+			}
+
+			MarkdownTemplate template;
+			if (this.DirectiveTemplatePath != null
+				&& Markdown.PageTemplates.TryGetValue(this.DirectiveTemplatePath, out template))
+			{
+				this.Dependents.Add(template);
+			}
+			if (this.TemplatePath != null
+				&& Markdown.PageTemplates.TryGetValue(this.TemplatePath, out template))
+			{
+				this.Dependents.Add(template);
+			}
+
 		}
 	}
 }
