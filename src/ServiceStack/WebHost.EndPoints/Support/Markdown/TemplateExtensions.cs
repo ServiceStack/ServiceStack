@@ -217,7 +217,12 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 				pos++; //@
 
-				if (content[pos] == StatementPlaceholderChar)
+				if (content[pos] == '@')
+				{
+					prevTextBlock.Content += "@";
+					pos++;
+				}
+				else if (content[pos] == StatementPlaceholderChar)
 				{
 					pos++; //^
 					var index = content.GetNextAlphaNumericExpr(ref pos);

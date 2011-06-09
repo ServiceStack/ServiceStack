@@ -15,6 +15,73 @@
             Ensure the same instance is used for subclasses
             </summary>
         </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.InitHelpers">
+            <summary>
+            Called before page is executed
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.OnLoad">
+            <summary>
+            Called after page is executed but before it's merged with the 
+            website template if any.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Raw(System.String)">
+            <summary>
+            Don't HTML encode safe output
+            </summary>
+            <param name="content"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Partial(System.String,System.Object)">
+            <summary>
+            Return the output of a different view with the specified name 
+            using the supplied model
+            </summary>
+            <param name="viewName"></param>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.TryResolve``1">
+            <summary>
+            Resolve registered Assemblies
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.AppHost">
+            <summary>
+            The AppHost so you can access configuration and resolve dependencies, etc.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.MarkdownPage">
+            <summary>
+            This precompiled Markdown page with Metadata
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Html">
+            <summary>
+            ASP.NET MVC's HtmlHelper
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.ScopeArgs">
+            <summary>
+            All variables passed to and created by your page. 
+            The Response DTO is stored and accessible via the 'Model' variable.
+             
+            All variables and outputs created are stored in ScopeArgs which is what's available
+            to your website template. The Generated page is stored in the 'Body' variable.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.RenderHtml">
+            <summary>
+            Whether HTML or Markdown output is requested
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Model">
+            <summary>
+            The Response DTO
+            </summary>
+        </member>
         <member name="M:ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory.ReturnRequestInfo(System.Web.HttpRequest)">
             <summary>
             If enabled, just returns the Request Info as it understands

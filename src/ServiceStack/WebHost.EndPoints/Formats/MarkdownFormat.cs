@@ -54,6 +54,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		private readonly MarkdownSharp.Markdown markdown;
 
+		public IAppHost AppHost { get; set; }
+
 		public string WebHostUrl { get; set; }
 
 		public MarkdownFormat()
@@ -67,6 +69,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public void Register(IAppHost appHost)
 		{
+			this.AppHost = appHost;
 			this.WebHostUrl = appHost.Config.WebHostUrl;
 			RegisterMarkdownPages(appHost.Config.MarkdownSearchPath);
 

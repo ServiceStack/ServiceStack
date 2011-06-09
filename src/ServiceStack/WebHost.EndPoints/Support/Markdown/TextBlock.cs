@@ -325,6 +325,13 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					lastPos = endPos + 2;
 					continue;
 				}
+				if (peekChar == "@")
+				{
+					sb.Append('@');
+					pos += 2;
+					lastPos = pos;
+					continue;
+				}
 
 				var contentBlock = content.Substring(lastPos, pos - lastPos);
 
@@ -703,7 +710,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 		public T Evaluate<T>(Dictionary<string, object> scopeArgs)
 		{
-			return Evaluate<T>(scopeArgs, false);
+			return Evaluate<T>(scopeArgs, true);
 		}
 	}
 

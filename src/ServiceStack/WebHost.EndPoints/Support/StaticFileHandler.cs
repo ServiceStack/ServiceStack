@@ -71,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			TimeSpan maxAge;
-			if (EndpointHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(response.ContentType, out maxAge))
+			if (response.ContentType != null && EndpointHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(response.ContentType, out maxAge))
 			{
 				response.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
 			}

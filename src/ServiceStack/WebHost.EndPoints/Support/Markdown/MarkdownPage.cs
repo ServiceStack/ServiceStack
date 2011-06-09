@@ -111,6 +111,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					isBusy = true;
 
 					this.Contents = contents;
+					if (Markdown.WebHostUrl != null)
+						this.Contents = this.Contents.Replace("~/", Markdown.WebHostUrl);
+
 					this.LastModified = lastModified;
 					initException = null;
 					exprSeq = 0;
@@ -136,6 +139,9 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			}
 
 			if (this.Contents.IsNullOrEmpty()) return;
+
+			if (Markdown.WebHostUrl != null)
+				this.Contents = this.Contents.Replace("~/", Markdown.WebHostUrl);
 
 			var markdownStatements = new List<StatementExprBlock>();
 
@@ -243,7 +249,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				object model;
 				pageContext.ScopeArgs.TryGetValue(ModelName, out model);
 
-				instance.Init(this, pageContext.ScopeArgs, model, pageContext.RenderHtml);
+				instance.Init(Markdown.AppHost, this, pageContext.ScopeArgs, model, pageContext.RenderHtml);
 			}
 
 			foreach (var block in blocks)
