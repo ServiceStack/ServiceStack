@@ -13,6 +13,7 @@ namespace ServiceStack.ServiceHost
 		public const string RestPost = "Post";
 		public const string RestPut = "Put";
 		public const string RestDelete = "Delete";
+		public const string RestPatch = "Patch";
 
 
 		private static readonly Dictionary<Type, MethodInfo> ServiceExecCache = new Dictionary<Type, MethodInfo>();
@@ -62,6 +63,11 @@ namespace ServiceStack.ServiceHost
 				var mi = serviceType.GetMethod(RestDelete, new[] { requestType });
 				if (mi != null) return mi;
 			}
+			else if ((attrs & EndpointAttributes.HttpPatch) == EndpointAttributes.HttpPatch)
+			{
+				var mi = serviceType.GetMethod(RestPatch, new[] { requestType });
+				if (mi != null) return mi;
+			}
 			return serviceType.GetMethod(Execute, new[] { requestType });
 		}
 	}
@@ -96,6 +102,11 @@ namespace ServiceStack.ServiceHost
 			{
 				var restService = service as IRestDeleteService<TReq>;
 				if (restService != null) return restService.Delete(request);
+			}
+			else if ((attrs & EndpointAttributes.HttpPatch) == EndpointAttributes.HttpPatch)
+			{
+				var restService = service as IRestPatchService<TReq>;
+				if (restService != null) return restService.Patch(request);
 			}
 			return service.Execute(request);
 		}

@@ -8,6 +8,7 @@ namespace ServiceStack.ServiceClient.Web
 		public const string Delete = "DELETE";
 		public const string Options = "OPTIONS";
 		public const string Head = "HEAD";
+		public const string Patch = "PATCH";
 
 	}
 }

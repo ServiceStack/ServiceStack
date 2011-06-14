@@ -47,6 +47,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		{
 			return new VerbMatch1Response { Result = HttpMethods.Delete };
 		}
+
+		public object Patch(VerbMatch1 request)
+		{
+			return new VerbMatch1Response { Result = HttpMethods.Patch };
+		}
 	}
 
 }

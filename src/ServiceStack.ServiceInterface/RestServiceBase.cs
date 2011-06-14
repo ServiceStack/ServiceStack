@@ -8,7 +8,8 @@ namespace ServiceStack.ServiceInterface
 		IRestGetService<TRequest>,
 		IRestPutService<TRequest>,
 		IRestPostService<TRequest>,
-		IRestDeleteService<TRequest>
+		IRestDeleteService<TRequest>,
+		IRestPatchService<TRequest>
 	{
 		protected override object Run(TRequest request)
 		{
@@ -80,6 +81,24 @@ namespace ServiceStack.ServiceInterface
 			{
 				OnBeforeExecute(request);
 				return OnDelete(request);
+			}
+			catch (Exception ex)
+			{
+				return HandleException(request, ex);
+			}
+		}
+
+		public virtual object OnPatch(TRequest request)
+		{
+			throw new NotImplementedException("This base method should be overridden but not called");
+		}
+
+		public object Patch(TRequest request)
+		{
+			try
+			{
+				OnBeforeExecute(request);
+				return OnPatch(request);
 			}
 			catch (Exception ex)
 			{

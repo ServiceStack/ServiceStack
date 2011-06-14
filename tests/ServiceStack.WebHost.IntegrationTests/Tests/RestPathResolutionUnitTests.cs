@@ -116,5 +116,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Assert.That(request2.Name, Is.EqualTo("arg"));
 		}
 
+		[Test]
+		public void Can_call_PATCH_on_VerbMatch_Services()
+		{
+			var request = (VerbMatch2)GetRequest(HttpMethods.Patch, "/verbmatch");
+			Assert.That(request.Name, Is.Null);
+
+			var request2 = (VerbMatch2)GetRequest(HttpMethods.Patch, "/verbmatch/arg");
+			Assert.That(request2.Name, Is.EqualTo("arg"));
+		}
+
 	}
 }

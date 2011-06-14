@@ -13,7 +13,7 @@ using ServiceStack.Text;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 
-	[RestService("/movies","POST,PUT")]
+	[RestService("/movies", "POST,PUT,PATCH")]
 	[RestService("/movies/{Id}")]
 	[DataContract]
 	public class Movie
@@ -94,8 +94,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public override object OnGet(Movie movie)
 		{
-			return new MovieResponse
-			{
+			return new MovieResponse {
 				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(movie.Id))
 			};
 		}
@@ -105,18 +104,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public override object OnPost(Movie movie)
 		{
-			var newMovieId = DbFactory.Exec(dbCmd =>
-			{
+			var newMovieId = DbFactory.Exec(dbCmd => {
 				dbCmd.Insert(movie);
 				return dbCmd.GetLastInsertId();
 			});
 
-			var newMovie = new MovieResponse
-			{
+			var newMovie = new MovieResponse {
 				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(newMovieId))
 			};
-			return new HttpResult(newMovie)
-			{
+			return new HttpResult(newMovie) {
 				StatusCode = HttpStatusCode.Created,
 				Headers = {
 					{ HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + newMovieId }
@@ -139,6 +135,20 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public override object OnDelete(Movie request)
 		{
 			DbFactory.Exec(dbCmd => dbCmd.DeleteById<Movie>(request.Id));
+			return new MovieResponse();
+		}
+
+		/// <summary>
+		/// PATCH /movies
+		/// </summary>
+		public override object OnPatch(Movie movie)
+		{
+			DbFactory.Exec(dbCmd => {
+				var existingMovie = dbCmd.GetById<Movie>(movie.Id);
+				if (movie.Title != null)
+					existingMovie.Title = movie.Title;
+				dbCmd.Save(existingMovie);
+			});
 			return new MovieResponse();
 		}
 	}

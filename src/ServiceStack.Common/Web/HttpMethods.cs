@@ -11,6 +11,7 @@ namespace ServiceStack.Common.Web
 		public const string Delete = "DELETE";
 		public const string Head = "HEAD";
 		public const string Options = "OPTIONS";
+		public const string Patch = "PATCH";
 
 		public static EndpointAttributes GetEndpointAttribute(string httpMethod)
 		{
@@ -24,6 +25,8 @@ namespace ServiceStack.Common.Web
 					return EndpointAttributes.HttpPost;
 				case Delete:
 					return EndpointAttributes.HttpDelete;
+				case Patch:
+					return EndpointAttributes.HttpPatch;
 				case Head:
 					return EndpointAttributes.HttpHead;
 			}

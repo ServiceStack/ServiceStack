@@ -17,8 +17,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	public class MovieServiceTests
 		: RestsTestBase
 	{
-		public Movie NewMovie = new Movie
-		{
+		public Movie NewMovie = new Movie {
 			ImdbId = "tt0111161",
 			Title = "The Shawshank Redemption",
 			Rating = 9.2m,
@@ -49,12 +48,28 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var response = ExecutePath(HttpMethods.Put, "/movies", null, null, NewMovie);
 
-			this.DbFactory.Exec(dbCmd =>
-			{
+			this.DbFactory.Exec(dbCmd => {
 				var lastInsertId = dbCmd.GetLastInsertId();
 				var createdMovie = dbCmd.GetById<Movie>(lastInsertId);
 				Assert.That(createdMovie, Is.Not.Null);
 				Assert.That(createdMovie, Is.EqualTo(NewMovie));
+			});
+		}
+
+		[Test]
+		public void Can_PATCH_Movie_from_dto()
+		{
+			ExecutePath(HttpMethods.Put, "/movies", null, null, NewMovie);
+
+			var lastInsertId = (int)this.DbFactory.Exec(dbCmd => dbCmd.GetLastInsertId());
+
+			var patchMovie = new Movie { Id = lastInsertId, Title = "PATCHED " + NewMovie.Title };
+			ExecutePath(HttpMethods.Patch, "/movies", null, null, patchMovie);
+
+			this.DbFactory.Exec(dbCmd => {
+				var movie = dbCmd.GetById<Movie>(lastInsertId);
+				Assert.That(movie, Is.Not.Null);
+				Assert.That(movie.Title, Is.EqualTo(patchMovie.Title));
 			});
 		}
 
@@ -65,8 +80,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 			var response = ExecutePath(HttpMethods.Put, "/movies", null, formData, null);
 
-			this.DbFactory.Exec(dbCmd =>
-			{
+			this.DbFactory.Exec(dbCmd => {
 				var lastInsertId = dbCmd.GetLastInsertId();
 				var createdMovie = dbCmd.GetById<Movie>(lastInsertId);
 				Assert.That(createdMovie, Is.Not.Null);
@@ -79,8 +93,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var response = ExecutePath(HttpMethods.Post, "/reset-movies");
 
-			this.DbFactory.Exec(dbCmd =>
-			{
+			this.DbFactory.Exec(dbCmd => {
 				var movies = dbCmd.Select<Movie>();
 				Assert.That(movies.Count, Is.EqualTo(ResetMoviesService.Top5Movies.Count));
 			});

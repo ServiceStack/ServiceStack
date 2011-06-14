@@ -8,7 +8,8 @@ namespace ServiceStack.ServiceHost
 		IRestGetService<T>,
 		IRestPostService<T>,
 		IRestPutService<T>,
-		IRestDeleteService<T>
+		IRestDeleteService<T>,
+		IRestPatchService<T>
 	{
 	}
 }

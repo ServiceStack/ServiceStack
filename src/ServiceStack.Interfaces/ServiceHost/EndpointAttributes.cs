@@ -31,27 +31,29 @@ namespace ServiceStack.ServiceHost
 		HttpPost = 1 << 7,
 		HttpPut = 1 << 8,
 		HttpDelete = 1 << 9,
+		HttpPatch = 1 << 10,
+		//Future 11,12
 
 		//Call Styles
-		AsyncOneWay = 1 << 10,
-		SyncReply = 1 << 11,
+		AsyncOneWay = 1 << 13,
+		SyncReply = 1 << 14,
 
 		//Different endpoints
-		Soap11 = 1 << 12,
-		Soap12 = 1 << 13,
+		Soap11 = 1 << 15,
+		Soap12 = 1 << 16,
 		//POX
-		Xml = 1 << 14,
+		Xml = 1 << 17,
 		//Javascript
-		Json = 1 << 15,
+		Json = 1 << 18,
 		//Jsv i.e. TypeSerializer
-		Jsv = 1 << 16,
+		Jsv = 1 << 19,
 		//e.g. protobuf-net
-		ProtoBuf = 1 << 17,
+		ProtoBuf = 1 << 20,
 		//e.g. text/csv
-		Csv = 1 << 18,
+		Csv = 1 << 21,
 
-		Html = 1 << 19,
-		Yaml = 1 << 20,
+		Html = 1 << 22,
+		Yaml = 1 << 23,
 	}
 
 }

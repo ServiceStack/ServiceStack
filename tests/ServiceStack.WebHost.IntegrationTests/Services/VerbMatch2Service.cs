@@ -6,8 +6,8 @@ using ServiceStack.ServiceHost;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
-	[RestService("/VerbMatch", "POST,PUT")]
-	[RestService("/VerbMatch/{Name}", "POST,PUT")]
+	[RestService("/VerbMatch", "POST,PUT,PATCH")]
+	[RestService("/VerbMatch/{Name}", "POST,PUT,PATCH")]
 	public class VerbMatch2
 	{
 		[DataMember]
@@ -46,6 +46,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public object Delete(VerbMatch2 request)
 		{
 			return new VerbMatch2Response { Result = HttpMethods.Delete };
+		}
+
+		public object Patch(VerbMatch2 request)
+		{
+			return new VerbMatch2Response { Result = HttpMethods.Patch };
 		}
 	}
 

@@ -189,6 +189,7 @@
     <Compile Include="SearchIndex\FullTextIndexAttribute.cs" />
     <Compile Include="SearchIndex\FullTextIndexDocumentAttribute.cs" />
     <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs" />
+    <Compile Include="ServiceHost\IRestPatchService.cs" />
     <Compile Include="ServiceHost\EndpointAttributes.cs" />
     <Compile Include="ServiceHost\Feature.cs" />
     <Compile Include="ServiceHost\IAsyncService.cs" />
