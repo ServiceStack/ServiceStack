@@ -52,6 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			null);
 		}
 
+		private DateTime DefaultFileModified { get; set; }
 		private string DefaultFilePath { get; set; }
 		private byte[] DefaultFileContents { get; set; }
 
@@ -65,6 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				this.DefaultFileContents = File.ReadAllBytes(defaultFilePath);
 				this.DefaultFilePath = defaultFilePath;
+				this.DefaultFileModified = File.GetLastWriteTime(defaultFilePath);
 			}
 			catch (Exception ex)
 			{
@@ -114,6 +116,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				if (fileName.EqualsIgnoreCase(this.DefaultFilePath))
 				{
+					if (fi.LastWriteTime > this.DefaultFileModified)
+						SetDefaultFile(this.DefaultFilePath); //reload
+
 					response.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
 					return;
 				}
