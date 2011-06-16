@@ -31,7 +31,9 @@
 using System;
 using System.IO;
 using System.Web;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -40,12 +42,34 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
 	{
+		private static ILog log = LogManager.GetLogger(typeof (StaticFileHandler));
+
 		public void ProcessRequest(HttpContext context)
 		{
 			ProcessRequest(
 			new HttpRequestWrapper(null, context.Request),
 			new HttpResponseWrapper(context.Response), 
 			null);
+		}
+
+		private string DefaultFilePath { get; set; }
+		private byte[] DefaultFileContents { get; set; }
+
+		/// <summary>
+		/// Keep default file contents in-memory
+		/// </summary>
+		/// <param name="defaultFilePath"></param>
+		public void SetDefaultFile(string defaultFilePath)
+		{
+			try
+			{
+				this.DefaultFileContents = File.ReadAllBytes(defaultFilePath);
+				this.DefaultFilePath = defaultFilePath;
+			}
+			catch (Exception ex)
+			{
+				log.Error(ex.Message, ex);
+			}
 		}
 
 		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
@@ -87,6 +111,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				response.AddHeaderLastModified(fi.LastWriteTime);
 				response.ContentType = MimeTypes.GetMimeType(fileName);
+
+				if (fileName.EqualsIgnoreCase(this.DefaultFilePath))
+				{
+					response.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
+					return;
+				}
 
 				if (!Env.IsMono)
 				{

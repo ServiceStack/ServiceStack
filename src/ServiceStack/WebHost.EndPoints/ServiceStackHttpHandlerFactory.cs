@@ -61,15 +61,17 @@ namespace ServiceStack.WebHost.Endpoints
 			ServeDefaultHandler = hostedAtRootPath || Env.IsMono;
 			if (ServeDefaultHandler)
 			{
-				foreach (var fileName in Directory.GetFiles(WebHostPhysicalPath))
+				foreach (var filePath in Directory.GetFiles(WebHostPhysicalPath))
 				{
-					var fileNameLower = Path.GetFileName(fileName).ToLower();
+					var fileNameLower = Path.GetFileName(filePath).ToLower();
 					if (DefaultRootFileName == null && EndpointHost.Config.DefaultDocuments.Contains(fileNameLower))
 					{
 						//Can't serve Default.aspx pages when hostedAtRootPath so ignore and allow for next default document
 						if (!(hostedAtRootPath && fileNameLower.EndsWith(".aspx")))
 						{
 							DefaultRootFileName = fileNameLower;
+							((StaticFileHandler)StaticFileHandler).SetDefaultFile(filePath);
+
 							if (DefaultHttpHandler == null)
 								DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = DefaultRootFileName };
 						}
@@ -99,6 +101,8 @@ namespace ServiceStack.WebHost.Endpoints
 			var debugDefaultHandler = defaultRedirectHanlder != null
 				? defaultRedirectHanlder.RelativeUrl
 				: typeof(DefaultHttpHandler).Name;
+
+			SetApplicationBaseUrl(EndpointHost.Config.WebHostUrl);
 
 			ForbiddenHttpHandler = new ForbiddenHttpHandler {
 				IsIntegratedPipeline = IsIntegratedPipeline,
@@ -170,6 +174,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static void SetApplicationBaseUrl(string absoluteUrl)
 		{
+			if (absoluteUrl == null) return;
+
 			ApplicationBaseUrl = absoluteUrl;
 
 			var defaultRedirectUrl = DefaultHttpHandler as RedirectHttpHandler;
