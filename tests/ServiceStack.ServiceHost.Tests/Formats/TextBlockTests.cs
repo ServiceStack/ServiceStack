@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
+using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.EndPoints.Support.Markdown;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
@@ -25,7 +26,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			var content = (string)dynamicListPageContent.Clone();
 
-			var expected = content.ReplaceForeach("@^1");;
+			var expected = content.ReplaceForeach("@^1"); ;
 
 			var statements = new List<StatementExprBlock>();
 			var parsedContent = StatementExprBlock.Extract(content, statements);
@@ -164,5 +165,44 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(stat4.Condition, Is.EqualTo("!Model.IsValid"));
 			Assert.That(stat4.Statement, Is.EqualTo("### This is not valid\r\n"));
 		}
+
+		[Test]
+		public void Does_transform_escaped_html_start_tags()
+		{
+			var markdownText =
+			@"#### Showing Results 1 - 5
+
+^<div id=""searchresults"">
+
+### Markdown &gt; [About Docs](http://path.com/to/about)
+
+^</div>
+
+Text".NormalizeNewLines();
+
+			var expectedHtml =
+			@"<h4>Showing Results 1 - 5</h4>
+
+<div id=""searchresults"">
+
+<h3>Markdown &gt; <a href=""http://path.com/to/about"">About Docs</a></h3>
+
+</div>
+
+<p>Text</p>
+".NormalizeNewLines();
+
+			var textBlock = new TextBlock("");
+			var page = new MarkdownPage { Markdown = new MarkdownFormat() };
+			textBlock.DoFirstRun(new PageContext(page, null, true));
+
+			var html = textBlock.TransformHtml(markdownText);
+
+			Console.WriteLine(html);
+
+			Assert.That(html, Is.EqualTo(expectedHtml));
+		}
+
+
 	}
 }

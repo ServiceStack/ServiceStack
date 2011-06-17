@@ -6,15 +6,28 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 {
 	public class MarkdownTestBase
 	{
-		private const string TemplateName = "Template";
+		public const string TemplateName = "Template";
 		protected const string PageName = "Page";
+
+		public MarkdownFormat Create(string websiteTemplate, string pageTemplate)
+		{
+			var markdownFormat = new MarkdownFormat();
+
+			markdownFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
+			markdownFormat.AddPage(
+				new MarkdownPage(markdownFormat, "/path/to/tpl", PageName, pageTemplate) {
+					TemplatePath = "/path/to/websitetpl",
+				});
+
+			return markdownFormat;
+		}
 
 		public MarkdownFormat Create(string pageTemplate)
 		{
 			var markdownFormat = new MarkdownFormat();
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, "/path/to/tpl", PageName, pageTemplate));
-			
+
 			return markdownFormat;
 		}
 

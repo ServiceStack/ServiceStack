@@ -1,0 +1,258 @@
+[
+	{
+		"Name":"About Docs",
+		"Slug":"about",
+		"Src":"https://servicestack.net/docs/markdown/about",
+		"FilePath":"~/markdown/about.md",
+		"Category":"Markdown",
+		"Tags":["Markdown","Docs","About","MarkdownRazor"]
+	},
+	{
+		"Name":"Markdown Features",
+		"Slug":"markdown-features",
+		"Src":"https://servicestack.net/docs/markdown/markdown",
+		"FilePath":"~/markdown/markdown-features.md",
+		"Category":"Markdown",
+		"Tags":["Markdown","MarkdownRazor"]
+	},
+	{
+		"Name":"Markdown Razor",
+		"Slug":"markdown-razor",
+		"Src":"https://servicestack.net/docs/markdown/markdown-razor",
+		"FilePath":"~/markdown/markdown-razor.md",
+		"Category":"Markdown",
+		"Tags":["Markdown","Docs","About","MarkdownRazor"]
+	},
+	{
+		"Name":"Home",
+		"Slug":"home",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/Home",
+		"FilePath":"~/framework/home.md",
+		"Category":"Framework",
+		"Tags":["GettingStarted"]
+	},
+	{
+		"Name":"Overview",
+		"Slug":"overview",
+		"Src":"https://github.com/ServiceStack/ServiceStack/blob/master/README.md",
+		"FilePath":"~/framework/overview.md",
+		"Category":"Framework",
+		"Tags":["Overview"]
+	},
+	{
+		"Name":"Release Notes",
+		"Slug":"release-notes",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes",
+		"FilePath":"~/framework/release-notes.md",
+		"Category":"Framework",
+		"Tags":["ReleaseNotes"]
+	},
+	{
+		"Name":"NuGet",
+		"Slug":"nuget",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/NuGet",
+		"FilePath":"~/framework/nuget.md",
+		"Category":"Framework",
+		"Tags":["NuGet"]
+	},
+	{
+		"Name":"JSON Report Format",
+		"Slug":"json-report-format",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/HTML5ReportFormat",
+		"FilePath":"~/framework/json-report-format.md",
+		"Category":"Framework",
+		"Tags":["HTML5","Formats","JsonReport"]
+	},
+	{
+		"Name":"Caching Options",
+		"Slug":"caching-options",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/Caching",
+		"FilePath":"~/framework/caching-options.md",
+		"Category":"Framework",
+		"Tags":["Caching","Redis","Memcached"]
+	},
+	{
+		"Name":"Accessing IHttpRequest",
+		"Slug":"accessing-ihttprequest",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/Access-the-HTTP-Request-in-Web-Services",
+		"FilePath":"~/framework/accessing-ihttprequest.md",
+		"Category":"Framework",
+		"Tags":["API","HTTP"]
+	},
+	{
+		"Name":"History of Web Services",
+		"Slug":"history-of-webservices",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/Service-Stack-Web-Services",
+		"FilePath":"~/framework/history-of-webservices.md",
+		"Category":"Framework",
+		"Tags":["HTTP","WebServices","JSON","POX","SOAP"]
+	},
+	{
+		"Name":"CSV Format",
+		"Slug":"csv-format",
+		"Src":"https://github.com/ServiceStack/ServiceStack/wiki/ServiceStack-CSV-Format",
+		"FilePath":"~/framework/csv-format.md",
+		"Category":"Framework",
+		"Tags":["CSV","CustomFormat"]
+	},
+	{
+		"Name":"Redis Client",
+		"Slug":"redis-client",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/blob/master/README.md",
+		"FilePath":"~/redis-client/redis-client.md",
+		"Category":"Redis Client",
+		"Tags":["Redis"]
+	},
+	{
+		"Name":"Redis Overview",
+		"Slug":"redis-overview",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/Home",
+		"FilePath":"~/redis-client/redis-overview.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","Overview"]
+	},
+	{
+		"Name":"Useful Redis Links",
+		"Slug":"useful-redis-links",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/Useful-Redis-Links",
+		"FilePath":"~/redis-client/useful-redis-links.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","Overview"]
+	},
+	{
+		"Name":"Redis Release Notes",
+		"Slug":"redis-release-notes",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/Home",
+		"FilePath":"~/redis-client/redis-release-notes.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","Overview","ReleaseNotes"]
+	},
+	{
+		"Name":"Designing NoSQL DB's",
+		"Slug":"designing-nosql-database",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/DesigningNoSqlDatabase",
+		"FilePath":"~/redis-client/designing-nosql-database.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","NoSQL","Tutorial"]
+	},
+	{
+		"Name":"Schemaless Migrations",
+		"Slug":"schemaless-nosql-migrations",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/MigrationsUsingSchemalessNoSql",
+		"FilePath":"~/redis-client/schemaless-nosql-migrations.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","NoSQL","Tutorial"]
+	},
+	{
+		"Name":"Distributed Locking",
+		"Slug":"distributed-locking-with-redis",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/MigrationsUsingSchemalessNoSql",
+		"FilePath":"~/redis-client/distributed-locking-with-redis.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","NoSQL","Example","Locks"]
+	},
+	{
+		"Name":"Redis Pub/Sub",
+		"Slug":"redis-pubsub",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/RedisPubSub",
+		"FilePath":"~/redis-client/redis-pubsub.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","NoSQL","Example","PubSub"]
+	},
+	{
+		"Name":"Redis Transactions",
+		"Slug":"redis-transactions",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/RedisTransactions",
+		"FilePath":"~/redis-client/redis-transactions.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","NoSQL","Example","Transactions"]
+	},
+	{
+		"Name":"IRedisClient API",
+		"Slug":"iredisclient-api",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/IRedisClient",
+		"FilePath":"~/redis-client/iredisclient-api.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","API","RedisClient"]
+	},
+	{
+		"Name":"IRedisTypedClient API",
+		"Slug":"iredistypedclient-api",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/IRedisTypedClient",
+		"FilePath":"~/redis-client/iredistypedclient-api.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","API","RedisClient"]
+	},
+	{
+		"Name":"IRedisNativeClient API",
+		"Slug":"iredisnativeclient-api",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/IRedisNativeClient",
+		"FilePath":"~/redis-client/iredisnativeclient-api.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","API","RedisClient"]
+	},
+	{
+		"Name":"IRedisTransaction API",
+		"Slug":"iredistransaction-api",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Redis/wiki/IRedisTransaction",
+		"FilePath":"~/redis-client/iredistransaction-api.md",
+		"Category":"Redis Client",
+		"Tags":["Redis","API","Transactions"]
+	},
+	{
+		"Name":"Redis Admin UI Overview",
+		"Slug":"redis-admin-ui-overview",
+		"Src":"https://github.com/ServiceStack/ServiceStack.RedisWebServices/blob/master/README.md",
+		"FilePath":"~/redis-admin-ui/redis-admin-ui-overview.md",
+		"Category":"Redis Admin UI",
+		"Tags":["Redis","RedisAdminUI","Overview"]
+	},
+	{
+		"Name":"JSON, CSV, JSV Text Serializers",
+		"Slug":"json-csv-jsv-serializers",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Text/blob/master/README.md",
+		"FilePath":"~/text-serializers/json-csv-jsv-serializers.md",
+		"Category":"Text Serializers",
+		"Tags":["JSON","JSV","CSV","Text","Overview"]
+	},
+	{
+		"Name":"JSV Format",
+		"Slug":"jsv-format",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Text/wiki/JSV-Format",
+		"FilePath":"~/text-serializers/jsv-format.md",
+		"Category":"Text Serializers",
+		"Tags":["JSV","Text"]
+	},
+	{
+		"Name":"ServiceStack Examples",
+		"Slug":"servicestack-examples",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Examples/blob/master/README.md",
+		"FilePath":"~/examples/servicestack-examples.md",
+		"Category":"Examples",
+		"Tags":["GettingStarted","Overview"]
+	},
+	{
+		"Name":"OrmLite Overview",
+		"Slug":"ormlite-overview",
+		"Src":"https://github.com/ServiceStack/ServiceStack.OrmLite/blob/master/README.md",
+		"FilePath":"~/ormlite/ormlite-overview.md",
+		"Category":"OrmLite",
+		"Tags":["OrmLite","SqlServer","Sqlite"]
+	},
+	{
+		"Name":"ServiceStack Contrib",
+		"Slug":"servicestack-contrib",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Contrib/blob/master/README.md",
+		"FilePath":"~/contrib/servicestack-contrib.md",
+		"Category":"Contrib",
+		"Tags":["Contrib","Overview"]
+	},
+	{
+		"Name":"Logging Overview",
+		"Slug":"logging-overview",
+		"Src":"https://github.com/ServiceStack/ServiceStack.Logging/blob/master/README.md",
+		"FilePath":"~/logging/logging-overview.md",
+		"Category":"Logging",
+		"Tags":["Logging","Log4Net","EventLog","Nlog"]
+	}
+]

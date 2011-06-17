@@ -123,7 +123,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 				httpRes.ContentType = ContentType.PlainText;
 			}
 
-			var markup = RenderDynamicPage(markdownPage, dto, renderHtml, renderInTemplate);
+			var markup = RenderDynamicPage(markdownPage, markdownPage.Name, dto, renderHtml, renderInTemplate);
 			var markupBytes = markup.ToUtf8Bytes();
 			httpRes.OutputStream.Write(markupBytes, 0, markupBytes.Length);
 
@@ -447,13 +447,13 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public string RenderDynamicPage(string pageName, object model, bool renderHtml)
 		{
-			return RenderDynamicPage(GetViewPage(pageName), model, renderHtml, true);
+			return RenderDynamicPage(GetViewPage(pageName), pageName, model, renderHtml, true);
 		}
 
-		private string RenderDynamicPage(MarkdownPage markdownPage, object model, bool renderHtml, bool renderTemplate)
+		private string RenderDynamicPage(MarkdownPage markdownPage, string pageName, object model, bool renderHtml, bool renderTemplate)
 		{
 			if (markdownPage == null)
-				throw new InvalidDataException(ErrorPageNotFound.FormatWith(markdownPage.Name));
+				throw new InvalidDataException(ErrorPageNotFound.FormatWith(pageName));
 
 			var scopeArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, model } };
 

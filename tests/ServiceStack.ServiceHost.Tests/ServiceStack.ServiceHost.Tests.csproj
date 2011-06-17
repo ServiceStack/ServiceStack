@@ -111,6 +111,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="AppData\NoTemplate\Static.md" />
+    <None Include="AppData\Pages.json" />
     <None Include="Views\NoTemplate\Dynamic.md" />
     <Compile Include="AppData\NorthwindCustomers.cs" />
     <Compile Include="AppData\FormatHelpers.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="Formats\TemplateTests.cs" />
     <Compile Include="Formats\TextBlockTests.cs" />
     <Compile Include="Formats\TextBlockUtils.cs" />
+    <Compile Include="Formats\UseCaseTests.cs" />
     <Compile Include="Formats\ViewTests.cs" />
     <Compile Include="PerfTests.cs" />
     <Compile Include="RestPathTests.cs" />
