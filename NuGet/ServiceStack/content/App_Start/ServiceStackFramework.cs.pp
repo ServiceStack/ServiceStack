@@ -47,6 +47,9 @@ namespace $rootnamespace$.App_Start
 		public static void Start()
 		{
 			new AppHost().Init();
+			
+			//If using with MVC remove servicestack path from MVC's RegisterRoutes(RouteCollection) e.g:
+			//routes.IgnoreRoute("servicestack/{*pathInfo}"); 
 		}
 	}
 }

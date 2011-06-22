@@ -1456,7 +1456,7 @@
             <param name="checkLastModified">The check last modified.</param>
             <returns>True; if it succeeded</returns>
         </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions.WriteToResponse(ServiceStack.ServiceHost.IHttpResponse,System.Object,ServiceStack.ServiceHost.ResponseSerializerDelegate,ServiceStack.ServiceHost.IRequestContext)">
+        <member name="M:ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions.WriteToResponse(ServiceStack.ServiceHost.IHttpResponse,System.Object,ServiceStack.ServiceHost.ResponseSerializerDelegate,ServiceStack.ServiceHost.IRequestContext,System.Byte[],System.Byte[])">
             <summary>
             Writes to response.
             Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
@@ -1465,6 +1465,8 @@
             <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
             <param name="defaultAction">The default action.</param>
             <param name="serializerCtx">The serialization context.</param>
+            <param name="bodyPrefix">Add prefix to response body if any</param>
+            <param name="bodySuffix">Add suffix to response body if any</param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.ServiceHost.ServiceManager.#ctor(Funq.Container,ServiceStack.ServiceHost.ServiceController)">
