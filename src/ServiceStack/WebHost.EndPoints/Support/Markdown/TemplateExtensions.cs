@@ -317,7 +317,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					|| varExpr == "model"
 					|| varExpr == "inherits"
 					|| varExpr == "helper"
-					|| varExpr == "template" || varExpr == "LayoutPage")
+					|| varExpr == "template" || varExpr == "Layout")
 				{
 					var pos = content.IndexOf('\n', fromPos);
 					var restOfLine = content.Substring(fromPos, pos - fromPos);

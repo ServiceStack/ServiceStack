@@ -2,6 +2,8 @@ namespace ServiceStack.Common.Web
 {
 	public static class HttpHeaders
 	{
+		public const string XParamOverridePrefix = "X-Param-Override-";
+
 		public const string XHttpMethodOverrideKey = "X-HTTP-Method-Override";
 
 		public const string CacheControl = "Cache-Control";

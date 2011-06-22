@@ -93,7 +93,7 @@ namespace ServiceStack.Markdown
 
 	public class TagBuilder
 	{
-		private string idAttributeDotReplacement;
+		//private string idAttributeDotReplacement;
 
 		private const string AttributeFormat = @" {0}=""{1}""";
 		private const string ElementFormatEndTag = "</{0}>";

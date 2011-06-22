@@ -105,7 +105,7 @@ namespace ServiceStack.CacheAccess.Providers
 							return Encoding.UTF8.GetString(bytes);
 						}
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
 						throw;
 					}

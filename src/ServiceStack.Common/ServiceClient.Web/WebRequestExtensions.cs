@@ -38,6 +38,13 @@ namespace ServiceStack.ServiceClient.Web
 				return DownloadText(webRes);
 		}
 
+		public static string DownloadAsString(this string url)
+		{
+			var webReq = WebRequest.Create(url);
+			using (var webRes = webReq.GetResponse())
+				return DownloadText(webRes);
+		}
+
 		public static string DownloadText(this WebResponse webRes)
 		{
 			using (var stream = webRes.GetResponseStream())

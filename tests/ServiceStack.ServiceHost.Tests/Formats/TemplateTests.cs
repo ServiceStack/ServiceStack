@@ -35,14 +35,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
-
-			templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
 		}
 
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
 			markdownFormat = new MarkdownFormat();
+			templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
 		}
 
 		[Test]

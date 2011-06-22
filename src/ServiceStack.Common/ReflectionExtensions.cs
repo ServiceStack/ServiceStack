@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Reflection.Emit;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common
@@ -75,6 +76,20 @@ namespace ServiceStack.Common
 			return null;
 		}
 
+		public static bool IsDynamic(this Assembly assembly)
+		{
+			try
+			{
+				var isDyanmic = assembly is AssemblyBuilder
+					|| string.IsNullOrEmpty(assembly.Location);
+				return isDyanmic;
+			}
+			catch (NotSupportedException)
+			{
+				//Ignore assembly.Location not supported in a dynamic assembly.
+				return true;
+			}
+		}
 	}
 }
 

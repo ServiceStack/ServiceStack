@@ -1,0 +1,29 @@
+<h1>@Model.FirstName Dynamic Nested Markdown Template</h1>
+
+<h1>heading 1</h1>
+
+<ul>
+@foreach (var link in Model.Links) {
+  @if (link.Name == "AjaxStack") {
+    <li>@link.Name - @link.Href</li>
+  }
+}
+</ul>
+
+@if (Model.Links.Count == 2) {
+<h2>Haz 2 links</h2>
+  <ul>
+    <li>
+  @foreach (var link in Model.Links) {
+    @link.Name - @link.Href 
+      <ul>
+    @foreach (var label in link.Labels) { 
+        <li>@label </li>
+	}
+      </ul>
+  }
+    </li>
+  </ul>
+}
+
+<h3>heading 3</h3>

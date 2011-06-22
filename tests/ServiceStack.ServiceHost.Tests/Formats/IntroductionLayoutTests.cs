@@ -66,7 +66,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 </html>".NormalizeNewLines();
 
 			var pageTemplate = 
-@"@LayoutPage ~/websiteTemplate
+@"@Layout ~/websiteTemplate
 
 # About this Site
 
@@ -155,7 +155,7 @@ current date/year: 2011</p>
 </html>".NormalizeNewLines();
 
 			var pageTemplate = 
-@"@LayoutPage ~/websiteTemplate
+@"@Layout ~/websiteTemplate
 
 # About this Site
 

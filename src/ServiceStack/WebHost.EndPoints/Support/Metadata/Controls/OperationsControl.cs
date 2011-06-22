@@ -8,7 +8,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     {
         public string Title { get; set; }
         public List<string> OperationNames { get; set; }
-        public string UsageExamplesBaseUri { get; set; }
+        public string MetadataOperationPageBodyHtml { get; set; }
 
         protected override void Render(HtmlTextWriter output)
         {
@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
                 ListItemTemplate = @"<li><a href=""?op={0}"">{0}</a></li>"
             }.ToString();
             var renderedTemplate = string.Format(PageTemplate, 
-                this.Title, this.UsageExamplesBaseUri, operationsPart);
+                this.Title, this.MetadataOperationPageBodyHtml, operationsPart);
             output.Write(renderedTemplate);
         }
 
@@ -75,13 +75,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
     </p>
 
     {2}
-    
-    <br />
-    <h3>Usage Examples:</h3>
-    <ul>
-        <li><a href=""{1}/UsingRestAndJson.cs"">Using Rest and JSON</a></li>
-        <li><a href=""{1}/UsingRestAndXml.cs"">Using Rest and XML</a></li>
-    </ul>
+
+    {1}    
     
     </form>
 </body>

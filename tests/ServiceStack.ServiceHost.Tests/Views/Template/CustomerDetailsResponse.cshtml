@@ -1,0 +1,33 @@
+﻿@model ServiceStack.ServiceHost.Tests.AppData.CustomerDetailsResponse
+
+@{ var customer = Model.Customer; }
+
+<h1>@customer.ContactName Customer Details (@customer.City, @customer.Country)</h1>
+<h3>@customer.ContactTitle</h3>
+
+<ul>
+    <li><b>Company Name:</b> @customer.CompanyName</li>
+    <li><b>Address:</b> @customer.Address</li>
+    <li><b>Email:</b> @customer.Email</li>
+</ul>
+
+<h2>Customer Orders</h2>
+
+<table><thead>
+  <tr><th>Id</th><th>Order Date</th><th>Freight Cost</th><th>Order Total</th></tr>
+</thead>
+<tbody>
+
+@foreach (var customerOrder in Model.CustomerOrders) {
+@{ var order = customerOrder.Order; }
+<tr>
+  <td>@order.Id</td>
+  <td>@Fmt.ShortDate(order.OrderDate)</td>
+  <td>@Fmt.Money(order.Freight)</td>
+  <td>@Nwnd.OrderTotal(customerOrder.OrderDetails)</td>
+</tr>
+}
+
+</tbody></table>
+
+<h3>Customer Orders Total: @Nwnd.CustomerOrderTotal(Model.CustomerOrders)</h3>

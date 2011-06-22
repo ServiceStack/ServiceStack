@@ -46,7 +46,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					typeof(FunqDepCtor).Name,
 					typeof(AltDepCtor).Name,
 					typeof(FunqDepProperty).Name,
+					typeof(FunqDepDisposableProperty).Name,
 					typeof(AltDepProperty).Name,
+					typeof(AltDepDisposableProperty).Name,
 				};
 
 				//Console.WriteLine(response.Results.Dump());

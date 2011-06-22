@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ServiceStack.ServiceHost;
 
 namespace Funq
 {
@@ -18,8 +19,7 @@ namespace Funq
 		public Container()
 		{
 			services[new ServiceKey(typeof(Func<Container, Container>), null)] =
-				new ServiceEntry<Container, Func<Container, Container>>((Func<Container, Container>)(c => c))
-				{
+				new ServiceEntry<Container, Func<Container, Container>>((Func<Container, Container>)(c => c)) {
 					Container = this,
 					Instance = this,
 					Owner = Owner.External,
@@ -67,7 +67,7 @@ namespace Funq
 		public void Register<TService>(string name, TService instance)
 		{
 			var entry = RegisterImpl<TService, Func<Container, TService>>(name, null);
-			
+
 			// Set sensible defaults for instance registration.
 			entry.ReusedWithin(ReuseScope.Hierarchy).OwnedBy(Owner.External);
 			entry.InitializeInstance(instance);
@@ -79,8 +79,7 @@ namespace Funq
 			if (typeof(TService) == typeof(Container))
 				throw new ArgumentException(ServiceStack.Properties.Resources.Registration_CantRegisterContainer);
 
-			var entry = new ServiceEntry<TService, TFunc>(factory)
-			{
+			var entry = new ServiceEntry<TService, TFunc>(factory) {
 				Container = this,
 				Reuse = DefaultReuse,
 				Owner = DefaultOwner
@@ -256,24 +255,31 @@ namespace Funq
 			else
 			{
 				//i.e. if called Resolve<> for Constructor injection
-				if (throwIfMissing) 
+				if (throwIfMissing)
 				{
 					if (Adapter != null)
 					{
 						return new ServiceEntry<TService, TFunc>(
-							(TFunc)(object)(Func<Container, TService>)(c => Adapter.Resolve<TService>()));
+							(TFunc)(object)(Func<Container, TService>)(c => Adapter.Resolve<TService>())) {
+								Owner = Owner.Container,
+								Container = this,
+							};
 					}
 					ThrowMissing<TService>(serviceName);
 				}
 				else
 				{
-					if (Adapter != null)
+					if (Adapter != null
+						&& (typeof(TService) != typeof(IRequestContext)))
 					{
 						return new ServiceEntry<TService, TFunc>(
-							(TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>()));
+							(TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>())) {
+								Owner = Owner.Container,
+								Container = this,								
+							};
 					}
 				}
-			} 
+			}
 
 			return (ServiceEntry<TService, TFunc>)entry;
 		}

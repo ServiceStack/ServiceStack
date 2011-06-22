@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			var defaultPage = new OperationsControl {
 				Title = EndpointHost.Config.ServiceName,
 				OperationNames = allOperations.Names,
-				UsageExamplesBaseUri = EndpointHost.Config.UsageExamplesBaseUri,
+				MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
 			};
 
 			defaultPage.RenderControl(writer);

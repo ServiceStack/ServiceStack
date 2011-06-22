@@ -13,6 +13,8 @@ using ServiceStack.Markdown.Html;
 
 namespace CSharpEval
 {
+
+
 	[TestFixture]
 	public class _Expr
 	 : ServiceStack.ServiceHost.Tests.Formats.TemplateTests.CustomMarkdownViewBase
@@ -22,7 +24,7 @@ namespace CSharpEval
 			return null;
 		}
 
-		[Test]
+		//[Test]
 		public void Compare_access()
 		{
 			var filePath = "~/AppData/TestsResults/Customer.htm".MapAbsolutePath();

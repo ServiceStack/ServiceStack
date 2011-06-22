@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServiceStack.ServiceHost.Tests</RootNamespace>
     <AssemblyName>ServiceStack.ServiceHost.Tests</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -76,6 +76,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="ServiceStack.OrmLite, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\tests\ServiceStack.OrmLite.dll</HintPath>
@@ -110,12 +111,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="AppData\NoTemplate\Static.cshtml" />
     <None Include="AppData\NoTemplate\Static.md" />
     <None Include="AppData\Pages.json" />
+    <None Include="AppData\Template\StaticTpl.cshtml" />
+    <None Include="Views\NoTemplate\Dynamic.cshtml" />
     <None Include="Views\NoTemplate\Dynamic.md" />
     <Compile Include="AppData\NorthwindCustomers.cs" />
     <Compile Include="AppData\FormatHelpers.cs" />
     <Compile Include="AppData\NorthwindHelpers.cs" />
+    <Compile Include="Formats_Razor\CustomRazorBasePage.cs" />
+    <Compile Include="Formats_Razor\RazorEngineTests.cs" />
+    <Compile Include="Formats_Razor\TemplateTests.cs" />
     <Compile Include="Formats\IntroductionExampleTests.cs" />
     <Compile Include="Formats\IntroductionLayoutTests.cs" />
     <Compile Include="Formats\MarkdownFormatTests.cs" />
@@ -158,10 +165,19 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="AppData\ALFKI.json" />
+    <None Include="Views\Shared\DynamicTplShared.cshtml" />
+    <None Include="Views\Shared\DynamicShared.cshtml" />
+    <None Include="Views\Template\DynamicTpl.cshtml" />
+    <None Include="Views\Template\DynamicNestedTpl.cshtml" />
+    <None Include="Views\Template\DynamicListTpl.cshtml" />
+    <None Include="Views\Template\CustomerDetailsResponse.cshtml" />
+    <None Include="Views\Template\Customer.cshtml" />
     <None Include="Views\Template\Customer.md" />
     <None Include="Views\Template\CustomerDetailsResponse.md" />
+    <None Include="AppData\Template\default.cshtml" />
     <Content Include="AppData\Template\default.shtml" />
     <Content Include="Views\Template\alt-template.htm" />
+    <None Include="Views\Template\default.cshtml" />
     <Content Include="Views\Template\default.shtml" />
     <Content Include="lib\Funq.dll" />
     <Content Include="lib\hiro\Hiro.Containers.dll" />
@@ -174,6 +190,10 @@
     <Content Include="lib\hiro\NGenerics.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\RazorEngine\RazorEngine.csproj">
+      <Project>{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}</Project>
+      <Name>RazorEngine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
       <Name>ServiceStack.Common</Name>
@@ -217,7 +237,7 @@
     <None Include="AppData\Template\StaticTpl.md" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="AppData\TestsResults\" />
+    <Folder Include="App_Code\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

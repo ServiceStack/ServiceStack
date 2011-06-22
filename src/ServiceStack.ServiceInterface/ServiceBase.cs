@@ -278,6 +278,13 @@ namespace ServiceStack.ServiceInterface
 		{
 			return typeof(TRequest).FullName + ResponseDtoSuffix;
 		}
+
+		protected HttpResult View(string viewName, object response)
+		{
+			return new HttpResult(response) {
+				TemplateName = viewName
+			};
+		}
 	}
 
 }

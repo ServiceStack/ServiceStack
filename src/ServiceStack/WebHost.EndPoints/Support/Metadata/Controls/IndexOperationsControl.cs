@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 		public IHttpRequest HttpRequest { get; set; }
 		public string Title { get; set; }
 		public List<string> OperationNames { get; set; }
-		public string UsageExamplesBaseUri { get; set; }
+		public string MetadataPageBodyHtml { get; set; }
 		public IDictionary<int, string> Xsds { get; set; }
 		public int XsdServiceTypesIndex { get; set; }
 		public ServiceEndpointsMetadataConfig MetadataConfig { get; set; }
@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 			}
 
 			var renderedTemplate = string.Format(
-				PageTemplate, this.Title, this.UsageExamplesBaseUri, this.XsdServiceTypesIndex,
+				PageTemplate, this.Title, this.MetadataPageBodyHtml, this.XsdServiceTypesIndex,
 				operationsPart, xsdsPart, wsdlTemplate);
 
 			output.Write(renderedTemplate);
@@ -158,19 +158,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata.Controls
 	<div class=""operations"">
 	  {3}
 	</div>
-    
-    <br />
-    <h3>Client Usage Examples:</h3>
-    <ul>
-        <li><a href=""{1}/UsingServiceClients.cs"">Using Service Clients</a></li>
-        <li><a href=""{1}/UsingDtoFromAssembly.cs"">Using Dto From Assembly</a></li>
-        <li><a href=""{1}/UsingDtoFromXsd.cs"">Using Dto From Xsd</a></li>
-        <li><a href=""{1}/UsingServiceReferenceClient.cs"">Using Service Reference Client</a></li>
-        <li><a href=""{1}/UsingSvcutilGeneratedClient.cs"">Using SvcUtil Generated Client</a></li>
-        <li><a href=""{1}/UsingRawHttpClient.cs"">Using Raw Http Client</a></li>
-        <li><a href=""{1}/UsingRestAndJson.cs"">Using Rest and Json</a></li>
-        <li><a href=""{1}/UsingRestAndXml.cs"">Using Rest and Xml</a></li>
-    </ul>
+
+    {1}    
     
     {4}
 

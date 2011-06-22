@@ -57,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			{
 				Title = EndpointHost.Config.ServiceName,
 				OperationNames = allOperations.Names,
-				UsageExamplesBaseUri = EndpointHost.Config.UsageExamplesBaseUri,
+				MetadataOperationPageBodyHtml = EndpointHost.Config.MetadataOperationPageBodyHtml,
 			};
 
 			defaultPage.RenderControl(writer);

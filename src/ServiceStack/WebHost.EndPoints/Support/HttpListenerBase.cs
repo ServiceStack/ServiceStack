@@ -165,7 +165,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// because there will be a thread stopped waiting on the .EndGetContext()
 				// method, and again, that is just the way most Begin/End asynchronous
 				// methods of the .NET Framework work.
-				Log.Warn(ex.ToString() + ": " + isListening);
+				var errMsg = ex + ": " + isListening;
+				Log.Warn(errMsg);
 				return;
 			}
 			finally

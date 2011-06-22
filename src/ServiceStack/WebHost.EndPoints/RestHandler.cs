@@ -2,6 +2,7 @@ using System;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
@@ -67,11 +68,10 @@ namespace ServiceStack.WebHost.Endpoints
 					return;
 				}
 
-				if (doJsonp) httpRes.Write(callback + "(");
-
-				httpRes.WriteToResponse(httpReq, response);
-
-				if (doJsonp) httpRes.Write(")\n");
+				if (doJsonp)
+					httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+				else
+					httpRes.WriteToResponse(httpReq, response);
 			}
 			catch (Exception ex)
 			{

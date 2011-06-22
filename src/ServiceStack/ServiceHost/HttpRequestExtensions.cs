@@ -39,6 +39,7 @@ namespace ServiceStack.ServiceHost
 		public static string GetParam(this IHttpRequest httpReq, string name)
 		{
 			string value;
+			if ((value = httpReq.Headers[HttpHeaders.XParamOverridePrefix + name]) != null) return value;
 			if ((value = httpReq.QueryString[name]) != null) return value;
 			if ((value = httpReq.FormData[name]) != null) return value;
 

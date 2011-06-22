@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 		public IAppHost AppHost { get; set; }
 
-		public string WebHostUrl { get; set; }
+		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
 
 		public MarkdownFormat()
 		{
@@ -65,12 +65,16 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			this.MarkdownBaseType = typeof(MarkdownViewBase);
 			this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
 			this.FindMarkdownPagesFn = FindMarkdownPages;
+			this.MarkdownReplaceTokens = new Dictionary<string, string>();
 		}
 
 		public void Register(IAppHost appHost)
 		{
 			this.AppHost = appHost;
-			this.WebHostUrl = appHost.Config.WebHostUrl;
+			this.MarkdownReplaceTokens = appHost.Config.MarkdownReplaceTokens ?? new Dictionary<string, string>();
+			if (!appHost.Config.WebHostUrl.IsNullOrEmpty() && this.MarkdownReplaceTokens.ContainsKey("~/"))
+				this.MarkdownReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
+
 			RegisterMarkdownPages(appHost.Config.MarkdownSearchPath);
 
 			//Render HTML
@@ -101,6 +105,8 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 
 			appHost.ContentTypeFilters.Register(ContentType.MarkdownText, SerializeToStream, null);
 			appHost.ContentTypeFilters.Register(ContentType.PlainText, SerializeToStream, null);
+			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.MarkdownText.ToContentFormat());
+			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.PlainText.ToContentFormat());
 		}
 
 		public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)
@@ -158,9 +164,9 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		private void ReloadTemplate(MarkdownTemplate template)
 		{
 			var contents = File.ReadAllText(template.FilePath);
-			if (!string.IsNullOrEmpty(this.WebHostUrl))
+			foreach (var markdownReplaceToken in MarkdownReplaceTokens)
 			{
-				contents = contents.Replace(WebHostUrlPlaceHolder, WebHostUrl.WithTrailingSlash());
+				contents = contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
 			}
 			template.Reload(contents);
 		}
@@ -342,9 +348,9 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			var templateFile = new FileInfo(templatePath);
 			var templateName = templateFile.FullName.WithoutExtension();
 
-			if (!string.IsNullOrEmpty(this.WebHostUrl))
+			foreach (var markdownReplaceToken in MarkdownReplaceTokens)
 			{
-				templateContents = templateContents.Replace(WebHostUrlPlaceHolder, WebHostUrl.WithTrailingSlash());
+				templateContents = templateContents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
 			}
 
 			var template = new MarkdownTemplate(templatePath, templateName, templateContents) {

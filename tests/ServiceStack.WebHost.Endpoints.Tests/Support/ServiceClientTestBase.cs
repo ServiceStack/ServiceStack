@@ -6,7 +6,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 {
 	public abstract class ServiceClientTestBase : IDisposable
 	{
-		private const string BaseUrl = "http://127.0.0.1:8080/";
+		private const string BaseUrl = "http://127.0.0.1:8083/";
 
 		private AppHostHttpListenerBase appHost;
 

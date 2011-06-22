@@ -9,7 +9,7 @@ namespace ServiceStack.Markdown
 		private HtmlHelper<T> html;
 		public new HtmlHelper<T> Html
 		{
-			get { return html ?? (html = (HtmlHelper<T>) base.Html); }
+			get { return html ?? (html = (HtmlHelper<T>)base.Html); }
 		}
 
 		protected override HtmlHelper GetHtmlHelper()
@@ -29,9 +29,9 @@ namespace ServiceStack.Markdown
 
 			InitHelpers();
 		}
-	}  
+	}
 
-	public abstract class MarkdownViewBase
+	public abstract class MarkdownViewBase : ITemplatePage
 	{
 		/// <summary>
 		/// The AppHost so you can access configuration and resolve dependencies, etc.
@@ -42,12 +42,12 @@ namespace ServiceStack.Markdown
 		/// This precompiled Markdown page with Metadata
 		/// </summary>
 		public MarkdownPage MarkdownPage { get; protected set; }
-		
+
 		/// <summary>
 		/// ASP.NET MVC's HtmlHelper
 		/// </summary>
 		public HtmlHelper Html { get; protected set; }
-		
+
 		/// <summary>
 		/// All variables passed to and created by your page. 
 		/// The Response DTO is stored and accessible via the 'Model' variable.
@@ -55,20 +55,20 @@ namespace ServiceStack.Markdown
 		/// All variables and outputs created are stored in ScopeArgs which is what's available
 		/// to your website template. The Generated page is stored in the 'Body' variable.
 		/// </summary>
-		public Dictionary<string,object> ScopeArgs { get; protected set; }
-		
+		public Dictionary<string, object> ScopeArgs { get; set; }
+
 		/// <summary>
 		/// Whether HTML or Markdown output is requested
 		/// </summary>
 		public bool RenderHtml { get; protected set; }
-		
+
 		/// <summary>
 		/// The Response DTO
 		/// </summary>
 		public object Model { get; protected set; }
 
 		protected MarkdownViewBase()
-		{ 
+		{
 			Html = GetHtmlHelper();
 		}
 
@@ -95,7 +95,7 @@ namespace ServiceStack.Markdown
 		/// <summary>
 		/// Called before page is executed
 		/// </summary>
-		public virtual void InitHelpers() {}
+		public virtual void InitHelpers() { }
 
 		/// <summary>
 		/// Called after page is executed but before it's merged with the 

@@ -11,6 +11,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 	public class FunqDepProperty { }
 	public class AltDepProperty { }
 
+	public class FunqDepDisposableProperty : IDisposable { public void Dispose() { } }
+	public class AltDepDisposableProperty : IDisposable { public void Dispose() { } }
+
 	public class Ioc { }
 
 	public class IocResponse : IHasResponseStatus
@@ -26,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class IocService : IService<Ioc>, IDisposable 
+	public class IocService : IService<Ioc>, IDisposable, IRequiresRequestContext
 	{
 		private readonly FunqDepCtor funqDepCtor;
 		private readonly AltDepCtor altDepCtor;
@@ -37,15 +40,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 			this.altDepCtor = altDepCtor;
 		}
 
+		public IRequestContext RequestContext { get; set; }
 		public FunqDepProperty FunqDepProperty { get; set; }
+		public FunqDepDisposableProperty FunqDepDisposableProperty { get; set; }
 		public AltDepProperty AltDepProperty { get; set; }
+		public AltDepDisposableProperty AltDepDisposableProperty { get; set; }
 
 		public object Execute(Ioc request)
 		{
 			var response = new IocResponse();
 
 			var deps = new object[] {
-				funqDepCtor, altDepCtor, FunqDepProperty, AltDepProperty
+				funqDepCtor, altDepCtor, 
+				FunqDepProperty, FunqDepDisposableProperty, 
+				AltDepProperty, AltDepDisposableProperty
 			};
 
 			foreach (var dep in deps)
@@ -54,13 +62,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 					response.Results.Add(dep.GetType().Name);
 			}
 
-            if (ThrowErrors) throw new ArgumentException("This service has intentionally failed");
+			if (ThrowErrors) throw new ArgumentException("This service has intentionally failed");
 
 			return response;
 		}
 
 		public static int DisposedCount = 0;
-        public static bool ThrowErrors = false;
+		public static bool ThrowErrors = false;
 
 		public void Dispose()
 		{

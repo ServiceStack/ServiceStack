@@ -1,0 +1,17 @@
+﻿@model ServiceStack.ServiceHost.Tests.AppData.Customer
+@{
+	Layout = "alt-template.htm"
+}
+@helper Fmt: ServiceStack.ServiceHost.Tests.AppData.FormatHelpers
+@helper Nwnd: ServiceStack.ServiceHost.Tests.AppData.NorthwindHelpers
+
+@{ var customer = Model }
+
+<h1>@customer.ContactName Customer Details (@customer.City, @customer.Country)</h1>
+<h3>@customer.ContactTitle</h3>
+
+<ul>
+	<li><b>Company Name:</b> @customer.CompanyName</li>
+	<li><b>Address:</b> @customer.Address</li>
+	<li><b>Email:</b> @customer.Email</li>
+</ul>

@@ -1,5 +1,8 @@
+using System;
 using Funq;
 using ServiceStack.Configuration;
+using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
@@ -18,6 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			container.Adapter = new IocAdapter();
 			container.Register(c => new FunqDepCtor());
 			container.Register(c => new FunqDepProperty());
+			container.Register(c => new FunqDepDisposableProperty());
 
 			Routes.Add<Ioc>("/ioc");
 		}
@@ -27,8 +31,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	{
 		public T TryResolve<T>()
 		{
+			if (typeof(T) == typeof(IRequestContext))
+				throw new ArgumentException("should not ask for IRequestContext");
+
 			if (typeof(T) == typeof(AltDepProperty))
 				return (T)(object)new AltDepProperty();
+			if (typeof(T) == typeof(AltDepDisposableProperty))
+				return (T)(object)new AltDepDisposableProperty();
 
 			return default(T);
 		}

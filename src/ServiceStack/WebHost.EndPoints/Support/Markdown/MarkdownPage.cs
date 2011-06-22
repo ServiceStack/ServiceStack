@@ -111,9 +111,11 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					isBusy = true;
 
 					this.Contents = contents;
-					if (Markdown.WebHostUrl != null)
-						this.Contents = this.Contents.Replace("~/", Markdown.WebHostUrl);
-
+					foreach (var markdownReplaceToken in Markdown.MarkdownReplaceTokens)
+					{
+						this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
+					}
+					
 					this.LastModified = lastModified;
 					initException = null;
 					exprSeq = 0;
@@ -135,13 +137,15 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			if (!typeof(MarkdownViewBase).IsAssignableFrom(this.Markdown.MarkdownBaseType))
 			{
 				throw new ConfigurationErrorsException(
-					"Config.MarkdownBaseType should derive from MarkdownViewBase");
+					"Config.MarkdownBaseType must inherit from MarkdownViewBase");
 			}
 
 			if (this.Contents.IsNullOrEmpty()) return;
 
-			if (Markdown.WebHostUrl != null)
-				this.Contents = this.Contents.Replace("~/", Markdown.WebHostUrl);
+			foreach (var markdownReplaceToken in Markdown.MarkdownReplaceTokens)
+			{
+				this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
+			}
 
 			var markdownStatements = new List<StatementExprBlock>();
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Runtime.Serialization;
-using System.Web;
 using System.Web.Configuration;
 using MarkdownSharp;
 using ServiceStack.Common.Utils;
@@ -12,7 +11,6 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -32,7 +30,26 @@ namespace ServiceStack.WebHost.Endpoints
 				if (instance == null)
 				{
 					instance = new EndpointHostConfig {
-						UsageExamplesBaseUri = DefaultUsageExamplesBaseUri,
+						MetadataPageBodyHtml = @"
+    <br />
+    <h3>Client Usage Examples:</h3>
+    <ul>
+        <li><a href=""{0}/UsingServiceClients.cs"">Using Service Clients</a></li>
+        <li><a href=""{0}/UsingDtoFromAssembly.cs"">Using Dto From Assembly</a></li>
+        <li><a href=""{0}/UsingDtoFromXsd.cs"">Using Dto From Xsd</a></li>
+        <li><a href=""{0}/UsingServiceReferenceClient.cs"">Using Service Reference Client</a></li>
+        <li><a href=""{0}/UsingSvcutilGeneratedClient.cs"">Using SvcUtil Generated Client</a></li>
+        <li><a href=""{0}/UsingRawHttpClient.cs"">Using Raw Http Client</a></li>
+        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and Json</a></li>
+        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and Xml</a></li>
+    </ul>".Fmt(DefaultUsageExamplesBaseUri),
+						MetadataOperationPageBodyHtml = @"
+    <br />
+    <h3>Usage Examples:</h3>
+    <ul>
+        <li><a href=""{0}/UsingRestAndJson.cs"">Using Rest and JSON</a></li>
+        <li><a href=""{0}/UsingRestAndXml.cs"">Using Rest and XML</a></li>
+    </ul>".Fmt(DefaultUsageExamplesBaseUri),
 						LogFactory = new NullLogFactory(),
 						EnableAccessRestrictions = true,
 						WsdlServiceNamespace = "http://schemas.servicestack.net/types",
@@ -65,6 +82,8 @@ namespace ServiceStack.WebHost.Endpoints
 						MarkdownBaseType = typeof(MarkdownViewBase),
 						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
 						MarkdownSearchPath = "~".MapServerPath(),
+						MarkdownReplaceTokens = new Dictionary<string, string>(),
+						RazorSearchPath = "~".MapServerPath(),
 						AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
 							{ "image/gif", TimeSpan.FromHours(1) },
 							{ "image/png", TimeSpan.FromHours(1) },
@@ -86,7 +105,8 @@ namespace ServiceStack.WebHost.Endpoints
 			if (instance == null) return;
 
 			//Get a copy of the singleton already partially configured
-			this.UsageExamplesBaseUri = instance.UsageExamplesBaseUri;
+			this.MetadataPageBodyHtml = instance.MetadataPageBodyHtml;
+			this.MetadataOperationPageBodyHtml = instance.MetadataOperationPageBodyHtml;
 			this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
 			this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
 			this.LogFactory = instance.LogFactory;
@@ -108,6 +128,9 @@ namespace ServiceStack.WebHost.Endpoints
 			this.MarkdownBaseType = instance.MarkdownBaseType;
 			this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
 			this.MarkdownSearchPath = instance.MarkdownSearchPath;
+			this.MarkdownReplaceTokens = instance.MarkdownReplaceTokens;
+			this.RazorSearchPath = instance.RazorSearchPath;
+			this.RazorBaseType = instance.RazorBaseType;
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
 		}
 
@@ -171,7 +194,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public ServiceManager ServiceManager { get; set; }
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
-		public string UsageExamplesBaseUri { get; set; }
+		public string MetadataPageBodyHtml { get; set; }
+		public string MetadataOperationPageBodyHtml { get; set; }
 
 		public string ServiceName { get; set; }
 		public string DefaultContentType { get; set; }
@@ -205,6 +229,10 @@ namespace ServiceStack.WebHost.Endpoints
 		public Type MarkdownBaseType { get; set; }
 		public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
 		public string MarkdownSearchPath { get; set; }
+		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
+
+		public string RazorSearchPath { get; set; }
+		public Type RazorBaseType { get; set; }
 
 		public Dictionary<string, TimeSpan> AddMaxAgeForStaticMimeTypes { get; set; }
 
@@ -270,6 +298,6 @@ namespace ServiceStack.WebHost.Endpoints
 			var contentTypeFeature = ContentType.GetFeature(contentType);
 			AssertFeatures(contentTypeFeature);
 		}
-
 	}
+
 }

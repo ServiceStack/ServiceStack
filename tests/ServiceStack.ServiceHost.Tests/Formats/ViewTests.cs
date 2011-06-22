@@ -42,7 +42,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public AppHost()
 			{
 				this.Config = new EndpointHostConfig {
-					MarkdownSearchPath = "~".MapAbsolutePath(), 
+					MarkdownSearchPath = "~".MapAbsolutePath(),
+					MarkdownReplaceTokens = new Dictionary<string, string>(),
+					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};
 				this.ContentTypeFilters = HttpResponseFilter.Instance;
 				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
@@ -99,7 +101,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var html = GetHtml(response);
 
 			Console.WriteLine(html);
-			File.WriteAllText("~/AppData/TestsResults/CustomerDetailsResponse.htm".MapAbsolutePath(), html);
+			//File.WriteAllText("~/AppData/TestsResults/CustomerDetailsResponse.htm".MapAbsolutePath(), html);
 
 			Assert.That(html.StartsWith("<!doctype html>"));
 			Assert.That(html.Contains("Customer Orders Total:  &#163;4,596.20"));
@@ -122,7 +124,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var html = GetHtml(response, "markdown");
 
 			Console.WriteLine(html);
-			File.WriteAllText("~/AppData/TestsResults/CustomerDetailsResponse.txt".MapAbsolutePath(), html);
+			//File.WriteAllText("~/AppData/TestsResults/CustomerDetailsResponse.txt".MapAbsolutePath(), html);
 
 			Assert.That(html.StartsWith("<!doctype html>"));
 			Assert.That(html.Contains("# Maria Anders Customer Details (Berlin, Germany)"));
@@ -147,7 +149,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var html = GetHtml(response.Customer);
 
 			Console.WriteLine(html);
-			File.WriteAllText("~/AppData/TestsResults/Customer.htm".MapAbsolutePath(), html);
+			//File.WriteAllText("~/AppData/TestsResults/Customer.htm".MapAbsolutePath(), html);
 
 			Assert.That(html.StartsWith("<!doctype html>"));
 			Assert.That(html.Contains("ALT Template"));

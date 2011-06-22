@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 				Xsds = XsdTypes.Xsds,
 				XsdServiceTypesIndex = 1,
 				OperationNames = allOperations.Names,
-				UsageExamplesBaseUri = EndpointHost.Config.UsageExamplesBaseUri,
+				MetadataPageBodyHtml = EndpointHost.Config.MetadataPageBodyHtml,
 			};
 
 			defaultPage.RenderControl(writer);

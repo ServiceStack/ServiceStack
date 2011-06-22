@@ -40,6 +40,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static bool WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result)
 		{
+			return WriteToResponse(httpRes, httpReq, result, null, null);
+		}
+
+		public static bool WriteToResponse(this IHttpResponse httpRes, IHttpRequest httpReq, object result, byte[] bodyPrefix, byte[] bodySuffix)
+		{
 			if (result == null) return true;
 
 			var serializationContext = new HttpRequestContext(httpReq, result);
@@ -52,11 +57,16 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				}
 				httpResult.RequestContext = serializationContext;
 				var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(httpReq.ResponseContentType);
-				return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext);
+				return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext, bodyPrefix, bodySuffix);
 			}
 
 			var serializer = EndpointHost.AppHost.ContentTypeFilters.GetResponseSerializer(httpReq.ResponseContentType);
-			return httpRes.WriteToResponse(result, serializer, serializationContext);
+			return httpRes.WriteToResponse(result, serializer, serializationContext, bodyPrefix, bodySuffix);
+		}
+
+		public static bool WriteToResponse(this IHttpResponse httpRes, object result, ResponseSerializerDelegate serializer, IRequestContext serializationContext)
+		{
+			return httpRes.WriteToResponse(result, serializer, serializationContext, null, null);
 		}
 
 		/// <summary>
@@ -67,8 +77,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
 		/// <param name="defaultAction">The default action.</param>
 		/// <param name="serializerCtx">The serialization context.</param>
+		/// <param name="bodyPrefix">Add prefix to response body if any</param>
+		/// <param name="bodySuffix">Add suffix to response body if any</param>
 		/// <returns></returns>
-		public static bool WriteToResponse(this IHttpResponse response, object result, ResponseSerializerDelegate defaultAction, IRequestContext serializerCtx)
+		public static bool WriteToResponse(this IHttpResponse response, object result, ResponseSerializerDelegate defaultAction, IRequestContext serializerCtx, byte[] bodyPrefix, byte[] bodySuffix)
 		{
 			var defaultContentType = serializerCtx.ResponseContentType;
 			try
@@ -117,10 +129,19 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					result = httpResult.Response;
 				}
 
+				//ContentType='text/html' is the default for a HttpResponse
+				//Do not override if another has been set
+				if (response.ContentType == null || response.ContentType == ContentType.Html)
+				{
+					response.ContentType = defaultContentType;
+				}
+
 				var responseText = result as string;
 				if (responseText != null)
 				{
+					if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
 					WriteTextToResponse(response, responseText, defaultContentType);
+					if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 					return true;
 				}
 
@@ -131,14 +152,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						result.GetType().Name));
 				}
 
-				//ContentType='text/html' is the default for a HttpResponse
-				//Do not override if another has been set
-				if (response.ContentType == null || response.ContentType == ContentType.Html)
-				{
-					response.ContentType = defaultContentType;
-				}
-
+				if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
 				defaultAction(serializerCtx, result, response);
+				if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+
 				return false;
 			}
 			catch (Exception ex)
@@ -170,6 +187,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				{
 					response.ContentType = defaultContentType;
 				}
+
 				response.Write(text);
 			}
 			catch (Exception ex)

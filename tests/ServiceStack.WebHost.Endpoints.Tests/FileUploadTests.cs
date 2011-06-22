@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class FileUploadTests
 	{
-		public const string ListeningOn = "http://localhost:8080/";
+		public const string ListeningOn = "http://localhost:8082/";
 		ExampleAppHostHttpListener appHost;
 
 		[TestFixtureSetUp]

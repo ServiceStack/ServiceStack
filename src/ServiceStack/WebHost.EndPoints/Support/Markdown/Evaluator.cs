@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Xml;
 using System.Text;
 using ServiceStack.ServiceHost;
@@ -114,11 +115,24 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 
 				return typeName;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				//Console.WriteLine(ex);
 				throw;
 			}
+		}
+
+		private static readonly bool IsVersion4AndUp = Type.GetType("System.Collections.Concurrent.Partitioner") != null;
+
+		private static void AddAssembly(CompilerParameters cp, string location)
+		{
+			//Error if trying to re-add ref to mscorlib or System.Core for .NET 4.0
+			if (IsVersion4AndUp && 
+				(location == typeof(string).Assembly.Location
+				|| location == typeof(Expression).Assembly.Location))
+				return;
+
+			cp.ReferencedAssemblies.Add(location);
 		}
 
 		private void ConstructEvaluator(IEnumerable<EvaluatorItem> items)
@@ -140,7 +154,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 				GenerateExecutable = false,
 				GenerateInMemory = true,
 			};
-			assemblies.ForEach(x => cp.ReferencedAssemblies.Add(x.Location));
+			assemblies.ForEach(x => AddAssembly(cp, x.Location));
 
 
 			var code = new StringBuilder();
@@ -223,6 +237,18 @@ namespace CSharpEval
 			code.AppendLine("  }");
 			code.AppendLine("}");
 
+			if (IsVersion4AndUp)
+			{
+				//var type = Type.GetType("System.Collections.Concurrent.Partitioner");
+				//if (type != null)
+				//    cp.ReferencedAssemblies.Add(type.Assembly.Location);
+				if (!Env.IsMono)
+				{
+					//cp.ReferencedAssemblies.Add(@"C:\Windows\Microsoft.NET\Framework\v2.0.50727\System.dll");
+					cp.ReferencedAssemblies.Add(@"C:\Program Files\Reference Assemblies\Microsoft\Framework\v3.5\System.Core.dll");
+				}
+			}
+
 			var src = code.ToString();
 			var compilerResults = codeCompiler.CompileAssemblyFromSource(cp, src);
 			if (compilerResults.Errors.HasErrors)
@@ -249,7 +275,7 @@ namespace CSharpEval
 				if (!assemblies.Contains(paramType.Assembly))
 				{
 					assemblies.Add(paramType.Assembly);
-					cp.ReferencedAssemblies.Add(paramType.Assembly.Location);
+					AddAssembly(cp, paramType.Assembly.Location);
 				}
 			}
 		}
@@ -271,7 +297,9 @@ namespace CSharpEval
 			foreach (var assembly in typeAssemblies)
 			{
 				assemblies.Add(assembly);
-				cp.ReferencedAssemblies.Add(assembly.Location);
+
+				if (Common.ReflectionExtensions.IsDynamic(assembly)) continue;
+				AddAssembly(cp, assembly.Location);
 			}
 		}
 

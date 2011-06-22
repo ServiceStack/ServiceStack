@@ -511,7 +511,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 					this.Helpers[tagName] = helperType;
 				}
 			}
-			else if (directive == "template" || directive == "layoutpage")
+			else if (directive == "template" || directive == "layout")
 			{
 				this.TemplatePath = line.Trim();
 			}
