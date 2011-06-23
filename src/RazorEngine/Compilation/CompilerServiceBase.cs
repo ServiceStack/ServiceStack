@@ -1,4 +1,8 @@
-﻿namespace RazorEngine.Compilation
+﻿using System.Web.Mvc.Razor;
+using System.Web.Razor.Parser.SyntaxTree;
+using RazorEngine.Compilation.CSharp;
+
+namespace RazorEngine.Compilation
 {
     using System;
     using System.CodeDom;
@@ -135,7 +139,7 @@
                                    ? typeof(TemplateBase)
                                    : typeof(TemplateBase<>));
 
-            var host = new RazorEngineHost(CodeLanguage, () => MarkupParser)
+			var host = new MvcWebPageRazorHost(CodeLanguage, () => MarkupParser)
                            {
                                DefaultBaseClass = BuildTypeName(templateType, modelType),
                                DefaultClassName = className,
@@ -145,6 +149,8 @@
                                                                                  "RazorEngine.Templating.TemplateWriter",
 																				 "WriteSection")
                            };
+
+			host.NamespaceImports.Add("ServiceStack.Markdown.Html");
 
             var templateNamespaces = templateType.GetCustomAttributes(typeof (RequireNamespacesAttribute), true)
                 .Cast<RequireNamespacesAttribute>()
@@ -187,5 +193,25 @@
             return result.GeneratedCode;
         }
         #endregion
+
+		public IEnumerable<T> AllNodesOfType<T>(Block block)
+		{
+			if (block is T)
+				yield return (T)(object)block;
+			
+			foreach (var syntaxTreeNode in block.Children)
+			{
+				if (syntaxTreeNode is T)
+					yield return (T)(object)syntaxTreeNode;
+
+				var childBlock = syntaxTreeNode as Block;
+				if (childBlock == null) continue;
+
+				foreach (var variable in AllNodesOfType<T>(childBlock))
+				{
+					yield return variable;
+				}
+			}
+		}
     }
 }

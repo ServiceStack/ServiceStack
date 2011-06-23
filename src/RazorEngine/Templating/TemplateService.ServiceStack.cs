@@ -50,16 +50,21 @@ namespace RazorEngine.Templating
 			if (sectionName == null)
 				throw new ArgumentNullException("sectionName");
 
-			if (childTemplate == null) return null;
-
 			Action renderSection;
-			childTemplate.Sections.TryGetValue(sectionName, out renderSection);
+			this.Sections.TryGetValue(sectionName, out renderSection);
 
 			if (renderSection == null)
 			{
-				if (required)
-					throw new ApplicationException("Section not defined: " + sectionName);
-				return null;
+				if (childTemplate == null) return null;
+
+				childTemplate.Sections.TryGetValue(sectionName, out renderSection);
+
+				if (renderSection == null)
+				{
+					if (required)
+						throw new ApplicationException("Section not defined: " + sectionName);
+					return null;
+				}
 			}
 
 			renderSection();
@@ -93,7 +98,7 @@ namespace RazorEngine.Templating
 			SetModel(instance, model);
 
 			var razorTemplate = (IRazorTemplate)instance;
-			razorTemplate.Init(RazorFormat, new ViewDataDictionary(model));
+			razorTemplate.Init(RazorFormat, new ViewDataDictionary<T>(model));
 	
 			instance.Execute(); 
 

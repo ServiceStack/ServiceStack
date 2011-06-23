@@ -54,7 +54,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
 		private static string[] MenuItems = new[] { "About Us", "Blog", "Links", "Contact" };
 
-		public void Menu(string selectedId)
+		public MvcHtmlString Menu(string selectedId)
 		{
 			var sb = new StringBuilder();
 			sb.Append("<ul>\n");
@@ -64,7 +64,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 				sb.AppendFormat("<li><a href='{0}'{1}>{0}</a></li>\n", menuItem, cls);
 			}
 			sb.Append("</ul>\n");
-			ScopeArgs.Add("Menu", MvcHtmlString.Create(sb.ToString()));
+			
+			return MvcHtmlString.Create(sb.ToString());
 		}
 
 		public string Lower(string name)
@@ -104,7 +105,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		string dynamicListPagePath;
 		string dynamicListPageContent;
 
-		private MvcRazorFormat markdownFormat;
+		private MvcRazorFormat razorFormat;
 		Person templateArgs;
 
 		Person person = new Person {
@@ -135,18 +136,18 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			markdownFormat = new MvcRazorFormat();
-			markdownFormat.Init();
+			razorFormat = new MvcRazorFormat();
+			razorFormat.Init();
 		}
 
 		private RazorPage AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
 		{
-			var dynamicPage = new RazorPage(markdownFormat,
+			var dynamicPage = new RazorPage(razorFormat,
 				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
 					TemplatePath = templatePath
 				};
 
-			markdownFormat.AddPage(dynamicPage);
+			razorFormat.AddPage(dynamicPage);
 			return dynamicPage;
 		}
 
@@ -155,12 +156,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
 			const string mockContents = "[Replaced with Template]";
 
-			markdownFormat.AddTemplate(staticTemplatePath, staticTemplateContent);
+			razorFormat.AddTemplate(staticTemplatePath, staticTemplateContent);
 			var page = AddViewPage("MockPage", "/path/to/page", mockContents, staticTemplatePath);
 
 			var expectedHtml = staticTemplateContent.ReplaceFirst(MvcRazorFormat.TemplatePlaceHolder, mockContents);
 
-			var templateOutput = page.RenderToString(null);
+			var templateOutput = page.RenderToString(templateArgs);
 
 			Console.WriteLine(templateOutput);
 
@@ -400,608 +401,502 @@ Demis / Bellot
 @Html.LabelFor(m => m.FirstName) @Html.TextBoxFor(m => m.FirstName)
 ";
 
-	var expectedHtml = @"
-<h1>Generic View Page</h1>
+			var expectedHtml = @"<h1>Generic View Page</h1>
 
 <h2>Form fields</h2>
-
-<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />".Replace("\r\n", "\n");
+<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />
+".NormalizeNewLines();
 
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs).NormalizeNewLines();
 
-			//Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase<>)));
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
+
+		[Test]
+		public void Can_inherit_from_CustomViewPage_using_inherits_directive()
+		{
+			var template = @"@inherits ServiceStack.ServiceHost.Tests.Formats_Razor.CustomMarkdownViewBase<ServiceStack.ServiceHost.Tests.Formats_Razor.Person>
+<h1>Generic View Page</h1>
+
+<h2>Form fields</h2>
+@Html.LabelFor(m => m.FirstName) @Html.TextBoxFor(m => m.FirstName)
+
+<h2>Person Table</h2>
+@Table(Model)";
+
+			var expectedHtml = @"<h1>Generic View Page</h1>
+
+<h2>Form fields</h2>
+<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />
+
+<h2>Person Table</h2>
+<table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
+<tbody>
+<tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
+</table>
+".NormalizeNewLines();
+
+			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+
+			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
+
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs).NormalizeNewLines();
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
-		//#if FALSE
 
+		[Test]
+		public void Can_Render_RazorPage_with_external_helper()
+		{
+			var template = @"<h1>View Page with Custom Helper</h1>
+
+<h2>External Helper</h2>
+<img src='path/to/img' class='inline-block' />
+@Ext.InlineBlock(Model.FirstName, ""first-name"")
+";
+
+			var expectedHtml =
+			@"<h1>View Page with Custom Helper</h1>
+
+<h2>External Helper</h2>
+<img src='path/to/img' class='inline-block' />
+<div id=""first-name""><div class=""inner inline-block"">Demis</div></div>
+".NormalizeNewLines();
+
+
+			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+
+			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs).NormalizeNewLines();
 
-		//        [Test]
-		//        public void Can_inherit_from_CustomViewPage_using_inherits_directive()
-		//        {
-		//            var template = @"@inherits ServiceStack.ServiceHost.Tests.Formats.TemplateTests+CustomMarkdownViewBase<ServiceStack.ServiceHost.Tests.Formats.TemplateTests+Person>
-		//# Generic View Page
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
 
-		//## Form fields
-		//@Html.LabelFor(m => m.FirstName) @Html.TextBoxFor(m => m.FirstName)
+		[Test]
+		public void Can_Render_RazorPage_with_variable_statements()
+		{
+			var template = @"<h2>Welcome to Razor!</h2>
 
-		//## Person Table
-		//@Table(Model)
-		//";
+@{ var lastName = Model.LastName; }
+Hello @Upper(lastName), @Model.FirstName
 
-		//            var expectedHtml = @"
-		//<h1>Generic View Page</h1>
+<h3>Breadcrumbs</h3>
+@Combine("" / "", Model.FirstName, lastName)
 
-		//<h2>Form fields</h2>
+@{ var links = Model.Links; }
+<h3>Menus</h3>
+<ul>
+@foreach (var link in links) {
+	<li>@link.Name - @link.Href
+		<ul>
+		@{ var labels = link.Labels; }
+		@foreach (var label in labels) { 
+			<li>@label</li>
+		}
+		</ul>
+	</li>
+}
+</ul>";
+
+			var expectedHtml = @"<h2>Welcome to Razor!</h2>
+
+Hello BELLOT, Demis
+
+<h3>Breadcrumbs</h3>
+Demis / Bellot
+
+<h3>Menus</h3>
+<ul>
+	<li>ServiceStack - http://www.servicestack.net
+		<ul>
+			<li>REST</li>
+			<li>JSON</li>
+			<li>XML</li>
+		</ul>
+	</li>
+	<li>AjaxStack - http://www.ajaxstack.com
+		<ul>
+			<li>HTML5</li>
+			<li>AJAX</li>
+			<li>SPA</li>
+		</ul>
+	</li>
+</ul>".NormalizeNewLines();
 
-		//<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />
-		//<h2>Person Table</h2>
+			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
-		//<table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
-		//<tbody>
-		//<tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
-		//</table>
-		//".Replace("\r\n", "\n");
+			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs).NormalizeNewLines();
 
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-		//            dynamicPage.Prepare();
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
 
-		//            var templateOutput = dynamicPage.RenderToHtml(templateArgs);
-		//            templateOutput = templateOutput.Replace("\r\n", "\n");
 
-		//            Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(CustomMarkdownViewBase<>)));
+		[Test]
+		public void Can_Render_RazorPage_with_comments()
+		{
+			var template = @"<h1>Dynamic If Markdown Template</h1>
 
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
+<p>Hello @Model.FirstName,</p>
 
-		//        [Test]
-		//        public void Can_Render_MarkdownPage_with_external_helper()
-		//        {
-		//            var template = @"# View Page with Custom Helper
+@if (Model.FirstName == ""Bellot"") {
+<ul>
+	<li>@Model.FirstName</li>
+</ul>
+}
+@*
+@if (Model.LastName == ""Bellot"") {
+	* @Model.LastName
+}
+*@
 
-		//## External Helper 
-		//<img src='path/to/img' class='inline-block' />
-		//@Ext.InlineBlock(Model.FirstName, ""first-name"")
-		//";
+@*
+Plain text in a comment
+*@
+<h3>heading 3</h3>";
 
-		//            var expectedHtml = @"<h1>View Page with Custom Helper</h1>
+			var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
 
-		//<h2>External Helper</h2>
+<p>Hello Demis,</p>
 
-		//<p><img src='path/to/img' class='inline-block' />
-		// <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".Replace("\r\n", "\n");
+<h3>heading 3</h3>".NormalizeNewLines();
 
+			var dynamicPage = AddViewPage("DynamicIfTpl", "/path/to/tpl", template);
 
-		//            markdownFormat.MarkdownGlobalHelpers.Add("Ext", typeof(CustomMarkdownHelper));
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-		//            dynamicPage.Prepare();
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs).NormalizeNewLines();
 
-		//            var templateOutput = dynamicPage.RenderToHtml(templateArgs);
-		//            templateOutput = templateOutput.Replace("\r\n", "\n");
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
 
-		//            Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
 
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
+		[Test]
+		public void Can_capture_Section_statements_and_store_them_in_Sections()
+		{
+			var template = @"<h2>Welcome to Razor!</h2>
 
-		//        [Test]
-		//        public void Can_Render_MarkdownPage_with_external_helper_using_helper_directive()
-		//        {
-		//            var template = @"@helper Ext: ServiceStack.ServiceHost.Tests.Formats.TemplateTests+CustomMarkdownHelper
-		//# View Page with Custom Helper
+@{ var lastName = Model.LastName; }
+@section Salutations {
+<p>Hello @Upper(lastName), @Model.FirstName</p>
+}
 
-		//## External Helper 
-		//<img src='path/to/img' class='inline-block' />
-		//@Ext.InlineBlock(Model.FirstName, ""first-name"")
-		//";
+@section Breadcrumbs {
+<h3>Breadcrumbs</h3>
+<p>@Combine("" / "", Model.FirstName, lastName)</p>
+}
 
-		//            var expectedHtml = @"
-		//<h1>View Page with Custom Helper</h1>
+@{ var links = Model.Links; }
+@section Menus {
+<h3>Menus</h3>
+<ul>
+@foreach (var link in links) {
+	<li>@link.Name - @link.Href
+		<ul>
+		@{ var labels = link.Labels; }
+		@foreach (var label in labels) { 
+			<li>@label</li>
+		}
+		</ul>
+	</li>
+}
+</ul>
+}
 
-		//<h2>External Helper</h2>
+<h2>Captured Sections</h2>
 
-		//<p><img src='path/to/img' class='inline-block' />
-		// <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".Replace("\r\n", "\n");
+<div id='breadcrumbs'>
+@RenderSection(""Breadcrumbs"")
+</div>
 
+@RenderSection(""Menus"")
 
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-		//            dynamicPage.Prepare();
+<h2>Salutations</h2>
+@RenderSection(""Salutations"")";
 
-		//            var templateOutput = dynamicPage.RenderToHtml(templateArgs);
-		//            templateOutput = templateOutput.Replace("\r\n", "\n");
+			var expectedHtml =
+			@"<h2>Welcome to Razor!</h2>
 
-		//            Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
 
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
 
-		//        [Test]
-		//        public void Can_Render_page_to_Markdown_only()
-		//        {
-		//            var headerTemplate = @"## Header Links!
-		//  - [Google](http://google.com)
-		//  - [Bing](http://bing.com)
-		//";
 
-		//            var template = @"## Welcome to Razor!
 
-		//@Html.Partial(""HeaderLinks"", Model)
 
-		//Hello @Upper(Model.LastName), @Model.FirstName
 
-		//### Breadcrumbs
-		//@Combine("" / "", Model.FirstName, Model.LastName)
+<h2>Captured Sections</h2>
 
-		//### Menus
-		//@foreach (var link in Model.Links) {
-		//  - @link.Name - @link.Href
-		//  @foreach (var label in link.Labels) { 
-		//    - @label
-		//  }
-		//}";
-		//            var expectedHtml = @"## Welcome to Razor!
+<div id='breadcrumbs'>
 
-		// ## Header Links!
-		//  - [Google](http://google.com)
-		//  - [Bing](http://bing.com)
+<h3>Breadcrumbs</h3>
+<p>Demis / Bellot</p>
 
-		//Hello  BELLOT, Demis
-
-		//### Breadcrumbs
-		// Demis / Bellot
-
-		//### Menus
-		//  - ServiceStack - http://www.servicestack.net
-		//    - REST
-		//    - JSON
-		//    - XML
-		//  - AjaxStack - http://www.ajaxstack.com
-		//    - HTML5
-		//    - AJAX
-		//    - SPA
-		//".Replace("\r\n", "\n");
+</div>
 
-		//            markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
-		//                "/path/to/page", "HeaderLinks", headerTemplate));
 
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-		//            dynamicPage.Prepare();
+<h3>Menus</h3>
+<ul>
+	<li>ServiceStack - http://www.servicestack.net
+		<ul>
+			<li>REST</li>
+			<li>JSON</li>
+			<li>XML</li>
+		</ul>
+	</li>
+	<li>AjaxStack - http://www.ajaxstack.com
+		<ul>
+			<li>HTML5</li>
+			<li>AJAX</li>
+			<li>SPA</li>
+		</ul>
+	</li>
+</ul>
+
+
+<h2>Salutations</h2>
+
+<p>Hello BELLOT, Demis</p>
+".NormalizeNewLines();
+
+			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+			
+			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
+
+			var templateOutput = dynamicPage.RenderToHtml(templateArgs).NormalizeNewLines();
+
+			Console.WriteLine(templateOutput);
+
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+			
+			var razorTemplate = dynamicPage.GetRazorTemplate();
 
-		//            var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
-		//            templateOutput = templateOutput.Replace("\r\n", "\n");
+			razorTemplate.Clear();
+			Action section;
+			razorTemplate.Sections.TryGetValue("Salutations", out section);
+			section();
 
-		//            Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
+			Assert.That(razorTemplate.Result, Is.EqualTo("\r\n<p>Hello BELLOT, Demis</p>\r\n"));
+		}
 
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
 
+		[Test]
+		public void Can_Render_RazorTemplate_with_section_and_variable_placeholders()
+		{
+			var template = @"<h2>Welcome to Razor!</h2>
 
-		//        [Test]
-		//        public void Can_Render_Markdown_with_variable_statements()
-		//        {
-		//            var template = @"## Welcome to Razor!
+@{ var lastName = Model.LastName; }
 
-		//@var lastName = Model.LastName;
+<p>Hello @Upper(lastName), @Model.FirstName,</p>
 
-		//Hello @Upper(lastName), @Model.FirstName
+@section Breadcrumbs {
+<h3>Breadcrumbs</h3>
+@Combine("" / "", Model.FirstName, lastName)
+}
 
-		//### Breadcrumbs
-		//@Combine("" / "", Model.FirstName, lastName)
+@section Menus {
+<h3>Menus</h3>
+<ul>
+@foreach (var link in Model.Links) {
+	<li>@link.Name - @link.Href
+		<ul>
+		@{ var labels = link.Labels; }
+		@foreach (var label in labels) { 
+			<li>@label</li>
+		}
+		</ul>
+	</li>
+}
+</ul>
+}";
+			var websiteTemplatePath = "/path/to/tpl";
+			
+			var websiteTemplate = @"<!doctype html>
+<html lang=""en-us"">
+<head>
+	<title>Bellot page</title>
+</head>
+<body>
 
-		//@var links = Model.Links
-		//### Menus
-		//@foreach (var link in links) {
-		//  - @link.Name - @link.Href
-		//  @var labels = link.Labels
-		//  @foreach (var label in labels) { 
-		//    - @label
-		//  }
-		//}";
-		//            var expectedHtml = @"## Welcome to Razor!
+	<header>
+		@RenderSection(""Menus"")
+	</header>
 
+	<h1>Website Template</h1>
 
-		//Hello  BELLOT, Demis
+	<div id=""content"">@RenderBody()</div>
 
-		//### Breadcrumbs
-		// Demis / Bellot
+	<footer>
+		@RenderSection(""Breadcrumbs"")
+	</footer>
 
-		//### Menus
-		//  - ServiceStack - http://www.servicestack.net
-		//    - REST
-		//    - JSON
-		//    - XML
-		//  - AjaxStack - http://www.ajaxstack.com
-		//    - HTML5
-		//    - AJAX
-		//    - SPA
-		//".Replace("\r\n", "\n");
+</body>
+</html>";
 
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-		//            dynamicPage.Prepare();
+			var expectedHtml =
+			@"<!doctype html>
+<html lang=""en-us"">
+<head>
+	<title>Bellot page</title>
+</head>
+<body>
 
-		//            var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
-		//            templateOutput = templateOutput.Replace("\r\n", "\n");
+	<header>
+		
+<h3>Menus</h3>
+<ul>
+	<li>ServiceStack - http://www.servicestack.net
+		<ul>
+			<li>REST</li>
+			<li>JSON</li>
+			<li>XML</li>
+		</ul>
+	</li>
+	<li>AjaxStack - http://www.ajaxstack.com
+		<ul>
+			<li>HTML5</li>
+			<li>AJAX</li>
+			<li>SPA</li>
+		</ul>
+	</li>
+</ul>
 
-		//            Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
+	</header>
 
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
+	<h1>Website Template</h1>
 
-		//        [Test]
-		//        public void Can_Render_MarkdownPage_with_comments()
-		//        {
-		//            var template = @"# Dynamic If Markdown Template
-		//Hello @Model.FirstName,
+	<div id=""content""><h2>Welcome to Razor!</h2>
 
-		//@if (Model.FirstName == ""Bellot"") {
-		//  * @Model.FirstName
-		//}
-		//@*
-		//@if (Model.LastName == ""Bellot"") {
-		//  * @Model.LastName
-		//}
-		//*@
 
-		//@*
-		//Plain text in a comment
-		//*@
+<p>Hello BELLOT, Demis,</p>
 
-		//### heading 3";
 
-		//            var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
 
-		//<p>Hello Demis,</p>
+</div>
 
+	<footer>
+		
+<h3>Breadcrumbs</h3>
+Demis / Bellot
 
-		//<h3>heading 3</h3>
-		//".Replace("\r\n", "\n");
+	</footer>
 
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
-		//            dynamicPage.Prepare();
+</body>
+</html>".NormalizeNewLines();
 
-		//            var templateOutput = dynamicPage.RenderToHtml(templateArgs);
+			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
+			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
+			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/page-tpl", template, websiteTemplatePath);
 
-		//        [Test]
-		//        public void Can_Render_MarkdownPage_with_unmatching_escaped_braces()
-		//        {
-		//            var template = @"# Dynamic If Markdown Template 
-		//Hello @Model.FirstName, { -- unmatched, leave unescaped outside statement
+			var razorTemplate = razorFormat.ExecuteTemplate(
+				person, "DynamicModelTpl", websiteTemplatePath);
 
-		//{ -- inside matching braces, outside statement -- }
+			var templateOutput = razorTemplate.Result.NormalizeNewLines();
 
-		//@if (Model.LastName == ""Bellot"") {
-		//  * @Model.LastName
+			Console.WriteLine(templateOutput);
 
-		//{{ -- inside matching braces, escape inside statement -- }}
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
 
-		//{{ -- unmatched
+		[Test]
+		public void Can_Render_Static_RazorContentPage_that_populates_variable_and_displayed_on_website_template()
+		{
 
-		//}
+			var websiteTemplate = @"<!doctype html>
+<html lang=""en-us"">
+<head>
+	<title>Static page</title>
+</head>
+<body>
+	<header>
+		@RenderSection(""Header"")
+	</header>
 
-		//### heading 3";
+	<div id='menus'>
+		@RenderSection(""Menu"")
+	</div>
 
-		//            var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
+	<h1>Website Template</h1>
 
-		//<p>Hello Demis, { -- unmatched, leave unescaped outside statement</p>
+	<div id=""content"">@RenderBody()</div>
 
-		//<p>{ -- inside matching braces, outside statement -- }</p>
+</body>
+</html>".NormalizeNewLines();
 
-		//<ul>
-		//<li>Bellot</li>
-		//</ul>
+	var template = @"<h1>Static Markdown Template</h1>
+@section Menu {
+  @Menu(""Links"")
+}
 
-		//<p>{ -- inside matching braces, escape inside statement -- }</p>
+@section Header {
+<h3>Static Page Title</h3>
+}
 
-		//<p>{ -- unmatched</p>
+<h3>heading 3</h3>
+<p>paragraph</p>";
 
-		//<h3>heading 3</h3>
-		//".Replace("\r\n", "\n");
+	var expectedHtml = @"<!doctype html>
+<html lang=""en-us"">
+<head>
+	<title>Static page</title>
+</head>
+<body>
+	<header>
+		
+<h3>Static Page Title</h3>
 
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
-		//            dynamicPage.Prepare();
+	</header>
 
-		//            var templateOutput = dynamicPage.RenderToHtml(templateArgs);
+	<div id='menus'>
+		
+  <ul>
+<li><a href='About Us'>About Us</a></li>
+<li><a href='Blog'>Blog</a></li>
+<li><a href='Links' class='selected'>Links</a></li>
+<li><a href='Contact'>Contact</a></li>
+</ul>
 
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
 
-		//        [Test]
-		//        public void Can_capture_Section_statements_and_store_them_in_scopeargs()
-		//        {
-		//            var template = @"## Welcome to Razor!
+	</div>
 
-		//@var lastName = Model.LastName;
-		//@section Salutations {
-		//Hello @Upper(lastName), @Model.FirstName
-		//}
+	<h1>Website Template</h1>
 
-		//@section Breadcrumbs {
-		//### Breadcrumbs
-		//@Combine("" / "", Model.FirstName, lastName)
-		//}
+	<div id=""content""><h1>Static Markdown Template</h1>
 
-		//@var links = Model.Links
-		//@section Menus {
-		//### Menus
-		//@foreach (var link in links) {
-		//  - @link.Name - @link.Href
-		//  @var labels = link.Labels
-		//  @foreach (var label in labels) { 
-		//    - @label
-		//  }
-		//}
-		//}
 
-		//## Captured Sections
 
-		//<div id='breadcrumbs'>@Breadcrumbs</div>
 
-		//@Menus
+<h3>heading 3</h3>
+<p>paragraph</p></div>
 
-		//## Salutations
-		//@Salutations
-		//";
-		//            var expectedHtml = @"<h2>Welcome to Razor!</h2>
+</body>
+</html>".NormalizeNewLines();
 
+			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
+			var websiteTemplatePath = "/path/to/tpl";
+			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
 
+			var staticPage = new RazorPage(razorFormat,
+				"/path/to/pagetpl", "StaticTpl", template, RazorPageType.ContentPage) {
+					TemplatePath = websiteTemplatePath
+				};
 
-		//<h2>Captured Sections</h2>
+			razorFormat.AddPage(staticPage);
 
-		//<div id='breadcrumbs'><h3>Breadcrumbs</h3>
+			var templateOutput = razorFormat.RenderStaticPage("/path/to/pagetpl").NormalizeNewLines();
 
-		//<p>Demis / Bellot</p>
-		//</div>
-
-		//<p><h3>Menus</h3>
-
-		//<ul>
-		//<li>ServiceStack - http://www.servicestack.net
-		//<ul>
-		//<li>REST</li>
-		//<li>JSON</li>
-		//<li>XML</li>
-		//</ul></li>
-		//<li>AjaxStack - http://www.ajaxstack.com
-		//<ul>
-		//<li>HTML5</li>
-		//<li>AJAX</li>
-		//<li>SPA</li>
-		//</ul></li>
-		//</ul>
-		//</p>
-
-		//<h2>Salutations</h2>
-
-		//<p><p>Hello  BELLOT, Demis</p>
-		//</p>
-		//".Replace("\r\n", "\n");
-
-		//            var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-		//            dynamicPage.Prepare();
-
-		//            var templateOutput = dynamicPage.RenderToHtml(templateArgs);
-		//            templateOutput = templateOutput.Replace("\r\n", "\n");
-
-		//            Assert.That(dynamicPage.ExecutionContext.BaseType, Is.EqualTo(typeof(MarkdownViewBase)));
-
-		//            Console.WriteLine(templateOutput);
-
-		//            Assert.That(templateArgs["Salutations"].ToString(), Is.EqualTo("<p>Hello  BELLOT, Demis</p>\n"));
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
-
-		//        [Test]
-		//        public void Can_Render_Template_with_section_and_variable_placeholders()
-		//        {
-		//            var template = @"## Welcome to Razor!
-
-		//@var lastName = Model.LastName;
-
-		//Hello @Upper(lastName), @Model.FirstName,
-
-		//@section Breadcrumbs {
-		//### Breadcrumbs
-		//@Combine("" / "", Model.FirstName, lastName)
-		//}
-
-		//@section Menus {
-		//### Menus
-		//@foreach (var link in Model.Links) {
-		//  - @link.Name - @link.Href
-		//  @var labels = link.Labels
-		//  @foreach (var label in labels) { 
-		//    - @label
-		//  }
-		//}
-		//}";
-
-		//            var websiteTemplate = @"<!doctype html>
-		//<html lang=""en-us"">
-		//<head>
-		//    <title><!--@lastName--> page</title>
-		//</head>
-		//<body>
-
-		//    <header>
-		//        <!--@Menus-->
-		//    </header>
-
-		//    <h1>Website Template</h1>
-
-		//    <div id=""content""><!--@Body--></div>
-
-		//    <footer>
-		//        <!--@Breadcrumbs-->
-		//    </footer>
-
-		//</body>
-		//</html>";
-
-		//            var expectedHtml = @"<!doctype html>
-		//<html lang=""en-us"">
-		//<head>
-		//    <title>Bellot page</title>
-		//</head>
-		//<body>
-
-		//    <header>
-		//        <h3>Menus</h3>
-
-		//<ul>
-		//<li>ServiceStack - http://www.servicestack.net
-		//<ul>
-		//<li>REST</li>
-		//<li>JSON</li>
-		//<li>XML</li>
-		//</ul></li>
-		//<li>AjaxStack - http://www.ajaxstack.com
-		//<ul>
-		//<li>HTML5</li>
-		//<li>AJAX</li>
-		//<li>SPA</li>
-		//</ul></li>
-		//</ul>
-
-		//    </header>
-
-		//    <h1>Website Template</h1>
-
-		//    <div id=""content""><h2>Welcome to Razor!</h2>
-
-
-		//<p>Hello  BELLOT, Demis,</p>
-
-
-		//</div>
-
-		//    <footer>
-		//        <h3>Breadcrumbs</h3>
-
-		//<p>Demis / Bellot</p>
-
-		//    </footer>
-
-		//</body>
-		//</html>".Replace("\r\n", "\n");
-
-		//            markdownFormat.AddTemplate("/path/to/tpl", websiteTemplate);
-
-		//            markdownFormat.AddPage(
-		//                new MarkdownPage(markdownFormat, "/path/to/page-tpl", "DynamicModelTpl", template) {
-		//                    TemplatePath = "/path/to/tpl"
-		//                });
-
-		//            var templateOutput = markdownFormat.RenderDynamicPageHtml("DynamicModelTpl", person);
-		//            templateOutput = templateOutput.Replace("\r\n", "\n");
-
-		//            Console.WriteLine(templateOutput);
-
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
-
-		//        [Test]
-		//        public void Can_Render_Static_ContentPage_that_populates_variable_and_displayed_on_website_template()
-		//        {
-
-		//            var websiteTemplate = @"<!doctype html>
-		//<html lang=""en-us"">
-		//<head>
-		//    <title>Static page</title>
-		//</head>
-		//<body>
-		//    <header>
-		//      <!--@Header-->
-		//    </header>
-
-		//    <div id='menus'>
-		//        <!--@Menu-->
-		//    </div>
-
-		//    <h1>Website Template</h1>
-
-		//    <div id=""content""><!--@Body--></div>
-
-		//</body>
-		//</html>".NormalizeNewLines();
-
-		//            var template = @"# Static Markdown Template
-		//@Menu(""Links"")
-
-		//@section Header {
-		//### Static Page Title  
-		//}
-
-		//### heading 3
-		//paragraph";
-
-		//            var expectedHtml = @"<!doctype html>
-		//<html lang=""en-us"">
-		//<head>
-		//    <title>Static page</title>
-		//</head>
-		//<body>
-		//    <header>
-		//      <h3>Static Page Title</h3>
-
-		//    </header>
-
-		//    <div id='menus'>
-		//        <ul>
-		//<li><a href='About Us'>About Us</a></li>
-		//<li><a href='Blog'>Blog</a></li>
-		//<li><a href='Links' class='selected'>Links</a></li>
-		//<li><a href='Contact'>Contact</a></li>
-		//</ul>
-
-		//    </div>
-
-		//    <h1>Website Template</h1>
-
-		//    <div id=""content""><h1>Static Markdown Template</h1>
-
-
-
-		//<h3>heading 3</h3>
-
-		//<p>paragraph</p>
-		//</div>
-
-		//</body>
-		//</html>".NormalizeNewLines();
-
-		//            markdownFormat.MarkdownBaseType = typeof(CustomMarkdownViewBase);
-
-		//            markdownFormat.AddTemplate("/path/to/tpl", websiteTemplate);
-
-		//            markdownFormat.RegisterMarkdownPage(
-		//                new MarkdownPage(markdownFormat, "/path/to/pagetpl", "StaticTpl", template, MarkdownPageType.ContentPage) {
-		//                    TemplatePath = "/path/to/tpl"
-		//                });
-
-		//            var templateOutput = markdownFormat.RenderStaticPage("/path/to/pagetpl", true);
-
-		//            Console.WriteLine(templateOutput);
-		//            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
-		//        }
-		//#endif
+			Console.WriteLine(templateOutput);
+			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+		}
 
 	}
 }

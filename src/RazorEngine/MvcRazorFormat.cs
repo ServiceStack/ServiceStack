@@ -364,6 +364,28 @@ namespace RazorEngine
 			return template;
 		}
 
+		public string RenderStaticPage(string filePath)
+		{
+			if (filePath == null)
+				throw new ArgumentNullException("filePath");
+
+			filePath = filePath.WithoutExtension();
+
+			RazorPage razorPage;
+			if (!ContentPages.TryGetValue(filePath, out razorPage))
+				throw new InvalidDataException(ErrorPageNotFound.FormatWith(filePath));
+
+			return RenderStaticPage(razorPage);
+		}
+
+		private string RenderStaticPage(RazorPage markdownPage)
+		{
+			var template = ExecuteTemplate((object)null, 
+				markdownPage.PageName, markdownPage.TemplatePath);
+
+			return template.Result;
+		}
+
 		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath)
 		{			
 			return Razor.DefaultTemplateService.ExecuteTemplate(model, name, templatePath);
@@ -371,6 +393,7 @@ namespace RazorEngine
 
 		public string RenderPartial(string pageName, object model, bool renderHtml)
 		{
+			//Razor writes partial to static StringBuilder so don't return or it will write x2
 			var template = Razor.DefaultTemplateService.RenderPartial(model, pageName);
 			//return template.Result;
 			return null;

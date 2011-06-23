@@ -1,4 +1,6 @@
-﻿namespace RazorEngine.Compilation.CSharp
+﻿using System.CodeDom;
+
+namespace RazorEngine.Compilation.CSharp
 {
     using System.Web.Razor;
     using System.Web.Razor.Parser.SyntaxTree;
@@ -8,7 +10,7 @@
     /// <summary>
     /// Defines a code generator that supports C# syntax.
     /// </summary>
-    public class CSharpRazorCodeGenerator : System.Web.Razor.Generator.CSharpRazorCodeGenerator
+    public partial class CSharpRazorCodeGenerator : System.Web.Razor.Generator.CSharpRazorCodeGenerator
     {
         #region Constructor
         /// <summary>
@@ -44,5 +46,7 @@
                 throw new TemplateParsingException(err);
         }
         #endregion
-    }
+
+	}
+
 }

@@ -67,6 +67,7 @@ namespace RazorEngine
 			get
 			{
 				return this.PageType == RazorPageType.Template
+					|| this.PageType == RazorPageType.ContentPage
 					? this.FilePath
 					: this.Name;
 			}
@@ -111,22 +112,27 @@ namespace RazorEngine
 				}
 				catch (Exception ex)
 				{
-					initException = ex;
+					initException = ex; 
 				}
 				isBusy = false;
 				Monitor.PulseAll(readWriteLock);
 			}
 		}
 
-		public string RenderToHtml(object model)
+		public string RenderToHtml<T>(T model)
 		{
 			return RenderToString(model);
 		}
 
-		public string RenderToString(object model)
+		public string RenderToString<T>(T model)
 		{
 			var template = RazorFormat.ExecuteTemplate(model, this.PageName, this.TemplatePath);
 			return template.Result;
+		}
+
+		public IRazorTemplate GetRazorTemplate()
+		{
+			return Razor.DefaultTemplateService.GetTemplate(this.PageName);
 		}
 	}
 }

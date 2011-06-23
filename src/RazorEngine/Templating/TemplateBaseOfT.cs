@@ -36,7 +36,17 @@
         /// </summary>
         public TModel Model
         {
-            get { return (TModel)model; }
+            get
+            {
+				if (HasDynamicModel 
+					&& !typeof(TModel).IsAssignableFrom(typeof(DynamicObject))
+					&& (model is DynamicObject || model is ExpandoObject))
+				{
+					TModel m = (dynamic)model;
+					return m;
+				}
+				return (TModel)model;
+            }
             set
             {
                 if (HasDynamicModel && !(value is DynamicObject) && !(value is ExpandoObject))
