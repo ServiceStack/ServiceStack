@@ -118,10 +118,15 @@ namespace RazorEngine
 			}
 		}
 
+		public string RenderToHtml(object model)
+		{
+			return RenderToString(model);
+		}
+
 		public string RenderToString(object model)
 		{
-			var html = Razor.Run(model, this.PageName);
-			return html;
+			var template = RazorFormat.ExecuteTemplate(model, this.PageName, this.TemplatePath);
+			return template.Result;
 		}
 	}
 }

@@ -51,6 +51,17 @@
                          : value;
             return true;
         }
+
+		public override bool TryConvert(ConvertBinder binder, out object result)
+		{
+			if (binder.ReturnType == Model.GetType())
+			{
+				result = Model;
+				return true;
+			}
+			return base.TryConvert(binder, out result);
+		}
+
         #endregion
     }
 }

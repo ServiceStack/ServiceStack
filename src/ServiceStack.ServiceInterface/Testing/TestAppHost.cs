@@ -23,10 +23,10 @@ namespace ServiceStack.ServiceInterface.Testing
 			
 			var createInstance = EndpointHostConfig.Instance;
 
-			this.Config = EndpointHost.Config = new EndpointHostConfig {
-				ServiceName = GetType().Name,
-				ServiceManager = new ServiceManager(true, serviceAssemblies),
-			};
+			this.Config = EndpointHost.Config = new EndpointHostConfig(
+				GetType().Name,
+				new ServiceManager(true, serviceAssemblies));
+
 			this.ContentTypeFilters = new HttpResponseFilter();
 			this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();

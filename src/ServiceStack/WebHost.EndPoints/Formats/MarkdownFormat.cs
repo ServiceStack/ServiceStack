@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		SharedViewPage = 3,
 	}
 
-	public class MarkdownFormat 
+	public class MarkdownFormat : IViewEngine
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(MarkdownFormat));
 
@@ -449,6 +449,11 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		public string RenderDynamicPageHtml(string pageName, Dictionary<string, object> scopeArgs)
 		{
 			return RenderDynamicPage(GetViewPage(pageName), scopeArgs, true, true);
+		}
+
+		public string RenderPartial(string pageName, object model, bool renderHtml)
+		{
+			return RenderDynamicPage(GetViewPage(pageName), pageName, model, renderHtml, true);
 		}
 
 		public string RenderDynamicPage(string pageName, object model, bool renderHtml)

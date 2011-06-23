@@ -70,11 +70,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Test_response_with_CompressedResult()
 		{
-			EndpointHost.Config = new EndpointHostConfig
-			{
-				ServiceName = "ServiceName",
-				ServiceManager = new ServiceManager(GetType().Assembly)
-			};
+			EndpointHost.Config = new EndpointHostConfig(
+				"ServiceName",
+				new ServiceManager(GetType().Assembly));
 
 			var assembly = typeof (CompressionTests).Assembly;
 			EndpointHost.ConfigureHost(

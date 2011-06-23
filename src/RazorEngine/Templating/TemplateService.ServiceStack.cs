@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Common;
+using ServiceStack.Markdown;
+using ServiceStack.ServiceHost;
 
 namespace RazorEngine.Templating
 {
@@ -68,10 +70,17 @@ namespace RazorEngine.Templating
 
 	public partial class TemplateService
 	{
+		public MvcRazorFormat RazorFormat { get; set; }
+
 		/// <summary>
 		/// Runs and returns the template with the specified name.
 		/// </summary>
 		public IRazorTemplate ExecuteTemplate<T>(T model, string name)
+		{
+			return ExecuteTemplate(model, name, null);
+		}
+
+		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath)
 		{
 			if (string.IsNullOrEmpty(name))
 				throw new ArgumentException("The named of the cached template is required.");
@@ -82,16 +91,21 @@ namespace RazorEngine.Templating
 
 			SetService(instance, this);
 			SetModel(instance, model);
-			instance.Execute();
 
-			var razorTemplate = (IRazorTemplate) instance;
+			var razorTemplate = (IRazorTemplate)instance;
+			razorTemplate.Init(RazorFormat, new ViewDataDictionary(model));
+	
+			instance.Execute(); 
 
 			if (!razorTemplate.Layout.IsNullOrEmpty())
+				templatePath = razorTemplate.Layout.MapServerPath();
+
+			if (templatePath != null)
 			{
-				var layoutTemplate = GetTemplate(razorTemplate.Layout);
+				var layoutTemplate = GetTemplate(templatePath);
 				if (layoutTemplate == null)
 					throw new ArgumentException(
-						"No template exists with the specified Layout: " + razorTemplate.Layout);
+						"No template exists with the specified Layout: " + templatePath);
 
 				layoutTemplate.ChildTemplate = razorTemplate;
 				SetService(layoutTemplate, this);
@@ -109,6 +123,22 @@ namespace RazorEngine.Templating
 			ITemplate instance;
 			templateCache.TryGetValue(name, out instance);
 			return instance as IRazorTemplate;
+		}
+
+		public IRazorTemplate RenderPartial<T>(T model, string name)
+		{
+			var template = GetTemplate(name);
+			SetService(template, this);
+			SetModel(template, model);
+
+			//TODO: make less ugly, 
+			//since executing templates clears the buffer we need to capture 
+			//what's been rendered and prepend after.
+			var capture = template.Result;
+			template.Execute();
+			template.Prepend(capture);
+			
+			return template;
 		}
 
 	}

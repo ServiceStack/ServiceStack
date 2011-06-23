@@ -100,6 +100,12 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+		public EndpointHostConfig(string serviceName, ServiceManager serviceManager)
+		{
+			this.ServiceName = serviceName;
+			this.ServiceManager = serviceManager;
+		}
+
 		public EndpointHostConfig()
 		{
 			if (instance == null) return;
@@ -192,7 +198,7 @@ namespace ServiceStack.WebHost.Endpoints
 			catch (Exception) { }
 		}
 
-		public ServiceManager ServiceManager { get; set; }
+		public ServiceManager ServiceManager { get; internal set; }
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
 		public string MetadataPageBodyHtml { get; set; }
 		public string MetadataOperationPageBodyHtml { get; set; }

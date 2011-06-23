@@ -22,7 +22,7 @@ namespace RazorEngine
 		Template = 4,
 	}
 
-	public class MvcRazorFormat : ITemplateResolver, IActivator
+	public class MvcRazorFormat : ITemplateResolver, IActivator, IViewEngine
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(MvcRazorFormat));
 
@@ -98,6 +98,7 @@ namespace RazorEngine
 
 		public void Init(Type razorBaseType = null)
 		{
+			//Force Binder to load
 			var loaded = typeof(Microsoft.CSharp.RuntimeBinder.Binder).Assembly != null;
 			if (!loaded)
 				throw new ConfigurationErrorsException("Microsoft.CSharp not properly loaded");
@@ -114,6 +115,7 @@ namespace RazorEngine
 				Razor.SetTemplateBase(typeof(RazorPageBase<>));
 			}
 
+			Razor.DefaultTemplateService.RazorFormat = this;
 			Razor.AddResolver(this);
 			Razor.SetActivator(this);
 		}
@@ -349,7 +351,7 @@ namespace RazorEngine
 
 		public ITemplate CreateInstance(Type type)
 		{
-			Console.WriteLine("CreateInstance(): " + type.Name);
+			//Console.WriteLine("CreateInstance(): " + type.Name);
 			var instance = ReflectionUtils.CreateInstance(type);
 
 			var templatePage = instance as ITemplatePage;
@@ -360,6 +362,18 @@ namespace RazorEngine
 
 			var template = (ITemplate)instance;
 			return template;
+		}
+
+		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath)
+		{			
+			return Razor.DefaultTemplateService.ExecuteTemplate(model, name, templatePath);
+		}
+
+		public string RenderPartial(string pageName, object model, bool renderHtml)
+		{
+			var template = Razor.DefaultTemplateService.RenderPartial(model, pageName);
+			//return template.Result;
+			return null;
 		}
 	}
 }

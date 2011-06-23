@@ -78,7 +78,7 @@ namespace ServiceStack.Markdown
 		private static readonly HtmlEncoder htmlEncoder = GetHtmlEncoder();
 
 		public bool RenderHtml { get; protected set; }
-		public MarkdownFormat Markdown { get; protected set; }
+		public IViewEngine ViewEngine { get; protected set; }
 		public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 		public virtual ViewDataDictionary ViewData { get; protected set; }
@@ -86,17 +86,23 @@ namespace ServiceStack.Markdown
 		public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
 			bool renderHtml, ViewDataDictionary viewData)
 		{
-			this.Markdown = markdownPage.Markdown;
 			this.RenderHtml = renderHtml;
 			this.MarkdownPage = markdownPage;
 			this.ScopeArgs = scopeArgs;
+
+			Init(markdownPage.Markdown, viewData);
+		}
+
+		public void Init(IViewEngine viewEngine, ViewDataDictionary viewData)
+		{
+			this.ViewEngine = viewEngine;
 			this.ViewData = viewData;
 			this.ViewData.PopulateModelState();
 		}
 		
 		public MvcHtmlString Partial(string viewName, object model)
 		{
-			var result = Markdown.RenderDynamicPage(viewName, model, this.RenderHtml);
+			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml);
 			return MvcHtmlString.Create(result);
 		}
 
