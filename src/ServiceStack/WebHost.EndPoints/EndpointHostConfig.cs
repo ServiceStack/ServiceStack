@@ -101,6 +101,7 @@ namespace ServiceStack.WebHost.Endpoints
 		}
 
 		public EndpointHostConfig(string serviceName, ServiceManager serviceManager)
+			: this()
 		{
 			this.ServiceName = serviceName;
 			this.ServiceManager = serviceManager;

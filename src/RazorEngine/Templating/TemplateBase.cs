@@ -1,4 +1,7 @@
-﻿namespace RazorEngine.Templating
+﻿using System.Web;
+using ServiceStack.Markdown;
+
+namespace RazorEngine.Templating
 {
     using System;
     using System.IO;
@@ -91,7 +94,15 @@
             if (@object == null)
                 return;
 
-            Builder.Append(@object);
+			if (@object is MvcHtmlString || ChildTemplate != null)
+			{
+				Builder.Append(@object);
+			}
+			else
+			{
+				var strValue = Convert.ToString(@object);
+				Builder.Append(HttpUtility.HtmlEncode(strValue));
+			}
         }
 
         /// <summary>

@@ -119,6 +119,11 @@ namespace RazorEngine
 			}
 		}
 
+		public string RenderToHtml()
+		{
+			return RenderToString((object)null);
+		}
+
 		public string RenderToHtml<T>(T model)
 		{
 			return RenderToString(model);

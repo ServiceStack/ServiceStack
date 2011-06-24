@@ -137,6 +137,7 @@
     <Compile Include="Markdown\RouteValueDictionary.cs" />
     <Compile Include="Markdown\TagBuilder.cs" />
     <Compile Include="Markdown\TypeHelpers.cs" />
+    <Compile Include="Markdown\UrlHelper.cs" />
     <Compile Include="Markdown\ViewDataDictionary.cs" />
     <Compile Include="Markdown\ViewDataDictionary`1.cs" />
     <Compile Include="Markdown\ViewDataInfo.cs" />

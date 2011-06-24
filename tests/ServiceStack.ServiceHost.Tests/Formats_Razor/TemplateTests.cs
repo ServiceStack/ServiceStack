@@ -33,6 +33,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 	public class CustomMarkdownViewBase<T> : RazorPageBase<T>
 	{
 		public CustomMarkdownHelper Ext = new CustomMarkdownHelper();
+		public ExternalProductHelper Prod = new ExternalProductHelper();
 
 		public MvcHtmlString Table(dynamic obj)
 		{

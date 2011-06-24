@@ -1,63 +1,55 @@
 ﻿using System.Collections.Generic;
-using ServiceStack.WebHost.EndPoints.Formats;
-using ServiceStack.WebHost.EndPoints.Support.Markdown;
+using RazorEngine;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
-	public class MarkdownTestBase
+	public class RazorTestBase
 	{
 		public const string TemplateName = "Template";
 		protected const string PageName = "Page";
 
-		public MarkdownFormat Create(string websiteTemplate, string pageTemplate)
+		public MvcRazorFormat Create(string websiteTemplate, string pageTemplate)
 		{
-			var markdownFormat = new MarkdownFormat();
+			var razorFormat = new MvcRazorFormat();
 
-			markdownFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
-			markdownFormat.AddPage(
-				new MarkdownPage(markdownFormat, "/path/to/tpl", PageName, pageTemplate) {
+			razorFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
+			razorFormat.AddPage(
+				new RazorPage(razorFormat, "/path/to/tpl", PageName, pageTemplate) {
 					TemplatePath = "/path/to/websitetpl",
 				});
 
-			return markdownFormat;
+			return razorFormat;
 		}
 
-		public MarkdownFormat Create(string pageTemplate)
+		public MvcRazorFormat Create(string pageTemplate)
 		{
-			var markdownFormat = new MarkdownFormat();
-			markdownFormat.AddPage(
-				new MarkdownPage(markdownFormat, "/path/to/tpl", PageName, pageTemplate));
+			var razorFormat = new MvcRazorFormat();
+			razorFormat.AddPage(
+				new RazorPage(razorFormat, "/path/to/tpl", PageName, pageTemplate));
 
-			return markdownFormat;
+			return razorFormat;
 		}
 
 		public string RenderToHtml(string pageTemplate, Dictionary<string, object> scopeArgs)
 		{
-			var markdown = Create(pageTemplate);
-			var html = markdown.RenderDynamicPageHtml(PageName, scopeArgs);
-			return html;
+			var razorFormat = Create(pageTemplate);
+			var template = razorFormat.ExecuteTemplate(scopeArgs, PageName, null);
+			return template.Result;
 		}
 
 		public string RenderToHtml(string pageTemplate, Dictionary<string, object> scopeArgs, string websiteTemplate)
 		{
-			var markdown = Create(pageTemplate);
-			var html = markdown.RenderDynamicPageHtml(PageName, scopeArgs);
-			return html;
+			var razorFormat = Create(pageTemplate);
+			var template = razorFormat.ExecuteTemplate(scopeArgs, PageName, websiteTemplate);
+			return template.Result;
 		}
 
-		public string RenderToHtml(string pageTemplate, object model)
+		public string RenderToHtml<T>(string pageTemplate, T model)
 		{
-			var markdown = Create(pageTemplate);
-			var html = markdown.RenderDynamicPageHtml(PageName, model);
-			return html;
+			var razorFormat = Create(pageTemplate);
+			var template = razorFormat.ExecuteTemplate(model, PageName, null);
+			return template.Result;
 		}
 	}
 
-	public static class MarkdownTestExtensions
-	{
-		public static string NormalizeNewLines(this string text)
-		{
-			return text.Replace("\r\n", "\n");
-		}
-	}
 }

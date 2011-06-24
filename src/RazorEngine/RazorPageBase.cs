@@ -8,6 +8,7 @@ namespace RazorEngine
 {
 	public abstract class RazorPageBase<TModel> : TemplateBase<TModel>, IRazorTemplate
 	{
+		public UrlHelper Url = new UrlHelper();
 		public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
 
 		public IAppHost AppHost { get; set; }
