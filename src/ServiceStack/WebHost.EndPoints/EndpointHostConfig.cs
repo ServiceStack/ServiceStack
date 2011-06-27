@@ -61,6 +61,7 @@ namespace ServiceStack.WebHost.Endpoints
 						DefaultDocuments = new List<string> {
 							"default.htm",
 							"default.html",
+							"default.cshtml",
 							"index.htm",
 							"index.html",
 							"default.aspx",

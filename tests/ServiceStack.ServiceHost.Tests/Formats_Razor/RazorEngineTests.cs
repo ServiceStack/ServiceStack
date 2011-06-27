@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			var mvcRazorFormat = new MvcRazorFormat();
+			var mvcRazorFormat = new RazorFormat();
 			mvcRazorFormat.Init(typeof(CustomRazorBasePage<>));
 		}
 

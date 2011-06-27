@@ -2,11 +2,12 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 {
-	public class HttpResponseMock 
+	public class HttpResponseMock
 		: IHttpResponse
 	{
 		public HttpResponseMock()
@@ -27,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 
 		public byte[] GetOutputStreamAsBytes()
 		{
-			var ms = (MemoryStream) this.OutputStream;
+			var ms = (MemoryStream)this.OutputStream;
 			return ms.ToArray();
 		}
 
@@ -41,18 +42,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 
 		public string ContentType
 		{
-			get; set;
+			get;
+			set;
 		}
 
 		public NameValueCollection Headers
 		{
-			get; 
+			get;
 			private set;
 		}
 
 		public void AddHeader(string name, string value)
 		{
 			this.Headers.Add(name, value);
+		}
+
+		public void Redirect(string url)
+		{
+			this.Headers.Add(HttpHeaders.Location, url.MapServerPath());
 		}
 
 		public Stream OutputStream
@@ -73,7 +80,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 
 		public bool IsClosed
 		{
-			get; private set;
+			get;
+			private set;
 		}
 	}
 }

@@ -177,6 +177,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				this.Headers.Add(name, value);
 			}
 
+			public void Redirect(string url)
+			{
+				this.Headers[HttpHeaders.Location] = url;
+			}
+
 			public Stream OutputStream { get { return MemoryStream; } }
 
 			public void Write(string text)

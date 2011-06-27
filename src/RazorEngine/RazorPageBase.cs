@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RazorEngine.Templating;
 using ServiceStack.Markdown;
+using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace RazorEngine
@@ -12,11 +13,13 @@ namespace RazorEngine
 		public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
 
 		public IAppHost AppHost { get; set; }
+		public IHttpResponse Response { get; set; }
 
 		public Dictionary<string, object> ScopeArgs { get; set; }
 
-		public void Init(IViewEngine viewEngine, ViewDataDictionary viewData)
+		public void Init(IViewEngine viewEngine, ViewDataDictionary viewData, IHttpResponse httpRes)
 		{
+			this.Response = httpRes;
 			Html.Init(viewEngine, viewData);
 		}
 
@@ -38,5 +41,9 @@ namespace RazorEngine
 			return this.AppHost.TryResolve<T>();
 		}
 
+		public string Href(string url)
+		{
+			return Url.Content(url);
+		}
 	}
 }

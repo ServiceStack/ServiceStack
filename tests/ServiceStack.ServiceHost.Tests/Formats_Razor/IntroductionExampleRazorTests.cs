@@ -38,7 +38,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			};
 			productArgs = new { products = products };
 
-			var mvcRazorFormat = new MvcRazorFormat();
+			var mvcRazorFormat = new RazorFormat();
 			mvcRazorFormat.Init(typeof(CustomRazorBasePage<>));
 		}
 

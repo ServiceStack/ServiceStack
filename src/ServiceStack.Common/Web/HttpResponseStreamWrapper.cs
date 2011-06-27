@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common.Web
@@ -22,6 +23,11 @@ namespace ServiceStack.Common.Web
 		public void AddHeader(string name, string value)
 		{
 			this.Headers[name] = value;
+		}
+
+		public void Redirect(string url)
+		{
+			this.Headers[HttpHeaders.Location] = url;
 		}
 
 		public Stream OutputStream { get; private set; }

@@ -8,7 +8,7 @@ namespace RazorEngine
 {
 	public class RazorPage
 	{
-		public MvcRazorFormat RazorFormat { get; set; }
+		public RazorFormat RazorFormat { get; set; }
 
 		public string FilePath { get; set; }
 		public string Name { get; set; }
@@ -27,12 +27,12 @@ namespace RazorEngine
 			this.Dependents = new List<IExpirable>();
 		}
 
-		public RazorPage(MvcRazorFormat razorFormat, string fullPath, string name, string contents)
+		public RazorPage(RazorFormat razorFormat, string fullPath, string name, string contents)
 			: this(razorFormat, fullPath, name, contents, RazorPageType.ViewPage)
 		{
 		}
 
-		public RazorPage(MvcRazorFormat razorFormat, string fullPath, string name, string contents, RazorPageType pageType)
+		public RazorPage(RazorFormat razorFormat, string fullPath, string name, string contents, RazorPageType pageType)
 			: this()
 		{
 			RazorFormat = razorFormat;

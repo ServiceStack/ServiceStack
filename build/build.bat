@@ -5,9 +5,7 @@ SET BUILD=Release
 
 %MSBUILD% build.msbuild
 
-COPY ..\src\ServiceStack\bin\%BUILD%\*.* ..\NuGet\ServiceStack\lib
-COPY ..\src\RazorEngine\bin\%BUILD%\RazorEngine.dll ..\NuGet\ServiceStack\lib\Net40
-COPY ..\src\RazorEngine\bin\%BUILD%\System.Web.Razor.dll ..\NuGet\ServiceStack\lib\Net40
+COPY ..\src\RazorEngine\bin\%BUILD%\*.* ..\NuGet\ServiceStack\lib
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\NuGet\ServiceStack\lib
 
 COPY ..\src\RazorEngine\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib

@@ -40,12 +40,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 	[TestFixture]
 	public class IntroductionLayoutRazorTests : RazorTestBase
 	{
-		private MvcRazorFormat razorFormat;
+		private RazorFormat razorFormat;
 
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			razorFormat = new MvcRazorFormat();
+			razorFormat = new RazorFormat();
 			razorFormat.Init();
 		}
 

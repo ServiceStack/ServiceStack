@@ -75,17 +75,12 @@ namespace RazorEngine.Templating
 
 	public partial class TemplateService
 	{
-		public MvcRazorFormat RazorFormat { get; set; }
+		public RazorFormat RazorFormat { get; set; }
 
 		/// <summary>
 		/// Runs and returns the template with the specified name.
 		/// </summary>
-		public IRazorTemplate ExecuteTemplate<T>(T model, string name)
-		{
-			return ExecuteTemplate(model, name, null);
-		}
-
-		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath)
+		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath=null, IHttpResponse httpRes=null)
 		{
 			if (string.IsNullOrEmpty(name))
 				throw new ArgumentException("The named of the cached template is required.");
@@ -98,7 +93,7 @@ namespace RazorEngine.Templating
 			SetModel(instance, model);
 
 			var razorTemplate = (IRazorTemplate)instance;
-			razorTemplate.Init(RazorFormat, new ViewDataDictionary<T>(model));
+			razorTemplate.Init(RazorFormat, new ViewDataDictionary<T>(model), httpRes);
 	
 			instance.Execute(); 
 

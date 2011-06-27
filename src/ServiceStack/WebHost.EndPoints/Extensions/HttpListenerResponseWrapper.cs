@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 
@@ -32,6 +33,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public void AddHeader(string name, string value)
 		{
 			response.AddHeader(name, value);
+		}
+
+		public void Redirect(string url)
+		{
+			response.Redirect(url);
 		}
 
 		public Stream OutputStream

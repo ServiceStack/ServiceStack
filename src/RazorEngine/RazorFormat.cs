@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using RazorEngine.Templating;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
@@ -22,13 +23,15 @@ namespace RazorEngine
 		Template = 4,
 	}
 
-	public class MvcRazorFormat : ITemplateResolver, IActivator, IViewEngine
+	public class RazorFormat : ITemplateResolver, IActivator, IViewEngine
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(MvcRazorFormat));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(RazorFormat));
+
+		public static RazorFormat Instance = new RazorFormat();
 
 		private const string ErrorPageNotFound = "Could not find Razor page '{0}'";
 
-		public static string TemplateName = "default.cshtml";
+		public static string TemplateName = "_Layout.cshtml";
 		public static string TemplatePlaceHolder = "@RenderBody()";
 
 		// ~/View - Dynamic Pages
@@ -52,13 +55,18 @@ namespace RazorEngine
 
 		public Func<string, IEnumerable<RazorPage>> FindRazorPagesFn { get; set; }
 
-		public MvcRazorFormat()
+		public RazorFormat()
 		{
 			this.FindRazorPagesFn = FindRazorPages;
 			this.MarkdownReplaceTokens = new Dictionary<string, string>();
 		}
 
-		public void Register(IAppHost appHost)
+		public static void Register(IAppHost appHost)
+		{
+			Instance.Configure(appHost);
+		}
+
+		public void Configure(IAppHost appHost)
 		{
 			this.AppHost = appHost;
 			this.MarkdownReplaceTokens = new Dictionary<string, string>(appHost.Config.MarkdownReplaceTokens);
@@ -87,7 +95,7 @@ namespace RazorEngine
 				RazorPage razorPage;
 				if (filePath == null || (razorPage = GetContentPage(filePath.WithoutExtension())) == null) return null;
 				return new RazorHandler {
-					MvcRazorFormat = this,
+					RazorFormat = this,
 					RazorPage = razorPage,
 					RequestName = "RazorPage",
 					PathInfo = pathInfo,
@@ -181,25 +189,19 @@ namespace RazorEngine
 		{
 			httpRes.AddHeaderLastModified(razorPage.GetLastModified());
 
-			var renderInTemplate = true;
+			var templatePath = razorPage.TemplatePath;
 			if (httpReq != null && httpReq.QueryString["format"] != null)
 			{
-				renderInTemplate = !httpReq.GetFormatModifier().StartsWithIgnoreCase("bare");
+				if (!httpReq.GetFormatModifier().StartsWithIgnoreCase("bare"))
+					templatePath = null;
 			}
 
-			var markup = RenderDynamicPage(razorPage, razorPage.Name, dto, renderInTemplate);
-			var markupBytes = markup.ToUtf8Bytes();
-			httpRes.OutputStream.Write(markupBytes, 0, markupBytes.Length);
+			var template = ExecuteTemplate(dto, razorPage.PageName, templatePath, httpRes);
+			var html = template.Result;
+			var htmlBytes = html.ToUtf8Bytes();
+			httpRes.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
 
 			return true;
-		}
-
-		private string RenderDynamicPage(RazorPage razorPage, string pageName, object model, bool renderTemplate)
-		{
-			if (razorPage == null)
-				throw new InvalidDataException(ErrorPageNotFound.FormatWith(pageName));
-
-			return Razor.Run(model, razorPage.PageName);
 		}
 
 		public void ReloadModifiedPageAndTemplates(RazorPage razorPage)
@@ -380,15 +382,20 @@ namespace RazorEngine
 
 		private string RenderStaticPage(RazorPage markdownPage)
 		{
-			var template = ExecuteTemplate((object)null, 
+			var template = ExecuteTemplate((object)null,
 				markdownPage.PageName, markdownPage.TemplatePath);
 
 			return template.Result;
 		}
 
 		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath)
-		{			
-			return Razor.DefaultTemplateService.ExecuteTemplate(model, name, templatePath);
+		{
+			return ExecuteTemplate(model, name, templatePath, null);
+		}
+
+		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath, IHttpResponse httpRes)
+		{
+			return Razor.DefaultTemplateService.ExecuteTemplate(model, name, templatePath, httpRes);
 		}
 
 		public string RenderPartial(string pageName, object model, bool renderHtml)

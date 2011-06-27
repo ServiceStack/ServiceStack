@@ -106,7 +106,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		string dynamicListPagePath;
 		string dynamicListPageContent;
 
-		private MvcRazorFormat razorFormat;
+		private RazorFormat razorFormat;
 		Person templateArgs;
 
 		Person person = new Person {
@@ -122,7 +122,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/Views/Template/default.cshtml".MapAbsolutePath();
+			staticTemplatePath = "~/Views/Template/_Layout.cshtml".MapAbsolutePath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
 			dynamicPagePath = "~/Views/Template/DynamicTpl.cshtml".MapAbsolutePath();
@@ -137,7 +137,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			razorFormat = new MvcRazorFormat();
+			razorFormat = new RazorFormat();
 			razorFormat.Init();
 		}
 
@@ -160,7 +160,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			razorFormat.AddTemplate(staticTemplatePath, staticTemplateContent);
 			var page = AddViewPage("MockPage", "/path/to/page", mockContents, staticTemplatePath);
 
-			var expectedHtml = staticTemplateContent.ReplaceFirst(MvcRazorFormat.TemplatePlaceHolder, mockContents);
+			var expectedHtml = staticTemplateContent.ReplaceFirst(RazorFormat.TemplatePlaceHolder, mockContents);
 
 			var templateOutput = page.RenderToString(templateArgs);
 
@@ -178,7 +178,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 				.Replace("@Model.FirstName", person.FirstName)
 				.Replace("@Model.LastName", person.LastName);
 
-			expectedHtml = staticTemplateContent.Replace(MvcRazorFormat.TemplatePlaceHolder, expectedHtml);
+			expectedHtml = staticTemplateContent.Replace(RazorFormat.TemplatePlaceHolder, expectedHtml);
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
@@ -201,7 +201,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
 			expectedHtml = expectedHtml.ReplaceForeach(foreachLinks);
 
-			expectedHtml = staticTemplateContent.Replace(MvcRazorFormat.TemplatePlaceHolder, expectedHtml);
+			expectedHtml = staticTemplateContent.Replace(RazorFormat.TemplatePlaceHolder, expectedHtml);
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 

@@ -7,7 +7,7 @@ namespace RazorEngine
 {
 	public class RazorHandler : EndpointHandlerBase
 	{
-		public MvcRazorFormat MvcRazorFormat { get; set; }
+		public RazorFormat RazorFormat { get; set; }
 		public RazorPage RazorPage { get; set; }
 
 		public string PathInfo { get; set; }
@@ -19,7 +19,7 @@ namespace RazorEngine
 			if (contentPage == null)
 			{
 				var pageFilePath = this.FilePath.WithoutExtension();
-				contentPage = MvcRazorFormat.GetContentPage(pageFilePath);
+				contentPage = RazorFormat.GetContentPage(pageFilePath);
 			}
 			if (contentPage == null)
 			{
@@ -27,12 +27,12 @@ namespace RazorEngine
 				return;
 			}
 
-			MvcRazorFormat.ReloadModifiedPageAndTemplates(contentPage);
+			RazorFormat.ReloadModifiedPageAndTemplates(contentPage);
 
 			if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
 				return;
 
-			MvcRazorFormat.ProcessRazorPage(httpReq, contentPage, null, httpRes);
+			RazorFormat.ProcessRazorPage(httpReq, contentPage, null, httpRes);
 		}
 
 		public override object CreateRequest(IHttpRequest request, string operationName)

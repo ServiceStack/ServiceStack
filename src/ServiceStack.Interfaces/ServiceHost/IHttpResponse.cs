@@ -10,6 +10,8 @@ namespace ServiceStack.ServiceHost
 
 		void AddHeader(string name, string value);
 
+		void Redirect(string url);
+
 		Stream OutputStream { get; }
 
 		void Write(string text);
