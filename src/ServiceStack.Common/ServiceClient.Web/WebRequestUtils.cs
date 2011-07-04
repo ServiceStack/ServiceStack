@@ -23,6 +23,7 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			var webEx = ex as WebException;
 			return (webEx != null
+                    && webEx.Response != null
 			        && ((HttpWebResponse) webEx.Response).StatusCode == HttpStatusCode.Unauthorized
 			        && !string.IsNullOrEmpty(userName)
 			        && !string.IsNullOrEmpty(password));
