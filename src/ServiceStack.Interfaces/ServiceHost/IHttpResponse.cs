@@ -6,6 +6,8 @@ namespace ServiceStack.ServiceHost
 	{
 		int StatusCode { set; }
 
+        string StatusDescription { set; }
+
 		string ContentType { get; set; }
 
 		void AddHeader(string name, string value);
