@@ -10,6 +10,11 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		HttpStatusCode StatusCode { get; set; }
 
+        /// <summary>
+        /// The HTTP Status Description
+        /// </summary>
+        string StatusDescription { get; set; }
+
 		/// <summary>
 		/// The HTTP Response ContentType
 		/// </summary>

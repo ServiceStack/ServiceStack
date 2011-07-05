@@ -18,6 +18,7 @@ namespace ServiceStack.Common.Web
 
 		public Dictionary<string, string> Headers { get; set; }
 		public int StatusCode { set; private get; }
+        public string StatusDescription { set; private get; }
 		public string ContentType { get; set; }
 
 		public void AddHeader(string name, string value)
