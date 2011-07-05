@@ -168,6 +168,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			public int StatusCode { set; private get; }
 
+            public string StatusDescription { set; private get; }
+
 			public string ContentType { get; set; }
 
 			private Dictionary<string, string> Headers { get; set; }

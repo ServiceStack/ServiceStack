@@ -67,6 +67,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(mockResponse.Headers["X-Custom"], Is.EqualTo("Header"));
 		}
 
+        [Test]
+        public void Can_send_ResponseText_test_with_StatusDescription()
+        {
+            var mockResponse = new HttpResponseMock();
+
+            var customStatus = "Custom Status Description";
+
+            var httpResult = new HttpResult(System.Net.HttpStatusCode.Accepted, customStatus);
+
+            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, ContentType.Html);
+
+            Assert.That(reponseWasAutoHandled, Is.True);
+
+            var statusDesc = mockResponse.StatusDescription;            
+            Assert.That(mockResponse.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.Accepted));
+            Assert.That(statusDesc, Is.EqualTo(customStatus));
+        }
+
 	}
 
 }

@@ -22,6 +22,8 @@ namespace ServiceStack.Common.Web
 
 		public HttpStatusCode StatusCode { get; set; }
 
+        public string StatusDescription { get; set; }
+
 		public object Response
 		{
 			get { return this.Contents; }

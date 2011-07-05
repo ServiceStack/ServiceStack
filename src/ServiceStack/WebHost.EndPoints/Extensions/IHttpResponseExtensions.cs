@@ -96,6 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				if (httpResult != null)
 				{
 					response.StatusCode = (int)httpResult.StatusCode;
+                    response.StatusDescription = httpResult.StatusDescription;
 					if (string.IsNullOrEmpty(httpResult.ContentType))
 					{
 						httpResult.ContentType = defaultContentType;
