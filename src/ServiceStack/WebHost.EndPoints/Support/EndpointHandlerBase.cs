@@ -203,10 +203,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			if (request.UserHostAddress != null)
 			{
-				var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1;
+				var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1 &&
+					request.UserHostAddress.IndexOf("::") == -1;
+				var pieces = request.UserHostAddress.Split(new char[] {':' },StringSplitOptions.RemoveEmptyEntries);
 				var ipAddressNumber = isIpv4Address
-                    ? request.UserHostAddress.Split(':')[0]
-					: request.UserHostAddress;
+					? pieces[0]
+					: (pieces.Length == 9 || pieces.Length == 6 || pieces.Length == 4 
+						? request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'))
+						: request.UserHostAddress);
 
 				var ipAddress = IPAddress.Parse(ipAddressNumber);
 
