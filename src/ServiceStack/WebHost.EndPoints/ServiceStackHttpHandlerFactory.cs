@@ -183,7 +183,7 @@ namespace ServiceStack.WebHost.Endpoints
 				defaultRedirectUrl.AbsoluteUrl = ApplicationBaseUrl.CombineWith(
 				defaultRedirectUrl.RelativeUrl);
 
-			if (NonRootModeDefaultHttpHandler.AbsoluteUrl == null)
+			if (NonRootModeDefaultHttpHandler != null && NonRootModeDefaultHttpHandler.AbsoluteUrl == null)
 				NonRootModeDefaultHttpHandler.AbsoluteUrl = ApplicationBaseUrl.CombineWith(
 				NonRootModeDefaultHttpHandler.RelativeUrl);
 		}
