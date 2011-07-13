@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Configuration;
+using System.Xml.Linq;
 using MarkdownSharp;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -148,44 +150,15 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				//Read the user-defined path in the Web.Config
 				var config = WebConfigurationManager.OpenWebConfiguration("~/");
-				var handlersSection = config.GetSection("system.web/httpHandlers") as HttpHandlersSection;
-				if (handlersSection != null)
-				{
-					for (var i = 0; i < handlersSection.Handlers.Count; i++)
-					{
-						var httpHandler = handlersSection.Handlers[i];
-						if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
-
-						var handlerPath = httpHandler.Path.Replace("*", "");
-						instance.MetadataRedirectPath = PathUtils.CombinePaths(
-							handlerPath, "metadata");
-						instance.ServiceStackHandlerFactoryPath = string.IsNullOrEmpty(handlerPath)
-							? null : handlerPath;
-
-						break;
-					}
-				}
+				SetPathsFromConfiguration(config, null);
 
 				if (instance.MetadataRedirectPath == null)
 				{
 					foreach (ConfigurationLocation location in config.Locations)
 					{
-						var locationPath = (location.Path ?? "").ToLower();
-						System.Configuration.Configuration locConfig = location.OpenConfiguration();
-						handlersSection = locConfig.GetSection("system.web/httpHandlers") as HttpHandlersSection;
-						if (handlersSection == null) continue;
+						SetPathsFromConfiguration(location.OpenConfiguration(), (location.Path ?? "").ToLower());
 
-						for (var i = 0; i < handlersSection.Handlers.Count; i++)
-						{
-							var httpHandler = handlersSection.Handlers[i];
-							if (!httpHandler.Type.StartsWith("ServiceStack")) continue;
-
-							instance.ServiceStackHandlerFactoryPath = locationPath;
-							instance.MetadataRedirectPath = PathUtils.CombinePaths(
-								instance.ServiceStackHandlerFactoryPath, "metadata");
-
-							break;
-						}
+						if (instance.MetadataRedirectPath != null) { break; }
 					}
 				}
 
@@ -198,6 +171,66 @@ namespace ServiceStack.WebHost.Endpoints
 				}
 			}
 			catch (Exception) { }
+		}
+
+		private static void SetPathsFromConfiguration(System.Configuration.Configuration config, string locationPath)
+		{
+			//standard config
+			var handlersSection = config.GetSection("system.web/httpHandlers") as HttpHandlersSection;
+			if (handlersSection != null)
+			{
+				for (var i = 0; i < handlersSection.Handlers.Count; i++)
+				{
+					var httpHandler = handlersSection.Handlers[i];
+					if (!httpHandler.Type.StartsWith("ServiceStack"))
+						continue;
+
+					SetPaths(httpHandler.Path, locationPath);
+					break;
+				}
+			}
+
+			//IIS7+ integrated mode system.webServer/handlers
+			if (instance.MetadataRedirectPath == null)
+			{
+				var webServerSection = config.GetSection("system.webServer");
+				if (webServerSection != null)
+				{
+					var rawXml = webServerSection.SectionInformation.GetRawXml();
+					if (!string.IsNullOrEmpty(rawXml))
+					{
+						SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
+					}
+				}
+			}
+		}
+
+		private static void SetPaths(string handlerPath, string locationPath)
+		{
+			if (null == handlerPath) { return; }
+
+			if (null == locationPath)
+			{
+				handlerPath = handlerPath.Replace("*", string.Empty);
+			}
+
+			instance.ServiceStackHandlerFactoryPath = null != locationPath ? locationPath
+				: string.IsNullOrEmpty(handlerPath)
+					? null : handlerPath;
+
+			instance.MetadataRedirectPath = PathUtils.CombinePaths(
+				null != locationPath ? instance.ServiceStackHandlerFactoryPath : handlerPath
+				, "metadata");
+		}
+
+		private static string ExtractHandlerPathFromWebServerConfigurationXml(string rawXml)
+		{
+			return XDocument.Parse(rawXml).Root.Element("handlers")
+				.Descendants("add")
+				.Where(handler => (handler.Attribute("type").Value
+				?? string.Empty).StartsWith("ServiceStack"))
+				.Select(handler => handler.Attribute("path").Value)
+				.FirstOrDefault();
 		}
 
 		public ServiceManager ServiceManager { get; internal set; }
