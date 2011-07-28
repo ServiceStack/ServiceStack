@@ -85,6 +85,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(statusDesc, Is.EqualTo(customStatus));
         }
 
+		[Test]
+		public void Can_handle_null_HttpResult_StatusDescription()
+		{
+			var mockResponse = new HttpResponseMock();
+
+			var httpResult = new HttpResult();
+			httpResult.StatusDescription = null;
+
+			mockResponse.WriteToResponse(httpResult, ContentType.Html);
+
+			Assert.IsNotNull(mockResponse.StatusDescription);
+		}
 	}
 
 }
