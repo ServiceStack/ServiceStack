@@ -40,7 +40,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 
 		public int StatusCode { get; set; }
 
-        public string StatusDescription { get; set; }
+		private string statusDescription = string.Empty;
+		public string StatusDescription
+		{
+			get
+			{
+				return statusDescription;
+			}
+			set
+			{
+				statusDescription = value;
+			}
+		}
 
 		public string ContentType
 		{
