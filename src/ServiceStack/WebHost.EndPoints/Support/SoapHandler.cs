@@ -66,11 +66,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						: null;
 				}
 
-				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
+				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return null;
 
 				var response = ExecuteService(request, endpointAttributes, null);
 
-				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
+				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return null;
 
 				return requestMsg.Headers.Action == null
 					? Message.CreateMessage(requestMsg.Version, null, response)
