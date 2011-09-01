@@ -55,7 +55,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			physicalFilePath = "~".MapAbsolutePath();
 		}
-
+		
+		public HttpListenerRequest Request
+		{
+			get { return request; }
+		}
+		
 		private readonly HttpListenerRequest request;
 
 		public HttpListenerRequestWrapper(string operationName, HttpListenerRequest request)
