@@ -13,7 +13,7 @@ namespace ServiceStack.ServiceHost
 		public static void RedirectToUrl(this IHttpResponse httpRes, string url)
 		{
 			httpRes.AddHeader(HttpHeaders.Location, url);
-			httpRes.Close();
+			//httpRes.Close();
 		}
 
 		public static void TransmitFile(this IHttpResponse httpRes, string filePath)
@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost
 				fs.WriteTo(httpRes.OutputStream);
 			}
 
-			httpRes.Close();
+			//httpRes.Close();
 		}
 
 		public static void WriteFile(this IHttpResponse httpRes, string filePath)
@@ -47,13 +47,13 @@ namespace ServiceStack.ServiceHost
 				fs.WriteTo(httpRes.OutputStream);
 			}
 
-			httpRes.Close();
+			//httpRes.Close();
 		}
 
 		public static void Redirect(this IHttpResponse httpRes, string url)
 		{
 			httpRes.AddHeader(HttpHeaders.Location, url);
-			httpRes.Close();
+			//httpRes.Close();
 		}
 
 		public static void ReturnAuthRequired(this IHttpResponse httpRes)
@@ -65,7 +65,7 @@ namespace ServiceStack.ServiceHost
 		{
 			httpRes.StatusCode = (int) HttpStatusCode.Unauthorized;
 			httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "Basic realm=\"" + authRealm + "\"");
-			httpRes.Close();
+			//httpRes.Close();
 		}
 
 		/// <summary>

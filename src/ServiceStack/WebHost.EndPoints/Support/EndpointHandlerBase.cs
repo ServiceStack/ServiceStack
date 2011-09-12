@@ -37,10 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public EndpointAttributes HandlerAttributes { get; set; }
 
-		public bool IsReusable
-		{
-			get { return false; }
-		}
+		
 
 		public abstract object CreateRequest(IHttpRequest request, string operationName);
 		public abstract object GetResponse(IHttpRequest httpReq, object request);
@@ -120,34 +117,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			return false;
 		}
 
-		public virtual void ProcessRequest(HttpContext context)
-		{
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-			if (string.IsNullOrEmpty(operationName)) return;
-
-			if (DefaultHandledRequest(context)) return;
-
-			ProcessRequest(
-				new HttpRequestWrapper(operationName, context.Request),
-				new HttpResponseWrapper(context.Response),
-				operationName);
-		}
-
-		public virtual void ProcessRequest(HttpListenerContext context)
-		{
-			var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-			if (string.IsNullOrEmpty(operationName)) return;
-
-			if (DefaultHandledRequest(context)) return;
-
-			ProcessRequest(
-				new HttpListenerRequestWrapper(operationName, context.Request),
-				new HttpListenerResponseWrapper(context.Response),
-				operationName);
-		}
-
+		
 		public static ServiceManager ServiceManager { get; set; }
 
 		public static Type GetOperationType(string operationName)
@@ -267,5 +237,24 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					string.Format("The operation '{0}' does not exist for this service", operationName));
 			}
 		}
-	}
+
+        bool IHttpHandler.IsReusable
+        {
+            get { return false; }
+        }
+
+        void IHttpHandler.ProcessRequest(HttpContext context)
+        {
+            var operationName = this.RequestName ?? context.Request.GetOperationName();
+
+            if (string.IsNullOrEmpty(operationName)) return;
+
+            if (DefaultHandledRequest(context)) return;
+
+            ProcessRequest(
+                new HttpRequestWrapper(operationName, context.Request),
+                new HttpResponseWrapper(context.Response),
+                operationName);
+        }
+    }
 }

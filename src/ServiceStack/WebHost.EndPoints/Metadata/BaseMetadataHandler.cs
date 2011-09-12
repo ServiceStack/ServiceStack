@@ -35,11 +35,12 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 
 		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			using (var sw = new StreamWriter(httpRes.OutputStream))
+			using (var sw = new StringWriter())
 			{
 				var writer = new HtmlTextWriter(sw);
 				httpRes.ContentType = "text/html";
 				ProcessOperations(writer, httpReq);
+                httpRes.Write(sw.ToString());
 			}
 		}
 

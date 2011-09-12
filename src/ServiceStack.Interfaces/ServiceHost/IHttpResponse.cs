@@ -16,12 +16,14 @@ namespace ServiceStack.ServiceHost
 
 		Stream OutputStream { get; }
 
+        TextWriter Output { get; }
+
 		void Write(string text);
 
 		/// <summary>
 		/// Signal that this response has been handled and no more processing should be done
 		/// </summary>
-		void Close();
+		//void Close();
 
 		/// <summary>
 		/// Gets a value indicating whether this instance is closed.

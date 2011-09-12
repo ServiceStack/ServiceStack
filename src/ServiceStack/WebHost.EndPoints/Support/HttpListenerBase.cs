@@ -175,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// so that it calls the BeginGetContext() (or possibly exits if we're not
 				// listening any more) method to start handling the next incoming request
 				// while we continue to process this request on a different thread.
-				ListenForNextRequest.Set();
+				//RG ListenForNextRequest.Set();
 			}
 
 			if (context == null) return;
@@ -188,39 +188,44 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (this.ReceiveWebRequest != null)
 				this.ReceiveWebRequest(context);
 
-			try
-			{
-				this.ProcessRequest(context);
-			}
-			catch (Exception ex)
-			{
-				var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-				Log.ErrorFormat(error);
+            try
+            {
+                this.ProcessRequest(context);
+            }
+            catch (Exception ex)
+            {
+                var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
+                Log.ErrorFormat(error);
 
-				try
-				{
-					var sb = new StringBuilder();
-					sb.AppendLine("{");
-					sb.AppendLine("\"ResponseStatus\":{");
-					sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
-					sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
-					sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
-					sb.AppendLine("}");
-					sb.AppendLine("}");
+                try
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine("{");
+                    sb.AppendLine("\"ResponseStatus\":{");
+                    sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
+                    sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
+                    sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
+                    sb.AppendLine("}");
+                    sb.AppendLine("}");
 
-					context.Response.StatusCode = 500;
-					context.Response.ContentType = ContentType.Json;
-					var sbBytes = sb.ToString().ToUtf8Bytes();
-					context.Response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
-					context.Response.Close();
-				}
-				catch (Exception errorEx)
-				{
-					error = string.Format("Error this.ProcessRequest(context)(Excetption): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
-					Log.ErrorFormat(error);
+                    context.Response.StatusCode = 500;
+                    context.Response.ContentType = ContentType.Json;
+                    var sbBytes = sb.ToString().ToUtf8Bytes();
+                    context.Response.OutputStream.Write(sbBytes, 0, sbBytes.Length);
+                    
+                }
+                catch (Exception errorEx)
+                {
+                    error = string.Format("Error this.ProcessRequest(context)(Excetption): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
+                    Log.ErrorFormat(error);
 
-				}
-			}			
+                }
+            }
+            finally
+            {
+                context.Response.Close();
+                ListenForNextRequest.Set();
+            }
 
 			//System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.Now);
 		}

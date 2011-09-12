@@ -9,10 +9,12 @@ namespace ServiceStack.Common.Web
 	public class HttpResponseStreamWrapper : IHttpResponse
 	{
 		private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(false);
+        private TextWriter _output; 
 
 		public HttpResponseStreamWrapper(Stream stream)
 		{
 			this.OutputStream = stream;
+            _output = new StreamWriter(stream, UTF8EncodingWithoutBom);
 			this.Headers = new Dictionary<string, string>();
 		}
 
@@ -35,17 +37,24 @@ namespace ServiceStack.Common.Web
 
 		public void Write(string text)
 		{
-			var bytes = UTF8EncodingWithoutBom.GetBytes(text);
-			OutputStream.Write(bytes, 0, bytes.Length);
+            Output.Write(text);
+            Output.Flush();
 		}
 
 		public void Close()
 		{
 			if (IsClosed) return;
+            Output.Flush();
 			OutputStream.Close();
 			IsClosed = true;
 		}
 
 		public bool IsClosed { get; private set; }
-	}
+
+
+        public TextWriter Output
+        {
+            get { throw new System.NotImplementedException(); }
+        }
+    }
 }

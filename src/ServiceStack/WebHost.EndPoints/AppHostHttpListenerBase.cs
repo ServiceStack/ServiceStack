@@ -4,6 +4,7 @@ using System.Reflection;
 using ServiceStack.Common.Utils;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -44,21 +45,43 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var httpReq = new HttpListenerRequestWrapper(operationName, context.Request);
 			var httpRes = new HttpListenerResponseWrapper(context.Response);
-			var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
+            try
+            {
+                var handler = ServiceStackHttpHandlerFactory.GetHandler(httpReq);
 
-			var serviceStackHandler = handler as IServiceStackHttpHandler;
-			if (serviceStackHandler != null)
-			{
-				var restHandler = serviceStackHandler as RestHandler;
-				if (restHandler != null)
-				{
-					httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
-				}
-				serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
-				return;
-			}
+                var serviceStackHandler = handler as IServiceStackHttpHandler;
+                if (serviceStackHandler != null)
+                {
+                    var restHandler = serviceStackHandler as RestHandler;
+                    if (restHandler != null)
+                    {
+                        httpReq.OperationName = operationName = restHandler.RestPath.RequestType.Name;
+                    }
+                    serviceStackHandler.ProcessRequest(httpReq, httpRes, operationName);
+                    return;
+                }
+                throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
 
-			throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+            }
+            catch (Exception ex)
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("{");
+                sb.AppendLine("\"ResponseStatus\":{");
+                sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
+                sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
+                sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
+                sb.AppendLine("}");
+                sb.AppendLine("}");
+                httpRes.Clear();
+                httpRes.Write(sb.ToString());
+                httpRes.StatusCode = 500;
+            }
+            finally
+            {
+                httpRes.Close();
+            }
+
 		}
 
 	}

@@ -130,8 +130,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 			}
 
 			var markup = RenderDynamicPage(markdownPage, markdownPage.Name, dto, renderHtml, renderInTemplate);
-			var markupBytes = markup.ToUtf8Bytes();
-			httpRes.OutputStream.Write(markupBytes, 0, markupBytes.Length);
+            httpRes.Write(markup);
 
 			return true;
 		}

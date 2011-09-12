@@ -174,7 +174,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			finally
 			{
-				response.Close();
+				//response.Close();
 			}
 		}
 
@@ -245,7 +245,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			response.StatusCode = 500;
 			WriteTextToResponse(response, sb.ToString(), contentType);
-			response.Close();
+			//response.Close();
 		}
 
 		private static void WriteXmlErrorToResponse(this IHttpResponse response,

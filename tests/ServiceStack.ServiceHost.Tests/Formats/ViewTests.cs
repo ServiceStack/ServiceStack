@@ -159,11 +159,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public class MockHttpResponse : IHttpResponse
 		{
 			public MemoryStream MemoryStream { get; set; }
+            private TextWriter _output;
 
 			public MockHttpResponse()
 			{
 				this.Headers = new Dictionary<string, string>();
 				MemoryStream = new MemoryStream();
+                _output = new StreamWriter(MemoryStream, Encoding.UTF8);
 			}
 
 			public int StatusCode { set; private get; }
@@ -188,8 +190,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			public void Write(string text)
 			{
-				var bytes = Encoding.UTF8.GetBytes(text);
-				MemoryStream.Write(bytes, 0, bytes.Length);
+                Output.Write(text);
 			}
 
 			public string Contents { get; set; }
@@ -202,7 +203,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			}
 
 			public bool IsClosed { get; private set; }
-		}
+
+
+            public TextWriter Output
+            {
+                get { return _output; }
+            }
+        }
 
 		[Test]
 		public void Does_process_Markdown_pages()
