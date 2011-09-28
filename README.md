@@ -167,6 +167,7 @@ The Request and Response DTO's used to define web services in ServiceStack are s
 Service Stack re-uses the custom artefacts above and with zero-config and without imposing any extra burden on the developer adds discover-ability and provides hosting of your web service on a number of different physical end-points which as of today includes: XML (+REST), JSON (+REST), JSV (+REST) and SOAP 1.1 / SOAP 1.2.
 
 ### WCF the anti-DTO Web Services Framework
+<a name="anti-wcf"></a>
 Unfortunately this best-practices convention is effectively discouraged by Microsoft's WCF SOAP Web Services framework as they encourage you to develop API-specific RPC method calls by mandating the use method signatures to define your web services API. This results in less re-usable, more client-sepcfic APIs that encourages more remote method calls. 
 
 Unhappy with this perceived anit-pattern in WCF, ServiceStack was born providing a Web Sevice framework that embraces best-practices for calling remote services, using config-free, convention-based DTO's.
