@@ -126,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				var webRequest = (HttpWebRequest)WebRequest.Create(
 					ListeningOn + "json/syncreply/RequestFilter?StatusCode=401");
 
-				var webResponse = (HttpWebResponse)webRequest.GetResponse();
+				webRequest.GetResponse();
 
 				Assert.Fail("Should throw 401 WebException");
 			}
@@ -146,7 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					+ "&HeaderName=" + HttpHeaders.WwwAuthenticate
 					+ "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());
 
-				var webResponse = (HttpWebResponse)webRequest.GetResponse();
+				webRequest.GetResponse();
 
 				Assert.Fail("Should throw 401 WebException");
 			}

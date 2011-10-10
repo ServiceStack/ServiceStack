@@ -25,8 +25,8 @@ namespace ServiceStack.Markdown
 			private static readonly Dictionary<MemberInfo, Func<TIn, TOut>> SimpleMemberAccessDict =
                 new Dictionary<MemberInfo, Func<TIn, TOut>>();
 
-			private static readonly Dictionary<MemberInfo, Func<object, TOut>> ConstMemberAccessDict =
-                new Dictionary<MemberInfo, Func<object, TOut>>();
+//			private static readonly Dictionary<MemberInfo, Func<object, TOut>> ConstMemberAccessDict =
+//                new Dictionary<MemberInfo, Func<object, TOut>>();
 
 			public static Func<TIn, TOut> Compile(Expression<Func<TIn, TOut>> expr)
 			{

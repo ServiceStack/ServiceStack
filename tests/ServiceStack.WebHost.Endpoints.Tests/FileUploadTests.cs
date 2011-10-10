@@ -137,7 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			try
 			{
-				var response = client.PostFile<FileUploadResponse>(
+				client.PostFile<FileUploadResponse>(
 					ListeningOn + "/fileuploads/ThrowError", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
 				Assert.Fail("Upload Service should've thrown an error");

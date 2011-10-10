@@ -20,12 +20,12 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 		private MarkdownFormat markdownFormat;
 
-		string staticTemplatePath;
-		string staticTemplateContent;
+		//string staticTemplatePath;
+		//string staticTemplateContent;
 		string dynamicPagePath;
 		string dynamicPageContent;
-		string dynamicListPagePath;
-		string dynamicListPageContent;
+		//string dynamicListPagePath;
+		//string dynamicListPageContent;
 
 		readonly string[] viewPageNames = new[] {
 				"Dynamic", "Customer", "CustomerDetailsResponse", "DynamicListTpl", 
@@ -42,14 +42,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/AppData/Template/default.shtml".MapAbsolutePath();
-			staticTemplateContent = File.ReadAllText(staticTemplatePath);
+			//staticTemplatePath = "~/AppData/Template/default.shtml".MapAbsolutePath();
+			//staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
 			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapAbsolutePath();
 			dynamicPageContent = File.ReadAllText(dynamicPagePath);
 
-			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
-			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
+			//dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
+			//dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 		}
 
 		[SetUp]

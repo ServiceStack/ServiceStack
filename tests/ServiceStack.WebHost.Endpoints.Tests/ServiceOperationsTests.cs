@@ -42,6 +42,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var operations = CreateServiceOperations(typeof(GetCustomers).Assembly, typeof(GetCustomers).Namespace);
 			var schemaSet = XsdUtils.GetXmlSchemaSet(operations.AllOperations.Types);
 			var schemas = schemaSet.Schemas();
+			Assert.IsNotNull(schemas);
 		}
 
 	}

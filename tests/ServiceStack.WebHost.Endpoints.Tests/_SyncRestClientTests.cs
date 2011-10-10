@@ -117,7 +117,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				var xml = "<MovieResponse xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.servicestack.net/types\"><Movie><Director>Edward Zwick</Director><Genres xmlns:d3p1=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\"><d3p1:string>Adventure</d3p1:string><d3p1:string>Drama</d3p1:string><d3p1:string>Thriller</d3p1:string></Genres><Id>6</Id><ImdbId>tt0450259</ImdbId><Rating>8</Rating><ReleaseDate>2007-01-26T00:00:00+00:00</ReleaseDate><TagLine>A fisherman, a smuggler, and a syndicate of businessmen match wits over the possession of a priceless diamond.</TagLine><Title>Blood Diamond</Title></Movie></MovieResponse>";
 				var response = DataContractDeserializer.Instance.Parse<MovieResponse>(xml);
 				var toXml = DataContractSerializer.Instance.Parse(response);
-				Console.WriteLine("XML: " + xml);
+				Console.WriteLine("XML: " + toXml);
 			}
 			catch (Exception ex)
 			{

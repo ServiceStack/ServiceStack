@@ -244,6 +244,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			return response;
 		}
 	}
+	
+	public class MoviesZip
+	{
+		public string Genre { get; set; }
+		public Movie Movie { get; set; }
+	}
+
+	public class MoviesZipResponse
+	{
+		public MoviesZipResponse()
+		{
+			Movies = new List<Movie>();
+		}
+
+		public List<Movie> Movies { get; set; }
+	}
+
+	public class MoviesZipService : RestServiceBase<MoviesZip>
+	{
+		public IDbConnectionFactory DbFactory { get; set; }
+
+		public override object OnGet(MoviesZip request)
+		{
+			var response = new MoviesZipResponse
+			{
+				Movies = request.Genre.IsNullOrEmpty()
+					? DbFactory.Exec(dbCmd => dbCmd.Select<Movie>())
+					: DbFactory.Exec(dbCmd => dbCmd.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
+			};
+			
+			return RequestContext.ToOptimizedResult(response);
+		}
+	}
+			
 
 	[DataContract]
 	[RestService("/reset-movies")]
@@ -292,13 +326,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	public class ExampleAppHostHttpListener
 		: AppHostHttpListenerBase
 	{
-		private static ILog log;
+		//private static ILog log;
 
 		public ExampleAppHostHttpListener()
 			: base("ServiceStack Examples", typeof(GetFactorialService).Assembly)
 		{
 			LogManager.LogFactory = new DebugLogFactory();
-			log = LogManager.GetLogger(typeof(ExampleAppHostHttpListener));
+			//log = LogManager.GetLogger(typeof(ExampleAppHostHttpListener));
 		}
 
 		public override void Configure(Container container)
@@ -323,14 +357,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<Movies>("/custom-movies/genres/{Genre}")
 				.Add<Movie>("/custom-movies", "POST,PUT")
 				.Add<Movie>("/custom-movies/{Id}")
-				.Add<GetFactorial>("/fact/{ForNumber}");
+				.Add<GetFactorial>("/fact/{ForNumber}")
+				.Add<MoviesZip>("/movies.zip", "GET")
+			;
 
 			container.Register<IResourceManager>(new ConfigurationResourceManager());
 
-			var appSettings = container.Resolve<IResourceManager>();
+			//var appSettings = container.Resolve<IResourceManager>();
 
 			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
-			var appConfig = container.Resolve<ExampleConfig>();
+			//var appConfig = container.Resolve<ExampleConfig>();
 
 			container.Register<IDbConnectionFactory>(c =>
 				new OrmLiteConnectionFactory(

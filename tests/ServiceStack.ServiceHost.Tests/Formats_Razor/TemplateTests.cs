@@ -795,7 +795,7 @@ Demis / Bellot
 			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
-			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/page-tpl", template, websiteTemplatePath);
+			AddViewPage("DynamicModelTpl", "/path/to/page-tpl", template, websiteTemplatePath);
 
 			var razorTemplate = razorFormat.ExecuteTemplate(
 				person, "DynamicModelTpl", websiteTemplatePath);

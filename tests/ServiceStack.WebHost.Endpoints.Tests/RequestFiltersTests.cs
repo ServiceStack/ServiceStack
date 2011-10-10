@@ -231,6 +231,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Thread.Sleep(1000);
 			Assert.That(wasError, Is.True,
 				"Should throw WebServiceException.StatusCode == 401");
+			Assert.IsNotNull(response);
 		}
 
 		[Test]
@@ -247,6 +248,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Thread.Sleep(1000);
 			Assert.That(wasError, Is.True,
 				"Should throw WebServiceException.StatusCode == 401");
+			Assert.IsNotNull(response);
 		}
 
 		[Test]
@@ -263,6 +265,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Thread.Sleep(1000);
 			Assert.That(wasError, Is.True,
 				"Should throw WebServiceException.StatusCode == 401");
+			Assert.IsNotNull(response);
 		}
 
 		[Test]
@@ -279,6 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Thread.Sleep(1000);
 			Assert.That(wasError, Is.True,
 			            "Should throw WebServiceException.StatusCode == 401");
+			Assert.IsNotNull(response);
 		}
 
 

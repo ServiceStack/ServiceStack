@@ -30,7 +30,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 		public static string PlaceHolderPrefix = "<!--@";
 		public static string PlaceHolderSuffix = "-->";
 
-		private Exception initException;
+		internal Exception initException;
 		readonly object readWriteLock = new object();
 		private bool isBusy;
 		public void Reload(string templateContents)

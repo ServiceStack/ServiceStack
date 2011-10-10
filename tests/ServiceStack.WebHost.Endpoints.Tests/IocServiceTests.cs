@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             IocService.ThrowErrors = false;
 
 			var restClient = new JsonServiceClient(ListeningOn);
-			var response = restClient.Get<IocResponse>("ioc");
+			restClient.Get<IocResponse>("ioc");
 
 			Assert.That(IocService.DisposedCount, Is.EqualTo(1));
 		}

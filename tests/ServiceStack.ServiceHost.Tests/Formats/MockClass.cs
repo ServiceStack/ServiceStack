@@ -46,7 +46,7 @@ namespace CSharpEval
 			for (var i=0; i < Times; i++)
 			{
 				var result = File.GetLastWriteTime(filePath);
-				if (result != null) count++;
+				if (result != default(DateTime)) count++;
 			}
 			timeTaken = DateTime.Now - start;
 			Console.WriteLine("FileInfo.LastWriteTime: Times {0}: {1}ms", Times, timeTaken.TotalMilliseconds);

@@ -18,13 +18,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		//Fiddler can debug local HTTP requests when using the hostname
 		//private const string BaseUrl = "http://io:8081/";
 
-		private static ILog log;
+		//private static ILog log;
 
 		public IntegrationTestBase()
 			: base("ServiceStack Examples", typeof(RestMovieService).Assembly)
 		{
 			LogManager.LogFactory = new DebugLogFactory();
-			log = LogManager.GetLogger(GetType());
+			//log = LogManager.GetLogger(GetType());
 			Instance = null;
 
 			Init();
@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 			container.Register<IResourceManager>(new ConfigurationResourceManager());
 
 			container.Register(c => new ExampleConfig(c.Resolve<IResourceManager>()));
-			var appConfig = container.Resolve<ExampleConfig>();
+			//var appConfig = container.Resolve<ExampleConfig>();
 
 			container.Register<IDbConnectionFactory>(c =>
 				 new OrmLiteConnectionFactory(
