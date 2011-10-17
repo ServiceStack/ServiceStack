@@ -112,11 +112,18 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			catch (Exception ex)
 			{
-				return HandleResponseException<TResponse>(ex, Web.HttpMethod.Post, requestUri, request);
+				TResponse response;
+				
+				if (!HandleResponseException(ex, Web.HttpMethod.Post, requestUri, request, out response))
+				{
+					throw;
+				}
+
+				return response;
 			}
 		}
 
-		private TResponse HandleResponseException<TResponse>(Exception ex, string httpMethod, string requestUri, object request)
+		private bool HandleResponseException<TResponse>(Exception ex, string httpMethod, string requestUri, object request, out TResponse response)
 		{
 			try
 			{
@@ -127,18 +134,29 @@ namespace ServiceStack.ServiceClient.Web
 
 					using (var responseStream = client.GetResponse().GetResponseStream())
 					{
-						var response = DeserializeFromStream<TResponse>(responseStream);
-						return response;
+						response = DeserializeFromStream<TResponse>(responseStream);
+						return true;
 					}
 				}
 			}
-			catch (Exception /*subEx*/)
+			catch (Exception subEx)
 			{
-				HandleResponseException<TResponse>(ex, requestUri);
+				// Since we are effectively re-executing the call, 
+				// the new exception should be shown to the caller rather
+				// than the old one.
+				// The new exception is either this one or the one thrown
+				// by the following method.
+				HandleResponseException<TResponse>(subEx, requestUri);
+				throw;
 			}
 
+			// If this doesn't throw, the calling method 
+			// should rethrow the original exception upon
+			// return value of false.
 			HandleResponseException<TResponse>(ex, requestUri);
-			throw ex; //Doesn't get galled
+
+			response = default(TResponse);
+			return false;
 		}
 
 		private void HandleResponseException<TResponse>(Exception ex, string requestUri)
@@ -179,8 +197,6 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				throw WebRequestUtils.CreateCustomException(requestUri, authEx);
 			}
-
-			throw ex;
 		}
 
 		private WebRequest SendRequest(string requestUri, object request)
@@ -297,7 +313,14 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			catch (Exception ex)
 			{
-				return HandleResponseException<TResponse>(ex, httpMethod, requestUri, request);
+				TResponse response;
+
+				if (!HandleResponseException(ex, httpMethod, requestUri, request, out response))
+				{
+					throw;
+				}
+
+				return response;
 			}
 		}
 
