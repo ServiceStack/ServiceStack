@@ -149,7 +149,11 @@ namespace ServiceStack.ServiceInterface
 			}
 			catch (Exception ex)
 			{
-				return HandleException(request, ex);
+				var result = HandleException(request, ex);
+
+				if (result == null) throw;
+
+				return result;
 			}
 		}
 
@@ -202,7 +206,7 @@ namespace ServiceStack.ServiceInterface
 
 			if (responseDto == null)
 			{
-				throw ex;
+				return null;
 			}
 
 			var httpError = ex as IHttpError;
