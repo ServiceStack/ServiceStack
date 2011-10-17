@@ -82,6 +82,7 @@
       <HintPath>..\..\lib\tests\Moq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -128,6 +129,7 @@
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="RemoteEndDropsConnectionTests.cs" />
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
     <Compile Include="_JsonpTests.cs" />

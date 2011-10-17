@@ -138,6 +138,8 @@
     <Compile Include="Logging\LogManager.cs" />
     <Compile Include="Logging\Support\Logging\ConsoleLogFactory.cs" />
     <Compile Include="Logging\Support\Logging\ConsoleLogger.cs" />
+    <Compile Include="Logging\Support\Logging\TestLogFactory.cs" />
+    <Compile Include="Logging\Support\Logging\TestLogger.cs" />
     <Compile Include="Logging\Support\Logging\DebugLogFactory.cs" />
     <Compile Include="Logging\Support\Logging\DebugLogger.cs" />
     <Compile Include="Logging\Support\Logging\NullDebugLogger.cs" />
