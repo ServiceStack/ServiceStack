@@ -40,6 +40,7 @@ namespace ServiceStack.Redis.Generic
 		string SequenceKey { get; set; }
 		void SetSequence(int value);
 		long GetNextSequence();
+		long GetNextSequence(int incrBy);
 		RedisKeyType GetEntryType(string key);
 		string GetRandomKey();
 
