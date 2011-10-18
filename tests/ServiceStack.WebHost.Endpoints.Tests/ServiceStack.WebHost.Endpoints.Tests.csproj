@@ -129,6 +129,7 @@
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="HttpResultContentTypeTests.cs" />
     <Compile Include="RemoteEndDropsConnectionTests.cs" />
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
