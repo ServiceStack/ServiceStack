@@ -6,42 +6,82 @@ namespace ServiceStack.ServiceHost
 	public interface IServiceRoutes
 	{
 		/// <summary>
-		/// Register the user-defined restPath for the Service's Request DTO TRequest
+		///		Maps the specified REST path to the specified request DTO.
 		/// </summary>
-		/// <typeparam name="TRequest"></typeparam>
-		/// <param name="restPath"></param>
-		/// <returns></returns>
+		/// <typeparam name="TRequest">The type of request DTO to map 
+		///		the path to.</typeparam>
+		/// <param name="restPath">The path to map the request DTO to.
+		///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+		///		for details on the correct format.</param>
+		/// <returns>The same <see cref="IServiceRoutes"/> instance;
+		///		never <see langword="null"/>.</returns>
 		IServiceRoutes Add<TRequest>(string restPath);
 
 		/// <summary>
-		/// Register the user-defined restPath, HTTP verbs it applies to (empty == all)
+		///		Maps the specified REST path to the specified request DTO, and
+		///		specifies the HTTP verbs supported by the path.
 		/// </summary>
-		/// <typeparam name="TRequest"></typeparam>
-		/// <param name="restPath"></param>
-		/// <param name="verbs">comma-delimited verbs e.g. GET,POST,PUT,DELETE</param>
-		/// <returns></returns>
+		/// <typeparam name="TRequest">The type of request DTO to map 
+		///		the path to.</typeparam>
+		/// <param name="restPath">The path to map the request DTO to.
+		///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+		///		for details on the correct format.</param>
+		/// <param name="verbs">
+		///		The comma-delimited list of HTTP verbs supported by the path, 
+		///		such as "GET,PUT,DELETE".  Specify empty or <see langword="null"/>
+		///		to indicate that all verbs are supported.
+		/// </param>
+		/// <returns>The same <see cref="IServiceRoutes"/> instance;
+		///		never <see langword="null"/>.</returns>
 		IServiceRoutes Add<TRequest>(string restPath, string verbs);
 
 		/// <summary>
-		/// Register the user-defined restPath, HTTP verbs it applies to (empty == all) and
-		/// the defaultContentType the service should return if not specified by the client
+		///		Maps the specified REST path to the specified request DTO, 
+		///		specifies the HTTP verbs supported by the path, and indicates
+		///		the default MIME type of the returned response.
 		/// </summary>
-		/// <typeparam name="TRequest"></typeparam>
-		/// <param name="restPath"></param>
-		/// <param name="verbs">comma-delimited verbs e.g. GET,POST,PUT,DELETE</param>
-		/// <param name="defaultContentType"></param>
-		/// <returns></returns>
+		/// <typeparam name="TRequest">The type of request DTO to map 
+		///		the path to.</typeparam>
+		/// <param name="restPath">The path to map the request DTO to.
+		///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+		///		for details on the correct format.</param>
+		/// <param name="verbs">
+		///		The comma-delimited list of HTTP verbs supported by the path, 
+		///		such as "GET,PUT,DELETE".
+		/// </param>
+		/// <param name="defaultContentType">
+		///		The default MIME type in which the response object returned to the client
+		///		is formatted, if formatting hints are not provided by the client.
+		///		Specify <see langword="null"/> or empty to require formatting hints from
+		///		the client.
+		/// </param>
+		/// <returns>The same <see cref="IServiceRoutes"/> instance;
+		///		never <see langword="null"/>.</returns>
 		IServiceRoutes Add<TRequest>(string restPath, string verbs, string defaultContentType);
 
-        /// <summary>
-        /// Register the user-defined restPath, HTTP verbs it applies to (empty == all) and
-        /// the defaultContentType the service should return if not specified by the client
-        /// </summary>
-        /// <param name="requestType"></param>
-        /// <param name="restPath"></param>
-        /// <param name="verbs">comma-delimited verbs e.g. GET,POST,PUT,DELETE.  Pass null to allow all verbs.</param>
-        /// <param name="defaultContentType">Pass null to use default.</param>
-        /// <returns></returns>
-        IServiceRoutes Add(System.Type requestType, string restPath, string verbs, string defaultContentType);
+		/// <summary>
+		///		Maps the specified REST path to the specified request DTO, 
+		///		specifies the HTTP verbs supported by the path, and indicates
+		///		the default MIME type of the returned response.
+		/// </summary>
+		/// <param name="requestType">
+		///		The type of request DTO to map the path to.
+		/// </param>
+		/// <param name="restPath">The path to map the request DTO to.
+		///		See <see cref="RestServiceAttribute.Path">RestServiceAttribute.Path</see>
+		///		for details on the correct format.</param>
+		/// <param name="verbs">
+		///		The comma-delimited list of HTTP verbs supported by the path, 
+		///		such as "GET,PUT,DELETE".
+		/// </param>
+		/// <param name="defaultContentType">
+		///		The default MIME type in which the response object returned to the client
+		///		is formatted, if formatting hints are not provided by the client.
+		///		Specify <see langword="null"/> or empty to require formatting hints from
+		///		the client.
+		/// </param>
+		/// <returns>The same <see cref="IServiceRoutes"/> instance;
+		///		never <see langword="null"/>.</returns>
+		IServiceRoutes Add(System.Type requestType, string restPath, string verbs, string defaultContentType);
 	}
 }
