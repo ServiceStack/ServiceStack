@@ -102,8 +102,8 @@ namespace ServiceStack.ServiceHost
 		///		to grab all subsequent segments in the path portion of the request URL and assign
 		///		them to a single property on the request DTO.
 		///		For example, if the path "/Inventory/{ItemPath*}" is mapped to the request DTO,
-		///		then the request URL "http://services/Inventory/Books/12345" will result
-		///		in a request DTO whose ItemPath property contains "Books/12345".
+		///		then the request URL "http://services/Inventory/Category/Books/12345" will result
+		///		in a request DTO whose ItemPath property contains "Category/Books/12345".
 		///		You may only specify one such variable in the path, and it must be positioned at
 		///		the end of the path.</para>
 		/// </remarks>
