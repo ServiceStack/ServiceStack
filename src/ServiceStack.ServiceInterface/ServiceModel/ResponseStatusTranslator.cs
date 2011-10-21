@@ -84,6 +84,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 			{
 				ErrorCode = errorCode,
 				Message = errorMessage,
+                Errors = new List<ResponseError>(),
 			};
 			if (validationErrors != null)
 			{

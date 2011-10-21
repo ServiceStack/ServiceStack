@@ -26,7 +26,6 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		/// </summary>
 		public ResponseStatus()
 		{
-			this.Errors = new List<ResponseError>();
 		}
         
 		/// <summary>
