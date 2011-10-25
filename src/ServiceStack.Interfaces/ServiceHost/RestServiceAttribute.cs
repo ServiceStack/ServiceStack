@@ -79,14 +79,14 @@ namespace ServiceStack.ServiceHost
 		///		<para>Variables are specified within "{}"
 		///		brackets.  Each variable in the path is mapped to the same-named property 
 		///		on the request DTO.  At runtime, ServiceStack will parse the 
-		///		request URL, exact the variable values, instantiate the request DTO,
+		///		request URL, extract the variable values, instantiate the request DTO,
 		///		and assign the variable values into the corresponding request properties,
 		///		prior to passing the request DTO to the service object for processing.</para>
 		/// 
 		///		<para>It is not necessary to specify all request properties as
 		///		variables in the path.  For unspecified properties, callers may provide 
 		///		values in the query string.  For example: the URL 
-		///		"http://services/Inventory?Category=Books&ItemId=12345" causes the same 
+		///		"http://services/Inventory?Category=Books&amp;ItemId=12345" causes the same 
 		///		request DTO to be processed as "http://services/Inventory/Books/12345", 
 		///		provided that the paths "/Inventory" (which supports the first URL) and 
 		///		"/Inventory/{Category}/{ItemId}" (which supports the second URL)
@@ -99,7 +99,7 @@ namespace ServiceStack.ServiceHost
 		///		caching.</para>
 		/// 
 		///		<para>The final variable in the path may contain a "*" suffix
-		///		to grab all subsequent segments in the path portion of the request URL and assign
+		///		to grab all remaining segments in the path portion of the request URL and assign
 		///		them to a single property on the request DTO.
 		///		For example, if the path "/Inventory/{ItemPath*}" is mapped to the request DTO,
 		///		then the request URL "http://services/Inventory/Books/12345" will result
@@ -121,7 +121,7 @@ namespace ServiceStack.ServiceHost
 
 		/// <summary>
 		///		Gets or sets the default MIME type in which the response 
-		///		object returned to the client is formatted , when format hints 
+		///		object returned to the client is formatted, when format hints 
 		///		are not provided in the URI.  Some valid examples are such as 
 		///		"application/json", or "application/xml".
 		/// </summary>
