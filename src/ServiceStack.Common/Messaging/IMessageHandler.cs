@@ -19,6 +19,10 @@ namespace ServiceStack.Messaging
 		/// <param name="mqClient"></param>
 		void Process(IMessageQueueClient mqClient);
 
-		string GetStats();
+        /// <summary>
+        /// Get Current Stats for this Message Handler
+        /// </summary>
+        /// <returns></returns>
+        IMessageHandlerStats GetStats();
 	}
 }

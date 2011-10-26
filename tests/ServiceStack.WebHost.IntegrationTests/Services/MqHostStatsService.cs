@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		protected override object Run(MqHostStats request)
 		{
-			return new MqHostStatsResponse { Result = MessageService.GetStats() };
+			return new MqHostStatsResponse { Result = MessageService.GetStatsDescription() };
 		}
 	}
 

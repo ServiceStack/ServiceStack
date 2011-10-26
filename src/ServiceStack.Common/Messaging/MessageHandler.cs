@@ -4,6 +4,11 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.Messaging
 {
+    /// <summary>
+    /// Processes all messages in a Normal and Priority Queue.
+    /// Expects to be called in 1 thread. i.e. Non Thread-Safe.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
 	public class MessageHandler<T>
 		: IMessageHandler, IDisposable
 	{
@@ -15,8 +20,8 @@ namespace ServiceStack.Messaging
 		private readonly Action<Exception> processExceptionFn;
 		private readonly int retryCount;
 
-		public int TotalProcessed { get; private set; }
-		public int TotalFailed { get; private set; }
+		public int TotalMessagesProcessed { get; private set; }
+		public int TotalMessagesFailed { get; private set; }
 		public int TotalRetries { get; private set; }
 		public int TotalNormalMessagesReceived { get; private set; }
 		public int TotalPriorityMessagesReceived { get; private set; }
@@ -88,16 +93,11 @@ namespace ServiceStack.Messaging
 			}
 		}
 
-		public string GetStats()
+        public IMessageHandlerStats GetStats()
 		{
-			var sb = new StringBuilder("Stats for " + typeof(T).Name);
-			sb.AppendFormat("\nTotalNormalMessagesReceived: {0}", TotalNormalMessagesReceived);
-			sb.AppendFormat("\nTotalPriorityMessagesReceived: {0}", TotalPriorityMessagesReceived);
-			sb.AppendFormat("\nTotalProcessed: {0}", TotalProcessed);
-			sb.AppendFormat("\nTotalRetries: {0}", TotalRetries);
-			sb.AppendFormat("\nTotalFailed: {0}", TotalFailed);
-			
-			return sb.ToString();
+		    return new MessageHandlerStats(typeof(T).Name,
+                TotalMessagesProcessed, TotalMessagesFailed, TotalRetries, 
+                TotalNormalMessagesReceived, TotalPriorityMessagesReceived);
 		}
 
 		private void DefaultExceptionHandler(Exception ex)
@@ -128,14 +128,14 @@ namespace ServiceStack.Messaging
 			try
 			{
 				processMessageFn(message);
-				TotalProcessed++;
+				TotalMessagesProcessed++;
 				mqClient.Notify(QueueNames<T>.Out, this.Message.ToBytes());
 			}
 			catch (Exception ex)
 			{
 				try
 				{
-					TotalFailed++;
+					TotalMessagesFailed++;
 					processExceptionFn(ex);
 				}
 				catch (Exception exHandlerEx)

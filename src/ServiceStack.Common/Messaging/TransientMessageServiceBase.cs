@@ -49,13 +49,20 @@ namespace ServiceStack.Messaging
 			handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
 		}
 
-		public string GetStats()
+        public IMessageHandlerStats GetStats()
+        {
+            var total = new MessageHandlerStats("All Handlers");
+            messageHandlers.ToList().ForEach(x => total.Add(x.GetStats()));
+            return total;
+        }
+
+	    public string GetStatsDescription()
 		{
 			var sb = new StringBuilder("#MQ HOST STATS:\n");
 			sb.AppendLine("===============");
 			foreach (var messageHandler in messageHandlers)
 			{
-				sb.AppendLine(messageHandler.GetStats());
+				sb.AppendLine(messageHandler.GetStats().ToString());
 				sb.AppendLine("---------------");
 			}
 			return sb.ToString();
