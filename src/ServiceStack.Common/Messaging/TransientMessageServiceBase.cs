@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace ServiceStack.Messaging
 {
 	public abstract class TransientMessageServiceBase
-		: IMessageService
+		: IMessageService, IMessageHandlerDisposer
 	{
 		private bool isRunning;
 		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
@@ -48,9 +49,23 @@ namespace ServiceStack.Messaging
 			handlerMap[typeof(T)] = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
 		}
 
+		public string GetStats()
+		{
+			var sb = new StringBuilder("#MQ HOST STATS:\n");
+			sb.AppendLine("===============");
+			foreach (var messageHandler in messageHandlers)
+			{
+				sb.AppendLine(messageHandler.GetStats());
+				sb.AppendLine("---------------");
+			}
+			return sb.ToString();
+		}
+
 		protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
 		{
-			return new TransientMessageHandlerFactory<T>(this, processMessageFn, processExceptionEx);
+			return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx) {
+				RetryCount = RetryCount,
+			};
 		}
 
 		public virtual void Start()

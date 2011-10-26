@@ -1,29 +1,38 @@
 using System;
+using System.Text;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Messaging
 {
-	internal class TransientMessageHandler<T>
+	public class MessageHandler<T>
 		: IMessageHandler, IDisposable
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(TransientMessageHandler<T>));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(MessageHandler<T>));
 
-		private readonly TransientMessageServiceBase messageService;
+		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
+		private readonly IMessageService messageService;
 		private readonly Func<IMessage<T>, object> processMessageFn;
 		private readonly Action<Exception> processExceptionFn;
+		private readonly int retryCount;
 
-		public TransientMessageHandler(TransientMessageServiceBase messageService,
+		public int TotalProcessed { get; private set; }
+		public int TotalFailed { get; private set; }
+		public int TotalRetries { get; private set; }
+		public int TotalNormalMessagesReceived { get; private set; }
+		public int TotalPriorityMessagesReceived { get; private set; }
+
+		public MessageHandler(IMessageService messageService,
 			Func<IMessage<T>, object> processMessageFn)
-			: this(messageService, processMessageFn, null)
+			: this(messageService, processMessageFn, null, DefaultRetryCount)
 		{
 		}
 
 		private IMessageQueueClient MqClient { get; set; }
 		private Message<T> Message { get; set; }
 
-		public TransientMessageHandler(TransientMessageServiceBase messageService,
+		public MessageHandler(IMessageService messageService,
 			Func<IMessage<T>, object> processMessageFn,
-			Action<Exception> processExceptionFn)
+			Action<Exception> processExceptionFn, int retryCount)
 		{
 			if (messageService == null)
 				throw new ArgumentNullException("messageService");
@@ -34,6 +43,7 @@ namespace ServiceStack.Messaging
 			this.messageService = messageService;
 			this.processMessageFn = processMessageFn;
 			this.processExceptionFn = processExceptionFn ?? DefaultExceptionHandler;
+			this.retryCount = retryCount;
 		}
 
 		public Type MessageType
@@ -53,6 +63,7 @@ namespace ServiceStack.Messaging
 					byte[] messageBytes;
 					while ((messageBytes = mqClient.GetAsync(QueueNames<T>.Priority)) != null)
 					{
+						this.TotalPriorityMessagesReceived++;
 						hadReceivedMessages = true;
 
 						var message = messageBytes.ToMessage<T>();
@@ -61,6 +72,7 @@ namespace ServiceStack.Messaging
 
 					while ((messageBytes = mqClient.GetAsync(QueueNames<T>.In)) != null)
 					{
+						this.TotalNormalMessagesReceived++;
 						hadReceivedMessages = true;
 
 						var message = messageBytes.ToMessage<T>();
@@ -76,15 +88,28 @@ namespace ServiceStack.Messaging
 			}
 		}
 
+		public string GetStats()
+		{
+			var sb = new StringBuilder("Stats for " + typeof(T).Name);
+			sb.AppendFormat("\nTotalNormalMessagesReceived: {0}", TotalNormalMessagesReceived);
+			sb.AppendFormat("\nTotalPriorityMessagesReceived: {0}", TotalPriorityMessagesReceived);
+			sb.AppendFormat("\nTotalProcessed: {0}", TotalProcessed);
+			sb.AppendFormat("\nTotalRetries: {0}", TotalRetries);
+			sb.AppendFormat("\nTotalFailed: {0}", TotalFailed);
+			
+			return sb.ToString();
+		}
+
 		private void DefaultExceptionHandler(Exception ex)
 		{
 			Log.Error("Message exception handler threw an error", ex);
 
 			if (!(ex is UnRetryableMessagingException))
 			{
-				if (this.Message.RetryAttempts < messageService.RetryCount)
+				if (this.Message.RetryAttempts < retryCount)
 				{
 					this.Message.RetryAttempts++;
+					this.TotalRetries++;
 
 					this.Message.Error = new MessagingException(ex.Message, ex).ToMessageError();
 					MqClient.Publish(QueueNames<T>.In, this.Message.ToBytes());
@@ -103,12 +128,14 @@ namespace ServiceStack.Messaging
 			try
 			{
 				processMessageFn(message);
+				TotalProcessed++;
 				mqClient.Notify(QueueNames<T>.Out, this.Message.ToBytes());
 			}
 			catch (Exception ex)
 			{
 				try
 				{
+					TotalFailed++;
 					processExceptionFn(ex);
 				}
 				catch (Exception exHandlerEx)
@@ -120,7 +147,9 @@ namespace ServiceStack.Messaging
 
 		public void Dispose()
 		{
-			messageService.DisposeMessageHandler(this);
+			var shouldDispose = messageService as IMessageHandlerDisposer;
+			if (shouldDispose != null)
+				shouldDispose.DisposeMessageHandler(this);
 		}
 	}
 }

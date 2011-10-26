@@ -33,5 +33,12 @@ namespace ServiceStack.Messaging
 		/// <param name="queueName"></param>
 		/// <returns></returns>
 		byte[] GetAsync(string queueName);
+
+		/// <summary>
+		/// Blocking wait for notifications on any of the supplied channels
+		/// </summary>
+		/// <param name="channelNames"></param>
+		/// <returns></returns>
+		string WaitForNotifyOnAny(params string[] channelNames);
 	}
 }

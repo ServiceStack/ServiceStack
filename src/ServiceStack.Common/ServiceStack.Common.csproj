@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -115,14 +115,15 @@
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="IntExtensions.cs" />
     <Compile Include="Messaging\IMessageHandler.cs" />
+    <Compile Include="Messaging\IMessageHandlerDisposer.cs" />
     <Compile Include="Messaging\IMessageHandlerFactory.cs" />
     <Compile Include="Messaging\InMemoryMessageQueueClient.cs" />
     <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
     <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
     <Compile Include="Messaging\MessageExtensions.cs" />
     <Compile Include="Messaging\MessageQueueClientFactory.cs" />
-    <Compile Include="Messaging\TransientMessageHandler.cs" />
-    <Compile Include="Messaging\TransientMessageHandlerFactory.cs" />
+    <Compile Include="Messaging\MessageHandler.cs" />
+    <Compile Include="Messaging\MessageHandlerFactory.cs" />
     <Compile Include="Messaging\TransientMessageServiceBase.cs" />
     <Compile Include="Web\HttpResponseStreamWrapper.cs" />
     <Compile Include="StreamExtensions.cs" />

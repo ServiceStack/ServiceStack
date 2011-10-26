@@ -4,8 +4,11 @@ using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Messaging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Redis;
+using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
@@ -58,7 +61,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 					.Add<Movies>("/custom-movies", "GET")
 					.Add<Movies>("/custom-movies/genres/{Genre}")
 					.Add<Movie>("/custom-movies", "POST,PUT")
-					.Add<Movie>("/custom-movies/{Id}");
+					.Add<Movie>("/custom-movies/{Id}")
+					.Add<MqHostStats>("/mqstats");
 
 				var resetMovies = this.Container.Resolve<ResetMoviesService>();
 				resetMovies.Post(null);
@@ -69,6 +73,14 @@ namespace ServiceStack.WebHost.IntegrationTests
 				//    EnableFeatures = onlyEnableFeatures,
 				//    DebugMode = true, //Show StackTraces for easier debugging
 				//});
+
+				var redisManager = new BasicRedisClientManager();
+				var mqHost = new BackgroundThreadMessageService(redisManager, 2, null);
+				mqHost.RegisterHandler<Reverse>(x => 
+					this.Container.Resolve<ReverseService>().Execute(x.Body));
+				mqHost.Start();
+
+				this.Container.Register((IMessageService)mqHost);
 			}
 		}
 

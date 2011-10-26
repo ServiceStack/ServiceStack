@@ -34,6 +34,8 @@ namespace ServiceStack.Messaging
 	/// </summary>
 	public class QueueNames
 	{
+		public const string Topic = "mq:topic";
+
 		private readonly Type messageType;
 
 		public QueueNames(Type messageType)

@@ -37,6 +37,11 @@ namespace ServiceStack.Messaging
 			return factory.GetMessageAsync(queueName);
 		}
 
+		public string WaitForNotifyOnAny(params string[] channelNames)
+		{
+			throw new NotImplementedException();
+		}
+
 		public byte[] Get(string queueName, TimeSpan? timeOut)
 		{
 			throw new NotImplementedException();

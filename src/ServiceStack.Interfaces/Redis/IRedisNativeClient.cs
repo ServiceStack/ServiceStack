@@ -129,5 +129,6 @@ namespace ServiceStack.Redis
 		byte[][] UnSubscribe(params string[] toChannels);
 		byte[][] PSubscribe(params string[] toChannelsMatchingPatterns);
 		byte[][] PUnSubscribe(params string[] toChannelsMatchingPatterns);
+		byte[][] ReceiveMessages();
 	}
 }

@@ -2,19 +2,21 @@ using System;
 
 namespace ServiceStack.Messaging
 {
-	internal class TransientMessageHandlerFactory<T>
+	public class MessageHandlerFactory<T>
 		: IMessageHandlerFactory
 	{
-		private readonly TransientMessageServiceBase messageService;
+		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
+		private readonly IMessageService messageService;
 		private readonly Func<IMessage<T>, object> processMessageFn;
 		private readonly Action<Exception> processExceptionFn;
+		public int RetryCount { get; set; }
 
-		public TransientMessageHandlerFactory(TransientMessageServiceBase messageService, Func<IMessage<T>, object> processMessageFn)
+		public MessageHandlerFactory(IMessageService messageService, Func<IMessage<T>, object> processMessageFn)
 			: this(messageService, processMessageFn, null)
 		{
 		}
 
-		public TransientMessageHandlerFactory(TransientMessageServiceBase messageService, Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
+		public MessageHandlerFactory(IMessageService messageService, Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
 		{
 			if (messageService == null)
 				throw new ArgumentNullException("messageService");
@@ -25,11 +27,12 @@ namespace ServiceStack.Messaging
 			this.messageService = messageService;
 			this.processMessageFn = processMessageFn;
 			this.processExceptionFn = processExceptionEx;
+			this.RetryCount = DefaultRetryCount;
 		}
 
 		public IMessageHandler CreateMessageHandler()
 		{
-			return new TransientMessageHandler<T>(messageService, processMessageFn, processExceptionFn);
+			return new MessageHandler<T>(messageService, processMessageFn, processExceptionFn, this.RetryCount);
 		}
 	}
 }
