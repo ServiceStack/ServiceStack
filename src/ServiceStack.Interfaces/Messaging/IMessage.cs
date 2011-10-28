@@ -10,11 +10,13 @@ namespace ServiceStack.Messaging
 
 		long Priority { get; set; }
 
-		int RetryAttempts { get; }
+		int RetryAttempts { get; set; }
+
+		Guid? ReplyId { get; set; }
 
 		string ReplyTo { get; set; }
 
-		MessageError Error { get; }
+		MessageError Error { get; set; }
 	}
 
 	public interface IMessage<T>

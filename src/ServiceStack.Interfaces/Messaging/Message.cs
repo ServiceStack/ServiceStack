@@ -1,7 +1,39 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace ServiceStack.Messaging
 {
+	internal delegate IMessage MessageFactoryDelegate(object body);
+
+	public static class Message
+	{
+		static readonly Dictionary<Type, MessageFactoryDelegate> CacheFn 
+			= new Dictionary<Type, MessageFactoryDelegate>();
+
+		public static IMessage Create(object response)
+		{
+			if (response == null) return null;
+			var type = response.GetType();
+
+			MessageFactoryDelegate factoryFn;
+			lock (CacheFn) CacheFn.TryGetValue(type, out factoryFn);
+
+			if (factoryFn != null)
+				return factoryFn(response);
+
+			var genericMessageType = typeof(Message<>).MakeGenericType(type);
+			var mi = genericMessageType.GetMethod("Create", 
+				BindingFlags.Public | BindingFlags.Static);
+			factoryFn = (MessageFactoryDelegate) Delegate.CreateDelegate(
+				typeof (MessageFactoryDelegate), mi);
+
+			lock (CacheFn) CacheFn[type] = factoryFn;
+
+			return factoryFn(response);
+		}
+	}
+
 	/// <summary>
 	/// Basic implementation of IMessage[T]
 	/// </summary>
@@ -11,12 +43,12 @@ namespace ServiceStack.Messaging
 	{
 		public Message()
 		{
-		}
-
-		public Message(T body)
-		{
 			this.Id = Guid.NewGuid();
 			this.CreatedDate = DateTime.UtcNow;
+		}
+
+		public Message(T body) : this()
+		{
 			Body = body;
 		}
 
@@ -28,18 +60,25 @@ namespace ServiceStack.Messaging
 
 		public int RetryAttempts { get; set; }
 
+		public Guid? ReplyId { get; set; }
+
 		public string ReplyTo { get; set; }
 
 		public MessageError Error { get; set; }
 
 		public T Body { get; set; }
 
+		public static IMessage Create(object oBody)
+		{
+			return new Message<T>((T) oBody);
+		}
+
 		public override string ToString()
 		{
 			return string.Format("CreatedDate={0}, Id={1}, Type={2}, Retry={3}",
-				this.CreatedDate, 
-				this.Id.ToString("N"), 
-				typeof(T).Name, 
+				this.CreatedDate,
+				this.Id.ToString("N"),
+				typeof(T).Name,
 				this.RetryAttempts);
 		}
 

@@ -15,6 +15,12 @@ namespace ServiceStack.Messaging
 			return TypeSerializer.DeserializeFromString<Message<T>>(messageText);
 		}
 
+		public static byte[] ToBytes(this IMessage message)
+		{
+			var serializedMessage = TypeSerializer.SerializeToString((object)message);
+			return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
+		}
+
 		public static byte[] ToBytes<T>(this IMessage<T> message)
 		{
 			var serializedMessage = TypeSerializer.SerializeToString(message);

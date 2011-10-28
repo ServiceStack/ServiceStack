@@ -8,7 +8,7 @@ namespace ServiceStack.Messaging
 		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
 		private readonly IMessageService messageService;
 		private readonly Func<IMessage<T>, object> processMessageFn;
-		private readonly Action<Exception> processExceptionFn;
+		private readonly Action<IMessage<T>, Exception> processExceptionFn;
 		public int RetryCount { get; set; }
 
 		public MessageHandlerFactory(IMessageService messageService, Func<IMessage<T>, object> processMessageFn)
@@ -16,7 +16,9 @@ namespace ServiceStack.Messaging
 		{
 		}
 
-		public MessageHandlerFactory(IMessageService messageService, Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
+		public MessageHandlerFactory(IMessageService messageService, 
+			Func<IMessage<T>, object> processMessageFn,
+			Action<IMessage<T>, Exception> processExceptionEx)
 		{
 			if (messageService == null)
 				throw new ArgumentNullException("messageService");
@@ -32,7 +34,8 @@ namespace ServiceStack.Messaging
 
 		public IMessageHandler CreateMessageHandler()
 		{
-			return new MessageHandler<T>(messageService, processMessageFn, processExceptionFn, this.RetryCount);
+			return new MessageHandler<T>(messageService, processMessageFn, 
+				processExceptionFn, this.RetryCount);
 		}
 	}
 }

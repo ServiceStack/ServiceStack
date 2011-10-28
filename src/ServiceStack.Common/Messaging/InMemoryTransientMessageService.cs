@@ -6,17 +6,17 @@ namespace ServiceStack.Messaging
 	public class InMemoryTransientMessageService
 		: TransientMessageServiceBase
 	{
-		internal MessageQueueClientFactory Factory { get; set; }
+		internal InMemoryTransientMessageFactory Factory { get; set; }
 
 		public InMemoryTransientMessageService()
 			: this(null)
 		{
 		}
 
-		public InMemoryTransientMessageService(MessageQueueClientFactory factory)
+		public InMemoryTransientMessageService(InMemoryTransientMessageFactory factory)
 		{
-			this.Factory = factory ?? new MessageQueueClientFactory();
-			this.Factory.MessageReceived += factory_MessageReceived;
+			this.Factory = factory ?? new InMemoryTransientMessageFactory(this);
+			this.Factory.MqFactory.MessageReceived += factory_MessageReceived;
 		}
 
 		void factory_MessageReceived(object sender, EventArgs e)
@@ -25,9 +25,14 @@ namespace ServiceStack.Messaging
 			this.Start();
 		}
 
-		public override IMessageQueueClientFactory MessageFactory
+		public override IMessageFactory MessageFactory
 		{
 			get { return Factory; }
+		}
+
+		public MessageQueueClientFactory MessageQueueFactory
+		{
+			get { return Factory.MqFactory; }
 		}
 	}
 }

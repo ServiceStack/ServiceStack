@@ -1,6 +1,9 @@
 using System;
 using System.Text;
 using ServiceStack.Logging;
+using ServiceStack.Service;
+using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
 {
@@ -17,27 +20,28 @@ namespace ServiceStack.Messaging
 		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
 		private readonly IMessageService messageService;
 		private readonly Func<IMessage<T>, object> processMessageFn;
-		private readonly Action<Exception> processExceptionFn;
+		private readonly Action<IMessage<T>, Exception> processInExceptionFn;
+		public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
 		private readonly int retryCount;
 
-		public int TotalMessagesProcessed { get; private set; }
+    	public int TotalMessagesProcessed { get; private set; }
 		public int TotalMessagesFailed { get; private set; }
 		public int TotalRetries { get; private set; }
 		public int TotalNormalMessagesReceived { get; private set; }
 		public int TotalPriorityMessagesReceived { get; private set; }
+		public int TotalOutMessagesReceived { get; private set; }
 
 		public MessageHandler(IMessageService messageService,
 			Func<IMessage<T>, object> processMessageFn)
-			: this(messageService, processMessageFn, null, DefaultRetryCount)
-		{
-		}
+			: this(messageService, processMessageFn, null, DefaultRetryCount) {}
 
 		private IMessageQueueClient MqClient { get; set; }
-		private Message<T> Message { get; set; }
+		//private Message<T> Message { get; set; }
 
 		public MessageHandler(IMessageService messageService,
 			Func<IMessage<T>, object> processMessageFn,
-			Action<Exception> processExceptionFn, int retryCount)
+			Action<IMessage<T>, Exception> processInExceptionFn,
+			int retryCount)
 		{
 			if (messageService == null)
 				throw new ArgumentNullException("messageService");
@@ -47,8 +51,9 @@ namespace ServiceStack.Messaging
 
 			this.messageService = messageService;
 			this.processMessageFn = processMessageFn;
-			this.processExceptionFn = processExceptionFn ?? DefaultExceptionHandler;
+			this.processInExceptionFn = processInExceptionFn ?? DefaultInExceptionHandler;
 			this.retryCount = retryCount;
+			this.ReplyClientFactory = ClientFactory.Create;
 		}
 
 		public Type MessageType
@@ -89,7 +94,8 @@ namespace ServiceStack.Messaging
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Error serializing message from mq server", ex);
+				var lastEx = ex;
+				Log.Error("Error serializing message from mq server: " + lastEx.Message, ex);
 			}
 		}
 
@@ -100,43 +106,71 @@ namespace ServiceStack.Messaging
                 TotalNormalMessagesReceived, TotalPriorityMessagesReceived);
 		}
 
-		private void DefaultExceptionHandler(Exception ex)
+		private void DefaultInExceptionHandler(IMessage<T> message, Exception ex)
 		{
 			Log.Error("Message exception handler threw an error", ex);
 
 			if (!(ex is UnRetryableMessagingException))
 			{
-				if (this.Message.RetryAttempts < retryCount)
+				if (message.RetryAttempts < retryCount)
 				{
-					this.Message.RetryAttempts++;
+					message.RetryAttempts++;
 					this.TotalRetries++;
 
-					this.Message.Error = new MessagingException(ex.Message, ex).ToMessageError();
-					MqClient.Publish(QueueNames<T>.In, this.Message.ToBytes());
+					message.Error = new MessagingException(ex.Message, ex).ToMessageError();
+					MqClient.Publish(QueueNames<T>.In, message.ToBytes());
 					return;
 				}
 			}
 
-			MqClient.Publish(QueueNames<T>.Dlq, this.Message.ToBytes());
+			MqClient.Publish(QueueNames<T>.Dlq, message.ToBytes());
 		}
 
 		public void ProcessMessage(IMessageQueueClient mqClient, Message<T> message)
 		{
 			this.MqClient = mqClient;
-			this.Message = message;
 
 			try
 			{
-				processMessageFn(message);
-				TotalMessagesProcessed++;
-				mqClient.Notify(QueueNames<T>.Out, this.Message.ToBytes());
+				var response = processMessageFn(message);
+				this.TotalMessagesProcessed++;
+
+				//If there's no response publish the request message to its OutQ
+				if (response == null)
+				{
+					mqClient.Notify(QueueNames<T>.Out, message.ToBytes());
+				}
+				else
+				{
+					//If there is a response send it to the typed response OutQ
+					var mqName = message.ReplyTo ?? new QueueNames(response.GetType()).In;
+					var replyClient = ReplyClientFactory(mqName);
+					if (replyClient != null)
+					{
+						try
+						{
+							replyClient.SendOneWay(response);
+							return;
+						}
+						catch (Exception ex)
+						{
+							Log.Error("Could not send response to '{0}' with client '{1}'"
+								.Fmt(mqName, replyClient.GetType().Name), ex);
+						}
+					}
+
+					//Otherwise send to our trusty response Queue (inc if replyClient fails)
+					var responseMessage = Message.Create(response);
+					responseMessage.ReplyId = message.Id;
+					mqClient.Notify(mqName, responseMessage.ToBytes());
+				}
 			}
 			catch (Exception ex)
 			{
 				try
 				{
 					TotalMessagesFailed++;
-					processExceptionFn(ex);
+					processInExceptionFn(message, ex);
 				}
 				catch (Exception exHandlerEx)
 				{

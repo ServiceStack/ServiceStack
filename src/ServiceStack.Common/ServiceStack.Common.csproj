@@ -124,6 +124,7 @@
     <Compile Include="Messaging\MessageQueueClientFactory.cs" />
     <Compile Include="Messaging\MessageHandler.cs" />
     <Compile Include="Messaging\MessageHandlerFactory.cs" />
+    <Compile Include="Messaging\ClientFactory.cs" />
     <Compile Include="Messaging\TransientMessageServiceBase.cs" />
     <Compile Include="Web\HttpResponseStreamWrapper.cs" />
     <Compile Include="StreamExtensions.cs" />

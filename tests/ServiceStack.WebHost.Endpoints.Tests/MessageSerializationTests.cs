@@ -7,6 +7,7 @@ using System.Xml;
 using NUnit.Framework;
 using ServiceStack.Messaging;
 using ServiceStack.ServiceModel.Serialization;
+using Message = System.ServiceModel.Channels.Message;
 using DataContractSerializer = ServiceStack.ServiceModel.Serialization.DataContractSerializer;
 
 namespace ServiceStack.WebHost.Endpoints.Tests

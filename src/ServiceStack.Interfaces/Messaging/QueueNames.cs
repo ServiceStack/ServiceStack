@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace ServiceStack.Messaging
 {
@@ -8,25 +9,31 @@ namespace ServiceStack.Messaging
 	/// <typeparam name="T"></typeparam>
 	public static class QueueNames<T>
 	{
-		public static string Priority
+		static QueueNames()
 		{
-			get { return "mq:" + typeof(T).Name + ".priorityq"; }
+			var utf8 = new UTF8Encoding(false);
+
+			Priority = "mq:" + typeof(T).Name + ".priorityq";
+			PriorityBytes = utf8.GetBytes(Priority);
+			In = "mq:" + typeof(T).Name + ".inq";
+			InBytes = utf8.GetBytes(In);
+			Out = "mq:" + typeof(T).Name + ".outq";
+			OutBytes = utf8.GetBytes(Out);
+			Dlq = "mq:" + typeof(T).Name + ".dlq";
+			DlqBytes = utf8.GetBytes(Dlq);
 		}
 
-		public static string In
-		{
-			get { return "mq:" + typeof(T).Name + ".inq"; }
-		}
+		public static string Priority { get; private set; }
+		public static byte[] PriorityBytes { get; private set; }
 
-		public static string Out
-		{
-			get { return "mq:" + typeof(T).Name + ".outq"; }
-		}
+		public static string In { get; private set; }
+		public static byte[] InBytes { get; private set; }
 
-		public static string Dlq
-		{
-			get { return "mq:" + typeof(T).Name + ".dlq"; }
-		}
+		public static string Out { get; private set; }
+		public static byte[] OutBytes { get; private set; }
+
+		public static string Dlq { get; private set; }
+		public static byte[] DlqBytes { get; private set; }
 	}
 
 	/// <summary>
@@ -34,7 +41,8 @@ namespace ServiceStack.Messaging
 	/// </summary>
 	public class QueueNames
 	{
-		public const string Topic = "mq:topic";
+		public const string TopicIn = "mq:topic:in";
+		public const string TopicOut = "mq:topic:out";
 
 		private readonly Type messageType;
 

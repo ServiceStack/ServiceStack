@@ -4,6 +4,131 @@
         <name>ServiceStack</name>
     </assembly>
     <members>
+        <member name="M:ServiceStack.WebHost.Endpoints.RestHandler.CreateRequest(ServiceStack.ServiceHost.IHttpRequest,System.String)">
+            <summary>
+            Used in Unit tests
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.GetHtmlHelper">
+            <summary>
+            Ensure the same instance is used for subclasses
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.InitHelpers">
+            <summary>
+            Called before page is executed
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.OnLoad">
+            <summary>
+            Called after page is executed but before it's merged with the 
+            website template if any.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Raw(System.String)">
+            <summary>
+            Don't HTML encode safe output
+            </summary>
+            <param name="content"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Partial(System.String,System.Object)">
+            <summary>
+            Return the output of a different view with the specified name 
+            using the supplied model
+            </summary>
+            <param name="viewName"></param>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Markdown.MarkdownViewBase.TryResolve``1">
+            <summary>
+            Resolve registered Assemblies
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.AppHost">
+            <summary>
+            The AppHost so you can access configuration and resolve dependencies, etc.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.MarkdownPage">
+            <summary>
+            This precompiled Markdown page with Metadata
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Html">
+            <summary>
+            ASP.NET MVC's HtmlHelper
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.ScopeArgs">
+            <summary>
+            All variables passed to and created by your page. 
+            The Response DTO is stored and accessible via the 'Model' variable.
+             
+            All variables and outputs created are stored in ScopeArgs which is what's available
+            to your website template. The Generated page is stored in the 'Body' variable.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.RenderHtml">
+            <summary>
+            Whether HTML or Markdown output is requested
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Model">
+            <summary>
+            The Response DTO
+            </summary>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory.ReturnRequestInfo(System.Web.HttpRequest)">
+            <summary>
+            If enabled, just returns the Request Info as it understands
+            </summary>
+            <param name="context"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.RestPath.IsMatch(System.String,System.String[])">
+            <summary>
+            For performance withPathInfoParts should already be a lower case string
+            to minimize redundant matching operations.
+            </summary>
+            <param name="httpMethod"></param>
+            <param name="withPathInfoParts"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.RestPath.PathComponentsCount">
+            <summary>
+            The number of segments separated by '/' determinable by path.Split('/').Length
+            e.g. /path/to/here.ext == 3
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.RestPath.TotalComponentsCount">
+            <summary>
+            The total number of segments after subparts have been exploded ('.') 
+            e.g. /path/to/here.ext == 4
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.RestPath.FirstMatchHashKey">
+            <summary>
+            Provide for quick lookups based on hashes that can be determined from a request url
+            </summary>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.EndpointHost.ApplyRequestFilters(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.Object)">
+            <summary>
+            Applies the request filters. Returns whether or not the request has been handled 
+            and no more processing should be done.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.EndpointHost.ApplyResponseFilters(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.Object)">
+            <summary>
+            Applies the response filters. Returns whether or not the request has been handled 
+            and no more processing should be done.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:ServiceStack.WebHost.Endpoints.AppHostHttpListenerBase">
             <summary>
             Inherit from this class if you want to host your web services inside a 
@@ -41,664 +166,6 @@
             Overridable method that can be used to implement a custom hnandler
             </summary>
             <param name="context"></param>
-        </member>
-        <member name="T:Funq.Container">
-            <summary>
-			Main container class for components, supporting container hierarchies and
-			lifetime management of <see cref="T:System.IDisposable"/> instances.
-		</summary>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``1">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance 
-			of the service when needed.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>The function that can resolve to the service instance when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``2">
-            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``3">
-            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``4">
-            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``5">
-            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``6">
-            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``7">
-            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``1(System.String)">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance
-			of the service with the given name when needed.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``2(System.String)">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance
-			of the service of the given type, name and service constructor arguments when needed.
-		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``3(System.String)">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance
-			of the service of the given type, name and service constructor arguments when needed.
-		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``4(System.String)">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance
-			of the service of the given type, name and service constructor arguments when needed.
-		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``5(System.String)">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance
-			of the service of the given type, name and service constructor arguments when needed.
-		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``6(System.String)">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance
-			of the service of the given type, name and service constructor arguments when needed.
-		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.LazyResolve``7(System.String)">
-            <summary>
-			Retrieves a function that can be used to lazily resolve an instance
-			of the service of the given type, name and service constructor arguments when needed.
-		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
-        </member>
-        <member name="M:Funq.Container.Register``1(System.Func{Funq.Container,``0})">
-            <summary>
-			Registers the given service by providing a factory delegate to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``2(System.Func{Funq.Container,``1,``0})">
-            <summary>
-			Registers the given service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg">First argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``3(System.Func{Funq.Container,``1,``2,``0})">
-            <summary>
-			Registers the given service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``4(System.Func{Funq.Container,``1,``2,``3,``0})">
-            <summary>
-			Registers the given service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``5(Funq.Func{Funq.Container,``1,``2,``3,``4,``0})">
-            <summary>
-			Registers the given service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``6(Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``0})">
-            <summary>
-			Registers the given service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``7(Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``6,``0})">
-            <summary>
-			Registers the given service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg6">Sixth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``1(System.String,System.Func{Funq.Container,``0})">
-            <summary>
-			Registers the given named service by providing a factory delegate to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``2(System.String,System.Func{Funq.Container,``1,``0})">
-            <summary>
-			Registers the given named service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg">First argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``3(System.String,System.Func{Funq.Container,``1,``2,``0})">
-            <summary>
-			Registers the given named service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``4(System.String,System.Func{Funq.Container,``1,``2,``3,``0})">
-            <summary>
-			Registers the given named service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``5(System.String,Funq.Func{Funq.Container,``1,``2,``3,``4,``0})">
-            <summary>
-			Registers the given named service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``6(System.String,Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``0})">
-            <summary>
-			Registers the given named service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Register``7(System.String,Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``6,``0})">
-            <summary>
-			Registers the given named service by providing a factory delegate that receives arguments to
-			instantiate it.
-		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg6">Sixth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
-        </member>
-        <member name="M:Funq.Container.Resolve``1">
-            <summary>
-			Resolves the given service by type, without passing any arguments for
-			its construction.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.Resolve``2(``1)">
-            <summary>
-			Resolves the given service by type, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.Resolve``3(``1,``2)">
-            <summary>
-			Resolves the given service by type, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.Resolve``4(``1,``2,``3)">
-            <summary>
-			Resolves the given service by type, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.Resolve``5(``1,``2,``3,``4)">
-            <summary>
-			Resolves the given service by type, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.Resolve``6(``1,``2,``3,``4,``5)">
-            <summary>
-			Resolves the given service by type, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.Resolve``7(``1,``2,``3,``4,``5,``6)">
-            <summary>
-			Resolves the given service by type, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.ResolveNamed``1(System.String)">
-            <summary>
-			Resolves the given service by type and name, without passing arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.ResolveNamed``2(System.String,``1)">
-            <summary>
-			Resolves the given service by type and name, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.ResolveNamed``3(System.String,``1,``2)">
-            <summary>
-			Resolves the given service by type and name, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.ResolveNamed``4(System.String,``1,``2,``3)">
-            <summary>
-			Resolves the given service by type and name, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.ResolveNamed``5(System.String,``1,``2,``3,``4)">
-            <summary>
-			Resolves the given service by type and name, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.ResolveNamed``6(System.String,``1,``2,``3,``4,``5)">
-            <summary>
-			Resolves the given service by type and name, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.ResolveNamed``7(System.String,``1,``2,``3,``4,``5,``6)">
-            <summary>
-			Resolves the given service by type and name, passing the given arguments
-			for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
-        </member>
-        <member name="M:Funq.Container.TryResolve``1">
-            <summary>
-			Attempts to resolve the given service by type, without passing arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolve``2(``1)">
-            <summary>
-			Attempts to resolve the given service by type, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolve``3(``1,``2)">
-            <summary>
-			Attempts to resolve the given service by type, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolve``4(``1,``2,``3)">
-            <summary>
-			Attempts to resolve the given service by type, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolve``5(``1,``2,``3,``4)">
-            <summary>
-			Attempts to resolve the given service by type, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolve``6(``1,``2,``3,``4,``5)">
-            <summary>
-			Attempts to resolve the given service by type, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolve``7(``1,``2,``3,``4,``5,``6)">
-            <summary>
-			Attempts to resolve the given service by type, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolveNamed``1(System.String)">
-            <summary>
-			Attempts to resolve the given service by type and name, without passing
-			arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolveNamed``2(System.String,``1)">
-            <summary>
-			Attempts to resolve the given service by type and name, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolveNamed``3(System.String,``1,``2)">
-            <summary>
-			Attempts to resolve the given service by type and name, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolveNamed``4(System.String,``1,``2,``3)">
-            <summary>
-			Attempts to resolve the given service by type and name, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolveNamed``5(System.String,``1,``2,``3,``4)">
-            <summary>
-			Attempts to resolve the given service by type and name, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolveNamed``6(System.String,``1,``2,``3,``4,``5)">
-            <summary>
-			Attempts to resolve the given service by type and name, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.TryResolveNamed``7(System.String,``1,``2,``3,``4,``5,``6)">
-            <summary>
-			Attempts to resolve the given service by type and name, passing the
-			given arguments arguments for its initialization.
-		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
-			The resolved service instance or <see langword="null"/> if it cannot be resolved.
-		</returns>
-        </member>
-        <member name="M:Funq.Container.#ctor">
-            <summary>
-			Initializes a new empty container.
-		</summary>
-        </member>
-        <member name="M:Funq.Container.CreateChildContainer">
-            <summary>
-			Creates a child container of the current one, which exposes its
-			current service registration to the new child container.
-		</summary>
-        </member>
-        <member name="M:Funq.Container.Dispose">
-            <summary>
-			Disposes the container and all instances owned by it (see
-			<see cref="F:Funq.Owner.Container"/>), as well as all child containers
-			created through <see cref="M:Funq.Container.CreateChildContainer"/>.
-		</summary>
-        </member>
-        <member name="M:Funq.Container.Register``1(``0)">
-            <summary>
-			Registers a service instance with the container. This instance 
-			will have <see cref="F:Funq.Owner.External"/> and <see cref="F:Funq.ReuseScope.Hierarchy"/> 
-			behavior.
-		</summary><param name="instance">Service instance to use.</param>
-        </member>
-        <member name="M:Funq.Container.Register``1(System.String,``0)">
-            <summary>
-			Registers a named service instance with the container. This instance
-			will have <see cref="F:Funq.Owner.External"/> and <see cref="F:Funq.ReuseScope.Hierarchy"/>
-			behavior.
-		</summary><param name="name">Name of the service to register.</param><param name="instance">Service instance to use.</param>
-        </member>
-        <member name="P:Funq.Container.DefaultOwner">
-            <summary>
-			Default owner for new registrations. <see cref="F:Funq.Owner.Container"/> by default.
-		</summary>
-        </member>
-        <member name="P:Funq.Container.DefaultReuse">
-            <summary>
-			Default reuse scope for new registrations. <see cref="F:Funq.ReuseScope.Hierarchy"/> by default.
-		</summary>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions.WriteToResponse(ServiceStack.ServiceHost.IHttpResponse,System.Object,ServiceStack.ServiceHost.ResponseSerializerDelegate,ServiceStack.ServiceHost.IRequestContext,System.Byte[],System.Byte[])">
-            <summary>
-            Writes to response.
-            Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
-            </summary>
-            <param name="response">The response.</param>
-            <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
-            <param name="defaultAction">The default action.</param>
-            <param name="serializerCtx">The serialization context.</param>
-            <param name="bodyPrefix">Add prefix to response body if any</param>
-            <param name="bodySuffix">Add suffix to response body if any</param>
-            <returns></returns>
-        </member>
-        <member name="T:ServiceStack.WebHost.Endpoints.Ext.AllFilesHandler">
-            <summary>
-            Summary description for $codebehindclassname$
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.RestPath.IsMatch(System.String,System.String[])">
-            <summary>
-            For performance withPathInfoParts should already be a lower case string
-            to minimize redundant matching operations.
-            </summary>
-            <param name="httpMethod"></param>
-            <param name="withPathInfoParts"></param>
-            <returns></returns>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.RestPath.PathComponentsCount">
-            <summary>
-            The number of segments separated by '/' determinable by path.Split('/').Length
-            e.g. /path/to/here.ext == 3
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.RestPath.TotalComponentsCount">
-            <summary>
-            The total number of segments after subparts have been exploded ('.') 
-            e.g. /path/to/here.ext == 4
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceHost.RestPath.FirstMatchHashKey">
-            <summary>
-            Provide for quick lookups based on hashes that can be determined from a request url
-            </summary>
-        </member>
-        <member name="T:ServiceStack.WebHost.Endpoints.AppHostBase">
-            <summary>
-            Inherit from this class if you want to host your web services inside an
-            ASP.NET application.
-            </summary>
-        </member>
-        <member name="T:Funq.IFunqlet">
-            <summary>
-            Funqlets are a set of components provided as a package 
-            to an existing container (like a module).
-            </summary>
-        </member>
-        <member name="M:Funq.IFunqlet.Configure(Funq.Container)">
-            <summary>
-            Configure the given container with the 
-            registrations provided by the funqlet.
-            </summary>
-            <param name="container">Container to register.</param>
-        </member>
-        <member name="T:Funq.ResolutionException">
-            <summary>
-            Exception thrown by the container when a service cannot be resolved.
-            </summary>
-        </member>
-        <member name="M:Funq.ResolutionException.#ctor(System.Type)">
-            <summary>
-            Initializes the exception with the service that could not be resolved.
-            </summary>
-        </member>
-        <member name="M:Funq.ResolutionException.#ctor(System.Type,System.String)">
-            <summary>
-            Initializes the exception with the service (and its name) that could not be resolved.
-            </summary>
-        </member>
-        <member name="M:Funq.ResolutionException.#ctor(System.String)">
-            <summary>
-            Initializes the exception with an arbitrary message.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Support.StaticFileHandler.SetDefaultFile(System.String)">
-            <summary>
-            Keep default file contents in-memory
-            </summary>
-            <param name="defaultFilePath"></param>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.ServiceManager.#ctor(Funq.Container,ServiceStack.ServiceHost.ServiceController)">
-            <summary>
-            Inject alternative container and strategy for resolving Service Types
-            </summary>
-        </member>
-        <member name="T:ServiceStack.ServiceHost.ServiceExecOperations">
-            <summary>
-            Static type constants for referring to service exec methods
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.ToOptimizedResult``1(ServiceStack.ServiceHost.IRequestContext,``0)">
-            <summary>
-            Returns the optimized result for the IRequestContext. 
-            Does not use or store results in any cache.
-            </summary>
-            <param name="requestContext"></param>
-            <param name="dto"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.ToOptimizedResultUsingCache``1(ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Func{``0})">
-            <summary>
-            Overload for the <see cref="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Resolve``1(System.Func{``0},ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan})"/> method returning the most
-            optimized result based on the MimeType and CompressionType from the IRequestContext.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.ToOptimizedResultUsingCache``1(ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan},System.Func{``0})">
-            <summary>
-            Overload for the <see cref="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Resolve``1(System.Func{``0},ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan})"/> method returning the most
-            optimized result based on the MimeType and CompressionType from the IRequestContext.
-            <param name="expireCacheIn">How long to cache for, null is no expiration</param>
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.RemoveFromCache(ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String[])">
-            <summary>
-            Clears all the serialized and compressed caches set 
-            by the 'Resolve' method for the cacheKey provided
-            </summary>
-            <param name="requestContext"></param>
-            <param name="cacheClient"></param>
-            <param name="cacheKeys"></param>
-        </member>
-        <member name="T:ServiceStack.CacheAccess.Providers.ContentCacheManager">
-            <summary>
-            Provides static helper methods to serialize and compress results
-            </summary>
-        </member>
-        <member name="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Resolve``1(System.Func{``0},ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan})">
-            <summary>
-            Returns a serialized dto based on the mime-type, created using the factoryFn().
-            If the correct mimeType is found, it will return the cached result.
-            If a compressionType is set it will return a compressed version of the result.
-            If no result is found, the dto is created by the factoryFn()
-            The dto is set on the cacheClient[cacheKey] =&gt; factoryFn()
-            e.g. urn:user:1 =&gt; dto
-            The serialized dto is set on the cacheClient[cacheKey.mimeType] =&gt; serialized(factoryFn())
-            e.g. urn:user:1.xml =&gt; xmlDto
-            Finally, if a compressionType is specified, the compressed dto is set on the
-            cacheClient[cacheKey.mimeType.compressionType] =&gt; compressed(serialized(factoryFn()))
-            e.g. urn:user:1.xml.gzip =&gt; compressedXmlDto
-            </summary>
-            <typeparam name="TResult">The type of the result.</typeparam>
-            <param name="factoryFn">The factory fn.</param>
-            <param name="serializationContext">The serialization context.</param>
-            <param name="compressionType">Type of the compression. -optional null means no compression</param>
-            <param name="cacheClient">The cache client</param>
-            <param name="cacheKey">The base cache key</param>
-            <param name="expireCacheIn">How long to cache for, default is no expiration</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Clear(ServiceStack.CacheAccess.ICacheClient,System.String[])">
-            <summary>
-            Clears all the serialized and compressed caches set 
-            by the 'Resolve' method for the cacheKey provided
-            </summary>
-            <param name="cacheClient">The cache client.</param>
-            <param name="cacheKeys">The cache keys.</param>
-        </member>
-        <member name="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.ResolveFromCache``1(ServiceStack.CacheAccess.Providers.ContentSerializer{``0},ServiceStack.CacheAccess.ICacheClient,System.String)">
-            <summary>
-            Helper method on ContentSerializer to 'Resolve' the serialized/compressed
-            result using the cacheClient and cacheKey provided
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="contentSerializer">The content serializer.</param>
-            <param name="cacheClient">The cache client.</param>
-            <param name="cacheKey">The cache key.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.WebHost.EndPoints.Formats.MarkdownFormat.SerializeToStream(ServiceStack.ServiceHost.IRequestContext,System.Object,System.IO.Stream)">
-            <summary>
-            Render Markdown for text/markdown and text/plain ContentTypes
-            </summary>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.EndpointHost.ApplyRequestFilters(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.Object)">
-            <summary>
-            Applies the request filters. Returns whether or not the request has been handled 
-            and no more processing should be done.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.EndpointHost.ApplyResponseFilters(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.Object)">
-            <summary>
-            Applies the response filters. Returns whether or not the request has been handled 
-            and no more processing should be done.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="T:Funq.Owner">
-            <summary>
-            Determines who is responsible for disposing instances 
-            registered with a container.
-            </summary>
-        </member>
-        <member name="F:Funq.Owner.Container">
-            <summary>
-            Container should dispose provided instances when it is disposed. This is the 
-            default.
-            </summary>
-        </member>
-        <member name="F:Funq.Owner.External">
-            <summary>
-            Container does not dispose provided instances.
-            </summary>
-        </member>
-        <member name="F:Funq.Owner.Default">
-            <summary>
-            Default owner, which equals <see cref="F:Funq.Owner.Container"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetPermanentCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String)">
-            <summary>
-            Sets a persistent cookie which never expires
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetSessionCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String)">
-            <summary>
-            Sets a session cookie which expires after the browser session closes
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String,System.TimeSpan)">
-            <summary>
-            Sets a persistent cookie which expires after the given time
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String,System.DateTime,System.String)">
-            <summary>
-            Sets a persistent cookie with an expiresAt date
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.DeleteCookie(ServiceStack.ServiceHost.IHttpResponse,System.String)">
-            <summary>
-            Deletes a specified cookie by setting its value to empty and expiration to -1 days
-            </summary>
-        </member>
-        <member name="T:ServiceStack.WebHost.Endpoints.Support.GzipOptimizationTest">
-            <summary>
-            Highly optimized code to find if GZIP is supported from:
-             - http://dotnetperls.com/gzip-request
-            
-            Other resources for GZip, deflate resources:
-            - http://www.west-wind.com/Weblog/posts/10564.aspx
-            	- http://www.west-wind.com/WebLog/posts/102969.aspx
-            - ICSharpCode 
-            </summary>
-        </member>
-        <member name="T:Funq.IContainerModule">
-            <summary>
-            Interface used by plugins to contribute registrations 
-            to an existing container.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.RestHandler.CreateRequest(ServiceStack.ServiceHost.IHttpRequest,System.String)">
-            <summary>
-            Used in Unit tests
-            </summary>
-            <returns></returns>
         </member>
         <member name="T:ServiceStack.Properties.Resources">
             <summary>
@@ -794,31 +261,39 @@
             owner is <see cref="F:Funq.Owner.Container"/>.
             </summary>
         </member>
-        <member name="F:Funq.ServiceEntry.Owner">
+        <member name="T:Funq.IRegistration`1">
             <summary>
-            Ownership setting for the service.
+            Fluent API for customizing the registration of a service.
             </summary>
         </member>
-        <member name="F:Funq.ServiceEntry.Reuse">
+        <member name="T:Funq.IInitializable`1">
             <summary>
-            Reuse scope setting for the service.
+            Fluent API that allows registering an initializer for the 
+            service.
             </summary>
         </member>
-        <member name="F:Funq.ServiceEntry.Container">
+        <member name="M:Funq.IInitializable`1.InitializedBy(System.Action{Funq.Container,`0})">
             <summary>
-            The container where the entry was registered.
+            Specifies an initializer that should be invoked after 
+            the service instance has been created by the factory.
             </summary>
         </member>
-        <member name="M:Funq.ServiceEntry.OwnedBy(Funq.Owner)">
+        <member name="M:ServiceStack.WebHost.Endpoints.ServiceEndpointsMetadataConfig.Create(System.String)">
             <summary>
-            Specifies the owner for instances, which determines how 
-            they will be disposed.
+            Changes the links for the servicestack/metadata page
             </summary>
+            <param name="serviceStackHandlerPrefix"></param>
+            <returns></returns>
         </member>
-        <member name="M:Funq.ServiceEntry.ReusedWithin(Funq.ReuseScope)">
+        <member name="T:ServiceStack.WebHost.Endpoints.Support.GzipOptimizationTest">
             <summary>
-            Specifies the scope for instances, which determines 
-            visibility of instances across containers and hierarchies.
+            Highly optimized code to find if GZIP is supported from:
+             - http://dotnetperls.com/gzip-request
+            
+            Other resources for GZip, deflate resources:
+            - http://www.west-wind.com/Weblog/posts/10564.aspx
+            	- http://www.west-wind.com/WebLog/posts/102969.aspx
+            - ICSharpCode 
             </summary>
         </member>
         <member name="P:MarkdownSharp.MarkdownOptions.AutoHyperlink">
@@ -1167,43 +642,109 @@
             see http://code.google.com/p/markdownsharp/ for the latest code or to contribute
             </summary>
         </member>
-        <member name="T:Funq.Func`6">
+        <member name="F:Funq.ServiceEntry.Owner">
             <summary>
-            Encapsulates a method that has five parameters and returns a value of the 
-             type specified by the <typeparamref name="TResult"/> parameter.
+            Ownership setting for the service.
             </summary>
         </member>
-        <member name="T:Funq.Func`7">
+        <member name="F:Funq.ServiceEntry.Reuse">
             <summary>
-            Encapsulates a method that has six parameters and returns a value of the 
-             type specified by the <typeparamref name="TResult"/> parameter.
+            Reuse scope setting for the service.
             </summary>
         </member>
-        <member name="T:Funq.Func`8">
+        <member name="F:Funq.ServiceEntry.Container">
             <summary>
-            Encapsulates a method that has seven parameters and returns a value of the 
-             type specified by the <typeparamref name="TResult"/> parameter.
+            The container where the entry was registered.
             </summary>
         </member>
-        <member name="T:ServiceStack.CacheAccess.Providers.FileAndCacheTextManager">
+        <member name="M:Funq.ServiceEntry.OwnedBy(Funq.Owner)">
             <summary>
-            Stores both 'compressed' and 'text' caches of the dto in the FileSystem and ICacheTextManager provided.
-            The ContentType is inferred from the ICacheTextManager's ContentType.
+            Specifies the owner for instances, which determines how 
+            they will be disposed.
             </summary>
         </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Support.RedirectHttpHandler.ProcessRequest(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.String)">
+        <member name="M:Funq.ServiceEntry.ReusedWithin(Funq.ReuseScope)">
             <summary>
-            Non ASP.NET requests
+            Specifies the scope for instances, which determines 
+            visibility of instances across containers and hierarchies.
             </summary>
-            <param name="request"></param>
-            <param name="response"></param>
-            <param name="operationName"></param>
         </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Support.RedirectHttpHandler.ProcessRequest(System.Web.HttpContext)">
+        <member name="F:Funq.ServiceEntry`2.Factory">
             <summary>
-            ASP.NET requests
+            The Func delegate that creates instances of the service.
             </summary>
-            <param name="context"></param>
+        </member>
+        <member name="F:Funq.ServiceEntry`2.Instance">
+            <summary>
+            The cached service instance if the scope is <see cref="F:Funq.ReuseScope.Hierarchy"/> or 
+            <see cref="F:Funq.ReuseScope.Container"/>.
+            </summary>
+        </member>
+        <member name="F:Funq.ServiceEntry`2.Initializer">
+            <summary>
+            The Func delegate that initializes the object after creation.
+            </summary>
+        </member>
+        <member name="M:Funq.ServiceEntry`2.CloneFor(Funq.Container)">
+            <summary>
+            Clones the service entry assigning the <see cref="T:Funq.Container"/> to the 
+            <paramref name="newContainer"/>. Does not copy the <see cref="F:Funq.ServiceEntry`2.Instance"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetPermanentCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String)">
+            <summary>
+            Sets a persistent cookie which never expires
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetSessionCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String)">
+            <summary>
+            Sets a session cookie which expires after the browser session closes
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String,System.TimeSpan)">
+            <summary>
+            Sets a persistent cookie which expires after the given time
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.SetCookie(ServiceStack.ServiceHost.IHttpResponse,System.String,System.String,System.DateTime,System.String)">
+            <summary>
+            Sets a persistent cookie with an expiresAt date
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.HttpResponseExtensions.DeleteCookie(ServiceStack.ServiceHost.IHttpResponse,System.String)">
+            <summary>
+            Deletes a specified cookie by setting its value to empty and expiration to -1 days
+            </summary>
+        </member>
+        <member name="T:Funq.ReuseScope">
+            <summary>
+            Determines visibility and reuse of instances provided by the container.
+            </summary>
+        </member>
+        <member name="F:Funq.ReuseScope.Hierarchy">
+            <summary>
+            Instances are reused within a container hierarchy. Instances 
+            are created (if necessary) in the container where the registration
+            was performed, and are reused by all descendent containers.
+            </summary>
+        </member>
+        <member name="F:Funq.ReuseScope.Container">
+            <summary>
+            Instances are reused only at the given container. Descendent 
+            containers do not reuse parent container instances and get  
+            a new instance at their level.
+            </summary>
+        </member>
+        <member name="F:Funq.ReuseScope.None">
+            <summary>
+            Each request to resolve the dependency will result in a new 
+            instance being returned.
+            </summary>
+        </member>
+        <member name="F:Funq.ReuseScope.Default">
+            <summary>
+            Default scope, which equals <see cref="F:Funq.ReuseScope.Hierarchy"/>.
+            </summary>
         </member>
         <member name="T:ServiceStack.WebHost.Endpoints.Extensions.HttpRequestExtensions">
             	 * 
@@ -1240,21 +781,708 @@
             calculating them multiple times.
             </summary>
         </member>
-        <member name="T:Funq.IRegistration`1">
+        <member name="T:Funq.IFunqlet">
             <summary>
-            Fluent API for customizing the registration of a service.
+            Funqlets are a set of components provided as a package 
+            to an existing container (like a module).
             </summary>
         </member>
-        <member name="T:Funq.IInitializable`1">
+        <member name="M:Funq.IFunqlet.Configure(Funq.Container)">
             <summary>
-            Fluent API that allows registering an initializer for the 
-            service.
+            Configure the given container with the 
+            registrations provided by the funqlet.
+            </summary>
+            <param name="container">Container to register.</param>
+        </member>
+        <member name="T:Funq.IContainerModule">
+            <summary>
+            Interface used by plugins to contribute registrations 
+            to an existing container.
             </summary>
         </member>
-        <member name="M:Funq.IInitializable`1.InitializedBy(System.Action{Funq.Container,`0})">
+        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.ToOptimizedResult``1(ServiceStack.ServiceHost.IRequestContext,``0)">
             <summary>
-            Specifies an initializer that should be invoked after 
-            the service instance has been created by the factory.
+            Returns the optimized result for the IRequestContext. 
+            Does not use or store results in any cache.
+            </summary>
+            <param name="requestContext"></param>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.ToOptimizedResultUsingCache``1(ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Func{``0})">
+            <summary>
+            Overload for the <see cref="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Resolve``1(System.Func{``0},ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan})"/> method returning the most
+            optimized result based on the MimeType and CompressionType from the IRequestContext.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.ToOptimizedResultUsingCache``1(ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan},System.Func{``0})">
+            <summary>
+            Overload for the <see cref="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Resolve``1(System.Func{``0},ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan})"/> method returning the most
+            optimized result based on the MimeType and CompressionType from the IRequestContext.
+            <param name="expireCacheIn">How long to cache for, null is no expiration</param>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.RequestContextExtensions.RemoveFromCache(ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String[])">
+            <summary>
+            Clears all the serialized and compressed caches set 
+            by the 'Resolve' method for the cacheKey provided
+            </summary>
+            <param name="requestContext"></param>
+            <param name="cacheClient"></param>
+            <param name="cacheKeys"></param>
+        </member>
+        <member name="T:Funq.Container">
+            <summary>
+			Main container class for components, supporting container hierarchies and
+			lifetime management of <see cref="T:System.IDisposable"/> instances.
+		</summary>
+        </member>
+        <member name="M:Funq.Container.#ctor">
+            <summary>
+			Initializes a new empty container.
+		</summary>
+        </member>
+        <member name="M:Funq.Container.CreateChildContainer">
+            <summary>
+			Creates a child container of the current one, which exposes its
+			current service registration to the new child container.
+		</summary>
+        </member>
+        <member name="M:Funq.Container.Dispose">
+            <summary>
+			Disposes the container and all instances owned by it (see
+			<see cref="F:Funq.Owner.Container"/>), as well as all child containers
+			created through <see cref="M:Funq.Container.CreateChildContainer"/>.
+		</summary>
+        </member>
+        <member name="M:Funq.Container.Register``1(``0)">
+            <summary>
+			Registers a service instance with the container. This instance 
+			will have <see cref="F:Funq.Owner.External"/> and <see cref="F:Funq.ReuseScope.Hierarchy"/> 
+			behavior.
+		</summary><param name="instance">Service instance to use.</param>
+        </member>
+        <member name="M:Funq.Container.Register``1(System.String,``0)">
+            <summary>
+			Registers a named service instance with the container. This instance
+			will have <see cref="F:Funq.Owner.External"/> and <see cref="F:Funq.ReuseScope.Hierarchy"/>
+			behavior.
+		</summary><param name="name">Name of the service to register.</param><param name="instance">Service instance to use.</param>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``1">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance 
+			of the service when needed.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>The function that can resolve to the service instance when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``2">
+            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``3">
+            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``4">
+            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``5">
+            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``6">
+            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``7">
+            <!-- No matching elements were found for the following include tag --><include file="Container.xdoc" path="docs/doc[@for=&quot;Container.LazyResolve{TService,TArgs}&quot;]/*"/>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``1(System.String)">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance
+			of the service with the given name when needed.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``2(System.String)">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance
+			of the service of the given type, name and service constructor arguments when needed.
+		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``3(System.String)">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance
+			of the service of the given type, name and service constructor arguments when needed.
+		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``4(System.String)">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance
+			of the service of the given type, name and service constructor arguments when needed.
+		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``5(System.String)">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance
+			of the service of the given type, name and service constructor arguments when needed.
+		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``6(System.String)">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance
+			of the service of the given type, name and service constructor arguments when needed.
+		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.LazyResolve``7(System.String)">
+            <summary>
+			Retrieves a function that can be used to lazily resolve an instance
+			of the service of the given type, name and service constructor arguments when needed.
+		</summary><param name="name">Name of the service to retrieve.</param><returns>The function that can resolve to the service instance with the given and service constructor arguments name when invoked.</returns><exception cref="T:Funq.ResolutionException">The requested service with the given name and constructor arguments has not been registered previously.</exception>
+        </member>
+        <member name="M:Funq.Container.Register``1(System.Func{Funq.Container,``0})">
+            <summary>
+			Registers the given service by providing a factory delegate to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``2(System.Func{Funq.Container,``1,``0})">
+            <summary>
+			Registers the given service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg">First argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``3(System.Func{Funq.Container,``1,``2,``0})">
+            <summary>
+			Registers the given service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``4(System.Func{Funq.Container,``1,``2,``3,``0})">
+            <summary>
+			Registers the given service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``5(Funq.Func{Funq.Container,``1,``2,``3,``4,``0})">
+            <summary>
+			Registers the given service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``6(Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``0})">
+            <summary>
+			Registers the given service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``7(Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``6,``0})">
+            <summary>
+			Registers the given service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg6">Sixth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``1(System.String,System.Func{Funq.Container,``0})">
+            <summary>
+			Registers the given named service by providing a factory delegate to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``2(System.String,System.Func{Funq.Container,``1,``0})">
+            <summary>
+			Registers the given named service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg">First argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``3(System.String,System.Func{Funq.Container,``1,``2,``0})">
+            <summary>
+			Registers the given named service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``4(System.String,System.Func{Funq.Container,``1,``2,``3,``0})">
+            <summary>
+			Registers the given named service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``5(System.String,Funq.Func{Funq.Container,``1,``2,``3,``4,``0})">
+            <summary>
+			Registers the given named service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``6(System.String,Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``0})">
+            <summary>
+			Registers the given named service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Register``7(System.String,Funq.Func{Funq.Container,``1,``2,``3,``4,``5,``6,``0})">
+            <summary>
+			Registers the given named service by providing a factory delegate that receives arguments to
+			instantiate it.
+		</summary><typeparam name="TService">The service type to register.</typeparam><typeparam name="TArg1">First argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg2">Second argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg3">Third argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg4">Fourth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg5">Fifth argument that should be passed to the factory delegate to create the instace.</typeparam><typeparam name="TArg6">Sixth argument that should be passed to the factory delegate to create the instace.</typeparam><param name="name">A name used to differenciate this service registration.</param><param name="factory">The factory delegate to initialize new instances of the service when needed.</param><returns>The registration object to perform further configuration via its fluent interface.</returns>
+        </member>
+        <member name="M:Funq.Container.Resolve``1">
+            <summary>
+			Resolves the given service by type, without passing any arguments for
+			its construction.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.Resolve``2(``1)">
+            <summary>
+			Resolves the given service by type, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.Resolve``3(``1,``2)">
+            <summary>
+			Resolves the given service by type, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.Resolve``4(``1,``2,``3)">
+            <summary>
+			Resolves the given service by type, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.Resolve``5(``1,``2,``3,``4)">
+            <summary>
+			Resolves the given service by type, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.Resolve``6(``1,``2,``3,``4,``5)">
+            <summary>
+			Resolves the given service by type, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.Resolve``7(``1,``2,``3,``4,``5,``6)">
+            <summary>
+			Resolves the given service by type, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.ResolveNamed``1(System.String)">
+            <summary>
+			Resolves the given service by type and name, without passing arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.ResolveNamed``2(System.String,``1)">
+            <summary>
+			Resolves the given service by type and name, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.ResolveNamed``3(System.String,``1,``2)">
+            <summary>
+			Resolves the given service by type and name, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.ResolveNamed``4(System.String,``1,``2,``3)">
+            <summary>
+			Resolves the given service by type and name, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.ResolveNamed``5(System.String,``1,``2,``3,``4)">
+            <summary>
+			Resolves the given service by type and name, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.ResolveNamed``6(System.String,``1,``2,``3,``4,``5)">
+            <summary>
+			Resolves the given service by type and name, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.ResolveNamed``7(System.String,``1,``2,``3,``4,``5,``6)">
+            <summary>
+			Resolves the given service by type and name, passing the given arguments
+			for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>The resolved service instance.</returns><exception cref="T:Funq.ResolutionException">The given service could not be resolved.</exception>
+        </member>
+        <member name="M:Funq.Container.TryResolve``1">
+            <summary>
+			Attempts to resolve the given service by type, without passing arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolve``2(``1)">
+            <summary>
+			Attempts to resolve the given service by type, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolve``3(``1,``2)">
+            <summary>
+			Attempts to resolve the given service by type, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolve``4(``1,``2,``3)">
+            <summary>
+			Attempts to resolve the given service by type, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolve``5(``1,``2,``3,``4)">
+            <summary>
+			Attempts to resolve the given service by type, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolve``6(``1,``2,``3,``4,``5)">
+            <summary>
+			Attempts to resolve the given service by type, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolve``7(``1,``2,``3,``4,``5,``6)">
+            <summary>
+			Attempts to resolve the given service by type, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolveNamed``1(System.String)">
+            <summary>
+			Attempts to resolve the given service by type and name, without passing
+			arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolveNamed``2(System.String,``1)">
+            <summary>
+			Attempts to resolve the given service by type and name, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg">First argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolveNamed``3(System.String,``1,``2)">
+            <summary>
+			Attempts to resolve the given service by type and name, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolveNamed``4(System.String,``1,``2,``3)">
+            <summary>
+			Attempts to resolve the given service by type and name, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolveNamed``5(System.String,``1,``2,``3,``4)">
+            <summary>
+			Attempts to resolve the given service by type and name, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolveNamed``6(System.String,``1,``2,``3,``4,``5)">
+            <summary>
+			Attempts to resolve the given service by type and name, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="M:Funq.Container.TryResolveNamed``7(System.String,``1,``2,``3,``4,``5,``6)">
+            <summary>
+			Attempts to resolve the given service by type and name, passing the
+			given arguments arguments for its initialization.
+		</summary><typeparam name="TService">Type of the service to retrieve.</typeparam><typeparam name="TArg1">First argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg2">Second argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg3">Third argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg4">Fourth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg5">Fifth argument to pass to the factory delegate that may create the instace.</typeparam><typeparam name="TArg6">Sixth argument to pass to the factory delegate that may create the instace.</typeparam><returns>
+			The resolved service instance or <see langword="null"/> if it cannot be resolved.
+		</returns>
+        </member>
+        <member name="P:Funq.Container.DefaultOwner">
+            <summary>
+			Default owner for new registrations. <see cref="F:Funq.Owner.Container"/> by default.
+		</summary>
+        </member>
+        <member name="P:Funq.Container.DefaultReuse">
+            <summary>
+			Default reuse scope for new registrations. <see cref="F:Funq.ReuseScope.Hierarchy"/> by default.
+		</summary>
+        </member>
+        <member name="T:ServiceStack.CacheAccess.Providers.ContentCacheManager">
+            <summary>
+            Provides static helper methods to serialize and compress results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Resolve``1(System.Func{``0},ServiceStack.ServiceHost.IRequestContext,ServiceStack.CacheAccess.ICacheClient,System.String,System.Nullable{System.TimeSpan})">
+            <summary>
+            Returns a serialized dto based on the mime-type, created using the factoryFn().
+            If the correct mimeType is found, it will return the cached result.
+            If a compressionType is set it will return a compressed version of the result.
+            If no result is found, the dto is created by the factoryFn()
+            The dto is set on the cacheClient[cacheKey] =&gt; factoryFn()
+            e.g. urn:user:1 =&gt; dto
+            The serialized dto is set on the cacheClient[cacheKey.mimeType] =&gt; serialized(factoryFn())
+            e.g. urn:user:1.xml =&gt; xmlDto
+            Finally, if a compressionType is specified, the compressed dto is set on the
+            cacheClient[cacheKey.mimeType.compressionType] =&gt; compressed(serialized(factoryFn()))
+            e.g. urn:user:1.xml.gzip =&gt; compressedXmlDto
+            </summary>
+            <typeparam name="TResult">The type of the result.</typeparam>
+            <param name="factoryFn">The factory fn.</param>
+            <param name="serializationContext">The serialization context.</param>
+            <param name="compressionType">Type of the compression. -optional null means no compression</param>
+            <param name="cacheClient">The cache client</param>
+            <param name="cacheKey">The base cache key</param>
+            <param name="expireCacheIn">How long to cache for, default is no expiration</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.Clear(ServiceStack.CacheAccess.ICacheClient,System.String[])">
+            <summary>
+            Clears all the serialized and compressed caches set 
+            by the 'Resolve' method for the cacheKey provided
+            </summary>
+            <param name="cacheClient">The cache client.</param>
+            <param name="cacheKeys">The cache keys.</param>
+        </member>
+        <member name="M:ServiceStack.CacheAccess.Providers.ContentCacheManager.ResolveFromCache``1(ServiceStack.CacheAccess.Providers.ContentSerializer{``0},ServiceStack.CacheAccess.ICacheClient,System.String)">
+            <summary>
+            Helper method on ContentSerializer to 'Resolve' the serialized/compressed
+            result using the cacheClient and cacheKey provided
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="contentSerializer">The content serializer.</param>
+            <param name="cacheClient">The cache client.</param>
+            <param name="cacheKey">The cache key.</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.WebHost.Endpoints.Ext.AllFilesHandler">
+            <summary>
+            Summary description for $codebehindclassname$
+            </summary>
+        </member>
+        <member name="M:ServiceStack.WebHost.EndPoints.Formats.MarkdownFormat.SerializeToStream(ServiceStack.ServiceHost.IRequestContext,System.Object,System.IO.Stream)">
+            <summary>
+            Render Markdown for text/markdown and text/plain ContentTypes
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.ServiceOperations.GetBaseTypeWithTheSameName(System.Type)">
+            <summary>
+            Gets the name of the base most type in the heirachy tree with the same.
+            
+            We get an exception when trying to create a schema with multiple types of the same name
+            like when inheriting from a DataContract with the same name.
+            </summary>
+            <param name="type">The type.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.ServiceOperations.LoadOperationTypes(System.Collections.Generic.IEnumerable{System.Type})">
+            <summary>
+            Loads the operation types into a dictionary.
+            If there are multiple operation types with the same name,
+            the operation type that is last will be the one 'discoverable' via the service.
+            </summary>
+            <param name="operationTypes">The operation types.</param>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.HttpRequestExtensions.GetItemOrCookie(ServiceStack.ServiceHost.IHttpRequest,System.String)">
+            <summary>
+            Gets string value from Items[name] then Cookies[name] if exists.
+            Useful when *first* setting the users response cookie in the request filter.
+            To access the value for this initial request you need to set it in Items[].
+            </summary>
+            <returns>string value or null if it doesn't exist</returns>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.HttpRequestExtensions.GetParam(ServiceStack.ServiceHost.IHttpRequest,System.String)">
+            <summary>
+            Gets request paramater string value by looking in the following order:
+            - QueryString[name]
+            - FormData[name]
+            - Cookies[name]
+            - Items[name]
+            </summary>
+            <returns>string value or null if it doesn't exist</returns>
+        </member>
+        <member name="T:Funq.Func`6">
+            <summary>
+            Encapsulates a method that has five parameters and returns a value of the 
+             type specified by the <typeparamref name="TResult"/> parameter.
+            </summary>
+        </member>
+        <member name="T:Funq.Func`7">
+            <summary>
+            Encapsulates a method that has six parameters and returns a value of the 
+             type specified by the <typeparamref name="TResult"/> parameter.
+            </summary>
+        </member>
+        <member name="T:Funq.Func`8">
+            <summary>
+            Encapsulates a method that has seven parameters and returns a value of the 
+             type specified by the <typeparamref name="TResult"/> parameter.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.Support.IndexPageHttpHandler.ProcessRequest(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.String)">
+            <summary>
+            Non ASP.NET requests
+            </summary>
+            <param name="request"></param>
+            <param name="response"></param>
+            <param name="operationName"></param>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.Support.IndexPageHttpHandler.ProcessRequest(System.Web.HttpContext)">
+            <summary>
+            ASP.NET requests
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="T:ServiceStack.CacheAccess.Providers.FileAndCacheTextManager">
+            <summary>
+            Stores both 'compressed' and 'text' caches of the dto in the FileSystem and ICacheTextManager provided.
+            The ContentType is inferred from the ICacheTextManager's ContentType.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.Support.RedirectHttpHandler.ProcessRequest(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.String)">
+            <summary>
+            Non ASP.NET requests
+            </summary>
+            <param name="request"></param>
+            <param name="response"></param>
+            <param name="operationName"></param>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.Support.RedirectHttpHandler.ProcessRequest(System.Web.HttpContext)">
+            <summary>
+            ASP.NET requests
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="T:Funq.ResolutionException">
+            <summary>
+            Exception thrown by the container when a service cannot be resolved.
+            </summary>
+        </member>
+        <member name="M:Funq.ResolutionException.#ctor(System.Type)">
+            <summary>
+            Initializes the exception with the service that could not be resolved.
+            </summary>
+        </member>
+        <member name="M:Funq.ResolutionException.#ctor(System.Type,System.String)">
+            <summary>
+            Initializes the exception with the service (and its name) that could not be resolved.
+            </summary>
+        </member>
+        <member name="M:Funq.ResolutionException.#ctor(System.String)">
+            <summary>
+            Initializes the exception with an arbitrary message.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.CacheAccess.Providers.FileSystemXmlCacheClient">
+            <summary>
+            Implements a very limited subset of ICacheClient, i.e.
+            
+            	- T Get[T]()
+            	- Set(path, value)
+            	- Remove(path)
+            
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ServiceHost.ServiceExecOperations">
+            <summary>
+            Static type constants for referring to service exec methods
+            </summary>
+        </member>
+        <member name="T:ServiceStack.WebHost.Endpoints.AppHostBase">
+            <summary>
+            Inherit from this class if you want to host your web services inside an
+            ASP.NET application.
+            </summary>
+        </member>
+        <member name="T:Funq.Owner">
+            <summary>
+            Determines who is responsible for disposing instances 
+            registered with a container.
+            </summary>
+        </member>
+        <member name="F:Funq.Owner.Container">
+            <summary>
+            Container should dispose provided instances when it is disposed. This is the 
+            default.
+            </summary>
+        </member>
+        <member name="F:Funq.Owner.External">
+            <summary>
+            Container does not dispose provided instances.
+            </summary>
+        </member>
+        <member name="F:Funq.Owner.Default">
+            <summary>
+            Default owner, which equals <see cref="F:Funq.Owner.Container"/>.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.Support.StaticFileHandler.SetDefaultFile(System.String)">
+            <summary>
+            Keep default file contents in-memory
+            </summary>
+            <param name="defaultFilePath"></param>
+        </member>
+        <member name="M:ServiceStack.CacheAccess.Providers.MemoryCacheClient.CacheAdd(System.String,System.Object,System.DateTime)">
+            <summary>
+            Stores The value with key only if such key doesn't exist at the server yet. 
+            </summary>
+            <param name="key">The key.</param>
+            <param name="value">The value.</param>
+            <param name="expiresAt">The expires at.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.CacheAccess.Providers.MemoryCacheClient.CacheSet(System.String,System.Object,System.DateTime,System.Nullable{System.Int64})">
+            <summary>
+            Adds or replaces the value with key. 
+            </summary>
+            <param name="key">The key.</param>
+            <param name="value">The value.</param>
+            <param name="expiresAt">The expires at.</param>
+            <param name="checkLastModified">The check last modified.</param>
+            <returns>True; if it succeeded</returns>
+        </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions.WriteToResponse(ServiceStack.ServiceHost.IHttpResponse,System.Object,ServiceStack.ServiceHost.ResponseSerializerDelegate,ServiceStack.ServiceHost.IRequestContext,System.Byte[],System.Byte[])">
+            <summary>
+            Writes to response.
+            Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
+            </summary>
+            <param name="response">The response.</param>
+            <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
+            <param name="defaultAction">The default action.</param>
+            <param name="serializerCtx">The serialization context.</param>
+            <param name="bodyPrefix">Add prefix to response body if any</param>
+            <param name="bodySuffix">Add suffix to response body if any</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.ServiceManager.#ctor(Funq.Container,ServiceStack.ServiceHost.ServiceController)">
+            <summary>
+            Inject alternative container and strategy for resolving Service Types
+            </summary>
+        </member>
+        <member name="T:ServiceStack.ServiceHost.ServiceControllerReflection">
+            <summary>
+            Keeping around just to compare how slow it is
+            </summary>
+        </member>
+        <member name="T:ServiceStack.CacheAccess.Providers.ContentSerializer`1">
+            <summary>
+            Encapsulates the behaviour of serving compressed or uncompressed 
+            serialized results for a particular MimeType and CompressionType.
             </summary>
         </member>
         <member name="M:ServiceStack.Configuration.ConfigUtils.GetNullableAppSetting(System.String)">
@@ -1346,234 +1574,6 @@
             <typeparam name="T"></typeparam>
             <param name="textValue">The default value.</param>
             <returns>T.Parse(string) or new T(string) value</returns>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory.ReturnRequestInfo(System.Web.HttpRequest)">
-            <summary>
-            If enabled, just returns the Request Info as it understands
-            </summary>
-            <param name="context"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.GetHtmlHelper">
-            <summary>
-            Ensure the same instance is used for subclasses
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.InitHelpers">
-            <summary>
-            Called before page is executed
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.OnLoad">
-            <summary>
-            Called after page is executed but before it's merged with the 
-            website template if any.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Raw(System.String)">
-            <summary>
-            Don't HTML encode safe output
-            </summary>
-            <param name="content"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Partial(System.String,System.Object)">
-            <summary>
-            Return the output of a different view with the specified name 
-            using the supplied model
-            </summary>
-            <param name="viewName"></param>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.TryResolve``1">
-            <summary>
-            Resolve registered Assemblies
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.AppHost">
-            <summary>
-            The AppHost so you can access configuration and resolve dependencies, etc.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.MarkdownPage">
-            <summary>
-            This precompiled Markdown page with Metadata
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Html">
-            <summary>
-            ASP.NET MVC's HtmlHelper
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.ScopeArgs">
-            <summary>
-            All variables passed to and created by your page. 
-            The Response DTO is stored and accessible via the 'Model' variable.
-             
-            All variables and outputs created are stored in ScopeArgs which is what's available
-            to your website template. The Generated page is stored in the 'Body' variable.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.RenderHtml">
-            <summary>
-            Whether HTML or Markdown output is requested
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Model">
-            <summary>
-            The Response DTO
-            </summary>
-        </member>
-        <member name="M:ServiceStack.CacheAccess.Providers.MemoryCacheClient.CacheAdd(System.String,System.Object,System.DateTime)">
-            <summary>
-            Stores The value with key only if such key doesn't exist at the server yet. 
-            </summary>
-            <param name="key">The key.</param>
-            <param name="value">The value.</param>
-            <param name="expiresAt">The expires at.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.CacheAccess.Providers.MemoryCacheClient.CacheSet(System.String,System.Object,System.DateTime,System.Nullable{System.Int64})">
-            <summary>
-            Adds or replaces the value with key. 
-            </summary>
-            <param name="key">The key.</param>
-            <param name="value">The value.</param>
-            <param name="expiresAt">The expires at.</param>
-            <param name="checkLastModified">The check last modified.</param>
-            <returns>True; if it succeeded</returns>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Support.IndexPageHttpHandler.ProcessRequest(ServiceStack.ServiceHost.IHttpRequest,ServiceStack.ServiceHost.IHttpResponse,System.String)">
-            <summary>
-            Non ASP.NET requests
-            </summary>
-            <param name="request"></param>
-            <param name="response"></param>
-            <param name="operationName"></param>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.Support.IndexPageHttpHandler.ProcessRequest(System.Web.HttpContext)">
-            <summary>
-            ASP.NET requests
-            </summary>
-            <param name="context"></param>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.ServiceOperations.GetBaseTypeWithTheSameName(System.Type)">
-            <summary>
-            Gets the name of the base most type in the heirachy tree with the same.
-            
-            We get an exception when trying to create a schema with multiple types of the same name
-            like when inheriting from a DataContract with the same name.
-            </summary>
-            <param name="type">The type.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.ServiceOperations.LoadOperationTypes(System.Collections.Generic.IEnumerable{System.Type})">
-            <summary>
-            Loads the operation types into a dictionary.
-            If there are multiple operation types with the same name,
-            the operation type that is last will be the one 'discoverable' via the service.
-            </summary>
-            <param name="operationTypes">The operation types.</param>
-        </member>
-        <member name="T:Funq.ReuseScope">
-            <summary>
-            Determines visibility and reuse of instances provided by the container.
-            </summary>
-        </member>
-        <member name="F:Funq.ReuseScope.Hierarchy">
-            <summary>
-            Instances are reused within a container hierarchy. Instances 
-            are created (if necessary) in the container where the registration
-            was performed, and are reused by all descendent containers.
-            </summary>
-        </member>
-        <member name="F:Funq.ReuseScope.Container">
-            <summary>
-            Instances are reused only at the given container. Descendent 
-            containers do not reuse parent container instances and get  
-            a new instance at their level.
-            </summary>
-        </member>
-        <member name="F:Funq.ReuseScope.None">
-            <summary>
-            Each request to resolve the dependency will result in a new 
-            instance being returned.
-            </summary>
-        </member>
-        <member name="F:Funq.ReuseScope.Default">
-            <summary>
-            Default scope, which equals <see cref="F:Funq.ReuseScope.Hierarchy"/>.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.CacheAccess.Providers.FileSystemXmlCacheClient">
-            <summary>
-            Implements a very limited subset of ICacheClient, i.e.
-            
-            	- T Get[T]()
-            	- Set(path, value)
-            	- Remove(path)
-            
-            </summary>
-        </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.ServiceEndpointsMetadataConfig.Create(System.String)">
-            <summary>
-            Changes the links for the servicestack/metadata page
-            </summary>
-            <param name="serviceStackHandlerPrefix"></param>
-            <returns></returns>
-        </member>
-        <member name="T:ServiceStack.ServiceHost.ServiceControllerReflection">
-            <summary>
-            Keeping around just to compare how slow it is
-            </summary>
-        </member>
-        <member name="T:ServiceStack.CacheAccess.Providers.ContentSerializer`1">
-            <summary>
-            Encapsulates the behaviour of serving compressed or uncompressed 
-            serialized results for a particular MimeType and CompressionType.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.HttpRequestExtensions.GetItemOrCookie(ServiceStack.ServiceHost.IHttpRequest,System.String)">
-            <summary>
-            Gets string value from Items[name] then Cookies[name] if exists.
-            Useful when *first* setting the users response cookie in the request filter.
-            To access the value for this initial request you need to set it in Items[].
-            </summary>
-            <returns>string value or null if it doesn't exist</returns>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.HttpRequestExtensions.GetParam(ServiceStack.ServiceHost.IHttpRequest,System.String)">
-            <summary>
-            Gets request paramater string value by looking in the following order:
-            - QueryString[name]
-            - FormData[name]
-            - Cookies[name]
-            - Items[name]
-            </summary>
-            <returns>string value or null if it doesn't exist</returns>
-        </member>
-        <member name="F:Funq.ServiceEntry`2.Factory">
-            <summary>
-            The Func delegate that creates instances of the service.
-            </summary>
-        </member>
-        <member name="F:Funq.ServiceEntry`2.Instance">
-            <summary>
-            The cached service instance if the scope is <see cref="F:Funq.ReuseScope.Hierarchy"/> or 
-            <see cref="F:Funq.ReuseScope.Container"/>.
-            </summary>
-        </member>
-        <member name="F:Funq.ServiceEntry`2.Initializer">
-            <summary>
-            The Func delegate that initializes the object after creation.
-            </summary>
-        </member>
-        <member name="M:Funq.ServiceEntry`2.CloneFor(Funq.Container)">
-            <summary>
-            Clones the service entry assigning the <see cref="T:Funq.Container"/> to the 
-            <paramref name="newContainer"/>. Does not copy the <see cref="F:Funq.ServiceEntry`2.Instance"/>.
-            </summary>
         </member>
     </members>
 </doc>

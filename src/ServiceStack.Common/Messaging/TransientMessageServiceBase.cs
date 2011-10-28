@@ -16,7 +16,7 @@ namespace ServiceStack.Messaging
 
 		public int PoolSize { get; protected set; } //use later
 
-		public abstract IMessageQueueClientFactory MessageFactory { get; }
+		public abstract IMessageFactory MessageFactory { get; }
 
 		protected TransientMessageServiceBase()
 			: this(DefaultRetryCount, null)
@@ -39,7 +39,8 @@ namespace ServiceStack.Messaging
 			RegisterHandler(processMessageFn, null);
 		}
 
-		public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
+		public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn,
+			Action<IMessage<T>, Exception> processExceptionEx)
 		{
 			if (handlerMap.ContainsKey(typeof(T)))
 			{
@@ -68,7 +69,9 @@ namespace ServiceStack.Messaging
 			return sb.ToString();
 		}
 
-		protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(Func<IMessage<T>, object> processMessageFn, Action<Exception> processExceptionEx)
+		protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(
+			Func<IMessage<T>, object> processMessageFn, 
+			Action<IMessage<T>, Exception> processExceptionEx)
 		{
 			return new MessageHandlerFactory<T>(this, processMessageFn, processExceptionEx) {
 				RetryCount = RetryCount,

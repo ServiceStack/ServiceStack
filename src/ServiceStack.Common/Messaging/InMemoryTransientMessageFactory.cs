@@ -8,6 +8,7 @@ namespace ServiceStack.Messaging
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(InMemoryTransientMessageFactory));
 		private readonly InMemoryTransientMessageService  transientMessageService;
+		internal MessageQueueClientFactory MqFactory { get; set; }
 
 		public InMemoryTransientMessageFactory()
 			: this(null)
@@ -17,11 +18,17 @@ namespace ServiceStack.Messaging
 		public InMemoryTransientMessageFactory(InMemoryTransientMessageService transientMessageService)
 		{
 			this.transientMessageService = transientMessageService ?? new InMemoryTransientMessageService();
+			this.MqFactory = new MessageQueueClientFactory();
 		}
 
 		public IMessageProducer CreateMessageProducer()
 		{
 			return new InMemoryMessageProducer(this);
+		}
+
+		public IMessageQueueClient CreateMessageQueueClient()
+		{
+			return new InMemoryMessageQueueClient(MqFactory);
 		}
 
 		public IMessageService CreateMessageService()
@@ -52,7 +59,7 @@ namespace ServiceStack.Messaging
 
 			public void Publish<T>(IMessage<T> message)
 			{
-				this.parent.transientMessageService.Factory.PublishMessage(QueueNames<T>.In, message);
+				this.parent.transientMessageService.MessageQueueFactory.PublishMessage(QueueNames<T>.In, message);
 			}
 
 			public void Dispose()
