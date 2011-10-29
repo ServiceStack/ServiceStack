@@ -13,19 +13,29 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensions));
 
-		public static bool WriteToOutputStream(Stream responseStream, object result)
+		public static bool WriteToOutputStream(IHttpResponse response, object result)
 		{
+			//var responseStream = response.OutputStream;
+
 			var streamWriter = result as IStreamWriter;
 			if (streamWriter != null)
 			{
-				streamWriter.WriteTo(responseStream);
+				streamWriter.WriteTo(response.OutputStream);
 				return true;
 			}
 
 			var stream = result as Stream;
 			if (stream != null)
 			{
-				stream.WriteTo(responseStream);
+				stream.WriteTo(response.OutputStream);
+				return true;
+			}
+
+			var bytes = result as byte[];
+			if (bytes != null)
+			{
+				response.ContentType = ContentType.Binary;
+				response.OutputStream.Write(bytes, 0, bytes.Length);
 				return true;
 			}
 
@@ -120,7 +130,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					}
 				}
 
-				if (WriteToOutputStream(response.OutputStream, result))
+				if (WriteToOutputStream(response, result))
 				{
 					return true;
 				}

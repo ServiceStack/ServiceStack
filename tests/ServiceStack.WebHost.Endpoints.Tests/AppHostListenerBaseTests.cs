@@ -133,5 +133,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(response.Movies.Count, Is.GreaterThan(0));
 		}
 		
+		[Test]
+		public void Calling_not_implemented_method_returns_405()
+		{
+			var client = new JsonServiceClient(ListeningOn);
+			try
+			{
+				var response = client.Put<MoviesZipResponse>("movies.zip", new MoviesZip());
+				Assert.Fail("Should throw 405 excetpion");
+			}
+			catch (WebServiceException ex)
+			{
+				Assert.That(ex.StatusCode, Is.EqualTo(405));
+			} 
+		}
+
+		[Test, Ignore]
+		public void DebugHost()
+		{
+			Thread.Sleep(180 * 1000);
+		}
 	}
 }

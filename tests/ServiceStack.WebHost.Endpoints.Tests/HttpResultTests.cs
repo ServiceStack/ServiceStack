@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -22,8 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			var customText = "<h1>Custom Text</h1>";
 
-			var httpResult = new HttpResult(customText, ContentType.Html)
-			{
+			var httpResult = new HttpResult(customText, ContentType.Html) {
 				Headers =
 				{
 					{"X-Custom","Header"}
@@ -50,8 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			ms.Write(customTextBytes, 0, customTextBytes.Length);
 
 
-			var httpResult = new HttpResult(ms, ContentType.Html)
-			{
+			var httpResult = new HttpResult(ms, ContentType.Html) {
 				Headers =
 				{
 					{"X-Custom","Header"}
@@ -67,23 +66,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(mockResponse.Headers["X-Custom"], Is.EqualTo("Header"));
 		}
 
-        [Test]
-        public void Can_send_ResponseText_test_with_StatusDescription()
-        {
-            var mockResponse = new HttpResponseMock();
+		[Test]
+		public void Can_send_ResponseText_test_with_StatusDescription()
+		{
+			var mockRequest = new MockHttpRequest { ContentType = ContentType.Json };
+			var mockRequestContext = new HttpRequestContext(mockRequest, new object());
+			var mockResponse = new HttpResponseMock();
 
-            var customStatus = "Custom Status Description";
+			var customStatus = "Custom Status Description";
 
-            var httpResult = new HttpResult(System.Net.HttpStatusCode.Accepted, customStatus);
+			var httpResult = new HttpResult(System.Net.HttpStatusCode.Accepted, customStatus) {
+				RequestContext = mockRequestContext
+			};
 
-            var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, ContentType.Html);
+			var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, ContentType.Html);
 
-            Assert.That(reponseWasAutoHandled, Is.True);
+			Assert.That(reponseWasAutoHandled, Is.True);
 
-            var statusDesc = mockResponse.StatusDescription;            
-            Assert.That(mockResponse.StatusCode, Is.EqualTo(System.Net.HttpStatusCode.Accepted));
-            Assert.That(statusDesc, Is.EqualTo(customStatus));
-        }
+			var statusDesc = mockResponse.StatusDescription;
+			Assert.That(mockResponse.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Accepted));
+			Assert.That(statusDesc, Is.EqualTo(customStatus));
+		}
 
 		[Test]
 		public void Can_handle_null_HttpResult_StatusDescription()

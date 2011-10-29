@@ -267,6 +267,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public override object OnGet(MoviesZip request)
 		{
+			return OnPost(request);
+		}
+
+		public override object OnPost(MoviesZip request)
+		{
 			var response = new MoviesZipResponse
 			{
 				Movies = request.Genre.IsNullOrEmpty()
@@ -358,7 +363,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<Movie>("/custom-movies", "POST,PUT")
 				.Add<Movie>("/custom-movies/{Id}")
 				.Add<GetFactorial>("/fact/{ForNumber}")
-				.Add<MoviesZip>("/movies.zip", "GET")
+				.Add<MoviesZip>("/movies.zip")
 			;
 
 			container.Register<IResourceManager>(new ConfigurationResourceManager());

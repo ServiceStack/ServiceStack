@@ -114,6 +114,20 @@ namespace ServiceStack.ServiceInterface.Testing
 			public TResponse Send<TResponse>(object request)
 			{
 				var response = ServiceManager.Execute(request);
+				var httpResult = response as HttpResult;
+				if (httpResult != null)
+				{
+					if (httpResult.StatusCode >= HttpStatusCode.BadRequest)
+					{
+						var webEx = new WebServiceException(httpResult.StatusDescription) {
+							ResponseDto = httpResult.Response,
+							StatusCode = (int)httpResult.StatusCode,
+						};
+						throw webEx;
+					}
+					return (TResponse) httpResult.Response;
+				}
+
 				return (TResponse)response;
 			}
 

@@ -43,6 +43,8 @@ namespace ServiceStack.Common.Web
 
 		public const string ProtoBuf = "application/x-protobuf";
 
+		public const string Binary = "application/octet-stream";
+
 		public static EndpointAttributes GetEndpointAttributes(string contentType)
 		{
 			if (contentType == null)

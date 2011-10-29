@@ -108,7 +108,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 			if (doCompression)
 			{
-				var compressedSerializedDto = ContentSerializer<TResult>.ToCompressedResult(
+				var compressedSerializedDto = ContentSerializer<TResult>.ToCompressedBytes(
 					serializedDto, compressionType);
 
 				CacheSet(cacheClient, cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
