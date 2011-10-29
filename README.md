@@ -262,6 +262,26 @@ Which will change your urls will now look like:
 	http://localhost/servicestack.ashx/xml/syncreply/Hello?Name=World
 
 
+# Contributors 
+A big thanks to GitHub and all of ServiceStack's contributors:
+
+ - [@mythz](https://github.com/mythz) (Demis Bellot)
+ - [@bman654](https://github.com/bman654) (Brandon Wallace)
+ - [@Iristyle](https://github.com/Iristyle)
+ - [@superlogical](https://github.com/superlogical) (Jake Scott)
+ - [@itamar82](https://github.com/itamar82)
+ - [@chadwackerman](https://github.com/itamar82/chadwackerman)
+ - [@derfsplat](https://github.com/derfsplat)
+ - [@JohnACarruthers](https://github.com/JohnACarruthers) (John Carruthers)
+ - [@mvitorino](https://github.com/mvitorino) (Miguel Vitorino)
+ - [@bsiegel](https://github.com/bsiegel) (Brandon Siegel)
+ - [@mdavid](https://github.com/mdavid) (M. David Peterson)
+ - [@lhaussknecht](https://github.com/lhaussknecht) (Louis Hauﬂknecht)
+ - [@grendello](https://github.com/grendello) (Marek Habersack)
+ - [@SteveDunn](https://github.com/SteveDunn) (Steve Dunn)
+ - [@kcherenkov](https://github.com/kcherenkov) (Konstantin Cherenkov)
+ - [@timryan](https://github.com/timryan) (Tim Ryan)
+
 
 ***
 
