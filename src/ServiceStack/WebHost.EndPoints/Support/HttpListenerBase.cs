@@ -216,7 +216,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 				catch (Exception errorEx)
 				{
-					error = string.Format("Error this.ProcessRequest(context)(Excetption): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
+					error = string.Format("Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
 					Log.ErrorFormat(error);
 
 				}
