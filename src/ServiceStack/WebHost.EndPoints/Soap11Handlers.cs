@@ -17,7 +17,21 @@ namespace ServiceStack.WebHost.Endpoints
 	{
 		public Soap11AsyncOneWayHandler() : base(EndpointAttributes.Soap11) { }
 
-		public override void ProcessRequest(HttpContext context)
+
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        {
+            if (httpReq.HttpMethod == HttpMethods.Get)
+            {
+                var wsdl = new Soap11WsdlMetadataHandler();
+                wsdl.Execute(httpReq, httpRes);
+                return;
+            }
+
+            var requestMessage = GetSoap11RequestMessage(httpReq);
+            SendOneWay(requestMessage);
+        }
+
+		/*public override void ProcessRequest(HttpContext context)
 		{
 			if (context.Request.HttpMethod == HttpMethods.Get)
 			{
@@ -28,14 +42,33 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var requestMessage = GetSoap11RequestMessage(context);
 			SendOneWay(requestMessage);
-		}
+		}*/
 	}
 
 	public class Soap11MessageSyncReplyHttpHandler : SoapHandler, IHttpHandler
 	{
 		public Soap11MessageSyncReplyHttpHandler() : base(EndpointAttributes.Soap11) {}
 
-		public new void ProcessRequest(HttpContext context)
+        public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+        {
+            if (httpReq.HttpMethod == HttpMethods.Get)
+            {
+                var wsdl = new Soap11WsdlMetadataHandler();
+                wsdl.Execute(httpReq, httpRes);
+                return;
+            }
+
+            var requestMessage = GetSoap11RequestMessage(httpReq);
+            var responseMessage = Send(requestMessage);
+
+            httpRes.ContentType = GetSoapContentType(httpReq);
+            using (var writer = XmlWriter.Create(httpRes.Output))
+            {
+                responseMessage.WriteMessage(writer);
+            }
+        }
+        /*
+		public override void ProcessRequest(HttpContext context)
 		{
 			if (context.Request.HttpMethod == HttpMethods.Get)
 			{
@@ -52,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				responseMessage.WriteMessage(writer);
 			}
-		}
+		}*/
 	}
 
 }

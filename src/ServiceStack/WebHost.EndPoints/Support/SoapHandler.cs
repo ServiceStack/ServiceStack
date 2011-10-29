@@ -110,6 +110,32 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
+        protected static Message GetSoap12RequestMessage(IHttpRequest rq)
+        {
+            return GetRequestMessage(rq, MessageVersion.Soap12WSAddressingAugust2004);
+        }
+
+        protected static Message GetSoap11RequestMessage(IHttpRequest rq)
+        {
+            return GetRequestMessage(rq, MessageVersion.Soap11WSAddressingAugust2004);
+        }
+
+        protected static Message GetRequestMessage(IHttpRequest rq, MessageVersion msgVersion)
+        {
+            using (var sr = new StreamReader(rq.InputStream))
+            {
+                var requestXml = sr.ReadToEnd();
+
+                var doc = new XmlDocument();
+                doc.LoadXml(requestXml);
+
+                var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+                    msgVersion);
+
+                return msg;
+            }
+        }
+
 		protected Type GetRequestType(Message requestMsg, string xml)
 		{
 			var action = GetAction(requestMsg, xml);
@@ -172,6 +198,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			return null;
 		}
+
+
+        public string GetSoapContentType(IHttpRequest rq)
+        {
+            var requestOperationName = GetOperationName(rq.ContentType); 
+            return requestOperationName != null
+                    ? rq.ContentType.Replace(requestOperationName, requestOperationName + "Response")
+                    : (this.HandlerAttributes == EndpointAttributes.Soap11 ? ContentType.Soap11 : ContentType.Soap12);
+        }
 
 		public string GetSoapContentType(HttpContext context)
 		{

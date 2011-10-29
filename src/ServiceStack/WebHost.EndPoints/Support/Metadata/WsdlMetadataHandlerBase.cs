@@ -11,6 +11,20 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 	{
 		protected abstract WsdlTemplateBase GetWsdlTemplate();
 
+        public void Execute(IHttpRequest httpReq, IHttpResponse httpRes)
+        {
+            httpRes.ContentType = "text/xml";
+
+            var baseUri = httpReq.AbsoluteUri; // .GetParentBaseUrl();
+            var optimizeForFlash = httpReq.QueryString["flash"] != null;
+            var includeAllTypesInAssembly = httpReq.QueryString["includeAllTypes"] != null;
+            var operations = includeAllTypesInAssembly ? EndpointHost.AllServiceOperations : EndpointHost.ServiceOperations;
+
+            var wsdlTemplate = GetWsdlTemplate(operations, baseUri, optimizeForFlash, includeAllTypesInAssembly, httpReq.GetPathUrl());
+
+            httpRes.Write(wsdlTemplate.ToString());
+        }
+
 		public override void Execute(HttpContext context)
 		{
 			EndpointHost.Config.AssertFeatures(Feature.Metadata);
@@ -26,6 +40,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 
 			context.Response.Write(wsdlTemplate.ToString());
 		}
+
+        
 
 		public WsdlTemplateBase GetWsdlTemplate(ServiceOperations operations, string baseUri, bool optimizeForFlash, bool includeAllTypesInAssembly, string rawUrl)
 		{

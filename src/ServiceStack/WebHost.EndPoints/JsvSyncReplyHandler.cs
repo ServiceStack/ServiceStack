@@ -21,8 +21,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static void WriteDebugRequest(IRequestContext requestContext, object dto, IHttpResponse httpRes)
 		{
-			var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
-			httpRes.OutputStream.Write(bytes, 0, bytes.Length);
+            httpRes.Write(dto.SerializeAndFormat());
+			
 		}
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints
 			httpRes.WriteToResponse(response, WriteDebugRequest,
 				new SerializationContext(ContentType.PlainText));
 
-			httpRes.Close();
+			//httpRes.Close();
 		}
 	}
 }

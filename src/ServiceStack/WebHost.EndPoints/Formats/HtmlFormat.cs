@@ -427,9 +427,7 @@ function enc(html) {{
 			  string.Format(TitleFormat, requestName, now),
 			  string.Format(HtmlTitleFormat, requestName, now),
 			  url);
-
-			var utf8Bytes = html.ToUtf8Bytes();
-			httpRes.OutputStream.Write(utf8Bytes, 0, utf8Bytes.Length);
+            httpRes.Write(html);
 		}
 
 	}

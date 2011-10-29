@@ -49,18 +49,16 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
     			foreach (XmlSchema schema in schemaSet.Schemas())
     			{
     				if (xsdNo != i++) continue;
-    				schema.Write(httpRes.OutputStream);
-    				break;
+                    schema.Write(httpRes.Output);
+                    break;
     			}
     			return;
     		}
 
-			using (var sw = new StreamWriter(httpRes.OutputStream))
-			{
-				var writer = new HtmlTextWriter(sw);
-				httpRes.ContentType = "text/html";
-				ProcessOperations(writer, httpReq);
-			}
+			var writer = new HtmlTextWriter(httpRes.Output);
+			httpRes.ContentType = "text/html";
+			ProcessOperations(writer, httpReq);
+            writer.Flush();
     	}
 
     	protected override void RenderOperations(HtmlTextWriter writer, IHttpRequest httpReq, Operations allOperations)

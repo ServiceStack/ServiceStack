@@ -198,8 +198,7 @@ namespace RazorEngine
 
 			var template = ExecuteTemplate(dto, razorPage.PageName, templatePath, httpRes);
 			var html = template.Result;
-			var htmlBytes = html.ToUtf8Bytes();
-			httpRes.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
+            httpRes.Write(html);
 
 			return true;
 		}

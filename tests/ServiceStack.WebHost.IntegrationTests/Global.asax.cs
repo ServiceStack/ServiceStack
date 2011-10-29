@@ -37,7 +37,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 						{
 							res.AddHeader(requestFilter.HeaderName, requestFilter.HeaderValue);
 						}
-						res.Close();
+						//res.Close();
 					}
 
 					var secureRequests = dto as IRequiresSession;

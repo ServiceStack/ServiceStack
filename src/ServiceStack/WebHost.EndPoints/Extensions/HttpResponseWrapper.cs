@@ -72,5 +72,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get;
 			private set;
 		}
-	}
+
+
+        public TextWriter Output
+        {
+            get { return response.Output; }
+        }
+    }
 }

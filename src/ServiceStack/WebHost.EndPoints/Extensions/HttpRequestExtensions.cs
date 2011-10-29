@@ -106,6 +106,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+        
+
 		// http://localhost/ServiceStack.Examples.Host.Web/Public/Public/Soap12/Wsdl => 
 		// http://localhost/ServiceStack.Examples.Host.Web/Public/Soap12/
 		public static string GetParentBaseUrl(this HttpRequest request)

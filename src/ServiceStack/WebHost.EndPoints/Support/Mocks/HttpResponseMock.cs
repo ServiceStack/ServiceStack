@@ -14,6 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 		{
 			this.Headers = new NameValueCollection();
 			this.OutputStream = new MemoryStream();
+            _output = new StreamWriter(this.OutputStream);
 			this.TextWritten = new StringBuilder();
 		}
 
@@ -83,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 
 		public void Write(string text)
 		{
-			this.TextWritten.Append(text);
+			this.Output.Write(text);
 		}
 
 		public void Close()
@@ -96,5 +97,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			get;
 			private set;
 		}
-	}
+
+        private TextWriter _output;
+        public TextWriter Output
+        {
+            get { return _output; }
+        }
+    }
 }
