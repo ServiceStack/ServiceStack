@@ -162,7 +162,7 @@ namespace ServiceStack.Messaging
 					//Otherwise send to our trusty response Queue (inc if replyClient fails)
 					var responseMessage = Message.Create(response);
 					responseMessage.ReplyId = message.Id;
-					mqClient.Notify(mqName, responseMessage.ToBytes());
+					mqClient.Publish(mqName, responseMessage.ToBytes());
 				}
 			}
 			catch (Exception ex)
