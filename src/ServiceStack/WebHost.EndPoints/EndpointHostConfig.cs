@@ -81,6 +81,7 @@ namespace ServiceStack.WebHost.Endpoints
 						DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
 						DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
 						EnableFeatures = Feature.All,
+						WriteErrorsToResponse = true,
 						MarkdownOptions = new MarkdownOptions(),
 						MarkdownBaseType = typeof(MarkdownViewBase),
 						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
@@ -134,6 +135,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
 			this.AllowFileExtensions = instance.AllowFileExtensions;
 			this.EnableFeatures = instance.EnableFeatures;
+			this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
 			this.MarkdownOptions = instance.MarkdownOptions;
 			this.MarkdownBaseType = instance.MarkdownBaseType;
 			this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
@@ -214,9 +216,8 @@ namespace ServiceStack.WebHost.Endpoints
 				handlerPath = handlerPath.Replace("*", string.Empty);
 			}
 
-			instance.ServiceStackHandlerFactoryPath = null != locationPath ? locationPath
-				: string.IsNullOrEmpty(handlerPath)
-					? null : handlerPath;
+			instance.ServiceStackHandlerFactoryPath = locationPath ?? 
+				(string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
 			instance.MetadataRedirectPath = PathUtils.CombinePaths(
 				null != locationPath ? instance.ServiceStackHandlerFactoryPath : handlerPath
@@ -265,6 +266,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public bool UseBclJsonSerializers { get; set; }
 		public Dictionary<string, string> GlobalResponseHeaders { get; set; }
 		public Feature EnableFeatures { get; set; }
+		public bool WriteErrorsToResponse { get; set; }
 
 		public MarkdownOptions MarkdownOptions { get; set; }
 		public Type MarkdownBaseType { get; set; }

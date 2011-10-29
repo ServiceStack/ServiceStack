@@ -267,5 +267,29 @@ namespace ServiceStack.WebHost.Endpoints.Support
 					string.Format("The operation '{0}' does not exist for this service", operationName));
 			}
 		}
+
+		protected void HandleException(string responseContentType, IHttpResponse httpRes, string operationName, Exception ex)
+		{
+			var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+			Log.Error(errorMessage, ex);
+
+			try
+			{
+				//httpRes.WriteToResponse always calls .Close in it's finally statement so 
+				//if there is a problem writing to response, by now it will be closed
+				if (!httpRes.IsClosed)
+				{
+					httpRes.WriteErrorToResponse(responseContentType, operationName, errorMessage, ex);
+				}
+			}
+			catch (Exception writeErrorEx)
+			{
+				//Exception in writing to response should not hide the original exception
+				Log.Info("Failed to write error to response: {0}", writeErrorEx);
+				//rethrow the original exception
+				throw ex;
+			}
+		}
+	
 	}
 }

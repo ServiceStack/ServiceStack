@@ -169,34 +169,33 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 				return false;
 			}
-			catch (Exception ex)
+			catch (Exception originalEx)
 			{
                 //TM: It would be good to handle 'remote end dropped connection' problems here. Arguably they should at least be suppressible via configuration
 
-                //default value 'true' to be consistent with the way SS worked before this change
-                bool writeErrorToResponse = ServiceStack.Configuration.ConfigUtils.GetAppSetting<bool>(ServiceStack.Configuration.Keys.WriteErrorsToResponse, true);
+				//DB: Using standard ServiceStack configuration method
+				if (!EndpointHost.Config.WriteErrorsToResponse) throw;
+                
+                var errorMessage = string.Format(
+					"Error occured while Processing Request: [{0}] {1}", originalEx.GetType().Name, originalEx.Message);
 
-                if(!writeErrorToResponse) {
-                    throw;
-                }
-                var errorMessage = string.Format("Error occured while Processing Request: [{0}] {1}",
-                    ex.GetType().Name, ex.Message);
-                Log.Error(errorMessage, ex);
+				Log.Error(errorMessage, originalEx);
 
                 var operationName = result != null
                     ? result.GetType().Name.Replace("Response", "")
                     : "OperationName";
 
-                try {
-                    if(!response.IsClosed) {
-                        response.WriteErrorToResponse(defaultContentType, operationName, errorMessage, ex);
+                try 
+				{
+                    if (!response.IsClosed) {
+                        response.WriteErrorToResponse(defaultContentType, operationName, errorMessage, originalEx);
                     }
                 }
-                catch(Exception WriteErrorEx) {
+                catch (Exception writeErrorEx) 
+				{
                     //Exception in writing to response should not hide the original exception
-                    Log.Info("Failed to write error to response: {0}", WriteErrorEx);
-                    //rethrow the original exception
-                    throw ex;
+                    Log.Info("Failed to write error to response: {0}", writeErrorEx);
+                    throw originalEx;
                 }
                 return true;
             }

@@ -73,31 +73,11 @@ namespace ServiceStack.WebHost.Endpoints
                 else
                     httpRes.WriteToResponse(httpReq, response);
             }
-            catch(Exception ex) {
-                bool writeErrorToResponse = ServiceStack.Configuration.ConfigUtils.GetAppSetting<bool>(ServiceStack.Configuration.Keys.WriteErrorsToResponse, true);
-                if(!writeErrorToResponse) {
-                    throw;
-                }
-
-                var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
-                Log.Error(errorMessage, ex);
-
-                try {
-                    //httpRes.WriteToResponse always calls .Close in it's finally statement so if there is a problem writing to response, by now it will be closed
-                    if(!httpRes.IsClosed) {
-
-
-                        var attrEndpointType = ContentType.GetEndpointAttributes(responseContentType);
-                        httpRes.WriteErrorToResponse(attrEndpointType, operationName, errorMessage, ex);
-                    }
-                }
-                catch(Exception WriteErrorEx) {
-                    //Exception in writing to response should not hide the original exception
-                    Log.Info("Failed to write error to response: {0}", WriteErrorEx);
-                    //rethrow the original exception
-                    throw ex;
-                }
-            }
+            catch (Exception ex) 
+			{
+				if (!EndpointHost.Config.WriteErrorsToResponse) throw;
+				HandleException(responseContentType, httpRes, operationName, ex);
+			}
 		}
 
 		public override object GetResponse(IHttpRequest httpReq, object request)

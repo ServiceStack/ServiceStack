@@ -86,33 +86,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestCase(false)]
         [TestCase(true)]
         public void TestClientDropsConnection( bool writeErrorsToResponse ) {
-            NameValueCollection settings = System.Configuration.ConfigurationManager.AppSettings;
-            settings["ServiceStack.WriteErrorsToResponse"] = writeErrorsToResponse.ToString();
+			EndpointHost.Config.WriteErrorsToResponse = writeErrorsToResponse;
 
-            int SleepMs = 1000;
-            string url = string.Format("{0}/test/timed?Milliseconds={1}", ListeningOn,SleepMs);
-            HttpWebRequest req = WebRequest.Create(url) as HttpWebRequest;
+            var SleepMs = 1000;
+            var url = string.Format("{0}/test/timed?Milliseconds={1}", ListeningOn,SleepMs);
+            var req = WebRequest.Create(url) as HttpWebRequest;
             //Set a short timeout so we'll give up before the request is processed
             req.Timeout = 100;
             try {
-                HttpWebResponse res = (HttpWebResponse)req.GetResponse();
+                var res = (HttpWebResponse)req.GetResponse();
             }
-            catch(Exception ex) {
-                if( ex.Message != "The operation has timed out" ) {
+            catch (Exception ex) 
+			{
+                if (ex.Message != "The operation has timed out") 
                     throw;
-                }
 
-                //Do nothing - we are expecting a time out
+				//Do nothing - we are expecting a time out
             }
             
             //Sleep to give the appHost the chance to log the problems so we can investigate
-            System.Threading.Thread.Sleep(SleepMs*2);
+            Thread.Sleep(SleepMs*2);
 
             foreach(var pair in TestLogger.GetLogs()) {
                 Console.WriteLine("TEST: {0}: {1}", pair.Key, pair.Value);
             }
 
-            if(!writeErrorsToResponse) {
+            if (!writeErrorsToResponse) {
                 //Arguably there should be only one Error reported, but we get two. Lets check them both
 
                 //We should get only one log entry: An ERROR from ProcessRequest
@@ -121,7 +120,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 StringAssert.Contains("Error in HttpListenerResponseWrapper", TestLogger.GetLogs()[0].Value, "Checking if the error is from HttpListenerResponseWrapper");
                 StringAssert.Contains("ProcessRequest", TestLogger.GetLogs()[1].Value, "Checking if the error is from ProcessRequest");
-            } else {
+            } 
+			else 
+			{
                 //There is quite a lot of logging going on here and arguably there should be only one Error reported.
             }
 
