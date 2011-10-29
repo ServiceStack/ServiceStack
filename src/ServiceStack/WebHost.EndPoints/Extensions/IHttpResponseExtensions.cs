@@ -171,17 +171,35 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				var errorMessage = string.Format("Error occured while Processing Request: [{0}] {1}", 
-					ex.GetType().Name, ex.Message);
-				Log.Error(errorMessage, ex);
+                //TM: It would be good to handle 'remote end dropped connection' problems here. Arguably they should at least be suppressible via configuration
 
-				var operationName = result != null
-					? result.GetType().Name.Replace("Response", "")
-					: "OperationName";
+                //default value 'true' to be consistent with the way SS worked before this change
+                bool writeErrorToResponse = ServiceStack.Configuration.ConfigUtils.GetAppSetting<bool>(ServiceStack.Configuration.Keys.WriteErrorsToResponse, true);
 
-				response.WriteErrorToResponse(defaultContentType, operationName, errorMessage, ex);
-				return true;
-			}
+                if(!writeErrorToResponse) {
+                    throw;
+                }
+                var errorMessage = string.Format("Error occured while Processing Request: [{0}] {1}",
+                    ex.GetType().Name, ex.Message);
+                Log.Error(errorMessage, ex);
+
+                var operationName = result != null
+                    ? result.GetType().Name.Replace("Response", "")
+                    : "OperationName";
+
+                try {
+                    if(!response.IsClosed) {
+                        response.WriteErrorToResponse(defaultContentType, operationName, errorMessage, ex);
+                    }
+                }
+                catch(Exception WriteErrorEx) {
+                    //Exception in writing to response should not hide the original exception
+                    Log.Info("Failed to write error to response: {0}", WriteErrorEx);
+                    //rethrow the original exception
+                    throw ex;
+                }
+                return true;
+            }
 			finally
 			{
 				response.Close();
