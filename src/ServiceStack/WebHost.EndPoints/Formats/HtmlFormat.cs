@@ -286,12 +286,12 @@ var doc = document, win = window,
 $.each = function(arr, fn) {{ $each.call(arr, fn); }};
 
 var splitCase = function(t) {{ return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1'); }},
-    uniqueKeys = function(m){{ var h={{}}; for (var i=0,len=m.length; i<len; i++) for (var k in m[i]) h[k] = k; return h; }},
-    keys = function(o){{ var a=[]; for (var k in o) a.push(k); return a; }}
+    uniqueKeys = function(m){{ var h={{}}; for (var i=0,len=m.length; i<len; i++) for (var k in m[i]) if (show(k)) h[k] = k; return h; }},
+    keys = function(o){{ var a=[]; for (var k in o) if (show(k)) a.push(k); return a; }}
 var tbls = [];
 
 function val(m) {{
-  if (typeof m == 'undefined') return '';
+  if (m == null) return '';
   if (typeof m == 'number') return num(m);
   if (typeof m == 'string') return str(m);
   if (typeof m == 'boolean') return m ? 'true' : 'false';
@@ -304,9 +304,10 @@ function str(m) {{
 function date(s) {{ return new Date(parseFloat(/Date\(([^)]+)\)/.exec(s)[1])); }}
 function pad(d) {{ return d < 10 ? '0'+d : d; }}
 function dmft(d) {{ return d.getFullYear() + '/' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()); }}
+function show(k) {{ return typeof k != 'string' || k.substr(0,2) != '__'; }}
 function obj(m) {{
   var sb = '<dl>';
-  for (var k in m) sb += '<dt class=""ib"">' + splitCase(k) + '</dt><dd>' + val(m[k]) + '</dd>';
+  for (var k in m) if (show(k)) sb += '<dt class=""ib"">' + splitCase(k) + '</dt><dd>' + val(m[k]) + '</dd>';
   sb += '</dl>';
   return sb;
 }}
@@ -326,7 +327,7 @@ function makeRows(h,m) {{
   for (var r=0,len=m.length; r<len; r++) {{
     sb += '<tr>';
     var row = m[r];
-    for (var k in h) sb += '<td>' + val(row[k]) + '</td>';
+    for (var k in h) if (show(k)) sb += '<td>' + val(row[k]) + '</td>';
     sb += '</tr>';
   }}  
   return sb;
