@@ -17,11 +17,13 @@ namespace ServiceStack.Messaging
 		string ReplyTo { get; set; }
 
 		MessageError Error { get; set; }
+
+		object Body { get; set; }
 	}
 
 	public interface IMessage<T>
 		: IMessage
 	{
-		T Body { get; }
+		T GetBody();
 	}
 }

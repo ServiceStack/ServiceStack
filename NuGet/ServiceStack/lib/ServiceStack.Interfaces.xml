@@ -234,6 +234,13 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="T:ServiceStack.Logging.Support.Logging.TestLogger">
+            <summary>
+            Tests logger which  stores all log messages in a member list which can be examined later
+            
+            Made public so its testable
+            </summary>
+        </member>
         <member name="T:ServiceStack.Logging.ILog">
             <summary>
             Logs a message in a running application
@@ -346,6 +353,38 @@
             <value>
             	<c>true</c> if this instance is debug enabled; otherwise, <c>false</c>.
             </value>
+        </member>
+        <member name="M:ServiceStack.Logging.Support.Logging.TestLogger.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.Support.Logging.TestLogger"/> class.
+            </summary>
+            <param name="type">The type.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.Support.Logging.TestLogger.#ctor(System.Type)">
+            <summary>
+            Initializes a new instance of the <see cref="T:ServiceStack.Logging.Support.Logging.TestLogger"/> class.
+            </summary>
+            <param name="type">The type.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.Support.Logging.TestLogger.Log(ServiceStack.Logging.Support.Logging.TestLogger.Levels,System.Object,System.Exception)">
+            <summary>
+            Logs the specified message.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="exception">The exception.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.Support.Logging.TestLogger.LogFormat(ServiceStack.Logging.Support.Logging.TestLogger.Levels,System.Object,System.Object[])">
+            <summary>
+            Logs the format.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.Support.Logging.TestLogger.Log(ServiceStack.Logging.Support.Logging.TestLogger.Levels,System.Object)">
+            <summary>
+            Logs the specified message.
+            </summary>
+            <param name="message">The message.</param>
         </member>
         <member name="T:ServiceStack.Translators.TranslateAttribute">
             <summary>
@@ -753,6 +792,11 @@
         <member name="T:ServiceStack.Redis.Pipeline.IRedisPipeline">
             <summary>
             Interface to redis pipeline
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Logging.Support.Logging.TestLogFactory">
+            <summary>
+            Creates a test Logger, that stores all log messages in a member list
             </summary>
         </member>
         <member name="T:ServiceStack.CacheAccess.IMemcachedClient">

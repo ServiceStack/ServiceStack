@@ -43,6 +43,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.HttpMethod; }
 		}
 
+		public string UserAgent
+		{
+			get { return request.UserAgent; }
+		}
+
 		private Dictionary<string, object> items;
 		public Dictionary<string, object> Items
 		{

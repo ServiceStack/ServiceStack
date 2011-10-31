@@ -32,6 +32,8 @@ namespace ServiceStack.ServiceHost.Tests
 			public string OperationName { get; private set; }
 			public string ContentType { get; private set; }
 			public string HttpMethod { get; private set; }
+			public string UserAgent { get; set; }
+
 			public IDictionary<string, Cookie> Cookies { get; private set; }
 			public string ResponseContentType { get; set; }
 			public Dictionary<string, object> Items { get; private set; }

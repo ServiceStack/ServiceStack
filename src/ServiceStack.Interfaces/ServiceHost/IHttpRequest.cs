@@ -14,6 +14,8 @@ namespace ServiceStack.ServiceHost
 
 		string HttpMethod { get; }
 
+		string UserAgent { get; }
+
 		IDictionary<string, Cookie> Cookies { get; }
 
 		string ResponseContentType { get; set; }

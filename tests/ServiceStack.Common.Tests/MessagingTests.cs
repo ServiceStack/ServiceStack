@@ -17,11 +17,22 @@ namespace ServiceStack.Common.Tests
 		public void Can_serialize_IMessage_into_typed_Message()
 		{
 			var dto = new Incr { Value = 1 };
-			var iMsg = Message.Create(dto);
-			var json = ((object) iMsg).ToJson();
+			IMessage iMsg = Message.Create(dto);
+			var json = iMsg.ToJson();
 			var typedMessage = json.FromJson<Message<Incr>>();
 
-			Assert.That(typedMessage.Body.Value, Is.EqualTo(dto.Value));
+			Assert.That(typedMessage.GetBody().Value, Is.EqualTo(dto.Value));
+		}
+
+		[Test]
+		public void Can_serialize_object_IMessage_into_typed_Message()
+		{
+			var dto = new Incr { Value = 1 };
+			var iMsg = Message.Create(dto);
+			var json = ((object)iMsg).ToJson();
+			var typedMessage = json.FromJson<Message<Incr>>();
+
+			Assert.That(typedMessage.GetBody().Value, Is.EqualTo(dto.Value));
 		}
 
 		[Test]
@@ -32,7 +43,7 @@ namespace ServiceStack.Common.Tests
 			var bytes = iMsg.ToBytes();
 			var typedMessage = bytes.ToMessage<Incr>();
 
-			Assert.That(typedMessage.Body.Value, Is.EqualTo(dto.Value));
+			Assert.That(typedMessage.GetBody().Value, Is.EqualTo(dto.Value));
 		}
 
 	}

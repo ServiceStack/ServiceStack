@@ -85,7 +85,7 @@ namespace ServiceStack.Messaging.Tests
 						.ToMessage<AlwaysFail>();
 
 					Assert.That(dlqMessage, Is.Not.Null);
-					Assert.That(dlqMessage.Body.Name, Is.EqualTo(request.Name));
+					Assert.That(dlqMessage.GetBody().Name, Is.EqualTo(request.Name));
 				}
 			}
 		}
@@ -114,7 +114,7 @@ namespace ServiceStack.Messaging.Tests
 						.ToMessage<UnRetryableFail>();
 
 					Assert.That(dlqMessage, Is.Not.Null);
-					Assert.That(dlqMessage.Body.Name, Is.EqualTo(request.Name));
+					Assert.That(dlqMessage.GetBody().Name, Is.EqualTo(request.Name));
 				}
 			}
 		}

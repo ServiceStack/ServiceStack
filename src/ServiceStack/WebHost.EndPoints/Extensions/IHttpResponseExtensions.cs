@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -228,55 +229,63 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public static void WriteErrorToResponse(this IHttpResponse response, string contentType,
 			string operationName, string errorMessage, Exception ex)
 		{
+			WriteErrorToResponse(response, contentType, operationName, errorMessage, ex, 
+				HttpStatusCode.InternalServerError);
+		}
+
+		public static void WriteErrorToResponse(this IHttpResponse response, string contentType,
+			string operationName, string errorMessage, Exception ex, HttpStatusCode statusCode)
+		{
 			switch (contentType)
 			{
 				case ContentType.Xml:
-					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 				case ContentType.Json:
-					WriteJsonErrorToResponse(response, operationName, errorMessage, ex);
+					WriteJsonErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 				case ContentType.Jsv:
-					WriteJsvErrorToResponse(response, operationName, errorMessage, ex);
+					WriteJsvErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 				default:
-					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 			}
 		}
 
 		public static void WriteErrorToResponse(this IHttpResponse response,
-			EndpointAttributes contentType, string operationName, string errorMessage, Exception ex)
+			EndpointAttributes contentType, string operationName, string errorMessage,
+			Exception ex, HttpStatusCode statusCode)
 		{
 			switch (contentType)
 			{
 				case EndpointAttributes.Xml:
-					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 
 				case EndpointAttributes.Json:
-					WriteJsonErrorToResponse(response, operationName, errorMessage, ex);
+					WriteJsonErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 
 				case EndpointAttributes.Jsv:
-					WriteJsvErrorToResponse(response, operationName, errorMessage, ex);
+					WriteJsvErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 
 				default:
-					WriteXmlErrorToResponse(response, operationName, errorMessage, ex);
+					WriteXmlErrorToResponse(response, operationName, errorMessage, ex, statusCode);
 					break;
 			}
 		}
 
-		private static void WriteErrorTextToResponse(this IHttpResponse response, StringBuilder sb, string contentType)
+		private static void WriteErrorTextToResponse(this IHttpResponse response, StringBuilder sb,
+			string contentType, HttpStatusCode statusCode)
 		{
-			response.StatusCode = 500;
+			response.StatusCode = (int)statusCode;
 			WriteTextToResponse(response, sb.ToString(), contentType);
 			response.Close();
 		}
 
-		private static void WriteXmlErrorToResponse(this IHttpResponse response,
-			string operationName, string errorMessage, Exception ex)
+		private static void WriteXmlErrorToResponse(this IHttpResponse response, string operationName, string errorMessage, Exception ex, HttpStatusCode statusCode)
 		{
 			var sb = new StringBuilder();
 			sb.AppendFormat("<{0}Response xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"{1}\">\n",
@@ -288,11 +297,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("</ResponseStatus>");
 			sb.AppendFormat("</{0}Response>", operationName);
 
-			response.WriteErrorTextToResponse(sb, ContentType.Xml);
+			response.WriteErrorTextToResponse(sb, ContentType.Xml, statusCode);
 		}
 
-		private static void WriteJsonErrorToResponse(this IHttpResponse response,
-			string operationName, string errorMessage, Exception ex)
+		private static void WriteJsonErrorToResponse(this IHttpResponse response, string operationName, string errorMessage, Exception ex, HttpStatusCode statusCode)
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("{");
@@ -303,11 +311,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("}");
 			sb.AppendLine("}");
 
-			response.WriteErrorTextToResponse(sb, ContentType.Json);
+			response.WriteErrorTextToResponse(sb, ContentType.Json, statusCode);
 		}
 
-		private static void WriteJsvErrorToResponse(this IHttpResponse response,
-			string operationName, string errorMessage, Exception ex)
+		private static void WriteJsvErrorToResponse(this IHttpResponse response, string operationName, string errorMessage, Exception ex, HttpStatusCode statusCode)
 		{
 			var sb = new StringBuilder();
 			sb.Append("{");
@@ -318,7 +325,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.Append("}");
 			sb.Append("}");
 
-			response.WriteErrorTextToResponse(sb, ContentType.Jsv);
+			response.WriteErrorTextToResponse(sb, ContentType.Jsv, statusCode);
 		}
 
 	}

@@ -1290,5 +1290,10 @@
             can be mocked and used by different 'Redis Client Managers' 
             </summary>
         </member>
+        <member name="P:ServiceStack.Redis.Messaging.RedisMqHost.ReplyClientFactory">
+            <summary>
+            Inject your own Reply Client Factory to handle custom Message.ReplyTo urls.
+            </summary>
+        </member>
     </members>
 </doc>

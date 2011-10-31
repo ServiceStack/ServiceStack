@@ -4,6 +4,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -292,6 +293,16 @@ namespace ServiceStack.ServiceInterface
 			return new HttpResult(response) {
 				TemplateName = viewName
 			};
+		}
+
+		/// <summary>
+		/// The Deferred execution of ExecuteAsync(request)'s. 
+		/// This request is typically invoked from a messaging queue service host.
+		/// </summary>
+		/// <param name="request"></param>
+		public virtual object Execute(IMessage<TRequest> request)
+		{
+			return Run(request.GetBody());
 		}
 	}
 

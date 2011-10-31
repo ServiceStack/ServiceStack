@@ -51,7 +51,7 @@ namespace ServiceStack.ServiceInterface
 		/// <param name="request"></param>
 		public virtual object ExecuteAsync(IMessage<TRequest> request)
 		{
-			return Run(request.Body);
+			return Run(request.GetBody());
 		}
 
 	}

@@ -66,11 +66,16 @@ namespace ServiceStack.Messaging
 
 		public MessageError Error { get; set; }
 
-		public T Body { get; set; }
+		public object Body { get; set; }
 
 		public static IMessage Create(object oBody)
 		{
 			return new Message<T>((T) oBody);
+		}
+
+		public T GetBody()
+		{
+			return (T)Body;
 		}
 
 		public override string ToString()

@@ -162,6 +162,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+		public string UserAgent
+		{
+			get { return request.UserAgent; }
+		}
+
 		public NameValueCollection Headers
 		{
 			get { return request.Headers; }
