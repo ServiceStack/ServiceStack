@@ -1,4 +1,4 @@
-[Join the new google group](http://groups.google.com/group/servicestack) or
+Join the new google group](http://groups.google.com/group/servicestack) or
 follow [@demisbellot](http://twitter.com/demisbellot) and [@ServiceStack](http://twitter.com/servicestack)
 for twitter updates.
 
@@ -281,6 +281,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [SteveDunn](https://github.com/SteveDunn) (Steve Dunn)
  - [kcherenkov](https://github.com/kcherenkov) (Konstantin Cherenkov)
  - [timryan](https://github.com/timryan) (Tim Ryan)
+ - [letssellsomebananas](https://github.com/letssellsomebananas) (Tymek Majewski)
 
 
 ***
