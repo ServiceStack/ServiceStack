@@ -70,5 +70,32 @@ namespace ServiceStack.Messaging.Tests
 			Assert.That(fromMessageString, Is.Not.Null);
 			Assert.That(fromMessageString.Id, Is.EqualTo(message.Id));
 		}
+
+        [Test]
+        public void Does_serialize_to_correct_MQ_name()
+        {
+            var message = new Message<Greet>(new Greet { Name = "Test" }) {};
+            var message2 = new Message<Greet> { Body = new Greet { Name = "Test" }, };
+
+            const string expected = "mq:Greet.inq";
+
+            Assert.That(QueueNames<Greet>.In, Is.EqualTo(expected));
+            Assert.That(message.ToInQueueName(), Is.EqualTo(expected));
+            Assert.That(((IMessage<Greet>)message).ToInQueueName(), Is.EqualTo(expected));
+
+            Assert.That(message2.ToInQueueName(), Is.EqualTo(expected));
+            Assert.That(((IMessage<Greet>)message2).ToInQueueName(), Is.EqualTo(expected));
+            Assert.That(((IMessage<Greet>)(object)message2).ToInQueueName(), Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void Cast_Tests()
+        {
+            var message = new Message<Greet>(new Greet { Name = "Test" }) { };
+
+            Assert.That(message is IMessage<Greet>, Is.True);
+            Assert.That(typeof(IMessage<Greet>).IsAssignableFrom(message.GetType()), Is.True);
+            Assert.That(message.GetType().IsAssignableFrom(typeof(IMessage<Greet>)), Is.False);
+        }
 	}
 }
