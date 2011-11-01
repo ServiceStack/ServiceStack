@@ -143,26 +143,26 @@ namespace ServiceStack.Messaging
 				else
 				{
 					//If there is a response send it to the typed response OutQ
-					var mqName = message.ReplyTo ?? new QueueNames(response.GetType()).In;
-					var replyClient = ReplyClientFactory(mqName);
+					var mqReplyTo = message.ReplyTo ?? new QueueNames(response.GetType()).In;
+					var replyClient = ReplyClientFactory(mqReplyTo);
 					if (replyClient != null)
 					{
 						try
 						{
-							replyClient.SendOneWay(response);
+							replyClient.SendOneWay(mqReplyTo, response);
 							return;
 						}
 						catch (Exception ex)
 						{
 							Log.Error("Could not send response to '{0}' with client '{1}'"
-								.Fmt(mqName, replyClient.GetType().Name), ex);
+								.Fmt(mqReplyTo, replyClient.GetType().Name), ex);
 						}
 					}
 
 					//Otherwise send to our trusty response Queue (inc if replyClient fails)
 					var responseMessage = Message.Create(response);
 					responseMessage.ReplyId = message.Id;
-					mqClient.Publish(mqName, responseMessage.ToBytes());
+					mqClient.Publish(mqReplyTo, responseMessage.ToBytes());
 				}
 			}
 			catch (Exception ex)

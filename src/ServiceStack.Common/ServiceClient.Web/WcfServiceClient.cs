@@ -130,7 +130,12 @@ namespace ServiceStack.ServiceClient.Web
 			SendOneWay(request, request.GetType().Name);
 		}
 
-		public void SendOneWay(object request, string action)
+	    public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+	    {
+            SendOneWay(Message.CreateMessage(MessageVersion, relativeOrAbsoluteUrl, request));
+        }
+
+	    public void SendOneWay(object request, string action)
 		{
 			SendOneWay(Message.CreateMessage(MessageVersion, action, request));
 		}

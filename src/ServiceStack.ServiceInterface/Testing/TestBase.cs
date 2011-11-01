@@ -111,7 +111,12 @@ namespace ServiceStack.ServiceInterface.Testing
 				ServiceManager.Execute(request);
 			}
 
-			public TResponse Send<TResponse>(object request)
+		    public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+		    {
+                ServiceManager.Execute(request);
+            }
+
+		    public TResponse Send<TResponse>(object request)
 			{
 				var response = ServiceManager.Execute(request);
 				var httpResult = response as HttpResult;

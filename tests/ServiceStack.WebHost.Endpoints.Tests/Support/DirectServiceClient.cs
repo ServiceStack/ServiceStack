@@ -25,7 +25,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			ServiceManager.Execute(request);
 		}
 
-		private bool ApplyRequestFilters(object request)
+	    public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+	    {
+            ServiceManager.Execute(request);
+        }
+
+	    private bool ApplyRequestFilters(object request)
 		{
 			if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
 			{

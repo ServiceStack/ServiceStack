@@ -81,6 +81,8 @@ namespace ServiceStack.ServiceClient.Web
 
 		public string HttpMethod { get; set; }
 
+        public IWebProxy Proxy { get; set; }
+
 		private ICredentials credentials;
 		public ICredentials Credentials
 		{
@@ -222,22 +224,15 @@ namespace ServiceStack.ServiceClient.Web
 			var client = (HttpWebRequest)WebRequest.Create(requestUri);
 			try
 			{
-				if (this.Timeout.HasValue)
-				{
-					client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
-				}
-
 				client.Accept = ContentType;
 				client.Method = httpMethod;
-				if (this.credentials != null)
-				{
-					client.Credentials = this.credentials;
-				}
+
+                if (Proxy != null) client.Proxy = Proxy;
+                if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
+                if (this.credentials != null) client.Credentials = this.credentials;
 
 				if (HttpWebRequestFilter != null)
-				{
-					HttpWebRequestFilter(client);
-				}
+                    HttpWebRequestFilter(client);
 
 				if (httpMethod != Web.HttpMethod.Get
 					&& httpMethod != Web.HttpMethod.Delete)
@@ -265,13 +260,27 @@ namespace ServiceStack.ServiceClient.Web
 					 : this.BaseUri + relativeOrAbsoluteUrl;
 		}
 
+        private byte[] DownloadBytes(string requestUri, object request)
+        {
+            var webRequest = SendRequest(requestUri, request);
+            using (var response = webRequest.GetResponse())
+            using (var stream = response.GetResponseStream())
+                return stream.ReadFully();
+        }
+
 		public void SendOneWay(object request)
 		{
 			var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
-			SendRequest(requestUri, request);
+            DownloadBytes(requestUri, request);
 		}
 
-		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+	    public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+	    {
+            var requestUri = GetUrl(relativeOrAbsoluteUrl);
+            DownloadBytes(requestUri, request);
+        }
+
+	    public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
 			var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
 			asyncClient.SendAsync(Web.HttpMethod.Post, requestUri, request, onSuccess, onError);
@@ -350,6 +359,7 @@ namespace ServiceStack.ServiceClient.Web
 			var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
 			webRequest.Method = Web.HttpMethod.Post;
 			webRequest.Accept = ContentType;
+            if (Proxy != null) webRequest.Proxy = Proxy;
 
 			try
 			{
