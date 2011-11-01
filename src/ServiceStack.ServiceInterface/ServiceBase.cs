@@ -217,9 +217,9 @@ namespace ServiceStack.ServiceInterface
 				return httpError;
 			}
 
-			var statusCode = ex is NotImplementedException
-				? HttpStatusCode.MethodNotAllowed
-				: HttpStatusCode.InternalServerError;
+			var statusCode = HttpStatusCode.InternalServerError;
+			if (ex is NotImplementedException) statusCode = HttpStatusCode.MethodNotAllowed;
+			else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
 
 			return new HttpResult(responseDto, null, statusCode);
 		}
