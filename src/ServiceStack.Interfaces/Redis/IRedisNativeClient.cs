@@ -91,8 +91,10 @@ namespace ServiceStack.Redis
 
 		//Redis Sorted Set operations
 		int ZAdd(string setId, double score, byte[] value);
+		int ZAdd(string setId, long score, byte[] value);
 		int ZRem(string setId, byte[] value);
 		double ZIncrBy(string setId, double incrBy, byte[] value);
+		double ZIncrBy(string setId, long incrBy, byte[] value);
 		int ZRank(string setId, byte[] value);
 		int ZRevRank(string setId, byte[] value);
 		byte[][] ZRange(string setId, int min, int max);
@@ -100,11 +102,16 @@ namespace ServiceStack.Redis
 		byte[][] ZRevRange(string setId, int min, int max);
 		byte[][] ZRevRangeWithScores(string setId, int min, int max);
 		byte[][] ZRangeByScore(string setId, double min, double max, int? skip, int? take);
+		byte[][] ZRangeByScore(string setId, long min, long max, int? skip, int? take);
 		byte[][] ZRangeByScoreWithScores(string setId, double min, double max, int? skip, int? take);
+		byte[][] ZRangeByScoreWithScores(string setId, long min, long max, int? skip, int? take);
 		byte[][] ZRevRangeByScore(string setId, double min, double max, int? skip, int? take);
+		byte[][] ZRevRangeByScore(string setId, long min, long max, int? skip, int? take);
 		byte[][] ZRevRangeByScoreWithScores(string setId, double min, double max, int? skip, int? take);
+		byte[][] ZRevRangeByScoreWithScores(string setId, long min, long max, int? skip, int? take);
 		int ZRemRangeByRank(string setId, int min, int max);
 		int ZRemRangeByScore(string setId, double fromScore, double toScore);
+		int ZRemRangeByScore(string setId, long fromScore, long toScore);
 		int ZCard(string setId);
 		double ZScore(string setId, byte[] value);
 		int ZUnionStore(string intoSetId, params string[] setIds);
