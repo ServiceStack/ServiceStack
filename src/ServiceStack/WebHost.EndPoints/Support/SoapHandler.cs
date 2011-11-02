@@ -9,6 +9,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
@@ -33,6 +34,16 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			return ExecuteMessage(requestMsg, endpointAttributes);
 		}
+
+        public Message EmptyResponse(Message requestMsg, Type requestType)
+        {
+            var responseType = AssemblyUtils.FindType(requestType.FullName + "Response");
+            var response = ReflectionExtensions.CreateInstance(responseType ?? typeof(object));
+
+            return requestMsg.Headers.Action == null
+                ? Message.CreateMessage(requestMsg.Version, null, response)
+                : Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
+        }
 
 		protected Message ExecuteMessage(Message requestMsg, EndpointAttributes endpointAttributes)
 		{
@@ -66,11 +77,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						: null;
 				}
 
-				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return null;
+				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
+                    return EmptyResponse(requestMsg, requestType);
 
 				var response = ExecuteService(request, endpointAttributes, null);
 
-				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return null;
+				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
+                    return EmptyResponse(requestMsg, requestType);
 
 				return requestMsg.Headers.Action == null
 					? Message.CreateMessage(requestMsg.Version, null, response)
