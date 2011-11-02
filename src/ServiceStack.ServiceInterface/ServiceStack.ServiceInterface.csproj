@@ -99,17 +99,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncServiceBase.cs" />
+    <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="IServiceBase.cs" />
+    <Compile Include="OAuth\IOAuthSession.cs" />
+    <Compile Include="OAuth\OAuthAuthorizer.cs" />
+    <Compile Include="OAuth\OAuthConfig.cs" />
+    <Compile Include="OAuth\OAuthService.cs" />
+    <Compile Include="OAuth\OAuthUserSession.cs" />
+    <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />
     <Compile Include="ServiceBase.cs" />
     <Compile Include="ServiceModel\ResponseStatusTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceResponseException.cs" />
-    <Compile Include="Session\CachedUserSessionManager.cs" />
-    <Compile Include="Session\IUserSessionManager.cs" />
-    <Compile Include="Session\UserClientSession.cs" />
-    <Compile Include="Session\PublicAndPrivateClientSessions.cs" />
-    <Compile Include="Session\UserSession.cs" />
+    <Compile Include="Deprecated.Session\CachedUserSessionManager.cs" />
+    <Compile Include="Deprecated.Session\IUserSessionManager.cs" />
+    <Compile Include="Deprecated.Session\UserClientSession.cs" />
+    <Compile Include="Deprecated.Session\PublicAndPrivateClientSessions.cs" />
+    <Compile Include="Deprecated.Session\UserSession.cs" />
+    <Compile Include="SessionFeature.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">
       <SubType>Code</SubType>

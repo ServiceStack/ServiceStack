@@ -12,6 +12,8 @@ namespace ServiceStack.CacheAccess.Providers
 		private Dictionary<string, CacheEntry> memory;
 		private Dictionary<string, int> counters;
 
+		public bool DontDispose { get; set; }
+
 		private class CacheEntry
 		{
 			private object cacheValue;
@@ -116,6 +118,8 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public void Dispose()
 		{
+			if (DontDispose) return;
+
 			this.memory = new Dictionary<string, CacheEntry>();
 			this.counters = new Dictionary<string, int>();
 		}

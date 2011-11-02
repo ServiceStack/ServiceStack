@@ -76,15 +76,19 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				serviceManager.Init();
 				Configure(EndpointHost.Config.ServiceManager.Container);
-
-				EndpointHost.SetOperationTypes(
-					serviceManager.ServiceOperations,
-					serviceManager.AllServiceOperations
-				);
 			}
 			else
 			{
 				Configure(null);
+			}
+			if (serviceManager != null)
+			{
+				//Required for adhoc services added in Configure()
+				serviceManager.ReloadServiceOperations();
+				EndpointHost.SetOperationTypes(
+					serviceManager.ServiceOperations,
+					serviceManager.AllServiceOperations
+				);
 			}
 
 			EndpointHost.AfterInit();
@@ -164,6 +168,11 @@ namespace ServiceStack.WebHost.Endpoints
 		public EndpointHostConfig Config
 		{
 			get { return EndpointHost.Config; }
+		}
+
+		public void RegisterService(Type serviceType)
+		{
+			EndpointHost.Config.ServiceManager.RegisterService(serviceType);
 		}
 
 		public virtual void Dispose()

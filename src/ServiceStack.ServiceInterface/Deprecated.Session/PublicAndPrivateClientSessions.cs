@@ -9,7 +9,7 @@
 */
 
 
-namespace ServiceStack.ServiceInterface.Session
+namespace ServiceStack.ServiceInterface.Deprecated.Session
 {
 	/// <summary>
 	/// Holds a 'Secure' and 'Unsecure' client session for the user.

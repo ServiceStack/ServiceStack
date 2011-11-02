@@ -19,5 +19,7 @@ namespace ServiceStack.WebHost.Endpoints
 		List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
 
 		EndpointHostConfig Config { get; }
+
+		void RegisterService(Type serviceType);
 	}
 }

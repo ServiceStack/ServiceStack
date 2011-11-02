@@ -68,6 +68,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
 			public EndpointHostConfig Config { get; set; }
+
+			public void RegisterService(Type serviceType)
+			{
+				Config.ServiceManager.RegisterService(serviceType);
+			}
 		}
 
 		public string GetHtml(object dto, string format)

@@ -50,5 +50,10 @@ namespace ServiceStack.ServiceInterface.Testing
 		public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; private set; }
 
 		public EndpointHostConfig Config { get; set; }
+
+		public void RegisterService(Type serviceType)
+		{
+			Config.ServiceManager.RegisterService(serviceType);
+		}
 	}
 }

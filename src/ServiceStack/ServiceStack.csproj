@@ -120,6 +120,7 @@
     <Compile Include="Funq\ServiceEntry.Generic.cs" />
     <Compile Include="Funq\ServiceKey.cs" />
     <Compile Include="Funq\Syntax.cs" />
+    <Compile Include="AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
     <Compile Include="Markdown\DynamicTypeGenerator .cs" />
     <Compile Include="Markdown\ExpressionHelper.cs" />

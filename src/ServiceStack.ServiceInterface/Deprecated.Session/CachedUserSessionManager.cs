@@ -14,7 +14,7 @@ using System.Diagnostics;
 using ServiceStack.CacheAccess;
 using ServiceStack.Logging;
 
-namespace ServiceStack.ServiceInterface.Session
+namespace ServiceStack.ServiceInterface.Deprecated.Session
 {
 	/// <summary>
 	/// Manages all the User Sessions into the ICacheClient provided

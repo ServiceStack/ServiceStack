@@ -11,7 +11,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.ServiceInterface.Session
+namespace ServiceStack.ServiceInterface.Deprecated.Session
 {
 	/// <summary>
 	/// Manager Interface listing all the methods required to manage a users session.

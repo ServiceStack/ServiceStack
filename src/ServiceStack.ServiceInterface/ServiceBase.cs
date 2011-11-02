@@ -13,7 +13,6 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
 {
-
 	/// <summary>
 	/// A Useful ServiceBase for all services with support for automatically serializing
 	/// Exceptions into a common ResponseError DTO so errors can be handled generically by clients. 
@@ -23,7 +22,7 @@ namespace ServiceStack.ServiceInterface
 	/// </summary>
 	/// <typeparam name="TRequest"></typeparam>
 	public abstract class ServiceBase<TRequest>
-		: IService<TRequest>, IRequiresRequestContext
+		: IService<TRequest>, IRequiresRequestContext, IServiceBase
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
 
@@ -114,7 +113,7 @@ namespace ServiceStack.ServiceInterface
 			return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", GetType().Name, DateTime.UtcNow, requestString);
 		}
 
-		protected T TryResolve<T>()
+		public T TryResolve<T>()
 		{
 			return this.AppHost == null
 				? default(T)

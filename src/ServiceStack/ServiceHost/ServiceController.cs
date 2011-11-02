@@ -69,37 +69,42 @@ namespace ServiceStack.ServiceHost
 		{
 			foreach (var serviceType in ResolveServicesFn())
 			{
-				if (serviceType.IsAbstract || serviceType.ContainsGenericParameters) continue;
+				RegisterService(serviceFactoryFn, serviceType);
+			}
+		}
 
-				foreach (var service in serviceType.GetInterfaces())
+		public void RegisterService(ITypeFactory serviceFactoryFn, Type serviceType)
+		{
+			if (serviceType.IsAbstract || serviceType.ContainsGenericParameters) return;
+
+			foreach (var service in serviceType.GetInterfaces())
+			{
+				if (!service.IsGenericType
+				    || service.GetGenericTypeDefinition() != typeof (IService<>)
+				) continue;
+
+				var requestType = service.GetGenericArguments()[0];
+
+				Register(requestType, serviceType, serviceFactoryFn);
+
+				RegisterRestPaths(requestType);
+
+				this.ServiceTypes.Add(serviceType);
+
+				this.AllOperationTypes.Add(requestType);
+				this.OperationTypes.Add(requestType);
+
+				var responseTypeName = requestType.FullName + ResponseDtoSuffix;
+				var responseType = AssemblyUtils.FindType(responseTypeName);
+				if (responseType != null)
 				{
-					if (!service.IsGenericType
-						|| service.GetGenericTypeDefinition() != typeof(IService<>)
-						) continue;
-
-					var requestType = service.GetGenericArguments()[0];
-
-					Register(requestType, serviceType, serviceFactoryFn);
-
-					RegisterRestPaths(requestType);
-
-					this.ServiceTypes.Add(serviceType);
-
-					this.AllOperationTypes.Add(requestType);
-					this.OperationTypes.Add(requestType);
-
-					var responseTypeName = requestType.FullName + ResponseDtoSuffix;
-					var responseType = AssemblyUtils.FindType(responseTypeName);
-					if (responseType != null)
-					{
-						this.AllOperationTypes.Add(responseType);
-						this.OperationTypes.Add(responseType);
-					}
-
-					Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
-						(responseType != null ? "SyncReply" : "OneWay"),
-						serviceType.Name, requestType.Name);
+					this.AllOperationTypes.Add(responseType);
+					this.OperationTypes.Add(responseType);
 				}
+
+				Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
+					(responseType != null ? "SyncReply" : "OneWay"), 
+					serviceType.Name, requestType.Name);
 			}
 		}
 

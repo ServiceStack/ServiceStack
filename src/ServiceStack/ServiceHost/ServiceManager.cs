@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using Funq;
 
@@ -79,16 +80,35 @@ namespace ServiceStack.ServiceHost
 			this.ServiceController = serviceController;
 		}
 
+		private ExpressionTypeFunqContainer typeFactory;
+
 		public void Init()
 		{
-			var typeFactory = new ExpressionTypeFunqContainer(this.Container);
+			typeFactory = new ExpressionTypeFunqContainer(this.Container);
 
 			this.ServiceController.Register(typeFactory);
 
-			this.ServiceOperations = new ServiceOperations(this.ServiceController.OperationTypes);
-			this.AllServiceOperations = new ServiceOperations(this.ServiceController.AllOperationTypes);
+			ReloadServiceOperations();
 
 			typeFactory.RegisterTypes(this.ServiceController.ServiceTypes);
+		}
+
+		public void ReloadServiceOperations()
+		{
+			this.ServiceOperations = new ServiceOperations(this.ServiceController.OperationTypes);
+			this.AllServiceOperations = new ServiceOperations(this.ServiceController.AllOperationTypes);
+		}
+
+		public void RegisterService<T>()
+		{
+			this.ServiceController.RegisterService(typeFactory, typeof(T));
+			typeFactory.Register<T>();
+		}
+
+		public void RegisterService(Type serviceType)
+		{
+			this.ServiceController.RegisterService(typeFactory, serviceType);
+			typeFactory.RegisterTypes(serviceType);
 		}
 	
 		public object Execute(object dto)

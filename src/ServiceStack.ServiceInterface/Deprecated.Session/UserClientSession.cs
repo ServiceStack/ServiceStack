@@ -11,7 +11,7 @@
 using System;
 using ServiceStack.DesignPatterns.Model;
 
-namespace ServiceStack.ServiceInterface.Session
+namespace ServiceStack.ServiceInterface.Deprecated.Session
 {
 	/// <summary>
 	/// Holds information on a single 'User Client' session.

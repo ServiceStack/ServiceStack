@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Common;
 
-namespace ServiceStack.ServiceInterface.Session
+namespace ServiceStack.ServiceInterface.Deprecated.Session
 {
 	/// <summary>
 	/// Holds all the data required for a User Session
