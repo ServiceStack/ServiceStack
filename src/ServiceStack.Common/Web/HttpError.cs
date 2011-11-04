@@ -61,5 +61,10 @@ namespace ServiceStack.Common.Web
 		{
 			get { return this.Headers; }
 		}
+
+		public static Exception NotFound(string message)
+		{
+			return new HttpError(HttpStatusCode.NotFound, message);
+		}
 	}
 }

@@ -77,12 +77,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						: null;
 				}
 
-				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
+				if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
                     return EmptyResponse(requestMsg, requestType);
 
 				var response = ExecuteService(request, endpointAttributes, null);
 
-				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
+				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
 
 				return requestMsg.Headers.Action == null

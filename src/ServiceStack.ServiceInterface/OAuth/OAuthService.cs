@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
@@ -12,6 +13,7 @@ namespace ServiceStack.ServiceInterface.OAuth
 {
 	public class OAuth
 	{
+		public string provider { get; set; }
 		public string State { get; set; }
 		public string oauth_token { get; set; }
 		public string oauth_verifier { get; set; }
@@ -29,7 +31,8 @@ namespace ServiceStack.ServiceInterface.OAuth
 
 	public class OAuthService : RestServiceBase<OAuth>
 	{
-		public static OAuthConfig OAuthConfig { get; private set; }
+		public static string DefaultOAuthRealm { get; private set; }
+		public static OAuthConfig[] OAuthConfigs { get; private set; }
 		public static Func<IOAuthSession> SessionFactory { get; private set; }
 		
 		public static string GetSessionKey(string sessionId)
@@ -37,18 +40,26 @@ namespace ServiceStack.ServiceInterface.OAuth
 			return IdUtils.CreateUrn<IOAuthSession>(sessionId);
 		}
 
-		public static void Register(IAppHost appHost, OAuthConfig config, Func<IOAuthSession> sessionFactory)
+		public static void Register(IAppHost appHost, Func<IOAuthSession> sessionFactory, params OAuthConfig[] oAuthConfigs)
 		{
-			OAuthConfig = config;
+			if (oAuthConfigs.Length == 0)
+				throw new ArgumentNullException("oAuthConfigs");
+			
+			DefaultOAuthRealm = oAuthConfigs[0].OAuthRealm;
+
+			OAuthConfigs = oAuthConfigs;
 			SessionFactory = sessionFactory;
 			appHost.RegisterService<OAuthService>();
 			
 			SessionFeature.Register(appHost);
 
 			appHost.RequestFilters.Add((req, res, dto) => {
-				var requiresAuth = dto.GetType().GetCustomAttributes(typeof(AuthenticateAttribute), true).Length > 0;
-				if (requiresAuth)
+				var requiresAuth = dto.GetType().FirstAttribute<AuthenticateAttribute>();
+				if (requiresAuth != null)
 				{
+					var oAuthConfig = OAuthConfigs.FirstOrDefault(x => x.Provider == requiresAuth.Provider);
+					var oAuthRealm = oAuthConfig != null ? oAuthConfig.OAuthRealm : DefaultOAuthRealm;
+
 					var sessionId = req.GetItemOrCookie("ss-psession");
 					using (var cache = appHost.GetCacheClient())
 					{
@@ -56,7 +67,7 @@ namespace ServiceStack.ServiceInterface.OAuth
 						if (session == null || !session.IsAuthorized())
 						{
 							res.StatusCode = (int)HttpStatusCode.Unauthorized;
-							res.AddHeader(HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(OAuthConfig.OAuthRealm));
+							res.AddHeader(HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(oAuthRealm));
 							res.Close();
 							return;
 						}
@@ -64,32 +75,43 @@ namespace ServiceStack.ServiceInterface.OAuth
 				}
 			});
 		}
-		
+
 		public override object OnGet(OAuth request)
 		{
+			var provider = request.provider ?? OAuthConfigs[0].Provider;
+
+			var oAuthConfig = OAuthConfigs.FirstOrDefault(x => x.Provider == provider);
+			if (oAuthConfig == null)
+				throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'");
+
 			var session = this.GetSession();
 			
 			if (session.ReferrerUrl.IsNullOrEmpty())
-			{
-				session.ReferrerUrl = base.RequestContext.GetHeader("Referer") ?? OAuthConfig.CallbackUrl;
-			}
-			
-			var oAuth = new OAuthAuthorizer(OAuthConfig);
+				session.ReferrerUrl = base.RequestContext.GetHeader("Referer") ?? oAuthConfig.CallbackUrl;
+
+			if (oAuthConfig.CallbackUrl.IsNullOrEmpty())
+				oAuthConfig.CallbackUrl = session.ReferrerUrl;
+
+			var oAuth = new OAuthAuthorizer(oAuthConfig);
 			
 			if (!session.IsAuthorized())
 			{
-				if (!session.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
+				IOAuthTokens tokens;
+				if (!session.ProviderOAuthAccess.TryGetValue(provider, out tokens))
+					session.ProviderOAuthAccess[provider] = tokens = new OAuthTokens();
+
+				if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
 				{
-					oAuth.RequestToken = session.RequestToken;
-					oAuth.RequestTokenSecret = session.RequestTokenSecret;
+					oAuth.RequestToken = tokens.RequestToken;
+					oAuth.RequestTokenSecret = tokens.RequestTokenSecret;
 					oAuth.AuthorizationToken = request.oauth_token;
 					oAuth.AuthorizationVerifier = request.oauth_verifier;
 					
 					if (oAuth.AcquireAccessToken())
 					{
-						session.OAuthToken = oAuth.AccessToken;
-						session.AccessToken = oAuth.AccessTokenSecret;
-						session.OnAuthenticated(this, oAuth.AuthInfo);
+						tokens.OAuthToken = oAuth.AccessToken;
+						tokens.AccessToken = oAuth.AccessTokenSecret;
+						session.OnAuthenticated(this, provider, oAuth.AuthInfo);
 						this.SaveSession(session);
 						
 						//Haz access!
@@ -101,13 +123,13 @@ namespace ServiceStack.ServiceInterface.OAuth
 				}
 				if (oAuth.AcquireRequestToken())
 				{
-					session.RequestToken = oAuth.RequestToken;
-					session.RequestTokenSecret = oAuth.RequestTokenSecret;
+					tokens.RequestToken = oAuth.RequestToken;
+					tokens.RequestTokenSecret = oAuth.RequestTokenSecret;
 					this.SaveSession(session);
 					
 					//Redirect to OAuth provider to approve access
-					return this.Redirect(OAuthConfig.AuthorizeUrl
-						.AddQueryParam("oauth_token", session.RequestToken)
+					return this.Redirect(oAuthConfig.AuthorizeUrl
+						.AddQueryParam("oauth_token", tokens.RequestToken)
 						.AddQueryParam("oauth_callback", session.ReferrerUrl));					
 				}
 
@@ -117,6 +139,7 @@ namespace ServiceStack.ServiceInterface.OAuth
 			//Already Authenticated
 			return this.Redirect(session.ReferrerUrl.AddQueryParam("s", "0"));
 		}
+
 	}
 }
 

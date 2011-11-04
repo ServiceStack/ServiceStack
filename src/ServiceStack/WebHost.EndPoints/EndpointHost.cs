@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Web;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
@@ -143,6 +144,9 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static bool ApplyRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes, object requestDto)
 		{
+			httpReq.ThrowIfNull("httpReq");
+			httpRes.ThrowIfNull("httpRes");
+
 			foreach (var requestFilter in RequestFilters)
 			{
 				requestFilter(httpReq, httpRes, requestDto);
@@ -159,6 +163,9 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <returns></returns>
 		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object responseDto)
 		{
+			httpReq.ThrowIfNull("httpReq");
+			httpRes.ThrowIfNull("httpRes");
+
 			foreach (var responseFilter in ResponseFilters)
 			{
 				responseFilter(httpReq, httpRes, responseDto);

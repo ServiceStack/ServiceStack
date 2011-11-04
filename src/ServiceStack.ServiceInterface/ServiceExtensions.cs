@@ -40,7 +40,7 @@ namespace ServiceStack.ServiceInterface
 				StatusCode = HttpStatusCode.Unauthorized,
 				ContentType = service.RequestContext.ResponseContentType,
 				Headers = {
-					{ HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(OAuthConfig.OAuthRealm) }
+					{ HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(OAuthService.DefaultOAuthRealm) }
 				},
 			};
 		}

@@ -103,6 +103,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="IServiceBase.cs" />
     <Compile Include="OAuth\IOAuthSession.cs" />
+    <Compile Include="OAuth\IOAuthTokens.cs" />
     <Compile Include="OAuth\OAuthAuthorizer.cs" />
     <Compile Include="OAuth\OAuthConfig.cs" />
     <Compile Include="OAuth\OAuthService.cs" />

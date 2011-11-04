@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace ServiceStack.Common
 {
@@ -20,5 +21,11 @@ namespace ServiceStack.Common
 				return propertyNames;
 			}
 		}
+
+		public static List<T> ToAttributes<T>(this Type type) where T : Attribute
+		{
+			return type.GetCustomAttributes(typeof(T), true).SafeConvertAll(x => (T)x);
+		}
+
 	}
 }

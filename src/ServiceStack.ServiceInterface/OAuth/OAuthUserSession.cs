@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Common;
 
 namespace ServiceStack.ServiceInterface.OAuth
@@ -8,7 +9,7 @@ namespace ServiceStack.ServiceInterface.OAuth
 	{
 		public OAuthUserSession()
 		{
-			this.Items = new Dictionary<string, string>();
+			this.ProviderOAuthAccess = new Dictionary<string, IOAuthTokens>();
 		}
 
 		public string ReferrerUrl { get; set; }
@@ -19,39 +20,38 @@ namespace ServiceStack.ServiceInterface.OAuth
 
 		public string TwitterScreenName { get; set; }
 
-		public string OAuthToken { get; set; }
-
-		public string AccessToken { get; set; }
-
-		public string RequestToken { get; set; }
-
 		public string RequestTokenSecret { get; set; }
 
 		public DateTime CreatedAt { get; set; }
 
 		public DateTime LastModified { get; set; }
 
-		public Dictionary<string, string> Items { get; set; }
+		public Dictionary<string, IOAuthTokens> ProviderOAuthAccess { get; set; }
 
 		public virtual bool IsAuthorized()
 		{
-			return !string.IsNullOrEmpty(OAuthToken)
-				&& !string.IsNullOrEmpty(AccessToken);
+			return ProviderOAuthAccess.Values
+				.Any(x => !string.IsNullOrEmpty(x.OAuthToken) 
+					&& !string.IsNullOrEmpty(x.AccessToken));
 		}
 
-		public virtual void OnAuthenticated(OAuthService oAuthService, Dictionary<string, string> authInfo)
+		public virtual void OnAuthenticated(OAuthService oAuthService, string provider, Dictionary<string, string> authInfo)
 		{
-			if (authInfo.ContainsKey("user_id"))
+			if (provider == TwitterOAuthConfig.Name)
 			{
-				this.TwitterUserId = authInfo.GetValueOrDefault("user_id");
-				authInfo.Remove("user_info");
+				if (authInfo.ContainsKey("user_id"))
+					this.TwitterUserId = authInfo.GetValueOrDefault("user_id");
+
+				if (authInfo.ContainsKey("screen_name"))
+					this.TwitterScreenName = authInfo.GetValueOrDefault("screen_name");
 			}
-			if (authInfo.ContainsKey("screen_name"))
-			{
-				this.TwitterScreenName = authInfo.GetValueOrDefault("screen_name");
-				authInfo.Remove("screen_name");
-			}
-			authInfo.ForEach((x, y) => this.Items[x] = y);
+			else if (provider == FacebookOAuthConfig.Name) {}
+
+			IOAuthTokens providerTokens;
+			if (!ProviderOAuthAccess.TryGetValue(provider, out providerTokens))
+				ProviderOAuthAccess[provider] = providerTokens = new OAuthTokens();
+
+			authInfo.ForEach((x, y) => providerTokens.Items[x] = y);
 		}
 	}
 
