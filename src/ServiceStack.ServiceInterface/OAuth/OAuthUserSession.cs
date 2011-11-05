@@ -9,7 +9,7 @@ namespace ServiceStack.ServiceInterface.OAuth
 	{
 		public OAuthUserSession()
 		{
-			this.ProviderOAuthAccess = new Dictionary<string, IOAuthTokens>();
+			this.ProviderOAuthAccess = new List<IOAuthTokens>();
 		}
 
 		public string ReferrerUrl { get; set; }
@@ -26,11 +26,11 @@ namespace ServiceStack.ServiceInterface.OAuth
 
 		public DateTime LastModified { get; set; }
 
-		public Dictionary<string, IOAuthTokens> ProviderOAuthAccess { get; set; }
+		public List<IOAuthTokens> ProviderOAuthAccess { get; set; }
 
 		public virtual bool IsAuthorized()
 		{
-			return ProviderOAuthAccess.Values
+			return ProviderOAuthAccess
 				.Any(x => !string.IsNullOrEmpty(x.OAuthToken) 
 					&& !string.IsNullOrEmpty(x.AccessToken));
 		}
@@ -47,11 +47,11 @@ namespace ServiceStack.ServiceInterface.OAuth
 			}
 			else if (provider == FacebookOAuthConfig.Name) {}
 
-			IOAuthTokens providerTokens;
-			if (!ProviderOAuthAccess.TryGetValue(provider, out providerTokens))
-				ProviderOAuthAccess[provider] = providerTokens = new OAuthTokens();
+			var tokens = ProviderOAuthAccess.FirstOrDefault(x => x.Provider == provider);
+			if (tokens == null)
+				ProviderOAuthAccess.Add(tokens = new OAuthTokens());
 
-			authInfo.ForEach((x, y) => providerTokens.Items[x] = y);
+			authInfo.ForEach((x, y) => tokens.Items[x] = y);
 		}
 	}
 

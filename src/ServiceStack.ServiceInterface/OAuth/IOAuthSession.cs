@@ -7,7 +7,7 @@ namespace ServiceStack.ServiceInterface.OAuth
 	{
 		string ReferrerUrl { get; set; }
 		string Id { get; set; }
-		Dictionary<string, IOAuthTokens> ProviderOAuthAccess { get; set; }
+		List<IOAuthTokens> ProviderOAuthAccess { get; set; }
 		DateTime CreatedAt { get; set; }
 		DateTime LastModified { get; set; }
 		bool IsAuthorized();

@@ -4,8 +4,8 @@ namespace ServiceStack.ServiceInterface.OAuth
 {
 	public interface IOAuthTokens
 	{
-		string OAuthToken { get; set; }
 		string Provider { get; set; }
+		string OAuthToken { get; set; }
 		string AccessToken { get; set; }
 		string RequestToken { get; set; }
 		string RequestTokenSecret { get; set; }
@@ -19,8 +19,8 @@ namespace ServiceStack.ServiceInterface.OAuth
 			this.Items = new Dictionary<string, string>();
 		}
 
-		public string OAuthToken { get; set; }
 		public string Provider { get; set; }
+		public string OAuthToken { get; set; }
 		public string AccessToken { get; set; }
 		public string RequestToken { get; set; }
 		public string RequestTokenSecret { get; set; }

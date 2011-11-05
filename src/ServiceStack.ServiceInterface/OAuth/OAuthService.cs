@@ -96,9 +96,9 @@ namespace ServiceStack.ServiceInterface.OAuth
 			
 			if (!session.IsAuthorized())
 			{
-				IOAuthTokens tokens;
-				if (!session.ProviderOAuthAccess.TryGetValue(provider, out tokens))
-					session.ProviderOAuthAccess[provider] = tokens = new OAuthTokens();
+				var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == provider);
+				if (tokens == null)
+					session.ProviderOAuthAccess.Add(tokens = new OAuthTokens());
 
 				if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
 				{
