@@ -100,16 +100,19 @@
   <ItemGroup>
     <Compile Include="AsyncServiceBase.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
+    <Compile Include="Auth\InMemoryAuthRepository.cs" />
+    <Compile Include="Auth\IOAuthHttpGateway.cs" />
+    <Compile Include="Auth\IOAuthSession.cs" />
+    <Compile Include="Auth\IOAuthTokens.cs" />
+    <Compile Include="Auth\IUserAuthRepository.cs" />
+    <Compile Include="Auth\OAuthAuthorizer.cs" />
+    <Compile Include="Auth\OAuthConfig.cs" />
+    <Compile Include="Auth\OAuthService.cs" />
+    <Compile Include="Auth\OAuthUserSession.cs" />
+    <Compile Include="Auth\RedisAuthRepository.cs" />
+    <Compile Include="Auth\UserAuth.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="IServiceBase.cs" />
-    <Compile Include="IUserAuthRepository.cs" />
-    <Compile Include="OAuth\IOAuthHttpGateway.cs" />
-    <Compile Include="OAuth\IOAuthSession.cs" />
-    <Compile Include="OAuth\IOAuthTokens.cs" />
-    <Compile Include="OAuth\OAuthAuthorizer.cs" />
-    <Compile Include="OAuth\OAuthConfig.cs" />
-    <Compile Include="OAuth\OAuthService.cs" />
-    <Compile Include="OAuth\OAuthUserSession.cs" />
     <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />
     <Compile Include="ServiceBase.cs" />

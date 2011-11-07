@@ -30,11 +30,6 @@ namespace ServiceStack.ServiceInterface.Auth
 			public void Dispose() {}
 		}
 
-		public class InMemoryRedisClient : IRedisClient
-		{
-			
-		}
-
-		public InMemoryAuthRepository() : base(factory) {}
+		public InMemoryAuthRepository() : base(null) {}
 	}
 }

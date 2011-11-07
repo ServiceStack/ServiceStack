@@ -5,7 +5,7 @@ using Moq;
 using NUnit.Framework;
 using ServiceStack.Redis;
 using ServiceStack.ServiceInterface;
-using ServiceStack.ServiceInterface.OAuth;
+using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth

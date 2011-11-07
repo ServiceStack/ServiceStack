@@ -1,4 +1,4 @@
-using ServiceStack.ServiceInterface.OAuth;
+using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth
