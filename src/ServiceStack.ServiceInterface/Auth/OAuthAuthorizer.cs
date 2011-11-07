@@ -37,7 +37,7 @@ using System.Web;
 using System.Security.Cryptography;
 using ServiceStack.ServiceModel;
 
-namespace ServiceStack.ServiceInterface.OAuth
+namespace ServiceStack.ServiceInterface.Auth
 {
 	//
 	// Configuration information for an OAuth client

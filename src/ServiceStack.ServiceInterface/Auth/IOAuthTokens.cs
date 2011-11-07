@@ -1,12 +1,17 @@
 using System.Collections.Generic;
 
-namespace ServiceStack.ServiceInterface.OAuth
+namespace ServiceStack.ServiceInterface.Auth
 {
 	public interface IOAuthTokens
 	{
 		string Provider { get; set; }
-		string OAuthToken { get; set; }
+		string UserId { get; set; }
+		string DisplayName { get; set; }
+		string FirstName { get; set; }
+		string LastName { get; set; }
+		string Email { get; set; }
 		string AccessToken { get; set; }
+		string AccessTokenSecret { get; set; }
 		string RequestToken { get; set; }
 		string RequestTokenSecret { get; set; }
 		Dictionary<string, string> Items { get; set; }
@@ -20,8 +25,13 @@ namespace ServiceStack.ServiceInterface.OAuth
 		}
 
 		public string Provider { get; set; }
-		public string OAuthToken { get; set; }
+		public string UserId { get; set; }
+		public string DisplayName { get; set; }
+		public string FirstName { get; set; }
+		public string LastName { get; set; }
+		public string Email { get; set; }
 		public string AccessToken { get; set; }
+		public string AccessTokenSecret { get; set; }
 		public string RequestToken { get; set; }
 		public string RequestTokenSecret { get; set; }
 		public Dictionary<string, string> Items { get; set; }

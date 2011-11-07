@@ -102,6 +102,8 @@
     <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="IServiceBase.cs" />
+    <Compile Include="IUserAuthRepository.cs" />
+    <Compile Include="OAuth\IOAuthHttpGateway.cs" />
     <Compile Include="OAuth\IOAuthSession.cs" />
     <Compile Include="OAuth\IOAuthTokens.cs" />
     <Compile Include="OAuth\OAuthAuthorizer.cs" />

@@ -9,6 +9,8 @@ namespace ServiceStack.CacheAccess.Providers
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (MemoryCacheClient));
 
+		private readonly object rwlock = new object();
+
 		private Dictionary<string, CacheEntry> memory;
 		private Dictionary<string, int> counters;
 
@@ -51,6 +53,16 @@ namespace ServiceStack.CacheAccess.Providers
 			return CacheAdd(key, value, DateTime.MaxValue);
 		}
 
+		private bool TryGetValue(string key, out CacheEntry entry)
+		{
+			lock (this.rwlock) return this.memory.TryGetValue(key, out entry);
+		}
+
+		private void Set(string key, CacheEntry entry)
+		{
+			lock (this.rwlock) this.memory[key] = entry;
+		}
+
 		/// <summary>
 		/// Stores The value with key only if such key doesn't exist at the server yet. 
 		/// </summary>
@@ -61,10 +73,10 @@ namespace ServiceStack.CacheAccess.Providers
 		private bool CacheAdd(string key, object value, DateTime expiresAt)
 		{
 			CacheEntry entry;
-			if (this.memory.TryGetValue(key, out entry)) return false;
+			if (this.TryGetValue(key, out entry)) return false;
 
 			entry = new CacheEntry(value, expiresAt);
-			this.memory.Add(key, entry);
+			this.Set(key, entry);
 
 			return true;
 		}
@@ -90,10 +102,10 @@ namespace ServiceStack.CacheAccess.Providers
 		private bool CacheSet(string key, object value, DateTime expiresAt, long? checkLastModified)
 		{
 			CacheEntry entry;
-			if (!this.memory.TryGetValue(key, out entry))
+			if (!this.TryGetValue(key, out entry))
 			{
 				entry = new CacheEntry(value, expiresAt);
-				this.memory.Add(key, entry);
+				this.Set(key, entry);
 				return true;
 			}
 
@@ -126,12 +138,15 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public bool Remove(string key)
 		{
-			if (this.memory.ContainsKey(key))
+			lock (this.rwlock)
 			{
-				this.memory.Remove(key);
-				return true;
+				if (this.memory.ContainsKey(key))
+				{
+					this.memory.Remove(key);
+					return true;
+				}
+				return false;
 			}
-			return false;
 		}
 
 		public void RemoveAll(IEnumerable<string> keys)
@@ -158,16 +173,19 @@ namespace ServiceStack.CacheAccess.Providers
 		public object Get(string key, out long lastModifiedTicks)
 		{
 			lastModifiedTicks = 0;
-			if (this.memory.ContainsKey(key))
+			lock (rwlock)
 			{
-				var cacheEntry = this.memory[key];
-				if (cacheEntry.ExpiresAt < DateTime.Now)
+				if (this.memory.ContainsKey(key))
 				{
-					this.memory.Remove(key);
-					return null;
+					var cacheEntry = this.memory[key];
+					if (cacheEntry.ExpiresAt < DateTime.Now)
+					{
+						this.memory.Remove(key);
+						return null;
+					}
+					lastModifiedTicks = cacheEntry.LastModifiedTicks;
+					return cacheEntry.Value;
 				}
-				lastModifiedTicks = cacheEntry.LastModifiedTicks;
-				return cacheEntry.Value;
 			}
 			return null;
 		}
@@ -246,7 +264,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public void FlushAll()
 		{
-			this.memory = new Dictionary<string, CacheEntry>();
+			lock (this.rwlock) this.memory = new Dictionary<string, CacheEntry>();
 		}
 
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)

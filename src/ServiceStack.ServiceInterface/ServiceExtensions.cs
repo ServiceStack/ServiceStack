@@ -5,7 +5,7 @@ using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Web;
 using ServiceStack.Redis;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.OAuth;
+using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 

@@ -77,6 +77,12 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\..\lib\tests\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Redis">
+      <HintPath>..\..\lib\tests\ServiceStack.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -131,6 +137,7 @@
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />
+    <Compile Include="OAuth\MockOAuthHttpGateway.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
     <Compile Include="Perf\IdUtilsPerf.cs" />
     <Compile Include="Perf\PropertyAccessorPerf.cs" />
@@ -165,6 +172,7 @@
     <Compile Include="Support\ModelWithOnlyStringFields.cs" />
     <Compile Include="Support\PathInfoTests.cs" />
     <Compile Include="Text\AdhocJsTests.cs" />
+    <Compile Include="OAuth\OAuthUserSessionTests.cs" />
     <Compile Include="Xlinq\XlinqExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
