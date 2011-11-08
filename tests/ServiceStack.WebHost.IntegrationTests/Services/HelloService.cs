@@ -6,6 +6,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
 	[Description("ServiceStack's Hello World web service.")]
+	[RestService("/hello")]
 	[RestService("/hello/{Name}")]
 	public class Hello
 	{

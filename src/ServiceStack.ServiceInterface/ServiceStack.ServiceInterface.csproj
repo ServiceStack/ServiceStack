@@ -104,6 +104,7 @@
     <Compile Include="Auth\IOAuthHttpGateway.cs" />
     <Compile Include="Auth\IOAuthSession.cs" />
     <Compile Include="Auth\IOAuthTokens.cs" />
+    <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\OAuthConfig.cs" />
