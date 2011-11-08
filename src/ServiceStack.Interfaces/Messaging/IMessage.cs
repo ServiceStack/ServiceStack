@@ -21,7 +21,7 @@ namespace ServiceStack.Messaging
 		object Body { get; set; }
 	}
 
-	public interface IMessage<T>
+    public interface IMessage<T>
 		: IMessage
 	{
 		T GetBody();
