@@ -26,9 +26,13 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			get
 			{
-				var redisManager = new BasicRedisClientManager();
-				redisManager.Exec(x => x.FlushAll());
-				yield return new TestCaseData(new RedisAuthRepository(redisManager));
+				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager());
+				redisRepo.Clear();				
+				yield return new TestCaseData(redisRepo);
+
+				var inMemoryRepo = new InMemoryAuthRepository();
+				inMemoryRepo.Clear();
+				yield return new TestCaseData(inMemoryRepo);
 			}
 		}
 

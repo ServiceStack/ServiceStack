@@ -1,0 +1,128 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using ServiceStack.Redis;
+using ServiceStack.Redis.Generic;
+
+namespace ServiceStack.ServiceInterface.Auth
+{
+	public interface IRedisClientManagerFacade : IClearable
+	{
+		IRedisClientFacade GetClient();
+	}
+
+	public interface IClearable
+	{
+		void Clear();		
+	}
+
+	public interface IRedisClientFacade : IDisposable
+	{
+		HashSet<string> GetAllItemsFromSet(string setId);
+		void Store<T>(T item) where T : class, new();
+		string GetValueFromHash(string hashId, string key);
+		void SetEntryInHash(string hashId, string key, string value);
+		void AddItemToSet(string setId, string item);
+		ITypedRedisClientFacade<T> As<T>();
+	}
+
+	public interface ITypedRedisClientFacade<T>
+	{
+		long GetNextSequence();
+		T GetById(object id);
+		List<T> GetByIds(IEnumerable ids);
+	}
+
+	public class RedisClientManagerFacade : IRedisClientManagerFacade
+	{
+		private readonly IRedisClientsManager redisManager;
+
+		public RedisClientManagerFacade(IRedisClientsManager redisManager)
+		{
+			this.redisManager = redisManager;
+		}
+
+		public IRedisClientFacade GetClient()
+		{
+			return new RedisClientFacade(redisManager.GetClient());
+		}
+
+		public void Clear()
+		{
+			using (var redis = redisManager.GetClient())
+				redis.FlushAll();
+		}
+
+		private class RedisClientFacade : IRedisClientFacade
+		{
+			private readonly IRedisClient redisClient;
+
+			class RedisITypedRedisClientFacade<T> : ITypedRedisClientFacade<T>
+			{
+				private readonly IRedisTypedClient<T> redisTypedClient;
+
+				public RedisITypedRedisClientFacade(IRedisTypedClient<T> redisTypedClient)
+				{
+					this.redisTypedClient = redisTypedClient;
+				}
+
+				public long GetNextSequence()
+				{
+					return redisTypedClient.GetNextSequence();
+				}
+
+				public T GetById(object id)
+				{
+					return redisTypedClient.GetById(id);
+				}
+
+				public List<T> GetByIds(IEnumerable ids)
+				{
+					return redisTypedClient.GetByIds(ids).ToList();
+				}
+			}
+
+			public RedisClientFacade(IRedisClient redisClient)
+			{
+				this.redisClient = redisClient;
+			}
+
+			public HashSet<string> GetAllItemsFromSet(string setId)
+			{
+				return redisClient.GetAllItemsFromSet(setId);
+			}
+
+			public void Store<T>(T item) where T : class , new()
+			{
+				redisClient.Store(item);
+			}
+
+			public string GetValueFromHash(string hashId, string key)
+			{
+				return redisClient.GetValueFromHash(hashId, key);
+			}
+
+			public void SetEntryInHash(string hashId, string key, string value)
+			{
+				redisClient.SetEntryInHash(hashId, key, value);
+			}
+
+			public void AddItemToSet(string setId, string item)
+			{
+				redisClient.AddItemToSet(setId, item);
+			}
+
+			public ITypedRedisClientFacade<T> As<T>()
+			{
+				return new RedisITypedRedisClientFacade<T>(redisClient.As<T>());
+			}
+
+			public void Dispose()
+			{
+				this.redisClient.Dispose();
+			}
+		}
+	}
+
+}

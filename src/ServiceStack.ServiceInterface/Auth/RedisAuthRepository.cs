@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.CacheAccess;
@@ -6,9 +7,17 @@ using ServiceStack.Redis;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class RedisAuthRepository : IUserAuthRepository
+	public class RedisAuthRepository : IUserAuthRepository, IClearable
 	{
-		private readonly IRedisClientsManager factory;
+		private readonly IRedisClientManagerFacade factory;
+
+		public RedisAuthRepository(IRedisClientsManager factory)
+			: this(new RedisClientManagerFacade(factory)) {}
+
+		public RedisAuthRepository(IRedisClientManagerFacade factory)
+		{
+			this.factory = factory;
+		}
 
 		private string IndexUserAuthAndProviderIdsSet(long userAuthId)
 		{
@@ -39,12 +48,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			session.Email = userAuth.Email;
 		}
 
-		public RedisAuthRepository(IRedisClientsManager factory)
-		{
-			this.factory = factory;
-		}
-
-		private UserAuth GetUserAuth(IRedisClient redis, string userAuthId)
+		private UserAuth GetUserAuth(IRedisClientFacade redis, string userAuthId)
 		{
 			long longId;
 			if (userAuthId == null || !long.TryParse(userAuthId, out longId)) return null;
@@ -76,7 +80,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				return GetUserAuth(redis, authSession, tokens);
 		}
 
-		private UserAuth GetUserAuth(IRedisClient redis, IOAuthSession authSession, IOAuthTokens tokens)
+		private UserAuth GetUserAuth(IRedisClientFacade redis, IOAuthSession authSession, IOAuthTokens tokens)
 		{
 			if (tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty()) return null;
 
@@ -138,11 +142,16 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 		}
 
-		private string GetAuthProviderByUserId(IRedisClient redis, string provider, string userId)
+		private string GetAuthProviderByUserId(IRedisClientFacade redis, string provider, string userId)
 		{
 			var idx = IndexProviderUserIdHash(provider);
 			var oAuthProviderId = redis.GetValueFromHash(idx, userId);
 			return oAuthProviderId;
+		}
+
+		public void Clear()
+		{
+			this.factory.Clear();
 		}
 	}
 
