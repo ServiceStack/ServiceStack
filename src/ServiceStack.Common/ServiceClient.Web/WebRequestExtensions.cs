@@ -84,7 +84,6 @@ namespace ServiceStack.ServiceClient.Web
             return webRequest.GetResponse();
         }
 
-        private static byte[] CrLfBytes = "\r\n".ToUtf8Bytes();
         public static void UploadFile(this WebRequest webRequest, Stream fileStream, string fileName, string mimeType)
         {
             var httpReq = (HttpWebRequest)webRequest;
@@ -100,7 +99,7 @@ namespace ServiceStack.ServiceClient.Web
 
             using (var ms = new MemoryStream())
             {
-                var boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary);
+                var boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
 
                 var headerTemplate = "\r\n--" + boundary +
                                      "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{0}\"\r\nContent-Type: {1}\r\n\r\n";
@@ -113,7 +112,6 @@ namespace ServiceStack.ServiceClient.Web
                 fileStream.WriteTo(ms);
 
                 ms.Write(boundarybytes, 0, boundarybytes.Length);
-                ms.Write(CrLfBytes, 0, CrLfBytes.Length);
 
                 httpReq.ContentLength = ms.Length;
 
