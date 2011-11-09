@@ -40,7 +40,7 @@ namespace ServiceStack.ServiceInterface
 				StatusCode = HttpStatusCode.Unauthorized,
 				ContentType = service.RequestContext.ResponseContentType,
 				Headers = {
-					{ HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(OAuthService.DefaultOAuthRealm) }
+					{ HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(AuthService.DefaultOAuthRealm) }
 				},
 			};
 		}
@@ -78,7 +78,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			using (var cache = service.GetCacheClient())
 			{
-				var sessionKey = OAuthService.GetSessionKey(service.GetSessionId());
+				var sessionKey = AuthService.GetSessionKey(service.GetSessionId());
 				cache.Set(sessionKey, session);
 			}
 		}
@@ -93,10 +93,10 @@ namespace ServiceStack.ServiceInterface
 
 		public static IOAuthSession GetSession(this ICacheClient cache, string sessionId)
 		{
-			var session = cache.Get<IOAuthSession>(OAuthService.GetSessionKey(sessionId));
+			var session = cache.Get<IOAuthSession>(AuthService.GetSessionKey(sessionId));
 			if (session == null)
 			{
-				session = OAuthService.SessionFactory();
+				session = AuthService.SessionFactory();
 				session.Id = sessionId;
 				session.CreatedAt = session.LastModified = DateTime.UtcNow;
 			}
