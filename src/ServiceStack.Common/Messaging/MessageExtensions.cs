@@ -12,18 +12,18 @@ namespace ServiceStack.Messaging
 		public static Message<T> ToMessage<T>(this byte[] bytes)
 		{
 			var messageText = ToString(bytes);
-			return TypeSerializer.DeserializeFromString<Message<T>>(messageText);
+            return JsonSerializer.DeserializeFromString<Message<T>>(messageText);
 		}
 
 		public static byte[] ToBytes(this IMessage message)
 		{
-			var serializedMessage = TypeSerializer.SerializeToString((object)message);
+            var serializedMessage = JsonSerializer.SerializeToString((object)message);
 			return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
 		}
 
 		public static byte[] ToBytes<T>(this IMessage<T> message)
 		{
-			var serializedMessage = TypeSerializer.SerializeToString(message);
+			var serializedMessage = JsonSerializer.SerializeToString(message);
 			return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
 		}
 

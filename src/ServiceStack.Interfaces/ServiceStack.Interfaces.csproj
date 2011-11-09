@@ -156,7 +156,7 @@
     <Compile Include="Messaging\IMessageQueueClient.cs" />
     <Compile Include="Messaging\IMessageQueueClientFactory.cs" />
     <Compile Include="Messaging\IMessageService.cs" />
-    <Compile Include="Messaging\Message.cs" />
+    <Compile Include="Messaging\MessageFactory.cs" />
     <Compile Include="Messaging\MessageError.cs" />
     <Compile Include="Messaging\MessageHandlerStats.cs" />
     <Compile Include="Messaging\MessagingException.cs" />
