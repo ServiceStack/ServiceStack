@@ -109,6 +109,7 @@ DT {{
   margin: 10px 0 5px 0;
   font: bold 18px Helvetica, Verdana, Arial;
   width: 200px;
+  overflow: hidden;
   clear: left;
   float: left;
   display:block;
