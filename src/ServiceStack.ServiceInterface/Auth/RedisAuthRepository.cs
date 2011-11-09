@@ -1,7 +1,7 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServiceStack.CacheAccess;
+using System.Text.RegularExpressions;
 using ServiceStack.Common;
 using ServiceStack.Redis;
 
@@ -9,6 +9,9 @@ namespace ServiceStack.ServiceInterface.Auth
 {
 	public class RedisAuthRepository : IUserAuthRepository, IClearable
 	{
+		//http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
+		public static Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
+
 		private readonly IRedisClientManagerFacade factory;
 
 		public RedisAuthRepository(IRedisClientsManager factory)
@@ -24,9 +27,83 @@ namespace ServiceStack.ServiceInterface.Auth
 			return "urn:UserAuth>UserOAuthProvider:" + userAuthId;
 		}
 
-		private string IndexProviderUserIdHash(string provider)
+		private string IndexProviderToUserIdHash(string provider)
 		{
 			return "hash:ProviderUserId>OAuthProviderId:" + provider;
+		}
+
+		private string IndexUserNameToUserId
+		{
+			get
+			{
+				return "hash:UserAuth:UserName>UserId";
+			}
+		}
+
+		private string IndexEmailToUserId
+		{
+			get
+			{
+				return "hash:UserAuth:Email>UserId";
+			}
+		}
+
+		public UserAuth CreateUserAuth(UserAuth newUser)
+		{
+			newUser.ThrowIfNull("newUser");
+			newUser.UserName.ThrowIfNullOrEmpty("UserName");
+			newUser.PasswordHash.ThrowIfNullOrEmpty("PasswordHash");
+			if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
+				throw new ArgumentException("UserName contains invalid characters", "UserName");
+
+			using (var redis = factory.GetClient())
+			{
+				var userId = redis.GetValueFromHash(IndexUserNameToUserId, newUser.UserName);
+				if (userId != null)
+					throw new ArgumentException("User already exists", "UserName");
+
+				var saltedHash = new SaltedHash();
+				string salt;
+				string hash;
+				saltedHash.GetHashAndSaltString(newUser.PasswordHash, out hash, out salt);
+
+				newUser.PasswordHash = hash;
+				newUser.Salt = salt;
+
+				newUser.Id = redis.As<UserAuth>().GetNextSequence();
+				redis.SetEntryInHash(IndexUserNameToUserId, newUser.UserName, newUser.Id.ToString());
+				if (!newUser.Email.IsNullOrEmpty())
+					redis.SetEntryInHash(IndexEmailToUserId, newUser.Email, newUser.Id.ToString());
+				redis.Store(newUser);
+			}
+		}
+
+		public UserAuth GetUserAuthByUserName(string userName)
+		{
+			using (var redis = factory.GetClient())
+			{
+				var isEmail = userName.Contains("@");
+				var userId = isEmail
+					? redis.GetValueFromHash(IndexEmailToUserId, userName)
+					: redis.GetValueFromHash(IndexUserNameToUserId, userName);
+
+				return userId == null ? null : redis.As<UserAuth>().GetById(userId);
+			}
+		}
+
+		public bool TryAuthenticate(string userName, string password, out string userId)
+		{
+			userId = null;
+			var userAuth = GetUserAuthByUserName(userName);
+			if (userAuth == null) return false;
+
+			var saltedHash = new SaltedHash();
+			if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+			{
+				userId = userAuth.Id.ToString();
+				return true;
+			}
+			return false;
 		}
 
 		public virtual void LoadUserAuth(IOAuthSession session, IOAuthTokens tokens)
@@ -127,7 +204,7 @@ namespace ServiceStack.ServiceInterface.Auth
 						Provider = tokens.Provider,
 						UserId = tokens.UserId,
 					};
-					var idx = IndexProviderUserIdHash(tokens.Provider);
+					var idx = IndexProviderToUserIdHash(tokens.Provider);
 					redis.SetEntryInHash(idx, tokens.UserId, oauthProvider.Id.ToString());
 				}
 
@@ -144,7 +221,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		private string GetAuthProviderByUserId(IRedisClientFacade redis, string provider, string userId)
 		{
-			var idx = IndexProviderUserIdHash(provider);
+			var idx = IndexProviderToUserIdHash(provider);
 			var oAuthProviderId = redis.GetValueFromHash(idx, userId);
 			return oAuthProviderId;
 		}

@@ -8,6 +8,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		string ReferrerUrl { get; set; }
 		string Id { get; set; }
 		string UserAuthId { get; set; }
+		string UserName { get; set; }
 		string DisplayName { get; set; }
 		string FirstName { get; set; }
 		string LastName { get; set; }
@@ -19,5 +20,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		bool IsAuthorized(string provider);
 
 		void OnAuthenticated(IServiceBase oAuthService, IOAuthTokens tokens, Dictionary<string, string> authInfo);
+
+		bool TryAuthenticate(IServiceBase oAuthService, string userName, string password);
 	}
 }

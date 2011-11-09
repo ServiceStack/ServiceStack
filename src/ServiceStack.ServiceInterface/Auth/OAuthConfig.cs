@@ -38,7 +38,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			this.Permissions = appSettings.Get("oauth.facebook.Permissions", new string[0]);
 		}
 
-		public override object Authenticate(IServiceBase service, OAuth request, IOAuthSession session, IOAuthTokens tokens, OAuthAuthorizer oAuth)
+		public override object Authenticate(IServiceBase service, Auth request, IOAuthSession session, IOAuthTokens tokens, OAuthAuthorizer oAuth)
 		{
 			var code = service.RequestContext.Get<IHttpRequest>().QueryString["code"];
 			var isPreAuthCallback = !code.IsNullOrEmpty();
@@ -109,7 +109,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string AuthorizeUrl { get; set; }
 		public string AccessTokenUrl { get; set; }
 
-		public virtual object Authenticate(IServiceBase service, OAuth request, IOAuthSession session,
+		public virtual object Authenticate(IServiceBase service, Auth request, IOAuthSession session,
 			IOAuthTokens tokens, OAuthAuthorizer oAuth)
 		{
 			//Default oAuth logic based on Twitter's oAuth workflow

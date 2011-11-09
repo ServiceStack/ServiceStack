@@ -25,6 +25,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public string UserAuthId { get; set; }
 
+		public string UserName { get; set; }
+
 		public string TwitterUserId { get; set; }
 
 		public string TwitterScreenName { get; set; }
@@ -56,8 +58,11 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public virtual bool IsAuthorized(string provider)
 		{
-			return ProviderOAuthAccess
-				.Any(x => x.Provider == provider
+			if (!this.UserName.IsNullOrEmpty())
+				return provider == AuthService.CredentialsProvider
+				       || provider == AuthService.BasicProvider;
+
+			return ProviderOAuthAccess.Any(x => x.Provider == provider
 					&& !string.IsNullOrEmpty(x.AccessTokenSecret)
 					&& !string.IsNullOrEmpty(x.AccessToken));
 		}
@@ -122,6 +127,27 @@ namespace ServiceStack.ServiceInterface.Auth
 			authInfo.ForEach((x, y) => tokens.Items[x] = y);
 
 			SaveUserAuth(oAuthService.TryResolve<IUserAuthRepository>(), tokens);
+		}
+
+		public virtual void OnAuthenticatedCredentials(IServiceBase serviceBase, string userName) {}
+
+		public virtual bool TryAuthenticate(IServiceBase oAuthService, string userName, string password)
+		{
+			var authRepo = oAuthService.TryResolve<IUserAuthRepository>();
+			if (authRepo == null)
+			{
+				Log.WarnFormat("Tried to authenticate without a registered IUserAuthRepository");
+				return false;
+			}
+
+			string useUserName = null;
+			if (authRepo.TryAuthenticate(userName, password, out useUserName))
+			{
+				this.UserName = userName;
+				OnAuthenticatedCredentials(oAuthService, userName);
+				return true;
+			}
+			return false;
 		}
 	}
 

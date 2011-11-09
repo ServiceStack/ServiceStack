@@ -11,26 +11,35 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class OAuth
+	public class Auth
 	{
 		public string provider { get; set; }
 		public string State { get; set; }
 		public string oauth_token { get; set; }
 		public string oauth_verifier { get; set; }
+		public string UserName { get; set; }
+		public string Password { get; set; }
 	}
 
-	public class OAuthResponse
+	public class AuthResponse
 	{
-		public OAuthResponse()
+		public AuthResponse()
 		{
 			this.ResponseStatus = new ResponseStatus();
 		}
 
+		public string SessionId { get; set; }
+
+		public string UserName { get; set; }
+
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	public class OAuthService : RestServiceBase<OAuth>
+	public class AuthService : RestServiceBase<Auth>
 	{
+		public const string BasicProvider = "basic";
+		public const string CredentialsProvider = "credentials";
+
 		public static string DefaultOAuthProvider { get; private set; }
 		public static string DefaultOAuthRealm { get; private set; }
 		public static OAuthConfig[] OAuthConfigs { get; private set; }
@@ -51,7 +60,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			OAuthConfigs = oAuthConfigs;
 			SessionFactory = sessionFactory;
-			appHost.RegisterService<OAuthService>();
+			appHost.RegisterService<AuthService>();
 
 			SessionFeature.Register(appHost);
 
@@ -78,7 +87,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			});
 		}
 
-		public override object OnGet(OAuth request)
+		public override object OnGet(Auth request)
 		{
 			var provider = request.provider ?? OAuthConfigs[0].Provider;
 
@@ -107,6 +116,39 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			//Already Authenticated
 			return this.Redirect(session.ReferrerUrl.AddQueryParam("s", "0"));
+		}
+
+		public override object OnPost(Auth request)
+		{
+			request.provider.ThrowIfNullOrEmpty("provider");
+
+			if (request.provider != BasicProvider || request.provider != CredentialsProvider)
+				throw new ArgumentException("Provider must be either 'basic' or 'credentials'");
+
+			var session = this.GetSession();
+			var userName = request.UserName;
+			var password = request.Password;
+
+			if (request.provider == BasicProvider)
+			{
+				var httpReq = base.RequestContext.Get<IHttpRequest>();
+				var basicAuth = httpReq.GetBasicAuthUserAndPassword();
+				if (basicAuth == null)
+					throw HttpError.Unauthorized("Invalid BasicAuth credentials");
+
+				userName = basicAuth.Value.Key;
+				password = basicAuth.Value.Value;
+			}
+
+			if (session.TryAuthenticate(this, userName, password))
+			{				
+				return new AuthResponse {
+					UserName = userName,
+					SessionId = session.Id,
+				};
+			}
+
+			throw HttpError.Unauthorized("Invalid UserName or Password");
 		}
 	}
 }
