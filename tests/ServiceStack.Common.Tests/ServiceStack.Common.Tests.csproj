@@ -80,6 +80,9 @@
     <Reference Include="Moq">
       <HintPath>..\..\lib\tests\Moq.dll</HintPath>
     </Reference>
+    <Reference Include="ServiceStack.OrmLite.SqlServer">
+      <HintPath>..\..\lib\tests\ServiceStack.OrmLite.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Redis">
       <HintPath>..\..\lib\tests\ServiceStack.Redis.dll</HintPath>
     </Reference>
@@ -138,6 +141,7 @@
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />
     <Compile Include="OAuth\MockOAuthHttpGateway.cs" />
+    <Compile Include="OAuth\OAuthUserSessionWithoutTestSourceTests.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
     <Compile Include="Perf\IdUtilsPerf.cs" />
     <Compile Include="Perf\PropertyAccessorPerf.cs" />
