@@ -75,6 +75,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (!newUser.Email.IsNullOrEmpty())
 					redis.SetEntryInHash(IndexEmailToUserId, newUser.Email, newUser.Id.ToString());
 				redis.Store(newUser);
+
+			    return newUser;
 			}
 		}
 

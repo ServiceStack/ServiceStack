@@ -67,9 +67,14 @@ namespace ServiceStack.Common.Web
 			return new HttpError(HttpStatusCode.NotFound, message);
 		}
 
-		public static Exception Unauthorized(string message)
-		{
-			return new HttpError(HttpStatusCode.Unauthorized, message);
-		}
-	}
+        public static Exception Unauthorized(string message)
+        {
+            return new HttpError(HttpStatusCode.Unauthorized, message);
+        }
+
+        public static Exception Conflict(string message)
+        {
+            return new HttpError(HttpStatusCode.Conflict, message);
+        }
+    }
 }

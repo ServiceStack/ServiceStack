@@ -100,17 +100,20 @@
   <ItemGroup>
     <Compile Include="AsyncServiceBase.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
+    <Compile Include="Auth\AuthService.cs" />
     <Compile Include="Auth\InMemoryAuthRepository.cs" />
     <Compile Include="Auth\IOAuthHttpGateway.cs" />
     <Compile Include="Auth\IOAuthSession.cs" />
     <Compile Include="Auth\IOAuthTokens.cs" />
     <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
+    <Compile Include="Auth\Login.cs" />
+    <Compile Include="Auth\LoginService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\OAuthConfig.cs" />
-    <Compile Include="Auth\OAuthService.cs" />
     <Compile Include="Auth\OAuthUserSession.cs" />
     <Compile Include="Auth\RedisAuthRepository.cs" />
+    <Compile Include="Auth\SaltedHash.cs" />
     <Compile Include="Auth\UserAuth.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="IServiceBase.cs" />
