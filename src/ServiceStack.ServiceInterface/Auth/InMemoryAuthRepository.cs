@@ -29,7 +29,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			internal readonly List<T> Items = new List<T>();
-			internal long Sequence = 0;
+			internal int Sequence = 0;
 			
 			public void Clear()
 			{
@@ -62,8 +62,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			{
 				lock (Instance.Sets) Instance.Sets.Clear();
 				lock (Instance.Hashes) Instance.Hashes.Clear();
-				lock (Instance.TrackedTypes)
-					Instance.TrackedTypes.ForEach(x => x.Clear());
+				lock (Instance.TrackedTypes) Instance.TrackedTypes.ForEach(x => x.Clear());
 			}
 		}
 
@@ -85,7 +84,7 @@ namespace ServiceStack.ServiceInterface.Auth
 					this.root = root;
 				}
 
-				public long GetNextSequence()
+				public int GetNextSequence()
 				{
 					return Interlocked.Increment(ref TypedData<T>.Instance.Sequence);
 				}
@@ -96,7 +95,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 					lock (TypedData<T>.Instance.Items)
 					{
-						return TypedData<T>.Instance.Items.FirstOrDefault(x => id.Equals(x.ToId()));
+						return TypedData<T>.Instance.Items.FirstOrDefault(x => id.ToString() == x.ToId().ToString());
 					}
 				}
 
@@ -130,7 +129,7 @@ namespace ServiceStack.ServiceInterface.Auth
 					for (var i = 0; i < TypedData<T>.Instance.Items.Count; i++)
 					{
 						var o = TypedData<T>.Instance.Items[i];
-						if (!o.ToId().Equals(item)) continue;
+						if (o.ToId().ToString() != item.ToId().ToString()) continue;
 						TypedData<T>.Instance.Items[i] = item;
 						return;
 					}
@@ -167,7 +166,6 @@ namespace ServiceStack.ServiceInterface.Auth
 
 					hash[key] = value;
 				}
-
 			}
 
 			public void AddItemToSet(string setId, string item)

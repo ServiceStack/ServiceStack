@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Moq;
 using NUnit.Framework;
+using ServiceStack.Common.Utils;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
@@ -10,10 +14,75 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
+	[TestFixture, Ignore("OAuth Test with Manual iteration over data stores")]
+	public class OAuthUserSessionWithoutTestSourceTests
+	{
+		private OAuthUserSessionTests tests;
+		private readonly List<IUserAuthRepository> userAuthRepositorys = new List<IUserAuthRepository>();
+
+		OrmLiteConnectionFactory dbFactory = new OrmLiteConnectionFactory(
+			":memory:", false, SqliteOrmLiteDialectProvider.Instance);
+
+		[SetUp]
+		public void SetUp()
+		{
+			tests = new OAuthUserSessionTests();
+			var inMemoryRepo = new InMemoryAuthRepository();
+			inMemoryRepo.Clear();
+			userAuthRepositorys.Add(inMemoryRepo);
+
+			var redisRepo = new RedisAuthRepository(new BasicRedisClientManager());
+			redisRepo.Clear();
+			userAuthRepositorys.Add(redisRepo);
+
+			var sqliteInMemoryRepo = new OrmLiteAuthRepository(dbFactory);
+			dbFactory.Exec(dbCmd => {
+				dbCmd.CreateTable<UserAuth>(true);
+				dbCmd.CreateTable<UserOAuthProvider>(true);
+			});
+			sqliteInMemoryRepo.Clear();
+			userAuthRepositorys.Add(sqliteInMemoryRepo);
+
+			var sqliteDbFactory = new OrmLiteConnectionFactory(
+				"~/App_Data/auth.sqlite".MapAbsolutePath());
+			var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
+			sqliteDbRepo.CreateMissingTables();
+			userAuthRepositorys.Add(sqliteDbRepo);
+		}
+		
+		[Test]
+		public void Does_persist_TwitterOAuth()
+		{
+			userAuthRepositorys.ForEach(x =>
+				tests.Does_persist_TwitterOAuth(x));
+		}
+
+		[Test]
+		public void Does_persist_FacebookOAuth()
+		{
+			userAuthRepositorys.ForEach(x =>
+				tests.Does_persist_FacebookOAuth(x));
+		}
+
+		[Test]
+		public void Does_merge_FacebookOAuth_TwitterOAuth()
+		{
+			userAuthRepositorys.ForEach(x =>
+				tests.Does_merge_FacebookOAuth_TwitterOAuth(x));
+		}
+
+		[Test]
+		public void Can_login_with_user_created_CreateUserAuth()
+		{
+			userAuthRepositorys.ForEach(x =>
+				tests.Can_login_with_user_created_CreateUserAuth(x));
+		}
+	}
+
 	[TestFixture]
 	public class OAuthUserSessionTests
 	{
-		private static OAuthUserSession GetSession()
+		public static OAuthUserSession GetSession()
 		{
 			new RedisClient().FlushAll();
 			var oAuthUserSession = new OAuthUserSession {
@@ -26,19 +95,35 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			get
 			{
-				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager());
-				redisRepo.Clear();				
-				yield return new TestCaseData(redisRepo);
-
 				var inMemoryRepo = new InMemoryAuthRepository();
 				inMemoryRepo.Clear();
 				yield return new TestCaseData(inMemoryRepo);
+
+				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager());
+				redisRepo.Clear();
+				yield return new TestCaseData(redisRepo);
+
+				var dbFactory = new OrmLiteConnectionFactory(
+					":memory:", false, SqliteOrmLiteDialectProvider.Instance);
+				var sqliteRepo = new OrmLiteAuthRepository(dbFactory);
+				sqliteRepo.CreateMissingTables();
+				sqliteRepo.Clear();
+				yield return new TestCaseData(sqliteRepo);
+
+				var dbFilePath = "~/App_Data/auth.sqlite".MapAbsolutePath();
+				if (File.Exists(dbFilePath)) File.Delete(dbFilePath);
+				var sqliteDbFactory = new OrmLiteConnectionFactory(dbFilePath);
+				var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
+				sqliteDbRepo.CreateMissingTables();
+				yield return new TestCaseData(sqliteDbRepo);
 			}
 		}
 
 		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
 		public void Does_persist_TwitterOAuth(IUserAuthRepository userAuthRepository)
 		{
+			((IClearable)userAuthRepository).Clear();
+
 			var mockService = new Mock<IServiceBase>();
 			mockService.Expect(x => x.TryResolve<IUserAuthRepository>())
 				.Returns(userAuthRepository);
@@ -67,7 +152,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(userAuth.Id.ToString(), Is.EqualTo(oAuthUserSession.UserAuthId));
 			Assert.That(userAuth.DisplayName, Is.EqualTo("Demis Bellot TW"));
 
-			var authProviders = userAuthRepository.GetUserAuthProviders(oAuthUserSession.UserAuthId);
+			var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
 			Assert.That(authProviders.Count, Is.EqualTo(1));
 			var authProvider = authProviders[0];
 			Assert.That(authProvider.UserAuthId, Is.EqualTo(userAuth.Id));
@@ -83,6 +168,8 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
 		public void Does_persist_FacebookOAuth(IUserAuthRepository userAuthRepository)
 		{
+			((IClearable)userAuthRepository).Clear();
+
 			var mockService = new Mock<IServiceBase>();
 			mockService.Expect(x => x.TryResolve<IUserAuthRepository>())
 				.Returns(userAuthRepository);
@@ -115,7 +202,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(userAuth.LastName, Is.EqualTo(serviceTokens.LastName));
 			Assert.That(userAuth.Email, Is.EqualTo(serviceTokens.Email));
 
-			var authProviders = userAuthRepository.GetUserAuthProviders(oAuthUserSession.UserAuthId);
+			var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
 			Assert.That(authProviders.Count, Is.EqualTo(1));
 			var authProvider = authProviders[0];
 			Assert.That(authProvider.UserAuthId, Is.EqualTo(userAuth.Id));
@@ -134,6 +221,8 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
 		public void Does_merge_FacebookOAuth_TwitterOAuth(IUserAuthRepository userAuthRepository)
 		{
+			((IClearable)userAuthRepository).Clear();
+
 			var mockService = new Mock<IServiceBase>();
 			mockService.Expect(x => x.TryResolve<IUserAuthRepository>())
 				.Returns(userAuthRepository);
@@ -181,12 +270,64 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(userAuth.LastName, Is.EqualTo(serviceTokensFb.LastName));
 			Assert.That(userAuth.Email, Is.EqualTo(serviceTokensFb.Email));
 
-			var authProviders = userAuthRepository.GetUserAuthProviders(oAuthUserSession.UserAuthId);
+			var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
 			Assert.That(authProviders.Count, Is.EqualTo(2));
 
 			Console.WriteLine(userAuth.Dump());
 			Console.WriteLine(authProviders.Dump());
 		}
 
+		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
+		public void Can_login_with_user_created_CreateUserAuth(IUserAuthRepository userAuthRepository)
+		{
+			((IClearable)userAuthRepository).Clear();
+
+			var request = new Login {
+				UserName = "UserName",
+				Password = "p@55word",
+				Email = "as@if.com",
+				DisplayName = "DisplayName",
+				FirstName = "FirstName",
+				LastName = "LastName",
+			};
+			var loginService = new LoginService {
+				UserAuthRepo = userAuthRepository
+			};
+
+			var response = (LoginResponse)loginService.Post(request);
+			Assert.That(response.UserId, Is.Not.Null);
+
+			var userAuth = userAuthRepository.GetUserAuth(response.UserId);
+			AssertEqual(userAuth, request);
+
+			userAuth = userAuthRepository.GetUserAuthByUserName(request.UserName);
+			AssertEqual(userAuth, request);
+
+			userAuth = userAuthRepository.GetUserAuthByUserName(request.Email);
+			AssertEqual(userAuth, request);
+
+			string userId;
+			var success = userAuthRepository.TryAuthenticate(request.UserName, request.Password, out userId);
+			Assert.That(success, Is.True);
+			Assert.That(userId, Is.Not.Null);
+
+			success = userAuthRepository.TryAuthenticate(request.Email, request.Password, out userId);
+			Assert.That(success, Is.True);
+			Assert.That(userId, Is.Not.Null);
+
+			success = userAuthRepository.TryAuthenticate(request.UserName, "Bad Password", out userId);
+			Assert.That(success, Is.False);
+			Assert.That(userId, Is.Null);
+		}
+
+		private static void AssertEqual(UserAuth userAuth, Login request)
+		{
+			Assert.That(userAuth, Is.Not.Null);
+			Assert.That(userAuth.UserName, Is.EqualTo(request.UserName));
+			Assert.That(userAuth.Email, Is.EqualTo(request.Email));
+			Assert.That(userAuth.DisplayName, Is.EqualTo(request.DisplayName));
+			Assert.That(userAuth.FirstName, Is.EqualTo(request.FirstName));
+			Assert.That(userAuth.LastName, Is.EqualTo(request.LastName));
+		}
 	}
 }

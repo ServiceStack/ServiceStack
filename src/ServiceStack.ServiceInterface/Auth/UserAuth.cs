@@ -6,7 +6,7 @@ namespace ServiceStack.ServiceInterface.Auth
 	public class UserAuth
 	{
 		[AutoIncrement]
-		public long Id { get; set; }
+		public int Id { get; set; }
 		public string UserName { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
@@ -31,8 +31,8 @@ namespace ServiceStack.ServiceInterface.Auth
 	public class UserOAuthProvider
 	{
 		[AutoIncrement]
-		public long Id { get; set; }
-		public long UserAuthId { get; set; }
+		public int Id { get; set; }
+		public int UserAuthId { get; set; }
 		public string Provider { get; set; }
 		public string UserId { get; set; }
 		public string DisplayName { get; set; }

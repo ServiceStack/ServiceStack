@@ -29,7 +29,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 	public interface ITypedRedisClientFacade<T>
 	{
-		long GetNextSequence();
+		int GetNextSequence();
 		T GetById(object id);
 		List<T> GetByIds(IEnumerable ids);
 	}
@@ -67,9 +67,9 @@ namespace ServiceStack.ServiceInterface.Auth
 					this.redisTypedClient = redisTypedClient;
 				}
 
-				public long GetNextSequence()
+				public int GetNextSequence()
 				{
-					return redisTypedClient.GetNextSequence();
+					return (int) redisTypedClient.GetNextSequence();
 				}
 
 				public T GetById(object id)

@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				throw HttpError.Conflict("UserName already exists");
 
 			var newUserAuth = request.TranslateTo<UserAuth>();
-			var createdUser = this.UserAuthRepo.CreateUserAuth(newUserAuth);
+			var createdUser = this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password);
 
 			return new LoginResponse {
 				UserId = createdUser.Id.ToString(),

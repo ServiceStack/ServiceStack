@@ -74,6 +74,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.OrmLite">
+      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -112,6 +115,7 @@
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\OAuthConfig.cs" />
     <Compile Include="Auth\OAuthUserSession.cs" />
+    <Compile Include="Auth\OrmLiteAuthRepository.cs" />
     <Compile Include="Auth\RedisAuthRepository.cs" />
     <Compile Include="Auth\SaltedHash.cs" />
     <Compile Include="Auth\UserAuth.cs" />
