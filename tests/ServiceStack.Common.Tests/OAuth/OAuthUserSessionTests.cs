@@ -54,11 +54,11 @@ namespace ServiceStack.Common.Tests.OAuth
 				sqliteDbRepo.CreateMissingTables();
 				yield return new TestCaseData(sqliteDbRepo);
 
-			    var connStr = "Data Source=.;Initial Catalog=TestDb;Integrated Security=True";
-			    var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerOrmLiteDialectProvider.Instance);
-			    var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
-                sqlServerRepo.CreateMissingTables();
-                yield return new TestCaseData(sqlServerRepo);
+				//var connStr = "Data Source=.;Initial Catalog=TestDb;Integrated Security=True";
+				//var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerOrmLiteDialectProvider.Instance);
+				//var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
+				//sqlServerRepo.CreateMissingTables();
+				//yield return new TestCaseData(sqlServerRepo);
             }
 		}
 

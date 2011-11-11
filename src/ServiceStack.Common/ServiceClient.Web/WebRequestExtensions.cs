@@ -89,7 +89,6 @@ namespace ServiceStack.ServiceClient.Web
             var httpReq = (HttpWebRequest)webRequest;
             httpReq.UserAgent = Env.ServerUserAgent;
             httpReq.Method = "POST";
-            httpReq.Accept = "*/*";
             httpReq.AllowAutoRedirect = false;
             httpReq.KeepAlive = false;
 

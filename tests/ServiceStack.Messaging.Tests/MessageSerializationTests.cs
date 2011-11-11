@@ -17,21 +17,14 @@ namespace ServiceStack.Messaging.Tests
 		}
 
 		[Test]
-		public void Can_Serialize_basic_IMessage()
+		public void Serializing_basic_IMessage_returns_null()
 		{
 			var message = new Message<Greet>(new Greet { Name = "Test" });
 			var messageString = TypeSerializer.SerializeToString(message);
 			Assert.That(messageString, Is.Not.Null);
 
-			try
-			{
-				TypeSerializer.DeserializeFromString<IMessage<Greet>>(messageString);
-			}
-			catch (NotSupportedException)
-			{
-				return;
-			}
-			Assert.Fail("Should've thrown NotSupportedException: Cannot deserialize an interface type");
+			var result = TypeSerializer.DeserializeFromString<IMessage<Greet>>(messageString);
+			Assert.That(result, Is.Null);
 		}
 
 		[Test]

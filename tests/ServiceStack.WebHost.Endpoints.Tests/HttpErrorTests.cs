@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Thread.Sleep(1000);
 
-			Assert.That(webEx.StatusCode, Is.EqualTo(500));
+			Assert.That(webEx.StatusCode, Is.EqualTo(400));
 			Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
 		}
 
