@@ -301,7 +301,7 @@ namespace ServiceStack.ServiceInterface
 		/// <param name="request"></param>
 		public virtual object Execute(IMessage<TRequest> request)
 		{
-			return Run(request.GetBody());
+			return Execute(request.GetBody());
 		}
 	}
 

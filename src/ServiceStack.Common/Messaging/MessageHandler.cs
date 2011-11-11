@@ -133,6 +133,10 @@ namespace ServiceStack.Messaging
 			try
 			{
 				var response = processMessageFn(message);
+			    var responseEx = response as Exception;
+                if (responseEx != null)
+                    throw responseEx;
+
 				this.TotalMessagesProcessed++;
 
 				//If there's no response publish the request message to its OutQ
