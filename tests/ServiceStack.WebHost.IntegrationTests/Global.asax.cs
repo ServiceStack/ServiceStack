@@ -89,5 +89,12 @@ namespace ServiceStack.WebHost.IntegrationTests
 			appHost.Init();
 		}
 
+		protected void Application_EndRequest(object src, EventArgs e)
+		{
+			var mqHost = AppHostBase.Instance.Container.TryResolve<IMessageService>();
+			if (mqHost != null)
+				mqHost.Start();
+		}
+
 	}
 }
