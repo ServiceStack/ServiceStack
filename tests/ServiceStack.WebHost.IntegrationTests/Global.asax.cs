@@ -76,8 +76,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				var redisManager = new BasicRedisClientManager();
 				var mqHost = new RedisMqHost(redisManager, 2, null);
-				mqHost.RegisterHandler<Reverse>(x =>
-					this.Container.Resolve<ReverseService>().Execute(x.GetBody()));
+				mqHost.RegisterHandler<Reverse>(this.Container.Resolve<ReverseService>().Execute);
 				mqHost.Start();
 
 				this.Container.Register((IMessageService)mqHost);
