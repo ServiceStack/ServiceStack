@@ -256,10 +256,10 @@ H3 {{
   <b>from original url:</b>
   <a href=""{3}"">{3}</a>
   <b>in other formats:</b>
-  <a href=""{3}?format=json"">json</a>
-  <a href=""{3}?format=xml"">xml</a>
-  <a href=""{3}?format=csv"">csv</a>
-  <a href=""{3}?format=jsv"">jsv</a>
+  <a href=""{3}format=json"">json</a>
+  <a href=""{3}format=xml"">xml</a>
+  <a href=""{3}format=csv"">csv</a>
+  <a href=""{3}format=jsv"">jsv</a>
 </div>
 
 <div id=""body"">
@@ -419,6 +419,8 @@ function enc(html) {{
 				.Replace("format=html", "")
 				.Replace("format=shtm", "")
 				.TrimEnd('?', '&');
+
+			url += url.Contains("?") ? "&" : "?";
 
 			var now = DateTime.UtcNow;
 
