@@ -110,10 +110,9 @@
     <Compile Include="Auth\IOAuthTokens.cs" />
     <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
-    <Compile Include="Auth\Login.cs" />
-    <Compile Include="Auth\LoginService.cs" />
+    <Compile Include="Auth\RegistrationService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
-    <Compile Include="Auth\OAuthConfig.cs" />
+    <Compile Include="Auth\AuthConfig.cs" />
     <Compile Include="Auth\OAuthUserSession.cs" />
     <Compile Include="Auth\OrmLiteAuthRepository.cs" />
     <Compile Include="Auth\RedisAuthRepository.cs" />

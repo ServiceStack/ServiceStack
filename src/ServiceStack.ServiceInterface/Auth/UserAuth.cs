@@ -35,6 +35,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public int UserAuthId { get; set; }
 		public string Provider { get; set; }
 		public string UserId { get; set; }
+		public string UserName { get; set; }
 		public string DisplayName { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
@@ -48,6 +49,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			if (!withTokens.UserId.IsNullOrEmpty())
 				this.UserId = withTokens.UserId;
+			if (!withTokens.UserName.IsNullOrEmpty())
+				this.UserName = withTokens.UserName;
 			if (!withTokens.RequestToken.IsNullOrEmpty())
 				this.RequestToken = withTokens.RequestToken;
 			if (!withTokens.RequestTokenSecret.IsNullOrEmpty())

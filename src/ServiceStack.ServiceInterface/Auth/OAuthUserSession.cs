@@ -32,6 +32,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string TwitterScreenName { get; set; }
 
 		public string FacebookUserId { get; set; }
+		
+		public string FacebookUserName { get; set; }
 
 		public string FirstName { get; set; }
 
@@ -73,6 +75,10 @@ namespace ServiceStack.ServiceInterface.Auth
 			this.UserAuthId = provider.CreateOrMergeAuthSession(this, tokens);
 		}
 
+		public virtual void OnSaveUserAuth(IServiceBase oAuthService, string userAuthId)
+		{
+		}
+
 		public virtual void OnAuthenticated(IServiceBase oAuthService, IOAuthTokens tokens, Dictionary<string, string> authInfo)
 		{
 			var provider = tokens.Provider;
@@ -80,13 +86,13 @@ namespace ServiceStack.ServiceInterface.Auth
 			if (authProvider != null)
 				authProvider.LoadUserAuth(this, tokens);
 
-			if (provider == TwitterOAuthConfig.Name)
+			if (provider == TwitterAuthConfig.Name)
 			{
 				if (authInfo.ContainsKey("user_id"))
 					tokens.UserId = this.TwitterUserId = authInfo.GetValueOrDefault("user_id");
 
 				if (authInfo.ContainsKey("screen_name"))
-					this.TwitterScreenName = authInfo.GetValueOrDefault("screen_name");
+					tokens.UserName = this.TwitterScreenName = authInfo.GetValueOrDefault("screen_name");
 
 				try
 				{
@@ -100,19 +106,21 @@ namespace ServiceStack.ServiceInterface.Auth
 					Log.Error("Could not retrieve twitter user info for '{0}'".Fmt(TwitterUserId), ex);
 				}
 			}
-			else if (provider == FacebookOAuthConfig.Name)
+			else if (provider == FacebookAuthConfig.Name)
 			{
 				try
 				{
 					var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret);
 					var obj = JsonObject.Parse(json);
 					tokens.UserId = obj.Get("id");
+					tokens.UserName = obj.Get("username");
 					tokens.DisplayName = obj.Get("name");
 					tokens.FirstName = obj.Get("first_name");
 					tokens.LastName = obj.Get("last_name");
 					tokens.Email = obj.Get("email");
 
 					this.FacebookUserId = tokens.UserId ?? this.FacebookUserId;
+					this.FacebookUserName = tokens.UserName ?? this.FacebookUserName;
 					this.DisplayName = tokens.DisplayName ?? this.DisplayName;
 					this.FirstName = tokens.FirstName ?? this.FirstName;
 					this.LastName = tokens.LastName ?? this.LastName;
@@ -127,9 +135,19 @@ namespace ServiceStack.ServiceInterface.Auth
 			authInfo.ForEach((x, y) => tokens.Items[x] = y);
 
 			SaveUserAuth(oAuthService.TryResolve<IUserAuthRepository>(), tokens);
+			OnSaveUserAuth(oAuthService, this.UserAuthId);
 		}
 
-		public virtual void OnAuthenticatedCredentials(IServiceBase serviceBase, string userName) {}
+		public virtual void OnAuthenticatedCredentials(IServiceBase oAuthService, string userName)
+		{
+			var provider = oAuthService.TryResolve<IUserAuthRepository>();
+			if (provider != null)
+			{
+				provider.SaveUserAuth(this);
+			}
+			
+			OnSaveUserAuth(oAuthService, this.UserAuthId);
+		}
 
 		public virtual bool TryAuthenticate(IServiceBase oAuthService, string userName, string password)
 		{
@@ -144,6 +162,8 @@ namespace ServiceStack.ServiceInterface.Auth
 			if (authRepo.TryAuthenticate(userName, password, out useUserName))
 			{
 				this.UserName = userName;
+				authRepo.LoadUserAuth(this, null);
+
 				OnAuthenticatedCredentials(oAuthService, userName);
 				return true;
 			}

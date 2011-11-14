@@ -86,9 +86,9 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-		public RestPath(Type requestType, string path) : this(requestType, path, null, null) {}
+		public RestPath(Type requestType, string path) : this(requestType, path, null, null) { }
 
-			public RestPath(Type requestType, string path, string verbs, string defaultContentType)
+		public RestPath(Type requestType, string path, string verbs, string defaultContentType)
 		{
 			this.RequestType = requestType;
 
@@ -270,7 +270,7 @@ namespace ServiceStack.ServiceHost
 
 			if (requestComponents.Length != this.TotalComponentsCount)
 			{
-				var isValidWildCardPath = this.isWildCardPath 
+				var isValidWildCardPath = this.isWildCardPath
 					&& requestComponents.Length >= this.TotalComponentsCount;
 
 				if (!isValidWildCardPath)

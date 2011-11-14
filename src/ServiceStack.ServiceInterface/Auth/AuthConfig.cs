@@ -9,18 +9,52 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class TwitterOAuthConfig : OAuthConfig
+	public class CredentialsAuthConfig : AuthConfig
 	{
-		public const string Name = "twitter";
-		public static string Realm = "https://api.twitter.com/";
+		public const string Name = AuthService.CredentialsProvider;
+		public static string Realm = "/auth/" + AuthService.CredentialsProvider;
 
-		public TwitterOAuthConfig(IResourceManager appSettings)
+		public CredentialsAuthConfig()
+		{
+			this.Provider = Name;
+			this.AuthRealm = Realm;
+		}
+
+		public CredentialsAuthConfig(IResourceManager appSettings)
 			: base(appSettings, Realm, Name)
 		{
 		}
 	}
 
-	public class FacebookOAuthConfig : OAuthConfig
+	public class BasicAuthConfig : AuthConfig
+	{
+		public const string Name = AuthService.BasicProvider;
+		public static string Realm = "/auth/" + AuthService.BasicProvider;
+
+		public BasicAuthConfig()
+		{
+			this.Provider = Name;
+			this.AuthRealm = Realm;
+		}
+
+		public BasicAuthConfig(IResourceManager appSettings)
+			: base(appSettings, Realm, Name)
+		{
+		}
+	}
+
+	public class TwitterAuthConfig : AuthConfig
+	{
+		public const string Name = "twitter";
+		public static string Realm = "https://api.twitter.com/";
+
+		public TwitterAuthConfig(IResourceManager appSettings)
+			: base(appSettings, Realm, Name)
+		{
+		}
+	}
+
+	public class FacebookAuthConfig : AuthConfig
 	{
 		public const string Name = "facebook";
 		public static string Realm = "https://graph.facebook.com/";
@@ -30,7 +64,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string AppSecret { get; set; }
 		public string[] Permissions { get; set; }
 
-		public FacebookOAuthConfig(IResourceManager appSettings)
+		public FacebookAuthConfig(IResourceManager appSettings)
 			: base(appSettings, Realm, Name, "AppId", "AppSecret")
 		{
 			this.AppId = appSettings.GetString("oauth.facebook.AppId");
@@ -78,29 +112,29 @@ namespace ServiceStack.ServiceInterface.Auth
 	}
 
 
-	public class OAuthConfig
+	public class AuthConfig
 	{
-		public OAuthConfig() { }
+		public AuthConfig() { }
 
-		public OAuthConfig(IResourceManager appSettings, string oAuthRealm, string oAuthProvider)
-			: this(appSettings, oAuthRealm, oAuthProvider, "ConsumerKey", "ConsumerSecret") { }
+		public AuthConfig(IResourceManager appSettings, string authRealm, string oAuthProvider)
+			: this(appSettings, authRealm, oAuthProvider, "ConsumerKey", "ConsumerSecret") { }
 
-		public OAuthConfig(IResourceManager appSettings, string oAuthRealm, string oAuthProvider,
+		public AuthConfig(IResourceManager appSettings, string authRealm, string oAuthProvider,
 			string consumerKeyName, string consumerSecretName)
 		{
-			oAuthRealm = appSettings.Get("OAuthRealm", oAuthRealm);
+			this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
 
 			this.Provider = oAuthProvider;
 			this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
 			this.ConsumerKey = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerKeyName));
 			this.ConsumerSecret = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerSecretName));
 
-			this.RequestTokenUrl = appSettings.Get("oauth.{0}.RequestTokenUrl", oAuthRealm + "oauth/request_token");
-			this.AuthorizeUrl = appSettings.Get("oauth.{0}.AuthorizeUrl", oAuthRealm + "oauth/authorize");
-			this.AccessTokenUrl = appSettings.Get("oauth.{0}.AccessTokenUrl", oAuthRealm + "oauth/access_token");
+			this.RequestTokenUrl = appSettings.Get("oauth.{0}.RequestTokenUrl", authRealm + "oauth/request_token");
+			this.AuthorizeUrl = appSettings.Get("oauth.{0}.AuthorizeUrl", authRealm + "oauth/authorize");
+			this.AccessTokenUrl = appSettings.Get("oauth.{0}.AccessTokenUrl", authRealm + "oauth/access_token");
 		}
 
-		public string OAuthRealm { get; set; }
+		public string AuthRealm { get; set; }
 		public string Provider { get; set; }
 		public string CallbackUrl { get; set; }
 		public string ConsumerKey { get; set; }

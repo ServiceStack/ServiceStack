@@ -36,7 +36,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public EndpointHostConfig Config { get; set; }
 
-		public void RegisterService(Type serviceType)
+		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
 			Config.ServiceManager.RegisterService(serviceType);
 		}

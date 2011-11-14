@@ -5,13 +5,14 @@ using System.Reflection;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using Funq;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost
 {
 	public class ServiceManager
 		: IDisposable
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof (ServiceManager));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceManager));
 
 		public Container Container { get; private set; }
 		public ServiceController ServiceController { get; private set; }
@@ -27,8 +28,8 @@ namespace ServiceStack.ServiceHost
 					+ "To register your services, please provide the assemblies where your web services are defined.");
 
 			this.Container = new Container();
-//			this.ServiceController = new ServiceController(
-//				() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
+			//			this.ServiceController = new ServiceController(
+			//				() => assembliesWithServices.ToList().SelectMany(x => x.GetTypes()));
 			this.ServiceController = new ServiceController(() => GetAssemblyTypes(assembliesWithServices));
 		}
 
@@ -40,13 +41,13 @@ namespace ServiceStack.ServiceHost
 				this.Init();
 			}
 		}
-		
+
 		private List<Type> GetAssemblyTypes(Assembly[] assembliesWithServices)
 		{
 			var results = new List<Type>();
 			string assemblyName = null;
 			string typeName = null;
-			
+
 			try
 			{
 				foreach (var assembly in assembliesWithServices)
@@ -101,16 +102,26 @@ namespace ServiceStack.ServiceHost
 
 		public void RegisterService<T>()
 		{
+			if (!typeof(T).IsGenericType
+				|| typeof(T).GetGenericTypeDefinition() != typeof(IService<>))
+				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
+
 			this.ServiceController.RegisterService(typeFactory, typeof(T));
 			typeFactory.Register<T>();
 		}
 
-		public void RegisterService(Type serviceType)
+		public Type RegisterService(Type serviceType)
 		{
+			var genericServiceType = serviceType.GetTypeWithGenericTypeDefinitionOf(typeof(IService<>));
+			if (genericServiceType == null)
+				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(serviceType.FullName));
+
 			this.ServiceController.RegisterService(typeFactory, serviceType);
 			typeFactory.RegisterTypes(serviceType);
+			
+			return genericServiceType;
 		}
-	
+
 		public object Execute(object dto)
 		{
 			return this.ServiceController.Execute(dto, null);

@@ -226,10 +226,16 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+		public static void WriteError(this IHttpResponse response, IHttpRequest httpReq, object dto, string errorMessage)
+		{
+			WriteErrorToResponse(response, httpReq.ResponseContentType, dto.GetType().Name, errorMessage, null,
+				HttpStatusCode.InternalServerError);
+		}
+
 		public static void WriteErrorToResponse(this IHttpResponse response, string contentType,
 			string operationName, string errorMessage, Exception ex)
 		{
-			WriteErrorToResponse(response, contentType, operationName, errorMessage, ex, 
+			WriteErrorToResponse(response, contentType, operationName, errorMessage, ex,
 				HttpStatusCode.InternalServerError);
 		}
 

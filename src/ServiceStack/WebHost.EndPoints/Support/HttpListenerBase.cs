@@ -333,9 +333,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			get { return EndpointHost.Config; }
 		}
 
-		public void RegisterService(Type serviceType)
+		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
-			EndpointHost.Config.ServiceManager.RegisterService(serviceType);
+			var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);
+			var requestType = genericService.GetGenericArguments()[0];
+			foreach (var atRestPath in atRestPaths)
+			{
+				this.Routes.Add(requestType, atRestPath, null, null);
+			}
 		}
 
 		public virtual void Dispose()

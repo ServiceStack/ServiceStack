@@ -68,7 +68,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		// Settable by the user
 		public string xAuthUsername, xAuthPassword;
 
-		OAuthConfig config;
+		AuthConfig config;
 		public string RequestToken, RequestTokenSecret;
 		public string AuthorizationToken, AuthorizationVerifier;
 		public string AccessToken, AccessTokenSecret;//, AccessScreenName;
@@ -76,7 +76,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public Dictionary<string, string> AuthInfo = new Dictionary<string, string>();
 
 		// Constructor for standard OAuth
-		public OAuthAuthorizer(OAuthConfig config)
+		public OAuthAuthorizer(AuthConfig config)
 		{
 			this.config = config;
 		}
@@ -238,7 +238,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		// Assign the result to the Authorization header, like this:
 		// request.Headers [HttpRequestHeader.Authorization] = AuthorizeRequest (...)
 		//
-		public static string AuthorizeRequest(OAuthConfig config, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
+		public static string AuthorizeRequest(AuthConfig config, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
 		{
 			var headers = new Dictionary<string, string>() {
 				{ "oauth_consumer_key", config.ConsumerKey },
@@ -278,7 +278,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		//
 		// Used to authorize an HTTP request going to TwitPic
 		//
-		public static void AuthorizeTwitPic(OAuthConfig config, HttpWebRequest wc, string oauthToken, string oauthTokenSecret)
+		public static void AuthorizeTwitPic(AuthConfig config, HttpWebRequest wc, string oauthToken, string oauthTokenSecret)
 		{
 			var headers = new Dictionary<string, string>() {
 				{ "oauth_consumer_key", config.ConsumerKey },

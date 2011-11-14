@@ -18,7 +18,10 @@ namespace ServiceStack.Common.Tests.OAuth
 {
     [TestFixture]
 	public class OAuthUserSessionTests
-	{
+    {
+		//Can only use either 1 OrmLiteDialectProvider at 1-time SqlServer or Sqlite.
+    	public static bool UseSqlServer = true;
+
 		public static OAuthUserSession GetSession()
 		{
 			new RedisClient().FlushAll();
@@ -40,26 +43,31 @@ namespace ServiceStack.Common.Tests.OAuth
 				redisRepo.Clear();
 				yield return new TestCaseData(redisRepo);
 
-				var dbFactory = new OrmLiteConnectionFactory(
-					":memory:", false, SqliteOrmLiteDialectProvider.Instance);
-				var sqliteRepo = new OrmLiteAuthRepository(dbFactory);
-				sqliteRepo.CreateMissingTables();
-				sqliteRepo.Clear();
-				yield return new TestCaseData(sqliteRepo);
+				if (UseSqlServer)
+				{
+					var connStr = @"Data Source=.\SQLEXPRESS;AttachDbFilename=|DataDirectory|\App_Data\auth.mdf;Integrated Security=True;Connect Timeout=30;User Instance=True";
+					var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerOrmLiteDialectProvider.Instance);
+					var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
+					sqlServerRepo.DropAndReCreateTables();
+					yield return new TestCaseData(sqlServerRepo);
+				}
+				else
+				{
+					var dbFactory = new OrmLiteConnectionFactory(
+						":memory:", false, SqliteOrmLiteDialectProvider.Instance);
+					var sqliteRepo = new OrmLiteAuthRepository(dbFactory);
+					sqliteRepo.CreateMissingTables();
+					sqliteRepo.Clear();
+					yield return new TestCaseData(sqliteRepo);
 
-				var dbFilePath = "~/App_Data/auth.sqlite".MapAbsolutePath();
-				if (File.Exists(dbFilePath)) File.Delete(dbFilePath);
-				var sqliteDbFactory = new OrmLiteConnectionFactory(dbFilePath);
-				var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
-				sqliteDbRepo.CreateMissingTables();
-				yield return new TestCaseData(sqliteDbRepo);
-
-				//var connStr = "Data Source=.;Initial Catalog=TestDb;Integrated Security=True";
-				//var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerOrmLiteDialectProvider.Instance);
-				//var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
-				//sqlServerRepo.CreateMissingTables();
-				//yield return new TestCaseData(sqlServerRepo);
-            }
+					var dbFilePath = "~/App_Data/auth.sqlite".MapAbsolutePath();
+					if (File.Exists(dbFilePath)) File.Delete(dbFilePath);
+					var sqliteDbFactory = new OrmLiteConnectionFactory(dbFilePath);
+					var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
+					sqliteDbRepo.CreateMissingTables();
+					yield return new TestCaseData(sqliteDbRepo);
+				}
+			}
 		}
 
 		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
@@ -76,7 +84,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			MockOAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
 
 			var twitterTokens = new OAuthTokens {
-				Provider = TwitterOAuthConfig.Name,
+				Provider = TwitterAuthConfig.Name,
 				RequestToken = "JGz2CcwqgB1GR5e0EmGFxzyxGTw2rwEFFcC8a9o7g",
 				RequestTokenSecret = "qkCdURJ2R10bMieVQZZad7iSwWkPYJmtBYzPoM9q0",
 				UserId = "133371690876022785",
@@ -127,7 +135,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			var service = mockService.Object;
 			var facebookTokens = new OAuthTokens {
-				Provider = FacebookOAuthConfig.Name,
+				Provider = FacebookAuthConfig.Name,
 				AccessTokenSecret = "AAADPaOoR848BAMkQIZCRIKnVWZAvcKWqo7Ibvec8ebV9vJrfZAz8qVupdu5EbjFzmMmbwUFDbcNDea9H6rOn5SVn8es7KYZD",
 			};
 			var authInfo = new Dictionary<string, string> { };
@@ -181,7 +189,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			};
 
 			var facebookTokens = new OAuthTokens {
-				Provider = FacebookOAuthConfig.Name,
+				Provider = FacebookAuthConfig.Name,
 				AccessTokenSecret = "AAADDDCCCoR848BAMkQIZCRIKnVWZAvcKWqo7Ibvec8ebV9vJrfZAz8qVupdu5EbjFzmMmbwUFDbcNDea9H6rOn5SVn8es7KYZD",
 			};
 
@@ -191,7 +199,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			var serviceTokensTw = MockOAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
 
 			var twitterTokens = new OAuthTokens {
-				Provider = TwitterOAuthConfig.Name,
+				Provider = TwitterAuthConfig.Name,
 				RequestToken = "JGGZZ22CCqgB1GR5e0EmGFxzyxGTw2rwEFFcC8a9o7g",
 				RequestTokenSecret = "qKKCCUUJ2R10bMieVQZZad7iSwWkPYJmtBYzPoM9q0",
 				UserId = "133371690876022785",
@@ -225,7 +233,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			((IClearable)userAuthRepository).Clear();
 
-			var request = new Login {
+			var request = new Registration {
 				UserName = "UserName",
 				Password = "p@55word",
 				Email = "as@if.com",
@@ -233,7 +241,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				FirstName = "FirstName",
 				LastName = "LastName",
 			};
-			var loginService = new LoginService {
+			var loginService = new RegistrationService {
 				UserAuthRepo = userAuthRepository
 			};
 
@@ -245,7 +253,7 @@ namespace ServiceStack.Common.Tests.OAuth
                 Assert.Fail("HttpResult found: " + httpResult.Dump());
             }
 
-            var response = (LoginResponse)responseObj;
+            var response = (RegistrationResponse)responseObj;
 			Assert.That(response.UserId, Is.Not.Null);
 
 			var userAuth = userAuthRepository.GetUserAuth(response.UserId);
@@ -271,7 +279,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(userId, Is.Null);
 		}
 
-		private static void AssertEqual(UserAuth userAuth, Login request)
+		private static void AssertEqual(UserAuth userAuth, Registration request)
 		{
 			Assert.That(userAuth, Is.Not.Null);
 			Assert.That(userAuth.UserName, Is.EqualTo(request.UserName));

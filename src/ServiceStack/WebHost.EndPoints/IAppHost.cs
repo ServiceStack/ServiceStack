@@ -20,6 +20,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 		EndpointHostConfig Config { get; }
 
-		void RegisterService(Type serviceType);
+		void RegisterService(Type serviceType, params string[] atRestPaths);
 	}
 }

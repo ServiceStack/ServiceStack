@@ -1,4 +1,6 @@
 using System;
+using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using ServiceStack.Common;
@@ -8,6 +10,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -42,7 +45,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public static string DefaultOAuthProvider { get; private set; }
 		public static string DefaultOAuthRealm { get; private set; }
-		public static OAuthConfig[] OAuthConfigs { get; private set; }
+		public static AuthConfig[] AuthConfigs { get; private set; }
 		public static Func<IOAuthSession> SessionFactory { get; private set; }
 
 		public static string GetSessionKey(string sessionId)
@@ -50,35 +53,46 @@ namespace ServiceStack.ServiceInterface.Auth
 			return IdUtils.CreateUrn<IOAuthSession>(sessionId);
 		}
 
-		public static void Register(IAppHost appHost, Func<IOAuthSession> sessionFactory, params OAuthConfig[] oAuthConfigs)
+		public static void Init(IAppHost appHost, Func<IOAuthSession> sessionFactory, params AuthConfig[] authConfigs)
 		{
-			if (oAuthConfigs.Length == 0)
-				throw new ArgumentNullException("oAuthConfigs");
+			if (authConfigs.Length == 0)
+				throw new ArgumentNullException("authConfigs");
 
-			DefaultOAuthProvider = oAuthConfigs[0].Provider;
-			DefaultOAuthRealm = oAuthConfigs[0].OAuthRealm;
+			DefaultOAuthProvider = authConfigs[0].Provider;
+			DefaultOAuthRealm = authConfigs[0].AuthRealm;
 
-			OAuthConfigs = oAuthConfigs;
+			AuthConfigs = authConfigs;
 			SessionFactory = sessionFactory;
 			appHost.RegisterService<AuthService>();
 
-			SessionFeature.Register(appHost);
+			SessionFeature.Init(appHost);
 
 			appHost.RequestFilters.Add((req, res, dto) => {
 				var requiresAuth = dto.GetType().FirstAttribute<AuthenticateAttribute>();
+
 				if (requiresAuth != null)
 				{
-					var oAuthConfig = OAuthConfigs.FirstOrDefault(x => x.Provider == requiresAuth.Provider)
-						?? oAuthConfigs[0];
+					var matchingOAuthConfigs = AuthConfigs.Where(x =>
+						requiresAuth.Provider.IsNullOrEmpty() 
+						|| x.Provider == requiresAuth.Provider).ToList();
 
-					var sessionId = req.GetItemOrCookie("ss-psession");
+					if (matchingOAuthConfigs.Count == 0)
+					{
+						res.WriteError(req, dto, "No OAuth Configs found matching {0} provider"
+							.Fmt(requiresAuth.Provider ?? "any"));
+						res.Close();
+						return;
+					}
+
 					using (var cache = appHost.GetCacheClient())
 					{
+						var sessionId = req.GetPermanentSessionId();
 						var session = sessionId != null ? cache.GetSession(sessionId) : null;
-						if (session == null || !session.IsAuthorized(oAuthConfig.Provider))
+
+						if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
 						{
 							res.StatusCode = (int)HttpStatusCode.Unauthorized;
-							res.AddHeader(HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(oAuthConfig.OAuthRealm));
+							res.AddHeader(HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(matchingOAuthConfigs[0].AuthRealm));
 							res.Close();
 							return;
 						}
@@ -87,13 +101,25 @@ namespace ServiceStack.ServiceInterface.Auth
 			});
 		}
 
+		private void AssertAuthProviders()
+		{
+			if (AuthConfigs == null || AuthConfigs.Length == 0)
+				throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
+		}
+
 		public override object OnGet(Auth request)
 		{
-			var provider = request.provider ?? OAuthConfigs[0].Provider;
+			AssertAuthProviders();
 
-			var oAuthConfig = OAuthConfigs.FirstOrDefault(x => x.Provider == provider);
+			var provider = request.provider ?? AuthConfigs[0].Provider;
+			if (provider == BasicProvider || provider == CredentialsProvider)
+			{
+				return CredentialsAuth(request);
+			}
+
+			var oAuthConfig = AuthConfigs.FirstOrDefault(x => x.Provider == provider);
 			if (oAuthConfig == null)
-				throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'");
+				throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));
 
 			var session = this.GetSession();
 
@@ -120,9 +146,16 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public override object OnPost(Auth request)
 		{
+			return CredentialsAuth(request);
+		}
+
+		private object CredentialsAuth(Auth request)
+		{
+			AssertAuthProviders();
+
 			request.provider.ThrowIfNullOrEmpty("provider");
 
-			if (request.provider != BasicProvider || request.provider != CredentialsProvider)
+			if (request.provider != BasicProvider && request.provider != CredentialsProvider)
 				throw new ArgumentException("Provider must be either 'basic' or 'credentials'");
 
 			var session = this.GetSession();
@@ -141,7 +174,9 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			if (session.TryAuthenticate(this, userName, password))
-			{				
+			{
+				this.SaveSession(session);
+
 				return new AuthResponse {
 					UserName = userName,
 					SessionId = session.Id,

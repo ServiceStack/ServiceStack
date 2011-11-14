@@ -48,7 +48,7 @@ namespace ServiceStack.ServiceInterface
 		public static string GetSessionId(this IServiceBase service)
 		{
 			var req = service.RequestContext.Get<IHttpRequest>();
-			var id = req.GetItemOrCookie("ss-psession");
+			var id = req.GetPermanentSessionId();
 			if (id == null)
 				throw new ArgumentNullException("Session not set. Is Session being set in RequestFilters?");
 

@@ -6,6 +6,7 @@ namespace ServiceStack.ServiceInterface.Auth
 	{
 		string Provider { get; set; }
 		string UserId { get; set; }
+		string UserName { get; set; }
 		string DisplayName { get; set; }
 		string FirstName { get; set; }
 		string LastName { get; set; }
@@ -26,6 +27,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public string Provider { get; set; }
 		public string UserId { get; set; }
+		public string UserName { get; set; }
 		public string DisplayName { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }

@@ -1,33 +1,47 @@
 ﻿using System;
+using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
 {
-	public class SessionFeature
+	public static class SessionFeature
 	{
+		public const string SessionId = "ss-id";
+		public const string PermanentSessionId = "ss-pid";
+
 		private static bool alreadyConfigured;
 
-		public static void Register(IAppHost appHost)
+		public static void Init(IAppHost appHost)
 		{
 			if (alreadyConfigured) return;
 			alreadyConfigured = true;
 
 			//Add permanent and session cookies if not already set.
 			appHost.RequestFilters.Add((req, res, dto) => {
-				if (req.GetCookieValue("ss-session") == null)
+				if (req.GetCookieValue(SessionId) == null)
 				{
-					var sessionId = Guid.NewGuid().ToString("N");
-					res.SetSessionCookie("ss-session", sessionId);
-					req.Items["ss-session"] = sessionId;
+					var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+					res.SetSessionCookie(SessionId, sessionId);
+					req.Items[SessionId] = sessionId;
 				}
-				if (req.GetCookieValue("ss-psession") == null)
+				if (req.GetCookieValue(PermanentSessionId) == null)
 				{
-					var permanentId = Guid.NewGuid().ToString("N");
-					res.SetPermanentCookie("ss-psession", permanentId);
-					req.Items["ss-psession"] = permanentId;
+					var permanentId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+					res.SetPermanentCookie(PermanentSessionId, permanentId);
+					req.Items[PermanentSessionId] = permanentId;
 				}
 			});
+		}
+
+		public static string GetPermanentSessionId(this IHttpRequest httpReq)
+		{
+			return httpReq.GetItemOrCookie(PermanentSessionId);
+		}
+
+		public static string GetTemporarySessionId(this IHttpRequest httpReq)
+		{
+			return httpReq.GetItemOrCookie(SessionId);
 		}
 	}
 }

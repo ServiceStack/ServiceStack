@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text.RegularExpressions;
 using ServiceStack.Common;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -11,7 +13,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		//http://stackoverflow.com/questions/3588623/c-sharp-regex-for-a-username-with-a-few-restrictions
 		public Regex ValidUserNameRegEx = new Regex(@"^(?=.{3,15}$)([A-Za-z0-9][._-]?)*$", RegexOptions.Compiled);
 
-		private IDbConnectionFactory dbFactory;
+		private readonly IDbConnectionFactory dbFactory;
 
 		public OrmLiteAuthRepository(IDbConnectionFactory dbFactory)
 		{
@@ -26,18 +28,33 @@ namespace ServiceStack.ServiceInterface.Auth
 			});
 		}
 
+		public void DropAndReCreateTables()
+		{
+			dbFactory.Exec(dbCmd => {
+				dbCmd.CreateTable<UserAuth>(true);
+				dbCmd.CreateTable<UserOAuthProvider>(true);
+			});
+		}
+
 		public UserAuth CreateUserAuth(UserAuth newUser, string password)
 		{
 			newUser.ThrowIfNull("newUser");
-			newUser.UserName.ThrowIfNullOrEmpty("UserName");
-			password.ThrowIfNullOrEmpty("PasswordHash");
-			if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
-				throw new ArgumentException("UserName contains invalid characters", "UserName");
+			password.ThrowIfNullOrEmpty("password");
+
+			if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
+				throw new ArgumentNullException("UserName or Email is required");
+
+			if (!newUser.UserName.IsNullOrEmpty())
+			{
+				if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
+					throw new ArgumentException("UserName contains invalid characters", "UserName");
+			}
 
 			return dbFactory.Exec(dbCmd => {
-				var existingUser = dbCmd.FirstOrDefault<UserAuth>("UserName = {0}", newUser.UserName);
+			    var effectiveUserName = newUser.UserName ?? newUser.Email;
+				var existingUser = GetUserAuthByUserName(dbCmd, effectiveUserName);
 				if (existingUser != null)
-					throw new ArgumentException("User already exists", "UserName");
+					throw new ArgumentException("User {0} already exists".Fmt(effectiveUserName));
 
 				var saltedHash = new SaltedHash();
 				string salt;
@@ -56,14 +73,17 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public UserAuth GetUserAuthByUserName(string userNameOrEmail)
 		{
-			return dbFactory.Exec(dbCmd => {
-				var isEmail = userNameOrEmail.Contains("@");
-				var userAuth = isEmail
-					? dbCmd.FirstOrDefault<UserAuth>("Email = {0}", userNameOrEmail)
-					: dbCmd.FirstOrDefault<UserAuth>("UserName = {0}", userNameOrEmail);
+			return dbFactory.Exec(dbCmd => GetUserAuthByUserName(dbCmd, userNameOrEmail));
+		}
 
-				return userAuth;
-			});
+		private static UserAuth GetUserAuthByUserName(IDbCommand dbCmd, string userNameOrEmail)
+		{
+			var isEmail = userNameOrEmail.Contains("@");
+			var userAuth = isEmail
+			    ? dbCmd.FirstOrDefault<UserAuth>("Email = {0}", userNameOrEmail)
+			    : dbCmd.FirstOrDefault<UserAuth>("UserName = {0}", userNameOrEmail);
+
+			return userAuth;
 		}
 
 		public bool TryAuthenticate(string userName, string password, out string userId)
@@ -105,6 +125,26 @@ namespace ServiceStack.ServiceInterface.Auth
 			return dbFactory.Exec(dbCmd => dbCmd.GetByIdOrDefault<UserAuth>(userAuthId));
 		}
 
+		public void SaveUserAuth(IOAuthSession oAuthSession)
+		{
+			dbFactory.Exec(dbCmd => {
+				
+				var userAuth = !oAuthSession.UserAuthId.IsNullOrEmpty()
+					? dbCmd.GetByIdOrDefault<UserAuth>(oAuthSession.UserAuthId)
+					: oAuthSession.TranslateTo<UserAuth>();
+
+				if (userAuth.Id == default(int) && !oAuthSession.UserAuthId.IsNullOrEmpty())
+					userAuth.Id = int.Parse(oAuthSession.UserAuthId);
+
+				dbCmd.Save(userAuth);
+			});
+		}
+
+		public void SaveUserAuth(UserAuth userAuth)
+		{
+			dbFactory.Exec(dbCmd => dbCmd.Save(userAuth));
+		}
+
 		public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
 		{
 			return dbFactory.Exec(dbCmd =>
@@ -113,13 +153,19 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public UserAuth GetUserAuth(IOAuthSession authSession, IOAuthTokens tokens)
 		{
-			if (tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty()) return null;
-
 			if (!authSession.UserAuthId.IsNullOrEmpty())
 			{
 				var userAuth = GetUserAuth(authSession.UserAuthId);
 				if (userAuth != null) return userAuth;
 			}
+			if (!authSession.UserName.IsNullOrEmpty())
+			{
+				var userAuth = GetUserAuthByUserName(authSession.UserName);
+				if (userAuth != null) return userAuth;
+			}
+
+			if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty()) 
+				return null;
 
 			return dbFactory.Exec(dbCmd => {
 				var oAuthProvider = dbCmd.FirstOrDefault<UserOAuthProvider>(
