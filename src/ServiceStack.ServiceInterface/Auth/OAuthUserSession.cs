@@ -53,7 +53,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public virtual bool IsAnyAuthorized()
 		{
-			return ProviderOAuthAccess
+			return !this.UserName.IsNullOrEmpty() 
+				|| ProviderOAuthAccess
 				.Any(x => !string.IsNullOrEmpty(x.AccessTokenSecret) 
 					&& !string.IsNullOrEmpty(x.AccessToken));
 		}
