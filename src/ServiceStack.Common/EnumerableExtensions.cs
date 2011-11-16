@@ -69,6 +69,26 @@ namespace ServiceStack.Common
 			var hasNoMoreLeftAsWell = !otherEnum.MoveNext();
 			return hasNoMoreLeftAsWell;
 		}
-		 
+
+		public static IEnumerable<T[]> BatchesOf<T>(this IEnumerable<T> sequence, int batchSize)
+		{
+			var batch = new List<T>(batchSize);
+			foreach (var item in sequence)
+			{
+				batch.Add(item);
+				if (batch.Count >= batchSize)
+				{
+					yield return batch.ToArray();
+					batch.Clear();
+				}
+			}
+
+			if (batch.Count > 0)
+			{
+				yield return batch.ToArray();
+				batch.Clear();
+			}
+		}
+
 	}
 }
