@@ -14,6 +14,18 @@ using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
+	/// <summary>
+	/// Inject logic into existing services by introspecting the request and injecting your own
+	/// validation logic. Exceptions thrown will have the same behaviour as if the service threw it.
+	/// 
+	/// If a non-null object is returned the request will short-circuit and return that response.
+	/// </summary>
+	/// <param name="service">The instance of the service</param>
+	/// <param name="httpMethod">GET,POST,PUT,DELETE</param>
+	/// <param name="requestDto"></param>
+	/// <returns>Response DTO; non-null will short-circuit execution and return that response</returns>
+	public delegate object ValidateFn(IServiceBase service, string httpMethod, object requestDto);
+
 	public class Auth
 	{
 		public string provider { get; set; }
@@ -47,6 +59,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public static string DefaultOAuthRealm { get; private set; }
 		public static AuthConfig[] AuthConfigs { get; private set; }
 		public static Func<IOAuthSession> SessionFactory { get; private set; }
+		public static ValidateFn ValidateFn { get; set; }
 
 		public static string GetSessionKey(string sessionId)
 		{
@@ -109,6 +122,12 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public override object OnGet(Auth request)
 		{
+			if (ValidateFn != null)
+			{
+				var response = ValidateFn(this, HttpMethods.Get, request);
+				if (response != null) return response;
+			}
+
 			AssertAuthProviders();
 
 			var provider = request.provider ?? AuthConfigs[0].Provider;
@@ -146,6 +165,12 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public override object OnPost(Auth request)
 		{
+			if (ValidateFn != null)
+			{
+				var response = ValidateFn(this, HttpMethods.Get, request);
+				if (response != null) return response;
+			}
+
 			return CredentialsAuth(request);
 		}
 

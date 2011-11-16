@@ -32,6 +32,7 @@ namespace ServiceStack.ServiceInterface.Auth
 	public class RegistrationService : RestServiceBase<Registration>
 	{
 		public IUserAuthRepository UserAuthRepo { get; set; }
+		public static ValidateFn ValidateFn { get; set; }
 
 		public static void Init(IAppHost appHost)
 		{
@@ -49,6 +50,12 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// </summary>
 		public override object OnPost(Registration request)
 		{
+			if (ValidateFn != null)
+			{
+				var response = ValidateFn(this, HttpMethods.Get, request);
+				if (response != null) return response;
+			}
+
 			AssertUserAuthRepo();
 
 			request.Password.ThrowIfNullOrEmpty("Password");
@@ -77,6 +84,12 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// </summary>
 		public object UpdateUserAuth(Registration request)
 		{
+			if (ValidateFn != null)
+			{
+				var response = ValidateFn(this, HttpMethods.Get, request);
+				if (response != null) return response;
+			}
+
 			if (request.UserName.IsNullOrEmpty() && request.Email.IsNullOrEmpty())
 				throw new ArgumentNullException("UserName or Email required");
 
