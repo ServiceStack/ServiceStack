@@ -67,7 +67,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeFilters;
 				}
 				httpResult.RequestContext = serializationContext;
-				var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(httpReq.ResponseContentType);
+                serializationContext.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
+                var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(serializationContext.ResponseContentType);
 				return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext, bodyPrefix, bodySuffix);
 			}
 

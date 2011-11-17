@@ -73,9 +73,11 @@ namespace ServiceStack.ServiceHost
 			get { return this.httpReq.ContentType; }
 		}
 
+	    private string responseContentType;
 		public string ResponseContentType
 		{
-			get { return this.httpReq.ResponseContentType; }
+            get { return responseContentType ?? this.httpReq.ResponseContentType; }
+            set { responseContentType = value; }
 		}
 
 		public T Get<T>() where T : class

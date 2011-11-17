@@ -127,12 +127,6 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="T:ServiceStack.Messaging.Message`1">
-            <summary>
-            Basic implementation of IMessage[T]
-            </summary>
-            <typeparam name="T"></typeparam>
-        </member>
         <member name="T:ServiceStack.DataAccess.IBasicPersistenceProvider`1">
             <summary>
             For providers that want a cleaner API with a little more perf
@@ -1032,6 +1026,12 @@
             <summary>
             Util class to create unique queue names for runtime types
             </summary>
+        </member>
+        <member name="T:ServiceStack.Messaging.Message`1">
+            <summary>
+            Basic implementation of IMessage[T]
+            </summary>
+            <typeparam name="T"></typeparam>
         </member>
         <member name="T:ServiceStack.LogicFacade.IServiceModelFinder">
             <summary>
