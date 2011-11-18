@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-  <metadata>
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack</id> 
-    <version>3.0.5</version> 
+    <version>3.0.6</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
@@ -15,11 +15,15 @@ Ultimately providing a clean, succinct, strong-typed API, for a friction-free de
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
-    <iconUrl>http://www.servicestack.net/logo-32x32.png</iconUrl>
+    <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO</tags>
     <language>en-US</language> 
+    <copyright>Liquidbit 2011 and contributors</copyright>
     <dependencies>
       <dependency id="WebActivator" version="1.4" />
+      <dependency id="ServiceStack.Common" />
+      <dependency id="ServiceStack.Redis" />
+      <dependency id="ServiceStack.OrmLite.SqlServer" />
     </dependencies> 
   </metadata> 
 </package>

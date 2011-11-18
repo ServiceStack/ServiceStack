@@ -36,3 +36,7 @@ _ReSharper*/
 App_Data/
 build/*.dll
 *.user
+
+release/latest/
+*.nupkg
+release/*
