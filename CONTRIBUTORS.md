@@ -17,3 +17,4 @@
  - [kcherenkov](https://github.com/kcherenkov) (Konstantin Cherenkov)
  - [timryan](https://github.com/timryan) (Tim Ryan)
  - [letssellsomebananas](https://github.com/letssellsomebananas) (Tymek Majewski)
+ - [danbarua](https://github.com/danbarua) (Dan Barua)
