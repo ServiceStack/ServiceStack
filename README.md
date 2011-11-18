@@ -270,7 +270,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [Iristyle](https://github.com/Iristyle) (Ethan Brown)
  - [superlogical](https://github.com/superlogical) (Jake Scott)
  - [itamar82](https://github.com/itamar82)
- - [chadwackerman](https://github.com/itamar82/chadwackerman)
+ - [chadwackerman](https://github.com/chadwackerman)
  - [derfsplat](https://github.com/derfsplat)
  - [JohnACarruthers](https://github.com/JohnACarruthers) (John Carruthers)
  - [mvitorino](https://github.com/mvitorino) (Miguel Vitorino)
