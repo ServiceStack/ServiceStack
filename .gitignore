@@ -38,3 +38,5 @@ build/*.dll
 *.user
 
 release/latest/
+*.nupkg
+release/*

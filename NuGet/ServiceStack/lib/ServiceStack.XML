@@ -746,6 +746,11 @@
             Default scope, which equals <see cref="F:Funq.ReuseScope.Hierarchy"/>.
             </summary>
         </member>
+        <member name="T:ServiceStack.Configuration.AppSettings">
+            <summary>
+            More familiar name for the new crowd.
+            </summary>
+        </member>
         <member name="T:ServiceStack.WebHost.Endpoints.Extensions.HttpRequestExtensions">
             	 * 
             		 Input: http://localhost:96/Cambia3/Temp/Test.aspx/path/info?q=item#fragment
