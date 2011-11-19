@@ -41,8 +41,16 @@ namespace ServiceStack.Messaging
 	/// </summary>
 	public class QueueNames
 	{
-		public const string TopicIn = "mq:topic:in";
-		public const string TopicOut = "mq:topic:out";
+		public static string TopicIn = "mq:topic:in";
+		public static string TopicOut = "mq:topic:out";
+		public static string QueuePrefix = "";
+
+		public static void SetQueuePrefix(string prefix)
+		{
+			TopicIn = prefix + "mq:topic:in";
+			TopicOut = prefix + "mq:topic:out";
+			QueuePrefix = prefix;
+		}
 
 		private readonly Type messageType;
 
@@ -53,22 +61,22 @@ namespace ServiceStack.Messaging
 
 		public string Priority
 		{
-			get { return "mq:" + messageType.Name + ".priorityq"; }
+			get { return QueuePrefix + "mq:" + messageType.Name + ".priorityq"; }
 		}
 
 		public string In
 		{
-			get { return "mq:" + messageType.Name + ".inq"; }
+			get { return QueuePrefix + "mq:" + messageType.Name + ".inq"; }
 		}
 
 		public string Out
 		{
-			get { return "mq:" + messageType.Name + ".outq"; }
+			get { return QueuePrefix + "mq:" + messageType.Name + ".outq"; }
 		}
 
 		public string Dlq
 		{
-			get { return "mq:" + messageType.Name + ".dlq"; }
+			get { return QueuePrefix + "mq:" + messageType.Name + ".dlq"; }
 		}
 	}
 
