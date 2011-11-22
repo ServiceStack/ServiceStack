@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Web;
+using MvcMiniProfiler.UI;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
@@ -27,6 +28,7 @@ namespace ServiceStack.WebHost.Endpoints
 		static private readonly IHttpHandler StaticFileHandler = new StaticFileHandler();
 		private static readonly bool IsIntegratedPipeline = false;
 		private static readonly bool ServeDefaultHandler = false;
+		private static Func<IHttpRequest, IHttpHandler>[] RawHttpHandlers;
 
 		[ThreadStatic]
 		public static string DebugLastHandlerArgs;
@@ -123,14 +125,23 @@ namespace ServiceStack.WebHost.Endpoints
 					DefaultHandler = debugDefaultHandler,
 				}
 				: new RedirectHttpHandler { RelativeUrl = EndpointHost.Config.NotFoundRedirectPath };
+
+			var rawHandlers = EndpointHost.Config.RawHttpHandlers;
+			rawHandlers.Add(ReturnRequestInfo);
+			rawHandlers.Add(MiniProfilerHandler.MatchesRequest);
+			RawHttpHandlers = rawHandlers.ToArray();
 		}
 
 		// Entry point for ASP.NET
 		public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
 		{
 			DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
-			var reqInfo = ReturnRequestInfo(context.Request);
-			if (reqInfo != null) return reqInfo;
+			var httpReq = new HttpRequestWrapper(pathTranslated, context.Request);
+			foreach (var rawHttpHandler in RawHttpHandlers)
+			{
+				var reqInfo = rawHttpHandler(httpReq);
+				if (reqInfo != null) return reqInfo;
+			}
 
 			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 			var pathInfo = context.Request.GetPathInfo();
@@ -191,8 +202,11 @@ namespace ServiceStack.WebHost.Endpoints
 		// Entry point for HttpListener
 		public static IHttpHandler GetHandler(IHttpRequest httpReq)
 		{
-			var reqInfo = ReturnRequestInfo(httpReq);
-			if (reqInfo != null) return reqInfo;
+			foreach (var rawHttpHandler in RawHttpHandlers)
+			{
+				var reqInfo = rawHttpHandler(httpReq);
+				if (reqInfo != null) return reqInfo;
+			}
 
 			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 			var pathInfo = httpReq.PathInfo;

@@ -244,22 +244,23 @@ H3 {{
   clear: left;
 }}
 </style>
+{2}
 </head>
 <body>
 
 <div id=""mask""></div>
 
-<h1>{2}</h1>
+<h1>{3}</h1>
 
 <div id=""lnks"">
   <a href=""javascript:showJson()"">view json datasource</a>
   <b>from original url:</b>
-  <a href=""{3}"">{3}</a>
+  <a href=""{4}"">{4}</a>
   <b>in other formats:</b>
-  <a href=""{3}format=json"">json</a>
-  <a href=""{3}format=xml"">xml</a>
-  <a href=""{3}format=csv"">csv</a>
-  <a href=""{3}format=jsv"">jsv</a>
+  <a href=""{4}format=json"">json</a>
+  <a href=""{4}format=xml"">xml</a>
+  <a href=""{4}format=csv"">csv</a>
+  <a href=""{4}format=jsv"">jsv</a>
 </div>
 
 <div id=""body"">
@@ -429,6 +430,7 @@ function enc(html) {{
 			var html = string.Format(Template,
 			  json,
 			  string.Format(TitleFormat, requestName, now),
+			  MvcMiniProfiler.MiniProfiler.RenderIncludes(),
 			  string.Format(HtmlTitleFormat, requestName, now),
 			  url);
 

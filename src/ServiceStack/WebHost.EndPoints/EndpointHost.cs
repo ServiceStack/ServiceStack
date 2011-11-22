@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
+using MvcMiniProfiler;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -147,13 +148,16 @@ namespace ServiceStack.WebHost.Endpoints
 			httpReq.ThrowIfNull("httpReq");
 			httpRes.ThrowIfNull("httpRes");
 
-			foreach (var requestFilter in RequestFilters)
+			using (MiniProfiler.Current.Step("Executing Request Filters"))
 			{
-				requestFilter(httpReq, httpRes, requestDto);
-				if (httpRes.IsClosed) break;
-			}
+				foreach (var requestFilter in RequestFilters)
+				{
+					requestFilter(httpReq, httpRes, requestDto);
+					if (httpRes.IsClosed) break;
+				}
 
-			return httpRes.IsClosed;
+				return httpRes.IsClosed;
+			}
 		}
 
 		/// <summary>
@@ -166,13 +170,16 @@ namespace ServiceStack.WebHost.Endpoints
 			httpReq.ThrowIfNull("httpReq");
 			httpRes.ThrowIfNull("httpRes");
 
-			foreach (var responseFilter in ResponseFilters)
+			using (MiniProfiler.Current.Step("Executing Response Filters"))
 			{
-				responseFilter(httpReq, httpRes, responseDto);
-				if (httpRes.IsClosed) break;
-			}
+				foreach (var responseFilter in ResponseFilters)
+				{
+					responseFilter(httpReq, httpRes, responseDto);
+					if (httpRes.IsClosed) break;
+				}
 
-			return httpRes.IsClosed;
+				return httpRes.IsClosed;
+			}
 		}
 
 		public static void SetOperationTypes(ServiceOperations operationTypes, ServiceOperations allOperationTypes)
@@ -183,8 +190,11 @@ namespace ServiceStack.WebHost.Endpoints
 
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq)
 		{
-			return config.ServiceController.Execute(request,
-				new HttpRequestContext(httpReq, request, endpointAttributes));
+			using (MiniProfiler.Current.Step("Execute Service"))
+			{
+				return config.ServiceController.Execute(request,
+					new HttpRequestContext(httpReq, request, endpointAttributes));
+			}
 		}
 
 	}

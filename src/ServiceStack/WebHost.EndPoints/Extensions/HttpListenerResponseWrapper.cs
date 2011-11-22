@@ -73,8 +73,21 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
             if (!this.IsClosed)
             {
                 this.IsClosed = true;
-                this.response.CloseOutputStream();
-            }
+
+				try
+				{
+					this.response.CloseOutputStream();
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Error closing HttpListener output stream", ex);
+				}
+			}
+		}
+
+		public void Flush()
+		{
+			response.OutputStream.Flush();
 		}
 
 		public bool IsClosed

@@ -120,6 +120,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						SetDefaultFile(this.DefaultFilePath); //reload
 
 					response.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
+					response.Close();
 					return;
 				}
 

@@ -93,6 +93,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Net30\ConcurrentDictionary.cs" />
+    <Compile Include="Net30\ObjectPool.cs" />
+    <Compile Include="Net30\SplitOrderedList.cs" />
+    <Compile Include="Net30\Tuple.cs" />
     <Compile Include="DirectoryInfoExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="Expressions\DelegateFactory.cs" />

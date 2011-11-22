@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
@@ -20,14 +21,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
+			var text = new StringBuilder("Handler for Request not found: \n\n")
+				.AppendLine("Request.HttpMethod: " + request.HttpMethod)
+				.AppendLine("Request.HttpMethod: " + request.HttpMethod)
+				.AppendLine("Request.PathInfo: " + request.PathInfo)
+				.AppendLine("Request.QueryString: " + request.QueryString)
+				.AppendLine("Request.RawUrl: " + request.RawUrl).ToString();
+
 			response.ContentType = "text/plain";
 			response.StatusCode = 404;
-			response.Write("Handler for Request not found: \n\n");
-
-			response.Write("\nRequest.HttpMethod: " + request.HttpMethod);
-			response.Write("\nRequest.PathInfo: " + request.PathInfo);
-			response.Write("\nRequest.QueryString: " + request.QueryString);
-			response.Write("\nRequest.RawUrl: " + request.RawUrl);
+			response.Write(text);
+			response.Close();
 		}
 
 		public void ProcessRequest(HttpContext context)
@@ -37,52 +41,55 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			var httpReq = new HttpRequestWrapper("NotFoundHttpHandler", request);
 			
-			response.ContentType = "text/plain";
-			response.StatusCode = 404;
-			response.Write("Handler for Request not found: \n\n");
+			var sb = new StringBuilder();
+			sb.AppendLine("Handler for Request not found: \n\n");
 
-			response.Write("\nRequest.ApplicationPath: " + request.ApplicationPath);
-			response.Write("\nRequest.CurrentExecutionFilePath: " + request.CurrentExecutionFilePath);
-			response.Write("\nRequest.FilePath: " + request.FilePath);
-			response.Write("\nRequest.HttpMethod: " + request.HttpMethod);
-			response.Write("\nRequest.MapPath('~'): " + request.MapPath("~"));
-			response.Write("\nRequest.Path: " + request.Path);
-			response.Write("\nRequest.PathInfo: " + request.PathInfo);
-			response.Write("\nRequest.ResolvedPathInfo: " + httpReq.PathInfo);
-			response.Write("\nRequest.PhysicalPath: " + request.PhysicalPath);
-			response.Write("\nRequest.PhysicalApplicationPath: " + request.PhysicalApplicationPath);
-			response.Write("\nRequest.QueryString: " + request.QueryString);
-			response.Write("\nRequest.RawUrl: " + request.RawUrl);
+			sb.AppendLine("Request.ApplicationPath: " + request.ApplicationPath);
+			sb.AppendLine("Request.CurrentExecutionFilePath: " + request.CurrentExecutionFilePath);
+			sb.AppendLine("Request.FilePath: " + request.FilePath);
+			sb.AppendLine("Request.HttpMethod: " + request.HttpMethod);
+			sb.AppendLine("Request.MapPath('~'): " + request.MapPath("~"));
+			sb.AppendLine("Request.Path: " + request.Path);
+			sb.AppendLine("Request.PathInfo: " + request.PathInfo);
+			sb.AppendLine("Request.ResolvedPathInfo: " + httpReq.PathInfo);
+			sb.AppendLine("Request.PhysicalPath: " + request.PhysicalPath);
+			sb.AppendLine("Request.PhysicalApplicationPath: " + request.PhysicalApplicationPath);
+			sb.AppendLine("Request.QueryString: " + request.QueryString);
+			sb.AppendLine("Request.RawUrl: " + request.RawUrl);
 			try
 			{
-				response.Write("\nRequest.Url.AbsoluteUri: " + request.Url.AbsoluteUri);
-				response.Write("\nRequest.Url.AbsolutePath: " + request.Url.AbsolutePath);
-				response.Write("\nRequest.Url.Fragment: " + request.Url.Fragment);
-				response.Write("\nRequest.Url.Host: " + request.Url.Host);
-				response.Write("\nRequest.Url.LocalPath: " + request.Url.LocalPath);
-				response.Write("\nRequest.Url.Port: " + request.Url.Port);
-				response.Write("\nRequest.Url.Query: " + request.Url.Query);
-				response.Write("\nRequest.Url.Scheme: " + request.Url.Scheme);
-				response.Write("\nRequest.Url.Segments: " + request.Url.Segments);
+				sb.AppendLine("Request.Url.AbsoluteUri: " + request.Url.AbsoluteUri);
+				sb.AppendLine("Request.Url.AbsolutePath: " + request.Url.AbsolutePath);
+				sb.AppendLine("Request.Url.Fragment: " + request.Url.Fragment);
+				sb.AppendLine("Request.Url.Host: " + request.Url.Host);
+				sb.AppendLine("Request.Url.LocalPath: " + request.Url.LocalPath);
+				sb.AppendLine("Request.Url.Port: " + request.Url.Port);
+				sb.AppendLine("Request.Url.Query: " + request.Url.Query);
+				sb.AppendLine("Request.Url.Scheme: " + request.Url.Scheme);
+				sb.AppendLine("Request.Url.Segments: " + request.Url.Segments);
 			}
 			catch (Exception ex)
 			{
-				response.Write("\nRequest.Url ERROR: " + ex.Message);
+				sb.AppendLine("Request.Url ERROR: " + ex.Message);
 			}
 			if (IsIntegratedPipeline.HasValue)
-				response.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
+				sb.AppendLine("App.IsIntegratedPipeline: " + IsIntegratedPipeline);
 			if (!WebHostPhysicalPath.IsNullOrEmpty())
-				response.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
+				sb.AppendLine("App.WebHostPhysicalPath: " + WebHostPhysicalPath);
 			if (!WebHostRootFileNames.IsEmpty())
-				response.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
+				sb.AppendLine("App.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
 			if (!ApplicationBaseUrl.IsNullOrEmpty())
-				response.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
+				sb.AppendLine("App.ApplicationBaseUrl: " + ApplicationBaseUrl);
 			if (!DefaultRootFileName.IsNullOrEmpty())
-				response.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+				sb.AppendLine("App.DefaultRootFileName: " + DefaultRootFileName);
 			if (!DefaultHandler.IsNullOrEmpty())
-				response.Write("\nApp.DefaultHandler: " + DefaultHandler);
+				sb.AppendLine("App.DefaultHandler: " + DefaultHandler);
 			if (!ServiceStackHttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
-				response.Write("\nApp.DebugLastHandlerArgs: " + ServiceStackHttpHandlerFactory.DebugLastHandlerArgs);
+				sb.AppendLine("App.DebugLastHandlerArgs: " + ServiceStackHttpHandlerFactory.DebugLastHandlerArgs);
+
+			response.ContentType = "text/plain";
+			response.StatusCode = 404;
+			response.Write(sb.ToString());
 
 			//Apache+mod_mono doesn't like this
 			//response.OutputStream.Flush();

@@ -120,6 +120,48 @@
     <Compile Include="Funq\ServiceEntry.Generic.cs" />
     <Compile Include="Funq\ServiceKey.cs" />
     <Compile Include="Funq\Syntax.cs" />
+    <Compile Include="MvcMiniProfiler\BaseProfilerProvider.cs" />
+    <Compile Include="MvcMiniProfiler\Data\ExecuteType.cs" />
+    <Compile Include="MvcMiniProfiler\Data\IDbProfiler.cs" />
+    <Compile Include="MvcMiniProfiler\Data\Link.cs" />
+    <Compile Include="MvcMiniProfiler\Data\ProfiledDbCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MvcMiniProfiler\Data\ProfiledDbConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MvcMiniProfiler\Data\ProfiledDbDataReader.cs" />
+    <Compile Include="MvcMiniProfiler\Data\ProfiledDbProviderFactory.cs" />
+    <Compile Include="MvcMiniProfiler\Data\ProfiledDbTransaction.cs" />
+    <Compile Include="MvcMiniProfiler\Helpers\ExtensionMethods.cs" />
+    <Compile Include="MvcMiniProfiler\Helpers\HaackFormatter.cs" />
+    <Compile Include="MvcMiniProfiler\Helpers\IStopwatch.cs" />
+    <Compile Include="MvcMiniProfiler\Helpers\SqlMapper.cs" />
+    <Compile Include="MvcMiniProfiler\Helpers\StackTraceSnippet.cs" />
+    <Compile Include="MvcMiniProfiler\HtmlString.cs" />
+    <Compile Include="MvcMiniProfiler\IpAddressProvider.cs" />
+    <Compile Include="MvcMiniProfiler\IProfilerProvider.cs" />
+    <Compile Include="MvcMiniProfiler\IUserProvider.cs" />
+    <Compile Include="MvcMiniProfiler\MiniProfiler.cs" />
+    <Compile Include="MvcMiniProfiler\MiniProfiler.IDbProfiler.cs" />
+    <Compile Include="MvcMiniProfiler\MiniProfiler.Settings.cs" />
+    <Compile Include="MvcMiniProfiler\MVCHelpers\ProfilingActionFilter.cs" />
+    <Compile Include="MvcMiniProfiler\MVCHelpers\ProfilingViewEngine.cs" />
+    <Compile Include="MvcMiniProfiler\SqlFormatters\InlineFormatter.cs" />
+    <Compile Include="MvcMiniProfiler\SqlFormatters\ISqlFormatter.cs" />
+    <Compile Include="MvcMiniProfiler\SqlFormatters\OracleFormatter.cs" />
+    <Compile Include="MvcMiniProfiler\SqlFormatters\SqlServerFormatter.cs" />
+    <Compile Include="MvcMiniProfiler\SqlProfiler.cs" />
+    <Compile Include="MvcMiniProfiler\SqlTiming.cs" />
+    <Compile Include="MvcMiniProfiler\SqlTimingParameter.cs" />
+    <Compile Include="MvcMiniProfiler\Storage\DatabaseStorageBase.cs" />
+    <Compile Include="MvcMiniProfiler\Storage\HttpRuntimeCacheStorage.cs" />
+    <Compile Include="MvcMiniProfiler\Storage\IStorage.cs" />
+    <Compile Include="MvcMiniProfiler\Storage\SqlServerStorage.cs" />
+    <Compile Include="MvcMiniProfiler\Timing.cs" />
+    <Compile Include="MvcMiniProfiler\UI\MiniProfilerHandler.cs" />
+    <Compile Include="MvcMiniProfiler\WebRequestProfilerProvider.cs" />
+    <Compile Include="MvcMiniProfiler\WebRequestProfilerProvider.Settings.cs" />
     <Compile Include="WebHost.EndPoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
     <Compile Include="Markdown\DynamicTypeGenerator .cs" />
@@ -249,10 +291,15 @@
   <ItemGroup>
     <Compile Include="Funq\Container.Adapter.cs" />
     <None Include="Funq\Container.xdoc" />
+    <EmbeddedResource Include="MvcMiniProfiler\UI\includes.tmpl" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
+    <EmbeddedResource Include="MvcMiniProfiler\UI\includes.css" />
+    <EmbeddedResource Include="MvcMiniProfiler\UI\includes.js" />
+    <EmbeddedResource Include="MvcMiniProfiler\UI\jquery.1.6.2.js" />
+    <EmbeddedResource Include="MvcMiniProfiler\UI\jquery.tmpl.beta1.js" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

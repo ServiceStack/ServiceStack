@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using MvcMiniProfiler;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Service;
@@ -94,116 +95,121 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// <returns></returns>
 		public static bool WriteToResponse(this IHttpResponse response, object result, ResponseSerializerDelegate defaultAction, IRequestContext serializerCtx, byte[] bodyPrefix, byte[] bodySuffix)
 		{
-			var defaultContentType = serializerCtx.ResponseContentType;
-			try
+			using (MiniProfiler.Current.Step("Writing to Response"))
 			{
-				if (result == null) return true;
-
-				foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+				var defaultContentType = serializerCtx.ResponseContentType;
+				try
 				{
-					response.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
-				}
+					if (result == null) return true;
 
-				var httpResult = result as IHttpResult;
-				if (httpResult != null)
-				{
-					response.StatusCode = (int)httpResult.StatusCode;
-					response.StatusDescription = httpResult.StatusDescription ?? httpResult.StatusCode.ToString();
-					if (string.IsNullOrEmpty(httpResult.ContentType))
+					foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
 					{
-						httpResult.ContentType = defaultContentType;
+						response.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
 					}
-					response.ContentType = httpResult.ContentType;
-				}
 
-				/* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
-				var responseOptions = result as IHasOptions;
-				if (responseOptions != null)
-				{
-					//Reserving options with keys in the format 'xx.xxx' (No Http headers contain a '.' so its a safe restriction)
-					const string reservedOptions = ".";
-
-					foreach (var responseHeaders in responseOptions.Options)
+					var httpResult = result as IHttpResult;
+					if (httpResult != null)
 					{
-						if (responseHeaders.Key.Contains(reservedOptions)) continue;
-
-						Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
-						response.AddHeader(responseHeaders.Key, responseHeaders.Value);
+						response.StatusCode = (int) httpResult.StatusCode;
+						response.StatusDescription = httpResult.StatusDescription ?? httpResult.StatusCode.ToString();
+						if (string.IsNullOrEmpty(httpResult.ContentType))
+						{
+							httpResult.ContentType = defaultContentType;
+						}
+						response.ContentType = httpResult.ContentType;
 					}
-				}
 
-				if (WriteToOutputStream(response, result))
-				{
-					return true;
-				}
+					/* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
+					var responseOptions = result as IHasOptions;
+					if (responseOptions != null)
+					{
+						//Reserving options with keys in the format 'xx.xxx' (No Http headers contain a '.' so its a safe restriction)
+						const string reservedOptions = ".";
 
-				if (httpResult != null)
-				{
-					result = httpResult.Response;
-				}
+						foreach (var responseHeaders in responseOptions.Options)
+						{
+							if (responseHeaders.Key.Contains(reservedOptions)) continue;
 
-				//ContentType='text/html' is the default for a HttpResponse
-				//Do not override if another has been set
-				if (response.ContentType == null || response.ContentType == ContentType.Html)
-				{
-					response.ContentType = defaultContentType;
-				}
+							Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
+							response.AddHeader(responseHeaders.Key, responseHeaders.Value);
+						}
+					}
 
-				var responseText = result as string;
-				if (responseText != null)
-				{
-					if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-					WriteTextToResponse(response, responseText, defaultContentType);
-					if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
-					return true;
-				}
+					if (WriteToOutputStream(response, result))
+					{
+						response.Flush(); //required for Compression
+						return true;
+					}
 
-				if (defaultAction == null)
-				{
-					throw new ArgumentNullException("defaultAction", string.Format(
+					if (httpResult != null)
+					{
+						result = httpResult.Response;
+					}
+
+					//ContentType='text/html' is the default for a HttpResponse
+					//Do not override if another has been set
+					if (response.ContentType == null || response.ContentType == ContentType.Html)
+					{
+						response.ContentType = defaultContentType;
+					}
+
+					var responseText = result as string;
+					if (responseText != null)
+					{
+						if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+						WriteTextToResponse(response, responseText, defaultContentType);
+						if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+						return true;
+					}
+
+					if (defaultAction == null)
+					{
+						throw new ArgumentNullException("defaultAction", string.Format(
 						"As result '{0}' is not a supported responseType, a defaultAction must be supplied",
 						result.GetType().Name));
+					}
+
+					if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+					defaultAction(serializerCtx, result, response);
+					if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+
+					return false;
 				}
+				catch (Exception originalEx)
+				{
+					//TM: It would be good to handle 'remote end dropped connection' problems here. Arguably they should at least be suppressible via configuration
 
-				if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-				defaultAction(serializerCtx, result, response);
-				if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+					//DB: Using standard ServiceStack configuration method
+					if (!EndpointHost.Config.WriteErrorsToResponse) throw;
 
-				return false;
-			}
-			catch (Exception originalEx)
-			{
-                //TM: It would be good to handle 'remote end dropped connection' problems here. Arguably they should at least be suppressible via configuration
-
-				//DB: Using standard ServiceStack configuration method
-				if (!EndpointHost.Config.WriteErrorsToResponse) throw;
-                
-                var errorMessage = string.Format(
+					var errorMessage = string.Format(
 					"Error occured while Processing Request: [{0}] {1}", originalEx.GetType().Name, originalEx.Message);
 
-				Log.Error(errorMessage, originalEx);
+					Log.Error(errorMessage, originalEx);
 
-                var operationName = result != null
-                    ? result.GetType().Name.Replace("Response", "")
-                    : "OperationName";
+					var operationName = result != null
+					                    ? result.GetType().Name.Replace("Response", "")
+					                    : "OperationName";
 
-                try 
+					try
+					{
+						if (!response.IsClosed)
+						{
+							response.WriteErrorToResponse(defaultContentType, operationName, errorMessage, originalEx);
+						}
+					}
+					catch (Exception writeErrorEx)
+					{
+						//Exception in writing to response should not hide the original exception
+						Log.Info("Failed to write error to response: {0}", writeErrorEx);
+						throw originalEx;
+					}
+					return true;
+				}
+				finally
 				{
-                    if (!response.IsClosed) {
-                        response.WriteErrorToResponse(defaultContentType, operationName, errorMessage, originalEx);
-                    }
-                }
-                catch (Exception writeErrorEx) 
-				{
-                    //Exception in writing to response should not hide the original exception
-                    Log.Info("Failed to write error to response: {0}", writeErrorEx);
-                    throw originalEx;
-                }
-                return true;
-            }
-			finally
-			{
-				response.Close();
+					response.Close();
+				}
 			}
 		}
 

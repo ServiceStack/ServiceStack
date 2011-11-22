@@ -65,8 +65,8 @@ namespace ServiceStack.Common.Web
 
 		public void WriteTo(Stream stream)
 		{
-			stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
-			stream.Flush();
+			stream.Write(this.Contents, 0, this.Contents.Length);
+			//stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
 		}
 
 	}

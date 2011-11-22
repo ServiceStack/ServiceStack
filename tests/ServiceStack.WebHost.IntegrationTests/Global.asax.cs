@@ -68,11 +68,10 @@ namespace ServiceStack.WebHost.IntegrationTests
 				resetMovies.Post(null);
 
 				//var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
-				//SetConfig(new EndpointHostConfig
-				//{
-				//    EnableFeatures = onlyEnableFeatures,
-				//    DebugMode = true, //Show StackTraces for easier debugging
-				//});
+				SetConfig(new EndpointHostConfig {
+					//EnableFeatures = onlyEnableFeatures,
+					DebugMode = true, //Show StackTraces for easier debugging
+				});
 
 				var redisManager = new BasicRedisClientManager();
 				var mqHost = new RedisMqHost(redisManager, 2, null);
@@ -89,8 +88,16 @@ namespace ServiceStack.WebHost.IntegrationTests
 			appHost.Init();
 		}
 
+		protected void Application_BeginRequest(object src, EventArgs e)
+		{
+			if (Request.IsLocal)
+				MvcMiniProfiler.MiniProfiler.Start();
+		}
+
 		protected void Application_EndRequest(object src, EventArgs e)
 		{
+			MvcMiniProfiler.MiniProfiler.Stop();
+
 			var mqHost = AppHostBase.Instance.Container.TryResolve<IMessageService>();
 			if (mqHost != null)
 				mqHost.Start();

@@ -1,4 +1,5 @@
 using System;
+using MvcMiniProfiler;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
@@ -90,20 +91,23 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)
 		{
-			var requestParams = httpReq.GetRequestParams();
-
-			object requestDto = null;
-
-			if (!string.IsNullOrEmpty(httpReq.ContentType) && httpReq.ContentLength > 0)
+			using (MiniProfiler.Current.Step("Deserialize Request"))
 			{
-				var requestDeserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(httpReq.ContentType);
-				if (requestDeserializer != null)
-				{
-					requestDto = requestDeserializer(restPath.RequestType, httpReq.InputStream);
-				}
-			}
+				var requestParams = httpReq.GetRequestParams();
 
-			return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
+				object requestDto = null;
+
+				if (!string.IsNullOrEmpty(httpReq.ContentType) && httpReq.ContentLength > 0)
+				{
+					var requestDeserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(httpReq.ContentType);
+					if (requestDeserializer != null)
+					{
+						requestDto = requestDeserializer(restPath.RequestType, httpReq.InputStream);
+					}
+				}
+
+				return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
+			}
 		}
 
 		/// <summary>

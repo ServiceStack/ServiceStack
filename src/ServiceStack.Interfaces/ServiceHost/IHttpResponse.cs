@@ -24,6 +24,11 @@ namespace ServiceStack.ServiceHost
 		void Close();
 
 		/// <summary>
+		/// Response.Flush() and OutputStream.Flush() seem to have different behaviour in ASP.NET
+		/// </summary>
+		void Flush();
+
+		/// <summary>
 		/// Gets a value indicating whether this instance is closed.
 		/// </summary>
 		bool IsClosed { get; }

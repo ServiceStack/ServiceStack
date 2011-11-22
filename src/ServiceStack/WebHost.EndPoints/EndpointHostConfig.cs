@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Web;
 using System.Web.Configuration;
 using System.Xml.Linq;
 using MarkdownSharp;
@@ -60,6 +61,7 @@ namespace ServiceStack.WebHost.Endpoints
 						MetadataRedirectPath = null,
 						DefaultContentType = ContentType.Json,
 						AllowJsonpRequests = true,
+						DebugMode = false,
 						DefaultDocuments = new List<string> {
 							"default.htm",
 							"default.html",
@@ -92,7 +94,8 @@ namespace ServiceStack.WebHost.Endpoints
 							{ "image/gif", TimeSpan.FromHours(1) },
 							{ "image/png", TimeSpan.FromHours(1) },
 							{ "image/jpeg", TimeSpan.FromHours(1) },
-						}
+						},
+						RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -130,6 +133,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.ServiceStackHandlerFactoryPath = instance.ServiceStackHandlerFactoryPath;
 			this.DefaultContentType = instance.DefaultContentType;
 			this.AllowJsonpRequests = instance.AllowJsonpRequests;
+			this.DebugMode = instance.DebugMode;
 			this.DefaultDocuments = instance.DefaultDocuments;
 			this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
 			this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
@@ -144,6 +148,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.RazorSearchPath = instance.RazorSearchPath;
 			this.RazorBaseType = instance.RazorBaseType;
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
+			this.RawHttpHandlers = instance.RawHttpHandlers;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -278,6 +283,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public Type RazorBaseType { get; set; }
 
 		public Dictionary<string, TimeSpan> AddMaxAgeForStaticMimeTypes { get; set; }
+
+		public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace

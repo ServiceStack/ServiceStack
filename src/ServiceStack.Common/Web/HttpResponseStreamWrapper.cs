@@ -46,6 +46,11 @@ namespace ServiceStack.Common.Web
 			IsClosed = true;
 		}
 
+		public void Flush()
+		{
+			OutputStream.Flush();
+		}
+
 		public bool IsClosed { get; private set; }
 	}
 }

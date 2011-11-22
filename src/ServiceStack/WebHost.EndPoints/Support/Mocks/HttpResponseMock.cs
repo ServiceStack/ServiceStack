@@ -91,6 +91,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			this.IsClosed = true;
 		}
 
+		public void Flush()
+		{
+			OutputStream.Flush();
+		}
+
 		public bool IsClosed
 		{
 			get;

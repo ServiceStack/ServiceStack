@@ -206,6 +206,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				this.IsClosed = true;
 			}
 
+			public void Flush()
+			{
+				MemoryStream.Flush();
+			}
+
 			public bool IsClosed { get; private set; }
 		}
 
