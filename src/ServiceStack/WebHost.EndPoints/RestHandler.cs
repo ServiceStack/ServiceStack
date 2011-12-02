@@ -1,7 +1,7 @@
 using System;
-using MvcMiniProfiler;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)
 		{
-			using (MiniProfiler.Current.Step("Deserialize Request"))
+			using (Profiler.Current.Step("Deserialize Request"))
 			{
 				var requestParams = httpReq.GetRequestParams();
 

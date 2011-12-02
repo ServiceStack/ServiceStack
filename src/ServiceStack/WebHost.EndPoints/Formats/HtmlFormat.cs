@@ -431,7 +431,7 @@ function enc(html) {{
 			var html = string.Format(Template,
 			  json,
 			  string.Format(TitleFormat, requestName, now),
-			  MvcMiniProfiler.MiniProfiler.RenderIncludes(),
+			  MiniProfiler.Profiler.RenderIncludes(),
 			  string.Format(HtmlTitleFormat, requestName, now),
 			  url);
 

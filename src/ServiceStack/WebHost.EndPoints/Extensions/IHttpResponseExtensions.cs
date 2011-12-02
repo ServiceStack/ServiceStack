@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
-using MvcMiniProfiler;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.MiniProfiler;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		/// <returns></returns>
 		public static bool WriteToResponse(this IHttpResponse response, object result, ResponseSerializerDelegate defaultAction, IRequestContext serializerCtx, byte[] bodyPrefix, byte[] bodySuffix)
 		{
-			using (MiniProfiler.Current.Step("Writing to Response"))
+			using (Profiler.Current.Step("Writing to Response"))
 			{
 				var defaultContentType = serializerCtx.ResponseContentType;
 				try

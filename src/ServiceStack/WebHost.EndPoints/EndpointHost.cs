@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
-using MvcMiniProfiler;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.EndPoints.Formats;
@@ -148,7 +148,7 @@ namespace ServiceStack.WebHost.Endpoints
 			httpReq.ThrowIfNull("httpReq");
 			httpRes.ThrowIfNull("httpRes");
 
-			using (MiniProfiler.Current.Step("Executing Request Filters"))
+			using (Profiler.Current.Step("Executing Request Filters"))
 			{
 				foreach (var requestFilter in RequestFilters)
 				{
@@ -170,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints
 			httpReq.ThrowIfNull("httpReq");
 			httpRes.ThrowIfNull("httpRes");
 
-			using (MiniProfiler.Current.Step("Executing Response Filters"))
+			using (Profiler.Current.Step("Executing Response Filters"))
 			{
 				foreach (var responseFilter in ResponseFilters)
 				{
@@ -190,7 +190,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq)
 		{
-			using (MiniProfiler.Current.Step("Execute Service"))
+            using (Profiler.Current.Step("Execute Service"))
 			{
 				return config.ServiceController.Execute(request,
 					new HttpRequestContext(httpReq, request, endpointAttributes));
