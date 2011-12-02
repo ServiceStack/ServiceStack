@@ -1,611 +1,813 @@
-﻿var MiniProfiler = (function ($) {
+﻿var MiniProfiler = (function ($)
+{
+	var slice = Array.prototype.slice,
+		nativeForEach = Array.prototype.forEach,
+		breaker = {};
 
-    var options,
+	function _each(o, fn, ctx)
+	{
+		if (o == null) return;
+		if (nativeForEach && o.forEach === nativeForEach)
+			o.forEach(fn, ctx);
+		else if (o.length === +o.length)
+		{
+			for (var i = 0, l = o.length; i < l; i++)
+				if (i in o && fn.call(ctx, o[i], i, o) === breaker) return;
+		} else
+		{
+			for (var key in o)
+				if (hasOwn.call(o, key))
+					if (fn.call(ctx, o[key], key, o) === breaker) return;
+		}
+	} $['_each'] = _each;
+	$['_defaults'] = function (obj)
+	{
+		_each(slice.call(arguments, 1), function (o)
+		{
+			for (var k in o)
+				if (obj[k] == null) obj[k] = o[k];
+		});
+		return obj;
+	};
+	$['templateSettings'] = {
+		evaluate: /<%([\s\S]+?)%>/g,
+		interpolate: /<%=([\s\S]+?)%>/g,
+		escape: /<%-([\s\S]+?)%>/g
+	};
+	$['_template'] = function (str, data)
+	{
+		var c = $['templateSettings'];
+		var tmpl = 'var __p=[],print=function(){__p.push.apply(__p,arguments);};' +
+          'with(obj||{}){__p.push(\'' +
+          str.replace(/\\/g, '\\\\')
+             .replace(/'/g, "\\'")
+             .replace(c.escape, function (match, code)
+             {
+             	return "',_.escape(" + code.replace(/\\'/g, "'") + "),'";
+             })
+             .replace(c.interpolate, function (match, code)
+             {
+             	return "'," + code.replace(/\\'/g, "'") + ",'";
+             })
+             .replace(c.evaluate || null, function (match, code)
+             {
+             	return "');" + code.replace(/\\'/g, "'")
+                                  .replace(/[\r\n\t]/g, ' ') + ";__p.push('";
+             })
+             .replace(/\r/g, '\\r')
+             .replace(/\n/g, '\\n')
+             .replace(/\t/g, '\\t')
+             + "');}return __p.join('');";
+		var func = new Function('obj', '$', tmpl);
+		return data ? func(data, $) : function (data) { return func(data, $) };
+	};
+
+	var tmplCache = {},
+    	options,
         container,
         controls,
         fetchedIds = [],
         fetchingIds = []  // so we never pull down a profiler twice
         ;
 
-    var hasLocalStorage = function () {
-        try {
-            return 'localStorage' in window && window['localStorage'] !== null;
-        } catch (e) {
-            return false;
-        }
-    };
+	var defaults = {
+		showTrivial: true,
+		HasDuplicateSqlTimings: false,
+		HasSqlTimings: false,
+		HasTrivialTimings: false,
+		HasAllTrivialTimings: false,
+		TrivialDurationThresholdMilliseconds: 1000
+	};
+	$.tmpl = function (name, o)
+	{
+		try
+		{
+			var tmpl = (tmplCache[name] || (tmplCache[name] = $._template($(name).html())));
+			var html = tmpl($._defaults(o, defaults));
+			return html;
+		} catch (e)
+		{
+			console.log("error with: " + name + ": " + e);
+		}
+	};
+	$.fn.tmpl = function (o)
+	{
+		var tmpl = this.html();
+		var cachedTmpl = $._template(tmpl);
+		var html = cachedTmpl($._defaults(o, defaults));
+		return $($.trim(html));
+	};
 
-    var getVersionedKey = function (keyPrefix) {
-        return keyPrefix + '-' + options.version;
-    }
+	var hasLocalStorage = function ()
+	{
+		try
+		{
+			return 'localStorage' in window && window['localStorage'] !== null;
+		} catch (e)
+		{
+			return false;
+		}
+	};
 
-    var save = function (keyPrefix, value) {
-        if (!hasLocalStorage()) { return; }
+	var getVersionedKey = function (keyPrefix)
+	{
+		return keyPrefix + '-' + options.version;
+	}
 
-        // clear old keys with this prefix, if any
-        for (var i = 0; i < localStorage.length; i++) {
-            if ((localStorage.key(i) || '').indexOf(keyPrefix) > -1) {
-                localStorage.removeItem(localStorage.key(i));
-            }
-        }
+	var save = function (keyPrefix, value)
+	{
+		if (!hasLocalStorage()) { return; }
 
-        // save under this version
-        localStorage[getVersionedKey(keyPrefix)] = value;
-    };
+		// clear old keys with this prefix, if any
+		for (var i = 0; i < localStorage.length; i++)
+		{
+			if ((localStorage.key(i) || '').indexOf(keyPrefix) > -1)
+			{
+				localStorage.removeItem(localStorage.key(i));
+			}
+		}
 
-    var load = function (keyPrefix) {
-        if (!hasLocalStorage()) { return null; }
+		// save under this version
+		localStorage[getVersionedKey(keyPrefix)] = value;
+	};
 
-        return localStorage[getVersionedKey(keyPrefix)];
-    };
+	var load = function (keyPrefix)
+	{
+		if (!hasLocalStorage()) { return null; }
 
-    var fetchTemplates = function (success) {
-        var key = 'mini-profiler-templates',
+		return localStorage[getVersionedKey(keyPrefix)];
+	};
+
+	var fetchTemplates = function (success)
+	{
+		var key = 'mini-profiler-templates',
             cached = load(key);
 
-        if (cached) {
-            $('body').append(cached);
-            success();
-        }
-        else {
-            $.get(options.path + 'mini-profiler-includes.tmpl?v=' + options.version, function (data) {
-                if (data) {
-                    save(key, data);
-                    $('body').append(data);
-                    success();
-                }
-            });
-        }
-    };
+		if (cached)
+		{
+			$('body').append(cached);
+			success();
+		}
+		else
+		{
+			$.get(options.path + 'mini-profiler-includes.tmpl?v=' + options.version, function (data)
+			{
+				if (data)
+				{
+					save(key, data);
+					$('body').append(data);
+					success();
+				}
+			});
+		}
+	};
 
-    var fetchResults = function (ids) {
-        for (var i = 0, id; i < ids.length; i++) {
-            id = ids[i];
-            if ($.inArray(id, fetchedIds) < 0 && $.inArray(id, fetchingIds) < 0) {
-                var idx = fetchingIds.push(id) - 1;
+	var fetchResults = function (ids)
+	{
+		for (var i = 0, id; i < ids.length; i++)
+		{
+			id = ids[i];
+			if ($.inArray(id, fetchedIds) < 0 && $.inArray(id, fetchingIds) < 0)
+			{
+				var idx = fetchingIds.push(id) - 1;
 
-                $.ajax({
-                    url: options.path + 'mini-profiler-results?id=' + id + '&popup=1',
-                    dataType: 'json',
-                    success: function (json) {
-                        fetchedIds.push(id);
-                        buttonShow(json);
-                    },
-                    complete: function () {
-                        fetchingIds.splice(idx, 1);
-                    }
-                });
-            }
-        }
-    };
+				$.ajax({
+					url: options.path + 'mini-profiler-results?id=' + id + '&popup=1',
+					dataType: 'json',
+					success: function (json)
+					{
+						fetchedIds.push(id);
+						buttonShow(json);
+					},
+					complete: function ()
+					{
+						fetchingIds.splice(idx, 1);
+					}
+				});
+			}
+		}
+	};
 
-    var renderTemplate = function (json) {
-        return $('#profilerTemplate').tmpl(json);
-    };
+	var renderTemplate = function (json)
+	{
+		return $('#profilerTemplate').tmpl(json);
+	};
 
-    var buttonShow = function (json) {
-        var result = renderTemplate(json);
+	var buttonShow = function (json)
+	{
+		var result = renderTemplate(json);
 
-        if (controls)
-            result.insertBefore(controls);
-        else
-            result.appendTo(container);
+		if (controls)
+			result.insertBefore(controls);
+		else
+			result.appendTo(container);
 
-        var button = result.find('.profiler-button'),
+		var button = result.find('.profiler-button'),
             popup = result.find('.profiler-popup');
 
-        // button will appear in corner with the total profiling duration - click to show details
-        button.click(function () { buttonClick(button, popup); });
+		// button will appear in corner with the total profiling duration - click to show details
+		button.click(function () { buttonClick(button, popup); });
 
-        // small duration steps and the column with aggregate durations are hidden by default; allow toggling
-        toggleHidden(popup);
+		// small duration steps and the column with aggregate durations are hidden by default; allow toggling
+		toggleHidden(popup);
 
-        // lightbox in the queries
-        popup.find('.queries-show').click(function () { queriesShow($(this), result); });
+		// lightbox in the queries
+		popup.find('.queries-show').click(function () { queriesShow($(this), result); });
 
-        // limit count
-        if (container.find('.profiler-result').length > options.maxTracesToShow)
-            container.find('.profiler-result').first().remove();
-        button.show();
-    };
+		// limit count
+		if (container.find('.profiler-result').length > options.maxTracesToShow)
+			container.find('.profiler-result').first().remove();
+		button.show();
+	};
 
-    var toggleHidden = function (popup) {
-        var trivial = popup.find('.toggle-trivial');
-        var childrenTime = popup.find('.toggle-duration-with-children');
-        var trivialGaps = popup.parent().find('.toggle-trivial-gaps');
+	var toggleHidden = function (popup)
+	{
+		var trivial = popup.find('.toggle-trivial');
+		var childrenTime = popup.find('.toggle-duration-with-children');
+		var trivialGaps = popup.parent().find('.toggle-trivial-gaps');
 
-        var toggleIt = function (node) {
-            var link = $(node),
+		var toggleIt = function (node)
+		{
+			var link = $(node),
                 klass = link.attr('class').substr('toggle-'.length),
                 isHidden = link.text().indexOf('show') > -1;
 
-            popup.parent().find('.' + klass).toggle(isHidden);
-            link.text(link.text().replace(isHidden ? 'show' : 'hide', isHidden ? 'hide' : 'show'));
+			popup.parent().find('.' + klass).toggle(isHidden);
+			link.text(link.text().replace(isHidden ? 'show' : 'hide', isHidden ? 'hide' : 'show'));
 
-            popupPreventHorizontalScroll(popup);
-        };
+			popupPreventHorizontalScroll(popup);
+		};
 
-        childrenTime.add(trivial).add(trivialGaps).click(function () {
-            toggleIt(this);
-        });
+		childrenTime.add(trivial).add(trivialGaps).click(function ()
+		{
+			toggleIt(this);
+		});
 
-        // if option is set or all our timings are trivial, go ahead and show them
-        if (options.showTrivial || trivial.data('show-on-load')) {
-            toggleIt(trivial);
-        }
-        // if option is set, go ahead and show time with children
-        if (options.showChildrenTime) {
-            toggleIt(childrenTime);
-        }
-    };
+		// if option is set or all our timings are trivial, go ahead and show them
+		if (options.showTrivial || trivial.data('show-on-load'))
+		{
+			toggleIt(trivial);
+		}
+		// if option is set, go ahead and show time with children
+		if (options.showChildrenTime)
+		{
+			toggleIt(childrenTime);
+		}
+	};
 
-    var buttonClick = function (button, popup) {
-        // we're toggling this button/popup
-        if (popup.is(':visible')) {
-            popupHide(button, popup);
-        }
-        else {
-            var visiblePopups = container.find('.profiler-popup:visible'),
+	var buttonClick = function (button, popup)
+	{
+		// we're toggling this button/popup
+		if (popup.is(':visible'))
+		{
+			popupHide(button, popup);
+		}
+		else
+		{
+			var visiblePopups = container.find('.profiler-popup').find(":visible"),  //was: container.find('.profiler-popup:visible')
                 theirButtons = visiblePopups.siblings('.profiler-button');
 
-            // hide any other popups
-            popupHide(theirButtons, visiblePopups);
+			// hide any other popups
+			popupHide(theirButtons, visiblePopups);
 
-            // before showing the one we clicked
-            popupShow(button, popup);
-        }
-    };
+			// before showing the one we clicked
+			popupShow(button, popup);
+		}
+	};
 
-    var popupShow = function (button, popup) {
-        button.addClass('profiler-button-active');
+	var popupShow = function (button, popup)
+	{
+		button.addClass('profiler-button-active');
 
-        popupSetDimensions(button, popup);
+		popupSetDimensions(button, popup);
 
-        popup.show();
+		popup.show();
 
-        popupPreventHorizontalScroll(popup);
-    };
+		popupPreventHorizontalScroll(popup);
+	};
 
-    var popupSetDimensions = function (button, popup) {
-        var top = button.position().top - 1, // position next to the button we clicked
+	var popupSetDimensions = function (button, popup)
+	{
+		var top = button.position().top - 1, // position next to the button we clicked
             windowHeight = $(window).height(),
             maxHeight = windowHeight - top - 40; // make sure the popup doesn't extend below the fold
 
-        popup
+		popup
             .css({ 'top': top, 'max-height': maxHeight })
             .css(options.renderPosition, button.outerWidth() - 3); // move left or right, based on config
-    };
+	};
 
-    var popupPreventHorizontalScroll = function (popup) {
-        var childrenHeight = 0;
+	var popupPreventHorizontalScroll = function (popup)
+	{
+		var childrenHeight = 0;
 
-        popup.children().each(function () { childrenHeight += $(this).height(); });
+		popup.children().each(function () { childrenHeight += $(this).height(); });
 
-        popup.css({ 'padding-right': childrenHeight > popup.height() ? 40 : 10 });
-    }
+		popup.css({ 'padding-right': childrenHeight > popup.height() ? 40 : 10 });
+	}
 
-    var popupHide = function (button, popup) {
-        button.removeClass('profiler-button-active');
-        popup.hide();
-    };
+	var popupHide = function (button, popup)
+	{
+		button.removeClass('profiler-button-active');
+		popup.hide();
+	};
 
-    var queriesShow = function (link, result) {
+	var queriesShow = function (link, result)
+	{
 
-        var px = 30,
+		var px = 30,
             win = $(window),
             width = win.width() - 2 * px,
             height = win.height() - 2 * px,
             queries = result.find('.profiler-queries');
 
-        // opaque background
-        $('<div class="profiler-queries-bg"/>').appendTo('body').css({ 'height': $(document).height() }).show();
+		// opaque background
+		$('<div class="profiler-queries-bg"/>').appendTo('body').css({ 'height': $(document).height() }).show();
 
-        // center the queries and ensure long content is scrolled
-        queries.css({ 'top': px, 'max-height': height, 'width': width }).css(options.renderPosition, px)
+		// center the queries and ensure long content is scrolled
+		queries.css({ 'top': px, 'max-height': height, 'width': width }).css(options.renderPosition, px)
             .find('table').css({ 'width': width });
 
-        // have to show everything before we can get a position for the first query
-        queries.show();
+		// have to show everything before we can get a position for the first query
+		queries.show();
 
-        queriesScrollIntoView(link, queries, queries);
+		queriesScrollIntoView(link, queries, queries);
 
-        // syntax highlighting
-        prettyPrint();
-    };
+		// syntax highlighting
+		prettyPrint();
+	};
 
-    var queriesScrollIntoView = function (link, queries, whatToScroll) {
-        var id = link.closest('tr').attr('data-timing-id'),
+	var queriesScrollIntoView = function (link, queries, whatToScroll)
+	{
+		var id = link.closest('tr').attr('data-timing-id'),
             cells = queries.find('tr[data-timing-id="' + id + '"] td');
 
-        // ensure they're in view
-        whatToScroll.scrollTop(whatToScroll.scrollTop() + cells.first().position().top - 100);
+		// ensure they're in view
+		whatToScroll.scrollTop(whatToScroll.scrollTop() + cells.first().position().top - 100);
 
-        // highlight and then fade back to original bg color; do it ourselves to prevent any conflicts w/ jquery.UI or other implementations of Resig's color plugin
-        cells.each(function () {
-            var cell = $(this),
+		// highlight and then fade back to original bg color; do it ourselves to prevent any conflicts w/ jquery.UI or other implementations of Resig's color plugin
+		cells.each(function ()
+		{
+			var cell = $(this),
                 highlightHex = '#FFFFBB',
                 highlightRgb = getRGB(highlightHex),
                 originalRgb = getRGB(cell.css('background-color')),
-                getColorDiff = function (fx, i) {
-                    // adapted from John Resig's color plugin: http://plugins.jquery.com/project/color
-                    return Math.max(Math.min(parseInt((fx.pos * (originalRgb[i] - highlightRgb[i])) + highlightRgb[i]), 255), 0);
+                getColorDiff = function (fx, i)
+                {
+                	// adapted from John Resig's color plugin: http://plugins.jquery.com/project/color
+                	return Math.max(Math.min(parseInt((fx.pos * (originalRgb[i] - highlightRgb[i])) + highlightRgb[i]), 255), 0);
                 };
 
-            // we need to animate some other property to piggy-back on the step function, so I choose you, opacity!
-            cell.css({ 'opacity': 1, 'background-color': highlightHex })
-                .animate({ 'opacity': 1 }, { duration: 2000, step: function (now, fx) {
-                    fx.elem.style['backgroundColor'] = "rgb(" + [getColorDiff(fx, 0), getColorDiff(fx, 1), getColorDiff(fx, 2)].join(",") + ")";
+			// we need to animate some other property to piggy-back on the step function, so I choose you, opacity!
+			cell.css({ 'opacity': 1, 'background-color': highlightHex })
+                .animate({ 'opacity': 1 }, { duration: 2000, step: function (now, fx)
+                {
+                	fx.elem.style['backgroundColor'] = "rgb(" + [getColorDiff(fx, 0), getColorDiff(fx, 1), getColorDiff(fx, 2)].join(",") + ")";
                 }
                 });
-        });
-    };
+		});
+	};
 
-    // Color Conversion functions from highlightFade
-    // By Blair Mitchelmore
-    // http://jquery.offput.ca/highlightFade/
-    // Parse strings looking for color tuples [255,255,255]
-    var getRGB = function (color) {
-        var result;
+	// Color Conversion functions from highlightFade
+	// By Blair Mitchelmore
+	// http://jquery.offput.ca/highlightFade/
+	// Parse strings looking for color tuples [255,255,255]
+	var getRGB = function (color)
+	{
+		var result;
 
-        // Check if we're already dealing with an array of colors
-        if (color && color.constructor == Array && color.length == 3) return color;
+		// Check if we're already dealing with an array of colors
+		if (color && color.constructor == Array && color.length == 3) return color;
 
-        // Look for rgb(num,num,num)
-        if (result = /rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(color)) return [parseInt(result[1]), parseInt(result[2]), parseInt(result[3])];
+		// Look for rgb(num,num,num)
+		if (result = /rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(color)) return [parseInt(result[1]), parseInt(result[2]), parseInt(result[3])];
 
-        // Look for rgb(num%,num%,num%)
-        if (result = /rgb\(\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*\)/.exec(color)) return [parseFloat(result[1]) * 2.55, parseFloat(result[2]) * 2.55, parseFloat(result[3]) * 2.55];
+		// Look for rgb(num%,num%,num%)
+		if (result = /rgb\(\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*\)/.exec(color)) return [parseFloat(result[1]) * 2.55, parseFloat(result[2]) * 2.55, parseFloat(result[3]) * 2.55];
 
-        // Look for #a0b1c2
-        if (result = /#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/.exec(color)) return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
+		// Look for #a0b1c2
+		if (result = /#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/.exec(color)) return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
 
-        // Look for #fff
-        if (result = /#([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/.exec(color)) return [parseInt(result[1] + result[1], 16), parseInt(result[2] + result[2], 16), parseInt(result[3] + result[3], 16)];
+		// Look for #fff
+		if (result = /#([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/.exec(color)) return [parseInt(result[1] + result[1], 16), parseInt(result[2] + result[2], 16), parseInt(result[3] + result[3], 16)];
 
-        // Look for rgba(0, 0, 0, 0) == transparent in Safari 3
-        if (result = /rgba\(0, 0, 0, 0\)/.exec(color)) return colors['transparent'];
+		// Look for rgba(0, 0, 0, 0) == transparent in Safari 3
+		if (result = /rgba\(0, 0, 0, 0\)/.exec(color)) return colors['transparent'];
 
-        return null;
-    };
+		return null;
+	};
 
-    var bindDocumentEvents = function () {
-        $(document).bind('click keyup', function (e) {
+	var bindDocumentEvents = function ()
+	{
+		$(document).bind('click keyup', function (e)
+		{
 
-            // this happens on every keystroke, and :visible is crazy expensive in IE <9
-            // and in this case, the display:none check is sufficient.
-            var popup = $('.profiler-popup').filter(function () { return $(this).css("display") !== "none"; });
+			// this happens on every keystroke, and :visible is crazy expensive in IE <9
+			// and in this case, the display:none check is sufficient.
+			var popup = $('.profiler-popup').filter(function () { return $(this).css("display") !== "none"; });
 
-            if (!popup.length) {
-                return;
-            }
+			if (!popup.length)
+			{
+				return;
+			}
 
-            var button = popup.siblings('.profiler-button'),
+			var button = popup.siblings('.profiler-button'),
                 queries = popup.closest('.profiler-result').find('.profiler-queries'),
                 bg = $('.profiler-queries-bg'),
                 isEscPress = e.type == 'keyup' && e.which == 27,
                 hidePopup = false,
                 hideQueries = false;
 
-            if (bg.is(':visible')) {
-                hideQueries = isEscPress || (e.type == 'click' && !$.contains(queries[0], e.target) && !$.contains(popup[0], e.target));
-            }
-            else if (popup.is(':visible')) {
-                hidePopup = isEscPress || (e.type == 'click' && !$.contains(popup[0], e.target) && !$.contains(button[0], e.target) && button[0] != e.target);
-            }
+			if (bg.is(':visible'))
+			{
+				hideQueries = isEscPress || (e.type == 'click' && !$.contains(queries[0], e.target) && !$.contains(popup[0], e.target));
+			}
+			else if (popup.is(':visible'))
+			{
+				hidePopup = isEscPress || (e.type == 'click' && !$.contains(popup[0], e.target) && !$.contains(button[0], e.target) && button[0] != e.target);
+			}
 
-            if (hideQueries) {
-                bg.remove();
-                queries.hide();
-            }
+			if (hideQueries)
+			{
+				bg.remove();
+				queries.hide();
+			}
 
-            if (hidePopup) {
-                popupHide(button, popup);
-            }
-        });
-    };
+			if (hidePopup)
+			{
+				popupHide(button, popup);
+			}
+		});
+	};
 
-    var initFullView = function () {
+	var initFullView = function ()
+	{
 
-        // first, get jquery tmpl, then render and bind handlers
-        fetchTemplates(function () {
+		// first, get jquery tmpl, then render and bind handlers
+		fetchTemplates(function ()
+		{
 
-            // profiler will be defined in the full page's head
-            renderTemplate(profiler).appendTo(container);
+			// profiler will be defined in the full page's head
+			renderTemplate(profiler).appendTo(container);
 
-            var popup = $('.profiler-popup');
+			var popup = $('.profiler-popup');
 
-            toggleHidden(popup);
+			toggleHidden(popup);
 
-            prettyPrint();
+			prettyPrint();
 
-            // since queries are already shown, just highlight and scroll when clicking a "1 sql" link
-            popup.find('.queries-show').click(function () {
-                queriesScrollIntoView($(this), $('.profiler-queries'), $(document));
+			// since queries are already shown, just highlight and scroll when clicking a "1 sql" link
+			popup.find('.queries-show').click(function ()
+			{
+				queriesScrollIntoView($(this), $('.profiler-queries'), $(document));
+			});
+		});
+	};
+
+	var initControls = function (container)
+	{
+		if (options.showControls)
+		{
+			controls = $('<div class="profiler-controls"><span class="profiler-min-max">m</span><span class="profiler-clear">c</span></div>').appendTo(container);
+
+			$('.profiler-controls .profiler-min-max').click(function ()
+			{
+				container.toggleClass('profiler-min');
+			});
+
+			container.hover(function ()
+			{
+				if ($(this).hasClass('profiler-min'))
+				{
+					$(this).find('.profiler-min-max').show();
+				}
+			},
+            function ()
+            {
+            	if ($(this).hasClass('profiler-min'))
+            	{
+            		$(this).find('.profiler-min-max').hide();
+            	}
             });
-        });
-    };
 
-    var initControls = function (container) {
-        if (options.showControls) {
-            controls = $('<div class="profiler-controls"><span class="profiler-min-max">m</span><span class="profiler-clear">c</span></div>').appendTo(container);
+			$('.profiler-controls .profiler-clear').click(function ()
+			{
+				container.find('.profiler-result').remove();
+			});
+		}
+		else
+		{
+			container.addClass('profiler-no-controls');
+		}
+	};
 
-            $('.profiler-controls .profiler-min-max').click(function () {
-                container.toggleClass('profiler-min');
-            });
+	var initPopupView = function ()
+	{
+		// all fetched profilings will go in here
+		container = $('<div class="profiler-results"/>').appendTo('body');
 
-            container.hover(function () {
-                if ($(this).hasClass('profiler-min')) {
-                    $(this).find('.profiler-min-max').show();
-                }
-            },
-            function () {
-                if ($(this).hasClass('profiler-min')) {
-                    $(this).find('.profiler-min-max').hide();
-                }
-            });
+		// MiniProfiler.RenderIncludes() sets which corner to render in - default is upper left
+		container.addClass(options.renderPosition);
 
-            $('.profiler-controls .profiler-clear').click(function () {
-                container.find('.profiler-result').remove();
-            });
-        }
-        else {
-            container.addClass('profiler-no-controls');
-        }
-    };
+		//initialize the controls
+		initControls(container);
 
-    var initPopupView = function () {
-        // all fetched profilings will go in here
-        container = $('<div class="profiler-results"/>').appendTo('body');
+		// we'll render results json via a jquery.tmpl - after we get the templates, we'll fetch the initial json to populate it
+		fetchTemplates(function ()
+		{
+			// get master page profiler results
+			fetchResults(options.ids);
+		});
 
-        // MiniProfiler.RenderIncludes() sets which corner to render in - default is upper left
-        container.addClass(options.renderPosition);
-
-        //initialize the controls
-        initControls(container);
-
-        // we'll render results json via a jquery.tmpl - after we get the templates, we'll fetch the initial json to populate it
-        fetchTemplates(function () {
-            // get master page profiler results
-            fetchResults(options.ids);
-        });
-
-        // fetch profile results for any ajax calls
-        $(document).ajaxComplete(function (e, xhr, settings) {
-            if (xhr) {
-                // should be an array of strings, e.g. ["008c4813-9bd7-443d-9376-9441ec4d6a8c","16ff377b-8b9c-4c20-a7b5-97cd9fa7eea7"]
-                var stringIds = xhr.getResponseHeader('X-MiniProfiler-Ids');
-                if (stringIds) {
-                    var ids = typeof JSON != 'undefined' ? JSON.parse(stringIds) : eval(stringIds);
-                    fetchResults(ids);
-                }
-            }
-        });
+		// fetch profile results for any ajax calls
+		$(document).ajaxComplete(function (e, xhr, settings)
+		{
+			if (xhr)
+			{
+				// should be an array of strings, e.g. ["008c4813-9bd7-443d-9376-9441ec4d6a8c","16ff377b-8b9c-4c20-a7b5-97cd9fa7eea7"]
+				var stringIds = xhr.getResponseHeader('X-MiniProfiler-Ids');
+				if (stringIds)
+				{
+					var ids = typeof JSON != 'undefined' ? JSON.parse(stringIds) : eval(stringIds);
+					fetchResults(ids);
+				}
+			}
+		});
 
 
-        // fetch results after ASP Ajax calls
-        if (typeof (Sys) != 'undefined' && typeof (Sys.WebForms) != 'undefined' && typeof (Sys.WebForms.PageRequestManager) != 'undefined') {
-            // Get the instance of PageRequestManager.
-            var PageRequestManager = Sys.WebForms.PageRequestManager.getInstance();
+		// fetch results after ASP Ajax calls
+		if (typeof (Sys) != 'undefined' && typeof (Sys.WebForms) != 'undefined' && typeof (Sys.WebForms.PageRequestManager) != 'undefined')
+		{
+			// Get the instance of PageRequestManager.
+			var PageRequestManager = Sys.WebForms.PageRequestManager.getInstance();
 
-            PageRequestManager.add_endRequest(function (sender, args) {
-                if (args) {
-                    var response = args.get_response();
-                    if (response.get_responseAvailable() && response._xmlHttpRequest != null) {
-                        var stringIds = args.get_response().getResponseHeader('X-MiniProfiler-Ids');
-                        if (stringIds) {
-                            var ids = typeof JSON != 'undefined' ? JSON.parse(stringIds) : eval(stringIds);
-                            fetchResults(ids);
-                        }
-                    }
-                }
-            });
-        }
+			PageRequestManager.add_endRequest(function (sender, args)
+			{
+				if (args)
+				{
+					var response = args.get_response();
+					if (response.get_responseAvailable() && response._xmlHttpRequest != null)
+					{
+						var stringIds = args.get_response().getResponseHeader('X-MiniProfiler-Ids');
+						if (stringIds)
+						{
+							var ids = typeof JSON != 'undefined' ? JSON.parse(stringIds) : eval(stringIds);
+							fetchResults(ids);
+						}
+					}
+				}
+			});
+		}
 
-        // some elements want to be hidden on certain doc events
-        bindDocumentEvents();
-    };
+		// some elements want to be hidden on certain doc events
+		bindDocumentEvents();
+	};
 
-    return {
+	return {
 
-        init: function (opt) {
+		init: function (opt)
+		{
 
-            options = opt || {};
+			options = opt || {};
 
-            // when rendering a shared, full page, this div will exist
-            container = $('.profiler-result-full');
+			// when rendering a shared, full page, this div will exist
+			container = $('.profiler-result-full');
 
-            if (container.length) {
-                initFullView();
-            }
-            else {
-                initPopupView();
-            }
-        },
+			if (container.length)
+			{
+				initFullView();
+			}
+			else
+			{
+				initPopupView();
+			}
+		},
 
-        renderDate: function (jsonDate) { // JavaScriptSerializer sends dates as /Date(1308024322065)/
-            if (jsonDate) {
-                return (typeof jsonDate === 'string') ? new Date(parseInt(jsonDate.replace("/Date(", "").replace(")/", ""), 10)).toUTCString() : jsonDate;
-            }
-        },
+		renderDate: function (jsonDate)
+		{ // JavaScriptSerializer sends dates as /Date(1308024322065)/
+			if (jsonDate)
+			{
+				return (typeof jsonDate === 'string') ? new Date(parseInt(jsonDate.replace("/Date(", "").replace(")/", ""), 10)).toUTCString() : jsonDate;
+			}
+		},
 
-        renderIndent: function (depth) {
-            var result = '';
-            for (var i = 0; i < depth; i++) {
-                result += '&nbsp;';
-            }
-            return result;
-        },
+		renderIndent: function (depth)
+		{
+			var result = '';
+			for (var i = 0; i < depth; i++)
+			{
+				result += '&nbsp;';
+			}
+			return result;
+		},
 
-        renderExecuteType: function (typeId) {
-            // see MvcMiniProfiler.ExecuteType enum
-            switch (typeId) {
-                case 0: return 'None';
-                case 1: return 'NonQuery';
-                case 2: return 'Scalar';
-                case 3: return 'Reader';
-            }
-        },
+		renderExecuteType: function (typeId)
+		{
+			// see MvcMiniProfiler.ExecuteType enum
+			switch (typeId)
+			{
+				case 0: return 'None';
+				case 1: return 'NonQuery';
+				case 2: return 'Scalar';
+				case 3: return 'Reader';
+			}
+		},
 
-        shareUrl: function (id) {
-            return options.path + 'mini-profiler-results?id=' + id;
-        },
+		shareUrl: function (id)
+		{
+			return options.path + 'mini-profiler-results?id=' + id;
+		},
 
-        getSqlTimings: function (root) {
-            var result = [],
-                addToResults = function (timing) {
-                    if (timing.SqlTimings) {
-                        for (var i = 0, sqlTiming; i < timing.SqlTimings.length; i++) {
-                            sqlTiming = timing.SqlTimings[i];
+		getSqlTimings: function (root)
+		{
+			var result = [],
+                addToResults = function (timing)
+                {
+                	if (timing.SqlTimings)
+                	{
+                		for (var i = 0, sqlTiming; i < timing.SqlTimings.length; i++)
+                		{
+                			sqlTiming = timing.SqlTimings[i];
 
-                            // HACK: add info about the parent Timing to each SqlTiming so UI can render
-                            sqlTiming.ParentTimingName = timing.Name;
-                            result.push(sqlTiming);
-                        }
-                    }
+                			// HACK: add info about the parent Timing to each SqlTiming so UI can render
+                			sqlTiming.ParentTimingName = timing.Name;
+                			result.push(sqlTiming);
+                		}
+                	}
 
-                    if (timing.Children) {
-                        for (var i = 0; i < timing.Children.length; i++) {
-                            addToResults(timing.Children[i]);
-                        }
-                    }
+                	if (timing.Children)
+                	{
+                		for (var i = 0; i < timing.Children.length; i++)
+                		{
+                			addToResults(timing.Children[i]);
+                		}
+                	}
                 };
 
-            // start adding at the root and recurse down
-            addToResults(root);
+			// start adding at the root and recurse down
+			addToResults(root);
 
-            var removeDuration = function (list, duration) {
+			var removeDuration = function (list, duration)
+			{
 
-                var newList = [];
-                for (var i = 0; i < list.length; i++) {
+				var newList = [];
+				for (var i = 0; i < list.length; i++)
+				{
 
-                    var item = list[i];
-                    if (duration.start > item.start) {
-                        if (duration.start > item.finish) {
-                            newList.push(item);
-                            continue;
-                        }
-                        newList.push({ start: item.start, finish: duration.start });
-                    }
+					var item = list[i];
+					if (duration.start > item.start)
+					{
+						if (duration.start > item.finish)
+						{
+							newList.push(item);
+							continue;
+						}
+						newList.push({ start: item.start, finish: duration.start });
+					}
 
-                    if (duration.finish < item.finish) {
-                        if (duration.finish < item.start) {
-                            newList.push(item);
-                            continue;
-                        }
-                        newList.push({ start: duration.finish, finish: item.finish });
-                    }
-                }
+					if (duration.finish < item.finish)
+					{
+						if (duration.finish < item.start)
+						{
+							newList.push(item);
+							continue;
+						}
+						newList.push({ start: duration.finish, finish: item.finish });
+					}
+				}
 
-                return newList;
-            }
+				return newList;
+			}
 
-            var processTimes = function (elem, parent) {
-                var duration = { start: elem.StartMilliseconds, finish: (elem.StartMilliseconds + elem.DurationMilliseconds) };
-                elem.richTiming = [duration];
-                if (parent != null) {
-                    elem.parent = parent;
-                    elem.parent.richTiming = removeDuration(elem.parent.richTiming, duration);
-                }
+			var processTimes = function (elem, parent)
+			{
+				var duration = { start: elem.StartMilliseconds, finish: (elem.StartMilliseconds + elem.DurationMilliseconds) };
+				elem.richTiming = [duration];
+				if (parent != null)
+				{
+					elem.parent = parent;
+					elem.parent.richTiming = removeDuration(elem.parent.richTiming, duration);
+				}
 
-                if (elem.Children) {
-                    for (var i = 0; i < elem.Children.length; i++) {
-                        processTimes(elem.Children[i], elem);
-                    }
-                }
-            };
+				if (elem.Children)
+				{
+					for (var i = 0; i < elem.Children.length; i++)
+					{
+						processTimes(elem.Children[i], elem);
+					}
+				}
+			};
 
-            processTimes(root, null);
+			processTimes(root, null);
 
-            // sort results by time
-            result.sort(function (a, b) { return a.StartMilliseconds - b.StartMilliseconds; });
+			// sort results by time
+			result.sort(function (a, b) { return a.StartMilliseconds - b.StartMilliseconds; });
 
-            var determineOverlap = function (gap, node) {
-                var overlap = 0;
-                for (var i = 0; i < node.richTiming.length; i++) {
-                    var current = node.richTiming[i];
-                    if (current.start > gap.finish) {
-                        break;
-                    }
-                    if (current.finish < gap.start) {
-                        continue;
-                    }
+			var determineOverlap = function (gap, node)
+			{
+				var overlap = 0;
+				for (var i = 0; i < node.richTiming.length; i++)
+				{
+					var current = node.richTiming[i];
+					if (current.start > gap.finish)
+					{
+						break;
+					}
+					if (current.finish < gap.start)
+					{
+						continue;
+					}
 
-                    overlap += Math.min(gap.finish, current.finish) - Math.max(gap.start, current.start);
-                }
-                return overlap;
-            }
+					overlap += Math.min(gap.finish, current.finish) - Math.max(gap.start, current.start);
+				}
+				return overlap;
+			}
 
-            var determineGap = function (gap, node, match) {
-                var overlap = determineOverlap(gap, node);
-                if (match == null || overlap > match.duration) {
-                    match = { name: node.Name, duration: overlap };
-                }
-                else if (match.name == node.Name) {
-                    match.duration += overlap;
-                }
+			var determineGap = function (gap, node, match)
+			{
+				var overlap = determineOverlap(gap, node);
+				if (match == null || overlap > match.duration)
+				{
+					match = { name: node.Name, duration: overlap };
+				}
+				else if (match.name == node.Name)
+				{
+					match.duration += overlap;
+				}
 
-                if (node.Children) {
-                    for (var i = 0; i < node.Children.length; i++) {
-                        match = determineGap(gap, node.Children[i], match);
-                    }
-                }
-                return match;
-            };
+				if (node.Children)
+				{
+					for (var i = 0; i < node.Children.length; i++)
+					{
+						match = determineGap(gap, node.Children[i], match);
+					}
+				}
+				return match;
+			};
 
-            var time = 0;
-            var prev = null;
-            $.each(result, function () {
-                this.prevGap = {
-                    duration: (this.StartMilliseconds - time).toFixed(2),
-                    start: time,
-                    finish: this.StartMilliseconds
+			var time = 0;
+			var prev = null;
+			$.each(result, function ()
+			{
+				this.prevGap = {
+					duration: (this.StartMilliseconds - time).toFixed(2),
+					start: time,
+					finish: this.StartMilliseconds
+				};
+
+				this.prevGap.topReason = determineGap(this.prevGap, root, null);
+
+				time = this.StartMilliseconds + this.DurationMilliseconds;
+				prev = this;
+			});
+
+
+			if (result.length > 0)
+			{
+				var me = result[result.length - 1];
+				me.nextGap = {
+					duration: (root.DurationMilliseconds - time).toFixed(2),
+					start: time,
+					finish: root.DurationMilliseconds
+				};
+				me.nextGap.topReason = determineGap(me.nextGap, root, null);
+			}
+
+			return result;
+		},
+
+		getSqlTimingsCount: function (root)
+		{
+			var result = 0,
+                countSql = function (timing)
+                {
+                	if (timing.SqlTimings)
+                	{
+                		result += timing.SqlTimings.length;
+                	}
+
+                	if (timing.Children)
+                	{
+                		for (var i = 0; i < timing.Children.length; i++)
+                		{
+                			countSql(timing.Children[i]);
+                		}
+                	}
                 };
+			countSql(root);
+			return result;
+		},
 
-                this.prevGap.topReason = determineGap(this.prevGap, root, null);
+		fetchResultsExposed: function (ids)
+		{
+			return fetchResults(ids);
+		},
 
-                time = this.StartMilliseconds + this.DurationMilliseconds;
-                prev = this;
-            });
-
-
-            if (result.length > 0) {
-                var me = result[result.length - 1];
-                me.nextGap = {
-                    duration: (root.DurationMilliseconds - time).toFixed(2),
-                    start: time,
-                    finish: root.DurationMilliseconds
-                };
-                me.nextGap.topReason = determineGap(me.nextGap, root, null);
-            }
-
-            return result;
-        },
-
-        getSqlTimingsCount: function (root) {
-            var result = 0,
-                countSql = function (timing) {
-                    if (timing.SqlTimings) {
-                        result += timing.SqlTimings.length;
-                    }
-
-                    if (timing.Children) {
-                        for (var i = 0; i < timing.Children.length; i++) {
-                            countSql(timing.Children[i]);
-                        }
-                    }
-                };
-            countSql(root);
-            return result;
-        },
-
-        fetchResultsExposed: function (ids) {
-            return fetchResults(ids);
-        },
-
-        formatDuration: function (duration) {
-            return (duration || 0).toFixed(1);
-        }
-    };
+		formatDuration: function (duration)
+		{
+			return (duration || 0).toFixed(1);
+		}
+	};
 })(jQuery);
 
 // prettify.js

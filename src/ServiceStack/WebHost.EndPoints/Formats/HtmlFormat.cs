@@ -353,6 +353,7 @@ doc.onclick = function(e) {{
     $.each($$('TH'), function(i,th){{ if (th == el) return; th.className = null; }});
     clearSel();
     var ids=el.id.split('-'), tId=ids[1], cId=ids[2];
+	if (!tbls[tId]) return;
     var tbl=tbls[tId].slice(0), h=uniqueKeys(tbl), col=keys(h)[cId], tbody=el.parentNode.parentNode.nextSibling;
     if (!el.className){{ setTableBody(tbody, makeRows(h,tbls[tId])); return; }}
     var d=el.className=='asc'?1:-1;

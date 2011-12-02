@@ -20,7 +20,7 @@ Ultimately providing a clean, succinct, strong-typed API, for a friction-free de
     <language>en-US</language> 
     <copyright>Liquidbit 2011 and contributors</copyright>
     <dependencies>
-      <dependency id="WebActivator" version="1.4" />
+      <dependency id="WebActivator" version="1.5" />
       <dependency id="ServiceStack.Common" />
       <dependency id="ServiceStack.Redis" />
       <dependency id="ServiceStack.OrmLite.SqlServer" />

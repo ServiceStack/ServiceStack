@@ -292,10 +292,13 @@
     <Compile Include="Funq\Container.Adapter.cs" />
     <None Include="Funq\Container.xdoc" />
     <EmbeddedResource Include="MvcMiniProfiler\UI\includes.tmpl" />
+    <None Include="MvcMiniProfiler\UI\includes.tmpl.orig" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
+    <None Include="MvcMiniProfiler\UI\jquery.tmpl.beta1.js.orig" />
+    <None Include="MvcMiniProfiler\UI\jquery.1.6.2.js.orig" />
     <EmbeddedResource Include="MvcMiniProfiler\UI\includes.css" />
     <EmbeddedResource Include="MvcMiniProfiler\UI\includes.js" />
     <EmbeddedResource Include="MvcMiniProfiler\UI\jquery.1.6.2.js" />
