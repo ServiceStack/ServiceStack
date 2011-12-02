@@ -93,6 +93,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Messaging\Rcon\Client.cs" />
+    <Compile Include="Messaging\Rcon\Packet.cs" />
+    <Compile Include="Messaging\Rcon\PacketCodec.cs" />
+    <Compile Include="Messaging\Rcon\PacketProcessingClient.cs" />
+    <Compile Include="Messaging\Rcon\Server.cs" />
     <Compile Include="Net30\ConcurrentDictionary.cs" />
     <Compile Include="Net30\ObjectPool.cs" />
     <Compile Include="Net30\SplitOrderedList.cs" />
