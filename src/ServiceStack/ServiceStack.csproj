@@ -291,7 +291,9 @@
   <ItemGroup>
     <Compile Include="Funq\Container.Adapter.cs" />
     <None Include="Funq\Container.xdoc" />
-    <EmbeddedResource Include="MvcMiniProfiler\UI\includes.tmpl" />
+    <EmbeddedResource Include="MvcMiniProfiler\UI\includes.tmpl">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="MvcMiniProfiler\UI\includes.tmpl.orig" />
     <None Include="README.md" />
   </ItemGroup>
