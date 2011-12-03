@@ -194,7 +194,14 @@ namespace ServiceStack.Messaging.Rcon
             {
                 var callback = _registeredCallbacks[packetObj.Sequence];
                 _registeredCallbacks.Remove(packetObj.Sequence);
-                callback(this, Encoding.UTF8.GetBytes(packetObj.Words[2]));
+                if (packetObj.Words.Length < 3)
+                {
+                    callback(this, null);
+                }
+                else
+                {
+                    callback(this, packetObj.Words[2]);
+                }
             }
         }
 
@@ -226,14 +233,14 @@ namespace ServiceStack.Messaging.Rcon
         {
             _registeredCallbacks[_sequenceID] = callback;
             IMessage<T> message = new Message<T>(request);
-            InternalSend(new string[]{ request.GetType().AssemblyQualifiedName, Encoding.UTF8.GetString(message.ToBytes()) });
+            InternalSend(new byte[][]{ Encoding.UTF8.GetBytes(request.GetType().AssemblyQualifiedName), message.ToBytes() });
         }
 
         /// <summary>
         /// Sends message to the server.
         /// </summary>
         /// <param name="words">Words to send.</param>
-        protected virtual void InternalSend(string[] words)
+        protected virtual void InternalSend(byte[][] words)
         {
             if (!Connected)
             {
