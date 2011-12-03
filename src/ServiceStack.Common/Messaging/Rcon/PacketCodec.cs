@@ -55,16 +55,20 @@ namespace ServiceStack.Messaging.Rcon
         /// </summary>
         /// <param name="packet"></param>
         /// <returns></returns>
-        private static string[] DecodeWords(byte[] packet)
+        private static byte[][] DecodeWords(byte[] packet)
         {
             var wordCount = BitConverter.ToUInt32(packet, 8);
-            var words = new string[wordCount];
+            var words = new byte[wordCount][];
             var wordIndex = 0;
             int offset = 12;
             for (int i = 0; i < wordCount; i++)
             {
                 var wordLen = BitConverter.ToInt32(packet, offset);
-                var word = System.Text.Encoding.UTF8.GetString(packet, offset + 4, wordLen);
+                var word = new byte[wordLen];
+                for (int j = 0; j < wordLen; j++)
+                {
+                    word[j] = packet[offset + 4 + j];
+                }
                 words[wordIndex++] = word;
                 offset += 5 + wordLen;
             }
@@ -79,7 +83,7 @@ namespace ServiceStack.Messaging.Rcon
         /// <param name="id"></param>
         /// <param name="words"></param>
         /// <returns></returns>
-        internal static byte[] EncodePacket(bool fromServer, bool isResponse, uint id, string[] words)
+        internal static byte[] EncodePacket(bool fromServer, bool isResponse, uint id, byte[][] words)
         {
             /*
              * Packet format:
@@ -128,16 +132,16 @@ namespace ServiceStack.Messaging.Rcon
         /// </summary>
         /// <param name="words"></param>
         /// <returns></returns>
-        private static byte[] EncodeWords(string[] words)
+        private static byte[] EncodeWords(byte[][] words)
         {
             var wordPacket = new List<byte>();
             foreach (var word in words)
             {
                 var encodedWord = new List<byte>();
-                encodedWord.AddRange(System.Text.Encoding.UTF8.GetBytes(word));
+                encodedWord.AddRange(word);
                 encodedWord.Add(0);
 
-                var encodedLength = BitConverter.GetBytes((uint)System.Text.Encoding.UTF8.GetByteCount(word));
+                var encodedLength = BitConverter.GetBytes((uint)word.Length);
 
                 wordPacket.AddRange(encodedLength);
                 wordPacket.AddRange(encodedWord);

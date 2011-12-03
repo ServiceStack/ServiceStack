@@ -25,6 +25,6 @@ namespace ServiceStack.Messaging.Rcon
         /// <summary>
         /// Words.
         /// </summary>
-        public string[] Words { get; internal set; }
+        public byte[][] Words { get; internal set; }
     }
 }

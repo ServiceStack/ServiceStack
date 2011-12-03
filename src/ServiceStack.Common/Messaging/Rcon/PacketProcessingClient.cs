@@ -74,7 +74,7 @@ namespace ServiceStack.Messaging.Rcon
         {
             if (givenPacket)
                 return null;
-            var ret = Encoding.UTF8.GetBytes(thePacket.Words[1]);
+            var ret = thePacket.Words[1];
             givenPacket = true;
             return ret;
         }
