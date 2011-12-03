@@ -160,6 +160,7 @@ namespace ServiceStack.Messaging
 						{
 							Log.Error("Could not send response to '{0}' with client '{1}'"
 								.Fmt(mqReplyTo, replyClient.GetType().Name), ex);
+                            mqReplyTo = new QueueNames(response.GetType()).In;
 						}
 					}
 
