@@ -42,8 +42,8 @@
 				  <a class="toggle-duration-with-children" title="toggles column with aggregate child durations">show time with children</a>
               </td>
             <% if (HasSqlTimings){ %>
-              <td colspan="2" class="number percent-in-sql" title="${MiniProfiler.getSqlTimingsCount(Root)} queries spent ${MiniProfiler.formatDuration(DurationMillisecondsInSql)} ms of total request time">
-                ${MiniProfiler.formatDuration(DurationMillisecondsInSql / DurationMilliseconds * 100)}
+              <td colspan="2" class="number percent-in-sql" title="<%=MiniProfiler.getSqlTimingsCount(Root)%> queries spent <%=MiniProfiler.formatDuration(DurationMillisecondsInSql)%> ms of total request time">
+                <%=MiniProfiler.formatDuration(DurationMillisecondsInSql / DurationMilliseconds * 100)%>
                 <span class="unit">% in sql</span>
               </td>
 		    <% } %>
@@ -63,13 +63,13 @@
         </tr>
       </thead>
       <tbody>
-        <% $._each(MiniProfiler.getSqlTimings(Root), function(i, s) { %> 
+        <% $._each(MiniProfiler.getSqlTimings(Root), function(s, i) { %> 
           <%= $.tmpl("#sqlGapTemplate", { g:s.prevGap }) %>
 		  <%= $.tmpl("#sqlTimingTemplate", { i:i, s:s }) %>
 	      <% if (s.nextGap){ %>
 			  <%= $.tmpl("#sqlGapTemplate", { g:s.nextGap }) %>
 		  <% } %>
-		<% }); %>
+		<% }) %>
       </tbody>
       </table>
       <p class="trivial-gap-container">
@@ -122,7 +122,7 @@
 
 <script id="sqlTimingTemplate" type="text/x-jquery-tmpl">
 
-  <tr class="<%= i % 2 == 1 ? 'odd' : '' %>"> data-timing-id="<%= s.ParentTimingId %>">
+  <tr class="<%= i % 2 == 1 ? 'odd' : '' %>" data-timing-id="<%= s.ParentTimingId %>">
   <td class="info">
       <div><%= s.ParentTimingName %></div>
       <div class="number"><span class="unit">T+</span><%= MiniProfiler.formatDuration(s.StartMilliseconds) %> <span class="unit">ms</span></div>
@@ -130,7 +130,7 @@
         <% if (s.IsDuplicate){ %><span class="warning">DUPLICATE</span><% } %>
 		<%= MiniProfiler.renderExecuteType(s.ExecuteType) %>
 	</div>
-      <div title="<%= s.ExecuteType == 3 ? 'first result fetched: ' + s.FirstFetchDurationMilliseconds %>ms"><%= MiniProfiler.formatDuration(s.DurationMilliseconds)%> <span class="unit">ms</span></div>
+      <div title="<%= s.ExecuteType == 3 ? 'first result fetched: ' + s.FirstFetchDurationMilliseconds : '' %>ms"><%= MiniProfiler.formatDuration(s.DurationMilliseconds)%> <span class="unit">ms</span></div>
     </td>
     <td>
       <div class="query">

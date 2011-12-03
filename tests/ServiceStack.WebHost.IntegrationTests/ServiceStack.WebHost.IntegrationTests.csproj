@@ -121,6 +121,7 @@
     <Compile Include="Services\HttpResultsService.cs" />
     <Compile Include="Services\CustomFormDataService.cs" />
     <Compile Include="Services\GeoInfoService.cs" />
+    <Compile Include="Services\ProfilerService.cs" />
     <Compile Include="Services\RouteInfoService.cs" />
     <Compile Include="Tests\AppHostBaseTests.cs" />
     <Compile Include="Tests\CachedServiceTests.cs" />

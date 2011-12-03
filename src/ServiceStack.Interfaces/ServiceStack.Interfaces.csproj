@@ -96,6 +96,7 @@
     <Compile Include="DataAccess\IAggregatable.cs" />
     <Compile Include="DataAccess\IBasicPersistenceProvider.cs" />
     <Compile Include="DataAccess\IBasicPersistenceProvider.Generic.cs" />
+    <Compile Include="DataAccess\IHasDbConnection.cs" />
     <Compile Include="DataAccess\IPersistenceProvider.cs" />
     <Compile Include="DataAccess\IPersistenceProviderManager.cs" />
     <Compile Include="DataAccess\IPersistenceProviderManagerFactory.cs" />

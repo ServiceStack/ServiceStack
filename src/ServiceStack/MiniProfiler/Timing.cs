@@ -59,7 +59,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Needed for database deserialization and JSON serialization.
         /// </summary>
-        public Guid? ParentTimingId { get; set; }
+		[DataMember(Order = 8)]
+		public Guid? ParentTimingId { get; set; }
 
         private Timing _parentTiming;
         /// <summary>
@@ -212,7 +213,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql data readers were executed in this Timing step. Does not include queries in any child Timings.
         /// </summary>
-        public int ExecutedReaders
+		[DataMember]
+		public int ExecutedReaders
         {
             get { return GetExecutedCount(ExecuteType.Reader); }
         }
@@ -220,7 +222,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql scalar queries were executed in this Timing step. Does not include queries in any child Timings.
         /// </summary>
-        public int ExecutedScalars
+		[DataMember]
+		public int ExecutedScalars
         {
             get { return GetExecutedCount(ExecuteType.Scalar); }
         }
@@ -228,7 +231,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql non-query statements were executed in this Timing step. Does not include queries in any child Timings.
         /// </summary>
-        public int ExecutedNonQueries
+		[DataMember]
+		public int ExecutedNonQueries
         {
             get { return GetExecutedCount(ExecuteType.NonQuery); }
         }

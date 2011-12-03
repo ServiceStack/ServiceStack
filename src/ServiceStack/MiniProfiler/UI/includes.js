@@ -340,7 +340,9 @@
 	var queriesScrollIntoView = function (link, queries, whatToScroll)
 	{
 		var id = link.closest('tr').attr('data-timing-id'),
-            cells = queries.find('tr[data-timing-id="' + id + '"] td');
+			cells = queries.find('tr[data-timing-id="' + id + '"]').find('td');
+		
+		//was: cells = queries.find('tr[data-timing-id="' + id + '"] td');
 
 		// ensure they're in view
 		whatToScroll.scrollTop(whatToScroll.scrollTop() + cells.first().position().top - 100);
@@ -352,19 +354,33 @@
                 highlightHex = '#FFFFBB',
                 highlightRgb = getRGB(highlightHex),
                 originalRgb = getRGB(cell.css('background-color')),
-                getColorDiff = function (fx, i)
+                getColorDiff = function (pos, i)
                 {
                 	// adapted from John Resig's color plugin: http://plugins.jquery.com/project/color
-                	return Math.max(Math.min(parseInt((fx.pos * (originalRgb[i] - highlightRgb[i])) + highlightRgb[i]), 255), 0);
+                	return Math.max(Math.min(parseInt((pos * (originalRgb[i] - highlightRgb[i])) + highlightRgb[i]), 255), 0);
                 };
 
 			// we need to animate some other property to piggy-back on the step function, so I choose you, opacity!
-			cell.css({ 'opacity': 1, 'background-color': highlightHex })
-                .animate({ 'opacity': 1 }, { duration: 2000, step: function (now, fx)
-                {
-                	fx.elem.style['backgroundColor'] = "rgb(" + [getColorDiff(fx, 0), getColorDiff(fx, 1), getColorDiff(fx, 2)].join(",") + ")";
-                }
-                });
+            cell.css({ 'background-color': highlightHex }); // had: 'opacity': 1, 
+
+			var startAt = new Date();
+			(function anim()
+			{
+				var now = new Date(), pos = Math.min((now - startAt) / 2000 * 1.5, 1);
+				cell[0].style['backgroundColor'] = "rgb(" + [getColorDiff(pos, 0), getColorDiff(pos, 1), getColorDiff(pos, 2)].join(",") + ")";
+				if ((now - startAt) < 2000)
+					setTimeout(anim, 100);
+			})();
+
+			/* was:
+				cell.animate({ 'opacity': 1 }, { duration: 2000, step: function (now, fx)
+					{
+						console.log([now, fx.pos]);
+						fx.elem.style['backgroundColor'] = "rgb(" + [getColorDiff(fx.pos, 0), getColorDiff(fx.pos, 1), getColorDiff(fx.pos, 2)].join(",") + ")";
+					}
+				});
+			*/
+			
 		});
 	};
 
