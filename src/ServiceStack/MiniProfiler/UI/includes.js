@@ -340,8 +340,7 @@
 	var queriesScrollIntoView = function (link, queries, whatToScroll)
 	{
 		var id = link.closest('tr').attr('data-timing-id'),
-			cells = queries.find('tr[data-timing-id="' + id + '"]').find('td');
-		
+			cells = queries.find('tr[data-timing-id="' + id + '"]').find('td');		
 		//was: cells = queries.find('tr[data-timing-id="' + id + '"] td');
 
 		// ensure they're in view

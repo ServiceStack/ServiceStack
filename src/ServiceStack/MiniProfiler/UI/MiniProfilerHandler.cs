@@ -28,8 +28,7 @@ namespace ServiceStack.MiniProfiler.UI
             const string format =
 @"<link rel=""stylesheet"" type=""text/css"" href=""{path}mini-profiler-includes.css?v={version}""{closeXHTML}>
 <script type=""text/javascript"">
-    if (!window.jQuery) document.write(unescape(""%3Cscript src='{path}mini-profiler-jquery.1.6.2.js' type='text/javascript'%3E%3C/script%3E""));
-    if (!window.jQuery || !window.jQuery.tmpl) document.write(unescape(""%3Cscript src='{path}mini-profiler-jquery.tmpl.beta1.js' type='text/javascript'%3E%3C/script%3E""));
+    if (!window.jQuery) document.write(unescape(""%3Cscript src='{path}mini-profiler-jquip.all.js?v={version}' type='text/javascript'%3E%3C/script%3E""));
 </script>
 <script type=""text/javascript"" src=""{path}mini-profiler-includes.js?v={version}""></script>
 <script type=""text/javascript"">
@@ -141,8 +140,9 @@ namespace ServiceStack.MiniProfiler.UI
 			string output;
 			switch (Path.GetFileNameWithoutExtension(path))
 			{
-				case "mini-profiler-jquery.1.6.2":
-				case "mini-profiler-jquery.tmpl.beta1":
+				//case "mini-profiler-jquery.1.6.2":
+				//case "mini-profiler-jquery.tmpl.beta1":
+				case "mini-profiler-jquip.all":
 				case "mini-profiler-includes":
 					output = Includes(httpReq, httpRes, path);
 					break;
