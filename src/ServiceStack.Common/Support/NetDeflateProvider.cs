@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using ServiceStack.CacheAccess;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Support
 {
@@ -15,7 +16,7 @@ namespace ServiceStack.Common.Support
 			using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
 			{
 				zipStream.Write(buffer, 0, buffer.Length);
-				ms.Position = 0;
+				zipStream.Close();
 
 				return ms.ToArray();
 			}
@@ -23,21 +24,13 @@ namespace ServiceStack.Common.Support
 
 		public string Inflate(byte[] gzBuffer)
 		{
-			using (var ms = new MemoryStream())
+			using (var compressedStream = new MemoryStream(gzBuffer))
+			using (var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
 			{
-				var msgLength = BitConverter.ToInt32(gzBuffer, 0);
-				ms.Write(gzBuffer, 4, gzBuffer.Length - 4);
-
-				var buffer = new byte[msgLength];
-
-				ms.Position = 0;
-				using (var zipStream = new DeflateStream(ms, CompressionMode.Decompress))
-				{
-					zipStream.Read(buffer, 0, buffer.Length);
-				}
-
-				return Encoding.UTF8.GetString(buffer);
+				var utf8Bytes = zipStream.ReadFully();
+				return Encoding.UTF8.GetString(utf8Bytes);
 			}
 		}
+
 	}
 }

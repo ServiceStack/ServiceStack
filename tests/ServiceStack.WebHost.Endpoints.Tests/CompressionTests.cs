@@ -99,8 +99,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Assert.That(reponseWasAutoHandled, Is.True);
 
-			var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
-			Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);
+			//var bytesToWriteToResponseStream = new byte[simpleDtoZip.Length - 4];
+			//Array.Copy(simpleDtoZip, CompressedResult.Adler32ChecksumLength, bytesToWriteToResponseStream, 0, bytesToWriteToResponseStream.Length);
+
+			var bytesToWriteToResponseStream = simpleDtoZip;
 
 			var writtenBytes = mockResponse.GetOutputStreamAsBytes();
 			Assert.That(writtenBytes, Is.EqualTo(bytesToWriteToResponseStream));
