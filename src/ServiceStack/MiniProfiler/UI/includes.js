@@ -1,67 +1,5 @@
 ﻿var MiniProfiler = (function ($)
 {
-	var slice = Array.prototype.slice,
-		nativeForEach = Array.prototype.forEach,
-		breaker = {};
-
-	function _each(o, fn, ctx)
-	{
-		if (o == null) return;
-		if (nativeForEach && o.forEach === nativeForEach)
-			o.forEach(fn, ctx);
-		else if (o.length === +o.length)
-		{
-			for (var i = 0, l = o.length; i < l; i++)
-				if (i in o && fn.call(ctx, o[i], i, o) === breaker) return;
-		} else
-		{
-			for (var key in o)
-				if (hasOwn.call(o, key))
-					if (fn.call(ctx, o[key], key, o) === breaker) return;
-		}
-	} $['_each'] = _each;
-	$['_defaults'] = function (obj)
-	{
-		_each(slice.call(arguments, 1), function (o)
-		{
-			for (var k in o)
-				if (obj[k] == null) obj[k] = o[k];
-		});
-		return obj;
-	};
-	$['templateSettings'] = {
-		evaluate: /<%([\s\S]+?)%>/g,
-		interpolate: /<%=([\s\S]+?)%>/g,
-		escape: /<%-([\s\S]+?)%>/g
-	};
-	$['_template'] = function (str, data)
-	{
-		var c = $['templateSettings'];
-		var tmpl = 'var __p=[],print=function(){__p.push.apply(__p,arguments);};' +
-          'with(obj||{}){__p.push(\'' +
-          str.replace(/\\/g, '\\\\')
-             .replace(/'/g, "\\'")
-             .replace(c.escape, function (match, code)
-             {
-             	return "',_.escape(" + code.replace(/\\'/g, "'") + "),'";
-             })
-             .replace(c.interpolate, function (match, code)
-             {
-             	return "'," + code.replace(/\\'/g, "'") + ",'";
-             })
-             .replace(c.evaluate || null, function (match, code)
-             {
-             	return "');" + code.replace(/\\'/g, "'")
-                                  .replace(/[\r\n\t]/g, ' ') + ";__p.push('";
-             })
-             .replace(/\r/g, '\\r')
-             .replace(/\n/g, '\\n')
-             .replace(/\t/g, '\\t')
-             + "');}return __p.join('');";
-		var func = new Function('obj', '$', tmpl);
-		return data ? func(data, $) : function (data) { return func(data, $) };
-	};
-
 	var tmplCache = {},
     	options,
         container,
@@ -98,13 +36,11 @@
 		return $($.trim(html));
 	};
 
-	var hasLocalStorage = function ()
+	var hasLocalStorage = function () 
 	{
-		try
-		{
+		try {
 			return 'localStorage' in window && window['localStorage'] !== null;
-		} catch (e)
-		{
+		} catch (e) {
 			return false;
 		}
 	};
