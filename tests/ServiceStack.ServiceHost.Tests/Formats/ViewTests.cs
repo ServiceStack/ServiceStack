@@ -171,6 +171,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				MemoryStream = new MemoryStream();
 			}
 
+			public object OriginalResponse
+			{
+				get { throw new NotImplementedException(); }
+			}
+
 			public int StatusCode { set; private get; }
 
             public string StatusDescription { set; private get; }

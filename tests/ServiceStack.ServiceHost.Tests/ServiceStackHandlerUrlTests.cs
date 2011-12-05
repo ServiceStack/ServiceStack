@@ -29,6 +29,11 @@ namespace ServiceStack.ServiceHost.Tests
 				AbsoluteUri = "http://localhost" + rawUrl;
 			}
 
+			public object OriginalRequest
+			{
+				get { throw new NotImplementedException(); }
+			}
+
 			public string OperationName { get; private set; }
 			public string ContentType { get; private set; }
 			public string HttpMethod { get; private set; }

@@ -1,4 +1,5 @@
-﻿var MiniProfiler = (function ($)
+﻿//A port of the excellent http://code.google.com/p/mvc-mini-profiler/
+var MiniProfiler = (function ($)
 {
 	var tmplCache = {},
     	options,
