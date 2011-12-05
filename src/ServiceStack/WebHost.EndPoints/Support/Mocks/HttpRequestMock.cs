@@ -32,6 +32,11 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 			this.InputStream = inputStream;
 		}
 
+		public object OriginalRequest
+		{
+			get { return null; }
+		}
+
 		public string OperationName { get; set; }
 		public string ContentType { get; set; }
 		public string HttpMethod { get; set; }

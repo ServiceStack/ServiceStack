@@ -8,6 +8,8 @@ namespace ServiceStack.ServiceHost
 {
 	public interface IHttpRequest
 	{
+		object OriginalRequest { get; }
+
 		string OperationName { get; }
 
 		string ContentType { get; }

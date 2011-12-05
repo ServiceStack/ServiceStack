@@ -17,6 +17,12 @@ namespace ServiceStack.Common.Web
 		}
 
 		public Dictionary<string, string> Headers { get; set; }
+
+		public object OriginalResponse
+		{
+			get { return null; }
+		}
+
 		public int StatusCode { set; private get; }
         public string StatusDescription { set; private get; }
 		public string ContentType { get; set; }
