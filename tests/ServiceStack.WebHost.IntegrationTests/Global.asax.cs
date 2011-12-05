@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Data.Common;
 using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Messaging;
+using ServiceStack.MiniProfiler;
+using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
@@ -27,8 +30,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 			public override void Configure(Container container)
 			{
-				this.RequestFilters.Add((req, res, dto) =>
-				{
+				this.RequestFilters.Add((req, res, dto) => {
 					var requestFilter = dto as RequestFilter;
 					if (requestFilter != null)
 					{
@@ -50,7 +52,9 @@ namespace ServiceStack.WebHost.IntegrationTests
 				this.Container.Register<IDbConnectionFactory>(c =>
 					new OrmLiteConnectionFactory(
 						"~/App_Data/db.sqlite".MapHostAbsolutePath(),
-						SqliteOrmLiteDialectProvider.Instance));
+						SqliteOrmLiteDialectProvider.Instance) {
+							ConnectionFilter = x => new ProfiledDbConnection(x, Profiler.Current)
+						});
 
 				this.Container.Register<ICacheClient>(new MemoryCacheClient());
 

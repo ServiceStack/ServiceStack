@@ -23,6 +23,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request; }
 		}
 
+		public object OriginalRequest
+		{
+			get { return request; }
+		}
+
 		private readonly HttpRequest request;
 
 		public HttpRequestWrapper(string operationName, HttpRequest request)

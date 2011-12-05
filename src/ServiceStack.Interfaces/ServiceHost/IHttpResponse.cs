@@ -4,6 +4,8 @@ namespace ServiceStack.ServiceHost
 {
 	public interface IHttpResponse
 	{
+		object OriginalResponse { get; }
+
 		int StatusCode { set; }
 
         string StatusDescription { set; }

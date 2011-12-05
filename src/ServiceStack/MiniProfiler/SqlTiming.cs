@@ -37,7 +37,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// The command string with special formatting applied based on MiniProfiler.Settings.SqlFormatter
         /// </summary>
-        public string FormattedCommandString
+		[DataMember(Order = 3)]
+		public string FormattedCommandString
         {
             get
             {
@@ -50,32 +51,32 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Roughly where in the calling code that this sql was executed.
         /// </summary>
-        [DataMember(Order = 3)]
+        [DataMember(Order = 4)]
         public string StackTraceSnippet { get; set; }
 
         /// <summary>
         /// Offset from main MiniProfiler start that this sql began.
         /// </summary>
-        [DataMember(Order = 4)]
+        [DataMember(Order = 5)]
         public decimal StartMilliseconds { get; set; }
 
         /// <summary>
         /// How long this sql statement took to execute.
         /// </summary>
-        [DataMember(Order = 5)]
+        [DataMember(Order = 6)]
         public decimal DurationMilliseconds { get; set; }
 
         /// <summary>
         /// When executing readers, how long it took to come back initially from the database, 
         /// before all records are fetched and reader is closed.
         /// </summary>
-        [DataMember(Order = 6)]
+        [DataMember(Order = 7)]
         public decimal FirstFetchDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Stores any parameter names and values used by the profiled DbCommand.
         /// </summary>
-        [DataMember(Order = 7)]
+        [DataMember(Order = 8)]
         public List<SqlTimingParameter> Parameters { get; set; }
 
         /// <summary>
@@ -84,7 +85,8 @@ namespace ServiceStack.MiniProfiler
         /// <remarks>
         /// Needed for database deserialization.
         /// </remarks>
-        public Guid? ParentTimingId { get; set; }
+		[DataMember(Order = 9)]
+		public Guid? ParentTimingId { get; set; }
 
         private Timing _parentTiming;
         /// <summary>
@@ -106,7 +108,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// True when other identical sql statements have been executed during this MiniProfiler session.
         /// </summary>
-        [DataMember(Order = 9)]
+        [DataMember(Order = 10)]
         public bool IsDuplicate { get; set; }
 
         private long _startTicks;

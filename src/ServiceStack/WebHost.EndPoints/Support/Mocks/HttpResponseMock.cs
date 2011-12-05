@@ -17,6 +17,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			this.TextWritten = new StringBuilder();
 		}
 
+		public object OriginalResponse
+		{
+			get { return null; }
+		}
+
 		public string GetOutputStreamAsString()
 		{
 			this.OutputStream.Seek(0, SeekOrigin.Begin);

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
+using ServiceStack.DataAccess;
 
 namespace ServiceStack.MiniProfiler.Data
 {
@@ -41,15 +43,32 @@ namespace ServiceStack.MiniProfiler.Data
         /// <param name="profiler">The currently started <see cref="MiniProfiler.Profiler"/> or null.</param>
         public ProfiledDbConnection(DbConnection connection, IDbProfiler profiler)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+        	Init(connection, profiler);
+        }
 
-            _conn = connection;
-            _conn.StateChange += StateChangeHandler;
+    	private void Init(DbConnection connection, IDbProfiler profiler)
+    	{
+    		if (connection == null) throw new ArgumentNullException("connection");
 
-            if (profiler != null)
-            {
-                _profiler = profiler;
-            }
+    		_conn = connection;
+    		_conn.StateChange += StateChangeHandler;
+
+    		if (profiler != null)
+    		{
+    			_profiler = profiler;
+    		}
+    	}
+
+    	public ProfiledDbConnection(IDbConnection connection, IDbProfiler profiler)
+    	{
+    		var hasConn = connection as IHasDbConnection;
+			if (hasConn != null) connection = hasConn.DbConnection;
+    		var dbConn = connection as DbConnection;
+
+			if (dbConn == null)
+				throw new ArgumentException(connection.GetType().Name + " does not inherit DbConnection");
+			
+			Init(dbConn, profiler);
         }
 
 

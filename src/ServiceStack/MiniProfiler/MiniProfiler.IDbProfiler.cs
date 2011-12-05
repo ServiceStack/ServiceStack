@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.Common;
+using System.Runtime.Serialization;
 using ServiceStack.MiniProfiler.Data;
 
 namespace ServiceStack.MiniProfiler
@@ -24,7 +25,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Milliseconds, to one decimal place, that this MiniProfiler was executing sql.
         /// </summary>
-        public decimal DurationMillisecondsInSql
+		[DataMember(Order = 14)]
+		public decimal DurationMillisecondsInSql
         {
             get { return GetTimingHierarchy().Sum(t => t.HasSqlTimings ? t.SqlTimings.Sum(s => s.DurationMilliseconds) : 0); }
         }
@@ -32,17 +34,20 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when we have profiled queries.
         /// </summary>
-        public bool HasSqlTimings { get; set; }
+		[DataMember(Order = 15)]
+		public bool HasSqlTimings { get; set; }
 
         /// <summary>
         /// Returns true when any child Timings have duplicate queries.
         /// </summary>
-        public bool HasDuplicateSqlTimings { get; set; }
+		[DataMember(Order = 16)]
+		public bool HasDuplicateSqlTimings { get; set; }
 
         /// <summary>
         /// How many sql data readers were executed in all <see cref="Timing"/> steps.
         /// </summary>
-        public int ExecutedReaders
+		[DataMember(Order = 17)]
+		public int ExecutedReaders
         {
             get { return GetExecutedCount(ExecuteType.Reader); }
         }
@@ -50,7 +55,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql scalar queries were executed in all <see cref="Timing"/> steps.
         /// </summary>
-        public int ExecutedScalars
+		[DataMember(Order = 18)]
+		public int ExecutedScalars
         {
             get { return GetExecutedCount(ExecuteType.Scalar); }
         }
@@ -58,7 +64,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql non-query statements were executed in all <see cref="Timing"/> steps.
         /// </summary>
-        public int ExecutedNonQueries
+		[DataMember(Order = 19)]
+		public int ExecutedNonQueries
         {
             get { return GetExecutedCount(ExecuteType.NonQuery); }
         }

@@ -83,7 +83,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				QueryString = new NameValueCollection(),
 			};
 			httpReq.QueryString.Add("format", format);
-			var requestContext = new HttpRequestContext((IHttpRequest)httpReq, dto);
+			var requestContext = new HttpRequestContext(httpReq, dto);
 			using (var ms = new MemoryStream())
 			{
 				var httpRes = new HttpResponseStreamWrapper(ms);
@@ -109,7 +109,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			//File.WriteAllText("~/AppData/TestsResults/CustomerDetailsResponse.htm".MapAbsolutePath(), html);
 
 			Assert.That(html.StartsWith("<!doctype html>"));
-			Assert.That(html.Contains("Customer Orders Total:  &#163;4,596.20"));
+			Assert.That(html.Contains("Customer Orders Total:  $4,596.20"));
 		}
 
 		[Test]
@@ -120,7 +120,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Console.WriteLine(html);
 
 			Assert.That(html.TrimStart().StartsWith("<h1>Maria Anders Customer Details (Berlin, Germany)</h1>"));
-			Assert.That(html.Contains("Customer Orders Total:  &#163;4,596.20"));
+			Assert.That(html.Contains("Customer Orders Total:  $4,596.20"));
 		}
 
 		[Test]
@@ -133,7 +133,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			Assert.That(html.StartsWith("<!doctype html>"));
 			Assert.That(html.Contains("# Maria Anders Customer Details (Berlin, Germany)"));
-			Assert.That(html.Contains("Customer Orders Total:  &#163;4,596.20"));
+			Assert.That(html.Contains("Customer Orders Total:  $4,596.20"));
 		}
 
 		[Test]
@@ -144,7 +144,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Console.WriteLine(html);
 
 			Assert.That(html.TrimStart().StartsWith("# Maria Anders Customer Details (Berlin, Germany)"));
-			Assert.That(html.Contains("Customer Orders Total:  &#163;4,596.20"));
+			Assert.That(html.Contains("Customer Orders Total:  $4,596.20"));
 		}
 
 
@@ -169,6 +169,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			{
 				this.Headers = new Dictionary<string, string>();
 				MemoryStream = new MemoryStream();
+			}
+
+			public object OriginalResponse
+			{
+				get { throw new NotImplementedException(); }
 			}
 
 			public int StatusCode { set; private get; }

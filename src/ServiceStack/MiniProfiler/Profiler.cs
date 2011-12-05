@@ -133,7 +133,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when <see cref="Root"/> or any of its <see cref="Timing.Children"/> are <see cref="Timing.IsTrivial"/>.
         /// </summary>
-        public bool HasTrivialTimings
+		[DataMember(Order = 10)]
+		public bool HasTrivialTimings
         {
             get
             {
@@ -149,7 +150,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when all child <see cref="Timing"/>s are <see cref="Timing.IsTrivial"/>.
         /// </summary>
-        public bool HasAllTrivialTimings
+		[DataMember(Order = 11)]
+		public bool HasAllTrivialTimings
         {
             get
             {
@@ -165,7 +167,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Any Timing step with a duration less than or equal to this will be hidden by default in the UI; defaults to 2.0 ms.
         /// </summary>
-        public decimal TrivialDurationThresholdMilliseconds
+		[DataMember(Order = 12)]
+		public decimal TrivialDurationThresholdMilliseconds
         {
             get { return Settings.TrivialDurationThresholdMilliseconds; }
         }
@@ -173,7 +176,8 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Ticks since this MiniProfiler was started.
         /// </summary>
-        internal long ElapsedTicks { get { return _sw.ElapsedTicks; } }
+		[DataMember(Order = 13)]
+		internal long ElapsedTicks { get { return _sw.ElapsedTicks; } }
 
         /// <summary>
         /// Points to the currently executing Timing. 
@@ -365,6 +369,7 @@ namespace ServiceStack.MiniProfiler
         {
             if (profiler == null) return null;
 
+			profiler.OnDeserialized(default(StreamingContext)); //Added
             var result = JsonSerializer.SerializeToString(profiler);
             return result;
         }

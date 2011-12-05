@@ -1,67 +1,6 @@
-﻿var MiniProfiler = (function ($)
+﻿//A port of the excellent http://code.google.com/p/mvc-mini-profiler/
+var MiniProfiler = (function ($)
 {
-	var slice = Array.prototype.slice,
-		nativeForEach = Array.prototype.forEach,
-		breaker = {};
-
-	function _each(o, fn, ctx)
-	{
-		if (o == null) return;
-		if (nativeForEach && o.forEach === nativeForEach)
-			o.forEach(fn, ctx);
-		else if (o.length === +o.length)
-		{
-			for (var i = 0, l = o.length; i < l; i++)
-				if (i in o && fn.call(ctx, o[i], i, o) === breaker) return;
-		} else
-		{
-			for (var key in o)
-				if (hasOwn.call(o, key))
-					if (fn.call(ctx, o[key], key, o) === breaker) return;
-		}
-	} $['_each'] = _each;
-	$['_defaults'] = function (obj)
-	{
-		_each(slice.call(arguments, 1), function (o)
-		{
-			for (var k in o)
-				if (obj[k] == null) obj[k] = o[k];
-		});
-		return obj;
-	};
-	$['templateSettings'] = {
-		evaluate: /<%([\s\S]+?)%>/g,
-		interpolate: /<%=([\s\S]+?)%>/g,
-		escape: /<%-([\s\S]+?)%>/g
-	};
-	$['_template'] = function (str, data)
-	{
-		var c = $['templateSettings'];
-		var tmpl = 'var __p=[],print=function(){__p.push.apply(__p,arguments);};' +
-          'with(obj||{}){__p.push(\'' +
-          str.replace(/\\/g, '\\\\')
-             .replace(/'/g, "\\'")
-             .replace(c.escape, function (match, code)
-             {
-             	return "',_.escape(" + code.replace(/\\'/g, "'") + "),'";
-             })
-             .replace(c.interpolate, function (match, code)
-             {
-             	return "'," + code.replace(/\\'/g, "'") + ",'";
-             })
-             .replace(c.evaluate || null, function (match, code)
-             {
-             	return "');" + code.replace(/\\'/g, "'")
-                                  .replace(/[\r\n\t]/g, ' ') + ";__p.push('";
-             })
-             .replace(/\r/g, '\\r')
-             .replace(/\n/g, '\\n')
-             .replace(/\t/g, '\\t')
-             + "');}return __p.join('');";
-		var func = new Function('obj', '$', tmpl);
-		return data ? func(data, $) : function (data) { return func(data, $) };
-	};
-
 	var tmplCache = {},
     	options,
         container,
@@ -98,13 +37,11 @@
 		return $($.trim(html));
 	};
 
-	var hasLocalStorage = function ()
+	var hasLocalStorage = function () 
 	{
-		try
-		{
+		try {
 			return 'localStorage' in window && window['localStorage'] !== null;
-		} catch (e)
-		{
+		} catch (e) {
 			return false;
 		}
 	};
@@ -340,7 +277,8 @@
 	var queriesScrollIntoView = function (link, queries, whatToScroll)
 	{
 		var id = link.closest('tr').attr('data-timing-id'),
-            cells = queries.find('tr[data-timing-id="' + id + '"] td');
+			cells = queries.find('tr[data-timing-id="' + id + '"]').find('td');		
+		//was: cells = queries.find('tr[data-timing-id="' + id + '"] td');
 
 		// ensure they're in view
 		whatToScroll.scrollTop(whatToScroll.scrollTop() + cells.first().position().top - 100);
@@ -352,19 +290,33 @@
                 highlightHex = '#FFFFBB',
                 highlightRgb = getRGB(highlightHex),
                 originalRgb = getRGB(cell.css('background-color')),
-                getColorDiff = function (fx, i)
+                getColorDiff = function (pos, i)
                 {
                 	// adapted from John Resig's color plugin: http://plugins.jquery.com/project/color
-                	return Math.max(Math.min(parseInt((fx.pos * (originalRgb[i] - highlightRgb[i])) + highlightRgb[i]), 255), 0);
+                	return Math.max(Math.min(parseInt((pos * (originalRgb[i] - highlightRgb[i])) + highlightRgb[i]), 255), 0);
                 };
 
 			// we need to animate some other property to piggy-back on the step function, so I choose you, opacity!
-			cell.css({ 'opacity': 1, 'background-color': highlightHex })
-                .animate({ 'opacity': 1 }, { duration: 2000, step: function (now, fx)
-                {
-                	fx.elem.style['backgroundColor'] = "rgb(" + [getColorDiff(fx, 0), getColorDiff(fx, 1), getColorDiff(fx, 2)].join(",") + ")";
-                }
-                });
+            cell.css({ 'background-color': highlightHex }); // had: 'opacity': 1, 
+
+			var startAt = new Date();
+			(function anim()
+			{
+				var now = new Date(), pos = Math.min((now - startAt) / 2000 * 1.5, 1);
+				cell[0].style['backgroundColor'] = "rgb(" + [getColorDiff(pos, 0), getColorDiff(pos, 1), getColorDiff(pos, 2)].join(",") + ")";
+				if ((now - startAt) < 2000)
+					setTimeout(anim, 100);
+			})();
+
+			/* was:
+				cell.animate({ 'opacity': 1 }, { duration: 2000, step: function (now, fx)
+					{
+						console.log([now, fx.pos]);
+						fx.elem.style['backgroundColor'] = "rgb(" + [getColorDiff(fx.pos, 0), getColorDiff(fx.pos, 1), getColorDiff(fx.pos, 2)].join(",") + ")";
+					}
+				});
+			*/
+			
 		});
 	};
 

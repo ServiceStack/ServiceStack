@@ -303,8 +303,7 @@
     <None Include="MiniProfiler\UI\jquery.1.6.2.js.orig" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.css" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.js" />
-    <EmbeddedResource Include="MiniProfiler\UI\jquery.1.6.2.js" />
-    <EmbeddedResource Include="MiniProfiler\UI\jquery.tmpl.beta1.js" />
+    <EmbeddedResource Include="MiniProfiler\UI\jquip.all.js" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

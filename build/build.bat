@@ -15,6 +15,7 @@ COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.Common.* ..\N
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.Interfaces.* ..\NuGet\ServiceStack.Common\lib
 
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\chaweet\api\lib
+COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\SocialApiBootstrap\lib
 
 COPY ..\src\RazorEngine\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Linq;
 using System.Threading;
+using System.Text;
 using ServiceStack.Messaging;
 
 namespace ServiceStack.Messaging.Rcon
@@ -135,14 +136,14 @@ namespace ServiceStack.Messaging.Rcon
 
         public void Notify(string queueName, byte[] message, Socket client, uint sequenceID)
         {
-            var words = new string[] { "notify", queueName, System.Text.Encoding.UTF8.GetString(message) };
+            var words = new byte[][] { Encoding.UTF8.GetBytes("notify"), Encoding.UTF8.GetBytes(queueName), message };
             var sendToClient = PacketCodec.EncodePacket(false, true, sequenceID, words);
             Send(sendToClient, client);
         }
 
         public void Publish(string queueName, byte[] message, Socket client, uint sequenceID)
         {
-            var words = new string[] { "publish", queueName, System.Text.Encoding.UTF8.GetString(message) };
+            var words = new byte[][] { Encoding.UTF8.GetBytes("publish"), Encoding.UTF8.GetBytes(queueName), message };
             var sendToClient = PacketCodec.EncodePacket(false, true, sequenceID, words);
             Send(sendToClient, client);
         }
@@ -254,7 +255,7 @@ namespace ServiceStack.Messaging.Rcon
         void ProcessPacket(byte[] packet, Socket client, ClientSocketState userToken)
         {
             var packetObj = PacketCodec.DecodePacket(packet);
-            var type = Type.GetType(packetObj.Words[0]);
+            var type = Type.GetType(Encoding.UTF8.GetString(packetObj.Words[0]));
             if (messageHandlers.ContainsKey(type))
             {
                 messageHandlers[type].Process(new ProcessingClient(packetObj, client, this));
