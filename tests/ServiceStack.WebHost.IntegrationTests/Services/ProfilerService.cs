@@ -26,13 +26,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			using (var dbConn = DbFactory.OpenDbConnection())
 			using (profiler.Step("MiniProfiler Service"))
 			{
-				if (request.Type.IsNullOrEmpty())
-				{
-					using (profiler.Step("Simple Select all"))
-					{
-						return DbFactory.Exec(dbCmd => dbCmd.Select<Movie>());
-					}
-				}
 				if (request.Type == "n1")
 				{
 					using (profiler.Step("N + 1 query"))
@@ -46,9 +39,12 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 						return results;
 					}
 				}
-			}
 
-			return null;
+				using (profiler.Step("Simple Select all"))
+				{
+					return DbFactory.Exec(dbCmd => dbCmd.Select<Movie>());
+				}
+			}
 		}
 	}
 }

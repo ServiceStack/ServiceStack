@@ -95,12 +95,12 @@ namespace ServiceStack.WebHost.IntegrationTests
 		protected void Application_BeginRequest(object src, EventArgs e)
 		{
 			if (Request.IsLocal)
-				MiniProfiler.Profiler.Start();
+				Profiler.Start();
 		}
 
 		protected void Application_EndRequest(object src, EventArgs e)
 		{
-			MiniProfiler.Profiler.Stop();
+			Profiler.Stop();
 
 			var mqHost = AppHostBase.Instance.Container.TryResolve<IMessageService>();
 			if (mqHost != null)
