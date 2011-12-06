@@ -131,6 +131,7 @@
     <Compile Include="Deprecated.Session\UserClientSession.cs" />
     <Compile Include="Deprecated.Session\PublicAndPrivateClientSessions.cs" />
     <Compile Include="Deprecated.Session\UserSession.cs" />
+    <Compile Include="ServiceRoutesExtension.cs" />
     <Compile Include="SessionFeature.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">
@@ -172,7 +173,7 @@
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack</Name>
+      <Name>ServiceStack %28ServiceStack\Stack\ServiceStack%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
