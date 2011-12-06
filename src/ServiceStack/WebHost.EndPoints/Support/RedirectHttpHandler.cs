@@ -59,9 +59,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 			else
 			{
-				var absoluteUrl = request.Url.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
-				response.StatusCode = (int)HttpStatusCode.Redirect;
-				response.AddHeader(HttpHeaders.Location, absoluteUrl);
+                string absoluteUrl;
+			    absoluteUrl = this.RelativeUrl.Contains("~/")
+			                      ? request.GetApplicationUrl().WithTrailingSlash() + this.RelativeUrl.Replace("~/", "")
+			                      : request.Url.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
+			    response.StatusCode = (int)HttpStatusCode.Redirect;
+                response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
 
         	response.CloseOutputStream();
