@@ -24,6 +24,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			var profiler = Profiler.Current;
 
 			using (var dbConn = DbFactory.OpenDbConnection())
+			using (var dbCmd = dbConn.CreateCommand())
 			using (profiler.Step("MiniProfiler Service"))
 			{
 				if (request.Type == "n1")
@@ -31,7 +32,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 					using (profiler.Step("N + 1 query"))
 					{
 						var results = new List<Movie>();
-						var dbCmd = dbConn.CreateCommand();
 						foreach (var movie in dbCmd.Select<Movie>())
 						{
 							results.Add(dbCmd.QueryById<Movie>(movie.Id));
@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 				using (profiler.Step("Simple Select all"))
 				{
-					return DbFactory.Exec(dbCmd => dbCmd.Select<Movie>());
+					return dbCmd.Select<Movie>();
 				}
 			}
 		}
