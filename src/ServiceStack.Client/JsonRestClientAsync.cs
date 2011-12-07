@@ -1,3 +1,10 @@
+/*
+	Note: The preferred ServiceClients are in ServiceStack.Common.dll
+	https://github.com/ServiceStack/ServiceStack/blob/master/src/ServiceStack.Common/ServiceClient.Web/JsonServiceClient.cs
+
+	This is a dependency-free ServiceClient using the built-in .NET BCL Serializers.
+*/
+
 using System;
 using ServiceStack.Service;
 using ServiceStack.Text;
