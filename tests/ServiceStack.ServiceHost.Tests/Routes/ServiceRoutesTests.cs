@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using NUnit.Framework;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.ServiceHost.Tests.Routes
@@ -34,7 +35,7 @@ namespace ServiceStack.ServiceHost.Tests.Routes
 
             RestPath restWithAFewMethodsRoute = (from r in routes.RestPaths
                                                  where r.Path == "RestServiceWithSomeVerbsImplemented"
-                                                select r).FirstOrDefault();
+                                                 select r).FirstOrDefault();
 
             Assert.That(restWithAFewMethodsRoute, Is.Not.Null);
 
@@ -44,5 +45,20 @@ namespace ServiceStack.ServiceHost.Tests.Routes
             Assert.That(restWithAFewMethodsRoute.AllowedVerbs.Contains("DELETE"), Is.False);
             Assert.That(restWithAFewMethodsRoute.AllowedVerbs.Contains("PATCH"), Is.False);
         }
+
+        [Test]
+        public void Can_Register_Routes_Using_Add_Extension()
+        {
+            var routes = new ServiceRoutes();
+            routes.Add<Customer>(HttpMethod.Get, "/Users/{0}/Orders/{1}", x => x.Name, x => x.OrderId);
+            var route = routes.RestPaths[0];
+            Assert.That(route.Path == "/Users/{Name}/Orders/{OrderId}");
+        }
+    }
+
+    public class Customer
+    {
+        public string Name { get; set; }
+        public int OrderId { get; set; }
     }
 }
