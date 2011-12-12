@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.ServiceHost;
 
@@ -87,5 +88,21 @@ namespace ServiceStack.ServiceInterface
 			}
 			return false;
 		}
+
+        private static string FormatRoute<T>(string path, params Expression<Func<T, object>>[] propertyExpressions)
+        {
+            var properties = propertyExpressions.Select(x => string.Format("{{{0}}}", PropertyName(x))).ToArray();
+            return string.Format(path, properties);
+        }
+
+        private static string PropertyName(LambdaExpression ex)
+        {
+            return (ex.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)ex.Body).Operand : (MemberExpression)ex.Body).Member.Name;
+        }
+
+        public static void Add<T>(this IServiceRoutes serviceRoutes, string httpMethod, string url, params Expression<Func<T, object>>[] propertyExpressions)
+        {
+            serviceRoutes.Add<T>(FormatRoute(url, propertyExpressions), httpMethod);
+        }
 	}
 }
