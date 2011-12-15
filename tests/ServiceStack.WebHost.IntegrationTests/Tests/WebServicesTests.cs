@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		private const string TestString = "ServiceStack";
 
 		protected WebServicesTests()
-			: base("http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack", typeof(ReverseService).Assembly)
+			: base(Config.AbsoluteBaseUri, typeof(ReverseService).Assembly)
 		{
 		}
 

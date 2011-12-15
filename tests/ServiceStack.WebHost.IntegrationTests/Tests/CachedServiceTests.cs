@@ -8,11 +8,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	[TestFixture]
 	public class CachedServiceTests
 	{
-		private const string ServiceClientBaseUri = "http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack/";
-
 		protected IRestClient CreateNewServiceClient()
 		{
-			return new JsonServiceClient(ServiceClientBaseUri);
+			return new JsonServiceClient(Config.AbsoluteBaseUri);
 		}
 
 		[Test]
@@ -20,7 +18,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         {
 			var client = CreateNewServiceClient();
 
-			var response = client.Get<MoviesResponse>("cached/movies");
+			var response = client.Get<MoviesResponse>("/cached/movies");
 
 			Assert.That(response.Movies.Count, Is.EqualTo(ResetMoviesService.Top5Movies.Count));
         }

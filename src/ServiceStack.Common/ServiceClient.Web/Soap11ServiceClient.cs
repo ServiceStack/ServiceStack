@@ -58,6 +58,11 @@ namespace ServiceStack.ServiceClient.Web
 			throw new NotImplementedException();
 		}
 
+		public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+		{
+			throw new NotImplementedException();
+		}
+
 		public TResponse Send<TResponse>(object request)
 		{
 			throw new NotImplementedException();

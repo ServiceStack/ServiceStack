@@ -2,16 +2,12 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack</id> 
-    <version>3.0.9</version> 
+    <version>3.1.3</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
-A modern, code-first, DTO-driven, web services framework encouraging best-practices development to create high-perfomance, scalable REST web services.
-    
-With a primary focus on simplicity and speed, ServiceStack allows development of web services code-first, using normal C# objects. Strong-typed DTO's provide a well-defined contract for your web service API and provides the auto-generation of documentation metadata pages, auto-configuration of popular formats (XML,JSON,HTML,CSV,JSV) and endpoints (REST,RPC,SOAP), all without any configuration or code-gen required. 
-    
-Ultimately providing a clean, succinct, strong-typed API, for a friction-free development experience.
+      Binaries for ServiceStack. New projects should reference host packages: *ServiceStack.Host.AspNet* (hosted at '/') or *ServiceStack.Host.Mvc* (hosted at '/api')
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
@@ -20,7 +16,6 @@ Ultimately providing a clean, succinct, strong-typed API, for a friction-free de
     <language>en-US</language> 
     <copyright>Liquidbit 2011 and contributors</copyright>
     <dependencies>
-      <dependency id="WebActivator" version="1.5" />
       <dependency id="ServiceStack.Common" />
       <dependency id="ServiceStack.Redis" />
       <dependency id="ServiceStack.OrmLite.SqlServer" />

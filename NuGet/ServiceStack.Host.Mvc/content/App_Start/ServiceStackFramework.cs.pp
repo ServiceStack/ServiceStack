@@ -1,12 +1,17 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Web.Mvc;
+using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof($rootnamespace$.App_Start.AppHost), "Start")]
 
+//IMPORTANT: Add the line below to MvcApplication.RegisterRoutes(RouteCollection) in the Global.asax:
+//routes.IgnoreRoute("api/{*pathInfo}"); 
 
 /**
  * Entire ServiceStack Starter Template configured with a 'Hello' Web Service and a 'Todo' Rest Service.
@@ -25,9 +30,6 @@ namespace $rootnamespace$.App_Start
 
 		public override void Configure(Funq.Container container)
 		{
-			//Register all your dependencies
-			container.Register(new TodoRepository());
-			
 			//Configure User Defined REST Paths
 			Routes
 			  .Add<Hello>("/hello")
@@ -35,27 +37,35 @@ namespace $rootnamespace$.App_Start
 			  .Add<Todo>("/todos")
 			  .Add<Todo>("/todos/{Id}");
 
-			//Uncomment to change the default ServiceStack configuration
-			//var disableFeatures = Feature.Jsv | Feature.Soap;
-			//SetConfig(new EndpointHostConfig
-			//{
-			//    EnableFeatures = Feature.All.Remove(disableFeatures),
-			//    DebugMode = true, //Show StackTraces when developing
+			//Change the default ServiceStack configuration
+			//SetConfig(new EndpointHostConfig {
+			//    DebugMode = true, //Show StackTraces in responses in development
 			//});
+
+			//Register all your dependencies
+			container.Register(new TodoRepository());
+			
+			//Register In-Memory Cache provider. 
+			//For Distributed Cache Providers Use: PooledRedisClientManager, BasicRedisClientManager or see: https://github.com/ServiceStack/ServiceStack/wiki/Caching
+			container.Register<ICacheClient>(new MemoryCacheClient());
+
+			//Set MVC to use the same Funq IOC as ServiceStack
+			ControllerBuilder.Current.SetControllerFactory(new FunqControllerFactory(container));
 		}
 
 		public static void Start()
 		{
 			new AppHost().Init();
-			
-			//If using with MVC remove servicestack path from MVC's RegisterRoutes(RouteCollection) e.g:
-			//routes.IgnoreRoute("servicestack/{*pathInfo}"); 
 		}
 	}
 }
 
 namespace $rootnamespace$
 {
+	/*
+	 * ServiceStack's Hello World Web Service. 
+	 */
+
 	//Request DTO
 	public class Hello
 	{
@@ -69,7 +79,7 @@ namespace $rootnamespace$
 		public ResponseStatus ResponseStatus { get; set; } //Where Exceptions get auto-serialized
 	}
 
-	//Can be called via any endpoint or format, see: http://servicestack.net/ServiceStack.Hello/
+	//Implementation. Can be called via any endpoint or format, see: http://servicestack.net/ServiceStack.Hello/
 	public class HelloService : ServiceBase<Hello>
 	{
 		protected override object Run(Hello request)
@@ -78,6 +88,9 @@ namespace $rootnamespace$
 		}
 	}
 
+	/*
+	 * A Simple REST Web Service example
+	 */
 
 	//REST DTO
 	public class Todo 
