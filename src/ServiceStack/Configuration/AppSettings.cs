@@ -3,7 +3,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Configuration
 {
-	public class ConfigurationResourceManager : IResourceManager
+	/// <summary>
+	/// More familiar name for the new crowd.
+	/// </summary>
+	public class AppSettings : IResourceManager
 	{
 		public string GetString(string name)
 		{
@@ -24,9 +27,9 @@ namespace ServiceStack.Configuration
 		{
 			var stringValue = ConfigUtils.GetNullableAppSetting(name);
 
-			return stringValue != null 
-				? TypeSerializer.DeserializeFromString<T>(stringValue)
-				: defaultValue;
+			return stringValue != null
+				   ? TypeSerializer.DeserializeFromString<T>(stringValue)
+				   : defaultValue;
 		}
 	}
 }
