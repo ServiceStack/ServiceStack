@@ -40,7 +40,7 @@ namespace RazorEngine
 			return null;
 		}
 
-		public override object GetResponse(IHttpRequest httpReq, object request)
+		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
 		{
 			return null;
 		}

@@ -10,6 +10,8 @@ namespace ServiceStack.ServiceHost
 	{
 		object OriginalRequest { get; }
 
+		T TryResolve<T>();
+
 		string OperationName { get; }
 
 		string ContentType { get; }

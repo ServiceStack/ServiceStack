@@ -132,6 +132,7 @@
     <Compile Include="Deprecated.Session\PublicAndPrivateClientSessions.cs" />
     <Compile Include="Deprecated.Session\UserSession.cs" />
     <Compile Include="ServiceRoutesExtension.cs" />
+    <Compile Include="SessionFactory.cs" />
     <Compile Include="SessionFeature.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">

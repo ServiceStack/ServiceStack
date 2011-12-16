@@ -30,10 +30,10 @@ namespace ServiceStack.WebHost.Endpoints
 			return GetRequest(request, operationName);
 		}
 
-		public override object GetResponse(IHttpRequest httpReq, object request)
+		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
 		{
 			var response = ExecuteService(request,
-				HandlerAttributes | GetEndpointAttributes(httpReq), httpReq);
+				HandlerAttributes | GetEndpointAttributes(httpReq), httpReq, httpRes);
 			
 			return response;
 		}
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var request = CreateRequest(httpReq, operationName);
 				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
-				var response = GetResponse(httpReq, request);
+				var response = GetResponse(httpReq, httpRes, request);
 				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
 				if (doJsonp)

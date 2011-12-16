@@ -176,10 +176,6 @@
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Support\InvokeSimpleCommandsTests.cs" />
-    <Compile Include="Support\ModelWithFieldsOfDifferentTypes.cs" />
-    <Compile Include="Support\ModelWithOnlyStringFields.cs" />
-    <Compile Include="Support\PathInfoTests.cs" />
     <Compile Include="Text\AdhocJsTests.cs" />
     <Compile Include="OAuth\OAuthUserSessionTests.cs" />
     <Compile Include="Xlinq\XlinqExtensionsTests.cs" />

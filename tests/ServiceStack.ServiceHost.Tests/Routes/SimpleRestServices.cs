@@ -22,29 +22,34 @@ namespace ServiceStack.ServiceHost.Tests.Routes
         }
     }
 
-    public class RestServiceWithAllVerbsImplemented : RestServiceBase<RequestDto>
+	public class RequestDto2
+	{
+		public string Name { get; set; }
+	}
+
+	public class RestServiceWithAllVerbsImplemented : RestServiceBase<RequestDto2>
     {
-        public override object OnGet(RequestDto request)
+		public override object OnGet(RequestDto2 request)
         {
             return new HttpResult {StatusCode = HttpStatusCode.OK};
         }
 
-        public override object OnPut(RequestDto request)
+		public override object OnPut(RequestDto2 request)
         {
             return new HttpResult {StatusCode = HttpStatusCode.OK};
         }
 
-        public override object OnPost(RequestDto request)
+		public override object OnPost(RequestDto2 request)
         {
             return new HttpResult {StatusCode = HttpStatusCode.OK};
         }
 
-        public override object OnDelete(RequestDto request)
+		public override object OnDelete(RequestDto2 request)
         {
             return new HttpResult {StatusCode = HttpStatusCode.OK};
         }
 
-        public override object OnPatch(RequestDto request)
+		public override object OnPatch(RequestDto2 request)
         {
             return new HttpResult {StatusCode = HttpStatusCode.OK};
         }

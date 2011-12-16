@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		}
 
 		public abstract object CreateRequest(IHttpRequest request, string operationName);
-		public abstract object GetResponse(IHttpRequest httpReq, object request);
+		public abstract object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request);
 
 		public virtual void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
@@ -164,9 +164,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				: EndpointHost.ServiceOperations.GetOperationType(operationName);
 		}
 
-		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq)
+		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes, 
+			IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-			return EndpointHost.ExecuteService(request, endpointAttributes, httpReq);
+			return EndpointHost.ExecuteService(request, endpointAttributes, httpReq, httpRes);
 		}
 
 		public EndpointAttributes GetEndpointAttributes(System.ServiceModel.OperationContext operationContext)

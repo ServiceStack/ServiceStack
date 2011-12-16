@@ -83,7 +83,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				QueryString = new NameValueCollection(),
 			};
 			httpReq.QueryString.Add("format", format);
-			var requestContext = new HttpRequestContext(httpReq, dto);
+			var requestContext = new HttpRequestContext(httpReq, null, dto);
 			using (var ms = new MemoryStream())
 			{
 				var httpRes = new HttpResponseStreamWrapper(ms);

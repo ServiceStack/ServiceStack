@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.EndPoints.Support.Markdown
 			return null;
 		}
 
-		public override object GetResponse(IHttpRequest httpReq, object request)
+		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
 		{
 			return null;
 		}

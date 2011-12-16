@@ -13,6 +13,7 @@ using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -57,6 +58,10 @@ namespace ServiceStack.WebHost.IntegrationTests
 						});
 
 				this.Container.Register<ICacheClient>(new MemoryCacheClient());
+				//this.Container.Register<ICacheClient>(new BasicRedisClientManager());
+
+				//this.Container.Register<ISessionFactory>(
+				//    c => new SessionFactory(c.Resolve<ICacheClient>()));
 
 				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();
 				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));

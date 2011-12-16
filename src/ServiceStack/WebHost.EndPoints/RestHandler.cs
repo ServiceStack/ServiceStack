@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var request = GetRequest(httpReq, restPath);
 				if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) return;
 
-				var response = GetResponse(httpReq, request);
+				var response = GetResponse(httpReq, httpRes, request);
 				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
 				if (responseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString["debug"]))
@@ -81,12 +81,12 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		public override object GetResponse(IHttpRequest httpReq, object request)
+		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
 		{
 			var requestContentType = ContentType.GetEndpointAttributes(httpReq.ResponseContentType);
 
 			return ExecuteService(request,
-				HandlerAttributes | requestContentType | GetEndpointAttributes(httpReq), httpReq);
+				HandlerAttributes | requestContentType | GetEndpointAttributes(httpReq), httpReq, httpRes);
 		}
 
 		private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)

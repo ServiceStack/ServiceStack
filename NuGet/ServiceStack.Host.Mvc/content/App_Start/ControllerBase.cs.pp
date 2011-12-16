@@ -10,6 +10,20 @@ namespace $rootnamespace$
 	public abstract class ControllerBase : Controller
 	{
 		public ICacheClient Cache { get; set; }
+		public ISessionFactory SessionFactory { get; set; }
+
+		private ISession session;
+		public ISession Session
+		{
+			get
+			{
+				return session ?? (session =
+					SessionFactory.GetOrCreateSession(
+						new ServiceStack.WebHost.Endpoints.Extensions.HttpRequestWrapper(null, System.Web.HttpContext.Current.Request),
+						new ServiceStack.WebHost.Endpoints.Extensions.HttpResponseWrapper(System.Web.HttpContext.Current.Response)
+					));
+			}
+		}
 
 		protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
 		{

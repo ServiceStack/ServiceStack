@@ -37,6 +37,11 @@ namespace ServiceStack.ServiceInterface.Testing
 			get { return null; }
 		}
 
+		public T TryResolve<T>()
+		{
+			throw new NotImplementedException();
+		}
+
 		public string OperationName { get; set; }
 		public string ContentType { get; set; }
 		public string HttpMethod { get; set; }

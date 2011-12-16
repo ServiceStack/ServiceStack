@@ -117,6 +117,7 @@
     </Compile>
     <Compile Include="Services\BatchWidgetValidationService.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />
+    <Compile Include="Services\SessionService.cs" />
     <Compile Include="Services\MqHostStatsService.cs" />
     <Compile Include="Services\HttpResultsService.cs" />
     <Compile Include="Services\CustomFormDataService.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Tests\RestPathResolutionUnitTests.cs" />
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />
+    <Compile Include="Tests\SessionTests.cs" />
     <Compile Include="Tests\WebServicesTests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public void Can_send_ResponseText_test_with_StatusDescription()
 		{
 			var mockRequest = new MockHttpRequest { ContentType = ContentType.Json };
-			var mockRequestContext = new HttpRequestContext(mockRequest, new object());
+			var mockRequestContext = new HttpRequestContext(mockRequest, null, new object());
 			var mockResponse = new HttpResponseMock();
 
 			var customStatus = "Custom Status Description";
