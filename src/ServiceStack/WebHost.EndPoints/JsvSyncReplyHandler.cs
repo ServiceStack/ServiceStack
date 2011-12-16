@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var request = CreateRequest(httpReq, operationName);
 
 				var response = ExecuteService(request,
-					HandlerAttributes | GetEndpointAttributes(httpReq), httpReq);
+					HandlerAttributes | GetEndpointAttributes(httpReq), httpReq, httpRes);
 
 				WriteDebugResponse(httpRes, response);
 			}

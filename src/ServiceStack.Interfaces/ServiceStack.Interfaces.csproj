@@ -83,6 +83,8 @@
     <Compile Include="CacheAccess\IMemcachedClient.cs" />
     <Compile Include="CacheAccess\IPersistenceProviderCache.cs" />
     <Compile Include="CacheAccess\IPersistenceProviderCacheFactory.cs" />
+    <Compile Include="CacheAccess\ISession.cs" />
+    <Compile Include="CacheAccess\ISessionFactory.cs" />
     <Compile Include="Configuration\IFactoryProvider.cs" />
     <Compile Include="Configuration\IContainerAdapter.cs" />
     <Compile Include="Configuration\IResourceManager.cs" />

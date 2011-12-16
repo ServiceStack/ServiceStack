@@ -8,7 +8,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	[TestFixture]
 	public class RequestFilterTests
 	{
-		private const string ServiceClientBaseUri = "http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack";
+		private const string ServiceClientBaseUri = Config.AbsoluteBaseUri;
 
 		[Test]
 		public void Does_return_bare_401_StatusCode()

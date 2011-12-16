@@ -41,6 +41,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
+using Funq;
 using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -51,6 +52,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		: IHttpRequest
 	{
 		private static readonly string physicalFilePath;
+		private readonly HttpListenerRequest request;
+		public Container Container { get; set; }
+
 		static HttpListenerRequestWrapper()
 		{
 			physicalFilePath = "~".MapAbsolutePath();
@@ -66,12 +70,18 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request; }
 		}
 
-		private readonly HttpListenerRequest request;
-
-		public HttpListenerRequestWrapper(string operationName, HttpListenerRequest request)
+		public HttpListenerRequestWrapper(
+			string operationName, HttpListenerRequest request)
 		{
 			this.OperationName = operationName;
 			this.request = request;
+		}
+
+		public T TryResolve<T>()
+		{
+			return Container == null 
+				? EndpointHost.AppHost.TryResolve<T>()
+				: Container.TryResolve<T>();
 		}
 
 		public string OperationName { get; set; }

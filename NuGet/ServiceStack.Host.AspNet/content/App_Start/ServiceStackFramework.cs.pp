@@ -25,9 +25,6 @@ namespace $rootnamespace$.App_Start
 
 		public override void Configure(Funq.Container container)
 		{
-			//Register all your dependencies
-			container.Register(new TodoRepository());
-			
 			//Configure User Defined REST Paths
 			Routes
 			  .Add<Hello>("/hello")
@@ -36,20 +33,17 @@ namespace $rootnamespace$.App_Start
 			  .Add<Todo>("/todos/{Id}");
 
 			//Uncomment to change the default ServiceStack configuration
-			//var disableFeatures = Feature.Jsv | Feature.Soap;
-			//SetConfig(new EndpointHostConfig
-			//{
-			//    EnableFeatures = Feature.All.Remove(disableFeatures),
+			//SetConfig(new EndpointHostConfig {
 			//    DebugMode = true, //Show StackTraces when developing
 			//});
+
+			//Register all your dependencies
+			container.Register(new TodoRepository());			
 		}
 
 		public static void Start()
 		{
 			new AppHost().Init();
-			
-			//If using with MVC remove servicestack path from MVC's RegisterRoutes(RouteCollection) e.g:
-			//routes.IgnoreRoute("servicestack/{*pathInfo}"); 
 		}
 	}
 }

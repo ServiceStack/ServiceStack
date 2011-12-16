@@ -8,7 +8,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	public class AppHostBaseTests
 	{
 		private const string BasePath = "http://localhost/ServiceStack.WebHost.IntegrationTests/";
-		private const string ServiceStackUrl = BasePath + "servicestack/";
+		private const string ServiceStackUrl = BasePath + "api/";
 
 		[Test]
 		public void Root_path_redirects_to_metadata_page()

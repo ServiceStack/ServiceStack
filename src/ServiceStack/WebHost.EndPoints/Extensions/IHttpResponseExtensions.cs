@@ -59,7 +59,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 			if (result == null) return true;
 
-			var serializationContext = new HttpRequestContext(httpReq, result);
+			var serializationContext = new HttpRequestContext(httpReq, httpRes, result);
 			var httpResult = result as IHttpResult;
 			if (httpResult != null)
 			{

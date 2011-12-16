@@ -332,7 +332,7 @@ namespace ServiceStack.ServiceInterface.Testing
 				);
 
 			var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
-			var response = httpHandler.GetResponse(httpReq, request);
+			var response = httpHandler.GetResponse(httpReq, null, request);
 
 			var httpRes = response as IHttpResult;
 			if (httpRes != null)

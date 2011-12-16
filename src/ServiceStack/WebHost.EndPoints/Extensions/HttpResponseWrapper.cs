@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
-	internal class HttpResponseWrapper
+	public class HttpResponseWrapper
 		: IHttpResponse
 	{
 		//private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseWrapper));

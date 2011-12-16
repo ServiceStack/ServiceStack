@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
                     return EmptyResponse(requestMsg, requestType);
 
-				var response = ExecuteService(request, endpointAttributes, null);
+				var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
 
 				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
@@ -199,7 +199,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			throw new NotImplementedException();
 		}
 
-		public override object GetResponse(IHttpRequest httpReq, object request)
+		public override object GetResponse(IHttpRequest httpReq, IHttpResponse httpRes, object request)
 		{
 			throw new NotImplementedException();
 		}

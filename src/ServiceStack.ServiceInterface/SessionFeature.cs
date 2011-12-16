@@ -21,15 +21,11 @@ namespace ServiceStack.ServiceInterface
 			appHost.RequestFilters.Add((req, res, dto) => {
 				if (req.GetCookieValue(SessionId) == null)
 				{
-					var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-					res.SetSessionCookie(SessionId, sessionId);
-					req.Items[SessionId] = sessionId;
+					res.CreateTemporarySessionId(req);
 				}
 				if (req.GetCookieValue(PermanentSessionId) == null)
 				{
-					var permanentId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-					res.SetPermanentCookie(PermanentSessionId, permanentId);
-					req.Items[PermanentSessionId] = permanentId;
+					res.CreatePermanentSessionId(req);
 				}
 			});
 		}
@@ -43,5 +39,22 @@ namespace ServiceStack.ServiceInterface
 		{
 			return httpReq.GetItemOrCookie(SessionId);
 		}
+
+		public static string CreatePermanentSessionId(this IHttpResponse res, IHttpRequest req)
+		{
+			var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+			res.SetPermanentCookie(PermanentSessionId, sessionId);
+			req.Items[PermanentSessionId] = sessionId;
+			return sessionId;
+		}
+
+		public static string CreateTemporarySessionId(this IHttpResponse res, IHttpRequest req)
+		{
+			var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+			res.SetSessionCookie(SessionId, sessionId);
+			req.Items[SessionId] = sessionId;
+			return sessionId;
+		}
+
 	}
 }

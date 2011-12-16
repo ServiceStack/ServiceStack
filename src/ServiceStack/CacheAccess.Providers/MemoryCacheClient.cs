@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Logging;
+using ServiceStack.Net30.Collections.Concurrent;
 
 namespace ServiceStack.CacheAccess.Providers
 {
@@ -9,10 +10,8 @@ namespace ServiceStack.CacheAccess.Providers
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (MemoryCacheClient));
 
-		private readonly object rwlock = new object();
-
-		private Dictionary<string, CacheEntry> memory;
-		private Dictionary<string, int> counters;
+		private ConcurrentDictionary<string, CacheEntry> memory;
+		private ConcurrentDictionary<string, int> counters;
 
 		public bool DontDispose { get; set; }
 
@@ -44,8 +43,8 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public MemoryCacheClient()
 		{
-			this.memory = new Dictionary<string, CacheEntry>();
-			this.counters = new Dictionary<string, int>();
+			this.memory = new ConcurrentDictionary<string, CacheEntry>();
+			this.counters = new ConcurrentDictionary<string, int>();
 		}
 
 		private bool CacheAdd(string key, object value)
@@ -55,12 +54,12 @@ namespace ServiceStack.CacheAccess.Providers
 
 		private bool TryGetValue(string key, out CacheEntry entry)
 		{
-			lock (this.rwlock) return this.memory.TryGetValue(key, out entry);
+			return this.memory.TryGetValue(key, out entry);
 		}
 
 		private void Set(string key, CacheEntry entry)
 		{
-			lock (this.rwlock) this.memory[key] = entry;
+			this.memory[key] = entry;
 		}
 
 		/// <summary>
@@ -132,21 +131,14 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			if (DontDispose) return;
 
-			this.memory = new Dictionary<string, CacheEntry>();
-			this.counters = new Dictionary<string, int>();
+			this.memory = new ConcurrentDictionary<string, CacheEntry>();
+			this.counters = new ConcurrentDictionary<string, int>();
 		}
 
 		public bool Remove(string key)
 		{
-			lock (this.rwlock)
-			{
-				if (this.memory.ContainsKey(key))
-				{
-					this.memory.Remove(key);
-					return true;
-				}
-				return false;
-			}
+			CacheEntry item;
+			return this.memory.TryRemove(key, out item);
 		}
 
 		public void RemoveAll(IEnumerable<string> keys)
@@ -173,19 +165,17 @@ namespace ServiceStack.CacheAccess.Providers
 		public object Get(string key, out long lastModifiedTicks)
 		{
 			lastModifiedTicks = 0;
-			lock (rwlock)
+
+			CacheEntry cacheEntry;
+			if (this.memory.TryGetValue(key, out cacheEntry))
 			{
-				if (this.memory.ContainsKey(key))
+				if (cacheEntry.ExpiresAt < DateTime.Now)
 				{
-					var cacheEntry = this.memory[key];
-					if (cacheEntry.ExpiresAt < DateTime.Now)
-					{
-						this.memory.Remove(key);
-						return null;
-					}
-					lastModifiedTicks = cacheEntry.LastModifiedTicks;
-					return cacheEntry.Value;
+					this.memory.TryRemove(key, out cacheEntry);
+					return null;
 				}
+				lastModifiedTicks = cacheEntry.LastModifiedTicks;
+				return cacheEntry.Value;
 			}
 			return null;
 		}
@@ -264,7 +254,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public void FlushAll()
 		{
-			lock (this.rwlock) this.memory = new Dictionary<string, CacheEntry>();
+			this.memory = new ConcurrentDictionary<string, CacheEntry>();
 		}
 
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)

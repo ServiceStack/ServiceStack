@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using NUnit.Framework;
-using ServiceStack.Common.Tests.Support;
+using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAnnotations;
 using System.Collections.Generic;
@@ -168,7 +168,7 @@ namespace ServiceStack.Common.Tests
 			var toObj = ModelWithFieldsOfDifferentTypes.Create(1);
 			var fromObj = ModelWithFieldsOfDifferentTypes.Create(2);
 
-			var obj3 = (ModelWithFieldsOfDifferentTypes)ReflectionUtils.PopulateObject(toObj, fromObj);
+			var obj3 = ReflectionUtils.PopulateObject(toObj, fromObj);
 
 			Assert.IsTrue(obj3 == toObj);
 			Assert.That(obj3.Bool, Is.EqualTo(fromObj.Bool));
@@ -186,8 +186,7 @@ namespace ServiceStack.Common.Tests
 			var toObj = ModelWithFieldsOfDifferentTypes.Create(1);
 			var fromObj = ModelWithOnlyStringFields.Create("2");
 
-			var obj3 = (ModelWithFieldsOfDifferentTypes)
-				ReflectionUtils.PopulateObject(toObj, fromObj);
+			var obj3 = ReflectionUtils.PopulateObject(toObj, fromObj);
 
 			Assert.IsTrue(obj3 == toObj);
 			Assert.That(obj3.Id, Is.EqualTo(2));

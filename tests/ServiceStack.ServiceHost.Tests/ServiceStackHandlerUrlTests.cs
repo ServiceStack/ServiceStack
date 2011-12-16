@@ -34,6 +34,11 @@ namespace ServiceStack.ServiceHost.Tests
 				get { throw new NotImplementedException(); }
 			}
 
+			public T TryResolve<T>()
+			{
+				throw new NotImplementedException();
+			}
+
 			public string OperationName { get; private set; }
 			public string ContentType { get; private set; }
 			public string HttpMethod { get; private set; }

@@ -103,6 +103,7 @@
     <Compile Include="CacheAccess.Providers\MultiCacheClient.cs" />
     <Compile Include="CacheAccess.Providers\PersistenceProviderCache.cs" />
     <Compile Include="CacheAccess.Providers\XmlCacheManager.cs" />
+    <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\ConfigurationResourceManager.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />
     <Compile Include="Funq\Action.cs" />

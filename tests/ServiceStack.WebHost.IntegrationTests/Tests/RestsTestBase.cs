@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		readonly EndpointHostConfig defaultConfig = new EndpointHostConfig();
 
 		public RestsTestBase()
-			: base("http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack", typeof(HelloService).Assembly)
+			: base(Config.AbsoluteBaseUri, typeof(HelloService).Assembly)
 			//: base("http://localhost:4000", typeof(HelloService).Assembly) //Uncomment to test on dev web server
 		{
 		}

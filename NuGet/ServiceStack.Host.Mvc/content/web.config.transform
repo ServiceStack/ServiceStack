@@ -1,0 +1,31 @@
+﻿<?xml version="1.0"?>
+<configuration>
+
+<location path="api">
+  <system.web>
+    <httpHandlers>
+      <add path="*" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
+    </httpHandlers>
+  </system.web>
+
+  <!-- Required for IIS 7.0 -->
+  <system.webServer>
+    <modules runAllManagedModulesForAllRequests="true"/>
+    <validation validateIntegratedModeConfiguration="false" />
+    <handlers>
+      <add path="*" name="ServiceStack.Factory" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*" preCondition="integratedMode" resourceType="Unspecified" allowPathInfo="true" />
+    </handlers>
+  </system.webServer>
+</location>
+
+<!-- Required for MONO -->
+<system.web>
+  <httpHandlers>
+    <add path="api*" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
+  </httpHandlers>
+</system.web>
+<system.webServer>
+  <validation validateIntegratedModeConfiguration="false" />
+</system.webServer>
+
+</configuration>

@@ -188,12 +188,12 @@ namespace ServiceStack.WebHost.Endpoints
 			AllServiceOperations = allOperationTypes;
 		}
 
-		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq)
+		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq, IHttpResponse httpRes)
 		{
             using (Profiler.Current.Step("Execute Service"))
 			{
 				return config.ServiceController.Execute(request,
-					new HttpRequestContext(httpReq, request, endpointAttributes));
+					new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));
 			}
 		}
 

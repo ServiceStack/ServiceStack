@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Net;
+using System.Web;
+using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -10,6 +13,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -72,6 +76,24 @@ namespace ServiceStack.ServiceInterface
 		}
 
 		public IRequestContext RequestContext { get; set; }
+
+		public ISessionFactory SessionFactory { get; set; }
+		
+		private ISession session;
+		public ISession Session
+		{
+			get
+			{
+				if (SessionFactory == null)
+					SessionFactory = new SessionFactory(this.GetCacheClient());
+
+				return session ?? (session =					
+					SessionFactory.GetOrCreateSession(
+						RequestContext.Get<IHttpRequest>(),
+						RequestContext.Get<IHttpResponse>()
+					));
+			}
+		}
 
 		/// <summary>
 		/// Resolve an alternate Web Service from ServiceStack's IOC container.
