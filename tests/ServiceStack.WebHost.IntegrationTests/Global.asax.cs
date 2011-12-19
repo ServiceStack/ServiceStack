@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();
 				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));
-
+				ModelConfig<Movie>.Id(x => x.Title);
 				Routes
 					.Add<Movies>("/custom-movies", "GET")
 					.Add<Movies>("/custom-movies/genres/{Genre}")
