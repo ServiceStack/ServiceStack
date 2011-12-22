@@ -162,6 +162,7 @@
     <Compile Include="Messaging\MessageFactory.cs" />
     <Compile Include="Messaging\MessageError.cs" />
     <Compile Include="Messaging\MessageHandlerStats.cs" />
+    <Compile Include="Messaging\MessageOption.cs" />
     <Compile Include="Messaging\MessagingException.cs" />
     <Compile Include="Messaging\QueueNames.cs" />
     <Compile Include="Messaging\UnRetryableMessagingException.cs" />

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Messaging
 {
@@ -42,6 +43,7 @@ namespace ServiceStack.Messaging
         public int RetryAttempts { get; set; }
         public Guid? ReplyId { get; set; }
         public string ReplyTo { get; set; }
+        public int Options { get; set; }
         public MessageError Error { get; set; }
         public object Body { get; set; }
     }
@@ -57,6 +59,7 @@ namespace ServiceStack.Messaging
 		{
 			this.Id = Guid.NewGuid();
 			this.CreatedDate = DateTime.UtcNow;
+            this.Options = (int) MessageOption.NotifyOneWay;
 		}
 
 		public Message(T body) : this()

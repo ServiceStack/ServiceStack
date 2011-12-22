@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
@@ -142,7 +143,11 @@ namespace ServiceStack.Messaging
 				//If there's no response publish the request message to its OutQ
 				if (response == null)
 				{
-					mqClient.Notify(QueueNames<T>.Out, message.ToBytes());
+                    var messageOptions = (MessageOption)message.Options;
+                    if (messageOptions.Has(MessageOption.NotifyOneWay))
+                    {
+                        mqClient.Notify(QueueNames<T>.Out, message.ToBytes());
+                    }
 				}
 				else
 				{

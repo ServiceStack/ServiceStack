@@ -1,4 +1,5 @@
 using System;
+using ServiceStack.DataAnnotations;
 using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Messaging
@@ -14,9 +15,11 @@ namespace ServiceStack.Messaging
 
 		Guid? ReplyId { get; set; }
 
-		string ReplyTo { get; set; }
+        string ReplyTo { get; set; }
 
-		MessageError Error { get; set; }
+        int Options { get; set; }
+
+        MessageError Error { get; set; }
 
 		object Body { get; set; }
 	}
