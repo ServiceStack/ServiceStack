@@ -16,11 +16,13 @@ namespace ServiceStack.ServiceInterface.Auth
 		List<IOAuthTokens> ProviderOAuthAccess { get; set; }
 		DateTime CreatedAt { get; set; }
 		DateTime LastModified { get; set; }
+        List<string> Permissions { get; set; }
 		bool IsAnyAuthorized();
 		bool IsAuthorized(string provider);
 
 		void OnAuthenticated(IServiceBase oAuthService, IOAuthTokens tokens, Dictionary<string, string> authInfo);
 
 		bool TryAuthenticate(IServiceBase oAuthService, string userName, string password);
+        bool HasPermission(string permission);
 	}
 }

@@ -110,6 +110,7 @@
     <Compile Include="Auth\IOAuthTokens.cs" />
     <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
+    <Compile Include="Auth\PermissionHandler.cs" />
     <Compile Include="Auth\RegistrationService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\AuthConfig.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Auth\UserAuth.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="IServiceBase.cs" />
+    <Compile Include="RequiredPermissionAttribute.cs" />
     <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />
     <Compile Include="ServiceBase.cs" />

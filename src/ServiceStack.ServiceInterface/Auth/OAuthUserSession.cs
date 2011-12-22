@@ -51,6 +51,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public List<IOAuthTokens> ProviderOAuthAccess { get; set; }
 
+        public List<string> Permissions { get; set; }
+
 		public virtual bool IsAnyAuthorized()
 		{
 			return !this.UserName.IsNullOrEmpty() 
@@ -170,6 +172,13 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 			return false;
 		}
-	}
+
+        public virtual bool HasPermission(string permission)
+        {
+            if(this.Permissions != null)
+                return this.Permissions.Contains(permission);
+            return false;
+        }
+    }
 
 }
