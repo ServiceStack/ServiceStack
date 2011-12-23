@@ -147,6 +147,7 @@
     <Compile Include="Testing\TestBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />
     <Compile Include="Validation\ValidationFilter.cs" />
     <Compile Include="Validation\ValidationHandler.cs" />
     <Compile Include="Validation\ValidationResultExtensions.cs" />
