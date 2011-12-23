@@ -74,6 +74,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FluentValidation">
+      <HintPath>..\..\lib\FluentValidation.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
@@ -144,6 +147,9 @@
     <Compile Include="Testing\TestBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Validation\ValidationFilter.cs" />
+    <Compile Include="Validation\ValidationHandler.cs" />
+    <Compile Include="Validation\ValidationResultExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -179,6 +185,7 @@
       <Name>ServiceStack %28ServiceStack\Stack\ServiceStack%29</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
