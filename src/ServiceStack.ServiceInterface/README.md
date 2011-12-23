@@ -13,9 +13,14 @@ The ServiceBase and RestServiceBase classes provide use-ful base classes for you
 
   * Reduces the boiler-plate by already implementing all REST operations so you don't have to e.g. IRestGetService<TRequest>
 
-
 ### ServiceModel
 Generic DTO types useful for all web services. e.g. **ResponseStatus** is where C# exceptions get injected into
+
+### Fluent Validation
+
+Includes @JeremySkinner's Fluent Validation (https://github.com/JeremySkinner/FluentValidation)
+Which is licensed under the Apache License 2.0 
+http://www.apache.org/licenses/LICENSE-2.0.html
 
 ### Session
 Existing classes

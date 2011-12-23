@@ -74,9 +74,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentValidation">
-      <HintPath>..\..\lib\FluentValidation.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
@@ -123,6 +120,72 @@
     <Compile Include="Auth\SaltedHash.cs" />
     <Compile Include="Auth\UserAuth.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="FluentValidation\AbstractValidator.cs" />
+    <Compile Include="FluentValidation\AssemblyScanner.cs" />
+    <Compile Include="FluentValidation\Attributes\AttributedValidatorFactory.cs" />
+    <Compile Include="FluentValidation\Attributes\ValidatorAttribute.cs" />
+    <Compile Include="FluentValidation\CollectionValidatorExtensions.cs" />
+    <Compile Include="FluentValidation\DefaultValidatorExtensions.cs" />
+    <Compile Include="FluentValidation\DefaultValidatorOptions.cs" />
+    <Compile Include="FluentValidation\Enums.cs" />
+    <Compile Include="FluentValidation\InlineValidator.cs" />
+    <Compile Include="FluentValidation\Internal\DefaultValidatorSelector.cs" />
+    <Compile Include="FluentValidation\Internal\DelegateValidator.cs" />
+    <Compile Include="FluentValidation\Internal\Extensions.cs" />
+    <Compile Include="FluentValidation\Internal\IConfigurable.cs" />
+    <Compile Include="FluentValidation\Internal\IFluentInterface.cs" />
+    <Compile Include="FluentValidation\Internal\InstanceCache.cs" />
+    <Compile Include="FluentValidation\Internal\IValidatorSelector.cs" />
+    <Compile Include="FluentValidation\Internal\MemberNameValidatorSelector.cs" />
+    <Compile Include="FluentValidation\Internal\MessageFormatter.cs" />
+    <Compile Include="FluentValidation\Internal\PropertyChain.cs" />
+    <Compile Include="FluentValidation\Internal\PropertyRule.cs" />
+    <Compile Include="FluentValidation\Internal\RuleBuilder.cs" />
+    <Compile Include="FluentValidation\Internal\RulesetValidatorSelector.cs" />
+    <Compile Include="FluentValidation\Internal\TrackingCollection.cs" />
+    <Compile Include="FluentValidation\IValidationRule.cs" />
+    <Compile Include="FluentValidation\IValidator.cs" />
+    <Compile Include="FluentValidation\IValidatorDescriptor.cs" />
+    <Compile Include="FluentValidation\IValidatorFactory.cs" />
+    <Compile Include="FluentValidation\Resources\IResourceAccessorBuilder.cs" />
+    <Compile Include="FluentValidation\Resources\IStringSource.cs" />
+    <Compile Include="FluentValidation\Resources\LocalizedStringSource.cs" />
+    <Compile Include="FluentValidation\Resources\Messages.Designer.cs" />
+    <Compile Include="FluentValidation\Resources\StaticStringSource.cs" />
+    <Compile Include="FluentValidation\Results\ValidationFailure.cs" />
+    <Compile Include="FluentValidation\Results\ValidationResult.cs" />
+    <Compile Include="FluentValidation\Syntax.cs" />
+    <Compile Include="FluentValidation\TestHelper\ValidationTestException.cs" />
+    <Compile Include="FluentValidation\TestHelper\ValidatorTester.cs" />
+    <Compile Include="FluentValidation\TestHelper\ValidatorTestExtensions.cs" />
+    <Compile Include="FluentValidation\ValidationContext.cs" />
+    <Compile Include="FluentValidation\ValidationException.cs" />
+    <Compile Include="FluentValidation\ValidatorDescriptor.cs" />
+    <Compile Include="FluentValidation\ValidatorFactoryBase.cs" />
+    <Compile Include="FluentValidation\ValidatorOptions.cs" />
+    <Compile Include="FluentValidation\Validators\AbstractComparisonValidator.cs" />
+    <Compile Include="FluentValidation\Validators\ChildCollectionValidatorAdaptor.cs" />
+    <Compile Include="FluentValidation\Validators\ChildValidatorAdaptor.cs" />
+    <Compile Include="FluentValidation\Validators\CreditCardValidator.cs" />
+    <Compile Include="FluentValidation\Validators\DelegatingValidator.cs" />
+    <Compile Include="FluentValidation\Validators\EmailValidator.cs" />
+    <Compile Include="FluentValidation\Validators\EqualValidator.cs" />
+    <Compile Include="FluentValidation\Validators\ExclusiveBetweenValidator.cs" />
+    <Compile Include="FluentValidation\Validators\GreaterThanOrEqualValidator.cs" />
+    <Compile Include="FluentValidation\Validators\GreaterThanValidator.cs" />
+    <Compile Include="FluentValidation\Validators\InclusiveBetweenValidator.cs" />
+    <Compile Include="FluentValidation\Validators\IPropertyValidator.cs" />
+    <Compile Include="FluentValidation\Validators\LengthValidator.cs" />
+    <Compile Include="FluentValidation\Validators\LessThanOrEqualValidator.cs" />
+    <Compile Include="FluentValidation\Validators\LessThanValidator.cs" />
+    <Compile Include="FluentValidation\Validators\NoopPropertyValidator.cs" />
+    <Compile Include="FluentValidation\Validators\NotEmptyValidator.cs" />
+    <Compile Include="FluentValidation\Validators\NotEqualValidator.cs" />
+    <Compile Include="FluentValidation\Validators\NotNullValidator.cs" />
+    <Compile Include="FluentValidation\Validators\PredicateValidator.cs" />
+    <Compile Include="FluentValidation\Validators\PropertyValidator.cs" />
+    <Compile Include="FluentValidation\Validators\PropertyValidatorContext.cs" />
+    <Compile Include="FluentValidation\Validators\RegularExpressionValidator.cs" />
     <Compile Include="IServiceBase.cs" />
     <Compile Include="RequiredPermissionAttribute.cs" />
     <Compile Include="ServiceExtensions.cs" />
@@ -131,12 +194,7 @@
     <Compile Include="ServiceModel\ResponseStatusTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceResponseException.cs" />
-    <Compile Include="Deprecated.Session\CachedUserSessionManager.cs" />
-    <Compile Include="Deprecated.Session\IUserSessionManager.cs" />
-    <Compile Include="Deprecated.Session\UserClientSession.cs" />
-    <Compile Include="Deprecated.Session\PublicAndPrivateClientSessions.cs" />
-    <Compile Include="Deprecated.Session\UserSession.cs" />
-    <Compile Include="ServiceRoutesExtension.cs" />
+    <Compile Include="ServiceRoutesExtensions.cs" />
     <Compile Include="SessionFactory.cs" />
     <Compile Include="SessionFeature.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
@@ -183,10 +241,21 @@
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack %28ServiceStack\Stack\ServiceStack%29</Name>
+      <Name>ServiceStack</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.de.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.es.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.fr.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.it.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.nl.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.pl.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.pt.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.resx" />
+    <EmbeddedResource Include="FluentValidation\Resources\Messages.sv.resx" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

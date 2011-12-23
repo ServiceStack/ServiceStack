@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public override object OnPost(FileUpload request)
 		{
 			if (this.RequestContext.Files.Length == 0)
-				throw new ValidationException("UploadError", "No such file exists");
+                throw new SerializableValidationException("UploadError", "No such file exists");
 
 			var file = this.RequestContext.Files[0];
 			return new FileUploadResponse

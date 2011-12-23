@@ -15,6 +15,12 @@ namespace ServiceStack.Common.Web
 		public HttpError(HttpStatusCode statusCode, string errorCode)
 			: this(statusCode, errorCode, null) {}
 
+        public HttpError(object responseDto, HttpStatusCode statusCode, string errorCode, string errorMessage)
+            : this(statusCode, errorCode, errorMessage)
+        {
+            this.Response = responseDto;
+        }
+
 		public HttpError(HttpStatusCode statusCode, string errorCode, string errorMessage)
 			: base(errorMessage ?? errorCode)
 		{

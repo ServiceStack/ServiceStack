@@ -242,7 +242,15 @@ namespace ServiceStack.ServiceInterface
 			if (ex is NotImplementedException) statusCode = HttpStatusCode.MethodNotAllowed;
 			else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
 
-			return new HttpResult(responseDto, null, statusCode);
+		    var errorCode = ex.GetType().Name;
+		    var errorMsg = ex.Message;
+            if (responseStatus != null)
+            {
+                errorCode = responseStatus.ErrorCode ?? errorCode;
+                errorMsg = responseStatus.Message ?? errorMsg;
+            }
+
+		    return new HttpError(responseDto, statusCode, errorCode, errorMsg);
 		}
 
 		/// <summary>

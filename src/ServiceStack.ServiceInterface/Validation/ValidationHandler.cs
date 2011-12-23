@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.ServiceHost;
-using FluentValidation;
+using ServiceStack.FluentValidation;
 
 namespace ServiceStack.ServiceInterface.Validation
 {
@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceInterface.Validation
     {
         public static void Init(IAppHost appHost)
         {
-            ValidationFilter filter = new ValidationFilter();
+            var filter = new ValidationFilter();
             appHost.RequestFilters.Add(filter.ValidateRequest);
         }
     }

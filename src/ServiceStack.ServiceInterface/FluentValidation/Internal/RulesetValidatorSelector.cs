@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using ServiceStack.FluentValidation.Internal;
-using ServiceStack.FluentValidation;
-
-namespace ServiceStack.ServiceInterface.Validation
+namespace ServiceStack.FluentValidation.Internal
 {
-    public class MultiRuleSetValidatorSelector : IValidatorSelector
-    {
-        readonly string[] rulesetsToExecute;
+	using System;
+	using System.Linq;
+
+	/// <summary>
+	/// Selects validators that belong to the specified rulesets.
+	/// </summary>
+	public class RulesetValidatorSelector : IValidatorSelector {
+		readonly string[] rulesetsToExecute;
 
 		/// <summary>
 		/// Creates a new instance of the RulesetValidatorSelector.
 		/// </summary>
-		public MultiRuleSetValidatorSelector(params string[] rulesetsToExecute) {
+		public RulesetValidatorSelector(params string[] rulesetsToExecute) {
 			this.rulesetsToExecute = rulesetsToExecute;
 		}
 
@@ -26,11 +24,11 @@ namespace ServiceStack.ServiceInterface.Validation
 		/// <param name="context">Contextual information</param>
 		/// <returns>Whether or not the validator can execute.</returns>
 		public bool CanExecute(IValidationRule rule, string propertyPath, ValidationContext context) {
-			if (string.IsNullOrEmpty(rule.RuleSet)) return true;
+			if (string.IsNullOrEmpty(rule.RuleSet) && rulesetsToExecute.Length == 0) return true;
 			if (!string.IsNullOrEmpty(rule.RuleSet) && rulesetsToExecute.Length > 0 && rulesetsToExecute.Contains(rule.RuleSet)) return true;
 			if (rulesetsToExecute.Contains("*")) return true;
 
 			return false;
 		}
-    }
+	}
 }
