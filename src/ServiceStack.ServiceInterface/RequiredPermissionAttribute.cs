@@ -5,20 +5,10 @@ using System.Text;
 
 namespace ServiceStack.ServiceInterface
 {
-    [Flags]
-    public enum ApplyTo
-    {
-        None = 0,
-        All = Get | Post | Put | Delete | Patch | Options | Head,
-        Get = 1 << 0,
-        Post = 1 << 1,
-        Put = 1 << 2,
-        Delete = 1 << 3,
-        Patch = 1 << 4,
-        Options = 1 << 5,
-        Head = 1 << 6
-    }
-
+    /// <summary>
+    /// Indicates that the request dto, which is associated with this attribute,
+    /// can only execute, if the user has specific permissions.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public class RequiredPermissionAttribute : Attribute
     {

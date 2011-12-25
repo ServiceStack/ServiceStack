@@ -101,6 +101,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplyTo.cs" />
     <Compile Include="AsyncServiceBase.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="Auth\AuthService.cs" />
@@ -246,15 +247,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.de.resx" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.es.resx" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.fr.resx" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.it.resx" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.nl.resx" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.pl.resx" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.pt.resx" />
     <EmbeddedResource Include="FluentValidation\Resources\Messages.resx" />
-    <EmbeddedResource Include="FluentValidation\Resources\Messages.sv.resx" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

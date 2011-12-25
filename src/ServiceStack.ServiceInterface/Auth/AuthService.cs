@@ -85,31 +85,35 @@ namespace ServiceStack.ServiceInterface.Auth
 
 				if (requiresAuth != null)
 				{
-					var matchingOAuthConfigs = AuthConfigs.Where(x =>
-						requiresAuth.Provider.IsNullOrEmpty() 
-						|| x.Provider == requiresAuth.Provider).ToList();
+                    ApplyTo httpMethod = req.HttpMethodAsApplyTo();
+                    if(requiresAuth.ApplyTo.Has(httpMethod))
+                    {
+					    var matchingOAuthConfigs = AuthConfigs.Where(x =>
+						    requiresAuth.Provider.IsNullOrEmpty() 
+						    || x.Provider == requiresAuth.Provider).ToList();
 
-					if (matchingOAuthConfigs.Count == 0)
-					{
-						res.WriteError(req, dto, "No OAuth Configs found matching {0} provider"
-							.Fmt(requiresAuth.Provider ?? "any"));
-						res.Close();
-						return;
-					}
+					    if (matchingOAuthConfigs.Count == 0)
+					    {
+						    res.WriteError(req, dto, "No OAuth Configs found matching {0} provider"
+							    .Fmt(requiresAuth.Provider ?? "any"));
+						    res.Close();
+						    return;
+					    }
 
-					using (var cache = appHost.GetCacheClient())
-					{
-						var sessionId = req.GetPermanentSessionId();
-						var session = sessionId != null ? cache.GetSession(sessionId) : null;
+					    using (var cache = appHost.GetCacheClient())
+					    {
+						    var sessionId = req.GetPermanentSessionId();
+						    var session = sessionId != null ? cache.GetSession(sessionId) : null;
 
-						if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
-						{
-							res.StatusCode = (int)HttpStatusCode.Unauthorized;
-							res.AddHeader(HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(matchingOAuthConfigs[0].AuthRealm));
-							res.Close();
-							return;
-						}
-					}
+						    if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
+						    {
+							    res.StatusCode = (int)HttpStatusCode.Unauthorized;
+							    res.AddHeader(HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(matchingOAuthConfigs[0].AuthRealm));
+							    res.Close();
+							    return;
+						    }
+					    }
+                    }
 				}
 			});
 		}
