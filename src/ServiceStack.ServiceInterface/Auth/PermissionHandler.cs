@@ -23,21 +23,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 string sessionId = req.GetPermanentSessionId();
                 IOAuthSession session = appHost.GetCacheClient().GetSession(sessionId);
 
-                ApplyTo httpMethod = ApplyTo.None;
-                if (req.HttpMethod == HttpMethods.Get)
-                    httpMethod = ApplyTo.Get;
-                else if (req.HttpMethod == HttpMethods.Post)
-                    httpMethod = ApplyTo.Post;
-                else if (req.HttpMethod == HttpMethods.Put)
-                    httpMethod = ApplyTo.Put;
-                else if (req.HttpMethod == HttpMethods.Delete)
-                    httpMethod = ApplyTo.Delete;
-                else if (req.HttpMethod == HttpMethods.Patch)
-                    httpMethod = ApplyTo.Patch;
-                else if (req.HttpMethod == HttpMethods.Options)
-                    httpMethod = ApplyTo.Options;
-                else if (req.HttpMethod == HttpMethods.Head)
-                    httpMethod = ApplyTo.Head;
+                ApplyTo httpMethod = req.HttpMethodAsApplyTo();
 
                 RequiredPermissionAttribute[] attributes = (RequiredPermissionAttribute[])dto.GetType().GetCustomAttributes(typeof(RequiredPermissionAttribute), true);
                 foreach (RequiredPermissionAttribute attribute in attributes)
