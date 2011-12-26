@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test, TestCaseSource(typeof(HelloWorldServiceClientTests), "ServiceClients")]
-		public void Sync_Call_HelloWorld_with_Sync_ServiceClients_on_Automatic_Routes(IServiceClient client)
+		public void Sync_Call_HelloWorld_with_Sync_ServiceClients_on_PreDefined_Routes(IServiceClient client)
 		{
 			var response = client.Send<HelloResponse>(new Hello { Name = "World!" });
 
@@ -42,7 +42,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test, TestCaseSource(typeof(HelloWorldServiceClientTests), "RestClients")]
-		public void Async_Call_HelloWorld_with_ServiceClients_on_Automatic_Routes(IServiceClient client)
+		public void Async_Call_HelloWorld_with_ServiceClients_on_PreDefined_Routes(IServiceClient client)
 		{
 			HelloResponse response = null;
 			client.SendAsync<HelloResponse>(new Hello { Name = "World!" },
@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test, TestCaseSource(typeof(HelloWorldServiceClientTests), "RestClients")]
-		public void Sync_Call_HelloWorld_with_RestClients_on_Custom_UserDefined_Routes(IRestClient client)
+		public void Sync_Call_HelloWorld_with_RestClients_on_UserDefined_Routes(IRestClient client)
 		{
 			var response = client.Get<HelloResponse>("/hello/World!");
 
@@ -62,7 +62,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		}
 
 		[Test, TestCaseSource(typeof(HelloWorldServiceClientTests), "RestClients")]
-		public void Async_Call_HelloWorld_with_Async_ServiceClients_on_Automatic_Routes(IServiceClient client)
+		public void Async_Call_HelloWorld_with_Async_ServiceClients_on_UserDefined_Routes(IServiceClient client)
 		{
 			HelloResponse response = null;
 			client.GetAsync<HelloResponse>("/hello/World!",
