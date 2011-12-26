@@ -6,14 +6,31 @@ using System.Net;
 
 namespace ServiceStack.ServiceHost
 {
+	/// <summary>
+	/// A thin wrapper around ASP.NET or HttpListener's HttpRequest
+	/// </summary>
 	public interface IHttpRequest
 	{
+		/// <summary>
+		/// The underlying ASP.NET or HttpListener HttpRequest
+		/// </summary>
 		object OriginalRequest { get; }
 
+		/// <summary>
+		/// Resolve a dependency from the AppHost's IOC
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
 		T TryResolve<T>();
 
+		/// <summary>
+		/// The name of the service being called (e.g. Request DTO Name)
+		/// </summary>
 		string OperationName { get; }
 
+		/// <summary>
+		/// The request ContentType
+		/// </summary>
 		string ContentType { get; }
 
 		string HttpMethod { get; }
@@ -22,6 +39,9 @@ namespace ServiceStack.ServiceHost
 
 		IDictionary<string, Cookie> Cookies { get; }
 
+		/// <summary>
+		/// The expected Response ContentType for this request
+		/// </summary>
 		string ResponseContentType { get; set; }
 
 		/// <summary>
@@ -35,6 +55,10 @@ namespace ServiceStack.ServiceHost
 
 		NameValueCollection FormData { get; }
 
+		/// <summary>
+		/// The entire string contents of Request.InputStream
+		/// </summary>
+		/// <returns></returns>
 		string GetRawBody();
 
 		string RawUrl { get; }
@@ -43,6 +67,9 @@ namespace ServiceStack.ServiceHost
 
 		string UserHostAddress { get; }
 
+		/// <summary>
+		/// e.g. is https or not
+		/// </summary>
 		bool IsSecureConnection { get; }
 
 		string[] AcceptTypes { get; }
@@ -53,6 +80,9 @@ namespace ServiceStack.ServiceHost
 
 		long ContentLength { get; }
 
+		/// <summary>
+		/// Access to the multi-part/formdata files posted on this request
+		/// </summary>
 		IFile[] Files { get; }
 
 		string ApplicationFilePath { get; }
