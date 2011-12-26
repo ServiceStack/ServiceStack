@@ -5,15 +5,15 @@ using NUnit.Framework;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
-	public class HelloServiceTests
+	public class HelloWorldRawHttpPostTests
 	{
-		private const string BaseUrl = "http://localhost/ServiceStack.WebHost.IntegrationTests/servicestack/hello";
+		private const string BaseUrl = "http://localhost/ServiceStack.WebHost.IntegrationTests/api/hello";
 		private const string RemoteUrl = "http://www.servicestack.net/ServiceStack.Hello/servicestack/hello";
 
 		[Test]
 		public void Post_JSON_to_HelloWorld()
 		{
-			var httpReq = (HttpWebRequest)WebRequest.Create(RemoteUrl);
+			var httpReq = (HttpWebRequest)WebRequest.Create(BaseUrl);
 			httpReq.Method = "POST";
 			httpReq.ContentType = httpReq.Accept = "application/json";
 
@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Post_XML_to_HelloWorld()
 		{
-			var httpReq = (HttpWebRequest)WebRequest.Create(RemoteUrl);
+			var httpReq = (HttpWebRequest)WebRequest.Create(BaseUrl);
 			httpReq.Method = "POST";
 			httpReq.ContentType = httpReq.Accept = "application/xml";
 
