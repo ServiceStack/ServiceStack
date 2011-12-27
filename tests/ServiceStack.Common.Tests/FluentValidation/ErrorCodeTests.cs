@@ -19,6 +19,7 @@ namespace ServiceStack.Common.Tests.FluentValidation
             public int Age { get; set; }
             public List<Car> Cars { get; set; }
             public List<Car> Favorites { get; set; }
+            public string Lastname { get; set; }
         }
 
         public class Car
@@ -31,15 +32,17 @@ namespace ServiceStack.Common.Tests.FluentValidation
         {
             public PersonValidator()
             {
-                RuleFor(x => x.Firstname).Matches("asdfj").NotEmpty();
+                RuleFor(x => x.Firstname).Matches("asdfj");
 
                 RuleFor(x => x.CreditCard).CreditCard().Length(10).EmailAddress().Equal("537")
                     .ExclusiveBetween("asdlöfjasdf", "asldfjlöakjdfsadf");
 
                 RuleFor(x => x.Age).GreaterThan(100).GreaterThanOrEqualTo(100).InclusiveBetween(100, 200).LessThan(10);
 
-                RuleFor(x => x.Cars).SetCollectionValidator(new CarValidator()).NotEmpty();
-                RuleFor(x => x.Favorites).NotEmpty().NotNull();
+                RuleFor(x => x.Cars).SetCollectionValidator(new CarValidator());
+                RuleFor(x => x.Favorites).NotNull().NotEmpty().WithErrorCode("ShouldNotBeEmpty");
+
+                RuleFor(x => x.Lastname).NotEmpty();
             }
         }
 
@@ -160,6 +163,12 @@ namespace ServiceStack.Common.Tests.FluentValidation
         public void RegularExpression()
         {
             Assert.IsTrue(Result.Errors.Any(f => f.ErrorCode == ValidationErrors.RegularExpression));
+        }
+
+        [Test]
+        public void Custom()
+        {
+            Assert.AreEqual(1, Result.Errors.Where(f => f.ErrorCode == "ShouldNotBeEmpty").Count());
         }
     }
 }
