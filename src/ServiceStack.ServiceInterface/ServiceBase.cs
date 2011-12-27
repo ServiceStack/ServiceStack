@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Net;
 using System.Web;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
-using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -29,16 +27,6 @@ namespace ServiceStack.ServiceInterface
         : IService<TRequest>, IRequiresRequestContext, IServiceBase
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
-
-        /// <summary>
-        /// Naming convention for the request's Response DTO
-        /// </summary>
-        public const string ResponseDtoSuffix = "Response";
-
-        /// <summary>
-        /// Naming convention for the ResponseStatus property name on the response DTO
-        /// </summary>
-        public const string ResponseStatusPropertyName = "ResponseStatus";
 
         /// <summary>
         /// Service error logs are kept in 'urn:ServiceErrors:{ServiceName}'
@@ -153,8 +141,18 @@ namespace ServiceStack.ServiceInterface
         /// Called before the request is Executed. Override to enforce generic validation logic.
         /// </summary>
         /// <param name="request"></param>
-        protected virtual void OnBeforeExecute(TRequest request) { }
-
+		protected virtual void OnBeforeExecute(TRequest request) { }
+		
+		/// <summary>
+		/// Called after the request is Executed. Override to decorate the response dto
+		/// </summary>
+		/// <param name="response"></param>
+		/// <returns></returns>
+		protected virtual object OnAfterExecute(object response)
+		{
+			return response;
+		}
+		
         /// <summary>
         /// Execute the request with the protected abstract Run() method in a managed scope by
         /// provide default handling of Service Exceptions by serializing exceptions in the response
@@ -167,7 +165,7 @@ namespace ServiceStack.ServiceInterface
             try
             {
                 OnBeforeExecute(request);
-                return Run(request);
+				return OnAfterExecute(Run(request));
             }
             catch (Exception ex)
             {
@@ -224,98 +222,9 @@ namespace ServiceStack.ServiceInterface
                 }
             }
 
-            var responseDto = CreateResponseDto(request, responseStatus);
-
-            var statusCode = HttpStatusCode.InternalServerError;
-            if (responseDto != null)
-            {
-
-                var httpError = ex as IHttpError;
-                if (httpError != null)
-                {
-                    httpError.Response = responseDto;
-                    return httpError;
-                }
-
-                if (ex is NotImplementedException) statusCode = HttpStatusCode.MethodNotAllowed;
-                else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
-            }
-
-            var errorCode = ex.GetType().Name;
-            var errorMsg = ex.Message;
-            if (responseStatus != null)
-            {
-                errorCode = responseStatus.ErrorCode ?? errorCode;
-                errorMsg = responseStatus.Message ?? errorMsg;
-            }
-
-            return new HttpError(responseDto, statusCode, errorCode, errorMsg);
+            return ServiceUtils.CreateErrorResponse(request, ex, responseStatus);
         }
-
-        /// <summary>
-        /// Create an instance of the service response dto type and inject it with the supplied responseStatus
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="responseStatus"></param>
-        /// <returns></returns>
-        protected static object CreateResponseDto(TRequest request, ResponseStatus responseStatus)
-        {
-            // Predict the Response message type name
-            // Get the type
-            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
-            var responseDto = CreateResponseDto(request);
-
-            if (responseDto == null)
-                return null;
-
-            // For faster serialization of exceptions, services should implement IHasResponseStatus
-            var hasResponseStatus = responseDto as IHasResponseStatus;
-            if (hasResponseStatus != null)
-            {
-                hasResponseStatus.ResponseStatus = responseStatus;
-            }
-            else
-            {
-                // Get the ResponseStatus property
-                var responseStatusProperty = responseDtoType.GetProperty(ResponseStatusPropertyName);
-
-                if (responseStatusProperty != null)
-                {
-                    // Set the ResponseStatus
-                    ReflectionUtils.SetProperty(responseDto, responseStatusProperty, responseStatus);
-                }
-            }
-
-            // Return an Error DTO with the exception populated
-            return responseDto;
-        }
-
-        /// <summary>
-        /// Create an instance of the response dto based on the requestDto type and default naming convention
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        protected static object CreateResponseDto(TRequest request)
-        {
-            // Get the type
-            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
-
-            if (responseDtoType == null)
-            {
-                // We don't support creation of response messages without a predictable type name
-                return null;
-            }
-
-            // Create an instance of the response message for this request
-            var responseDto = ReflectionUtils.CreateInstance(responseDtoType);
-            return responseDto;
-        }
-
-        protected static string GetResponseDtoName(TRequest request)
-        {
-            return typeof(TRequest).FullName + ResponseDtoSuffix;
-        }
-
+		
         protected HttpResult View(string viewName, object response)
         {
             return new HttpResult(response)
@@ -334,5 +243,4 @@ namespace ServiceStack.ServiceInterface
             return Execute(request.GetBody());
         }
     }
-
 }

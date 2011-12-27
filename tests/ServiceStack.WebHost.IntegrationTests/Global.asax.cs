@@ -14,6 +14,7 @@ using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -75,6 +76,9 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				var resetMovies = this.Container.Resolve<ResetMoviesService>();
 				resetMovies.Post(null);
+
+				ValidationFeature.Init(this);
+				container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
 				//var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
 				SetConfig(new EndpointHostConfig {

@@ -48,8 +48,8 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public ResponseStatus Parse(SerializableValidationResult validationResult)
 		{
 			return validationResult.IsValid
-					? CreateSuccessResponse(validationResult.SuccessMessage)
-					: CreateErrorResponse(validationResult.ErrorCode, validationResult.ErrorMessage, validationResult.Errors);
+				? CreateSuccessResponse(validationResult.SuccessMessage)
+				: CreateErrorResponse(validationResult.ErrorCode, validationResult.ErrorMessage, validationResult.Errors);
 		}
 
 		public static ResponseStatus CreateSuccessResponse(string message)

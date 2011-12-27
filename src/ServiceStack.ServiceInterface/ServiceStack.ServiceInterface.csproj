@@ -196,6 +196,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceResponseException.cs" />
     <Compile Include="ServiceRoutesExtensions.cs" />
+    <Compile Include="ServiceUtils.cs" />
     <Compile Include="SessionFactory.cs" />
     <Compile Include="SessionFeature.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
@@ -208,8 +209,9 @@
     </Compile>
     <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />
     <Compile Include="Validation\ValidationFilter.cs" />
-    <Compile Include="Validation\ValidationHandler.cs" />
+    <Compile Include="Validation\ValidationFeature.cs" />
     <Compile Include="Validation\ValidationResultExtensions.cs" />
+    <Compile Include="Validation\ValidatorCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

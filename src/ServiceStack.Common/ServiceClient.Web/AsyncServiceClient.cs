@@ -235,7 +235,6 @@ namespace ServiceStack.ServiceClient.Web
 						SendWebRequestAsync(
 							requestState.HttpMethod, requestState.Request,
 							requestState, requestState.WebRequest);
-
 					}
 					catch (Exception /*subEx*/)
 					{

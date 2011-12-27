@@ -16,6 +16,9 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
+using ServiceStack.Common;
+using ServiceStack.ServiceInterface;
+
 namespace ServiceStack.FluentValidation
 {
 	using System;
@@ -152,6 +155,15 @@ namespace ServiceStack.FluentValidation
 
 			using (nestedValidators.OnItemAdded(r => r.RuleSet = ruleSetName)) {
 				action();
+			}
+		}
+
+		public void RuleSet(ApplyTo appliesTo, Action action)
+		{
+			var httpMethods = appliesTo.ToString().Split(',').SafeConvertAll(x => x.Trim());
+			foreach (var httpMethod in httpMethods)
+			{
+				RuleSet(httpMethod, action);
 			}
 		}
 

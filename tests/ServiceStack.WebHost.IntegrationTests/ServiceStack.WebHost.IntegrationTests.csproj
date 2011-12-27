@@ -117,6 +117,7 @@
     </Compile>
     <Compile Include="Services\BatchWidgetValidationService.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />
+    <Compile Include="Services\CustomerService.cs" />
     <Compile Include="Services\SessionService.cs" />
     <Compile Include="Services\MqHostStatsService.cs" />
     <Compile Include="Services\HttpResultsService.cs" />

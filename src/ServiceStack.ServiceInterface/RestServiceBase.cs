@@ -8,7 +8,7 @@ namespace ServiceStack.ServiceInterface
 	///		Base class for services that support HTTP verbs.
 	/// </summary>
 	/// <typeparam name="TRequest">The request class that the descendent class
-	///		is responsible for processing.</typeparam>
+	///	is responsible for processing.</typeparam>
 	public abstract class RestServiceBase<TRequest>
 		: ServiceBase<TRequest>,
 		IRestGetService<TRequest>,
@@ -46,7 +46,7 @@ namespace ServiceStack.ServiceInterface
 			try
 			{
 				OnBeforeExecute(request);
-				return OnGet(request);
+				return OnAfterExecute(OnGet(request));
 			}
 			catch (Exception ex)
 			{
@@ -82,7 +82,7 @@ namespace ServiceStack.ServiceInterface
 			try
 			{
 				OnBeforeExecute(request);
-				return OnPut(request);
+				return OnAfterExecute(OnPut(request));
 			}
 			catch (Exception ex)
 			{
@@ -118,7 +118,7 @@ namespace ServiceStack.ServiceInterface
 			try
 			{
 				OnBeforeExecute(request);
-				return OnPost(request);
+				return OnAfterExecute(OnPost(request));
 			}
 			catch (Exception ex)
 			{
@@ -154,7 +154,7 @@ namespace ServiceStack.ServiceInterface
 			try
 			{
 				OnBeforeExecute(request);
-				return OnDelete(request);
+				return OnAfterExecute(OnDelete(request));
 			}
 			catch (Exception ex)
 			{
@@ -190,7 +190,7 @@ namespace ServiceStack.ServiceInterface
 			try
 			{
 				OnBeforeExecute(request);
-				return OnPatch(request);
+				return OnAfterExecute(OnPatch(request));
 			}
 			catch (Exception ex)
 			{
