@@ -22,15 +22,8 @@ namespace ServiceStack.ServiceInterface.Validation
 		{
 			foreach (var assembly in assemblies)
 			{
-				var validators = 
-                    from t in assembly.GetTypes()
-					where
-						!t.IsAbstract 
-						&& t.IsGenericType 
-						&& t.GetGenericTypeDefinition() == typeof(IValidator<>)
-					select t;
-
-				foreach (var validator in validators)
+				foreach (var validator in assembly.GetTypes()
+					.Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
 				{
 					var baseType = validator.BaseType;
 					while (!baseType.IsGenericType)
@@ -41,12 +34,14 @@ namespace ServiceStack.ServiceInterface.Validation
 					var dtoType = baseType.GetGenericArguments()[0];
 					var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
 
-					var registerFn = typeof(Container).GetMethods(BindingFlags.Public)
+					var registerFn = typeof(Container)
+						.GetMethods(BindingFlags.Public | BindingFlags.Instance)
 						.First(x => x.Name == "Register" 
 							&& x.ReturnType == typeof(void) && x.GetParameters().Length == 1)
 						.MakeGenericMethod(validatorType);
-					
-					registerFn.Invoke(container, new[] { validator });
+
+					var instance = ReflectionExtensions.CreateInstance(validator);
+					registerFn.Invoke(container, new[] { instance });
 				}
 			}
 		}

@@ -123,11 +123,26 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 
 		[Test]
-		public void Post_empty_request_throws_validation_exception()
+		public void UnitTest_Post_empty_request_throws_validation_exception()
 		{
 			try
 			{
 				var client = CreateNewServiceClient();
+				var response = client.Send<Customers>(new Customers());
+				Assert.Fail("Should throw Validation Exception");
+			}
+			catch (WebServiceException ex)
+			{
+				throw ex;
+			}
+		}
+
+		[Test]
+		public void Json_Post_empty_request_throws_validation_exception()
+		{
+			try
+			{
+				var client = new JsonServiceClient(ListeningOn);
 				var response = client.Send<Customers>(new Customers());
 				Assert.Fail("Should throw Validation Exception");
 			}

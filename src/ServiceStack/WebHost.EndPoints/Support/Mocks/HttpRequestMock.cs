@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 
 		public T TryResolve<T>()
 		{
-			throw new NotImplementedException();
+			return EndpointHost.AppHost.TryResolve<T>();
 		}
 
 		public string OperationName { get; set; }
@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		private string responseContentType;
 		public string ResponseContentType
 		{
-			get { return responseContentType ?? this.ContentType; }
+			get { return responseContentType ?? this.ContentType ?? Common.Web.ContentType.Json; }
 			set { responseContentType = value; }
 		}
 

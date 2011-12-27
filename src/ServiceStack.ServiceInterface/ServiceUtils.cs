@@ -110,7 +110,9 @@ namespace ServiceStack.ServiceInterface
 
 		public static string GetResponseDtoName<TRequest>(TRequest request)
 		{
-			return typeof(TRequest).FullName + ResponseDtoSuffix;
+			return typeof(TRequest) != typeof(object)
+				? typeof(TRequest).FullName + ResponseDtoSuffix
+				: request.GetType().FullName + ResponseDtoSuffix;
 		}	
 	}
 }
