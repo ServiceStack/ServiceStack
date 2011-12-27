@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using System.Reflection.Emit;
 using ServiceStack.Common.Utils;
 
 namespace ServiceStack.Common
@@ -78,9 +77,12 @@ namespace ServiceStack.Common
 
 		public static bool IsDynamic(this Assembly assembly)
 		{
+#if MONOTOUCH
+			return false;
+#else
 			try
 			{
-				var isDyanmic = assembly is AssemblyBuilder
+				var isDyanmic = assembly is System.Reflection.Emit.AssemblyBuilder
 					|| string.IsNullOrEmpty(assembly.Location);
 				return isDyanmic;
 			}
@@ -89,7 +91,9 @@ namespace ServiceStack.Common
 				//Ignore assembly.Location not supported in a dynamic assembly.
 				return true;
 			}
+#endif
 		}
+
 	}
 }
 
