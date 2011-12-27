@@ -28,6 +28,7 @@ namespace ServiceStack.FluentValidation.Validators
 	public abstract class PropertyValidator : IPropertyValidator {
 		private readonly List<Func<object, object>> customFormatArgs = new List<Func<object, object>>();
 		private IStringSource errorSource;
+        private string errorCode;
 
 		public Func<object, object> CustomStateProvider { get; set; }
 
@@ -35,16 +36,19 @@ namespace ServiceStack.FluentValidation.Validators
 			get { return customFormatArgs; }
 		}
 
-		protected PropertyValidator(string errorMessageResourceName, Type errorMessageResourceType) {
-			errorSource = new LocalizedStringSource(errorMessageResourceType, errorMessageResourceName, new FallbackAwareResourceAccessorBuilder());
+		protected PropertyValidator(string errorMessageResourceName, Type errorMessageResourceType, string errorCode) {
+			this.errorSource = new LocalizedStringSource(errorMessageResourceType, errorMessageResourceName, new FallbackAwareResourceAccessorBuilder());
+            this.errorCode = errorCode;
 		}
 
-		protected PropertyValidator(string errorMessage) {
-			errorSource = new StaticStringSource(errorMessage);
+		protected PropertyValidator(string errorMessage, string errorCode) {
+			this.errorSource = new StaticStringSource(errorMessage);
+            this.errorCode = errorCode;
 		}
 
-		protected PropertyValidator(Expression<Func<string>> errorMessageResourceSelector) {
-			errorSource = LocalizedStringSource.CreateFromExpression(errorMessageResourceSelector, new FallbackAwareResourceAccessorBuilder());
+		protected PropertyValidator(Expression<Func<string>> errorMessageResourceSelector, string errorCode) {
+			this.errorSource = LocalizedStringSource.CreateFromExpression(errorMessageResourceSelector, new FallbackAwareResourceAccessorBuilder());
+            this.errorCode = errorCode;
 		}
 
 		public IStringSource ErrorMessageSource {
@@ -56,6 +60,17 @@ namespace ServiceStack.FluentValidation.Validators
 				errorSource = value;
 			}
 		}
+
+        public string ErrorCode
+        {
+            get { return errorCode; }
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException("value");
+                errorCode = value;
+            }
+        }
 
 		public virtual IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
 			context.MessageFormatter.AppendPropertyName(context.PropertyDescription);
@@ -81,7 +96,7 @@ namespace ServiceStack.FluentValidation.Validators
 
 			string error = context.MessageFormatter.BuildMessage(errorSource.GetString());
 
-			var failure = new ValidationFailure(context.PropertyName, error, context.PropertyValue);
+			var failure = new ValidationFailure(context.PropertyName, error, errorCode, context.PropertyValue);
 
 			if (CustomStateProvider != null) {
 				failure.CustomState = CustomStateProvider(context.Instance);

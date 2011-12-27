@@ -34,5 +34,6 @@ namespace ServiceStack.FluentValidation.Validators
         ICollection<Func<object, object>> CustomMessageFormatArguments { get; }
         Func<object, object> CustomStateProvider { get; set; }
         IStringSource ErrorMessageSource { get; set; }
+        string ErrorCode { get; set; }
     }
 }

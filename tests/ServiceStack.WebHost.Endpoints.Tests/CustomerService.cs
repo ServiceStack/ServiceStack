@@ -36,7 +36,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public CustomersValidator()
 		{
 			RuleSet(ApplyTo.Post | ApplyTo.Put, () => {
-				RuleFor(x => x.LastName).NotEmpty();
+				RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
 				RuleFor(x => x.FirstName).NotEmpty().WithMessage("Please specify a first name");
 				RuleFor(x => x.Company).NotNull();
 				RuleFor(x => x.Discount).NotEqual(0).When(x => x.HasDiscount);

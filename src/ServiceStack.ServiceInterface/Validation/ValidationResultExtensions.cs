@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceInterface.Validation
         {
             var validationResult = new SerializableValidationResult();
             foreach (var error in result.Errors)
-                validationResult.Errors.Add(new SerializableValidationError(error.ErrorMessage, error.PropertyName));
+                validationResult.Errors.Add(new SerializableValidationError(error.ErrorCode, error.PropertyName, error.ErrorMessage));
 
             return validationResult;
         }

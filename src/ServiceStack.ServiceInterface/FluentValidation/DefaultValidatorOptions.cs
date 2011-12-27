@@ -153,7 +153,19 @@ namespace ServiceStack.FluentValidation
 			});
 		}
 
-		
+        /// <summary>
+        /// Specifies a custom error code to use when validation fails
+        /// </summary>
+        /// <param name="rule">The current rule</param>
+        /// <param name="errorCode">The error code to use</param>
+        /// <returns></returns>
+        public static IRuleBuilderOptions<T, TProperty> WithErrorCode<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorCode)
+        {
+            return rule.Configure(config =>
+            {
+                config.CurrentValidator.ErrorCode = errorCode;
+            });
+        }
 
 		/// <summary>
 		/// Specifies a condition limiting when the validator should run. 

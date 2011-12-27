@@ -30,7 +30,7 @@ namespace ServiceStack.FluentValidation.Validators
 		public LengthValidator(int min, int max) : this(min, max, () => Messages.length_error) {
 		}
 
-		public LengthValidator(int min, int max, Expression<Func<string>> errorMessageResourceSelector) : base(errorMessageResourceSelector) {
+		public LengthValidator(int min, int max, Expression<Func<string>> errorMessageResourceSelector) : base(errorMessageResourceSelector, ValidationErrors.Length) {
 			Max = max;
 			Min = min;
 

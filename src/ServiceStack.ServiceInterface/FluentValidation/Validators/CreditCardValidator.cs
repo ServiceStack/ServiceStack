@@ -28,7 +28,7 @@ namespace ServiceStack.FluentValidation.Validators
 	public class CreditCardValidator : PropertyValidator {
 		// This logic was taken from the CreditCardAttribute in the ASP.NET MVC3 source.
 
-		public CreditCardValidator() : base(() => Messages.CreditCardError) {
+		public CreditCardValidator() : base(() => Messages.CreditCardError, ValidationErrors.CreditCard) {
 		}
 
 		protected override bool IsValid(PropertyValidatorContext context) {

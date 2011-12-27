@@ -24,11 +24,12 @@ namespace ServiceStack.FluentValidation.Validators
 	using Resources;
 
 	public class GreaterThanOrEqualValidator : AbstractComparisonValidator  {
-		public GreaterThanOrEqualValidator(IComparable value) : base(value, () => Messages.greaterthanorequal_error) {
+		public GreaterThanOrEqualValidator(IComparable value) : base(value, () => Messages.greaterthanorequal_error, ValidationErrors.GreaterThanOrEqual) {
 		}
 
 		public GreaterThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
-			: base(valueToCompareFunc, member, () => Messages.greaterthanorequal_error) {
+            : base(valueToCompareFunc, member, () => Messages.greaterthanorequal_error, ValidationErrors.GreaterThanOrEqual)
+        {
 		}
 
 		public override bool IsValid(IComparable value, IComparable valueToCompare) {

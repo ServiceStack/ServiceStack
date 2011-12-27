@@ -29,7 +29,7 @@ namespace ServiceStack.FluentValidation.Validators
 		readonly string expression;
 		readonly Regex regex;
 
-		public RegularExpressionValidator(string expression) : base(() => Messages.regex_error) {
+		public RegularExpressionValidator(string expression) : base(() => Messages.regex_error, ValidationErrors.RegularExpression) {
 			this.expression = expression;
 			regex = new Regex(expression);
 
