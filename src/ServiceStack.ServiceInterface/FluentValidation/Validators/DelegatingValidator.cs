@@ -38,6 +38,12 @@ namespace ServiceStack.FluentValidation.Validators
 			set { InnerValidator.ErrorMessageSource = value; }
 		}
 
+        public string ErrorCode
+        {
+            get { return InnerValidator.ErrorCode; }
+            set { InnerValidator.ErrorCode = value; }
+        }
+
 		public IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
 			if (condition(context.Instance)) {
 				return InnerValidator.Validate(context);
