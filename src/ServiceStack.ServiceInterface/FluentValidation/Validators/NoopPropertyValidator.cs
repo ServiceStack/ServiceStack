@@ -30,6 +30,12 @@ namespace ServiceStack.FluentValidation.Validators
 			set { }
 		}
 
+        public string ErrorCode
+        {
+            get { return null; }
+            set { }
+        }
+
 		public abstract IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);
 
 		public virtual ICollection<Func<object, object>> CustomMessageFormatArguments {

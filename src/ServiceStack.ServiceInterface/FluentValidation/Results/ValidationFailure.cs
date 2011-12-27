@@ -27,16 +27,17 @@ namespace ServiceStack.FluentValidation.Results
 		/// <summary>
 		/// Creates a new validation failure.
 		/// </summary>
-		public ValidationFailure(string propertyName, string error) : this(propertyName, error, null) {
+		public ValidationFailure(string propertyName, string error, string errorCode) : this(propertyName, error, errorCode, null) {
 		}
 
 		/// <summary>
 		/// Creates a new ValidationFailure.
 		/// </summary>
-		public ValidationFailure(string propertyName, string error, object attemptedValue) {
+		public ValidationFailure(string propertyName, string error, string errorCode, object attemptedValue) {
 			PropertyName = propertyName;
 			ErrorMessage = error;
 			AttemptedValue = attemptedValue;
+            ErrorCode = errorCode;
 		}
 
 		/// <summary>
@@ -48,6 +49,11 @@ namespace ServiceStack.FluentValidation.Results
 		/// The error message
 		/// </summary>
 		public string ErrorMessage { get; private set; }
+
+        /// <summary>
+        /// The error code
+        /// </summary>
+        public string ErrorCode { get; private set; }
 		
 		/// <summary>
 		/// The property value that caused the failure.

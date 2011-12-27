@@ -25,7 +25,7 @@ namespace ServiceStack.FluentValidation.Validators
     public class NotEmptyValidator : PropertyValidator, INotEmptyValidator {
 		readonly object defaultValueForType;
 
-		public NotEmptyValidator(object defaultValueForType) : base(() => Messages.notempty_error) {
+		public NotEmptyValidator(object defaultValueForType) : base(() => Messages.notempty_error, ValidationErrors.NotEmpty) {
 			this.defaultValueForType = defaultValueForType;
 		}
 

@@ -29,7 +29,7 @@ namespace ServiceStack.FluentValidation.Validators
 
 		private readonly Predicate predicate;
 
-		public PredicateValidator(Predicate predicate) : base(() => Messages.predicate_error) {
+		public PredicateValidator(Predicate predicate) : base(() => Messages.predicate_error, ValidationErrors.Predicate) {
 			predicate.Guard("A predicate must be specified.");
 			this.predicate = predicate;
 		}

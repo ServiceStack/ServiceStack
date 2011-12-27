@@ -23,7 +23,7 @@ namespace ServiceStack.FluentValidation.Validators
 	using Resources;
 
 	public class ExclusiveBetweenValidator : PropertyValidator, IBetweenValidator {
-		public ExclusiveBetweenValidator(IComparable from, IComparable to) : base(() => Messages.exclusivebetween_error) {
+		public ExclusiveBetweenValidator(IComparable from, IComparable to) : base(() => Messages.exclusivebetween_error, ValidationErrors.ExclusiveBetween) {
 			To = to;
 			From = from;
 
