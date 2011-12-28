@@ -12,11 +12,11 @@ namespace ServiceStack.ServiceInterface.Validation
     {
         public static void Throw(this ValidationResult result)
         {
-            var validationResult = result.AsSerializable();
+            var validationResult = result.ToErrorResult();
             throw new ValidationError(validationResult);
         }
 
-        public static ValidationErrorResult AsSerializable(this ValidationResult result)
+        public static ValidationErrorResult ToErrorResult(this ValidationResult result)
         {
             var validationResult = new ValidationErrorResult();
             foreach (var error in result.Errors)

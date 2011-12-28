@@ -5,6 +5,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -19,6 +20,18 @@ namespace ServiceStack.ServiceInterface
 		/// Naming convention for the request's Response DTO
 		/// </summary>
 		public const string ResponseDtoSuffix = "Response";
+
+		public static object CreateErrorResponse<TRequest>(TRequest request, ValidationErrorResult validationError)
+		{
+			var responseStatus = ResponseStatusTranslator.Instance.Parse(validationError);
+			
+			var errorResponse = CreateErrorResponse(
+				request,
+				new ValidationError(validationError),
+				responseStatus);
+			
+			return errorResponse;
+		}
 
 		public static object CreateErrorResponse<TRequest>(TRequest request, Exception ex, ResponseStatus responseStatus)
 		{

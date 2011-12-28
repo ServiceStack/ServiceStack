@@ -133,7 +133,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			var validationResult = validator.Validate(
 			new ValidationContext(request, null, new MultiRuleSetValidatorSelector(httpMethod)));
 
-			var responseStatus = ResponseStatusTranslator.Instance.Parse(validationResult.AsSerializable());
+			var responseStatus = ResponseStatusTranslator.Instance.Parse(validationResult.ToErrorResult());
 
 			var errorFields = responseStatus.Errors;
 			return errorFields ?? new List<ResponseError>();
@@ -313,15 +313,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
 		public void Post_ValidRequest_succeeds(IServiceClient client)
 		{
-			try
-			{
-				var response = client.Send<CustomersResponse>(validRequest);
-				Assert.That(response.ResponseStatus, Is.Null);
-			}
-			catch (WebServiceException ex)
-			{
-				throw ex;
-			}
+			var response = client.Send<CustomersResponse>(validRequest);
+			Assert.That(response.ResponseStatus, Is.Null);
 		}
 
 	}

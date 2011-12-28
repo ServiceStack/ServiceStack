@@ -209,7 +209,7 @@
     </Compile>
     <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />
     <Compile Include="FluentValidation\ValidationErrors.cs" />
-    <Compile Include="Validation\ValidationFilter.cs" />
+    <Compile Include="Validation\ValidationFilters.cs" />
     <Compile Include="Validation\ValidationFeature.cs" />
     <Compile Include="Validation\ValidationResultExtensions.cs" />
     <Compile Include="Validation\ValidatorCache.cs" />

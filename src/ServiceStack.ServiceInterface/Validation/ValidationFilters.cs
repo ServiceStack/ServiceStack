@@ -1,16 +1,12 @@
-﻿using System;
-using ServiceStack.ServiceHost;
+﻿using ServiceStack.ServiceHost;
 using ServiceStack.FluentValidation;
-using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.Validation;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface.Validation
 {
-	public class ValidationFilter
+	public class ValidationFilters
 	{
-		public void ValidateRequest(IHttpRequest req, IHttpResponse res, object requestDto)
+		public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
 			var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
 			if (validator != null)
@@ -20,13 +16,9 @@ namespace ServiceStack.ServiceInterface.Validation
 					new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)));
 
 				if (validationResult.IsValid) return;
-				
-				var responseStatus = ResponseStatusTranslator.Instance.Parse(validationResult.AsSerializable());
 
 				var errorResponse = ServiceUtils.CreateErrorResponse(
-					requestDto, 
-					new ValidationError(validationResult.AsSerializable()),
-					responseStatus);
+					requestDto, validationResult.ToErrorResult());
 
 				res.WriteToResponse(req, errorResponse);
 			}

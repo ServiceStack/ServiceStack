@@ -14,8 +14,8 @@ namespace ServiceStack.ServiceInterface.Validation
 	{
 		public static void Init(IAppHost appHost)
 		{
-			var filter = new ValidationFilter();
-			appHost.RequestFilters.Add(filter.ValidateRequest);
+			var filter = new ValidationFilters();
+			appHost.RequestFilters.Add(filter.RequestFilter);
 		}
 
 		public static void RegisterValidators(this Container container, params Assembly[] assemblies)

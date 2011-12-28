@@ -4,6 +4,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -11,6 +12,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	[RestService("/customers/{Id}")]
 	public class Customers
 	{
+		public int Id { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string Company { get; set; }
@@ -24,8 +26,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	{
 		public CustomersValidator()
 		{
+			RuleFor(x => x.Id).NotEqual(default(int));
+
 			RuleSet(ApplyTo.Post | ApplyTo.Put, () => {
-				RuleFor(x => x.LastName).NotEmpty();
+				RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
 				RuleFor(x => x.FirstName).NotEmpty().WithMessage("Please specify a first name");
 				RuleFor(x => x.Company).NotNull();
 				RuleFor(x => x.Discount).NotEqual(0).When(x => x.HasDiscount);
@@ -38,13 +42,15 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		private bool BeAValidPostcode(string postcode)
 		{
-			return UsPostCodeRegEx.IsMatch(postcode);
+			return !string.IsNullOrEmpty(postcode) && UsPostCodeRegEx.IsMatch(postcode);
 		}
 	}
 
 	public class CustomersResponse
 	{
 		public Customers Result { get; set; }
+
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 
 	public class CustomerService : RestServiceBase<Customers>
