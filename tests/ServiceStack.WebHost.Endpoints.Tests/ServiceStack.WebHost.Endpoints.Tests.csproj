@@ -123,7 +123,7 @@
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="CompressionTests.cs" />
-    <Compile Include="CustomerService.cs" />
+    <Compile Include="CustomerServiceValidationTests.cs" />
     <Compile Include="HttpResultContentTypeTests.cs" />
     <Compile Include="RemoteEndDropsConnectionTests.cs" />
     <Compile Include="IocServiceTests.cs" />
