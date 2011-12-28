@@ -21,14 +21,14 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 	/// Translates a ValidationResult into a ResponseStatus DTO fragment.
 	/// </summary>
 	public class ResponseStatusTranslator 
-		: ITranslator<ResponseStatus, SerializableValidationResult>
+		: ITranslator<ResponseStatus, ValidationErrorResult>
 	{
 		public static readonly ResponseStatusTranslator Instance 
 			= new ResponseStatusTranslator();
 
 		public ResponseStatus Parse(Exception exception)
 		{
-			var validationException = exception as SerializableValidationException;
+			var validationException = exception as ValidationError;
 			if (validationException != null)
 			{
 				return this.Parse(validationException); 
@@ -40,12 +40,12 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 				: CreateErrorResponse(exception.GetType().Name, exception.Message);
 		}
 
-		public ResponseStatus Parse(SerializableValidationException validationException)
+		public ResponseStatus Parse(ValidationError validationException)
 		{
 			return CreateErrorResponse(validationException.ErrorCode, validationException.Message, validationException.Violations);
 		}
 
-		public ResponseStatus Parse(SerializableValidationResult validationResult)
+		public ResponseStatus Parse(ValidationErrorResult validationResult)
 		{
 			return validationResult.IsValid
 				? CreateSuccessResponse(validationResult.SuccessMessage)
@@ -78,7 +78,7 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		/// <param name="errorMessage">The error message.</param>
 		/// <param name="validationErrors">The validation errors.</param>
 		/// <returns></returns>
-		public static ResponseStatus CreateErrorResponse(string errorCode, string errorMessage, IEnumerable<SerializableValidationError> validationErrors)
+		public static ResponseStatus CreateErrorResponse(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors)
 		{
 			var to = new ResponseStatus
 			{

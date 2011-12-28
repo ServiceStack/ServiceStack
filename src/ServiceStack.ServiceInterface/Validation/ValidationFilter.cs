@@ -23,10 +23,13 @@ namespace ServiceStack.ServiceInterface.Validation
 				var validationResult = validator.Validate(
 					new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)));
 
+				if (validationResult.IsValid) return;
+				
 				var responseStatus = ResponseStatusTranslator.Instance.Parse(validationResult.AsSerializable());
 
-				var errorResponse = ServiceUtils.CreateErrorResponse(requestDto,
-					new SerializableValidationException(validationResult.AsSerializable()),
+				var errorResponse = ServiceUtils.CreateErrorResponse(
+					requestDto, 
+					new ValidationError(validationResult.AsSerializable()),
 					responseStatus);
 
 				res.WriteToResponse(req, errorResponse);

@@ -160,7 +160,9 @@ namespace ServiceStack.FluentValidation
 
 		public void RuleSet(ApplyTo appliesTo, Action action)
 		{
-			var httpMethods = appliesTo.ToString().Split(',').SafeConvertAll(x => x.Trim());
+			var httpMethods = appliesTo.ToString().Split(',')
+				.SafeConvertAll(x => x.Trim().ToUpper());
+
 			foreach (var httpMethod in httpMethods)
 			{
 				RuleSet(httpMethod, action);

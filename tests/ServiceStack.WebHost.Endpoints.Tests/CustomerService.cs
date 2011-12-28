@@ -1,4 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using Funq;
@@ -23,6 +27,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	[RestService("/customers/{Id}")]
 	public class Customers
 	{
+		public int Id { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string Company { get; set; }
@@ -36,6 +41,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	{
 		public CustomersValidator()
 		{
+			RuleFor(x => x.Id).NotEqual(default(int));
+
 			RuleSet(ApplyTo.Post | ApplyTo.Put, () => {
 				RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
 				RuleFor(x => x.FirstName).NotEmpty().WithMessage("Please specify a first name");
@@ -50,14 +57,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		private bool BeAValidPostcode(string postcode)
 		{
-			return UsPostCodeRegEx.IsMatch(postcode);
+			return !string.IsNullOrEmpty(postcode) && UsPostCodeRegEx.IsMatch(postcode);
 		}
 	}
 
 	public class CustomersResponse
 	{
 		public Customers Result { get; set; }
-		
+
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
@@ -119,20 +126,197 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			appHost.Dispose();
 		}
 
-		protected IServiceClient CreateNewServiceClient()
+		private static List<ResponseError> GetValidationFieldErrors(string httpMethod, Customers request)
+		{
+			var validator = (IValidator)new CustomersValidator();
+
+			var validationResult = validator.Validate(
+			new ValidationContext(request, null, new MultiRuleSetValidatorSelector(httpMethod)));
+
+			var responseStatus = ResponseStatusTranslator.Instance.Parse(validationResult.AsSerializable());
+
+			var errorFields = responseStatus.Errors;
+			return errorFields ?? new List<ResponseError>();
+		}
+
+		private string[] ExpectedPostErrorFields = new[] {
+			"Id",
+			"LastName",
+			"FirstName",
+			"Company",
+			"Address",
+			"Postcode",
+		};
+
+		private string[] ExpectedPostErrorCodes = new[] {
+			"NotEqual",
+			"ShouldNotBeEmpty",
+			"NotEmpty",
+			"NotNull",
+			"Length",
+			"Predicate",
+		};
+
+		Customers validRequest;
+
+		[SetUp]
+		public void SetUp()
+		{
+			validRequest = new Customers {
+				Id = 1,
+				FirstName = "FirstName",
+				LastName = "LastName",
+				Address = "12345 Address St, New York",
+				Company = "Company",
+				Discount = 10,
+				HasDiscount = true,
+				Postcode = "11215",
+			};
+		}
+
+		[Test]
+		public void Validates_ValidRequest_request_on_Post()
+		{
+			var errorFields = GetValidationFieldErrors(HttpMethod.Post, validRequest);
+			Assert.That(errorFields.Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Validates_ValidRequest_request_on_Get()
+		{
+			var errorFields = GetValidationFieldErrors(HttpMethod.Get, validRequest);
+			Assert.That(errorFields.Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Validates_Conditional_Request_request_on_Post()
+		{
+			validRequest.Discount = 0;
+			validRequest.HasDiscount = true;
+
+			var errorFields = GetValidationFieldErrors(HttpMethod.Post, validRequest);
+			Assert.That(errorFields.Count, Is.EqualTo(1));
+			Assert.That(errorFields[0].FieldName, Is.EqualTo("Discount"));
+		}
+
+		[Test]
+		public void Validates_empty_request_on_Post()
+		{
+			var request = new Customers();
+			var errorFields = GetValidationFieldErrors(HttpMethod.Post, request);
+
+			var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
+			var fieldErrorCodes = errorFields.Select(x => x.ErrorCode).ToArray();
+
+			Assert.That(errorFields.Count, Is.EqualTo(ExpectedPostErrorFields.Length));
+			Assert.That(fieldNames, Is.EquivalentTo(ExpectedPostErrorFields));
+			Assert.That(fieldErrorCodes, Is.EquivalentTo(ExpectedPostErrorCodes));
+		}
+
+		[Test]
+		public void Validates_empty_request_on_Put()
+		{
+			var request = new Customers();
+			var errorFields = GetValidationFieldErrors(HttpMethod.Put, request);
+
+			var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
+			var fieldErrorCodes = errorFields.Select(x => x.ErrorCode).ToArray();
+
+			Assert.That(errorFields.Count, Is.EqualTo(ExpectedPostErrorFields.Length));
+			Assert.That(fieldNames, Is.EquivalentTo(ExpectedPostErrorFields));
+			Assert.That(fieldErrorCodes, Is.EquivalentTo(ExpectedPostErrorCodes));
+		}
+
+		[Test]
+		public void Validates_empty_request_on_Get()
+		{
+			var request = new Customers();
+			var errorFields = GetValidationFieldErrors(HttpMethod.Get, request);
+
+			Assert.That(errorFields.Count, Is.EqualTo(1));
+			Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
+			Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
+		}
+
+		[Test]
+		public void Validates_empty_request_on_Delete()
+		{
+			var request = new Customers();
+			var errorFields = GetValidationFieldErrors(HttpMethod.Delete, request);
+
+			Assert.That(errorFields.Count, Is.EqualTo(1));
+			Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
+			Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
+		}
+
+		protected static IServiceClient UnitTestServiceClient()
 		{
 			EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).Assembly);
 			return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
 		}
 
-		[Test]
-		public void UnitTest_Post_empty_request_throws_validation_exception()
+		public static IEnumerable ServiceClients
+		{
+			get
+			{
+				yield return UnitTestServiceClient();
+				yield return new JsonServiceClient(ListeningOn);
+				yield return new JsvServiceClient(ListeningOn);
+				yield return new XmlServiceClient(ListeningOn);
+			}
+		}
+
+
+		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
+		public void Post_empty_request_throws_validation_exception(IServiceClient client)
 		{
 			try
 			{
-				var client = CreateNewServiceClient();
-				var response = client.Send<Customers>(new Customers());
+				var response = client.Send<CustomersResponse>(new Customers());
 				Assert.Fail("Should throw Validation Exception");
+			}
+			catch (WebServiceException ex)
+			{
+				var response = (CustomersResponse)ex.ResponseDto;
+
+				var errorFields = response.ResponseStatus.Errors;
+				var fieldNames = errorFields.Select(x => x.FieldName).ToArray();
+				var fieldErrorCodes = errorFields.Select(x => x.ErrorCode).ToArray();
+
+				Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+				Assert.That(errorFields.Count, Is.EqualTo(ExpectedPostErrorFields.Length));
+				Assert.That(fieldNames, Is.EquivalentTo(ExpectedPostErrorFields));
+				Assert.That(fieldErrorCodes, Is.EquivalentTo(ExpectedPostErrorCodes));
+			}
+		}
+
+		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
+		public void Get_empty_request_throws_validation_exception(IRestClient client)
+		{
+			try
+			{
+				var response = client.Get<CustomersResponse>("Customers");
+				Assert.Fail("Should throw Validation Exception");
+			}
+			catch (WebServiceException ex)
+			{
+				var response = (CustomersResponse)ex.ResponseDto;
+
+				var errorFields = response.ResponseStatus.Errors;
+				Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+				Assert.That(errorFields.Count, Is.EqualTo(1));
+				Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
+				Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
+			}
+		}
+
+		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
+		public void Post_ValidRequest_succeeds(IServiceClient client)
+		{
+			try
+			{
+				var response = client.Send<CustomersResponse>(validRequest);
+				Assert.That(response.ResponseStatus, Is.Null);
 			}
 			catch (WebServiceException ex)
 			{
@@ -140,19 +324,5 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			}
 		}
 
-		[Test]
-		public void Json_Post_empty_request_throws_validation_exception()
-		{
-			try
-			{
-				var client = new JsonServiceClient(ListeningOn);
-				var response = client.Send<Customers>(new Customers());
-				Assert.Fail("Should throw Validation Exception");
-			}
-			catch (WebServiceException ex)
-			{
-				throw ex;
-			}
-		}
 	}
 }

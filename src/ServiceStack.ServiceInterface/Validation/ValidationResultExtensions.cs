@@ -13,14 +13,14 @@ namespace ServiceStack.ServiceInterface.Validation
         public static void Throw(this ValidationResult result)
         {
             var validationResult = result.AsSerializable();
-            throw new SerializableValidationException(validationResult);
+            throw new ValidationError(validationResult);
         }
 
-        public static SerializableValidationResult AsSerializable(this ValidationResult result)
+        public static ValidationErrorResult AsSerializable(this ValidationResult result)
         {
-            var validationResult = new SerializableValidationResult();
+            var validationResult = new ValidationErrorResult();
             foreach (var error in result.Errors)
-                validationResult.Errors.Add(new SerializableValidationError(error.ErrorCode, error.PropertyName, error.ErrorMessage));
+                validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage));
 
             return validationResult;
         }

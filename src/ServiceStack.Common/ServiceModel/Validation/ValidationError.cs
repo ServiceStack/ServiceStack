@@ -9,17 +9,17 @@ namespace ServiceStack.Validation
     /// The exception which is thrown when a validation error occured.
     /// This validation is serialized in a extra clean and human-readable way by ServiceStack.
     /// </summary>
-	public class SerializableValidationException : Exception
+	public class ValidationError : ArgumentException
 	{
 		private readonly string errorCode;
 		public string ErrorMessage { get; private set; }
 
-		public SerializableValidationException(string errorCode)
+		public ValidationError(string errorCode)
 			: this(errorCode, errorCode.SplitCamelCase())
 		{
 		}
 
-		public SerializableValidationException(SerializableValidationResult validationResult)
+		public ValidationError(ValidationErrorResult validationResult)
 			: base(validationResult.ErrorMessage)
 		{
 			this.errorCode = validationResult.ErrorCode;
@@ -27,18 +27,18 @@ namespace ServiceStack.Validation
 			this.Violations = validationResult.Errors;
 		}
 
-		public SerializableValidationException(SerializableValidationError validationError)
+		public ValidationError(ValidationErrorField validationError)
 			: this(validationError.ErrorCode, validationError.ErrorMessage)
 		{
 			this.Violations.Add(validationError);
 		}
 
-		public SerializableValidationException(string errorCode, string errorMessage)
+		public ValidationError(string errorCode, string errorMessage)
 			: base(errorMessage)
 		{
 			this.errorCode = errorCode;
 			this.ErrorMessage = errorMessage;
-			this.Violations = new List<SerializableValidationError>();
+			this.Violations = new List<ValidationErrorField>();
 		}
 
 		/// <summary>
@@ -82,7 +82,7 @@ namespace ServiceStack.Validation
 			}
 		}
 
-		public IList<SerializableValidationError> Violations { get; private set; }
+		public IList<ValidationErrorField> Violations { get; private set; }
 
 		/// <summary>
 		/// Used if we need to serialize this exception to XML
@@ -92,7 +92,7 @@ namespace ServiceStack.Validation
 		{
 			var sb = new StringBuilder();
 			sb.Append("<ValidationException>");
-			foreach (SerializableValidationError error in this.Violations)
+			foreach (ValidationErrorField error in this.Violations)
 			{
 				sb.Append("<ValidationError>")
 					.AppendFormat("<Code>{0}</Code>", error.ErrorCode)
@@ -104,47 +104,47 @@ namespace ServiceStack.Validation
 			return sb.ToString();
 		}
 
-		public static SerializableValidationException CreateException(Enum errorCode)
+		public static ValidationError CreateException(Enum errorCode)
 		{
-			return new SerializableValidationException(errorCode.ToString());
+			return new ValidationError(errorCode.ToString());
 		}
 
-		public static SerializableValidationException CreateException(Enum errorCode, string errorMessage)
+		public static ValidationError CreateException(Enum errorCode, string errorMessage)
 		{
-			return new SerializableValidationException(errorCode.ToString(), errorMessage);
+			return new ValidationError(errorCode.ToString(), errorMessage);
 		}
 
-		public static SerializableValidationException CreateException(Enum errorCode, string errorMessage, string fieldName)
+		public static ValidationError CreateException(Enum errorCode, string errorMessage, string fieldName)
 		{
 			return CreateException(errorCode.ToString(), errorMessage, fieldName);
 		}
 
-		public static SerializableValidationException CreateException(string errorCode)
+		public static ValidationError CreateException(string errorCode)
 		{
-			return new SerializableValidationException(errorCode);
+			return new ValidationError(errorCode);
 		}
 
-		public static SerializableValidationException CreateException(string errorCode, string errorMessage)
+		public static ValidationError CreateException(string errorCode, string errorMessage)
 		{
-			return new SerializableValidationException(errorCode, errorMessage);
+			return new ValidationError(errorCode, errorMessage);
 		}
 
-		public static SerializableValidationException CreateException(string errorCode, string errorMessage, string fieldName)
+		public static ValidationError CreateException(string errorCode, string errorMessage, string fieldName)
 		{
-			var error = new SerializableValidationError(errorCode, fieldName, errorMessage);
-			return new SerializableValidationException(new SerializableValidationResult(new List<SerializableValidationError> { error }));
+			var error = new ValidationErrorField(errorCode, fieldName, errorMessage);
+			return new ValidationError(new ValidationErrorResult(new List<ValidationErrorField> { error }));
 		}
 
-		public static SerializableValidationException CreateException(SerializableValidationError error)
+		public static ValidationError CreateException(ValidationErrorField error)
 		{
-			return new SerializableValidationException(error);
+			return new ValidationError(error);
 		}
 
-		public static void ThrowIfNotValid(SerializableValidationResult validationResult)
+		public static void ThrowIfNotValid(ValidationErrorResult validationResult)
 		{
 			if (!validationResult.IsValid)
 			{
-				throw new SerializableValidationException(validationResult);
+				throw new ValidationError(validationResult);
 			}
 		}
 	}

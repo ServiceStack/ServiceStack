@@ -173,9 +173,9 @@
     <Compile Include="ServiceModel\Serialization\XmlSerializableDeserializer.cs" />
     <Compile Include="ServiceModel\Serialization\XmlSerializableSerializer.cs" />
     <Compile Include="ServiceModel\Support\XmlSerializableWrapper.cs" />
-    <Compile Include="ServiceModel\Validation\SerializableValidationError.cs" />
-    <Compile Include="ServiceModel\Validation\SerializableValidationException.cs" />
-    <Compile Include="ServiceModel\Validation\SerializableValidationResult.cs" />
+    <Compile Include="ServiceModel\Validation\ValidationErrorField.cs" />
+    <Compile Include="ServiceModel\Validation\ValidationError.cs" />
+    <Compile Include="ServiceModel\Validation\ValidationErrorResult.cs" />
     <Compile Include="ServiceModel\XLinqExtensions.cs" />
     <Compile Include="Reflection\StaticAccessors.cs" />
     <Compile Include="Support\InMemoryLogFactory.cs" />
