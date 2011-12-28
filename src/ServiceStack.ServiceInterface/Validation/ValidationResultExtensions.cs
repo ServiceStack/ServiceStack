@@ -10,12 +10,11 @@ namespace ServiceStack.ServiceInterface.Validation
 {
     public static class ValidationResultExtensions
     {
-        public static void Throw(this ValidationResult result)
-        {
-            var validationResult = result.ToErrorResult();
-            throw new ValidationError(validationResult);
-        }
-
+        /// <summary>
+        /// Converts the validation result to an error result which will be serialized by ServiceStack in a clean and human-readable way.
+        /// </summary>
+        /// <param name="result">The validation result</param>
+        /// <returns></returns>
         public static ValidationErrorResult ToErrorResult(this ValidationResult result)
         {
             var validationResult = new ValidationErrorResult();
@@ -23,6 +22,17 @@ namespace ServiceStack.ServiceInterface.Validation
                 validationResult.Errors.Add(new ValidationErrorField(error.ErrorCode, error.PropertyName, error.ErrorMessage));
 
             return validationResult;
+        }
+
+        /// <summary>
+        /// Converts the validation result to an error exception which will be serialized by ServiceStack in a clean and human-readable way
+        /// if the returned exception is thrown.
+        /// </summary>
+        /// <param name="result">The validation result</param>
+        /// <returns></returns>
+        public static ValidationError ToException(this ValidationResult result)
+        {
+            return new ValidationError(result.ToErrorResult());
         }
     }
 }
