@@ -25,39 +25,49 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			ServiceManager.Execute(request);
 		}
 
-	    public void SendOneWay(string relativeOrAbsoluteUrl, object request)
-	    {
-            ServiceManager.Execute(request);
-        }
+		public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+		{
+			ServiceManager.Execute(request);
+		}
 
-	    private bool ApplyRequestFilters(object request)
+		private bool ApplyRequestFilters<TResponse>(object request)
 		{
 			if (EndpointHost.ApplyRequestFilters(httpReq, httpRes, request))
 			{
-				if (httpRes.StatusCode >= 400)
-				{
-					throw new WebServiceException("WebServiceException, StatusCode: " + httpRes.StatusCode)
-					{
-						StatusCode = httpRes.StatusCode,
-					};
-				}
+				ThrowIfError<TResponse>(httpRes);
 				return true;
 			}
 			return false;
 		}
 
-		private bool ApplyResponseFilters(object response)
+		private void ThrowIfError<TResponse>(HttpResponseMock httpRes)
+		{
+			if (httpRes.StatusCode >= 400)
+			{
+				var webEx = new WebServiceException("WebServiceException, StatusCode: " + httpRes.StatusCode) {
+					StatusCode = httpRes.StatusCode,
+					StatusDescription = httpRes.StatusDescription,
+				};
+
+				try
+				{
+					var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(httpReq.ResponseContentType);
+					webEx.ResponseDto = deserializer(typeof(TResponse), httpRes.OutputStream);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex);
+				}
+
+				throw webEx;
+			}
+		}
+
+		private bool ApplyResponseFilters<TResponse>(object response)
 		{
 			if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
 			{
-				if (httpRes.StatusCode >= 400)
-				{
-					throw new WebServiceException("WebServiceException, StatusCode: " + httpRes.StatusCode)
-					{
-						ResponseDto = response,
-						StatusCode = httpRes.StatusCode,
-					};
-				}
+				ThrowIfError<TResponse>(httpRes);
 				return true;
 			}
 			return false;
@@ -65,11 +75,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
 		public TResponse Send<TResponse>(object request)
 		{
-			if (ApplyRequestFilters(request)) return default(TResponse);
+			if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
 			var response = ServiceManager.Execute(request);
 
-			if (ApplyResponseFilters(response)) return (TResponse)response;
+			if (ApplyResponseFilters<TResponse>(response)) return (TResponse)response;
 
 			return (TResponse)response;
 		}
@@ -86,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			{
 				try
 				{
-					if (ApplyRequestFilters(request))
+					if (ApplyRequestFilters<TResponse>(request))
 					{
 						onSuccess(default(TResponse));
 						return;
@@ -102,7 +112,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
 				try
 				{
-					if (ApplyResponseFilters(request))
+					if (ApplyResponseFilters<TResponse>(request))
 					{
 						onSuccess(response);
 						return;

@@ -94,6 +94,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 		public void Close()
 		{
 			this.IsClosed = true;
+			OutputStream.Position = 0;
 		}
 
 		public void Flush()

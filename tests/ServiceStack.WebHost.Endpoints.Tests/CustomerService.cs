@@ -8,6 +8,7 @@ using ServiceStack.FluentValidation;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -56,6 +57,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	public class CustomersResponse
 	{
 		public Customers Result { get; set; }
+		
+		public ResponseStatus ResponseStatus { get; set; }
 	}
 
 	public class CustomerService : RestServiceBase<Customers>
