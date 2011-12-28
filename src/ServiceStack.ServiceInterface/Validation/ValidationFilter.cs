@@ -12,11 +12,7 @@ namespace ServiceStack.ServiceInterface.Validation
 	{
 		public void ValidateRequest(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
-			var validatorType = typeof(IValidator<>).MakeGenericType(requestDto.GetType());
-			var resolver = typeof(IHttpRequest).GetMethod("TryResolve")
-				.MakeGenericMethod(validatorType);
-
-			var validator = (IValidator)resolver.Invoke(req, new object[0]);
+			var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
 			if (validator != null)
 			{
 				string ruleSet = req.HttpMethod;
