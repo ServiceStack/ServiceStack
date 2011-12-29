@@ -37,18 +37,28 @@ namespace ServiceStack.ServiceInterface.Validation
 				foreach (var validator in assembly.GetTypes()
 					.Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
 				{
-					var baseType = validator.BaseType;
-					while (!baseType.IsGenericType)
-					{
-						baseType = baseType.BaseType;
-					}
-
-					var dtoType = baseType.GetGenericArguments()[0];
-					var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
-
-					autoWire.RegisterType(validator, validatorType);
+					RegisterValidator(autoWire, validator);
 				}
 			}
+		}
+
+		public static void RegisterValidator(this Container container, Type validator)
+		{
+			RegisterValidator(new ExpressionTypeFunqContainer(container), validator);
+		}
+
+		private static void RegisterValidator(ExpressionTypeFunqContainer autoWire, Type validator)
+		{
+			var baseType = validator.BaseType;
+			while (!baseType.IsGenericType)
+			{
+				baseType = baseType.BaseType;
+			}
+
+			var dtoType = baseType.GetGenericArguments()[0];
+			var validatorType = typeof (IValidator<>).MakeGenericType(dtoType);
+
+			autoWire.RegisterType(validator, validatorType);
 		}
 	}
 }
