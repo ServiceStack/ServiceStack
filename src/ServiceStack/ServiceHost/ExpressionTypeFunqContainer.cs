@@ -34,17 +34,13 @@ namespace ServiceStack.ServiceHost
 		{
 			return type.GetConstructors()
 				.OrderByDescending(x => x.GetParameters().Length)
-				.Where(ctor => !ctor.IsStatic)
-				.First();
+				.First(ctor => !ctor.IsStatic);
 		}
-
 
 		public Func<Container, TService> AutoWire<TService>(ParameterExpression lambdaParam)
 		{
-			var serviceType = typeof(TService);
-
 			var propertyResolveFn = typeof(Container).GetMethod("TryResolve", new Type[0]);
-			var memberBindings = serviceType.GetPublicProperties()
+			var memberBindings = typeof(TService).GetPublicProperties()
 				.Where(x => x.CanWrite)
 				.Select(x =>
 					Expression.Bind
@@ -59,7 +55,7 @@ namespace ServiceStack.ServiceHost
 				(
 					Expression.MemberInit
 					(
-						ConstrcutorExpression(ctorResolveFn, serviceType, lambdaParam),
+						ConstrcutorExpression(ctorResolveFn, typeof(TService), lambdaParam),
 						memberBindings
 					),
 					lambdaParam
@@ -91,8 +87,31 @@ namespace ServiceStack.ServiceHost
 
 			var serviceFactory = AutoWire<T>(lambdaParam);
 
-			this.container.Register(serviceFactory)
-				.ReusedWithin(this.Scope);
+			this.container.Register(serviceFactory).ReusedWithin(this.Scope);
+		}
+
+		public void RegisterAs<T, TAs>() 
+			where T : TAs 
+		{
+			var lambdaParam = Expression.Parameter(typeof(Container), "lambdaContainerParam");
+
+			var serviceFactory = AutoWire<T>(lambdaParam);
+
+			Func<Container, TAs> fn = c => serviceFactory(c);
+
+			this.container.Register(fn).ReusedWithin(this.Scope);
+		}
+
+		public void RegisterType(Type serviceType, Type inFunqAsType)
+		{
+			if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
+				return;
+
+			var methodInfo = GetType().GetMethod("RegisterAs", Type.EmptyTypes);
+			var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType, inFunqAsType });
+			registerMethodInfo.Invoke(this, new object[0]);
+
+			GenerateServiceFactory(serviceType);
 		}
 
 		public void RegisterTypes(params Type[] serviceTypes)
@@ -108,7 +127,7 @@ namespace ServiceStack.ServiceHost
 				if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
 					continue;
 
-				var methodInfo = GetType().GetMethod("Register", new Type[0]);
+				var methodInfo = GetType().GetMethod("Register", Type.EmptyTypes);
 				var registerMethodInfo = methodInfo.MakeGenericMethod(new[] { serviceType });
 				registerMethodInfo.Invoke(this, new object[0]);
 

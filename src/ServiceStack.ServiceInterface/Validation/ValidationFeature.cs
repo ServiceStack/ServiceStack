@@ -20,6 +20,7 @@ namespace ServiceStack.ServiceInterface.Validation
 
 		public static void RegisterValidators(this Container container, params Assembly[] assemblies)
 		{
+			var autoWire = new ExpressionTypeFunqContainer(container);
 			foreach (var assembly in assemblies)
 			{
 				foreach (var validator in assembly.GetTypes()
@@ -34,14 +35,7 @@ namespace ServiceStack.ServiceInterface.Validation
 					var dtoType = baseType.GetGenericArguments()[0];
 					var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
 
-					var registerFn = typeof(Container)
-						.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-						.First(x => x.Name == "Register" 
-							&& x.ReturnType == typeof(void) && x.GetParameters().Length == 1)
-						.MakeGenericMethod(validatorType);
-
-					var instance = ReflectionExtensions.CreateInstance(validator);
-					registerFn.Invoke(container, new[] { instance });
+					autoWire.RegisterType(validator, validatorType);
 				}
 			}
 		}

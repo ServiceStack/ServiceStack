@@ -37,8 +37,25 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public bool HasDiscount { get; set; }
 	}
 
+	public interface IAddressValidator
+	{
+		bool ValidAddress(string address);
+	}
+
+	public class AddressValidator : IAddressValidator
+	{
+		public bool ValidAddress(string address)
+		{
+			return address != null
+				&& address.Length >= 20
+				&& address.Length <= 250;
+		}
+	}
+
 	public class CustomersValidator : AbstractValidator<Customers>
 	{
+		public IAddressValidator AddressValidator { get; set; }
+
 		public CustomersValidator()
 		{
 			RuleFor(x => x.Id).NotEqual(default(int));
@@ -48,7 +65,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 				RuleFor(x => x.FirstName).NotEmpty().WithMessage("Please specify a first name");
 				RuleFor(x => x.Company).NotNull();
 				RuleFor(x => x.Discount).NotEqual(0).When(x => x.HasDiscount);
-				RuleFor(x => x.Address).Length(20, 250);
+				RuleFor(x => x.Address).Must(x => AddressValidator.ValidAddress(x));
 				RuleFor(x => x.Postcode).Must(BeAValidPostcode).WithMessage("Please specify a valid postcode");
 			});
 		}
@@ -106,6 +123,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			public override void Configure(Container container)
 			{
 				ValidationFeature.Init(this);
+				container.Register<IAddressValidator>(new AddressValidator());
 				container.RegisterValidators(typeof(CustomersValidator).Assembly);
 			}
 		}
@@ -128,7 +146,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		private static List<ResponseError> GetValidationFieldErrors(string httpMethod, Customers request)
 		{
-			var validator = (IValidator)new CustomersValidator();
+			var validator = (IValidator)new CustomersValidator {
+				AddressValidator = new AddressValidator()
+			};
 
 			var validationResult = validator.Validate(
 			new ValidationContext(request, null, new MultiRuleSetValidatorSelector(httpMethod)));
@@ -153,7 +173,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			"ShouldNotBeEmpty",
 			"NotEmpty",
 			"NotNull",
-			"Length",
+			"Predicate",
 			"Predicate",
 		};
 

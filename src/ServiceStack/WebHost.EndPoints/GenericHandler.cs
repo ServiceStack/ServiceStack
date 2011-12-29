@@ -45,11 +45,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 			return DeserializeContentType(operationType, httpReq, HandlerContentType);
 		}
-        
-		//public StreamSerializerDelegate GetStreamSerializer(string contentType)
-		//{
-		//    return GetContentFilters().GetStreamSerializer(contentType);
-		//}
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{

@@ -1,13 +1,9 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.FluentValidation;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
