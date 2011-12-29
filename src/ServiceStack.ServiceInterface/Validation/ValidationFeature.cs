@@ -12,12 +12,23 @@ namespace ServiceStack.ServiceInterface.Validation
 {
 	public static class ValidationFeature
 	{
+        /// <summary>
+        /// Activate the validation mechanism, so every request DTO with an existing validator
+        /// will be validated.
+        /// </summary>
+        /// <param name="appHost">The app host</param>
 		public static void Init(IAppHost appHost)
 		{
 			var filter = new ValidationFilters();
 			appHost.RequestFilters.Add(filter.RequestFilter);
 		}
 
+        /// <summary>
+        /// Auto-scans the provided assemblies for a <see cref="IValidator"/>
+        /// and registers it in the provided IoC container.
+        /// </summary>
+        /// <param name="container">The IoC container</param>
+        /// <param name="assemblies">The assemblies to scan for a validator</param>
 		public static void RegisterValidators(this Container container, params Assembly[] assemblies)
 		{
 			var autoWire = new ExpressionTypeFunqContainer(container);
