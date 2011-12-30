@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Text;
 using NUnit.Framework;
-using RazorEngine;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Markdown;
+using ServiceStack.RazorEngine;
 using ServiceStack.ServiceHost.Tests.Formats;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor

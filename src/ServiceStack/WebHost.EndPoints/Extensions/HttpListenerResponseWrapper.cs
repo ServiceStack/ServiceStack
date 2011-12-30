@@ -33,16 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             set
             {
-				try
-				{
-					this.response.StatusDescription = value;
-
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex);
-					throw;
-				}
+				this.response.StatusDescription = value;
 			}
         }
 

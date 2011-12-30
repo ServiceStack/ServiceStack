@@ -1,4 +1,4 @@
-﻿using RazorEngine;
+﻿using ServiceStack.RazorEngine;
 using ServiceStack.ServiceHost.Tests.AppData;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using NUnit.Framework;
-using RazorEngine;
+using ServiceStack.RazorEngine;
 using ServiceStack.ServiceHost.Tests.Formats;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor

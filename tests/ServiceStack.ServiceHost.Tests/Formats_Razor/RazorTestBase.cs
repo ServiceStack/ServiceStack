@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using RazorEngine;
+using ServiceStack.RazorEngine;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {

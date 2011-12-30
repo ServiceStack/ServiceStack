@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using RazorEngine;
 using ServiceStack.Markdown;
+using ServiceStack.RazorEngine;
 using ServiceStack.ServiceHost.Tests.Formats;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
