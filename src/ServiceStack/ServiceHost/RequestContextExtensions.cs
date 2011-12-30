@@ -16,8 +16,7 @@ namespace ServiceStack.ServiceHost
 		public static object ToOptimizedResult<T>(this IRequestContext requestContext, T dto) 
 			where T : class
 		{
-			return ContentSerializer<T>.ToOptimizedResult(
-				requestContext.ResponseContentType, requestContext.CompressionType, dto);
+			return ContentSerializer<T>.ToOptimizedResult(requestContext, dto);
 		}
 
 		/// <summary>
