@@ -133,6 +133,7 @@
     <Compile Include="Formats\UseCaseTests.cs" />
     <Compile Include="Formats\ViewTests.cs" />
     <Compile Include="PerfTests.cs" />
+    <Compile Include="RequestContextExtensionsTest.cs" />
     <Compile Include="RestPathTests.cs" />
     <Compile Include="Routes\SimpleRestServices.cs" />
     <Compile Include="Routes\ServiceRoutesTests.cs" />

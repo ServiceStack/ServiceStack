@@ -72,8 +72,16 @@ namespace ServiceStack.CacheAccess.Providers
 			contentType.ThrowIfNull("MimeType");
 
 			var serializeCtx = new SerializationContext(contentType) { CompressionType = compressionType };
-			return ToCompressedBytes(ToSerializedString(result, serializeCtx), compressionType);
+            return ToCompressedBytes(result, serializeCtx);
 		}
+
+        public static byte[] ToCompressedBytes(object result, IRequestContext context)
+        {
+            result.ThrowIfNull("result");
+            context.ThrowIfNull("context");
+
+            return ToCompressedBytes(ToSerializedString(result, context), context.CompressionType);
+        }
 
 		public static byte[] ToCompressedBytes(string serializedResult, string compressionType)
 		{
@@ -134,13 +142,12 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 		}
 
-		public static object ToOptimizedResult(string contentType, string compressionType, T result)
+		public static object ToOptimizedResult(IRequestContext context, T result)
 		{
-			var serializeCtx = new SerializationContext(contentType) { CompressionType = compressionType };
-			return compressionType == null
-				? (object)ToSerializedString(result, serializeCtx)
-				: new CompressedResult(ToCompressedBytes(result, contentType, compressionType),
-					compressionType, contentType);
+			return context.CompressionType == null
+                ? (object)ToSerializedString(result, context)
+				: new CompressedResult(ToCompressedBytes(result, context),
+                    context.CompressionType, context.ContentType);
 		}
 
 	}
