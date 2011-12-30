@@ -13,7 +13,7 @@ namespace ServiceStack.CacheAccess.Providers
 		private ConcurrentDictionary<string, CacheEntry> memory;
 		private ConcurrentDictionary<string, int> counters;
 
-		public bool DontDispose { get; set; }
+		public bool FlushOnDispose { get; set; }
 
 		private class CacheEntry
 		{
@@ -129,7 +129,7 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public void Dispose()
 		{
-			if (DontDispose) return;
+			if (!FlushOnDispose) return;
 
 			this.memory = new ConcurrentDictionary<string, CacheEntry>();
 			this.counters = new ConcurrentDictionary<string, int>();

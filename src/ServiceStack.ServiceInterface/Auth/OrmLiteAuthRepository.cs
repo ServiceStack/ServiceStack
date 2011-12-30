@@ -101,7 +101,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			return false;
 		}
 
-		public void LoadUserAuth(IOAuthSession session, IOAuthTokens tokens)
+		public void LoadUserAuth(IAuthSession session, IOAuthTokens tokens)
 		{
 			session.ThrowIfNull("session");
 
@@ -109,7 +109,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			LoadUserAuth(session, userAuth);
 		}
 
-		private void LoadUserAuth(IOAuthSession session, UserAuth userAuth)
+		private void LoadUserAuth(IAuthSession session, UserAuth userAuth)
 		{
 			if (userAuth == null) return;
 
@@ -125,16 +125,16 @@ namespace ServiceStack.ServiceInterface.Auth
 			return dbFactory.Exec(dbCmd => dbCmd.GetByIdOrDefault<UserAuth>(userAuthId));
 		}
 
-		public void SaveUserAuth(IOAuthSession oAuthSession)
+		public void SaveUserAuth(IAuthSession authSession)
 		{
 			dbFactory.Exec(dbCmd => {
 				
-				var userAuth = !oAuthSession.UserAuthId.IsNullOrEmpty()
-					? dbCmd.GetByIdOrDefault<UserAuth>(oAuthSession.UserAuthId)
-					: oAuthSession.TranslateTo<UserAuth>();
+				var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
+					? dbCmd.GetByIdOrDefault<UserAuth>(authSession.UserAuthId)
+					: authSession.TranslateTo<UserAuth>();
 
-				if (userAuth.Id == default(int) && !oAuthSession.UserAuthId.IsNullOrEmpty())
-					userAuth.Id = int.Parse(oAuthSession.UserAuthId);
+				if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
+					userAuth.Id = int.Parse(authSession.UserAuthId);
 
 				dbCmd.Save(userAuth);
 			});
@@ -151,7 +151,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				dbCmd.Select<UserOAuthProvider>("UserAuthId = {0}", userAuthId));
 		}
 
-		public UserAuth GetUserAuth(IOAuthSession authSession, IOAuthTokens tokens)
+		public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
 		{
 			if (!authSession.UserAuthId.IsNullOrEmpty())
 			{
@@ -180,9 +180,9 @@ namespace ServiceStack.ServiceInterface.Auth
 			});
 		}
 
-		public string CreateOrMergeAuthSession(IOAuthSession oAuthSession, IOAuthTokens tokens)
+		public string CreateOrMergeAuthSession(IAuthSession authSession, IOAuthTokens tokens)
 		{
-			var userAuth = GetUserAuth(oAuthSession, tokens) ?? new UserAuth();
+			var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
 
 			return dbFactory.Exec(dbCmd => {
 				var oAuthProvider = dbCmd.FirstOrDefault<UserOAuthProvider>(

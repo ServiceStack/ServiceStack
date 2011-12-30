@@ -7,12 +7,12 @@ namespace ServiceStack.ServiceInterface.Auth
 		UserAuth CreateUserAuth(UserAuth newUser, string password);
 		UserAuth GetUserAuthByUserName(string userNameOrEmail);
 		bool TryAuthenticate(string userName, string password, out string userId);
-		void LoadUserAuth(IOAuthSession session, IOAuthTokens tokens);
+		void LoadUserAuth(IAuthSession session, IOAuthTokens tokens);
 		UserAuth GetUserAuth(string userAuthId);
-		void SaveUserAuth(IOAuthSession oAuthSession);
+		void SaveUserAuth(IAuthSession authSession);
 		void SaveUserAuth(UserAuth userAuth);
 		List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId);
-		UserAuth GetUserAuth(IOAuthSession authSession, IOAuthTokens tokens);
-		string CreateOrMergeAuthSession(IOAuthSession oAuthSession, IOAuthTokens tokens);
+		UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens);
+		string CreateOrMergeAuthSession(IAuthSession authSession, IOAuthTokens tokens);
 	}
 }

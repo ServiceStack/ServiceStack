@@ -3,9 +3,9 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
-	public class MockOAuthHttpGateway : IOAuthHttpGateway
+	public class MockAuthHttpGateway : IAuthHttpGateway
 	{
-		static MockOAuthHttpGateway()
+		static MockAuthHttpGateway()
 		{
 			Tokens = new OAuthTokens {
 				UserId = "623501766",

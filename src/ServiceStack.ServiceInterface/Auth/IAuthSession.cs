@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public interface IOAuthSession
+	public interface IAuthSession
 	{
 		string ReferrerUrl { get; set; }
 		string Id { get; set; }

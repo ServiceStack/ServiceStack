@@ -58,15 +58,15 @@ namespace ServiceStack.ServiceInterface.Auth
 		public static string DefaultOAuthProvider { get; private set; }
 		public static string DefaultOAuthRealm { get; private set; }
 		public static AuthConfig[] AuthConfigs { get; private set; }
-		public static Func<IOAuthSession> SessionFactory { get; private set; }
+		public static Func<IAuthSession> SessionFactory { get; private set; }
 		public static ValidateFn ValidateFn { get; set; }
 
 		public static string GetSessionKey(string sessionId)
 		{
-			return IdUtils.CreateUrn<IOAuthSession>(sessionId);
+			return IdUtils.CreateUrn<IAuthSession>(sessionId);
 		}
 
-		public static void Init(IAppHost appHost, Func<IOAuthSession> sessionFactory, params AuthConfig[] authConfigs)
+		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params AuthConfig[] authConfigs)
 		{
 			if (authConfigs.Length == 0)
 				throw new ArgumentNullException("authConfigs");

@@ -4,13 +4,13 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public interface IOAuthHttpGateway
+	public interface IAuthHttpGateway
 	{
 		string DownloadTwitterUserInfo(string twitterUserId);
 		string DownloadFacebookUserInfo(string facebookCode);
 	}
 
-	public class OAuthHttpGateway : IOAuthHttpGateway
+	public class AuthHttpGateway : IAuthHttpGateway
 	{
 		public const string TwitterUserUrl = "http://api.twitter.com/1/users/lookup.json?user_id={0}";
 

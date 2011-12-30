@@ -124,7 +124,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			return false;
 		}
 
-		public virtual void LoadUserAuth(IOAuthSession session, IOAuthTokens tokens)
+		public virtual void LoadUserAuth(IAuthSession session, IOAuthTokens tokens)
 		{
 			session.ThrowIfNull("session");
 
@@ -132,7 +132,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			LoadUserAuth(session, userAuth);
 		}
 
-		private void LoadUserAuth(IOAuthSession session, UserAuth userAuth)
+		private void LoadUserAuth(IAuthSession session, UserAuth userAuth)
 		{
 			if (userAuth == null) return;
 
@@ -157,16 +157,16 @@ namespace ServiceStack.ServiceInterface.Auth
 				return GetUserAuth(redis, userAuthId);
 		}
 
-		public void SaveUserAuth(IOAuthSession oAuthSession)
+		public void SaveUserAuth(IAuthSession authSession)
 		{
 			using (var redis = factory.GetClient())
 			{
-				var userAuth = !oAuthSession.UserAuthId.IsNullOrEmpty()
-					? GetUserAuth(redis, oAuthSession.UserAuthId)
-					: oAuthSession.TranslateTo<UserAuth>();
+				var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
+					? GetUserAuth(redis, authSession.UserAuthId)
+					: authSession.TranslateTo<UserAuth>();
 
-				if (userAuth.Id == default(int) && !oAuthSession.UserAuthId.IsNullOrEmpty())
-					userAuth.Id = int.Parse(oAuthSession.UserAuthId);
+				if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
+					userAuth.Id = int.Parse(authSession.UserAuthId);
 
 				redis.Store(userAuth);
 			}
@@ -190,13 +190,13 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 		}
 
-		public UserAuth GetUserAuth(IOAuthSession authSession, IOAuthTokens tokens)
+		public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
 		{
 			using (var redis = factory.GetClient())
 				return GetUserAuth(redis, authSession, tokens);
 		}
 
-		private UserAuth GetUserAuth(IRedisClientFacade redis, IOAuthSession authSession, IOAuthTokens tokens)
+		private UserAuth GetUserAuth(IRedisClientFacade redis, IAuthSession authSession, IOAuthTokens tokens)
 		{
 			if (!authSession.UserAuthId.IsNullOrEmpty())
 			{
@@ -221,7 +221,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			return null;
 		} 
 
-		public string CreateOrMergeAuthSession(IOAuthSession oAuthSession, IOAuthTokens tokens)
+		public string CreateOrMergeAuthSession(IAuthSession authSession, IOAuthTokens tokens)
 		{
 			using (var redis = factory.GetClient())
 			{
@@ -231,7 +231,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (!oAuthProviderId.IsNullOrEmpty())
 					oAuthProvider = redis.As<UserOAuthProvider>().GetById(oAuthProviderId);
 
-				var userAuth = GetUserAuth(redis, oAuthSession, tokens) 
+				var userAuth = GetUserAuth(redis, authSession, tokens) 
 					?? new UserAuth { Id = redis.As<UserAuth>().GetNextSequence(), };
 				 
 				if (oAuthProvider == null)

@@ -7,17 +7,17 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class OAuthUserSession : IOAuthSession
+	public class AuthUserSession : IAuthSession
 	{
-		private static readonly ILog Log = LogManager.GetLogger(typeof(OAuthUserSession));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(AuthUserSession));
 
-		public OAuthUserSession()
+		public AuthUserSession()
 		{
 			this.ProviderOAuthAccess = new List<IOAuthTokens>();
-			this.AuthHttpGateway = new OAuthHttpGateway();
+			this.AuthHttpGateway = new AuthHttpGateway();
 		}
 
-		public IOAuthHttpGateway AuthHttpGateway { get; set; }
+		public IAuthHttpGateway AuthHttpGateway { get; set; }
 
 		public string ReferrerUrl { get; set; }
 

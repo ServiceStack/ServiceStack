@@ -141,7 +141,7 @@
     <Compile Include="Models\Shipper.cs" />
     <Compile Include="Models\ShipperFactory.cs" />
     <Compile Include="Models\BuiltInsFactory.cs" />
-    <Compile Include="OAuth\MockOAuthHttpGateway.cs" />
+    <Compile Include="OAuth\MockAuthHttpGateway.cs" />
     <Compile Include="OAuth\OAuthUserSessionWithoutTestSourceTests.cs" />
     <Compile Include="Perf\DateTimePerf.cs" />
     <Compile Include="Perf\IdUtilsPerf.cs" />

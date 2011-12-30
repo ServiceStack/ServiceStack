@@ -58,7 +58,7 @@ namespace ServiceStack.ServiceInterface
 		/// <summary>
 		/// If they don't have an ICacheClient configured use an In Memory one.
 		/// </summary>
-		private static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient { DontDispose = true };
+		private static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient { FlushOnDispose = true };
 
 		public static ICacheClient GetCacheClient(this IServiceBase service)
 		{
@@ -74,7 +74,7 @@ namespace ServiceStack.ServiceInterface
 				?? DefaultCache;
 		}
 
-		public static void SaveSession(this IServiceBase service, IOAuthSession session)
+		public static void SaveSession(this IServiceBase service, IAuthSession session)
 		{
 			using (var cache = service.GetCacheClient())
 			{
@@ -83,7 +83,7 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
-		public static IOAuthSession GetSession(this IServiceBase service)
+		public static IAuthSession GetSession(this IServiceBase service)
 		{
 			using (var cache = service.GetCacheClient())
 			{
@@ -91,9 +91,9 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
-		public static IOAuthSession GetSession(this ICacheClient cache, string sessionId)
+		public static IAuthSession GetSession(this ICacheClient cache, string sessionId)
 		{
-			var session = cache.Get<IOAuthSession>(AuthService.GetSessionKey(sessionId));
+			var session = cache.Get<IAuthSession>(AuthService.GetSessionKey(sessionId));
 			if (session == null)
 			{
 				session = AuthService.SessionFactory();

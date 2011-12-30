@@ -22,11 +22,11 @@ namespace ServiceStack.Common.Tests.OAuth
 		//Can only use either 1 OrmLiteDialectProvider at 1-time SqlServer or Sqlite.
     	public static bool UseSqlServer = true;
 
-		public static OAuthUserSession GetSession()
+		public static AuthUserSession GetSession()
 		{
 			new RedisClient().FlushAll();
-			var oAuthUserSession = new OAuthUserSession {
-				AuthHttpGateway = new MockOAuthHttpGateway(),
+			var oAuthUserSession = new AuthUserSession {
+				AuthHttpGateway = new MockAuthHttpGateway(),
 			};
 			return oAuthUserSession;
 		}
@@ -81,7 +81,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			var service = mockService.Object;
 
-			MockOAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
+			MockAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
 
 			var twitterTokens = new OAuthTokens {
 				Provider = TwitterAuthConfig.Name,
@@ -125,7 +125,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			mockService.Expect(x => x.TryResolve<IUserAuthRepository>())
 				.Returns(userAuthRepository);
 
-			var serviceTokens = MockOAuthHttpGateway.Tokens = new OAuthTokens {
+			var serviceTokens = MockAuthHttpGateway.Tokens = new OAuthTokens {
 				UserId = "623501766",
 				DisplayName = "Demis Bellot FB",
 				FirstName = "Demis",
@@ -180,7 +180,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			var service = mockService.Object;
 
-			var serviceTokensFb = MockOAuthHttpGateway.Tokens = new OAuthTokens {
+			var serviceTokensFb = MockAuthHttpGateway.Tokens = new OAuthTokens {
 				UserId = "623501766",
 				DisplayName = "Demis Bellot FB",
 				FirstName = "Demis",
@@ -196,7 +196,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			var oAuthUserSession = GetSession();
 			oAuthUserSession.OnAuthenticated(service, facebookTokens, new Dictionary<string, string>());
 
-			var serviceTokensTw = MockOAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
+			var serviceTokensTw = MockAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
 
 			var twitterTokens = new OAuthTokens {
 				Provider = TwitterAuthConfig.Name,
