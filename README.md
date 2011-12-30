@@ -283,6 +283,14 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [timryan](https://github.com/timryan) (Tim Ryan)
  - [letssellsomebananas](https://github.com/letssellsomebananas) (Tymek Majewski)
  - [danbarua](https://github.com/danbarua) (Dan Barua)
+ - [JonCanning](https://github.com/JonCanning) (Jon Canning)
+ - [arxisos](https://github.com/arxisos) (Steffen M)
+ - [paegun](https://github.com/paegun) (James Gorlick)
+ - [pvasek](https://github.com/pvasek) (pvasek)
+ - [derfsplat](https://github.com/derfsplat) (derfsplat)
+ - [mvitorino](https://github.com/mvitorino) (Miguel Vitorino)
+ - [justinrolston](https://github.com/justinrolston) (Justin Rolston)
+ - [danatkinson](https://github.com/danatkinson) (Dan Atkinson)
 
 ***
 
