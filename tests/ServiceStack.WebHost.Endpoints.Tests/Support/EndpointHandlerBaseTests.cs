@@ -41,14 +41,15 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
 			get
 			{
 				var ipv6Addresses = NetworkInterface.GetAllNetworkInterfaces()
-				.Where(nic => nic.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-				.SelectMany(nic => nic.GetIPProperties().UnicastAddresses.Select(unicast => unicast.Address))
-				.Where(address => address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6).ToList();
+					.Where(nic => nic.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+					.SelectMany(nic => nic.GetIPProperties()
+						.UnicastAddresses.Select(unicast => unicast.Address))
+						.Where(address => address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6).ToList();
 
 				//this covers all the different flavors of ipv6 address -- scoped, link local, etc
 				foreach (var address in ipv6Addresses)
 				{
-					yield return new TestCaseData(address, EndpointAttributes.LocalSubnet);
+					yield return new TestCaseData(address.ToString(), EndpointAttributes.LocalSubnet);
 					yield return new TestCaseData(address + ":57", EndpointAttributes.LocalSubnet);
 				}
 

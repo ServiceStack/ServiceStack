@@ -27,7 +27,7 @@ namespace ServiceStack.Common.Web
 			this.ErrorCode = errorCode;
 			this.StatusCode = statusCode;
 			this.Headers = new Dictionary<string, string>();
-            this.StatusDescription = errorMessage ?? errorCode;
+            this.StatusDescription = errorCode;
 		}
 
 		public HttpError(HttpStatusCode statusCode, Exception innerException)

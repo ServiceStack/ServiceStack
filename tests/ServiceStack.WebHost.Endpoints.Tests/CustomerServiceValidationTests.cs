@@ -193,7 +193,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 				Postcode = "11215",
 			};
 		}
-
+		
 		[Test]
 		public void Validates_ValidRequest_request_on_Post()
 		{
@@ -279,19 +279,24 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		{
 			get
 			{
-				yield return UnitTestServiceClient();
-				yield return new JsonServiceClient(ListeningOn);
-				yield return new JsvServiceClient(ListeningOn);
-				yield return new XmlServiceClient(ListeningOn);
+				//Seriously retarded workaround for some devs idea who thought this should
+				//be run for all test fixtures, not just this one.
+
+				return new Func<IServiceClient>[] {
+					() => UnitTestServiceClient(),
+					() => new JsonServiceClient(ListeningOn),
+					() => new JsvServiceClient(ListeningOn),
+					() => new XmlServiceClient(ListeningOn),
+				};
 			}
 		}
 
-
 		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
-		public void Post_empty_request_throws_validation_exception(IServiceClient client)
+		public void Post_empty_request_throws_validation_exception(Func<IServiceClient> factory)
 		{
 			try
 			{
+				var client = factory();
 				var response = client.Send<CustomersResponse>(new Customers());
 				Assert.Fail("Should throw Validation Exception");
 			}
@@ -311,10 +316,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 
 		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
-		public void Get_empty_request_throws_validation_exception(IRestClient client)
+		public void Get_empty_request_throws_validation_exception(Func<IServiceClient> factory)
 		{
 			try
 			{
+				var client = (IRestClient)factory();
 				var response = client.Get<CustomersResponse>("Customers");
 				Assert.Fail("Should throw Validation Exception");
 			}
@@ -331,8 +337,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 
 		[Test, TestCaseSource(typeof(CustomerServiceValidationTests), "ServiceClients")]
-		public void Post_ValidRequest_succeeds(IServiceClient client)
+		public void Post_ValidRequest_succeeds(Func<IServiceClient> factory)
 		{
+			var client = factory();
 			var response = client.Send<CustomersResponse>(validRequest);
 			Assert.That(response.ResponseStatus, Is.Null);
 		}

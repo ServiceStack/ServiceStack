@@ -52,9 +52,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			get
 			{
-				yield return new JsonServiceClient(ListeningOn);
-				yield return new JsvServiceClient(ListeningOn);
-				yield return new XmlServiceClient(ListeningOn);
+				return new IServiceClient[] {
+					new JsonServiceClient(ListeningOn),
+					new JsvServiceClient(ListeningOn),
+					new XmlServiceClient(ListeningOn),
+				};
 			}
 		}
 

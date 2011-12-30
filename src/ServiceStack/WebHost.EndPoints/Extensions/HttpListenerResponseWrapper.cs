@@ -31,7 +31,19 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public string StatusDescription
         {
-            set { this.response.StatusDescription = value; }
+            set
+            {
+				try
+				{
+					this.response.StatusDescription = value;
+
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex);
+					throw;
+				}
+			}
         }
 
 		public string ContentType
