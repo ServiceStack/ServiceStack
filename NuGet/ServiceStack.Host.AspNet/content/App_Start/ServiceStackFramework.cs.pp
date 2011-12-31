@@ -103,7 +103,7 @@ namespace $rootnamespace$
 			return Repository.Store(todo);
 		}
 
-		public override object OnPut(Todo request)
+		public override object OnPut(Todo todo)
 		{
 			return Repository.Store(todo);
 		}
