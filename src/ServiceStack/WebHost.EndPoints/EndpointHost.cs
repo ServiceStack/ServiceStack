@@ -9,6 +9,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.Endpoints.Formats;
+using ServiceStack.WebHost.EndPoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -156,6 +157,13 @@ namespace ServiceStack.WebHost.Endpoints
 					if (httpRes.IsClosed) break;
 				}
 
+                IEnumerable<IHasRequestFilter> attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
+                foreach (var attribute in attributes)
+                {
+                    attribute.RequestFilter(httpReq, httpRes, requestDto);
+                    if (httpRes.IsClosed) break;
+                }
+
 				return httpRes.IsClosed;
 			}
 		}
@@ -177,6 +185,13 @@ namespace ServiceStack.WebHost.Endpoints
 					responseFilter(httpReq, httpRes, responseDto);
 					if (httpRes.IsClosed) break;
 				}
+
+                IEnumerable<IHasResponseFilter> attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
+                foreach (var attribute in attributes)
+                {
+                    attribute.ResponseFilter(httpReq, httpRes, responseDto);
+                    if (httpRes.IsClosed) break;
+                }
 
 				return httpRes.IsClosed;
 			}
