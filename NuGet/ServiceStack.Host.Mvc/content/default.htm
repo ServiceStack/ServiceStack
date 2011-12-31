@@ -13,7 +13,7 @@
         // to persist Backbone models within your browser.
 
         // Load the application once the DOM is ready, using `jQuery.ready`:
-        var todosUrl = "api/todos";
+        var todosUrl = "todos";
         $(function () {
 
             // Todo Model
@@ -24,24 +24,24 @@
 
                 // Default attributes for the todo.
                 defaults: {
-                    Content: "empty todo...",
-                    Done: false
+                    content: "empty todo...",
+                    done: false
                 },
 
                 // Ensure that each todo created has `content`.
                 initialize: function () {
-                    if (!this.get("Content")) {
-                        this.set({ "Content": this.defaults.Content });
+                    if (!this.get("content")) {
+                        this.set({ "content": this.defaults.content });
                     }
                 },
 
                 // Toggle the `done` state of this todo item.
                 toggle: function () {
-                    this.save({ Done: !this.get("Done") });
+                    this.save({ done: !this.get("done") });
                 },
 
                 url: function () {
-                    return this.get("Id") ? todosUrl + '/' + this.get("Id") : todosUrl;
+                    return this.get("id") ? todosUrl + '/' + this.get("id") : todosUrl;
                 },
 
                 // Remove this Todo from *localStorage* and delete its view.
@@ -68,7 +68,7 @@
 
                 // Filter down the list of all todo items that are finished.
                 done: function () {
-                    return this.filter(function (todo) { return todo.get('Done'); });
+                    return this.filter(function (todo) { return todo.get('done'); });
                 },
 
                 // Filter down the list to only todo items that are still not finished.
@@ -80,12 +80,12 @@
                 // GUID in the database. This generates the next order number for new items.
                 nextOrder: function () {
                     if (!this.length) return 1;
-                    return this.last().get('Order') + 1;
+                    return this.last().get('order') + 1;
                 },
 
                 // Todos are sorted by their original insertion order.
                 comparator: function (todo) {
-                    return todo.get('Order');
+                    return todo.get('order');
                 }
 
             });
@@ -132,7 +132,7 @@
                 // To avoid XSS (not that it would be harmful in this particular app),
                 // we use `jQuery.text` to set the contents of the todo item.
                 setContent: function () {
-                    var content = this.model.get('Content');
+                    var content = this.model.get('content');
                     this.$('.todo-content').text(content);
                     this.input = this.$('.todo-input');
                     this.input.bind('blur', this.close);
@@ -152,7 +152,7 @@
 
                 // Close the `"editing"` mode, saving changes to the todo.
                 close: function () {
-                    this.model.save({ Content: this.input.val() });
+                    this.model.save({ content: this.input.val() });
                     $(this.el).removeClass("editing");
                 },
 
@@ -213,9 +213,9 @@
                 render: function () {
                     var done = Todos.done().length;
                     this.$('#todo-stats').html(this.statsTemplate({
-                        Total: Todos.length,
-                        Done: Todos.done().length,
-                        Remaining: Todos.remaining().length
+                        total: Todos.length,
+                        done: Todos.done().length,
+                        remaining: Todos.remaining().length
                     }));
                 },
 
@@ -234,9 +234,9 @@
                 // Generate the attributes for a new Todo item.
                 newAttributes: function () {
                     return {
-                        Content: this.input.val(),
-                        Order: Todos.nextOrder(),
-                        Done: false
+                        content: this.input.val(),
+                        order: Todos.nextOrder(),
+                        done: false
                     };
                 },
 
@@ -637,9 +637,9 @@ html {
     <!-- Templates -->
 
     <script type="text/template" id="item-template">
-      <div class="todo <%= Done ? 'Done' : '' %>">
+      <div class="todo <%= done ? 'done' : '' %>">
         <div class="display">
-          <input class="check" type="checkbox" <%= Done ? 'checked="checked"' : '' %> />
+          <input class="check" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
           <div class="todo-content"></div>
           <span class="todo-destroy"></span>
         </div>
@@ -650,17 +650,17 @@ html {
     </script>
 
     <script type="text/template" id="stats-template">
-      <% if (Total) { %>
+      <% if (total) { %>
         <span class="todo-count">
-          <span class="number"><%= Remaining %></span>
-          <span class="word"><%= Remaining == 1 ? 'item' : 'items' %></span> left.
+          <span class="number"><%= remaining %></span>
+          <span class="word"><%= remaining == 1 ? 'item' : 'items' %></span> left.
         </span>
       <% } %>
-      <% if (Done) { %>
+      <% if (done) { %>
         <span class="todo-clear">
           <a href="#">
-            Clear <span class="number-done"><%= Done %></span>
-            completed <span class="word-done"><%= Done == 1 ? 'item' : 'items' %></span>
+            Clear <span class="number-done"><%= done %></span>
+            completed <span class="word-done"><%= done == 1 ? 'item' : 'items' %></span>
           </a>
         </span>
       <% } %>

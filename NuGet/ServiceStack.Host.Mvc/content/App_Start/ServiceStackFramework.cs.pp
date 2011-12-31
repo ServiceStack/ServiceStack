@@ -30,6 +30,9 @@ namespace $rootnamespace$.App_Start
 
 		public override void Configure(Funq.Container container)
 		{
+			//Set JSON web services to return idiomatic JSON camelCase properties
+			ServiceStack.Text.JsConfig.EmitCamelCaseNames = true;
+
 			//Configure User Defined REST Paths
 			Routes
 			  .Add<Hello>("/hello")
@@ -116,8 +119,12 @@ namespace $rootnamespace$
 			return Repository.GetById(request.Id);
 		}
 
-		//Called for new and update
 		public override object OnPost(Todo todo)
+		{
+			return Repository.Store(todo);
+		}
+
+		public override object OnPut(Todo request)
 		{
 			return Repository.Store(todo);
 		}
