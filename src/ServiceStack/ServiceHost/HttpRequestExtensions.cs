@@ -191,5 +191,10 @@ namespace ServiceStack.ServiceHost
 			}
 			return false;
 		}
+
+		public static string GetJsonpCallback(this IHttpRequest httpReq)
+		{
+			return httpReq == null ? null : httpReq.QueryString["callback"];
+		}
 	}
 }

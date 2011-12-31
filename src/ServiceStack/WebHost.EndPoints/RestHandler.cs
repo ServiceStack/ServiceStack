@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				operationName = restPath.RequestType.Name;
 
-				var callback = httpReq.QueryString["callback"];
+				var callback = httpReq.GetJsonpCallback();
 				var doJsonp = EndpointHost.Config.AllowJsonpRequests
 							  && !string.IsNullOrEmpty(callback);
 

@@ -71,7 +71,16 @@ namespace ServiceStack.CacheAccess.Providers
 
 			var contentType = serializationContext.ResponseContentType;
 			var compressionType = serializationContext.CompressionType;
-			var cacheKeySerialized = GetSerializedCacheKey(cacheKey, contentType);
+			string modifiers = null, jsonp = null;
+
+			if (contentType == ContentType.Json)
+			{
+				jsonp = serializationContext.Get<IHttpRequest>().GetJsonpCallback();
+				if (jsonp != null)
+					modifiers = ".jsonp," + jsonp.SafeVarName();
+			}
+
+			var cacheKeySerialized = GetSerializedCacheKey(cacheKey, contentType, modifiers);
 
 			var doCompression = compressionType != null;
 
@@ -104,6 +113,9 @@ namespace ServiceStack.CacheAccess.Providers
 
 			var serializedDto = ContentSerializer<TResult>.ToSerializedString(dto, serializationContext);
 
+			if (jsonp != null)
+				serializedDto = jsonp + "(" + serializedDto + ")";
+
 			CacheSet(cacheClient, cacheKeySerialized, serializedDto, expireCacheIn);
 
 			if (doCompression)
@@ -133,9 +145,9 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 		}
 
-		public static string GetSerializedCacheKey(string cacheKey, string mimeType)
+		public static string GetSerializedCacheKey(string cacheKey, string mimeType, string modifiers)
 		{
-			return cacheKey + MimeTypes.GetExtension(mimeType);
+			return cacheKey + MimeTypes.GetExtension(mimeType) + modifiers;
 		}
 
 		public static string GetCompressedCacheKey(
@@ -161,7 +173,7 @@ namespace ServiceStack.CacheAccess.Providers
 				allCacheKeys.Add(cacheKey);
 				foreach (var serializedExt in AllCachedContentTypes)
 				{
-					var serializedCacheKey = GetSerializedCacheKey(cacheKey, serializedExt);
+					var serializedCacheKey = GetSerializedCacheKey(cacheKey, serializedExt, null);
 					allCacheKeys.Add(serializedCacheKey);
 
 					foreach (var compressionType in CompressionTypes.AllCompressionTypes)
