@@ -11,6 +11,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.WebHost.EndPoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -65,22 +66,28 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				IHttpRequest httpReq = null;
 				IHttpResponse httpRes = null;
-				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0;
-				var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0;
-				if (hasRequestFilters || hasResponseFilters)
+				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0 
+                    || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Count() > 0;
+				if (hasRequestFilters)
 				{
 					httpReq = HttpContext.Current != null
 						? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
-						: null;
-					httpRes = HttpContext.Current != null
-						? new HttpResponseWrapper(HttpContext.Current.Response)
-						: null;
+						: null;					
 				}
 
 				if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
                     return EmptyResponse(requestMsg, requestType);
 
 				var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
+
+                var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
+                   || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Count() > 0;
+                if (hasResponseFilters)
+                {
+                    httpRes = HttpContext.Current != null
+                            ? new HttpResponseWrapper(HttpContext.Current.Response)
+                            : null;
+                }
 
 				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);

@@ -74,6 +74,13 @@ namespace ServiceStack.ServiceInterface
 				?? DefaultCache;
 		}
 
+        public static ICacheClient GetCacheClient(this IHttpRequest httpRequest)
+        {
+            return httpRequest.TryResolve<ICacheClient>()
+                ?? (ICacheClient)httpRequest.TryResolve<IRedisClientsManager>()
+                ?? DefaultCache;
+        }
+
 		public static void SaveSession(this IServiceBase service, IAuthSession session)
 		{
 			using (var cache = service.GetCacheClient())
