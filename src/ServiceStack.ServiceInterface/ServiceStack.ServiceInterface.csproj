@@ -188,7 +188,9 @@
     <Compile Include="FluentValidation\Validators\PropertyValidatorContext.cs" />
     <Compile Include="FluentValidation\Validators\RegularExpressionValidator.cs" />
     <Compile Include="IServiceBase.cs" />
+    <Compile Include="RequestFilterAttribute.cs" />
     <Compile Include="RequiredPermissionAttribute.cs" />
+    <Compile Include="ResponseFilterAttribute.cs" />
     <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />
     <Compile Include="ServiceBase.cs" />

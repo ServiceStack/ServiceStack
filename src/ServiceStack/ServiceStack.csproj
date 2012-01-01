@@ -282,6 +282,7 @@
     <Compile Include="WebHost.EndPoints\EndpointHost.cs" />
     <Compile Include="WebHost.EndPoints\EndpointHostConfig.cs" />
     <Compile Include="WebHost.EndPoints\Support\SoapHandler.cs" />
+    <Compile Include="WebHost.EndPoints\Utils\FilterAttributeCache.cs" />
     <Compile Include="WebHost.EndPoints\WebServerType.cs" />
     <Compile Include="WebHost.EndPoints\XmlSyncReplyHandler.cs" />
     <Compile Include="WebHost.EndPoints\Metadata\IndexMetadataHandler.cs" />
