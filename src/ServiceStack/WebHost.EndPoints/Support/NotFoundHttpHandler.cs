@@ -40,6 +40,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			var response = context.Response;
 
 			var httpReq = new HttpRequestWrapper("NotFoundHttpHandler", request);
+			if (!request.IsLocal)
+			{
+				ProcessRequest(httpReq, new HttpResponseWrapper(response), null);
+				return;
+			}
 			
 			var sb = new StringBuilder();
 			sb.AppendLine("Handler for Request not found: \n\n");
