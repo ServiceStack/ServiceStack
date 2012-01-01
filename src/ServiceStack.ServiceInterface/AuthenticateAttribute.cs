@@ -22,28 +22,32 @@ namespace ServiceStack.ServiceInterface
         public ApplyTo ApplyTo { get; set; }
 
         public AuthenticateAttribute()
-            : this(ApplyTo.All)
+            : base(ApplyTo.All)
         {
         }
 
 		public AuthenticateAttribute(string provider)
-            : this(ApplyTo.All, provider)
+            : base(ApplyTo.All)
 		{
+            this.Provider = provider;
 		}
 
         public AuthenticateAttribute(ApplyTo applyTo)
+            : base(applyTo)
         {
-            this.ApplyTo = applyTo;
         }
 
         public AuthenticateAttribute(ApplyTo applyTo, string provider)
+            : base(applyTo)
         {
             this.Provider = provider;
-            this.ApplyTo = applyTo;
         }
 
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
+            if (AuthService.AuthConfigs == null) throw new InvalidOperationException("The AuthService must be initialized by calling "
+                 + "AuthService.Init to use an authenticate attribute");
+
             var matchingOAuthConfigs = AuthService.AuthConfigs.Where(x =>
                             this.Provider.IsNullOrEmpty()
                             || x.Provider == this.Provider).ToList();

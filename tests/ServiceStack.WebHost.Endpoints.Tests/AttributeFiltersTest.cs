@@ -6,10 +6,12 @@ using ServiceStack.ServiceHost;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Service;
+using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class RequestFilterAttribute : Attribute, IHasRequestFilter
+    //Always executed
+    public class FilterTestAttribute : Attribute, IHasRequestFilter
     {
         public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
@@ -18,14 +20,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    //Only executed for the provided HTTP methods (GET, POST) 
+    public class ContextualFilterTestAttribute : RequestFilterAttribute
+    {
+        public ContextualFilterTestAttribute(ApplyTo applyTo)
+            : base(applyTo)
+        {
+        }
+
+        public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+        {
+            var dto = requestDto as AttributeFiltered;
+            dto.ContextualRequestFilterExecuted = true;
+        }
+    }
+
     [RestService("/attributefiltered")]
-    [RequestFilter]
+    [FilterTest]
+    [ContextualFilterTest(ApplyTo.Delete | ApplyTo.Put)]
     public class AttributeFiltered
     {
         public bool RequestFilterExecuted { get; set; }
+        public bool ContextualRequestFilterExecuted { get; set; }
     }
 
-    public class ResponseFilterAttribute : Attribute, IHasResponseFilter
+    //Always executed
+    public class ResponseFilterTestAttribute : Attribute, IHasResponseFilter
     {
         public void ResponseFilter(IHttpRequest req, IHttpResponse res, object responseDto)
         {
@@ -34,18 +54,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [ResponseFilter]
+    //Only executed for the provided HTTP methods (GET, POST) 
+    public class ContextualResponseFilterTestAttribute : ResponseFilterAttribute
+    {
+        public ContextualResponseFilterTestAttribute(ApplyTo applyTo)
+            : base(applyTo)
+        {
+        }
+
+        public override void Execute(IHttpRequest req, IHttpResponse res, object responseDto)
+        {
+            var dto = responseDto as AttributeFilteredResponse;
+            dto.ContextualResponseFilterExecuted = true;
+        }
+    }
+
+    [ResponseFilterTest]
+    [ContextualResponseFilterTest(ApplyTo.Delete | ApplyTo.Put)]
     public class AttributeFilteredResponse
     {
         public bool ResponseFilterExecuted { get; set; }
+        public bool ContextualResponseFilterExecuted { get; set; }
+
         public bool RequestFilterExecuted { get; set; }
+        public bool ContextualRequestFilterExecuted { get; set; }
     }
 
     public class AttributeFilteredService : IService<AttributeFiltered>
     {
         public object Execute(AttributeFiltered request)
         {
-            return new AttributeFilteredResponse() { ResponseFilterExecuted = false, RequestFilterExecuted = request.RequestFilterExecuted };
+            return new AttributeFilteredResponse() 
+            { 
+                ResponseFilterExecuted = false, 
+                ContextualResponseFilterExecuted = false,
+                RequestFilterExecuted = request.RequestFilterExecuted,
+                ContextualRequestFilterExecuted = request.ContextualRequestFilterExecuted
+            };
         }
     }
 
@@ -96,6 +141,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Send<AttributeFilteredResponse>(new AttributeFiltered() { RequestFilterExecuted = false });
             Assert.IsTrue(response.RequestFilterExecuted);
             Assert.IsTrue(response.ResponseFilterExecuted);
+            Assert.IsFalse(response.ContextualRequestFilterExecuted);
+            Assert.IsFalse(response.ContextualResponseFilterExecuted);
         }
 
         static IRestClient[] RestClients = 
@@ -111,6 +158,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Post<AttributeFilteredResponse>("attributefiltered", new AttributeFiltered() { RequestFilterExecuted = false });
             Assert.IsTrue(response.RequestFilterExecuted);
             Assert.IsTrue(response.ResponseFilterExecuted);
+            Assert.IsFalse(response.ContextualRequestFilterExecuted);
+            Assert.IsFalse(response.ContextualResponseFilterExecuted);
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Contextual_Request_and_Response_Filters_are_executed_using_RestClient(IRestClient client)
+        {
+            var response = client.Delete<AttributeFilteredResponse>("attributefiltered");
+            Assert.IsTrue(response.RequestFilterExecuted);
+            Assert.IsTrue(response.ResponseFilterExecuted);
+            Assert.IsTrue(response.ContextualRequestFilterExecuted);
+            Assert.IsTrue(response.ContextualResponseFilterExecuted);
+        }
+
+        [Test, TestCaseSource("RestClients")]
+        public void Multi_Contextual_Request_and_Response_Filters_are_executed_using_RestClient(IRestClient client)
+        {
+            var response = client.Put<AttributeFilteredResponse>("attributefiltered", new AttributeFiltered() { RequestFilterExecuted = false });
+            Assert.IsTrue(response.RequestFilterExecuted);
+            Assert.IsTrue(response.ResponseFilterExecuted);
+            Assert.IsTrue(response.ContextualRequestFilterExecuted);
+            Assert.IsTrue(response.ContextualResponseFilterExecuted);
         }
     }
 }
