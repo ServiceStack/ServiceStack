@@ -33,6 +33,9 @@ namespace ServiceStack.Common.Web
             StatusDescription = statusDescription;
         }
 
+		public HttpResult(object response, HttpStatusCode statusCode)
+			: this(response, null, statusCode) {}
+
 		public HttpResult(object response, string contentType, HttpStatusCode statusCode)
 		{
 			this.Headers = new Dictionary<string, string>();
