@@ -66,13 +66,18 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				IHttpRequest httpReq = null;
 				IHttpResponse httpRes = null;
+				
 				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0 
-                    || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Count() > 0;
+                    || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
+				
 				if (hasRequestFilters)
 				{
 					httpReq = HttpContext.Current != null
 						? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
-						: null;					
+						: null;
+					httpRes = HttpContext.Current != null
+							? new HttpResponseWrapper(HttpContext.Current.Response)
+							: null;
 				}
 
 				if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
@@ -80,14 +85,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				var response = ExecuteService(request, endpointAttributes, httpReq, httpRes);
 
-                var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
-                   || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Count() > 0;
-                if (hasResponseFilters)
-                {
-                    httpRes = HttpContext.Current != null
-                            ? new HttpResponseWrapper(HttpContext.Current.Response)
-                            : null;
-                }
+				var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
+				   || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
+				
+				if (hasResponseFilters && httpRes == null)
+				{
+					httpRes = HttpContext.Current != null
+							? new HttpResponseWrapper(HttpContext.Current.Response)
+							: null;					
+				}
 
 				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
