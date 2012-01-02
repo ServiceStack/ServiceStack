@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Configuration;
@@ -96,6 +97,7 @@ namespace ServiceStack.WebHost.Endpoints
 							{ "image/jpeg", TimeSpan.FromHours(1) },
 						},
 						RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
+						CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -149,6 +151,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.RazorBaseType = instance.RazorBaseType;
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
+			this.CustomHttpHandlers = instance.CustomHttpHandlers;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -221,7 +224,7 @@ namespace ServiceStack.WebHost.Endpoints
 				handlerPath = handlerPath.Replace("*", string.Empty);
 			}
 
-			instance.ServiceStackHandlerFactoryPath = locationPath ?? 
+			instance.ServiceStackHandlerFactoryPath = locationPath ??
 				(string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
 			instance.MetadataRedirectPath = PathUtils.CombinePaths(
@@ -262,7 +265,6 @@ namespace ServiceStack.WebHost.Endpoints
 		public string ServiceStackHandlerFactoryPath { get; set; }
 		public string DefaultRedirectPath { get; set; }
 		public string MetadataRedirectPath { get; set; }
-		public string NotFoundRedirectPath { get; set; }
 
 		public string WsdlServiceNamespace { get; set; }
 		public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
@@ -285,6 +287,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public Dictionary<string, TimeSpan> AddMaxAgeForStaticMimeTypes { get; set; }
 
 		public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
+
+		public Dictionary<HttpStatusCode, IHttpHandler> CustomHttpHandlers { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace

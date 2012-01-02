@@ -131,14 +131,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         static IServiceClient[] ServiceClients = 
         {
             new JsonServiceClient(ServiceClientBaseUri),
-            new Soap11ServiceClient(ServiceClientBaseUri),
-            new Soap12ServiceClient(ServiceClientBaseUri)
+            new XmlServiceClient(ServiceClientBaseUri),
+            new JsvServiceClient(ServiceClientBaseUri)
+			//SOAP not supported in HttpListener
+			//new Soap11ServiceClient(ServiceClientBaseUri),
+			//new Soap12ServiceClient(ServiceClientBaseUri)
         };
 
         [Test, TestCaseSource("ServiceClients")]
         public void Request_and_Response_Filters_are_executed_using_ServiceClient(IServiceClient client)
         {
-            var response = client.Send<AttributeFilteredResponse>(new AttributeFiltered() { RequestFilterExecuted = false });
+            var response = client.Send<AttributeFilteredResponse>(
+				new AttributeFiltered { RequestFilterExecuted = false });
+
             Assert.IsTrue(response.RequestFilterExecuted);
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsFalse(response.ContextualRequestFilterExecuted);
