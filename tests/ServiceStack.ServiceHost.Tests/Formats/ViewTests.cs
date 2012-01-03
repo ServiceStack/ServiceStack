@@ -52,6 +52,16 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 			}
 
+			public void Register<T>(T instance)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void RegisterAs<T, TAs>() where T : TAs
+			{
+				throw new NotImplementedException();
+			}
+
 			public T TryResolve<T>()
 			{
 				throw new NotImplementedException();

@@ -70,7 +70,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			}
 		}
 
-		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
+		[Test, TestCaseSource("UserAuthRepositorys")]
 		public void Does_persist_TwitterOAuth(IUserAuthRepository userAuthRepository)
 		{
 			((IClearable)userAuthRepository).Clear();
@@ -116,7 +116,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Console.WriteLine(authProviders.Dump());
 		}
 
-		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
+		[Test, TestCaseSource("UserAuthRepositorys")]
 		public void Does_persist_FacebookOAuth(IUserAuthRepository userAuthRepository)
 		{
 			((IClearable)userAuthRepository).Clear();
@@ -169,7 +169,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Console.WriteLine(authProviders.Dump());
 		}
 
-		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
+		[Test, TestCaseSource("UserAuthRepositorys")]
 		public void Does_merge_FacebookOAuth_TwitterOAuth(IUserAuthRepository userAuthRepository)
 		{
 			((IClearable)userAuthRepository).Clear();
@@ -228,7 +228,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Console.WriteLine(authProviders.Dump());
 		}
 
-		[Test, TestCaseSource(typeof(OAuthUserSessionTests), "UserAuthRepositorys")]
+		[Test, TestCaseSource("UserAuthRepositorys")]
 		public void Can_login_with_user_created_CreateUserAuth(IUserAuthRepository userAuthRepository)
 		{
 			((IClearable)userAuthRepository).Clear();

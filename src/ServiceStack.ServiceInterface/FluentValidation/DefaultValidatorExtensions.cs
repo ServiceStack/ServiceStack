@@ -16,6 +16,8 @@
 // The latest version of this file can be found at http://www.codeplex.com/FluentValidation
 #endregion
 
+using ServiceStack.ServiceInterface;
+
 namespace ServiceStack.FluentValidation
 {
 	using System;
@@ -535,6 +537,21 @@ namespace ServiceStack.FluentValidation
 
 			if(! result.IsValid) {
 				throw new ValidationException(result.Errors);	
+			}
+		}
+
+		public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, ApplyTo ruleSet)
+		{
+			validator.ValidateAndThrow(instance, ruleSet.ToString().ToUpper());
+		}
+
+		public static void ValidateAndThrow<T>(this IValidator<T> validator, T instance, string ruleSet)
+		{
+			var result = validator.Validate(instance, (IValidatorSelector)null, ruleSet);
+
+			if (!result.IsValid)
+			{
+				throw new ValidationException(result.Errors);
 			}
 		}
 

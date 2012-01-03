@@ -34,6 +34,17 @@ namespace ServiceStack.ServiceInterface.Testing
 			this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 		}
 
+		public void RegisterAs<T, TAs>() where T : TAs
+		{
+			var autoWire = new ExpressionTypeFunqContainer(container);
+			autoWire.RegisterAs<T, TAs>();
+		}
+		
+		public void Register<T>(T instance)
+		{
+			container.Register(instance);
+		}
+
 		public T TryResolve<T>()
 		{
 			return container.TryResolve<T>();

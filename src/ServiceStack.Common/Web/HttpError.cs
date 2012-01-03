@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.Common.Web
 {
@@ -66,6 +68,34 @@ namespace ServiceStack.Common.Web
 		public IDictionary<string, string> Options
 		{
 			get { return this.Headers; }
+		}
+
+		public ResponseStatus ResponseStatus
+		{
+			get
+			{
+				if (this.Response == null)
+					return null;
+
+				var hasResponseStatus = this.Response as IHasResponseStatus;
+				if (hasResponseStatus != null)
+					return hasResponseStatus.ResponseStatus;
+
+				var propertyInfo = this.Response.GetType().GetProperty("ResponseStatus");				
+				if (propertyInfo == null)
+					return null;
+
+				return ReflectionUtils.GetProperty(this.Response, propertyInfo) as ResponseStatus;
+			}
+		}
+
+		public List<ResponseError> GetFieldErrors()
+		{
+			var responseStatus = ResponseStatus;
+			if (responseStatus != null)
+				return responseStatus.Errors ?? new List<ResponseError>();
+			
+			return new List<ResponseError>();
 		}
 
 		public static Exception NotFound(string message)

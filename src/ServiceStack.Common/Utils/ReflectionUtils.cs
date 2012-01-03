@@ -169,6 +169,15 @@ namespace ServiceStack.Common.Utils
 			}
 		}
 
+		public static object GetProperty(object obj, PropertyInfo propertyInfo)
+		{
+			if (propertyInfo == null || !propertyInfo.CanRead)
+				return null;
+
+			var getMethod = propertyInfo.GetGetMethod();
+			return getMethod != null ? getMethod.Invoke(obj, new object[0]) : null;
+		}
+
 		public static void SetValue(FieldInfo fieldInfo, PropertyInfo propertyInfo, object obj, object value)
 		{
 			try

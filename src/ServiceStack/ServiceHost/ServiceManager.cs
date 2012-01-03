@@ -116,9 +116,15 @@ namespace ServiceStack.ServiceHost
 			if (genericServiceType == null)
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(serviceType.FullName));
 
-			this.ServiceController.RegisterService(typeFactory, serviceType);
-			typeFactory.RegisterTypes(serviceType);
-			
+			try
+			{
+				this.ServiceController.RegisterService(typeFactory, serviceType);
+				typeFactory.RegisterTypes(serviceType);
+			}
+			catch (Exception ex)
+			{
+				Log.Error(ex);
+			}			
 			return genericServiceType;
 		}
 

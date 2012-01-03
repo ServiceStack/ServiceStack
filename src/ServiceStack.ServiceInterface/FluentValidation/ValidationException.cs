@@ -23,7 +23,7 @@ namespace ServiceStack.FluentValidation
 	using Results;
 	using System.Linq;
 
-	public class ValidationException : Exception {
+	public class ValidationException : ArgumentException {
 		public IEnumerable<ValidationFailure> Errors { get; private set; }
 
 		public ValidationException(IEnumerable<ValidationFailure> errors) : base(BuildErrorMesage(errors)) {

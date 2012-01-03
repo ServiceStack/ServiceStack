@@ -2,6 +2,7 @@
 using System.Configuration;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.FluentValidation;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 
@@ -29,14 +30,55 @@ namespace ServiceStack.ServiceInterface.Auth
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
+	public class FullRegistrationValidator : RegistrationValidator
+	{
+		public FullRegistrationValidator()
+		{
+			RuleSet(ApplyTo.Post, () => {
+				RuleFor(x => x.DisplayName).NotEmpty();
+			});
+		}
+	}
+
+	public class RegistrationValidator : AbstractValidator<Registration>
+	{
+		public IUserAuthRepository UserAuthRepo { get; set; }
+
+		public RegistrationValidator()
+		{
+			RuleSet(ApplyTo.Post, () => {
+				RuleFor(x => x.Password).NotEmpty();
+				RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
+				RuleFor(x => x.Email).NotEmpty().When(x => x.UserName.IsNullOrEmpty());
+				RuleFor(x => x.UserName)
+					.Must(x => UserAuthRepo.GetUserAuthByUserName(x) == null)
+					.WithErrorCode("UserNameAlreadyExists")
+					.WithMessage("UserName already exists")
+					.When(x => !x.UserName.IsNullOrEmpty());
+				RuleFor(x => x.Email)
+					.Must(x => x.IsNullOrEmpty() || UserAuthRepo.GetUserAuthByUserName(x) == null)
+					.WithErrorCode("EmailAlreadyExists")
+					.WithMessage("Email already exists")
+					.When(x => !x.Email.IsNullOrEmpty());
+			});
+			RuleSet(ApplyTo.Put, () => {
+				RuleFor(x => x.UserName).NotEmpty();
+				RuleFor(x => x.Email).NotEmpty();
+			});
+		}
+	}
+
 	public class RegistrationService : RestServiceBase<Registration>
 	{
 		public IUserAuthRepository UserAuthRepo { get; set; }
 		public static ValidateFn ValidateFn { get; set; }
 
+		public IValidator<Registration> RegistrationValidator { get; set; }
+
 		public static void Init(IAppHost appHost)
 		{
 			appHost.RegisterService<RegistrationService>();
+			appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
 		}
 
 		private void AssertUserAuthRepo()
@@ -58,18 +100,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			AssertUserAuthRepo();
 
-			request.Password.ThrowIfNullOrEmpty("Password");
-
-			if (request.UserName.IsNullOrEmpty() && request.Email.IsNullOrEmpty())
-				throw new ArgumentNullException("UserName or Email required");
-
-			if (!request.UserName.IsNullOrEmpty()
-				&& UserAuthRepo.GetUserAuthByUserName(request.UserName) != null)
-				throw HttpError.Conflict("UserName already exists");
-
-			if (!request.Email.IsNullOrEmpty()
-				&& UserAuthRepo.GetUserAuthByUserName(request.Email) != null)
-				throw HttpError.Conflict("Email already exists");
+			RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
 
 			var newUserAuth = request.TranslateTo<UserAuth>();
 			var createdUser = this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password);
@@ -78,7 +109,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				UserId = createdUser.Id.ToString(),
 			};
 		}
-		
+
 		/// <summary>
 		/// Logic to update UserAuth from Registration info, not enabled on OnPut because of security.
 		/// </summary>
@@ -90,8 +121,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (response != null) return response;
 			}
 
-			if (request.UserName.IsNullOrEmpty() && request.Email.IsNullOrEmpty())
-				throw new ArgumentNullException("UserName or Email required");
+			RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
 
 			var userName = request.UserName ?? request.Email;
 			var existingUser = UserAuthRepo.GetUserAuthByUserName(userName);

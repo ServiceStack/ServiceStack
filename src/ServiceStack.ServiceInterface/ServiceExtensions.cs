@@ -90,6 +90,15 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
+		public static void RemoveSession(this IServiceBase service)
+		{
+			using (var cache = service.GetCacheClient())
+			{
+				var sessionKey = AuthService.GetSessionKey(service.GetSessionId());
+				cache.Remove(sessionKey);
+			}
+		}
+
 		public static IAuthSession GetSession(this IServiceBase service)
 		{
 			using (var cache = service.GetCacheClient())

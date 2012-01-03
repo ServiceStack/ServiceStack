@@ -6,6 +6,7 @@ using System.Net;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
@@ -55,6 +56,7 @@ namespace ServiceStack.ServiceInterface.Auth
 	{
 		public const string BasicProvider = "basic";
 		public const string CredentialsProvider = "credentials";
+		public const string LogoutAction = "logout";
 
 		public static string DefaultOAuthProvider { get; private set; }
 		public static string DefaultOAuthRealm { get; private set; }
@@ -97,6 +99,12 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			AssertAuthProviders();
+
+			if (request.provider == LogoutAction)
+			{
+				this.RemoveSession();
+				return new AuthResponse();
+			}
 
 			var provider = request.provider ?? AuthConfigs[0].Provider;
 			if (provider == BasicProvider || provider == CredentialsProvider)
@@ -142,18 +150,30 @@ namespace ServiceStack.ServiceInterface.Auth
 			return CredentialsAuth(request);
 		}
 
+		class CredentialsAuthValidator : AbstractValidator<Auth>
+		{
+			public CredentialsAuthValidator()
+			{
+				RuleFor(x => x.provider)
+					.Must(x => x == BasicProvider || x == CredentialsProvider)
+					.WithErrorCode("InvalidProvider")
+					.WithMessage("Provider must be either 'basic' or 'credentials'");
+
+				RuleFor(x => x.UserName).NotEmpty();
+				RuleFor(x => x.Password).NotEmpty();
+			}
+		}
+
 		private object CredentialsAuth(Auth request)
 		{
 			AssertAuthProviders();
 
-			request.provider.ThrowIfNullOrEmpty("provider");
+			new CredentialsAuthValidator().ValidateAndThrow(request);
 
-			if (request.provider != BasicProvider && request.provider != CredentialsProvider)
-				throw new ArgumentException("Provider must be either 'basic' or 'credentials'");
-
-			var session = this.GetSession();
 			var userName = request.UserName;
 			var password = request.Password;
+
+			var session = this.GetSession();
 
 			if (request.provider == BasicProvider)
 			{
