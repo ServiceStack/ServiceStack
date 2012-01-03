@@ -129,6 +129,7 @@
     <Compile Include="RemoteEndDropsConnectionTests.cs" />
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
+    <Compile Include="UserServiceValidationTests.cs" />
     <Compile Include="_JsonpTests.cs" />
     <Compile Include="Support\Host\IocAppHost.cs" />
     <Compile Include="Support\Services\IocService.cs" />
