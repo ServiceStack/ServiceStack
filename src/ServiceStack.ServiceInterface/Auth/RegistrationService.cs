@@ -4,6 +4,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
 using ServiceStack.ServiceInterface.ServiceModel;
+using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
@@ -49,15 +50,15 @@ namespace ServiceStack.ServiceInterface.Auth
 			RuleSet(ApplyTo.Post, () => {
 				RuleFor(x => x.Password).NotEmpty();
 				RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
-				RuleFor(x => x.Email).NotEmpty().When(x => x.UserName.IsNullOrEmpty());
+				RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
 				RuleFor(x => x.UserName)
 					.Must(x => UserAuthRepo.GetUserAuthByUserName(x) == null)
-					.WithErrorCode("UserNameAlreadyExists")
+					.WithErrorCode("AlreadyExists")
 					.WithMessage("UserName already exists")
 					.When(x => !x.UserName.IsNullOrEmpty());
 				RuleFor(x => x.Email)
 					.Must(x => x.IsNullOrEmpty() || UserAuthRepo.GetUserAuthByUserName(x) == null)
-					.WithErrorCode("EmailAlreadyExists")
+					.WithErrorCode("AlreadyExists")
 					.WithMessage("Email already exists")
 					.When(x => !x.Email.IsNullOrEmpty());
 			});
@@ -92,6 +93,9 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// </summary>
 		public override object OnPost(Registration request)
 		{
+			if (!ValidationFeature.Enabled)
+				RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
+
 			if (ValidateFn != null)
 			{
 				var response = ValidateFn(this, HttpMethods.Get, request);
@@ -99,8 +103,6 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			AssertUserAuthRepo();
-
-			RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
 
 			var newUserAuth = request.TranslateTo<UserAuth>();
 			var createdUser = this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password);
@@ -115,13 +117,14 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// </summary>
 		public object UpdateUserAuth(Registration request)
 		{
+			if (!ValidationFeature.Enabled)
+				RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
+
 			if (ValidateFn != null)
 			{
 				var response = ValidateFn(this, HttpMethods.Get, request);
 				if (response != null) return response;
 			}
-
-			RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
 
 			var userName = request.UserName ?? request.Email;
 			var existingUser = UserAuthRepo.GetUserAuthByUserName(userName);

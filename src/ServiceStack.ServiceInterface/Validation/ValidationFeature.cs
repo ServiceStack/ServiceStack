@@ -12,6 +12,8 @@ namespace ServiceStack.ServiceInterface.Validation
 {
 	public static class ValidationFeature
 	{
+		public static bool Enabled { private set; get; }
+
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
         /// will be validated.
@@ -19,6 +21,7 @@ namespace ServiceStack.ServiceInterface.Validation
         /// <param name="appHost">The app host</param>
 		public static void Init(IAppHost appHost)
 		{
+			Enabled = true;
 			var filter = new ValidationFilters();
 			appHost.RequestFilters.Add(filter.RequestFilter);
 		}
