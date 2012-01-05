@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints
 						WebHostPhysicalPath = "~".MapServerPath(),
 						ServiceStackHandlerFactoryPath = ServiceStackPath,
 						MetadataRedirectPath = null,
-						DefaultContentType = ContentType.Json,
+						DefaultContentType = null,
 						AllowJsonpRequests = true,
 						DebugMode = false,
 						DefaultDocuments = new List<string> {

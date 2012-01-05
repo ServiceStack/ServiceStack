@@ -65,6 +65,8 @@ namespace ServiceStack.WebHost.Endpoints
 		//After configure called
 		public static void AfterInit()
 		{
+			var specifiedContentType = config.DefaultContentType;
+
 			if (config.EnableFeatures != Feature.All)
 			{
 				if ((Feature.Xml & config.EnableFeatures) != Feature.Xml)
@@ -95,6 +97,11 @@ namespace ServiceStack.WebHost.Endpoints
 				MarkdownFormat.Instance.MarkdownGlobalHelpers = config.MarkdownGlobalHelpers;
 				MarkdownFormat.Instance.Register(AppHost);
 			}
+
+			if (!string.IsNullOrEmpty(specifiedContentType))
+				config.DefaultContentType = specifiedContentType;
+			else if (string.IsNullOrEmpty(config.DefaultContentType))
+				config.DefaultContentType = ContentType.Json;
 
 			config.ServiceManager.AfterInit();
 		}
