@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			var json = "~/AppData/ALFKI.json".MapAbsolutePath().ReadAllText();
+			var json = "~/AppData/ALFKI.json".MapProjectPath().ReadAllText();
 			response = JsonSerializer.DeserializeFromString<CustomerDetailsResponse>(json);
 		}
 
@@ -42,7 +42,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public AppHost()
 			{
 				this.Config = new EndpointHostConfig {
-					MarkdownSearchPath = "~".MapAbsolutePath(),
+					MarkdownSearchPath = "~".MapProjectPath(),
 					MarkdownReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};
@@ -235,14 +235,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			var markdownHandler = new MarkdownHandler {
 				MarkdownFormat = markdownFormat,
 				PathInfo = "/AppData/NoTemplate/Static.md",
-				FilePath = "~/AppData/NoTemplate/Static.md".MapAbsolutePath(),
+				FilePath = "~/AppData/NoTemplate/Static.md".MapProjectPath(),
 			};
 			var httpReq = new MockHttpRequest { QueryString = new NameValueCollection() };
 			var httpRes = new MockHttpResponse();
 			markdownHandler.ProcessRequest(httpReq, httpRes, "Static");
 
 			var expectedHtml = markdownFormat.Transform(
-				File.ReadAllText("~/AppData/NoTemplate/Static.md".MapAbsolutePath()));
+				File.ReadAllText("~/AppData/NoTemplate/Static.md".MapProjectPath()));
 
 			httpRes.Close();
 			Assert.That(httpRes.Contents, Is.EqualTo(expectedHtml));

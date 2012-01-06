@@ -121,13 +121,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/Views/Template/_Layout.cshtml".MapAbsolutePath();
+			staticTemplatePath = "~/Views/Template/_Layout.cshtml".MapProjectPath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
-			dynamicPagePath = "~/Views/Template/DynamicTpl.cshtml".MapAbsolutePath();
+			dynamicPagePath = "~/Views/Template/DynamicTpl.cshtml".MapProjectPath();
 			dynamicPageContent = File.ReadAllText(dynamicPagePath);
 
-			dynamicListPagePath = "~/Views/Template/DynamicListTpl.cshtml".MapAbsolutePath();
+			dynamicListPagePath = "~/Views/Template/DynamicListTpl.cshtml".MapProjectPath();
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 
 			templateArgs = person;

@@ -27,7 +27,7 @@ namespace CSharpEval
 		//[Test]
 		public void Compare_access()
 		{
-			var filePath = "~/AppData/TestsResults/Customer.htm".MapAbsolutePath();
+			var filePath = "~/AppData/TestsResults/Customer.htm".MapProjectPath();
 			const int Times = 10000;
 
 			var start = DateTime.Now;
