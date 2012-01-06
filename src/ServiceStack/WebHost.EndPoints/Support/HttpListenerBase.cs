@@ -105,37 +105,22 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		/// </param>
 		public virtual void Start(string urlBase)
 		{
-			this.Start(new string[]{urlBase});
+			// *** Already running - just leave it in place
+			if (this.IsStarted)
+				return;
+
+			if (this.Listener == null)
+			{
+				this.Listener = new HttpListener();
+			}
+
+			this.Listener.Prefixes.Add(urlBase);
+
+			this.IsStarted = true;
+			this.Listener.Start();
+
+			ThreadPool.QueueUserWorkItem(Listen);
 		}
-
-        /// <summary>
-        /// Starts the Web Service
-        /// </summary>
-        /// <param name="urlBases">A collection of Uris that acts as the base that the server is listening on.
-        /// Format should be: http://127.0.0.1:8080/ or http://127.0.0.1:8080/somevirtual/
-        /// Note: the trailing backslash is required! For more info see the
-        /// HttpListener.Prefixes property on MSDN.</param>
-        public virtual void Start(string[] urlBases)
-        {
-            // *** Already running - just leave it in place
-            if (this.IsStarted)
-                return;
-
-            if (this.Listener == null)
-            {
-                this.Listener = new HttpListener();
-            }
-
-            foreach (var urlBase in urlBases)
-            {
-                this.Listener.Prefixes.Add(urlBase);
-            }
-
-            this.IsStarted = true;
-            this.Listener.Start();
-
-            ThreadPool.QueueUserWorkItem(Listen);
-        }
 
 		// Loop here to begin processing of new requests.
 		private void Listen(object state)

@@ -13,9 +13,7 @@ namespace ServiceStack.Common.Utils
 				var assemblyDirectoryPath = Path.GetDirectoryName(new Uri(typeof(PathUtils).Assembly.EscapedCodeBase).LocalPath);
 
 				// Escape the assembly bin directory to the hostname directory
-			    var hostDirectoryPath = appendPartialPathModifier != null
-			                                ? assemblyDirectoryPath + appendPartialPathModifier
-			                                : assemblyDirectoryPath;
+				var hostDirectoryPath = assemblyDirectoryPath + appendPartialPathModifier;
 
 				return Path.GetFullPath(relativePath.Replace("~", hostDirectoryPath));
 			}
@@ -25,15 +23,12 @@ namespace ServiceStack.Common.Utils
 
 		public static string MapAbsolutePath(this string relativePath)
 		{
-            /* When running self-hosted, static files with Build Action set to Content should be 
-             * copied over into the /bin/ folder with the dlls */
-			var mapPath = MapAbsolutePath(relativePath, null);
+			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..{0}..", Path.DirectorySeparatorChar));
 			return mapPath;
 		}
 
 		public static string MapHostAbsolutePath(this string relativePath)
 		{
-            /* When running in Asp.Net, the root folder is one up from the /bin/ folder */
 			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..", Path.DirectorySeparatorChar));
 			return mapPath;
 		}
