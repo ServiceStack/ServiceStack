@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
+﻿using System.Net;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
-using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.ServiceInterface.Auth
+namespace ServiceStack.ServiceInterface
 {
-    public static class PermissionHandler
+    public static class PermissionFeature
     {
         /// <summary>
         /// Adds a request filter which checks if the required permission is given
@@ -25,8 +20,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
                 ApplyTo httpMethod = req.HttpMethodAsApplyTo();
 
-                RequiredPermissionAttribute[] attributes = (RequiredPermissionAttribute[])dto.GetType().GetCustomAttributes(typeof(RequiredPermissionAttribute), true);
-                foreach (RequiredPermissionAttribute attribute in attributes)
+                var attributes = (RequiredPermissionAttribute[])dto.GetType().GetCustomAttributes(typeof(RequiredPermissionAttribute), true);
+                foreach (var attribute in attributes)
                 {
                     if (attribute.ApplyTo.Has(httpMethod))
                     {

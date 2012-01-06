@@ -5,6 +5,9 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
 {
+	/// <summary>
+	/// Configure ServiceStack to have ISession support
+	/// </summary>
 	public static class SessionFeature
 	{
 		public const string SessionId = "ss-id";

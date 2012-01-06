@@ -104,6 +104,7 @@
     <Compile Include="ApplyTo.cs" />
     <Compile Include="AsyncServiceBase.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
+    <Compile Include="AuthFeature.cs" />
     <Compile Include="Auth\AuthService.cs" />
     <Compile Include="Auth\InMemoryAuthRepository.cs" />
     <Compile Include="Auth\IAuthHttpGateway.cs" />
@@ -111,7 +112,7 @@
     <Compile Include="Auth\IOAuthTokens.cs" />
     <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
-    <Compile Include="Auth\PermissionHandler.cs" />
+    <Compile Include="PermissionFeature.cs" />
     <Compile Include="Auth\RegistrationService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\AuthConfig.cs" />
@@ -188,6 +189,7 @@
     <Compile Include="FluentValidation\Validators\PropertyValidatorContext.cs" />
     <Compile Include="FluentValidation\Validators\RegularExpressionValidator.cs" />
     <Compile Include="IServiceBase.cs" />
+    <Compile Include="RegistrationFeature.cs" />
     <Compile Include="RequestFilterAttribute.cs" />
     <Compile Include="RequiredPermissionAttribute.cs" />
     <Compile Include="ResponseFilterAttribute.cs" />
