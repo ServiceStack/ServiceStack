@@ -45,7 +45,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			//staticTemplatePath = "~/AppData/Template/default.shtml".MapAbsolutePath();
 			//staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
-			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapAbsolutePath();
+			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapProjectPath();
 			dynamicPageContent = File.ReadAllText(dynamicPagePath);
 
 			//dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
@@ -61,7 +61,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Can_load_all_markdown_files()
 		{
-			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
+			markdownFormat.RegisterMarkdownPages("~/".MapProjectPath());
 
 			Assert.That(markdownFormat.ViewPages.Count, Is.EqualTo(viewPageNames.Length));
 			Assert.That(markdownFormat.ViewSharedPages.Count, Is.EqualTo(sharedViewPageNames.Length));
@@ -78,8 +78,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Can_Render_StaticPage()
 		{
-			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
-			var html = markdownFormat.RenderStaticPageHtml("~/AppData/NoTemplate/Static".MapAbsolutePath());
+			markdownFormat.RegisterMarkdownPages("~/".MapProjectPath());
+			var html = markdownFormat.RenderStaticPageHtml("~/AppData/NoTemplate/Static".MapProjectPath());
 
 			Assert.That(html, Is.Not.Null);
 			Assert.That(html, Is.StringStarting("<h1>Static Markdown template</h1>"));
@@ -88,8 +88,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Can_Render_StaticPage_WithTemplate()
 		{
-			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
-			var html = markdownFormat.RenderStaticPageHtml("~/AppData/Template/StaticTpl".MapAbsolutePath());
+			markdownFormat.RegisterMarkdownPages("~/".MapProjectPath());
+			var html = markdownFormat.RenderStaticPageHtml("~/AppData/Template/StaticTpl".MapProjectPath());
 
 			Console.WriteLine(html);
 
@@ -101,7 +101,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_DynamicPage()
 		{
 			var person = new Person { FirstName = "Demis", LastName = "Bellot" };
-			markdownFormat.RegisterMarkdownPages("~/".MapAbsolutePath());
+			markdownFormat.RegisterMarkdownPages("~/".MapProjectPath());
 
 			var html = markdownFormat.RenderDynamicPageHtml("Dynamic", person);
 

@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
+			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapProjectPath();
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 		}
 

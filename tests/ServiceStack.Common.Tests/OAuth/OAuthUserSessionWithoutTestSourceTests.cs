@@ -51,7 +51,7 @@ namespace ServiceStack.Common.Tests.OAuth
 					userAuthRepositorys.Add(sqliteInMemoryRepo);
 
 					var sqliteDbFactory = new OrmLiteConnectionFactory(
-						"~/App_Data/auth.sqlite".MapAbsolutePath());
+						"~/App_Data/auth.sqlite".MapProjectPath());
 					var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
 					sqliteDbRepo.CreateMissingTables();
 					userAuthRepositorys.Add(sqliteDbRepo);

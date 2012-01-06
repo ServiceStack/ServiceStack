@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 			if (request.RelativePath.IsNullOrEmpty())
 				throw new ArgumentNullException("RelativePath");
 
-			var filePath = ("~/" + request.RelativePath).MapAbsolutePath();
+			var filePath = ("~/" + request.RelativePath).MapProjectPath();
 			if (!File.Exists(filePath))
 				throw new FileNotFoundException(request.RelativePath);
 
