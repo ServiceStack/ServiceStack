@@ -195,11 +195,18 @@ namespace ServiceStack.WebHost.Endpoints
 
 				if (responseDto != null)
 				{
-					var attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
-					foreach (var attribute in attributes)
+					var httpResult = responseDto as IHttpResult;
+					if (httpResult != null)
+						responseDto = httpResult.Response;
+
+					if (responseDto != null)
 					{
-						attribute.ResponseFilter(httpReq, httpRes, responseDto);
-						if (httpRes.IsClosed) break;
+						var attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
+						foreach (var attribute in attributes)
+						{
+							attribute.ResponseFilter(httpReq, httpRes, responseDto);
+							if (httpRes.IsClosed) break;
+						}
 					}
 				}
 

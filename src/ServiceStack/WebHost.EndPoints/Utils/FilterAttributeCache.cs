@@ -51,9 +51,13 @@ namespace ServiceStack.WebHost.EndPoints.Utils
 			var attributes = new List<IHasResponseFilter>(
 	            (IHasResponseFilter[])responseDtoType.GetCustomAttributes(typeof(IHasResponseFilter), true));
 
-			var serviceType = EndpointHost.ServiceManager.ServiceController.ResponseServiceTypeMap[responseDtoType];
-			attributes.AddRange(
-				(IHasResponseFilter[])serviceType.GetCustomAttributes(typeof(IHasResponseFilter), true));
+        	Type serviceType;
+			EndpointHost.ServiceManager.ServiceController.ResponseServiceTypeMap.TryGetValue(responseDtoType, out serviceType);
+			if (serviceType != null)
+			{
+				attributes.AddRange(
+					(IHasResponseFilter[])serviceType.GetCustomAttributes(typeof(IHasResponseFilter), true));
+			}
 
 			attrs = attributes.ToArray();
 

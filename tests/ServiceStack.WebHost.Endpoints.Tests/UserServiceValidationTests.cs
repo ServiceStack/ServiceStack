@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
@@ -127,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
 
                 //One of this two properties should match
                 Assert.That(ex.ErrorCode, Is.EqualTo(ExpectedErrorCode));

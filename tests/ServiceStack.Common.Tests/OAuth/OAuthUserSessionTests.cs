@@ -10,6 +10,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
@@ -242,12 +243,13 @@ namespace ServiceStack.Common.Tests.OAuth
 				LastName = "LastName",
 			};
 			var loginService = new RegistrationService {
-				UserAuthRepo = userAuthRepository
+				UserAuthRepo = userAuthRepository,
+				RegistrationValidator = new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
 			};
 
             var responseObj = loginService.Post(request);
 
-            var httpResult = responseObj as HttpResult;
+            var httpResult = responseObj as IHttpResult;
             if (httpResult != null)
             {
                 Assert.Fail("HttpResult found: " + httpResult.Dump());
