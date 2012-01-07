@@ -8,76 +8,79 @@ For more info check out [servicestack.net](http://www.servicestack.net).
 
 Simple REST service example
 ===========================
-	
-	//Web Service Host Configuration
-	public class AppHost : AppHostBase
+
+```csharp
+//Web Service Host Configuration
+public class AppHost : AppHostBase
+{
+	public AppHost() : base("Backbone.js TODO", typeof(TodoService).Assembly) {}
+
+	public override void Configure(Funq.Container container)
 	{
-		public AppHost() : base("Backbone.js TODO", typeof(TodoService).Assembly) {}
+		//Register Web Service dependencies
+		container.Register(new TodoRepository());
 
-		public override void Configure(Funq.Container container)
-		{
-			//Register Web Service dependencies
-			container.Register(new TodoRepository());
-
-			//Register user-defined REST-ful routes			
-			Routes
-			  .Add<Todo>("/todos")
-			  .Add<Todo>("/todos/{Id}");
-		}
+		//Register user-defined REST-ful routes			
+		Routes
+		  .Add<Todo>("/todos")
+		  .Add<Todo>("/todos/{Id}");
 	}
-	
+}
 
-	//REST Resource DTO
-	public class Todo 
+
+//REST Resource DTO
+public class Todo 
+{
+	public long Id { get; set; }
+	public string Content { get; set; }
+	public int Order { get; set; }
+	public bool Done { get; set; }
+}
+
+//Todo REST Service implementation
+public class TodoService : RestServiceBase<Todo>
+{
+	public TodoRepository Repository { get; set; }  //Injected by IOC
+
+	public override object OnGet(Todo request)
 	{
-		public long Id { get; set; }
-		public string Content { get; set; }
-		public int Order { get; set; }
-		public bool Done { get; set; }
-	}
+		if (request.Id != default(long))
+			return Repository.GetById(request.Id);
 
-	//Todo REST Service implementation
-	public class TodoService : RestServiceBase<Todo>
-	{
-		public TodoRepository Repository { get; set; }  //Injected by IOC
-
-		public override object OnGet(Todo request)
-		{
-			if (request.Id != default(long))
-				return Repository.GetById(request.Id);
-
-			return Repository.GetAll();
-		}
-
-		//Called for both new and updated TODOs
-		public override object OnPost(Todo todo)
-		{
-			return Repository.Store(todo);
-		}
-
-		public override object OnDelete(Todo request)
-		{
-			Repository.DeleteById(request.Id);
-			return null;
-		}
+		return Repository.GetAll();
 	}
 
+	//Called for both new and updated TODOs
+	public override object OnPost(Todo todo)
+	{
+		return Repository.Store(todo);
+	}
+
+	public override object OnDelete(Todo request)
+	{
+		Repository.DeleteById(request.Id);
+		return null;
+	}
+}
+```
 
 ### Calling the above TODO REST service from any C#/.NET Client
-    //no code-gen required, can re-use above DTO's
 
-    var restClient = new JsonServiceClient("http://localhost/Backbone.Todo");
-    var all = restClient.Get<List<Todo>>("/todos"); // Count = 0
+```csharp
+//no code-gen required, can re-use above DTO's
 
-    var todo = restClient.Post<Todo>("/todos", new Todo { Content = "New TODO", Order = 1 }); //todo.Id = 1
-    all = restClient.Get<List<Todo>>("/todos"); // Count = 1
+var restClient = new JsonServiceClient("http://localhost/Backbone.Todo");
+var all = restClient.Get<List<Todo>>("/todos"); // Count = 0
 
-    todo.Content = "Updated TODO";
-    todo = restClient.Post<Todo>("/todos", todo); // todo.Content = Updated TODO
-    
-    restClient.Delete<Todo>("/todos/" + todo.Id);
-    all = restClient.Get<List<Todo>>("/todos"); // Count = 0
+var todo = restClient.Post<Todo>("/todos", new Todo { Content = "New TODO", Order = 1 }); //todo.Id = 1
+all = restClient.Get<List<Todo>>("/todos"); // Count = 1
 
+todo.Content = "Updated TODO";
+todo = restClient.Post<Todo>("/todos", todo); // todo.Content = Updated TODO
+
+restClient.Delete<Todo>("/todos/" + todo.Id);
+all = restClient.Get<List<Todo>>("/todos"); // Count = 0
+```
 
 ### Calling the TODO REST service from jQuery
 
