@@ -27,13 +27,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/Views/Template/default.shtml".MapAbsolutePath();
+			staticTemplatePath = "~/Views/Template/default.shtml".MapProjectPath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
-			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapAbsolutePath();
+			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapProjectPath();
 			dynamicPageContent = File.ReadAllText(dynamicPagePath);
 
-			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
+			dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapProjectPath();
 			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 		}
 

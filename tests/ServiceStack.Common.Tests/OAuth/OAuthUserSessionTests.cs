@@ -60,7 +60,7 @@ namespace ServiceStack.Common.Tests.OAuth
 					sqliteRepo.Clear();
 					yield return new TestCaseData(sqliteRepo);
 
-					var dbFilePath = "~/App_Data/auth.sqlite".MapAbsolutePath();
+					var dbFilePath = "~/App_Data/auth.sqlite".MapProjectPath();
 					if (File.Exists(dbFilePath)) File.Delete(dbFilePath);
 					var sqliteDbFactory = new OrmLiteConnectionFactory(dbFilePath);
 					var sqliteDbRepo = new OrmLiteAuthRepository(sqliteDbFactory);
