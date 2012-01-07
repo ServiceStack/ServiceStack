@@ -188,6 +188,9 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			if (session.TryAuthenticate(this, userName, password))
 			{
+				if (session.UserName == null)
+					session.UserName = userName;
+
 				this.SaveSession(session);
 
 				return new AuthResponse {

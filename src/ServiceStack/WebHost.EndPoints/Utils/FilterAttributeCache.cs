@@ -4,55 +4,70 @@ using System.Linq;
 using System.Text;
 using ServiceStack.ServiceHost;
 using System.Threading;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.WebHost.EndPoints.Utils
 {
     public static class FilterAttributeCache
     {
-        private static Dictionary<Type, IEnumerable<IHasRequestFilter>> requestFilterAttributes
-            = new Dictionary<Type, IEnumerable<IHasRequestFilter>>();
+		private static Dictionary<Type, IHasRequestFilter[]> requestFilterAttributes
+            = new Dictionary<Type, IHasRequestFilter[]>();
 
-        private static Dictionary<Type, IEnumerable<IHasResponseFilter>> responseFilterAttributes
-            = new Dictionary<Type, IEnumerable<IHasResponseFilter>>();
+		private static Dictionary<Type, IHasResponseFilter[]> responseFilterAttributes
+            = new Dictionary<Type, IHasResponseFilter[]>();
 
-        public static IEnumerable<IHasRequestFilter> GetRequestFilterAttributes(Type requestDtoType)
+        public static IHasRequestFilter[] GetRequestFilterAttributes(Type requestDtoType)
         {
-            IEnumerable<IHasRequestFilter> attributes;
-            if (requestFilterAttributes.TryGetValue(requestDtoType, out attributes)) return attributes;
+        	IHasRequestFilter[] attrs;
+			if (requestFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs;
 
-            attributes = (IHasRequestFilter[])requestDtoType.GetCustomAttributes(typeof(IHasRequestFilter), true);
+			var attributes = new List<IHasRequestFilter>(
+				(IHasRequestFilter[])requestDtoType.GetCustomAttributes(typeof(IHasRequestFilter), true));
 
-            Dictionary<Type, IEnumerable<IHasRequestFilter>> snapshot, newCache;
+        	var serviceType = EndpointHost.ServiceManager.ServiceController.RequestServiceTypeMap[requestDtoType];
+			attributes.AddRange(
+				(IHasRequestFilter[])serviceType.GetCustomAttributes(typeof(IHasRequestFilter), true)); 
+
+			attrs = attributes.ToArray();
+
+            Dictionary<Type, IHasRequestFilter[]> snapshot, newCache;
             do
             {
                 snapshot = requestFilterAttributes;
-                newCache = new Dictionary<Type, IEnumerable<IHasRequestFilter>>(requestFilterAttributes);
-                newCache[requestDtoType] = attributes;
+                newCache = new Dictionary<Type, IHasRequestFilter[]>(requestFilterAttributes);
+				newCache[requestDtoType] = attrs;
 
             } while (!ReferenceEquals(
             Interlocked.CompareExchange(ref requestFilterAttributes, newCache, snapshot), snapshot));
 
-            return attributes;
+			return attrs;
         }
 
-        public static IEnumerable<IHasResponseFilter> GetResponseFilterAttributes(Type responseDtoType)
+        public static IHasResponseFilter[] GetResponseFilterAttributes(Type responseDtoType)
         {
-            IEnumerable<IHasResponseFilter> attributes;
-            if (responseFilterAttributes.TryGetValue(responseDtoType, out attributes)) return attributes;
+			IHasResponseFilter[] attrs;
+			if (responseFilterAttributes.TryGetValue(responseDtoType, out attrs)) return attrs;
 
-            attributes = (IHasResponseFilter[])responseDtoType.GetCustomAttributes(typeof(IHasResponseFilter), true);
+			var attributes = new List<IHasResponseFilter>(
+	            (IHasResponseFilter[])responseDtoType.GetCustomAttributes(typeof(IHasResponseFilter), true));
 
-            Dictionary<Type, IEnumerable<IHasResponseFilter>> snapshot, newCache;
+			var serviceType = EndpointHost.ServiceManager.ServiceController.ResponseServiceTypeMap[responseDtoType];
+			attributes.AddRange(
+				(IHasResponseFilter[])serviceType.GetCustomAttributes(typeof(IHasResponseFilter), true));
+
+			attrs = attributes.ToArray();
+
+            Dictionary<Type, IHasResponseFilter[]> snapshot, newCache;
             do
             {
                 snapshot = responseFilterAttributes;
-                newCache = new Dictionary<Type, IEnumerable<IHasResponseFilter>>(responseFilterAttributes);
-                newCache[responseDtoType] = attributes;
+                newCache = new Dictionary<Type, IHasResponseFilter[]>(responseFilterAttributes);
+				newCache[responseDtoType] = attrs;
 
             } while (!ReferenceEquals(
             Interlocked.CompareExchange(ref responseFilterAttributes, newCache, snapshot), snapshot));
 
-            return attributes;
+			return attrs;
         }
     }
 }

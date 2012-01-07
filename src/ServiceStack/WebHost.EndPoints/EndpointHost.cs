@@ -164,7 +164,7 @@ namespace ServiceStack.WebHost.Endpoints
 					if (httpRes.IsClosed) break;
 				}
 
-                IEnumerable<IHasRequestFilter> attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
+                var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
                 foreach (var attribute in attributes)
                 {
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
@@ -193,12 +193,15 @@ namespace ServiceStack.WebHost.Endpoints
 					if (httpRes.IsClosed) break;
 				}
 
-                IEnumerable<IHasResponseFilter> attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
-                foreach (var attribute in attributes)
-                {
-                    attribute.ResponseFilter(httpReq, httpRes, responseDto);
-                    if (httpRes.IsClosed) break;
-                }
+				if (responseDto != null)
+				{
+					var attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
+					foreach (var attribute in attributes)
+					{
+						attribute.ResponseFilter(httpReq, httpRes, responseDto);
+						if (httpRes.IsClosed) break;
+					}
+				}
 
 				return httpRes.IsClosed;
 			}
