@@ -15,7 +15,6 @@ COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.Common.* ..\N
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.Interfaces.* ..\NuGet\ServiceStack.Common\lib
 
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\chaweet\api\lib
-COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\SocialApiBootstrap\lib
 
 COPY ..\src\ServiceStack.RazorEngine\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib
@@ -40,3 +39,6 @@ COPY ..\..\ServiceStack.Text\NuGet\lib\*.* ..\release\latest\ServiceStack
 COPY ..\NuGet\ServiceStack\lib\*.* ..\release\latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Common\lib\*.* ..\release\latest\ServiceStack
 
+COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\SocialApiBootstrap\lib
+COPY ..\..\ServiceStack.OrmLite\NuGet\ServiceStack.OrmLite.SqlServer\lib\*.* ..\..\SocialApiBootstrap\lib
+COPY ..\..\ServiceStack.Redis\NuGet\lib\*.* ..\..\SocialApiBootstrap\lib
