@@ -16,7 +16,6 @@ namespace ServiceStack.ServiceInterface
     public class RequiredPermissionAttribute : RequestFilterAttribute
     {
         public List<string> RequiredPermissions { get; set; }
-        public ApplyTo ApplyTo { get; set; }
 
     	public RequiredPermissionAttribute(params string[] permissions)
         {
