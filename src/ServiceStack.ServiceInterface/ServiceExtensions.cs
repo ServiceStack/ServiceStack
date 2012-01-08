@@ -74,12 +74,12 @@ namespace ServiceStack.ServiceInterface
 				?? DefaultCache;
 		}
 
-        public static ICacheClient GetCacheClient(this IHttpRequest httpRequest)
-        {
-            return httpRequest.TryResolve<ICacheClient>()
-                ?? (ICacheClient)httpRequest.TryResolve<IRedisClientsManager>()
-                ?? DefaultCache;
-        }
+		public static ICacheClient GetCacheClient(this IHttpRequest httpRequest)
+		{
+			return httpRequest.TryResolve<ICacheClient>()
+				?? (ICacheClient)httpRequest.TryResolve<IRedisClientsManager>()
+				?? DefaultCache;
+		}
 
 		public static void SaveSession(this IServiceBase service, IAuthSession session)
 		{
@@ -87,6 +87,7 @@ namespace ServiceStack.ServiceInterface
 			{
 				var sessionKey = AuthService.GetSessionKey(service.GetSessionId());
 				cache.Set(sessionKey, session);
+				service.RequestContext.Get<IHttpRequest>().SaveSession(session);
 			}
 		}
 
@@ -96,8 +97,20 @@ namespace ServiceStack.ServiceInterface
 			{
 				var sessionKey = AuthService.GetSessionKey(service.GetSessionId());
 				cache.Remove(sessionKey);
-				service.RequestContext.Get<IHttpRequest>().Items.Remove(RequestItemsSessionKey);
+				service.RequestContext.Get<IHttpRequest>().RemoveSession();
 			}
+		}
+
+		public static void SaveSession(this IHttpRequest httpReq, IAuthSession session)
+		{
+			if (httpReq == null) return;
+			httpReq.Items[RequestItemsSessionKey] = session;
+		}
+
+		public static void RemoveSession(this IHttpRequest httpReq)
+		{
+			if (httpReq == null) return;
+			httpReq.Items.Remove(RequestItemsSessionKey);
 		}
 
 		public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
@@ -108,6 +121,8 @@ namespace ServiceStack.ServiceInterface
 		public const string RequestItemsSessionKey = "__session";
 		public static IAuthSession GetSession(this IHttpRequest httpReq, bool reload = false)
 		{
+			if (httpReq == null) return null;
+
 			object oSession = null;
 			if (!reload)
 				httpReq.Items.TryGetValue(RequestItemsSessionKey, out oSession);

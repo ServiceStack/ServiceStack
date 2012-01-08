@@ -32,19 +32,15 @@ namespace ServiceStack.ServiceInterface
 
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
-			var httpMethod = req.HttpMethodAsApplyTo();
-			if (this.ApplyTo.Has(httpMethod))
+			var session = req.GetSession();
+			foreach (string requiredPermission in this.RequiredPermissions)
 			{
-				var session = req.GetSession(); //Now cached
-				foreach (string requiredPermission in this.RequiredPermissions)
+				if (session == null || !session.HasPermission(requiredPermission))
 				{
-					if (session == null || !session.HasPermission(requiredPermission))
-					{
-						res.StatusCode = (int)HttpStatusCode.Unauthorized;
-						res.StatusDescription = "Invalid Permissions";
-						res.Close();
-						return;
-					}
+					res.StatusCode = (int)HttpStatusCode.Unauthorized;
+					res.StatusDescription = "Invalid Permissions";
+					res.Close();
+					return;
 				}
 			}
 		}
