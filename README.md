@@ -1,4 +1,4 @@
-Join the new google group](http://groups.google.com/group/servicestack) or
+Join the [google group](http://groups.google.com/group/servicestack) or
 follow [@demisbellot](http://twitter.com/demisbellot) and [@ServiceStack](http://twitter.com/servicestack)
 for twitter updates.
 
