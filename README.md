@@ -126,7 +126,7 @@ Otherwise if you just want ServiceStack hosted at `/` - Create an empty ASP.NET 
 ![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.aspnet.png)
 
 
-To help get started you should also download the ServiceStack.Examples projects (includes ServiceStack.dlls, demos and starter templates):
+To help get started you should also download the ServiceStack.Examples projects (includes dlls, demos and starter templates):
 
   * **[ServiceStack.Examples/downloads/](https://github.com/ServiceStack/ServiceStack.Examples/downloads)**
 
