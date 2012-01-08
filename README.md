@@ -50,8 +50,12 @@ public class TodoService : RestServiceBase<Todo>
 		return Repository.GetAll();
 	}
 
-	//Called for both new and updated TODOs
 	public override object OnPost(Todo todo)
+	{
+		return Repository.Store(todo);
+	}
+
+	public override object OnPut(Todo todo)
 	{
 		return Repository.Store(todo);
 	}
