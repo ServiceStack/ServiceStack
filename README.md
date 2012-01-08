@@ -1,4 +1,4 @@
-Join the new google group](http://groups.google.com/group/servicestack) or
+Join the [google group](http://groups.google.com/group/servicestack) or
 follow [@demisbellot](http://twitter.com/demisbellot) and [@ServiceStack](http://twitter.com/servicestack)
 for twitter updates.
 
@@ -50,8 +50,12 @@ public class TodoService : RestServiceBase<Todo>
 		return Repository.GetAll();
 	}
 
-	//Called for both new and updated TODOs
 	public override object OnPost(Todo todo)
+	{
+		return Repository.Store(todo);
+	}
+
+	public override object OnPut(Todo todo)
 	{
 		return Repository.Store(todo);
 	}
@@ -113,11 +117,20 @@ host of functionality for free, out of the box without any configuration require
 Download
 ========
 
-To start developing web services with Service Stack we recommend starting with the ServiceStack.Examples project (includes ServiceStack.dlls):
+If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
+
+If you want to host ServiceStack Side-by-Side with MVC: Hosted at `/api` - Create an empty MVC Web Application and
+![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.mvc.png)
+
+Otherwise if you just want ServiceStack hosted at `/` - Create an empty ASP.NET Web Application and
+![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.aspnet.png)
+
+
+To help get started you should also download the ServiceStack.Examples projects (includes dlls, demos and starter templates):
 
   * **[ServiceStack.Examples/downloads/](https://github.com/ServiceStack/ServiceStack.Examples/downloads)**
 
-If you already have ServiceStack and just want to download the latest release binaries get them at:
+If you prefer not to use NuGet and just want to download the latest release binaries get them at:
 
   * **[ServiceStack/downloads/](https://github.com/ServiceStack/ServiceStack/downloads)**
 
