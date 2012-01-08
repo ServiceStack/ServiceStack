@@ -96,14 +96,31 @@ namespace ServiceStack.ServiceInterface
 			{
 				var sessionKey = AuthService.GetSessionKey(service.GetSessionId());
 				cache.Remove(sessionKey);
+				service.RequestContext.Get<IHttpRequest>().Items.Remove(RequestItemsSessionKey);
 			}
 		}
 
-		public static IAuthSession GetSession(this IServiceBase service)
+		public static IAuthSession GetSession(this IServiceBase service, bool reload = false)
 		{
-			using (var cache = service.GetCacheClient())
+			return service.RequestContext.Get<IHttpRequest>().GetSession(reload);
+		}
+
+		public const string RequestItemsSessionKey = "__session";
+		public static IAuthSession GetSession(this IHttpRequest httpReq, bool reload = false)
+		{
+			object oSession = null;
+			if (!reload)
+				httpReq.Items.TryGetValue(RequestItemsSessionKey, out oSession);
+
+			if (oSession != null)
+				return (IAuthSession)oSession;
+
+			using (var cache = httpReq.GetCacheClient())
 			{
-				return GetSession(cache, service.GetSessionId());
+				var session = GetSession(cache, httpReq.GetPermanentSessionId());
+				if (session != null)
+					httpReq.Items.Add(RequestItemsSessionKey, session);
+				return session;
 			}
 		}
 
@@ -118,5 +135,6 @@ namespace ServiceStack.ServiceInterface
 			}
 			return session;
 		}
+
 	}
 }

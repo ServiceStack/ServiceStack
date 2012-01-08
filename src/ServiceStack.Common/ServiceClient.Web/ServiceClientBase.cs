@@ -177,7 +177,8 @@ namespace ServiceStack.ServiceClient.Web
 				log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
 				var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
-					StatusCode = (int)errorResponse.StatusCode,
+					StatusCode = (int)errorResponse.StatusCode,				
+					StatusDescription = errorResponse.StatusDescription,
 				};
 
 				try
@@ -192,6 +193,7 @@ namespace ServiceStack.ServiceClient.Web
 					// Oh, well, we tried
 					throw new WebServiceException(errorResponse.StatusDescription, innerEx) {
 						StatusCode = (int)errorResponse.StatusCode,
+						StatusDescription = errorResponse.StatusDescription,
 					};
 				}
 

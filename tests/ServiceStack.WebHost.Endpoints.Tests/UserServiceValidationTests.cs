@@ -17,9 +17,9 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [RestService("/users")]
-    [RestService("/users/{Id}")]
-    public class User
+    [RestService("/uservalidation")]
+	[RestService("/uservalidation/{Id}")]
+    public class UserValidation
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -30,15 +30,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         bool ValidAddress(string address);
     }
 
-    public class UserValidator : AbstractValidator<User>
+    public class UserValidator : AbstractValidator<UserValidation>
     {
         public IAddressValidator AddressValidator { get; set; }
 
         public UserValidator()
         {
-            RuleSet(ApplyTo.Post | ApplyTo.Put, () =>
+			RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
+			RuleSet(ApplyTo.Post | ApplyTo.Put, () =>
             {
-                RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
                 RuleFor(x => x.FirstName).NotEmpty().WithMessage("Please specify a first name");
             });
         }
@@ -47,12 +47,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     //Not matching the naming convention ([Request DTO Name] + "Response")
     public class OperationResponse
     {
-        public User Result { get; set; }
+        public UserValidation Result { get; set; }
     }
 
-    public class UserService : RestServiceBase<User>
+    public class UserValidationService : RestServiceBase<UserValidation>
     {
-        public override object OnGet(User request)
+        public override object OnGet(UserValidation request)
         {
             return new OperationResponse { Result = request };
         }
@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public UserAppHostHttpListener()
-                : base("Validation Tests", typeof(UserService).Assembly) { }
+                : base("Validation Tests", typeof(UserValidationService).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -123,16 +123,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var client = (IRestClient)factory();
-                var response = client.Get<OperationResponse>("Customers");
+				var response = client.Get<OperationResponse>("UserValidation");
                 Assert.Fail("Should throw Validation Exception");
             }
             catch (WebServiceException ex)
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-
-                //One of this two properties should match
-                Assert.That(ex.ErrorCode, Is.EqualTo(ExpectedErrorCode));
-                Assert.That(ex.StatusDescription, Is.EqualTo(ExpectedErrorCode));
+            	Assert.That(ex.StatusDescription, Is.EqualTo(ExpectedErrorCode));
             }
         }
 

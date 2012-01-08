@@ -9,7 +9,6 @@ using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -106,15 +105,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				var client = GetClient();
 				var request = new Secured { Name = "test" };
 				var response = client.Send<SecureResponse>(request);
-				
+
 				Assert.Fail("Shouldn't be allowed");
 			}
 			catch (WebServiceException webEx)
 			{
 				Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-
 				Console.WriteLine(webEx.ResponseDto.Dump());
-			} 
+			}
 		}
 
 		[Test]
@@ -132,5 +130,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Assert.Fail(webEx.Message);
 			}
 		}
+
+		[Test]
+		public void Manually_authenticating_holds()
+		{
+			try
+			{
+				var client = GetClient();
+
+				var authResponse = client.Send<AuthResponse>(new Auth {
+					provider = CredentialsAuthConfig.Name,
+					UserName = "user",
+					Password = "p@55word",
+				});
+
+				Console.WriteLine(authResponse.Dump());
+
+				var request = new Secured { Name = "test" };
+				var response = client.Send<SecureResponse>(request);
+				Assert.That(response.Result, Is.EqualTo(request.Name));
+			}
+			catch (WebServiceException webEx)
+			{
+				Assert.Fail(webEx.Message);
+			}
+		}
+
 	}
 }
