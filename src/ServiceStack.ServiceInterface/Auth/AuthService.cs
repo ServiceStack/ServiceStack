@@ -136,7 +136,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			//Already Authenticated
-			return this.Redirect(session.ReferrerUrl.AddQueryParam("s", "0"));
+			return this.Redirect(session.ReferrerUrl.AddHashParam("s", "0"));
 		}
 
 		public override object OnPost(Auth request)

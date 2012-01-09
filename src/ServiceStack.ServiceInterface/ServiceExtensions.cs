@@ -24,6 +24,17 @@ namespace ServiceStack.ServiceInterface
 			return url + prefix + key + "=" + val.UrlEncode();
 		}
 
+		public static string AddHashParam(this string url, string key, object val)
+		{
+			return url.AddHashParam(key, val.ToString());
+		}
+
+		public static string AddHashParam(this string url, string key, string val)
+		{
+			var prefix = url.IndexOf('#') == -1 ? "#" : "/";
+			return url + prefix + key + "=" + val.UrlEncode();
+		}
+
 		public static IHttpResult Redirect(this IServiceBase service, string url)
 		{
 			return service.Redirect(url, "Moved Temporarily");
