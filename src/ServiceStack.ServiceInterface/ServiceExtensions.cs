@@ -13,6 +13,11 @@ namespace ServiceStack.ServiceInterface
 {
 	public static class ServiceExtensions
 	{
+		public static string AddQueryParam(this string url, string key, object val)
+		{
+			return url.AddQueryParam(key, val.ToString());
+		}
+
 		public static string AddQueryParam(this string url, string key, string val)
 		{
 			var prefix = url.IndexOf('?') == -1 ? "?" : "&";
@@ -40,7 +45,7 @@ namespace ServiceStack.ServiceInterface
 				StatusCode = HttpStatusCode.Unauthorized,
 				ContentType = service.RequestContext.ResponseContentType,
 				Headers = {
-					{ HttpHeaders.WwwAuthenticate, "OAuth realm=\"{0}\"".Fmt(AuthService.DefaultOAuthRealm) }
+					{ HttpHeaders.WwwAuthenticate, AuthService.DefaultOAuthProvider + " realm=\"{0}\"".Fmt(AuthService.DefaultOAuthRealm) }
 				},
 			};
 		}
