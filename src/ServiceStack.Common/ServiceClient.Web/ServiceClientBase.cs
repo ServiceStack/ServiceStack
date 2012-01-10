@@ -28,6 +28,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		protected ServiceClientBase()
 		{
+			this.StoreCookies = true;
 			this.HttpMethod = DefaultHttpMethod;
 			asyncClient = new AsyncServiceClient {
 				ContentType = ContentType,
@@ -92,6 +93,10 @@ namespace ServiceStack.ServiceClient.Web
 				this.asyncClient.Credentials = value;
 			}
 		}
+
+		public bool StoreCookies { get; set; }
+
+		private CookieContainer cookieContainer;
 
 		public abstract void SerializeToStream(IRequestContext requestContext, object request, Stream stream);
 
@@ -172,7 +177,8 @@ namespace ServiceStack.ServiceClient.Web
 				log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
 
 				var serviceEx = new WebServiceException(errorResponse.StatusDescription) {
-					StatusCode = (int)errorResponse.StatusCode,
+					StatusCode = (int)errorResponse.StatusCode,				
+					StatusDescription = errorResponse.StatusDescription,
 				};
 
 				try
@@ -187,6 +193,7 @@ namespace ServiceStack.ServiceClient.Web
 					// Oh, well, we tried
 					throw new WebServiceException(errorResponse.StatusDescription, innerEx) {
 						StatusCode = (int)errorResponse.StatusCode,
+						StatusDescription = errorResponse.StatusDescription,
 					};
 				}
 
@@ -230,6 +237,14 @@ namespace ServiceStack.ServiceClient.Web
                 if (Proxy != null) client.Proxy = Proxy;
                 if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
                 if (this.credentials != null) client.Credentials = this.credentials;
+
+				if (StoreCookies)
+				{
+					if (cookieContainer == null)
+						cookieContainer = new CookieContainer();
+
+					client.CookieContainer = cookieContainer;
+				}
 
 				if (HttpWebRequestFilter != null)
                     HttpWebRequestFilter(client);

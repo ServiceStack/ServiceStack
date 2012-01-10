@@ -98,6 +98,7 @@ namespace ServiceStack.WebHost.Endpoints
 						},
 						RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
 						CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+						MetadataPagesFilter = (httpReq, body) => body,
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -152,6 +153,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
 			this.CustomHttpHandlers = instance.CustomHttpHandlers;
+			this.MetadataPagesFilter = instance.MetadataPagesFilter;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -289,6 +291,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
 		public Dictionary<HttpStatusCode, IHttpHandler> CustomHttpHandlers { get; set; }
+
+		public Func<IHttpRequest, string, string> MetadataPagesFilter { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace

@@ -95,19 +95,19 @@ namespace ServiceStack.ServiceInterface.Auth
 				session.OnAuthenticated(service, tokens, authInfo.ToDictionary());
 
 				//Haz access!
-				return service.Redirect(session.ReferrerUrl.AddQueryParam("s", "1"));
+				return service.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
 			}
 			catch (WebException we)
 			{
 				var statusCode = ((HttpWebResponse)we.Response).StatusCode;
 				if (statusCode == HttpStatusCode.BadRequest)
 				{
-					return service.Redirect(session.ReferrerUrl.AddQueryParam("f", "AccessTokenFailed"));
+					return service.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
 				}
 			}
 
 			//Shouldn't get here
-			return service.Redirect(session.ReferrerUrl.AddQueryParam("f", "Unknown"));
+			return service.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
 		}
 	}
 
@@ -162,14 +162,14 @@ namespace ServiceStack.ServiceInterface.Auth
 					service.SaveSession(session);
 
 					//Haz access!
-					return service.Redirect(session.ReferrerUrl.AddQueryParam("s", "1"));
+					return service.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
 				}
 
 				//No Joy :(
 				tokens.RequestToken = null;
 				tokens.RequestTokenSecret = null;
 				service.SaveSession(session);
-				return service.Redirect(session.ReferrerUrl.AddQueryParam("f", "AccessTokenFailed"));
+				return service.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
 			}
 			if (oAuth.AcquireRequestToken())
 			{
@@ -183,7 +183,7 @@ namespace ServiceStack.ServiceInterface.Auth
 					.AddQueryParam("oauth_callback", session.ReferrerUrl));
 			}
 
-			return service.Redirect(session.ReferrerUrl.AddQueryParam("f", "RequestTokenFailed"));
+			return service.Redirect(session.ReferrerUrl.AddHashParam("f", "RequestTokenFailed"));
 		}
 	}
 }

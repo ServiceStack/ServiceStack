@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -35,3 +36,7 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyFileVersion("1.0.0.0")]
 
 //Default DataContract namespace instead of tempuri.org
+[assembly: ContractNamespace("http://schemas.servicestack.net/types",
+	ClrNamespace = "ServiceStack.ServiceInterface")]
+[assembly: ContractNamespace("http://schemas.servicestack.net/types",
+	ClrNamespace = "ServiceStack.ServiceInterface.Auth")]

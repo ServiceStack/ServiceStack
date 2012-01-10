@@ -123,8 +123,10 @@
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="AttributeFiltersTest.cs" />
+    <Compile Include="AuthTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CustomerServiceValidationTests.cs" />
+    <Compile Include="ExceptionHandlingTests.cs" />
     <Compile Include="HttpResultContentTypeTests.cs" />
     <Compile Include="RemoteEndDropsConnectionTests.cs" />
     <Compile Include="IocServiceTests.cs" />
@@ -229,8 +231,12 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="webpage.forbidden" />
-    <Content Include="webpage.html" />
+    <Content Include="webpage.forbidden">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="webpage.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestExistingDir\default.html" />
     <Content Include="TestExistingDir\upload.html" />
   </ItemGroup>

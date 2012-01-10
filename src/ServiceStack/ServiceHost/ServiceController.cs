@@ -18,6 +18,8 @@ namespace ServiceStack.ServiceHost
 
 		public ServiceController(Func<IEnumerable<Type>> resolveServicesFn)
 		{
+			this.RequestServiceTypeMap = new Dictionary<Type, Type>();
+			this.ResponseServiceTypeMap = new Dictionary<Type, Type>();
 			this.AllOperationTypes = new List<Type>();
 			this.OperationTypes = new List<Type>();
 			this.ServiceTypes = new HashSet<Type>();
@@ -35,6 +37,10 @@ namespace ServiceStack.ServiceHost
 		private readonly ServiceRoutes routes;
 
 		public bool EnableAccessRestrictions { get; set; }
+
+		public Dictionary<Type, Type> ResponseServiceTypeMap { get; set; }
+
+		public Dictionary<Type, Type> RequestServiceTypeMap { get; set; }
 
 		public IList<Type> AllOperationTypes { get; protected set; }
 
@@ -91,6 +97,7 @@ namespace ServiceStack.ServiceHost
 
 				this.ServiceTypes.Add(serviceType);
 
+				this.RequestServiceTypeMap[requestType] = serviceType;
 				this.AllOperationTypes.Add(requestType);
 				this.OperationTypes.Add(requestType);
 
@@ -98,6 +105,7 @@ namespace ServiceStack.ServiceHost
 				var responseType = AssemblyUtils.FindType(responseTypeName);
 				if (responseType != null)
 				{
+					this.ResponseServiceTypeMap[responseType] = serviceType;
 					this.AllOperationTypes.Add(responseType);
 					this.OperationTypes.Add(responseType);
 				}

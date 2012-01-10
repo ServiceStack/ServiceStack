@@ -16,7 +16,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				new CredentialsAuthConfig());
 		}
 
-		public IUserAuthRepository GetStubRepo()
+		public static IUserAuthRepository GetStubRepo()
 		{
 			var mock = new Mock<IUserAuthRepository>();
 			mock.Expect(x => x.GetUserAuthByUserName(It.IsAny<string>()))
@@ -117,9 +117,9 @@ namespace ServiceStack.Common.Tests.OAuth
 			var errors = response.GetFieldErrors();
 
 			Assert.That(errors.Count, Is.EqualTo(2));
-			Assert.That(errors[0].ErrorCode, Is.EqualTo("UserNameAlreadyExists"));
+			Assert.That(errors[0].ErrorCode, Is.EqualTo("AlreadyExists"));
 			Assert.That(errors[0].FieldName, Is.EqualTo("UserName"));
-			Assert.That(errors[1].ErrorCode, Is.EqualTo("EmailAlreadyExists"));
+			Assert.That(errors[1].ErrorCode, Is.EqualTo("AlreadyExists"));
 			Assert.That(errors[1].FieldName, Is.EqualTo("Email"));
 		}
 	}

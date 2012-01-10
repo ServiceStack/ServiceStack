@@ -73,7 +73,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			var jsonPages = File.ReadAllText("~/AppData/Pages.json".MapAbsolutePath());
+			var jsonPages = File.ReadAllText("~/AppData/Pages.json".MapProjectPath());
 	
 			Pages = JsonSerializer.DeserializeFromString<List<Page>>(jsonPages);
 
