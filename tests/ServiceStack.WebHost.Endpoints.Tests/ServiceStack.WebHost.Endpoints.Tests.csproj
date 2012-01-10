@@ -126,6 +126,7 @@
     <Compile Include="AuthTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CustomerServiceValidationTests.cs" />
+    <Compile Include="ExceptionHandlingTests.cs" />
     <Compile Include="HttpResultContentTypeTests.cs" />
     <Compile Include="RemoteEndDropsConnectionTests.cs" />
     <Compile Include="IocServiceTests.cs" />
