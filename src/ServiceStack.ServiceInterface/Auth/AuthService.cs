@@ -139,16 +139,29 @@ namespace ServiceStack.ServiceInterface.Auth
 			return this.Redirect(session.ReferrerUrl.AddHashParam("s", "0"));
 		}
 
-		public override object OnPost(Auth request)
-		{
-			if (ValidateFn != null)
-			{
-				var response = ValidateFn(this, HttpMethods.Get, request);
-				if (response != null) return response;
-			}
+        public override object OnPost(Auth request)
+        {
+            if (ValidateFn != null)
+            {
+                var response = ValidateFn(this, HttpMethods.Post, request);
+                if (response != null) return response;
+            }
 
-			return CredentialsAuth(request);
-		}
+            return CredentialsAuth(request);
+        }
+
+        public override object OnDelete(Auth request)
+        {
+            if (ValidateFn != null)
+            {
+                var response = ValidateFn(this, HttpMethods.Delete, request);
+                if (response != null) return response;
+            }
+
+            this.RemoveSession();
+
+            return new AuthResponse();
+        }
 
 		class CredentialsAuthValidator : AbstractValidator<Auth>
 		{
