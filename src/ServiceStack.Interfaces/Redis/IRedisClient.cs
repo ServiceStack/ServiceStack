@@ -59,6 +59,10 @@ namespace ServiceStack.Redis
 		void RenameKey(string fromName, string toName);
 		string GetSubstring(string key, int fromIndex, int toIndex);
 
+        //store POCOs as hash
+	    T GetFromHash<T>(object id);
+	    void StoreAsHash<T>(T entity);
+
 		bool ContainsKey(string key);
 		bool RemoveEntry(params string[] args);
 		long IncrementValue(string key);

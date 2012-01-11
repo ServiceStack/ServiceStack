@@ -72,6 +72,9 @@ namespace ServiceStack.Redis.Generic
 		List<T> GetValues(List<string> keys);
 		List<T> GetSortedEntryValues(IRedisSet<T> fromSet, int startingFrom, int endingAt);
 
+	    void StoreAsHash(T entity);
+	    T GetFromHash(object id);
+
 		//Set operations
 		HashSet<T> GetAllItemsFromSet(IRedisSet<T> fromSet);
 		void AddItemToSet(IRedisSet<T> toSet, T item);
