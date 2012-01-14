@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
 				Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
-				Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+				Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
 			}
 		}
 
@@ -111,7 +111,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
 				Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.BadRequest));
-				Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+				Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
 			}
 		}
 
