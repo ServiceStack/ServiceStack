@@ -116,7 +116,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Does_work_with_Credentials()
+		public void Does_work_with_BasicAuth()
 		{
 			try
 			{
@@ -132,7 +132,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		public void Manually_authenticating_holds()
+		public void Does_always_send_BasicAuth()
+		{
+			try
+			{
+				var client = (ServiceClientBase)GetClientWithUserPassword();
+				client.AlwaysSendBasicAuthHeader = true;
+				client.LocalHttpWebRequestFilter = req =>
+					{
+						bool hasAuthentication = false;
+						foreach (var key in req.Headers.Keys)
+						{
+							if (key.ToString() == "Authorization")
+								hasAuthentication = true;
+						}
+						Assert.IsTrue(hasAuthentication);
+					};
+
+				var request = new Secured { Name = "test" };
+				var response = client.Send<SecureResponse>(request);
+				Assert.That(response.Result, Is.EqualTo(request.Name));
+			}
+			catch (WebServiceException webEx)
+			{
+				Assert.Fail(webEx.Message);
+			}
+		}
+
+		[Test]
+		public void Does_work_with_CredentailsAuth()
 		{
 			try
 			{
