@@ -20,6 +20,10 @@ namespace ServiceStack.ServiceClient.Web
 	{
 		private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
 
+		/// <summary>
+		/// The request filter is called before any request.
+		/// This request filter is executed globally.
+		/// </summary>
 		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
 
 		public const string DefaultHttpMethod = "POST";
@@ -51,10 +55,19 @@ namespace ServiceStack.ServiceClient.Web
 			this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
 		}
 
+		/// <summary>
+		/// The user name for basic authentication
+		/// </summary>
 		public string UserName { get; set; }
 
+		/// <summary>
+		/// The password for basic authentication
+		/// </summary>
 		public string Password { get; set; }
 
+		/// <summary>
+		/// Sets the username and the password for basic authentication.
+		/// </summary>
 		public void SetCredentials(string userName, string password)
 		{
 			this.UserName = userName;
@@ -85,6 +98,12 @@ namespace ServiceStack.ServiceClient.Web
         public IWebProxy Proxy { get; set; }
 
 		private ICredentials credentials;
+
+		/// <summary>
+		/// Gets or sets authentication information for the request.
+		/// Warning: It's recommened to use <see cref="UserName"/> and <see cref="Password"/> for basic auth.
+		/// This property is only used for IIS level authentication.
+		/// </summary>
 		public ICredentials Credentials
 		{
 			set
@@ -94,9 +113,24 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
+		/// <summary>
+		/// Determines if the basic auth header should be sent with every request.
+		/// By default, the basic auth header is only sent when "401 Unauthorized" is returned.
+		/// </summary>
+		public bool AlwaysSendBasicAuthHeader { get; set; }
+
+		/// <summary>
+		/// Specifies if cookies should be stored
+		/// </summary>
 		public bool StoreCookies { get; set; }
 
-		private CookieContainer cookieContainer;
+		public CookieContainer CookieContainer { get; set; }
+
+		/// <summary>
+		/// The request filter is called before any request.
+		/// This request filter only works with the instance where it was set (not global).
+		/// </summary>
+		public Action<HttpWebRequest> LocalHttpWebRequestFilter { get; set; }
 
 		public abstract void SerializeToStream(IRequestContext requestContext, object request, Stream stream);
 
@@ -237,14 +271,18 @@ namespace ServiceStack.ServiceClient.Web
                 if (Proxy != null) client.Proxy = Proxy;
                 if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
                 if (this.credentials != null) client.Credentials = this.credentials;
+				if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
 
 				if (StoreCookies)
 				{
-					if (cookieContainer == null)
-						cookieContainer = new CookieContainer();
+					if (CookieContainer == null)
+						CookieContainer = new CookieContainer();
 
-					client.CookieContainer = cookieContainer;
+					client.CookieContainer = CookieContainer;
 				}
+
+				if (this.LocalHttpWebRequestFilter != null)
+					LocalHttpWebRequestFilter(client);
 
 				if (HttpWebRequestFilter != null)
                     HttpWebRequestFilter(client);
