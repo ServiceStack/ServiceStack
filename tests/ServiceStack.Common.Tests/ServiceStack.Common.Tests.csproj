@@ -126,6 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
+    <Compile Include="MappingTests.cs" />
     <Compile Include="MessagingTests.cs" />
     <Compile Include="Models\DdnContentIngest.cs" />
     <Compile Include="EnumerableExtensionsTests.cs" />
