@@ -113,8 +113,9 @@ var MiniProfiler = (function ($)
 					dataType: 'json',
 					success: function (json)
 					{
+					    var obj = deepCloneToPascalCase(json);
 						fetchedIds.push(id);
-						buttonShow(json);
+						buttonShow(obj);
 					},
 					complete: function ()
 					{
@@ -124,6 +125,47 @@ var MiniProfiler = (function ($)
 			}
 		}
 	};
+
+    function deepCloneToPascalCase(obj) {
+        return extend(true, {}, obj);
+    }
+
+    function pascalCase(name) {
+        return name && typeof name == "string"
+            ? name.charAt(0).toUpperCase() + name.substr(1)
+            : name;
+    }
+
+    function extend() { //modified $.extend
+        var opt, name, src, copy, copyIsArr, clone, args = arguments,
+			    dst = args[0] || {}, i = 1, aLen = args.length, deep = false;
+        if (typeof dst == "boolean") { deep = dst; dst = args[1] || {}; i = 2; }
+        if (typeof dst != "object" && !$.isFunction(dst)) dst = {};
+        if (aLen === i) { dst = this; --i; }
+        for (; i < aLen; i++) {
+            if ((opt = args[i]) != null) {
+                for (name in opt) {
+                    src = dst[name];
+                    copy = opt[name];
+                    if (dst === copy) continue;
+                    if (deep && copy && (isPlainObj(copy) || (copyIsArr = $.isArray(copy)))) {
+                        if (copyIsArr) {
+                            copyIsArr = false;
+                            clone = src && $.isArray(src) ? src : [];
+                        } else
+                            clone = src && isPlainObj(src) ? src : {};
+                        dst[pascalCase(name)] = extend(deep, clone, copy);
+                    } else if (copy !== undefined)
+                        dst[pascalCase(name)] = copy;
+                }
+            }
+        }
+        return dst;
+    }
+
+    function isPlainObj(o) { //much more simplified $.isPlainObj
+        return typeof o == "object";
+    }
 
 	var renderTemplate = function (json)
 	{
