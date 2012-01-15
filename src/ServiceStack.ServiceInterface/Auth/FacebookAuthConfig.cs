@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class FacebookAuthConfig : AuthConfig
+	public class FacebookAuthProvider : AuthProvider
 	{
 		public const string Name = "facebook";
 		public static string Realm = "https://graph.facebook.com/";
@@ -20,7 +20,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string AppSecret { get; set; }
 		public string[] Permissions { get; set; }
 
-		public FacebookAuthConfig(IResourceManager appSettings)
+		public FacebookAuthProvider(IResourceManager appSettings)
 			: base(appSettings, Realm, Name, "AppId", "AppSecret")
 		{
 			this.AppId = appSettings.GetString("oauth.facebook.AppId");

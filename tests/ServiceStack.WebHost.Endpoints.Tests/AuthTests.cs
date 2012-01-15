@@ -55,9 +55,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			public override void Configure(Container container)
 			{
 				AuthFeature.Init(this, () => new CustomUserSession(),
-					new AuthConfig[] {
-						new CredentialsAuthConfig(), //HTML Form post of UserName/Password credentials
-						new BasicAuthConfig(), //Sign-in with Basic Auth
+					new AuthProvider[] {
+						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
+						new BasicAuthProvider(), //Sign-in with Basic Auth
 					});
 
 				container.Register<ICacheClient>(new MemoryCacheClient());
@@ -179,7 +179,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				var client = GetClient();
 
 				var authResponse = client.Send<AuthResponse>(new Auth {
-					provider = CredentialsAuthConfig.Name,
+					provider = CredentialsAuthProvider.Name,
 					UserName = "user",
 					Password = "p@55word",
 					RememberMe = true,

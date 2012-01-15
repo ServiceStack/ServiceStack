@@ -8,16 +8,16 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class AuthConfig
+	public class AuthProvider : IAuthProvider
 	{
-		protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthConfig));
+		protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
 
-		public AuthConfig() { }
+		public AuthProvider() { }
 
-		public AuthConfig(IResourceManager appSettings, string authRealm, string oAuthProvider)
+		public AuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
 			: this(appSettings, authRealm, oAuthProvider, "ConsumerKey", "ConsumerSecret") { }
 
-		public AuthConfig(IResourceManager appSettings, string authRealm, string oAuthProvider,
+		public AuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider,
 			string consumerKeyName, string consumerSecretName)
 		{
 			this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
@@ -60,7 +60,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		}
 
 		/// <summary>
-		/// The entry point for all AuthConfig providers. Runs inside the AuthService so exceptions are treated normally.
+		/// The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
 		/// Overridable so you can provide your own Auth implementation.
 		/// </summary>
 		/// <param name="authService"></param>
@@ -112,7 +112,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		}
 
 		/// <summary>
-		/// Sets the CallbackUrl and session.ReferrerUrl if not set and initializes the session tokens for this AuthConfig
+		/// Sets the CallbackUrl and session.ReferrerUrl if not set and initializes the session tokens for this AuthProvider
 		/// </summary>
 		/// <param name="service"></param>
 		/// <param name="session"></param>
@@ -175,9 +175,9 @@ namespace ServiceStack.ServiceInterface.Auth
 
 	public static class AuthConfigExtensions
 	{
-		public static bool IsAuthorizedSafe(this AuthConfig authConfig, IAuthSession session, IOAuthTokens tokens)
+		public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IOAuthTokens tokens)
 		{
-			return authConfig != null && authConfig.IsAuthorized(session, tokens);
+			return authProvider != null && authProvider.IsAuthorized(session, tokens);
 		}
 	}
 

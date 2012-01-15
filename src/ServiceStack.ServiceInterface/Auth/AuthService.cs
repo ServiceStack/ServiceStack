@@ -53,16 +53,16 @@ namespace ServiceStack.ServiceInterface.Auth
 		public const string CredentialsProvider = "credentials";
 		public const string LogoutAction = "logout";
 
-		public static Func<IAuthSession> CurrentSessionFactory { get; private set; }
+		public static Func<IAuthSession> CurrentSessionFactory { get; set; }
 		public static ValidateFn ValidateFn { get; set; }
 
 		public static string DefaultOAuthProvider { get; private set; }
 		public static string DefaultOAuthRealm { get; private set; }
-		public static AuthConfig[] AuthConfigs { get; private set; }
-		
-		public static AuthConfig GetAuthConfig(string provider)
+		public static IAuthProvider[] AuthProviders { get; private set; }
+
+		public static IAuthProvider GetAuthConfig(string provider)
 		{
-			foreach (var authConfig in AuthConfigs)
+			foreach (var authConfig in AuthProviders)
 			{
 				if (string.Compare(authConfig.Provider, provider,
 					StringComparison.InvariantCultureIgnoreCase) == 0)
@@ -77,15 +77,15 @@ namespace ServiceStack.ServiceInterface.Auth
 			return IdUtils.CreateUrn<IAuthSession>(sessionId);
 		}
 
-		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params AuthConfig[] authConfigs)
+		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
 		{
-			if (authConfigs.Length == 0)
-				throw new ArgumentNullException("authConfigs");
+			if (authProviders.Length == 0)
+				throw new ArgumentNullException("authProviders");
 
-			DefaultOAuthProvider = authConfigs[0].Provider;
-			DefaultOAuthRealm = authConfigs[0].AuthRealm;
+			DefaultOAuthProvider = authProviders[0].Provider;
+			DefaultOAuthRealm = authProviders[0].AuthRealm;
 
-			AuthConfigs = authConfigs;
+			AuthProviders = authProviders;
 			CurrentSessionFactory = sessionFactory;
 			appHost.RegisterService<AuthService>();
 
@@ -94,7 +94,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		private void AssertAuthProviders()
 		{
-			if (AuthConfigs == null || AuthConfigs.Length == 0)
+			if (AuthProviders == null || AuthProviders.Length == 0)
 				throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
 		}
 
@@ -120,7 +120,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			base.RequestContext.Get<IHttpResponse>()
 				.AddSessionOptions(base.RequestContext.Get<IHttpRequest>(), opt);
 
-			var provider = request.provider ?? AuthConfigs[0].Provider;
+			var provider = request.provider ?? AuthProviders[0].Provider;
 			var oAuthConfig = GetAuthConfig(provider);
 			if (oAuthConfig == null)
 				throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));

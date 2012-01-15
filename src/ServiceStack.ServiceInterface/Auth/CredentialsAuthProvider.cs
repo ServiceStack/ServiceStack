@@ -5,7 +5,7 @@ using ServiceStack.FluentValidation;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class CredentialsAuthConfig : AuthConfig
+	public class CredentialsAuthProvider : AuthProvider
 	{
 		class CredentialsAuthValidator : AbstractValidator<Auth>
 		{
@@ -19,16 +19,16 @@ namespace ServiceStack.ServiceInterface.Auth
 		public static string Name = AuthService.CredentialsProvider;
 		public static string Realm = "/auth/" + AuthService.CredentialsProvider;
 
-		public CredentialsAuthConfig()
+		public CredentialsAuthProvider()
 		{
 			this.Provider = Name;
 			this.AuthRealm = Realm;
 		}
 
-		public CredentialsAuthConfig(IResourceManager appSettings, string authRealm, string oAuthProvider)
+		public CredentialsAuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
 			: base(appSettings, authRealm, oAuthProvider) { }
 
-		public CredentialsAuthConfig(IResourceManager appSettings)
+		public CredentialsAuthProvider(IResourceManager appSettings)
 			: base(appSettings, Realm, Name) { }
 
 		public virtual bool TryAuthenticate(IServiceBase authService, string userName, string password)

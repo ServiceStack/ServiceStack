@@ -13,7 +13,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		public void TestFixtureSetUp()
 		{
 			AuthService.Init(new TestAppHost(), () => new AuthUserSession(),
-				new CredentialsAuthConfig());
+				new CredentialsAuthProvider());
 		}
 
 		public static IUserAuthRepository GetStubRepo()

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Common;
@@ -243,7 +244,7 @@ namespace ServiceStack.ServiceInterface.Auth
 						UserId = tokens.UserId,
 					};
 					var idx = IndexProviderToUserIdHash(tokens.Provider);
-					redis.SetEntryInHash(idx, tokens.UserId, oAuthProvider.Id.ToString());
+					redis.SetEntryInHash(idx, tokens.UserId, oAuthProvider.Id.ToString(CultureInfo.InvariantCulture));
 				}
 
 				oAuthProvider.PopulateMissing(tokens);
@@ -251,9 +252,9 @@ namespace ServiceStack.ServiceInterface.Auth
 
 				redis.Store(userAuth);
 				redis.Store(oAuthProvider);
-				redis.AddItemToSet(IndexUserAuthAndProviderIdsSet(userAuth.Id), oAuthProvider.Id.ToString());
+				redis.AddItemToSet(IndexUserAuthAndProviderIdsSet(userAuth.Id), oAuthProvider.Id.ToString(CultureInfo.InvariantCulture));
 
-				return userAuth.Id.ToString();
+				return userAuth.Id.ToString(CultureInfo.InvariantCulture);
 			}
 		}
 

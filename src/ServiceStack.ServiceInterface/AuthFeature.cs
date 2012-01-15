@@ -9,9 +9,9 @@ namespace ServiceStack.ServiceInterface
 	/// </summary>
 	public class AuthFeature
 	{
-		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params AuthConfig[] authConfigs)
+		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params AuthProvider[] authProviders)
 		{
-			AuthService.Init(appHost, sessionFactory, authConfigs);
+			AuthService.Init(appHost, sessionFactory, authProviders);
 		}
 	}
 }

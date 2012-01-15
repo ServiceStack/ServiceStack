@@ -6,12 +6,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class TwitterAuthConfig : AuthConfig
+	public class TwitterAuthProvider : AuthProvider
 	{
 		public const string Name = "twitter";
 		public static string Realm = "https://api.twitter.com/";
 
-		public TwitterAuthConfig(IResourceManager appSettings)
+		public TwitterAuthProvider(IResourceManager appSettings)
 			: base(appSettings, Realm, Name) {}
 
 		protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)

@@ -51,7 +51,7 @@ namespace ServiceStack.ServiceInterface.Auth
 	//}
 
 	//
-	// The authorizer uses a config and an optional xAuth user/password
+	// The authorizer uses a provider and an optional xAuth user/password
 	// to perform the OAuth authorization process as well as signing
 	// outgoing http requests
 	//
@@ -68,7 +68,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		// Settable by the user
 		public string xAuthUsername, xAuthPassword;
 
-		AuthConfig config;
+		AuthProvider provider;
 		public string RequestToken, RequestTokenSecret;
 		public string AuthorizationToken, AuthorizationVerifier;
 		public string AccessToken, AccessTokenSecret;//, AccessScreenName;
@@ -76,9 +76,9 @@ namespace ServiceStack.ServiceInterface.Auth
 		public Dictionary<string, string> AuthInfo = new Dictionary<string, string>();
 
 		// Constructor for standard OAuth
-		public OAuthAuthorizer(AuthConfig config)
+		public OAuthAuthorizer(AuthProvider provider)
 		{
-			this.config = config;
+			this.provider = provider;
 		}
 
 		static Random random = new Random();
@@ -135,15 +135,15 @@ namespace ServiceStack.ServiceInterface.Auth
 		public bool AcquireRequestToken()
 		{
 			var headers = new Dictionary<string, string>() {
-				{ "oauth_callback", OAuthUtils.PercentEncode (config.CallbackUrl) },
-				{ "oauth_consumer_key", config.ConsumerKey },
+				{ "oauth_callback", OAuthUtils.PercentEncode (provider.CallbackUrl) },
+				{ "oauth_consumer_key", provider.ConsumerKey },
 				{ "oauth_nonce", MakeNonce () },
 				{ "oauth_signature_method", "HMAC-SHA1" },
 				{ "oauth_timestamp", MakeTimestamp () },
 				{ "oauth_version", "1.0" }};
 
-			string signature = MakeSignature("POST", config.RequestTokenUrl, headers);
-			string compositeSigningKey = MakeSigningKey(config.ConsumerSecret, null);
+			string signature = MakeSignature("POST", provider.RequestTokenUrl, headers);
+			string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, null);
 			string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
 			var wc = new WebClient();
@@ -152,7 +152,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			try
 			{
-				var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(config.RequestTokenUrl), ""));
+				var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.RequestTokenUrl), ""));
 
 				if (result["oauth_callback_confirmed"] != null)
 				{
@@ -177,7 +177,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public bool AcquireAccessToken()
 		{
 			var headers = new Dictionary<string, string>() {
-				{ "oauth_consumer_key", config.ConsumerKey },
+				{ "oauth_consumer_key", provider.ConsumerKey },
 				{ "oauth_nonce", MakeNonce () },
 				{ "oauth_signature_method", "HMAC-SHA1" },
 				{ "oauth_timestamp", MakeTimestamp () },
@@ -196,8 +196,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				content = String.Format("x_auth_mode=client_auth&x_auth_password={0}&x_auth_username={1}", OAuthUtils.PercentEncode(xAuthPassword), OAuthUtils.PercentEncode(xAuthUsername));
 			}
 
-			string signature = MakeSignature("POST", config.AccessTokenUrl, headers);
-			string compositeSigningKey = MakeSigningKey(config.ConsumerSecret, RequestTokenSecret);
+			string signature = MakeSignature("POST", provider.AccessTokenUrl, headers);
+			string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, RequestTokenSecret);
 			string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
 			var wc = new WebClient();
@@ -212,7 +212,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			try
 			{
-				var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(config.AccessTokenUrl), content));
+				var result = HttpUtility.ParseQueryString(wc.UploadString(new Uri(provider.AccessTokenUrl), content));
 
 				if (result["oauth_token"] != null)
 				{
@@ -238,10 +238,10 @@ namespace ServiceStack.ServiceInterface.Auth
 		// Assign the result to the Authorization header, like this:
 		// request.Headers [HttpRequestHeader.Authorization] = AuthorizeRequest (...)
 		//
-		public static string AuthorizeRequest(AuthConfig config, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
+		public static string AuthorizeRequest(AuthProvider provider, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
 		{
 			var headers = new Dictionary<string, string>() {
-				{ "oauth_consumer_key", config.ConsumerKey },
+				{ "oauth_consumer_key", provider.ConsumerKey },
 				{ "oauth_nonce", MakeNonce () },
 				{ "oauth_signature_method", "HMAC-SHA1" },
 				{ "oauth_timestamp", MakeTimestamp () },
@@ -267,7 +267,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			string signature = MakeSignature(method, uri.GetLeftPart(UriPartial.Path), signatureHeaders);
-			string compositeSigningKey = MakeSigningKey(config.ConsumerSecret, oauthTokenSecret);
+			string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, oauthTokenSecret);
 			string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
 			headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
@@ -278,10 +278,10 @@ namespace ServiceStack.ServiceInterface.Auth
 		//
 		// Used to authorize an HTTP request going to TwitPic
 		//
-		public static void AuthorizeTwitPic(AuthConfig config, HttpWebRequest wc, string oauthToken, string oauthTokenSecret)
+		public static void AuthorizeTwitPic(AuthProvider provider, HttpWebRequest wc, string oauthToken, string oauthTokenSecret)
 		{
 			var headers = new Dictionary<string, string>() {
-				{ "oauth_consumer_key", config.ConsumerKey },
+				{ "oauth_consumer_key", provider.ConsumerKey },
 				{ "oauth_nonce", MakeNonce () },
 				{ "oauth_signature_method", "HMAC-SHA1" },
 				{ "oauth_timestamp", MakeTimestamp () },
@@ -292,7 +292,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			string signurl = "http://api.twitter.com/1/account/verify_credentials.xml";
 			// The signature is not done against the *actual* url, it is done against the verify_credentials.json one 
 			string signature = MakeSignature("GET", signurl, headers);
-			string compositeSigningKey = MakeSigningKey(config.ConsumerSecret, oauthTokenSecret);
+			string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, oauthTokenSecret);
 			string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
 			headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));

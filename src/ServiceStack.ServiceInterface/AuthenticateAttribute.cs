@@ -44,10 +44,10 @@ namespace ServiceStack.ServiceInterface
 
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
-			if (AuthService.AuthConfigs == null) throw new InvalidOperationException("The AuthService must be initialized by calling "
+			if (AuthService.AuthProviders == null) throw new InvalidOperationException("The AuthService must be initialized by calling "
 				 + "AuthService.Init to use an authenticate attribute");
 
-			var matchingOAuthConfigs = AuthService.AuthConfigs.Where(x =>
+			var matchingOAuthConfigs = AuthService.AuthProviders.Where(x =>
 							this.Provider.IsNullOrEmpty()
 							|| x.Provider == this.Provider).ToList();
 
@@ -65,7 +65,7 @@ namespace ServiceStack.ServiceInterface
 				var authService = req.TryResolve<AuthService>();
 				authService.RequestContext = new HttpRequestContext(req, res, requestDto);
 				var response = authService.Post(new Auth.Auth {
-					provider = BasicAuthConfig.Name,
+					provider = BasicAuthProvider.Name,
 					UserName = userPass.Value.Key,
 					Password = userPass.Value.Value
 				});

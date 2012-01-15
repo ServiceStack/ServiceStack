@@ -4,18 +4,18 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class BasicAuthConfig : CredentialsAuthConfig
+	public class BasicAuthProvider : CredentialsAuthProvider
 	{
 		public new static string Name = AuthService.BasicProvider;
 		public new static string Realm = "/auth/" + AuthService.BasicProvider;
 
-		public BasicAuthConfig()
+		public BasicAuthProvider()
 		{
 			this.Provider = Name;
 			this.AuthRealm = Realm;
 		}
 
-		public BasicAuthConfig(IResourceManager appSettings)
+		public BasicAuthProvider(IResourceManager appSettings)
 			: base(appSettings, Realm, Name)
 		{
 		}
