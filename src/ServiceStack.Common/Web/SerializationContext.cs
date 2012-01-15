@@ -27,9 +27,9 @@ namespace ServiceStack.Common.Web
 			get { throw new NotImplementedException(); }
 		}
 
-		public IDictionary<string, Cookie> Cookies
+		public IDictionary<string, System.Net.Cookie> Cookies
 		{
-			get { return new Dictionary<string, Cookie>(); }
+			get { return new Dictionary<string, System.Net.Cookie>(); }
 		}
 
 		public EndpointAttributes EndpointAttributes

@@ -15,6 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			this.Headers = new NameValueCollection();
 			this.OutputStream = new MemoryStream();
 			this.TextWritten = new StringBuilder();
+			this.Cookies = new Cookies(this);
 		}
 
 		public object OriginalResponse
@@ -69,6 +70,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			get;
 			private set;
 		}
+
+		public ICookies Cookies { get; set; }
 
 		public void AddHeader(string name, string value)
 		{

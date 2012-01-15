@@ -1,18 +1,12 @@
 using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
-using ServiceStack.FluentValidation;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Extensions;
-using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -36,6 +30,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string oauth_verifier { get; set; }
 		public string UserName { get; set; }
 		public string Password { get; set; }
+		public bool? RememberMe { get; set; }
 	}
 
 	public class AuthResponse
@@ -58,11 +53,24 @@ namespace ServiceStack.ServiceInterface.Auth
 		public const string CredentialsProvider = "credentials";
 		public const string LogoutAction = "logout";
 
+		public static Func<IAuthSession> CurrentSessionFactory { get; private set; }
+		public static ValidateFn ValidateFn { get; set; }
+
 		public static string DefaultOAuthProvider { get; private set; }
 		public static string DefaultOAuthRealm { get; private set; }
 		public static AuthConfig[] AuthConfigs { get; private set; }
-		public static Func<IAuthSession> SessionFactory { get; private set; }
-		public static ValidateFn ValidateFn { get; set; }
+		
+		public static AuthConfig GetAuthConfig(string provider)
+		{
+			foreach (var authConfig in AuthConfigs)
+			{
+				if (string.Compare(authConfig.Provider, provider,
+					StringComparison.InvariantCultureIgnoreCase) == 0)
+					return authConfig;
+			}
+
+			return null;
+		}
 
 		public static string GetSessionKey(string sessionId)
 		{
@@ -78,7 +86,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			DefaultOAuthRealm = authConfigs[0].AuthRealm;
 
 			AuthConfigs = authConfigs;
-			SessionFactory = sessionFactory;
+			CurrentSessionFactory = sessionFactory;
 			appHost.RegisterService<AuthService>();
 
 			SessionFeature.Init(appHost);
@@ -92,63 +100,43 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public override object OnGet(Auth request)
 		{
+			return OnPost(request);
+		}
+
+        public override object OnPost(Auth request)
+        {
+			AssertAuthProviders();
+
 			if (ValidateFn != null)
 			{
 				var response = ValidateFn(this, HttpMethods.Get, request);
 				if (response != null) return response;
 			}
 
-			AssertAuthProviders();
+			var opt = request.RememberMe.GetValueOrDefault(false)
+				? SessionOptions.Permanent
+				: SessionOptions.Temporary;
 
-			if (request.provider == LogoutAction)
-			{
-				this.RemoveSession();
-				return new AuthResponse();
-			}
+			base.RequestContext.Get<IHttpResponse>()
+				.AddSessionOptions(base.RequestContext.Get<IHttpRequest>(), opt);
 
 			var provider = request.provider ?? AuthConfigs[0].Provider;
-			if (provider == BasicProvider || provider == CredentialsProvider)
-			{
-				return CredentialsAuth(request);
-			}
-
-			var oAuthConfig = AuthConfigs.FirstOrDefault(x => x.Provider == provider);
+			var oAuthConfig = GetAuthConfig(provider);
 			if (oAuthConfig == null)
 				throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));
 
+			if (request.provider == LogoutAction)
+				return oAuthConfig.Logout(this, request);
+
 			var session = this.GetSession();
-
-			if (oAuthConfig.CallbackUrl.IsNullOrEmpty())
-				oAuthConfig.CallbackUrl = base.RequestContext.AbsoluteUri;
-
-			if (session.ReferrerUrl.IsNullOrEmpty())
-				session.ReferrerUrl = base.RequestContext.GetHeader("Referer") ?? oAuthConfig.CallbackUrl;
-
-			var oAuth = new OAuthAuthorizer(oAuthConfig);
-
-			if (!session.IsAuthorized(provider))
+			if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider)))
 			{
-				var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == provider);
-				if (tokens == null)
-					session.ProviderOAuthAccess.Add(tokens = new OAuthTokens { Provider = provider });
-
-				return oAuthConfig.Authenticate(this, request, session, tokens, oAuth);
+				return oAuthConfig.Authenticate(this, session, request);
 			}
 
 			//Already Authenticated
 			return this.Redirect(session.ReferrerUrl.AddHashParam("s", "0"));
 		}
-
-        public override object OnPost(Auth request)
-        {
-            if (ValidateFn != null)
-            {
-                var response = ValidateFn(this, HttpMethods.Post, request);
-                if (response != null) return response;
-            }
-
-            return CredentialsAuth(request);
-        }
 
         public override object OnDelete(Auth request)
         {
@@ -162,58 +150,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
             return new AuthResponse();
         }
-
-		class CredentialsAuthValidator : AbstractValidator<Auth>
-		{
-			public CredentialsAuthValidator()
-			{
-				RuleFor(x => x.provider)
-					.Must(x => x == BasicProvider || x == CredentialsProvider)
-					.WithErrorCode("InvalidProvider")
-					.WithMessage("Provider must be either 'basic' or 'credentials'");
-
-				RuleFor(x => x.UserName).NotEmpty();
-				RuleFor(x => x.Password).NotEmpty();
-			}
-		}
-
-		private object CredentialsAuth(Auth request)
-		{
-			AssertAuthProviders();
-
-			new CredentialsAuthValidator().ValidateAndThrow(request);
-
-			var userName = request.UserName;
-			var password = request.Password;
-
-			var session = this.GetSession();
-
-			if (request.provider == BasicProvider)
-			{
-				var httpReq = base.RequestContext.Get<IHttpRequest>();
-				var basicAuth = httpReq.GetBasicAuthUserAndPassword();
-				if (basicAuth == null)
-					throw HttpError.Unauthorized("Invalid BasicAuth credentials");
-
-				userName = basicAuth.Value.Key;
-				password = basicAuth.Value.Value;
-			}
-
-			if (session.TryAuthenticate(this, userName, password))
-			{
-				if (session.UserName == null)
-					session.UserName = userName;
-
-				this.SaveSession(session);
-
-				return new AuthResponse {
-					UserName = userName,
-					SessionId = session.Id,
-				};
-			}
-
-			throw HttpError.Unauthorized("Invalid UserName or Password");
-		}
 	}
+
 }
 

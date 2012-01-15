@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			appHost.RequestFilters.Add((req, res, dto) => {
 
-				string sessionId = req.GetPermanentSessionId();
+				string sessionId = req.GetSessionId();
 				using (var client = appHost.GetCacheClient())
 				{
 					IAuthSession session = client.GetSession(sessionId);

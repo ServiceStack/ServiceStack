@@ -211,6 +211,7 @@
     <Compile Include="SearchIndex\FullTextIndexAttribute.cs" />
     <Compile Include="SearchIndex\FullTextIndexDocumentAttribute.cs" />
     <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs" />
+    <Compile Include="ServiceHost\ICookies.cs" />
     <Compile Include="ServiceHost\IHasRequestFilter.cs" />
     <Compile Include="ServiceHost\IHasResponseFilter.cs" />
     <Compile Include="ServiceHost\IRestPatchService.cs" />

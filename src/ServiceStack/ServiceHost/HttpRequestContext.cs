@@ -61,7 +61,7 @@ namespace ServiceStack.ServiceHost
 
 		public object Dto { get; set; }
 
-		public IDictionary<string, Cookie> Cookies
+		public IDictionary<string, System.Net.Cookie> Cookies
 		{
 			get { return this.httpReq.Cookies; }
 		}

@@ -1,119 +1,17 @@
-using System.Net;
-using System.Web;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
-using ServiceStack.ServiceClient.Web;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class CredentialsAuthConfig : AuthConfig
-	{
-		public const string Name = AuthService.CredentialsProvider;
-		public static string Realm = "/auth/" + AuthService.CredentialsProvider;
-
-		public CredentialsAuthConfig()
-		{
-			this.Provider = Name;
-			this.AuthRealm = Realm;
-		}
-
-		public CredentialsAuthConfig(IResourceManager appSettings)
-			: base(appSettings, Realm, Name)
-		{
-		}
-	}
-
-	public class BasicAuthConfig : AuthConfig
-	{
-		public const string Name = AuthService.BasicProvider;
-		public static string Realm = "/auth/" + AuthService.BasicProvider;
-
-		public BasicAuthConfig()
-		{
-			this.Provider = Name;
-			this.AuthRealm = Realm;
-		}
-
-		public BasicAuthConfig(IResourceManager appSettings)
-			: base(appSettings, Realm, Name)
-		{
-		}
-	}
-
-	public class TwitterAuthConfig : AuthConfig
-	{
-		public const string Name = "twitter";
-		public static string Realm = "https://api.twitter.com/";
-
-		public TwitterAuthConfig(IResourceManager appSettings)
-			: base(appSettings, Realm, Name)
-		{
-		}
-	}
-
-	public class FacebookAuthConfig : AuthConfig
-	{
-		public const string Name = "facebook";
-		public static string Realm = "https://graph.facebook.com/";
-		public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
-
-		public string AppId { get; set; }
-		public string AppSecret { get; set; }
-		public string[] Permissions { get; set; }
-
-		public FacebookAuthConfig(IResourceManager appSettings)
-			: base(appSettings, Realm, Name, "AppId", "AppSecret")
-		{
-			this.AppId = appSettings.GetString("oauth.facebook.AppId");
-			this.AppSecret = appSettings.GetString("oauth.facebook.AppSecret");
-			this.Permissions = appSettings.Get("oauth.facebook.Permissions", new string[0]);
-		}
-
-		public override object Authenticate(IServiceBase service, Auth request, IAuthSession session, IOAuthTokens tokens, OAuthAuthorizer oAuth)
-		{
-			var code = service.RequestContext.Get<IHttpRequest>().QueryString["code"];
-			var isPreAuthCallback = !code.IsNullOrEmpty();
-			if (!isPreAuthCallback)
-			{
-				var preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}"
-					.Fmt(AppId, this.CallbackUrl.UrlEncode(), string.Join(",", Permissions));
-				return service.Redirect(preAuthUrl);
-			}
-
-			var accessTokenUrl = this.AccessTokenUrl + "?client_id={0}&redirect_uri={1}&client_secret={2}&code={3}"
-				.Fmt(AppId, this.CallbackUrl.UrlEncode(), AppSecret, code);
-
-			try
-			{
-				var contents = accessTokenUrl.DownloadUrl();
-				var authInfo = HttpUtility.ParseQueryString(contents);
-				tokens.AccessTokenSecret = authInfo["access_token"];
-				service.SaveSession(session);
-				session.OnAuthenticated(service, tokens, authInfo.ToDictionary());
-
-				//Haz access!
-				return service.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
-			}
-			catch (WebException we)
-			{
-				var statusCode = ((HttpWebResponse)we.Response).StatusCode;
-				if (statusCode == HttpStatusCode.BadRequest)
-				{
-					return service.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
-				}
-			}
-
-			//Shouldn't get here
-			return service.Redirect(session.ReferrerUrl.AddHashParam("f", "Unknown"));
-		}
-	}
-
-
 	public class AuthConfig
 	{
+		protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthConfig));
+
 		public AuthConfig() { }
 
 		public AuthConfig(IResourceManager appSettings, string authRealm, string oAuthProvider)
@@ -132,7 +30,12 @@ namespace ServiceStack.ServiceInterface.Auth
 			this.RequestTokenUrl = appSettings.Get("oauth.{0}.RequestTokenUrl", authRealm + "oauth/request_token");
 			this.AuthorizeUrl = appSettings.Get("oauth.{0}.AuthorizeUrl", authRealm + "oauth/authorize");
 			this.AccessTokenUrl = appSettings.Get("oauth.{0}.AccessTokenUrl", authRealm + "oauth/access_token");
+
+			this.oAuth = new OAuthAuthorizer(this);
+			this.AuthHttpGateway = new AuthHttpGateway();
 		}
+
+		public IAuthHttpGateway AuthHttpGateway { get; set; }
 
 		public string AuthRealm { get; set; }
 		public string Provider { get; set; }
@@ -142,10 +45,32 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string RequestTokenUrl { get; set; }
 		public string AuthorizeUrl { get; set; }
 		public string AccessTokenUrl { get; set; }
+		public OAuthAuthorizer oAuth { get; set; }
 
-		public virtual object Authenticate(IServiceBase service, Auth request, IAuthSession session,
-			IOAuthTokens tokens, OAuthAuthorizer oAuth)
+		/// <summary>
+		/// Remove the Users Session
+		/// </summary>
+		/// <param name="service"></param>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		public virtual object Logout(IServiceBase service, Auth request)
 		{
+			service.RemoveSession();
+			return new AuthResponse();
+		}
+
+		/// <summary>
+		/// The entry point for all AuthConfig providers. Runs inside the AuthService so exceptions are treated normally.
+		/// Overridable so you can provide your own Auth implementation.
+		/// </summary>
+		/// <param name="authService"></param>
+		/// <param name="session"></param>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		public virtual object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
+		{
+			var tokens = Init(authService, session);
+
 			//Default oAuth logic based on Twitter's oAuth workflow
 			if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
 			{
@@ -158,33 +83,103 @@ namespace ServiceStack.ServiceInterface.Auth
 				{
 					tokens.AccessToken = oAuth.AccessToken;
 					tokens.AccessTokenSecret = oAuth.AccessTokenSecret;
-					session.OnAuthenticated(service, tokens, oAuth.AuthInfo);
-					service.SaveSession(session);
+					OnAuthenticated(authService, session, tokens, oAuth.AuthInfo);
+					authService.SaveSession(session);
 
 					//Haz access!
-					return service.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
+					return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
 				}
 
 				//No Joy :(
 				tokens.RequestToken = null;
 				tokens.RequestTokenSecret = null;
-				service.SaveSession(session);
-				return service.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
+				authService.SaveSession(session);
+				return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
 			}
 			if (oAuth.AcquireRequestToken())
 			{
 				tokens.RequestToken = oAuth.RequestToken;
 				tokens.RequestTokenSecret = oAuth.RequestTokenSecret;
-				service.SaveSession(session);
+				authService.SaveSession(session);
 
 				//Redirect to OAuth provider to approve access
-				return service.Redirect(this.AuthorizeUrl
+				return authService.Redirect(this.AuthorizeUrl
 					.AddQueryParam("oauth_token", tokens.RequestToken)
 					.AddQueryParam("oauth_callback", session.ReferrerUrl));
 			}
 
-			return service.Redirect(session.ReferrerUrl.AddHashParam("f", "RequestTokenFailed"));
+			return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "RequestTokenFailed"));
+		}
+
+		/// <summary>
+		/// Sets the CallbackUrl and session.ReferrerUrl if not set and initializes the session tokens for this AuthConfig
+		/// </summary>
+		/// <param name="service"></param>
+		/// <param name="session"></param>
+		/// <returns></returns>
+		protected IOAuthTokens Init(IServiceBase service, IAuthSession session)
+		{
+			if (this.CallbackUrl.IsNullOrEmpty())
+				this.CallbackUrl = service.RequestContext.AbsoluteUri;
+
+			if (session.ReferrerUrl.IsNullOrEmpty())
+				session.ReferrerUrl = service.RequestContext.GetHeader("Referer") ?? this.CallbackUrl;
+
+			var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == Provider);
+			if (tokens == null)
+				session.ProviderOAuthAccess.Add(tokens = new OAuthTokens { Provider = Provider });
+
+			return tokens;
+		}
+
+		/// <summary>
+		/// Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
+		/// Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
+		/// </summary>
+		/// <param name="session"></param>
+		/// <param name="provider"></param>
+		/// <param name="tokens"></param>
+		protected virtual void SaveUserAuth(IAuthSession session, IUserAuthRepository provider, IOAuthTokens tokens)
+		{
+			if (provider == null) return;
+			session.UserAuthId = provider.CreateOrMergeAuthSession(session, tokens);
+		}
+
+		public virtual void OnSaveUserAuth(IServiceBase oAuthService, string userAuthId) { }
+
+		public virtual void OnAuthenticated(IServiceBase oAuthService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+		{
+			var userSession = session as AuthUserSession;
+			if (userSession != null)
+			{
+				LoadUserAuthInfo(userSession, tokens, authInfo);
+			}
+
+			var authProvider = oAuthService.TryResolve<IUserAuthRepository>();
+			if (authProvider != null)
+				authProvider.LoadUserAuth(session, tokens);
+
+			authInfo.ForEach((x, y) => tokens.Items[x] = y);
+
+			SaveUserAuth(userSession, oAuthService.TryResolve<IUserAuthRepository>(), tokens);
+			OnSaveUserAuth(oAuthService, session.UserAuthId);
+		}
+
+		protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo) { }
+
+		public virtual bool IsAuthorized(IAuthSession session, IOAuthTokens tokens)
+		{
+			return string.IsNullOrEmpty(tokens.AccessTokenSecret);
 		}
 	}
+
+	public static class AuthConfigExtensions
+	{
+		public static bool IsAuthorizedSafe(this AuthConfig authConfig, IAuthSession session, IOAuthTokens tokens)
+		{
+			return authConfig != null && authConfig.IsAuthorized(session, tokens);
+		}
+	}
+
 }
 

@@ -19,7 +19,6 @@ namespace ServiceStack.ServiceInterface
 	public class AuthenticateAttribute : RequestFilterAttribute
 	{
 		public string Provider { get; set; }
-		public ApplyTo ApplyTo { get; set; }
 
 		public AuthenticateAttribute()
 			: base(ApplyTo.All)
@@ -74,7 +73,7 @@ namespace ServiceStack.ServiceInterface
 
 			using (var cache = req.GetCacheClient())
 			{
-				var sessionId = req.GetPermanentSessionId();
+				var sessionId = req.GetSessionId();
 				var session = sessionId != null ? cache.GetSession(sessionId) : null;
 
 				if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))

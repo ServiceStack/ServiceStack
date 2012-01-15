@@ -17,12 +17,9 @@ namespace ServiceStack.ServiceInterface.Auth
 		DateTime CreatedAt { get; set; }
 		DateTime LastModified { get; set; }
         List<string> Permissions { get; set; }
-		bool IsAnyAuthorized();
+		bool IsAuthenticated { get; }
+
+		bool HasPermission(string permission);
 		bool IsAuthorized(string provider);
-
-		void OnAuthenticated(IServiceBase oAuthService, IOAuthTokens tokens, Dictionary<string, string> authInfo);
-
-		bool TryAuthenticate(IServiceBase oAuthService, string userName, string password);
-        bool HasPermission(string permission);
 	}
 }

@@ -80,6 +80,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 				ValidationFeature.Init(this);
 				container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
+				SessionFeature.Init(this);
+
 				//var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
 				SetConfig(new EndpointHostConfig {
 					//EnableFeatures = onlyEnableFeatures,

@@ -18,6 +18,8 @@ namespace ServiceStack.ServiceHost
 
 		string ContentType { get; set; }
 
+		ICookies Cookies { get; }
+
 		void AddHeader(string name, string value);
 
 		void Redirect(string url);

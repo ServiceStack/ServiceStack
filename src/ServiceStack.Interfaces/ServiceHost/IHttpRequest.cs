@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceHost
 
 		string UserAgent { get; }
 
-		IDictionary<string, Cookie> Cookies { get; }
+		IDictionary<string, System.Net.Cookie> Cookies { get; }
 
 		/// <summary>
 		/// The expected Response ContentType for this request

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using Funq;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Testing
@@ -15,6 +16,7 @@ namespace ServiceStack.ServiceInterface.Testing
 			this.Headers = new NameValueCollection();
 			this.Cookies = new Dictionary<string, Cookie>();
 			this.Items = new Dictionary<string, object>();
+			this.Container = new Container();
 		}
 
 		public MockHttpRequest(string operationName, string httpMethod,
@@ -39,9 +41,10 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public T TryResolve<T>()
 		{
-			throw new NotImplementedException();
+			return Container.TryResolve<T>();
 		}
 
+		public Container Container { get; set; }
 		public string OperationName { get; set; }
 		public string ContentType { get; set; }
 		public string HttpMethod { get; set; }

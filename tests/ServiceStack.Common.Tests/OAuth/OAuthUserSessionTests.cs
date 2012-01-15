@@ -6,6 +6,7 @@ using Moq;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.OrmLite.Sqlite;
@@ -17,19 +18,31 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
-    [TestFixture]
+	[TestFixture]
 	public class OAuthUserSessionTests
-    {
+	{
 		//Can only use either 1 OrmLiteDialectProvider at 1-time SqlServer or Sqlite.
-    	public static bool UseSqlServer = true;
+		public static bool UseSqlServer = true;
 
 		public static AuthUserSession GetSession()
 		{
 			new RedisClient().FlushAll();
-			var oAuthUserSession = new AuthUserSession {
+			var oAuthUserSession = new AuthUserSession();
+			return oAuthUserSession;
+		}
+
+		public TwitterAuthConfig GetTwitterAuthConfig()
+		{
+			return new TwitterAuthConfig(new AppSettings()) {
 				AuthHttpGateway = new MockAuthHttpGateway(),
 			};
-			return oAuthUserSession;
+		}
+
+		public FacebookAuthConfig GetFacebookAuthConfig()
+		{
+			return new FacebookAuthConfig(new AppSettings()) {
+				AuthHttpGateway = new MockAuthHttpGateway(),
+			};
 		}
 
 		public static IEnumerable UserAuthRepositorys
@@ -96,7 +109,8 @@ namespace ServiceStack.Common.Tests.OAuth
 			};
 
 			var oAuthUserSession = GetSession();
-			oAuthUserSession.OnAuthenticated(service, twitterTokens, authInfo);
+			var twitterAuth = GetTwitterAuthConfig();
+			twitterAuth.OnAuthenticated(service, oAuthUserSession, twitterTokens, authInfo);
 
 			Assert.That(oAuthUserSession.UserAuthId, Is.Not.Null);
 
@@ -142,7 +156,9 @@ namespace ServiceStack.Common.Tests.OAuth
 			var authInfo = new Dictionary<string, string> { };
 
 			var oAuthUserSession = GetSession();
-			oAuthUserSession.OnAuthenticated(service, facebookTokens, authInfo);
+			var facebookAuth = GetFacebookAuthConfig();
+			facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookTokens, authInfo);
+
 			Assert.That(oAuthUserSession.FacebookUserId, Is.EqualTo(serviceTokens.UserId));
 
 			Assert.That(oAuthUserSession.UserAuthId, Is.Not.Null);
@@ -195,7 +211,8 @@ namespace ServiceStack.Common.Tests.OAuth
 			};
 
 			var oAuthUserSession = GetSession();
-			oAuthUserSession.OnAuthenticated(service, facebookTokens, new Dictionary<string, string>());
+			var facebookAuth = GetFacebookAuthConfig();
+			facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookTokens, new Dictionary<string, string>());
 
 			var serviceTokensTw = MockAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
 
@@ -210,7 +227,8 @@ namespace ServiceStack.Common.Tests.OAuth
 				{"screen_name", "demisbellot"},				
 			};
 
-			oAuthUserSession.OnAuthenticated(service, twitterTokens, authInfo);
+			var twitterAuth = GetTwitterAuthConfig();
+			twitterAuth.OnAuthenticated(service, oAuthUserSession, twitterTokens, authInfo);
 
 			Assert.That(oAuthUserSession.TwitterUserId, Is.EqualTo(authInfo["user_id"]));
 			Assert.That(oAuthUserSession.TwitterScreenName, Is.EqualTo(authInfo["screen_name"]));
@@ -247,15 +265,15 @@ namespace ServiceStack.Common.Tests.OAuth
 				RegistrationValidator = new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
 			};
 
-            var responseObj = loginService.Post(request);
+			var responseObj = loginService.Post(request);
 
-            var httpResult = responseObj as IHttpResult;
-            if (httpResult != null)
-            {
-                Assert.Fail("HttpResult found: " + httpResult.Dump());
-            }
+			var httpResult = responseObj as IHttpResult;
+			if (httpResult != null)
+			{
+				Assert.Fail("HttpResult found: " + httpResult.Dump());
+			}
 
-            var response = (RegistrationResponse)responseObj;
+			var response = (RegistrationResponse)responseObj;
 			Assert.That(response.UserId, Is.Not.Null);
 
 			var userAuth = userAuthRepository.GetUserAuth(response.UserId);

@@ -37,21 +37,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 	public class CustomUserSession : AuthUserSession
 	{
-		public override bool TryAuthenticate(IServiceBase oAuthService,
-			string userName, string password)
-		{
-			return userName == "user" && password == "p@55word";
-		}
 	}
 
 	public class AuthTests
 	{
 		private const string ListeningOn = "http://localhost:82/";
 
+		private const string UserName = "user";
+		private const string Password = "p@55word";
+
 		public class AuthAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
-
 			public AuthAppHostHttpListener()
 				: base("Validation Tests", typeof(CustomerService).Assembly) { }
 
@@ -64,7 +61,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					});
 
 				container.Register<ICacheClient>(new MemoryCacheClient());
-				container.Register<IUserAuthRepository>(new InMemoryAuthRepository());
+				var userRep = new InMemoryAuthRepository();
+				container.Register<IUserAuthRepository>(userRep);
+
+				string hash;
+				string salt;
+				new SaltedHash().GetHashAndSaltString(Password, out hash, out salt);
+
+				userRep.CreateUserAuth(new UserAuth {
+					Id = 1,
+					DisplayName = "DisplayName",
+					Email = "as@if.com",
+					UserName = UserName,
+					FirstName = "FirstName",
+					LastName = "LastName",
+					PasswordHash = hash,
+					Salt = salt,
+				}, Password);
 			}
 		}
 
@@ -92,8 +105,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		IServiceClient GetClientWithUserPassword()
 		{
 			return new JsonServiceClient(ListeningOn) {
-				UserName = "user",
-				Password = "p@55word",
+				UserName = UserName,
+				Password = Password,
 			};
 		}
 
@@ -138,8 +151,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				var client = (ServiceClientBase)GetClientWithUserPassword();
 				client.AlwaysSendBasicAuthHeader = true;
-				client.LocalHttpWebRequestFilter = req =>
-					{
+				client.LocalHttpWebRequestFilter = req => {
 						bool hasAuthentication = false;
 						foreach (var key in req.Headers.Keys)
 						{
@@ -170,6 +182,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					provider = CredentialsAuthConfig.Name,
 					UserName = "user",
 					Password = "p@55word",
+					RememberMe = true,
 				});
 
 				Console.WriteLine(authResponse.Dump());

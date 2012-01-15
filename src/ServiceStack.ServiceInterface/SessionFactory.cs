@@ -52,8 +52,8 @@ namespace ServiceStack.ServiceInterface
 
 		public ISession GetOrCreateSession(IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-			var sessionId = httpReq.GetCookieValue(SessionFeature.PermanentSessionId)
-				?? httpRes.CreatePermanentSessionId(httpReq);
+			var sessionId = httpReq.GetSessionId()
+				?? httpRes.CreateSessionId(httpReq);
 
 			return new SessionCacheClient(cacheClient, sessionId);
 		}

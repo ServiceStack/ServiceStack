@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.Net30;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -18,6 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public HttpResponseWrapper(HttpResponse response)
 		{
 			this.response = response;
+			this.Cookies = new Cookies(this);
 		}
 
 		public HttpResponse Response
@@ -35,16 +39,18 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			set { this.response.StatusCode = value; }
 		}
 
-        public string StatusDescription
-        {
-            set { this.response.StatusDescription = value; }
-        }
+		public string StatusDescription
+		{
+			set { this.response.StatusDescription = value; }
+		}
 
 		public string ContentType
 		{
 			get { return response.ContentType; }
 			set { response.ContentType = value; }
 		}
+
+		public ICookies Cookies { get; set; }
 
 		public void AddHeader(string name, string value)
 		{

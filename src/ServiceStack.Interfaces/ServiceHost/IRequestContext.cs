@@ -12,7 +12,7 @@ namespace ServiceStack.ServiceHost
 
 		string GetHeader(string headerName);
 
-		IDictionary<string, Cookie> Cookies { get; }
+		IDictionary<string, System.Net.Cookie> Cookies { get; }
 
 		EndpointAttributes EndpointAttributes { get; }
 		

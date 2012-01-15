@@ -178,7 +178,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public MockHttpResponse()
 			{
 				this.Headers = new Dictionary<string, string>();
-				MemoryStream = new MemoryStream();
+				this.MemoryStream = new MemoryStream();
+				this.Cookies = new Cookies(this);
 			}
 
 			public object OriginalResponse
@@ -193,6 +194,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public string ContentType { get; set; }
 
 			private Dictionary<string, string> Headers { get; set; }
+
+			public ICookies Cookies { get; set; }
 
 			public void AddHeader(string name, string value)
 			{

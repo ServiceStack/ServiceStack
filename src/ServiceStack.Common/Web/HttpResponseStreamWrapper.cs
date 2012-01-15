@@ -27,6 +27,8 @@ namespace ServiceStack.Common.Web
         public string StatusDescription { set; private get; }
 		public string ContentType { get; set; }
 
+		public ICookies Cookies { get; set; }
+
 		public void AddHeader(string name, string value)
 		{
 			this.Headers[name] = value;

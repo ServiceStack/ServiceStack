@@ -106,12 +106,16 @@
     <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="AuthFeature.cs" />
     <Compile Include="Auth\AuthService.cs" />
+    <Compile Include="Auth\BasicAuthConfig.cs" />
+    <Compile Include="Auth\CredentialsAuthConfig.cs" />
+    <Compile Include="Auth\FacebookAuthConfig.cs" />
     <Compile Include="Auth\InMemoryAuthRepository.cs" />
     <Compile Include="Auth\IAuthHttpGateway.cs" />
     <Compile Include="Auth\IAuthSession.cs" />
     <Compile Include="Auth\IOAuthTokens.cs" />
     <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
+    <Compile Include="Auth\TwitterAuthConfig.cs" />
     <Compile Include="PermissionFeature.cs" />
     <Compile Include="Auth\RegistrationService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
@@ -207,6 +211,8 @@
     <Compile Include="Testing\MockHttpRequest.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Testing\MockHttpResponse.cs" />
+    <Compile Include="Testing\MockRequestContext.cs" />
     <Compile Include="Testing\TestAppHost.cs" />
     <Compile Include="Testing\TestBase.cs">
       <SubType>Code</SubType>

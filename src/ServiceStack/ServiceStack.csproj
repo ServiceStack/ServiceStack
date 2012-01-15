@@ -180,6 +180,7 @@
     <Compile Include="MiniProfiler\UI\MiniProfilerHandler.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.Settings.cs" />
+    <Compile Include="ServiceHost\Cookies.cs" />
     <Compile Include="WebHost.EndPoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
     <Compile Include="Markdown\DynamicTypeGenerator .cs" />

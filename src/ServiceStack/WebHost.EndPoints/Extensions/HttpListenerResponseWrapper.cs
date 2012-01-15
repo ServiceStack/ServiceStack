@@ -17,6 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public HttpListenerResponseWrapper(HttpListenerResponse response)
 		{
 			this.response = response;
+			this.Cookies = new Cookies(this);
 		}
 
 		public object OriginalResponse
@@ -42,6 +43,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return response.ContentType; }
 			set { response.ContentType = value; }
 		}
+
+		public ICookies Cookies { get; set; }
 
 		public void AddHeader(string name, string value)
 		{

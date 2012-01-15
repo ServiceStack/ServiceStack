@@ -64,7 +64,7 @@ namespace ServiceStack.ServiceInterface
 		public static string GetSessionId(this IServiceBase service)
 		{
 			var req = service.RequestContext.Get<IHttpRequest>();
-			var id = req.GetPermanentSessionId();
+			var id = req.GetSessionId();
 			if (id == null)
 				throw new ArgumentNullException("Session not set. Is Session being set in RequestFilters?");
 
@@ -148,7 +148,7 @@ namespace ServiceStack.ServiceInterface
 
 			using (var cache = httpReq.GetCacheClient())
 			{
-				var session = GetSession(cache, httpReq.GetPermanentSessionId());
+				var session = GetSession(cache, httpReq.GetSessionId());
 				if (session != null)
 					httpReq.Items.Add(RequestItemsSessionKey, session);
 				return session;
@@ -160,7 +160,7 @@ namespace ServiceStack.ServiceInterface
 			var session = cache.Get<IAuthSession>(AuthService.GetSessionKey(sessionId));
 			if (session == null)
 			{
-				session = AuthService.SessionFactory();
+				session = AuthService.CurrentSessionFactory();
 				session.Id = sessionId;
 				session.CreatedAt = session.LastModified = DateTime.UtcNow;
 			}

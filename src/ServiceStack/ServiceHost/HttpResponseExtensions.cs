@@ -63,7 +63,7 @@ namespace ServiceStack.ServiceHost
 
 		public static void ReturnAuthRequired(this IHttpResponse httpRes, string authRealm)
 		{
-			httpRes.StatusCode = (int) HttpStatusCode.Unauthorized;
+			httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
 			httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "Basic realm=\"" + authRealm + "\"");
 			httpRes.Close();
 		}
@@ -73,7 +73,7 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public static void SetPermanentCookie(this IHttpResponse httpRes, string cookieName, string cookieValue)
 		{
-			SetCookie(httpRes, cookieName, cookieValue, DateTime.UtcNow.AddYears(20), null);
+			httpRes.Cookies.AddPermanentCookie(cookieName, cookieValue);
 		}
 
 		/// <summary>
@@ -81,8 +81,7 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public static void SetSessionCookie(this IHttpResponse httpRes, string cookieName, string cookieValue)
 		{
-			var cookie = String.Format("{0}={1};path=/", cookieName, cookieValue);
-			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
+			httpRes.Cookies.AddSessionCookie(cookieName, cookieValue);
 		}
 
 		/// <summary>
@@ -90,19 +89,20 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public static void SetCookie(this IHttpResponse httpRes, string cookieName, string cookieValue, TimeSpan expiresIn)
 		{
-			var expiration = DateTime.UtcNow + expiresIn;
-			SetCookie(httpRes, cookieName, cookieValue, expiration, null);
+			httpRes.Cookies.AddCookie(new Cookie(cookieName, cookieValue) {
+				Expires = DateTime.UtcNow + expiresIn
+			});
 		}
 
 		/// <summary>
 		/// Sets a persistent cookie with an expiresAt date
 		/// </summary>
-		public static void SetCookie(this IHttpResponse httpRes, string cookieName, 
-			string cookieValue, DateTime expiresAt, string path)
+		public static void SetCookie(this IHttpResponse httpRes, string cookieName,
+			string cookieValue, DateTime expiresAt, string path = "/")
 		{
-			path = path ?? "/";
-			var cookie = String.Format("{0}={1};expires={2};path={3}", cookieName, cookieValue, expiresAt.ToString("R"), path);
-			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
+			httpRes.Cookies.AddCookie(new Cookie(cookieName, cookieValue, path) {
+				Expires = expiresAt,
+			});
 		}
 
 		/// <summary>
@@ -110,9 +110,7 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public static void DeleteCookie(this IHttpResponse httpRes, string cookieName)
 		{
-			var cookie = String.Format("{0}=;expires={1};path=/",
-				cookieName, DateTime.UtcNow.AddDays(-1).ToString("R"));
-			httpRes.AddHeader(HttpHeaders.SetCookie, cookie);
+			httpRes.Cookies.DeleteCookie(cookieName);
 		}
 
 		public static void AddHeaderLastModified(this IHttpResponse httpRes, DateTime? lastModified)
