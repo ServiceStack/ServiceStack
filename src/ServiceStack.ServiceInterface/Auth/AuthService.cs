@@ -60,6 +60,11 @@ namespace ServiceStack.ServiceInterface.Auth
 		public static string DefaultOAuthRealm { get; private set; }
 		public static IAuthProvider[] AuthProviders { get; private set; }
 
+		static AuthService()
+		{
+			CurrentSessionFactory = () => new AuthUserSession();
+		}
+
 		public static IAuthProvider GetAuthConfig(string provider)
 		{
 			foreach (var authConfig in AuthProviders)

@@ -142,6 +142,8 @@ namespace ServiceStack.ServiceInterface.Auth
 			session.FirstName = userAuth.FirstName;
 			session.LastName = userAuth.LastName;
 			session.Email = userAuth.Email;
+			session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
+				.ConvertAll(x => (IOAuthTokens)x);
 		}
 
 		private UserAuth GetUserAuth(IRedisClientFacade redis, string userAuthId)

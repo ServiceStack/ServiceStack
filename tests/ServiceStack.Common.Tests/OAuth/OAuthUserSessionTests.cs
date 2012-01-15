@@ -317,10 +317,13 @@ namespace ServiceStack.Common.Tests.OAuth
 			var mockService = new Mock<IServiceBase>();
 			mockService.Expect(x => x.TryResolve<IUserAuthRepository>())
 				.Returns(userAuthRepository);
-			mockService.Expect(x => x.RequestContext)
-				.Returns(new MockRequestContext());
 
-			//AuthService.Init();
+			var requestContext = new MockRequestContext();
+			mockService.Expect(x => x.RequestContext)
+				.Returns(requestContext);
+
+			requestContext.Get<IHttpResponse>()
+				.CreateSessionId(requestContext.Get<IHttpRequest>());
 
 			var service = mockService.Object;
 
@@ -329,7 +332,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				DisplayName = "Demis Bellot FB",
 				FirstName = "Demis",
 				LastName = "Bellot",
-				Email = "demis.bellot@gmail.com",
+				Email = "demis.bellot@gmail.com", 
 			};
 
 			var facebookTokens = new OAuthTokens {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
 
@@ -28,8 +29,13 @@ namespace ServiceStack.ServiceInterface.Auth
 		}
 	}
 
-	public class UserOAuthProvider
+	public class UserOAuthProvider : IOAuthTokens
 	{
+		public UserOAuthProvider()
+		{
+			this.Items = new Dictionary<string, string>();
+		}
+
 		[AutoIncrement]
 		public int Id { get; set; }
 		public int UserAuthId { get; set; }
@@ -42,6 +48,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string Email { get; set; }
 		public string RequestToken { get; set; }
 		public string RequestTokenSecret { get; set; }
+		public Dictionary<string, string> Items { get; set; }
 		public string AccessToken { get; set; }
 		public string AccessTokenSecret { get; set; }
 
