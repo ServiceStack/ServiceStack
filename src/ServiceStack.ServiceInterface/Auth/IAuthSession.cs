@@ -19,6 +19,7 @@ namespace ServiceStack.ServiceInterface.Auth
         List<string> Permissions { get; set; }
 		bool IsAuthenticated { get; }
 
+		bool HasRole(string role);
 		bool HasPermission(string permission);
 		bool IsAuthorized(string provider);
 	}
