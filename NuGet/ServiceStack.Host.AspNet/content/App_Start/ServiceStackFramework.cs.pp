@@ -1,7 +1,12 @@
 using System;
 using System.Linq;
+using System.Configuration;
 using System.Collections.Generic;
+using ServiceStack.Configuration;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
 
@@ -40,9 +45,45 @@ namespace $rootnamespace$.App_Start
 			//    DebugMode = true, //Show StackTraces when developing
 			//});
 
+			//Enable Authentication
+			//ConfigureAuth(container);
+
 			//Register all your dependencies
 			container.Register(new TodoRepository());			
 		}
+
+		/* Uncomment to enable ServiceStack Authentication and CustomUserSession
+		private void ConfigureAuth(Funq.Container container)
+		{
+			Routes
+				.Add<Auth>("/auth")
+				.Add<Auth>("/auth/{provider}")
+				.Add<Registration>("/register");
+
+			var appSettings = new AppSettings();
+
+			AuthFeature.Init(this, () => new CustomUserSession(),
+				new IAuthProvider[] {
+					new CredentialsAuthProvider(appSettings), 
+					new FacebookAuthProvider(appSettings), 
+					new TwitterAuthProvider(appSettings), 
+					new BasicAuthProvider(appSettings), 
+				});
+
+			RegistrationFeature.Init(this);
+
+			//Requires ConnectionString configured in Web.Config
+			var connectionString = ConfigurationManager.ConnectionStrings["AppDb"].ConnectionString;
+			container.Register<IDbConnectionFactory>(c =>
+				new OrmLiteConnectionFactory(connectionString, SqlServerOrmLiteDialectProvider.Instance));
+
+			container.Register<IUserAuthRepository>(c =>
+				new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
+
+			var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>();
+			authRepo.CreateMissingTables();
+		}
+		*/
 
 		public static void Start()
 		{

@@ -44,6 +44,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public string UserName { get; set; }
 
+		public string ReferrerUrl { get; set; }
+
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
@@ -67,7 +69,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public static IAuthProvider GetAuthConfig(string provider)
 		{
-			if (AuthProviders == null) return null;
+			if (AuthProviders == null || AuthProviders.Length == 0) return null;
+			if (provider == LogoutAction) return AuthProviders[0];
 
 			foreach (var authConfig in AuthProviders)
 			{
@@ -77,11 +80,6 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			return null;
-		}
-
-		public static string GetSessionKey(string sessionId)
-		{
-			return IdUtils.CreateUrn<IAuthSession>(sessionId);
 		}
 
 		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
@@ -111,8 +109,8 @@ namespace ServiceStack.ServiceInterface.Auth
 			return OnPost(request);
 		}
 
-        public override object OnPost(Auth request)
-        {
+		public override object OnPost(Auth request)
+		{
 			AssertAuthProviders();
 
 			if (ValidateFn != null)
@@ -120,13 +118,16 @@ namespace ServiceStack.ServiceInterface.Auth
 				var response = ValidateFn(this, HttpMethods.Get, request);
 				if (response != null) return response;
 			}
+		
+			if (request.RememberMe.HasValue)
+			{
+				var opt = request.RememberMe.GetValueOrDefault(false)
+					? SessionOptions.Permanent
+					: SessionOptions.Temporary;
 
-			var opt = request.RememberMe.GetValueOrDefault(false)
-				? SessionOptions.Permanent
-				: SessionOptions.Temporary;
-
-			base.RequestContext.Get<IHttpResponse>()
-				.AddSessionOptions(base.RequestContext.Get<IHttpRequest>(), opt);
+				base.RequestContext.Get<IHttpResponse>()
+					.AddSessionOptions(base.RequestContext.Get<IHttpRequest>(), opt);
+			}
 
 			var provider = request.provider ?? AuthProviders[0].Provider;
 			var oAuthConfig = GetAuthConfig(provider);
@@ -143,25 +144,32 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			var referrerUrl = session.ReferrerUrl
-				?? this.RequestContext.GetHeader("Referer") 
+				?? this.RequestContext.GetHeader("Referer")
 				?? oAuthConfig.CallbackUrl;
 
 			//Already Authenticated
-			return this.Redirect(referrerUrl.AddHashParam("s", "0"));
+			if (base.RequestContext.ResponseContentType == ContentType.Html)
+				return this.Redirect(referrerUrl.AddHashParam("s", "0"));
+
+			return new AuthResponse {
+				UserName = session.UserName,
+				SessionId = session.Id,
+				ReferrerUrl = referrerUrl,
+			};
 		}
 
-        public override object OnDelete(Auth request)
-        {
-            if (ValidateFn != null)
-            {
-                var response = ValidateFn(this, HttpMethods.Delete, request);
-                if (response != null) return response;
-            }
+		public override object OnDelete(Auth request)
+		{
+			if (ValidateFn != null)
+			{
+				var response = ValidateFn(this, HttpMethods.Delete, request);
+				if (response != null) return response;
+			}
 
-            this.RemoveSession();
+			this.RemoveSession();
 
-            return new AuthResponse();
-        }
+			return new AuthResponse();
+		}
 	}
 
 }

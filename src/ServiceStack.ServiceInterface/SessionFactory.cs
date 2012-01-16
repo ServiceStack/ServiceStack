@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 using ServiceStack.CacheAccess;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -53,9 +54,19 @@ namespace ServiceStack.ServiceInterface
 		public ISession GetOrCreateSession(IHttpRequest httpReq, IHttpResponse httpRes)
 		{
 			var sessionId = httpReq.GetSessionId()
-				?? httpRes.CreateSessionId(httpReq);
+				?? httpRes.CreateSessionIds(httpReq);
 
 			return new SessionCacheClient(cacheClient, sessionId);
+		}
+
+		public ISession GetOrCreateSession()
+		{
+			if (HttpContext.Current != null)
+				return GetOrCreateSession(
+					HttpContext.Current.Request.ToRequest(),
+					HttpContext.Current.Response.ToResponse());
+			
+			throw new NotImplementedException("Only ASP.NET Requests can be accessed via Singletons");
 		}
 	}
 }

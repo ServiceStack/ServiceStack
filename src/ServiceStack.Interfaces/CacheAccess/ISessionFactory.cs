@@ -14,5 +14,11 @@ namespace ServiceStack.CacheAccess
 		/// <param name="httpRes"></param>
 		/// <returns></returns>
 		ISession GetOrCreateSession(IHttpRequest httpReq, IHttpResponse httpRes);
+
+		/// <summary>
+		/// Gets the session for this request, creates one if it doesn't exist.
+		/// Only for ASP.NET apps. Uses the HttpContext.Current singleton.
+		/// </summary>
+		ISession GetOrCreateSession();
 	}
 }

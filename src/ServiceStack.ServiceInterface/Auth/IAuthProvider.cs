@@ -13,7 +13,11 @@ namespace ServiceStack.ServiceInterface.Auth
 		string RequestTokenUrl { get; set; }
 		string AuthorizeUrl { get; set; }
 		string AccessTokenUrl { get; set; }
-		OAuthAuthorizer oAuth { get; set; }
+
+		/// <summary>
+		/// Useful OAuth utilities
+		/// </summary>
+		OAuthAuthorizer OAuthUtils { get; set; }
 
 		/// <summary>
 		/// Remove the Users Session
@@ -29,8 +33,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// </summary>
 		object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
 
-		void OnSaveUserAuth(IServiceBase oAuthService, string userAuthId);
-		void OnAuthenticated(IServiceBase oAuthService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo);
+		void OnSaveUserAuth(IServiceBase authService, IAuthSession session);
+		void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo);
 		bool IsAuthorized(IAuthSession session, IOAuthTokens tokens);
 	}
 }

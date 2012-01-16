@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Data.Common;
+using System.Web;
 using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Configuration;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
@@ -14,8 +16,11 @@ using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Validation;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests
@@ -32,6 +37,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 			public override void Configure(Container container)
 			{
+				JsConfig.EmitCamelCaseNames = true;
+
 				this.RequestFilters.Add((req, res, dto) => {
 					var requestFilter = dto as RequestFilter;
 					if (requestFilter != null)
@@ -60,6 +67,8 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				this.Container.Register<ICacheClient>(new MemoryCacheClient());
 				//this.Container.Register<ICacheClient>(new BasicRedisClientManager());
+
+				ConfigureAuth(container);
 
 				//this.Container.Register<ISessionFactory>(
 				//    c => new SessionFactory(c.Resolve<ICacheClient>()));
@@ -94,6 +103,33 @@ namespace ServiceStack.WebHost.IntegrationTests
 				mqHost.Start();
 
 				this.Container.Register((IMessageService)mqHost);
+			}
+
+			//Configure ServiceStack Authentication and CustomUserSession
+			private void ConfigureAuth(Funq.Container container)
+			{
+				Routes
+					.Add<Auth>("/auth")
+					.Add<Auth>("/auth/{provider}")
+					.Add<Registration>("/register");
+
+				var appSettings = new AppSettings();
+
+				AuthFeature.Init(this, () => new CustomUserSession(),
+					new IAuthProvider[] {
+						new CredentialsAuthProvider(appSettings), 
+						new FacebookAuthProvider(appSettings), 
+						new TwitterAuthProvider(appSettings), 
+						new BasicAuthProvider(appSettings), 
+					});
+
+				RegistrationFeature.Init(this);
+
+				container.Register<IUserAuthRepository>(c =>
+					new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
+
+				var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>();
+				authRepo.CreateMissingTables();
 			}
 		}
 

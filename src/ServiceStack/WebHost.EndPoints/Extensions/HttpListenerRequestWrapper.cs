@@ -70,6 +70,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request; }
 		}
 
+		public HttpListenerRequestWrapper(HttpListenerRequest request)
+			: this(null, request) {}
+
 		public HttpListenerRequestWrapper(
 			string operationName, HttpListenerRequest request)
 		{

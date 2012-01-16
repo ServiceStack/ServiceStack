@@ -3,7 +3,7 @@ SET MSBUILD=C:\Windows\Microsoft.NET\Framework\v3.5\MSBuild.exe
 REM SET BUILD=Debug
 SET BUILD=Release
 
-%MSBUILD% build.msbuild
+REM %MSBUILD% build.msbuild
 
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.dll ..\NuGet\ServiceStack\lib
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.pdb ..\NuGet\ServiceStack\lib

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -31,7 +32,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			this.AuthorizeUrl = appSettings.Get("oauth.{0}.AuthorizeUrl", authRealm + "oauth/authorize");
 			this.AccessTokenUrl = appSettings.Get("oauth.{0}.AccessTokenUrl", authRealm + "oauth/access_token");
 
-			this.oAuth = new OAuthAuthorizer(this);
+			this.OAuthUtils = new OAuthAuthorizer(this);
 			this.AuthHttpGateway = new AuthHttpGateway();
 		}
 
@@ -45,7 +46,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string RequestTokenUrl { get; set; }
 		public string AuthorizeUrl { get; set; }
 		public string AccessTokenUrl { get; set; }
-		public OAuthAuthorizer oAuth { get; set; }
+		public OAuthAuthorizer OAuthUtils { get; set; }
 
 		/// <summary>
 		/// Remove the Users Session
@@ -55,7 +56,16 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// <returns></returns>
 		public virtual object Logout(IServiceBase service, Auth request)
 		{
+			var session = service.GetSession();
+			var referrerUrl = session.ReferrerUrl
+				?? service.RequestContext.GetHeader("Referer")
+				?? this.CallbackUrl;
+
 			service.RemoveSession();
+
+			if (service.RequestContext.ResponseContentType == ContentType.Html)
+				return service.Redirect(referrerUrl.AddHashParam("s", "-1"));
+
 			return new AuthResponse();
 		}
 
@@ -71,19 +81,20 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			var tokens = Init(authService, session);
 
-			//Default oAuth logic based on Twitter's oAuth workflow
+			//Default OAuth logic based on Twitter's OAuth workflow
 			if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
 			{
-				oAuth.RequestToken = tokens.RequestToken;
-				oAuth.RequestTokenSecret = tokens.RequestTokenSecret;
-				oAuth.AuthorizationToken = request.oauth_token;
-				oAuth.AuthorizationVerifier = request.oauth_verifier;
+				OAuthUtils.RequestToken = tokens.RequestToken;
+				OAuthUtils.RequestTokenSecret = tokens.RequestTokenSecret;
+				OAuthUtils.AuthorizationToken = request.oauth_token;
+				OAuthUtils.AuthorizationVerifier = request.oauth_verifier;
 
-				if (oAuth.AcquireAccessToken())
+				if (OAuthUtils.AcquireAccessToken())
 				{
-					tokens.AccessToken = oAuth.AccessToken;
-					tokens.AccessTokenSecret = oAuth.AccessTokenSecret;
-					OnAuthenticated(authService, session, tokens, oAuth.AuthInfo);
+					tokens.AccessToken = OAuthUtils.AccessToken;
+					tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
+					session.IsAuthenticated = true;
+					OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo);
 					authService.SaveSession(session);
 
 					//Haz access!
@@ -96,10 +107,10 @@ namespace ServiceStack.ServiceInterface.Auth
 				authService.SaveSession(session);
 				return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
 			}
-			if (oAuth.AcquireRequestToken())
+			if (OAuthUtils.AcquireRequestToken())
 			{
-				tokens.RequestToken = oAuth.RequestToken;
-				tokens.RequestTokenSecret = oAuth.RequestTokenSecret;
+				tokens.RequestToken = OAuthUtils.RequestToken;
+				tokens.RequestTokenSecret = OAuthUtils.RequestTokenSecret;
 				authService.SaveSession(session);
 
 				//Redirect to OAuth provider to approve access
@@ -136,18 +147,20 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
 		/// Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
 		/// </summary>
-		/// <param name="session"></param>
-		/// <param name="provider"></param>
-		/// <param name="tokens"></param>
-		protected virtual void SaveUserAuth(IAuthSession session, IUserAuthRepository provider, IOAuthTokens tokens)
+		protected virtual void SaveUserAuth(IServiceBase authService, IAuthSession session, IUserAuthRepository authRepo, IOAuthTokens tokens)
 		{
-			if (provider == null) return;
-			session.UserAuthId = provider.CreateOrMergeAuthSession(session, tokens);
+			if (authRepo == null) return;
+			if (tokens != null)
+			{
+				session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
+			}
+			authRepo.LoadUserAuth(session, tokens);
+			authRepo.SaveUserAuth(session);
 		}
 
-		public virtual void OnSaveUserAuth(IServiceBase oAuthService, string userAuthId) { }
+		public virtual void OnSaveUserAuth(IServiceBase authService, IAuthSession session) { }
 
-		public virtual void OnAuthenticated(IServiceBase oAuthService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+		public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
 		{
 			var userSession = session as AuthUserSession;
 			if (userSession != null)
@@ -155,14 +168,18 @@ namespace ServiceStack.ServiceInterface.Auth
 				LoadUserAuthInfo(userSession, tokens, authInfo);
 			}
 
-			var authProvider = oAuthService.TryResolve<IUserAuthRepository>();
-			if (authProvider != null)
-				authProvider.LoadUserAuth(session, tokens);
+			var authRepo = authService.TryResolve<IUserAuthRepository>();
+			if (authRepo != null)
+			{
+				if (tokens != null)
+				{
+					authInfo.ForEach((x, y) => tokens.Items[x] = y);
+				}
+				SaveUserAuth(authService, userSession, authRepo, tokens);
+			}
 
-			authInfo.ForEach((x, y) => tokens.Items[x] = y);
-
-			SaveUserAuth(userSession, oAuthService.TryResolve<IUserAuthRepository>(), tokens);
-			OnSaveUserAuth(oAuthService, session.UserAuthId);
+			OnSaveUserAuth(authService, session);
+			session.OnAuthenticated(authService, session, tokens, authInfo);
 		}
 
 		protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo) { }

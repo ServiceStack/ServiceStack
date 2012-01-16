@@ -35,7 +35,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				this.LastName = authProvider.LastName;
 			if (!authProvider.DisplayName.IsNullOrEmpty())
 				this.DisplayName = authProvider.DisplayName;
-			if (!authProvider.Email.IsNullOrEmpty())
+			//Used for logging in, must be a explicit change.
+			if (this.Email == null && !authProvider.Email.IsNullOrEmpty()) 
 				this.Email = authProvider.Email;
 		}
 	}

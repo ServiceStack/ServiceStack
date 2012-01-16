@@ -247,6 +247,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
 
 			return dbFactory.Exec(dbCmd => {
+
 				var oAuthProvider = dbCmd.FirstOrDefault<UserOAuthProvider>(
 				"Provider = {0} AND UserId = {1}", tokens.Provider, tokens.UserId);
 

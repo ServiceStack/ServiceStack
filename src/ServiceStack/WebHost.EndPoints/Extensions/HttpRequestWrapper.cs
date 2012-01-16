@@ -32,6 +32,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request; }
 		}
 
+		public HttpRequestWrapper(HttpRequest request)
+			: this(null, request)
+		{
+		}
+
 		public HttpRequestWrapper(string operationName, HttpRequest request)
 		{
 			this.OperationName = operationName;

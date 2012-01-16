@@ -110,12 +110,44 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\default.css" />
+    <Content Include="Content\img\bootstrap-apple-114x114.png" />
+    <Content Include="Content\img\bootstrap-apple-57x57.png" />
+    <Content Include="Content\img\bootstrap-apple-72x72.png" />
+    <Content Include="Content\img\favicon.ico" />
+    <Content Include="Content\img\sign-in-with-facebook.png" />
+    <Content Include="Content\img\sign-in-with-twitter-l.png" />
+    <Content Include="Content\img\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\img\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="Content\img\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="Content\img\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="Content\img\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="Content\img\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="Content\img\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\img\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="Content\img\ui-icons_222222_256x240.png" />
+    <Content Include="Content\img\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\img\ui-icons_454545_256x240.png" />
+    <Content Include="Content\img\ui-icons_888888_256x240.png" />
+    <Content Include="Content\img\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\js\app.js" />
+    <Content Include="Content\js\backbone.min.js" />
+    <Content Include="Content\js\base.js" />
+    <Content Include="Content\js\jquery-1.7.1.min.js" />
+    <Content Include="Content\js\jsonreport.js" />
+    <Content Include="Content\js\login.js" />
+    <Content Include="Content\js\register.js" />
+    <Content Include="Content\js\ss-validation.js" />
+    <Content Include="Content\js\underscore.min.js" />
+    <Content Include="Content\js\userprofile.js" />
+    <Content Include="Content\js\_blank.js" />
     <Content Include="Default.aspx" />
     <Content Include="user-notfound.htm" />
     <Content Include="user-default.htm" />
     <Content Include="Global.asax" />
     <Content Include="Soap11WebService.asmx" />
-    <Content Include="default.html" />
+    <Content Include="_default.html" />
     <Content Include="TestExistingDir\default.html" />
     <Content Include="TestExistingDir\upload.html" />
     <Content Include="Web.config">
@@ -124,6 +156,9 @@
     <Content Include="webpage.html" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PageBase.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -142,6 +177,7 @@
     <Compile Include="Services\GeoInfoService.cs" />
     <Compile Include="Services\ProfilerService.cs" />
     <Compile Include="Services\RouteInfoService.cs" />
+    <Compile Include="Services\UserAuths.cs" />
     <Compile Include="Tests\AppHostBaseTests.cs" />
     <Compile Include="Tests\CachedServiceTests.cs" />
     <Compile Include="Tests\Config.cs" />

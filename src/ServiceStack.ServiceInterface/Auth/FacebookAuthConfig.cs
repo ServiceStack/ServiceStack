@@ -49,6 +49,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				var contents = accessTokenUrl.DownloadUrl();
 				var authInfo = HttpUtility.ParseQueryString(contents);
 				tokens.AccessTokenSecret = authInfo["access_token"];
+				session.IsAuthenticated = true;
 				authService.SaveSession(session);
 				OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
 

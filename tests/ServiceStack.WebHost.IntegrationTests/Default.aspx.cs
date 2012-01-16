@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 
 namespace ServiceStack.WebHost.IntegrationTests
 {
-	public partial class Default : System.Web.UI.Page
+	public partial class Default : PageBase
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{

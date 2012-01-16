@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
@@ -44,10 +45,9 @@ namespace ServiceStack.ServiceInterface.Auth
 			string useUserName = null;
 			if (authRepo.TryAuthenticate(userName, password, out useUserName))
 			{
+				session.IsAuthenticated = true;
 				session.UserName = userName;
-				authRepo.LoadUserAuth(session, null);
 
-				OnAuthenticatedCredentials(authService, session, userName);
 				return true;
 			}
 			return false;
@@ -68,6 +68,9 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			if (TryAuthenticate(authService, userName, password))
 			{
+				OnAuthenticated(authService, session, null, null);
+				//OnAuthenticatedCredentials(authService, session, userName);
+
 				if (session.UserName == null)
 					session.UserName = userName;
 
@@ -82,13 +85,5 @@ namespace ServiceStack.ServiceInterface.Auth
 			throw HttpError.Unauthorized("Invalid UserName or Password");
 		}
 
-		protected virtual void OnAuthenticatedCredentials(IServiceBase oAuthService, IAuthSession session, string userName)
-		{
-			var provider = oAuthService.TryResolve<IUserAuthRepository>();
-			if (provider != null)
-				provider.SaveUserAuth(session);
-
-			OnSaveUserAuth(oAuthService, session.UserAuthId);
-		}
 	}
 }

@@ -150,6 +150,11 @@
             and parsing member names and enum values in a case-insensitive manner.
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.ExcludeTypeInfo">
+            <summary>
+            Never emit type info for this type
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.EmitCamelCaseNames">
             <summary>
             <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
@@ -158,7 +163,7 @@
             and parsing member names and enum values in a case-insensitive manner.
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig`1.SerializeFn">
+        <member name="F:ServiceStack.Text.JsConfig`1.serializeFn">
             <summary>
             Define custom serialization fn for BCL Structs
             </summary>
@@ -166,6 +171,11 @@
         <member name="F:ServiceStack.Text.JsConfig`1.DeSerializeFn">
             <summary>
             Define custom deserialization fn for BCL Structs
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.ExcludePropertyNames">
+            <summary>
+            Exclude specific properties of this type from being serialized
             </summary>
         </member>
         <member name="T:ServiceStack.Text.TypeSerializer">

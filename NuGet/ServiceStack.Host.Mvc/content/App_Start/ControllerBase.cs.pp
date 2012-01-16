@@ -4,25 +4,60 @@ using System.Web;
 using System.Web.Mvc;
 using ServiceStack.CacheAccess;
 using ServiceStack.Text;
+using ServiceStack.ServiceInterface;
+using ServiceStack.ServiceInterface.Auth;
 
 namespace $rootnamespace$
 {
+	//A customizeable typed UserSession that can be extended with your own properties
+	public class CustomUserSession : AuthUserSession
+	{
+		public string CustomPropety { get; set; }
+	}
+
 	public abstract class ControllerBase : Controller
 	{
 		public ICacheClient Cache { get; set; }
 		public ISessionFactory SessionFactory { get; set; }
 
 		private ISession session;
-		public ISession Session
+		public new ISession Session
 		{
 			get
 			{
-				return session ?? (session =
-					SessionFactory.GetOrCreateSession(
-						new ServiceStack.WebHost.Endpoints.Extensions.HttpRequestWrapper(null, System.Web.HttpContext.Current.Request),
-						new ServiceStack.WebHost.Endpoints.Extensions.HttpResponseWrapper(System.Web.HttpContext.Current.Response)
-					));
+				return session ?? (session = SessionFactory.GetOrCreateSession());
 			}
+		}
+
+		protected string SessionKey
+		{
+			get
+			{
+				var sessionId = SessionFeature.GetSessionId();
+				return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
+			}
+		}
+
+		private CustomUserSession userSession;
+		protected CustomUserSession UserSession
+		{
+			get
+			{
+				if (userSession != null) return userSession;
+				if (SessionKey != null)
+					userSession = this.Cache.Get<CustomUserSession>(SessionKey);
+				else
+					SessionFeature.CreateSessionIds();
+
+				var unAuthorizedSession = new CustomUserSession();
+				return userSession ?? (userSession = unAuthorizedSession);
+			}
+		}
+
+		public void ClearSession()
+		{
+			userSession = null;
+			this.Cache.Remove(SessionKey);
 		}
 
 		protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)

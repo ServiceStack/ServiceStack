@@ -47,15 +47,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public List<string> Permissions { get; set; }
 
-		public virtual bool IsAuthenticated
-		{
-			get
-			{
-				return ProviderOAuthAccess != null 
-					&& ProviderOAuthAccess.Any(
-						x => AuthService.GetAuthConfig(x.Provider).IsAuthorizedSafe(this, x));
-			}
-		}
+		public virtual bool IsAuthenticated { get; set; }
 
 		public virtual bool IsAuthorized(string provider)
 		{
@@ -71,6 +63,10 @@ namespace ServiceStack.ServiceInterface.Auth
 		public virtual bool HasRole(string role)
 		{
 			return this.Roles != null && this.Roles.Contains(role);
+		}
+
+		public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+		{			
 		}
 	}
 

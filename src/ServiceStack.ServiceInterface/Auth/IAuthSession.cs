@@ -18,10 +18,11 @@ namespace ServiceStack.ServiceInterface.Auth
 		DateTime LastModified { get; set; }
 		List<string> Roles { get; set; }
         List<string> Permissions { get; set; }
-		bool IsAuthenticated { get; }
+		bool IsAuthenticated { get; set; }
 
 		bool HasRole(string role);
 		bool HasPermission(string permission);
 		bool IsAuthorized(string provider);
+		void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo);
 	}
 }

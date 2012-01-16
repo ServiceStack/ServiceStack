@@ -103,7 +103,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			using (var cache = service.GetCacheClient())
 			{
-				var sessionKey = AuthService.GetSessionKey(service.GetSessionId());
+				var sessionKey = SessionFeature.GetSessionKey(service.GetSessionId());
 				cache.Set(sessionKey, session);
 				service.RequestContext.Get<IHttpRequest>().SaveSession(session);
 			}
@@ -113,7 +113,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			using (var cache = service.GetCacheClient())
 			{
-				var sessionKey = AuthService.GetSessionKey(service.GetSessionId());
+				var sessionKey = SessionFeature.GetSessionKey(service.GetSessionId());
 				cache.Remove(sessionKey);
 				service.RequestContext.Get<IHttpRequest>().RemoveSession();
 			}
@@ -159,7 +159,7 @@ namespace ServiceStack.ServiceInterface
 
 		public static IAuthSession GetSession(this ICacheClient cache, string sessionId)
 		{
-			var session = cache.Get<IAuthSession>(AuthService.GetSessionKey(sessionId));
+			var session = cache.Get<IAuthSession>(SessionFeature.GetSessionKey(sessionId));
 			if (session == null)
 			{
 				session = AuthService.CurrentSessionFactory();

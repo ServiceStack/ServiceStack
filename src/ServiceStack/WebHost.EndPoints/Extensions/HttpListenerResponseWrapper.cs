@@ -7,7 +7,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
-	internal class HttpListenerResponseWrapper 
+	public class HttpListenerResponseWrapper 
 		: IHttpResponse
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof (HttpListenerResponseWrapper));
