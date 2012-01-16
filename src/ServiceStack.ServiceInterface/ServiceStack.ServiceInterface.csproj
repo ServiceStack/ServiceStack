@@ -106,9 +106,9 @@
     <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="AuthFeature.cs" />
     <Compile Include="Auth\AuthService.cs" />
-    <Compile Include="Auth\BasicAuthConfig.cs" />
+    <Compile Include="Auth\BasicAuthProvider.cs" />
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
-    <Compile Include="Auth\FacebookAuthConfig.cs" />
+    <Compile Include="Auth\FacebookAuthProvider.cs" />
     <Compile Include="Auth\IAuthProvider.cs" />
     <Compile Include="Auth\InMemoryAuthRepository.cs" />
     <Compile Include="Auth\IAuthHttpGateway.cs" />
