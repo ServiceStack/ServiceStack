@@ -14,20 +14,16 @@ namespace ServiceStack.ServiceInterface
 	/// If one is not configured it will Execute the request immediately as per normal.
 	/// </summary>
 	/// <typeparam name="TRequest"></typeparam>
+	[Obsolete("IAsyncService hae been merged into ServiceBase")]
 	public abstract class AsyncServiceBase<TRequest> 
 		: ServiceBase<TRequest>, IAsyncService<TRequest>
 	{
-		/// <summary>
-		/// Injected by the ServiceStack IOC with the registered dependency in the Funq IOC container.
-		/// </summary>
-		public IMessageFactory MessageFactory { get; set; }
-
 		/// <summary>
 		/// Persists the request into the registered message queue if configured, 
 		/// otherwise calls Execute() to handle the request immediately.
 		/// </summary>
 		/// <param name="request"></param>
-		public virtual object ExecuteAsync(TRequest request)
+		public override object ExecuteAsync(TRequest request)
 		{
 			if (MessageFactory == null)
 			{

@@ -23,6 +23,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		void Store<T>(T item) where T : class, new();
 		string GetValueFromHash(string hashId, string key);
 		void SetEntryInHash(string hashId, string key, string value);
+		void RemoveEntryFromHash(string hashId, string key);
 		void AddItemToSet(string setId, string item);
 		ITypedRedisClientFacade<T> As<T>();
 	}
@@ -106,6 +107,11 @@ namespace ServiceStack.ServiceInterface.Auth
 			public void SetEntryInHash(string hashId, string key, string value)
 			{
 				redisClient.SetEntryInHash(hashId, key, value);
+			}
+
+			public void RemoveEntryFromHash(string hashId, string key)
+			{
+				redisClient.RemoveEntryFromHash(hashId, key);
 			}
 
 			public void AddItemToSet(string setId, string item)

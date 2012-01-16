@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Globalization;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
@@ -96,19 +97,24 @@ namespace ServiceStack.ServiceInterface.Auth
 			if (!ValidationFeature.Enabled)
 				RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
 
+			AssertUserAuthRepo();
+
 			if (ValidateFn != null)
 			{
-				var response = ValidateFn(this, HttpMethods.Get, request);
+				var response = ValidateFn(this, HttpMethods.Post, request);
 				if (response != null) return response;
 			}
 
-			AssertUserAuthRepo();
-
+			var session = this.GetSession();
 			var newUserAuth = request.TranslateTo<UserAuth>();
-			var createdUser = this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password);
+			var existingUser = UserAuthRepo.GetUserAuth(session, null);
+			
+			var user = existingUser != null
+				? this.UserAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password)
+				: this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password);
 
 			return new RegistrationResponse {
-				UserId = createdUser.Id.ToString(),
+				UserId = user.Id.ToString(CultureInfo.InvariantCulture),
 			};
 		}
 
@@ -122,19 +128,22 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			if (ValidateFn != null)
 			{
-				var response = ValidateFn(this, HttpMethods.Get, request);
+				var response = ValidateFn(this, HttpMethods.Put, request);
 				if (response != null) return response;
 			}
 
-			var userName = request.UserName ?? request.Email;
-			var existingUser = UserAuthRepo.GetUserAuthByUserName(userName);
+			var session = this.GetSession();
+			var existingUser = UserAuthRepo.GetUserAuth(session, null);
+			if (existingUser == null)
+			{
+				throw HttpError.NotFound("User does not exist");
+			}
 
-			existingUser.PopulateWith(request);
-
-			UserAuthRepo.SaveUserAuth(existingUser);
+			var newUserAuth = request.TranslateTo<UserAuth>();
+			UserAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
 
 			return new RegistrationResponse {
-				UserId = existingUser.Id.ToString(),
+				UserId = existingUser.Id.ToString(CultureInfo.InvariantCulture),
 			};
 		}
 	}

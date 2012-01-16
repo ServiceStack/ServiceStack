@@ -169,7 +169,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public virtual bool IsAuthorized(IAuthSession session, IOAuthTokens tokens)
 		{
-			return string.IsNullOrEmpty(tokens.AccessTokenSecret);
+			return tokens != null && !string.IsNullOrEmpty(tokens.AccessTokenSecret);
 		}
 	}
 

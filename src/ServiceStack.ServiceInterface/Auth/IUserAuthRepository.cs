@@ -5,6 +5,7 @@ namespace ServiceStack.ServiceInterface.Auth
 	public interface IUserAuthRepository
 	{
 		UserAuth CreateUserAuth(UserAuth newUser, string password);
+		UserAuth UpdateUserAuth(UserAuth existingUser, UserAuth newUser, string password);
 		UserAuth GetUserAuthByUserName(string userNameOrEmail);
 		bool TryAuthenticate(string userName, string password, out string userId);
 		void LoadUserAuth(IAuthSession session, IOAuthTokens tokens);

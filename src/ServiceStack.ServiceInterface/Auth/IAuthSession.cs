@@ -16,6 +16,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		List<IOAuthTokens> ProviderOAuthAccess { get; set; }
 		DateTime CreatedAt { get; set; }
 		DateTime LastModified { get; set; }
+		List<string> Roles { get; set; }
         List<string> Permissions { get; set; }
 		bool IsAuthenticated { get; }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Funq;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -49,6 +50,9 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
+			if (Config == null)
+				Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Assembly.GetExecutingAssembly()));				
+
 			Config.ServiceManager.RegisterService(serviceType);
 		}
 	}

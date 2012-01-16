@@ -20,6 +20,7 @@ namespace ServiceStack.ServiceInterface
 
 		public static string AddQueryParam(this string url, string key, string val)
 		{
+			if (string.IsNullOrEmpty(url)) return null;
 			var prefix = url.IndexOf('?') == -1 ? "?" : "&";
 			return url + prefix + key + "=" + val.UrlEncode();
 		}
@@ -31,6 +32,7 @@ namespace ServiceStack.ServiceInterface
 
 		public static string AddHashParam(this string url, string key, string val)
 		{
+			if (string.IsNullOrEmpty(url)) return null;
 			var prefix = url.IndexOf('#') == -1 ? "#" : "/";
 			return url + prefix + key + "=" + val.UrlEncode();
 		}

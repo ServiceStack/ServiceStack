@@ -17,6 +17,7 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -269,12 +270,10 @@ namespace ServiceStack.Common.Tests.OAuth
 				FirstName = "FirstName",
 				LastName = "LastName",
 			};
-			var loginService = new RegistrationService {
-				UserAuthRepo = userAuthRepository,
-				RegistrationValidator = new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
-			};
 
-			var responseObj = loginService.Post(request);
+			var registrationService = GetRegistrationService(userAuthRepository);
+
+			var responseObj = registrationService.Post(request);
 
 			var httpResult = responseObj as IHttpResult;
 			if (httpResult != null)
@@ -308,7 +307,6 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(userId, Is.Null);
 		}
 
-
 		[Test, TestCaseSource("UserAuthRepositorys")]
 		public void Logging_in_pulls_all_AuthInfo_from_repo_after_logging_in_all_AuthProviders(IUserAuthRepository userAuthRepository)
 		{
@@ -322,8 +320,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			mockService.Expect(x => x.RequestContext)
 				.Returns(requestContext);
 
-			requestContext.Get<IHttpResponse>()
-				.CreateSessionId(requestContext.Get<IHttpRequest>());
+			var oAuthUserSession = GetNewSession();
 
 			var service = mockService.Object;
 
@@ -332,7 +329,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				DisplayName = "Demis Bellot FB",
 				FirstName = "Demis",
 				LastName = "Bellot",
-				Email = "demis.bellot@gmail.com", 
+				Email = "demis.bellot@gmail.com",
 			};
 
 			var facebookTokens = new OAuthTokens {
@@ -340,11 +337,10 @@ namespace ServiceStack.Common.Tests.OAuth
 				AccessTokenSecret = "AAADDDCCCoR848BAMkQIZCRIKnVWZAvcKWqo7Ibvec8ebV9vJrfZAz8qVupdu5EbjFzmMmbwUFDbcNDea9H6rOn5SVn8es7KYZD",
 			};
 
-			var oAuthUserSession = GetNewSession();
-
 			//Facebook
 			var facebookAuth = GetFacebookAuthConfig();
 			facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookTokens, new Dictionary<string, string>());
+			Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
 
 			var serviceTokensTw = MockAuthHttpGateway.Tokens = new OAuthTokens { DisplayName = "Demis Bellot TW" };
 
@@ -362,6 +358,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			//Twitter
 			var twitterAuth = GetTwitterAuthConfig();
 			twitterAuth.OnAuthenticated(service, oAuthUserSession, twitterTokens, authInfo);
+			Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
 
 			//Register
 			var request = new Registration {
@@ -372,13 +369,13 @@ namespace ServiceStack.Common.Tests.OAuth
 				FirstName = "FirstName",
 				LastName = "LastName",
 			};
-			var registrationService = new RegistrationService {
-				UserAuthRepo = userAuthRepository,
-				RegistrationValidator = new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
-			};
+
+			var registrationService = GetRegistrationService(userAuthRepository, oAuthUserSession, requestContext);
 
 			var responseObj = registrationService.Post(request);
-			oAuthUserSession = GetNewSession();
+			Assert.That(responseObj as IHttpError, Is.Null, responseObj.ToString());
+
+			Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
 
 			var credentialsAuth = GetCredentialsAuthConfig();
 			var loginResponse = credentialsAuth.Authenticate(service, oAuthUserSession,
@@ -392,17 +389,52 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(oAuthUserSession.TwitterScreenName, Is.EqualTo(authInfo["screen_name"]));
 
 			var userAuth = userAuthRepository.GetUserAuth(oAuthUserSession.UserAuthId);
-			Assert.That(userAuth.Id.ToString(), Is.EqualTo(oAuthUserSession.UserAuthId));
-			Assert.That(userAuth.DisplayName, Is.EqualTo(serviceTokensTw.DisplayName));
-			Assert.That(userAuth.FirstName, Is.EqualTo(serviceTokensFb.FirstName));
-			Assert.That(userAuth.LastName, Is.EqualTo(serviceTokensFb.LastName));
-			Assert.That(userAuth.Email, Is.EqualTo(serviceTokensFb.Email));
+			Assert.That(userAuth.Id.ToString(CultureInfo.InvariantCulture), Is.EqualTo(oAuthUserSession.UserAuthId));
+			Assert.That(userAuth.DisplayName, Is.EqualTo(request.DisplayName));
+			Assert.That(userAuth.FirstName, Is.EqualTo(request.FirstName));
+			Assert.That(userAuth.LastName, Is.EqualTo(request.LastName));
+			Assert.That(userAuth.Email, Is.EqualTo(request.Email));
+
+			AuthService.Init(new BasicAppHost(), null,
+				new IAuthProvider[] {
+					facebookAuth, 
+					twitterAuth, 
+					credentialsAuth
+				});
+			Console.WriteLine(oAuthUserSession.Dump());
+			Assert.That(oAuthUserSession.ProviderOAuthAccess.Count, Is.EqualTo(2));
+			Assert.That(oAuthUserSession.IsAuthenticated, Is.True);
 
 			var authProviders = userAuthRepository.GetUserOAuthProviders(oAuthUserSession.UserAuthId);
 			Assert.That(authProviders.Count, Is.EqualTo(2));
 
 			Console.WriteLine(userAuth.Dump());
 			Console.WriteLine(authProviders.Dump());
+		}
+
+		private static RegistrationService GetRegistrationService(
+			IUserAuthRepository userAuthRepository,
+			AuthUserSession oAuthUserSession = null,
+			MockRequestContext requestContext = null)
+		{
+			if (oAuthUserSession == null)
+				oAuthUserSession = GetNewSession();
+			if (requestContext == null)
+				requestContext = new MockRequestContext();
+
+			var httpReq = requestContext.Get<IHttpRequest>();
+			var httpRes = requestContext.Get<IHttpResponse>();
+			oAuthUserSession.Id = httpRes.CreateSessionId(httpReq);
+			httpReq.Items[ServiceExtensions.RequestItemsSessionKey] = oAuthUserSession;
+
+			var registrationService = new RegistrationService {
+				UserAuthRepo = userAuthRepository,
+				RequestContext = requestContext,
+				RegistrationValidator =
+				new RegistrationValidator { UserAuthRepo = RegistrationServiceTests.GetStubRepo() },
+			};
+
+			return registrationService;
 		}
 
 		private static void AssertEqual(UserAuth userAuth, Registration request)

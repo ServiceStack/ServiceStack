@@ -1,6 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
 using ServiceStack.Common.Web;
+using ServiceStack.FluentValidation;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
 
@@ -27,13 +28,21 @@ namespace ServiceStack.Common.Tests.OAuth
 			return mock.Object;
 		}
 
+		private static RegistrationService GetRegistrationService(AbstractValidator<Registration> validator=null)
+		{
+			var requestContext = new MockRequestContext();
+			var service = new RegistrationService {
+				RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = GetStubRepo() },
+				UserAuthRepo = GetStubRepo(),
+				RequestContext = requestContext
+			};
+			return service;
+		}
+
 		[Test]
 		public void Empty_Registration_is_invalid()
 		{
-			var service = new RegistrationService {
-				RegistrationValidator = new RegistrationValidator { UserAuthRepo = GetStubRepo() },
-				UserAuthRepo = GetStubRepo()
-			};
+			var service = GetRegistrationService();
 
 			var response = (HttpError)service.Post(new Registration());
 			var errors = response.GetFieldErrors();
@@ -50,10 +59,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test]
 		public void Empty_Registration_is_invalid_with_FullRegistrationValidator()
 		{
-			var service = new RegistrationService {
-				RegistrationValidator = new FullRegistrationValidator { UserAuthRepo = GetStubRepo() },
-				UserAuthRepo = GetStubRepo()
-			};
+			var service = GetRegistrationService(new FullRegistrationValidator());
 
 			var response = (HttpError)service.Post(new Registration());
 			var errors = response.GetFieldErrors();
@@ -72,10 +78,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		[Test]
 		public void Accepts_valid_registration()
 		{
-			var service = new RegistrationService {
-				RegistrationValidator = new RegistrationValidator { UserAuthRepo = GetStubRepo() },
-				UserAuthRepo = GetStubRepo()
-			};
+			var service = GetRegistrationService();
 
 			var request = new Registration {
 				DisplayName = "DisplayName",

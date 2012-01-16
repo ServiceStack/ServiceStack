@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
@@ -6,6 +7,12 @@ namespace ServiceStack.ServiceInterface.Auth
 {
 	public class UserAuth
 	{
+		public UserAuth()
+		{
+			this.Roles = new List<string>();
+			this.Permissions = new List<string>();
+		}
+
 		[AutoIncrement]
 		public int Id { get; set; }
 		public string UserName { get; set; }
@@ -15,6 +22,10 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string Email { get; set; }
 		public string Salt { get; set; }
 		public string PasswordHash { get; set; }
+		public List<string> Roles { get; set; }
+		public List<string> Permissions { get; set; }
+		public DateTime CreatedDate { get; set; }
+		public DateTime ModifiedDate { get; set; }
 
 		public void PopulateMissing(UserOAuthProvider authProvider)
 		{
@@ -51,6 +62,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		public Dictionary<string, string> Items { get; set; }
 		public string AccessToken { get; set; }
 		public string AccessTokenSecret { get; set; }
+		public DateTime CreatedDate { get; set; }
+		public DateTime ModifiedDate { get; set; }
 
 		public void PopulateMissing(IOAuthTokens withTokens)
 		{

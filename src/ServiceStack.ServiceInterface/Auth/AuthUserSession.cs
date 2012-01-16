@@ -51,8 +51,9 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			get
 			{
-				return ProviderOAuthAccess.Any(
-					x => AuthService.GetAuthConfig(x.Provider).IsAuthorizedSafe(this, x));
+				return ProviderOAuthAccess != null 
+					&& ProviderOAuthAccess.Any(
+						x => AuthService.GetAuthConfig(x.Provider).IsAuthorizedSafe(this, x));
 			}
 		}
 

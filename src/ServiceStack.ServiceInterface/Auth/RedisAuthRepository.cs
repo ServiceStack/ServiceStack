@@ -50,7 +50,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 		}
 
-		public UserAuth CreateUserAuth(UserAuth newUser, string password)
+		private void ValidateNewUser(UserAuth newUser, string password)
 		{
 			newUser.ThrowIfNull("newUser");
 			password.ThrowIfNullOrEmpty("password");
@@ -63,35 +63,100 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (!ValidUserNameRegEx.IsMatch(newUser.UserName))
 					throw new ArgumentException("UserName contains invalid characters", "UserName");
 			}
+		}
+
+		private void AssertNoExistingUser(IRedisClientFacade redis, UserAuth newUser, UserAuth exceptForExistingUser = null)
+		{
+			if (newUser.UserName != null)
+			{
+				var existingUser = GetUserAuthByUserName(redis, newUser.UserName);
+				if (existingUser != null
+					&& (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+						throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
+			}
+			if (newUser.Email != null)
+			{
+				var existingUser = GetUserAuthByUserName(redis, newUser.Email);
+				if (existingUser != null
+					&& (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
+						throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
+			}
+		}
+
+		public UserAuth CreateUserAuth(UserAuth newUser, string password)
+		{
+			ValidateNewUser(newUser, password);
 
 			using (var redis = factory.GetClient())
 			{
-				var effectiveUserName = newUser.UserName ?? newUser.Email;
-				var userAuth = GetUserAuthByUserName(redis, newUser.UserName);
-				if (userAuth != null)
-					throw new ArgumentException("User {0} already exists".Fmt(effectiveUserName));
+				AssertNoExistingUser(redis, newUser);
 
 				var saltedHash = new SaltedHash();
 				string salt;
 				string hash;
 				saltedHash.GetHashAndSaltString(password, out hash, out salt);
 
+				newUser.Id = redis.As<UserAuth>().GetNextSequence();
 				newUser.PasswordHash = hash;
 				newUser.Salt = salt;
+				newUser.CreatedDate = DateTime.UtcNow;
+				newUser.ModifiedDate = newUser.CreatedDate;
 
-				newUser.Id = redis.As<UserAuth>().GetNextSequence();
-	
+				var userId = newUser.Id.ToString(CultureInfo.InvariantCulture);
 				if (!newUser.UserName.IsNullOrEmpty())
-					redis.SetEntryInHash(IndexUserNameToUserId, newUser.UserName, newUser.Id.ToString());
+					redis.SetEntryInHash(IndexUserNameToUserId, newUser.UserName, userId);
 				if (!newUser.Email.IsNullOrEmpty())
-					redis.SetEntryInHash(IndexEmailToUserId, newUser.Email, newUser.Id.ToString());
+					redis.SetEntryInHash(IndexEmailToUserId, newUser.Email, userId);
 
 				redis.Store(newUser);
 
-			    return newUser;
+				return newUser;
 			}
 		}
 
+		public UserAuth UpdateUserAuth(UserAuth existingUser, UserAuth newUser, string password)
+		{
+			ValidateNewUser(newUser, password);
+
+			using (var redis = factory.GetClient())
+			{
+				AssertNoExistingUser(redis, newUser, existingUser);
+
+				if (existingUser.UserName != newUser.UserName && existingUser.UserName != null)
+				{
+					redis.RemoveEntryFromHash(IndexUserNameToUserId, existingUser.UserName);
+				}
+				if (existingUser.Email != newUser.Email && existingUser.Email != null)
+				{
+					redis.RemoveEntryFromHash(IndexEmailToUserId, existingUser.Email);
+				}
+
+				var hash = existingUser.PasswordHash;
+				var salt = existingUser.Salt;
+				if (password != null)
+				{
+					var saltedHash = new SaltedHash();
+					saltedHash.GetHashAndSaltString(password, out hash, out salt);
+				}
+
+				newUser.Id = existingUser.Id;
+				newUser.PasswordHash = hash;
+				newUser.Salt = salt;
+				newUser.CreatedDate = existingUser.CreatedDate;
+				newUser.ModifiedDate = DateTime.UtcNow;
+
+				var userId = newUser.Id.ToString(CultureInfo.InvariantCulture);
+				if (!newUser.UserName.IsNullOrEmpty())
+					redis.SetEntryInHash(IndexUserNameToUserId, newUser.UserName, userId);
+				if (!newUser.Email.IsNullOrEmpty())
+					redis.SetEntryInHash(IndexEmailToUserId, newUser.Email, userId);
+
+				redis.Store(newUser);
+
+				return newUser;
+			}
+		}
+		
 		public UserAuth GetUserAuthByUserName(string userNameOrEmail)
 		{
 			using (var redis = factory.GetClient())
@@ -119,7 +184,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			var saltedHash = new SaltedHash();
 			if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
 			{
-				userId = userAuth.Id.ToString();
+				userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
 				return true;
 			}
 			return false;
@@ -137,11 +202,13 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			if (userAuth == null) return;
 
-			session.UserAuthId = userAuth.Id.ToString();
+			session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
 			session.DisplayName = userAuth.DisplayName;
 			session.FirstName = userAuth.FirstName;
 			session.LastName = userAuth.LastName;
 			session.Email = userAuth.Email;
+			session.Roles = userAuth.Roles;
+			session.Permissions = userAuth.Permissions;
 			session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
 				.ConvertAll(x => (IOAuthTokens)x);
 		}
@@ -171,12 +238,20 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
 					userAuth.Id = int.Parse(authSession.UserAuthId);
 
+				userAuth.ModifiedDate = DateTime.UtcNow;
+				if (userAuth.CreatedDate == default(DateTime))
+					userAuth.CreatedDate = userAuth.ModifiedDate;
+
 				redis.Store(userAuth);
 			}
 		}
 
 		public void SaveUserAuth(UserAuth userAuth)
 		{
+			userAuth.ModifiedDate = DateTime.UtcNow;
+			if (userAuth.CreatedDate == default(DateTime))
+				userAuth.CreatedDate = userAuth.ModifiedDate;
+
 			using (var redis = factory.GetClient())
 				redis.Store(userAuth);
 		}
@@ -251,6 +326,11 @@ namespace ServiceStack.ServiceInterface.Auth
 
 				oAuthProvider.PopulateMissing(tokens);
 				userAuth.PopulateMissing(oAuthProvider);
+
+				userAuth.ModifiedDate = DateTime.UtcNow;
+				if (oAuthProvider.CreatedDate == default(DateTime))
+					oAuthProvider.CreatedDate = userAuth.ModifiedDate;
+				oAuthProvider.ModifiedDate = userAuth.ModifiedDate;
 
 				redis.Store(userAuth);
 				redis.Store(oAuthProvider);

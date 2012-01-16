@@ -67,6 +67,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public static IAuthProvider GetAuthConfig(string provider)
 		{
+			if (AuthProviders == null) return null;
+
 			foreach (var authConfig in AuthProviders)
 			{
 				if (string.Compare(authConfig.Provider, provider,
@@ -91,7 +93,8 @@ namespace ServiceStack.ServiceInterface.Auth
 			DefaultOAuthRealm = authProviders[0].AuthRealm;
 
 			AuthProviders = authProviders;
-			CurrentSessionFactory = sessionFactory;
+			if (sessionFactory != null)
+				CurrentSessionFactory = sessionFactory;
 			appHost.RegisterService<AuthService>();
 
 			SessionFeature.Init(appHost);
@@ -139,8 +142,12 @@ namespace ServiceStack.ServiceInterface.Auth
 				return oAuthConfig.Authenticate(this, session, request);
 			}
 
+			var referrerUrl = session.ReferrerUrl
+				?? this.RequestContext.GetHeader("Referer") 
+				?? oAuthConfig.CallbackUrl;
+
 			//Already Authenticated
-			return this.Redirect(session.ReferrerUrl.AddHashParam("s", "0"));
+			return this.Redirect(referrerUrl.AddHashParam("s", "0"));
 		}
 
         public override object OnDelete(Auth request)

@@ -168,6 +168,21 @@ namespace ServiceStack.ServiceInterface.Auth
 				}
 			}
 
+			public void RemoveEntryFromHash(string hashId, string key)
+			{
+				hashId.ThrowIfNull("hashId");
+				key.ThrowIfNull("key");
+
+				lock (root.Hashes)
+				{
+					Dictionary<string, string> hash;
+					if (!root.Hashes.TryGetValue(hashId, out hash))
+						root.Hashes[hashId] = hash = new Dictionary<string, string>();
+
+					hash.Remove(key);
+				}
+			}
+
 			public void AddItemToSet(string setId, string item)
 			{
 				lock (root.Sets)

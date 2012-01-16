@@ -24,7 +24,7 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
     public abstract class ServiceBase<TRequest>
-        : IService<TRequest>, IRequiresRequestContext, IServiceBase
+		: IService<TRequest>, IRequiresRequestContext, IServiceBase, IAsyncService<TRequest>
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
 
@@ -242,5 +242,36 @@ namespace ServiceStack.ServiceInterface
         {
             return Execute(request.GetBody());
         }
-    }
+
+		/// <summary>
+		/// Injected by the ServiceStack IOC with the registered dependency in the Funq IOC container.
+		/// </summary>
+		public IMessageFactory MessageFactory { get; set; }
+
+		/// <summary>
+		/// Persists the request into the registered message queue if configured, 
+		/// otherwise calls Execute() to handle the request immediately.
+		/// 
+		/// IAsyncService.ExecuteAsync() will be used instead of IService.Execute() for 
+		/// EndpointAttributes.AsyncOneWay requests
+		/// </summary>
+		/// <param name="request"></param>
+		public virtual object ExecuteAsync(TRequest request)
+		{
+			if (MessageFactory == null)
+			{
+				return Execute(request);
+			}
+
+			//Capture and persist this async request on this Services 'In Queue' 
+			//for execution after this request has been completed
+			using (var producer = MessageFactory.CreateMessageProducer())
+			{
+				producer.Publish(request);
+			}
+
+			return ServiceUtils.CreateResponseDto(request);
+		}
+
+	}
 }
