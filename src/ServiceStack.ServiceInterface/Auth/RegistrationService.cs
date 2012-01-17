@@ -106,7 +106,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			var session = this.GetSession();
-			var newUserAuth = request.TranslateTo<UserAuth>();
+			var newUserAuth = ToUserAuth(request);
 			var existingUser = UserAuthRepo.GetUserAuth(session, null);
 			
 			var user = existingUser != null
@@ -116,6 +116,12 @@ namespace ServiceStack.ServiceInterface.Auth
 			return new RegistrationResponse {
 				UserId = user.Id.ToString(CultureInfo.InvariantCulture),
 			};
+		}
+
+		public UserAuth ToUserAuth(Registration request)
+		{
+			var to = request.TranslateTo<UserAuth>();
+			return to;
 		}
 
 		/// <summary>
@@ -139,7 +145,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				throw HttpError.NotFound("User does not exist");
 			}
 
-			var newUserAuth = request.TranslateTo<UserAuth>();
+			var newUserAuth = ToUserAuth(request);
 			UserAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
 
 			return new RegistrationResponse {

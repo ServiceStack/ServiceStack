@@ -79,7 +79,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// <returns></returns>
 		public virtual object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
 		{
-			var tokens = Init(authService, session);
+			var tokens = Init(authService, ref session, request);
 
 			//Default OAuth logic based on Twitter's OAuth workflow
 			if (!tokens.RequestToken.IsNullOrEmpty() && !request.oauth_token.IsNullOrEmpty())
@@ -125,16 +125,23 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// <summary>
 		/// Sets the CallbackUrl and session.ReferrerUrl if not set and initializes the session tokens for this AuthProvider
 		/// </summary>
-		/// <param name="service"></param>
+		/// <param name="authService"></param>
 		/// <param name="session"></param>
+		/// <param name="request"> </param>
 		/// <returns></returns>
-		protected IOAuthTokens Init(IServiceBase service, IAuthSession session)
+		protected IOAuthTokens Init(IServiceBase authService, ref IAuthSession session, Auth request)
 		{
+			if (request != null && !LoginMatchesSession(session, request.UserName))
+			{
+				authService.RemoveSession();
+				session = authService.GetSession();
+			}
+
 			if (this.CallbackUrl.IsNullOrEmpty())
-				this.CallbackUrl = service.RequestContext.AbsoluteUri;
+				this.CallbackUrl = authService.RequestContext.AbsoluteUri;
 
 			if (session.ReferrerUrl.IsNullOrEmpty())
-				session.ReferrerUrl = service.RequestContext.GetHeader("Referer") ?? this.CallbackUrl;
+				session.ReferrerUrl = authService.RequestContext.GetHeader("Referer") ?? this.CallbackUrl;
 
 			var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == Provider);
 			if (tokens == null)
@@ -165,6 +172,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			var userSession = session as AuthUserSession;
 			if (userSession != null)
 			{
+				session.ProviderOAuthAccess.ForEach(x => LoadUserOAuthProvider(userSession, x));
 				LoadUserAuthInfo(userSession, tokens, authInfo);
 			}
 
@@ -184,10 +192,35 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		protected virtual void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo) { }
 
-		public virtual bool IsAuthorized(IAuthSession session, IOAuthTokens tokens)
+		public virtual bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request=null)
 		{
+			if (request != null)
+			{
+				if (!LoginMatchesSession(session, request.UserName)) return false;
+			}
+
 			return tokens != null && !string.IsNullOrEmpty(tokens.AccessTokenSecret);
 		}
+
+		protected static bool LoginMatchesSession(IAuthSession session, string userName)
+		{
+			if (userName == null) return false;
+			var isEmail = userName.Contains("@");
+			if (isEmail)
+			{
+				if (!userName.EqualsIgnoreCase(session.Email))
+					return false;
+			}
+			else
+			{
+				if (!userName.EqualsIgnoreCase(session.UserName))
+					return false;
+			}
+			return true;
+		}
+
+		protected virtual void LoadUserOAuthProvider(AuthUserSession userSession, IOAuthTokens tokens){}
+
 	}
 
 	public static class AuthConfigExtensions

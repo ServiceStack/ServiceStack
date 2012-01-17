@@ -17,6 +17,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public string UserAuthId { get; set; }
 
+		public string UserAuthName { get; set; }
+
 		public string UserName { get; set; }
 
 		public string TwitterUserId { get; set; }

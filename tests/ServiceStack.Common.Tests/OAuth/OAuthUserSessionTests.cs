@@ -385,6 +385,8 @@ namespace ServiceStack.Common.Tests.OAuth
 					Password = request.Password,
 				});
 
+			oAuthUserSession = requestContext.Get<IHttpRequest>().GetSession() as AuthUserSession;
+
 			Assert.That(oAuthUserSession.TwitterUserId, Is.EqualTo(authInfo["user_id"]));
 			Assert.That(oAuthUserSession.TwitterScreenName, Is.EqualTo(authInfo["screen_name"]));
 

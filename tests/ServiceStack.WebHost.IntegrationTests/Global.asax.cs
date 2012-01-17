@@ -129,7 +129,10 @@ namespace ServiceStack.WebHost.IntegrationTests
 					new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
 
 				var authRepo = (OrmLiteAuthRepository)container.Resolve<IUserAuthRepository>();
-				authRepo.CreateMissingTables();
+				if (new AppSettings().Get("Recr	eateTables", true))
+					authRepo.DropAndReCreateTables();
+				else 
+					authRepo.CreateMissingTables();
 			}
 		}
 

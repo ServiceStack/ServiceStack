@@ -138,7 +138,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				return oAuthConfig.Logout(this, request);
 
 			var session = this.GetSession();
-			if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider)))
+			if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
 			{
 				return oAuthConfig.Authenticate(this, session, request);
 			}
