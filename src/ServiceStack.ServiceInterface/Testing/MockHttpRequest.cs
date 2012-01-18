@@ -107,6 +107,14 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public IFile[] Files { get; set; }
 
-		public string ApplicationFilePath { get; set; }
+        public string ApplicationFilePath { get; set; }
+
+        public void AddSessionCookies()
+        {
+            var permSessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            this.Cookies[SessionFeature.PermanentSessionId] = new Cookie(SessionFeature.PermanentSessionId, permSessionId);
+            var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            this.Cookies[SessionFeature.SessionId] = new Cookie(SessionFeature.SessionId, sessionId);
+        }
 	}
 }

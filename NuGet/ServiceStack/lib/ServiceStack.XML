@@ -1159,6 +1159,26 @@
             Deletes a specified cookie by setting its value to empty and expiration to -1 days
             </summary>
         </member>
+        <member name="M:ServiceStack.ServiceHost.Cookies.AddPermanentCookie(System.String,System.String)">
+            <summary>
+            Sets a persistent cookie which never expires
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.Cookies.AddSessionCookie(System.String,System.String)">
+            <summary>
+            Sets a session cookie which expires after the browser session closes
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.Cookies.DeleteCookie(System.String)">
+            <summary>
+            Deletes a specified cookie by setting its value to empty and expiration to -1 days
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.Cookies.AddCookie(System.Net.Cookie)">
+            <summary>
+            Sets a persistent cookie which expires after the given time
+            </summary>
+        </member>
         <member name="T:Funq.ReuseScope">
             <summary>
             Determines visibility and reuse of instances provided by the container.
@@ -3528,26 +3548,6 @@
             <typeparam name="T"></typeparam>
             <param name="textValue">The default value.</param>
             <returns>T.Parse(string) or new T(string) value</returns>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.Cookies.AddPermanentCookie(System.String,System.String)">
-            <summary>
-            Sets a persistent cookie which never expires
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.Cookies.AddSessionCookie(System.String,System.String)">
-            <summary>
-            Sets a session cookie which expires after the browser session closes
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.Cookies.DeleteCookie(System.String)">
-            <summary>
-            Deletes a specified cookie by setting its value to empty and expiration to -1 days
-            </summary>
-        </member>
-        <member name="M:ServiceStack.ServiceHost.Cookies.AddCookie(System.Net.Cookie)">
-            <summary>
-            Sets a persistent cookie which expires after the given time
-            </summary>
         </member>
     </members>
 </doc>

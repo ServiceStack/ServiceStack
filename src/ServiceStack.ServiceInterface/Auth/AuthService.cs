@@ -67,7 +67,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			CurrentSessionFactory = () => new AuthUserSession();
 		}
 
-		public static IAuthProvider GetAuthConfig(string provider)
+		public static IAuthProvider GetAuthProvider(string provider)
 		{
 			if (AuthProviders == null || AuthProviders.Length == 0) return null;
 			if (provider == LogoutAction) return AuthProviders[0];
@@ -93,9 +93,13 @@ namespace ServiceStack.ServiceInterface.Auth
 			AuthProviders = authProviders;
 			if (sessionFactory != null)
 				CurrentSessionFactory = sessionFactory;
-			appHost.RegisterService<AuthService>();
 
-			SessionFeature.Init(appHost);
+		    var test = appHost != null;
+            if (test)
+            {
+                appHost.RegisterService<AuthService>();
+                SessionFeature.Init(appHost);
+            }
 		}
 
 		private void AssertAuthProviders()
@@ -130,7 +134,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			var provider = request.provider ?? AuthProviders[0].Provider;
-			var oAuthConfig = GetAuthConfig(provider);
+			var oAuthConfig = GetAuthProvider(provider);
 			if (oAuthConfig == null)
 				throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));
 

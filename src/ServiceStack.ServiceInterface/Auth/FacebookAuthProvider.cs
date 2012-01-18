@@ -90,14 +90,17 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 		}
 
-		protected override void LoadUserOAuthProvider(AuthUserSession userSession, IOAuthTokens tokens)
-		{
-			userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        {
+            var userSession = authSession as AuthUserSession;
+            if (userSession == null) return;
+
+            userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
 			userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;
 			userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
 			userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
 			userSession.LastName = tokens.LastName ?? userSession.LastName;
-			userSession.Email = tokens.Email ?? userSession.Email;
+            userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
 		}
 	}
 }

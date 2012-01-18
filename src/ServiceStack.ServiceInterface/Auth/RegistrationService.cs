@@ -121,6 +121,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public UserAuth ToUserAuth(Registration request)
 		{
 			var to = request.TranslateTo<UserAuth>();
+		    to.PrimaryEmail = request.Email;
 			return to;
 		}
 

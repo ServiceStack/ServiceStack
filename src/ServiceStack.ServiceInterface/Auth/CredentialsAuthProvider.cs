@@ -79,12 +79,10 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			if (TryAuthenticate(authService, userName, password))
 			{
-				OnAuthenticated(authService, session, null, null);
-
-				if (session.UserAuthName == null)
-					session.UserAuthName = userName;
-
-				authService.SaveSession(session);
+                if (session.UserAuthName == null)
+                    session.UserAuthName = userName;
+                
+                OnAuthenticated(authService, session, null, null);
 
 				return new AuthResponse {
 					UserName = userName,

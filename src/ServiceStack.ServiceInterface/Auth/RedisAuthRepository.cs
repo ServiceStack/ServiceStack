@@ -203,6 +203,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			if (userAuth == null) return;
 
 			session.PopulateWith(userAuth);
+		    session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
 			session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
 				.ConvertAll(x => (IOAuthTokens)x);
 		}
@@ -258,7 +259,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			{
 				var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
 				var authProiverIds = redis.GetAllItemsFromSet(idx);
-				return redis.As<UserOAuthProvider>().GetByIds(authProiverIds).ToList();
+                return redis.As<UserOAuthProvider>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).ToList();
 			}
 		}
 

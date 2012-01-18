@@ -24,9 +24,12 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			try
 			{
-				var json = AuthHttpGateway.DownloadTwitterUserInfo(userSession.TwitterUserId);
-				var obj = JsonObject.Parse(json);
-				tokens.DisplayName = obj.Get("name");
+                if (tokens.UserId != null)
+                {
+                    var json = AuthHttpGateway.DownloadTwitterUserInfo(tokens.UserId);
+                    var obj = JsonObject.Parse(json);
+                    tokens.DisplayName = obj.Get("name");
+                }
 
 				LoadUserOAuthProvider(userSession, tokens);
 			}
@@ -36,8 +39,11 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 		}
 
-		protected override void LoadUserOAuthProvider(AuthUserSession userSession, IOAuthTokens tokens)
-		{
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        {
+            var userSession = authSession as AuthUserSession;
+            if (userSession == null) return;
+            
 			userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
 			userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
 			userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
