@@ -32,7 +32,6 @@ namespace ServiceStack.ServiceInterface
         public void ResponseFilter(IHttpRequest req, IHttpResponse res, object responseDto)
         {
             ApplyTo httpMethod = req.HttpMethodAsApplyTo();
-			EndpointHost.ServiceManager.Container.AutoWire(this);
             if (ApplyTo.Has(httpMethod))
                 this.Execute(req, res, responseDto);
         }

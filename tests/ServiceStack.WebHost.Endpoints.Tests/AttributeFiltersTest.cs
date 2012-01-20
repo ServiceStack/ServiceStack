@@ -7,16 +7,21 @@ using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceInterface;
+using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     //Always executed
     public class FilterTestAttribute : Attribute, IHasRequestFilter
     {
+		public ICacheClient Cache { get; set; }
+
         public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
         {
             var dto = requestDto as AttributeFiltered;
             dto.RequestFilterExecuted = true;
+			dto.RequestFilterDependenyIsResolved = Cache != null;
         }
     }
 
@@ -42,15 +47,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public bool RequestFilterExecuted { get; set; }
         public bool ContextualRequestFilterExecuted { get; set; }
+		public bool RequestFilterDependenyIsResolved { get; set; }
     }
 
     //Always executed
     public class ResponseFilterTestAttribute : Attribute, IHasResponseFilter
     {
+		public ICacheClient Cache { get; set; }
+
         public void ResponseFilter(IHttpRequest req, IHttpResponse res, object responseDto)
         {
             var dto = responseDto as AttributeFilteredResponse;
             dto.ResponseFilterExecuted = true;
+			dto.ResponseFilterDependencyIsResolved = Cache != null;
         }
     }
 
@@ -78,6 +87,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public bool RequestFilterExecuted { get; set; }
         public bool ContextualRequestFilterExecuted { get; set; }
+
+		public bool RequestFilterDependenyIsResolved { get; set; }
+		public bool ResponseFilterDependencyIsResolved { get; set; }
     }
 
     public class AttributeFilteredService : IService<AttributeFiltered>
@@ -89,7 +101,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ResponseFilterExecuted = false, 
                 ContextualResponseFilterExecuted = false,
                 RequestFilterExecuted = request.RequestFilterExecuted,
-                ContextualRequestFilterExecuted = request.ContextualRequestFilterExecuted
+                ContextualRequestFilterExecuted = request.ContextualRequestFilterExecuted,
+				RequestFilterDependenyIsResolved = request.RequestFilterDependenyIsResolved,
+				ResponseFilterDependencyIsResolved = false
             };
         }
     }
@@ -109,6 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Funq.Container container)
             {
+				container.Register<ICacheClient>(new MemoryCacheClient());
             }
         }
 
@@ -148,6 +163,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsFalse(response.ContextualRequestFilterExecuted);
             Assert.IsFalse(response.ContextualResponseFilterExecuted);
+			Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+			Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 
         static IRestClient[] RestClients = 
@@ -165,6 +182,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsFalse(response.ContextualRequestFilterExecuted);
             Assert.IsFalse(response.ContextualResponseFilterExecuted);
+			Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+			Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -175,6 +194,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsTrue(response.ContextualRequestFilterExecuted);
             Assert.IsTrue(response.ContextualResponseFilterExecuted);
+			Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+			Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -185,6 +206,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.IsTrue(response.ResponseFilterExecuted);
             Assert.IsTrue(response.ContextualRequestFilterExecuted);
             Assert.IsTrue(response.ContextualResponseFilterExecuted);
+			Assert.IsTrue(response.RequestFilterDependenyIsResolved);
+			Assert.IsTrue(response.ResponseFilterDependencyIsResolved);
         }
     }
 }

@@ -24,6 +24,8 @@ namespace ServiceStack.ServiceHost.Tests.Support
 
 		public IBar Bar { get; set; }
 
+		public int Count { get; set; }
+
 		public AutoWireService(IFoo foo)
 		{
 			this.foo = foo;

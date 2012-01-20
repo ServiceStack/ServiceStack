@@ -8,6 +8,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Text;
 using ServiceStack.CacheAccess;
 using System.Threading;
+using System.Collections;
 
 namespace ServiceStack.ServiceHost
 {
@@ -53,7 +54,7 @@ namespace ServiceStack.ServiceHost
 			var lambdaParam = Expression.Parameter(typeof(Container), "container");
 			var propertyResolveFn = typeof(Container).GetMethod("TryResolve", new Type[0]);
 			var memberBindings = typeof(TService).GetPublicProperties()
-				.Where(x => x.CanWrite)
+				.Where(x => x.CanWrite && !x.PropertyType.IsValueType)
 				.Select(x =>
 					Expression.Bind
 					(

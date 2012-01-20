@@ -167,6 +167,7 @@ namespace ServiceStack.WebHost.Endpoints
                 var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
                 foreach (var attribute in attributes)
                 {
+					EndpointHost.ServiceManager.Container.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
                     if (httpRes.IsClosed) break;
                 }
@@ -204,6 +205,7 @@ namespace ServiceStack.WebHost.Endpoints
 						var attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
 						foreach (var attribute in attributes)
 						{
+							EndpointHost.ServiceManager.Container.AutoWire(attribute);
 							attribute.ResponseFilter(httpReq, httpRes, responseDto);
 							if (httpRes.IsClosed) break;
 						}
