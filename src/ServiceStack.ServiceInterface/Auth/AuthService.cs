@@ -97,7 +97,9 @@ namespace ServiceStack.ServiceInterface.Auth
 		    var test = appHost != null;
             if (test)
             {
-                appHost.RegisterService<AuthService>();
+				appHost.RegisterService<AuthService>();
+				appHost.RegisterService<AssignRolesService>();
+				appHost.RegisterService<UnAssignRolesService>();
                 SessionFeature.Init(appHost);
             }
 		}

@@ -105,6 +105,7 @@
     <Compile Include="AsyncServiceBase.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
     <Compile Include="AuthFeature.cs" />
+    <Compile Include="Auth\AssignRolesService.cs" />
     <Compile Include="Auth\AuthService.cs" />
     <Compile Include="Auth\BasicAuthProvider.cs" />
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
     <Compile Include="Auth\TwitterAuthProvider.cs" />
+    <Compile Include="Auth\UnAssignRolesService.cs" />
     <Compile Include="RequiredRoleAttribute.cs" />
     <Compile Include="PermissionFeature.cs" />
     <Compile Include="Auth\RegistrationService.cs" />

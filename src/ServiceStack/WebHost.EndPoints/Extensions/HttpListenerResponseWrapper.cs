@@ -96,6 +96,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
+		public void End()
+		{
+			Close();
+		}
+
 		public void Flush()
 		{
 			response.OutputStream.Flush();

@@ -35,6 +35,11 @@ namespace ServiceStack.ServiceInterface.Testing
 		{
 		}
 
+		public void End()
+		{
+			Close();
+		}
+
 		public void Flush()
 		{
 		}

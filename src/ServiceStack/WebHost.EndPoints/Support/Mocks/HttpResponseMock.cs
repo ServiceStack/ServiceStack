@@ -100,6 +100,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Mocks
 			OutputStream.Position = 0;
 		}
 
+		public void End()
+		{
+			Close();
+		}
+
 		public void Flush()
 		{
 			OutputStream.Flush();

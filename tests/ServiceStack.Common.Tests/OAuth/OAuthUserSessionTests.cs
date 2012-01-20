@@ -300,5 +300,17 @@ namespace ServiceStack.Common.Tests.OAuth
             Assert.That(userAuthProviders.Count, Is.EqualTo(1));
         }
 
+		[Test, TestCaseSource("UserAuthRepositorys")]
+		public void Can_AutoLogin_whilst_Registering(IUserAuthRepository userAuthRepository)
+		{
+			InitTest(userAuthRepository);
+			var oAuthUserSession = requestContext.ReloadSession();
+			registrationDto.AutoLogin = true;
+			Register(userAuthRepository, oAuthUserSession, registrationDto);
+
+			oAuthUserSession = requestContext.ReloadSession();
+			Assert.That(oAuthUserSession.IsAuthenticated, Is.True);
+		}
+
     }
 }

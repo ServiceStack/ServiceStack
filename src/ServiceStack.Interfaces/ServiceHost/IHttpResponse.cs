@@ -33,6 +33,12 @@ namespace ServiceStack.ServiceHost
 		/// When used in a request or response filter, no more filters or processing is done on this request.
 		/// </summary>
 		void Close();
+		
+		/// <summary>
+		/// Calls Response.End() on ASP.NET HttpResponse otherwise is an alias for Close().
+		/// Useful when you want to prevent ASP.NET to provide it's own custom error page.
+		/// </summary>
+		void End();
 
 		/// <summary>
 		/// Response.Flush() and OutputStream.Flush() seem to have different behaviour in ASP.NET

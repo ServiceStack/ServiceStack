@@ -3,12 +3,21 @@ using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.WebHost.IntegrationTests.Tests;
 
 namespace ServiceStack.WebHost.IntegrationTests
 {
 	public class CustomUserSession : AuthUserSession
 	{
 		public string CustomPropety { get; set; }
+
+		public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
+		{
+			base.OnAuthenticated(authService, session, tokens, authInfo);
+
+			if (session.Email == AuthTestsBase.AdminEmail)
+				session.Roles.Add(AuthFeature.AdminRole);
+		}
 	}
 
 	public class PageBase : Page

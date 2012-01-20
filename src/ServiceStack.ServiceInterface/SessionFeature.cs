@@ -117,6 +117,13 @@ namespace ServiceStack.ServiceInterface
 				: sessionOptions.Split(',').ToHashSet();
 		}
 
+		public static void UpdateSession(this IAuthSession session, UserAuth userAuth)
+		{
+			if (userAuth == null) return;
+			session.Roles = userAuth.Roles;
+			session.Permissions = userAuth.Permissions;
+		}
+
 		public static HashSet<string> AddSessionOptions(this IHttpResponse res, IHttpRequest req, params string[] options)
 		{
 			if (res == null || req == null || options.Length == 0) return new HashSet<string>();

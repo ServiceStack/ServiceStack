@@ -9,6 +9,8 @@ namespace ServiceStack.ServiceInterface
 	/// </summary>
 	public class AuthFeature
 	{
+		public const string AdminRole = "Admin";
+
 		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
 		{
 			AuthService.Init(appHost, sessionFactory, authProviders);
