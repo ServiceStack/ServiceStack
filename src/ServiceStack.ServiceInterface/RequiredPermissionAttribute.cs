@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.Auth;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -32,17 +33,29 @@ namespace ServiceStack.ServiceInterface
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
 			var session = req.GetSession();
-			foreach (string requiredPermission in this.RequiredPermissions)
+			if (HasAllPermissions(session)) return;
+
+			var userAuthRepo = req.TryResolve<IUserAuthRepository>();
+			var userAuth = userAuthRepo.GetUserAuth(session, null);
+			session.UpdateSession(userAuth);
+			
+			if (HasAllPermissions(session))
 			{
-				if (session == null || !session.HasPermission(requiredPermission))
-				{
-					res.StatusCode = (int)HttpStatusCode.Unauthorized;
-					res.StatusDescription = "Invalid Permissions";
-					res.Close();
-					return;
-				}
+				req.SaveSession(session);
+				return;
 			}
+
+			res.StatusCode = (int)HttpStatusCode.Unauthorized;
+			res.StatusDescription = "Invalid Permissions";
+			res.Close();
 		}
-	}
+
+    	private bool HasAllPermissions(IAuthSession session)
+    	{
+    		return this.RequiredPermissions
+				.All(requiredPermission => session != null 
+					&& session.HasPermission(requiredPermission));
+    	}
+    }
 
 }

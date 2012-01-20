@@ -173,11 +173,15 @@ namespace ServiceStack.ServiceClient.Web
 					var client = SendRequest(httpMethod, requestUri, request);
 					client.AddBasicAuth(this.UserName, this.Password);
 
-					using (var responseStream = client.GetResponse().GetResponseStream())
+					try
 					{
-						response = DeserializeFromStream<TResponse>(responseStream);
-						return true;
+						using (var responseStream = client.GetResponse().GetResponseStream())
+						{
+							response = DeserializeFromStream<TResponse>(responseStream);
+							return true;
+						}
 					}
+					catch { /* Ignore deserializing error exceptions */ }
 				}
 			}
 			catch (Exception subEx)

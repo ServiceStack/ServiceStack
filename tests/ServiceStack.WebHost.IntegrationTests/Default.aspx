@@ -111,17 +111,28 @@
 <%= UserSession.Dump() %>
 </pre>
 
+<div id="userauths"></div>
+<div id="oAuthProviders"></div>
+
+<script type="text/javascript">
+    $.getJSON("api/userauths", function(r) {
+        $("#userauths").html(_.jsonreport(r.results));
+        $("#oAuthProviders").html(_.jsonreport(r.oAuthProviders));
+    });
+</script>
+
+
 <script type="text/javascript">
 
     _.each({
-        UserName: 'as@if.com',
-        DisplayName: 'mythz',
-        Email: 'as@if.com',
-        Password: 'test',
-        ConfirmPassword: 'test'
-    }, function (val, name) {
-        $("[name=" + name + "]").val(val);
-    });
+            UserName: 'as@if.com',
+            DisplayName: 'mythz',
+            Email: 'as@if.com',
+            Password: 'test',
+            ConfirmPassword: 'test'
+        }, function (val, name) {
+            $("[name=" + name + "]").val(val);
+        });
 
     var clear = function () {
         $(".success, .error-summary").hide();

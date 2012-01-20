@@ -46,16 +46,21 @@ namespace ServiceStack.ServiceInterface.Auth
 			if (authRepo.TryAuthenticate(userName, password, out useUserName))
 			{
 				session.IsAuthenticated = true;
-				session.UserName = userName;
+				session.UserAuthName = userName;
 
 				return true;
 			}
 			return false;
 		}
 
-		public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens)
+		public override bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request=null)
 		{
-			return !session.UserName.IsNullOrEmpty();
+			if (request != null)
+			{
+				if (!LoginMatchesSession(session, request.UserName)) return false;
+			}
+
+			return !session.UserAuthName.IsNullOrEmpty();
 		}
 
 		public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
@@ -66,15 +71,18 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password)
 		{
+			if (!LoginMatchesSession(session, userName))
+			{
+				authService.RemoveSession();
+				session = authService.GetSession();
+			}
+
 			if (TryAuthenticate(authService, userName, password))
 			{
-				OnAuthenticated(authService, session, null, null);
-				//OnAuthenticatedCredentials(authService, session, userName);
-
-				if (session.UserName == null)
-					session.UserName = userName;
-
-				authService.SaveSession(session);
+                if (session.UserAuthName == null)
+                    session.UserAuthName = userName;
+                
+                OnAuthenticated(authService, session, null, null);
 
 				return new AuthResponse {
 					UserName = userName,

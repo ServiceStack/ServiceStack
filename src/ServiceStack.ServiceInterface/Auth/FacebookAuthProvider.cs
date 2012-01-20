@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public override object Authenticate(IServiceBase authService, IAuthSession session, Auth request)
 		{
-			var tokens = Init(authService, session);
+			var tokens = Init(authService, ref session, request);
 
 			var code = authService.RequestContext.Get<IHttpRequest>().QueryString["code"];
 			var isPreAuthCallback = !code.IsNullOrEmpty();
@@ -38,6 +38,8 @@ namespace ServiceStack.ServiceInterface.Auth
 			{
 				var preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}"
 					.Fmt(AppId, this.CallbackUrl.UrlEncode(), string.Join(",", Permissions));
+
+				authService.SaveSession(session);
 				return authService.Redirect(preAuthUrl);
 			}
 
@@ -82,17 +84,25 @@ namespace ServiceStack.ServiceInterface.Auth
 				tokens.LastName = obj.Get("last_name");
 				tokens.Email = obj.Get("email");
 
-				userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
-				userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;
-				userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-				userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
-				userSession.LastName = tokens.LastName ?? userSession.LastName;
-				userSession.Email = tokens.Email ?? userSession.Email;
+				LoadUserOAuthProvider(userSession, tokens);
 			}
 			catch (Exception ex)
 			{
 				Log.Error("Could not retrieve facebook user info for '{0}'".Fmt(tokens.DisplayName), ex);
 			}
+		}
+
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        {
+            var userSession = authSession as AuthUserSession;
+            if (userSession == null) return;
+
+            userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
+			userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;
+			userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+			userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
+			userSession.LastName = tokens.LastName ?? userSession.LastName;
+            userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
 		}
 	}
 }

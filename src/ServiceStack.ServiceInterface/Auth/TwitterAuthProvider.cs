@@ -17,22 +17,36 @@ namespace ServiceStack.ServiceInterface.Auth
 		protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
 		{
 			if (authInfo.ContainsKey("user_id"))
-				tokens.UserId = userSession.TwitterUserId = authInfo.GetValueOrDefault("user_id");
+				tokens.UserId = authInfo.GetValueOrDefault("user_id");
 
 			if (authInfo.ContainsKey("screen_name"))
-				tokens.UserName = userSession.TwitterScreenName = authInfo.GetValueOrDefault("screen_name");
+				tokens.UserName = authInfo.GetValueOrDefault("screen_name");
 
 			try
 			{
-				var json = AuthHttpGateway.DownloadTwitterUserInfo(userSession.TwitterUserId);
-				var obj = JsonObject.Parse(json);
-				tokens.DisplayName = obj.Get("name");
-				userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+                if (tokens.UserId != null)
+                {
+                    var json = AuthHttpGateway.DownloadTwitterUserInfo(tokens.UserId);
+                    var obj = JsonObject.Parse(json);
+                    tokens.DisplayName = obj.Get("name");
+                }
+
+				LoadUserOAuthProvider(userSession, tokens);
 			}
 			catch (Exception ex)
 			{
 				Log.Error("Could not retrieve twitter user info for '{0}'".Fmt(userSession.TwitterUserId), ex);
 			}
+		}
+
+        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+        {
+            var userSession = authSession as AuthUserSession;
+            if (userSession == null) return;
+            
+			userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
+			userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
+			userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
 		}
 	}
 }

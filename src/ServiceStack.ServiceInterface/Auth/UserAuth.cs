@@ -16,10 +16,11 @@ namespace ServiceStack.ServiceInterface.Auth
 		[AutoIncrement]
 		public int Id { get; set; }
 		public string UserName { get; set; }
-		public string FirstName { get; set; }
+        public string Email { get; set; }
+        public string PrimaryEmail { get; set; }
+        public string FirstName { get; set; }
 		public string LastName { get; set; }
 		public string DisplayName { get; set; }
-		public string Email { get; set; }
 		public string Salt { get; set; }
 		public string PasswordHash { get; set; }
 		public List<string> Roles { get; set; }
@@ -33,11 +34,10 @@ namespace ServiceStack.ServiceInterface.Auth
 				this.FirstName = authProvider.FirstName;
 			if (!authProvider.LastName.IsNullOrEmpty())
 				this.LastName = authProvider.LastName;
-			if (!authProvider.DisplayName.IsNullOrEmpty())
-				this.DisplayName = authProvider.DisplayName;
-			//Used for logging in, must be a explicit change.
-			if (this.Email == null && !authProvider.Email.IsNullOrEmpty()) 
-				this.Email = authProvider.Email;
+            if (!authProvider.DisplayName.IsNullOrEmpty())
+                this.DisplayName = authProvider.DisplayName;
+            if (!authProvider.Email.IsNullOrEmpty())
+                this.PrimaryEmail = authProvider.Email;
 		}
 	}
 

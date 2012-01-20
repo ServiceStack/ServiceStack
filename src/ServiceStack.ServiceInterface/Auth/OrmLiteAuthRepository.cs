@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Common;
 using ServiceStack.OrmLite;
@@ -163,15 +164,11 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			if (userAuth == null) return;
 
-			session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-			session.DisplayName = userAuth.DisplayName;
-			session.FirstName = userAuth.FirstName;
-			session.LastName = userAuth.LastName;
-			session.Email = userAuth.Email;
-			session.Roles = userAuth.Roles;
-			session.Permissions = userAuth.Permissions;
-			session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
+			session.PopulateWith(userAuth);
+            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+            session.ProviderOAuthAccess = GetUserOAuthProviders(session.UserAuthId)
 				.ConvertAll(x => (IOAuthTokens)x);
+			
 		}
 
 		public UserAuth GetUserAuth(string userAuthId)
@@ -210,7 +207,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
 		{
 			return dbFactory.Exec(dbCmd =>
-				dbCmd.Select<UserOAuthProvider>("UserAuthId = {0}", userAuthId));
+				dbCmd.Select<UserOAuthProvider>("UserAuthId = {0}", userAuthId)).OrderBy(x => x.ModifiedDate).ToList();
 		}
 
 		public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
@@ -220,9 +217,9 @@ namespace ServiceStack.ServiceInterface.Auth
 				var userAuth = GetUserAuth(authSession.UserAuthId);
 				if (userAuth != null) return userAuth;
 			}
-			if (!authSession.UserName.IsNullOrEmpty())
+			if (!authSession.UserAuthName.IsNullOrEmpty())
 			{
-				var userAuth = GetUserAuthByUserName(authSession.UserName);
+				var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
 				if (userAuth != null) return userAuth;
 			}
 

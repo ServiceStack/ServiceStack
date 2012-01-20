@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -30,19 +33,32 @@ namespace ServiceStack.ServiceInterface
 			this.ApplyTo = applyTo;
 		}
 
+
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
-			IAuthSession session = req.GetSession();
-			foreach (string requiredRole in this.RequiredRoles)
+			var session = req.GetSession();
+			if (HasAllRoles(session)) return;
+
+			var userAuthRepo = req.TryResolve<IUserAuthRepository>();
+			var userAuth = userAuthRepo.GetUserAuth(session, null);
+			session.UpdateSession(userAuth);
+
+			if (HasAllRoles(session))
 			{
-				if (session == null || !session.HasRole(requiredRole))
-				{
-					res.StatusCode = (int)HttpStatusCode.Unauthorized;
-					res.StatusDescription = "Invalid Role";
-					res.Close();
-					return;
-				}
+				req.SaveSession(session);
+				return;
 			}
+
+			res.StatusCode = (int)HttpStatusCode.Unauthorized;
+			res.StatusDescription = "Invalid Role";
+			res.Close();
+		}
+
+		private bool HasAllRoles(IAuthSession session)
+		{
+			return this.RequiredRoles
+				.All(requiredRole => session != null
+					&& session.HasRole(requiredRole));
 		}
 	}
 

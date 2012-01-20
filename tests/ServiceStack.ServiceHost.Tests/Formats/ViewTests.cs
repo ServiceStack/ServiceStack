@@ -224,6 +224,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				this.IsClosed = true;
 			}
 
+			public void End()
+			{
+				Close();
+			}
+
 			public void Flush()
 			{
 				MemoryStream.Flush();

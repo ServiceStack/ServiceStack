@@ -8,6 +8,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		string ReferrerUrl { get; set; }
 		string Id { get; set; }
 		string UserAuthId { get; set; }
+		string UserAuthName { get; set; }
 		string UserName { get; set; }
 		string DisplayName { get; set; }
 		string FirstName { get; set; }

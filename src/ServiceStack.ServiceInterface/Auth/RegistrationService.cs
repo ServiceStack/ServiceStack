@@ -4,6 +4,7 @@ using System.Globalization;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.WebHost.Endpoints;
@@ -18,6 +19,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string DisplayName { get; set; }
 		public string Email { get; set; }
 		public string Password { get; set; }
+		public bool? AutoLogin { get; set; }
 	}
 
 	public class RegistrationResponse
@@ -106,16 +108,34 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			var session = this.GetSession();
-			var newUserAuth = request.TranslateTo<UserAuth>();
+			var newUserAuth = ToUserAuth(request);
 			var existingUser = UserAuthRepo.GetUserAuth(session, null);
-			
+
 			var user = existingUser != null
 				? this.UserAuthRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password)
 				: this.UserAuthRepo.CreateUserAuth(newUserAuth, request.Password);
 
+			if (request.AutoLogin.GetValueOrDefault())
+			{
+				var authService = base.ResolveService<AuthService>();
+				var response = authService.Post(new Auth {
+					UserName = request.UserName ?? request.Email,
+					Password = request.Password
+				});
+				if (response is IHttpError)
+					throw (Exception) response;
+			}
+
 			return new RegistrationResponse {
 				UserId = user.Id.ToString(CultureInfo.InvariantCulture),
 			};
+		}
+
+		public UserAuth ToUserAuth(Registration request)
+		{
+			var to = request.TranslateTo<UserAuth>();
+			to.PrimaryEmail = request.Email;
+			return to;
 		}
 
 		/// <summary>
@@ -139,7 +159,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				throw HttpError.NotFound("User does not exist");
 			}
 
-			var newUserAuth = request.TranslateTo<UserAuth>();
+			var newUserAuth = ToUserAuth(request);
 			UserAuthRepo.UpdateUserAuth(newUserAuth, existingUser, request.Password);
 
 			return new RegistrationResponse {

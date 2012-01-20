@@ -78,6 +78,17 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			response.CloseOutputStream();
 		}
 
+		public void End()
+		{
+			this.IsClosed = true;
+			try
+			{
+				response.ClearContent();
+				response.End();
+			}
+			catch {}
+		}
+
 		public void Flush()
 		{
 			response.Flush();

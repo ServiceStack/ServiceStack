@@ -35,6 +35,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		void OnSaveUserAuth(IServiceBase authService, IAuthSession session);
 		void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo);
-		bool IsAuthorized(IAuthSession session, IOAuthTokens tokens);
+		bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null);
+        void LoadUserOAuthProvider(IAuthSession userSession, IOAuthTokens tokens);
 	}
 }

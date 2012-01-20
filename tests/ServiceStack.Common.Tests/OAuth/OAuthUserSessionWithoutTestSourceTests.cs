@@ -24,7 +24,7 @@ namespace ServiceStack.Common.Tests.OAuth
         {
 			try
 			{
-				tests = new OAuthUserSessionTests();
+                tests = new OAuthUserSessionTests();
 				var inMemoryRepo = new InMemoryAuthRepository();
 				inMemoryRepo.Clear();
 				userAuthRepositorys.Add(inMemoryRepo);
@@ -33,7 +33,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				redisRepo.Clear();
 				userAuthRepositorys.Add(redisRepo);
 
-				if (OAuthUserSessionTests.UseSqlServer)
+				if (OAuthUserSessionTestsBase.UseSqlServer)
 				{
 					var connStr = @"Data Source=.\SQLEXPRESS;AttachDbFilename=|DataDirectory|\App_Data\auth.mdf;Integrated Security=True;Connect Timeout=30;User Instance=True";
 					var sqlServerFactory = new OrmLiteConnectionFactory(connStr, SqlServerOrmLiteDialectProvider.Instance);
