@@ -36,7 +36,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			var autoWire = new ExpressionTypeFunqContainer(container);
+			var autoWire = new AutoWireContainer(container);
 			autoWire.RegisterAs<T, TAs>();
 		}
 		

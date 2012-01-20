@@ -34,7 +34,7 @@ namespace ServiceStack.ServiceInterface.Validation
         /// <param name="assemblies">The assemblies to scan for a validator</param>
 		public static void RegisterValidators(this Container container, params Assembly[] assemblies)
 		{
-			var autoWire = new ExpressionTypeFunqContainer(container);
+			var autoWire = new AutoWireContainer(container);
 			foreach (var assembly in assemblies)
 			{
 				foreach (var validator in assembly.GetTypes()
@@ -47,10 +47,10 @@ namespace ServiceStack.ServiceInterface.Validation
 
 		public static void RegisterValidator(this Container container, Type validator)
 		{
-			RegisterValidator(new ExpressionTypeFunqContainer(container), validator);
+			RegisterValidator(new AutoWireContainer(container), validator);
 		}
 
-		private static void RegisterValidator(ExpressionTypeFunqContainer autoWire, Type validator)
+		private static void RegisterValidator(AutoWireContainer autoWire, Type validator)
 		{
 			var baseType = validator.BaseType;
 			while (!baseType.IsGenericType)

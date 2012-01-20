@@ -1,5 +1,6 @@
 using ServiceStack.Configuration;
 using ServiceStack.ServiceHost;
+using System;
 
 namespace Funq
 {
@@ -7,14 +8,24 @@ namespace Funq
 	{
 		public IContainerAdapter Adapter { get; set; }
 
+		private AutoWireContainer autoWireContainer;
+		private AutoWireContainer AutoWireContainer
+		{
+			get
+			{
+				if (autoWireContainer == null)
+					autoWireContainer = new AutoWireContainer(this);
+				return autoWireContainer;
+			}
+		}
+
 		/// <summary>
 		/// Register an autowired dependency
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		public void RegisterAutoWired<T>()
 		{
-			var autoWired = new ExpressionTypeFunqContainer(this);
-			autoWired.Register<T>();
+			AutoWireContainer.Register<T>();
 		}
 
 		/// <summary>
@@ -24,8 +35,7 @@ namespace Funq
 		public void RegisterAutoWiredAs<T, TAs>()
 			where T : TAs
 		{
-			var autoWired = new ExpressionTypeFunqContainer(this);
-			autoWired.RegisterAs<T, TAs>();
+			AutoWireContainer.RegisterAs<T, TAs>();
 		}
 
 		/// <summary>
@@ -35,8 +45,17 @@ namespace Funq
 		public void RegisterAs<T, TAs>()
 			where T : TAs
 		{
-			var autoWired = new ExpressionTypeFunqContainer(this);
-			autoWired.RegisterAs<T, TAs>();
+			AutoWireContainer.RegisterAs<T, TAs>();
+		}
+
+		/// <summary>
+		/// Auto-wires an existing instance, 
+		/// ie all public properties are tried to be resolved.
+		/// </summary>
+		/// <param name="instance"></param>
+		public void AutoWire(object instance)
+		{
+			AutoWireContainer.AutoWire(instance);
 		}
 	}
 

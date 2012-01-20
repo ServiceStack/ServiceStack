@@ -283,7 +283,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			var autoWire = new ExpressionTypeFunqContainer(this.Container);
+			var autoWire = new AutoWireContainer(this.Container);
 			autoWire.RegisterAs<T, TAs>();
 		}
 
