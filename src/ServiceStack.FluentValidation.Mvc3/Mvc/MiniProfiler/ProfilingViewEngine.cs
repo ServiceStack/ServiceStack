@@ -1,13 +1,12 @@
-﻿#if ASP_NET_MVC3
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.Mvc;
 using System.Web;
+using ServiceStack.MiniProfiler;
 
-namespace MvcMiniProfiler.MVCHelpers
+namespace ServiceStack.Mvc.MiniProfiler
 {
     /// <summary>
     /// You can wrap your view engines with this view to enable profiling on views and partial
@@ -29,7 +28,7 @@ namespace MvcMiniProfiler.MVCHelpers
 
             public void Render(ViewContext viewContext, System.IO.TextWriter writer)
             {
-                using (MiniProfiler.Current.Step("Render " + (isPartial ? "partial" : "") + ": " + name))
+                using (Profiler.Current.Step("Render " + (isPartial ? "partial" : "") + ": " + name))
                 {
                     wrapped.Render(viewContext, writer);
                 }
@@ -50,7 +49,7 @@ namespace MvcMiniProfiler.MVCHelpers
 
         private ViewEngineResult Find(ControllerContext controllerContext, string name, Func<ViewEngineResult> finder, bool isPartial)
         {
-            var profiler = MiniProfiler.Current;
+			var profiler = Profiler.Current;
             IDisposable block = null;
             var key = "find-view-or-partial";
 
@@ -110,5 +109,3 @@ namespace MvcMiniProfiler.MVCHelpers
         }
     }
 }
-
-#endif

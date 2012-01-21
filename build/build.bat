@@ -40,5 +40,6 @@ COPY ..\NuGet\ServiceStack\lib\*.* ..\release\latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Common\lib\*.* ..\release\latest\ServiceStack
 
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\SocialApiBootstrap\lib
+COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentValidation.Mvc3.* ..\..\SocialApiBootstrap\lib
 COPY ..\..\ServiceStack.OrmLite\NuGet\ServiceStack.OrmLite.SqlServer\lib\*.* ..\..\SocialApiBootstrap\lib
 COPY ..\..\ServiceStack.Redis\NuGet\lib\*.* ..\..\SocialApiBootstrap\lib

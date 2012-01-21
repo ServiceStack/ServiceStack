@@ -1,20 +1,18 @@
-﻿#if ASP_NET_MVC3
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.Mvc;
 using System.Web;
+using ServiceStack.MiniProfiler;
 
-namespace MvcMiniProfiler.MVCHelpers
+namespace ServiceStack.Mvc.MiniProfiler
 {
     /// <summary>
     /// This filter can be applied globally to hook up automatic action profiling
     /// </summary>
     public class ProfilingActionFilter : ActionFilterAttribute
     {
-
         const string stackKey = "ProfilingActionFilterStack";
 
         /// <summary>
@@ -22,7 +20,7 @@ namespace MvcMiniProfiler.MVCHelpers
         /// </summary>
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            var mp = MiniProfiler.Current;
+            var mp = Profiler.Current;
             if (mp != null)
             {
                 var stack = HttpContext.Current.Items[stackKey] as Stack<IDisposable>;
@@ -32,7 +30,7 @@ namespace MvcMiniProfiler.MVCHelpers
                     HttpContext.Current.Items[stackKey] = stack;
                 }
 
-                var profiler = MiniProfiler.Current;
+				var profiler = Profiler.Current;
                 if (profiler != null)
                 {
                     var tokens = filterContext.RouteData.DataTokens;
@@ -64,5 +62,3 @@ namespace MvcMiniProfiler.MVCHelpers
         }
     }
 }
-
-#endif

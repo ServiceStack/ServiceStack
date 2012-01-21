@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using System.Text;
+using ServiceStack.Common;
 using ServiceStack.MiniProfiler.Helpers;
 using ServiceStack.ServiceHost;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 //using System.Web.Routing;
@@ -23,7 +25,7 @@ namespace ServiceStack.MiniProfiler.UI
 				: null;
 		}
 
-    	internal static HtmlString RenderIncludes(Profiler profiler, RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
+    	public static HtmlString RenderIncludes(Profiler profiler, RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
         {
             const string format =
 @"<link rel=""stylesheet"" type=""text/css"" href=""{path}ss-includes.css?v={version}""{closeXHTML}>
@@ -56,10 +58,12 @@ namespace ServiceStack.MiniProfiler.UI
                 var ids = Profiler.Settings.Storage.GetUnviewedIds(profiler.User);
                 ids.Add(profiler.Id);
 
+            	var path = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+
                 result = format.Format(new
                 {
                     //path = VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash(),
-					path = "",
+					path = !string.IsNullOrEmpty(path) ? path + "/" : "",
                     version = Profiler.Settings.Version,
                     ids = ids.ToJson(),
                     position = (position ?? Profiler.Settings.PopupRenderPosition).ToString().ToLower(),

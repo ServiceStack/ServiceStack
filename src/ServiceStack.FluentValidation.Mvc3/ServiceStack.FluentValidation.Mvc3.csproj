@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Text, Version=3.2.2.5660, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -48,6 +52,11 @@
     <Compile Include="FluentValidationModelValidator.cs" />
     <Compile Include="FluentValidationModelValidatorProvider.cs" />
     <Compile Include="IValidatorInterceptor.cs" />
+    <Compile Include="Mvc\MiniProfiler\MiniProfiler.cs" />
+    <Compile Include="Mvc\MiniProfiler\ProfilingActionFilter.cs" />
+    <Compile Include="Mvc\MiniProfiler\ProfilingViewEngine.cs" />
+    <Compile Include="Mvc\ControllerBase.cs" />
+    <Compile Include="Mvc\FunqControllerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyValidatorAdapters\CreditCardFluentValidationPropertyValidator.cs" />
     <Compile Include="PropertyValidatorAdapters\EmailFluentValidationPropertyValidator.cs" />
@@ -58,12 +67,21 @@
     <Compile Include="PropertyValidatorAdapters\RequiredFluentValidationPropertyValidator.cs" />
     <Compile Include="PropertyValidatorAdapters\StringLengthFluentValidationPropertyValidator.cs" />
     <Compile Include="RuleSetForClientSideMessagesAttribute.cs" />
+    <Compile Include="Mvc\ServiceStackActionFilterAttribute.cs" />
     <Compile Include="ValidationResultExtension.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
+      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Name>ServiceStack</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

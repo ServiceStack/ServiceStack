@@ -163,8 +163,6 @@
     <Compile Include="MiniProfiler\Profiler.cs" />
     <Compile Include="MiniProfiler\MiniProfiler.IDbProfiler.cs" />
     <Compile Include="MiniProfiler\MiniProfiler.Settings.cs" />
-    <Compile Include="MiniProfiler\MVCHelpers\ProfilingActionFilter.cs" />
-    <Compile Include="MiniProfiler\MVCHelpers\ProfilingViewEngine.cs" />
     <Compile Include="MiniProfiler\SqlFormatters\InlineFormatter.cs" />
     <Compile Include="MiniProfiler\SqlFormatters\ISqlFormatter.cs" />
     <Compile Include="MiniProfiler\SqlFormatters\OracleFormatter.cs" />
