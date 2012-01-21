@@ -27,9 +27,9 @@ namespace ServiceStack.ServiceInterface
 			this.ApplyTo = ApplyTo.All;
 		}
 
-		public RequiredRoleAttribute(ApplyTo applyTo, params string[] permissions)
+		public RequiredRoleAttribute(ApplyTo applyTo, params string[] roles)
 		{
-			this.RequiredRoles = permissions.ToList();
+			this.RequiredRoles = roles.ToList();
 			this.ApplyTo = applyTo;
 		}
 
