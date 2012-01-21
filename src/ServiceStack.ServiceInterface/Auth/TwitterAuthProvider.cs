@@ -6,7 +6,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class TwitterAuthProvider : AuthProvider
+	public class TwitterAuthProvider : OAuthProvider
 	{
 		public const string Name = "twitter";
 		public static string Realm = "https://api.twitter.com/";

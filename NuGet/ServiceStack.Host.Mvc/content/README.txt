@@ -1,6 +1,7 @@
 You *MUST* register ServiceStacks '/api' path by adding the line below to MvcApplication.RegisterRoutes(RouteCollection) in the Global.asax:
 
 	routes.IgnoreRoute("api/{*pathInfo}"); 
+	routes.IgnoreRoute("{*favicon}", new { favicon = @"(.*/)?favicon.ico(/.*)?" }); //Prevent exceptions for favicon
 
 
 To enable the Mini Profiler add the following lines in to MvcApplication in Global.asax.cs:

@@ -4,20 +4,9 @@ namespace ServiceStack.ServiceInterface.Auth
 {
 	public interface IAuthProvider
 	{
-		IAuthHttpGateway AuthHttpGateway { get; set; }
 		string AuthRealm { get; set; }
 		string Provider { get; set; }
 		string CallbackUrl { get; set; }
-		string ConsumerKey { get; set; }
-		string ConsumerSecret { get; set; }
-		string RequestTokenUrl { get; set; }
-		string AuthorizeUrl { get; set; }
-		string AccessTokenUrl { get; set; }
-
-		/// <summary>
-		/// Useful OAuth utilities
-		/// </summary>
-		OAuthAuthorizer OAuthUtils { get; set; }
 
 		/// <summary>
 		/// Remove the Users Session
@@ -33,9 +22,19 @@ namespace ServiceStack.ServiceInterface.Auth
 		/// </summary>
 		object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
 
-		void OnSaveUserAuth(IServiceBase authService, IAuthSession session);
-		void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo);
+		/// <summary>
+		/// Determine if the current session is already authenticated with this AuthProvider
+		/// </summary>
 		bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null);
-        void LoadUserOAuthProvider(IAuthSession userSession, IOAuthTokens tokens);
+	}
+
+	public interface IOAuthProvider : IAuthProvider
+	{
+		IAuthHttpGateway AuthHttpGateway { get; set; }
+		string ConsumerKey { get; set; }
+		string ConsumerSecret { get; set; }
+		string RequestTokenUrl { get; set; }
+		string AuthorizeUrl { get; set; }
+		string AccessTokenUrl { get; set; }
 	}
 }

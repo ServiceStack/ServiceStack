@@ -10,7 +10,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class FacebookAuthProvider : AuthProvider
+	public class FacebookAuthProvider : OAuthProvider
 	{
 		public const string Name = "facebook";
 		public static string Realm = "https://graph.facebook.com/";

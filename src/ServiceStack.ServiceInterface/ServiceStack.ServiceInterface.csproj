@@ -117,6 +117,7 @@
     <Compile Include="Auth\IOAuthTokens.cs" />
     <Compile Include="Auth\IRedisClientFacade.cs" />
     <Compile Include="Auth\IUserAuthRepository.cs" />
+    <Compile Include="Auth\OAuthProvider.cs" />
     <Compile Include="Auth\TwitterAuthProvider.cs" />
     <Compile Include="Auth\UnAssignRolesService.cs" />
     <Compile Include="RequiredRoleAttribute.cs" />
