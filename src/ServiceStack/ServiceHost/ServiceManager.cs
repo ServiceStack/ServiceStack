@@ -81,11 +81,11 @@ namespace ServiceStack.ServiceHost
 			this.ServiceController = serviceController;
 		}
 
-		private ExpressionTypeFunqContainer typeFactory;
+		private AutoWireContainer typeFactory;
 
 		public void Init()
 		{
-			typeFactory = new ExpressionTypeFunqContainer(this.Container);
+			typeFactory = new AutoWireContainer(this.Container);
 
 			this.ServiceController.Register(typeFactory);
 

@@ -204,7 +204,7 @@
     <Compile Include="Markdown\ViewDataInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Markdown\ITemplatePage.cs" />
-    <Compile Include="ServiceHost\ExpressionTypeFunqContainer.cs" />
+    <Compile Include="ServiceHost\AutoWireContainer.cs" />
     <Compile Include="ServiceHost\FileExtensions.cs" />
     <Compile Include="ServiceHost\HttpFile.cs" />
     <Compile Include="ServiceHost\HttpRequestAuthentication.cs" />

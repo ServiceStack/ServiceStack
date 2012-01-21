@@ -148,7 +148,7 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		{
 			var container = GetContainerWithDependencies();
 
-			var typeFactory = new ExpressionTypeFunqContainer(container);
+			var typeFactory = new AutoWireContainer(container);
 			typeFactory.RegisterTypes(typeof(StoreCustomersService), typeof(GetCustomerService));
 
 			return typeFactory;
