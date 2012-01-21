@@ -16,11 +16,11 @@ namespace $rootnamespace$
 	/// </summary>
 	public class FunqControllerFactory : DefaultControllerFactory
 	{
-		private readonly ExpressionTypeFunqContainer funqBuilder;
+		private readonly AutoWireContainer funqBuilder;
 
 		public FunqControllerFactory(Container container)
 		{
-			this.funqBuilder = new ExpressionTypeFunqContainer(container) {
+			this.funqBuilder = new AutoWireContainer(container) {
 				Scope = ReuseScope.None //don't re-use instances
 			};
 

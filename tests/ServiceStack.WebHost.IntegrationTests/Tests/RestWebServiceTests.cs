@@ -20,8 +20,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			var contents = GetContents(response);
 
 			Assert.That(contents, Is.Not.Null);
-			Assert.That(contents.Contains("\"Id\":1"));
-			Assert.That(contents.Contains("\"String\":\"One\""));
+			Assert.That(contents.Contains("\"id\":1"));
+			Assert.That(contents.Contains("\"string\":\"One\""));
 		}
 
 		[Test]

@@ -32,8 +32,7 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 		{
 			return type.GetConstructors()
 				.OrderByDescending(x => x.GetParameters().Length)
-				.Where(ctor => !ctor.IsStatic)
-				.First();
+				.First(ctor => !ctor.IsStatic);
 		}
 
 		public Func<TService> AutoWire<TService>(Func<Type, object> resolveFn)
@@ -53,6 +52,8 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
 
 			foreach (var propertyInfo in serviceType.GetProperties())
 			{
+				if (propertyInfo.PropertyType.IsValueType) continue;
+
 				var propertyValue = resolveFn(propertyInfo.PropertyType);
 				var propertySetter = propertyInfo.GetSetMethod();
 				if (propertySetter != null)

@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			using (var stream = response.GetResponseStream())
 			using (var reader = new StreamReader(stream))
 			{
-				Assert.That(reader.ReadToEnd(), Is.EqualTo("{\"Result\":\"Hello, World!\"}"));
+				Assert.That(reader.ReadToEnd(), Is.EqualTo("{\"result\":\"Hello, World!\"}"));
 			}
 		}
 

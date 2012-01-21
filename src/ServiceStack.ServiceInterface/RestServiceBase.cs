@@ -17,9 +17,14 @@ namespace ServiceStack.ServiceInterface
 		IRestDeleteService<TRequest>,
 		IRestPatchService<TRequest>
 	{
+
+		/// <summary>
+		/// What gets run when the request is sent to AsyncOneWay endpoint.
+		/// For a REST service the OnPost() method is called.
+		/// </summary>
 		protected override object Run(TRequest request)
 		{
-			throw new NotImplementedException("This base method should be overridden but not called");
+			return OnPost(request);
 		}
 
 		/// <summary>

@@ -2321,6 +2321,13 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="M:Funq.Container.AutoWire(System.Object)">
+            <summary>
+            Auto-wires an existing instance, 
+            ie all public properties are tried to be resolved.
+            </summary>
+            <param name="instance"></param>
+        </member>
         <member name="P:Funq.Container.DefaultOwner">
             <summary>
 			Default owner for new registrations. <see cref="F:Funq.Owner.Container"/> by default.
@@ -3333,6 +3340,76 @@
             <param name="bodyPrefix">Add prefix to response body if any</param>
             <param name="bodySuffix">Add suffix to response body if any</param>
             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.GenerateAutoWireFn``1">
+            <summary>
+            Generates a function which creates and auto-wires <see cref="!:TService"/>.
+            </summary>
+            <typeparam name="TService"></typeparam>
+            <param name="lambdaParam"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.AutoWire(System.Object)">
+            <summary>
+            Auto-wires an existing instance of a specific type.
+            The auto-wiring progress is also cached to be faster 
+            when calling next time with the same type.
+            </summary>
+            <param name="instance"></param>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.Register``1">
+            <summary>
+            Registers the type in the IoC container passed in the constructor and
+            adds auto-wiring to the specified type.
+            Auto-wiring is not cached with this method!
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.RegisterAs``2">
+            <summary>
+            Registers the type in the IoC container passed in the constructor and
+            adds auto-wiring to the specified type.
+            Auto-wiring is not cached with this method!
+            </summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="TAs"></typeparam>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.RegisterType(System.Type,System.Type)">
+            <summary>
+            Registers the type in the IoC container and
+            adds auto-wiring to the specified type.
+            Additionaly the creation of the type is cached when calling <see cref="M:ServiceStack.ServiceHost.AutoWireContainer.CreateInstance(System.Type)"/> on the same instance.
+            </summary>
+            <param name="serviceType"></param>
+            <param name="inFunqAsType"></param>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.RegisterTypes(System.Type[])">
+            <summary>
+            Registers the types in the IoC container and
+            adds auto-wiring to the specified types.
+            Additionaly the creation of the types is cached when calling <see cref="M:ServiceStack.ServiceHost.AutoWireContainer.CreateInstance(System.Type)"/> on the same instance.
+            </summary>
+            <param name="serviceTypes"></param>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.RegisterTypes(System.Collections.Generic.IEnumerable{System.Type})">
+            <summary>
+            Registers the types in the IoC container and
+            adds auto-wiring to the specified types.
+            Additionaly the creation of the types is cached when calling <see cref="M:ServiceStack.ServiceHost.AutoWireContainer.CreateInstance(System.Type)"/> on the same instance.
+            </summary>
+            <param name="serviceTypes"></param>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.AutoWireContainer.CreateInstance(System.Type)">
+            <summary>
+            Creates a new auto-wired instance of the specified type.
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.ServiceHost.AutoWireContainer.Scope">
+            <summary>
+            Determines in which scope the types registered will be saved in the Funq container.
+            </summary>
         </member>
         <member name="M:ServiceStack.ServiceHost.ServiceManager.#ctor(Funq.Container,ServiceStack.ServiceHost.ServiceController)">
             <summary>

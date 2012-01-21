@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				}
 				var response = new StreamReader(webReq.GetResponse().GetResponseStream()).ReadToEnd();
 
-				Assert.That(response, Is.EqualTo("{\"FirstName\":\"tom\",\"Item0\":\"blah\",\"Item1Delete\":\"1\"}"));
+				Assert.That(response, Is.EqualTo("{\"firstName\":\"tom\",\"item0\":\"blah\",\"item1Delete\":\"1\"}"));
 			}
 			catch (WebException webEx)
 			{
