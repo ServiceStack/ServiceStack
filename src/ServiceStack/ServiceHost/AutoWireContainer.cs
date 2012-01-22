@@ -28,6 +28,7 @@ namespace ServiceStack.ServiceHost
 		public AutoWireContainer(Container container)
 		{
 			this.container = container;
+			this.Scope = ReuseScope.None;
 		}
 
 		protected static MethodInfo GetResolveMethod(Type typeWithResolveMethod, Type serviceType)
