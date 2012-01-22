@@ -68,11 +68,7 @@ namespace ServiceStack.ServiceInterface
 
 				if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
 				{
-					res.StatusCode = (int)HttpStatusCode.Unauthorized;
-					res.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\""
-						.Fmt(matchingOAuthConfigs[0].Provider, matchingOAuthConfigs[0].AuthRealm));
-
-					res.Close();
+					AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
 				}
 			}
 		}

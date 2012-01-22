@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
@@ -128,6 +129,30 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public abstract bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null);
     	public abstract object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
+
+		public virtual void OnFailedAuthentication(IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
+		{
+			httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
+			httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\"".Fmt(this.Provider, this.AuthRealm));
+			httpRes.Close();
+		}
+
+		public static void HandleFailedAuth(IAuthProvider authProvider,
+			IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
+		{
+			var baseAuthProvider = authProvider as AuthProvider;
+			if (baseAuthProvider != null)
+			{
+				baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
+				return;
+			}
+
+			httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
+			httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\""
+				.Fmt(authProvider.Provider, authProvider.AuthRealm));
+
+			httpRes.Close();
+		}
     }
 
 	public static class AuthConfigExtensions
