@@ -4,7 +4,9 @@ namespace ServiceStack.Common.Web
 	{
 		public const string XParamOverridePrefix = "X-Param-Override-";
 
-		public const string XHttpMethodOverrideKey = "X-HTTP-Method-Override";
+		public const string XHttpMethodOverride = "X-Http-Method-Override";
+
+		public const string XUserAuthId = "X-UAId";
 
 		public const string CacheControl = "Cache-Control";
 

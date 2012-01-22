@@ -1,6 +1,7 @@
 ﻿using System.Net.Mime;
 using System.Text;
 using System.Web.Mvc;
+using System.Web.Routing;
 using ServiceStack.CacheAccess;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
@@ -36,11 +37,28 @@ namespace ServiceStack.Mvc
 		{
 			userSession = null;
 			this.Cache.Remove(SessionKey);
-		}		
+		}
 	}
 
+	[ExecuteServiceStackFilters]
 	public abstract class ControllerBase : Controller
 	{
+		public virtual string LoginRedirectUrl
+		{
+			get { return "/login?redirect={0}"; }
+		}
+
+		public virtual ActionResult AuthorizationErrorResult
+		{
+			get
+			{
+				return new RedirectToRouteResult(new RouteValueDictionary(new {
+					controller = "Error",
+					action = "Unauthorized"
+				}));
+			}
+		}
+
 		public ICacheClient Cache { get; set; }
 		public ISessionFactory SessionFactory { get; set; }
 
@@ -53,7 +71,7 @@ namespace ServiceStack.Mvc
 			}
 		}
 
-		public abstract IAuthSession AuthSession { get;  }
+		public abstract IAuthSession AuthSession { get; }
 
 		protected string SessionKey
 		{

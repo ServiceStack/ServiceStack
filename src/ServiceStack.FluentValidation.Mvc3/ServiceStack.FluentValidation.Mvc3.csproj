@@ -52,6 +52,7 @@
     <Compile Include="FluentValidationModelValidator.cs" />
     <Compile Include="FluentValidationModelValidatorProvider.cs" />
     <Compile Include="IValidatorInterceptor.cs" />
+    <Compile Include="Mvc\FunqValidatorBase.cs" />
     <Compile Include="Mvc\MiniProfiler\MiniProfiler.cs" />
     <Compile Include="Mvc\MiniProfiler\ProfilingActionFilter.cs" />
     <Compile Include="Mvc\MiniProfiler\ProfilingViewEngine.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="PropertyValidatorAdapters\RequiredFluentValidationPropertyValidator.cs" />
     <Compile Include="PropertyValidatorAdapters\StringLengthFluentValidationPropertyValidator.cs" />
     <Compile Include="RuleSetForClientSideMessagesAttribute.cs" />
-    <Compile Include="Mvc\ServiceStackActionFilterAttribute.cs" />
+    <Compile Include="Mvc\ExecuteServiceStackFiltersAttribute.cs" />
     <Compile Include="ValidationResultExtension.cs" />
   </ItemGroup>
   <ItemGroup>
