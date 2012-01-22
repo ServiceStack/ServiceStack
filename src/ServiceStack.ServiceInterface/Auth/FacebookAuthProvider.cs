@@ -39,7 +39,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				var preAuthUrl = PreAuthUrl + "?client_id={0}&redirect_uri={1}&scope={2}"
 					.Fmt(AppId, this.CallbackUrl.UrlEncode(), string.Join(",", Permissions));
 
-				authService.SaveSession(session);
+				authService.SaveSession(session, SessionExpiry);
 				return authService.Redirect(preAuthUrl);
 			}
 
@@ -52,7 +52,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				var authInfo = HttpUtility.ParseQueryString(contents);
 				tokens.AccessTokenSecret = authInfo["access_token"];
 				session.IsAuthenticated = true;
-				authService.SaveSession(session);
+				authService.SaveSession(session, SessionExpiry);
 				OnAuthenticated(authService, session, tokens, authInfo.ToDictionary());
 
 				//Haz access!

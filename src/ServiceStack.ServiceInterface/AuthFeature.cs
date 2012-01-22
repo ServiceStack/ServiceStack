@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints;
 
@@ -11,6 +12,12 @@ namespace ServiceStack.ServiceInterface
 	{
 		public const string AdminRole = "Admin";
 		public static bool AddUserIdHttpHeader = true;
+		
+		public static TimeSpan? GetDefaultSessionExpiry()
+		{
+			var authProvider = AuthService.AuthProviders.FirstOrDefault() as AuthProvider;
+			return authProvider == null ? null : authProvider.SessionExpiry;
+		}
 
 		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
 		{

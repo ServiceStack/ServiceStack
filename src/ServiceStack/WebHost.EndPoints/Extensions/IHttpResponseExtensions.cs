@@ -166,11 +166,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						throw new ArgumentNullException("defaultAction", string.Format(
 						"As result '{0}' is not a supported responseType, a defaultAction must be supplied",
-						result.GetType().Name));
+						(result != null ? result.GetType().Name : "")));
 					}
 
 					if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-					defaultAction(serializerCtx, result, response);
+					if (result != null) defaultAction(serializerCtx, result, response);
 					if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 
 					return false;

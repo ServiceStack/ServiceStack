@@ -76,7 +76,7 @@ namespace ServiceStack.ServiceInterface.Auth
 					tokens.AccessTokenSecret = OAuthUtils.AccessTokenSecret;
 					session.IsAuthenticated = true;
 					OnAuthenticated(authService, session, tokens, OAuthUtils.AuthInfo);
-					authService.SaveSession(session);
+					authService.SaveSession(session, SessionExpiry);
 
 					//Haz access!
 					return authService.Redirect(session.ReferrerUrl.AddHashParam("s", "1"));
@@ -85,14 +85,14 @@ namespace ServiceStack.ServiceInterface.Auth
 				//No Joy :(
 				tokens.RequestToken = null;
 				tokens.RequestTokenSecret = null;
-				authService.SaveSession(session);
+				authService.SaveSession(session, SessionExpiry);
 				return authService.Redirect(session.ReferrerUrl.AddHashParam("f", "AccessTokenFailed"));
 			}
 			if (OAuthUtils.AcquireRequestToken())
 			{
 				tokens.RequestToken = OAuthUtils.RequestToken;
 				tokens.RequestTokenSecret = OAuthUtils.RequestTokenSecret;
-				authService.SaveSession(session);
+				authService.SaveSession(session, SessionExpiry);
 
 				//Redirect to OAuth provider to approve access
 				return authService.Redirect(this.AuthorizeUrl

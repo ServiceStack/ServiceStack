@@ -10,22 +10,25 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-    public abstract class AuthProvider : IAuthProvider
-    {
+	public abstract class AuthProvider : IAuthProvider
+	{
 		protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthProvider));
+		public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
 
+		public TimeSpan? SessionExpiry { get; set; }
 		public string AuthRealm { get; set; }
 		public string Provider { get; set; }
 		public string CallbackUrl { get; set; }
 
-    	protected AuthProvider() {}
+		protected AuthProvider() { }
 
-    	protected AuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
+		protected AuthProvider(IResourceManager appSettings, string authRealm, string oAuthProvider)
 		{
 			this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
 
 			this.Provider = oAuthProvider;
 			this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
+			this.SessionExpiry = DefaultSessionExpiry;
 		}
 
 		/// <summary>
@@ -48,7 +51,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			return new AuthResponse();
 		}
-		
+
 		/// <summary>
 		/// Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
 		/// Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
@@ -104,7 +107,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			OnSaveUserAuth(authService, session);
-			authService.SaveSession(session);
+			authService.SaveSession(session, SessionExpiry);
 			session.OnAuthenticated(authService, session, tokens, authInfo);
 		}
 
@@ -128,7 +131,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		}
 
 		public abstract bool IsAuthorized(IAuthSession session, IOAuthTokens tokens, Auth request = null);
-    	public abstract object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
+		public abstract object Authenticate(IServiceBase authService, IAuthSession session, Auth request);
 
 		public virtual void OnFailedAuthentication(IAuthSession session, IHttpRequest httpReq, IHttpResponse httpRes)
 		{
@@ -153,15 +156,15 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			httpRes.Close();
 		}
-    }
+	}
 
 	public static class AuthConfigExtensions
-    {
-        public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IOAuthTokens tokens)
-        {
-            return authProvider != null && authProvider.IsAuthorized(session, tokens);
-        }
-    }
+	{
+		public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IOAuthTokens tokens)
+		{
+			return authProvider != null && authProvider.IsAuthorized(session, tokens);
+		}
+	}
 
 }
 

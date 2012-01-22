@@ -85,11 +85,11 @@ namespace ServiceStack.ServiceInterface
 				?? DefaultCache;
 		}
 
-		public static void SaveSession(this IServiceBase service, IAuthSession session)
+		public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn)
 		{
 			if (service == null) return;
 
-			service.RequestContext.Get<IHttpRequest>().SaveSession(session);
+			service.RequestContext.Get<IHttpRequest>().SaveSession(session, expiresIn);
 		}
 
 		public static void RemoveSession(this IServiceBase service)
@@ -99,14 +99,22 @@ namespace ServiceStack.ServiceInterface
 			service.RequestContext.Get<IHttpRequest>().RemoveSession();
 		}
 
-		public static void SaveSession(this IHttpRequest httpReq, IAuthSession session)
+		public static void CacheSet<T>(this ICacheClient cache, string key, T value, TimeSpan? expiresIn)
+		{
+			if (expiresIn.HasValue)
+				cache.Set(key, value, expiresIn.Value);
+			else
+				cache.Set(key, value);
+		}
+
+		public static void SaveSession(this IHttpRequest httpReq, IAuthSession session, TimeSpan? expiresIn=null)
 		{
 			if (httpReq == null) return;
 
 			using (var cache = httpReq.GetCacheClient())
 			{
 				var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
-				cache.Set(sessionKey, session);
+				cache.CacheSet(sessionKey, session, expiresIn ?? AuthFeature.GetDefaultSessionExpiry());
 			}
 
 			httpReq.Items[RequestItemsSessionKey] = session;

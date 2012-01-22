@@ -1,25 +1,10 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.FluentValidation;
-using ServiceStack.Service;
-using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.ServiceInterface.Validation;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Support;
-using ServiceStack.WebHost.Endpoints.Tests;
-using ServiceStack.WebHost.Endpoints.Tests.Support;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
