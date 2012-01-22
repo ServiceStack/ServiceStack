@@ -36,7 +36,7 @@ namespace ServiceStack.ServiceHost
 		/// </summary>
 		public void AddSessionCookie(string cookieName, string cookieValue)
 		{
-			AddCookie(new Cookie(cookieName, cookieValue));
+			AddCookie(new Cookie(cookieName, cookieValue, RootPath));
 		}
 
 		/// <summary>
