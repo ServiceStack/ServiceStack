@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-    <id>ServiceStack.Host.Mvc</id>
+    <id>ServiceStack.Mvc</id>
 	<version>3.3.4</version>
 	<authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
-    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <summary>.NET 4.0 project Integration of ServiceStack with MVC3</summary>
     <description>
-Host ServiceStack side-by-side with an existing ASP.NET MVC application at the path '/api'. 
-ServiceStack is a modern, high-performance, code-first web service framework promoting code and web services best practices. Simple, Fast, Elegant. Website: http://www.servicestack.net
-    </description> 
+		Adapter classes to provide tight integration and re-usable functionality between ServiceStack and MVC3.
+		Including adapters for: MiniProfiler, FluentValidation, Funq IOC Controller Factory, Funq Validator Factory
+		ControllerBase (configured with access to ServiceStack's ICacheClient, ISession, typed UserSession dependencies).
+	</description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
-    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO</tags>
-    <language>en-US</language>
+    <tags>MiniProfiler FluentValidation MVC Controller</tags>
+    <language>en-US</language> 
     <copyright>servicestack.net 2012 and contributors</copyright>
-	  <dependencies>
-      <dependency id="WebActivator" version="1.5" />
-      <dependency id="ServiceStack.Mvc" />
+    <dependencies>
+      <dependency id="ServiceStack" />
     </dependencies> 
   </metadata> 
 </package>

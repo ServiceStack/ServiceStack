@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Common</id>
-	<version>3.3.1</version>
+	<version>3.3.5</version>
 	<authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
@@ -18,9 +18,9 @@
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
     <iconUrl>http://www.servicestack.net/logo-100x100.png</iconUrl>
     <tags>ServiceStack Common Framework</tags>
-    <language>en-US</language> 
-    <copyright>Liquidbit 2011 and contributors</copyright>
-    <dependencies>
+    <language>en-US</language>
+	<copyright>servicestack.net 2012 and contributors</copyright>
+	<dependencies>
       <dependency id="ServiceStack.Text" />
     </dependencies> 
   </metadata> 

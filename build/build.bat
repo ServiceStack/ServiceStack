@@ -14,6 +14,8 @@ COPY ..\src\ServiceStack.RazorEngine\bin\%BUILD%\ServiceStack.RazorEngine.* ..\N
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.Common.* ..\NuGet\ServiceStack.Common\lib
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\ServiceStack.Interfaces.* ..\NuGet\ServiceStack.Common\lib
 
+COPY ..\src\ServiceStack.FluentValidation.Mvc3\bin\%BUILD%\ServiceStack.FluentValidation.Mvc3.* ..\NuGet\ServiceStack.Mvc\lib\net4
+
 COPY ..\src\ServiceStack.ServiceInterface\bin\%BUILD%\*.* ..\..\chaweet\api\lib
 
 COPY ..\src\ServiceStack.RazorEngine\bin\%BUILD%\*.* ..\..\ServiceStack.Examples\lib

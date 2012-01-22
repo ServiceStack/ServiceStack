@@ -182,7 +182,7 @@
             A thin wrapper around ASP.NET or HttpListener's HttpRequest
             </summary>
         </member>
-        <member name="M:ServiceStack.ServiceHost.IHttpRequest.TryResolve``1">
+        <member name="M:ServiceStack.ServiceHost.IResolver.TryResolve``1">
             <summary>
             Resolve a dependency from the AppHost's IOC
             </summary>
@@ -1419,6 +1419,18 @@
             Logs the specified message.
             </summary>
             <param name="message">The message.</param>
+        </member>
+        <member name="T:ServiceStack.ServiceHost.IRequestLogger">
+            <summary>
+            Log every service request
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceHost.IRequestLogger.Log(ServiceStack.ServiceHost.IRequestContext,System.Object)">
+            <summary>
+            Log a request
+            </summary>
+            <param name="requestContext"></param>
+            <param name="requestDto"></param>
         </member>
     </members>
 </doc>

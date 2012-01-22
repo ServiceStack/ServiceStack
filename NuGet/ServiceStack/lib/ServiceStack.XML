@@ -164,13 +164,6 @@
             <typeparam name="T"></typeparam>
             <typeparam name="TAs"></typeparam>
         </member>
-        <member name="M:ServiceStack.WebHost.Endpoints.IAppHost.TryResolve``1">
-            <summary>
-            Resolve a dependency from the AppHost IOC
-            </summary>
-            <typeparam name="T"></typeparam>
-            <returns></returns>
-        </member>
         <member name="M:ServiceStack.WebHost.Endpoints.IAppHost.RegisterService(System.Type,System.String[])">
             <summary>
             Register an Adhoc web service on Startup
