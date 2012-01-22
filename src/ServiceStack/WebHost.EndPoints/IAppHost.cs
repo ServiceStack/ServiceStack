@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints
 	/// <summary>
 	/// ASP.NET or HttpListener ServiceStack host
 	/// </summary>
-	public interface IAppHost
+	public interface IAppHost : IResolver
 	{
 		/// <summary>
 		/// Register dependency in AppHost IOC on Startup
@@ -22,13 +22,6 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <typeparam name="T"></typeparam>
 		/// <typeparam name="TAs"></typeparam>
 		void RegisterAs<T, TAs>() where T : TAs;
-
-		/// <summary>
-		/// Resolve a dependency from the AppHost IOC
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		T TryResolve<T>();
 
 		/// <summary>
 		/// Register custom ContentType serializers

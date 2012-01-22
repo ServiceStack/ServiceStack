@@ -167,6 +167,7 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\ContentManagerOnly.cs" />
+    <Compile Include="Services\EchoMethodService.cs" />
     <Compile Include="Tests\AuthTestsBase.cs" />
     <Compile Include="Services\BatchWidgetValidationService.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />

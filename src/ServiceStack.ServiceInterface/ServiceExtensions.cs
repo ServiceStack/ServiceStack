@@ -78,56 +78,50 @@ namespace ServiceStack.ServiceInterface
 		/// </summary>
 		private static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient { FlushOnDispose = true };
 
-		public static ICacheClient GetCacheClient(this IServiceBase service)
+		public static ICacheClient GetCacheClient(this IResolver service)
 		{
 			return service.TryResolve<ICacheClient>()
 				?? (ICacheClient)service.TryResolve<IRedisClientsManager>()
 				?? DefaultCache;
 		}
 
-		public static ICacheClient GetCacheClient(this IAppHost appHost)
-		{
-			return appHost.TryResolve<ICacheClient>()
-				?? (ICacheClient)appHost.TryResolve<IRedisClientsManager>()
-				?? DefaultCache;
-		}
-
-		public static ICacheClient GetCacheClient(this IHttpRequest httpRequest)
-		{
-			return httpRequest.TryResolve<ICacheClient>()
-				?? (ICacheClient)httpRequest.TryResolve<IRedisClientsManager>()
-				?? DefaultCache;
-		}
-
 		public static void SaveSession(this IServiceBase service, IAuthSession session)
 		{
-			using (var cache = service.GetCacheClient())
-			{
-				var sessionKey = SessionFeature.GetSessionKey(service.GetSessionId());
-				cache.Set(sessionKey, session);
-				service.RequestContext.Get<IHttpRequest>().SaveSession(session);
-			}
+			if (service == null) return;
+
+			service.RequestContext.Get<IHttpRequest>().SaveSession(session);
 		}
 
 		public static void RemoveSession(this IServiceBase service)
 		{
-			using (var cache = service.GetCacheClient())
-			{
-				var sessionKey = SessionFeature.GetSessionKey(service.GetSessionId());
-				cache.Remove(sessionKey);
-				service.RequestContext.Get<IHttpRequest>().RemoveSession();
-			}
+			if (service == null) return;
+
+			service.RequestContext.Get<IHttpRequest>().RemoveSession();
 		}
 
 		public static void SaveSession(this IHttpRequest httpReq, IAuthSession session)
 		{
 			if (httpReq == null) return;
+
+			using (var cache = httpReq.GetCacheClient())
+			{
+				var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
+				cache.Set(sessionKey, session);
+			}
+
 			httpReq.Items[RequestItemsSessionKey] = session;
 		}
 
 		public static void RemoveSession(this IHttpRequest httpReq)
 		{
 			if (httpReq == null) return;
+
+			using (var cache = httpReq.GetCacheClient())
+			{
+				var sessionKey = SessionFeature.GetSessionKey(httpReq.GetSessionId());
+				cache.Remove(sessionKey);
+			}
+
 			httpReq.Items.Remove(RequestItemsSessionKey);
 		}
 

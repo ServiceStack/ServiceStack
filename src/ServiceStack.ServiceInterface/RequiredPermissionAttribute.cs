@@ -13,7 +13,7 @@ namespace ServiceStack.ServiceInterface
     /// Indicates that the request dto, which is associated with this attribute,
     /// can only execute, if the user has specific permissions.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method /*MVC Actions*/, Inherited = false, AllowMultiple = true)]
     public class RequiredPermissionAttribute : RequestFilterAttribute
     {
         public List<string> RequiredPermissions { get; set; }
@@ -32,25 +32,37 @@ namespace ServiceStack.ServiceInterface
 
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
-			var session = req.GetSession();
-			if (HasAllPermissions(session)) return;
+			AuthenticateAttribute.AuthenticateIfBasicAuth(req, res);
 
-			var userAuthRepo = req.TryResolve<IUserAuthRepository>();
-			var userAuth = userAuthRepo.GetUserAuth(session, null);
-			session.UpdateSession(userAuth);
-			
-			if (HasAllPermissions(session))
-			{
-				req.SaveSession(session);
-				return;
-			}
+			var session = req.GetSession();
+			if (HasAllPermissions(req, session)) return;
 
 			res.StatusCode = (int)HttpStatusCode.Unauthorized;
 			res.StatusDescription = "Invalid Permissions";
 			res.Close();
 		}
 
-    	private bool HasAllPermissions(IAuthSession session)
+    	public bool HasAllPermissions(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo=null)
+    	{
+    		if (HasAllPermissions(session)) return true;
+
+			if (userAuthRepo == null) 
+    			userAuthRepo = req.TryResolve<IUserAuthRepository>();
+
+			if (userAuthRepo == null) return false;
+
+    		var userAuth = userAuthRepo.GetUserAuth(session, null);
+    		session.UpdateSession(userAuth);
+
+    		if (HasAllPermissions(session))
+    		{
+    			req.SaveSession(session);
+    			return true;
+    		}
+    		return false;
+    	}
+
+    	public bool HasAllPermissions(IAuthSession session)
     	{
     		return this.RequiredPermissions
 				.All(requiredPermission => session != null 

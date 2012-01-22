@@ -58,9 +58,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.ContentType; }
 		}
 
+		private string httpMethod;
 		public string HttpMethod
 		{
-			get { return request.HttpMethod; }
+			get { return httpMethod
+				?? (httpMethod = request.Headers[Common.Web.HttpHeaders.XHttpMethodOverride] ?? request.HttpMethod);
+			}
 		}
 
 		public string UserAgent

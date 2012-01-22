@@ -609,7 +609,7 @@ var MiniProfiler = (function ($)
 
 		shareUrl: function (id)
 		{
-			return options.path + 'ss-profiler-results?id=' + id;
+			return options.path + 'ss-results?id=' + id;
 		},
 
 		getSqlTimings: function (root)

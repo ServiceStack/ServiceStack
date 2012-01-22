@@ -5,6 +5,7 @@ using System.Net;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints;
@@ -27,6 +28,7 @@ namespace ServiceStack.ServiceInterface
 		public const string SessionId = "ss-id";
 		public const string PermanentSessionId = "ss-pid";
 		public const string SessionOptionsKey = "ss-opt";
+		public const string XUserAuthId = HttpHeaders.XUserAuthId;
 
 		private static bool alreadyConfigured;
 
@@ -158,12 +160,16 @@ namespace ServiceStack.ServiceInterface
 
 		public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq)
 		{
-			return new HttpRequestWrapper(aspnetHttpReq);
+			return new HttpRequestWrapper(aspnetHttpReq) {
+				Container = AppHostBase.Instance.Container
+			};
 		}
 
 		public static IHttpRequest ToRequest(this HttpListenerRequest listenerHttpReq)
 		{
-			return new HttpListenerRequestWrapper(listenerHttpReq);
+			return new HttpListenerRequestWrapper(listenerHttpReq) {
+				Container = AppHostBase.Instance.Container
+			};
 		}
 
 		public static IHttpResponse ToResponse(this HttpResponse aspnetHttpRes)

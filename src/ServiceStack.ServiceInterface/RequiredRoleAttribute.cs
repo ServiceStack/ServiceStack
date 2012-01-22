@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceInterface
 	/// Indicates that the request dto, which is associated with this attribute,
 	/// can only execute, if the user has specific roles.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method /*MVC Actions*/, Inherited = false, AllowMultiple = true)]
 	public class RequiredRoleAttribute : RequestFilterAttribute
 	{
 		public List<string> RequiredRoles { get; set; }
@@ -32,29 +32,40 @@ namespace ServiceStack.ServiceInterface
 			this.RequiredRoles = roles.ToList();
 			this.ApplyTo = applyTo;
 		}
-
-
+		
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
+			AuthenticateAttribute.AuthenticateIfBasicAuth(req, res);
+
 			var session = req.GetSession();
-			if (HasAllRoles(session)) return;
-
-			var userAuthRepo = req.TryResolve<IUserAuthRepository>();
-			var userAuth = userAuthRepo.GetUserAuth(session, null);
-			session.UpdateSession(userAuth);
-
-			if (HasAllRoles(session))
-			{
-				req.SaveSession(session);
-				return;
-			}
+			if (HasAllRoles(req, session)) return;
 
 			res.StatusCode = (int)HttpStatusCode.Unauthorized;
 			res.StatusDescription = "Invalid Role";
 			res.Close();
 		}
 
-		private bool HasAllRoles(IAuthSession session)
+		public bool HasAllRoles(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo=null)
+		{
+			if (HasAllRoles(session)) return true;
+
+			if (userAuthRepo == null)
+				userAuthRepo = req.TryResolve<IUserAuthRepository>();
+
+			if (userAuthRepo == null) return false;
+
+			var userAuth = userAuthRepo.GetUserAuth(session, null);
+			session.UpdateSession(userAuth);
+
+			if (HasAllRoles(session))
+			{
+				req.SaveSession(session);
+				return true;
+			}
+			return false;
+		}
+
+		public bool HasAllRoles(IAuthSession session)
 		{
 			return this.RequiredRoles
 				.All(requiredRole => session != null

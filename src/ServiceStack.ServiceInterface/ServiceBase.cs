@@ -37,8 +37,7 @@ namespace ServiceStack.ServiceInterface
         /// Combined service error logs are maintained in 'urn:ServiceErrors:All'
         /// </summary>
         public const string CombinedServiceLogId = "All";
-
-
+		
         /// <summary>
         /// Can be overriden to supply Custom 'ServiceName' error logs
         /// </summary>
@@ -65,7 +64,26 @@ namespace ServiceStack.ServiceInterface
 
         public IRequestContext RequestContext { get; set; }
 
-        public ISessionFactory SessionFactory { get; set; }
+		public ISessionFactory SessionFactory { get; set; }
+
+		public IRequestLogger RequestLogger { get; set; }
+
+		/// <summary>
+		/// Easy way to log all requests
+		/// </summary>
+		/// <param name="requestDto"></param>
+		protected void OnEachRequest(object requestDto)
+		{
+			if (this.RequestLogger == null) return;
+			try
+			{
+				RequestLogger.Log(this.RequestContext, requestDto);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Error while logging request: " + requestDto.Dump(), ex);
+			}
+		}
 
         private ISession session;
         public ISession Session
@@ -164,6 +182,7 @@ namespace ServiceStack.ServiceInterface
         {
             try
             {
+				OnEachRequest(request);
                 OnBeforeExecute(request);
 				return OnAfterExecute(Run(request));
             }
@@ -262,6 +281,8 @@ namespace ServiceStack.ServiceInterface
 			{
 				return Execute(request);
 			}
+
+			OnEachRequest(request);
 
 			//Capture and persist this async request on this Services 'In Queue' 
 			//for execution after this request has been completed

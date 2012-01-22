@@ -3,7 +3,7 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
 {
-	public interface IServiceBase 
+	public interface IServiceBase : IResolver
 	{
 		IAppHost AppHost { get; set; }
 
@@ -13,8 +13,6 @@ namespace ServiceStack.ServiceInterface
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
 		T ResolveService<T>();
-
-		T TryResolve<T>();
 
 		IRequestContext RequestContext { get; }
 	}

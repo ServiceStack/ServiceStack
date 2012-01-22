@@ -135,9 +135,9 @@ namespace ServiceStack.ServiceHost
 				return httpMethod;			
 
 			var overrideHttpMethod = 
-				httpReq.Headers[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
-				?? httpReq.FormData[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty()
-				?? httpReq.QueryString[HttpHeaders.XHttpMethodOverrideKey].ToNullIfEmpty();
+				httpReq.Headers[HttpHeaders.XHttpMethodOverride].ToNullIfEmpty()
+				?? httpReq.FormData[HttpHeaders.XHttpMethodOverride].ToNullIfEmpty()
+				?? httpReq.QueryString[HttpHeaders.XHttpMethodOverride].ToNullIfEmpty();
 
 			if (overrideHttpMethod != null)
 			{

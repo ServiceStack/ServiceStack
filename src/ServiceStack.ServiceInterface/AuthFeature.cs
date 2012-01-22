@@ -10,6 +10,7 @@ namespace ServiceStack.ServiceInterface
 	public class AuthFeature
 	{
 		public const string AdminRole = "Admin";
+		public static bool AddUserIdHttpHeader = true;
 
 		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
 		{

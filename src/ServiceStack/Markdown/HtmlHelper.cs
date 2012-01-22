@@ -239,7 +239,7 @@ namespace ServiceStack.Markdown
 
 			var tagBuilder = new TagBuilder("input");
 			tagBuilder.Attributes["type"] = "hidden";
-			tagBuilder.Attributes["name"] = HttpHeaders.XHttpMethodOverrideKey;
+			tagBuilder.Attributes["name"] = HttpHeaders.XHttpMethodOverride;
 			tagBuilder.Attributes["value"] = httpMethod;
 
 			return tagBuilder.ToMvcHtmlString(TagRenderMode.SelfClosing);

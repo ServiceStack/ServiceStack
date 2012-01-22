@@ -50,6 +50,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
+				OnEachRequest(request);
 				OnBeforeExecute(request);
 				return OnAfterExecute(OnGet(request));
 			}
@@ -86,6 +87,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
+				OnEachRequest(request);
 				OnBeforeExecute(request);
 				return OnAfterExecute(OnPut(request));
 			}
@@ -122,6 +124,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
+				OnEachRequest(request);
 				OnBeforeExecute(request);
 				return OnAfterExecute(OnPost(request));
 			}
@@ -158,6 +161,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
+				OnEachRequest(request);
 				OnBeforeExecute(request);
 				return OnAfterExecute(OnDelete(request));
 			}
@@ -194,6 +198,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
+				OnEachRequest(request);
 				OnBeforeExecute(request);
 				return OnAfterExecute(OnPatch(request));
 			}

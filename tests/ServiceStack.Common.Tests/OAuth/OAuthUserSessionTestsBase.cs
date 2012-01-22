@@ -34,7 +34,6 @@ namespace ServiceStack.Common.Tests.OAuth
 		public CredentialsAuthProvider GetCredentialsAuthConfig()
 		{
 			return new CredentialsAuthProvider(new AppSettings()) {
-				AuthHttpGateway = new MockAuthHttpGateway(),
 			};
 		}
 

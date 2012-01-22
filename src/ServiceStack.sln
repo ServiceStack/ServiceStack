@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
 		..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec = ..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec
 		..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec = ..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec
+		..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec = ..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec
 		..\NuGet\ServiceStack\servicestack.nuspec = ..\NuGet\ServiceStack\servicestack.nuspec
 	EndProjectSection
 EndProject

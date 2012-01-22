@@ -9,19 +9,12 @@ namespace ServiceStack.ServiceHost
 	/// <summary>
 	/// A thin wrapper around ASP.NET or HttpListener's HttpRequest
 	/// </summary>
-	public interface IHttpRequest
+	public interface IHttpRequest : IResolver
 	{
 		/// <summary>
 		/// The underlying ASP.NET or HttpListener HttpRequest
 		/// </summary>
 		object OriginalRequest { get; }
-
-		/// <summary>
-		/// Resolve a dependency from the AppHost's IOC
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		T TryResolve<T>();
 
 		/// <summary>
 		/// The name of the service being called (e.g. Request DTO Name)

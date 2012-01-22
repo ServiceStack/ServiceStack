@@ -70,6 +70,45 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			});
 		}
 
+		private HttpWebResponse EmulateHttpMethod(string emulateMethod, string useMethod)
+		{
+			var webRequest = (HttpWebRequest) WebRequest.Create(ServiceClientBaseUri + "/echomethod");
+			webRequest.Accept = ContentType.Json;
+			webRequest.Method = useMethod;
+			webRequest.Headers[HttpHeaders.XHttpMethodOverride] = emulateMethod;
+			if (useMethod == HttpMethods.Post)
+				webRequest.ContentLength = 0;
+			var response = (HttpWebResponse) webRequest.GetResponse();
+			return response;
+		}
+
+		[Test]
+		public void Can_emulate_Put_HttpMethod_with_POST()
+		{
+			var response = EmulateHttpMethod(HttpMethods.Put, HttpMethods.Post);
+
+			AssertResponse<EchoMethodResponse>(response, ContentType.Json, x =>
+				Assert.That(x.Result, Is.EqualTo(HttpMethods.Put)));
+		}
+
+		[Test]
+		public void Can_emulate_Put_HttpMethod_with_GET()
+		{
+			var response = EmulateHttpMethod(HttpMethods.Put, HttpMethods.Get);
+
+			AssertResponse<EchoMethodResponse>(response, ContentType.Json, x =>
+				Assert.That(x.Result, Is.EqualTo(HttpMethods.Put)));
+		}
+
+		[Test]
+		public void Can_emulate_Delete_HttpMethod_with_GET()
+		{
+			var response = EmulateHttpMethod(HttpMethods.Delete, HttpMethods.Get);
+
+			AssertResponse<EchoMethodResponse>(response, ContentType.Json, x =>
+				Assert.That(x.Result, Is.EqualTo(HttpMethods.Delete)));
+		}
+
 		[Test]
 		public void Can_call_WildCardRequest_with_alternate_WildCard_defined()
 		{

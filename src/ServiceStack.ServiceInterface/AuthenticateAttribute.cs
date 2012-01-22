@@ -15,7 +15,7 @@ namespace ServiceStack.ServiceInterface
 	/// Indicates that the request dto, which is associated with this attribute,
 	/// requires authentication.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method /*MVC Actions*/, Inherited = false, AllowMultiple = false)]
 	public class AuthenticateAttribute : RequestFilterAttribute
 	{
 		public string Provider { get; set; }
@@ -59,17 +59,7 @@ namespace ServiceStack.ServiceInterface
 				return;
 			}
 
-			var userPass = req.GetBasicAuthUserAndPassword();
-			if (userPass != null)
-			{
-				var authService = req.TryResolve<AuthService>();
-				authService.RequestContext = new HttpRequestContext(req, res, requestDto);
-				var response = authService.Post(new Auth.Auth {
-					provider = BasicAuthProvider.Name,
-					UserName = userPass.Value.Key,
-					Password = userPass.Value.Value
-				});
-			}
+			AuthenticateIfBasicAuth(req, res);
 
 			using (var cache = req.GetCacheClient())
 			{
@@ -84,6 +74,21 @@ namespace ServiceStack.ServiceInterface
 
 					res.Close();
 				}
+			}
+		}
+
+		public static void AuthenticateIfBasicAuth(IHttpRequest req, IHttpResponse res)
+		{
+			var userPass = req.GetBasicAuthUserAndPassword();
+			if (userPass != null)
+			{
+				var authService = req.TryResolve<AuthService>();
+				authService.RequestContext = new HttpRequestContext(req, res, null);
+				var response = authService.Post(new Auth.Auth {
+					provider = BasicAuthProvider.Name,
+					UserName = userPass.Value.Key,
+					Password = userPass.Value.Value
+				});
 			}
 		}
 	}
