@@ -37,18 +37,18 @@ namespace ServiceStack.ServiceInterface
 		{
 			var responseDto = CreateResponseDto(request, responseStatus);
 
-			if (responseDto != null)
-			{
-				var httpError = ex as IHttpError;
-				if (httpError != null)
-				{
-					httpError.Response = responseDto;
-					return httpError;
-				}
-			}
+            var httpError = ex as IHttpError;
+            if (httpError != null)
+            {
+                if (responseDto != null)
+                {
+                    httpError.Response = responseDto;
+                }
+                return httpError;
+            }
 
-			var statusCode = HttpStatusCode.InternalServerError;
-			if (ex is NotImplementedException) statusCode = HttpStatusCode.MethodNotAllowed;
+            var statusCode = HttpStatusCode.InternalServerError;
+            if (ex is NotImplementedException) statusCode = HttpStatusCode.MethodNotAllowed;
 			else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
 
 			var errorCode = ex.GetType().Name;
