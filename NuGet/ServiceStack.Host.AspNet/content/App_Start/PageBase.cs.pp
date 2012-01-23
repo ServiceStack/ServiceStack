@@ -3,6 +3,7 @@ using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.WebHost.Endpoints;
 
 
 /**
@@ -22,7 +23,7 @@ namespace $rootnamespace$.App_Start
 		private Container container;
 		public Container Container
 		{
-			get { return container ?? (container = Endpoints.AppHostBase.Instance.Container); }
+			get { return container ?? (container = AppHostBase.Instance.Container); }
 		}
 
 		protected string SessionKey
