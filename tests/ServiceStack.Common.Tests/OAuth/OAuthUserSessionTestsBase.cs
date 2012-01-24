@@ -22,7 +22,7 @@ namespace ServiceStack.Common.Tests.OAuth
 	public abstract class OAuthUserSessionTestsBase
 	{
 		//Can only use either 1 OrmLiteDialectProvider at 1-time SqlServer or Sqlite.
-		public static bool UseSqlServer = true;
+		public static bool UseSqlServer = false;
 
 		public static AuthUserSession GetNewSession2()
 		{

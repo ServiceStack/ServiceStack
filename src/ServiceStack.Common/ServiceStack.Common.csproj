@@ -138,6 +138,7 @@
     <Compile Include="Model.cs" />
     <Compile Include="ModelConfig.cs" />
     <Compile Include="ServiceClient.Web\AuthDtos.cs" />
+    <Compile Include="Support\PropertyInvoker.cs" />
     <Compile Include="Web\HttpResponseStreamWrapper.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="TypeExtensions.cs" />

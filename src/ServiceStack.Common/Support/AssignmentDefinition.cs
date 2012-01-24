@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using ServiceStack.Common.Utils;
 using ServiceStack.Logging;
+using ServiceStack.Net30.Collections.Concurrent;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Support
@@ -11,6 +12,12 @@ namespace ServiceStack.Common.Support
 	public class AssignmentDefinition
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(AssignmentDefinition));
+
+		private ConcurrentDictionary<string, PropertySetterDelegate> PropertySetters = 
+			new ConcurrentDictionary<string, PropertySetterDelegate>();
+
+		private ConcurrentDictionary<string, PropertyGetterDelegate> PropertyGetters = 
+			new ConcurrentDictionary<string, PropertyGetterDelegate>();
 
 		public AssignmentDefinition()
 		{
@@ -46,7 +53,7 @@ namespace ServiceStack.Common.Support
 		public void PopulateWithNonDefaultValues(object to, object from)
 		{
 			var nonDefaultPredicate = (Func<object, bool>) (x => 
-					!Equals( x, ReflectionUtils.GetDefaultValue(x.GetType()) )
+					x != null && !Equals( x, ReflectionUtils.GetDefaultValue(x.GetType()) )
 				);
 	
 			Populate(to, from, null, nonDefaultPredicate);
@@ -73,7 +80,9 @@ namespace ServiceStack.Common.Support
 
 				try
 				{
-					var fromValue = fromPropertyInfo.GetValue(from, new object[] { });
+					var getterFn = PropertyGetters.GetOrAdd(fromPropertyInfo.Name,
+						fromPropertyInfo.GetPropertyGetterFn());
+					var fromValue = getterFn(from);
 
 					if (valuePredicate != null)
 					{
@@ -103,8 +112,10 @@ namespace ServiceStack.Common.Support
 						}
 					}
 
-					var toSetMetodInfo = toPropertyInfo.GetSetMethod();
-					toSetMetodInfo.Invoke(to, new[] { fromValue });
+					var setterFn = PropertySetters.GetOrAdd(toPropertyInfo.Name,
+						toPropertyInfo.GetPropertySetterFn());
+
+					setterFn(to, fromValue);
 				}
 				catch (Exception ex)
 				{

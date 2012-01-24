@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using ServiceStack.Common.Support;
 using ServiceStack.Logging;
+using ServiceStack.Net30.Collections.Concurrent;
 
 namespace ServiceStack.Common.Utils
 {
@@ -70,22 +71,16 @@ namespace ServiceStack.Common.Utils
 			return defaultValue;
 		}
 
-		private static readonly Dictionary<string, AssignmentDefinition> AssignmentDefinitionCache 
-			= new Dictionary<string, AssignmentDefinition>();
+		private static readonly ConcurrentDictionary<string, AssignmentDefinition> AssignmentDefinitionCache 
+			= new ConcurrentDictionary<string, AssignmentDefinition>();
 
 		public static AssignmentDefinition GetAssignmentDefinition(Type toType, Type fromType)
 		{
 			var cacheKey = toType.FullName + "<" + fromType.FullName;
 
-			lock (AssignmentDefinitionCache)
-			{
-				AssignmentDefinition definition;
-				if (AssignmentDefinitionCache.TryGetValue(cacheKey, out definition))
-				{
-					return definition;
-				}
-
-				definition = new AssignmentDefinition {
+			return AssignmentDefinitionCache.GetOrAdd(cacheKey, delegate {
+				
+				var definition = new AssignmentDefinition {
 					ToType = toType,
 					FromType = fromType,
 				};
@@ -114,11 +109,9 @@ namespace ServiceStack.Common.Utils
 						definition.AddMatch(fromFieldInfo, toFieldInfo);
 					}
 				}
-
-				AssignmentDefinitionCache[cacheKey] = definition;
-
 				return definition;
-			}
+			});
+
 		}
 
 		public static To PopulateObject<To, From>(To to, From from)

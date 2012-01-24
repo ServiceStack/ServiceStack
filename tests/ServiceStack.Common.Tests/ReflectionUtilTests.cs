@@ -6,6 +6,7 @@ using ServiceStack.Common.Tests.Models;
 using ServiceStack.Common.Utils;
 using ServiceStack.DataAnnotations;
 using System.Collections.Generic;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -234,6 +235,30 @@ namespace ServiceStack.Common.Tests
 			Assert.That(toObj.LongId, Is.EqualTo(fromObj.LongId));
 			Assert.That(toObj.Bool, Is.EqualTo(fromObj.Bool));
 			Assert.That(toObj.DateTime, Is.EqualTo(fromObj.DateTime));
+		}
+
+		[Test]
+		public void Translate_Between_Models_of_differrent_types_and_nullables()
+		{
+			var fromObj = ModelWithFieldsOfDifferentTypes.CreateConstant(1);
+
+			var toObj = fromObj.TranslateTo<ModelWithFieldsOfDifferentTypesAsNullables>();
+
+			Console.WriteLine(toObj.Dump());
+
+			ModelWithFieldsOfDifferentTypesAsNullables.AssertIsEqual(fromObj, toObj);
+		}
+
+		[Test]
+		public void Translate_Between_Models_of_nullables_and_differrent_types()
+		{
+			var fromObj = ModelWithFieldsOfDifferentTypesAsNullables.CreateConstant(1);
+
+			var toObj = fromObj.TranslateTo<ModelWithFieldsOfDifferentTypes>();
+
+			Console.WriteLine(toObj.Dump());
+
+			ModelWithFieldsOfDifferentTypesAsNullables.AssertIsEqual(toObj, fromObj);
 		}
 	}
 }
