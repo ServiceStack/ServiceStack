@@ -54,7 +54,7 @@ namespace ServiceStack.ServiceHost
 			return new HttpCookie(cookie.Name, cookie.Value) {
 				Path = cookie.Path,
 				Expires = cookie.Expires,
-				Domain = cookie.Domain,				
+				Domain = (string.IsNullOrEmpty(cookie.Domain)) ? null : cookie.Domain,				
 			};
 		}
 
