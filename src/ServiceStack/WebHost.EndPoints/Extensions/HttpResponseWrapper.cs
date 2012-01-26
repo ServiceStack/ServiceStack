@@ -21,6 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		public HttpResponseWrapper(HttpResponse response)
 		{
 			this.response = response;
+			this.response.TrySkipIisCustomErrors = true;
 			this.Cookies = new Cookies(this);
 		}
 

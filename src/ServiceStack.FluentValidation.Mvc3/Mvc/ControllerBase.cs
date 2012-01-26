@@ -95,6 +95,13 @@ namespace ServiceStack.Mvc
 		{
 			this.Cache.Remove(SessionKey);
 		}
+		
+		protected override void HandleUnknownAction(string actionName)
+		{
+			// If controller is ErrorController dont 'nest' exceptions
+			//if (this.GetType() != typeof(ErrorController))
+			//    this.InvokeHttp404(HttpContext);
+		}
 	}
 
 	public class ServiceStackJsonResult : JsonResult

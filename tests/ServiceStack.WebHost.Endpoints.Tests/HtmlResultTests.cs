@@ -17,14 +17,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		public static class Html
 		{
-			public static HtmlResult RedirectTo(string url)
+			public static HttpResult RedirectTo(string url)
 			{
 				var html = string.Format(
 					"<html><head><meta http-equiv=\"refresh\" content=\"0;url={0}\"></head></html>",
 					url);
 
-				return new HtmlResult {
-					Html = new StringBuilder(html),
+				return new HttpResult(html, ContentType.Html) {
 					Headers = { { "Location", url } },
 				};
 			}

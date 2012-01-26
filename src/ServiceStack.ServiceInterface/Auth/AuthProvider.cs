@@ -19,6 +19,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string AuthRealm { get; set; }
 		public string Provider { get; set; }
 		public string CallbackUrl { get; set; }
+		public string RedirectUrl { get; set; }
 
 		protected AuthProvider() { }
 
@@ -28,6 +29,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			this.Provider = oAuthProvider;
 			this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
+			this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider));
 			this.SessionExpiry = DefaultSessionExpiry;
 		}
 

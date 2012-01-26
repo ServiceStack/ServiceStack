@@ -61,9 +61,9 @@ namespace ServiceStack.Common.Web
 				"attachment; " +
 				"filename=\"" + fileResponse.Name + "\"; " +
 				"size=" + fileResponse.Length + "; " +
-				"creation-date=" + fileResponse.CreationTimeUtc.ToString("R") + "; " +
-				"modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R") + "; " +
-				"read-date=" + fileResponse.LastAccessTimeUtc.ToString("R");
+				"creation-date=" + fileResponse.CreationTimeUtc.ToString("R").Replace(",","") + "; " +
+				"modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "") + "; " +
+				"read-date=" + fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "");
 
 			this.Headers = new Dictionary<string, string> {
 				{ HttpHeaders.ContentDisposition, headerValue },

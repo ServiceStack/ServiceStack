@@ -1,8 +1,10 @@
+using System;
 using System.Linq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -19,6 +21,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			this.AuthRealm = appSettings.Get("OAuthRealm", authRealm);
 
 			this.Provider = oAuthProvider;
+			this.RedirectUrl = appSettings.GetString("oauth.{0}.RedirectUrl".Fmt(oAuthProvider));
 			this.CallbackUrl = appSettings.GetString("oauth.{0}.CallbackUrl".Fmt(oAuthProvider));
 			this.ConsumerKey = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerKeyName));
 			this.ConsumerSecret = appSettings.GetString("oauth.{0}.{1}".Fmt(oAuthProvider, consumerSecretName));
@@ -118,11 +121,18 @@ namespace ServiceStack.ServiceInterface.Auth
 				//session = authService.GetSession();
 			}
 
+			var requestUri = authService.RequestContext.AbsoluteUri;
 			if (this.CallbackUrl.IsNullOrEmpty())
-				this.CallbackUrl = authService.RequestContext.AbsoluteUri;
+				this.CallbackUrl = requestUri;
 
 			if (session.ReferrerUrl.IsNullOrEmpty())
-				session.ReferrerUrl = authService.RequestContext.GetHeader("Referer") ?? this.CallbackUrl;
+				session.ReferrerUrl = authService.RequestContext.GetHeader("Referer");
+
+			if (session.ReferrerUrl.IsNullOrEmpty() 
+				|| session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
+				session.ReferrerUrl = this.RedirectUrl 
+					?? ServiceStackHttpHandlerFactory.GetBaseUrl()
+					?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1));
 
 			var tokens = session.ProviderOAuthAccess.FirstOrDefault(x => x.Provider == Provider);
 			if (tokens == null)

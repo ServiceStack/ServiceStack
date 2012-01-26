@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 			if (!File.Exists(filePath))
 				throw new FileNotFoundException(request.RelativePath);
 
-			var result = new FileResult(filePath);
+			var result = new HttpResult(new FileInfo(filePath));
 			return result;
 		}
 

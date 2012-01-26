@@ -208,6 +208,11 @@ namespace ServiceStack.WebHost.Endpoints
 				NonRootModeDefaultHttpHandler.RelativeUrl);
 		}
 
+		public static string GetBaseUrl()
+		{
+			return EndpointHost.Config.WebHostUrl ?? ApplicationBaseUrl;
+		}
+
 		// Entry point for HttpListener
 		public static IHttpHandler GetHandler(IHttpRequest httpReq)
 		{

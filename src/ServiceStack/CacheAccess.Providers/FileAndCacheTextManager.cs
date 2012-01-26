@@ -132,13 +132,13 @@ namespace ServiceStack.CacheAccess.Providers
 			);
 		}
 
-		public FileResult GetFromFile(string cacheKey)
+		public HttpResult GetFromFile(string cacheKey)
 		{
 			try
 			{
 				var filePath = Path.Combine(this.baseCachePath, cacheKey);
 				return File.Exists(filePath)
-					? new FileResult(new FileInfo(filePath), this.ContentType)
+					? new HttpResult(new FileInfo(filePath), this.ContentType)
 					: null;
 			}
 			catch (Exception)

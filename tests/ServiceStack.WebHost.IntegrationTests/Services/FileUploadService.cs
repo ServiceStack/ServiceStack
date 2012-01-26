@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			if (!File.Exists(filePath))
 				throw new FilterInvalidBodyAccessException(request.RelativePath);
 
-			var result = new FileResult(filePath);
+			var result = new HttpResult(new FileInfo(filePath));
 			return result;
 		}
 
