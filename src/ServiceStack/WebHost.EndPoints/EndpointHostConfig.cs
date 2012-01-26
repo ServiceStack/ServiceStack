@@ -159,7 +159,10 @@ namespace ServiceStack.WebHost.Endpoints
 			try
 			{
 				//Read the user-defined path in the Web.Config
-				var config = WebConfigurationManager.OpenWebConfiguration("~/");
+                var config = EndpointHost.AppHost is AppHostBase 
+                    ? WebConfigurationManager.OpenWebConfiguration("~/") 
+                    : ConfigurationManager.OpenExeConfiguration(System.Reflection.Assembly.GetEntryAssembly().Location);
+
 				SetPathsFromConfiguration(config, null);
 
 				if (instance.MetadataRedirectPath == null)
