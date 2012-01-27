@@ -125,6 +125,11 @@ namespace ServiceStack.ServiceClient.Web
 			throw new NotImplementedException();
 		}
 
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
 		public void SendOneWay(object request)
 		{
 			SendOneWay(request, request.GetType().Name);
