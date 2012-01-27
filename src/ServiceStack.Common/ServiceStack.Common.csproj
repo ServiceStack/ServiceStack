@@ -93,128 +93,370 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Messaging\Rcon\Client.cs" />
-    <Compile Include="Messaging\Rcon\Packet.cs" />
-    <Compile Include="Messaging\Rcon\PacketCodec.cs" />
-    <Compile Include="Messaging\Rcon\PacketProcessingClient.cs" />
-    <Compile Include="Messaging\Rcon\Server.cs" />
-    <Compile Include="Net30\ConcurrentDictionary.cs" />
-    <Compile Include="Net30\ObjectPool.cs" />
-    <Compile Include="Net30\SplitOrderedList.cs" />
-    <Compile Include="Net30\Tuple.cs" />
-    <Compile Include="DirectoryInfoExtensions.cs" />
-    <Compile Include="EnumerableExtensions.cs" />
-    <Compile Include="Expressions\DelegateFactory.cs" />
-    <Compile Include="Extensions\ActionExecExtensions.cs" />
-    <Compile Include="ActionExecExtensions.cs" />
-    <Compile Include="AssertExtensions.cs" />
-    <Compile Include="ByteArrayExtensions.cs" />
-    <Compile Include="Extensions\AssertExtensions.cs" />
-    <Compile Include="Extensions\ByteArrayExtensions.cs" />
-    <Compile Include="Extensions\CollectionExtensions.cs" />
-    <Compile Include="Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Extensions\IntExtensions.cs" />
-    <Compile Include="Extensions\ReflectionExtensions.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="IPAddressExtensions.cs" />
-    <Compile Include="ExecExtensions.cs" />
-    <Compile Include="DictionaryExtensions.cs" />
-    <Compile Include="DisposableExtensions.cs" />
-    <Compile Include="EnumExtensions.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="IntExtensions.cs" />
-    <Compile Include="Messaging\IMessageHandler.cs" />
-    <Compile Include="Messaging\IMessageHandlerDisposer.cs" />
-    <Compile Include="Messaging\IMessageHandlerFactory.cs" />
-    <Compile Include="Messaging\InMemoryMessageQueueClient.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs" />
-    <Compile Include="Messaging\InMemoryTransientMessageService.cs" />
-    <Compile Include="Messaging\MessageExtensions.cs" />
-    <Compile Include="Messaging\MessageQueueClientFactory.cs" />
-    <Compile Include="Messaging\MessageHandler.cs" />
-    <Compile Include="Messaging\MessageHandlerFactory.cs" />
-    <Compile Include="Messaging\ClientFactory.cs" />
-    <Compile Include="Messaging\TransientMessageServiceBase.cs" />
-    <Compile Include="Model.cs" />
-    <Compile Include="ModelConfig.cs" />
-    <Compile Include="ServiceClient.Web\AuthDtos.cs" />
-    <Compile Include="Support\PropertyInvoker.cs" />
-    <Compile Include="Web\HttpResponseStreamWrapper.cs" />
-    <Compile Include="StreamExtensions.cs" />
-    <Compile Include="TypeExtensions.cs" />
-    <Compile Include="ServiceClient.Web\AsyncServiceClient.cs" />
-    <Compile Include="ServiceClient.Web\DictionaryExtensions.cs" />
-    <Compile Include="ServiceClient.Web\GenericProxy.cs" />
-    <Compile Include="ServiceClient.Web\HttpMethod.cs" />
-    <Compile Include="ServiceClient.Web\IDuplex.cs" />
-    <Compile Include="ServiceClient.Web\IDuplexCallback.cs" />
-    <Compile Include="ServiceClient.Web\IOneWay.cs" />
-    <Compile Include="ServiceClient.Web\ISyncReply.cs" />
-    <Compile Include="ServiceClient.Web\IWcfServiceClient.cs" />
-    <Compile Include="ServiceClient.Web\JsonRestClientAsync.cs" />
-    <Compile Include="ServiceClient.Web\JsonServiceClient.cs" />
-    <Compile Include="ServiceClient.Web\JsvRestClientAsync.cs" />
-    <Compile Include="ServiceClient.Web\JsvServiceClient.cs" />
-    <Compile Include="ServiceClient.Web\ServiceClientBase.cs" />
-    <Compile Include="ServiceClient.Web\Soap11ServiceClient.cs" />
-    <Compile Include="ServiceClient.Web\Soap12ServiceClient.cs" />
-    <Compile Include="ServiceClient.Web\WcfServiceClient.cs" />
-    <Compile Include="ServiceClient.Web\WebRequestExtensions.cs" />
-    <Compile Include="ServiceClient.Web\WebRequestUtils.cs" />
-    <Compile Include="ServiceClient.Web\WebServiceException.cs" />
-    <Compile Include="ServiceClient.Web\XLinqExtensions.cs" />
-    <Compile Include="ServiceClient.Web\XmlRestClientAsync.cs" />
-    <Compile Include="ServiceClient.Web\XmlServiceClient.cs" />
-    <Compile Include="ServiceModel\DictionaryExtensions.cs" />
-    <Compile Include="ServiceModel\Serialization\DataContractDeserializer.cs" />
-    <Compile Include="ServiceModel\Serialization\DataContractSerializer.cs" />
-    <Compile Include="ServiceModel\Serialization\JsonDataContractDeserializer.cs" />
-    <Compile Include="ServiceModel\Serialization\JsonDataContractSerializer.cs" />
-    <Compile Include="ServiceModel\Serialization\KeyValueDataContractDeserializer.cs" />
-    <Compile Include="ServiceModel\Serialization\StringMapTypeDeserializer.cs" />
-    <Compile Include="ServiceModel\Serialization\XmlSerializableDeserializer.cs" />
-    <Compile Include="ServiceModel\Serialization\XmlSerializableSerializer.cs" />
-    <Compile Include="ServiceModel\Support\XmlSerializableWrapper.cs" />
-    <Compile Include="ServiceModel\Validation\ValidationErrorField.cs" />
-    <Compile Include="ServiceModel\Validation\ValidationError.cs" />
-    <Compile Include="ServiceModel\Validation\ValidationErrorResult.cs" />
-    <Compile Include="ServiceModel\XLinqExtensions.cs" />
-    <Compile Include="Reflection\StaticAccessors.cs" />
-    <Compile Include="Support\InMemoryLogFactory.cs" />
-    <Compile Include="Support\NetDeflateProvider.cs" />
-    <Compile Include="Support\NetGZipProvider.cs" />
-    <Compile Include="Extensions\ITranslatorExtensions.cs" />
-    <Compile Include="ReflectionExtensions.cs" />
-    <Compile Include="StringExtensions.cs" />
-    <Compile Include="Support\ActionExecHandler.cs" />
-    <Compile Include="Support\AdapterBase.cs" />
-    <Compile Include="Support\LogicFacadeBase.cs" />
-    <Compile Include="Utils\FuncUtils.cs" />
-    <Compile Include="Utils\AssertUtils.cs" />
-    <Compile Include="Support\AssignmentDefinition.cs" />
-    <Compile Include="Utils\CommandsUtils.cs" />
-    <Compile Include="Utils\IdUtils.cs" />
+    <Compile Include="ActionExecExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AssertExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ByteArrayExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DictionaryExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DirectoryInfoExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DisposableExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="EnumerableExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="EnumExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ExecExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Expressions\DelegateFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\ActionExecExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\AssertExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\ByteArrayExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\CollectionExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\DictionaryExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\EnumerableExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\IntExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\ITranslatorExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\ReflectionExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Extensions\StringExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IntExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IPAddressExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\ClientFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageHandlerDisposer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\IMessageHandlerFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\InMemoryMessageQueueClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\InMemoryTransientMessageFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\InMemoryTransientMessageService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessageExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessageHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessageHandlerFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\MessageQueueClientFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\Rcon\Client.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\Rcon\Packet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\Rcon\PacketCodec.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\Rcon\PacketProcessingClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\Rcon\Server.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messaging\TransientMessageServiceBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ModelConfig.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Net30\ConcurrentDictionary.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Net30\ObjectPool.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Net30\SplitOrderedList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Net30\Tuple.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\PathUtils.cs" />
-    <Compile Include="Reflection\PropertyAccessor.cs" />
-    <Compile Include="Utils\PerfUtils.cs" />
-    <Compile Include="Utils\ReflectionUtils.cs" />
-    <Compile Include="Support\CommandExecsHandler.cs" />
-    <Compile Include="Support\CommandResultsHandler.cs" />
-    <Compile Include="UrnId.cs" />
-    <Compile Include="Web\CompressedFileResult.cs" />
-    <Compile Include="Web\CompressedResult.cs" />
-    <Compile Include="Web\CompressionTypes.cs" />
-    <Compile Include="Web\ContentType.cs" />
-    <Compile Include="Web\EndpointType.cs" />
-    <Compile Include="Web\HttpError.cs" />
-    <Compile Include="Web\HttpMethods.cs" />
-    <Compile Include="Web\HttpResponseFilter.cs" />
-    <Compile Include="Web\HttpResult.cs" />
-    <Compile Include="Web\SerializationContext.cs" />
-    <Compile Include="Web\EndPoint.cs" />
-    <Compile Include="Web\HttpHeaders.cs" />
-    <Compile Include="Web\MimeTypes.cs" />
+    <Compile Include="ReflectionExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Reflection\PropertyAccessor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Reflection\StaticAccessors.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\AsyncServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\AuthDtos.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\DictionaryExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\GenericProxy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\HttpMethod.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\IDuplex.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\IDuplexCallback.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\IOneWay.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\ISyncReply.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\IWcfServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\JsonRestClientAsync.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\JsonServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\JsvRestClientAsync.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\JsvServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\ServiceClientBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\Soap11ServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\Soap12ServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\WcfServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\WebRequestExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\WebRequestUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\WebServiceException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\XLinqExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\XmlRestClientAsync.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceClient.Web\XmlServiceClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\DictionaryExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\DataContractDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\DataContractSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\JsonDataContractDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\JsonDataContractSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\KeyValueDataContractDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\StringMapTypeDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\XmlSerializableDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Serialization\XmlSerializableSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Support\XmlSerializableWrapper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Validation\ValidationError.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Validation\ValidationErrorField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\Validation\ValidationErrorResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ServiceModel\XLinqExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="StreamExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="StringExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\ActionExecHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\AdapterBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\AssignmentDefinition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\CommandExecsHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\CommandResultsHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\InMemoryLogFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\LogicFacadeBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\NetDeflateProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\NetGZipProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Support\PropertyInvoker.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TypeExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UrnId.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\AssertUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\CommandsUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\FuncUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\IdUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\PathUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\PerfUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\ReflectionUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\CompressedFileResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\CompressedResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\CompressionTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\ContentType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\EndPoint.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\EndpointType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\HttpError.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\HttpHeaders.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\HttpMethods.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\HttpResponseFilter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\HttpResponseStreamWrapper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\HttpResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\MimeTypes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Web\SerializationContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
