@@ -166,5 +166,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(actualContents, Is.EqualTo(expectedContents));
 		}
 
+        [Test]
+        public void Can_POST_upload_file_and_apply_filter_using_ServiceClient()
+        {
+            try
+            {
+                var client = new JsonServiceClient(ListeningOn);
+
+                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+                bool isFilterCalled = false;
+                ServiceClientBase.HttpWebRequestFilter = request =>
+                                                             {
+                                                                 isFilterCalled = true;
+                                                                
+                                                             };
+
+                var response = client.PostFile<FileUploadResponse>(
+                    ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+
+
+                var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+                Assert.That(isFilterCalled);
+                Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+                Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+                Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
+                Assert.That(response.Contents, Is.EqualTo(expectedContents));
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                ServiceClientBase.HttpWebRequestFilter = null;  //reset this to not cause side-effects
+            }
+        }
+
 	}
 }
