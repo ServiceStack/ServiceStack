@@ -192,10 +192,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
                 Assert.That(response.Contents, Is.EqualTo(expectedContents));
             }
-            catch (Exception e)
-            {
-                throw e;
-            }
             finally
             {
                 ServiceClientBase.HttpWebRequestFilter = null;  //reset this to not cause side-effects
