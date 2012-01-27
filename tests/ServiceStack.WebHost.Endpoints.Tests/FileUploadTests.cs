@@ -166,5 +166,73 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(actualContents, Is.EqualTo(expectedContents));
 		}
 
+        [Test]
+        public void Can_POST_upload_file_and_apply_filter_using_ServiceClient()
+        {
+            try
+            {
+                var client = new JsonServiceClient(ListeningOn);
+
+                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+                bool isFilterCalled = false;
+                ServiceClientBase.HttpWebRequestFilter = request =>
+                                                             {
+                                                                 isFilterCalled = true;
+                                                                
+                                                             };
+
+                var response = client.PostFile<FileUploadResponse>(
+                    ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+
+
+                var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+                Assert.That(isFilterCalled);
+                Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+                Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+                Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadFile.Name)));
+                Assert.That(response.Contents, Is.EqualTo(expectedContents));
+            }
+            finally
+            {
+                ServiceClientBase.HttpWebRequestFilter = null;  //reset this to not cause side-effects
+            }
+        }
+
+        [Test]
+        public void Can_POST_upload_stream_using_ServiceClient()
+        {
+            try
+            {
+                var client = new JsonServiceClient(ListeningOn);
+
+                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+                {
+                    var fileName = "upload.html";
+
+                    bool isFilterCalled = false;
+                    ServiceClientBase.HttpWebRequestFilter = request =>
+                    {
+                        isFilterCalled = true;
+
+                    };
+                    var response = client.PostFile<FileUploadResponse>(
+                        ListeningOn + "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
+
+                    fileStream.Position = 0;
+                    var expectedContents = new StreamReader(fileStream).ReadToEnd();
+
+                    Assert.That(isFilterCalled);
+                    Assert.That(response.FileName, Is.EqualTo(fileName));
+                    Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
+                    Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
+                    Assert.That(response.Contents, Is.EqualTo(expectedContents));
+                }
+            }
+            finally
+            {
+                ServiceClientBase.HttpWebRequestFilter = null;  //reset this to not cause side-effects
+            }
+        }
+
 	}
 }

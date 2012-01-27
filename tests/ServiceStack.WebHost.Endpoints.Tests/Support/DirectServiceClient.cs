@@ -129,6 +129,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			throw new NotImplementedException();
 		}
 
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileInfo, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
 		public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
 			var response = default(TResponse);
