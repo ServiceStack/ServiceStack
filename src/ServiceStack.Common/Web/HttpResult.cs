@@ -46,14 +46,16 @@ namespace ServiceStack.Common.Web
 			this.StatusCode = statusCode;
 		}
 
+		public HttpResult(FileInfo fileResponse)
+			: this(fileResponse, false, MimeTypes.GetMimeType(fileResponse.Name)) { }
+
 		public HttpResult(FileInfo fileResponse, bool asAttachment)
 			: this(fileResponse, asAttachment, MimeTypes.GetMimeType(fileResponse.Name)) { }
 
 		public HttpResult(FileInfo fileResponse, bool asAttachment, string contentType)
+			: this(null, contentType, HttpStatusCode.OK)
 		{
-			this.StatusCode = HttpStatusCode.OK;
 			this.FileInfo = fileResponse;
-			this.ContentType = contentType;
 
 			if (!asAttachment) return;
 
