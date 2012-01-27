@@ -12,5 +12,7 @@ namespace ServiceStack.Service
 		TResponse Send<TResponse>(object request);
 
 		TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType);
+
+        TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType);
 	}
 }

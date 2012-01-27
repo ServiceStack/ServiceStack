@@ -438,6 +438,37 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        {
+            var requestUri = GetUrl(relativeOrAbsoluteUrl);
+            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            webRequest.Method = Web.HttpMethod.Post;
+            webRequest.Accept = ContentType;
+            if (Proxy != null) webRequest.Proxy = Proxy;
+
+            try
+            {
+                if (HttpWebRequestFilter != null)
+                {
+                    HttpWebRequestFilter(webRequest);
+                }
+
+                webRequest.UploadFile(fileToUpload, fileName, mimeType);
+                var webResponse = webRequest.GetResponse();
+
+                using (var responseStream = webResponse.GetResponseStream())
+                {
+                    var response = DeserializeFromStream<TResponse>(responseStream);
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleResponseException<TResponse>(ex, requestUri);
+                throw;
+            }
+        }
+
 		public void Dispose() { }
 	}
 }

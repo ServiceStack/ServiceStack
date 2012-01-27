@@ -198,5 +198,41 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
+        [Test]
+        public void Can_POST_upload_stream_using_ServiceClient()
+        {
+            try
+            {
+                var client = new JsonServiceClient(ListeningOn);
+
+                using (var fileStream = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath()).OpenRead())
+                {
+                    var fileName = "upload.html";
+
+                    bool isFilterCalled = false;
+                    ServiceClientBase.HttpWebRequestFilter = request =>
+                    {
+                        isFilterCalled = true;
+
+                    };
+                    var response = client.PostFile<FileUploadResponse>(
+                        ListeningOn + "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
+
+                    fileStream.Position = 0;
+                    var expectedContents = new StreamReader(fileStream).ReadToEnd();
+
+                    Assert.That(isFilterCalled);
+                    Assert.That(response.FileName, Is.EqualTo(fileName));
+                    Assert.That(response.ContentLength, Is.EqualTo(fileStream.Length));
+                    Assert.That(response.ContentType, Is.EqualTo(MimeTypes.GetMimeType(fileName)));
+                    Assert.That(response.Contents, Is.EqualTo(expectedContents));
+                }
+            }
+            finally
+            {
+                ServiceClientBase.HttpWebRequestFilter = null;  //reset this to not cause side-effects
+            }
+        }
+
 	}
 }
