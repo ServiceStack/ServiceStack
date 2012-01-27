@@ -420,6 +420,10 @@ namespace ServiceStack.ServiceClient.Web
 
 			try
 			{
+                if (HttpWebRequestFilter != null)
+                {
+                    HttpWebRequestFilter(webRequest);
+                }
 				var webResponse = webRequest.UploadFile(fileToUpload, mimeType);
 				using (var responseStream = webResponse.GetResponseStream())
 				{
