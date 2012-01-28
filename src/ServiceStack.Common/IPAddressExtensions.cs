@@ -113,6 +113,7 @@ namespace ServiceStack.Common.Extensions
 
 			try
 			{
+#if !SILVERLIGHT 
 				foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
 				{
 					foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
@@ -123,7 +124,8 @@ namespace ServiceStack.Common.Extensions
 						map[uipi.Address] = uipi.IPv4Mask;
 					}
 				}
-			}
+#endif
+            }
 			catch /*(NotImplementedException ex)*/
 			{
 				//log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
@@ -141,6 +143,7 @@ namespace ServiceStack.Common.Extensions
 
 			try
 			{
+#if !SILVERLIGHT 
 				foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
 				{
 					foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
@@ -149,7 +152,7 @@ namespace ServiceStack.Common.Extensions
 						list.Add(uipi.Address);
 					}
 				}
-
+#endif
 			}
 			catch /*(NotImplementedException ex)*/
 			{

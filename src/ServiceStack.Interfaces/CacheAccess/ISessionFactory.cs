@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.CacheAccess
@@ -22,3 +23,4 @@ namespace ServiceStack.CacheAccess
 		ISession GetOrCreateSession();
 	}
 }
+#endif

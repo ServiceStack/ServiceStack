@@ -1,3 +1,4 @@
+#if !SILVERLIGHT 
 using System;
 using ServiceStack.Logging;
 
@@ -70,3 +71,4 @@ namespace ServiceStack.Messaging
 
 	}
 }
+#endif

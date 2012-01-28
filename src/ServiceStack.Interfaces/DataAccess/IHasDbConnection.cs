@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+using System.Data;
 
 namespace ServiceStack.DataAccess
 {
@@ -7,3 +8,4 @@ namespace ServiceStack.DataAccess
 		IDbConnection DbConnection { get; }
 	}
 }
+#endif

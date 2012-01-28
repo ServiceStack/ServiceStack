@@ -17,11 +17,13 @@ namespace ServiceStack.ServiceModel.Serialization
 		private readonly XmlDictionaryReaderQuotas quotas;
 
 		public static DataContractDeserializer Instance 
-			= new DataContractDeserializer(new XmlDictionaryReaderQuotas {
-				MaxStringContentLength = 1024 * 1024,
-			});
+			= new DataContractDeserializer(
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+                new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024, }
+#endif
+                );
 
-		public DataContractDeserializer(XmlDictionaryReaderQuotas quotas)
+		public DataContractDeserializer(XmlDictionaryReaderQuotas quotas=null)
 		{
 			this.quotas = quotas;
 		}

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !SILVERLIGHT
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -255,7 +256,13 @@ namespace ServiceStack.Messaging.Rcon
         void ProcessPacket(byte[] packet, Socket client, ClientSocketState userToken)
         {
             var packetObj = PacketCodec.DecodePacket(packet);
+#if !SILVERLIGHT 
             var type = Type.GetType(Encoding.UTF8.GetString(packetObj.Words[0]));
+#else
+            var bytes = packetObj.Words[0];
+            var type = Type.GetType(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
+#endif
+
             if (messageHandlers.ContainsKey(type))
             {
                 messageHandlers[type].Process(new ProcessingClient(packetObj, client, this));
@@ -310,3 +317,5 @@ namespace ServiceStack.Messaging.Rcon
         public uint MessageLength = 0;
     }
 }
+
+#endif

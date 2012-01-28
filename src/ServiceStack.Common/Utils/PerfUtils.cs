@@ -1,3 +1,5 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+
 using System;
 using System.Diagnostics;
 
@@ -26,3 +28,5 @@ namespace ServiceStack.Common.Utils
 		}
 	}
 }
+
+#endif

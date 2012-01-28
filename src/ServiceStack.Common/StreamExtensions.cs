@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common.Support;
@@ -67,3 +68,4 @@ namespace ServiceStack.Common
 	}
 
 }
+#endif

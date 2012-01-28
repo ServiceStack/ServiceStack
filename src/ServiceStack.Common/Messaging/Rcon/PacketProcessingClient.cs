@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !SILVERLIGHT 
+using System;
 using System.Collections.Generic;
 using ServiceStack.Messaging;
 using System.Net.Sockets;
@@ -104,3 +105,4 @@ namespace ServiceStack.Messaging.Rcon
         }
     }
 }
+#endif

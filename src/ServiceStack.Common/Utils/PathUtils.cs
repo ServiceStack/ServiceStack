@@ -8,6 +8,7 @@ namespace ServiceStack.Common.Utils
 	{
 		public static string MapAbsolutePath(string relativePath, string appendPartialPathModifier)
 		{
+#if !SILVERLIGHT 
 			if (relativePath.StartsWith("~"))
 			{
 				var assemblyDirectoryPath = Path.GetDirectoryName(new Uri(typeof(PathUtils).Assembly.EscapedCodeBase).LocalPath);
@@ -19,9 +20,9 @@ namespace ServiceStack.Common.Utils
 
 				return Path.GetFullPath(relativePath.Replace("~", hostDirectoryPath));
 			}
-
-			return relativePath;
-		}
+#endif
+            return relativePath;
+        }
 
         /// <summary>
         /// Maps the path of a file in the context of a VS project

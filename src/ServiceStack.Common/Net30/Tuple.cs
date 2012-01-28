@@ -6,7 +6,7 @@
 
 #endregion
 
-#if !NET_4_0
+#if !NET_4_0 && !SILVERLIGHT && !MONOTOUCH && !XBOX
 
 using System;
 using System.Collections.Generic;

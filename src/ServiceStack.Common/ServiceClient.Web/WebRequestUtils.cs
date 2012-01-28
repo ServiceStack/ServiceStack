@@ -1,11 +1,25 @@
 using System;
 using System.Net;
-using System.Security.Authentication;
 using System.Text;
 using ServiceStack.Common.Web;
 
 namespace ServiceStack.ServiceClient.Web
 {
+    public class AuthenticationException : Exception
+    {
+        public AuthenticationException()
+        {
+        }
+
+        public AuthenticationException(string message) : base(message)
+        {
+        }
+
+        public AuthenticationException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
+
 	internal static class WebRequestUtils
 	{
 		internal static AuthenticationException CreateCustomException(string uri, AuthenticationException ex)

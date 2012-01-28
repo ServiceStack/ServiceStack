@@ -33,12 +33,14 @@ namespace ServiceStack.Common.Extensions
 			return Proxy.WaitAll(waitHandles, timeout);
 		}
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 		public static bool WaitAll(this List<IAsyncResult> asyncResults, TimeSpan timeout)
 		{
 			return Proxy.WaitAll(asyncResults, timeout);
 		}
+#endif
 
-		public static bool WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
+        public static bool WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
 		{
 			return Proxy.WaitAll(waitHandles, timeout);
 		}

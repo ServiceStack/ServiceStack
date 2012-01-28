@@ -11,23 +11,28 @@ namespace ServiceStack.Common.Utils
 
 		static IdUtils()
 		{
-			var hasIdInterfaces = typeof(T).FindInterfaces(
+
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+            var hasIdInterfaces = typeof(T).FindInterfaces(
 				(t, critera) => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IHasId<>), null);
 
 			if (hasIdInterfaces.Length > 0)
 			{
 				CanGetId = HasId<T>.GetId;
+                return;
 			}
-			else if (typeof(T).IsClass
-				&& typeof(T).GetProperty(IdUtils.IdField) != null
-				&& typeof(T).GetProperty(IdUtils.IdField).GetGetMethod() != null)
-			{
-				CanGetId = HasPropertyId<T>.GetId;
-			}
-			else
-			{
-				CanGetId = x => x.GetHashCode();
-			}
+#endif
+
+		    if (typeof(T).IsClass
+		        && typeof(T).GetProperty(IdUtils.IdField) != null
+		        && typeof(T).GetProperty(IdUtils.IdField).GetGetMethod() != null)
+		    {
+		        CanGetId = HasPropertyId<T>.GetId;
+		    }
+		    else
+		    {
+		        CanGetId = x => x.GetHashCode();
+		    }
 		}
 
 		public static object GetId(T entity)

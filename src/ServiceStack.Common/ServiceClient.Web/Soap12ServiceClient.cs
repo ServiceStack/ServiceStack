@@ -4,9 +4,7 @@ using ServiceStack.Service;
 
 namespace ServiceStack.ServiceClient.Web
 {
-
-
-#if MONOTOUCH
+#if SILVERLIGHT || MONOTOUCH || XBOX
 
 	public class Soap12ServiceClient  : IServiceClient
 	{
@@ -73,13 +71,19 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			throw new NotImplementedException();
 		}
+
+	    public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+	    {
+	        throw new NotImplementedException();
+	    }
 	}
 
 #else
 
-	using System.ServiceModel;
+    using System.ServiceModel;
 	using System.ServiceModel.Channels;
 	using ServiceStack.Text;
+    using ServiceStack.Service;
 
 	public class Soap12ServiceClient : WcfServiceClient
 	{

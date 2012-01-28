@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.Common.Utils;
@@ -10,7 +11,13 @@ namespace ServiceStack.Common
 {
 	public static class StringExtensions
 	{
-		static readonly Regex RegexSplitCamelCase = new Regex("([A-Z]|[0-9]+)", RegexOptions.Compiled);
+		static readonly Regex RegexSplitCamelCase = new Regex("([A-Z]|[0-9]+)", 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+            RegexOptions.Compiled
+#else
+            RegexOptions.None
+#endif
+        );
 
 		public static T ToEnum<T>(this string value)
 		{
@@ -31,7 +38,7 @@ namespace ServiceStack.Common
 		public static string ToEnglish(this string camelCase)
 		{
 			var ucWords = camelCase.SplitCamelCase().ToLower();
-			return ucWords[0].ToString().ToUpper() + ucWords.Substring(1);
+			return ucWords[0].ToString(CultureInfo.InvariantCulture).ToUpper() + ucWords.Substring(1);
 		}
 
 		public static bool IsEmpty(this string value)
@@ -80,7 +87,13 @@ namespace ServiceStack.Common
 			return false;
 		}
 
-		private static readonly Regex InvalidVarCharsRegEx = new Regex(@"[^A-Za-z0-9]", RegexOptions.Compiled);
+		private static readonly Regex InvalidVarCharsRegEx = new Regex(@"[^A-Za-z0-9]",
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+            RegexOptions.Compiled
+#else
+ RegexOptions.None
+#endif
+        );
 
 		public static string SafeVarName(this string text)
 		{

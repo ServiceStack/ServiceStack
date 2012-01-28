@@ -23,12 +23,13 @@ namespace ServiceStack.Messaging
 		{
 		}
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 		protected MessagingException(SerializationInfo info, StreamingContext context)
 			: base(info, context)
 		{
 		}
-
-		public virtual MessageError ToMessageError()
+#endif
+        public virtual MessageError ToMessageError()
 		{
 			return new MessageError {
 				ErrorCode = GetType().Name,

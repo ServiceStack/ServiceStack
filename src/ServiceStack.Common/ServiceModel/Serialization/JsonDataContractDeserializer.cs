@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Text;
@@ -21,6 +20,7 @@ namespace ServiceStack.ServiceModel.Serialization
 			if (TextSerializer != null)
 				return TextSerializer.DeserializeFromString(json, returnType);
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 			if (!UseBcl)
 				return JsonSerializer.DeserializeFromString(json, returnType);
 
@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceModel.Serialization
 					var bytes = Encoding.UTF8.GetBytes(json);
 					ms.Write(bytes, 0, bytes.Length);
 					ms.Position = 0;
-					var serializer = new DataContractJsonSerializer(returnType);
+					var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(returnType);
 					return serializer.ReadObject(ms);
 				}
 			}
@@ -39,6 +39,9 @@ namespace ServiceStack.ServiceModel.Serialization
 			{
 				throw new SerializationException("JsonDataContractDeserializer: Error converting to type: " + ex.Message, ex);
 			}
+#else
+				return JsonSerializer.DeserializeFromString(json, returnType);
+#endif
 		}
 
 		public T DeserializeFromString<T>(string json)
@@ -57,11 +60,13 @@ namespace ServiceStack.ServiceModel.Serialization
 			if (TextSerializer != null)
 				return TextSerializer.DeserializeFromStream<T>(stream);
 
-			if (UseBcl)
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+            if (UseBcl)
 			{
 				var serializer = new DataContractJsonSerializer(typeof(T));
 				return (T)serializer.ReadObject(stream);				
 			}
+#endif
 			return JsonSerializer.DeserializeFromStream<T>(stream);
 		}
 
@@ -70,12 +75,15 @@ namespace ServiceStack.ServiceModel.Serialization
 			if (TextSerializer != null)
 				return TextSerializer.DeserializeFromStream(type, stream);
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 			if (UseBcl)
 			{
 				var serializer = new DataContractJsonSerializer(type);
 				return serializer.ReadObject(stream);
 			}
-			return JsonSerializer.DeserializeFromStream(type, stream);
+#endif
+
+            return JsonSerializer.DeserializeFromStream(type, stream);
 		}
 	}
 }

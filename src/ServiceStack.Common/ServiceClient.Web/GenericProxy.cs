@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System.ServiceModel;
 using System.ServiceModel.Description;
 
@@ -44,3 +45,4 @@ namespace ServiceStack.ServiceClient.Web
 		}
 	}
 }
+#endif
