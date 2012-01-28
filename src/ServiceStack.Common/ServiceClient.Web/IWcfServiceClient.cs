@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System;
 using System.ServiceModel.Channels;
 using ServiceStack.Service;
@@ -18,3 +19,4 @@ namespace ServiceStack.ServiceClient.Web
 		void SendOneWay(Message message);
 	}
 }
+#endif

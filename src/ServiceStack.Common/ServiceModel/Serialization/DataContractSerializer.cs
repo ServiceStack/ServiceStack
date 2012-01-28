@@ -1,10 +1,13 @@
 using System;
 using System.IO;
-using System.IO.Compression;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 using ServiceStack.DesignPatterns.Serialization;
+
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+using System.IO.Compression;
+#endif
 
 namespace ServiceStack.ServiceModel.Serialization
 {
@@ -19,23 +22,31 @@ namespace ServiceStack.ServiceModel.Serialization
 			{
 				using (var ms = new MemoryStream())
 				{
-					using (var xw = new XmlTextWriter(ms, Encoding))
-					{
+					var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+					using (var xw = new XmlTextWriter(ms, Encoding)) 
+                    {
 						if (indentXml)
 						{
 							xw.Formatting = Formatting.Indented;	
 						}
 
-						var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
 						serializer.WriteObject(xw, from);
 						xw.Flush();
+#else
+                        serializer.WriteObject(ms, from);
+#endif
+
 						ms.Seek(0, SeekOrigin.Begin);
 						using (var reader = new StreamReader(ms))
 						{
 							return reader.ReadToEnd();
 						}
+
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 					}
-				}
+#endif
+                }
 			}
 			catch (Exception ex)
 			{
@@ -48,7 +59,23 @@ namespace ServiceStack.ServiceModel.Serialization
 			return Parse(from, false);
 		}
 
-		public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
+
+        public void SerializeToStream(object obj, Stream stream)
+        {
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+            using (var xw = new XmlTextWriter(stream, Encoding))
+            {
+                var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
+                serializer.WriteObject(xw, obj);
+            }
+#else
+            var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
+            serializer.WriteObject(stream, obj);
+#endif
+        }
+
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+        public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
 		{
 			using (var deflateStream = new DeflateStream(stream, CompressionMode.Compress))
 			using (var xw = new XmlTextWriter(deflateStream, Encoding))
@@ -56,15 +83,6 @@ namespace ServiceStack.ServiceModel.Serialization
 				var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
 				serializer.WriteObject(xw, from);
 				xw.Flush();
-			}
-		}
-
-		public void SerializeToStream(object obj, Stream stream)
-		{
-			using (var xw = new XmlTextWriter(stream, Encoding))
-			{
-				var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
-				serializer.WriteObject(xw, obj);
 			}
 		}
 
@@ -77,5 +95,7 @@ namespace ServiceStack.ServiceModel.Serialization
 				return ms.ToArray();
 			}
 		}
-	}
+#endif
+
+    }
 }

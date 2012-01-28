@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 //
 // ServiceStack: Useful extensions to simplify parsing xml with XLinq
 //
@@ -294,3 +295,4 @@ namespace ServiceStack.ServiceModel
 	}
 
 }
+#endif

@@ -1,3 +1,5 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
@@ -42,3 +44,4 @@ namespace ServiceStack.ServiceModel
 	}
 
 }
+#endif

@@ -1,3 +1,4 @@
+#if !SILVERLIGHT 
 using System;
 using System.Collections;
 
@@ -36,3 +37,4 @@ namespace ServiceStack.Messaging
 		}
 	}
 }
+#endif

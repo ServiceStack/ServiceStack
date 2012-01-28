@@ -30,11 +30,13 @@ namespace ServiceStack.Common.Utils
             return results;
         }
 
+
         public static void WaitAll(WaitHandle[] waitHandles, TimeSpan timeout)
         {
             // throws an exception if there are no wait handles
             if (waitHandles != null && waitHandles.Length > 0)
             {
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 				if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
                     // WaitAll for multiple handles on an STA thread is not supported.
@@ -51,6 +53,12 @@ namespace ServiceStack.Common.Utils
                         throw new TimeoutException();
                     }
                 }
+#else
+                if (!WaitHandle.WaitAll(waitHandles, timeout))
+                {
+                    throw new TimeoutException();
+                }
+#endif
             }
         }
 

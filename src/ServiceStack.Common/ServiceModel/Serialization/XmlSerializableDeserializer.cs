@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System;
 using System.IO;
 using System.Text;
@@ -69,3 +70,4 @@ namespace ServiceStack.ServiceModel.Serialization
 		}
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if !SILVERLIGHT 
 using System.Collections.Generic;
 using System.IO;
 
@@ -40,3 +41,4 @@ namespace ServiceStack.Common
 	}
 
 }
+#endif

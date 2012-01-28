@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using ServiceStack.Logging;
@@ -300,7 +299,11 @@ namespace ServiceStack.ServiceClient.Web
 		private void HandleResponseError<TResponse>(Exception exception, RequestState<TResponse> requestState)
 		{
 			var webEx = exception as WebException;
-			if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
+			if (webEx != null
+#if !SILVERLIGHT 
+                && webEx.Status == WebExceptionStatus.ProtocolError
+#endif
+            )
 			{
 				var errorResponse = ((HttpWebResponse)webEx.Response);
 				Log.Error(webEx);

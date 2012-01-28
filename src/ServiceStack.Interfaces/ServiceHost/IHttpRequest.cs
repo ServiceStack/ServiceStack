@@ -1,3 +1,4 @@
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -81,3 +82,4 @@ namespace ServiceStack.ServiceHost
 		string ApplicationFilePath { get; }
 	}
 }
+#endif

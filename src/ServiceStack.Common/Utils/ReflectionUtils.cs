@@ -267,6 +267,8 @@ namespace ServiceStack.Common.Utils
                 {
                     var value = constructorInfo.Invoke(new object[0]);
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+
                     Type[] interfaces = type.FindInterfaces((t, critera) =>
                         t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>)
                         , null);
@@ -277,6 +279,7 @@ namespace ServiceStack.Common.Utils
                     {
                         SetGenericCollection(interfaces[0], value, recursionInfo);
                     }
+#endif
 
                     //when the object might have nested properties such as enums with non-0 values, etc
                     return PopulateObjectInternal(value, recursionInfo);

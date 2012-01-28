@@ -22,8 +22,10 @@ namespace ServiceStack.Messaging
 		{
 		}
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 		protected UnRetryableMessagingException(SerializationInfo info, StreamingContext context) : base(info, context)
 		{
 		}
-	}
+#endif
+    }
 }

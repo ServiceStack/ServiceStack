@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using ServiceStack.DesignPatterns.Serialization;
 using ServiceStack.Text;
 
@@ -26,6 +25,7 @@ namespace ServiceStack.ServiceModel.Serialization
 			if (TextSerializer != null)
 				return TextSerializer.SerializeToString(obj);
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 			if (!UseBcl)
 				return JsonSerializer.SerializeToString(obj);
 
@@ -35,7 +35,7 @@ namespace ServiceStack.ServiceModel.Serialization
 			{
 				using (var ms = new MemoryStream())
 				{
-					var serializer = new DataContractJsonSerializer(type);
+					var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
 					serializer.WriteObject(ms, obj);
 					ms.Position = 0;
 					using (var sr = new StreamReader(ms))
@@ -48,6 +48,9 @@ namespace ServiceStack.ServiceModel.Serialization
 			{
 				throw new SerializationException("JsonDataContractSerializer: Error converting type: " + ex.Message, ex);
 			}
+#else
+				return JsonSerializer.SerializeToString(obj);
+#endif
 		}
 
 		public void SerializeToStream<T>(T obj, Stream stream)
@@ -56,11 +59,13 @@ namespace ServiceStack.ServiceModel.Serialization
 			{
 				TextSerializer.SerializeToStream(obj, stream);
 			}
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 			else if (UseBcl)
 			{
-				var serializer = new DataContractJsonSerializer(obj.GetType());
+				var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());
 				serializer.WriteObject(stream, obj);
 			}
+#endif
 			else
 			{
 				JsonSerializer.SerializeToStream(obj, stream);

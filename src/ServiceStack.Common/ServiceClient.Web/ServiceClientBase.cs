@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Security.Authentication;
 using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -11,7 +10,9 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
 {
-	/**
+#if !SILVERLIGHT
+
+    /**
 	 * Need to provide async request options
 	 * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
 	 */
@@ -471,4 +472,208 @@ namespace ServiceStack.ServiceClient.Web
 
 		public void Dispose() { }
 	}
+#else
+    public abstract class ServiceClientBase
+        : IServiceClient, IRestClient
+    {
+        private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
+
+        /// <summary>
+        /// The request filter is called before any request.
+        /// This request filter is executed globally.
+        /// </summary>
+        public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
+
+        public const string DefaultHttpMethod = "POST";
+
+        readonly AsyncServiceClient asyncClient;
+
+        protected ServiceClientBase()
+        {
+            this.StoreCookies = true;
+            this.HttpMethod = DefaultHttpMethod;
+            asyncClient = new AsyncServiceClient
+            {
+                ContentType = ContentType,
+                StreamSerializer = SerializeToStream,
+                StreamDeserializer = StreamDeserializer
+            };
+        }
+
+        protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
+            : this()
+        {
+            this.SyncReplyBaseUri = syncReplyBaseUri;
+            this.AsyncOneWayBaseUri = asyncOneWayBaseUri;
+        }
+
+        public void SetBaseUri(string baseUri, string format)
+        {
+            this.BaseUri = baseUri;
+            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + format + "/syncreply/";
+            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
+        }
+
+        /// <summary>
+        /// The user name for basic authentication
+        /// </summary>
+        public string UserName { get; set; }
+
+        /// <summary>
+        /// The password for basic authentication
+        /// </summary>
+        public string Password { get; set; }
+
+        /// <summary>
+        /// Sets the username and the password for basic authentication.
+        /// </summary>
+        public void SetCredentials(string userName, string password)
+        {
+            this.UserName = userName;
+            this.Password = password;
+        }
+
+        public string BaseUri { get; set; }
+
+        public string SyncReplyBaseUri { get; set; }
+
+        public string AsyncOneWayBaseUri { get; set; }
+
+        private TimeSpan? timeout;
+        public TimeSpan? Timeout
+        {
+            get { return this.timeout; }
+            set
+            {
+                this.timeout = value;
+                this.asyncClient.Timeout = value;
+            }
+        }
+
+        public abstract string ContentType { get; }
+
+        public string HttpMethod { get; set; }
+
+        //public IWebProxy Proxy { get; set; }
+
+        private ICredentials credentials;
+
+        /// <summary>
+        /// Gets or sets authentication information for the request.
+        /// Warning: It's recommened to use <see cref="UserName"/> and <see cref="Password"/> for basic auth.
+        /// This property is only used for IIS level authentication.
+        /// </summary>
+        public ICredentials Credentials
+        {
+            set
+            {
+                this.credentials = value;
+                this.asyncClient.Credentials = value;
+            }
+        }
+
+        /// <summary>
+        /// Determines if the basic auth header should be sent with every request.
+        /// By default, the basic auth header is only sent when "401 Unauthorized" is returned.
+        /// </summary>
+        public bool AlwaysSendBasicAuthHeader { get; set; }
+
+        /// <summary>
+        /// Specifies if cookies should be stored
+        /// </summary>
+        public bool StoreCookies { get; set; }
+
+        public CookieContainer CookieContainer { get; set; }
+
+        /// <summary>
+        /// The request filter is called before any request.
+        /// This request filter only works with the instance where it was set (not global).
+        /// </summary>
+        public Action<HttpWebRequest> LocalHttpWebRequestFilter { get; set; }
+
+        public abstract void SerializeToStream(IRequestContext requestContext, object request, Stream stream);
+
+        public abstract T DeserializeFromStream<T>(Stream stream);
+
+        public abstract StreamDeserializerDelegate StreamDeserializer { get; }
+
+        public void Dispose() {}
+
+        public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendOneWay(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Send<TResponse>(object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
+        TResponse IRestClient.PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
+        TResponse IReplyClient.PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+#endif
 }

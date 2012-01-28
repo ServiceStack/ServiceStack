@@ -19,9 +19,12 @@ namespace ServiceStack.DataAccess
 		{
 		}
 
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 		protected DataAccessException(SerializationInfo info, StreamingContext context) 
 			: base(info, context)
 		{
 		}
+#endif
+
 	}
 }

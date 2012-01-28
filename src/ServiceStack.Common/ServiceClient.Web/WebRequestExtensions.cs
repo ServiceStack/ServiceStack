@@ -1,3 +1,4 @@
+#if !SILVERLIGHT 
 using System;
 using System.IO;
 using System.Net;
@@ -137,3 +138,4 @@ namespace ServiceStack.ServiceClient.Web
     }
 
 }
+#endif
