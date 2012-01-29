@@ -1,5 +1,6 @@
-﻿using System.Net.Mime;
+﻿using System;
 using System.Text;
+using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using ServiceStack.CacheAccess;
@@ -9,7 +10,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Mvc
 {
-	public abstract class ControllerBase<T> : ControllerBase
+	[Obsolete("To avoid name conflicts with MVC's ControllerBase this has been renamed to ServiceStackController")]
+	public abstract class ControllerBase<T> : ServiceStackController<T> where T : class, IAuthSession, new() { }
+	[Obsolete("To avoid name conflicts with MVC's ControllerBase this has been renamed to ServiceStackController")]
+	public abstract class ControllerBase : ServiceStackController { }
+
+	public abstract class ServiceStackController<T> : ServiceStackController
 		where T : class, IAuthSession, new()
 	{
 		private T userSession;
@@ -40,9 +46,13 @@ namespace ServiceStack.Mvc
 		}
 	}
 
+
 	[ExecuteServiceStackFilters]
-	public abstract class ControllerBase : Controller
+	public abstract class ServiceStackController : Controller
 	{
+		public static string DefaultAction = "Index";
+		public static Func<RequestContext, ServiceStackController> CatchAllController;
+
 		public virtual string LoginRedirectUrl
 		{
 			get { return "/login?redirect={0}"; }
@@ -96,11 +106,35 @@ namespace ServiceStack.Mvc
 			this.Cache.Remove(SessionKey);
 		}
 		
+		public virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
+		{
+			try
+			{
+				this.View(DefaultAction).ExecuteResult(this.ControllerContext);
+			}
+			catch (Exception ex)
+			{
+				var catchAllController = CatchAllController != null
+					? CatchAllController(this.Request.RequestContext)
+					: null;
+
+				if (catchAllController != null)
+				{
+					var routeData = new RouteData();
+					var controllerName = catchAllController.GetType().Name.Replace("Controller", "");
+					routeData.Values.Add("controller", controllerName);
+					routeData.Values.Add("action", DefaultAction);
+					routeData.Values.Add("url", httpContext.Request.Url.OriginalString);
+					catchAllController.Execute(new RequestContext(httpContext, routeData));
+				}
+			}
+
+			return new EmptyResult();
+		}
+
 		protected override void HandleUnknownAction(string actionName)
 		{
-			// If controller is ErrorController dont 'nest' exceptions
-			//if (this.GetType() != typeof(ErrorController))
-			//    this.InvokeHttp404(HttpContext);
+			this.InvokeDefaultAction(HttpContext);
 		}
 	}
 

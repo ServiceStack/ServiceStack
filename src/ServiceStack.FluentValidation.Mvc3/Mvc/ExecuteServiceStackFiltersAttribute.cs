@@ -14,7 +14,7 @@ namespace ServiceStack.Mvc
 	{
 		public override void OnActionExecuting(ActionExecutingContext filterContext)
 		{
-			var ssController = filterContext.Controller as ControllerBase;
+			var ssController = filterContext.Controller as ServiceStackController;
 			if (ssController == null) return;
 
 			var authAttrs = GetActionAndControllerAttributes<AuthenticateAttribute>(filterContext);

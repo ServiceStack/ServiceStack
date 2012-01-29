@@ -56,7 +56,7 @@
     <Compile Include="Mvc\MiniProfiler\MiniProfiler.cs" />
     <Compile Include="Mvc\MiniProfiler\ProfilingActionFilter.cs" />
     <Compile Include="Mvc\MiniProfiler\ProfilingViewEngine.cs" />
-    <Compile Include="Mvc\ControllerBase.cs" />
+    <Compile Include="Mvc\ServiceStackController.cs" />
     <Compile Include="Mvc\FunqControllerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PropertyValidatorAdapters\CreditCardFluentValidationPropertyValidator.cs" />
