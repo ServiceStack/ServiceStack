@@ -164,6 +164,13 @@
             <typeparam name="T"></typeparam>
             <typeparam name="TAs"></typeparam>
         </member>
+        <member name="M:ServiceStack.WebHost.Endpoints.IAppHost.Release(System.Object)">
+            <summary>
+            Allows the clean up for executed autowired services and filters.
+            Calls directly after services and filters are executed.
+            </summary>
+            <param name="instance"></param>
+        </member>
         <member name="M:ServiceStack.WebHost.Endpoints.IAppHost.RegisterService(System.Type,System.String[])">
             <summary>
             Register an Adhoc web service on Startup
@@ -2320,6 +2327,23 @@
             ie all public properties are tried to be resolved.
             </summary>
             <param name="instance"></param>
+        </member>
+        <member name="M:Funq.Container.RegisterTypes(System.Type[])">
+            <summary>
+            Registers the types in the IoC container and
+            adds auto-wiring to the specified types.
+            Additionaly the creation of the types is cached when calling <see cref="!:CreateInstance"/> on the same instance.
+            </summary>
+            <param name="serviceTypes"></param>
+        </member>
+        <member name="M:Funq.Container.RegisterType(System.Type,System.Type)">
+            <summary>
+            Registers the type in the IoC container and
+            adds auto-wiring to the specified type.
+            Additionaly the creation of the type is cached when calling <see cref="!:CreateInstance"/> on the same instance.
+            </summary>
+            <param name="serviceType"></param>
+            <param name="inFunqAsType"></param>
         </member>
         <member name="P:Funq.Container.DefaultOwner">
             <summary>
