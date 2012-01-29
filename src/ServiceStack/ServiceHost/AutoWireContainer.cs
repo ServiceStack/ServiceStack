@@ -168,9 +168,9 @@ namespace ServiceStack.ServiceHost
         {
             var serviceFactory = GenerateAutoWireFn<T>();
             container.Register(serviceFactory).ReusedWithin(this.Scope);
-        }
 
 			this.resolveFnMap[typeof(T)] = () => serviceFactory(this.container);
+		}
 
         /// <summary>
         /// Registers the type in the IoC container passed in the constructor and
@@ -188,9 +188,9 @@ namespace ServiceStack.ServiceHost
             Func<Container, TAs> fn = c => serviceFactory(c);
 
             this.container.Register(fn).ReusedWithin(this.Scope);
-        }
 
 			this.resolveFnMap[typeof(TAs)] = () => fn(this.container);
+        }
 
         /// <summary>
         /// Registers the type in the IoC container and
