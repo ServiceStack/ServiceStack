@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
+using ServiceStack.Common;
+using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -43,37 +48,79 @@ namespace ServiceStack.ServiceInterface
 					Type requestType = baseType.GetGenericArguments()[0];
 
 					//find overriden REST methods
-					string allowedMethods = "";
+					var allowedMethods = new List<string>();
 					if (restService.GetMethod("OnGet").DeclaringType == restService)
 					{
-						allowedMethods += "GET ";
+						allowedMethods.Add(HttpMethods.Get);
 					}
 
 					if (restService.GetMethod("OnPost").DeclaringType == restService)
 					{
-						allowedMethods += "POST ";
+						allowedMethods.Add(HttpMethods.Post);
 					}
 
 					if (restService.GetMethod("OnPut").DeclaringType == restService)
 					{
-						allowedMethods += "PUT ";
+						allowedMethods.Add(HttpMethods.Put);
 					}
 
 					if (restService.GetMethod("OnDelete").DeclaringType == restService)
 					{
-						allowedMethods += "DELETE ";
+						allowedMethods.Add(HttpMethods.Delete);
 					}
 
 					if (restService.GetMethod("OnPatch").DeclaringType == restService)
 					{
-						allowedMethods += "PATCH ";
+						allowedMethods.Add(HttpMethods.Patch);
 					}
 
-					routes.Add(requestType, restService.Name, allowedMethods, null);
+					if (allowedMethods.Count == 0) continue;
+					var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
+
+					routes.Add(requestType, restService.Name, allowedVerbs, null);
+
+					var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
+					if (hasIdField)
+					{
+						var routePath = restService.Name + "/{" + IdUtils.IdField + "}";
+						routes.Add(requestType, routePath, allowedVerbs, null);
+					}
 				}
 			}
 
 			return routes;
+		}
+
+		public static IServiceRoutes Add<TRequest>(this IServiceRoutes routes, string restPath, ApplyTo verbs)
+		{
+			return routes.Add<TRequest>(restPath, verbs.ToVerbsString());
+		}
+
+		public static IServiceRoutes Add<TRequest>(this IServiceRoutes routes, string restPath, ApplyTo verbs, string defaultContentType)
+		{
+			return routes.Add<TRequest>(restPath, verbs.ToVerbsString(), defaultContentType);
+		}
+
+		public static IServiceRoutes Add(this IServiceRoutes routes, Type requestType, string restPath, ApplyTo verbs, string defaultContentType)
+		{
+			return routes.Add(requestType, restPath, verbs.ToVerbsString(), defaultContentType);
+		}
+
+		private static string ToVerbsString(this ApplyTo verbs)
+		{
+			var allowedMethods = new List<string>();
+			if (verbs.Has(ApplyTo.Get))
+				allowedMethods.Add(HttpMethods.Get);
+			if (verbs.Has(ApplyTo.Post))
+				allowedMethods.Add(HttpMethods.Post);
+			if (verbs.Has(ApplyTo.Put))
+				allowedMethods.Add(HttpMethods.Put);
+			if (verbs.Has(ApplyTo.Delete))
+				allowedMethods.Add(HttpMethods.Delete);
+			if (verbs.Has(ApplyTo.Patch))
+				allowedMethods.Add(HttpMethods.Patch);
+			
+			return string.Join(" ", allowedMethods.ToArray());
 		}
 
 		public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)

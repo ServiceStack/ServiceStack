@@ -9,7 +9,7 @@ namespace Funq
 		public IContainerAdapter Adapter { get; set; }
 
 		private AutoWireContainer autoWireContainer;
-		private AutoWireContainer AutoWireContainer
+		internal AutoWireContainer AutoWireContainer
 		{
 			get
 			{
@@ -57,6 +57,30 @@ namespace Funq
 		{
 			AutoWireContainer.AutoWire(instance);
 		}
+
+		/// <summary>
+		/// Registers the types in the IoC container and
+		/// adds auto-wiring to the specified types.
+		/// Additionaly the creation of the types is cached when calling <see cref="CreateInstance"/> on the same instance.
+		/// </summary>
+		/// <param name="serviceTypes"></param>
+		public void RegisterTypes(params Type[] serviceTypes)
+		{
+			AutoWireContainer.RegisterTypes(serviceTypes);
+		}
+
+		/// <summary>
+		/// Registers the type in the IoC container and
+		/// adds auto-wiring to the specified type.
+		/// Additionaly the creation of the type is cached when calling <see cref="CreateInstance"/> on the same instance.
+		/// </summary>
+		/// <param name="serviceType"></param>
+		/// <param name="inFunqAsType"></param>
+		public void RegisterType(Type serviceType, Type inFunqAsType)
+		{
+			AutoWireContainer.RegisterType(serviceType, inFunqAsType);
+		}
+
 	}
 
 }

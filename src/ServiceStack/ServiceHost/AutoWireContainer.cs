@@ -167,6 +167,8 @@ namespace ServiceStack.ServiceHost
 		{
 			var serviceFactory = GenerateAutoWireFn<T>();
 			this.container.Register(serviceFactory).ReusedWithin(this.Scope);
+
+			this.resolveFnMap[typeof(T)] = () => serviceFactory(this.container);
 		}
 
 		/// <summary>
@@ -184,6 +186,8 @@ namespace ServiceStack.ServiceHost
 			Func<Container, TAs> fn = c => serviceFactory(c);
 
 			this.container.Register(fn).ReusedWithin(this.Scope);
+
+			this.resolveFnMap[typeof(TAs)] = () => fn(this.container);
 		}
 
 		/// <summary>
@@ -256,8 +260,9 @@ namespace ServiceStack.ServiceHost
 		{
 			Func<object> resolveFn;
 
-			if (!this.resolveFnMap.TryGetValue(type, out resolveFn))
-			{
+			if (!this.resolveFnMap.TryGetValue(type, out resolveFn)
+				&& !this.container.AutoWireContainer.resolveFnMap.TryGetValue(type, out resolveFn))
+			{				
 				throw new ResolutionException(type);
 			}
 
