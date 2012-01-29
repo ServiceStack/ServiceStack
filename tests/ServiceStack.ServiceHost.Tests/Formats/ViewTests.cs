@@ -62,6 +62,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				throw new NotImplementedException();
 			}
 
+			public virtual void Release(object instance) { }
+
 			public T TryResolve<T>()
 			{
 				throw new NotImplementedException();
