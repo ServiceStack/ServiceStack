@@ -163,7 +163,15 @@ var MiniProfiler = (function ($)
         return dst;
     }
 
+    var class2type = {};
+    $.each("Boolean Number String Function Array Date RegExp Object".split(" "), function (i, name) {
+        class2type["[object " + name + "]"] = name.toLowerCase();
+    });
+    
     function isPlainObj(o) { //much more simplified $.isPlainObj
+        if (!o || jQuery.type(o) !== "object" || o.nodeType) {
+            return false;
+        }
         return typeof o == "object";
     }
 
