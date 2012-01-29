@@ -67,18 +67,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				IHttpRequest httpReq = null;
 				IHttpResponse httpRes = null;
 				
-				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0 
-                    || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
-				
-				if (hasRequestFilters)
-				{
-					httpReq = HttpContext.Current != null
-						? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
-						: null;
-					httpRes = HttpContext.Current != null
+				httpReq = HttpContext.Current != null ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)                                              : null;
+				httpRes = HttpContext.Current != null 
 							? new HttpResponseWrapper(HttpContext.Current.Response)
 							: null;
-				}
+				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0 
+                    || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
 				if (hasRequestFilters && EndpointHost.ApplyRequestFilters(httpReq, httpRes, request)) 
                     return EmptyResponse(requestMsg, requestType);
