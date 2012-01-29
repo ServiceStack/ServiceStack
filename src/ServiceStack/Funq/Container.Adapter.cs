@@ -23,29 +23,32 @@ namespace Funq
 		/// Register an autowired dependency
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
-		public void RegisterAutoWired<T>()
+		public IRegistration<T> RegisterAutoWired<T>()
 		{
-			AutoWireContainer.Register<T>();
+			var serviceFactory = AutoWireContainer.GenerateAutoWireFn<T>();
+			return this.Register(serviceFactory);
 		}
 
 		/// <summary>
 		/// Register an autowired dependency as a separate type
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
-		public void RegisterAutoWiredAs<T, TAs>()
+		public IRegistration<TAs> RegisterAutoWiredAs<T, TAs>()
 			where T : TAs
 		{
-			AutoWireContainer.RegisterAs<T, TAs>();
+			var serviceFactory = AutoWireContainer.GenerateAutoWireFn<T>();
+			Func<Container, TAs> fn = c => serviceFactory(c);
+			return this.Register(fn);
 		}
 
 		/// <summary>
 		/// Alias for RegisterAutoWiredAs
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
-		public void RegisterAs<T, TAs>()
+		public IRegistration<TAs> RegisterAs<T, TAs>()
 			where T : TAs
 		{
-			AutoWireContainer.RegisterAs<T, TAs>();
+			return this.RegisterAutoWiredAs<T, TAs>();
 		}
 
 		/// <summary>
