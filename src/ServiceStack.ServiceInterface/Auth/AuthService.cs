@@ -67,13 +67,6 @@ namespace ServiceStack.ServiceInterface.Auth
 			CurrentSessionFactory = () => new AuthUserSession();
 		}
 
-		public AuthService() {}
-
-		public AuthService(IAppHost appHost) : this()
-		{
-			SetAppHost(appHost);
-		}
-
 		public static IAuthProvider GetAuthProvider(string provider)
 		{
 			if (AuthProviders == null || AuthProviders.Length == 0) return null;

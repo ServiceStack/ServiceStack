@@ -57,9 +57,10 @@ namespace ServiceStack.ServiceInterface
 			return appHost ?? EndpointHost.AppHost;
 		}
 
-		public void SetAppHost(IAppHost appHost)
+		public ServiceBase<TRequest> SetAppHost(IAppHost appHost) //Allow chaining
 		{
 			this.appHost = appHost;
+			return this;
 		}
 
         public IRequestContext RequestContext { get; set; }
