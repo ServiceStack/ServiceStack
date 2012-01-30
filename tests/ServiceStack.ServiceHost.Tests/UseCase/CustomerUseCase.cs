@@ -148,10 +148,9 @@ namespace ServiceStack.ServiceHost.Tests.UseCase
 		{
 			var container = GetContainerWithDependencies();
 
-			var typeFactory = new AutoWireContainer(container);
-			typeFactory.RegisterTypes(typeof(StoreCustomersService), typeof(GetCustomerService));
+			container.RegisterAutoWiredType(typeof(StoreCustomersService), typeof(GetCustomerService));
 
-			return typeFactory;
+			return new ContainerResolveCache(container);
 		}
 
 		private static Container GetContainerWithDependencies()

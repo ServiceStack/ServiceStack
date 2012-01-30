@@ -81,17 +81,17 @@ namespace ServiceStack.ServiceHost
 			this.ServiceController = serviceController;
 		}
 
-		private AutoWireContainer typeFactory;
+		private ContainerResolveCache typeFactory;
 
 		public void Init()
 		{
-			typeFactory = new AutoWireContainer(this.Container);
+			typeFactory = new ContainerResolveCache(this.Container);
 
 			this.ServiceController.Register(typeFactory);
 
 			ReloadServiceOperations();
 
-			typeFactory.RegisterTypes(this.ServiceController.ServiceTypes);
+			this.Container.RegisterAutoWiredTypes(this.ServiceController.ServiceTypes);
 		}
 
 		public void ReloadServiceOperations()
@@ -107,7 +107,7 @@ namespace ServiceStack.ServiceHost
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
 
 			this.ServiceController.RegisterService(typeFactory, typeof(T));
-			typeFactory.Register<T>();
+			this.Container.RegisterAutoWired<T>();
 		}
 
 		public Type RegisterService(Type serviceType)
@@ -119,7 +119,7 @@ namespace ServiceStack.ServiceHost
 			try
 			{
 				this.ServiceController.RegisterService(typeFactory, serviceType);
-				typeFactory.RegisterTypes(serviceType);
+				this.Container.RegisterAutoWiredType(serviceType);
 			}
 			catch (Exception ex)
 			{
