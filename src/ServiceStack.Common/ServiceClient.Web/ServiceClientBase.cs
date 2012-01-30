@@ -249,16 +249,6 @@ namespace ServiceStack.ServiceClient.Web
 
 		private WebRequest SendRequest(string requestUri, object request)
 		{
-			var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
-			if (isHttpGet)
-			{
-				var queryString = QueryStringSerializer.SerializeToString(request);
-				if (!string.IsNullOrEmpty(queryString))
-				{
-					requestUri += "?" + queryString;
-				}
-			}
-
 			return SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request);
 		}
 
@@ -266,6 +256,15 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			if (httpMethod == null)
 				throw new ArgumentNullException("httpMethod");
+
+            if (httpMethod == Web.HttpMethod.Get && request != null)
+			{
+				var queryString = QueryStringSerializer.SerializeToString(request);
+				if (!string.IsNullOrEmpty(queryString))
+				{
+					requestUri += "?" + queryString;
+				}
+			}
 
 			var client = (HttpWebRequest)WebRequest.Create(requestUri);
 			try
