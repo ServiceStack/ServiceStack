@@ -45,7 +45,7 @@ namespace ServiceStack.ServiceHost
 				Interlocked.CompareExchange(ref resolveFnMap, newCache, snapshot), snapshot));
 			}
 
-			return resolveFn;
+			return resolveFn();
 		}
 	}
 }

@@ -90,8 +90,6 @@ namespace ServiceStack.ServiceHost
 				    || service.GetGenericTypeDefinition() != typeof (IService<>)
 				) continue;
 
-				if (service.IsAbstract) continue;
-
 				var requestType = service.GetGenericArguments()[0];
 
 				Register(requestType, serviceType, serviceFactoryFn);
