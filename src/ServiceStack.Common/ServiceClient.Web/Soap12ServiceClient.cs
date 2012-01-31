@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ServiceStack.Service;
+using System.Net;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -90,9 +91,10 @@ namespace ServiceStack.ServiceClient.Web
 		public Soap12ServiceClient(string uri)
 		{
 			this.Uri = uri.WithTrailingSlash() + "Soap12";
+            this.StoreCookies = true;
 		}
 
-		private WSHttpBinding binding;
+        private WSHttpBinding binding;
 
 		private Binding WsHttpBinding
 		{
@@ -106,6 +108,12 @@ namespace ServiceStack.ServiceClient.Web
 						MaxBufferPoolSize = 524288,
 					};
 					this.binding.Security.Mode = SecurityMode.None;
+                    // CCB Custom
+                    // Yes, you need this to manage cookies yourself.  Seems counterintutive, but set to true,
+                    // it only means that the framework will manage cookie propagation for the same call, which is
+                    // not what we want.
+                    if (StoreCookies)
+                        this.binding.AllowCookies = false;
 				}
 				return this.binding;
 			}
