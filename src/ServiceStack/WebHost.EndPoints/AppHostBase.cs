@@ -115,8 +115,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public void RegisterAs<T, TAs>() where T : TAs
 		{
-			var autoWire = new AutoWireContainer(this.Container);
-			autoWire.RegisterAs<T, TAs>();
+			this.Container.RegisterAutoWiredAs<T, TAs>();
 		}
 
 		public virtual void Release(object instance) { }

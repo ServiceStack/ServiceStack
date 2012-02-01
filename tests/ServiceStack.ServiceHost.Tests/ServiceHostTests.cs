@@ -69,8 +69,7 @@ namespace ServiceStack.ServiceHost.Tests
 			container.Register<IFoo>(c => new Foo());
 			container.Register<IBar>(c => new Bar());
 
-			var typeContainer = new AutoWireContainer(container);
-			typeContainer.RegisterTypes(serviceType);
+			container.RegisterAutoWiredType(serviceType);
 
 			var service = container.Resolve<AutoWireService>();
 
