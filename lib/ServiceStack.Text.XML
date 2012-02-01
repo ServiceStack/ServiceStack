@@ -117,12 +117,10 @@
             A fast, standards-based, serialization-issue free DateTime serailizer.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.Common.DeserializeTypeUtils.GetTypeStringConstructor(System.Type)">
+        <member name="T:ServiceStack.Text.JsonSerializer">
             <summary>
-            Get the type(string) constructor if exists
+            Creates an instance of a Type from a string value
             </summary>
-            <param name="type">The type.</param>
-            <returns></returns>
         </member>
         <member name="M:ServiceStack.Text.Common.JsWriter.HasAnyEscapeChars(System.String)">
             <summary>
@@ -131,10 +129,18 @@
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="T:ServiceStack.Text.JsonSerializer">
+        <member name="M:ServiceStack.Text.Common.DeserializeTypeUtils.GetTypeStringConstructor(System.Type)">
             <summary>
-            Creates an instance of a Type from a string value
+            Get the type(string) constructor if exists
             </summary>
+            <param name="type">The type.</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.Text.QueryStringWriter`1">
+            <summary>
+            Implement the serializer using a more static approach
+            </summary>
+            <typeparam name="T"></typeparam>
         </member>
         <member name="T:FastMember.ObjectAccessor">
             <summary>
@@ -170,12 +176,6 @@
             <summary>
             The object represented by this instance
             </summary>
-        </member>
-        <member name="T:ServiceStack.Text.QueryStringWriter`1">
-            <summary>
-            Implement the serializer using a more static approach
-            </summary>
-            <typeparam name="T"></typeparam>
         </member>
         <member name="P:ServiceStack.Text.JsConfig.EmitCamelCaseNames">
             <summary>
@@ -254,12 +254,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:ServiceStack.Text.Controller.PathInfo">
-            <summary>
-            Class to hold  
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Controller.PathInfo.Parse(System.String)" -->
         <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.WriteRawString(System.IO.TextWriter,System.String)">
             <summary>
             Shortcut escape when we're sure value doesn't contain any escaped chars
@@ -274,6 +268,12 @@
             <param name="utf32"></param>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.Text.Controller.PathInfo">
+            <summary>
+            Class to hold  
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Controller.PathInfo.Parse(System.String)" -->
         <member name="F:ServiceStack.Text.StreamExtensions.DefaultBufferSize">
             <summary>
             @jonskeet: Collection of utility methods which operate on streams.

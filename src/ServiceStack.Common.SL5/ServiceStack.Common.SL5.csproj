@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Common.SL5</RootNamespace>
-    <AssemblyName>ServiceStack.Common.SL5</AssemblyName>
+    <RootNamespace>ServiceStack.Common</RootNamespace>
+    <AssemblyName>ServiceStack.Common</AssemblyName>
     <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
@@ -427,7 +427,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj">
+    <ProjectReference Include="..\..\..\..\servicestacktext\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj">
       <Project>{CC38D2CC-5E47-4218-9994-5DDEE36820FA}</Project>
       <Name>ServiceStack.Text.SL5</Name>
     </ProjectReference>
