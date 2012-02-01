@@ -287,6 +287,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			autoWire.RegisterAs<T, TAs>();
 		}
 
+		public virtual void Release(object instance) {}
+
 		public void Register<T>(T instance)
 		{
 			this.Container.Register(instance);

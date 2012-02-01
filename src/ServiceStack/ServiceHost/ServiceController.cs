@@ -7,6 +7,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost
 {
@@ -231,7 +232,10 @@ namespace ServiceStack.ServiceHost
                     try
                     {
                         //Executes the service and returns the result
-                        return typeFactoryFn(dto, service, endpointAttrs);
+                        var response = typeFactoryFn(dto, service, endpointAttrs);
+						if (EndpointHost.AppHost != null) //tests
+							EndpointHost.AppHost.Release(service);
+                    	return response;
                     }
                     catch (TargetInvocationException tex)
                     {

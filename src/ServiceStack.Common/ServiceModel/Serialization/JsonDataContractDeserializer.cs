@@ -63,7 +63,7 @@ namespace ServiceStack.ServiceModel.Serialization
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
             if (UseBcl)
 			{
-				var serializer = new DataContractJsonSerializer(typeof(T));
+				var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
 				return (T)serializer.ReadObject(stream);				
 			}
 #endif
@@ -78,7 +78,7 @@ namespace ServiceStack.ServiceModel.Serialization
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
 			if (UseBcl)
 			{
-				var serializer = new DataContractJsonSerializer(type);
+				var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
 				return serializer.ReadObject(stream);
 			}
 #endif

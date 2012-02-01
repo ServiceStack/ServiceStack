@@ -23,7 +23,9 @@ namespace ServiceStack.ServiceInterface.Testing
 			var autoWire = new AutoWireContainer(this.Container);
 			autoWire.RegisterAs<T, TAs>();
 		}
-		
+
+		public virtual void Release(object instance) { }
+
 		public void Register<T>(T instance)
 		{
 			this.Container.Register(instance);

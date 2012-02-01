@@ -49,18 +49,19 @@ namespace ServiceStack.ServiceInterface
         /// <summary>
         /// Access to the Applications ServiceStack AppHost Instance
         /// </summary>
-        private IAppHost appHost;
-        public virtual IAppHost AppHost
-        {
-            get
-            {
-                return appHost ?? EndpointHost.AppHost;
-            }
-            set
-            {
-                this.appHost = value;
-            }
-        }
+        /// 
+        private IAppHost appHost; //not property to stop alt IOC's creating new instances of AppHost
+		
+		public IAppHost GetAppHost()
+		{
+			return appHost ?? EndpointHost.AppHost;
+		}
+
+		public ServiceBase<TRequest> SetAppHost(IAppHost appHost) //Allow chaining
+		{
+			this.appHost = appHost;
+			return this;
+		}
 
         public IRequestContext RequestContext { get; set; }
 
@@ -108,7 +109,7 @@ namespace ServiceStack.ServiceInterface
         /// <returns></returns>
         public T ResolveService<T>()
         {
-            var service = this.AppHost.TryResolve<T>();
+            var service = this.GetAppHost().TryResolve<T>();
             var requiresContext = service as IRequiresRequestContext;
             if (requiresContext != null)
             {
@@ -143,9 +144,9 @@ namespace ServiceStack.ServiceInterface
 
         public T TryResolve<T>()
         {
-            return this.AppHost == null
+			return this.GetAppHost() == null
                 ? default(T)
-                : this.AppHost.TryResolve<T>();
+                : this.GetAppHost().TryResolve<T>();
         }
 
         /// <summary>

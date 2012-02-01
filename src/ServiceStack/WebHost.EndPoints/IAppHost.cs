@@ -22,7 +22,14 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <typeparam name="T"></typeparam>
 		/// <typeparam name="TAs"></typeparam>
 		void RegisterAs<T, TAs>() where T : TAs;
-
+		
+		/// <summary>
+		/// Allows the clean up for executed autowired services and filters.
+		/// Calls directly after services and filters are executed.
+		/// </summary>
+		/// <param name="instance"></param>
+		void Release(object instance);
+		
 		/// <summary>
 		/// Register custom ContentType serializers
 		/// </summary>

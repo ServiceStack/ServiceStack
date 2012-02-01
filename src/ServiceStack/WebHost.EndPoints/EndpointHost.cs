@@ -169,6 +169,8 @@ namespace ServiceStack.WebHost.Endpoints
                 {
 					EndpointHost.ServiceManager.Container.AutoWire(attribute);
                     attribute.RequestFilter(httpReq, httpRes, requestDto);
+					if (EndpointHost.AppHost != null) //tests
+						EndpointHost.AppHost.Release(attribute);
                     if (httpRes.IsClosed) break;
                 }
 
@@ -207,6 +209,8 @@ namespace ServiceStack.WebHost.Endpoints
 						{
 							EndpointHost.ServiceManager.Container.AutoWire(attribute);
 							attribute.ResponseFilter(httpReq, httpRes, responseDto);
+							if (EndpointHost.AppHost != null) //tests
+								EndpointHost.AppHost.Release(attribute);
 							if (httpRes.IsClosed) break;
 						}
 					}
