@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Interfaces.SL5</RootNamespace>
-    <AssemblyName>ServiceStack.Interfaces.SL5</AssemblyName>
+    <RootNamespace>ServiceStack.Interfaces</RootNamespace>
+    <AssemblyName>ServiceStack.Interfaces</AssemblyName>
     <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
@@ -601,14 +601,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="..\ServiceStack.Interfaces\Redis\Redis-annotated.png">
+    <None Include="..\ServiceStack.Interfaces\Redis\Redis-annotated.png">
       <Link>Redis\Redis-annotated.png</Link>
-    </Resource>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="..\ServiceStack.Interfaces\Redis\Redis.png">
+    <None Include="..\ServiceStack.Interfaces\Redis\Redis.png">
       <Link>Redis\Redis.png</Link>
-    </Resource>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions>
@@ -616,7 +616,7 @@
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
         <SilverlightProjectProperties />
       </FlavorProperties>
-      <UserProperties ProjectLinkReference="42e1c8c0-a163-44cc-92b1-8f416f2c0b01" ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" />
+      <UserProperties ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" ProjectLinkReference="42e1c8c0-a163-44cc-92b1-8f416f2c0b01" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
