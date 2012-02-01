@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.SL5", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces.SL5", "ServiceStack.Interfaces.SL5\ServiceStack.Interfaces.SL5.csproj", "{36E79FA9-13BB-47BA-B7E8-2A45B8FEBE01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.SL5", "..\..\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj", "{CC38D2CC-5E47-4218-9994-5DDEE36820FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.SL5", "..\..\..\servicestacktext\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj", "{CC38D2CC-5E47-4218-9994-5DDEE36820FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

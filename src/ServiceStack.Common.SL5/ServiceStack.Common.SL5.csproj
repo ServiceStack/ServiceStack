@@ -427,7 +427,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj">
+    <ProjectReference Include="..\..\..\..\servicestacktext\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj">
       <Project>{CC38D2CC-5E47-4218-9994-5DDEE36820FA}</Project>
       <Name>ServiceStack.Text.SL5</Name>
     </ProjectReference>
