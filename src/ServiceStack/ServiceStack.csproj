@@ -128,6 +128,7 @@
     <Compile Include="Funq\Container.Overloads.cs">
       <DependentUpon>Container.cs</DependentUpon>
     </Compile>
+    <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
     <Compile Include="Funq\Func.cs" />
     <Compile Include="Funq\IFluentInterface.cs" />
     <Compile Include="Funq\IFunqlet.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="MiniProfiler\UI\MiniProfilerHandler.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.cs" />
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.Settings.cs" />
+    <Compile Include="ServiceHost\ContainerResolveCache.cs" />
     <Compile Include="ServiceHost\Cookies.cs" />
     <Compile Include="WebHost.EndPoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
@@ -202,7 +204,7 @@
     <Compile Include="Markdown\ViewDataInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Markdown\ITemplatePage.cs" />
-    <Compile Include="ServiceHost\AutoWireContainer.cs" />
+    <Compile Include="Funq\AutoWireHelpers.cs" />
     <Compile Include="ServiceHost\FileExtensions.cs" />
     <Compile Include="ServiceHost\HttpFile.cs" />
     <Compile Include="ServiceHost\HttpRequestAuthentication.cs" />

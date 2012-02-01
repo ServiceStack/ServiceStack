@@ -12,13 +12,11 @@ namespace ServiceStack.Mvc
 {
 	public class FunqControllerFactory : DefaultControllerFactory
 	{
-		private readonly AutoWireContainer funqBuilder;
+		private readonly ContainerResolveCache funqBuilder;
 
 		public FunqControllerFactory(Container container)
 		{
-			this.funqBuilder = new AutoWireContainer(container) {
-				Scope = ReuseScope.None //don't re-use instances
-			};
+			this.funqBuilder = new ContainerResolveCache(container);
 
 			// Also register all the controller types as transient
 			var controllerTypes =
@@ -26,7 +24,7 @@ namespace ServiceStack.Mvc
 				 where typeof(IController).IsAssignableFrom(type)
 				 select type).ToList();
 
-			funqBuilder.RegisterTypes(controllerTypes);
+			container.RegisterAutoWiredTypes(controllerTypes);
 		}
 
 		protected override IController GetControllerInstance(

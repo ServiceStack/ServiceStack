@@ -34,23 +34,17 @@ namespace ServiceStack.ServiceInterface.Validation
         /// <param name="assemblies">The assemblies to scan for a validator</param>
 		public static void RegisterValidators(this Container container, params Assembly[] assemblies)
 		{
-			var autoWire = new AutoWireContainer(container);
 			foreach (var assembly in assemblies)
 			{
 				foreach (var validator in assembly.GetTypes()
 					.Where(t => t.IsOrHasGenericInterfaceTypeOf(typeof(IValidator<>))))
 				{
-					RegisterValidator(autoWire, validator);
+					RegisterValidator(container, validator);
 				}
 			}
 		}
 
 		public static void RegisterValidator(this Container container, Type validator)
-		{
-			RegisterValidator(new AutoWireContainer(container), validator);
-		}
-
-		private static void RegisterValidator(AutoWireContainer autoWire, Type validator)
 		{
 			var baseType = validator.BaseType;
 			while (!baseType.IsGenericType)
@@ -59,9 +53,9 @@ namespace ServiceStack.ServiceInterface.Validation
 			}
 
 			var dtoType = baseType.GetGenericArguments()[0];
-			var validatorType = typeof (IValidator<>).MakeGenericType(dtoType);
+			var validatorType = typeof(IValidator<>).MakeGenericType(dtoType);
 
-			autoWire.RegisterType(validator, validatorType);
+			container.RegisterAutoWiredType(validator, validatorType);
 		}
 	}
 }

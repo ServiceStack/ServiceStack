@@ -8,13 +8,11 @@ namespace ServiceStack.Mvc
 {
 	public class FunqValidatorFactory : ValidatorFactoryBase
 	{
-		private readonly AutoWireContainer funqBuilder;
+		private readonly ContainerResolveCache funqBuilder;
 
 		public FunqValidatorFactory(Container container=null)
 		{
-			this.funqBuilder = new AutoWireContainer(container ?? AppHostBase.Instance.Container) {
-				Scope = ReuseScope.None //don't re-use instances
-			};
+			this.funqBuilder = new ContainerResolveCache(container ?? AppHostBase.Instance.Container);
 		}
 
 		public override IValidator CreateInstance(Type validatorType)
