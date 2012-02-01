@@ -1,3 +1,3 @@
-Client builds for Silverlight.
+ServiceStack Client builds for Silverlight.
 
-Only the Async operations are supported.
+Due to restrictions in Silverlight only the Async operations are supported.
