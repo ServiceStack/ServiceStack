@@ -169,7 +169,7 @@ var MiniProfiler = (function ($)
     });
     
     function isPlainObj(o) { //much more simplified $.isPlainObj
-        if (!o || jQuery.type(o) !== "object" || o.nodeType) {
+        if (!o || $.type(o) !== "object" || o.nodeType) {
             return false;
         }
         return typeof o == "object";
@@ -810,7 +810,7 @@ var MiniProfiler = (function ($)
 			return (duration || 0).toFixed(1);
 		}
 	};
-})(jQuery);
+})(window.jquip);
 
 // prettify.js
 // http://code.google.com/p/google-code-prettify/

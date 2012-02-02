@@ -13,21 +13,21 @@ using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.MiniProfiler.UI
 {
-    /// <summary>
-    /// Understands how to route and respond to MiniProfiler UI urls.
-    /// </summary>
-    public class MiniProfilerHandler : /*IRouteHandler, */ IHttpHandler, IServiceStackHttpHandler
-    {
+	/// <summary>
+	/// Understands how to route and respond to MiniProfiler UI urls.
+	/// </summary>
+	public class MiniProfilerHandler : /*IRouteHandler, */ IHttpHandler, IServiceStackHttpHandler
+	{
 		public static IHttpHandler MatchesRequest(IHttpRequest request)
 		{
-			return request.PathInfo.TrimStart('/').Contains("ss-") 
-				? new MiniProfilerHandler() 
+			return request.PathInfo.TrimStart('/').Contains("ss-")
+				? new MiniProfilerHandler()
 				: null;
 		}
 
-    	public static HtmlString RenderIncludes(Profiler profiler, RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
-        {
-            const string format =
+		public static HtmlString RenderIncludes(Profiler profiler, RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null, string path = null)
+		{
+			const string format =
 @"<link rel=""stylesheet"" type=""text/css"" href=""{path}ss-includes.css?v={version}""{closeXHTML}>
 <script type=""text/javascript"">
     if (!window.jQuery) document.write(unescape(""%3Cscript src='{path}ss-jquip.all.js?v={version}' type='text/javascript'%3E%3C/script%3E""));
@@ -48,35 +48,34 @@ namespace ServiceStack.MiniProfiler.UI
     }});
 </script>";
 
-            var result = "";
+			var result = "";
 
-            if (profiler != null)
-            {
-                // HACK: unviewed ids are added to this list during Storage.Save, but we know we haven't see the current one yet,
-                // so go ahead and add it to the end - it's usually the only id, but if there was a redirect somewhere, it'll be there, too
-                Profiler.Settings.EnsureStorageStrategy();
-                var ids = Profiler.Settings.Storage.GetUnviewedIds(profiler.User);
-                ids.Add(profiler.Id);
+			if (profiler != null)
+			{
+				// HACK: unviewed ids are added to this list during Storage.Save, but we know we haven't see the current one yet,
+				// so go ahead and add it to the end - it's usually the only id, but if there was a redirect somewhere, it'll be there, too
+				Profiler.Settings.EnsureStorageStrategy();
+				var ids = Profiler.Settings.Storage.GetUnviewedIds(profiler.User);
+				ids.Add(profiler.Id);
 
-            	var path = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+				path = (path ?? "") + EndpointHost.Config.ServiceStackHandlerFactoryPath;
 
-                result = format.Format(new
-                {
-                    //path = VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash(),
+				result = format.Format(new {
+					//path = VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash(),
 					path = !string.IsNullOrEmpty(path) ? path + "/" : "",
-                    version = Profiler.Settings.Version,
-                    ids = ids.ToJson(),
-                    position = (position ?? Profiler.Settings.PopupRenderPosition).ToString().ToLower(),
-                    showTrivial = showTrivial ?? Profiler.Settings.PopupShowTrivial ? "true" : "false",
-                    showChildren = showTimeWithChildren ?? Profiler.Settings.PopupShowTimeWithChildren ? "true" : "false",
-                    maxTracesToShow = maxTracesToShow ?? Profiler.Settings.PopupMaxTracesToShow,
-                    closeXHTML = xhtml ? "/" : "",
-                    showControls = showControls ?? Profiler.Settings.ShowControls ? "true" : "false"
-                });
-            }
+					version = Profiler.Settings.Version,
+					ids = ids.ToJson(),
+					position = (position ?? Profiler.Settings.PopupRenderPosition).ToString().ToLower(),
+					showTrivial = showTrivial ?? Profiler.Settings.PopupShowTrivial ? "true" : "false",
+					showChildren = showTimeWithChildren ?? Profiler.Settings.PopupShowTimeWithChildren ? "true" : "false",
+					maxTracesToShow = maxTracesToShow ?? Profiler.Settings.PopupMaxTracesToShow,
+					closeXHTML = xhtml ? "/" : "",
+					showControls = showControls ?? Profiler.Settings.ShowControls ? "true" : "false"
+				});
+			}
 
-            return new HtmlString(result);
-        }
+			return new HtmlString(result);
+		}
 
 		//internal static void RegisterRoutes()
 		//{
@@ -109,33 +108,33 @@ namespace ServiceStack.MiniProfiler.UI
 		//    }
 		//}
 
-        /// <summary>
-        /// Returns this <see cref="MiniProfilerHandler"/> to handle <paramref name="requestContext"/>.
-        /// </summary>
+		/// <summary>
+		/// Returns this <see cref="MiniProfilerHandler"/> to handle <paramref name="requestContext"/>.
+		/// </summary>
 		//public IHttpHandler GetHttpHandler(RequestContext requestContext)
 		//{
 		//    return this; // elegant? I THINK SO.
 		//}
 
-        /// <summary>
-        /// Try to keep everything static so we can easily be reused.
-        /// </summary>
-        public bool IsReusable
-        {
-            get { return true; }
-        }
+		/// <summary>
+		/// Try to keep everything static so we can easily be reused.
+		/// </summary>
+		public bool IsReusable
+		{
+			get { return true; }
+		}
 
-        /// <summary>
-        /// Returns either includes' css/javascript or results' html.
-        /// </summary>
-        public void ProcessRequest(HttpContext context)
-        {
-            string path = context.Request.AppRelativeCurrentExecutionFilePath;
+		/// <summary>
+		/// Returns either includes' css/javascript or results' html.
+		/// </summary>
+		public void ProcessRequest(HttpContext context)
+		{
+			string path = context.Request.AppRelativeCurrentExecutionFilePath;
 			ProcessRequest(
 				new HttpRequestWrapper(null, context.Request),
 				new HttpResponseWrapper(context.Response),
 				null);
-        }
+		}
 
 		public void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
@@ -163,48 +162,48 @@ namespace ServiceStack.MiniProfiler.UI
 			httpRes.Write(output);
 		}
 
-        /// <summary>
-        /// Handles rendering static content files.
-        /// </summary>
+		/// <summary>
+		/// Handles rendering static content files.
+		/// </summary>
 		private static string Includes(IHttpRequest httpReq, IHttpResponse httpRes, string path)
-        {
+		{
 			var response = httpRes;
 
-            switch (Path.GetExtension(path))
-            {
-                case ".js":
-                    response.ContentType = "application/javascript";
-                    break;
-                case ".css":
-                    response.ContentType = "text/css";
-                    break;
-                case ".tmpl":
-                    response.ContentType = "text/x-jquery-tmpl";
-                    break;
-                default:
+			switch (Path.GetExtension(path))
+			{
+				case ".js":
+					response.ContentType = "application/javascript";
+					break;
+				case ".css":
+					response.ContentType = "text/css";
+					break;
+				case ".tmpl":
+					response.ContentType = "text/x-jquery-tmpl";
+					break;
+				default:
 					return NotFound(httpRes);
-            }
+			}
 
 			//var cache = response.Cache;
 			//cache.SetCacheability(System.Web.HttpCacheability.Public);
 			//cache.SetExpires(DateTime.Now.AddDays(7));
 			//cache.SetValidUntilExpires(true);
 
-            var embeddedFile = Path.GetFileName(path).Replace("ss-", "");
-            return GetResource(embeddedFile);
-        }
+			var embeddedFile = Path.GetFileName(path).Replace("ss-", "");
+			return GetResource(embeddedFile);
+		}
 
-        /// <summary>
-        /// Handles rendering a previous MiniProfiler session, identified by its "?id=GUID" on the query.
-        /// </summary>
-        private static string Results(IHttpRequest httpReq, IHttpResponse httpRes)
-        {
-            // when we're rendering as a button/popup in the corner, we'll pass ?popup=1
-            // if it's absent, we're rendering results as a full page for sharing
+		/// <summary>
+		/// Handles rendering a previous MiniProfiler session, identified by its "?id=GUID" on the query.
+		/// </summary>
+		private static string Results(IHttpRequest httpReq, IHttpResponse httpRes)
+		{
+			// when we're rendering as a button/popup in the corner, we'll pass ?popup=1
+			// if it's absent, we're rendering results as a full page for sharing
 			var isPopup = httpReq.QueryString["popup"].IsNullOrWhiteSpace();
 
-            // this guid is the MiniProfiler.Id property
-            var id = new Guid();
+			// this guid is the MiniProfiler.Id property
+			var id = new Guid();
 
 			var validGuid = false;
 			try
@@ -217,79 +216,79 @@ namespace ServiceStack.MiniProfiler.UI
 			if (!validGuid)
 				return isPopup ? NotFound(httpRes) : NotFound(httpRes, "text/plain", "No Guid id specified on the query string");
 
-            Profiler.Settings.EnsureStorageStrategy();
-            var profiler = Profiler.Settings.Storage.Load(id);
+			Profiler.Settings.EnsureStorageStrategy();
+			var profiler = Profiler.Settings.Storage.Load(id);
 
-            if (profiler == null)
+			if (profiler == null)
 				return isPopup ? NotFound(httpRes) : NotFound(httpRes, "text/plain", "No MiniProfiler results found with Id=" + id.ToString());
 
-            // ensure that callers have access to these results
-            var authorize = Profiler.Settings.Results_Authorize;
+			// ensure that callers have access to these results
+			var authorize = Profiler.Settings.Results_Authorize;
 			if (authorize != null && !authorize(httpReq, profiler))
-            {
+			{
 				httpRes.StatusCode = 401;
 				httpRes.ContentType = "text/plain";
-                return "Unauthorized";
-            }
+				return "Unauthorized";
+			}
 
 			return isPopup ? ResultsJson(httpRes, profiler) : ResultsFullPage(httpRes, profiler);
-        }
+		}
 
 		private static string ResultsJson(IHttpResponse httpRes, Profiler profiler)
-        {
+		{
 			httpRes.ContentType = "application/json";
-            return Profiler.ToJson(profiler);
-        }
+			return Profiler.ToJson(profiler);
+		}
 
 		private static string ResultsFullPage(IHttpResponse httpRes, Profiler profiler)
-        {
+		{
 			httpRes.ContentType = "text/html";
-            return new StringBuilder()
-                .AppendLine("<html><head>")
-                .AppendFormat("<title>{0} ({1} ms) - MvcMiniProfiler Results</title>", profiler.Name, profiler.DurationMilliseconds)
-                .AppendLine()
-                .AppendLine("<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>")
-                .Append("<script type='text/javascript'> var profiler = ")
-                .Append(Profiler.ToJson(profiler))
-                .AppendLine(";</script>")
-                .Append(RenderIncludes(profiler)) // figure out how to better pass display options
-                .AppendLine("</head><body><div class='profiler-result-full'></div></body></html>")
-                .ToString();
-        }
+			return new StringBuilder()
+				.AppendLine("<html><head>")
+				.AppendFormat("<title>{0} ({1} ms) - MvcMiniProfiler Results</title>", profiler.Name, profiler.DurationMilliseconds)
+				.AppendLine()
+				.AppendLine("<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>")
+				.Append("<script type='text/javascript'> var profiler = ")
+				.Append(Profiler.ToJson(profiler))
+				.AppendLine(";</script>")
+				.Append(RenderIncludes(profiler)) // figure out how to better pass display options
+				.AppendLine("</head><body><div class='profiler-result-full'></div></body></html>")
+				.ToString();
+		}
 
-        private static string GetResource(string filename)
-        {
-            filename = filename.ToLower();
-            string result;
+		private static string GetResource(string filename)
+		{
+			filename = filename.ToLower();
+			string result;
 
-            if (!_ResourceCache.TryGetValue(filename, out result))
-            {
-                using (var stream = typeof(MiniProfilerHandler).Assembly.GetManifestResourceStream("ServiceStack.MiniProfiler.UI." + filename))
-                using (var reader = new StreamReader(stream))
-                {
-                    result = reader.ReadToEnd();
-                }
+			if (!_ResourceCache.TryGetValue(filename, out result))
+			{
+				using (var stream = typeof(MiniProfilerHandler).Assembly.GetManifestResourceStream("ServiceStack.MiniProfiler.UI." + filename))
+				using (var reader = new StreamReader(stream))
+				{
+					result = reader.ReadToEnd();
+				}
 
-                _ResourceCache[filename] = result;
-            }
+				_ResourceCache[filename] = result;
+			}
 
-            return result;
-        }
+			return result;
+		}
 
-        /// <summary>
-        /// Embedded resource contents keyed by filename.
-        /// </summary>
-        private static readonly Dictionary<string, string> _ResourceCache = new Dictionary<string, string>();
+		/// <summary>
+		/// Embedded resource contents keyed by filename.
+		/// </summary>
+		private static readonly Dictionary<string, string> _ResourceCache = new Dictionary<string, string>();
 
-        /// <summary>
-        /// Helper method that sets a proper 404 response code.
-        /// </summary>
+		/// <summary>
+		/// Helper method that sets a proper 404 response code.
+		/// </summary>
 		private static string NotFound(IHttpResponse httpRes, string contentType = "text/plain", string message = null)
-        {
+		{
 			httpRes.StatusCode = 404;
 			httpRes.ContentType = contentType;
 
-            return message;
-        }
-    }
+			return message;
+		}
+	}
 }

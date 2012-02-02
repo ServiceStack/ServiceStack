@@ -55,7 +55,8 @@ namespace ServiceStack.Mvc.MiniProfiler
 
 		public static System.Web.IHtmlString RenderIncludes(RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
 		{
-			return MiniProfilerHandler.RenderIncludes(Profiler.Current, position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls)
+			var path = VirtualPathUtility.ToAbsolute("~");
+			return MiniProfilerHandler.RenderIncludes(Profiler.Current, position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls, path)
 				.ToMvcHtmlString();
 		}		 
 
