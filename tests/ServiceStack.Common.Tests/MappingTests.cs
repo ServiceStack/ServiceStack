@@ -33,6 +33,17 @@ namespace ServiceStack.Common.Tests
         Blue
     }
 
+
+	public class IntNullableIDObj
+	{
+		public int? Id { get; set; }
+	}
+
+	public class IntIDObj
+	{
+		public int Id { get; set; }
+	}
+
     public class NullableConversion
     {
         public decimal Amount { get; set; }
@@ -121,5 +132,19 @@ namespace ServiceStack.Common.Tests
 
             Assert.That(conversionDto.Amount, Is.EqualTo(123.45m));
         }
+
+		[Test]
+		public void Does_translate_nullableInt_to_and_from()
+		{
+			var nullable = new IntNullableIDObj();
+
+			var nonNullable = nullable.TranslateTo<IntIDObj>();
+
+			nonNullable.Id = 10;
+
+			var expectedNullable = nonNullable.TranslateTo<IntNullableIDObj>();
+
+			Assert.That(expectedNullable.Id.Value, Is.EqualTo(nonNullable.Id));
+		}
 	}
 }
