@@ -125,6 +125,7 @@
     <Compile Include="AttributeFiltersTest.cs" />
     <Compile Include="AuthTests.cs" />
     <Compile Include="CompressionTests.cs" />
+    <Compile Include="IntegrationTests\ErrorRestTests.cs" />
     <Compile Include="TodoListTests.cs" />
     <Compile Include="CustomerServiceValidationTests.cs" />
     <Compile Include="ExceptionHandlingTests.cs" />
