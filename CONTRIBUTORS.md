@@ -34,3 +34,4 @@
  - [int03](https://github.com/int03) (Selim Selçuk)
  - [andidog](https://github.com/AndiDog) (AndiDog)
  - [chuckb](https://github.com/chuckb) (chuckb)
+ - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
