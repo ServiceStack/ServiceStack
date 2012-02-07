@@ -153,6 +153,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						response.ContentType = defaultContentType;
 					}
 
+					if (EndpointHost.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
+					{
+						response.ContentType += ContentType.Utf8Suffix;
+					}
+
 					var responseText = result as string;
 					if (responseText != null)
 					{

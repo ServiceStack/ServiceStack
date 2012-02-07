@@ -96,6 +96,7 @@ namespace ServiceStack.WebHost.Endpoints
 							{ "image/png", TimeSpan.FromHours(1) },
 							{ "image/jpeg", TimeSpan.FromHours(1) },
 						},
+						AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
 						RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
 						CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
 					};
@@ -150,6 +151,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.RazorSearchPath = instance.RazorSearchPath;
 			this.RazorBaseType = instance.RazorBaseType;
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
+			this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
 			this.CustomHttpHandlers = instance.CustomHttpHandlers;
 		}
@@ -286,6 +288,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public string RazorSearchPath { get; set; }
 		public Type RazorBaseType { get; set; }
+
+		public HashSet<string> AppendUtf8CharsetOnContentTypes { get; set; }
 
 		public Dictionary<string, TimeSpan> AddMaxAgeForStaticMimeTypes { get; set; }
 

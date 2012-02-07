@@ -5,6 +5,8 @@ namespace ServiceStack.Common.Web
 {
 	public static class ContentType
 	{
+		public const string Utf8Suffix = "; charset=utf-8";
+
 		public const string HeaderContentType = "Content-Type";
 
 		public const string FormUrlEncoded = "application/x-www-form-urlencoded";
