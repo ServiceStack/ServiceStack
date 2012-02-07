@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -172,9 +173,25 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			var httpGetOrDelete = (httpMethod == "GET" || httpMethod == "DELETE");
 			webRequest.Accept = string.Format("{0}, */*", ContentType);
-			webRequest.Method = httpMethod;
+#if !SILVERLIGHT 
+                webRequest.Method = httpMethod;
+#else
+            //Methods others than GET and POST are only supported by Client request creator, see
+            //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
 
-			if (this.Credentials != null)
+            if (webRequest.CreatorInstance.GetType().Name == "BrowserHttpWebRequestCreator" //internal class :(
+                && httpMethod != "GET" && httpMethod != "POST") 
+            {
+                webRequest.Method = "POST"; 
+                webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
+            }else
+            {
+                webRequest.Method = httpMethod;
+            }
+#endif
+
+
+            if (this.Credentials != null)
 			{
 				webRequest.Credentials = this.Credentials;
 			}
