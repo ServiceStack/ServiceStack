@@ -9,9 +9,9 @@ using System.Runtime.Serialization;
 [assembly: AssemblyTitle("ServiceStack")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Liquidbit")]
+[assembly: AssemblyCompany("ServiceStack")]
 [assembly: AssemblyProduct("ServiceStack")]
-[assembly: AssemblyCopyright("Copyright © Liquidbit 2011")]
+[assembly: AssemblyCopyright("Copyright © ServiceStack 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,5 +33,5 @@ using System.Runtime.Serialization;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.4.2.*")]
+[assembly: AssemblyVersion("3.4.3.*")]
 //[assembly: AssemblyFileVersion("1.0.*")]

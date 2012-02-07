@@ -77,12 +77,12 @@ namespace ServiceStack.ServiceInterface
 					if (allowedMethods.Count == 0) continue;
 					var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
 
-					routes.Add(requestType, restService.Name, allowedVerbs, null);
+					routes.Add(requestType, requestType.Name, allowedVerbs, null);
 
 					var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
 					if (hasIdField)
 					{
-						var routePath = restService.Name + "/{" + IdUtils.IdField + "}";
+						var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
 						routes.Add(requestType, routePath, allowedVerbs, null);
 					}
 				}
