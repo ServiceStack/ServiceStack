@@ -33,13 +33,15 @@ namespace ServiceStack.ServiceClient.Web
 
 		protected ServiceClientBase()
 		{
-			this.StoreCookies = true;
 			this.HttpMethod = DefaultHttpMethod;
+			this.CookieContainer = new CookieContainer();
 			asyncClient = new AsyncServiceClient {
 				ContentType = ContentType,
 				StreamSerializer = SerializeToStream,
-				StreamDeserializer = StreamDeserializer
+				StreamDeserializer = StreamDeserializer,
+				CookieContainer = this.CookieContainer,
 			};
+			this.StoreCookies = true;
 		}
 
 		protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
@@ -120,10 +122,16 @@ namespace ServiceStack.ServiceClient.Web
 		/// </summary>
 		public bool AlwaysSendBasicAuthHeader { get; set; }
 
+
 		/// <summary>
 		/// Specifies if cookies should be stored
 		/// </summary>
-		public bool StoreCookies { get; set; }
+		private bool storeCookies;
+		public bool StoreCookies
+		{
+			get { return storeCookies; }
+			set { asyncClient.StoreCookies = storeCookies = value; }
+		}
 
 		public CookieContainer CookieContainer { get; set; }
 
@@ -278,10 +286,7 @@ namespace ServiceStack.ServiceClient.Web
 				if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
 
 				if (StoreCookies)
-				{
-					if (CookieContainer == null)
-						CookieContainer = new CookieContainer();
-
+				{					
 					client.CookieContainer = CookieContainer;
 				}
 
@@ -489,15 +494,16 @@ namespace ServiceStack.ServiceClient.Web
 
         protected ServiceClientBase()
         {
-            this.StoreCookies = true;
-            this.HttpMethod = DefaultHttpMethod;
-            asyncClient = new AsyncServiceClient
-            {
-                ContentType = ContentType,
-                StreamSerializer = SerializeToStream,
-                StreamDeserializer = StreamDeserializer
-            };
-        }
+			this.HttpMethod = DefaultHttpMethod;
+			this.CookieContainer = new CookieContainer();
+			asyncClient = new AsyncServiceClient {
+				ContentType = ContentType,
+				StreamSerializer = SerializeToStream,
+				StreamDeserializer = StreamDeserializer,
+				CookieContainer = this.CookieContainer,
+			};
+			this.StoreCookies = true;
+		}
 
         protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
             : this()
@@ -580,7 +586,12 @@ namespace ServiceStack.ServiceClient.Web
         /// <summary>
         /// Specifies if cookies should be stored
         /// </summary>
-        public bool StoreCookies { get; set; }
+		private bool storeCookies;
+		public bool StoreCookies
+		{
+			get { return storeCookies; }
+			set { asyncClient.StoreCookies = storeCookies = value; }
+		}
 
         public CookieContainer CookieContainer { get; set; }
 
@@ -719,9 +730,6 @@ namespace ServiceStack.ServiceClient.Web
 
                 if (StoreCookies)
                 {
-                    if (CookieContainer == null)
-                        CookieContainer = new CookieContainer();
-
                     client.CookieContainer = CookieContainer;
                 }
 

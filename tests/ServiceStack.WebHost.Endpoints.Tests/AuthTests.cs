@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.CacheAccess;
@@ -126,6 +127,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Dispose();
 		}
 
+		private static void FailOnAsyncError<T>(T response, Exception ex)
+		{
+			Assert.Fail(ex.Message);
+		}
+
 		IServiceClient GetClient()
 		{
 			return new JsonServiceClient(ListeningOn);
@@ -224,6 +230,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				Assert.Fail(webEx.Message);
 			}
+		}
+
+		[Test]
+		public void Does_work_with_CredentailsAuth_Async()
+		{
+			var client = GetClient();
+
+			var request = new Secured { Name = "test" };
+			SecureResponse response = null;
+
+			client.SendAsync<AuthResponse>(new Auth {
+				provider = CredentialsAuthProvider.Name,
+				UserName = "user",
+				Password = "p@55word",
+				RememberMe = true,
+			}, authResponse => {
+				Console.WriteLine(authResponse.Dump());
+				client.SendAsync<SecureResponse>(request, r => response = r, FailOnAsyncError);
+
+			}, FailOnAsyncError);
+
+			Thread.Sleep(TimeSpan.FromSeconds(1));
+			Assert.That(response.Result, Is.EqualTo(request.Name));
 		}
 		
 		[Test]

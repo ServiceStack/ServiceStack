@@ -25,6 +25,10 @@ namespace ServiceStack.ServiceClient.Web
 
 		public ICredentials Credentials { get; set; }
 
+		public bool StoreCookies;
+
+		public CookieContainer CookieContainer;
+
 		internal class RequestState<TResponse> : IDisposable
 		{
 			public RequestState()
@@ -141,6 +145,11 @@ namespace ServiceStack.ServiceClient.Web
 			}
 
 			var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+
+			if (StoreCookies)
+			{
+				webRequest.CookieContainer = CookieContainer;
+			}
 
 			var requestState = new RequestState<TResponse>
 			{
