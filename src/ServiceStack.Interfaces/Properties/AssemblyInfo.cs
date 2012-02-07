@@ -9,9 +9,9 @@ using System.Runtime.Serialization;
 [assembly: AssemblyTitle("ServiceStack.Interfaces")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("ServiceStack")]
 [assembly: AssemblyProduct("ServiceStack.Interfaces")]
-[assembly: AssemblyCopyright("Copyright © Liquidbit 2011")]
+[assembly: AssemblyCopyright("Copyright © ServiceStack 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
