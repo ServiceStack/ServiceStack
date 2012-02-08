@@ -35,3 +35,5 @@
  - [andidog](https://github.com/AndiDog) (AndiDog)
  - [chuckb](https://github.com/chuckb) (chuckb)
  - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
+ - [mj1856](https://github.com/mj1856) (Matt Johnson)
+ - [matthieugd](https://github.com/matthieugd) (Matthieu)
