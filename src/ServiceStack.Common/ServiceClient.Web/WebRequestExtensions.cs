@@ -97,31 +97,32 @@ namespace ServiceStack.ServiceClient.Web
 
             httpReq.ContentType = "multipart/form-data; boundary=" + boundary;
 
-            using (var ms = new MemoryStream())
+            var boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
+
+            var headerTemplate = "\r\n--" + boundary +
+                                 "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{0}\"\r\nContent-Type: {1}\r\n\r\n";
+
+            var header = string.Format(headerTemplate, fileName, mimeType);
+
+            var headerbytes = System.Text.Encoding.ASCII.GetBytes(header);
+
+            httpReq.ContentLength = fileStream.Length + headerbytes.Length + boundarybytes.Length;
+
+            using (Stream outputStream = httpReq.GetRequestStream())
             {
-                var boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
+                outputStream.Write(headerbytes, 0, headerbytes.Length);
 
-                var headerTemplate = "\r\n--" + boundary +
-                                     "\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{0}\"\r\nContent-Type: {1}\r\n\r\n";
+                byte[] buffer = new byte[4096];
+                int byteCount;
 
-                var header = string.Format(headerTemplate, fileName, mimeType);
+                while ((byteCount = fileStream.Read(buffer, 0, 4096)) > 0)
+                {
+                    outputStream.Write(buffer, 0, byteCount);
+                }
 
-                var headerbytes = System.Text.Encoding.ASCII.GetBytes(header);
+                outputStream.Write(boundarybytes, 0, boundarybytes.Length);
 
-                ms.Write(headerbytes, 0, headerbytes.Length);
-                fileStream.WriteTo(ms);
-
-                ms.Write(boundarybytes, 0, boundarybytes.Length);
-
-                httpReq.ContentLength = ms.Length;
-
-                var requestStream = httpReq.GetRequestStream();
-
-                ms.Position = 0;
-
-                ms.WriteTo(requestStream);
-
-                requestStream.Close();
+                outputStream.Close();
             }
         }
 
