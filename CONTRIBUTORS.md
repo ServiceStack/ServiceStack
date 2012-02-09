@@ -37,3 +37,5 @@
  - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
  - [mj1856](https://github.com/mj1856) (Matt Johnson)
  - [matthieugd](https://github.com/matthieugd) (Matthieu)
+ - [tomaszkubacki](https://github.com/tomaszkubacki) (Tomasz Kubacki)
+ 
