@@ -69,12 +69,38 @@ namespace ServiceStack.ServiceClient.Web
 
 			public Action<TResponse, Exception> OnError;
 
+#if SILVERLIGHT
+			public bool HandleCallbackOnUIThread { get; set; }
+#endif
+
+			public void HandleSuccess(TResponse response)
+			{
+				if (this.OnSuccess == null)
+					return;
+
+#if SILVERLIGHT
+				if (this.HandleCallbackOnUIThread)
+					System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnSuccess(response));
+				else
+					this.OnSuccess(response);
+#else
+				this.OnSuccess(response);
+#endif
+			}
+			
 			public void HandleError(TResponse response, Exception ex)
 			{
-				if (OnError != null)
-				{
-					OnError(response, ex);
-				}
+				if (this.OnError == null)
+					return;
+
+#if SILVERLIGHT
+				if (this.HandleCallbackOnUIThread)
+					System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnError(response, ex));
+				else
+					this.OnError(response, ex);
+#else
+				OnError(response, ex);
+#endif
 			}
 
 			public void StartTimer(TimeSpan timeOut)
@@ -122,6 +148,10 @@ namespace ServiceStack.ServiceClient.Web
 
 		public StreamDeserializerDelegate StreamDeserializer { get; set; }
 
+#if SILVERLIGHT
+		public bool HandleCallbackOnUIThread { get; set; }
+#endif
+
 		public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
 			Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
@@ -160,6 +190,9 @@ namespace ServiceStack.ServiceClient.Web
 				Request = request,
 				OnSuccess = onSuccess,
 				OnError = onError,
+#if SILVERLIGHT
+				HandleCallbackOnUIThread = HandleCallbackOnUIThread,
+#endif
 			};
 			requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
@@ -301,10 +334,7 @@ namespace ServiceStack.ServiceClient.Web
 						response = (T)this.StreamDeserializer(typeof(T), reader);
 					}
 
-					if (requestState.OnSuccess != null)
-					{
-						requestState.OnSuccess(response);
-					}
+					requestState.HandleSuccess(response);
 				}
 				catch (Exception ex)
 				{
@@ -381,4 +411,5 @@ namespace ServiceStack.ServiceClient.Web
 
 		public void Dispose() { }
 	}
+
 }
