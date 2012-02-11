@@ -45,6 +45,7 @@ namespace ServiceStack.ServiceClient.Web
 
 #if SILVERLIGHT
 			asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
+			asyncClient.UseBrowserHttpHandling = this.UseBrowserHttpHandling = false;
 #endif
 			this.StoreCookies = true;
 		}
@@ -108,12 +109,21 @@ namespace ServiceStack.ServiceClient.Web
 #endif
 
 #if SILVERLIGHT
-		private bool _handleCallbackOnUiThread;
+		private bool handleCallbackOnUiThread;
 		public bool HandleCallbackOnUIThread
 		{
-			get { return this._handleCallbackOnUiThread; }
-			set { asyncClient.HandleCallbackOnUIThread = this._handleCallbackOnUiThread = value; }
+			get { return this.handleCallbackOnUiThread; }
+			set { asyncClient.HandleCallbackOnUIThread = this.handleCallbackOnUiThread = value; }
 		}
+
+		private bool useBrowserHttpHandling;
+		public bool UseBrowserHttpHandling
+		{
+			get { return this.useBrowserHttpHandling; }
+			set { asyncClient.UseBrowserHttpHandling = this.useBrowserHttpHandling = value; }
+		}
+
+
 #endif
 
 		private ICredentials credentials;

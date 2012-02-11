@@ -150,6 +150,8 @@ namespace ServiceStack.ServiceClient.Web
 
 #if SILVERLIGHT
 		public bool HandleCallbackOnUIThread { get; set; }
+
+		public bool UseBrowserHttpHandling { get; set; }
 #endif
 
 		public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
@@ -175,12 +177,22 @@ namespace ServiceStack.ServiceClient.Web
 				}
 			}
 
+#if SILVERLIGHT
+
+			var creator = this.UseBrowserHttpHandling
+			              	? System.Net.Browser.WebRequestCreator.BrowserHttp
+			              	: System.Net.Browser.WebRequestCreator.ClientHttp;
+
+			var webRequest = (HttpWebRequest) creator.Create(new Uri(requestUri));
+
+#else
 			var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
 
 			if (StoreCookies)
 			{
 				webRequest.CookieContainer = CookieContainer;
 			}
+#endif
 
 			var requestState = new RequestState<TResponse>
 			{
@@ -206,25 +218,25 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			var httpGetOrDelete = (httpMethod == "GET" || httpMethod == "DELETE");
 			webRequest.Accept = string.Format("{0}, */*", ContentType);
+
 #if !SILVERLIGHT 
-                webRequest.Method = httpMethod;
+            webRequest.Method = httpMethod;
 #else
             //Methods others than GET and POST are only supported by Client request creator, see
             //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
-
-            if (webRequest.CreatorInstance.GetType().Name == "BrowserHttpWebRequestCreator" //internal class :(
-                && httpMethod != "GET" && httpMethod != "POST") 
+			
+            if (this.UseBrowserHttpHandling && httpMethod != "GET" && httpMethod != "POST") 
             {
                 webRequest.Method = "POST"; 
                 webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
-            }else
+            }
+			else
             {
                 webRequest.Method = httpMethod;
             }
 #endif
 
-
-            if (this.Credentials != null)
+			if (this.Credentials != null)
 			{
 				webRequest.Credentials = this.Credentials;
 			}
