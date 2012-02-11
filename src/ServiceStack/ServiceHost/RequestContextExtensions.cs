@@ -1,6 +1,9 @@
 using System;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Common;
+using ServiceStack.WebHost.Endpoints;
+using ServiceStack.Common.Web;
 
 namespace ServiceStack.ServiceHost
 {
@@ -16,7 +19,12 @@ namespace ServiceStack.ServiceHost
 		public static object ToOptimizedResult<T>(this IRequestContext requestContext, T dto) 
 			where T : class
 		{
-			return ContentSerializer<T>.ToOptimizedResult(requestContext, dto);
+			string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(requestContext, dto);
+			if (requestContext.CompressionType == null)
+				return (object)serializedDto;
+
+			byte[] compressedBytes = StreamExtensions.Compress(serializedDto, requestContext.CompressionType);
+			return new CompressedResult(compressedBytes, requestContext.CompressionType, requestContext.ContentType);
 		}
 
 		/// <summary>
@@ -28,8 +36,7 @@ namespace ServiceStack.ServiceHost
 			Func<T> factoryFn)
 			where T : class
 		{
-			return ContentCacheManager.Resolve(
-				factoryFn, requestContext, cacheClient, cacheKey, null);
+			return requestContext.ToOptimizedResultUsingCache(cacheClient, cacheKey, null, factoryFn);
 		}
 
 		/// <summary>
@@ -42,9 +49,12 @@ namespace ServiceStack.ServiceHost
 			TimeSpan? expireCacheIn, Func<T> factoryFn)
 			where T : class
 		{
-			return ContentCacheManager.Resolve(
-				factoryFn, requestContext,
-				cacheClient, cacheKey, expireCacheIn);
+			var cacheResult = cacheClient.ResolveFromCache(cacheKey, requestContext);
+			if (cacheResult != null)
+				return cacheResult;
+
+			cacheResult = cacheClient.Cache(cacheKey, factoryFn(), requestContext, expireCacheIn);
+			return cacheResult;
 		}
 
 		/// <summary>
@@ -57,7 +67,7 @@ namespace ServiceStack.ServiceHost
 		public static void RemoveFromCache(
 			this IRequestContext requestContext, ICacheClient cacheClient, params string[] cacheKeys)
 		{
-			ContentCacheManager.Clear(cacheClient, cacheKeys);
+			cacheClient.ClearCaches(cacheKeys);
 		}
 
 	}

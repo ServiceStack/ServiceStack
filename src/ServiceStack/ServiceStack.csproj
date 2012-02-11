@@ -107,11 +107,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CacheAccess.Providers\BasicPersistenceProviderCacheBase.cs" />
+    <Compile Include="CacheAccess.Providers\CacheClientExtensions.cs" />
     <Compile Include="CacheAccess.Providers\CacheManager.cs" />
     <Compile Include="CacheAccess.Providers\CacheTextManagerFactory.cs" />
     <Compile Include="CacheAccess.Providers\CompressableFileAndCacheTextManagerFactory.cs" />
-    <Compile Include="CacheAccess.Providers\ContentCacheManager.cs" />
-    <Compile Include="CacheAccess.Providers\ContentSerializer.cs" />
     <Compile Include="CacheAccess.Providers\FileAndCacheTextManager.cs" />
     <Compile Include="CacheAccess.Providers\FileSystemXmlCacheClient.cs" />
     <Compile Include="CacheAccess.Providers\JsonCacheManager.cs" />

@@ -49,8 +49,6 @@ namespace ServiceStack.WebHost.Endpoints
 
             var config = EndpointHostConfig.Instance;
 		    Config = config; // avoid cross-dependency on Config setter
-
-			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
 		}
 
 		// Config has changed
