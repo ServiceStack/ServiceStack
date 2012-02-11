@@ -108,17 +108,11 @@
   <ItemGroup>
     <Compile Include="CacheAccess.Providers\BasicPersistenceProviderCacheBase.cs" />
     <Compile Include="CacheAccess.Providers\CacheClientExtensions.cs" />
-    <Compile Include="CacheAccess.Providers\CacheManager.cs" />
-    <Compile Include="CacheAccess.Providers\CacheTextManagerFactory.cs" />
-    <Compile Include="CacheAccess.Providers\CompressableFileAndCacheTextManagerFactory.cs" />
     <Compile Include="CacheAccess.Providers\FileAndCacheTextManager.cs" />
     <Compile Include="CacheAccess.Providers\FileSystemXmlCacheClient.cs" />
-    <Compile Include="CacheAccess.Providers\JsonCacheManager.cs" />
-    <Compile Include="CacheAccess.Providers\JsvCacheManager.cs" />
     <Compile Include="CacheAccess.Providers\MemoryCacheClient.cs" />
     <Compile Include="CacheAccess.Providers\MultiCacheClient.cs" />
     <Compile Include="CacheAccess.Providers\PersistenceProviderCache.cs" />
-    <Compile Include="CacheAccess.Providers\XmlCacheManager.cs" />
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\ConfigurationResourceManager.cs" />
     <Compile Include="Configuration\ConfigUtils.cs" />

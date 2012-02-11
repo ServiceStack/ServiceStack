@@ -23,7 +23,14 @@ namespace ServiceStack.CacheAccess.Providers
 			string cacheKey, 
 			IRequestContext context)
 		{
-			string modifiers = GenerateModifiers(context);
+			string modifiers = null;
+			if (context.ContentType == ContentType.Json)
+			{
+				string jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
+				if (jsonp != null)
+					modifiers = ".jsonp," + jsonp.SafeVarName();
+			}
+
 			var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
 
 			bool doCompression = context.CompressionType != null;
@@ -62,7 +69,17 @@ namespace ServiceStack.CacheAccess.Providers
 
 			string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(context, responseDto);
 
-			string modifiers = GenerateModifiers(context);
+			string jsonp = null, modifiers = null;
+			if (context.ContentType == ContentType.Json)
+			{
+				jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
+				if (jsonp != null)
+				{
+					modifiers = ".jsonp," + jsonp.SafeVarName();
+					serializedDto = jsonp + "(" + serializedDto + ")";
+				}
+			}
+
 			var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
 			cacheClient.Set<string>(cacheKeySerialized, serializedDto, expireCacheIn);
 
@@ -105,17 +122,6 @@ namespace ServiceStack.CacheAccess.Providers
 			}
 
 			cacheClient.RemoveAll(allCacheKeys);
-		}
-
-		private static string GenerateModifiers(IRequestContext context)
-		{
-			if (context.ContentType == ContentType.Json)
-			{
-				string jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
-				if (jsonp != null)
-					return ".jsonp," + jsonp.SafeVarName();
-			}
-			return null;
 		}
 
 		public static string GetCacheKeyForSerialized(string cacheKey, string mimeType, string modifiers)
