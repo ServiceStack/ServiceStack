@@ -1,9 +1,11 @@
 using System;
-using System.IO;
 
 namespace ServiceStack.Service
 {
-	public interface IServiceClient : IServiceClientAsync, IOneWayClient, IReplyClient
+	public interface IServiceClient : IServiceClientAsync, IOneWayClient
+#if !SILVERLIGHT
+		, IReplyClient
+#endif
 	{
 	}
 
