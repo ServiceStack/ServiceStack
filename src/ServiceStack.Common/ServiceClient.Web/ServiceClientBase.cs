@@ -46,6 +46,7 @@ namespace ServiceStack.ServiceClient.Web
 #if SILVERLIGHT
 			asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
 			asyncClient.UseBrowserHttpHandling = this.UseBrowserHttpHandling = false;
+			asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
 #endif
 			this.StoreCookies = true;
 		}
@@ -60,6 +61,7 @@ namespace ServiceStack.ServiceClient.Web
 		public void SetBaseUri(string baseUri, string format)
 		{
 			this.BaseUri = baseUri;
+			this.asyncClient.BaseUri = baseUri;
 			this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + format + "/syncreply/";
 			this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
 		}
@@ -123,6 +125,12 @@ namespace ServiceStack.ServiceClient.Web
 			set { asyncClient.UseBrowserHttpHandling = this.useBrowserHttpHandling = value; }
 		}
 
+		private bool shareCookiesWithBrowser;
+		public bool ShareCookiesWithBrowser
+		{
+			get { return this.shareCookiesWithBrowser; }
+			set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
+		}
 
 #endif
 

@@ -30,6 +30,8 @@ namespace ServiceStack.ServiceClient.Web
 
 		public CookieContainer CookieContainer { get; set; }
 
+		public string BaseUri { get; set; }
+
 		internal class RequestState<TResponse> : IDisposable
 		{
 			public RequestState()
@@ -152,6 +154,8 @@ namespace ServiceStack.ServiceClient.Web
 		public bool HandleCallbackOnUIThread { get; set; }
 
 		public bool UseBrowserHttpHandling { get; set; }
+
+		public bool ShareCookiesWithBrowser { get; set; }
 #endif
 
 		public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
@@ -184,6 +188,18 @@ namespace ServiceStack.ServiceClient.Web
 			              	: System.Net.Browser.WebRequestCreator.ClientHttp;
 
 			var webRequest = (HttpWebRequest) creator.Create(new Uri(requestUri));
+
+			if (StoreCookies && !UseBrowserHttpHandling)
+			{
+				if (ShareCookiesWithBrowser)
+				{
+					if (CookieContainer == null)
+						CookieContainer = new CookieContainer();
+					CookieContainer.SetCookies(new Uri(BaseUri), System.Windows.Browser.HtmlPage.Document.Cookies);
+				}
+				
+				webRequest.CookieContainer = CookieContainer;	
+			}
 
 #else
 			var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
@@ -345,6 +361,19 @@ namespace ServiceStack.ServiceClient.Web
 					{
 						response = (T)this.StreamDeserializer(typeof(T), reader);
 					}
+
+#if SILVERLIGHT
+					if (this.StoreCookies && this.ShareCookiesWithBrowser && !this.UseBrowserHttpHandling)
+					{
+						// browser cookies must be set on the ui thread
+						System.Windows.Deployment.Current.Dispatcher.BeginInvoke(
+							() =>
+								{
+									var cookieHeader = this.CookieContainer.GetCookieHeader(new Uri(BaseUri));
+									System.Windows.Browser.HtmlPage.Document.Cookies = cookieHeader;
+								});
+					}
+#endif
 
 					requestState.HandleSuccess(response);
 				}
