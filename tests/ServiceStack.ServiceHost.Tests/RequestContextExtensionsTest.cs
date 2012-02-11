@@ -23,8 +23,7 @@ namespace ServiceStack.ServiceHost.Tests
             var httpRequestContext = new HttpRequestContext(httpReq, httpRes, dto);
 
             var appHost = new TestAppHost();
-            HtmlFormat.Register(appHost);
-            ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;            
+            HtmlFormat.Register(appHost);        
             
             object result = RequestContextExtensions.ToOptimizedResult(httpRequestContext, dto);
             Assert.IsNotNull(result);
