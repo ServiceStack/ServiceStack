@@ -26,9 +26,9 @@ namespace ServiceStack.ServiceClient.Web
 
 		public ICredentials Credentials { get; set; }
 
-		public bool StoreCookies;
+		public bool StoreCookies { get; set; }
 
-		public CookieContainer CookieContainer;
+		public CookieContainer CookieContainer { get; set; }
 
 		internal class RequestState<TResponse> : IDisposable
 		{
