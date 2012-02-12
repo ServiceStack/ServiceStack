@@ -164,6 +164,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					break;
 
 				case ContentType.Json:
+				case ContentType.Json + ContentType.Utf8Suffix:
 					result = JsonSerializer.DeserializeFromString<T>(contents);
 					break;
 

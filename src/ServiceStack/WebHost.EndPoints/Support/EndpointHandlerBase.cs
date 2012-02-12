@@ -14,7 +14,7 @@ using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
-	public abstract class EndpointHandlerBase 
+	public abstract class EndpointHandlerBase
 		: IServiceStackHttpHandler, IHttpHandler
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(EndpointHandlerBase));
@@ -84,17 +84,37 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 			}
 
+			var request = CreateContentTypeRequest(httpReq, operationType, contentType);
+			return request;
+		}
+
+		protected static object CreateContentTypeRequest(IHttpRequest httpReq, Type requestType, string contentType)
+		{
 			try
 			{
-				var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(contentType);
-				return deserializer(operationType, httpReq.InputStream);
+				Func<IHttpRequest, object> requestFactoryFn;
+				(ServiceManager ?? EndpointHost.ServiceManager).ServiceController.RequestTypeFactoryMap.TryGetValue(requestType, out requestFactoryFn);
+				if (requestFactoryFn != null)
+				{
+					return requestFactoryFn(httpReq);
+				}
+
+				if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
+				{
+					var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(contentType);
+					if (deserializer != null)
+					{
+						return deserializer(requestType, httpReq.InputStream);
+					}
+				}
 			}
 			catch (Exception ex)
 			{
 				var msg = "Could not deserialize '{0}' request using {1}'\nError: {2}"
-					.Fmt(contentType, operationType, ex);
+					.Fmt(contentType, requestType, ex);
 				throw new SerializationException(msg);
 			}
+			return null;
 		}
 
 		protected static bool DefaultHandledRequest(HttpListenerContext context)
@@ -164,7 +184,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				: EndpointHost.ServiceOperations.GetOperationType(operationName);
 		}
 
-		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes, 
+		protected static object ExecuteService(object request, EndpointAttributes endpointAttributes,
 			IHttpRequest httpReq, IHttpResponse httpRes)
 		{
 			return EndpointHost.ExecuteService(request, endpointAttributes, httpReq, httpRes);
@@ -213,10 +233,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1 &&
 					request.UserHostAddress.IndexOf("::") == -1;
-				var pieces = request.UserHostAddress.Split(new char[] {':' },StringSplitOptions.RemoveEmptyEntries);
+				var pieces = request.UserHostAddress.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
 				var ipAddressNumber = isIpv4Address
 					? pieces[0]
-					: (pieces.Length == 9 || pieces.Length == 6 || pieces.Length == 4 
+					: (pieces.Length == 9 || pieces.Length == 6 || pieces.Length == 4
 						? request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'))
 						: request.UserHostAddress);
 
@@ -299,6 +319,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				throw ex;
 			}
 		}
-	
+
 	}
 }

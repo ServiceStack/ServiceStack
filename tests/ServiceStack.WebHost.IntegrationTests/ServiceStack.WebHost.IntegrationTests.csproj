@@ -170,6 +170,7 @@
     <Compile Include="Tests\AuthTestsBase.cs" />
     <Compile Include="Services\BatchWidgetValidationService.cs" />
     <Compile Include="Services\CachedMoviesService.cs" />
+    <Compile Include="Tests\RawRequestTests.cs" />
     <Compile Include="Tests\ManageRolesTests.cs" />
     <Compile Include="Services\TestService.cs" />
     <Compile Include="Services\CustomerService.cs" />

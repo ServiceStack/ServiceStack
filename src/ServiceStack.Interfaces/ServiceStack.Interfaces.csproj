@@ -461,6 +461,7 @@
     <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceHost\IRequiresRequestStream.cs" />
     <Compile Include="ServiceHost\EndpointAttributes.cs">
       <SubType>Code</SubType>
     </Compile>

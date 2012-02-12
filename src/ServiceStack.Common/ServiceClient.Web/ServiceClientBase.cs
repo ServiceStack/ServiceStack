@@ -42,13 +42,13 @@ namespace ServiceStack.ServiceClient.Web
 				StreamDeserializer = StreamDeserializer,
 				CookieContainer = this.CookieContainer,
 			};
+			this.StoreCookies = true; //leave
 
 #if SILVERLIGHT
 			asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
 			asyncClient.UseBrowserHttpHandling = this.UseBrowserHttpHandling = false;
 			asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
 #endif
-			this.StoreCookies = true;
 		}
 
 		protected ServiceClientBase(string syncReplyBaseUri, string asyncOneWayBaseUri)
