@@ -148,6 +148,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			} 
 		}
 
+        [Test]
+        public void Can_GET_single_gethttpresult_using_RestClient_with_JSONP_from_service_returning_HttpResult()
+        {
+            var url = ListeningOn + "gethttpresult?callback=cb";
+            string response;
+
+            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            webReq.Accept = "*/*";
+            using (var webRes = webReq.GetResponse())
+            {
+                Assert.That(webRes.ContentType, Is.StringStarting(ContentType.Json));
+                response = webRes.DownloadText();
+            }
+
+            Assert.That(response, Is.Not.Null, "No response received");
+            Console.WriteLine(response);
+            Assert.That(response, Is.StringStarting("cb("));
+            Assert.That(response, Is.StringEnding(")"));
+        } 
+
 		[Test, Ignore]
 		public void DebugHost()
 		{
