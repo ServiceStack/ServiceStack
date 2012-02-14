@@ -26,9 +26,11 @@ namespace ServiceStack.ServiceClient.Web
 
 		public ICredentials Credentials { get; set; }
 
-		public bool StoreCookies;
+		public bool StoreCookies { get; set; }
 
-		public CookieContainer CookieContainer;
+		public CookieContainer CookieContainer { get; set; }
+
+		public string BaseUri { get; set; }
 
 		internal class RequestState<TResponse> : IDisposable
 		{
@@ -69,12 +71,38 @@ namespace ServiceStack.ServiceClient.Web
 
 			public Action<TResponse, Exception> OnError;
 
+#if SILVERLIGHT
+			public bool HandleCallbackOnUIThread { get; set; }
+#endif
+
+			public void HandleSuccess(TResponse response)
+			{
+				if (this.OnSuccess == null)
+					return;
+
+#if SILVERLIGHT
+				if (this.HandleCallbackOnUIThread)
+					System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnSuccess(response));
+				else
+					this.OnSuccess(response);
+#else
+				this.OnSuccess(response);
+#endif
+			}
+			
 			public void HandleError(TResponse response, Exception ex)
 			{
-				if (OnError != null)
-				{
-					OnError(response, ex);
-				}
+				if (this.OnError == null)
+					return;
+
+#if SILVERLIGHT
+				if (this.HandleCallbackOnUIThread)
+					System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnError(response, ex));
+				else
+					this.OnError(response, ex);
+#else
+				OnError(response, ex);
+#endif
 			}
 
 			public void StartTimer(TimeSpan timeOut)
@@ -122,6 +150,14 @@ namespace ServiceStack.ServiceClient.Web
 
 		public StreamDeserializerDelegate StreamDeserializer { get; set; }
 
+#if SILVERLIGHT
+		public bool HandleCallbackOnUIThread { get; set; }
+
+		public bool UseBrowserHttpHandling { get; set; }
+
+		public bool ShareCookiesWithBrowser { get; set; }
+#endif
+
 		public void SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
 			Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
 		{
@@ -145,12 +181,34 @@ namespace ServiceStack.ServiceClient.Web
 				}
 			}
 
+#if SILVERLIGHT
+
+			var creator = this.UseBrowserHttpHandling
+			              	? System.Net.Browser.WebRequestCreator.BrowserHttp
+			              	: System.Net.Browser.WebRequestCreator.ClientHttp;
+
+			var webRequest = (HttpWebRequest) creator.Create(new Uri(requestUri));
+
+			if (StoreCookies && !UseBrowserHttpHandling)
+			{
+				if (ShareCookiesWithBrowser)
+				{
+					if (CookieContainer == null)
+						CookieContainer = new CookieContainer();
+					CookieContainer.SetCookies(new Uri(BaseUri), System.Windows.Browser.HtmlPage.Document.Cookies);
+				}
+				
+				webRequest.CookieContainer = CookieContainer;	
+			}
+
+#else
 			var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
 
 			if (StoreCookies)
 			{
 				webRequest.CookieContainer = CookieContainer;
 			}
+#endif
 
 			var requestState = new RequestState<TResponse>
 			{
@@ -160,6 +218,9 @@ namespace ServiceStack.ServiceClient.Web
 				Request = request,
 				OnSuccess = onSuccess,
 				OnError = onError,
+#if SILVERLIGHT
+				HandleCallbackOnUIThread = HandleCallbackOnUIThread,
+#endif
 			};
 			requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
@@ -173,25 +234,25 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			var httpGetOrDelete = (httpMethod == "GET" || httpMethod == "DELETE");
 			webRequest.Accept = string.Format("{0}, */*", ContentType);
+
 #if !SILVERLIGHT 
-                webRequest.Method = httpMethod;
+            webRequest.Method = httpMethod;
 #else
             //Methods others than GET and POST are only supported by Client request creator, see
             //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
-
-            if (webRequest.CreatorInstance.GetType().Name == "BrowserHttpWebRequestCreator" //internal class :(
-                && httpMethod != "GET" && httpMethod != "POST") 
+			
+            if (this.UseBrowserHttpHandling && httpMethod != "GET" && httpMethod != "POST") 
             {
                 webRequest.Method = "POST"; 
                 webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
-            }else
+            }
+			else
             {
                 webRequest.Method = httpMethod;
             }
 #endif
 
-
-            if (this.Credentials != null)
+			if (this.Credentials != null)
 			{
 				webRequest.Credentials = this.Credentials;
 			}
@@ -301,10 +362,20 @@ namespace ServiceStack.ServiceClient.Web
 						response = (T)this.StreamDeserializer(typeof(T), reader);
 					}
 
-					if (requestState.OnSuccess != null)
+#if SILVERLIGHT
+					if (this.StoreCookies && this.ShareCookiesWithBrowser && !this.UseBrowserHttpHandling)
 					{
-						requestState.OnSuccess(response);
+						// browser cookies must be set on the ui thread
+						System.Windows.Deployment.Current.Dispatcher.BeginInvoke(
+							() =>
+								{
+									var cookieHeader = this.CookieContainer.GetCookieHeader(new Uri(BaseUri));
+									System.Windows.Browser.HtmlPage.Document.Cookies = cookieHeader;
+								});
 					}
+#endif
+
+					requestState.HandleSuccess(response);
 				}
 				catch (Exception ex)
 				{
@@ -381,4 +452,5 @@ namespace ServiceStack.ServiceClient.Web
 
 		public void Dispose() { }
 	}
+
 }

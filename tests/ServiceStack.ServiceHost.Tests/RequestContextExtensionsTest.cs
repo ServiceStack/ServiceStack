@@ -3,6 +3,7 @@ using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.ServiceHost.Tests
@@ -24,9 +25,9 @@ namespace ServiceStack.ServiceHost.Tests
 
             var appHost = new TestAppHost();
             HtmlFormat.Register(appHost);
-            ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;            
+			EndpointHost.ContentTypeFilter = appHost.ContentTypeFilters;  
             
-            object result = RequestContextExtensions.ToOptimizedResult(httpRequestContext, dto);
+            object result = httpRequestContext.ToOptimizedResult(dto);
             Assert.IsNotNull(result);
             Assert.IsTrue(result is CompressedResult);
         }
