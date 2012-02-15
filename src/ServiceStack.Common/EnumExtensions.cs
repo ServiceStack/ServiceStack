@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 
 namespace ServiceStack.Common
 {
@@ -39,7 +41,11 @@ namespace ServiceStack.Common
 
 		public static List<string> ToList(this Enum @enum)
 		{
+#if !SILVERLIGHT4
 			return new List<string>(Enum.GetNames(@enum.GetType()));
+#else
+			return @enum.GetType().GetFields(BindingFlags.Static | BindingFlags.Public).Select(fi => fi.Name).ToList();
+#endif
 		}
 
 		public static bool Has<T>(this Enum type, T value)
