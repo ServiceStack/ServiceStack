@@ -18,15 +18,8 @@ namespace ServiceStack.WebHost.Endpoints
 		: IFunqlet, IDisposable, IAppHost
 	{
 		private readonly ILog log = LogManager.GetLogger(typeof(AppHostBase));
-		private readonly DateTime startTime;
 
 		public static AppHostBase Instance { get; protected set; }
-
-		protected AppHostBase()
-		{
-			this.startTime = DateTime.Now;
-			log.Info("Begin Initializing Application...");
-		}
 
 		protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
 		{
@@ -93,9 +86,6 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 
 			EndpointHost.AfterInit();
-
-			var elapsed = DateTime.Now - this.startTime;
-			log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
 		public abstract void Configure(Container container);
