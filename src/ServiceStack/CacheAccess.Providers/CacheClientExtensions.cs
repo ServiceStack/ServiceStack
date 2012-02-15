@@ -77,6 +77,11 @@ namespace ServiceStack.CacheAccess.Providers
 				{
 					modifiers = ".jsonp," + jsonp.SafeVarName();
 					serializedDto = jsonp + "(" + serializedDto + ")";
+
+					//Add a default expire timespan for jsonp requests,
+					//because they aren't cleared when calling ClearCaches()
+					if (expireCacheIn == null)
+						expireCacheIn = EndpointHost.Config.DefaultJsonpCacheExpiration;
 				}
 			}
 
