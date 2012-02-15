@@ -7,6 +7,10 @@ namespace ServiceStack.Messaging
 	{
 		public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
 		private readonly IMessageService messageService;
+
+		public Func<IMessage, IMessage> RequestFilter { get; set; }
+		public Func<object, object> ResponseFilter { get; set; }
+
 		private readonly Func<IMessage<T>, object> processMessageFn;
 		private readonly Action<IMessage<T>, Exception> processExceptionFn;
 		public int RetryCount { get; set; }
@@ -34,7 +38,24 @@ namespace ServiceStack.Messaging
 
 		public IMessageHandler CreateMessageHandler()
 		{
-			return new MessageHandler<T>(messageService, processMessageFn, 
+			if (this.RequestFilter == null && this.ResponseFilter == null)
+			{
+				return new MessageHandler<T>(messageService, processMessageFn, 
+					processExceptionFn, this.RetryCount);
+			}
+
+			return new MessageHandler<T>(messageService, msg => 
+				{
+					if (this.RequestFilter != null)
+						msg = (IMessage<T>) this.RequestFilter(msg);
+
+					var result = this.processMessageFn(msg);
+
+					if (this.ResponseFilter != null)
+						result = this.ResponseFilter(result);
+
+					return result;
+				},
 				processExceptionFn, this.RetryCount);
 		}
 	}

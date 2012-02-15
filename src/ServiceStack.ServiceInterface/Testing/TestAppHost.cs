@@ -61,6 +61,11 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; private set; }
 
+		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+		{
+			get { throw new NotImplementedException(); }
+		}
+
 		public EndpointHostConfig Config { get; set; }
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)

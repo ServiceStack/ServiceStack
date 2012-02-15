@@ -130,6 +130,11 @@ namespace ServiceStack.WebHost.Endpoints
 			return this.Container.TryResolve<T>();
 		}
 
+		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+		{
+			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
+		}
+
 		public IContentTypeFilter ContentTypeFilters
 		{
 			get

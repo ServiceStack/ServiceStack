@@ -15,29 +15,36 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensions));
 
-		public static bool WriteToOutputStream(IHttpResponse response, object result)
+        public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
 		{
 			//var responseStream = response.OutputStream;
+
 
 			var streamWriter = result as IStreamWriter;
 			if (streamWriter != null)
 			{
-				streamWriter.WriteTo(response.OutputStream);
+                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+                streamWriter.WriteTo(response.OutputStream);
+                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 				return true;
 			}
 
 			var stream = result as Stream;
 			if (stream != null)
 			{
-				stream.WriteTo(response.OutputStream);
+                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+                stream.WriteTo(response.OutputStream);
+                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 				return true;
 			}
 
 			var bytes = result as byte[];
 			if (bytes != null)
 			{
-				response.ContentType = ContentType.Binary;
-				response.OutputStream.Write(bytes, 0, bytes.Length);
+                response.ContentType = ContentType.Binary;
+                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+                response.OutputStream.Write(bytes, 0, bytes.Length);
+                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 				return true;
 			}
 
@@ -135,7 +142,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						}
 					}
 
-					if (WriteToOutputStream(response, result))
+					if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
 					{
 						response.Flush(); //required for Compression
 						return true;
@@ -152,6 +159,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						response.ContentType = defaultContentType;
 					}
+                    if (bodyPrefix != null && response.ContentType.IndexOf(ContentType.Json) >= 0)
+                    {
+                        response.ContentType = ContentType.JavaScript;                        
+                    }
 
 					if (EndpointHost.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
 					{

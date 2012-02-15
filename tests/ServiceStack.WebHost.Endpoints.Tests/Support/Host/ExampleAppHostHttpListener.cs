@@ -327,6 +327,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
+    [DataContract]
+    public class GetHttpResult {}
+
+    [DataContract]
+    public class GetHttpResultResponse
+    {
+        [DataMember]
+        public string Result { get; set; }
+    }
+
+    public class HttpResultService : IService<GetHttpResult>
+    {
+        public object Execute(GetHttpResult request)
+        {
+            var getHttpResultResponse = new GetHttpResultResponse { Result = "result" };
+            return new HttpResult(getHttpResultResponse);
+        }
+    }
 
 	public class ExampleAppHostHttpListener
 		: AppHostHttpListenerBase
@@ -364,6 +382,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<Movie>("/custom-movies/{Id}")
 				.Add<GetFactorial>("/fact/{ForNumber}")
 				.Add<MoviesZip>("/movies.zip")
+                .Add<GetHttpResult>("/gethttpresult")
 			;
 
 			container.Register<IResourceManager>(new ConfigurationResourceManager());

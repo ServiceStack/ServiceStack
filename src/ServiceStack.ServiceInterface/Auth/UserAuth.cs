@@ -28,7 +28,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public virtual DateTime CreatedDate { get; set; }
 		public virtual DateTime ModifiedDate { get; set; }
 
-		public void PopulateMissing(UserOAuthProvider authProvider)
+		public virtual void PopulateMissing(UserOAuthProvider authProvider)
 		{
 			if (!authProvider.FirstName.IsNullOrEmpty())
 				this.FirstName = authProvider.FirstName;
@@ -66,7 +66,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public virtual DateTime CreatedDate { get; set; }
 		public virtual DateTime ModifiedDate { get; set; }
 
-		public void PopulateMissing(IOAuthTokens withTokens)
+		public virtual void PopulateMissing(IOAuthTokens withTokens)
 		{
 			if (!withTokens.UserId.IsNullOrEmpty())
 				this.UserId = withTokens.UserId;

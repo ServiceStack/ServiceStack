@@ -23,6 +23,7 @@ namespace ServiceStack.ServiceHost
 			this.ResponseServiceTypeMap = new Dictionary<Type, Type>();
 			this.AllOperationTypes = new List<Type>();
 			this.OperationTypes = new List<Type>();
+			this.RequestTypeFactoryMap = new Dictionary<Type, Func<IHttpRequest, object>>();
 			this.ServiceTypes = new HashSet<Type>();
 			this.EnableAccessRestrictions = true;
 			this.routes = new ServiceRoutes();
@@ -46,6 +47,8 @@ namespace ServiceStack.ServiceHost
 		public IList<Type> AllOperationTypes { get; protected set; }
 
 		public IList<Type> OperationTypes { get; protected set; }
+
+		public Dictionary<Type, Func<IHttpRequest, object>> RequestTypeFactoryMap { get; set; }
 
 		public HashSet<Type> ServiceTypes { get; protected set; }
 
@@ -109,6 +112,15 @@ namespace ServiceStack.ServiceHost
 					this.ResponseServiceTypeMap[responseType] = serviceType;
 					this.AllOperationTypes.Add(responseType);
 					this.OperationTypes.Add(responseType);
+				}
+
+				if (typeof(IRequiresRequestStream).IsAssignableFrom(requestType))
+				{
+					this.RequestTypeFactoryMap[requestType] = httpReq => {
+						var rawReq = (IRequiresRequestStream) requestType.CreateInstance();
+						rawReq.RequestStream = httpReq.InputStream;
+						return rawReq;
+					};
 				}
 
 				Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",

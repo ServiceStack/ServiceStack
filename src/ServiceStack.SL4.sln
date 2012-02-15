@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.SL5", "ServiceStack.Common.SL5\ServiceStack.Common.SL5.csproj", "{603AA9B9-51DE-4FE5-A6BB-125752228434}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.SL4", "ServiceStack.Common.SL4\ServiceStack.Common.SL4.csproj", "{603AA9B9-51DE-4FE5-A6BB-125752228434}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces.SL5", "ServiceStack.Interfaces.SL5\ServiceStack.Interfaces.SL5.csproj", "{36E79FA9-13BB-47BA-B7E8-2A45B8FEBE01}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces.SL4", "ServiceStack.Interfaces.SL4\ServiceStack.Interfaces.SL4.csproj", "{36E79FA9-13BB-47BA-B7E8-2A45B8FEBE01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.SL5", "..\..\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj", "{CC38D2CC-5E47-4218-9994-5DDEE36820FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Text.SL4", "..\..\ServiceStack.Text\src\ServiceStack.Text.SL4\ServiceStack.Text.SL4.csproj", "{CC38D2CC-5E47-4218-9994-5DDEE36820FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

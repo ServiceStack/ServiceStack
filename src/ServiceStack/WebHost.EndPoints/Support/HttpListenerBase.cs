@@ -303,6 +303,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			get { return EndpointHost.Config.ServiceController.Routes; }
 		}
 
+		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+		{
+			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
+		}
+
 		public IContentTypeFilter ContentTypeFilters
 		{
 			get
