@@ -99,6 +99,7 @@ namespace ServiceStack.WebHost.Endpoints
 						AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
 						RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
 						CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+						DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0)
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -154,6 +155,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
 			this.CustomHttpHandlers = instance.CustomHttpHandlers;
+			this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -297,6 +299,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
 		public Dictionary<HttpStatusCode, IHttpHandler> CustomHttpHandlers { get; set; }
+
+		public TimeSpan DefaultJsonpCacheExpiration { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace
