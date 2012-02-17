@@ -30,7 +30,7 @@ namespace ServiceStack.MiniProfiler.UI
 			const string format =
 @"<link rel=""stylesheet"" type=""text/css"" href=""{path}ss-includes.css?v={version}""{closeXHTML}>
 <script type=""text/javascript"">
-    if (!window.jQuery) document.write(unescape(""%3Cscript src='{path}ss-jquip.all.js?v={version}' type='text/javascript'%3E%3C/script%3E""));
+    if (!window.jquip) document.write(unescape(""%3Cscript src='{path}ss-jquip.all.js?v={version}' type='text/javascript'%3E%3C/script%3E""));
 </script>
 <script type=""text/javascript"" src=""{path}ss-includes.js?v={version}""></script>
 <script type=""text/javascript"">
