@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Assert.That(response.Result, Is.EqualTo(expectedValue));
 		}
 
-		[Test, Ignore("TODO LATER")]
+		[Test]
 		public void Can_Handle_Exception_from_AlwaysThrowService()
 		{
 			var client = CreateNewServiceClient();

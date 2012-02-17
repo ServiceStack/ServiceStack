@@ -92,6 +92,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
 
+				var httpResult = response as IHttpResult;
+				if (httpResult != null)
+					response = httpResult.Response;
+
 				return requestMsg.Headers.Action == null
 					? Message.CreateMessage(requestMsg.Version, null, response)
 					: Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
