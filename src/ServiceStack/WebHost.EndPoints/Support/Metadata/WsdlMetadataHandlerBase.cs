@@ -55,8 +55,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Metadata
 			}
 			else
 			{
-				wsdlTemplate.ReplyEndpointUri = baseUri + "SyncReply.svc";
-				wsdlTemplate.OneWayEndpointUri = baseUri + "AsyncOneWay.svc";
+				var suffix = GetType().Name.StartsWith("Soap11") ? "soap11" : "soap12";
+				wsdlTemplate.ReplyEndpointUri = baseUri + suffix;
+				wsdlTemplate.OneWayEndpointUri = baseUri + suffix;
 			}
 
 			return wsdlTemplate;
