@@ -231,7 +231,8 @@ namespace ServiceStack.Common.Web
 		public StreamDeserializerDelegate GetStreamDeserializer(string contentType)
 		{
 			StreamDeserializerDelegate streamReader;
-			if (this.ContentTypeDeserializers.TryGetValue(contentType, out streamReader))
+            var realContentType = contentType.Split(';')[0].Trim();
+			if (this.ContentTypeDeserializers.TryGetValue(realContentType, out streamReader))
 			{
 				return streamReader;
 			}
