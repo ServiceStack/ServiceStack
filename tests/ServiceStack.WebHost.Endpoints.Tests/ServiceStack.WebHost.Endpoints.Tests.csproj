@@ -131,6 +131,7 @@
     <Compile Include="CompressionTests.cs" />
     <Compile Include="IntegrationTests\ErrorRestTests.cs" />
     <Compile Include="ProtoBufTests\ProtoBufServiceClient.cs" />
+    <Compile Include="ProtoBufTests\ProtoBufServiceTests.cs" />
     <Compile Include="TodoListTests.cs" />
     <Compile Include="CustomerServiceValidationTests.cs" />
     <Compile Include="ExceptionHandlingTests.cs" />

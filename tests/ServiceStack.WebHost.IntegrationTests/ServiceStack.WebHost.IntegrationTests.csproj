@@ -59,6 +59,9 @@
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>..\..\lib\tests\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core">
@@ -165,6 +168,8 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="ProtoBufTests\ProtoBufServiceClient.cs" />
+    <Compile Include="ProtoBufTests\ProtoBufServiceTests.cs" />
     <Compile Include="Services\ContentManagerOnly.cs" />
     <Compile Include="Services\EchoMethodService.cs" />
     <Compile Include="Tests\AuthTestsBase.cs" />

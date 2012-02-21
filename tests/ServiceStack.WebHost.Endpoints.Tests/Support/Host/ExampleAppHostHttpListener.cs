@@ -358,6 +358,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			//log = LogManager.GetLogger(typeof(ExampleAppHostHttpListener));
 		}
 
+		public Action<Container> ConfigureFilter { get; set; }
+
 		public override void Configure(Container container)
 		{
 			EndpointHostConfig.Instance.GlobalResponseHeaders.Clear();
@@ -402,6 +404,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 			//var movies = container.Resolve<IDbConnectionFactory>().Exec(x => x.Select<Movie>());
 			//Console.WriteLine(movies.Dump());
+
+			if (ConfigureFilter != null)
+			{
+				ConfigureFilter(container);
+			}
 		}
 	}
 
