@@ -77,6 +77,10 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="protobuf-net, Version=1.0.0.278, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\tests\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">
@@ -126,7 +130,7 @@
     <Compile Include="AuthTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="IntegrationTests\ErrorRestTests.cs" />
-    <Compile Include="RawRequestTests.cs" />
+    <Compile Include="ProtoBufTests\ProtoBufServiceClient.cs" />
     <Compile Include="TodoListTests.cs" />
     <Compile Include="CustomerServiceValidationTests.cs" />
     <Compile Include="ExceptionHandlingTests.cs" />
