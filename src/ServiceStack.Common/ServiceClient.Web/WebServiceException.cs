@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Common.Utils;
+using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.ServiceClient.Web
@@ -74,6 +76,34 @@ namespace ServiceStack.ServiceClient.Web
 				}
 				return serverStackTrace;
 			}
+		}
+
+		public ResponseStatus ResponseStatus
+		{
+			get
+			{
+				if (this.ResponseDto == null)
+					return null;
+
+				var hasResponseStatus = this.ResponseDto as IHasResponseStatus;
+				if (hasResponseStatus != null)
+					return hasResponseStatus.ResponseStatus;
+
+				var propertyInfo = this.ResponseDto.GetType().GetProperty("ResponseStatus");
+				if (propertyInfo == null)
+					return null;
+
+				return ReflectionUtils.GetProperty(this.ResponseDto, propertyInfo) as ResponseStatus;
+			}
+		}
+
+		public List<ResponseError> GetFieldErrors()
+		{
+			var responseStatus = ResponseStatus;
+			if (responseStatus != null)
+				return responseStatus.Errors ?? new List<ResponseError>();
+
+			return new List<ResponseError>();
 		}
 	}
 }
