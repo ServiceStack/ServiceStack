@@ -84,7 +84,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			return null;
 		}
 
-		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
+		public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
 		{
 			if (authProviders.Length == 0)
 				throw new ArgumentNullException("authProviders");

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints;
 
@@ -17,18 +18,20 @@ namespace ServiceStack.ServiceInterface
 		private readonly Func<IAuthSession> sessionFactory;
 		private readonly IAuthProvider[] authProviders;
 
-		public List<Type> RegisterServices { get; set; }
+		public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 		public List<IPlugin> RegisterPlugins { get; set; }
-		
+
 		public bool IncludeAssignRoleServices
 		{
 			set
 			{
 				if (!value)
 				{
-					RegisterServices.RemoveAll(x =>
-						x == typeof(AssignRolesService)
-						|| x == typeof(UnAssignRolesService));
+					(from registerService in ServiceRoutes
+					 where registerService.Key == typeof(AssignRolesService)
+						|| registerService.Key == typeof(UnAssignRolesService)
+					 select registerService.Key)
+					 .ForEach(x => ServiceRoutes.Remove(x));
 				}
 			}
 		}
@@ -38,10 +41,10 @@ namespace ServiceStack.ServiceInterface
 			this.sessionFactory = sessionFactory;
 			this.authProviders = authProviders;
 
-			RegisterServices = new List<Type> {
-				typeof(AuthService),
-				typeof(AssignRolesService),                      
-				typeof(UnAssignRolesService),        
+			ServiceRoutes = new Dictionary<Type, string[]> {
+				{ typeof(AuthService), new[]{"/auth", "/auth/{provider}"} },
+				{ typeof(AssignRolesService), new[]{"/assignroles"} },
+				{ typeof(UnAssignRolesService), new[]{"/unassignroles"} },
 			};
 			RegisterPlugins = new List<IPlugin> {
 				new SessionFeature()                          
@@ -50,12 +53,16 @@ namespace ServiceStack.ServiceInterface
 
 		public void Register(IAppHost appHost)
 		{
-			AuthService.Init(appHost, sessionFactory, authProviders);
+			AuthService.Init(sessionFactory, authProviders);
 
 			var unitTest = appHost == null;
 			if (unitTest) return;
 
-			RegisterServices.ForEach(x => appHost.RegisterService(x));
+			foreach (var registerService in ServiceRoutes)
+			{
+				appHost.RegisterService(registerService.Key, registerService.Value);
+			}
+
 			RegisterPlugins.ForEach(x => appHost.LoadPlugin(x));
 		}
 
