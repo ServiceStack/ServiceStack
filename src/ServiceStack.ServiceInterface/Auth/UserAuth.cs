@@ -27,6 +27,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public virtual List<string> Permissions { get; set; }
 		public virtual DateTime CreatedDate { get; set; }
 		public virtual DateTime ModifiedDate { get; set; }
+		public virtual Dictionary<string, string> Meta { get; set; }
 
 		public virtual void PopulateMissing(UserOAuthProvider authProvider)
 		{
