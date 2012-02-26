@@ -7,9 +7,9 @@ using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.EndPoints.Formats;
+using ServiceStack.WebHost.Endpoints.Formats;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public class MarkdownPage : IExpirable
 	{

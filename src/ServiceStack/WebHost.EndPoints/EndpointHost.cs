@@ -7,9 +7,9 @@ using ServiceStack.Common.Web;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
-using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.Endpoints.Formats;
-using ServiceStack.WebHost.EndPoints.Utils;
+using ServiceStack.WebHost.Endpoints.Formats;
+using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints
 {

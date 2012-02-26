@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using ServiceStack.WebHost.EndPoints.Support.Markdown;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Markdown

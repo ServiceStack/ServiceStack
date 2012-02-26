@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ServiceStack.ServiceHost;
 using System.Threading;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.WebHost.EndPoints.Utils
+namespace ServiceStack.WebHost.Endpoints.Utils
 {
     public static class FilterAttributeCache
     {

@@ -9,9 +9,9 @@ using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.EndPoints.Support.Markdown;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
-namespace ServiceStack.WebHost.EndPoints.Formats
+namespace ServiceStack.WebHost.Endpoints.Formats
 {
 	public enum MarkdownPageType
 	{

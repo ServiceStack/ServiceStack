@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public interface IExpirable
 	{

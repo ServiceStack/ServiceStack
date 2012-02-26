@@ -19,8 +19,7 @@ using System.Reflection;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Markdown.Html;
-using ServiceStack.WebHost.EndPoints.Formats;
-using ServiceStack.WebHost.EndPoints.Support.Markdown;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Markdown
 {

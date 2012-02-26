@@ -1,12 +1,9 @@
-﻿using System;
-using System.Net;
-using System.Web;
+﻿using System.Net;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.EndPoints.Formats;
-using ServiceStack.WebHost.Endpoints.Support;
+using ServiceStack.WebHost.Endpoints.Formats;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public class MarkdownHandler : EndpointHandlerBase
 	{
