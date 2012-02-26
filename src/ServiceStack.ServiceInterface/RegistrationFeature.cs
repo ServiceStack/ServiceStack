@@ -10,21 +10,16 @@ namespace ServiceStack.ServiceInterface
 	/// </summary>
 	public class RegistrationFeature : IPlugin
 	{
-		private readonly string atRestPath;
+		private string AtRestPath { get; set; }
 
 		public RegistrationFeature()
 		{
-			this.atRestPath = "/register";
-		}
-
-		public RegistrationFeature(string atRestPath)
-		{
-			this.atRestPath = atRestPath;
+			this.AtRestPath = "/register";
 		}
 
 		public void Register(IAppHost appHost)
 		{
-			appHost.RegisterService<RegistrationService>(atRestPath);
+			appHost.RegisterService<RegistrationService>(AtRestPath);
 			appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
 		}
 	}
