@@ -5,13 +5,14 @@ using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
+using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
-using Config = ServiceStack.WebHost.IntegrationTests.Tests.Config;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
-namespace ServiceStack.WebHost.Endpoints.Tests.ProtoBufTests
+namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[DataContract]
 	public class ProtoBufEmail
@@ -79,10 +80,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ProtoBufTests
 	[TestFixture]
 	public class ProtoBufServiceTests
 	{
+		protected const string ListeningOn = "http://localhost:85/";
+
+		ExampleAppHostHttpListener appHost;
+
+		[TestFixtureSetUp]
+		public void OnTestFixtureSetUp()
+		{
+			LogManager.LogFactory = new ConsoleLogFactory();
+
+			appHost = new ExampleAppHostHttpListener();
+			appHost.Plugins.Add(new ProtoBufFormat());
+			appHost.Init();
+			appHost.Start(ListeningOn);
+		}
+
+		[TestFixtureTearDown]
+		public void OnTestFixtureTearDown()
+		{
+			Dispose();
+		}
+
+		public void Dispose()
+		{
+			if (appHost == null) return;
+			appHost.Dispose();
+			appHost = null;
+		}
+
 		[Test]
 		public void Can_Send_ProtoBuf_request()
 		{
-			var client = new ProtoBufServiceClient(Config.AbsoluteBaseUri);
+			var client = new ProtoBufServiceClient(ListeningOn);
 
 			var request = new ProtoBufEmail {
 				ToAddress = "to@email.com",

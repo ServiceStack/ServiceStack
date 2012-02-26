@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Common.Utils;
 using ServiceStack.Markdown;
-using ServiceStack.Text;
-using ServiceStack.WebHost.EndPoints.Formats;
-using ServiceStack.WebHost.EndPoints.Support.Markdown;
+using ServiceStack.WebHost.Endpoints.Formats;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

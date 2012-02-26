@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RazorEngine", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.FluentValidation.Mvc3", "ServiceStack.FluentValidation.Mvc3\ServiceStack.FluentValidation.Mvc3.csproj", "{672F2DFE-4EE8-498B-B449-23E9E7F6961C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Plugins.ProtoBuf", "ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj", "{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -124,6 +126,12 @@ Global
 		{672F2DFE-4EE8-498B-B449-23E9E7F6961C}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
 		{672F2DFE-4EE8-498B-B449-23E9E7F6961C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{672F2DFE-4EE8-498B-B449-23E9E7F6961C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

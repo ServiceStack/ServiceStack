@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Web;
-using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
-using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Utils;
 
@@ -29,6 +26,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public static List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
 
 		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
+
+		private static bool pluginsLoaded = false;
 
 		public static List<IPlugin> Plugins { get; set; }
 
@@ -109,6 +108,7 @@ namespace ServiceStack.WebHost.Endpoints
 			var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
 			AppHost.LoadPlugin(Plugins.ToArray());
+			pluginsLoaded = true;
 
 			AfterPluginsLoaded(specifiedContentType);
 		}
@@ -122,6 +122,21 @@ namespace ServiceStack.WebHost.Endpoints
 
 			config.ServiceManager.AfterInit();
 			ServiceManager = config.ServiceManager; //reset operations
+		}
+
+		public static void AddPlugin(params IPlugin[] plugins)
+		{
+			if (pluginsLoaded)
+			{
+				AppHost.LoadPlugin(plugins);
+			}
+			else
+			{
+				foreach (var plugin in plugins)
+				{
+					Plugins.Add(plugin);
+				}
+			}
 		}
 
 		public static ServiceManager ServiceManager
