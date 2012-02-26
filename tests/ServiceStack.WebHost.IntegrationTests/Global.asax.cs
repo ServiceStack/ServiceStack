@@ -12,6 +12,7 @@ using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
@@ -88,6 +89,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				Plugins.Add(new ValidationFeature());
 				Plugins.Add(new SessionFeature());
+				Plugins.Add(new ProtoBufFormat());
 
 				container.RegisterValidators(typeof(CustomersValidator).Assembly);
 

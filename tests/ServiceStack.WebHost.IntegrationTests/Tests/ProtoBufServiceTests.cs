@@ -101,6 +101,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			catch (WebServiceException webEx)
 			{
 				Console.WriteLine(webEx.ResponseDto.Dump());
+				Assert.Fail(webEx.Message);
 			}
 		}
 
