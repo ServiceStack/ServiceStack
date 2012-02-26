@@ -24,7 +24,8 @@ namespace ServiceStack.ServiceHost.Tests
             var httpRequestContext = new HttpRequestContext(httpReq, httpRes, dto);
 
             var appHost = new TestAppHost();
-            HtmlFormat.Register(appHost);
+			new HtmlFormat().Register(appHost);
+
 			EndpointHost.ContentTypeFilter = appHost.ContentTypeFilters;  
             
             object result = httpRequestContext.ToOptimizedResult(dto);

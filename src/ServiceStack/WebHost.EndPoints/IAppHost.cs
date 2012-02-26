@@ -71,5 +71,11 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <param name="serviceType"></param>
 		/// <param name="atRestPaths"></param>
 		void RegisterService(Type serviceType, params string[] atRestPaths);
+
+		/// <summary>
+		/// Apply plugins to this AppHost
+		/// </summary>
+		/// <param name="plugins"></param>
+		void LoadPlugin(params IPlugin[] plugins);
 	}
 }

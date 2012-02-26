@@ -75,17 +75,17 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				Configure(null);
 			}
+
+			EndpointHost.AfterInit();
+
 			if (serviceManager != null)
 			{
 				//Required for adhoc services added in Configure()
-				serviceManager.ReloadServiceOperations();
 				EndpointHost.SetOperationTypes(
 					serviceManager.ServiceOperations,
 					serviceManager.AllServiceOperations
 				);
 			}
-
-			EndpointHost.AfterInit();
 		}
 
 		public abstract void Configure(Container container);
@@ -162,6 +162,31 @@ namespace ServiceStack.WebHost.Endpoints
 			get { return EndpointHost.CatchAllHandlers; }
 		}
 
+		public EndpointHostConfig Config
+		{
+			get { return EndpointHost.Config; }
+		}
+
+		public List<IPlugin> Plugins
+		{
+			get { return EndpointHost.Plugins; }
+		}
+
+		public virtual void LoadPlugin(params IPlugin[] plugins)
+		{
+			foreach (var plugin in plugins)
+			{
+				try
+				{
+					plugin.Register(this);
+				}
+				catch (Exception ex)
+				{
+					log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+				}
+			}
+		}
+
 		public virtual object ExecuteService(object requestDto)
 		{
 			return ExecuteService(requestDto, EndpointAttributes.None);
@@ -173,11 +198,6 @@ namespace ServiceStack.WebHost.Endpoints
 				new HttpRequestContext(requestDto, endpointAttributes));
 		}
 
-		public EndpointHostConfig Config
-		{
-			get { return EndpointHost.Config; }
-		}
-
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
 			var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);
@@ -187,7 +207,7 @@ namespace ServiceStack.WebHost.Endpoints
 				this.Routes.Add(requestType, atRestPath, null, null);
 			}
 		}
-
+		
 		public virtual void Dispose()
 		{
 			if (EndpointHost.Config.ServiceManager != null)

@@ -1,4 +1,6 @@
-﻿using ServiceStack.ServiceInterface.Auth;
+﻿using System;
+using ServiceStack.FluentValidation;
+using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
@@ -6,11 +8,12 @@ namespace ServiceStack.ServiceInterface
 	/// <summary>
 	/// Enable the Registration feature and configure the RegistrationService.
 	/// </summary>
-	public class RegistrationFeature
+	public class RegistrationFeature : IPlugin
 	{
-		public static void Init(IAppHost appHost)
+		public void Register(IAppHost appHost)
 		{
-			RegistrationService.Init(appHost);
+			appHost.RegisterService<RegistrationService>();
+			appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
 		}
 	}
 }

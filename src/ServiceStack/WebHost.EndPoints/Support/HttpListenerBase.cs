@@ -350,6 +350,26 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			get { return EndpointHost.Config; }
 		}
 
+		public List<IPlugin> Plugins
+		{
+			get { return EndpointHost.Plugins; }
+		}
+
+		public virtual void LoadPlugin(params IPlugin[] plugins)
+		{
+			foreach (var plugin in plugins)
+			{
+				try
+				{
+					plugin.Register(this);
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+				}
+			}
+		}
+
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
 			var genericService = EndpointHost.Config.ServiceManager.RegisterService(serviceType);

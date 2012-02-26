@@ -85,12 +85,6 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public IValidator<Registration> RegistrationValidator { get; set; }
 
-		public static void Init(IAppHost appHost)
-		{
-			appHost.RegisterService<RegistrationService>();
-			appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
-		}
-
 		private void AssertUserAuthRepo()
 		{
 			if (UserAuthRepo == null)

@@ -6,6 +6,7 @@
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{801771CD-2C19-463A-94F8-DF546825DF47}</ProjectGuid>
+    <ProjectTypeGuids>{349C5851-65DF-11DA-9384-00065B846F21};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServiceStack.WebHost.IntegrationTests</RootNamespace>
@@ -171,6 +172,7 @@
     <Compile Include="ProtoBufTests\ProtoBufServiceClient.cs" />
     <Compile Include="ProtoBufTests\ProtoBufServiceTests.cs" />
     <Compile Include="Services\ContentManagerOnly.cs" />
+    <Compile Include="Services\ThrowsArgumentNullService.cs" />
     <Compile Include="Services\EchoMethodService.cs" />
     <Compile Include="Tests\AuthTestsBase.cs" />
     <Compile Include="Services\BatchWidgetValidationService.cs" />
@@ -271,5 +273,21 @@
         <XspParameters Port="8080" Address="127.0.0.1" SslMode="None" SslProtocol="Default" KeyType="None" CertFile="" KeyFile="" PasswordOptions="None" Password="" Verbose="true" />
       </Properties>
     </MonoDevelop>
+    <VisualStudio>
+      <FlavorProperties GUID="{349C5851-65DF-11DA-9384-00065B846F21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>16299</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost/ServiceStack.WebHost.IntegrationTests</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
   </ProjectExtensions>
 </Project>

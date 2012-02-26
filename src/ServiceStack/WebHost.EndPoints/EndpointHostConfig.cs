@@ -243,8 +243,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			return XDocument.Parse(rawXml).Root.Element("handlers")
 				.Descendants("add")
-				.Where(handler => (handler.Attribute("type").Value
-				?? string.Empty).StartsWith("ServiceStack"))
+				.Where(handler => (handler.Attribute("type").Value ?? string.Empty).StartsWith("ServiceStack"))
 				.Select(handler => handler.Attribute("path").Value)
 				.FirstOrDefault();
 		}

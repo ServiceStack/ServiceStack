@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.ServiceHost;
@@ -60,6 +61,11 @@ namespace ServiceStack.ServiceInterface.Testing
 				Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Assembly.GetExecutingAssembly()));				
 
 			Config.ServiceManager.RegisterService(serviceType);
+		}
+
+		public void LoadPlugin(params IPlugin[] plugins)
+		{
+			plugins.ToList().ForEach(x => x.Register(this));
 		}
 	}
 }

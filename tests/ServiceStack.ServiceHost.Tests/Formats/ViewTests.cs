@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
@@ -41,7 +42,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			public AppHost()
 			{
-				this.Config = new EndpointHostConfig {
+				this.Config = new EndpointHostConfig {					
 					MarkdownSearchPath = "~".MapProjectPath(),
 					MarkdownReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
@@ -89,6 +90,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public void RegisterService(Type serviceType, params string[] atRestPaths)
 			{
 				Config.ServiceManager.RegisterService(serviceType);
+			}
+
+			public void LoadPlugin(params IPlugin[] plugins)
+			{
+				plugins.ToList().ForEach(x => x.Register(this));
 			}
 		}
 

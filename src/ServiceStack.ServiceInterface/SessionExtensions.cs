@@ -19,10 +19,7 @@ namespace ServiceStack.ServiceInterface
 		public const string Permanent = "perm";
 	}
 
-	/// <summary>
-	/// Configure ServiceStack to have ISession support
-	/// </summary>
-	public static class SessionFeature
+	public class SessionFeature : IPlugin
 	{
 		public const string OnlyAspNet = "Only ASP.NET Requests accessible via Singletons are supported";
 		public const string SessionId = "ss-id";
@@ -32,7 +29,7 @@ namespace ServiceStack.ServiceInterface
 
 		private static bool alreadyConfigured;
 
-		public static void Init(IAppHost appHost)
+		public void Register(IAppHost appHost)
 		{
 			if (alreadyConfigured) return;
 			alreadyConfigured = true;
@@ -49,24 +46,55 @@ namespace ServiceStack.ServiceInterface
 				}
 			});
 		}
+		
+		public static string GetSessionId()
+		{
+			if (HttpContext.Current == null)
+				throw new NotImplementedException(OnlyAspNet);
 
+			return HttpContext.Current.Request.ToRequest().GetSessionId();
+		}
+
+		public static void CreateSessionIds()
+		{
+			if (HttpContext.Current != null)
+			{
+				HttpContext.Current.Response.ToResponse()
+				.CreateSessionIds(HttpContext.Current.Request.ToRequest());
+				return;
+			}
+
+			throw new NotImplementedException(OnlyAspNet);
+		}
+
+		public static string GetSessionKey(string sessionId)
+		{
+			return IdUtils.CreateUrn<IAuthSession>(sessionId);
+		}
+	}
+
+	/// <summary>
+	/// Configure ServiceStack to have ISession support
+	/// </summary>
+	public static class SessionExtensions 
+	{
 		public static string GetSessionId(this IHttpRequest httpReq)
 		{
 			var sessionOptions = GetSessionOptions(httpReq);
 
 			return sessionOptions.Contains(SessionOptions.Permanent)
-				? httpReq.GetItemOrCookie(PermanentSessionId)
-				: httpReq.GetItemOrCookie(SessionId);
+				? httpReq.GetItemOrCookie(SessionFeature.PermanentSessionId)
+				: httpReq.GetItemOrCookie(SessionFeature.SessionId);
 		}
 
 		public static string GetPermanentSessionId(this IHttpRequest httpReq)
 		{
-			return httpReq.GetItemOrCookie(PermanentSessionId);
+			return httpReq.GetItemOrCookie(SessionFeature.PermanentSessionId);
 		}
 
 		public static string GetTemporarySessionId(this IHttpRequest httpReq)
 		{
-			return httpReq.GetItemOrCookie(SessionId);
+			return httpReq.GetItemOrCookie(SessionFeature.SessionId);
 		}
 
 		/// <summary>
@@ -98,22 +126,22 @@ namespace ServiceStack.ServiceInterface
 		public static string CreatePermanentSessionId(this IHttpResponse res, IHttpRequest req)
 		{
 			var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-			res.Cookies.AddPermanentCookie(PermanentSessionId, sessionId);
-			req.Items[PermanentSessionId] = sessionId;
+			res.Cookies.AddPermanentCookie(SessionFeature.PermanentSessionId, sessionId);
+			req.Items[SessionFeature.PermanentSessionId] = sessionId;
 			return sessionId;
 		}
 
 		public static string CreateTemporarySessionId(this IHttpResponse res, IHttpRequest req)
 		{
 			var sessionId = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-			res.Cookies.AddSessionCookie(SessionId, sessionId);
-			req.Items[SessionId] = sessionId;
+			res.Cookies.AddSessionCookie(SessionFeature.SessionId, sessionId);
+			req.Items[SessionFeature.SessionId] = sessionId;
 			return sessionId;
 		}
 
 		public static HashSet<string> GetSessionOptions(this IHttpRequest httpReq)
 		{
-			var sessionOptions = httpReq.GetItemOrCookie(SessionOptionsKey);
+			var sessionOptions = httpReq.GetItemOrCookie(SessionFeature.SessionOptionsKey);
 			return sessionOptions.IsNullOrEmpty()
 				? new HashSet<string>()
 				: sessionOptions.Split(',').ToHashSet();
@@ -144,18 +172,10 @@ namespace ServiceStack.ServiceInterface
 			}
 
 			var strOptions = string.Join(",", existingOptions.ToArray());
-			res.Cookies.AddPermanentCookie(SessionOptionsKey, strOptions);
-			req.Items[SessionOptionsKey] = strOptions;
+			res.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
+			req.Items[SessionFeature.SessionOptionsKey] = strOptions;
 			
 			return existingOptions;
-		}
-
-		public static string GetSessionId()
-		{
-			if (HttpContext.Current == null)
-				throw new NotImplementedException(OnlyAspNet);
-
-			return HttpContext.Current.Request.ToRequest().GetSessionId();
 		}
 
 		public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq)
@@ -180,23 +200,6 @@ namespace ServiceStack.ServiceInterface
 		public static IHttpResponse ToResponse(this HttpListenerResponse listenerHttpRes)
 		{
 			return new HttpListenerResponseWrapper(listenerHttpRes);
-		}
-
-		public static void CreateSessionIds()
-		{
-			if (HttpContext.Current != null)
-			{
-				HttpContext.Current.Response.ToResponse()
-					.CreateSessionIds(HttpContext.Current.Request.ToRequest());
-				return;
-			}
-
-			throw new NotImplementedException(OnlyAspNet);
-		}
-
-		public static string GetSessionKey(string sessionId)
-		{
-			return IdUtils.CreateUrn<IAuthSession>(sessionId);
 		}
 	}
 }

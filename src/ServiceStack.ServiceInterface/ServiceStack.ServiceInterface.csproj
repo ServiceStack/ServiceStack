@@ -121,7 +121,6 @@
     <Compile Include="Auth\TwitterAuthProvider.cs" />
     <Compile Include="Auth\UnAssignRolesService.cs" />
     <Compile Include="RequiredRoleAttribute.cs" />
-    <Compile Include="PermissionFeature.cs" />
     <Compile Include="Auth\RegistrationService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
     <Compile Include="Auth\AuthProvider.cs" />
@@ -211,7 +210,7 @@
     <Compile Include="ServiceRoutesExtensions.cs" />
     <Compile Include="ServiceUtils.cs" />
     <Compile Include="SessionFactory.cs" />
-    <Compile Include="SessionFeature.cs" />
+    <Compile Include="SessionExtensions.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">
       <SubType>Code</SubType>

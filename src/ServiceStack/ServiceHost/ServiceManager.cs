@@ -144,6 +144,7 @@ namespace ServiceStack.ServiceHost
 		public void AfterInit()
 		{
 			this.ServiceController.AfterInit();
+			ReloadServiceOperations();
 		}
 	}
 

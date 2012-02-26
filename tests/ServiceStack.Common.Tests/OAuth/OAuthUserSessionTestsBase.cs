@@ -123,13 +123,13 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			var appsettingsMock = new Mock<IResourceManager>();
 			var appSettings = appsettingsMock.Object;
-			AuthFeature.Init(null, null, new IAuthProvider[]
-                {
-                    new CredentialsAuthProvider(), 
-                    new BasicAuthProvider(),
-                    new FacebookAuthProvider(appSettings),
-                    new TwitterAuthProvider(appSettings)
-                });
+
+			new AuthFeature(null, new IAuthProvider[] {
+				new CredentialsAuthProvider(),
+				new BasicAuthProvider(),
+				new FacebookAuthProvider(appSettings),
+				new TwitterAuthProvider(appSettings)
+			}).Register(null);
 
 			mockService = new Mock<IServiceBase>();
 			mockService.Expect(x => x.TryResolve<IUserAuthRepository>()).Returns(userAuthRepository);

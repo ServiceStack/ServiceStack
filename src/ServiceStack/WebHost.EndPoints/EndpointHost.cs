@@ -30,6 +30,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
+		public static List<IPlugin> Plugins { get; set; }
+
 		static EndpointHost()
 		{
 			ContentTypeFilter = HttpResponseFilter.Instance;
@@ -37,18 +39,25 @@ namespace ServiceStack.WebHost.Endpoints
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			HtmlProviders = new List<StreamSerializerResolverDelegate>();
 			CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+			Plugins = new List<IPlugin>();
 		}
-
+		
 		// Pre user config
 		public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
 			AppHost = appHost;
-			
+
 			EndpointHostConfig.Instance.ServiceName = serviceName;
 			EndpointHostConfig.Instance.ServiceManager = serviceManager;
 
-            var config = EndpointHostConfig.Instance;
-		    Config = config; // avoid cross-dependency on Config setter
+			var config = EndpointHostConfig.Instance;
+			Config = config; // avoid cross-dependency on Config setter
+
+			Plugins = new List<IPlugin> {
+				new HtmlFormat(),
+				new CsvFormat(),
+				new MarkdownFormat(),
+			};
 		}
 
 		// Config has changed
@@ -63,7 +72,6 @@ namespace ServiceStack.WebHost.Endpoints
 		//After configure called
 		public static void AfterInit()
 		{
-			var specifiedContentType = config.DefaultContentType;
 
 			if (config.EnableFeatures != Feature.All)
 			{
@@ -83,25 +91,37 @@ namespace ServiceStack.WebHost.Endpoints
 					config.IgnoreFormatsInMetadata.Add("soap12");
 			}
 
-			if ((Feature.Html & config.EnableFeatures) == Feature.Html)
-				HtmlFormat.Register(AppHost);
+			if ((Feature.Html & config.EnableFeatures) != Feature.Html)
+				Plugins.RemoveAll(x => x is HtmlFormat);
 
-			if ((Feature.Csv & config.EnableFeatures) == Feature.Csv)
-				CsvFormat.Register(AppHost);
+			if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
+				Plugins.RemoveAll(x => x is CsvFormat);
 
-			if ((Feature.Markdown & config.EnableFeatures) == Feature.Markdown)
-			{
-				MarkdownFormat.Instance.MarkdownBaseType = config.MarkdownBaseType;
-				MarkdownFormat.Instance.MarkdownGlobalHelpers = config.MarkdownGlobalHelpers;
-				MarkdownFormat.Instance.Register(AppHost);
-			}
+			if ((Feature.Markdown & config.EnableFeatures) != Feature.Markdown)
+				Plugins.RemoveAll(x => x is MarkdownFormat);
 
+			if ((Feature.Razor & config.EnableFeatures) != Feature.Razor)
+				Plugins.RemoveAll(x => x is IRazorPlugin);    //external
+
+			if ((Feature.ProtoBuf & config.EnableFeatures) != Feature.ProtoBuf)
+				Plugins.RemoveAll(x => x is IProtoBufPlugin); //external
+
+			var specifiedContentType = config.DefaultContentType; //Before plugins loaded
+
+			AppHost.LoadPlugin(Plugins.ToArray());
+
+			AfterPluginsLoaded(specifiedContentType);
+		}
+
+		private static void AfterPluginsLoaded(string specifiedContentType)
+		{
 			if (!string.IsNullOrEmpty(specifiedContentType))
 				config.DefaultContentType = specifiedContentType;
 			else if (string.IsNullOrEmpty(config.DefaultContentType))
 				config.DefaultContentType = ContentType.Json;
 
 			config.ServiceManager.AfterInit();
+			ServiceManager = config.ServiceManager; //reset operations
 		}
 
 		public static ServiceManager ServiceManager
@@ -162,15 +182,15 @@ namespace ServiceStack.WebHost.Endpoints
 					if (httpRes.IsClosed) break;
 				}
 
-                var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
-                foreach (var attribute in attributes)
-                {
+				var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
+				foreach (var attribute in attributes)
+				{
 					EndpointHost.ServiceManager.Container.AutoWire(attribute);
-                    attribute.RequestFilter(httpReq, httpRes, requestDto);
+					attribute.RequestFilter(httpReq, httpRes, requestDto);
 					if (EndpointHost.AppHost != null) //tests
 						EndpointHost.AppHost.Release(attribute);
-                    if (httpRes.IsClosed) break;
-                }
+					if (httpRes.IsClosed) break;
+				}
 
 				return httpRes.IsClosed;
 			}
@@ -226,7 +246,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-            using (Profiler.Current.Step("Execute Service"))
+			using (Profiler.Current.Step("Execute Service"))
 			{
 				return config.ServiceController.Execute(request,
 					new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));

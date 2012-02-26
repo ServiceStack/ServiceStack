@@ -19,5 +19,7 @@ namespace ServiceStack.ServiceHost
 		CustomFormat = 1 << 7,
 		Metadata     = 1 << 8,
 		Markdown     = 1 << 9,
+		Razor        = 1 << 10,
+		ProtoBuf     = 1 << 11,
 	}
 }

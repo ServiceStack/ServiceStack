@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Common.Web;
@@ -71,6 +72,11 @@ namespace ServiceStack.ServiceInterface.Testing
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
 			Config.ServiceManager.RegisterService(serviceType);
+		}
+
+		public void LoadPlugin(params IPlugin[] plugins)
+		{
+			plugins.ToList().ForEach(x => x.Register(this));
 		}
 	}
 }

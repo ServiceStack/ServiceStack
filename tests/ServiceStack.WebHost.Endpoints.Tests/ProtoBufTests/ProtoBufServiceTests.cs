@@ -88,9 +88,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ProtoBufTests
 		{
 			LogManager.LogFactory = new ConsoleLogFactory();
 
-			appHost = new ExampleAppHostHttpListener {
-				ConfigureFilter = c => ProtoBufFormat.Register(appHost)
-			};
+			appHost = new ExampleAppHostHttpListener();
+			appHost.Plugins.Add(new ProtoBufFormat());
 			appHost.Init();
 			appHost.Start(ListeningOn);
 		}
