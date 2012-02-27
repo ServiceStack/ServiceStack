@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceInterface
 					(from registerService in ServiceRoutes
 					 where registerService.Key == typeof(AssignRolesService)
 						|| registerService.Key == typeof(UnAssignRolesService)
-					 select registerService.Key)
+					 select registerService.Key).ToList()
 					 .ForEach(x => ServiceRoutes.Remove(x));
 				}
 			}
