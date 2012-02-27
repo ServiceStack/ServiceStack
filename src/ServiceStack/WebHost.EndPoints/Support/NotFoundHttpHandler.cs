@@ -6,12 +6,15 @@ using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
 	public class NotFoundHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler
 	{
+        private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
+
 		public bool? IsIntegratedPipeline { get; set; }
 		public string WebHostPhysicalPath { get; set; }
 		public List<string> WebHostRootFileNames { get; set; }
@@ -21,6 +24,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
+            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+
 			var text = new StringBuilder("Handler for Request not found: \n\n")
 				.AppendLine("Request.HttpMethod: " + request.HttpMethod)
 				.AppendLine("Request.HttpMethod: " + request.HttpMethod)
@@ -45,7 +50,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				ProcessRequest(httpReq, new HttpResponseWrapper(response), null);
 				return;
 			}
-			
+
+            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+
 			var sb = new StringBuilder();
 			sb.AppendLine("Handler for Request not found: \n\n");
 
