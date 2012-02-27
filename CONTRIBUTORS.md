@@ -38,4 +38,5 @@
  - [mj1856](https://github.com/mj1856) (Matt Johnson)
  - [matthieugd](https://github.com/matthieugd) (Matthieu)
  - [tomaszkubacki](https://github.com/tomaszkubacki) (Tomasz Kubacki)
+ - [e11137](https://github.com/e11137) (Rogelio Canedo)
  

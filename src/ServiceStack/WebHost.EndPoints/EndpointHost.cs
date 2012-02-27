@@ -38,7 +38,11 @@ namespace ServiceStack.WebHost.Endpoints
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			HtmlProviders = new List<StreamSerializerResolverDelegate>();
 			CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
-			Plugins = new List<IPlugin>();
+			Plugins = new List<IPlugin> {
+				new HtmlFormat(),
+				new CsvFormat(),
+				new MarkdownFormat(),
+			};
 		}
 		
 		// Pre user config
@@ -51,12 +55,6 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var config = EndpointHostConfig.Instance;
 			Config = config; // avoid cross-dependency on Config setter
-
-			Plugins = new List<IPlugin> {
-				new HtmlFormat(),
-				new CsvFormat(),
-				new MarkdownFormat(),
-			};
 		}
 
 		// Config has changed
@@ -129,6 +127,7 @@ namespace ServiceStack.WebHost.Endpoints
 			if (pluginsLoaded)
 			{
 				AppHost.LoadPlugin(plugins);
+				ServiceManager.ReloadServiceOperations();
 			}
 			else
 			{
