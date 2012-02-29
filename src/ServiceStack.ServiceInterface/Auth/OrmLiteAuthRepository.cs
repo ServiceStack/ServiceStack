@@ -131,8 +131,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			var isEmail = userNameOrEmail.Contains("@");
 			var userAuth = isEmail
-				? dbCmd.FirstOrDefault<UserAuth>("Email = {0}", userNameOrEmail)
-				: dbCmd.FirstOrDefault<UserAuth>("UserName = {0}", userNameOrEmail);
+				? dbCmd.Select<UserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
+				: dbCmd.Select<UserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
 
 			return userAuth;
 		}
@@ -206,8 +206,9 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
 		{
+			var id = int.Parse(userAuthId);
 			return dbFactory.Exec(dbCmd =>
-				dbCmd.Select<UserOAuthProvider>("UserAuthId = {0}", userAuthId)).OrderBy(x => x.ModifiedDate).ToList();
+				dbCmd.Select<UserOAuthProvider>(q => q.UserAuthId == id)).OrderBy(x => x.ModifiedDate).ToList();
 		}
 
 		public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
@@ -227,8 +228,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				return null;
 
 			return dbFactory.Exec(dbCmd => {
-				var oAuthProvider = dbCmd.FirstOrDefault<UserOAuthProvider>(
-					"Provider = {0} AND UserId = {1}", tokens.Provider, tokens.UserId);
+				var oAuthProvider = dbCmd.Select<UserOAuthProvider>(q => 
+					q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
 				if (oAuthProvider != null)
 				{
@@ -245,8 +246,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			return dbFactory.Exec(dbCmd => {
 
-				var oAuthProvider = dbCmd.FirstOrDefault<UserOAuthProvider>(
-				"Provider = {0} AND UserId = {1}", tokens.Provider, tokens.UserId);
+				var oAuthProvider = dbCmd.Select<UserOAuthProvider>(q =>
+					q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
 				if (oAuthProvider == null)
 				{
