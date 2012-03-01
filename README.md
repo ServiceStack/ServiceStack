@@ -320,6 +320,13 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [matthieugd](https://github.com/matthieugd) (Matthieu)
  - [tomaszkubacki](https://github.com/tomaszkubacki) (Tomasz Kubacki)
  - [e11137](https://github.com/e11137) (Rogelio Canedo)
+ - [davrot](https://github.com/davrot) (David Roth)
+ - [meebey](https://github.com/meebey) (Mirco Bauer)
+ - [codedemonuk](https://github.com/codedemonuk) (Pervez Choudhury)
+ - [jrosskopf](https://github.com/jrosskopf) (Joachim Rosskopf)
+ - [friism](https://github.com/friism) (Michael Friis)
+ - [mp3125](https://github.com/mp3125)
+ - [aurimas86](https://github.com/aurimas86)
 
 
 ***
