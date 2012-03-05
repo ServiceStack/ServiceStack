@@ -137,20 +137,20 @@ namespace ServiceStack.ServiceInterface
 			return false;
 		}
 
-        private static string FormatRoute<T>(string path, params Expression<Func<T, object>>[] propertyExpressions)
+        private static string FormatRoute<T>(string restPath, params Expression<Func<T, object>>[] propertyExpressions)
         {
             var properties = propertyExpressions.Select(x => string.Format("{{{0}}}", PropertyName(x))).ToArray();
-            return string.Format(path, properties);
+            return string.Format(restPath, properties);
         }
 
-        private static string PropertyName(LambdaExpression ex)
+        private static string PropertyName(LambdaExpression lambdaExpression)
         {
-            return (ex.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)ex.Body).Operand : (MemberExpression)ex.Body).Member.Name;
+            return (lambdaExpression.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
         }
 
-        public static void Add<T>(this IServiceRoutes serviceRoutes, string httpMethod, string url, params Expression<Func<T, object>>[] propertyExpressions)
+        public static void Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)
         {
-            serviceRoutes.Add<T>(FormatRoute(url, propertyExpressions), httpMethod);
+            serviceRoutes.Add<T>(FormatRoute(restPath, propertyExpressions), verbs);
         }
 	}
 }

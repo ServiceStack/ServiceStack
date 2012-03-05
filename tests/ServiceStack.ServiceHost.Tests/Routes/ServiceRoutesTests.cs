@@ -48,14 +48,14 @@ namespace ServiceStack.ServiceHost.Tests.Routes
 			Assert.That(restWithAFewMethodsRoute.AllowedVerbs.Contains("PATCH"), Is.False);
 		}
 
-		[Test]
-		public void Can_Register_Routes_Using_Add_Extension()
-		{
-			var routes = new ServiceRoutes();
-			routes.Add<Customer>(HttpMethod.Get, "/Users/{0}/Orders/{1}", x => x.Name, x => x.OrderId);
-			var route = routes.RestPaths[0];
-			Assert.That(route.Path == "/Users/{Name}/Orders/{OrderId}");
-		}
+        [Test]
+        public void Can_Register_Routes_Using_Add_Extension()
+        {
+            var routes = new ServiceRoutes();
+            routes.Add<Customer>("/Users/{0}/Orders/{1}", ApplyTo.Get, x => x.Name, x => x.OrderId);
+            var route = routes.RestPaths[0];
+            Assert.That(route.Path == "/Users/{Name}/Orders/{OrderId}");
+        }
 	}
 
 	public class Customer
