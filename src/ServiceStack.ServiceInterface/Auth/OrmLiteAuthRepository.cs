@@ -137,16 +137,16 @@ namespace ServiceStack.ServiceInterface.Auth
 			return userAuth;
 		}
 
-		public bool TryAuthenticate(string userName, string password, out string userId)
+		public bool TryAuthenticate(string userName, string password, out UserAuth userAuth)
 		{
-			userId = null;
-			var userAuth = GetUserAuthByUserName(userName);
+			//userId = null;
+			userAuth = GetUserAuthByUserName(userName);
 			if (userAuth == null) return false;
 
 			var saltedHash = new SaltedHash();
 			if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
 			{
-				userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+				//userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
 				return true;
 			}
 			return false;

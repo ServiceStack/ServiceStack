@@ -105,10 +105,10 @@ namespace ServiceStack.ServiceInterface.Auth
 				{
 					authInfo.ForEach((x, y) => tokens.Items[x] = y);
 				}
-				SaveUserAuth(authService, userSession, authRepo, tokens);
+				//SaveUserAuth(authService, userSession, authRepo, tokens);
 			}
 
-			OnSaveUserAuth(authService, session);
+			//OnSaveUserAuth(authService, session);
 			authService.SaveSession(session, SessionExpiry);
 			session.OnAuthenticated(authService, session, tokens, authInfo);
 		}
