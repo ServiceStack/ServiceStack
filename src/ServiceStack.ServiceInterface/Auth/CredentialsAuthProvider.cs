@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Collections.Generic;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -42,11 +43,12 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			var session = authService.GetSession();
-			string useUserName = null;
-			if (authRepo.TryAuthenticate(userName, password, out useUserName))
+			UserAuth userAuth = null;
+			if (authRepo.TryAuthenticate(userName, password, out userAuth))
 			{
+				session.PopulateWith(userAuth);
 				session.IsAuthenticated = true;
-				session.UserAuthName = userName;
+				session.UserAuthId =  userAuth.Id.ToString(CultureInfo.InvariantCulture);
 
 				return true;
 			}
