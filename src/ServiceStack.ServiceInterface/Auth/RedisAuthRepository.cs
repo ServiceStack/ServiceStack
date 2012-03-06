@@ -184,9 +184,10 @@ namespace ServiceStack.ServiceInterface.Auth
 			var saltedHash = new SaltedHash();
 			if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
 			{
-				//userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
 				return true;
 			}
+
+			userAuth = null;
 			return false;
 		}
 

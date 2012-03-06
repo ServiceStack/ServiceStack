@@ -149,6 +149,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				//userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
 				return true;
 			}
+
+			userAuth = null;
 			return false;
 		}
 

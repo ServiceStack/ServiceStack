@@ -177,7 +177,7 @@
             The object represented by this instance
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.JsConfig.EmitCamelCaseNames">
+        <member name="F:ServiceStack.Text.JsConfig.tsEmitCamelCaseNames">
             <summary>
             <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
             to take advantage of <see cref="T:System.CLSCompliantAttribute"/> specification,
