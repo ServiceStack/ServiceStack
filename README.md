@@ -327,7 +327,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [friism](https://github.com/friism) (Michael Friis)
  - [mp3125](https://github.com/mp3125)
  - [aurimas86](https://github.com/aurimas86)
-
+ - [parnham](https://github.com/parnham) (Dan Parnham)
 
 ***
 
