@@ -105,9 +105,29 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (tokens != null)
 				{
 					authInfo.ForEach((x, y) => tokens.Items[x] = y);
-					SaveUserAuth(authService, userSession, authRepo, tokens);
+					session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
 				}
 				//SaveUserAuth(authService, userSession, authRepo, tokens);
+				
+				authRepo.LoadUserAuth(session, tokens);
+
+				foreach (var oAuthToken in session.ProviderOAuthAccess)
+				{
+					var authProvider = AuthService.GetAuthProvider(oAuthToken.Provider);
+					if (authProvider == null) continue;
+					var userAuthProvider = authProvider as OAuthProvider;
+					if (userAuthProvider != null)
+					{
+						userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
+					}
+				}
+		
+				var httpRes = authService.RequestContext.Get<IHttpResponse>();
+				if (httpRes != null)
+				{
+					httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
+				}
+				
 			}
 
 			//OnSaveUserAuth(authService, session);
