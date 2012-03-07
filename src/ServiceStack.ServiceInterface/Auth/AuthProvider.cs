@@ -86,6 +86,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			{
 				httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
 			}
+			OnSaveUserAuth(authService, session);
 		}
 
 		public virtual void OnSaveUserAuth(IServiceBase authService, IAuthSession session) { }
@@ -104,6 +105,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (tokens != null)
 				{
 					authInfo.ForEach((x, y) => tokens.Items[x] = y);
+					SaveUserAuth(authService, userSession, authRepo, tokens);
 				}
 				//SaveUserAuth(authService, userSession, authRepo, tokens);
 			}
