@@ -28,6 +28,14 @@ namespace ServiceStack.ServiceClient.Web
 		/// </summary>
 		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
 
+        /// <summary>
+        /// The response action is called once the server response is available.
+        /// It will allow you to access raw response information. 
+        /// This response action is executed globally.
+        /// Note that you should NOT consume the response stream as this is handled by ServiceStack
+        /// </summary>
+        public static Action<HttpWebResponse> HttpWebResponseFilter { get; set; }
+
 		public const string DefaultHttpMethod = "POST";
 
 		readonly AsyncServiceClient asyncClient;
@@ -174,6 +182,13 @@ namespace ServiceStack.ServiceClient.Web
 		/// This request filter only works with the instance where it was set (not global).
 		/// </summary>
 		public Action<HttpWebRequest> LocalHttpWebRequestFilter { get; set; }
+        
+        /// <summary>
+        /// The response action is called once the server response is available.
+        /// It will allow you to access raw response information. 
+        /// Note that you should NOT consume the response stream as this is handled by ServiceStack
+        /// </summary>
+        public Action<HttpWebResponse> LocalHttpWebResponseFilter { get; set; }
 
 		public abstract void SerializeToStream(IRequestContext requestContext, object request, Stream stream);
 
@@ -189,7 +204,9 @@ namespace ServiceStack.ServiceClient.Web
 
 			try
 			{
-				using (var responseStream = client.GetResponse().GetResponseStream())
+			    var webResponse = client.GetResponse();
+                ApplyWebResponseFilters(webResponse);
+			    using (var responseStream = webResponse.GetResponseStream())
 				{
 					var response = DeserializeFromStream<TResponse>(responseStream);
 					return response;
@@ -208,7 +225,7 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
-		private bool HandleResponseException<TResponse>(Exception ex, string httpMethod, string requestUri, object request, out TResponse response)
+	    private bool HandleResponseException<TResponse>(Exception ex, string httpMethod, string requestUri, object request, out TResponse response)
 		{
 			try
 			{
@@ -248,7 +265,7 @@ namespace ServiceStack.ServiceClient.Web
 			return false;
 		}
 
-		private void HandleResponseException<TResponse>(Exception ex, string requestUri)
+	    private void HandleResponseException<TResponse>(Exception ex, string requestUri)
 		{
 			var webEx = ex as WebException;
 			if (webEx != null && webEx.Status == WebExceptionStatus.ProtocolError)
@@ -325,13 +342,9 @@ namespace ServiceStack.ServiceClient.Web
 					client.CookieContainer = CookieContainer;
 				}
 
-				if (this.LocalHttpWebRequestFilter != null)
-					LocalHttpWebRequestFilter(client);
+				ApplyWebRequestFilters(client);
 
-				if (HttpWebRequestFilter != null)
-                    HttpWebRequestFilter(client);
-
-				if (httpMethod != Web.HttpMethod.Get
+			    if (httpMethod != Web.HttpMethod.Get
 					&& httpMethod != Web.HttpMethod.Delete)
 				{
 					client.ContentType = ContentType;
@@ -348,6 +361,25 @@ namespace ServiceStack.ServiceClient.Web
 			}
 			return client;
 		}
+
+	    private void ApplyWebResponseFilters(WebResponse webResponse)
+	    {
+            if (!(webResponse is HttpWebResponse)) return;
+
+            if (HttpWebResponseFilter != null)
+                HttpWebResponseFilter((HttpWebResponse)webResponse);
+	        if (LocalHttpWebResponseFilter != null)
+	            LocalHttpWebResponseFilter((HttpWebResponse)webResponse);
+	    }
+
+	    private void ApplyWebRequestFilters(HttpWebRequest client)
+	    {
+	        if (LocalHttpWebRequestFilter != null)
+	            LocalHttpWebRequestFilter(client);
+
+	        if (HttpWebRequestFilter != null)
+	            HttpWebRequestFilter(client);
+	    }
 #else
 		private void SendRequest(string requestUri, object request, Action<WebRequest> callback)
 		{
@@ -423,8 +455,11 @@ namespace ServiceStack.ServiceClient.Web
         {
             var webRequest = SendRequest(requestUri, request);
             using (var response = webRequest.GetResponse())
-            using (var stream = response.GetResponseStream())
-                return stream.ReadFully();
+            {
+                ApplyWebResponseFilters(response);
+                using (var stream = response.GetResponseStream())
+                    return stream.ReadFully();
+            }
         }
 #else
 		private void DownloadBytes(string requestUri, object request, Action<byte[]> callback = null)
@@ -491,7 +526,9 @@ namespace ServiceStack.ServiceClient.Web
 
 			try
 			{
-				using (var responseStream = client.GetResponse().GetResponseStream())
+			    var webResponse = client.GetResponse();
+                ApplyWebResponseFilters(webResponse);
+			    using (var responseStream = webResponse.GetResponseStream())
 				{
 					var response = DeserializeFromStream<TResponse>(responseStream);
 					return response;
@@ -545,6 +582,7 @@ namespace ServiceStack.ServiceClient.Web
                     HttpWebRequestFilter(webRequest);
                 }
 				var webResponse = webRequest.UploadFile(fileToUpload, mimeType);
+                ApplyWebResponseFilters(webResponse);
 				using (var responseStream = webResponse.GetResponseStream())
 				{
 					var response = DeserializeFromStream<TResponse>(responseStream);
@@ -568,14 +606,11 @@ namespace ServiceStack.ServiceClient.Web
 
             try
             {
-                if (HttpWebRequestFilter != null)
-                {
-                    HttpWebRequestFilter(webRequest);
-                }
+                ApplyWebRequestFilters(webRequest);
 
                 webRequest.UploadFile(fileToUpload, fileName, mimeType);
                 var webResponse = webRequest.GetResponse();
-
+                ApplyWebResponseFilters(webResponse);
                 using (var responseStream = webResponse.GetResponseStream())
                 {
                     var response = DeserializeFromStream<TResponse>(responseStream);
