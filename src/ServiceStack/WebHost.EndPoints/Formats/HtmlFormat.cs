@@ -20,6 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 <html lang=""en-us"">
 <head>
 <title>{1}</title>
+<meta http-equiv=""Content-Type"" content=""text/html; charset=utf-8"">
 <script id=""dto"" type=""text/json"">{0}</script>
 <style type=""text/css"">
 BODY, H1, H2, H3, H4, H5, H6, DL, DT, DD {{
