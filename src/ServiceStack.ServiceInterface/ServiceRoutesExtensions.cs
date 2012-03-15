@@ -37,61 +37,61 @@ namespace ServiceStack.ServiceInterface
 
 				foreach (Type service in services)
 				{
-                    Type baseType = service.BaseType;
-                    //go up the hierarchy to the first generic base type
-                    while (!baseType.IsGenericType)
-                    {
-                        baseType = baseType.BaseType;
-                    }
+					Type baseType = service.BaseType;
+					//go up the hierarchy to the first generic base type
+					while (!baseType.IsGenericType)
+					{
+						baseType = baseType.BaseType;
+					}
 
-                    Type requestType = baseType.GetGenericArguments()[0];
+					Type requestType = baseType.GetGenericArguments()[0];
 
-                    if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
-                    {
+					if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
+					{
 
-                        //find overriden REST methods
-                        var allowedMethods = new List<string>();
-                        if (service.GetMethod("OnGet").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Get);
-                        }
+						//find overriden REST methods
+						var allowedMethods = new List<string>();
+						if (service.GetMethod("OnGet").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Get);
+						}
 
-                        if (service.GetMethod("OnPost").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Post);
-                        }
+						if (service.GetMethod("OnPost").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Post);
+						}
 
-                        if (service.GetMethod("OnPut").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Put);
-                        }
+						if (service.GetMethod("OnPut").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Put);
+						}
 
-                        if (service.GetMethod("OnDelete").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Delete);
-                        }
+						if (service.GetMethod("OnDelete").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Delete);
+						}
 
-                        if (service.GetMethod("OnPatch").DeclaringType == service)
-                        {
-                            allowedMethods.Add(HttpMethods.Patch);
-                        }
+						if (service.GetMethod("OnPatch").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Patch);
+						}
 
-                        if (allowedMethods.Count == 0) continue;
-                        var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
+						if (allowedMethods.Count == 0) continue;
+						var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
 
-                        routes.Add(requestType, requestType.Name, allowedVerbs, null);
+						routes.Add(requestType, requestType.Name, allowedVerbs, null);
 
-                        var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
-                        if (hasIdField)
-                        {
-                            var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
-                            routes.Add(requestType, routePath, allowedVerbs, null);
-                        }
-                    }
-                    else
-                    {
-                        routes.Add(requestType, requestType.Name, null, null); //null == All Routes
-                    }
+						var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
+						if (hasIdField)
+						{
+							var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
+							routes.Add(requestType, routePath, allowedVerbs, null);
+						}
+					}
+					else
+					{
+						routes.Add(requestType, requestType.Name, null, null); //null == All Routes
+					}
 				}
 			}
 
@@ -130,7 +130,7 @@ namespace ServiceStack.ServiceInterface
 				allowedMethods.Add(HttpMethods.Options);
 			if (verbs.Has(ApplyTo.Head))
 				allowedMethods.Add(HttpMethods.Head);
-			
+
 			return string.Join(" ", allowedMethods.ToArray());
 		}
 
@@ -148,20 +148,20 @@ namespace ServiceStack.ServiceInterface
 			return false;
 		}
 
-        private static string FormatRoute<T>(string restPath, params Expression<Func<T, object>>[] propertyExpressions)
-        {
-            var properties = propertyExpressions.Select(x => string.Format("{{{0}}}", PropertyName(x))).ToArray();
-            return string.Format(restPath, properties);
-        }
+		private static string FormatRoute<T>(string restPath, params Expression<Func<T, object>>[] propertyExpressions)
+		{
+			var properties = propertyExpressions.Select(x => string.Format("{{{0}}}", PropertyName(x))).ToArray();
+			return string.Format(restPath, properties);
+		}
 
-        private static string PropertyName(LambdaExpression lambdaExpression)
-        {
-            return (lambdaExpression.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
-        }
+		private static string PropertyName(LambdaExpression lambdaExpression)
+		{
+			return (lambdaExpression.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
+		}
 
-        public static void Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)
-        {
-            serviceRoutes.Add<T>(FormatRoute(restPath, propertyExpressions), verbs);
-        }
+		public static void Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)
+		{
+			serviceRoutes.Add<T>(FormatRoute(restPath, propertyExpressions), verbs);
+		}
 	}
 }
