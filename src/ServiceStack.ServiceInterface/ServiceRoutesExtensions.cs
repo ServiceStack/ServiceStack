@@ -28,63 +28,70 @@ namespace ServiceStack.ServiceInterface
 		{
 			foreach (Assembly assembly in assembliesWithServices)
 			{
-				IEnumerable<Type> restServices = 
+				IEnumerable<Type> services = 
                     from t in assembly.GetExportedTypes()
 					where
 						!t.IsAbstract &&
-						t.IsSubclassOfRawGeneric(typeof(RestServiceBase<>))
+						t.IsSubclassOfRawGeneric(typeof(ServiceBase<>))
 					select t;
 
-				foreach (Type restService in restServices)
+				foreach (Type service in services)
 				{
-					Type baseType = restService.BaseType;
+                    Type baseType = service.BaseType;
+                    //go up the hierarchy to the first generic base type
+                    while (!baseType.IsGenericType)
+                    {
+                        baseType = baseType.BaseType;
+                    }
 
-					//go up the hierarchy to the first generic base type
-					while (!baseType.IsGenericType)
-					{
-						baseType = baseType.BaseType;
-					}
+                    Type requestType = baseType.GetGenericArguments()[0];
 
-					Type requestType = baseType.GetGenericArguments()[0];
+                    if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
+                    {
 
-					//find overriden REST methods
-					var allowedMethods = new List<string>();
-					if (restService.GetMethod("OnGet").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Get);
-					}
+                        //find overriden REST methods
+                        var allowedMethods = new List<string>();
+                        if (service.GetMethod("OnGet").DeclaringType == service)
+                        {
+                            allowedMethods.Add(HttpMethods.Get);
+                        }
 
-					if (restService.GetMethod("OnPost").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Post);
-					}
+                        if (service.GetMethod("OnPost").DeclaringType == service)
+                        {
+                            allowedMethods.Add(HttpMethods.Post);
+                        }
 
-					if (restService.GetMethod("OnPut").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Put);
-					}
+                        if (service.GetMethod("OnPut").DeclaringType == service)
+                        {
+                            allowedMethods.Add(HttpMethods.Put);
+                        }
 
-					if (restService.GetMethod("OnDelete").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Delete);
-					}
+                        if (service.GetMethod("OnDelete").DeclaringType == service)
+                        {
+                            allowedMethods.Add(HttpMethods.Delete);
+                        }
 
-					if (restService.GetMethod("OnPatch").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Patch);
-					}
+                        if (service.GetMethod("OnPatch").DeclaringType == service)
+                        {
+                            allowedMethods.Add(HttpMethods.Patch);
+                        }
 
-					if (allowedMethods.Count == 0) continue;
-					var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
+                        if (allowedMethods.Count == 0) continue;
+                        var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
 
-					routes.Add(requestType, requestType.Name, allowedVerbs, null);
+                        routes.Add(requestType, requestType.Name, allowedVerbs, null);
 
-					var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
-					if (hasIdField)
-					{
-						var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
-						routes.Add(requestType, routePath, allowedVerbs, null);
-					}
+                        var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
+                        if (hasIdField)
+                        {
+                            var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
+                            routes.Add(requestType, routePath, allowedVerbs, null);
+                        }
+                    }
+                    else
+                    {
+                        routes.Add(requestType, requestType.Name, null, null); //null == All Routes
+                    }
 				}
 			}
 
