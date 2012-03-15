@@ -126,6 +126,10 @@ namespace ServiceStack.ServiceInterface
 				allowedMethods.Add(HttpMethods.Delete);
 			if (verbs.Has(ApplyTo.Patch))
 				allowedMethods.Add(HttpMethods.Patch);
+			if (verbs.Has(ApplyTo.Options))
+				allowedMethods.Add(HttpMethods.Options);
+			if (verbs.Has(ApplyTo.Head))
+				allowedMethods.Add(HttpMethods.Head);
 			
 			return string.Join(" ", allowedMethods.ToArray());
 		}
