@@ -131,7 +131,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void Can_Post_TodoList()
 		{
 			var serviceClient = new JsonServiceClient(ListeningOn);
-			var response = serviceClient.Post<TodoListResponse>("todolist", new TodoList(Todos));
+			var response = serviceClient.Post<TodoListResponse>("/todolist", new TodoList(Todos));
 			Assert.That(response.Results, Is.EquivalentTo(Todos));
 		}
 
@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public void Can_Get_TodoList()
 		{
 			var serviceClient = new JsonServiceClient(ListeningOn);
-			var response = serviceClient.Get<TodoListResponse>("todolist");
+			var response = serviceClient.Get<TodoListResponse>("/todolist");
 			Assert.That(response.Results.Count, Is.EqualTo(0));
 		}
 	}

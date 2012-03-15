@@ -86,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			EndpointHost.Config.WriteErrorsToResponse = writeErrorsToResponse;
 
 			const int sleepMs = 1000;
-			var url = string.Format("{0}/test/timed?Milliseconds={1}", ListeningOn, sleepMs);
+			var url = string.Format("{0}test/timed?Milliseconds={1}", ListeningOn, sleepMs);
 			var req = WebRequest.Create(url) as HttpWebRequest;
 			//Set a short timeout so we'll give up before the request is processed
 			req.Timeout = 100;
@@ -94,9 +94,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			{
 				var res = (HttpWebResponse)req.GetResponse();
 			}
-			catch (Exception ex)
+			catch (WebException ex)
 			{
-				if (ex.Message != "The operation has timed out")
+				if (ex.Status != WebExceptionStatus.Timeout)
 					throw;
 
 				//Do nothing - we are expecting a time out
@@ -115,11 +115,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				//Arguably there should be only one Error reported, but we get two. Lets check them both
 
 				//We should get only one log entry: An ERROR from ProcessRequest
-				Assert.AreEqual(2, TestLogger.GetLogs().Count(), "Checking if there is only one log entry");
-				Assert.AreEqual(2, TestLogger.GetLogs().Where(o => o.Key == TestLogger.Levels.ERROR).Count(), "Checking if there is only one ERROR entry");
+				var errorLogs = TestLogger.GetLogs().Where(o => o.Key == TestLogger.Levels.ERROR).ToList();
+				Assert.AreEqual(2, errorLogs.Count, "Checking if there is only one ERROR entry");
 
-				StringAssert.Contains("Error in HttpListenerResponseWrapper", TestLogger.GetLogs()[0].Value, "Checking if the error is from HttpListenerResponseWrapper");
-				StringAssert.Contains("ProcessRequest", TestLogger.GetLogs()[1].Value, "Checking if the error is from ProcessRequest");
+				StringAssert.Contains("Error in HttpListenerResponseWrapper", errorLogs[0].Value, "Checking if the error is from HttpListenerResponseWrapper");
+				StringAssert.Contains("ProcessRequest", errorLogs[1].Value, "Checking if the error is from ProcessRequest");
 			}
 			else
 			{

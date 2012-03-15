@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	public class _JsonpTests
 	{
-		protected const string ListeningOn = "http://localhost:85/";
+		protected const string ListeningOn = "http://localhost:82/";
 
 		ExampleAppHostHttpListener appHost;
 
