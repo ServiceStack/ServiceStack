@@ -284,6 +284,10 @@ namespace ServiceStack.ServiceHost
 			{
 				serviceRequiresContext.RequestContext = requestContext;
 			}
+
+			var servicesRequiresHttpRequest = service as IRequiresHttpRequest;
+			if (servicesRequiresHttpRequest != null)
+				servicesRequiresHttpRequest.HttpRequest = requestContext.Get<IHttpRequest>();
 		}
 
 		private static Func<object, object, EndpointAttributes, object> CallServiceExecuteGeneric(

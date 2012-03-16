@@ -30,19 +30,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         bool ValidAddress(string address);
     }
 
-    public class UserValidator : AbstractValidator<UserValidation>
+    public class UserValidator : AbstractValidator<UserValidation>, IRequiresHttpRequest
     {
         public IAddressValidator AddressValidator { get; set; }
+		public IHttpRequest HttpRequest { get; set; }
 
         public UserValidator()
         {
+			RuleFor(x => x.FirstName).Must(f =>
+			{
+				if (HttpRequest == null)
+					Assert.Fail();
+
+				return true;
+			});
 			RuleFor(x => x.LastName).NotEmpty().WithErrorCode("ShouldNotBeEmpty");
 			RuleSet(ApplyTo.Post | ApplyTo.Put, () =>
             {
                 RuleFor(x => x.FirstName).NotEmpty().WithMessage("Please specify a first name");
             });
         }
-    }
+	}
 
     //Not matching the naming convention ([Request DTO Name] + "Response")
     public class OperationResponse

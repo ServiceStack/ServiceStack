@@ -160,7 +160,6 @@
     <Compile Include="Support\DirectServiceClient.cs" />
     <Compile Include="Support\Host\ExampleAppHostHttpListener.cs" />
     <Compile Include="HtmlResultTests.cs" />
-    <Compile Include="HttpRequestExtensionsTests.cs" />
     <Compile Include="IntegrationTests\ConfigureDatabase.cs" />
     <Compile Include="IntegrationTests\ExampleConfig.cs" />
     <Compile Include="IntegrationTests\IntegrationTestBase.cs" />
