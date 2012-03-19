@@ -41,6 +41,13 @@ namespace ServiceStack.ServiceClient.Web
                 return DownloadText(webRes);
         }
 
+        public static byte[] DownloadBinaryFromUrl(this string url)
+        {
+            var webReq = WebRequest.Create(url);
+            using (var webRes = webReq.GetResponse())
+                return DownloadBinary(webRes);
+        }
+
 		public static string PostToUrl(this string url, string data, string acceptContentType=null)
 		{
 			return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data), acceptContentType);
@@ -105,6 +112,14 @@ namespace ServiceStack.ServiceClient.Web
             using (var reader = new StreamReader(stream))
             {
                 return reader.ReadToEnd();
+            }
+        }
+
+        public static byte[] DownloadBinary(this WebResponse webRes)
+        {
+            using (var stream = webRes.GetResponseStream())
+            {
+                return stream.ReadFully();
             }
         }
 
