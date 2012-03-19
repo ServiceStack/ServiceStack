@@ -176,6 +176,12 @@ namespace ServiceStack.Common.Web
 			{
 				this.ResponseStream.WriteTo(responseStream);
 				responseStream.Flush();
+                try
+                {
+                    this.ResponseStream.Dispose();
+                }
+                catch { /*ignore*/ }
+
 				return;
 			}
 
@@ -191,6 +197,13 @@ namespace ServiceStack.Common.Web
 				throw new ArgumentNullException("ResponseFilter");
 			if (this.RequestContext == null)
 				throw new ArgumentNullException("RequestContext");
+
+		    var bytesResponse = this.Response as byte[];
+            if (bytesResponse != null)
+            {
+                responseStream.Write(bytesResponse, 0, bytesResponse.Length);
+                return;
+            }
 
 			ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
 		}
