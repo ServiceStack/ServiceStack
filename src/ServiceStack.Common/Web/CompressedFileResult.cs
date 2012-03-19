@@ -45,14 +45,14 @@ namespace ServiceStack.Common.Web
 			};
 		}
 
-		public void WriteTo(Stream stream)
+		public void WriteTo(Stream responseStream)
 		{
 			using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
 			{
 				fs.Position = Adler32ChecksumLength;
 
-				fs.WriteTo(stream);
-				stream.Flush();
+				fs.WriteTo(responseStream);
+				responseStream.Flush();
 			}
 		}
 

@@ -4,6 +4,6 @@ namespace ServiceStack.Service
 {
 	public interface IStreamWriter
 	{
-		void WriteTo(Stream stream);
+		void WriteTo(Stream responseStream);
 	}
 }
