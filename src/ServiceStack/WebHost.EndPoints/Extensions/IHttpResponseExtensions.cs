@@ -115,6 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					}
 
 					var httpResult = result as IHttpResult;
+				    var disposableResult = result as IDisposable;
 					if (httpResult != null)
 					{
 						response.StatusCode = (int) httpResult.StatusCode;
@@ -145,6 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
 					{
 						response.Flush(); //required for Compression
+                        if (disposableResult != null) disposableResult.Dispose();
 						return true;
 					}
 
@@ -188,6 +190,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
 					if (result != null) defaultAction(serializerCtx, result, response);
 					if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+
+                    if (disposableResult != null) disposableResult.Dispose();
 
 					return false;
 				}
