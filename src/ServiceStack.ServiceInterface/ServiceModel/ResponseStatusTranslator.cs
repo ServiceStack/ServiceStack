@@ -41,7 +41,6 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 				return this.Parse(validationException);
 			}
 
-
 			var httpError = exception as IHttpError;
 			return httpError != null
 				? CreateErrorResponse(httpError.ErrorCode, httpError.Message)

@@ -21,6 +21,8 @@ namespace ServiceStack.Common.Tests.OAuth
 {
 	public abstract class OAuthUserSessionTestsBase
 	{
+		public static bool LoadUserAuthRepositorys = true;
+
 		//Can only use either 1 OrmLiteDialectProvider at 1-time SqlServer or Sqlite.
 		public static bool UseSqlServer = false;
 
@@ -55,6 +57,8 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			get
 			{
+				if (!LoadUserAuthRepositorys) yield break;
+
 				var inMemoryRepo = new InMemoryAuthRepository();
 				inMemoryRepo.Clear();
 				yield return new TestCaseData(inMemoryRepo);
