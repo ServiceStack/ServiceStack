@@ -8,7 +8,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	[TestFixture]
 	public class RequestFilterTests
 	{
-		private const string ServiceClientBaseUri = Config.AbsoluteBaseUri;
+		private const string ServiceClientBaseUri = Config.ServiceStackBaseUri;
 
 		[Test]
 		public void Does_return_bare_401_StatusCode()
@@ -24,7 +24,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebException ex)
 			{
-				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+                var httpResponse = (HttpWebResponse)ex.Response;
+                Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 			}
 		}
 
@@ -44,7 +45,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebException ex)
 			{
-				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+                var httpResponse = (HttpWebResponse)ex.Response;
+                Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 
 				Assert.That(ex.Response.Headers[HttpHeaders.WwwAuthenticate],
 					Is.EqualTo("Basic realm=\"Auth Required\""));
@@ -66,7 +68,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			}
 			catch (WebException ex)
 			{
-				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+                var httpResponse = (HttpWebResponse)ex.Response;
+                Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 			}
 		}
 	}

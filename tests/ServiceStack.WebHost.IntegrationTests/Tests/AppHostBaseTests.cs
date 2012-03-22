@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	[TestFixture]
 	public class AppHostBaseTests
 	{
-		private const string BasePath = "http://localhost/ServiceStack.WebHost.IntegrationTests/";
+        private const string BasePath = Config.AbsoluteBaseUri;
 		private const string ServiceStackUrl = BasePath + "api/";
 
 		[Test]

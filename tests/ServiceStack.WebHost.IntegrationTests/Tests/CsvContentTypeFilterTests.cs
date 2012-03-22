@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	public class CsvContentTypeFilterTests
 	{
 		const int HeaderRowCount = 1;
-		private const string ServiceClientBaseUri = Config.AbsoluteBaseUri + "/";
+		private const string ServiceClientBaseUri = Config.ServiceStackBaseUri + "/";
 
 		private static void FailOnAsyncError<T>(T response, Exception ex)
 		{

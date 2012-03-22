@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_Send_ProtoBuf_request()
 		{
-			var client = new ProtoBufServiceClient(Config.AbsoluteBaseUri);
+			var client = new ProtoBufServiceClient(Config.ServiceStackBaseUri);
 
 			var request = new ProtoBufEmail {
 				ToAddress = "to@email.com",

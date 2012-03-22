@@ -7,13 +7,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
 	public class HelloWorldRawHttpPostTests
 	{
-		private const string BaseUrl = "http://localhost/ServiceStack.WebHost.IntegrationTests/api/hello";
-		private const string RemoteUrl = "http://www.servicestack.net/ServiceStack.Hello/servicestack/hello";
-
 		[Test]
 		public void Post_JSON_to_HelloWorld()
 		{
-			var httpReq = (HttpWebRequest)WebRequest.Create(BaseUrl);
+			var httpReq = (HttpWebRequest)WebRequest.Create(Config.ServiceStackBaseUri + "/hello");
 			httpReq.Method = "POST";
 			httpReq.ContentType = httpReq.Accept = "application/json";
 
@@ -34,7 +31,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Post_XML_to_HelloWorld()
 		{
-			var httpReq = (HttpWebRequest)WebRequest.Create(BaseUrl);
+			var httpReq = (HttpWebRequest)WebRequest.Create(Config.ServiceStackBaseUri + "/hello");
 			httpReq.Method = "POST";
 			httpReq.ContentType = httpReq.Accept = "application/xml";
 

@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
 	public class AuthTestsBase
 	{
-		private const string BaseUri = Config.AbsoluteBaseUri;
+		private const string BaseUri = Config.ServiceStackBaseUri;
 		public const string AdminEmail = "admin@servicestack.com";
 		private const string AdminPassword = "E8828A3E26884CE0B345D0D2DFED358A";
 

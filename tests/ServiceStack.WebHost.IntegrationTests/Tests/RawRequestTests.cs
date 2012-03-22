@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_POST_raw_request()
 		{
 			var rawData = "<<(( 'RAW_DATA' ))>>";
-			var requestUrl = Config.AbsoluteBaseUri + "/rawrequest";
+			var requestUrl = Config.ServiceStackBaseUri + "/rawrequest";
 			var json = requestUrl.PutToUrl(rawData, ContentType.Json);
 			var response = json.FromJson<RawRequestResponse>();
 			Assert.That(response.Result, Is.EqualTo(rawData));
@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_PUT_raw_request()
 		{
 			var rawData = "<<(( 'RAW_DATA' ))>>";
-			var requestUrl = Config.AbsoluteBaseUri + "/rawrequest";
+			var requestUrl = Config.ServiceStackBaseUri + "/rawrequest";
 			var json = requestUrl.PutToUrl(rawData, ContentType.Json);
 			var response = json.FromJson<RawRequestResponse>();
 			Assert.That(response.Result, Is.EqualTo(rawData));
