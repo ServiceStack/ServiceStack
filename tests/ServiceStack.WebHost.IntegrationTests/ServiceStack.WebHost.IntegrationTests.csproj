@@ -256,6 +256,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
+    <None Include="README.md" />
     <None Include="webpage.forbidden" />
   </ItemGroup>
   <ItemGroup>
