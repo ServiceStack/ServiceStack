@@ -40,9 +40,3 @@ build/*.dll
 release/latest/
 *.nupkg
 release/*
-
-*.pidb
-*.userprefs
-add.sh
-fetch_merge.sh
-.gitignore

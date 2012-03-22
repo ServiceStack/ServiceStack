@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	{
 		protected IRestClient CreateNewServiceClient()
 		{
-			return new JsonServiceClient(Config.AbsoluteBaseUri);
+			return new JsonServiceClient(Config.ServiceStackBaseUri);
 		}
 
 		[Test]

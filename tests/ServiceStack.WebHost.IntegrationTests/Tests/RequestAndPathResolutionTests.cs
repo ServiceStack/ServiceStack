@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		: TestBase
 	{
 		public RequestAndPathResolutionTests()
-			: base(typeof(ReverseService).Assembly)
+			: base(Config.ServiceStackBaseUri, typeof(ReverseService).Assembly)
 		{
 		}
 

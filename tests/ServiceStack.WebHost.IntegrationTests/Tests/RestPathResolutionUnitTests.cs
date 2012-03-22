@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		: TestBase
 	{
 		public RestPathResolutionUnitTests()
-			: base(typeof(ReverseService).Assembly)
+			: base(Config.ServiceStackBaseUri, typeof(ReverseService).Assembly)
 		{
 		}
 

@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 	public class IntegrationTestBase
 		: AppHostHttpListenerBase
 	{
-		protected const string BaseUrl = "http://localhost:8081/";
+		protected const string BaseUrl = "http://localhost:82/";
 
 		//Fiddler can debug local HTTP requests when using the hostname
 		//private const string BaseUrl = "http://io:8081/";

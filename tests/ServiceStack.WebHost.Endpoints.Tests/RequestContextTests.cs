@@ -132,7 +132,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 			catch (WebException ex)
 			{
-				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+				var httpResponse = (HttpWebResponse)ex.Response;
+				Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 			}
 		}
 
@@ -152,7 +153,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 			catch (WebException ex)
 			{
-				Assert.That(ex.Message, Is.EqualTo("The remote server returned an error: (401) Unauthorized."));
+				var httpResponse = (HttpWebResponse)ex.Response;
+				Assert.That(httpResponse.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
 
 				Assert.That(ex.Response.Headers[HttpHeaders.WwwAuthenticate],
 					Is.EqualTo("Basic realm=\"Auth Required\""));
