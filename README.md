@@ -277,6 +277,17 @@ Which will change your urls will now look like:
 
 	http://localhost/servicestack.ashx/xml/syncreply/Hello?Name=World
 
+## OSS Libraries used
+
+ServiceStack includes source code of the great libraries below for some of its core functionality. 
+Each library is released under its respective licence:
+
+  - [Mono](https://github.com/mono/mono) [(Licence)](https://github.com/mono/mono/blob/master/LICENSE)
+  - [Funq IOC](http://funq.codeplex.com) [(Licence)](http://funq.codeplex.com/license)
+  - [Fluent Validation](http://fluentvalidation.codeplex.com) [(Licence)](http://fluentvalidation.codeplex.com/license)
+  - [Mini Profiler](http://code.google.com/p/mvc-mini-profiler/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [Dapper](http://code.google.com/p/dapper-dot-net/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(Licence)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
 
 # Contributors 
 A big thanks to GitHub and all of ServiceStack's contributors:
