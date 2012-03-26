@@ -189,8 +189,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
 					userAuth.Id = int.Parse(authSession.UserAuthId);
 
-				userAuth.ModifiedDate = userAuth.ModifiedDate;
-				if (userAuth.CreatedDate == default(DateTime))
+                userAuth.ModifiedDate = DateTime.UtcNow;
+                if (userAuth.CreatedDate == default(DateTime))
 					userAuth.CreatedDate = userAuth.ModifiedDate;
 
 				dbCmd.Save(userAuth);
