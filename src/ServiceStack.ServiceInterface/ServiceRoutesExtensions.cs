@@ -46,9 +46,10 @@ namespace ServiceStack.ServiceInterface
 
 					Type requestType = baseType.GetGenericArguments()[0];
 
+                    string allowedVerbs = null; //null == All Routes
+
 					if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
 					{
-
 						//find overriden REST methods
 						var allowedMethods = new List<string>();
 						if (service.GetMethod("OnGet").DeclaringType == service)
@@ -77,22 +78,18 @@ namespace ServiceStack.ServiceInterface
 						}
 
 						if (allowedMethods.Count == 0) continue;
-						var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
-
-						routes.Add(requestType, requestType.Name, allowedVerbs, null);
-
-						var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
-						if (hasIdField)
-						{
-							var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
-							routes.Add(requestType, routePath, allowedVerbs, null);
-						}
+						allowedVerbs = string.Join(" ", allowedMethods.ToArray());
 					}
-					else
-					{
-						routes.Add(requestType, requestType.Name, null, null); //null == All Routes
-					}
-				}
+
+                    routes.Add(requestType, requestType.Name, allowedVerbs, null);
+
+				    var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
+				    if (hasIdField)
+                    {
+                        var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
+                        routes.Add(requestType, routePath, allowedVerbs, null);
+                    }
+                }
 			}
 
 			return routes;
