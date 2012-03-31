@@ -21,18 +21,16 @@ namespace ServiceStack.ServiceInterface
 	{
 		public List<string> RequiredRoles { get; set; }
 
-		public RequiredRoleAttribute(params string[] roles)
-		{
-			this.RequiredRoles = roles.ToList();
-			this.ApplyTo = ApplyTo.All;
-		}
-
 		public RequiredRoleAttribute(ApplyTo applyTo, params string[] roles)
 		{
 			this.RequiredRoles = roles.ToList();
 			this.ApplyTo = applyTo;
+			this.Priority = (int) RequestFilterPriority.RequiredRole;
 		}
-		
+
+		public RequiredRoleAttribute(params string[] roles)
+			: this(ApplyTo.All, roles) {}
+
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
 			AuthenticateAttribute.AuthenticateIfBasicAuth(req, res);

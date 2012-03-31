@@ -190,20 +190,35 @@ namespace ServiceStack.WebHost.Endpoints
 
 			using (Profiler.Current.Step("Executing Request Filters"))
 			{
+				//Exec all RequestFilter attributes with Priority < 0
+				var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
+				var i = 0;
+				for (; i < attributes.Length && attributes[i].Priority < 0; i++)
+				{
+					var attribute = attributes[i];
+					ServiceManager.Container.AutoWire(attribute);
+					attribute.RequestFilter(httpReq, httpRes, requestDto);
+					if (AppHost != null) //tests
+						AppHost.Release(attribute);
+					if (httpRes.IsClosed) return httpRes.IsClosed;
+				}
+
+				//Exec global filters
 				foreach (var requestFilter in RequestFilters)
 				{
 					requestFilter(httpReq, httpRes, requestDto);
-					if (httpRes.IsClosed) break;
+					if (httpRes.IsClosed) return httpRes.IsClosed;
 				}
 
-				var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
-				foreach (var attribute in attributes)
+				//Exec remaining RequestFilter attributes with Priority >= 0
+				for (; i < attributes.Length; i++)
 				{
-					EndpointHost.ServiceManager.Container.AutoWire(attribute);
+					var attribute = attributes[i];
+					ServiceManager.Container.AutoWire(attribute);
 					attribute.RequestFilter(httpReq, httpRes, requestDto);
-					if (EndpointHost.AppHost != null) //tests
-						EndpointHost.AppHost.Release(attribute);
-					if (httpRes.IsClosed) break;
+					if (AppHost != null) //tests
+						AppHost.Release(attribute);
+					if (httpRes.IsClosed) return httpRes.IsClosed;
 				}
 
 				return httpRes.IsClosed;
@@ -215,36 +230,51 @@ namespace ServiceStack.WebHost.Endpoints
 		/// and no more processing should be done.
 		/// </summary>
 		/// <returns></returns>
-		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object responseDto)
+		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object response)
 		{
 			httpReq.ThrowIfNull("httpReq");
 			httpRes.ThrowIfNull("httpRes");
 
 			using (Profiler.Current.Step("Executing Response Filters"))
 			{
-				foreach (var responseFilter in ResponseFilters)
+				var responseDto = response.ToResponseDto();
+				var attributes = responseDto != null
+					? FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType())
+					: null;
+
+				//Exec all ResponseFilter attributes with Priority < 0
+				var i = 0;
+				if (attributes != null)
 				{
-					responseFilter(httpReq, httpRes, responseDto);
-					if (httpRes.IsClosed) break;
+					for (; i < attributes.Length && attributes[i].Priority < 0; i++)
+					{
+						var attribute = attributes[i];
+						ServiceManager.Container.AutoWire(attribute);
+						attribute.ResponseFilter(httpReq, httpRes, response);
+						if (AppHost != null) //tests
+							AppHost.Release(attribute);
+						if (httpRes.IsClosed) return httpRes.IsClosed;
+					}
 				}
 
-				if (responseDto != null)
+				//Exec global filters
+				foreach (var responseFilter in ResponseFilters)
 				{
-					var httpResult = responseDto as IHttpResult;
-					if (httpResult != null)
-						responseDto = httpResult.Response;
+					responseFilter(httpReq, httpRes, response);
+					if (httpRes.IsClosed) return httpRes.IsClosed;
+				}
 
-					if (responseDto != null)
+				//Exec remaining RequestFilter attributes with Priority >= 0
+				if (attributes != null)
+				{
+					for (; i < attributes.Length; i++)
 					{
-						var attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
-						foreach (var attribute in attributes)
-						{
-							EndpointHost.ServiceManager.Container.AutoWire(attribute);
-							attribute.ResponseFilter(httpReq, httpRes, responseDto);
-							if (EndpointHost.AppHost != null) //tests
-								EndpointHost.AppHost.Release(attribute);
-							if (httpRes.IsClosed) break;
-						}
+						var attribute = attributes[i];
+						ServiceManager.Container.AutoWire(attribute);
+						attribute.ResponseFilter(httpReq, httpRes, response);
+						if (AppHost != null) //tests
+							AppHost.Release(attribute);
+						if (httpRes.IsClosed) return httpRes.IsClosed;
 					}
 				}
 

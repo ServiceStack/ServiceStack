@@ -20,24 +20,23 @@ namespace ServiceStack.ServiceInterface
 	{
 		public string Provider { get; set; }
 
-		public AuthenticateAttribute()
-			: base(ApplyTo.All)
+		public AuthenticateAttribute(ApplyTo applyTo)
+			: base(applyTo)
 		{
+			this.Priority = (int) RequestFilterPriority.Authenticate;
 		}
 
+		public AuthenticateAttribute()
+			: this(ApplyTo.All) {}
+
 		public AuthenticateAttribute(string provider)
-			: base(ApplyTo.All)
+			: this(ApplyTo.All)
 		{
 			this.Provider = provider;
 		}
 
-		public AuthenticateAttribute(ApplyTo applyTo)
-			: base(applyTo)
-		{
-		}
-
 		public AuthenticateAttribute(ApplyTo applyTo, string provider)
-			: base(applyTo)
+			: this(applyTo)
 		{
 			this.Provider = provider;
 		}
@@ -48,8 +47,8 @@ namespace ServiceStack.ServiceInterface
 				 + "AuthService.Init to use an authenticate attribute");
 
 			var matchingOAuthConfigs = AuthService.AuthProviders.Where(x =>
-							this.Provider.IsNullOrEmpty()
-							|| x.Provider == this.Provider).ToList();
+				this.Provider.IsNullOrEmpty()
+				|| x.Provider == this.Provider).ToList();
 
 			if (matchingOAuthConfigs.Count == 0)
 			{
@@ -73,8 +72,12 @@ namespace ServiceStack.ServiceInterface
 			}
 		}
 
+		//Also shared by RequiredRoleAttribute and RequiredPermissionAttribute
 		public static void AuthenticateIfBasicAuth(IHttpRequest req, IHttpResponse res)
 		{
+			//Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+			SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
 			var userPass = req.GetBasicAuthUserAndPassword();
 			if (userPass != null)
 			{

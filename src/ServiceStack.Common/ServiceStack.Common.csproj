@@ -451,6 +451,7 @@
     <Compile Include="Web\HttpResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\HttpResultExtensions.cs" />
     <Compile Include="Web\MimeTypes.cs">
       <SubType>Code</SubType>
     </Compile>
