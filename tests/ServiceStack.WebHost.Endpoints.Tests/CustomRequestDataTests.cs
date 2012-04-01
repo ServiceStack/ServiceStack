@@ -105,6 +105,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
+		public void Does_use_request_binder_for_POST_FormData_without_ContentType()
+		{
+			var responseStr = customUrl.PostToUrl("k=v", acceptContentType:ContentType.Json);
+			Console.WriteLine(responseStr);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_POST_FormData_without_ContentType_with_QueryString()
+		{
+			var customUrlWithQueryString = customUrl + "?a=1";
+			var responseStr = customUrlWithQueryString.PostToUrl("k=v", acceptContentType: ContentType.Json);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
 		public void Does_use_request_binder_for_predefined_POST()
 		{
 			var responseStr = predefinedUrl.PostJsonToUrl(new CustomRequestBinder());
