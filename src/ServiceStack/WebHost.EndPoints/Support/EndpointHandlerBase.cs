@@ -92,13 +92,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			try
 			{
-				Func<IHttpRequest, object> requestFactoryFn;
-				(ServiceManager ?? EndpointHost.ServiceManager).ServiceController.RequestTypeFactoryMap.TryGetValue(requestType, out requestFactoryFn);
-				if (requestFactoryFn != null)
-				{
-					return requestFactoryFn(httpReq);
-				}
-
 				if (!string.IsNullOrEmpty(contentType) && httpReq.ContentLength > 0)
 				{
 					var deserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(contentType);
@@ -115,6 +108,15 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				throw new SerializationException(msg);
 			}
 			return null;
+		}
+
+		protected static object GetCustomRequestFromBinder(IHttpRequest httpReq, Type requestType)
+		{
+			Func<IHttpRequest, object> requestFactoryFn;
+			(ServiceManager ?? EndpointHost.ServiceManager).ServiceController.RequestTypeFactoryMap.TryGetValue(
+				requestType, out requestFactoryFn);
+
+			return requestFactoryFn != null ? requestFactoryFn(httpReq) : null;
 		}
 
 		protected static bool DefaultHandledRequest(HttpListenerContext context)

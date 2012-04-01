@@ -96,7 +96,10 @@ namespace ServiceStack.WebHost.Endpoints
 			{
 				var requestParams = httpReq.GetRequestParams();
 
-				var requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
+				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
+				if (requestDto != null)	return requestDto;
+
+				requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
 
 				return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
 			}

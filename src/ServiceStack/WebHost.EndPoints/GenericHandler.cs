@@ -46,12 +46,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 			using (Profiler.Current.Step("Deserialize Request"))
 			{
-				Func<IHttpRequest, object> requestFactoryFn;
-				(ServiceManager ?? EndpointHost.ServiceManager).ServiceController.RequestTypeFactoryMap.TryGetValue(requestType, out requestFactoryFn);
-				if (requestFactoryFn != null)
-					return requestFactoryFn(httpReq);
-
-				return DeserializeContentType(requestType, httpReq, HandlerContentType);
+				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
+				return requestDto ?? DeserializeContentType(requestType, httpReq, HandlerContentType);
 			}
 		}
 
