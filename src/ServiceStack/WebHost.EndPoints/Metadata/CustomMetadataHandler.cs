@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Metadata
 			{
 				var error = string.Format("Error serializing type '{0}' with custom format '{1}'",
 					dtoType.Name, this.ContentFormat);
-				Log.Error(error, ex);
+				Log.Error(() => error, ex);
 
 				return string.Format("{{Unable to show example output for type '{0}' using the custom '{1}' filter}}" + ex.Message,
 					dtoType.Name, this.ContentFormat);

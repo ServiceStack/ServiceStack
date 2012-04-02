@@ -63,7 +63,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
+				Log.Error(() => "Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
 				Assert.That(actual.CreatedDate.RoundToSecond(), Is.EqualTo(expected.CreatedDate.RoundToSecond()));
 			}
 			Assert.That(actual.Priority, Is.EqualTo(expected.Priority));

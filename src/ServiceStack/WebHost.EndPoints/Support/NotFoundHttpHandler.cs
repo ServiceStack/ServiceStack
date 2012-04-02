@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 	public class NotFoundHttpHandler
 		: IServiceStackHttpHandler, IHttpHandler
 	{
-        private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
+		private static readonly ILog Log = LogManager.GetLogger(typeof(NotFoundHttpHandler));
 
 		public bool? IsIntegratedPipeline { get; set; }
 		public string WebHostPhysicalPath { get; set; }
@@ -24,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
-            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+			Log.ErrorFormat(() => "{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
 			var text = new StringBuilder("Handler for Request not found: \n\n")
 				.AppendLine("Request.HttpMethod: " + request.HttpMethod)
@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				return;
 			}
 
-            Log.ErrorFormat("{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
+			Log.ErrorFormat(() => "{0} Request not found: {1}", request.UserHostAddress, request.RawUrl);
 
 			var sb = new StringBuilder();
 			sb.AppendLine("Handler for Request not found: \n\n");

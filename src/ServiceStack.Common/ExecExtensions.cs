@@ -12,7 +12,7 @@ namespace ServiceStack.Common
 		public static void LogError(Type declaringType, string clientMethodName, Exception ex)
 		{
 			var log = LogManager.GetLogger(declaringType);
-			log.Error(string.Format("'{0}' threw an error on {1}: {2}", declaringType.FullName, clientMethodName, ex.Message), ex);
+			log.Error(() => string.Format("'{0}' threw an error on {1}: {2}", declaringType.FullName, clientMethodName, ex.Message), ex);
 		}
 
 		public static void ExecAll<T>(this IEnumerable<T> instances, Action<T> action)

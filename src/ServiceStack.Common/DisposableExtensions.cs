@@ -18,7 +18,7 @@ namespace ServiceStack.Common
 				{
 					if (log != null)
 					{
-						log.Error(string.Format("Error disposing of '{0}'", disposable.GetType().FullName), ex);
+						log.Error(() => string.Format("Error disposing of '{0}'", disposable.GetType().FullName), ex);
 					}
 				}
 			}

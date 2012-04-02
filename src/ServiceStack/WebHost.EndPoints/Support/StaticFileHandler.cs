@@ -70,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 			catch (Exception ex)
 			{
-				log.Error(ex.Message, ex);
+				log.Error(() => ex.Message, ex);
 			}
 		}
 

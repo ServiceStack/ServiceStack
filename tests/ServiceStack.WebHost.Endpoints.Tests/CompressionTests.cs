@@ -109,8 +109,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			Assert.That(mockResponse.ContentType, Is.EqualTo(MimeTypes.Xml));
 			Assert.That(mockResponse.Headers[HttpHeaders.ContentEncoding], Is.EqualTo(CompressionTypes.Deflate));
 
-			Log.Debug("Content-length: " + writtenBytes.Length);
-			Log.Debug(BitConverter.ToString(writtenBytes));
+			Log.Debug(() => "Content-length: " + writtenBytes.Length);
+			Log.Debug(() => BitConverter.ToString(writtenBytes));
 		}
 
 		[Test]

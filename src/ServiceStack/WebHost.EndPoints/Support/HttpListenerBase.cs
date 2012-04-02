@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected HttpListenerBase()
 		{
 			this.startTime = DateTime.Now;
-			Log.Info("Begin Initializing Application...");
+			Log.Info(() => "Begin Initializing Application...");
 
 			EndpointHostConfig.SkipPathValidation = true;
 		}
@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			EndpointHost.AfterInit();
 
 			var elapsed = DateTime.Now - this.startTime;
-			Log.InfoFormat("Initializing Application took {0}ms", elapsed.TotalMilliseconds);
+			Log.InfoFormat(() => "Initializing Application took {0}ms", elapsed.TotalMilliseconds);
 		}
 
 		public abstract void Configure(Container container);
@@ -136,7 +136,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 				catch (Exception ex)
 				{
-					Log.Error("Listen()", ex);
+					Log.Error(() => "Listen()", ex);
 					return;
 				}
 				if (this.Listener == null) return;
@@ -156,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				if (!isListening)
 				{
-					Log.DebugFormat("Ignoring ListenerCallback() as HttpListener is no longer listening");
+					Log.DebugFormat(() => "Ignoring ListenerCallback() as HttpListener is no longer listening");
 					return;
 				}
 				// The EndGetContext() method, as with all Begin/End asynchronous methods in the .NET Framework,
@@ -170,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				// method, and again, that is just the way most Begin/End asynchronous
 				// methods of the .NET Framework work.
 				var errMsg = ex + ": " + isListening;
-				Log.Warn(errMsg);
+				Log.Warn(()=> errMsg);
 				return;
 			}
 			finally
@@ -184,7 +184,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			if (context == null) return;
 
-            Log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+			Log.InfoFormat(() => "{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
 			//System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.Now);
 			//var request = context.Request;
@@ -201,7 +201,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			catch (Exception ex)
 			{
 				var error = string.Format("Error this.ProcessRequest(context): [{0}]: {1}", ex.GetType().Name, ex.Message);
-				Log.ErrorFormat(error);
+				Log.ErrorFormat(() => error);
 
 				try
 				{
@@ -223,7 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				catch (Exception errorEx)
 				{
 					error = string.Format("Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}", errorEx.GetType().Name, errorEx.Message);
-					Log.ErrorFormat(error);
+					Log.ErrorFormat(() => error);
 
 				}
 			}			
@@ -247,7 +247,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				if (ex.ErrorCode != RequestThreadAbortedException) throw;
 
-				Log.ErrorFormat("Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
+				Log.ErrorFormat(() => "Swallowing HttpListenerException({0}) Thread exit or aborted request", RequestThreadAbortedException);
 			}
 			this.Listener = null;
 			this.IsStarted = false;
@@ -367,7 +367,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				}
 				catch (Exception ex)
 				{
-					Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+					Log.Warn(() => "Error loading plugin " + plugin.GetType().Name, ex);
 				}
 			}
 		}

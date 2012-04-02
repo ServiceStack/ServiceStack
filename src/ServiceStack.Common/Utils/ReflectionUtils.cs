@@ -22,34 +22,34 @@ namespace ServiceStack.Common.Utils
 		{
 			if (obj == null) return null;
 
-            return PopulateObjectInternal(obj, new Dictionary<Type, int>(20));
+			return PopulateObjectInternal(obj, new Dictionary<Type, int>(20));
 		}
 
-        /// <summary>
-        /// Populates the object with example data.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="recursionInfo">Tracks how deeply nested we are</param>
-        /// <returns></returns>
-        private static object PopulateObjectInternal(object obj, Dictionary<Type,int> recursionInfo)
-        {
-            if (obj == null) return null;
-            if (obj is string) return obj; // prevents it from dropping into the char[] Chars property.  Sheesh
+		/// <summary>
+		/// Populates the object with example data.
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <param name="recursionInfo">Tracks how deeply nested we are</param>
+		/// <returns></returns>
+		private static object PopulateObjectInternal(object obj, Dictionary<Type,int> recursionInfo)
+		{
+			if (obj == null) return null;
+			if (obj is string) return obj; // prevents it from dropping into the char[] Chars property.  Sheesh
 
-            var members = obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var info in members)
-            {
-                var fieldInfo = info as FieldInfo;
-                var propertyInfo = info as PropertyInfo;
-                if (fieldInfo != null || propertyInfo != null)
-                {
-                    var memberType = fieldInfo != null ? fieldInfo.FieldType : propertyInfo.PropertyType;
-                    var value = CreateDefaultValue(memberType, recursionInfo);
-                    SetValue(fieldInfo, propertyInfo, obj, value);
-                }
-            }
-            return obj;
-        }
+			var members = obj.GetType().GetMembers(BindingFlags.Public | BindingFlags.Instance);
+			foreach (var info in members)
+			{
+				var fieldInfo = info as FieldInfo;
+				var propertyInfo = info as PropertyInfo;
+				if (fieldInfo != null || propertyInfo != null)
+				{
+					var memberType = fieldInfo != null ? fieldInfo.FieldType : propertyInfo.PropertyType;
+					var value = CreateDefaultValue(memberType, recursionInfo);
+					SetValue(fieldInfo, propertyInfo, obj, value);
+				}
+			}
+			return obj;
+		}
 
 		private static readonly Dictionary<Type, object> DefaultValueTypes 
 			= new Dictionary<Type, object>();
@@ -152,7 +152,7 @@ namespace ServiceStack.Common.Utils
 		{
 			if (!propertyInfo.CanWrite)
 			{
-				Log.WarnFormat("Attempted to set read only property '{0}'", propertyInfo.Name);
+				Log.WarnFormat(() => "Attempted to set read only property '{0}'", propertyInfo.Name);
 				return;
 			}
 			var propertySetMetodInfo = propertyInfo.GetSetMethod();
@@ -188,7 +188,7 @@ namespace ServiceStack.Common.Utils
 			catch (Exception ex)
 			{
 				var name = (fieldInfo != null) ? fieldInfo.Name : propertyInfo.Name;
-				Log.DebugFormat("Could not set member: {0}. Error: {1}", name, ex.Message);
+				Log.DebugFormat(() => "Could not set member: {0}. Error: {1}", name, ex.Message);
 			}
 		}
 
@@ -219,7 +219,7 @@ namespace ServiceStack.Common.Utils
 			return values.ToArray();
 		}
 
-        private const int MaxRecursionLevelForDefaultValues = 2; // do not nest a single type more than this deep.
+		private const int MaxRecursionLevelForDefaultValues = 2; // do not nest a single type more than this deep.
 
 		public static object CreateDefaultValue(Type type, Dictionary<Type, int> recursionInfo)
 		{
@@ -228,72 +228,72 @@ namespace ServiceStack.Common.Utils
 				return type.Name;
 			}
 
-            if (type.IsEnum)
-            {
+			if (type.IsEnum)
+			{
 #if SILVERLIGHT4
-            	return Enum.ToObject(type, 0);
+				return Enum.ToObject(type, 0);
 #else
-                return Enum.GetValues(type).GetValue(0);
+				return Enum.GetValues(type).GetValue(0);
 #endif
-            }
+			}
 
-            // If we have hit our recursion limit for this type, then return null
-            int recurseLevel; // will get set to 0 if TryGetValue() fails
-            recursionInfo.TryGetValue(type, out recurseLevel);
-            if (recurseLevel > MaxRecursionLevelForDefaultValues) return null;
+			// If we have hit our recursion limit for this type, then return null
+			int recurseLevel; // will get set to 0 if TryGetValue() fails
+			recursionInfo.TryGetValue(type, out recurseLevel);
+			if (recurseLevel > MaxRecursionLevelForDefaultValues) return null;
 
-            recursionInfo[type] = recurseLevel + 1; // increase recursion level for this type
-            try // use a try/finally block to make sure we decrease the recursion level for this type no matter which code path we take,
-            {
+			recursionInfo[type] = recurseLevel + 1; // increase recursion level for this type
+			try // use a try/finally block to make sure we decrease the recursion level for this type no matter which code path we take,
+			{
 
-                //when using KeyValuePair<TKey, TValue>, TKey must be non-default to stuff in a Dictionary
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
-                {
-                    var genericTypes = type.GetGenericArguments();
-                    var valueType = Activator.CreateInstance(type, CreateDefaultValue(genericTypes[0], recursionInfo), CreateDefaultValue(genericTypes[1], recursionInfo));
-                    return PopulateObjectInternal(valueType, recursionInfo);
-                }
+				//when using KeyValuePair<TKey, TValue>, TKey must be non-default to stuff in a Dictionary
+				if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+				{
+					var genericTypes = type.GetGenericArguments();
+					var valueType = Activator.CreateInstance(type, CreateDefaultValue(genericTypes[0], recursionInfo), CreateDefaultValue(genericTypes[1], recursionInfo));
+					return PopulateObjectInternal(valueType, recursionInfo);
+				}
 
-                if (type.IsValueType)
-                {
-                    return Activator.CreateInstance(type);
-                }
+				if (type.IsValueType)
+				{
+					return Activator.CreateInstance(type);
+				}
 
-                if (type.IsArray)
-                {
-                    return PopulateArray(type, recursionInfo);
-                }
+				if (type.IsArray)
+				{
+					return PopulateArray(type, recursionInfo);
+				}
 
-                var constructorInfo = type.GetConstructor(Type.EmptyTypes);
-                var hasEmptyConstructor = constructorInfo != null;
+				var constructorInfo = type.GetConstructor(Type.EmptyTypes);
+				var hasEmptyConstructor = constructorInfo != null;
 
-                if (hasEmptyConstructor)
-                {
-                    var value = constructorInfo.Invoke(new object[0]);
+				if (hasEmptyConstructor)
+				{
+					var value = constructorInfo.Invoke(new object[0]);
 
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
 
-                    Type[] interfaces = type.FindInterfaces((t, critera) =>
-                        t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>)
-                        , null);
+					Type[] interfaces = type.FindInterfaces((t, critera) =>
+						t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ICollection<>)
+						, null);
 
-                    bool isGenericCollection = interfaces.Length > 0;
+					bool isGenericCollection = interfaces.Length > 0;
 
-                    if (isGenericCollection)
-                    {
-                        SetGenericCollection(interfaces[0], value, recursionInfo);
-                    }
+					if (isGenericCollection)
+					{
+						SetGenericCollection(interfaces[0], value, recursionInfo);
+					}
 #endif
 
-                    //when the object might have nested properties such as enums with non-0 values, etc
-                    return PopulateObjectInternal(value, recursionInfo);
-                }
-                return null;
-            }
-            finally
-            {
-                recursionInfo[type] = recurseLevel;
-            }
+					//when the object might have nested properties such as enums with non-0 values, etc
+					return PopulateObjectInternal(value, recursionInfo);
+				}
+				return null;
+			}
+			finally
+			{
+				recursionInfo[type] = recurseLevel;
+			}
 		}
 
 		public static void SetGenericCollection(Type realisedListType, object genericObj, Dictionary<Type, int> recursionInfo)
@@ -302,12 +302,12 @@ namespace ServiceStack.Common.Utils
 
 			if (args.Length != 1)
 			{
-				Log.ErrorFormat("Found a generic list that does not take one generic argument: {0}", realisedListType);
+				Log.ErrorFormat(() => "Found a generic list that does not take one generic argument: {0}", realisedListType);
 
 				return;
 			}
 
-            var methodInfo = realisedListType.GetMethod("Add");
+			var methodInfo = realisedListType.GetMethod("Add");
 
 			if (methodInfo != null)
 			{

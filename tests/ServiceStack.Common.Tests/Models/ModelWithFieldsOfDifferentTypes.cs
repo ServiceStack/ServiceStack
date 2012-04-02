@@ -68,7 +68,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
+				Log.Error(() => "Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
 				Assert.That(actual.DateTime.RoundToSecond(), Is.EqualTo(expected.DateTime.Value.RoundToSecond()));
 			}
 			try
@@ -77,7 +77,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with double precisions, trying Assert again with rounding to 10 decimals", ex);
+				Log.Error(() => "Trouble with double precisions, trying Assert again with rounding to 10 decimals", ex);
 				Assert.That(Math.Round(actual.Double, 10), Is.EqualTo(Math.Round(actual.Double, 10)));
 			}
 		}
@@ -167,7 +167,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
+				Log.Error(() => "Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
 				Assert.That(actual.DateTime.RoundToSecond(), Is.EqualTo(expected.DateTime.RoundToSecond()));
 			}
 			try
@@ -176,7 +176,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with double precisions, trying Assert again with rounding to 10 decimals", ex);
+				Log.Error(() => "Trouble with double precisions, trying Assert again with rounding to 10 decimals", ex);
 				Assert.That(Math.Round(actual.Double, 10), Is.EqualTo(Math.Round(actual.Double, 10)));
 			}
 		}

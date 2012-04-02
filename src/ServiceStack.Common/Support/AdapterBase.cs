@@ -19,17 +19,17 @@ namespace ServiceStack.Common.Support
 		protected T Execute<T>(Func<T> action)
 		{
 			DateTime before = DateTime.Now;
-			this.Log.DebugFormat("Executing action '{0}'", action.Method.Name);
+			this.Log.DebugFormat(() => "Executing action '{0}'", action.Method.Name);
 			try
 			{
 				T result = action();
 				TimeSpan timeTaken = DateTime.Now - before;
-				this.Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
+				this.Log.DebugFormat(() => "Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
 				return result;
 			}
 			catch (Exception ex)
 			{
-				this.Log.ErrorFormat("There was an error executing Action '{0}'. Message: {1}", action.Method.Name, ex.Message);
+				this.Log.ErrorFormat(() => "There was an error executing Action '{0}'. Message: {1}", action.Method.Name, ex.Message);
 				throw;
 			}
 		}
@@ -41,16 +41,16 @@ namespace ServiceStack.Common.Support
 		protected void Execute(Action action)
 		{
 			DateTime before = DateTime.Now;
-			this.Log.DebugFormat("Executing action '{0}'", action.Method.Name);
+			this.Log.DebugFormat(() => "Executing action '{0}'", action.Method.Name);
 			try
 			{
 				action();
 				TimeSpan timeTaken = DateTime.Now - before;
-				this.Log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
+				this.Log.DebugFormat(() => "Action '{0}' executed. Took {1} ms.", action.Method.Name, timeTaken.TotalMilliseconds);
 			}
 			catch (Exception ex)
 			{
-				this.Log.ErrorFormat("There was an error executing Action '{0}'. Message: {1}", action.Method.Name, ex.Message);
+				this.Log.ErrorFormat(() => "There was an error executing Action '{0}'. Message: {1}", action.Method.Name, ex.Message);
 				throw;
 			}
 		}

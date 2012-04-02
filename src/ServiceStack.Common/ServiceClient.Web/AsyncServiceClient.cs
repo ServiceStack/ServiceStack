@@ -184,8 +184,8 @@ namespace ServiceStack.ServiceClient.Web
 #if SILVERLIGHT
 
 			var creator = this.UseBrowserHttpHandling
-			              	? System.Net.Browser.WebRequestCreator.BrowserHttp
-			              	: System.Net.Browser.WebRequestCreator.ClientHttp;
+							? System.Net.Browser.WebRequestCreator.BrowserHttp
+							: System.Net.Browser.WebRequestCreator.ClientHttp;
 
 			var webRequest = (HttpWebRequest) creator.Create(new Uri(requestUri));
 
@@ -236,20 +236,20 @@ namespace ServiceStack.ServiceClient.Web
 			webRequest.Accept = string.Format("{0}, */*", ContentType);
 
 #if !SILVERLIGHT 
-            webRequest.Method = httpMethod;
+			webRequest.Method = httpMethod;
 #else
-            //Methods others than GET and POST are only supported by Client request creator, see
-            //http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
+			//Methods others than GET and POST are only supported by Client request creator, see
+			//http://msdn.microsoft.com/en-us/library/cc838250(v=vs.95).aspx
 			
-            if (this.UseBrowserHttpHandling && httpMethod != "GET" && httpMethod != "POST") 
-            {
-                webRequest.Method = "POST"; 
-                webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
-            }
+			if (this.UseBrowserHttpHandling && httpMethod != "GET" && httpMethod != "POST") 
+			{
+				webRequest.Method = "POST"; 
+				webRequest.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
+			}
 			else
-            {
-                webRequest.Method = httpMethod;
-            }
+			{
+				webRequest.Method = httpMethod;
+			}
 #endif
 
 			if (this.Credentials != null)
@@ -379,7 +379,7 @@ namespace ServiceStack.ServiceClient.Web
 				}
 				catch (Exception ex)
 				{
-					Log.Debug(string.Format("Error Reading Response Error: {0}", ex.Message), ex);
+					Log.Debug(() => string.Format("Error Reading Response Error: {0}", ex.Message), ex);
 					requestState.HandleError(default(T), ex);
 				}
 				finally
@@ -398,14 +398,14 @@ namespace ServiceStack.ServiceClient.Web
 			var webEx = exception as WebException;
 			if (webEx != null
 #if !SILVERLIGHT 
-                && webEx.Status == WebExceptionStatus.ProtocolError
+				&& webEx.Status == WebExceptionStatus.ProtocolError
 #endif
-            )
+			)
 			{
 				var errorResponse = ((HttpWebResponse)webEx.Response);
-				Log.Error(webEx);
-				Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-				Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+				Log.Error(() => webEx);
+				Log.DebugFormat(() => "Status Code : {0}", errorResponse.StatusCode);
+				Log.DebugFormat(() => "Status Description : {0}", errorResponse.StatusDescription);
 
 				var serviceEx = new WebServiceException(errorResponse.StatusDescription)
 				{
@@ -428,7 +428,7 @@ namespace ServiceStack.ServiceClient.Web
 				catch (Exception innerEx)
 				{
 					// Oh, well, we tried
-					Log.Debug(string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
+					Log.Debug(() => string.Format("WebException Reading Response Error: {0}", innerEx.Message), innerEx);
 					requestState.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx)
 						{
 							StatusCode = (int)errorResponse.StatusCode,
@@ -442,11 +442,11 @@ namespace ServiceStack.ServiceClient.Web
 			{
 				var customEx = WebRequestUtils.CreateCustomException(requestState.Url, authEx);
 
-				Log.Debug(string.Format("AuthenticationException: {0}", customEx.Message), customEx);
+				Log.Debug(() => string.Format("AuthenticationException: {0}", customEx.Message), customEx);
 				requestState.HandleError(default(TResponse), authEx);
 			}
 
-			Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
+			Log.Debug(() => string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
 			requestState.HandleError(default(TResponse), exception);
 		}
 

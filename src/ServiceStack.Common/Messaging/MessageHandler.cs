@@ -8,11 +8,11 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
 {
-    /// <summary>
-    /// Processes all messages in a Normal and Priority Queue.
-    /// Expects to be called in 1 thread. i.e. Non Thread-Safe.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
+	/// <summary>
+	/// Processes all messages in a Normal and Priority Queue.
+	/// Expects to be called in 1 thread. i.e. Non Thread-Safe.
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	public class MessageHandler<T>
 		: IMessageHandler, IDisposable
 	{
@@ -25,7 +25,7 @@ namespace ServiceStack.Messaging
 		public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
 		private readonly int retryCount;
 
-    	public int TotalMessagesProcessed { get; private set; }
+		public int TotalMessagesProcessed { get; private set; }
 		public int TotalMessagesFailed { get; private set; }
 		public int TotalRetries { get; private set; }
 		public int TotalNormalMessagesReceived { get; private set; }
@@ -96,20 +96,20 @@ namespace ServiceStack.Messaging
 			catch (Exception ex)
 			{
 				var lastEx = ex;
-				Log.Error("Error serializing message from mq server: " + lastEx.Message, ex);
+				Log.Error(() => "Error serializing message from mq server: " + lastEx.Message, ex);
 			}
 		}
 
-        public IMessageHandlerStats GetStats()
+		public IMessageHandlerStats GetStats()
 		{
-		    return new MessageHandlerStats(typeof(T).Name,
-                TotalMessagesProcessed, TotalMessagesFailed, TotalRetries, 
-                TotalNormalMessagesReceived, TotalPriorityMessagesReceived);
+			return new MessageHandlerStats(typeof(T).Name,
+				TotalMessagesProcessed, TotalMessagesFailed, TotalRetries, 
+				TotalNormalMessagesReceived, TotalPriorityMessagesReceived);
 		}
 
 		private void DefaultInExceptionHandler(IMessage<T> message, Exception ex)
 		{
-			Log.Error("Message exception handler threw an error", ex);
+			Log.Error(() => "Message exception handler threw an error", ex);
 
 			if (!(ex is UnRetryableMessagingException))
 			{
@@ -134,20 +134,20 @@ namespace ServiceStack.Messaging
 			try
 			{
 				var response = processMessageFn(message);
-			    var responseEx = response as Exception;
-                if (responseEx != null)
-                    throw responseEx;
+				var responseEx = response as Exception;
+				if (responseEx != null)
+					throw responseEx;
 
 				this.TotalMessagesProcessed++;
 
 				//If there's no response publish the request message to its OutQ
 				if (response == null)
 				{
-                    var messageOptions = (MessageOption)message.Options;
-                    if (messageOptions.Has(MessageOption.NotifyOneWay))
-                    {
-                        mqClient.Notify(QueueNames<T>.Out, message.ToBytes());
-                    }
+					var messageOptions = (MessageOption)message.Options;
+					if (messageOptions.Has(MessageOption.NotifyOneWay))
+					{
+						mqClient.Notify(QueueNames<T>.Out, message.ToBytes());
+					}
 				}
 				else
 				{
@@ -163,9 +163,9 @@ namespace ServiceStack.Messaging
 						}
 						catch (Exception ex)
 						{
-							Log.Error("Could not send response to '{0}' with client '{1}'"
+							Log.Error(() => "Could not send response to '{0}' with client '{1}'"
 								.Fmt(mqReplyTo, replyClient.GetType().Name), ex);
-                            mqReplyTo = new QueueNames(response.GetType()).In;
+							mqReplyTo = new QueueNames(response.GetType()).In;
 						}
 					}
 
@@ -184,7 +184,7 @@ namespace ServiceStack.Messaging
 				}
 				catch (Exception exHandlerEx)
 				{
-					Log.Error("Message exception handler threw an error", exHandlerEx);
+					Log.Error(() => "Message exception handler threw an error", exHandlerEx);
 				}
 			}
 		}

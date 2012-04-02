@@ -30,13 +30,13 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			set { this.response.StatusCode = value; }
 		}
 
-        public string StatusDescription
-        {
-            set
-            {
+		public string StatusDescription
+		{
+			set
+			{
 				this.response.StatusDescription = value;
 			}
-        }
+		}
 
 		public string ContentType
 		{
@@ -74,16 +74,16 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
+				Log.Error(() => "Could not WriteTextToResponse: " + ex.Message, ex);
 				throw;
 			}
 		}
 
 		public void Close()
 		{
-            if (!this.IsClosed)
-            {
-                this.IsClosed = true;
+			if (!this.IsClosed)
+			{
+				this.IsClosed = true;
 
 				try
 				{
@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				}
 				catch (Exception ex)
 				{
-					Log.Error("Error closing HttpListener output stream", ex);
+					Log.Error(() => "Error closing HttpListener output stream", ex);
 				}
 			}
 		}

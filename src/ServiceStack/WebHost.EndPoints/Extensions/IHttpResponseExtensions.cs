@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensions));
 
-        public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
+		public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
 		{
 			//var responseStream = response.OutputStream;
 
@@ -23,28 +23,28 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var streamWriter = result as IStreamWriter;
 			if (streamWriter != null)
 			{
-                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                streamWriter.WriteTo(response.OutputStream);
-                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+				if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+				streamWriter.WriteTo(response.OutputStream);
+				if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 				return true;
 			}
 
 			var stream = result as Stream;
 			if (stream != null)
 			{
-                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                stream.WriteTo(response.OutputStream);
-                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+				if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+				stream.WriteTo(response.OutputStream);
+				if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 				return true;
 			}
 
 			var bytes = result as byte[];
 			if (bytes != null)
 			{
-                response.ContentType = ContentType.Binary;
-                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                response.OutputStream.Write(bytes, 0, bytes.Length);
-                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+				response.ContentType = ContentType.Binary;
+				if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+				response.OutputStream.Write(bytes, 0, bytes.Length);
+				if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 				return true;
 			}
 
@@ -75,8 +75,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					httpResult.ResponseFilter = EndpointHost.AppHost.ContentTypeFilters;
 				}
 				httpResult.RequestContext = serializationContext;
-                serializationContext.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
-                var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(serializationContext.ResponseContentType);
+				serializationContext.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
+				var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(serializationContext.ResponseContentType);
 				return httpRes.WriteToResponse(httpResult, httpResSerializer, serializationContext, bodyPrefix, bodySuffix);
 			}
 
@@ -115,7 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					}
 
 					var httpResult = result as IHttpResult;
-				    var disposableResult = result as IDisposable;
+					var disposableResult = result as IDisposable;
 					if (httpResult != null)
 					{
 						response.StatusCode = (int) httpResult.StatusCode;
@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 						{
 							if (responseHeaders.Key.Contains(reservedOptions)) continue;
 
-							Log.DebugFormat("Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
+							Log.DebugFormat(() => "Setting Custom HTTP Header: {0}: {1}", responseHeaders.Key, responseHeaders.Value);
 							response.AddHeader(responseHeaders.Key, responseHeaders.Value);
 						}
 					}
@@ -146,7 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
 					{
 						response.Flush(); //required for Compression
-                        if (disposableResult != null) disposableResult.Dispose();
+						if (disposableResult != null) disposableResult.Dispose();
 						return true;
 					}
 
@@ -161,10 +161,10 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						response.ContentType = defaultContentType;
 					}
-                    if (bodyPrefix != null && response.ContentType.IndexOf(ContentType.Json) >= 0)
-                    {
-                        response.ContentType = ContentType.JavaScript;                        
-                    }
+					if (bodyPrefix != null && response.ContentType.IndexOf(ContentType.Json) >= 0)
+					{
+						response.ContentType = ContentType.JavaScript;                        
+					}
 
 					if (EndpointHost.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
 					{
@@ -191,7 +191,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					if (result != null) defaultAction(serializerCtx, result, response);
 					if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
 
-                    if (disposableResult != null) disposableResult.Dispose();
+					if (disposableResult != null) disposableResult.Dispose();
 
 					return false;
 				}
@@ -205,11 +205,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					var errorMessage = string.Format(
 					"Error occured while Processing Request: [{0}] {1}", originalEx.GetType().Name, originalEx.Message);
 
-					Log.Error(errorMessage, originalEx);
+					Log.Error(() => errorMessage, originalEx);
 
 					var operationName = result != null
-					                    ? result.GetType().Name.Replace("Response", "")
-					                    : "OperationName";
+										? result.GetType().Name.Replace("Response", "")
+										: "OperationName";
 
 					try
 					{
@@ -221,7 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					catch (Exception writeErrorEx)
 					{
 						//Exception in writing to response should not hide the original exception
-						Log.Info("Failed to write error to response: {0}", writeErrorEx);
+						Log.Info(() => "Failed to write error to response: {0}", writeErrorEx);
 						throw originalEx;
 					}
 					return true;
@@ -248,7 +248,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
+				Log.Error(() => "Could not WriteTextToResponse: " + ex.Message, ex);
 				throw;
 			}
 		}

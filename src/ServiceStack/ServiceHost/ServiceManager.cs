@@ -64,7 +64,7 @@ namespace ServiceStack.ServiceHost
 			catch (Exception ex)
 			{
 				var msg = string.Format("Failed loading types, last assembly '{0}', type: '{1}'", assemblyName, typeName);
-				Log.Error(msg, ex);
+				Log.Error(() => msg, ex);
 				throw new Exception(msg, ex);
 			}
 		}
@@ -123,7 +123,7 @@ namespace ServiceStack.ServiceHost
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex);
+				Log.Error(() => ex);
 			}			
 			return genericServiceType;
 		}
