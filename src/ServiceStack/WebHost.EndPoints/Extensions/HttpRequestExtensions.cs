@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				Log.ErrorFormat("Error trying to get 'Request.Url.Host'", ex);
+				Log.ErrorFormat(() => "Error trying to get 'Request.Url.Host'", ex);
 
 				return request.UserHostName;
 			}
@@ -129,7 +129,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Error trying to get: request.Url.GetLeftPart(UriPartial.Authority): " + ex.Message, ex);
+				Log.Error(() => "Error trying to get: request.Url.GetLeftPart(UriPartial.Authority): " + ex.Message, ex);
 				return "http://" + request.UserHostName;
 			}
 		}

@@ -82,7 +82,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
+				Log.Error(() => "Trouble with DateTime precisions, trying Assert again with rounding to seconds", ex);
 				Assert.That(actual.NDateTime.Value.ToUniversalTime().RoundToSecond(), Is.EqualTo(expected.NDateTime.Value.ToUniversalTime().RoundToSecond()));
 			}
 
@@ -92,7 +92,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with float precisions, trying Assert again with rounding to 10 decimals", ex);
+				Log.Error(() => "Trouble with float precisions, trying Assert again with rounding to 10 decimals", ex);
 				Assert.That(Math.Round(actual.NFloat.Value, 10), Is.EqualTo(Math.Round(actual.NFloat.Value, 10)));
 			}
 
@@ -102,7 +102,7 @@ namespace ServiceStack.Common.Tests.Models
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Trouble with double precisions, trying Assert again with rounding to 10 decimals", ex);
+				Log.Error(() => "Trouble with double precisions, trying Assert again with rounding to 10 decimals", ex);
 				Assert.That(Math.Round(actual.NDouble.Value, 10), Is.EqualTo(Math.Round(actual.NDouble.Value, 10)));
 			}
 

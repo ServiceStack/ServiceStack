@@ -182,7 +182,7 @@ namespace ServiceStack.WebHost.Endpoints
 				}
 				catch (Exception ex)
 				{
-					log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+					log.Warn(() => "Error loading plugin " + plugin.GetType().Name, ex);
 				}
 			}
 		}

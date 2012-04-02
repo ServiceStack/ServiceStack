@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 			catch (Exception ex)
 			{
-				Log.Warn("Failed to retrieve IP Addresses, some security restriction features may not work: " + ex.Message, ex);
+				Log.Warn(() => "Failed to retrieve IP Addresses, some security restriction features may not work: " + ex.Message, ex);
 			}
 		}
 
@@ -301,7 +301,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		protected void HandleException(string responseContentType, IHttpResponse httpRes, string operationName, Exception ex)
 		{
 			var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
-			Log.Error(errorMessage, ex);
+			Log.Error(() => errorMessage, ex);
 
 			try
 			{
@@ -316,7 +316,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			catch (Exception writeErrorEx)
 			{
 				//Exception in writing to response should not hide the original exception
-				Log.Info("Failed to write error to response: {0}", writeErrorEx);
+				Log.Info(() => "Failed to write error to response: {0}", writeErrorEx);
 				//rethrow the original exception
 				throw ex;
 			}

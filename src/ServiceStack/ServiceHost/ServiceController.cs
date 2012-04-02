@@ -90,7 +90,7 @@ namespace ServiceStack.ServiceHost
 			foreach (var service in serviceType.GetInterfaces())
 			{
 				if (!service.IsGenericType
-				    || service.GetGenericTypeDefinition() != typeof (IService<>)
+					|| service.GetGenericTypeDefinition() != typeof (IService<>)
 				) continue;
 
 				var requestType = service.GetGenericArguments()[0];
@@ -123,7 +123,7 @@ namespace ServiceStack.ServiceHost
 					};
 				}
 
-				Log.DebugFormat("Registering {0} service '{1}' with request '{2}'",
+				Log.DebugFormat(() => "Registering {0} service '{1}' with request '{2}'",
 					(responseType != null ? "SyncReply" : "OneWay"), 
 					serviceType.Name, requestType.Name);
 			}
@@ -233,28 +233,28 @@ namespace ServiceStack.ServiceHost
 			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) =>
 			{
 				var service = serviceFactoryFn.CreateInstance(serviceType);
-                using (service as IDisposable) // using is happy if this expression evals to null
-                {
-                    InjectRequestContext(service, requestContext);
+				using (service as IDisposable) // using is happy if this expression evals to null
+				{
+					InjectRequestContext(service, requestContext);
 
-                    var endpointAttrs = requestContext != null
-                        ? requestContext.EndpointAttributes
-                        : EndpointAttributes.None;
+					var endpointAttrs = requestContext != null
+						? requestContext.EndpointAttributes
+						: EndpointAttributes.None;
 
-                    try
-                    {
-                        //Executes the service and returns the result
-                        var response = typeFactoryFn(dto, service, endpointAttrs);
+					try
+					{
+						//Executes the service and returns the result
+						var response = typeFactoryFn(dto, service, endpointAttrs);
 						if (EndpointHost.AppHost != null) //tests
 							EndpointHost.AppHost.Release(service);
-                    	return response;
-                    }
-                    catch (TargetInvocationException tex)
-                    {
-                        //Mono invokes using reflection
-                        throw tex.InnerException ?? tex;
-                    }
-                }
+						return response;
+					}
+					catch (TargetInvocationException tex)
+					{
+						//Mono invokes using reflection
+						throw tex.InnerException ?? tex;
+					}
+				}
 			};
 
 			try

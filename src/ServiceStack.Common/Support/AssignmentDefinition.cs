@@ -119,7 +119,7 @@ namespace ServiceStack.Common.Support
 				}
 				catch (Exception ex)
 				{
-					Log.Warn(string.Format("Error trying to set properties {0}.{1} > {2}.{3}",
+					Log.Warn(() => string.Format("Error trying to set properties {0}.{1} > {2}.{3}",
 						FromType.FullName, fromPropertyInfo.Name,
 						ToType.FullName, toPropertyInfo.Name), ex);
 				}
@@ -137,7 +137,7 @@ namespace ServiceStack.Common.Support
 				}
 				catch (Exception ex)
 				{
-					Log.Warn(string.Format("Error trying to set fields {0}.{1} > {2}.{3}",
+					Log.Warn(() => string.Format("Error trying to set fields {0}.{1} > {2}.{3}",
 						FromType.FullName, fromFieldInfo.Name,
 						ToType.FullName, toFieldInfo.Name), ex);
 				}

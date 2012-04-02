@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Exception closing HttpResponse: " + ex.Message, ex);
+				Log.Error(() => "Exception closing HttpResponse: " + ex.Message, ex);
 			}
 		}
 
@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
+				Log.Error(() => "Error in HttpListenerResponseWrapper: " + ex.Message, ex);
 			}
 		}
 

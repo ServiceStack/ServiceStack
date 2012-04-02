@@ -62,14 +62,14 @@ namespace ServiceStack.ServiceModel.Serialization
 					PropertySerializerEntry propertySerializerEntry;
 					if (!propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry))
 					{
-						Log.WarnFormat("Property '{0}' does not exist on type '{1}'", propertyName, type.FullName);
+						Log.WarnFormat(() => "Property '{0}' does not exist on type '{1}'", propertyName, type.FullName);
 						continue;
 					}
 
 					var value = propertySerializerEntry.PropertyParseStringFn(propertyTextValue);
 					if (value == null)
 					{
-						Log.WarnFormat("Could not create instance on '{0}' for property '{1}' with text value '{2}'",
+						Log.WarnFormat(() => "Could not create instance on '{0}' for property '{1}' with text value '{2}'",
 									   instance, propertyName, propertyTextValue);
 						continue;
 					}

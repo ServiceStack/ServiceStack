@@ -39,7 +39,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			var authRepo = authService.TryResolve<IUserAuthRepository>();
 			if (authRepo == null)
 			{
-				Log.WarnFormat("Tried to authenticate without a registered IUserAuthRepository");
+				Log.WarnFormat(() => "Tried to authenticate without a registered IUserAuthRepository");
 				return false;
 			}
 
@@ -84,10 +84,10 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			if (TryAuthenticate(authService, userName, password))
 			{
-                if (session.UserAuthName == null)
-                    session.UserAuthName = userName;
-                
-                OnAuthenticated(authService, session, null, null);
+				if (session.UserAuthName == null)
+					session.UserAuthName = userName;
+				
+				OnAuthenticated(authService, session, null, null);
 
 				return new AuthResponse {
 					UserName = userName,

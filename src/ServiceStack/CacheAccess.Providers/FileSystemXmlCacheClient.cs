@@ -58,7 +58,7 @@ namespace ServiceStack.CacheAccess.Providers
 				}
 				catch (Exception ex)
 				{
-					Log.Error(string.Format("Error trying to remove {0} from the FileSystem Cache", key), ex);
+					Log.Error(() => string.Format("Error trying to remove {0} from the FileSystem Cache", key), ex);
 				}
 			}
 		}

@@ -24,26 +24,26 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			try
 			{
-                if (tokens.UserId != null)
-                {
-                    var json = AuthHttpGateway.DownloadTwitterUserInfo(tokens.UserId);
-                    var obj = JsonObject.Parse(json);
-                    tokens.DisplayName = obj.Get("name");
-                }
+				if (tokens.UserId != null)
+				{
+					var json = AuthHttpGateway.DownloadTwitterUserInfo(tokens.UserId);
+					var obj = JsonObject.Parse(json);
+					tokens.DisplayName = obj.Get("name");
+				}
 
 				LoadUserOAuthProvider(userSession, tokens);
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Could not retrieve twitter user info for '{0}'".Fmt(userSession.TwitterUserId), ex);
+				Log.Error(() => "Could not retrieve twitter user info for '{0}'".Fmt(userSession.TwitterUserId), ex);
 			}
 		}
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
-        {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
-            
+		public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+		{
+			var userSession = authSession as AuthUserSession;
+			if (userSession == null) return;
+			
 			userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
 			userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
 			userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;

@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints
 					}
 					catch (Exception ex)
 					{
-						log.Error("Error adding new Plugin " + pluginType.Name, ex);
+						log.Error(() => "Error adding new Plugin " + pluginType.Name, ex);
 					}
 				}
 			}

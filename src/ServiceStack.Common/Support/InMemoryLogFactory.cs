@@ -71,22 +71,22 @@ namespace ServiceStack.Common.Support
 			}
 		}
 
-		private void AppendToLog(ICollection<string> logEntries, string format, params object[] args)
+		private void AppendToLog(ICollection<string> logEntries, Func<string> formatFunc, params object[] args)
 		{
-			if (format == null) return;
-			AppendToLog(logEntries, string.Format(format, args));
+			if (formatFunc == null) return;
+			AppendToLog(logEntries, string.Format(formatFunc(), args));
 		}
 
-		private void AppendToLog(ICollection<string> logEntries, object message)
+		private void AppendToLog(ICollection<string> logEntries, Func<object> messageFunc)
 		{
-			if (message == null) return;
-			AppendToLog(logEntries, message.ToString());
+			if (messageFunc == null) return;
+			AppendToLog(logEntries, messageFunc().ToString());
 		}
 
 		private void AppendToLog(
 			ICollection<string> logEntries, 
 			ICollection<Exception> logExceptions, 
-			object message, Exception ex)
+			Func<object> messageFunc, Exception ex)
 		{
 			if (ex != null)
 			{
@@ -95,8 +95,8 @@ namespace ServiceStack.Common.Support
 					logExceptions.Add(ex);
 				}
 			}
-			if (message == null) return;
-			AppendToLog(logEntries, message.ToString());
+			if (messageFunc == null) return;
+			AppendToLog(logEntries, messageFunc().ToString());
 		}
 
 		private void AppendToLog(ICollection<string> logEntries, string message)
@@ -108,79 +108,79 @@ namespace ServiceStack.Common.Support
 			}
 		}
 
-		public void Debug(object message)
+		public void Debug(Func<object> messageFunc)
 		{
-			AppendToLog(DebugEntries, message);
+			AppendToLog(DebugEntries, messageFunc);
 		}
 
-		public void Debug(object message, Exception exception)
+		public void Debug(Func<object> messageFunc, Exception exception)
 		{
-			AppendToLog(DebugEntries, DebugExceptions, message, exception);
+			AppendToLog(DebugEntries, DebugExceptions, messageFunc, exception);
 		}
 
-		public void DebugFormat(string format, params object[] args)
+		public void DebugFormat(Func<string> formatFunc, params object[] args)
 		{
-			AppendToLog(DebugEntries, format, args);
+			AppendToLog(DebugEntries, formatFunc, args);
 		}
 
-		public void Error(object message)
+		public void Error(Func<object> messageFunc)
 		{
-			AppendToLog(ErrorEntries, message);
+			AppendToLog(ErrorEntries, messageFunc);
 		}
 
-		public void Error(object message, Exception exception)
+		public void Error(Func<object> messageFunc, Exception exception)
 		{
-			AppendToLog(ErrorEntries, ErrorExceptions, message, exception);
+			AppendToLog(ErrorEntries, ErrorExceptions, messageFunc, exception);
 		}
 
-		public void ErrorFormat(string format, params object[] args)
+		public void ErrorFormat(Func<string> formatFunc, params object[] args)
 		{
-			AppendToLog(ErrorEntries, format, args);
+			AppendToLog(ErrorEntries, formatFunc, args);
 		}
 
-		public void Fatal(object message)
+		public void Fatal(Func<object> messageFunc)
 		{
-			AppendToLog(FatalEntries, message);
+			AppendToLog(FatalEntries, messageFunc);
 		}
 
-		public void Fatal(object message, Exception exception)
+		public void Fatal(Func<object> messageFunc, Exception exception)
 		{
-			AppendToLog(FatalEntries, FatalExceptions, message, exception);
+			AppendToLog(FatalEntries, FatalExceptions, messageFunc, exception);
 		}
 
-		public void FatalFormat(string format, params object[] args)
+		public void FatalFormat(Func<string> formatFunc, params object[] args)
 		{
-			AppendToLog(FatalEntries, format, args);
+			AppendToLog(FatalEntries, formatFunc, args);
 		}
 
-		public void Info(object message)
+		public void Info(Func<object> messageFunc)
 		{
-			AppendToLog(InfoEntries, message);
+			AppendToLog(InfoEntries, messageFunc);
 		}
 
-		public void Info(object message, Exception exception)
+		public void Info(Func<object> messageFunc, Exception exception)
 		{
-			AppendToLog(InfoEntries, InfoExceptions, message, exception);
+			AppendToLog(InfoEntries, InfoExceptions, messageFunc, exception);
 		}
 
-		public void InfoFormat(string format, params object[] args)
+		public void InfoFormat(Func<string> formatFunc, params object[] args)
 		{
-			AppendToLog(InfoEntries, format, args);
+			AppendToLog(InfoEntries, formatFunc, args);
 		}
 
-		public void Warn(object message)
+		public void Warn(Func<object> messageFunc)
 		{
-			AppendToLog(WarnEntries, message);
+			AppendToLog(WarnEntries, messageFunc);
 		}
 
-		public void Warn(object message, Exception exception)
+		public void Warn(Func<object> messageFunc, Exception exception)
 		{
-			AppendToLog(WarnEntries, WarnExceptions, message, exception);
+			AppendToLog(WarnEntries, WarnExceptions, messageFunc, exception);
 		}
 
-		public void WarnFormat(string format, params object[] args)
+		public void WarnFormat(Func<string> formatFunc, params object[] args)
 		{
-			AppendToLog(WarnEntries, format, args);
+			AppendToLog(WarnEntries, formatFunc, args);
 		}
 
 		public bool IsDebugEnabled

@@ -239,7 +239,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			}
 			catch (Exception ex)
 			{
-				Log.Error("MemberExprBlock: " + ex.Message, ex);
+				Log.Error(() => "MemberExprBlock: " + ex.Message, ex);
 			}
 		}
 	}

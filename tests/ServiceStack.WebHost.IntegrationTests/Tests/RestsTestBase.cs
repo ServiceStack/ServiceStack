@@ -72,9 +72,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				if (webEx.Status == WebExceptionStatus.ProtocolError)
 				{
 					var errorResponse = ((HttpWebResponse)webEx.Response);
-					Log.Error(webEx);
-					Log.DebugFormat("Status Code : {0}", errorResponse.StatusCode);
-					Log.DebugFormat("Status Description : {0}", errorResponse.StatusDescription);
+					Log.Error(() => webEx);
+					Log.DebugFormat(() => "Status Code : {0}", errorResponse.StatusCode);
+					Log.DebugFormat(() => "Status Description : {0}", errorResponse.StatusDescription);
 
 					try
 					{

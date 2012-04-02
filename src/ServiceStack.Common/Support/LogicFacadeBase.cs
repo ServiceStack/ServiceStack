@@ -104,7 +104,7 @@ namespace ServiceStack.Common.Support
 			{
 				DateTime before = DateTime.Now;
 
-				this.log.DebugFormat("Executing action '{0}'", action.GetType().Name);
+				this.log.DebugFormat(() => "Executing action '{0}'", action.GetType().Name);
 
 				Init(action);
 
@@ -115,7 +115,7 @@ namespace ServiceStack.Common.Support
 
 				if (this.IsCurrentlyInitializeOnly)
 				{
-					this.log.DebugFormat("Action '{0}' not executed (InitializedOnlyContext).", action.GetType().Name);
+					this.log.DebugFormat(() => "Action '{0}' not executed (InitializedOnlyContext).", action.GetType().Name);
 					return default(T);
 				}
 				else
@@ -123,7 +123,7 @@ namespace ServiceStack.Common.Support
 					T result = action.Execute();
 
 					TimeSpan timeTaken = DateTime.Now - before;
-					this.log.DebugFormat("Action '{0}' executed. Took {1} ms.", action.GetType().Name, timeTaken.TotalMilliseconds);
+					this.log.DebugFormat(() => "Action '{0}' executed. Took {1} ms.", action.GetType().Name, timeTaken.TotalMilliseconds);
 
 					return result;
 				}
@@ -131,7 +131,7 @@ namespace ServiceStack.Common.Support
 			}
 			catch (Exception ex)
 			{
-				log.ErrorFormat("Error executing action", ex);
+				log.ErrorFormat(() => "Error executing action", ex);
 				throw;
 			}
 		}

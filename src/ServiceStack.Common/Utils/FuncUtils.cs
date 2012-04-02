@@ -22,7 +22,7 @@ namespace ServiceStack.Common.Utils
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex.Message, ex);
+				Log.Error(() => ex.Message, ex);
 			}
 			return false;
 		}
@@ -40,7 +40,7 @@ namespace ServiceStack.Common.Utils
 			}
 			catch (Exception ex)
 			{
-				Log.Error(ex.Message, ex);
+				Log.Error(() => ex.Message, ex);
 			}
 			return default(T);
 		}

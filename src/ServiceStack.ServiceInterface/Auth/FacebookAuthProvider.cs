@@ -88,21 +88,21 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 			catch (Exception ex)
 			{
-				Log.Error("Could not retrieve facebook user info for '{0}'".Fmt(tokens.DisplayName), ex);
+				Log.Error(() => "Could not retrieve facebook user info for '{0}'".Fmt(tokens.DisplayName), ex);
 			}
 		}
 
-        public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
-        {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
+		public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
+		{
+			var userSession = authSession as AuthUserSession;
+			if (userSession == null) return;
 
-            userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
+			userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
 			userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;
 			userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
 			userSession.FirstName = tokens.FirstName ?? userSession.FirstName;
 			userSession.LastName = tokens.LastName ?? userSession.LastName;
-            userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
+			userSession.PrimaryEmail = tokens.Email ?? userSession.PrimaryEmail ?? userSession.Email;
 		}
 	}
 }

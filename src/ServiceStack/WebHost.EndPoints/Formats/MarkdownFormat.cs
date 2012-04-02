@@ -336,7 +336,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			}
 			catch (Exception ex)
 			{
-				Log.Error("AddViewPage() page.Prepare(): " + ex.Message, ex);
+				Log.Error(() => "AddViewPage() page.Prepare(): " + ex.Message, ex);
 			}
 
 			var templatePath = page.TemplatePath;
@@ -368,7 +368,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			}
 			catch (Exception ex)
 			{
-				Log.Error("AddViewPage() template.Prepare(): " + ex.Message, ex);
+				Log.Error(() => "AddViewPage() template.Prepare(): " + ex.Message, ex);
 				return null;
 			}
 		}
