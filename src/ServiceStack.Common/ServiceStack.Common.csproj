@@ -219,6 +219,7 @@
     <Compile Include="Net30\ConcurrentDictionary.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Net30\ConcurrentQueue.cs" />
     <Compile Include="Net30\ObjectPool.cs">
       <SubType>Code</SubType>
     </Compile>

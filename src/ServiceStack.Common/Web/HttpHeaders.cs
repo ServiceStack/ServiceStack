@@ -35,5 +35,7 @@ namespace ServiceStack.Common.Web
 		public const string Authorization = "Authorization";
 
 		public const string WwwAuthenticate = "WWW-Authenticate";
+
+		public const string Referer = "Referer";
 	}
 }
