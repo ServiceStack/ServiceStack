@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Web;
@@ -111,6 +112,35 @@ namespace ServiceStack.ServiceHost
 		public static void DeleteCookie(this IHttpResponse httpRes, string cookieName)
 		{
 			httpRes.Cookies.DeleteCookie(cookieName);
+		}
+
+		public static Dictionary<string, string> CookiesAsDictionary(this IHttpResponse httpRes)
+		{
+			var map = new Dictionary<string, string>();
+			var aspNet = httpRes.OriginalResponse as HttpResponse;
+			if (aspNet != null)
+			{
+				foreach (var name in aspNet.Cookies.AllKeys)
+				{
+					var cookie = aspNet.Cookies[name];
+					if (cookie == null) continue;
+					map[name] = cookie.Value;
+				}
+			}
+			else
+			{
+				var httpListener = httpRes.OriginalResponse as HttpListenerResponse;
+				if (httpListener != null)
+				{
+					for (var i = 0; i < httpListener.Cookies.Count; i++)
+					{
+						var cookie = httpListener.Cookies[i];
+						if (cookie == null || cookie.Name == null) continue;
+						map[cookie.Name] = cookie.Value;
+					}
+				}
+			}
+			return map;
 		}
 
 		public static void AddHeaderLastModified(this IHttpResponse httpRes, DateTime? lastModified)

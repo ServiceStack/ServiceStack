@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 			base.OnAuthenticated(authService, session, tokens, authInfo);
 
 			if (session.Email == AuthTestsBase.AdminEmail)
-				session.Roles.Add(AuthFeature.AdminRole);
+				session.Roles.Add(RoleNames.Admin);
 		}
 	}
 

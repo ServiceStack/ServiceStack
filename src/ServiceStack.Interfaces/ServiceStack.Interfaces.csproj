@@ -556,6 +556,7 @@
     <Compile Include="ServiceHost\IServiceRoutes.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceInterface.ServiceModel\RequestLogEntry.cs" />
     <Compile Include="ServiceHost\RestServiceAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
