@@ -8,6 +8,8 @@ namespace ServiceStack.Common.Web
 
 		public const string XUserAuthId = "X-UAId";
 
+		public const string XForwardedFor = "X-Forwarded-For";
+
 		public const string CacheControl = "Cache-Control";
 
 		public const string IfModifiedSince = "If-Modified-Since";

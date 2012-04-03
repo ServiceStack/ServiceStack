@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Common;
-using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.ServiceInterface.Admin
@@ -12,6 +11,7 @@ namespace ServiceStack.ServiceInterface.Admin
 		public int? BeforeSecs { get; set; }
 		public int? AfterSecs { get; set; }
 		public string IpAddress { get; set; }
+		public string ForwardedFor { get; set; }
 		public string UserAuthId { get; set; }
 		public string SessionId { get; set; }
 		public string Referer { get; set; }
@@ -19,8 +19,13 @@ namespace ServiceStack.ServiceInterface.Admin
 		public long[] Ids { get; set; }
 		public int? BeforeId { get; set; }
 		public int? AfterId { get; set; }
+		public bool? HasResponse { get; set; }
+		public bool? WithErrors { get; set; }
 		public int Skip { get; set; }
 		public int? Take { get; set; }
+		public bool? EnableSessionTracking { get; set; }
+		public bool? EnableResponseTracking { get; set; }
+		public bool? EnableErrorTracking { get; set; }
 	}
 
 	public class RequestLogsResponse
@@ -35,29 +40,36 @@ namespace ServiceStack.ServiceInterface.Admin
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
-	[RequiredRole(RoleNames.Admin)]
 	public class RequestLogsService : ServiceBase<RequestLogs>
 	{
-		public IRequestLogger RequestLogger { get; set; }
-
 		private static readonly Dictionary<string,string> Usage = new Dictionary<string,string> {
-			{"BeforeSecs", "int - Requests before elapsed time"},
-			{"AfterSecs",  "int - Requests after elapsed time"},
-			{"IpAddress",  "string - Requests matcing Ip Address"},
-			{"UserAuthId", "string - Requests matcing UserAuthId"},
-			{"SessionId",  "string - Requests matcing SessionId"},
-			{"Referer",    "string - Requests matcing Http Referer"},
-			{"PathInfo",   "string - Requests matcing PathInfo"},
-			{"BeforeId",   "int - Requests before RequestLog Id"},
-			{"AfterId",    "int - Requests after RequestLog Id"},
-			{"Skip",       "int - Skip past N results"},
-			{"Take",       "int - Only look at last N results"},
+			{"int BeforeSecs",      "Requests before elapsed time"},
+			{"int AfterSecs",       "Requests after elapsed time"},
+			{"string IpAddress",    "Requests matching Ip Address"},
+			{"string ForwardedFor", "Requests matching Forwarded Ip Address"},
+			{"string UserAuthId",   "Requests matching UserAuthId"},
+			{"string SessionId",    "Requests matching SessionId"},
+			{"string Referer",      "Requests matching Http Referer"},
+			{"string PathInfo",     "Requests matching PathInfo"},
+			{"int BeforeId",        "Requests before RequestLog Id"},
+			{"int AfterId",         "Requests after RequestLog Id"},
+			{"bool WithErrors",     "Requests with errors"},
+			{"int Skip",            "Skip past N results"},
+			{"int Take",            "Only look at last N results"},
+			{"bool EnableSessionTracking",  "Turn On/Off Session Tracking"},
+			{"bool EnableResponseTracking", "Turn On/Off Tracking of Responses"},
+			{"bool EnableErrorTracking",    "Turn On/Off Tracking of Errors"},
 		};
 
 		protected override object Run(RequestLogs request)
 		{
 			if (RequestLogger == null)
 				throw new Exception("No IRequestLogger is registered");
+
+			RequiredRoleAttribute.AssertRequiredRoles(RequestContext, RequestLogger.RequiresRole);
+			
+			if (request.EnableSessionTracking.HasValue)
+				RequestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
 
 			var now = DateTime.UtcNow;
 			var logs = RequestLogger.GetLatestLogs(request.Take).AsQueryable();
@@ -82,6 +94,10 @@ namespace ServiceStack.ServiceInterface.Admin
 				logs = logs.Where(x => x.Id <= request.BeforeId);
 			if (request.AfterId.HasValue)
 				logs = logs.Where(x => x.Id > request.AfterId);
+			if (request.WithErrors.HasValue)
+				logs = request.WithErrors.Value
+					? logs.Where(x => x.ErrorResponse != null)
+					: logs.Where(x => x.ErrorResponse == null);
 
 			var results = logs.Skip(request.Skip).OrderByDescending(x => x.Id).ToList();
 

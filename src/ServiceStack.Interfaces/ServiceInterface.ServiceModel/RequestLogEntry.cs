@@ -17,9 +17,13 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public string UserAuthId { get; set; }
 		public string SessionId { get; set; }
 		public string IpAddress { get; set; }
+		public string ForwardedFor { get; set; }
 		public string Referer { get; set; }
 		public Dictionary<string, string> Headers { get; set; }
 		public Dictionary<string, string> FormData { get; set; }
 		public Dictionary<string, object> Items { get; set; }
+		public object Session { get; set; }
+		public object ResponseDto { get; set; }
+		public object ErrorResponse { get; set; }
 	}
 }

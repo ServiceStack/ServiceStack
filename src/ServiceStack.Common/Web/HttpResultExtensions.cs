@@ -1,4 +1,5 @@
-﻿using ServiceStack.Common.Utils;
+﻿using System;
+using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
@@ -36,6 +37,16 @@ namespace ServiceStack.Common.Web
 				return null;
 
 			return ReflectionUtils.GetProperty(response, propertyInfo) as ResponseStatus;
+		}
+
+		/// <summary>
+		/// Whether the response is an IHttpError or Exception
+		/// </summary>
+		/// <param name="response"></param>
+		/// <returns></returns>
+		public static bool IsErrorResponse(this object response)
+		{
+			return response != null && (response is IHttpError || response is Exception);
 		}
 	}
 }
