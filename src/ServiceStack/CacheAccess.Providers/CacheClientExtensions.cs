@@ -44,7 +44,7 @@ namespace ServiceStack.CacheAccess.Providers
 					return new CompressedResult(
 						compressedResult,
 						context.CompressionType,
-						context.ContentType);
+						context.ResponseContentType);
 				}
 			}
 			else
@@ -97,7 +97,7 @@ namespace ServiceStack.CacheAccess.Providers
 				cacheClient.Set<byte[]>(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
 				return (compressedSerializedDto != null)
-					? new CompressedResult(compressedSerializedDto, context.CompressionType, context.ContentType)
+					? new CompressedResult(compressedSerializedDto, context.CompressionType, context.ResponseContentType)
 					: null;
 			}
 
