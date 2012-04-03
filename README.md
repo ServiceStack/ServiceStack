@@ -340,6 +340,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [aurimas86](https://github.com/aurimas86)
  - [parnham](https://github.com/parnham) (Dan Parnham)
  - [yeurch](https://github.com/yeurch) (Richard Fawcett)
+ - [damianh](https://github.com/damianh) (Damian Hickey)
 
 ***
 
