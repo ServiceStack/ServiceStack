@@ -207,6 +207,9 @@ namespace ServiceStack.ServiceInterface
 
         protected virtual object HandleException(TRequest request, Exception ex)
         {
+            if (ex.InnerException != null && !(ex is IHttpError))
+                ex = ex.InnerException;
+
             var responseStatus = ResponseStatusTranslator.Instance.Parse(ex);
 
             if (EndpointHost.UserConfig.DebugMode)
