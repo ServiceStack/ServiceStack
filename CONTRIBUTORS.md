@@ -49,4 +49,5 @@
  - [parnham](https://github.com/parnham) (Dan Parnham)
  - [yeurch](https://github.com/yeurch) (Richard Fawcett)
  - [damianh](https://github.com/damianh) (Damian Hickey)
+ - [freeman](https://github.com/freeman) (Michel Rasschaert)
 
