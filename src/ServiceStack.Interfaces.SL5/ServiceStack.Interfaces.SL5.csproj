@@ -549,6 +549,9 @@
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\Property.cs">
       <Link>ServiceInterface.ServiceModel\Property.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\RequestLogEntry.cs">
+      <Link>ServiceInterface.ServiceModel\RequestLogEntry.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceInterface.ServiceModel\ResponseError.cs">
       <Link>ServiceInterface.ServiceModel\ResponseError.cs</Link>
     </Compile>

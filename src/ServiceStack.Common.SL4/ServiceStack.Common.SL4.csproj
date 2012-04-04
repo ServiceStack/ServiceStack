@@ -415,6 +415,9 @@
     <Compile Include="..\ServiceStack.Common\Web\HttpResult.cs">
       <Link>Web\HttpResult.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpResultExtensions.cs">
+      <Link>Web\HttpResultExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\Web\MimeTypes.cs">
       <Link>Web\MimeTypes.cs</Link>
     </Compile>
