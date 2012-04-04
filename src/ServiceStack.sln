@@ -32,8 +32,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common", "Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces", "ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterHost", "..\tests\MasterHost\MasterHost.csproj", "{12FA52E0-E648-42B3-9F67-782011AD20C4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceInterface", "ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj", "{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RazorEngine", "ServiceStack.RazorEngine\ServiceStack.RazorEngine.csproj", "{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}"
@@ -103,12 +101,6 @@ Global
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.MonoTouch|Any CPU.Build.0 = MONOTOUCH|Any CPU
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.Build.0 = Release|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.MonoTouch|Any CPU.ActiveCfg = MONOTOUCH|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.MonoTouch|Any CPU.Build.0 = MONOTOUCH|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.MonoTouch|Any CPU.ActiveCfg = MonoTouch|Any CPU

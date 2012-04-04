@@ -90,7 +90,7 @@ namespace ServiceStack.ServiceInterface
 				?? DefaultCache;
 		}
 
-		public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn)
+		public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn=null)
 		{
 			if (service == null) return;
 

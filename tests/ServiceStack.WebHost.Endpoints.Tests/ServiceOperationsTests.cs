@@ -16,6 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var operationTypes = new List<Type>();
 			foreach (var type in assembly.GetTypes())
 			{
+				if (type.Namespace == null) continue;
 				if (type.Namespace.StartsWith(operationNamespace))
 				{
 					operationTypes.Add(type);

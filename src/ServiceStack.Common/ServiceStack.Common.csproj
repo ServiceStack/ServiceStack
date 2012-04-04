@@ -219,6 +219,7 @@
     <Compile Include="Net30\ConcurrentDictionary.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Net30\ConcurrentQueue.cs" />
     <Compile Include="Net30\ObjectPool.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -451,6 +452,7 @@
     <Compile Include="Web\HttpResult.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web\HttpResultExtensions.cs" />
     <Compile Include="Web\MimeTypes.cs">
       <SubType>Code</SubType>
     </Compile>

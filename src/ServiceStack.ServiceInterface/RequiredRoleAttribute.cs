@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Web;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -21,18 +18,16 @@ namespace ServiceStack.ServiceInterface
 	{
 		public List<string> RequiredRoles { get; set; }
 
-		public RequiredRoleAttribute(params string[] roles)
-		{
-			this.RequiredRoles = roles.ToList();
-			this.ApplyTo = ApplyTo.All;
-		}
-
 		public RequiredRoleAttribute(ApplyTo applyTo, params string[] roles)
 		{
 			this.RequiredRoles = roles.ToList();
 			this.ApplyTo = applyTo;
+			this.Priority = (int) RequestFilterPriority.RequiredRole;
 		}
-		
+
+		public RequiredRoleAttribute(params string[] roles)
+			: this(ApplyTo.All, roles) {}
+
 		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
 			AuthenticateAttribute.AuthenticateIfBasicAuth(req, res);
@@ -70,6 +65,24 @@ namespace ServiceStack.ServiceInterface
 			return this.RequiredRoles
 				.All(requiredRole => session != null
 					&& session.HasRole(requiredRole));
+		}
+
+		/// <summary>
+		/// Check all session is in all supplied roles otherwise a 401 HttpError is thrown
+		/// </summary>
+		/// <param name="requestContext"></param>
+		/// <param name="requiredRoles"></param>
+		public static void AssertRequiredRoles(IRequestContext requestContext, params string[] requiredRoles)
+		{
+			if (requiredRoles.IsEmpty()) return;
+
+			var req = requestContext.Get<IHttpRequest>();
+			var session = req.GetSession();
+
+			if (session != null && requiredRoles.All(session.HasRole))
+				return;
+			
+			throw new HttpError(HttpStatusCode.Unauthorized, "Invalid Role");
 		}
 	}
 

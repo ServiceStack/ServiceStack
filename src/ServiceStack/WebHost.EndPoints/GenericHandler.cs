@@ -1,6 +1,7 @@
 using System;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
+using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -40,10 +41,14 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public object GetRequest(IHttpRequest httpReq, string operationName)
 		{
-			var operationType = GetOperationType(operationName);
-			AssertOperationExists(operationName, operationType);
+			var requestType = GetOperationType(operationName);
+			AssertOperationExists(operationName, requestType);
 
-			return DeserializeContentType(operationType, httpReq, HandlerContentType);
+			using (Profiler.Current.Step("Deserialize Request"))
+			{
+				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
+				return requestDto ?? DeserializeContentType(requestType, httpReq, HandlerContentType);
+			}
 		}
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)

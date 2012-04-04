@@ -18,19 +18,17 @@ namespace ServiceStack.ServiceInterface
     {
         public List<string> RequiredPermissions { get; set; }
 
+    	public RequiredPermissionAttribute(ApplyTo applyTo, params string[] permissions)
+    	{
+    		this.RequiredPermissions = permissions.ToList();
+    		this.ApplyTo = applyTo;
+    		this.Priority = (int) RequestFilterPriority.RequiredPermission;
+    	}
+
     	public RequiredPermissionAttribute(params string[] permissions)
-        {
-            this.RequiredPermissions = permissions.ToList();
-            this.ApplyTo = ApplyTo.All;
-        }
+			: this(ApplyTo.All, permissions) {}
 
-        public RequiredPermissionAttribute(ApplyTo applyTo, params string[] permissions)
-        {
-            this.RequiredPermissions = permissions.ToList();
-            this.ApplyTo = applyTo;
-        }
-
-		public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
+    	public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
 		{
 			AuthenticateAttribute.AuthenticateIfBasicAuth(req, res);
 

@@ -12,13 +12,20 @@ namespace ServiceStack.ServiceHost
     /// </summary>
     public interface IHasResponseFilter
     {
+		/// <summary>
+		/// Order in which Response Filters are executed. 
+		/// &lt;0 Executed before global response filters
+		/// &gt;0 Executed after global response filters
+		/// </summary>
+		int Priority { get; }
+
         /// <summary>
         /// The response filter is executed after the service
         /// </summary>
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The response DTO</param>
-        void ResponseFilter(IHttpRequest req, IHttpResponse res, object responseDto);
+        void ResponseFilter(IHttpRequest req, IHttpResponse res, object response);
     }
 }
 #endif

@@ -73,17 +73,26 @@ namespace ServiceStack.ServiceInterface
 		/// Easy way to log all requests
 		/// </summary>
 		/// <param name="requestDto"></param>
-		protected void OnEachRequest(object requestDto)
+		protected void BeforeEachRequest(TRequest requestDto)
 		{
-			if (this.RequestLogger == null) return;
-			try
+			OnBeforeExecute(requestDto);
+		}
+
+		protected object AfterEachRequest(TRequest requestDto, object response)
+		{
+			if (this.RequestLogger != null)
 			{
-				RequestLogger.Log(this.RequestContext, requestDto);
+				try
+				{
+					RequestLogger.Log(this.RequestContext, requestDto, response);
+				}
+				catch (Exception ex)
+				{
+					Log.Error("Error while logging request: " + requestDto.Dump(), ex);
+				}
 			}
-			catch (Exception ex)
-			{
-				Log.Error("Error while logging request: " + requestDto.Dump(), ex);
-			}
+
+			return response.IsErrorResponse() ? null : OnAfterExecute(response);
 		}
 
         private ISession session;
@@ -183,9 +192,8 @@ namespace ServiceStack.ServiceInterface
         {
             try
             {
-				OnEachRequest(request);
-                OnBeforeExecute(request);
-				return OnAfterExecute(Run(request));
+				BeforeEachRequest(request);
+				return AfterEachRequest(request, Run(request));
             }
             catch (Exception ex)
             {
@@ -242,7 +250,11 @@ namespace ServiceStack.ServiceInterface
                 }
             }
 
-            return ServiceUtils.CreateErrorResponse(request, ex, responseStatus);
+        	var errorResponse = ServiceUtils.CreateErrorResponse(request, ex, responseStatus);
+			
+			AfterEachRequest(request, errorResponse ?? ex);
+
+			return errorResponse;
         }
 		
         protected HttpResult View(string viewName, object response)
@@ -283,7 +295,7 @@ namespace ServiceStack.ServiceInterface
 				return Execute(request);
 			}
 
-			OnEachRequest(request);
+			BeforeEachRequest(request);
 
 			//Capture and persist this async request on this Services 'In Queue' 
 			//for execution after this request has been completed

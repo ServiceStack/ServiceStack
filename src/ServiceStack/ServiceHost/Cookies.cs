@@ -11,7 +11,6 @@ namespace ServiceStack.ServiceHost
 	public class Cookies : ICookies
 	{
 		readonly IHttpResponse httpRes;
-		public Dictionary<string, List<Cookie>> PathCookies;
 		private static readonly DateTime Session = DateTime.MinValue;
 		private static readonly DateTime Permanaent = DateTime.UtcNow.AddYears(20);
 		private const string RootPath = "/";
@@ -54,15 +53,15 @@ namespace ServiceStack.ServiceHost
 			return new HttpCookie(cookie.Name, cookie.Value) {
 				Path = cookie.Path,
 				Expires = cookie.Expires,
-				Domain = (string.IsNullOrEmpty(cookie.Domain)) ? null : cookie.Domain,				
+				Domain = (string.IsNullOrEmpty(cookie.Domain)) ? null : cookie.Domain,
 			};
 		}
 
 		public string GetHeaderValue(Cookie cookie)
 		{
 			return cookie.Expires == Session
-			    ? String.Format("{0}={1};path=/", cookie.Name, cookie.Value)
-			    : String.Format("{0}={1};expires={2};path={3}",
+				? String.Format("{0}={1};path=/", cookie.Name, cookie.Value)
+				: String.Format("{0}={1};expires={2};path={3}",
 					cookie.Name, cookie.Value, cookie.Expires.ToString("R"), cookie.Path ?? "/");
 		}
 

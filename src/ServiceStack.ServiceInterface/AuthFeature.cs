@@ -12,7 +12,6 @@ namespace ServiceStack.ServiceInterface
 	/// </summary>
 	public class AuthFeature : IPlugin
 	{
-		public const string AdminRole = "Admin";
 		public static bool AddUserIdHttpHeader = true;
 
 		private readonly Func<IAuthSession> sessionFactory;

@@ -91,11 +91,15 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)
 		{
+			var requestType = restPath.RequestType;
 			using (Profiler.Current.Step("Deserialize Request"))
 			{
 				var requestParams = httpReq.GetRequestParams();
 
-				var requestDto = CreateContentTypeRequest(httpReq, restPath.RequestType, httpReq.ContentType);
+				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
+				if (requestDto != null)	return requestDto;
+
+				requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
 
 				return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
 			}

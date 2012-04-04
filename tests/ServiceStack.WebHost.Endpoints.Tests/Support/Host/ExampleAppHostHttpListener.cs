@@ -16,6 +16,7 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.IntegrationTests;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
@@ -150,8 +151,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public override object OnGet(Movie movie)
 		{
-			return new MovieResponse
-			{
+			return new MovieResponse {
 				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(movie.Id))
 			};
 		}
@@ -161,18 +161,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public override object OnPost(Movie movie)
 		{
-			var newMovieId = DbFactory.Exec(dbCmd =>
-			{
+			var newMovieId = DbFactory.Exec(dbCmd => {
 				dbCmd.Insert(movie);
 				return dbCmd.GetLastInsertId();
 			});
 
-			var newMovie = new MovieResponse
-			{
+			var newMovie = new MovieResponse {
 				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(newMovieId))
 			};
-			return new HttpResult(newMovie)
-			{
+			return new HttpResult(newMovie) {
 				StatusCode = HttpStatusCode.Created,
 				Headers = {
 					{ HttpHeaders.Location, this.RequestContext.AbsoluteUri.WithTrailingSlash() + newMovieId }
@@ -234,8 +231,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public override object OnGet(Movies request)
 		{
-			var response = new MoviesResponse
-			{
+			var response = new MoviesResponse {
 				Movies = request.Genre.IsNullOrEmpty()
 					? DbFactory.Exec(dbCmd => dbCmd.Select<Movie>())
 					: DbFactory.Exec(dbCmd => dbCmd.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
@@ -244,7 +240,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			return response;
 		}
 	}
-	
+
 	public class MoviesZip
 	{
 		public string Genre { get; set; }
@@ -272,17 +268,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public override object OnPost(MoviesZip request)
 		{
-			var response = new MoviesZipResponse
-			{
+			var response = new MoviesZipResponse {
 				Movies = request.Genre.IsNullOrEmpty()
 					? DbFactory.Exec(dbCmd => dbCmd.Select<Movie>())
 					: DbFactory.Exec(dbCmd => dbCmd.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
 			};
-			
+
 			return RequestContext.ToOptimizedResult(response);
 		}
 	}
-			
+
 
 	[DataContract]
 	[RestService("/reset-movies")]
@@ -316,8 +311,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public override object OnPost(ResetMovies request)
 		{
-			DbFactory.Exec(dbCmd =>
-			{
+			DbFactory.Exec(dbCmd => {
 				const bool overwriteTable = true;
 				dbCmd.CreateTable<Movie>(overwriteTable);
 				dbCmd.SaveAll(Top5Movies);
@@ -327,24 +321,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
-    [DataContract]
-    public class GetHttpResult {}
+	[DataContract]
+	public class GetHttpResult { }
 
-    [DataContract]
-    public class GetHttpResultResponse
-    {
-        [DataMember]
-        public string Result { get; set; }
-    }
+	[DataContract]
+	public class GetHttpResultResponse
+	{
+		[DataMember]
+		public string Result { get; set; }
+	}
 
-    public class HttpResultService : IService<GetHttpResult>
-    {
-        public object Execute(GetHttpResult request)
-        {
-            var getHttpResultResponse = new GetHttpResultResponse { Result = "result" };
-            return new HttpResult(getHttpResultResponse);
-        }
-    }
+	public class HttpResultService : IService<GetHttpResult>
+	{
+		public object Execute(GetHttpResult request)
+		{
+			var getHttpResultResponse = new GetHttpResultResponse { Result = "result" };
+			return new HttpResult(getHttpResultResponse);
+		}
+	}
 
 	public class ExampleAppHostHttpListener
 		: AppHostHttpListenerBase
@@ -365,8 +359,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			EndpointHostConfig.Instance.GlobalResponseHeaders.Clear();
 
 			//Signal advanced web browsers what HTTP Methods you accept
-			base.SetConfig(new EndpointHostConfig
-			{
+			base.SetConfig(new EndpointHostConfig {
 				GlobalResponseHeaders =
 				{
 					{ "Access-Control-Allow-Origin", "*" },
@@ -377,6 +370,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				DebugMode = true,
 			});
 
+			this.RegisterRequestBinder<CustomRequestBinder>(
+				httpReq => new CustomRequestBinder { IsFromBinder = true });
+
 			Routes
 				.Add<Movies>("/custom-movies", "GET")
 				.Add<Movies>("/custom-movies/genres/{Genre}")
@@ -384,7 +380,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 				.Add<Movie>("/custom-movies/{Id}")
 				.Add<GetFactorial>("/fact/{ForNumber}")
 				.Add<MoviesZip>("/movies.zip")
-                .Add<GetHttpResult>("/gethttpresult")
+				.Add<GetHttpResult>("/gethttpresult")
 			;
 
 			container.Register<IResourceManager>(new ConfigurationResourceManager());

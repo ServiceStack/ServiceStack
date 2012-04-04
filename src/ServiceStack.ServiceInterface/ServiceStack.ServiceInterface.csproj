@@ -101,6 +101,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin\RequestLogsFeature.cs" />
     <Compile Include="ApplyTo.cs" />
     <Compile Include="AsyncServiceBase.cs" />
     <Compile Include="AuthenticateAttribute.cs" />
@@ -120,6 +121,8 @@
     <Compile Include="Auth\OAuthProvider.cs" />
     <Compile Include="Auth\TwitterAuthProvider.cs" />
     <Compile Include="Auth\UnAssignRolesService.cs" />
+    <Compile Include="Providers\InMemoryRollingRequestLogger.cs" />
+    <Compile Include="Admin\RequestLogsService.cs" />
     <Compile Include="RequiredRoleAttribute.cs" />
     <Compile Include="Auth\RegistrationService.cs" />
     <Compile Include="Auth\OAuthAuthorizer.cs" />
@@ -201,6 +204,7 @@
     <Compile Include="RequestFilterAttribute.cs" />
     <Compile Include="RequiredPermissionAttribute.cs" />
     <Compile Include="ResponseFilterAttribute.cs" />
+    <Compile Include="RoleNames.cs" />
     <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />
     <Compile Include="ServiceBase.cs" />
@@ -211,6 +215,7 @@
     <Compile Include="ServiceUtils.cs" />
     <Compile Include="SessionFactory.cs" />
     <Compile Include="SessionExtensions.cs" />
+    <Compile Include="SessionFeature.cs" />
     <Compile Include="Testing\BasicAppHost.cs" />
     <Compile Include="Testing\MockHttpRequest.cs">
       <SubType>Code</SubType>
