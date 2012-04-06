@@ -342,6 +342,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [yeurch](https://github.com/yeurch) (Richard Fawcett)
  - [damianh](https://github.com/damianh) (Damian Hickey)
  - [freeman](https://github.com/freeman) (Michel Rasschaert)
+ - [pauldbau](https://github.com/pauldbau) (Paul Du Bois)
  
 ***
 
