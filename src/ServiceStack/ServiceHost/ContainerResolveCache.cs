@@ -19,20 +19,34 @@ namespace ServiceStack.ServiceHost
 			this.container = container;
 		}
 
-		private Func<Container, object> GenerateServiceFactory(Type type)
+		private Func<Container, object> GenerateServiceFactory(Type type, bool tryResolve)
 		{
+            var resolveType = tryResolve ? "TryResolve" : "Resolve";
 			var containerParam = Expression.Parameter(typeof(Container), "container");
-			var resolveInstance = Expression.Call(containerParam, "Resolve", new[] { type }, new Expression[0]);
+			var resolveInstance = Expression.Call(containerParam, resolveType, new[] { type }, new Expression[0]);
 			var resolveObject = Expression.Convert(resolveInstance, typeof(object));
 			return Expression.Lambda<Func<Container, object>>(resolveObject, containerParam).Compile();
 		}
 
-		public object CreateInstance(Type type)
+        /// <summary>
+        /// Creates instance using straight Resolve approach.
+        /// This will throw an exception if resolution fails
+        /// </summary>
+        public object CreateInstance(Type type)
+        {
+            return CreateInstance(type, false);
+        }
+
+        /// <summary>
+        /// Creates instance using the TryResolve approach if tryResolve = true.
+        /// Otherwise uses Resolve approach, which will throw an exception if resolution fails
+        /// </summary>
+		public object CreateInstance(Type type, bool tryResolve)
 		{
 			Func<Container, object> resolveFn;
 			if (!resolveFnMap.TryGetValue(type, out resolveFn))
 			{
-				resolveFn = GenerateServiceFactory(type);
+				resolveFn = GenerateServiceFactory(type, tryResolve);
 
 				//Support for multiple threads is needed
 				Dictionary<Type, Func<Container, object>> snapshot, newCache;
