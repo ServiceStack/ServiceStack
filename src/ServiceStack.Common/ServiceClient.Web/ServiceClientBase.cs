@@ -50,6 +50,8 @@ namespace ServiceStack.ServiceClient.Web
                 StreamSerializer = SerializeToStream,
                 StreamDeserializer = StreamDeserializer,
                 CookieContainer = this.CookieContainer,
+                UserName = this.UserName,
+                Password = this.Password
             };
             this.StoreCookies = true; //leave
 
@@ -75,15 +77,29 @@ namespace ServiceStack.ServiceClient.Web
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
         }
 
+        private string _username;
         /// <summary>
         /// The user name for basic authentication
         /// </summary>
-        public string UserName { get; set; }
+        public string UserName {
+            get { return _username; } 
+            set { 
+                _username = value;
+                asyncClient.UserName = value;
+            } 
+        }
 
+        private string _password;
         /// <summary>
         /// The password for basic authentication
         /// </summary>
-        public string Password { get; set; }
+        public string Password {
+            get { return _password; } 
+            set { 
+                _password = value;
+                asyncClient.Password = value;
+            } 
+        }
 
         /// <summary>
         /// Sets the username and the password for basic authentication.
