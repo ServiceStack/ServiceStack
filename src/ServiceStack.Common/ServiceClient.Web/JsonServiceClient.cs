@@ -9,13 +9,18 @@ namespace ServiceStack.ServiceClient.Web
 	public class JsonServiceClient
 		: ServiceClientBase
 	{
+        public override string Format
+        {
+            get { return "json"; }
+        }
+
 		public JsonServiceClient()
 		{
 		}
 
 		public JsonServiceClient(string baseUri) 
 		{			
-			SetBaseUri(baseUri, "json");
+			SetBaseUri(baseUri);
 		}
 
 		public JsonServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
@@ -25,7 +30,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		public override string ContentType
 		{
-			get { return "application/json"; }
+			get { return String.Format("application/{0}", Format); }
 		}
 
 		public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)

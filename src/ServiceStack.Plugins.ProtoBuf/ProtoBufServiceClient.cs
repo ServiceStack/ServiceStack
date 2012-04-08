@@ -7,9 +7,14 @@ namespace ServiceStack.Plugins.ProtoBuf
 {
 	public class ProtoBufServiceClient : ServiceClientBase
 	{
+        public override string Format
+        {
+            get { return "x-protobuf"; }
+        }
+
 		public ProtoBufServiceClient(string baseUri)
 		{
-			SetBaseUri(baseUri, "x-protobuf");
+			SetBaseUri(baseUri);
 		}
 
 		public ProtoBufServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri)

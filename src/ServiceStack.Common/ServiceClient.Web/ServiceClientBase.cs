@@ -69,12 +69,21 @@ namespace ServiceStack.ServiceClient.Web
             this.AsyncOneWayBaseUri = asyncOneWayBaseUri;
         }
 
+        public void SetBaseUri(string baseUri)
+        {
+            if (String.IsNullOrEmpty(Format))
+                throw new InvalidOperationException("SetBaseUri(string baseUri) was called, but no Format was found. "
+                    + "Please consider calling SetBaseUri(string baseUri, string format).");
+            SetBaseUri(baseUri, Format);
+        }
+
         public void SetBaseUri(string baseUri, string format)
         {
+            this.Format = format;
             this.BaseUri = baseUri;
             this.asyncClient.BaseUri = baseUri;
-            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + format + "/syncreply/";
-            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
+            this.SyncReplyBaseUri = baseUri.WithTrailingSlash() + this.Format + "/syncreply/";
+            this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + this.Format + "/asynconeway/";
         }
 
         private string _username;
@@ -111,6 +120,8 @@ namespace ServiceStack.ServiceClient.Web
         }
 
         public string BaseUri { get; set; }
+
+        public virtual string Format { get; set; }
 
         public string SyncReplyBaseUri { get; set; }
 
