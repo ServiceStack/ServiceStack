@@ -2,19 +2,25 @@ using System.IO;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using System;
 
 namespace ServiceStack.ServiceClient.Web
 {
 	public class XmlServiceClient
 		: ServiceClientBase
 	{
+        public override string Format
+        {
+            get { return "xml"; }
+        }
+
 		public XmlServiceClient()
 		{
 		}
 
 		public XmlServiceClient(string baseUri) 
 		{
-			SetBaseUri(baseUri, "xml");
+			SetBaseUri(baseUri);
 		}
 
 		public XmlServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
@@ -22,7 +28,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		public override string ContentType
 		{
-			get { return "application/xml"; }
+			get { return String.Format("application/{0}", Format); }
 		}
 
 		public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
