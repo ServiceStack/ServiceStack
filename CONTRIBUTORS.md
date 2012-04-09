@@ -53,4 +53,5 @@
  - [kvervo](https://github.com/kvervo) (Kvervo)
  - [pauldbau](https://github.com/pauldbau) (Paul Du Bois)
  - [justinpihony](https://github.com/JustinPihony) (Justin Pihony) 
+ - [bokmadsen](https://github.com/bokmadsen) (Bo Kingo Damgaard)
 
