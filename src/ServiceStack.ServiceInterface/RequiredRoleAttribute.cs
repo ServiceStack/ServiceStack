@@ -44,13 +44,7 @@ namespace ServiceStack.ServiceInterface
 		{
 			if (HasAllRoles(session)) return true;
 
-			if (userAuthRepo == null)
-				userAuthRepo = req.TryResolve<IUserAuthRepository>();
-
-			if (userAuthRepo == null) return false;
-
-			var userAuth = userAuthRepo.GetUserAuth(session, null);
-			session.UpdateSession(userAuth);
+			session.UpdateFromUserAuthRepo(req, userAuthRepo);
 
 			if (HasAllRoles(session))
 			{
@@ -81,7 +75,12 @@ namespace ServiceStack.ServiceInterface
 
 			if (session != null && requiredRoles.All(session.HasRole))
 				return;
-			
+
+			session.UpdateFromUserAuthRepo(req);
+
+			if (session != null && requiredRoles.All(session.HasRole))
+				return;
+
 			throw new HttpError(HttpStatusCode.Unauthorized, "Invalid Role");
 		}
 	}

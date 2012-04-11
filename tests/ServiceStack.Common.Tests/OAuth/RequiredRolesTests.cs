@@ -61,5 +61,23 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			Assert.That(!httpRes.IsClosed);
 		}
+
+		[Test]
+		public void Does_validate_AssertRequiredRoles_with_UserAuthRepo_When_Role_not_in_Session()
+		{
+			var userWithAdminRole = new UserAuth { Id = 1, Roles = new[] { RoleNames.Admin }.ToList() };
+			userAuthMock.Expect(x => x.GetUserAuth(It.IsAny<IAuthSession>(), It.IsAny<IOAuthTokens>()))
+				.Returns(userWithAdminRole);
+
+			var registrationService = GetRegistrationService();
+
+			var requestContext = (MockRequestContext)registrationService.RequestContext;
+			requestContext.Container.Register(userAuthMock.Object);
+			var httpRes = requestContext.Get<IHttpResponse>();
+
+			RequiredRoleAttribute.AssertRequiredRoles(requestContext, RoleNames.Admin);
+
+			Assert.That(!httpRes.IsClosed);
+		}
 	}
 }

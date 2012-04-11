@@ -93,9 +93,20 @@ namespace ServiceStack.ServiceInterface
 
 		public static void UpdateSession(this IAuthSession session, UserAuth userAuth)
 		{
-			if (userAuth == null) return;
+			if (userAuth == null || session == null) return;
 			session.Roles = userAuth.Roles;
 			session.Permissions = userAuth.Permissions;
+		}
+
+		public static void UpdateFromUserAuthRepo(this IAuthSession session, IHttpRequest req, IUserAuthRepository userAuthRepo = null)
+		{
+			if (userAuthRepo == null)
+				userAuthRepo = req.TryResolve<IUserAuthRepository>();
+
+			if (userAuthRepo == null) return;
+
+			var userAuth = userAuthRepo.GetUserAuth(session, null);
+			session.UpdateSession(userAuth);
 		}
 
 		public static HashSet<string> AddSessionOptions(this IHttpResponse res, IHttpRequest req, params string[] options)
@@ -115,7 +126,7 @@ namespace ServiceStack.ServiceInterface
 				existingOptions.Add(option);
 			}
 
-			var strOptions = string.Join(",", existingOptions.ToArray());
+			var strOptions = String.Join(",", existingOptions.ToArray());
 			res.Cookies.AddPermanentCookie(SessionFeature.SessionOptionsKey, strOptions);
 			req.Items[SessionFeature.SessionOptionsKey] = strOptions;
 			
