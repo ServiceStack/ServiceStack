@@ -102,7 +102,7 @@ namespace ServiceStack.Common.Web
 			{
 				using (var ms = new MemoryStream())
 				{
-					responseStreamWriter(requestContext, responseStreamWriter, ms);
+					responseStreamWriter(requestContext, response, ms);
 
 					ms.Position = 0;
 					var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
@@ -116,7 +116,7 @@ namespace ServiceStack.Common.Web
 				using (var ms = new MemoryStream())
 				{
 					var httpRes = new HttpResponseStreamWrapper(ms);
-					responseWriter(requestContext, responseWriter, httpRes);
+					responseWriter(requestContext, response, httpRes);
 
 					ms.Position = 0;
 					var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
@@ -231,7 +231,8 @@ namespace ServiceStack.Common.Web
 		public StreamDeserializerDelegate GetStreamDeserializer(string contentType)
 		{
 			StreamDeserializerDelegate streamReader;
-			if (this.ContentTypeDeserializers.TryGetValue(contentType, out streamReader))
+            var realContentType = contentType.Split(';')[0].Trim();
+			if (this.ContentTypeDeserializers.TryGetValue(realContentType, out streamReader))
 			{
 				return streamReader;
 			}

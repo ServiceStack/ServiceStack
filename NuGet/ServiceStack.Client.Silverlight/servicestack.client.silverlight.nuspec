@@ -2,12 +2,13 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Client.Silverlight</id> 
-    <version>3.4.2</version> 
+    <version>3.5.5</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Silverlight JSON, XML, JSV ServiceClients for ServiceStack web services</summary>
     <description>
-      ServiceStack client binaries for Silverlight. Provides generic JSON, XML and JSV Service Clients allowing you to call ServiceStack web services from a Silverlight client.
+      ServiceStack client binaries for Silverlight. Provides generic JSON, XML and JSV Service Clients allowing you to call ServiceStack web services from a Silverlight client. 
+      This is now a stub that points to ServiceStack.Common NuGet package which now contains the Silverlight client builds.
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
@@ -15,5 +16,8 @@
     <tags>Silverlight Fast JSON XML JSV REST Web Services</tags>
     <language>en-US</language>
 	<copyright>servicestack.net 2012 and contributors</copyright>
+    <dependencies>
+      <dependency id="ServiceStack.Common" />
+    </dependencies> 
   </metadata> 
 </package>

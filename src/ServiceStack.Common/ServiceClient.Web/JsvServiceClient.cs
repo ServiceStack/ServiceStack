@@ -8,13 +8,18 @@ namespace ServiceStack.ServiceClient.Web
 	public class JsvServiceClient
 		: ServiceClientBase
 	{
+        public override string Format
+        {
+            get { return "jsv"; }
+        }
+
 		public JsvServiceClient()
 		{
 		}
 
 		public JsvServiceClient(string baseUri) 
 		{
-			SetBaseUri(baseUri, "jsv");
+            SetBaseUri(baseUri);
 		}
 
 		public JsvServiceClient(string syncReplyBaseUri, string asyncOneWayBaseUri) 
@@ -24,7 +29,7 @@ namespace ServiceStack.ServiceClient.Web
 
 		public override string ContentType
 		{
-			get { return "application/jsv"; }
+            get { return String.Format("application/{0}", Format); }
 		}
 
 		public override void SerializeToStream(IRequestContext requestContext, object request, Stream stream)

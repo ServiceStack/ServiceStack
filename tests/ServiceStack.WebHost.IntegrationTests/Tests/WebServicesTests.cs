@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		private const string TestString = "ServiceStack";
 
 		protected WebServicesTests()
-			: base(Config.AbsoluteBaseUri, typeof(ReverseService).Assembly)
+			: base(Config.ServiceStackBaseUri, typeof(ReverseService).Assembly)
 		{
 		}
 
@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Assert.That(response.Result, Is.EqualTo(expectedValue));
 		}
 
-		[Test, Ignore("TODO LATER")]
+		[Test]
 		public void Can_Handle_Exception_from_AlwaysThrowService()
 		{
 			var client = CreateNewServiceClient();

@@ -7,7 +7,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		UserAuth CreateUserAuth(UserAuth newUser, string password);
 		UserAuth UpdateUserAuth(UserAuth existingUser, UserAuth newUser, string password);
 		UserAuth GetUserAuthByUserName(string userNameOrEmail);
-		bool TryAuthenticate(string userName, string password, out string userId);
+		bool TryAuthenticate(string userName, string password, out UserAuth userAuth);
 		void LoadUserAuth(IAuthSession session, IOAuthTokens tokens);
 		UserAuth GetUserAuth(string userAuthId);
 		void SaveUserAuth(IAuthSession authSession);

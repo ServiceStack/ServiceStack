@@ -77,6 +77,16 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="protobuf-net, Version=1.0.0.278, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\tests\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite">
+      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.OrmLite.Sqlite">
+      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core">
@@ -108,12 +118,6 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\lib\tests\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\lib\tests\ServiceStack.OrmLite.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.OrmLite.Sqlite">
-      <HintPath>..\..\lib\tests\ServiceStack.OrmLite.Sqlite.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -126,6 +130,8 @@
     <Compile Include="AuthTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="IntegrationTests\ErrorRestTests.cs" />
+    <Compile Include="ProtoBufServiceTests.cs" />
+    <Compile Include="Support\Operations\CustomRequestBinder.cs" />
     <Compile Include="TodoListTests.cs" />
     <Compile Include="CustomerServiceValidationTests.cs" />
     <Compile Include="ExceptionHandlingTests.cs" />
@@ -155,7 +161,6 @@
     <Compile Include="Support\DirectServiceClient.cs" />
     <Compile Include="Support\Host\ExampleAppHostHttpListener.cs" />
     <Compile Include="HtmlResultTests.cs" />
-    <Compile Include="HttpRequestExtensionsTests.cs" />
     <Compile Include="IntegrationTests\ConfigureDatabase.cs" />
     <Compile Include="IntegrationTests\ExampleConfig.cs" />
     <Compile Include="IntegrationTests\IntegrationTestBase.cs" />
@@ -215,6 +220,10 @@
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj">
+      <Project>{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}</Project>
+      <Name>ServiceStack.Plugins.ProtoBuf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
@@ -261,6 +270,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ServiceModel\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

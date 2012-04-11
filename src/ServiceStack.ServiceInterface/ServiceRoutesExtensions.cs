@@ -28,17 +28,16 @@ namespace ServiceStack.ServiceInterface
 		{
 			foreach (Assembly assembly in assembliesWithServices)
 			{
-				IEnumerable<Type> restServices = 
+				IEnumerable<Type> services = 
                     from t in assembly.GetExportedTypes()
 					where
 						!t.IsAbstract &&
-						t.IsSubclassOfRawGeneric(typeof(RestServiceBase<>))
+						t.IsSubclassOfRawGeneric(typeof(ServiceBase<>))
 					select t;
 
-				foreach (Type restService in restServices)
+				foreach (Type service in services)
 				{
-					Type baseType = restService.BaseType;
-
+					Type baseType = service.BaseType;
 					//go up the hierarchy to the first generic base type
 					while (!baseType.IsGenericType)
 					{
@@ -47,45 +46,50 @@ namespace ServiceStack.ServiceInterface
 
 					Type requestType = baseType.GetGenericArguments()[0];
 
-					//find overriden REST methods
-					var allowedMethods = new List<string>();
-					if (restService.GetMethod("OnGet").DeclaringType == restService)
+                    string allowedVerbs = null; //null == All Routes
+
+					if (service.IsSubclassOfRawGeneric(typeof(RestServiceBase<>)))
 					{
-						allowedMethods.Add(HttpMethods.Get);
+						//find overriden REST methods
+						var allowedMethods = new List<string>();
+						if (service.GetMethod("OnGet").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Get);
+						}
+
+						if (service.GetMethod("OnPost").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Post);
+						}
+
+						if (service.GetMethod("OnPut").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Put);
+						}
+
+						if (service.GetMethod("OnDelete").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Delete);
+						}
+
+						if (service.GetMethod("OnPatch").DeclaringType == service)
+						{
+							allowedMethods.Add(HttpMethods.Patch);
+						}
+
+						if (allowedMethods.Count == 0) continue;
+						allowedVerbs = string.Join(" ", allowedMethods.ToArray());
 					}
 
-					if (restService.GetMethod("OnPost").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Post);
-					}
+                    routes.Add(requestType, requestType.Name, allowedVerbs, null);
 
-					if (restService.GetMethod("OnPut").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Put);
-					}
-
-					if (restService.GetMethod("OnDelete").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Delete);
-					}
-
-					if (restService.GetMethod("OnPatch").DeclaringType == restService)
-					{
-						allowedMethods.Add(HttpMethods.Patch);
-					}
-
-					if (allowedMethods.Count == 0) continue;
-					var allowedVerbs = string.Join(" ", allowedMethods.ToArray());
-
-					routes.Add(requestType, requestType.Name, allowedVerbs, null);
-
-					var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
-					if (hasIdField)
-					{
-						var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
-						routes.Add(requestType, routePath, allowedVerbs, null);
-					}
-				}
+				    var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
+				    if (hasIdField)
+                    {
+                        var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
+                        routes.Add(requestType, routePath, allowedVerbs, null);
+                    }
+                }
 			}
 
 			return routes;
@@ -119,7 +123,11 @@ namespace ServiceStack.ServiceInterface
 				allowedMethods.Add(HttpMethods.Delete);
 			if (verbs.Has(ApplyTo.Patch))
 				allowedMethods.Add(HttpMethods.Patch);
-			
+			if (verbs.Has(ApplyTo.Options))
+				allowedMethods.Add(HttpMethods.Options);
+			if (verbs.Has(ApplyTo.Head))
+				allowedMethods.Add(HttpMethods.Head);
+
 			return string.Join(" ", allowedMethods.ToArray());
 		}
 
@@ -137,20 +145,20 @@ namespace ServiceStack.ServiceInterface
 			return false;
 		}
 
-        private static string FormatRoute<T>(string path, params Expression<Func<T, object>>[] propertyExpressions)
-        {
-            var properties = propertyExpressions.Select(x => string.Format("{{{0}}}", PropertyName(x))).ToArray();
-            return string.Format(path, properties);
-        }
+		private static string FormatRoute<T>(string restPath, params Expression<Func<T, object>>[] propertyExpressions)
+		{
+			var properties = propertyExpressions.Select(x => string.Format("{{{0}}}", PropertyName(x))).ToArray();
+			return string.Format(restPath, properties);
+		}
 
-        private static string PropertyName(LambdaExpression ex)
-        {
-            return (ex.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)ex.Body).Operand : (MemberExpression)ex.Body).Member.Name;
-        }
+		private static string PropertyName(LambdaExpression lambdaExpression)
+		{
+			return (lambdaExpression.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
+		}
 
-        public static void Add<T>(this IServiceRoutes serviceRoutes, string httpMethod, string url, params Expression<Func<T, object>>[] propertyExpressions)
-        {
-            serviceRoutes.Add<T>(FormatRoute(url, propertyExpressions), httpMethod);
-        }
+		public static void Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)
+		{
+			serviceRoutes.Add<T>(FormatRoute(restPath, propertyExpressions), verbs);
+		}
 	}
 }

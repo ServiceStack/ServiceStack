@@ -184,6 +184,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			if (context == null) return;
 
+            Log.InfoFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
+
 			//System.Diagnostics.Debug.WriteLine("Start: " + requestNumber + " at " + DateTime.Now);
 			//var request = context.Request;
 
@@ -303,6 +305,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			get { return EndpointHost.Config.ServiceController.Routes; }
 		}
 
+		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+		{
+			get { return EndpointHost.ServiceManager.ServiceController.RequestTypeFactoryMap; }
+		}
+
 		public IContentTypeFilter ContentTypeFilters
 		{
 			get
@@ -343,6 +350,26 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public EndpointHostConfig Config
 		{
 			get { return EndpointHost.Config; }
+		}
+
+		public List<IPlugin> Plugins
+		{
+			get { return EndpointHost.Plugins; }
+		}
+
+		public virtual void LoadPlugin(params IPlugin[] plugins)
+		{
+			foreach (var plugin in plugins)
+			{
+				try
+				{
+					plugin.Register(this);
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Error loading plugin " + plugin.GetType().Name, ex);
+				}
+			}
 		}
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)

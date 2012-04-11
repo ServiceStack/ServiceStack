@@ -18,6 +18,11 @@ namespace ServiceStack.ServiceInterface
 			return url.AddQueryParam(key, val.ToString());
 		}
 
+		public static string AddQueryParam(this string url, object key, string val)
+		{
+			return AddQueryParam(url, (key ?? "").ToString(), val);
+		}
+
 		public static string AddQueryParam(this string url, string key, string val)
 		{
 			if (string.IsNullOrEmpty(url)) return null;
@@ -85,7 +90,7 @@ namespace ServiceStack.ServiceInterface
 				?? DefaultCache;
 		}
 
-		public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn)
+		public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn=null)
 		{
 			if (service == null) return;
 

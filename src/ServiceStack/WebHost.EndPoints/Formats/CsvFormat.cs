@@ -5,9 +5,9 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Formats
 {
-	public class CsvFormat
+	public class CsvFormat : IPlugin
 	{
-		public static void Register(IAppHost appHost)
+		public void Register(IAppHost appHost)
 		{
 			//Register the 'text/csv' content-type and serializers (format is inferred from the last part of the content-type)
 			appHost.ContentTypeFilters.Register(ContentType.Csv,
@@ -24,10 +24,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			});
 		}
 
-		public static void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
+		public void SerializeToStream(IRequestContext requestContext, object request, Stream stream)
 		{
 			CsvSerializer.SerializeToStream(request, stream);
 		}
-
 	}
 }

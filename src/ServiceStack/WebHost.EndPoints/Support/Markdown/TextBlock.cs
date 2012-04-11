@@ -11,7 +11,7 @@ using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Text;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public class PageContext
 	{

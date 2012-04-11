@@ -86,6 +86,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			{
 				httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
 			}
+			OnSaveUserAuth(authService, session);
 		}
 
 		public virtual void OnSaveUserAuth(IServiceBase authService, IAuthSession session) { }
@@ -104,11 +105,32 @@ namespace ServiceStack.ServiceInterface.Auth
 				if (tokens != null)
 				{
 					authInfo.ForEach((x, y) => tokens.Items[x] = y);
+					session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
 				}
-				SaveUserAuth(authService, userSession, authRepo, tokens);
+				//SaveUserAuth(authService, userSession, authRepo, tokens);
+				
+				authRepo.LoadUserAuth(session, tokens);
+
+				foreach (var oAuthToken in session.ProviderOAuthAccess)
+				{
+					var authProvider = AuthService.GetAuthProvider(oAuthToken.Provider);
+					if (authProvider == null) continue;
+					var userAuthProvider = authProvider as OAuthProvider;
+					if (userAuthProvider != null)
+					{
+						userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
+					}
+				}
+		
+				var httpRes = authService.RequestContext.Get<IHttpResponse>();
+				if (httpRes != null)
+				{
+					httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
+				}
+				
 			}
 
-			OnSaveUserAuth(authService, session);
+			//OnSaveUserAuth(authService, session);
 			authService.SaveSession(session, SessionExpiry);
 			session.OnAuthenticated(authService, session, tokens, authInfo);
 		}

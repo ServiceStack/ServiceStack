@@ -74,18 +74,7 @@ namespace ServiceStack.Common.Web
 		{
 			get
 			{
-				if (this.Response == null)
-					return null;
-
-				var hasResponseStatus = this.Response as IHasResponseStatus;
-				if (hasResponseStatus != null)
-					return hasResponseStatus.ResponseStatus;
-
-				var propertyInfo = this.Response.GetType().GetProperty("ResponseStatus");				
-				if (propertyInfo == null)
-					return null;
-
-				return ReflectionUtils.GetProperty(this.Response, propertyInfo) as ResponseStatus;
+				return this.Response.ToResponseStatus();
 			}
 		}
 

@@ -44,6 +44,17 @@ namespace ServiceStack.ServiceInterface
                 {
                     httpError.Response = responseDto;
                 }
+				//Do we need this?
+				//if (httpError.Response == null)
+				//{
+				//    var httpEx = httpError as HttpError;
+				//    if (httpEx != null && httpEx.InnerException != null)
+				//    {
+				//        responseStatus = responseStatus ?? ResponseStatusTranslator.Instance.Parse(httpEx.InnerException);
+				//        httpEx.Response = CreateResponseDto(request, responseStatus);
+				//    }
+				//}
+
                 return httpError;
             }
 

@@ -35,8 +35,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public ResponseStatus ResponseStatus { get; set; }
 	}
-	
-	[RequiredRole(AuthFeature.AdminRole)]
+
+	[RequiredRole(RoleNames.Admin)]
 	public class AssignRolesService : RestServiceBase<AssignRoles>
 	{
 		public IUserAuthRepository UserAuthRepo { get; set; }

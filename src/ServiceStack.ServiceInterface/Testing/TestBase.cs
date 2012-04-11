@@ -119,7 +119,7 @@ namespace ServiceStack.ServiceInterface.Testing
 		    public TResponse Send<TResponse>(object request)
 			{
 				var response = ServiceManager.Execute(request);
-				var httpResult = response as HttpResult;
+				var httpResult = response as IHttpResult;
 				if (httpResult != null)
 				{
 					if (httpResult.StatusCode >= HttpStatusCode.BadRequest)

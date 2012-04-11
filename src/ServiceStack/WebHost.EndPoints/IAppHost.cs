@@ -56,6 +56,11 @@ namespace ServiceStack.WebHost.Endpoints
 		List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
 
 		/// <summary>
+		/// Provide a custom model minder for a specific Request DTO
+		/// </summary>
+		Dictionary<Type, Func<IHttpRequest, object>> RequestBinders { get; }
+
+		/// <summary>
 		/// The AppHost config
 		/// </summary>
 		EndpointHostConfig Config { get; }
@@ -66,5 +71,11 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <param name="serviceType"></param>
 		/// <param name="atRestPaths"></param>
 		void RegisterService(Type serviceType, params string[] atRestPaths);
+
+		/// <summary>
+		/// Apply plugins to this AppHost
+		/// </summary>
+		/// <param name="plugins"></param>
+		void LoadPlugin(params IPlugin[] plugins);
 	}
 }

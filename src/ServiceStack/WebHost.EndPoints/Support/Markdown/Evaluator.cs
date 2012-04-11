@@ -4,14 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Xml;
 using System.Text;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public class EvaluatorExecutionContext
 	{

@@ -41,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			var responseContentType = EndpointHost.Config.DefaultContentType;
+			var responseContentType = EndpointHost.Config.DefaultContentType; 
 			try
 			{
 				var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
@@ -91,20 +91,15 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static object GetRequest(IHttpRequest httpReq, IRestPath restPath)
 		{
+			var requestType = restPath.RequestType;
 			using (Profiler.Current.Step("Deserialize Request"))
 			{
 				var requestParams = httpReq.GetRequestParams();
 
-				object requestDto = null;
+				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
+				if (requestDto != null)	return requestDto;
 
-				if (!string.IsNullOrEmpty(httpReq.ContentType) && httpReq.ContentLength > 0)
-				{
-					var requestDeserializer = EndpointHost.AppHost.ContentTypeFilters.GetStreamDeserializer(httpReq.ContentType);
-					if (requestDeserializer != null)
-					{
-						requestDto = requestDeserializer(restPath.RequestType, httpReq.InputStream);
-					}
-				}
+				requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
 
 				return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
 			}

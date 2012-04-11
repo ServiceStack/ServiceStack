@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 			public override void Configure(Container container)
 			{
-				ValidationFeature.Init(this);
+				Plugins.Add(new ValidationFeature());
 				container.Register<IAddressValidator>(new AddressValidator());
 				container.RegisterValidators(typeof(CustomersValidator).Assembly);
 			}

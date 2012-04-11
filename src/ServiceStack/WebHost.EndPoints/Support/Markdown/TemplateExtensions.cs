@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using ServiceStack.Common;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public static class TemplateExtensions
 	{

@@ -230,7 +230,11 @@ namespace ServiceStack.Common.Utils
 
             if (type.IsEnum)
             {
+#if SILVERLIGHT4
+            	return Enum.ToObject(type, 0);
+#else
                 return Enum.GetValues(type).GetValue(0);
+#endif
             }
 
             // If we have hit our recursion limit for this type, then return null

@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Collections.Generic;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceHost;
 using ServiceStack.Configuration;
 using ServiceStack.FluentValidation;
 
@@ -42,11 +44,14 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			var session = authService.GetSession();
-			string useUserName = null;
-			if (authRepo.TryAuthenticate(userName, password, out useUserName))
+			UserAuth userAuth = null;
+			if (authRepo.TryAuthenticate(userName, password, out userAuth))
 			{
+				session.PopulateWith(userAuth);
 				session.IsAuthenticated = true;
-				session.UserAuthName = userName;
+				session.UserAuthId =  userAuth.Id.ToString(CultureInfo.InvariantCulture);
+				session.ProviderOAuthAccess = authRepo.GetUserOAuthProviders(session.UserAuthId)
+				.ConvertAll(x => (IOAuthTokens)x);
 
 				return true;
 			}
@@ -91,6 +96,46 @@ namespace ServiceStack.ServiceInterface.Auth
 			}
 
 			throw HttpError.Unauthorized("Invalid UserName or Password");
+		}
+		
+		public override void OnAuthenticated(IServiceBase authService, IAuthSession session, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+		{
+			var userSession = session as AuthUserSession;
+			if (userSession != null)
+			{
+				LoadUserAuthInfo(userSession, tokens, authInfo);
+			}
+
+			var authRepo = authService.TryResolve<IUserAuthRepository>();
+			if (authRepo != null)
+			{
+				if (tokens != null)
+				{
+					authInfo.ForEach((x, y) => tokens.Items[x] = y);
+					session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens);
+				}
+				
+				foreach (var oAuthToken in session.ProviderOAuthAccess)
+				{
+					var authProvider = AuthService.GetAuthProvider(oAuthToken.Provider);
+					if (authProvider == null) continue;
+					var userAuthProvider = authProvider as OAuthProvider;
+					if (userAuthProvider != null)
+					{
+						userAuthProvider.LoadUserOAuthProvider(session, oAuthToken);
+					}
+				}
+		
+				var httpRes = authService.RequestContext.Get<IHttpResponse>();
+				if (httpRes != null)
+				{
+					httpRes.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
+				}
+				
+			}
+
+			authService.SaveSession(session, SessionExpiry);
+			session.OnAuthenticated(authService, session, tokens, authInfo);
 		}
 
 	}

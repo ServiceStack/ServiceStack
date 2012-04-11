@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	public class _JsonpTests
 	{
-		protected const string ListeningOn = "http://localhost:85/";
+		protected const string ListeningOn = "http://localhost:82/";
 
 		ExampleAppHostHttpListener appHost;
 
@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			webReq.Accept = "*/*";
 			using (var webRes = webReq.GetResponse())
 			{
-				Assert.That(webRes.ContentType, Is.StringStarting(ContentType.Json));
+				Assert.That(webRes.ContentType, Is.StringStarting(ContentType.JavaScript));
 				response = webRes.DownloadText();
 			}
 

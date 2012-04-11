@@ -90,5 +90,18 @@ namespace ServiceStack.Common
 			}
 		}
 
+	    public static Dictionary<TKey, T> ToSafeDictionary<T, TKey>(this IEnumerable<T> list, Func<T, TKey> expr)
+        {
+            var map = new Dictionary<TKey, T>();
+            if (list != null)
+            {
+                foreach (var item in list)
+                {
+                    map[expr(item)] = item;
+                }
+            }
+            return map;
+        }
+        
 	}
 }

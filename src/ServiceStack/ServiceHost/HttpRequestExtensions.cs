@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Web;
@@ -196,5 +197,36 @@ namespace ServiceStack.ServiceHost
 		{
 			return httpReq == null ? null : httpReq.QueryString["callback"];
 		}
+
+
+		public static Dictionary<string, string> CookiesAsDictionary(this IHttpRequest httpReq)
+		{
+			var map = new Dictionary<string, string>();
+			var aspNet = httpReq.OriginalRequest as HttpRequest;
+			if (aspNet != null)
+			{
+				foreach (var name in aspNet.Cookies.AllKeys)
+				{
+					var cookie = aspNet.Cookies[name];
+					if (cookie == null) continue;
+					map[name] = cookie.Value;
+				}
+			}
+			else
+			{
+				var httpListener = httpReq.OriginalRequest as HttpListenerRequest;
+				if (httpListener != null)
+				{
+					for (var i = 0; i < httpListener.Cookies.Count; i++)
+					{
+						var cookie = httpListener.Cookies[i];
+						if (cookie == null || cookie.Name == null) continue;
+						map[cookie.Name] = cookie.Value;
+					}
+				}
+			}
+			return map;
+		}
+
 	}
 }

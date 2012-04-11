@@ -12,6 +12,7 @@ using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.Redis;
 using ServiceStack.Redis.Messaging;
 using ServiceStack.ServiceHost;
@@ -86,10 +87,12 @@ namespace ServiceStack.WebHost.IntegrationTests
 				var resetMovies = this.Container.Resolve<ResetMoviesService>();
 				resetMovies.Post(null);
 
-				ValidationFeature.Init(this);
+				Plugins.Add(new ValidationFeature());
+				Plugins.Add(new SessionFeature());
+				Plugins.Add(new ProtoBufFormat());
+
 				container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
-				SessionFeature.Init(this);
 
 				//var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
 				SetConfig(new EndpointHostConfig {
@@ -115,15 +118,15 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				var appSettings = new AppSettings();
 
-				AuthFeature.Init(this, () => new CustomUserSession(),
+				Plugins.Add(new AuthFeature(() => new CustomUserSession(),
 					new IAuthProvider[] {
 						new CredentialsAuthProvider(appSettings), 
 						new FacebookAuthProvider(appSettings), 
 						new TwitterAuthProvider(appSettings), 
 						new BasicAuthProvider(appSettings), 
-					});
+					}));
 
-				RegistrationFeature.Init(this);
+				Plugins.Add(new RegistrationFeature());
 
 				container.Register<IUserAuthRepository>(c =>
 					new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));

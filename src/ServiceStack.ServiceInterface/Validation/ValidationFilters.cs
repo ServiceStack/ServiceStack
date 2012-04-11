@@ -11,6 +11,10 @@ namespace ServiceStack.ServiceInterface.Validation
 			var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
 			if (validator != null)
 			{
+				var validatorWithHttpRequest = validator as IRequiresHttpRequest;
+				if (validatorWithHttpRequest != null)
+					validatorWithHttpRequest.HttpRequest = req;
+
 				string ruleSet = req.HttpMethod;
 				var validationResult = validator.Validate(
 					new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)));

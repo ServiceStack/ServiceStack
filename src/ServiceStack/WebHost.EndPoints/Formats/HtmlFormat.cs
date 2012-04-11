@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Formats
 {
-	public class HtmlFormat
+	public class HtmlFormat : IPlugin
 	{
 		public static string TitleFormat
 			= @"{0} Snapshot of {1}";
@@ -20,6 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 <html lang=""en-us"">
 <head>
 <title>{1}</title>
+<meta http-equiv=""Content-Type"" content=""text/html; charset=utf-8"">
 <script id=""dto"" type=""text/json"">{0}</script>
 <style type=""text/css"">
 BODY, H1, H2, H3, H4, H5, H6, DL, DT, DD {{
@@ -394,8 +395,9 @@ function enc(html) {{
 </body>
 </html>";
 
-		private static IAppHost AppHost { get; set; }
-		public static void Register(IAppHost appHost)
+		private IAppHost AppHost { get; set; }
+
+		public void Register(IAppHost appHost)
 		{
 			AppHost = appHost;
 			//Register this in ServiceStack with the custom formats
@@ -407,7 +409,7 @@ function enc(html) {{
 			appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.JsonReport.ToContentFormat());
 		}
 
-		public static void SerializeToStream(IRequestContext requestContext, object dto, IHttpResponse httpRes)
+		public void SerializeToStream(IRequestContext requestContext, object dto, IHttpResponse httpRes)
 		{
 			if (AppHost.HtmlProviders.Any(x => x(requestContext, dto, httpRes))) return;
 
@@ -438,6 +440,5 @@ function enc(html) {{
 			var utf8Bytes = html.ToUtf8Bytes();
 			httpRes.OutputStream.Write(utf8Bytes, 0, utf8Bytes.Length);
 		}
-
 	}
 }

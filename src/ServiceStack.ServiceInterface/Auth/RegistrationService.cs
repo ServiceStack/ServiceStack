@@ -31,6 +31,12 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public string UserId { get; set; }
 
+		public string SessionId { get; set; }
+
+		public string UserName { get; set; }
+
+		public string ReferrerUrl { get; set; }
+
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 
@@ -79,12 +85,6 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public IValidator<Registration> RegistrationValidator { get; set; }
 
-		public static void Init(IAppHost appHost)
-		{
-			appHost.RegisterService<RegistrationService>();
-			appHost.RegisterAs<RegistrationValidator, IValidator<Registration>>();
-		}
-
 		private void AssertUserAuthRepo()
 		{
 			if (UserAuthRepo == null)
@@ -122,8 +122,20 @@ namespace ServiceStack.ServiceInterface.Auth
 					UserName = request.UserName ?? request.Email,
 					Password = request.Password
 				});
+				
 				if (response is IHttpError)
 					throw (Exception) response;
+
+				var authResponse = response as AuthResponse;
+				if (authResponse != null)
+				{
+					return new RegistrationResponse {
+						SessionId = authResponse.SessionId,
+						UserName = authResponse.UserName,
+						ReferrerUrl = authResponse.ReferrerUrl,
+						UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+					};
+				}
 			}
 
 			return new RegistrationResponse {

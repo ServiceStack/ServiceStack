@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public static class DataBinder
 	{

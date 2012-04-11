@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Text;
-using ServiceStack.WebHost.EndPoints.Formats;
+using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

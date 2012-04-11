@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using ServiceStack.Markdown;
 
-namespace ServiceStack.WebHost.EndPoints.Support.Markdown
+namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public class MarkdownTemplate : ITemplateWriter, IExpirable
 	{

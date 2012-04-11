@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Common.Web;
@@ -61,11 +62,21 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; private set; }
 
+		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+		{
+			get { throw new NotImplementedException(); }
+		}
+
 		public EndpointHostConfig Config { get; set; }
 
 		public void RegisterService(Type serviceType, params string[] atRestPaths)
 		{
 			Config.ServiceManager.RegisterService(serviceType);
+		}
+
+		public void LoadPlugin(params IPlugin[] plugins)
+		{
+			plugins.ToList().ForEach(x => x.Register(this));
 		}
 	}
 }

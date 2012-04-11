@@ -11,7 +11,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using ServiceStack.WebHost.EndPoints.Utils;
+using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -92,6 +92,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
 
+				var httpResult = response as IHttpResult;
+				if (httpResult != null)
+					response = httpResult.Response;
+
 				return requestMsg.Headers.Action == null
 					? Message.CreateMessage(requestMsg.Version, null, response)
 					: Message.CreateMessage(requestMsg.Version, requestType.Name + "Response", response);
@@ -150,12 +154,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				return requestMsg.Headers.Action;
 			}
 
-			if (xml.StartsWith("<"))
-			{
-				return xml.Substring(1, xml.IndexOf(" ") - 1);
-			}
-
-			return null;
+			return xml.StartsWith("<") 
+				? xml.Substring(1, xml.IndexOf(" ") - 1).SplitOnFirst(':').Last()
+				: null;
 		}
 
 		protected static string GetActionFromHttpContext()

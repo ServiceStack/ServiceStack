@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ServiceStack.ServiceHost;
 using System.Threading;
-using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.WebHost.EndPoints.Utils
+namespace ServiceStack.WebHost.Endpoints.Utils
 {
     public static class FilterAttributeCache
     {
@@ -26,8 +23,9 @@ namespace ServiceStack.WebHost.EndPoints.Utils
 
         	var serviceType = EndpointHost.ServiceManager.ServiceController.RequestServiceTypeMap[requestDtoType];
 			attributes.AddRange(
-				(IHasRequestFilter[])serviceType.GetCustomAttributes(typeof(IHasRequestFilter), true)); 
+				(IHasRequestFilter[])serviceType.GetCustomAttributes(typeof(IHasRequestFilter), true));
 
+			attributes.Sort((x,y) => x.Priority - y.Priority);
 			attrs = attributes.ToArray();
 
             Dictionary<Type, IHasRequestFilter[]> snapshot, newCache;
@@ -59,6 +57,7 @@ namespace ServiceStack.WebHost.EndPoints.Utils
 					(IHasResponseFilter[])serviceType.GetCustomAttributes(typeof(IHasResponseFilter), true));
 			}
 
+			attributes.Sort((x, y) => x.Priority - y.Priority);
 			attrs = attributes.ToArray();
 
             Dictionary<Type, IHasResponseFilter[]> snapshot, newCache;

@@ -2,6 +2,7 @@
 {
 	public class Config
 	{
-		public const string AbsoluteBaseUri = "http://localhost/ServiceStack.WebHost.IntegrationTests/api";
+        public const string AbsoluteBaseUri = "http://localhost:50095/";
+        public const string ServiceStackBaseUri = AbsoluteBaseUri + "api/";
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.OrmLite;
@@ -7,6 +8,7 @@ using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Redis;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -87,5 +89,7 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             userAuthRepositorys.ForEach(x => tests.Can_login_with_user_created_CreateUserAuth(x));
         }
+
+
     }
 }

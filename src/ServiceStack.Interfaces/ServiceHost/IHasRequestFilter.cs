@@ -12,6 +12,13 @@ namespace ServiceStack.ServiceHost
     /// </summary>
     public interface IHasRequestFilter
     {
+    	/// <summary>
+    	/// Order in which Request Filters are executed. 
+    	/// &lt;0 Executed before global request filters
+		/// &gt;0 Executed after global request filters
+    	/// </summary>
+    	int Priority { get; }
+
         /// <summary>
         /// The request filter is executed before the service.
         /// </summary>

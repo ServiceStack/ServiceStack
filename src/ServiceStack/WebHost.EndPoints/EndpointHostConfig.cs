@@ -99,6 +99,7 @@ namespace ServiceStack.WebHost.Endpoints
 						AppendUtf8CharsetOnContentTypes = new HashSet<string> { ContentType.Json, },
 						RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>>(),
 						CustomHttpHandlers = new Dictionary<HttpStatusCode, IHttpHandler>(),
+						DefaultJsonpCacheExpiration = new TimeSpan(0, 20, 0)
 					};
 
 					if (instance.ServiceStackHandlerFactoryPath == null)
@@ -154,6 +155,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
 			this.CustomHttpHandlers = instance.CustomHttpHandlers;
+			this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
 		}
 
 		private static void InferHttpHandlerPath()
@@ -241,14 +243,14 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			return XDocument.Parse(rawXml).Root.Element("handlers")
 				.Descendants("add")
-				.Where(handler => (handler.Attribute("type").Value
-				?? string.Empty).StartsWith("ServiceStack"))
+				.Where(handler => (handler.Attribute("type").Value ?? string.Empty).StartsWith("ServiceStack"))
 				.Select(handler => handler.Attribute("path").Value)
 				.FirstOrDefault();
 		}
 
 		public ServiceManager ServiceManager { get; internal set; }
 		public IServiceController ServiceController { get { return ServiceManager.ServiceController; } }
+
 		public string MetadataPageBodyHtml { get; set; }
 		public string MetadataOperationPageBodyHtml { get; set; }
 
@@ -296,6 +298,8 @@ namespace ServiceStack.WebHost.Endpoints
 		public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
 
 		public Dictionary<HttpStatusCode, IHttpHandler> CustomHttpHandlers { get; set; }
+
+		public TimeSpan DefaultJsonpCacheExpiration { get; set; }
 
 		private string defaultOperationNamespace;
 		public string DefaultOperationNamespace

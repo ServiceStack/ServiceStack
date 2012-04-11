@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Title = "The Shawshank Redemption",
 			Rating = 9.2m,
 			Director = "Frank Darabont",
-			ReleaseDate = new DateTime(1995, 2, 17),
+			ReleaseDate = new DateTime(1995, 2, 17).ToUniversalTime(),
 			TagLine = "Fear can hold you prisoner. Hope can set you free.",
 			Genres = new List<string> { "Crime", "Drama" },
 		};

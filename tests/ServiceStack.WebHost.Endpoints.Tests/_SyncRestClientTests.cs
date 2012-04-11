@@ -159,6 +159,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			return new JsonServiceClient(ListeningOn);
 		}
+
+        [Test]
+        public void Can_use_response_filters()
+        {
+            var isActioncalledGlobal = false;
+            var isActioncalledLocal = false;
+            ServiceClientBase.HttpWebResponseFilter = r => isActioncalledGlobal = true;
+            var restClient = (JsonServiceClient)CreateRestClient();
+            restClient.LocalHttpWebResponseFilter = r => isActioncalledLocal = true;
+            restClient.Get<MoviesResponse>("movies");
+            Assert.That(isActioncalledGlobal, Is.True);
+            Assert.That(isActioncalledLocal, Is.True);
+        }
 	}
 
 	[TestFixture]

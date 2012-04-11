@@ -177,12 +177,19 @@
             The object represented by this instance
             </summary>
         </member>
-        <member name="P:ServiceStack.Text.JsConfig.EmitCamelCaseNames">
+        <member name="F:ServiceStack.Text.JsConfig.tsEmitCamelCaseNames">
             <summary>
             <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
             to take advantage of <see cref="T:System.CLSCompliantAttribute"/> specification,
             to support user-friendly serialized formats, ie emitting camelCasing for JSON
             and parsing member names and enum values in a case-insensitive manner.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig.tsThrowOnDeserializationError">
+            <summary>
+            Gets or sets a value indicating if the framework should throw serialization exceptions
+            or continue regardless of deserialization errors. If <see langword="true"/>  the framework
+            will throw; otherwise, it will parse as many fields as possible. The default is <see langword="false"/>.
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludeTypeInfo">
@@ -211,6 +218,11 @@
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludePropertyNames">
             <summary>
             Exclude specific properties of this type from being serialized
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefTypes">
+            <summary>
+            Opt-in flag to set some Value Types to be treated as a Ref Type
             </summary>
         </member>
         <member name="T:ServiceStack.Text.TypeSerializer">

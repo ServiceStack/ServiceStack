@@ -3,8 +3,12 @@ using System.IO;
 using System.Net;
 using System.Web;
 using NUnit.Framework;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceClient.Web;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -14,6 +18,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		private const string ListeningOn = "http://localhost:82/";
 
 		ExampleAppHostHttpListener appHost;
+		readonly JsonServiceClient client = new JsonServiceClient(ListeningOn);
+		private string customUrl = ListeningOn.CombineWith("customrequestbinder");
+		private string predefinedUrl = ListeningOn.CombineWith("json/syncreply/customrequestbinder");
 
 		[TestFixtureSetUp]
 		public void OnTestFixtureSetUp()
@@ -56,6 +63,105 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 				Assert.Fail(errorResponse);
 			}
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_GET()
+		{
+			var response = client.Get<CustomRequestBinderResponse>("/customrequestbinder");
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_predefined_GET()
+		{
+			var responseStr = predefinedUrl.DownloadJsonFromUrl();
+			Console.WriteLine(responseStr);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_predefined_GET_with_QueryString()
+		{
+			var customUrlWithQueryString = customUrl + "?IsFromBinder=false";
+			var responseStr = customUrlWithQueryString.DownloadJsonFromUrl();
+			Console.WriteLine(responseStr);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_Send()
+		{
+			var response = client.Send<CustomRequestBinderResponse>(new CustomRequestBinder());
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_POST()
+		{
+			var response = client.Post<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_POST_FormData()
+		{
+			var responseStr = customUrl.PostToUrl("IsFromBinder=false", ContentType.FormUrlEncoded, ContentType.Json);
+			Console.WriteLine(responseStr);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_POST_FormData_without_ContentType()
+		{
+			var responseStr = customUrl.PostToUrl("{\"IsFromBinder\":false}", ContentType.Json, ContentType.Json);
+			Console.WriteLine(responseStr);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_POST_FormData_without_ContentType_with_QueryString()
+		{
+			string customUrlWithQueryString = customUrl + "?IsFromBinder=false";
+			var responseStr = customUrlWithQueryString.PostToUrl("k=v", acceptContentType: ContentType.Json);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_predefined_POST()
+		{
+			var responseStr = predefinedUrl.PostJsonToUrl(new CustomRequestBinder());
+			Console.WriteLine(responseStr);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_predefined_POST_FormData()
+		{
+			var responseStr = predefinedUrl.PostToUrl("k=v", ContentType.FormUrlEncoded, ContentType.Json);
+			Console.WriteLine(responseStr);
+			var response = responseStr.FromJson<CustomRequestBinderResponse>();
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_PUT()
+		{
+			var response = client.Put<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());
+			Assert.That(response.FromBinder);
+		}
+
+		[Test]
+		public void Does_use_request_binder_for_DELETE()
+		{
+			var response = client.Delete<CustomRequestBinderResponse>("/customrequestbinder");
+			Assert.That(response.FromBinder);
 		}
 
 	}

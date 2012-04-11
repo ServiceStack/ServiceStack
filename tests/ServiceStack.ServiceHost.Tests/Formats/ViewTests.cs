@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
@@ -9,9 +10,9 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost.Tests.AppData;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
-using ServiceStack.WebHost.EndPoints.Formats;
-using ServiceStack.WebHost.EndPoints.Support.Markdown;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Formats;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -41,7 +42,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			public AppHost()
 			{
-				this.Config = new EndpointHostConfig {
+				this.Config = new EndpointHostConfig {					
 					MarkdownSearchPath = "~".MapProjectPath(),
 					MarkdownReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
@@ -79,11 +80,21 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
+			public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+			{
+				get { throw new NotImplementedException(); }
+			}
+
 			public EndpointHostConfig Config { get; set; }
 
 			public void RegisterService(Type serviceType, params string[] atRestPaths)
 			{
 				Config.ServiceManager.RegisterService(serviceType);
+			}
+
+			public void LoadPlugin(params IPlugin[] plugins)
+			{
+				plugins.ToList().ForEach(x => x.Register(this));
 			}
 		}
 

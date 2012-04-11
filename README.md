@@ -277,6 +277,17 @@ Which will change your urls will now look like:
 
 	http://localhost/servicestack.ashx/xml/syncreply/Hello?Name=World
 
+## OSS Libraries used
+
+ServiceStack includes source code of the great libraries below for some of its core functionality. 
+Each library is released under its respective licence:
+
+  - [Mono](https://github.com/mono/mono) [(Licence)](https://github.com/mono/mono/blob/master/LICENSE)
+  - [Funq IOC](http://funq.codeplex.com) [(Licence)](http://funq.codeplex.com/license)
+  - [Fluent Validation](http://fluentvalidation.codeplex.com) [(Licence)](http://fluentvalidation.codeplex.com/license)
+  - [Mini Profiler](http://code.google.com/p/mvc-mini-profiler/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [Dapper](http://code.google.com/p/dapper-dot-net/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(Licence)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
 
 # Contributors 
 A big thanks to GitHub and all of ServiceStack's contributors:
@@ -316,6 +327,26 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [andidog](https://github.com/AndiDog) (AndiDog)
  - [chuckb](https://github.com/chuckb) (chuckb)
  - [niemyjski](https://github.com/niemyjski) (Blake Niemyjski)
+ - [mj1856](https://github.com/mj1856) (Matt Johnson)
+ - [matthieugd](https://github.com/matthieugd) (Matthieu)
+ - [tomaszkubacki](https://github.com/tomaszkubacki) (Tomasz Kubacki)
+ - [e11137](https://github.com/e11137) (Rogelio Canedo)
+ - [davrot](https://github.com/davrot) (David Roth)
+ - [meebey](https://github.com/meebey) (Mirco Bauer)
+ - [codedemonuk](https://github.com/codedemonuk) (Pervez Choudhury)
+ - [jrosskopf](https://github.com/jrosskopf) (Joachim Rosskopf)
+ - [friism](https://github.com/friism) (Michael Friis)
+ - [mp3125](https://github.com/mp3125)
+ - [aurimas86](https://github.com/aurimas86)
+ - [parnham](https://github.com/parnham) (Dan Parnham)
+ - [yeurch](https://github.com/yeurch) (Richard Fawcett)
+ - [damianh](https://github.com/damianh) (Damian Hickey)
+ - [freeman](https://github.com/freeman) (Michel Rasschaert)
+ - [kvervo](https://github.com/kvervo) (Kvervo)
+ - [pauldbau](https://github.com/pauldbau) (Paul Du Bois)
+ - [justinpihony](https://github.com/JustinPihony) (Justin Pihony) 
+ - [bokmadsen](https://github.com/bokmadsen) (Bo Kingo Damgaard)
+ - [dragan](https://github.com/dragan) (Dale Ragan)
 
 ***
 

@@ -1,8 +1,11 @@
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
 using System;
+using System.IO;
+using System.Text;
 using ServiceStack.CacheAccess;
 using ServiceStack.Common.Support;
 using ServiceStack.Common.Web;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common
 {
@@ -65,6 +68,24 @@ namespace ServiceStack.Common
 		{
 			return GZipProvider.GUnzip(gzBuffer);
 		}
+
+		public static string ToUtf8String(this Stream stream)
+		{
+			if (stream == null) throw new ArgumentNullException("stream");
+
+			using (var reader = new StreamReader(stream, Encoding.UTF8))
+			{
+				return reader.ReadToEnd();
+			}
+		}
+
+		public static byte[] ToBytes(this Stream stream)
+		{
+			if (stream == null) throw new ArgumentNullException("stream");
+
+			return stream.ReadFully();
+		}
+
 	}
 
 }

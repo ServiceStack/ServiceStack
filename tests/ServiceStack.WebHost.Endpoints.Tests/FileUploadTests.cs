@@ -70,6 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					break;
 
 				case ContentType.Json:
+				case ContentType.Json + ContentType.Utf8Suffix:
 					result = JsonSerializer.DeserializeFromString<T>(contents);
 					break;
 

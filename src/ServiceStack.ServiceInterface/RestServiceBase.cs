@@ -50,9 +50,8 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
-				OnEachRequest(request);
-				OnBeforeExecute(request);
-				return OnAfterExecute(OnGet(request));
+				BeforeEachRequest(request);
+				return AfterEachRequest(request, OnGet(request));
 			}
 			catch (Exception ex)
 			{
@@ -87,9 +86,8 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
-				OnEachRequest(request);
-				OnBeforeExecute(request);
-				return OnAfterExecute(OnPut(request));
+				BeforeEachRequest(request);
+				return AfterEachRequest(request, OnPut(request));
 			}
 			catch (Exception ex)
 			{
@@ -124,9 +122,8 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
-				OnEachRequest(request);
-				OnBeforeExecute(request);
-				return OnAfterExecute(OnPost(request));
+				BeforeEachRequest(request);
+				return AfterEachRequest(request, OnPost(request));
 			}
 			catch (Exception ex)
 			{
@@ -161,9 +158,8 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
-				OnEachRequest(request);
-				OnBeforeExecute(request);
-				return OnAfterExecute(OnDelete(request));
+				BeforeEachRequest(request);
+				return AfterEachRequest(request, OnDelete(request));
 			}
 			catch (Exception ex)
 			{
@@ -198,9 +194,8 @@ namespace ServiceStack.ServiceInterface
 		{
 			try
 			{
-				OnEachRequest(request);
-				OnBeforeExecute(request);
-				return OnAfterExecute(OnPatch(request));
+				BeforeEachRequest(request);
+				return AfterEachRequest(request, OnPatch(request));
 			}
 			catch (Exception ex)
 			{

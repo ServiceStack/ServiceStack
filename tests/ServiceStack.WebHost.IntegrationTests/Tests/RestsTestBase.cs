@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		readonly EndpointHostConfig defaultConfig = new EndpointHostConfig();
 
 		public RestsTestBase()
-			: base(Config.AbsoluteBaseUri, typeof(HelloService).Assembly)
+			: base(Config.ServiceStackBaseUri, typeof(HelloService).Assembly)
 			//: base("http://localhost:4000", typeof(HelloService).Assembly) //Uncomment to test on dev web server
 		{
 		}
@@ -164,6 +164,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					break;
 
 				case ContentType.Json:
+				case ContentType.Json + ContentType.Utf8Suffix:
 					result = JsonSerializer.DeserializeFromString<T>(contents);
 					break;
 

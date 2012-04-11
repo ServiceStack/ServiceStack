@@ -52,7 +52,7 @@
     <Compile Include="FluentValidationModelValidator.cs" />
     <Compile Include="FluentValidationModelValidatorProvider.cs" />
     <Compile Include="IValidatorInterceptor.cs" />
-    <Compile Include="Mvc\FunqValidatorBase.cs" />
+    <Compile Include="Mvc\FunqValidatorFactory.cs" />
     <Compile Include="Mvc\MiniProfiler\MiniProfiler.cs" />
     <Compile Include="Mvc\MiniProfiler\ProfilingActionFilter.cs" />
     <Compile Include="Mvc\MiniProfiler\ProfilingViewEngine.cs" />

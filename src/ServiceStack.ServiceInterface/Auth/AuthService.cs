@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using ServiceStack.Common.Utils;
@@ -62,6 +63,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public static string DefaultOAuthRealm { get; private set; }
 		public static IAuthProvider[] AuthProviders { get; private set; }
 
+
 		static AuthService()
 		{
 			CurrentSessionFactory = () => new AuthUserSession();
@@ -82,7 +84,7 @@ namespace ServiceStack.ServiceInterface.Auth
 			return null;
 		}
 
-		public static void Init(IAppHost appHost, Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
+		public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
 		{
 			if (authProviders.Length == 0)
 				throw new ArgumentNullException("authProviders");
@@ -93,15 +95,6 @@ namespace ServiceStack.ServiceInterface.Auth
 			AuthProviders = authProviders;
 			if (sessionFactory != null)
 				CurrentSessionFactory = sessionFactory;
-
-		    var test = appHost != null;
-            if (test)
-            {
-				appHost.RegisterService<AuthService>();
-				appHost.RegisterService<AssignRolesService>();
-				appHost.RegisterService<UnAssignRolesService>();
-                SessionFeature.Init(appHost);
-            }
 		}
 
 		private void AssertAuthProviders()
@@ -124,7 +117,7 @@ namespace ServiceStack.ServiceInterface.Auth
 				var response = ValidateFn(this, HttpMethods.Get, request);
 				if (response != null) return response;
 			}
-		
+
 			if (request.RememberMe.HasValue)
 			{
 				var opt = request.RememberMe.GetValueOrDefault(false)

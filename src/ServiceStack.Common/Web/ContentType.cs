@@ -29,6 +29,8 @@ namespace ServiceStack.Common.Web
 
 		public const string JsonText = "text/json";
 
+        public const string JavaScript = "application/javascript";
+
 		public const string Jsv = "application/jsv";
 
 		public const string JsvText = "text/jsv";

@@ -4,16 +4,6 @@
         <name>ServiceStack.Text</name>
     </assembly>
     <members>
-        <member name="T:ServiceStack.Text.Support.Link`2">
-            <summary>
-            Pretty Thread-Safe cache class from:
-            http://code.google.com/p/dapper-dot-net/source/browse/Dapper/SqlMapper.cs
-            
-            This is a micro-cache; suitable when the number of terms is controllable (a few hundred, for example),
-            and strictly append-only; you cannot change existing values. All key matches are on **REFERENCE**
-            equality. The type is fully thread-safe.
-            </summary>
-        </member>
         <member name="M:ServiceStack.Text.ITypeSerializer`1.CanCreateFromString(System.Type)">
             <summary>
             Determines whether this serializer can create the specified type from a string.
@@ -112,17 +102,25 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="T:ServiceStack.Text.Marc.Link`2">
+            <summary>
+            Pretty Thread-Safe cache class from:
+            http://code.google.com/p/dapper-dot-net/source/browse/Dapper/SqlMapper.cs
+            
+            This is a micro-cache; suitable when the number of terms is controllable (a few hundred, for example),
+            and strictly append-only; you cannot change existing values. All key matches are on **REFERENCE**
+            equality. The type is fully thread-safe.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Text.DateTimeExtensions">
             <summary>
             A fast, standards-based, serialization-issue free DateTime serailizer.
             </summary>
         </member>
-        <member name="M:ServiceStack.Text.Common.DeserializeTypeUtils.GetTypeStringConstructor(System.Type)">
+        <member name="T:ServiceStack.Text.JsonSerializer">
             <summary>
-            Get the type(string) constructor if exists
+            Creates an instance of a Type from a string value
             </summary>
-            <param name="type">The type.</param>
-            <returns></returns>
         </member>
         <member name="M:ServiceStack.Text.Common.JsWriter.HasAnyEscapeChars(System.String)">
             <summary>
@@ -131,10 +129,12 @@
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="T:ServiceStack.Text.JsonSerializer">
+        <member name="M:ServiceStack.Text.Common.DeserializeTypeUtils.GetTypeStringConstructor(System.Type)">
             <summary>
-            Creates an instance of a Type from a string value
+            Get the type(string) constructor if exists
             </summary>
+            <param name="type">The type.</param>
+            <returns></returns>
         </member>
         <member name="T:ServiceStack.Text.QueryStringWriter`1">
             <summary>
@@ -142,12 +142,54 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="P:ServiceStack.Text.JsConfig.EmitCamelCaseNames">
+        <member name="T:FastMember.ObjectAccessor">
+            <summary>
+            Represents an individual object, allowing access to members by-name
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.Equals(System.Object)">
+            <summary>
+            Use the target types definition of equality
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.GetHashCode">
+            <summary>
+            Obtain the hash of the target object
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.ToString">
+            <summary>
+            Use the target's definition of a string representation
+            </summary>
+        </member>
+        <member name="M:FastMember.ObjectAccessor.Create(System.Object)">
+            <summary>
+            Wraps an individual object, allowing by-name access to that instance
+            </summary>
+        </member>
+        <member name="P:FastMember.ObjectAccessor.Item(System.String)">
+            <summary>
+            Get or Set the value of a named member for the underlying object
+            </summary>
+        </member>
+        <member name="P:FastMember.ObjectAccessor.Target">
+            <summary>
+            The object represented by this instance
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig.tsEmitCamelCaseNames">
             <summary>
             <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
             to take advantage of <see cref="T:System.CLSCompliantAttribute"/> specification,
             to support user-friendly serialized formats, ie emitting camelCasing for JSON
             and parsing member names and enum values in a case-insensitive manner.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsConfig.tsThrowOnDeserializationError">
+            <summary>
+            Gets or sets a value indicating if the framework should throw serialization exceptions
+            or continue regardless of deserialization errors. If <see langword="true"/>  the framework
+            will throw; otherwise, it will parse as many fields as possible. The default is <see langword="false"/>.
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludeTypeInfo">
@@ -163,7 +205,7 @@
             and parsing member names and enum values in a case-insensitive manner.
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig`1.SerializeFn">
+        <member name="F:ServiceStack.Text.JsConfig`1.serializeFn">
             <summary>
             Define custom serialization fn for BCL Structs
             </summary>
@@ -219,25 +261,12 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:ServiceStack.Text.Controller.PathInfo">
-            <summary>
-            Class to hold  
-            </summary>
-        </member>
-        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Controller.PathInfo.Parse(System.String)" -->
         <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.WriteRawString(System.IO.TextWriter,System.String)">
             <summary>
             Shortcut escape when we're sure value doesn't contain any escaped chars
             </summary>
             <param name="writer"></param>
             <param name="value"></param>
-        </member>
-        <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.EncodeMapKey(System.Object)">
-            <summary>
-            A JSON key needs to be a string with quotes
-            </summary>
-            <param name="value"></param>
-            <returns></returns>
         </member>
         <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.ConvertFromUtf32(System.Int32)">
             <summary>
@@ -246,6 +275,12 @@
             <param name="utf32"></param>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.Text.Controller.PathInfo">
+            <summary>
+            Class to hold  
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:ServiceStack.Text.Controller.PathInfo.Parse(System.String)" -->
         <member name="F:ServiceStack.Text.StreamExtensions.DefaultBufferSize">
             <summary>
             @jonskeet: Collection of utility methods which operate on streams.
@@ -354,6 +389,32 @@
             </summary>
             <param name="strVal"></param>
             <returns></returns>
+        </member>
+        <member name="T:FastMember.TypeAccessor">
+            <summary>
+            Provides by-name member-access to objects of a given type
+            </summary>
+        </member>
+        <member name="M:FastMember.TypeAccessor.CreateNew">
+            <summary>
+            Create a new instance of this type
+            </summary>
+        </member>
+        <member name="M:FastMember.TypeAccessor.Create(System.Type)">
+            <summary>
+            Provides a type-specific accessor, allowing by-name access for all objects of that type
+            </summary>
+            <remarks>The accessor is cached internally; a pre-existing accessor may be returned</remarks>
+        </member>
+        <member name="P:FastMember.TypeAccessor.CreateNewSupported">
+            <summary>
+            Does this type support new instances via a parameterless constructor?
+            </summary>
+        </member>
+        <member name="P:FastMember.TypeAccessor.Item(System.Object,System.String)">
+            <summary>
+            Get or set the value of a named member on the target instance
+            </summary>
         </member>
         <member name="T:ServiceStack.Text.Jsv.JsvWriter`1">
             <summary>

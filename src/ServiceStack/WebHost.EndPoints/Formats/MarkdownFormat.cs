@@ -9,9 +9,9 @@ using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.EndPoints.Support.Markdown;
+using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
-namespace ServiceStack.WebHost.EndPoints.Formats
+namespace ServiceStack.WebHost.Endpoints.Formats
 {
 	public enum MarkdownPageType
 	{
@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		SharedViewPage = 3,
 	}
 
-	public class MarkdownFormat : IViewEngine
+	public class MarkdownFormat : IViewEngine, IPlugin
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(MarkdownFormat));
 
@@ -71,6 +71,10 @@ namespace ServiceStack.WebHost.EndPoints.Formats
 		public void Register(IAppHost appHost)
 		{
 			this.AppHost = appHost;
+
+			this.MarkdownBaseType = appHost.Config.MarkdownBaseType ?? this.MarkdownBaseType;
+			this.MarkdownGlobalHelpers = appHost.Config.MarkdownGlobalHelpers ?? this.MarkdownGlobalHelpers;
+
 			this.MarkdownReplaceTokens = appHost.Config.MarkdownReplaceTokens ?? new Dictionary<string, string>();
 			if (!appHost.Config.WebHostUrl.IsNullOrEmpty() && this.MarkdownReplaceTokens.ContainsKey("~/"))
 				this.MarkdownReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();

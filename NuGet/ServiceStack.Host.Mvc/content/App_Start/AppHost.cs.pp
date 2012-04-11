@@ -32,7 +32,7 @@ namespace $rootnamespace$.App_Start
 	//To access ServiceStack's Session, Cache, etc from MVC Controllers inherit from ControllerBase<CustomUserSession>
 	public class CustomUserSession : AuthUserSession
 	{
-		public string CustomPropety { get; set; }
+		public string CustomProperty { get; set; }
 	}
 
 	public class AppHost
@@ -77,22 +77,19 @@ namespace $rootnamespace$.App_Start
 		/* Uncomment to enable ServiceStack Authentication and CustomUserSession
 		private void ConfigureAuth(Funq.Container container)
 		{
-			Routes
-				.Add<Auth>("/auth")
-				.Add<Auth>("/auth/{provider}")
-				.Add<Registration>("/register");
-
 			var appSettings = new AppSettings();
 
-			AuthFeature.Init(this, () => new CustomUserSession(),
+			//Default route: /auth/{provider}
+			Plugins.Add(new AuthFeature(this, () => new CustomUserSession(),
 				new IAuthProvider[] {
 					new CredentialsAuthProvider(appSettings), 
 					new FacebookAuthProvider(appSettings), 
 					new TwitterAuthProvider(appSettings), 
 					new BasicAuthProvider(appSettings), 
-				});
+				})); 
 
-			RegistrationFeature.Init(this);
+			//Default route: /register
+			Plugins.Add(new RegistrationFeature()); 
 
 			//Requires ConnectionString configured in Web.Config
 			var connectionString = ConfigurationManager.ConnectionStrings["AppDb"].ConnectionString;

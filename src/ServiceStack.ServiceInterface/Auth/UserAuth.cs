@@ -14,21 +14,22 @@ namespace ServiceStack.ServiceInterface.Auth
 		}
 
 		[AutoIncrement]
-		public int Id { get; set; }
-		public string UserName { get; set; }
-        public string Email { get; set; }
-        public string PrimaryEmail { get; set; }
-        public string FirstName { get; set; }
-		public string LastName { get; set; }
-		public string DisplayName { get; set; }
-		public string Salt { get; set; }
-		public string PasswordHash { get; set; }
-		public List<string> Roles { get; set; }
-		public List<string> Permissions { get; set; }
-		public DateTime CreatedDate { get; set; }
-		public DateTime ModifiedDate { get; set; }
+		public virtual int Id { get; set; }
+		public virtual string UserName { get; set; }
+		public virtual string Email { get; set; }
+		public virtual string PrimaryEmail { get; set; }
+		public virtual string FirstName { get; set; }
+		public virtual string LastName { get; set; }
+		public virtual string DisplayName { get; set; }
+		public virtual string Salt { get; set; }
+		public virtual string PasswordHash { get; set; }
+		public virtual List<string> Roles { get; set; }
+		public virtual List<string> Permissions { get; set; }
+		public virtual DateTime CreatedDate { get; set; }
+		public virtual DateTime ModifiedDate { get; set; }
+		public virtual Dictionary<string, string> Meta { get; set; }
 
-		public void PopulateMissing(UserOAuthProvider authProvider)
+		public virtual void PopulateMissing(UserOAuthProvider authProvider)
 		{
 			if (!authProvider.FirstName.IsNullOrEmpty())
 				this.FirstName = authProvider.FirstName;
@@ -49,24 +50,24 @@ namespace ServiceStack.ServiceInterface.Auth
 		}
 
 		[AutoIncrement]
-		public int Id { get; set; }
-		public int UserAuthId { get; set; }
-		public string Provider { get; set; }
-		public string UserId { get; set; }
-		public string UserName { get; set; }
-		public string DisplayName { get; set; }
-		public string FirstName { get; set; }
-		public string LastName { get; set; }
-		public string Email { get; set; }
-		public string RequestToken { get; set; }
-		public string RequestTokenSecret { get; set; }
-		public Dictionary<string, string> Items { get; set; }
-		public string AccessToken { get; set; }
-		public string AccessTokenSecret { get; set; }
-		public DateTime CreatedDate { get; set; }
-		public DateTime ModifiedDate { get; set; }
+		public virtual int Id { get; set; }
+		public virtual int UserAuthId { get; set; }
+		public virtual string Provider { get; set; }
+		public virtual string UserId { get; set; }
+		public virtual string UserName { get; set; }
+		public virtual string DisplayName { get; set; }
+		public virtual string FirstName { get; set; }
+		public virtual string LastName { get; set; }
+		public virtual string Email { get; set; }
+		public virtual string RequestToken { get; set; }
+		public virtual string RequestTokenSecret { get; set; }
+		public virtual Dictionary<string, string> Items { get; set; }
+		public virtual string AccessToken { get; set; }
+		public virtual string AccessTokenSecret { get; set; }
+		public virtual DateTime CreatedDate { get; set; }
+		public virtual DateTime ModifiedDate { get; set; }
 
-		public void PopulateMissing(IOAuthTokens withTokens)
+		public virtual void PopulateMissing(IOAuthTokens withTokens)
 		{
 			if (!withTokens.UserId.IsNullOrEmpty())
 				this.UserId = withTokens.UserId;

@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Web;
-using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
-using ServiceStack.WebHost.EndPoints.Formats;
 using ServiceStack.WebHost.Endpoints.Formats;
-using ServiceStack.WebHost.EndPoints.Utils;
+using ServiceStack.WebHost.Endpoints.Utils;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -30,6 +27,10 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
+		private static bool pluginsLoaded = false;
+
+		public static List<IPlugin> Plugins { get; set; }
+
 		static EndpointHost()
 		{
 			ContentTypeFilter = HttpResponseFilter.Instance;
@@ -37,20 +38,23 @@ namespace ServiceStack.WebHost.Endpoints
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			HtmlProviders = new List<StreamSerializerResolverDelegate>();
 			CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+			Plugins = new List<IPlugin> {
+				new HtmlFormat(),
+				new CsvFormat(),
+				new MarkdownFormat(),
+			};
 		}
-
+		
 		// Pre user config
 		public static void ConfigureHost(IAppHost appHost, string serviceName, ServiceManager serviceManager)
 		{
 			AppHost = appHost;
-			
+
 			EndpointHostConfig.Instance.ServiceName = serviceName;
 			EndpointHostConfig.Instance.ServiceManager = serviceManager;
 
-            var config = EndpointHostConfig.Instance;
-		    Config = config; // avoid cross-dependency on Config setter
-
-			ContentCacheManager.ContentTypeFilter = appHost.ContentTypeFilters;
+			var config = EndpointHostConfig.Instance;
+			Config = config; // avoid cross-dependency on Config setter
 		}
 
 		// Config has changed
@@ -65,7 +69,6 @@ namespace ServiceStack.WebHost.Endpoints
 		//After configure called
 		public static void AfterInit()
 		{
-			var specifiedContentType = config.DefaultContentType;
 
 			if (config.EnableFeatures != Feature.All)
 			{
@@ -85,25 +88,54 @@ namespace ServiceStack.WebHost.Endpoints
 					config.IgnoreFormatsInMetadata.Add("soap12");
 			}
 
-			if ((Feature.Html & config.EnableFeatures) == Feature.Html)
-				HtmlFormat.Register(AppHost);
+			if ((Feature.Html & config.EnableFeatures) != Feature.Html)
+				Plugins.RemoveAll(x => x is HtmlFormat);
 
-			if ((Feature.Csv & config.EnableFeatures) == Feature.Csv)
-				CsvFormat.Register(AppHost);
+			if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
+				Plugins.RemoveAll(x => x is CsvFormat);
 
-			if ((Feature.Markdown & config.EnableFeatures) == Feature.Markdown)
-			{
-				MarkdownFormat.Instance.MarkdownBaseType = config.MarkdownBaseType;
-				MarkdownFormat.Instance.MarkdownGlobalHelpers = config.MarkdownGlobalHelpers;
-				MarkdownFormat.Instance.Register(AppHost);
-			}
+			if ((Feature.Markdown & config.EnableFeatures) != Feature.Markdown)
+				Plugins.RemoveAll(x => x is MarkdownFormat);
 
+			if ((Feature.Razor & config.EnableFeatures) != Feature.Razor)
+				Plugins.RemoveAll(x => x is IRazorPlugin);    //external
+
+			if ((Feature.ProtoBuf & config.EnableFeatures) != Feature.ProtoBuf)
+				Plugins.RemoveAll(x => x is IProtoBufPlugin); //external
+
+			var specifiedContentType = config.DefaultContentType; //Before plugins loaded
+
+			AppHost.LoadPlugin(Plugins.ToArray());
+			pluginsLoaded = true;
+
+			AfterPluginsLoaded(specifiedContentType);
+		}
+
+		private static void AfterPluginsLoaded(string specifiedContentType)
+		{
 			if (!string.IsNullOrEmpty(specifiedContentType))
 				config.DefaultContentType = specifiedContentType;
 			else if (string.IsNullOrEmpty(config.DefaultContentType))
 				config.DefaultContentType = ContentType.Json;
 
 			config.ServiceManager.AfterInit();
+			ServiceManager = config.ServiceManager; //reset operations
+		}
+
+		public static void AddPlugin(params IPlugin[] plugins)
+		{
+			if (pluginsLoaded)
+			{
+				AppHost.LoadPlugin(plugins);
+				ServiceManager.ReloadServiceOperations();
+			}
+			else
+			{
+				foreach (var plugin in plugins)
+				{
+					Plugins.Add(plugin);
+				}
+			}
 		}
 
 		public static ServiceManager ServiceManager
@@ -158,21 +190,36 @@ namespace ServiceStack.WebHost.Endpoints
 
 			using (Profiler.Current.Step("Executing Request Filters"))
 			{
+				//Exec all RequestFilter attributes with Priority < 0
+				var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
+				var i = 0;
+				for (; i < attributes.Length && attributes[i].Priority < 0; i++)
+				{
+					var attribute = attributes[i];
+					ServiceManager.Container.AutoWire(attribute);
+					attribute.RequestFilter(httpReq, httpRes, requestDto);
+					if (AppHost != null) //tests
+						AppHost.Release(attribute);
+					if (httpRes.IsClosed) return httpRes.IsClosed;
+				}
+
+				//Exec global filters
 				foreach (var requestFilter in RequestFilters)
 				{
 					requestFilter(httpReq, httpRes, requestDto);
-					if (httpRes.IsClosed) break;
+					if (httpRes.IsClosed) return httpRes.IsClosed;
 				}
 
-                var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
-                foreach (var attribute in attributes)
-                {
-					EndpointHost.ServiceManager.Container.AutoWire(attribute);
-                    attribute.RequestFilter(httpReq, httpRes, requestDto);
-					if (EndpointHost.AppHost != null) //tests
-						EndpointHost.AppHost.Release(attribute);
-                    if (httpRes.IsClosed) break;
-                }
+				//Exec remaining RequestFilter attributes with Priority >= 0
+				for (; i < attributes.Length; i++)
+				{
+					var attribute = attributes[i];
+					ServiceManager.Container.AutoWire(attribute);
+					attribute.RequestFilter(httpReq, httpRes, requestDto);
+					if (AppHost != null) //tests
+						AppHost.Release(attribute);
+					if (httpRes.IsClosed) return httpRes.IsClosed;
+				}
 
 				return httpRes.IsClosed;
 			}
@@ -183,36 +230,51 @@ namespace ServiceStack.WebHost.Endpoints
 		/// and no more processing should be done.
 		/// </summary>
 		/// <returns></returns>
-		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object responseDto)
+		public static bool ApplyResponseFilters(IHttpRequest httpReq, IHttpResponse httpRes, object response)
 		{
 			httpReq.ThrowIfNull("httpReq");
 			httpRes.ThrowIfNull("httpRes");
 
 			using (Profiler.Current.Step("Executing Response Filters"))
 			{
-				foreach (var responseFilter in ResponseFilters)
+				var responseDto = response.ToResponseDto();
+				var attributes = responseDto != null
+					? FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType())
+					: null;
+
+				//Exec all ResponseFilter attributes with Priority < 0
+				var i = 0;
+				if (attributes != null)
 				{
-					responseFilter(httpReq, httpRes, responseDto);
-					if (httpRes.IsClosed) break;
+					for (; i < attributes.Length && attributes[i].Priority < 0; i++)
+					{
+						var attribute = attributes[i];
+						ServiceManager.Container.AutoWire(attribute);
+						attribute.ResponseFilter(httpReq, httpRes, response);
+						if (AppHost != null) //tests
+							AppHost.Release(attribute);
+						if (httpRes.IsClosed) return httpRes.IsClosed;
+					}
 				}
 
-				if (responseDto != null)
+				//Exec global filters
+				foreach (var responseFilter in ResponseFilters)
 				{
-					var httpResult = responseDto as IHttpResult;
-					if (httpResult != null)
-						responseDto = httpResult.Response;
+					responseFilter(httpReq, httpRes, response);
+					if (httpRes.IsClosed) return httpRes.IsClosed;
+				}
 
-					if (responseDto != null)
+				//Exec remaining RequestFilter attributes with Priority >= 0
+				if (attributes != null)
+				{
+					for (; i < attributes.Length; i++)
 					{
-						var attributes = FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType());
-						foreach (var attribute in attributes)
-						{
-							EndpointHost.ServiceManager.Container.AutoWire(attribute);
-							attribute.ResponseFilter(httpReq, httpRes, responseDto);
-							if (EndpointHost.AppHost != null) //tests
-								EndpointHost.AppHost.Release(attribute);
-							if (httpRes.IsClosed) break;
-						}
+						var attribute = attributes[i];
+						ServiceManager.Container.AutoWire(attribute);
+						attribute.ResponseFilter(httpReq, httpRes, response);
+						if (AppHost != null) //tests
+							AppHost.Release(attribute);
+						if (httpRes.IsClosed) return httpRes.IsClosed;
 					}
 				}
 
@@ -228,7 +290,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		internal static object ExecuteService(object request, EndpointAttributes endpointAttributes, IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-            using (Profiler.Current.Step("Execute Service"))
+			using (Profiler.Current.Step("Execute Service"))
 			{
 				return config.ServiceController.Execute(request,
 					new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));

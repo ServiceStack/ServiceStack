@@ -21,7 +21,7 @@ namespace ServiceStack.RazorEngine
 		Template = 4,
 	}
 
-	public class RazorFormat : ITemplateResolver, IActivator, IViewEngine
+	public class RazorFormat : ITemplateResolver, IActivator, IViewEngine, IPlugin, IRazorPlugin
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(RazorFormat));
 
@@ -59,7 +59,7 @@ namespace ServiceStack.RazorEngine
 			this.MarkdownReplaceTokens = new Dictionary<string, string>();
 		}
 
-		public static void Register(IAppHost appHost)
+		public void Register(IAppHost appHost)
 		{
 			Instance.Configure(appHost);
 		}

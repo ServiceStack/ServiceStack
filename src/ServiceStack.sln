@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceModel.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.Endpoints.Tests", "..\tests\ServiceStack.WebHost.Endpoints.Tests\ServiceStack.WebHost.Endpoints.Tests.csproj", "{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.IntegrationTests", "..\tests\ServiceStack.WebHost.IntegrationTests\ServiceStack.WebHost.IntegrationTests.csproj", "{801771CD-2C19-463A-94F8-DF546825DF47}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
 		..\build\build.bat = ..\build\build.bat
@@ -21,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec = ..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec
 		..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec = ..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec
 		..\NuGet\ServiceStack\servicestack.nuspec = ..\NuGet\ServiceStack\servicestack.nuspec
+		..\NuGet\ServiceStack.Plugins.ProtoBuf\servicestack.plugins.protobuf.nuspec = ..\NuGet\ServiceStack.Plugins.ProtoBuf\servicestack.plugins.protobuf.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "ServiceStack\ServiceStack.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
@@ -29,15 +32,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common", "Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Interfaces", "ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterHost", "..\tests\MasterHost\MasterHost.csproj", "{12FA52E0-E648-42B3-9F67-782011AD20C4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.ServiceInterface", "ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj", "{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RazorEngine", "ServiceStack.RazorEngine\ServiceStack.RazorEngine.csproj", "{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.FluentValidation.Mvc3", "ServiceStack.FluentValidation.Mvc3\ServiceStack.FluentValidation.Mvc3.csproj", "{672F2DFE-4EE8-498B-B449-23E9E7F6961C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.WebHost.IntegrationTests", "..\tests\ServiceStack.WebHost.IntegrationTests\ServiceStack.WebHost.IntegrationTests.csproj", "{801771CD-2C19-463A-94F8-DF546825DF47}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Plugins.ProtoBuf", "ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj", "{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,6 +77,12 @@ Global
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.MonoTouch|Any CPU.Build.0 = MonoTouch|Any CPU
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{801771CD-2C19-463A-94F8-DF546825DF47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{801771CD-2C19-463A-94F8-DF546825DF47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{801771CD-2C19-463A-94F8-DF546825DF47}.MonoTouch|Any CPU.ActiveCfg = MONOTOUCH|Any CPU
+		{801771CD-2C19-463A-94F8-DF546825DF47}.MonoTouch|Any CPU.Build.0 = MONOTOUCH|Any CPU
+		{801771CD-2C19-463A-94F8-DF546825DF47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{801771CD-2C19-463A-94F8-DF546825DF47}.Release|Any CPU.Build.0 = Release|Any CPU
 		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{680A1709-25EB-4D52-A87F-EE03FFD94BAA}.MonoTouch|Any CPU.ActiveCfg = MONOTOUCH|Any CPU
@@ -94,12 +101,6 @@ Global
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.MonoTouch|Any CPU.Build.0 = MONOTOUCH|Any CPU
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}.Release|Any CPU.Build.0 = Release|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.MonoTouch|Any CPU.ActiveCfg = MONOTOUCH|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.MonoTouch|Any CPU.Build.0 = MONOTOUCH|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12FA52E0-E648-42B3-9F67-782011AD20C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}.MonoTouch|Any CPU.ActiveCfg = MonoTouch|Any CPU
@@ -118,12 +119,12 @@ Global
 		{672F2DFE-4EE8-498B-B449-23E9E7F6961C}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
 		{672F2DFE-4EE8-498B-B449-23E9E7F6961C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{672F2DFE-4EE8-498B-B449-23E9E7F6961C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{801771CD-2C19-463A-94F8-DF546825DF47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{801771CD-2C19-463A-94F8-DF546825DF47}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{801771CD-2C19-463A-94F8-DF546825DF47}.MonoTouch|Any CPU.ActiveCfg = MONOTOUCH|Any CPU
-		{801771CD-2C19-463A-94F8-DF546825DF47}.MonoTouch|Any CPU.Build.0 = MONOTOUCH|Any CPU
-		{801771CD-2C19-463A-94F8-DF546825DF47}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{801771CD-2C19-463A-94F8-DF546825DF47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

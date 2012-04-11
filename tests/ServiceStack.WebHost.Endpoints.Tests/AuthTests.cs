@@ -84,11 +84,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			public override void Configure(Container container)
 			{
-				AuthFeature.Init(this, () => new CustomUserSession(),
+				Plugins.Add(new AuthFeature(() => new CustomUserSession(),
 					new AuthProvider[] {
 						new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
 						new BasicAuthProvider(), //Sign-in with Basic Auth
-					});
+					}));
 
 				container.Register<ICacheClient>(new MemoryCacheClient());
 				var userRep = new InMemoryAuthRepository();

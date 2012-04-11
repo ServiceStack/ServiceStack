@@ -44,6 +44,7 @@
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>Bin\Release\ServiceStack.Common.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -413,6 +414,9 @@
     <Compile Include="..\ServiceStack.Common\Web\HttpResult.cs">
       <Link>Web\HttpResult.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Common\Web\HttpResultExtensions.cs">
+      <Link>Web\HttpResultExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Common\Web\MimeTypes.cs">
       <Link>Web\MimeTypes.cs</Link>
     </Compile>
@@ -427,7 +431,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\servicestacktext\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj">
+    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text.SL5\ServiceStack.Text.SL5.csproj">
       <Project>{CC38D2CC-5E47-4218-9994-5DDEE36820FA}</Project>
       <Name>ServiceStack.Text.SL5</Name>
     </ProjectReference>
