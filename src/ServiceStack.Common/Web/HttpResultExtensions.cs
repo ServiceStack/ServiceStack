@@ -7,12 +7,12 @@ namespace ServiceStack.Common.Web
 {
 	public static class HttpResultExtensions
 	{
-		/// <summary>
-		/// Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
-		/// </summary>
-		/// <param name="response"></param>
-		/// <returns></returns>
-        public static object ToResponseDto(this object response)
+        /// <summary>
+        /// Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        public static object ToDto(this object response)
         {
             if (response == null) return null;
             var httpResult = response as IHttpResult;
@@ -20,15 +20,31 @@ namespace ServiceStack.Common.Web
         }
 
         /// <summary>
+        /// Alias of ToDto
+        /// </summary>
+        public static object ToResponseDto(this object response)
+        {
+            return ToDto(response);
+        }
+
+        /// <summary>
         /// Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
         /// </summary>
         /// <param name="response"></param>
         /// <returns>TResponse if found; otherwise null</returns>
-        public static TResponse ToResponseDto<TResponse>(this object response) where TResponse : class
+        public static TResponse ToDto<TResponse>(this object response) where TResponse : class
         {
             if (response == null) return default(TResponse);
             var httpResult = response as IHttpResult;
             return (httpResult != null ? httpResult.Response : response) as TResponse;
+        }
+
+        /// <summary>
+        /// Alias of ToDto
+        /// </summary>
+        public static TResponse ToResponseDto<TResponse>(this object response) where TResponse : class
+        {
+            return ToDto<TResponse>(response);
         }
 
         /// <summary>
