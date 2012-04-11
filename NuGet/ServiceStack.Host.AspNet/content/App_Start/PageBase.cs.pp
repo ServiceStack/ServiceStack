@@ -15,7 +15,7 @@ namespace $rootnamespace$.App_Start
 	//A customizeable typed UserSession that can be extended with your own properties
 	public class CustomUserSession : AuthUserSession
 	{
-		public string CustomPropety { get; set; }
+		public string CustomProperty { get; set; }
 	}
 
 	public class PageBase : Page

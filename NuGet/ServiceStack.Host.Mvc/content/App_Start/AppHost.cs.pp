@@ -32,7 +32,7 @@ namespace $rootnamespace$.App_Start
 	//To access ServiceStack's Session, Cache, etc from MVC Controllers inherit from ControllerBase<CustomUserSession>
 	public class CustomUserSession : AuthUserSession
 	{
-		public string CustomPropety { get; set; }
+		public string CustomProperty { get; set; }
 	}
 
 	public class AppHost
