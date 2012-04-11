@@ -154,12 +154,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				return requestMsg.Headers.Action;
 			}
 
-			if (xml.StartsWith("<"))
-			{
-				return xml.Substring(1, xml.IndexOf(" ") - 1);
-			}
-
-			return null;
+			return xml.StartsWith("<") 
+				? xml.Substring(1, xml.IndexOf(" ") - 1).SplitOnFirst(':').Last()
+				: null;
 		}
 
 		protected static string GetActionFromHttpContext()
