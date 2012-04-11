@@ -33,6 +33,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
 		public void Close()
 		{
+			IsClosed = true;
 		}
 
 		public void End()

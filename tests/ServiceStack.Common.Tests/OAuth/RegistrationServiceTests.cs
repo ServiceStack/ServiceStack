@@ -28,12 +28,14 @@ namespace ServiceStack.Common.Tests.OAuth
 			return mock.Object;
 		}
 
-		private static RegistrationService GetRegistrationService(AbstractValidator<Registration> validator=null)
+		public static RegistrationService GetRegistrationService(
+			AbstractValidator<Registration> validator = null, 
+			IUserAuthRepository authRepo=null)
 		{
 			var requestContext = new MockRequestContext();
 			var service = new RegistrationService {
 				RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = GetStubRepo() },
-				UserAuthRepo = GetStubRepo(),
+				UserAuthRepo = authRepo ?? GetStubRepo(),
 				RequestContext = requestContext
 			};
 			return service;
@@ -80,6 +82,15 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 			var service = GetRegistrationService();
 
+			var request = GetValidRegistration();
+
+			var response = service.Post(request);
+
+			Assert.That(response as RegistrationResponse, Is.Not.Null);
+		}
+
+		public static Registration GetValidRegistration(bool autoLogin=false)
+		{
 			var request = new Registration {
 				DisplayName = "DisplayName",
 				Email = "my@email.com",
@@ -87,11 +98,9 @@ namespace ServiceStack.Common.Tests.OAuth
 				LastName = "LastName",
 				Password = "Password",
 				UserName = "UserName",
+				AutoLogin = autoLogin,
 			};
-
-			var response = service.Post(request);
-
-			Assert.That(response as RegistrationResponse, Is.Not.Null);
+			return request;
 		}
 
 		[Test]
@@ -125,5 +134,7 @@ namespace ServiceStack.Common.Tests.OAuth
 			Assert.That(errors[1].ErrorCode, Is.EqualTo("AlreadyExists"));
 			Assert.That(errors[1].FieldName, Is.EqualTo("Email"));
 		}
+
+
 	}
 }
