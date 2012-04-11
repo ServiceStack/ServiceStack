@@ -185,6 +185,8 @@
     <Compile Include="Perf\ToStringPerf.cs" />
     <Compile Include="PerfTestBase.cs" />
     <Compile Include="Perf\StringParsePerf.cs" />
+    <Compile Include="ServiceClient.Web\ServiceClientBaseTester.cs" />
+    <Compile Include="ServiceClient.Web\ServiceClientBaseTests.cs" />
     <Compile Include="StreamExtensionsTests.cs" />
     <Compile Include="StringExtensionTests.cs" />
     <Compile Include="ReflectionUtilTests.cs" />
