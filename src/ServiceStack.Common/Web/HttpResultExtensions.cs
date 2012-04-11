@@ -12,14 +12,26 @@ namespace ServiceStack.Common.Web
 		/// </summary>
 		/// <param name="response"></param>
 		/// <returns></returns>
-		public static object ToResponseDto(this object response)
-		{
-			if (response == null) return null;
-			var httpResult = response as IHttpResult;
-			return httpResult != null ? httpResult.Response : response;
-		}
+        public static object ToResponseDto(this object response)
+        {
+            if (response == null) return null;
+            var httpResult = response as IHttpResult;
+            return httpResult != null ? httpResult.Response : response;
+        }
 
-		/// <summary>
+        /// <summary>
+        /// Shortcut to get the ResponseDTO whether it's bare or inside a IHttpResult
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns>TResponse if found; otherwise null</returns>
+        public static TResponse ToResponseDto<TResponse>(this object response) where TResponse : class
+        {
+            if (response == null) return default(TResponse);
+            var httpResult = response as IHttpResult;
+            return (httpResult != null ? httpResult.Response : response) as TResponse;
+        }
+
+        /// <summary>
 		/// Shortcut to get the ResponseStatus whether it's bare or inside a IHttpResult
 		/// </summary>
 		/// <param name="response"></param>
