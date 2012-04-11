@@ -4,6 +4,7 @@ using System.Net;
 using Funq;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Testing
 {
@@ -60,6 +61,11 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public void Dispose()
         {
+        }
+
+        public IAppHost CreateAppHost()
+        {
+            return new TestAppHost(this.Container);
         }
     }
 }
