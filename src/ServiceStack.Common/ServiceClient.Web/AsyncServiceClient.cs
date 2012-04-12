@@ -20,9 +20,26 @@ namespace ServiceStack.ServiceClient.Web
 		private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
 		private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
 
-		public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
+        /// <summary>
+        /// The request filter is called before any request.
+        /// This request filter is executed globally.
+        /// </summary>
+        public static Action<HttpWebRequest> HttpWebRequestFilter { get; set; }
 
-		const int BufferSize = 4096;
+        /// <summary>
+        /// The response action is called once the server response is available.
+        /// It will allow you to access raw response information. 
+        /// This response action is executed globally.
+        /// Note that you should NOT consume the response stream as this is handled by ServiceStack
+        /// </summary>
+        public static Action<HttpWebResponse> HttpWebResponseFilter { get; set; }
+
+        /// <summary>
+        /// Called before request resend, when the initial request required authentication
+        /// </summary>
+        public Action<WebRequest> OnAuthenticationRequired { get; set; }
+
+        const int BufferSize = 4096;
 
 		public ICredentials Credentials { get; set; }
 
@@ -30,7 +47,20 @@ namespace ServiceStack.ServiceClient.Web
 
 		public CookieContainer CookieContainer { get; set; }
 
-		public string BaseUri { get; set; }
+        /// <summary>
+        /// The request filter is called before any request.
+        /// This request filter only works with the instance where it was set (not global).
+        /// </summary>
+        public Action<HttpWebRequest> LocalHttpWebRequestFilter { get; set; }
+
+        /// <summary>
+        /// The response action is called once the server response is available.
+        /// It will allow you to access raw response information. 
+        /// Note that you should NOT consume the response stream as this is handled by ServiceStack
+        /// </summary>
+        public Action<HttpWebResponse> LocalHttpWebResponseFilter { get; set; }
+
+        public string BaseUri { get; set; }
 
 		internal class RequestState<TResponse> : IDisposable
 		{
@@ -257,11 +287,7 @@ namespace ServiceStack.ServiceClient.Web
 				webRequest.Credentials = this.Credentials;
 			}
 
-
-			if (HttpWebRequestFilter != null)
-			{
-				HttpWebRequestFilter(webRequest);
-			}
+            ApplyWebRequestFilters(webRequest);
 
 			if (!httpGetOrDelete && request != null)
 			{
@@ -298,7 +324,10 @@ namespace ServiceStack.ServiceClient.Web
 			try
 			{
 				var webRequest = requestState.WebRequest;
-				requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
+
+                requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
+
+                ApplyWebResponseFilters(requestState.WebResponse);
 
 				// Read the response into a Stream object.
 				var responseStream = requestState.WebResponse.GetResponseStream();
@@ -318,7 +347,12 @@ namespace ServiceStack.ServiceClient.Web
 
 						requestState.WebRequest.AddBasicAuth(this.UserName, this.Password);
 
-						SendWebRequestAsync(
+                        if (OnAuthenticationRequired != null)
+                        {
+                            OnAuthenticationRequired(requestState.WebRequest);
+                        }
+
+                        SendWebRequestAsync(
 							requestState.HttpMethod, requestState.Request,
 							requestState, requestState.WebRequest);
 					}
@@ -449,6 +483,24 @@ namespace ServiceStack.ServiceClient.Web
 			Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
 			requestState.HandleError(default(TResponse), exception);
 		}
+        private void ApplyWebResponseFilters(WebResponse webResponse)
+        {
+            if (!(webResponse is HttpWebResponse)) return;
+
+            if (HttpWebResponseFilter != null)
+                HttpWebResponseFilter((HttpWebResponse)webResponse);
+            if (LocalHttpWebResponseFilter != null)
+                LocalHttpWebResponseFilter((HttpWebResponse)webResponse);
+        }
+
+        private void ApplyWebRequestFilters(HttpWebRequest client)
+        {
+            if (LocalHttpWebRequestFilter != null)
+                LocalHttpWebRequestFilter(client);
+
+            if (HttpWebRequestFilter != null)
+                HttpWebRequestFilter(client);
+        }
 
 		public void Dispose() { }
 	}
