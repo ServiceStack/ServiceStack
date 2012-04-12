@@ -55,4 +55,5 @@
  - [justinpihony](https://github.com/JustinPihony) (Justin Pihony) 
  - [bokmadsen](https://github.com/bokmadsen) (Bo Kingo Damgaard)
  - [dragan](https://github.com/dragan) (Dale Ragan)
+ - [sneal](https://github.com/sneal) (Shawn Neal)
 
