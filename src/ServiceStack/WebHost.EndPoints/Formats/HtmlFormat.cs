@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -39,7 +40,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			if (requestContext.ResponseContentType != ContentType.Html
 				&& httpReq.ResponseContentType != ContentType.JsonReport) return;
 
-			var json = JsonSerializer.SerializeToString(dto);
+			// Serialize then escape any potential script tags to avoid XSS when displaying as HTML
+			var json = JsonSerializer.SerializeToString(dto).Replace("<", "&lt;").Replace(">", "&gt;");
 
 			var url = httpReq.AbsoluteUri
 				.Replace("format=html", "")

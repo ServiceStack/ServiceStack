@@ -3,7 +3,6 @@
 <head>
 <title>${Title}</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<script id="dto" type="text/json">${Dto}</script>
 <style type="text/css">
 BODY, H1, H2, H3, H4, H5, H6, DL, DT, DD {
   margin: 0;
@@ -318,13 +317,12 @@ function makeRows(h,m) {
   return sb;
 }
 
-var json = $('dto').innerHTML,
-    model = JSON.parse(json), 
+var model = ${Dto},
     txt = $$('TEXTAREA')[0],
     isIE = /msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent);
 
 $("content").innerHTML = val(model);  
-txt.innerHTML=enc(json); 
+txt.innerHTML=JSON.stringify(model);
 
 function showJson(){ doc.body.className='show-json'; txt.select(); txt.focus(); }
 
@@ -365,11 +363,6 @@ function cmp(v1, v2){
   if (typeof v1 == 'string' && v1.substr(0,6) == '/Date(') v1=date(v1), v2=date(v2);
   if (v1 == v2) return 0;
   return v1 > v2 ? 1 : -1;
-}
-
-function enc(html) {
-  if (typeof html != 'string') return html;
-  return html.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ]]>
