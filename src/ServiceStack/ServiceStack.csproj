@@ -313,6 +313,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
+    <EmbeddedResource Include="WebHost.Endpoints\Formats\HtmlFormat.html" />
     <None Include="MiniProfiler\UI\jquery.tmpl.beta1.js.orig" />
     <None Include="MiniProfiler\UI\jquery.1.6.2.js.orig" />
     <EmbeddedResource Include="MiniProfiler\UI\includes.css" />
