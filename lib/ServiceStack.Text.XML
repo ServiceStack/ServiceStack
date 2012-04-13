@@ -266,6 +266,11 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:ServiceStack.Text.WP.HashSet`1">
+            <summary>
+             A hashset implementation that uses an IDictionary
+            </summary>
+        </member>
         <member name="M:ServiceStack.Text.Json.JsonTypeSerializer.WriteRawString(System.IO.TextWriter,System.String)">
             <summary>
             Shortcut escape when we're sure value doesn't contain any escaped chars
@@ -439,6 +444,13 @@
             Parses the specified value.
             </summary>
             <param name="value">The value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Text.Common.DateTimeSerializer.ParseWcfJsonDateOffset(System.String)">
+            <summary>
+            WCF Json format: /Date(unixts+0000)/
+            </summary>
+            <param name="wcfJsonDate"></param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.Text.Common.DateTimeSerializer.ParseWcfJsonDate(System.String)">
