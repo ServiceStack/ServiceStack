@@ -587,40 +587,40 @@ namespace ServiceStack.ServiceClient.Web
 		}
 #endif
 
-        public void SendOneWay(object request)
+        public virtual void SendOneWay(object request)
         {
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + request.GetType().Name;
             DownloadBytes(requestUri, request);
         }
 
-        public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+        public virtual void SendOneWay(string relativeOrAbsoluteUrl, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             DownloadBytes(requestUri, request);
         }
 
-        public void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
             asyncClient.SendAsync(Web.HttpMethod.Post, requestUri, request, onSuccess, onError);
         }
 
-        public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(Web.HttpMethod.Get, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
         }
 
-        public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(Web.HttpMethod.Delete, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
         }
 
-        public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(Web.HttpMethod.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
 
-        public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        public virtual void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(Web.HttpMethod.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
@@ -654,27 +654,27 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
-        public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+        public virtual TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
         {
             return Send<TResponse>(Web.HttpMethod.Get, relativeOrAbsoluteUrl, null);
         }
 
-        public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
+        public virtual TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
         {
             return Send<TResponse>(Web.HttpMethod.Delete, relativeOrAbsoluteUrl, null);
         }
 
-        public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
+        public virtual TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return Send<TResponse>(Web.HttpMethod.Post, relativeOrAbsoluteUrl, request);
         }
 
-        public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
+        public virtual TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return Send<TResponse>(Web.HttpMethod.Put, relativeOrAbsoluteUrl, request);
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+        public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
@@ -701,7 +701,7 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
-        public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
+        public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
             var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
