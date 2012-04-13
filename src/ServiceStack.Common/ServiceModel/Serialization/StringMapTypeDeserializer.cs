@@ -51,10 +51,7 @@ namespace ServiceStack.ServiceModel.Serialization
                 {
                     propertySetterMap[attr.Name] = propertySerializer;                    
                 }
-                else
-                {
-                    propertySetterMap[propertyInfo.Name] = propertySerializer;
-                }
+				propertySetterMap[propertyInfo.Name] = propertySerializer;
 			}
 		}
 
