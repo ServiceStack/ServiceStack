@@ -41,7 +41,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 				&& httpReq.ResponseContentType != ContentType.JsonReport) return;
 
 			// Serialize then escape any potential script tags to avoid XSS when displaying as HTML
-			var json = JsonSerializer.SerializeToString(dto).Replace("<", "&lt;").Replace(">", "&gt;");
+			var json = JsonSerializer.SerializeToString(dto) ?? "null";
+			json = json.Replace("<", "&lt;").Replace(">", "&gt;");
 
 			var url = httpReq.AbsoluteUri
 				.Replace("format=html", "")
