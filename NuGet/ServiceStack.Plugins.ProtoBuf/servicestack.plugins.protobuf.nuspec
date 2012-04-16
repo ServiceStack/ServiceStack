@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Plugins.ProtoBuf</id> 
-    <version>3.5.8</version> 
+    <version>3.6.9</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>ProtoBuf Format Serializer ContentType ServiceClients for ServiceStack web services</summary>
