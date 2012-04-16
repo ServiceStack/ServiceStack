@@ -69,7 +69,7 @@ namespace ServiceStack.WebHost.Endpoints
 					return;
 				}
 
-                if(doJsonp)
+				if (doJsonp && !(response is CompressedResult))
                     httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
                 else
                     httpRes.WriteToResponse(httpReq, response);

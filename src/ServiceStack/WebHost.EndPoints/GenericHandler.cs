@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var response = GetResponse(httpReq, httpRes, request);
 				if (EndpointHost.ApplyResponseFilters(httpReq, httpRes, response)) return;
 
-				if (doJsonp)
+				if (doJsonp && !(response is CompressedResult))
 					httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
 				else
 					httpRes.WriteToResponse(httpReq, response);

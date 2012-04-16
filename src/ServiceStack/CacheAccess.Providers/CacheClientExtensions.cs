@@ -24,7 +24,7 @@ namespace ServiceStack.CacheAccess.Providers
 			IRequestContext context)
 		{
 			string modifiers = null;
-			if (context.ContentType == ContentType.Json)
+			if (context.ResponseContentType == ContentType.Json)
 			{
 				string jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
 				if (jsonp != null)
@@ -70,7 +70,7 @@ namespace ServiceStack.CacheAccess.Providers
 			string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(context, responseDto);
 
 			string jsonp = null, modifiers = null;
-			if (context.ContentType == ContentType.Json)
+			if (context.ResponseContentType == ContentType.Json)
 			{
 				jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
 				if (jsonp != null)
