@@ -21,6 +21,8 @@ namespace ServiceStack.Redis
 		//Redis utility operations
 		Dictionary<string, string> Info { get; }
 		int Db { get; set; }
+		int DbSize { get; }
+		DateTime LastSave { get; }
 		void Save();
 		void BgSave();
 		void Shutdown();
@@ -32,26 +34,58 @@ namespace ServiceStack.Redis
 		string Echo(string text);
 		void SlaveOf(string hostname, int port);
 		void SlaveOfNoOne();
+		byte[][] ConfigGet(string pattern);
+		void ConfigSet(string item, byte[] value);
+		void ConfigResetStat();
+		byte[][] Time();
+		void DebugSegfault();
+		byte[] Dump(string key);
+		byte[] Restore(string key, long expireMs, byte[] dumpValue);
+		void Migrate(string host, int port, int destinationDb, long timeoutMs);
+		bool Move(string key, int db);
+		int ObjectIdleTime(string key);
 
 		//Common key-value Redis operations
+		byte[][] Keys(string pattern);
+		int Exists(string key);
+		int StrLen(string key);
 		void Set(string key, byte[] value);
 		void SetEx(string key, int expireInSeconds, byte[] value);
+		bool Persist(string key);
+		void PSetEx(string key, long expireInMs, byte[] value);
 		int SetNX(string key, byte[] value);
+		void MSet(byte[][] keys, byte[][] values);
+		void MSet(string[] keys, byte[][] values);
+		bool MSetNx(byte[][] keys, byte[][] values);
+		bool MSetNx(string[] keys, byte[][] values);
 		byte[] Get(string key);
 		byte[] GetSet(string key, byte[] value);
+		byte[][] MGet(params byte[][] keys);
+		byte[][] MGet(params string[] keys);
 		int Del(string key);
+		int Del(params string[] keys);
 		long Incr(string key);
-		long IncrBy(string key, int count);
+		long IncrBy(string key, int incrBy);
+		double IncrByFloat(string key, double incrBy);
 		long Decr(string key);
-		long DecrBy(string key, int count);
+		long DecrBy(string key, int decrBy);
 		int Append(string key, byte[] value);
+		[Obsolete("Was renamed to GetRange in 2.4")]
 		byte[] Substr(string key, int fromIndex, int toIndex);
-
+		byte[] GetRange(string key, int fromIndex, int toIndex);
+		int SetRange(string key, int offset, byte[] value);
+		int GetBit(string key, int offset);
+		int SetBit(string key, int offset, int value);
+		
 		string RandomKey();
 		void Rename(string oldKeyname, string newKeyname);
-		int Expire(string key, int seconds);
-		int ExpireAt(string key, long unixTime);
+		bool RenameNx(string oldKeyname, string newKeyname);
+		bool Expire(string key, int seconds);
+		bool PExpire(string key, long ttlMs);
+		bool ExpireAt(string key, long unixTime);
+		bool PExpireAt(string key, long unixTimeMs);
 		int Ttl(string key);
+		long PTtl(string key);
 
 		//Redis Sort operation (works on lists, sets or hashes)
 		byte[][] Sort(string listOrSetId, SortOptions sortOptions);
@@ -59,7 +93,9 @@ namespace ServiceStack.Redis
 		//Redis List operations
 		byte[][] LRange(string listId, int startingFrom, int endingAt);
 		int RPush(string listId, byte[] value);
+		int RPushX(string listId, byte[] value);
 		int LPush(string listId, byte[] value);
+		int LPushX(string listId, byte[] value);
 		void LTrim(string listId, int keepStartingFrom, int keepEndingAt);
 		int LRem(string listId, int removeNoOfMatches, byte[] value);
 		int LLen(string listId);
@@ -68,8 +104,10 @@ namespace ServiceStack.Redis
 		byte[] LPop(string listId);
 		byte[] RPop(string listId);
 		byte[][] BLPop(string listId, int timeOutSecs);
+		byte[] BLPopValue(string listId, int timeOutSecs);
 		byte[][] BRPop(string listId, int timeOutSecs);
 		byte[] RPopLPush(string fromListId, string toListId);
+		byte[] BRPopValue(string listId, int timeOutSecs);
 
 
 		//Redis Set operations
@@ -119,10 +157,12 @@ namespace ServiceStack.Redis
 
 		//Redis Hash operations
 		int HSet(string hashId, byte[] key, byte[] value);
-		int HSetNX(string hashId, byte[] key, byte[] value);
 		void HMSet(string hashId, byte[][] keys, byte[][] values);
+		int HSetNX(string hashId, byte[] key, byte[] value);
 		int HIncrby(string hashId, byte[] key, int incrementBy);
+		double HIncrbyFloat(string hashId, byte[] key, double incrementBy);
 		byte[] HGet(string hashId, byte[] key);
+		byte[][] HMGet(string hashId, params byte[][] keys);
 		int HDel(string hashId, byte[] key);
 		int HExists(string hashId, byte[] key);
 		int HLen(string hashId);
@@ -131,11 +171,21 @@ namespace ServiceStack.Redis
 		byte[][] HGetAll(string hashId);
 
 		//Redis Pub/Sub operations
+		void Watch(params string[] keys);
+		void UnWatch();
 		int Publish(string toChannel, byte[] message);
 		byte[][] Subscribe(params string[] toChannels);
 		byte[][] UnSubscribe(params string[] toChannels);
 		byte[][] PSubscribe(params string[] toChannelsMatchingPatterns);
 		byte[][] PUnSubscribe(params string[] toChannelsMatchingPatterns);
 		byte[][] ReceiveMessages();
+
+		int EvalInt(string body, int numberKeysInArgs, params byte[][] keys);
+		string EvalStr(string body, int numberKeysInArgs, params byte[][] keys);
+		byte[][] Eval(string body, int numberKeysInArgs, params byte[][] keys);
+		byte[][] ScriptExists(params byte[][] sha1Refs);
+		void ScriptFlush();
+		void ScriptKill();
+		byte[] ScriptLoad(string body);
 	}
 }

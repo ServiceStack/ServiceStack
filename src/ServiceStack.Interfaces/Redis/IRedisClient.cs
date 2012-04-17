@@ -81,9 +81,18 @@ namespace ServiceStack.Redis
 		//Store entities without registering entity ids
 		void WriteAll<TEntity>(IEnumerable<TEntity> entities);
 
-		//Useful high-level abstractions
+		/// <summary>
+		/// Returns a high-level typed client API
+		/// Shorter Alias is As&lt;T&gt;();
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
 		IRedisTypedClient<T> GetTypedClient<T>();
-		IRedisTypedClient<T> As<T>(); //Alias for GetTypedClient<T>();
+
+		/// <summary>
+		/// Returns a high-level typed client API
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		IRedisTypedClient<T> As<T>(); 
 
 		IHasNamed<IRedisList> Lists { get; set; }
 		IHasNamed<IRedisSet> Sets { get; set; }
@@ -98,6 +107,8 @@ namespace ServiceStack.Redis
 
 		#region Redis pubsub
 
+		void Watch(params string[] keys);
+		void UnWatch();
 		IRedisSubscription CreateSubscription();
 		int PublishMessage(string toChannel, string message);
 
@@ -230,6 +241,15 @@ namespace ServiceStack.Redis
 		List<string> GetHashKeys(string hashId);
 		List<string> GetHashValues(string hashId);
 		Dictionary<string, string> GetAllEntriesFromHash(string hashId);
+
+		#endregion
+
+
+		#region Eval/Lua operations
+
+		string GetEvalStr(string body, int numOfArgs, params string[] args);
+		int GetEvalInt(string body, int numOfArgs, params string[] args);
+		List<string> GetEvalMultiData(string body, int numOfArgs, params string[] args);
 
 		#endregion
 
