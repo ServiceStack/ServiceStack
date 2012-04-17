@@ -32,6 +32,13 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string UserName { get; set; }
 		public string Password { get; set; }
 		public bool? RememberMe { get; set; }
+        // Thise are used for digest auth
+        public string nonce { get; set; }
+        public string uri { get; set; }
+        public string response { get; set; }
+        public string qop { get; set; }
+        public string nc { get; set; }
+        public string cnonce { get; set; }
 	}
 
 	public class AuthResponse
@@ -55,6 +62,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public const string BasicProvider = "basic";
 		public const string CredentialsProvider = "credentials";
 		public const string LogoutAction = "logout";
+        public const string DigestProvider = "digest";
 
 		public static Func<IAuthSession> CurrentSessionFactory { get; set; }
 		public static ValidateFn ValidateFn { get; set; }

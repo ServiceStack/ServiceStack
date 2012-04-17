@@ -20,6 +20,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		List<string> Roles { get; set; }
         List<string> Permissions { get; set; }
 		bool IsAuthenticated { get; set; }
+        //Used for digest authentication replay protection
+        string Sequence { get; set; }
 
 		bool HasRole(string role);
 		bool HasPermission(string permission);
