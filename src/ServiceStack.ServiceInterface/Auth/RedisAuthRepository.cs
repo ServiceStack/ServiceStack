@@ -99,7 +99,9 @@ namespace ServiceStack.ServiceInterface.Auth
 				newUser.Id = redis.As<UserAuth>().GetNextSequence();
 				newUser.PasswordHash = hash;
 				newUser.Salt = salt;
-				newUser.CreatedDate = DateTime.UtcNow;
+                var digestHelper = new DigestAuthFunctions();
+                newUser.DigestHA1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                newUser.CreatedDate = DateTime.UtcNow;
 				newUser.ModifiedDate = newUser.CreatedDate;
 
 				var userId = newUser.Id.ToString(CultureInfo.InvariantCulture);
@@ -138,6 +140,13 @@ namespace ServiceStack.ServiceInterface.Auth
 					var saltedHash = new SaltedHash();
 					saltedHash.GetHashAndSaltString(password, out hash, out salt);
 				}
+                // If either one changes the digest hash has to be recalculated
+                var digestHash = existingUser.DigestHA1Hash;
+                if (password != null || existingUser.UserName != newUser.UserName)
+                {
+                    var digestHelper = new DigestAuthFunctions();
+                    digestHash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                }
 
 				newUser.Id = existingUser.Id;
 				newUser.PasswordHash = hash;
@@ -190,6 +199,20 @@ namespace ServiceStack.ServiceInterface.Auth
 			userAuth = null;
 			return false;
 		}
+
+        public bool TryAuthenticate (Dictionary<string, string> digestHeaders, string PrivateKey, int NonceTimeOut, string sequence, out UserAuth userAuth)
+        {
+            userAuth = GetUserAuthByUserName(digestHeaders["username"]);
+            if (userAuth == null) return false;
+
+            var digestHelper = new DigestAuthFunctions();
+            if (digestHelper.ValidateResponse(digestHeaders, PrivateKey, NonceTimeOut, userAuth.DigestHA1Hash,sequence))
+            {
+                return true;
+            }
+            userAuth = null;
+            return false;
+        }
 
 		public virtual void LoadUserAuth(IAuthSession session, IOAuthTokens tokens)
 		{
@@ -347,6 +370,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		{
 			this.factory.Clear();
 		}
-	}
+
+
+    }
 
 }

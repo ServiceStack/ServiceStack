@@ -27,7 +27,35 @@ namespace ServiceStack.ServiceHost
 			var parts = userPass.SplitOnFirst(':');
 			return new KeyValuePair<string, string>(parts[0], parts[1]);
 		}
-
+        public static Dictionary<string,string> GetDigestAuth(this IHttpRequest httpReq)
+        {
+            var auth = httpReq.Headers[HttpHeaders.Authorization];
+            if (auth == null) return null;
+            var parts = auth.Split(' ');
+            // There should be at least to parts
+            if (parts.Length < 2) return null;
+            // It has to be a digest request
+            if (parts[0].ToLower() != "digest") return null;
+            // Remove uptil the first space
+            auth = auth.Substring(auth.IndexOf(' '));
+            parts = auth.Split(',');
+            try 
+	        {	        
+                var result = new Dictionary<string, string>();
+                foreach (var item in parts)
+                {
+                    var param = item.Trim().Split(new char[] {'='},2);
+                    result.Add(param[0],param[1].Trim(new char[] {'"'}));
+                }
+                result.Add("method", httpReq.HttpMethod);
+                result.Add("userhostaddress", httpReq.UserHostAddress);
+                return result;
+	        }
+	        catch (Exception)
+	        {
+	        }
+            return null;
+        }
 		public static string GetCookieValue(this IHttpRequest httpReq, string cookieName)
 		{
 			Cookie cookie;

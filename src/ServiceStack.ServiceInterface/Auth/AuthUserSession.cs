@@ -53,6 +53,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 		public virtual bool IsAuthenticated { get; set; }
 
+        public virtual string Sequence { get; set; }
+
 		public virtual bool IsAuthorized(string provider)
 		{
 			var tokens = ProviderOAuthAccess.FirstOrDefault(x => x.Provider == provider);

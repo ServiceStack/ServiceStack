@@ -64,10 +64,14 @@ namespace ServiceStack.ServiceHost
 
 		public static void ReturnAuthRequired(this IHttpResponse httpRes, string authRealm)
 		{
-			httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-			httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "Basic realm=\"" + authRealm + "\"");
-			httpRes.Close();
+            httpRes.ReturnAuthRequired(AuthenticationHeaderType.Basic, authRealm);
 		}
+        public static void ReturnAuthRequired(this IHttpResponse httpRes, AuthenticationHeaderType AuthType, string authRealm)
+        {
+            httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, string.Format("{0} realm=\"{1}\"",AuthType.ToString(),authRealm));
+            httpRes.Close();
+        }
 
 		/// <summary>
 		/// Sets a persistent cookie which never expires
@@ -150,4 +154,9 @@ namespace ServiceStack.ServiceHost
 			httpRes.AddHeader(HttpHeaders.LastModified, lastWt.ToString("r"));
 		}
 	}
+    public enum AuthenticationHeaderType
+    {
+        Basic,
+        Digest
+    }
 }
