@@ -8,7 +8,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		UserAuth UpdateUserAuth(UserAuth existingUser, UserAuth newUser, string password);
 		UserAuth GetUserAuthByUserName(string userNameOrEmail);
 		bool TryAuthenticate(string userName, string password, out UserAuth userAuth);
-		void LoadUserAuth(IAuthSession session, IOAuthTokens tokens);
+        bool TryAuthenticate(Dictionary<string, string> digestHeaders, string PrivateKey, int NonceTimeOut, string sequence, out UserAuth userAuth);
+        void LoadUserAuth(IAuthSession session, IOAuthTokens tokens);
 		UserAuth GetUserAuth(string userAuthId);
 		void SaveUserAuth(IAuthSession authSession);
 		void SaveUserAuth(UserAuth userAuth);

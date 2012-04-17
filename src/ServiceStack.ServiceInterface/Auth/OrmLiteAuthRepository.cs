@@ -64,7 +64,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				string salt;
 				string hash;
 				saltedHash.GetHashAndSaltString(password, out hash, out salt);
-
+                var digestHelper = new DigestAuthFunctions();
+                newUser.DigestHA1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
 				newUser.PasswordHash = hash;
 				newUser.Salt = salt;
 				newUser.CreatedDate = DateTime.UtcNow;
@@ -104,15 +105,22 @@ namespace ServiceStack.ServiceInterface.Auth
 
 				var hash = existingUser.PasswordHash;
 				var salt = existingUser.Salt;
-				if (password != null)
+                if (password != null)
 				{
 					var saltedHash = new SaltedHash();
 					saltedHash.GetHashAndSaltString(password, out hash, out salt);
 				}
-
+                // If either one changes the digest hash has to be recalculated
+                var digestHash = existingUser.DigestHA1Hash;
+                if (password != null || existingUser.UserName != newUser.UserName)
+                {
+                    var digestHelper = new DigestAuthFunctions();
+                    digestHash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                }
 				newUser.Id = existingUser.Id;
 				newUser.PasswordHash = hash;
 				newUser.Salt = salt;
+                newUser.DigestHA1Hash = digestHash;
 				newUser.CreatedDate = existingUser.CreatedDate;
 				newUser.ModifiedDate = DateTime.UtcNow;
 
@@ -153,6 +161,21 @@ namespace ServiceStack.ServiceInterface.Auth
 			userAuth = null;
 			return false;
 		}
+        public bool TryAuthenticate(Dictionary<string,string> digestHeaders, string PrivateKey, int NonceTimeOut, string sequence, out UserAuth userAuth)
+        {
+            //userId = null;
+            userAuth = GetUserAuthByUserName(digestHeaders["username"]);
+            if (userAuth == null) return false;
+
+            var digestHelper = new DigestAuthFunctions();
+            if (digestHelper.ValidateResponse(digestHeaders,PrivateKey,NonceTimeOut,userAuth.DigestHA1Hash,sequence))
+            {
+                //userId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+                return true;
+            }
+            userAuth = null;
+            return false;
+        }
 
 		public void LoadUserAuth(IAuthSession session, IOAuthTokens tokens)
 		{

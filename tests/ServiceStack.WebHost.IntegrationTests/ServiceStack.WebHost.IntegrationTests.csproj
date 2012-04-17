@@ -170,6 +170,7 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\HelloImage.cs" />
+    <Compile Include="Tests\DigestAuthTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
     <Compile Include="Services\ContentManagerOnly.cs" />
     <Compile Include="Services\ThrowsArgumentNullService.cs" />

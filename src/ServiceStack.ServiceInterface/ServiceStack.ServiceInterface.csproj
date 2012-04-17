@@ -110,6 +110,8 @@
     <Compile Include="Auth\AuthService.cs" />
     <Compile Include="Auth\BasicAuthProvider.cs" />
     <Compile Include="Auth\CredentialsAuthProvider.cs" />
+    <Compile Include="Auth\DigestAuthProvider.cs" />
+    <Compile Include="Auth\DigestAuthFunctions.cs" />
     <Compile Include="Auth\FacebookAuthProvider.cs" />
     <Compile Include="Auth\IAuthProvider.cs" />
     <Compile Include="Auth\InMemoryAuthRepository.cs" />
