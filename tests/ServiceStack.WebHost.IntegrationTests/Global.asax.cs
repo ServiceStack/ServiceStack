@@ -123,6 +123,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 						new CredentialsAuthProvider(appSettings), 
 						new FacebookAuthProvider(appSettings), 
 						new TwitterAuthProvider(appSettings), 
+                        new DigestAuthProvider(appSettings),
 						new BasicAuthProvider(appSettings), 
 					}));
 

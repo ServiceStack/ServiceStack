@@ -58,6 +58,7 @@ namespace ServiceStack.ServiceInterface
 				return;
 			}
 
+            AuthenticateIfDigestAuth(req, res);
 			AuthenticateIfBasicAuth(req, res);
 
 			using (var cache = req.GetCacheClient())
@@ -90,5 +91,28 @@ namespace ServiceStack.ServiceInterface
 				});
 			}
 		}
-	}
+        public static void AuthenticateIfDigestAuth(IHttpRequest req, IHttpResponse res)
+        {
+            //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
+            SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
+
+            var digestAuth = req.GetDigestAuth();
+            if (digestAuth != null)
+            {
+                var authService = req.TryResolve<AuthService>();
+                authService.RequestContext = new HttpRequestContext(req, res, null);
+                var response = authService.Post(new Auth.Auth
+                {
+                    provider = DigestAuthProvider.Name,
+                    nonce = digestAuth["nonce"],
+                    uri = digestAuth["uri"],
+                    response = digestAuth["response"],
+                    qop = digestAuth["qop"],
+                    nc = digestAuth["nc"],
+                    cnonce = digestAuth["cnonce"],
+                    UserName = digestAuth["username"]
+                });
+            }
+        }
+    }
 }
