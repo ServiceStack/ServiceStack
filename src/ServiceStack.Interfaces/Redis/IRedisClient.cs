@@ -30,6 +30,7 @@ namespace ServiceStack.Redis
 		DateTime LastSave { get; }
 		string Host { get; }
 		int Port { get; }
+        int ConnectTimeout { get; set; }
 		int RetryTimeout { get; set; }
 		int RetryCount { get; set; }
 		int SendTimeout { get; set; }
