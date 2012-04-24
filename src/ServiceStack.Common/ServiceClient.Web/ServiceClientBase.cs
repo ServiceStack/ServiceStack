@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Web;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
@@ -672,6 +673,69 @@ namespace ServiceStack.ServiceClient.Web
         public virtual TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return Send<TResponse>(Web.HttpMethod.Put, relativeOrAbsoluteUrl, request);
+        }
+
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
+        {
+            return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileToUpload.OpenRead(), fileToUpload.Name, request);
+        }
+
+        public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+        {
+            var requestUri = GetUrl(relativeOrAbsoluteUrl);
+            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            webRequest.Method = Web.HttpMethod.Post;
+            webRequest.Accept = ContentType;
+            if (Proxy != null) webRequest.Proxy = Proxy;
+
+            try
+            {
+                ApplyWebRequestFilters(webRequest);
+
+                var queryString = QueryStringSerializer.SerializeToString(request);
+                var nameValueCollection = HttpUtility.ParseQueryString(queryString);
+                var boundary = DateTime.Now.Ticks.ToString();
+                webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
+                boundary = "--" + boundary;
+                var memoryStream = new MemoryStream();
+                fileToUpload.CopyTo(memoryStream);
+                var byteArray = memoryStream.ToArray();
+                var postData = new MemoryStream();
+                var newLine = Environment.NewLine;
+                var sw = new StreamWriter(postData);
+                foreach (var key in nameValueCollection.AllKeys)
+                {
+                    sw.Write(boundary + newLine);
+                    sw.Write("Content-Disposition: form-data;name=\"{0}\"{1}{2}".FormatWith(key, newLine, newLine));
+                    sw.Write(nameValueCollection[key] + newLine);
+                    sw.Flush();
+                }
+                sw.Write(boundary + newLine);
+                sw.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}", "upload", fileName, newLine, newLine);
+                sw.Flush();
+                postData.Write(byteArray, 0, byteArray.Length);
+                sw.Write(newLine);
+                sw.Write("{0}--", boundary);
+                sw.Flush();
+                webRequest.ContentLength = postData.Length;
+                using (var requestStream = webRequest.GetRequestStream())
+                {
+                    postData.WriteTo(requestStream);
+                }
+                postData.Close();
+                var webResponse = webRequest.GetResponse();
+                ApplyWebResponseFilters(webResponse);
+                using (var responseStream = webResponse.GetResponseStream())
+                {
+                    var response = DeserializeFromStream<TResponse>(responseStream);
+                    return response;
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleResponseException<TResponse>(ex, requestUri);
+                throw;
+            }
         }
 
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
