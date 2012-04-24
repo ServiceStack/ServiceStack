@@ -17,6 +17,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 	{
 		[DataMember]
 		public string RelativePath { get; set; }
+
+        [DataMember]
+        public string CustomerName { get; set; }
+
+        [DataMember]
+        public int CustomerId { get; set; }
 	}
 
 	[DataContract]
@@ -36,6 +42,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
 		[DataMember]
 		public ResponseStatus ResponseStatus { get; set; }
+
+        [DataMember]
+        public string CustomerName { get; set; }
+
+        [DataMember]
+        public int CustomerId { get; set; }
 	}
 
 	public class FileUploadService
@@ -69,6 +81,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 				ContentLength = file.ContentLength,
 				ContentType = file.ContentType,
 				Contents = new StreamReader(file.InputStream).ReadToEnd(),
+                CustomerId = request.CustomerId,
+                CustomerName = request.CustomerName
 			};
 		}
 	}

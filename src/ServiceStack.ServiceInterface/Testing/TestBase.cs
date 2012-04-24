@@ -255,6 +255,15 @@ namespace ServiceStack.ServiceInterface.Testing
 			}
 
 			public void Dispose() { }
+            public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
+		    {
+		        throw new NotImplementedException();
+		    }
+
+            public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
+		    {
+		        throw new NotImplementedException();
+		    }
 		}
 
 		public object ExecutePath(string pathInfo)
