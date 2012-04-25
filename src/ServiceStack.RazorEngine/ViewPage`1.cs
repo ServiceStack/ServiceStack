@@ -6,7 +6,7 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.RazorEngine
 {
-	public abstract class RazorPageBase<TModel> : TemplateBase<TModel>, IRazorTemplate
+	public abstract class ViewPage<TModel> : TemplateBase<TModel>, IRazorTemplate
 	{
 		public UrlHelper Url = new UrlHelper();
 		public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
@@ -30,7 +30,7 @@ namespace ServiceStack.RazorEngine
 			Builder.Insert(0, contents);
 		}
 
-		protected RazorPageBase()
+		protected ViewPage()
 		{
 			this.ScopeArgs = new Dictionary<string, object>();
 		}

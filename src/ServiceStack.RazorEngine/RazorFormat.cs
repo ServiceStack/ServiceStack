@@ -33,25 +33,25 @@ namespace ServiceStack.RazorEngine
 		public static string TemplatePlaceHolder = "@RenderBody()";
 
 		// ~/View - Dynamic Pages
-		public Dictionary<string, RazorPage> ViewPages = new Dictionary<string, RazorPage>(
+		public Dictionary<string, ViewPage> ViewPages = new Dictionary<string, ViewPage>(
 			StringComparer.CurrentCultureIgnoreCase);
 
 		// ~/View/Shared - Dynamic Shared Pages
-		public Dictionary<string, RazorPage> ViewSharedPages = new Dictionary<string, RazorPage>(
+		public Dictionary<string, ViewPage> ViewSharedPages = new Dictionary<string, ViewPage>(
 			StringComparer.CurrentCultureIgnoreCase);
 
 		//Content Pages outside of ~/View
-		public Dictionary<string, RazorPage> ContentPages = new Dictionary<string, RazorPage>(
+		public Dictionary<string, ViewPage> ContentPages = new Dictionary<string, ViewPage>(
 			StringComparer.CurrentCultureIgnoreCase);
 
-		public Dictionary<string, RazorPage> PageTemplates = new Dictionary<string, RazorPage>(
+		public Dictionary<string, ViewPage> PageTemplates = new Dictionary<string, ViewPage>(
 			StringComparer.CurrentCultureIgnoreCase);
 
 		public IAppHost AppHost { get; set; }
 
 		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
 
-		public Func<string, IEnumerable<RazorPage>> FindRazorPagesFn { get; set; }
+		public Func<string, IEnumerable<ViewPage>> FindRazorPagesFn { get; set; }
 
 		public RazorFormat()
 		{
@@ -80,7 +80,7 @@ namespace ServiceStack.RazorEngine
 			appHost.HtmlProviders.Add((requestContext, dto, httpRes) => {
 
 				var httpReq = requestContext.Get<IHttpRequest>();
-				RazorPage razorPage;
+				ViewPage razorPage;
 				if ((razorPage = GetViewPageByResponse(dto, httpReq)) == null)
 					return false;
 
@@ -90,7 +90,7 @@ namespace ServiceStack.RazorEngine
 			});
 
 			appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
-				RazorPage razorPage;
+				ViewPage razorPage;
 				if (filePath == null || (razorPage = GetContentPage(filePath.WithoutExtension())) == null) return null;
 				return new RazorHandler {
 					RazorFormat = this,
@@ -118,7 +118,7 @@ namespace ServiceStack.RazorEngine
 			}
 			else
 			{
-				Razor.SetTemplateBase(typeof(RazorPageBase<>));
+				Razor.SetTemplateBase(typeof(ViewPage<>));
 			}
 
 			Razor.DefaultTemplateService.RazorFormat = this;
@@ -126,7 +126,7 @@ namespace ServiceStack.RazorEngine
 			Razor.SetActivator(this);
 		}
 
-		public IEnumerable<RazorPage> FindRazorPages(string dirPath)
+		public IEnumerable<ViewPage> FindRazorPages(string dirPath)
 		{
 			var di = new DirectoryInfo(dirPath);
 			var razorFiles = di.GetMatchingFiles("*.cshtml");
@@ -148,7 +148,7 @@ namespace ServiceStack.RazorEngine
 
 				var templatePath = GetTemplatePath(fileInfo.DirectoryName);
 
-				yield return new RazorPage(this, razorFile, pageName, pageContents, pageType) {
+				yield return new ViewPage(this, razorFile, pageName, pageContents, pageType) {
 					TemplatePath = templatePath,
 					LastModified = fileInfo.LastWriteTime,
 				};
@@ -183,7 +183,7 @@ namespace ServiceStack.RazorEngine
 			return null;
 		}
 
-		public bool ProcessRazorPage(IHttpRequest httpReq, RazorPage razorPage, object dto, IHttpResponse httpRes)
+		public bool ProcessRazorPage(IHttpRequest httpReq, ViewPage razorPage, object dto, IHttpResponse httpRes)
 		{
 			httpRes.AddHeaderLastModified(razorPage.GetLastModified());
 
@@ -202,7 +202,7 @@ namespace ServiceStack.RazorEngine
 			return true;
 		}
 
-		public void ReloadModifiedPageAndTemplates(RazorPage razorPage)
+		public void ReloadModifiedPageAndTemplates(ViewPage razorPage)
 		{
 			var lastWriteTime = File.GetLastWriteTime(razorPage.FilePath);
 			if (lastWriteTime > razorPage.LastModified)
@@ -210,7 +210,7 @@ namespace ServiceStack.RazorEngine
 				razorPage.Reload();
 			}
 
-			RazorPage template;
+			ViewPage template;
 			if (razorPage.DirectiveTemplatePath != null
 				&& this.PageTemplates.TryGetValue(razorPage.DirectiveTemplatePath, out template))
 			{
@@ -227,7 +227,7 @@ namespace ServiceStack.RazorEngine
 			}
 		}
 
-		private void ReloadTemplate(RazorPage template)
+		private void ReloadTemplate(ViewPage template)
 		{
 			var contents = File.ReadAllText(template.FilePath);
 			foreach (var markdownReplaceToken in MarkdownReplaceTokens)
@@ -237,7 +237,7 @@ namespace ServiceStack.RazorEngine
 			template.Reload(contents);
 		}
 
-		private RazorPage GetViewPageByResponse(object dto, IHttpRequest httpRequest)
+		private ViewPage GetViewPageByResponse(object dto, IHttpRequest httpRequest)
 		{
 			var httpResult = dto as IHttpResult;
 			if (httpResult != null)
@@ -258,9 +258,9 @@ namespace ServiceStack.RazorEngine
 			return httpRequest != null ? GetViewPage(httpRequest.OperationName) : null;
 		}
 
-		public RazorPage GetViewPage(string pageName)
+		public ViewPage GetViewPage(string pageName)
 		{
-			RazorPage razorPage;
+			ViewPage razorPage;
 
 			ViewPages.TryGetValue(pageName, out razorPage);
 			if (razorPage != null) return razorPage;
@@ -277,7 +277,7 @@ namespace ServiceStack.RazorEngine
 			}
 		}
 
-		public void AddPage(RazorPage page)
+		public void AddPage(ViewPage page)
 		{
 			try
 			{
@@ -308,7 +308,7 @@ namespace ServiceStack.RazorEngine
 			AddTemplate(templatePath, File.ReadAllText(templatePath));
 		}
 
-		public RazorPage AddTemplate(string templatePath, string templateContents)
+		public ViewPage AddTemplate(string templatePath, string templateContents)
 		{
 			var templateFile = new FileInfo(templatePath);
 			var templateName = templateFile.FullName.WithoutExtension();
@@ -318,7 +318,7 @@ namespace ServiceStack.RazorEngine
 				templateContents = templateContents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
 			}
 
-			var template = new RazorPage(this, templatePath, templateName, templateContents, RazorPageType.Template) {
+			var template = new ViewPage(this, templatePath, templateName, templateContents, RazorPageType.Template) {
 				LastModified = templateFile.LastWriteTime,
 			};
 			PageTemplates.Add(templatePath, template);
@@ -334,9 +334,9 @@ namespace ServiceStack.RazorEngine
 			}
 		}
 
-		public RazorPage GetContentPage(string pageFilePath)
+		public ViewPage GetContentPage(string pageFilePath)
 		{
-			RazorPage razorPage;
+			ViewPage razorPage;
 			ContentPages.TryGetValue(pageFilePath, out razorPage);
 			return razorPage;
 		}
@@ -344,7 +344,7 @@ namespace ServiceStack.RazorEngine
 		public string GetTemplate(string name)
 		{
 			Console.WriteLine("GetTemplate(): " + name);
-			RazorPage template;
+			ViewPage template;
 			PageTemplates.TryGetValue(name, out template);
 			return template != null ? template.Contents : null;
 		}
@@ -371,14 +371,14 @@ namespace ServiceStack.RazorEngine
 
 			filePath = filePath.WithoutExtension();
 
-			RazorPage razorPage;
+			ViewPage razorPage;
 			if (!ContentPages.TryGetValue(filePath, out razorPage))
 				throw new InvalidDataException(ErrorPageNotFound.FormatWith(filePath));
 
 			return RenderStaticPage(razorPage);
 		}
 
-		private string RenderStaticPage(RazorPage markdownPage)
+		private string RenderStaticPage(ViewPage markdownPage)
 		{
 			var template = ExecuteTemplate((object)null,
 				markdownPage.PageName, markdownPage.TemplatePath);

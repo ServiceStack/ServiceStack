@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		}
 	}
 
-	public class CustomBaseClass<T> : RazorPageBase<T>
+	public class CustomBaseClass<T> : ViewPage<T>
 	{
 		public MvcHtmlString Field(string fieldName, string fieldValue)
 		{
@@ -49,9 +49,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			razorFormat.Init();
 		}
 
-		private RazorPage AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
+		private ViewPage AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
 		{
-			var dynamicPage = new RazorPage(razorFormat,
+			var dynamicPage = new ViewPage(razorFormat,
 				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
 					TemplatePath = templatePath
 				};

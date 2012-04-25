@@ -9,6 +9,7 @@ namespace ServiceStack.Markdown
 {
 	public static class MvcResources
 	{
+		public const string ViewMasterPage_RequiresViewPage = "View MasterPage Requires ViewPage";
 		public const string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword = "The 'inherits' keyword is not allowed when a '{0}' keyword is used.";
 		public const string MvcRazorCodeParser_OnlyOneModelStatementIsAllowed = "Only one '{0}' statement is allowed in a file.";
 		public const string MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName = "The '{0}' keyword must be followed by a type name on the same line.";

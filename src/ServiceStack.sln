@@ -40,6 +40,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.FluentValidati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Plugins.ProtoBuf", "ServiceStack.Plugins.ProtoBuf\ServiceStack.Plugins.ProtoBuf.csproj", "{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RazorHostTests", "..\tests\ServiceStack.RazorHostTests\ServiceStack.RazorHostTests.csproj", "{CEAB2047-A095-4A96-8B23-325C6BB5690D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.RazorNancyTests", "..\tests\ServiceStack.RazorNancyTests\ServiceStack.RazorNancyTests.csproj", "{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -125,6 +129,18 @@ Global
 		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
 		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF36A253-C53F-4BF3-B0EC-4D29211FA67D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEAB2047-A095-4A96-8B23-325C6BB5690D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEAB2047-A095-4A96-8B23-325C6BB5690D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEAB2047-A095-4A96-8B23-325C6BB5690D}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{CEAB2047-A095-4A96-8B23-325C6BB5690D}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{CEAB2047-A095-4A96-8B23-325C6BB5690D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEAB2047-A095-4A96-8B23-325C6BB5690D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -136,6 +152,8 @@ Global
 		{A5646013-C243-453F-A2B6-3B6870A9637D} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{801771CD-2C19-463A-94F8-DF546825DF47} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{CEAB2047-A095-4A96-8B23-325C6BB5690D} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{1B1151B2-19A6-4F08-9765-5EA6EF06F3FB} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj

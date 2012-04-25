@@ -15,6 +15,7 @@ using System.Web.Razor;
 using System.Diagnostics;
 using System.Web.Razor.Generator;
 using System.Web.Razor.Parser;
+using ServiceStack.MiniProfiler;
 using CSharpRazorCodeGenerator = ServiceStack.RazorEngine.Compilation.CSharp.CSharpRazorCodeGenerator;
 
 namespace ServiceStack.RazorEngine.ServiceStack
@@ -41,6 +42,14 @@ namespace ServiceStack.RazorEngine.ServiceStack
 		private void Init()
 		{
 			GetRidOfNamespace("System.Web.WebPages.Html");
+
+			this.DefaultBaseClass = typeof(ViewPage).FullName;
+			this.DefaultNamespace = "RazorOutput";
+			this.DefaultClassName = "RazorView";
+
+			this.GeneratedClassContext = new GeneratedClassContext(
+				"Execute", "Write", "WriteLiteral", "WriteTo", "WriteLiteralTo", 
+				typeof(HelperResult).FullName, "DefineSection");
 		}
 
 		public override RazorCodeGenerator DecorateCodeGenerator(RazorCodeGenerator incomingCodeGenerator)

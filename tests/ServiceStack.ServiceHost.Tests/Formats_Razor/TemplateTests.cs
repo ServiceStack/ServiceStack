@@ -29,7 +29,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		public List<string> Labels { get; set; }
 	}
 
-	public class CustomMarkdownViewBase<T> : RazorPageBase<T>
+	public class CustomMarkdownViewBase<T> : ViewPage<T>
 	{
 		public CustomMarkdownHelper Ext = new CustomMarkdownHelper();
 		public ExternalProductHelper Prod = new ExternalProductHelper();
@@ -140,9 +140,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			razorFormat.Init();
 		}
 
-		private RazorPage AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
+		private ViewPage AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
 		{
-			var dynamicPage = new RazorPage(razorFormat,
+			var dynamicPage = new ViewPage(razorFormat,
 				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
 					TemplatePath = templatePath
 				};
@@ -885,7 +885,7 @@ Demis / Bellot
 			var websiteTemplatePath = "/path/to/tpl";
 			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
 
-			var staticPage = new RazorPage(razorFormat,
+			var staticPage = new ViewPage(razorFormat,
 				"/path/to/pagetpl", "StaticTpl", template, RazorPageType.ContentPage) {
 					TemplatePath = websiteTemplatePath
 				};

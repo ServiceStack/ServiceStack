@@ -103,10 +103,14 @@
     <Compile Include="Razor.cs" />
     <Compile Include="RazorFormat.cs" />
     <Compile Include="RazorHandler.cs" />
-    <Compile Include="RazorPage.cs" />
-    <Compile Include="RazorPageBase.cs" />
+    <Compile Include="ViewPage.cs" />
+    <Compile Include="ViewPage`1.cs" />
     <Compile Include="ServiceStack\MvcWebPageRazorHost.cs" />
     <Compile Include="ServiceStack\MvcCSharpRazorCodeParser.cs" />
+    <Compile Include="ServiceStack\MvcWebRazorHostFactory.cs" />
+    <Compile Include="ServiceStack\ServiceStackCSharpRazorBuildProvider.cs" />
+    <Compile Include="ServiceStack\ViewMasterPage.cs" />
+    <Compile Include="ServiceStack\ViewMasterPage`1.cs" />
     <Compile Include="Templating\DefaultActivator.cs" />
     <Compile Include="Templating\DelegateActivator.cs" />
     <Compile Include="Templating\DelegateTemplateResolver.cs" />

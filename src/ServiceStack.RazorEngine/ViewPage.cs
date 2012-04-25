@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
+using System.Web;
+using ServiceStack.MiniProfiler;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.RazorEngine
 {
-	public class RazorPage
+	public class ViewPage
 	{
 		public RazorFormat RazorFormat { get; set; }
+
+		public string Layout { get; set; }
 
 		public string FilePath { get; set; }
 		public string Name { get; set; }
@@ -22,17 +27,15 @@ namespace ServiceStack.RazorEngine
 
 		public const string ModelName = "Model";
 
-		public RazorPage()
+		public ViewPage()
 		{
 			this.Dependents = new List<IExpirable>();
 		}
 
-		public RazorPage(RazorFormat razorFormat, string fullPath, string name, string contents)
-			: this(razorFormat, fullPath, name, contents, RazorPageType.ViewPage)
-		{
-		}
+		public ViewPage(RazorFormat razorFormat, string fullPath, string name, string contents)
+			: this(razorFormat, fullPath, name, contents, RazorPageType.ViewPage) {}
 
-		public RazorPage(RazorFormat razorFormat, string fullPath, string name, string contents, RazorPageType pageType)
+		public ViewPage(RazorFormat razorFormat, string fullPath, string name, string contents, RazorPageType pageType)
 			: this()
 		{
 			RazorFormat = razorFormat;
@@ -138,6 +141,94 @@ namespace ServiceStack.RazorEngine
 		public IRazorTemplate GetRazorTemplate()
 		{
 			return Razor.DefaultTemplateService.GetTemplate(this.PageName);
+		}
+
+		//From https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor/NancyRazorViewBase.cs
+
+		public virtual void Write(object value)
+		{
+			WriteLiteral(HtmlEncode(value));
+		}
+
+		public virtual void WriteLiteral(object value)
+		{
+			//contents.Append(value);
+		}
+
+		public virtual void WriteTo(TextWriter writer, object value)
+		{
+			writer.Write(HtmlEncode(value));
+		}
+
+		public virtual void WriteLiteralTo(TextWriter writer, object value)
+		{
+			writer.Write(value);
+		}
+
+		public virtual void WriteTo(TextWriter writer, HelperResult value)
+		{
+			if (value != null)
+			{
+				value.WriteTo(writer);
+			}
+		}
+
+		public virtual void WriteLiteralTo(TextWriter writer, HelperResult value)
+		{
+			//if (value != null)
+			//{
+			//    value.WriteTo(writer);
+			//}
+		}
+
+		public virtual void DefineSection(string sectionName, Action action)
+		{
+			//this.Sections.Add(sectionName, action);
+		}
+
+		public virtual object RenderBody()
+		{
+			//this.contents.Append(this.childBody);
+
+			return null;
+		}
+
+		public virtual object RenderSection(string sectionName)
+		{
+			return this.RenderSection(sectionName, true);
+		}
+
+		public virtual object RenderSection(string sectionName, bool required)
+		{
+			//string sectionContent;
+
+			//var exists = this.childSections.TryGetValue(sectionName, out sectionContent);
+			//if (!exists && required)
+			//{
+			//    throw new InvalidOperationException("Section name " + sectionName + " not found and is required.");
+			//}
+
+			//this.contents.Append(sectionContent ?? String.Empty);
+
+			return null;
+		}
+		
+		public virtual bool IsSectionDefined(string sectionName)
+		{
+			//return this.childSections.ContainsKey(sectionName);
+			return false;
+		}
+
+		private static string HtmlEncode(object value)
+		{
+			if (value == null)
+			{
+				return null;
+			}
+
+			var str = value as IHtmlString;
+
+			return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
 		}
 	}
 }

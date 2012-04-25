@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Web;
+using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
@@ -555,7 +556,7 @@ namespace ServiceStack.ServiceClient.Web
             return relativeOrAbsoluteUrl.StartsWith("http:")
                 || relativeOrAbsoluteUrl.StartsWith("https:")
                      ? relativeOrAbsoluteUrl
-                     : this.BaseUri + relativeOrAbsoluteUrl;
+					 : this.BaseUri.CombineWith(relativeOrAbsoluteUrl);
         }
 
 #if !SILVERLIGHT

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Northwind.Common.ComplexModel;
 using NUnit.Framework;
-using Platform.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.Perf
@@ -20,23 +19,23 @@ namespace ServiceStack.Common.Tests.Perf
 		{
 			CompareMultipleRuns(
 				"TypeSerializer", () => TypeSerializer.SerializeToString(dto),
-				"TextSerializer", () => TextSerializer.SerializeToString(dto)
+				"TextSerializer", () => JsonSerializer.SerializeToString(dto)
 				);
 
 			var stringStr = TypeSerializer.SerializeToString(dto);
-			var textStr = TextSerializer.SerializeToString(dto);
+			var textStr = JsonSerializer.SerializeToString(dto);
 
 			//return;
 
 			CompareMultipleRuns(
 				"TypeSerializer", () => TypeSerializer.DeserializeFromString<T>(stringStr),
-				"TextSerializer", () => TextSerializer.DeserializeFromString<T>(textStr)
+				"JsonSerializer", () => JsonSerializer.DeserializeFromString<T>(textStr)
 			);
 
 			var seraializedStringDto = TypeSerializer.DeserializeFromString<T>(stringStr);
 			Assert.That(seraializedStringDto.Equals(dto), Is.True);
 
-			TextSerializer.DeserializeFromString<T>(textStr);
+			JsonSerializer.DeserializeFromString<T>(textStr);
 			//Assert.That(seraializedTextDto.Equals(dto), Is.True);
 		}
 
