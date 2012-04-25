@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_download_CSV_movies_using_csv_syncreply_endpoint()
 		{
-			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "/csv/syncreply/Movies");
+			var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri + "csv/syncreply/Movies");
 
 			var res = req.GetResponse();
 			Assert.That(res.ContentType, Is.EqualTo(ContentType.Csv));

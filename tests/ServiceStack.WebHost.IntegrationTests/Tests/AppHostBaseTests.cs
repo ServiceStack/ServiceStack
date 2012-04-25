@@ -4,16 +4,18 @@ using ServiceStack.ServiceClient.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
+	/// <summary>
+	/// Note: These tests don't test ServiceStack when its mounted at /api
+	/// </summary>
 	[TestFixture]
 	public class AppHostBaseTests
 	{
         private const string BasePath = Config.AbsoluteBaseUri;
-		private const string ServiceStackUrl = BasePath + "api/";
 
 		[Test]
 		public void Root_path_redirects_to_metadata_page()
 		{
-			var html = ServiceStackUrl.DownloadUrl();
+			var html = Config.ServiceStackBaseUri.DownloadUrl();
 			Assert.That(html.Contains("The following operations are supported."));
 		}
 
@@ -34,7 +36,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Gets_404_3_on_page_with_non_whitelisted_extension()
 		{
-			var webRes = (BasePath + "webpage.forbidden").GetErrorResponse();
+			var webRes = (BasePath + "api/webpage.forbidden").GetErrorResponse();
 			Assert.That(webRes.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 		}
 		 

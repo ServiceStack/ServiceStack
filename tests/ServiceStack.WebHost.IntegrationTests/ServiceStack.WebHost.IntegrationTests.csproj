@@ -170,7 +170,6 @@
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
     <Compile Include="Services\HelloImage.cs" />
-    <Compile Include="Tests\DigestAuthTests.cs" />
     <Compile Include="Tests\ProtoBufServiceTests.cs" />
     <Compile Include="Services\ContentManagerOnly.cs" />
     <Compile Include="Services\ThrowsArgumentNullService.cs" />
@@ -282,9 +281,9 @@
     <VisualStudio>
       <FlavorProperties GUID="{349C5851-65DF-11DA-9384-00065B846F21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>51314</DevelopmentServerPort>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>False</AutoAssignPort>
+          <DevelopmentServerPort>50000</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://localhost:50095/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
