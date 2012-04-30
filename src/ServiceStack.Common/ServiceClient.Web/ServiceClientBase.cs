@@ -29,11 +29,14 @@ namespace ServiceStack.ServiceClient.Web
         /// This request filter is executed globally.
         /// </summary>
         private static Action<HttpWebRequest> httpWebRequestFilter;
-        public static Action<HttpWebRequest> HttpWebRequestFilter {
-            get {
+        public static Action<HttpWebRequest> HttpWebRequestFilter
+        {
+            get
+            {
                 return httpWebRequestFilter;
             }
-            set {
+            set
+            {
                 httpWebRequestFilter = value;
                 AsyncServiceClient.HttpWebRequestFilter = value;
             }
@@ -125,24 +128,28 @@ namespace ServiceStack.ServiceClient.Web
         /// <summary>
         /// The user name for basic authentication
         /// </summary>
-        public string UserName {
-            get { return _username; } 
-            set { 
+        public string UserName
+        {
+            get { return _username; }
+            set
+            {
                 _username = value;
                 asyncClient.UserName = value;
-            } 
+            }
         }
 
         private string _password;
         /// <summary>
         /// The password for basic authentication
         /// </summary>
-        public string Password {
-            get { return _password; } 
-            set { 
+        public string Password
+        {
+            get { return _password; }
+            set
+            {
                 _password = value;
                 asyncClient.Password = value;
-            } 
+            }
         }
 
         /// <summary>
@@ -156,7 +163,7 @@ namespace ServiceStack.ServiceClient.Web
 
         public string BaseUri { get; set; }
 
-        public abstract string Format { get;}
+        public abstract string Format { get; }
 
         public string SyncReplyBaseUri { get; set; }
 
@@ -244,11 +251,14 @@ namespace ServiceStack.ServiceClient.Web
         /// Called before request resend, when the initial request required authentication
         /// </summary>
         private Action<WebRequest> onAuthenticationRequired { get; set; }
-        public Action<WebRequest> OnAuthenticationRequired {
-            get {
+        public Action<WebRequest> OnAuthenticationRequired
+        {
+            get
+            {
                 return onAuthenticationRequired;
             }
-            set {
+            set
+            {
                 onAuthenticationRequired = value;
                 asyncClient.OnAuthenticationRequired = value;
             }
@@ -258,8 +268,9 @@ namespace ServiceStack.ServiceClient.Web
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
         /// </summary>
-        private Action<HttpWebRequest> localHttpWebRequestFilter { get; set;}
-        public Action<HttpWebRequest> LocalHttpWebRequestFilter {
+        private Action<HttpWebRequest> localHttpWebRequestFilter { get; set; }
+        public Action<HttpWebRequest> LocalHttpWebRequestFilter
+        {
             get
             {
                 return localHttpWebRequestFilter;
@@ -335,7 +346,7 @@ namespace ServiceStack.ServiceClient.Web
                     client.AddBasicAuth(this.UserName, this.Password);
                     if (OnAuthenticationRequired != null)
                     {
-                        OnAuthenticationRequired(client);                        
+                        OnAuthenticationRequired(client);
                     }
 
                     try
@@ -698,32 +709,26 @@ namespace ServiceStack.ServiceClient.Web
                 var boundary = DateTime.Now.Ticks.ToString();
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
-                var memoryStream = new MemoryStream();
-                fileToUpload.CopyTo(memoryStream);
-                var byteArray = memoryStream.ToArray();
-                var postData = new MemoryStream();
                 var newLine = Environment.NewLine;
-                var sw = new StreamWriter(postData);
-                foreach (var key in nameValueCollection.AllKeys)
+                using (var outputStream = webRequest.GetRequestStream())
                 {
-                    sw.Write(boundary + newLine);
-                    sw.Write("Content-Disposition: form-data;name=\"{0}\"{1}{2}".FormatWith(key, newLine, newLine));
-                    sw.Write(nameValueCollection[key] + newLine);
-                    sw.Flush();
+                    foreach (var key in nameValueCollection.AllKeys)
+                    {
+                        outputStream.Write(boundary + newLine);
+                        outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}{2}".FormatWith(key, newLine, newLine));
+                        outputStream.Write(nameValueCollection[key] + newLine);
+                    }
+                    outputStream.Write(boundary + newLine);
+                    outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith("upload", fileName, newLine, newLine));
+                    var buffer = new byte[4096];
+                    int byteCount;
+                    while ((byteCount = fileToUpload.Read(buffer, 0, 4096)) > 0)
+                    {
+                        outputStream.Write(buffer, 0, byteCount);
+                    }
+                    outputStream.Write(newLine);
+                    outputStream.Write(boundary + "--");
                 }
-                sw.Write(boundary + newLine);
-                sw.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}", "upload", fileName, newLine, newLine);
-                sw.Flush();
-                postData.Write(byteArray, 0, byteArray.Length);
-                sw.Write(newLine);
-                sw.Write("{0}--", boundary);
-                sw.Flush();
-                webRequest.ContentLength = postData.Length;
-                using (var requestStream = webRequest.GetRequestStream())
-                {
-                    postData.WriteTo(requestStream);
-                }
-                postData.Close();
                 var webResponse = webRequest.GetResponse();
                 ApplyWebResponseFilters(webResponse);
                 using (var responseStream = webResponse.GetResponseStream())
