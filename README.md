@@ -248,16 +248,8 @@ Also included in ServiceStack are libraries that are useful in the development o
  * Email any questions to _demis.bellot@gmail.com_
 
 ## Future Roadmap
-Service Stack is under continuous improvement and is always adding features that are useful for high-performance, scalable and resilient web service scenarios. This is the current road map but is open to change.
-If you have suggestions for new features or want to prioritize the existing ones below: [http://code.google.com/p/servicestack/issues/entry you can leave feedback here].
-
- * Add an opt-in durable Message Queue service processing of [AsyncOneWay] requests (with In Memory, Redis and RabbitMQ implementations)
- * Enable [ProtoBuf.NET](http://code.google.com/p/protobuf-net/), TypeSerializer and CSV (for tabular datasets) web service endpoints
- * Integrate the Spark View Engine and enable a HTML endpoint so web services can also return a HTML human-friendly view
- * New REST web service endpoint developed in the 'Spirit of REST' with partitioning of GET / POST / PUT / DELETE requests and utilizing 'Accept mimetype' HTTP request header to determine the resulting content type.
- * Code generated proxy classes for Objective-C, Java Script / Action Script (and Java or C++ if there's enough interest) clients.
- * Develop a completely managed HTTP Web Service Host (at the moment looking at building on top of [Kayak HTTP](http://kayakhttp.com))
- * Add support for 'Web Sockets' protocol
+Service Stack is under continuous improvement and is always adding features that are useful for high-performance, scalable and resilient web service scenarios. See the 
+[trello board](https://trello.com/board/servicestack-features-bugs/4e9fbbc91065f8e9c805641c) to get information about the current project status and upcoming features.
 
 ## Similar open source projects
 Similar Open source .NET projects for developing or accessing web services include:
@@ -290,6 +282,10 @@ Each library is released under its respective licence:
   - [Mini Profiler](http://code.google.com/p/mvc-mini-profiler/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
   - [Dapper](http://code.google.com/p/dapper-dot-net/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
   - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(Licence)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
+  
+## Sponsors
+
+![JetBrains dotTrace](http://www.jetbrains.com/profiler/features/dt/dt1/dt210x60_white.gif)
 
 # Contributors 
 A big thanks to GitHub and all of ServiceStack's contributors:
