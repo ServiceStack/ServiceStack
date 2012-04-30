@@ -119,12 +119,14 @@ Download
 
 If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
 
-If you want to host ServiceStack Side-by-Side with MVC: Hosted at `/api` - Create an empty MVC Web Application and
-![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.mvc.png)
-
-Otherwise if you just want ServiceStack hosted at `/` - Create an empty ASP.NET Web Application and
+If you just want ServiceStack hosted at `/` - Create an empty ASP.NET Web Application and
 ![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.aspnet.png)
 
+Otherwise if you want to host ServiceStack Side-by-Side with MVC: Hosted at `/api` - Create an empty MVC Web Application and
+![Install-Pacakage ServiceStack.Host.Mvc](http://www.servicestack.net/img/nuget-servicestack.host.mvc.png)
+
+The above packages include a complete working Backbone.Todos demo, if just want the binaries (without config) use:
+![Install-Pacakage ServiceStack](http://www.servicestack.net/img/nuget-servicestack.png)
 
 To help get started you should also download the ServiceStack.Examples projects (includes dlls, demos and starter templates):
 
