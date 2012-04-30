@@ -59,3 +59,4 @@
  - [johnsheehan](https://github.com/johnsheehan) (John Sheehan)
  - [jschlicht](https://github.com/jschlicht) (Jared Schlicht)
  - [kumarnitin](https://github.com/kumarnitin) (Nitin Kumar)
+ - [DavidChristiansen](https://github.com/DavidChristiansen) (David Christiansen)  
