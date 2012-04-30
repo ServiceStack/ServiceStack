@@ -286,6 +286,7 @@ Each library is released under its respective licence:
 ## Sponsors
 
 ![JetBrains dotTrace](http://www.jetbrains.com/profiler/features/dt/dt1/dt210x60_white.gif)
+http://www.jetbrains.com/profiler/
 
 # Contributors 
 A big thanks to GitHub and all of ServiceStack's contributors:
