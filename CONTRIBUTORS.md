@@ -61,3 +61,4 @@
  - [kumarnitin](https://github.com/kumarnitin) (Nitin Kumar)
  - [DavidChristiansen](https://github.com/DavidChristiansen) (David Christiansen)  
  - [PaulECoyote](https://github.com/PaulECoyote) (Paul Evans)
+ - [kongo2002](https://github.com/kongo2002) (Gregor Uhlenheuer)
