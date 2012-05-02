@@ -20,7 +20,8 @@ namespace ServiceStack.MiniProfiler.UI
 	{
 		public static IHttpHandler MatchesRequest(IHttpRequest request)
 		{
-			return request.PathInfo.TrimStart('/').Contains("ss-")
+			var file = Path.GetFileNameWithoutExtension(request.PathInfo);
+			return file != null && file.StartsWith("ss-")
 				? new MiniProfilerHandler()
 				: null;
 		}
