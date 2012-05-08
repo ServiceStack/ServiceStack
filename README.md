@@ -355,6 +355,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [PaulECoyote](https://github.com/PaulECoyote) (Paul Evans)
  - [kongo2002](https://github.com/kongo2002) (Gregor Uhlenheuer)
  - [BrannonKing](https://github.com/BrannonKing) (Brannon King)
+ - [alexandrerocco](https://github.com/alexandrerocco) (Alexandre Rocco)
 
 
 ***
