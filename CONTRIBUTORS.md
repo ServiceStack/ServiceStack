@@ -64,3 +64,4 @@
  - [kongo2002](https://github.com/kongo2002) (Gregor Uhlenheuer)
  - [BrannonKing](https://github.com/BrannonKing) (Brannon King)
  - [alexandrerocco](https://github.com/alexandrerocco) (Alexandre Rocco)
+ - [cbarbara](https://github.com/cbarbara)
