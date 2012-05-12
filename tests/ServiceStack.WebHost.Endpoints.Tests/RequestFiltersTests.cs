@@ -44,6 +44,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 	}
 
+	[DataContract]
+	[RestService("/insecure")]
+	public class Insecure
+	{
+		[DataMember]
+		public string UserName { get; set; }
+	}
+
+	[DataContract]
+	public class InsecureResponse : IHasResponseStatus
+	{
+		[DataMember]
+		public string Result { get; set; }
+
+		[DataMember]
+		public ResponseStatus ResponseStatus { get; set; }
+	}
+
+	public class InsecureService : IService<Insecure>
+	{
+		public object Execute(Insecure request)
+		{
+			return new InsecureResponse { Result = "Public" };
+		}
+	}
+
 	[TestFixture]
 	public abstract class RequestFiltersTests
 	{
@@ -67,7 +93,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					var userPass = req.GetBasicAuthUserAndPassword();
 					if (userPass == null)
 					{
-						res.ReturnAuthRequired();
 						return;
 					}
 
@@ -80,11 +105,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 						req.Items["ss-session"] = sessionKey;
 						res.SetPermanentCookie("ss-session", sessionKey);
 					}
-					else
-					{
-						res.ReturnAuthRequired();
-					}
-					
 				});
 				this.RequestFilters.Add((req, res, dto) =>
 				{
@@ -180,7 +200,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var response = client.Send<SecureResponse>(new Secure());
 
 			Assert.That(response.Result, Is.EqualTo("Confidential"));
-		} 
+		}
 
 		[Test]
 		public void Can_login_with_Basic_auth_to_access_Secure_service_using_RestClientAsync()
@@ -197,6 +217,52 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Thread.Sleep(2000);
 			Assert.That(response.Result, Is.EqualTo("Confidential"));
+		}
+
+		[Test]
+		public void Can_login_without_authorization_to_access_Insecure_service()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var req = (HttpWebRequest)WebRequest.Create(
+				string.Format("{0}{1}/syncreply/Insecure", ServiceClientBaseUri, format));
+
+			req.Headers[HttpHeaders.Authorization]
+				= "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
+
+			var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+			Assert.That(dtoString.Contains("Public"));
+			Console.WriteLine(dtoString);
+		}
+
+		[Test]
+		public void Can_login_without_authorization_to_access_Insecure_service_using_ServiceClient()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var client = CreateNewServiceClient();
+
+			var response = client.Send<InsecureResponse>(new Insecure());
+
+			Assert.That(response.Result, Is.EqualTo("Public"));
+		}
+
+		[Test]
+		public void Can_login_without_authorization_to_access_Insecure_service_using_RestClientAsync()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var client = CreateNewRestClientAsync();
+
+			InsecureResponse response = null;
+			client.GetAsync<InsecureResponse>(ServiceClientBaseUri + "insecure",
+				r => response = r, FailOnAsyncError);
+
+			Thread.Sleep(2000);
+			Assert.That(response.Result, Is.EqualTo("Public"));
 		}
 
 		[Test]
@@ -281,7 +347,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Thread.Sleep(1000);
 			Assert.That(wasError, Is.True,
-			            "Should throw WebServiceException.StatusCode == 401");
+						"Should throw WebServiceException.StatusCode == 401");
 			Assert.IsNull(response);
 		}
 
