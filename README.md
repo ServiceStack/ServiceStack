@@ -357,7 +357,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [BrannonKing](https://github.com/BrannonKing) (Brannon King)
  - [alexandrerocco](https://github.com/alexandrerocco) (Alexandre Rocco)
  - [cbarbara](https://github.com/cbarbara)
-
+ - [assaframan](https://github.com/assaframan) (Assaf Raman)
 
 ***
 
