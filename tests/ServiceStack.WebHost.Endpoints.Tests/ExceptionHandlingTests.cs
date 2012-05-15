@@ -75,14 +75,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		static IRestClient[] ServiceClients = 
-        {
-            new JsonServiceClient(ListeningOn),
-            new XmlServiceClient(ListeningOn),
-            new JsvServiceClient(ListeningOn)
+		{
+			new JsonServiceClient(ListeningOn),
+			new XmlServiceClient(ListeningOn),
+			new JsvServiceClient(ListeningOn)
 			//SOAP not supported in HttpListener
 			//new Soap11ServiceClient(ServiceClientBaseUri),
 			//new Soap12ServiceClient(ServiceClientBaseUri)
-        };
+		};
 
 
 		[Test, TestCaseSource("ServiceClients")]
@@ -91,6 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			try
 			{
 				client.Get<UserResponse>("/users");
+				Assert.Fail();
 			}
 			catch (WebServiceException ex)
 			{
@@ -106,6 +107,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			try
 			{
 				client.Post<UserResponse>("/users", new User());
+				Assert.Fail();
 			}
 			catch (WebServiceException ex)
 			{
@@ -121,6 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			try
 			{
 				client.Put<UserResponse>("/users", new User());
+				Assert.Fail();
 			}
 			catch (WebServiceException ex)
 			{

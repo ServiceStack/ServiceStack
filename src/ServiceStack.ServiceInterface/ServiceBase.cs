@@ -92,7 +92,7 @@ namespace ServiceStack.ServiceInterface
 				}
 			}
 
-			return response.IsErrorResponse() ? null : OnAfterExecute(response);
+			return response.IsErrorResponse() ? response : OnAfterExecute(response); //only call OnAfterExecute if no exception occured
 		}
 
         private ISession session;
@@ -172,7 +172,8 @@ namespace ServiceStack.ServiceInterface
 		protected virtual void OnBeforeExecute(TRequest request) { }
 		
 		/// <summary>
-		/// Called after the request is Executed. Override to decorate the response dto
+		/// Called after the request is Executed. Override to decorate the response dto.
+		/// This method is only called if no exception occured while executing the service.
 		/// </summary>
 		/// <param name="response"></param>
 		/// <returns></returns>
