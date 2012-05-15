@@ -162,10 +162,16 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
+				System.Reflection.Assembly entryAssembly;
+				System.Configuration.Configuration config;
+
 				//Read the user-defined path in the Web.Config
-                var config = EndpointHost.AppHost is AppHostBase 
-                    ? WebConfigurationManager.OpenWebConfiguration("~/") 
-                    : ConfigurationManager.OpenExeConfiguration(System.Reflection.Assembly.GetEntryAssembly().Location);
+				if (EndpointHost.AppHost is AppHostBase)
+					config = WebConfigurationManager.OpenWebConfiguration("~/");
+				else if ((entryAssembly = System.Reflection.Assembly.GetEntryAssembly()) != null)
+					config = ConfigurationManager.OpenExeConfiguration(entryAssembly.Location);
+				else
+					return;
 
 				SetPathsFromConfiguration(config, null);
 
@@ -192,6 +198,9 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private static void SetPathsFromConfiguration(System.Configuration.Configuration config, string locationPath)
 		{
+			if (config == null)
+				return;
+
 			//standard config
 			var handlersSection = config.GetSection("system.web/httpHandlers") as HttpHandlersSection;
 			if (handlersSection != null)
