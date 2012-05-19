@@ -32,7 +32,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string UserName { get; set; }
 		public string Password { get; set; }
 		public bool? RememberMe { get; set; }
-        // Thise are used for digest auth
+		public string Continue { get; set; }
+		// Thise are used for digest auth
         public string nonce { get; set; }
         public string uri { get; set; }
         public string response { get; set; }
@@ -150,7 +151,8 @@ namespace ServiceStack.ServiceInterface.Auth
 				return oAuthConfig.Authenticate(this, session, request);
 			}
 
-			var referrerUrl = session.ReferrerUrl
+			var referrerUrl = request.Continue
+				?? session.ReferrerUrl
 				?? this.RequestContext.GetHeader("Referer")
 				?? oAuthConfig.CallbackUrl;
 

@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
 				}
 
 				yield return new TestCaseData("fe80::100:7f:fffe%10", EndpointAttributes.LocalSubnet);
-				yield return new TestCaseData("fe80::100:7f:fffe%10:57", EndpointAttributes.LocalSubnet);
+				//yield return new TestCaseData("fe80::100:7f:fffe%10:57", EndpointAttributes.LocalSubnet);
 
 				//ipv6 loopback
 				yield return new TestCaseData("::1", EndpointAttributes.Localhost);

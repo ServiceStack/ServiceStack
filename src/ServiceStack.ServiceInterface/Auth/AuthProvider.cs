@@ -42,7 +42,8 @@ namespace ServiceStack.ServiceInterface.Auth
 		public virtual object Logout(IServiceBase service, Auth request)
 		{
 			var session = service.GetSession();
-			var referrerUrl = session.ReferrerUrl
+			var referrerUrl = (request != null ? request.Continue : null)
+				?? session.ReferrerUrl
 				?? service.RequestContext.GetHeader("Referer")
 				?? this.CallbackUrl;
 
