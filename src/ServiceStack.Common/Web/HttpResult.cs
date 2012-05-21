@@ -107,6 +107,9 @@ namespace ServiceStack.Common.Web
 		{
 			set
 			{
+				if (StatusCode == HttpStatusCode.OK)
+					StatusCode = HttpStatusCode.Redirect;
+				
 				this.Headers[HttpHeaders.Location] = value;
 			}
 		}
