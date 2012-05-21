@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_PATCH_Movie_from_dto()
 		{
-			ExecutePath(HttpMethods.Put, "/movies", null, null, NewMovie);
+			ExecutePath(HttpMethods.Post, "/movies", null, null, NewMovie);
 
 			var lastInsertId = (int)this.DbFactory.Exec(dbCmd => dbCmd.GetLastInsertId());
 
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			var formData = NewMovie.ToStringDictionary();
 
-			var response = ExecutePath(HttpMethods.Put, "/movies", null, formData, null);
+			var response = ExecutePath(HttpMethods.Post, "/movies", null, formData, null);
 
 			this.DbFactory.Exec(dbCmd => {
 				var lastInsertId = dbCmd.GetLastInsertId();
@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		[Test]
 		public void Can_create_new_Movie_from_dto()
 		{
-			var response = ExecutePath(HttpMethods.Put, "/movies", null, null, NewMovie);
+			var response = ExecutePath(HttpMethods.Post, "/movies", null, null, NewMovie);
 
 			this.DbFactory.Exec(dbCmd => {
 				var lastInsertId = dbCmd.GetLastInsertId();
