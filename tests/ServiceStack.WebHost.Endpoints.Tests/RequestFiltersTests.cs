@@ -82,6 +82,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		public class RequestFiltersAppHostHttpListener
 			: AppHostHttpListenerBase
 		{
+			private Guid currentSessionGuid;
 
 			public RequestFiltersAppHostHttpListener()
 				: base("Request Filters Tests", typeof(GetFactorialService).Assembly) { }
@@ -99,7 +100,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 					var userName = userPass.Value.Key;
 					if (userName == AllowedUser && userPass.Value.Value == AllowedPass)
 					{
-						var sessionKey = userName + "/" + Guid.NewGuid().ToString("N");
+						currentSessionGuid = Guid.NewGuid();
+						var sessionKey = userName + "/" + currentSessionGuid.ToString("N");
 
 						//set session for this request (as no cookies will be set on this request)
 						req.Items["ss-session"] = sessionKey;
@@ -110,8 +112,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				{
 					if (dto is Secure)
 					{
-						var sessionId = req.GetItemOrCookie("ss-session");
-						if (sessionId == null || sessionId.SplitOnFirst('/')[0] != AllowedUser)
+						var sessionId = req.GetItemOrCookie("ss-session") ?? string.Empty;
+						var sessionIdParts = sessionId.SplitOnFirst('/');
+						if (sessionIdParts.Length < 2 || sessionIdParts[0] != AllowedUser || sessionIdParts[1] != currentSessionGuid.ToString("N"))
 						{
 							res.ReturnAuthRequired();
 						}
@@ -263,6 +266,54 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			Thread.Sleep(2000);
 			Assert.That(response.Result, Is.EqualTo("Public"));
+		}
+
+		[Test]
+		public void Can_login_with_session_cookie_to_access_Secure_service()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var req = (HttpWebRequest)WebRequest.Create(
+				string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+
+			req.Headers[HttpHeaders.Authorization]
+				= "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
+
+			var res = (HttpWebResponse)req.GetResponse();
+			var cookie = res.Cookies["ss-session"];
+			if (cookie != null)
+			{
+				req = (HttpWebRequest)WebRequest.Create(
+					string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+				req.CookieContainer.Add(new Cookie("ss-session", cookie.Value));
+
+				var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+				Assert.That(dtoString.Contains("Confidential"));
+				Console.WriteLine(dtoString);
+			}
+		}
+
+		[Test]
+		public void Get_401_When_accessing_Secure_using_fake_sessionid_cookie()
+		{
+			var format = GetFormat();
+			if (format == null) return;
+
+			var req = (HttpWebRequest)WebRequest.Create(
+				string.Format("http://localhost:82/{0}/syncreply/Secure", format));
+
+			req.CookieContainer = new CookieContainer();
+			req.CookieContainer.Add(new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
+
+			try
+			{
+				var res = req.GetResponse();
+			}
+			catch (WebException x)
+			{
+				Assert.That(((HttpWebResponse)x.Response).StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+			}
 		}
 
 		[Test]
