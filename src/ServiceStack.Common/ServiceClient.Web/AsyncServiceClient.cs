@@ -162,7 +162,9 @@ namespace ServiceStack.ServiceClient.Web
 			}
 		}
 
-		public string UserName { get; set; }
+        public bool DisableAutoCompression { get; set; }
+
+        public string UserName { get; set; }
 	
 		public string Password { get; set; }
 
@@ -193,6 +195,12 @@ namespace ServiceStack.ServiceClient.Web
 		{
 			SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
 		}
+
+        internal static void AllowAutoCompression(HttpWebRequest webRequest)
+        {
+            webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
+            webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;            
+        }
 
 		private RequestState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
 			Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
@@ -239,6 +247,12 @@ namespace ServiceStack.ServiceClient.Web
 				webRequest.CookieContainer = CookieContainer;
 			}
 #endif
+
+            if (!DisableAutoCompression)
+            {
+                webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
+                webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;                
+            }
 
 			var requestState = new RequestState<TResponse>
 			{

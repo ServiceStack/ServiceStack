@@ -124,6 +124,20 @@ namespace ServiceStack.ServiceClient.Web
             this.AsyncOneWayBaseUri = baseUri.WithTrailingSlash() + format + "/asynconeway/";
         }
 
+        private bool _disableAutoCompression;
+        /// <summary>
+        /// Whether to Accept Gzip,Deflate Content-Encoding and to auto decompress responses
+        /// </summary>
+        public bool DisableAutoCompression
+        {
+            get { return _disableAutoCompression; }
+            set
+            {
+                _disableAutoCompression = value;
+                asyncClient.DisableAutoCompression = value;
+            }
+        }
+
         private string _username;
         /// <summary>
         /// The user name for basic authentication
@@ -456,6 +470,12 @@ namespace ServiceStack.ServiceClient.Web
                 if (this.Timeout.HasValue) client.Timeout = (int)this.Timeout.Value.TotalMilliseconds;
                 if (this.credentials != null) client.Credentials = this.credentials;
                 if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+
+                if (!DisableAutoCompression)
+                {
+                    client.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
+                    client.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+                }
 
                 if (StoreCookies)
                 {
