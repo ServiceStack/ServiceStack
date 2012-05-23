@@ -126,12 +126,12 @@ namespace ServiceStack.ServiceInterface.Auth
 				this.CallbackUrl = requestUri;
 
 			if (session.ReferrerUrl.IsNullOrEmpty())
-				session.ReferrerUrl = authService.RequestContext.GetHeader("Referer");
+				session.ReferrerUrl = (request != null ? request.Continue : null)
+					?? authService.RequestContext.GetHeader("Referer");
 
 			if (session.ReferrerUrl.IsNullOrEmpty() 
 				|| session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
-				session.ReferrerUrl = (request != null ? request.Continue : null)
-					?? this.RedirectUrl 
+				session.ReferrerUrl = this.RedirectUrl 
 					?? ServiceStackHttpHandlerFactory.GetBaseUrl()
 					?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1));
 

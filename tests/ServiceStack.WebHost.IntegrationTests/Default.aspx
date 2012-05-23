@@ -185,9 +185,31 @@
     });
 </script>
 
-      <footer>
+    <h2>Test Redirect</h2>
+    
+        <form action="api/auth/credentials" method="POST">
+            <div>
+                <fieldset>
+                    <legend>Sign In w/ Redirect</legend>
+
+                    <div class="clearfix">                        <label for="UserName">Email Address</label>                        <input id="Text1" name="UserName" type="text" value="" />                    </div>
+                    <div class="clearfix">                        <label for="Password">Password</label>                        <input id="Password1" name="Password" type="password" />                    </div>
+                    <div class="clearfix">                        <label for="Continue">Continue</label>                        <input id="Password2" name="Continue" type="text" value="http://google.com" />                    </div>
+                    <div class="clearfix">                        <div class="input">                            <ul class="inputs-list">                                <li>                                    <label>                                        <input id="Checkbox1" name="RememberMe" type="checkbox" value="true" />                                        <span>Remember me</span>                                    </label>                                </li>                            </ul>                        </div>                        <span class="help-block"></span>                    </div>                    
+                    <p>
+                        <span class="error-summary"></span>
+                    </p>
+					
+                    <p>
+						<button class="btn" type="submit">Sign In</button>
+					</p>
+                </fieldset>
+            </div>
+		</form> 
+
+    <footer>
         <p>&copy; Company 2012</p>
-      </footer>
+    </footer>
 
     </div> <!-- /container -->
 

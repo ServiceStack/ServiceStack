@@ -1117,6 +1117,18 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.DisposeReadOnlyClient(ServiceStack.Redis.RedisNativeClient)">
+            <summary>
+            Disposes the read only client.
+            </summary>
+            <param name="client">The client.</param>
+        </member>
+        <member name="M:ServiceStack.Redis.PooledRedisClientManager.DisposeWriteClient(ServiceStack.Redis.RedisNativeClient)">
+            <summary>
+            Disposes the write client.
+            </summary>
+            <param name="client">The client.</param>
+        </member>
         <member name="T:ServiceStack.Redis.PooledRedisClientManager.DisposablePooledClient`1">
             <summary>
             Manage a client acquired from the PooledRedisClientManager
