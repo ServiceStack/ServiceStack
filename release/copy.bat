@@ -7,6 +7,14 @@ COPY ..\..\ServiceStack.Text\NuGet\lib\net35\*  latest\ServiceStack
 COPY ..\..\ServiceStack.Redis\NuGet\lib\net35\*  latest\ServiceStack
 COPY ..\..\ServiceStack.OrmLite\NuGet\ServiceStack.OrmLite.SqlServer\lib\*  latest\ServiceStack
 
+MD latest\ServiceStack.OrmLite\Firebird
+MD latest\ServiceStack.OrmLite\MySql
+MD latest\ServiceStack.OrmLite\PostgreSQL
+MD latest\ServiceStack.OrmLite\Sqlite32
+MD latest\ServiceStack.OrmLite\Sqlite64
+MD latest\ServiceStack.OrmLite\SqlServer
+MD latest\ServiceStack.OrmLite\Sqlite32.Mono
+
 COPY ..\..\ServiceStack.Text\NuGet\lib\net35\*  latest\ServiceStack.OrmLite
 COPY ..\NuGet\ServiceStack.Common\lib\net35\*  latest\ServiceStack.OrmLite
 COPY ..\..\ServiceStack.OrmLite\NuGet\ServiceStack.OrmLite.Firebird\lib\*  latest\ServiceStack.OrmLite\Firebird
