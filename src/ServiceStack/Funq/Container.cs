@@ -37,24 +37,31 @@ namespace Funq
 		public Container CreateChildContainer()
 		{
 			var child = new Container { parent = this };
-			childContainers.Push(child);
+            lock (childContainers) childContainers.Push(child);
 			return child;
 		}
 
 		/// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
 		public void Dispose()
 		{
-			while (disposables.Count > 0)
-			{
-				var wr = disposables.Pop();
-				var disposable = (IDisposable)wr.Target;
-				if (wr.IsAlive)
-					disposable.Dispose();
-			}
-			while (childContainers.Count > 0)
-			{
-				childContainers.Pop().Dispose();
-			}
+		    lock (disposables)
+		    {
+                while (disposables.Count > 0)
+                {
+                    var wr = disposables.Pop();
+                    var disposable = (IDisposable)wr.Target;
+                    if (wr.IsAlive)
+                        disposable.Dispose();
+                }
+            }
+
+            lock (childContainers)
+            {
+                while (childContainers.Count > 0)
+                {
+                    childContainers.Pop().Dispose();
+                }
+            }
 		}
 
 		/// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(instance)"]/*'/>
@@ -229,7 +236,7 @@ namespace Funq
 
 		internal void TrackDisposable(object instance)
 		{
-			disposables.Push(new WeakReference(instance));
+            lock (disposables) disposables.Push(new WeakReference(instance));
 		}
 
 		private ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
