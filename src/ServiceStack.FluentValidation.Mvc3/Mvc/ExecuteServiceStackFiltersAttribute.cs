@@ -21,6 +21,7 @@ namespace ServiceStack.Mvc
 			if (authAttrs.Count > 0 && !ssController.AuthSession.IsAuthenticated)
 			{
 				var returnUrl = filterContext.HttpContext.Request.Url.AbsolutePath;
+			    returnUrl += filterContext.HttpContext.Request.QueryString;
 				filterContext.Result = new RedirectResult(ssController.LoginRedirectUrl.Fmt(returnUrl));
 				return;
 			}
