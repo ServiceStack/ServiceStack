@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading;
 using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
@@ -13,13 +17,45 @@ namespace ServiceStack.Messaging
 #endif
 		}
 
-		public static Message<T> ToMessage<T>(this byte[] bytes)
+        private static Dictionary<Type, ToMessageDelegate> ToMessageFnCache = new Dictionary<Type, ToMessageDelegate>();
+	    internal static ToMessageDelegate GetToMessageFn(Type type)
+        {
+            ToMessageDelegate toMessageFn;
+            ToMessageFnCache.TryGetValue(type, out toMessageFn);
+
+            if (toMessageFn != null) return toMessageFn;
+
+            var genericType = typeof(MessageExtensions<>).MakeGenericType(type);
+            var mi = genericType.GetMethod("ConvertToMessage", BindingFlags.Public | BindingFlags.Static);
+            toMessageFn = (ToMessageDelegate)Delegate.CreateDelegate(typeof(ToMessageDelegate), mi);
+
+            Dictionary<Type, ToMessageDelegate> snapshot, newCache;
+            do
+            {
+                snapshot = ToMessageFnCache;
+                newCache = new Dictionary<Type, ToMessageDelegate>(ToMessageFnCache);
+                newCache[type] = toMessageFn;
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref ToMessageFnCache, newCache, snapshot), snapshot));
+
+            return toMessageFn;
+        }
+
+	    public static IMessage ToMessage(this byte[] bytes, Type ofType)
+	    {
+	        var msgFn = GetToMessageFn(ofType);
+	        var msg = msgFn(bytes);
+	        return msg;
+	    }
+
+	    public static Message<T> ToMessage<T>(this byte[] bytes)
 		{
 			var messageText = ToString(bytes);
             return JsonSerializer.DeserializeFromString<Message<T>>(messageText);
 		}
 
-		public static byte[] ToBytes(this IMessage message)
+	    public static byte[] ToBytes(this IMessage message)
 		{
             var serializedMessage = JsonSerializer.SerializeToString((object)message);
 			return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
@@ -38,4 +74,15 @@ namespace ServiceStack.Messaging
 		       	: QueueNames<T>.In;
 		}
 	}
+
+    internal delegate IMessage ToMessageDelegate(object param);
+
+    internal static class MessageExtensions<T>
+    {
+        public static IMessage ConvertToMessage(object oBytes)
+        {
+            var bytes = (byte[]) oBytes;
+            return bytes.ToMessage<T>();
+        }
+    }
 }
