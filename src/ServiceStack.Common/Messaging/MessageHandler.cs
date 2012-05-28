@@ -5,6 +5,7 @@ using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
+using StringExtensions = ServiceStack.Common.StringExtensions;
 
 namespace ServiceStack.Messaging
 {
@@ -25,19 +26,20 @@ namespace ServiceStack.Messaging
 		public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
 		private readonly int retryCount;
 
-    	public int TotalMessagesProcessed { get; private set; }
+        public int TotalMessagesProcessed { get; private set; }
 		public int TotalMessagesFailed { get; private set; }
 		public int TotalRetries { get; private set; }
 		public int TotalNormalMessagesReceived { get; private set; }
 		public int TotalPriorityMessagesReceived { get; private set; }
 		public int TotalOutMessagesReceived { get; private set; }
 
+		public string[] ProcessQueueNames { get; set; }
+
 		public MessageHandler(IMessageService messageService,
 			Func<IMessage<T>, object> processMessageFn)
 			: this(messageService, processMessageFn, null, DefaultRetryCount) {}
 
 		private IMessageQueueClient MqClient { get; set; }
-		//private Message<T> Message { get; set; }
 
 		public MessageHandler(IMessageService messageService,
 			Func<IMessage<T>, object> processMessageFn,
@@ -55,6 +57,7 @@ namespace ServiceStack.Messaging
 			this.processInExceptionFn = processInExceptionFn ?? DefaultInExceptionHandler;
 			this.retryCount = retryCount;
 			this.ReplyClientFactory = ClientFactory.Create;
+			this.ProcessQueueNames = new[] { QueueNames<T>.Priority, QueueNames<T>.In };
 		}
 
 		public Type MessageType
@@ -64,40 +67,35 @@ namespace ServiceStack.Messaging
 
 		public void Process(IMessageQueueClient mqClient)
 		{
+			foreach (var processQueueName in ProcessQueueNames)
+			{
+				ProcessQueue(mqClient, processQueueName);
+			}
+		}
+
+		public int ProcessQueue(IMessageQueueClient mqClient, string queueName, int? msgsToProcess = null)
+		{
+			var msgsProcessed = 0;
 			try
 			{
-				bool hadReceivedMessages;
-				do
+				byte[] messageBytes;
+				var processMaxMsgs = msgsToProcess.GetValueOrDefault(int.MaxValue);
+				while ((messageBytes = mqClient.GetAsync(queueName)) != null)
 				{
-					hadReceivedMessages = false;
+					var message = messageBytes.ToMessage<T>();
+					ProcessMessage(mqClient, message);
 
-					byte[] messageBytes;
-					while ((messageBytes = mqClient.GetAsync(QueueNames<T>.Priority)) != null)
-					{
-						this.TotalPriorityMessagesReceived++;
-						hadReceivedMessages = true;
-
-						var message = messageBytes.ToMessage<T>();
-						ProcessMessage(mqClient, message);
-					}
-
-					while ((messageBytes = mqClient.GetAsync(QueueNames<T>.In)) != null)
-					{
-						this.TotalNormalMessagesReceived++;
-						hadReceivedMessages = true;
-
-						var message = messageBytes.ToMessage<T>();
-						ProcessMessage(mqClient, message);
-					}
-
-				} while (hadReceivedMessages);
-
+					this.TotalNormalMessagesReceived++;
+					if (++msgsProcessed >= processMaxMsgs) return msgsProcessed;
+				}
 			}
 			catch (Exception ex)
 			{
 				var lastEx = ex;
 				Log.Error("Error serializing message from mq server: " + lastEx.Message, ex);
 			}
+
+			return msgsProcessed;
 		}
 
         public IMessageHandlerStats GetStats()
@@ -152,7 +150,15 @@ namespace ServiceStack.Messaging
 				else
 				{
 					//If there is a response send it to the typed response OutQ
-					var mqReplyTo = message.ReplyTo ?? new QueueNames(response.GetType()).In;
+				    var mqReplyTo = message.ReplyTo;
+
+                    if (mqReplyTo == null)
+                    {
+                        var responseType = response.GetType();
+                        if (!responseType.IsUserType()) return;
+                        mqReplyTo = new QueueNames(responseType).In;
+                    }
+				    
 					var replyClient = ReplyClientFactory(mqReplyTo);
 					if (replyClient != null)
 					{
@@ -165,7 +171,11 @@ namespace ServiceStack.Messaging
 						{
 							Log.Error("Could not send response to '{0}' with client '{1}'"
 								.Fmt(mqReplyTo, replyClient.GetType().Name), ex);
-                            mqReplyTo = new QueueNames(response.GetType()).In;
+
+                            var responseType = response.GetType();
+                            if (!responseType.IsUserType()) return;
+						    
+                            mqReplyTo = new QueueNames(responseType).In;
 						}
 					}
 
@@ -195,5 +205,6 @@ namespace ServiceStack.Messaging
 			if (shouldDispose != null)
 				shouldDispose.DisposeMessageHandler(this);
 		}
+
 	}
 }

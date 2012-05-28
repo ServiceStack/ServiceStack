@@ -144,8 +144,19 @@ namespace ServiceStack.Common
 
 		public static string ToNullIfEmpty(this string text)
 		{
-			return string.IsNullOrEmpty(text) ? null : text;
+			return String.IsNullOrEmpty(text) ? null : text;
 		}
+
+
+	    private static char[] SystemTypeChars = new[] { '<', '>', '+' };
+
+	    public static bool IsUserType(this Type type)
+        {
+            return type.IsClass
+                && type.Namespace != null
+                && !type.Namespace.StartsWith("System.")
+                && type.Name.IndexOfAny(SystemTypeChars) == -1;
+        }
 	}
 
 }
