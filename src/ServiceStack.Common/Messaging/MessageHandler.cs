@@ -73,20 +73,20 @@ namespace ServiceStack.Messaging
 			}
 		}
 
-		public int ProcessQueue(IMessageQueueClient mqClient, string queueName, int? msgsToProcess = null)
+		public int ProcessQueue(IMessageQueueClient mqClient, string queueName, Func<bool> doNext = null)
 		{
 			var msgsProcessed = 0;
 			try
 			{
 				byte[] messageBytes;
-				var processMaxMsgs = msgsToProcess.GetValueOrDefault(int.MaxValue);
 				while ((messageBytes = mqClient.GetAsync(queueName)) != null)
 				{
 					var message = messageBytes.ToMessage<T>();
 					ProcessMessage(mqClient, message);
 
 					this.TotalNormalMessagesReceived++;
-					if (++msgsProcessed >= processMaxMsgs) return msgsProcessed;
+				    msgsProcessed++;
+                    if (doNext != null && !doNext()) return msgsProcessed;
 				}
 			}
 			catch (Exception ex)
