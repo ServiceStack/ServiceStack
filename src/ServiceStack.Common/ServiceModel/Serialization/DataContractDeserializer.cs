@@ -14,7 +14,9 @@ namespace ServiceStack.ServiceModel.Serialization
 		/// <summary>
 		/// Default MaxStringContentLength is 8k, and throws an exception when reached
 		/// </summary>
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 		private readonly XmlDictionaryReaderQuotas quotas;
+#endif
 
 		public static DataContractDeserializer Instance 
 			= new DataContractDeserializer(
@@ -23,9 +25,15 @@ namespace ServiceStack.ServiceModel.Serialization
 #endif
                 );
 
-		public DataContractDeserializer(XmlDictionaryReaderQuotas quotas=null)
+		public DataContractDeserializer(
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+			XmlDictionaryReaderQuotas quotas=null
+#endif
+			)
 		{
+#if !SILVERLIGHT && !MONOTOUCH && !XBOX
 			this.quotas = quotas;
+#endif
 		}
 
 		public object Parse(string xml, Type type)
@@ -33,8 +41,12 @@ namespace ServiceStack.ServiceModel.Serialization
 			try
 			{
 				var bytes = Encoding.UTF8.GetBytes(xml);
-				
+
+#if MONOTOUCH				
+				using (var reader = XmlDictionaryReader.CreateTextReader(bytes, null))
+#else
 				using (var reader = XmlDictionaryReader.CreateTextReader(bytes, this.quotas))
+#endif
 				{
 					var serializer = new System.Runtime.Serialization.DataContractSerializer(type);
 					return serializer.ReadObject(reader);

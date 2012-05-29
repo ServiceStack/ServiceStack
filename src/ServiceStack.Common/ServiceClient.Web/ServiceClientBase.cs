@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Net;
+#if !MONOTOUCH
 using System.Web;
+#endif
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Service;
@@ -725,19 +727,23 @@ namespace ServiceStack.ServiceClient.Web
                 ApplyWebRequestFilters(webRequest);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
-                var nameValueCollection = HttpUtility.ParseQueryString(queryString);
+#if !MONOTOUCH
+				var nameValueCollection = HttpUtility.ParseQueryString(queryString);
+#endif
                 var boundary = DateTime.Now.Ticks.ToString();
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = Environment.NewLine;
                 using (var outputStream = webRequest.GetRequestStream())
                 {
+#if !MONOTOUCH
                     foreach (var key in nameValueCollection.AllKeys)
                     {
                         outputStream.Write(boundary + newLine);
                         outputStream.Write("Content-Disposition: form-data;name=\"{0}\"{1}{2}".FormatWith(key, newLine, newLine));
                         outputStream.Write(nameValueCollection[key] + newLine);
                     }
+#endif
                     outputStream.Write(boundary + newLine);
                     outputStream.Write("Content-Disposition: form-data;name=\"{0}\";filename=\"{1}\"{2}{3}".FormatWith("upload", fileName, newLine, newLine));
                     var buffer = new byte[4096];

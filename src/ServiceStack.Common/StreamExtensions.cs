@@ -1,4 +1,4 @@
-#if !SILVERLIGHT && !MONOTOUCH && !XBOX
+#if !SILVERLIGHT && !XBOX
 using System;
 using System.IO;
 using System.Text;
@@ -11,6 +11,7 @@ namespace ServiceStack.Common
 {
     public static class StreamExtensions
     {
+#if !MONOTOUCH
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>
@@ -68,6 +69,7 @@ namespace ServiceStack.Common
         {
             return GZipProvider.GUnzip(gzBuffer);
         }
+#endif
 
         public static string ToUtf8String(this Stream stream)
         {
