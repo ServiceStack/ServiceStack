@@ -18,17 +18,17 @@
 
 namespace ServiceStack.FluentValidation.Validators
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq.Expressions;
-	using Resources;
-	using Results;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq.Expressions;
+    using Resources;
+    using Results;
 
-	public abstract class NoopPropertyValidator : IPropertyValidator {
-		public IStringSource ErrorMessageSource {
-			get { return null; }
-			set { }
-		}
+    public abstract class NoopPropertyValidator : IPropertyValidator {
+        public IStringSource ErrorMessageSource {
+            get { return null; }
+            set { }
+        }
 
         public string ErrorCode
         {
@@ -36,19 +36,19 @@ namespace ServiceStack.FluentValidation.Validators
             set { }
         }
 
-		public abstract IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);
+        public abstract IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);
 
-		public virtual ICollection<Func<object, object>> CustomMessageFormatArguments {
-			get { return new List<Func<object, object>>(); }
-		}
+        public virtual ICollection<Func<object, object>> CustomMessageFormatArguments {
+            get { return new List<Func<object, object>>(); }
+        }
 
-		public virtual bool SupportsStandaloneValidation {
-			get { return false; }
-		}
+        public virtual bool SupportsStandaloneValidation {
+            get { return false; }
+        }
 
-		public Func<object, object> CustomStateProvider {
-			get { return null; }
-			set { }
-		}
-	}
+        public Func<object, object> CustomStateProvider {
+            get { return null; }
+            set { }
+        }
+    }
 }

@@ -18,9 +18,9 @@ namespace ServiceStack.ServiceInterface.Testing
             var httpReq = new MockHttpRequest { Container = this.Container };
             httpReq.AddSessionCookies();
             this.Container.Register<IHttpRequest>(httpReq);
-        	var httpRes = new MockHttpResponse();
-        	this.Container.Register<IHttpResponse>(httpRes);
-			httpReq.Container = this.Container;
+            var httpRes = new MockHttpResponse();
+            this.Container.Register<IHttpResponse>(httpRes);
+            httpReq.Container = this.Container;
         }
 
         public T Get<T>() where T : class

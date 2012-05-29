@@ -24,7 +24,7 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
     public abstract class ServiceBase<TRequest>
-		: IService<TRequest>, IRequiresRequestContext, IServiceBase, IAsyncService<TRequest>
+        : IService<TRequest>, IRequiresRequestContext, IServiceBase, IAsyncService<TRequest>
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
 
@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceInterface
         /// Combined service error logs are maintained in 'urn:ServiceErrors:All'
         /// </summary>
         public const string CombinedServiceLogId = "All";
-		
+        
         /// <summary>
         /// Can be overriden to supply Custom 'ServiceName' error logs
         /// </summary>
@@ -51,49 +51,49 @@ namespace ServiceStack.ServiceInterface
         /// </summary>
         /// 
         private IAppHost appHost; //not property to stop alt IOC's creating new instances of AppHost
-		
-		public IAppHost GetAppHost()
-		{
-			return appHost ?? EndpointHost.AppHost;
-		}
+        
+        public IAppHost GetAppHost()
+        {
+            return appHost ?? EndpointHost.AppHost;
+        }
 
-		public ServiceBase<TRequest> SetAppHost(IAppHost appHost) //Allow chaining
-		{
-			this.appHost = appHost;
-			return this;
-		}
+        public ServiceBase<TRequest> SetAppHost(IAppHost appHost) //Allow chaining
+        {
+            this.appHost = appHost;
+            return this;
+        }
 
         public IRequestContext RequestContext { get; set; }
 
-		public ISessionFactory SessionFactory { get; set; }
+        public ISessionFactory SessionFactory { get; set; }
 
-		public IRequestLogger RequestLogger { get; set; }
+        public IRequestLogger RequestLogger { get; set; }
 
-		/// <summary>
-		/// Easy way to log all requests
-		/// </summary>
-		/// <param name="requestDto"></param>
-		protected void BeforeEachRequest(TRequest requestDto)
-		{
-			OnBeforeExecute(requestDto);
-		}
+        /// <summary>
+        /// Easy way to log all requests
+        /// </summary>
+        /// <param name="requestDto"></param>
+        protected void BeforeEachRequest(TRequest requestDto)
+        {
+            OnBeforeExecute(requestDto);
+        }
 
-		protected object AfterEachRequest(TRequest requestDto, object response)
-		{
-			if (this.RequestLogger != null)
-			{
-				try
-				{
-					RequestLogger.Log(this.RequestContext, requestDto, response);
-				}
-				catch (Exception ex)
-				{
-					Log.Error("Error while logging request: " + requestDto.Dump(), ex);
-				}
-			}
+        protected object AfterEachRequest(TRequest requestDto, object response)
+        {
+            if (this.RequestLogger != null)
+            {
+                try
+                {
+                    RequestLogger.Log(this.RequestContext, requestDto, response);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error while logging request: " + requestDto.Dump(), ex);
+                }
+            }
 
-			return response.IsErrorResponse() ? response : OnAfterExecute(response); //only call OnAfterExecute if no exception occured
-		}
+            return response.IsErrorResponse() ? response : OnAfterExecute(response); //only call OnAfterExecute if no exception occured
+        }
 
         private ISession session;
         public ISession Session
@@ -153,7 +153,7 @@ namespace ServiceStack.ServiceInterface
 
         public T TryResolve<T>()
         {
-			return this.GetAppHost() == null
+            return this.GetAppHost() == null
                 ? default(T)
                 : this.GetAppHost().TryResolve<T>();
         }
@@ -169,19 +169,19 @@ namespace ServiceStack.ServiceInterface
         /// Called before the request is Executed. Override to enforce generic validation logic.
         /// </summary>
         /// <param name="request"></param>
-		protected virtual void OnBeforeExecute(TRequest request) { }
-		
-		/// <summary>
-		/// Called after the request is Executed. Override to decorate the response dto.
-		/// This method is only called if no exception occured while executing the service.
-		/// </summary>
-		/// <param name="response"></param>
-		/// <returns></returns>
-		protected virtual object OnAfterExecute(object response)
-		{
-			return response;
-		}
-		
+        protected virtual void OnBeforeExecute(TRequest request) { }
+        
+        /// <summary>
+        /// Called after the request is Executed. Override to decorate the response dto.
+        /// This method is only called if no exception occured while executing the service.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        protected virtual object OnAfterExecute(object response)
+        {
+            return response;
+        }
+        
         /// <summary>
         /// Execute the request with the protected abstract Run() method in a managed scope by
         /// provide default handling of Service Exceptions by serializing exceptions in the response
@@ -193,8 +193,8 @@ namespace ServiceStack.ServiceInterface
         {
             try
             {
-				BeforeEachRequest(request);
-				return AfterEachRequest(request, Run(request));
+                BeforeEachRequest(request);
+                return AfterEachRequest(request, Run(request));
             }
             catch (Exception ex)
             {
@@ -254,13 +254,13 @@ namespace ServiceStack.ServiceInterface
                 }
             }
 
-        	var errorResponse = ServiceUtils.CreateErrorResponse(request, ex, responseStatus);
-			
-			AfterEachRequest(request, errorResponse ?? ex);
+            var errorResponse = ServiceUtils.CreateErrorResponse(request, ex, responseStatus);
+            
+            AfterEachRequest(request, errorResponse ?? ex);
 
-			return errorResponse;
+            return errorResponse;
         }
-		
+        
         protected HttpResult View(string viewName, object response)
         {
             return new HttpResult(response)
@@ -279,37 +279,37 @@ namespace ServiceStack.ServiceInterface
             return Execute(request.GetBody());
         }
 
-		/// <summary>
-		/// Injected by the ServiceStack IOC with the registered dependency in the Funq IOC container.
-		/// </summary>
-		public IMessageFactory MessageFactory { get; set; }
+        /// <summary>
+        /// Injected by the ServiceStack IOC with the registered dependency in the Funq IOC container.
+        /// </summary>
+        public IMessageFactory MessageFactory { get; set; }
 
-		/// <summary>
-		/// Persists the request into the registered message queue if configured, 
-		/// otherwise calls Execute() to handle the request immediately.
-		/// 
-		/// IAsyncService.ExecuteAsync() will be used instead of IService.Execute() for 
-		/// EndpointAttributes.AsyncOneWay requests
-		/// </summary>
-		/// <param name="request"></param>
-		public virtual object ExecuteAsync(TRequest request)
-		{
-			if (MessageFactory == null)
-			{
-				return Execute(request);
-			}
+        /// <summary>
+        /// Persists the request into the registered message queue if configured, 
+        /// otherwise calls Execute() to handle the request immediately.
+        /// 
+        /// IAsyncService.ExecuteAsync() will be used instead of IService.Execute() for 
+        /// EndpointAttributes.AsyncOneWay requests
+        /// </summary>
+        /// <param name="request"></param>
+        public virtual object ExecuteAsync(TRequest request)
+        {
+            if (MessageFactory == null)
+            {
+                return Execute(request);
+            }
 
-			BeforeEachRequest(request);
+            BeforeEachRequest(request);
 
-			//Capture and persist this async request on this Services 'In Queue' 
-			//for execution after this request has been completed
-			using (var producer = MessageFactory.CreateMessageProducer())
-			{
-				producer.Publish(request);
-			}
+            //Capture and persist this async request on this Services 'In Queue' 
+            //for execution after this request has been completed
+            using (var producer = MessageFactory.CreateMessageProducer())
+            {
+                producer.Publish(request);
+            }
 
-			return ServiceUtils.CreateResponseDto(request);
-		}
+            return ServiceUtils.CreateResponseDto(request);
+        }
 
-	}
+    }
 }

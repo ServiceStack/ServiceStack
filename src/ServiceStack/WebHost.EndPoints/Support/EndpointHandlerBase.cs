@@ -238,7 +238,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				var pieces = request.UserHostAddress.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
 				var ipAddressNumber = isIpv4Address
 					? pieces[0]
-					: (pieces.Length == 9 || pieces.Length == 6 || pieces.Length == 4
+					: (request.UserHostAddress.Contains("]:")
 						? request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'))
 						: request.UserHostAddress);
 

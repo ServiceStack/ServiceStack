@@ -8,64 +8,64 @@ using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Testing
 {
-	public class BasicAppHost : IAppHost
-	{
-		public BasicAppHost()
-		{
-			this.Container = new Container();
-			this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-			this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-			this.HtmlProviders = new List<StreamSerializerResolverDelegate>();
-			this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
-		}
+    public class BasicAppHost : IAppHost
+    {
+        public BasicAppHost()
+        {
+            this.Container = new Container();
+            this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
+            this.HtmlProviders = new List<StreamSerializerResolverDelegate>();
+            this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+        }
 
-		public void RegisterAs<T, TAs>() where T : TAs
-		{
-			this.Container.RegisterAs<T, TAs>();
-		}
+        public void RegisterAs<T, TAs>() where T : TAs
+        {
+            this.Container.RegisterAs<T, TAs>();
+        }
 
-		public virtual void Release(object instance) { }
+        public virtual void Release(object instance) { }
 
-		public void Register<T>(T instance)
-		{
-			this.Container.Register(instance);
-		}
+        public void Register<T>(T instance)
+        {
+            this.Container.Register(instance);
+        }
 
-		public T TryResolve<T>()
-		{
-			return this.Container.TryResolve<T>();
-		}
+        public T TryResolve<T>()
+        {
+            return this.Container.TryResolve<T>();
+        }
 
-		public Container Container { get; set; }
+        public Container Container { get; set; }
 
-		public IContentTypeFilter ContentTypeFilters { get; set; }
+        public IContentTypeFilter ContentTypeFilters { get; set; }
 
-		public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; set; }
+        public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; set; }
 
-		public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
+        public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
 
-		public List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
+        public List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
 
-		public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
+        public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
-		public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
-		{
-			get { throw new NotImplementedException(); }
-		}
+        public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
+        {
+            get { throw new NotImplementedException(); }
+        }
 
-		public EndpointHostConfig Config { get; set; }
+        public EndpointHostConfig Config { get; set; }
 
-		public void RegisterService(Type serviceType, params string[] atRestPaths)
-		{
-			if (Config == null)
-				Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Assembly.GetExecutingAssembly()));				
+        public void RegisterService(Type serviceType, params string[] atRestPaths)
+        {
+            if (Config == null)
+                Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Assembly.GetExecutingAssembly()));				
 
-			Config.ServiceManager.RegisterService(serviceType);
-		}
+            Config.ServiceManager.RegisterService(serviceType);
+        }
 
-		public void LoadPlugin(params IPlugin[] plugins)
-		{
-			plugins.ToList().ForEach(x => x.Register(this));
-		}
-	}
+        public void LoadPlugin(params IPlugin[] plugins)
+        {
+            plugins.ToList().ForEach(x => x.Register(this));
+        }
+    }
 }

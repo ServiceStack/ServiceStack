@@ -18,10 +18,10 @@
 
 namespace ServiceStack.FluentValidation.TestHelper
 {
-	using System;
+    using System;
 
-	public class ValidationTestException : Exception {
-		public ValidationTestException(string message) : base(message) {
-		}
-	}
+    public class ValidationTestException : Exception {
+        public ValidationTestException(string message) : base(message) {
+        }
+    }
 }

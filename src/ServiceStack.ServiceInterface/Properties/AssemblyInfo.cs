@@ -37,6 +37,6 @@ using System.Runtime.Serialization;
 
 //Default DataContract namespace instead of tempuri.org
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
-	ClrNamespace = "ServiceStack.ServiceInterface")]
+    ClrNamespace = "ServiceStack.ServiceInterface")]
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
-	ClrNamespace = "ServiceStack.ServiceInterface.Auth")]
+    ClrNamespace = "ServiceStack.ServiceInterface.Auth")]

@@ -50,15 +50,15 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
 				foreach (var address in ipv6Addresses)
 				{
 					yield return new TestCaseData(address.ToString(), EndpointAttributes.LocalSubnet);
-					yield return new TestCaseData(address + ":57", EndpointAttributes.LocalSubnet);
+					yield return new TestCaseData("[" + address + "]:57", EndpointAttributes.LocalSubnet);
 				}
 
 				yield return new TestCaseData("fe80::100:7f:fffe%10", EndpointAttributes.LocalSubnet);
-				//yield return new TestCaseData("fe80::100:7f:fffe%10:57", EndpointAttributes.LocalSubnet);
+				yield return new TestCaseData("[fe80::100:7f:fffe%10]:57", EndpointAttributes.LocalSubnet);
 
 				//ipv6 loopback
 				yield return new TestCaseData("::1", EndpointAttributes.Localhost);
-				yield return new TestCaseData("::1:83", EndpointAttributes.LocalSubnet);
+                yield return new TestCaseData("[::1]:83", EndpointAttributes.Localhost);
 				
 				//ipv4
 				yield return new TestCaseData("192.168.100.2", EndpointAttributes.External);
