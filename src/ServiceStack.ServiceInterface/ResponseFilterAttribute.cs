@@ -13,9 +13,9 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     public abstract class ResponseFilterAttribute : Attribute, IHasResponseFilter
     {
-		public int Priority { get; set; }
+        public int Priority { get; set; }
 
-		public ApplyTo ApplyTo { get; set; }
+        public ApplyTo ApplyTo { get; set; }
 
         public ResponseFilterAttribute()
         {
@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceInterface
             ApplyTo = applyTo;
         }
 
-    	public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
+        public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
         {
             ApplyTo httpMethod = req.HttpMethodAsApplyTo();
             if (ApplyTo.Has(httpMethod))

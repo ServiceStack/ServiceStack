@@ -18,29 +18,29 @@
 
 namespace ServiceStack.FluentValidation.Results
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
 #if !SILVERLIGHT
-	[Serializable]
+    [Serializable]
 #endif
-	public class ValidationResult {
-		private readonly List<ValidationFailure> errors = new List<ValidationFailure>();
+    public class ValidationResult {
+        private readonly List<ValidationFailure> errors = new List<ValidationFailure>();
 
-		public bool IsValid {
-			get { return Errors.Count == 0; }
-		}
+        public bool IsValid {
+            get { return Errors.Count == 0; }
+        }
 
-		public IList<ValidationFailure> Errors {
-			get { return errors; }
-		}
+        public IList<ValidationFailure> Errors {
+            get { return errors; }
+        }
 
-		public ValidationResult() {
-		}
+        public ValidationResult() {
+        }
 
-		public ValidationResult(IEnumerable<ValidationFailure> failures) {
-			errors.AddRange(failures.Where(failure => failure != null));
-		}
-	}
+        public ValidationResult(IEnumerable<ValidationFailure> failures) {
+            errors.AddRange(failures.Where(failure => failure != null));
+        }
+    }
 }

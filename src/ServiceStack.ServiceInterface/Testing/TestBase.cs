@@ -19,147 +19,147 @@ using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.ServiceInterface.Testing
 {
-	public abstract class TestBase
-	{
-		protected IAppHost AppHost { get; set; }
+    public abstract class TestBase
+    {
+        protected IAppHost AppHost { get; set; }
 
-		protected bool HasConfigured { get; set; }
+        protected bool HasConfigured { get; set; }
 
-		protected TestBase(params Assembly[] serviceAssemblies)
-			: this(null, serviceAssemblies) { }
+        protected TestBase(params Assembly[] serviceAssemblies)
+            : this(null, serviceAssemblies) { }
 
-		protected TestBase(string serviceClientBaseUri, params Assembly[] serviceAssemblies)
-		{
-			if (serviceAssemblies.Length == 0)
-				serviceAssemblies = new[] { GetType().Assembly };
+        protected TestBase(string serviceClientBaseUri, params Assembly[] serviceAssemblies)
+        {
+            if (serviceAssemblies.Length == 0)
+                serviceAssemblies = new[] { GetType().Assembly };
 
-			ServiceClientBaseUri = serviceClientBaseUri;
-			ServiceAssemblies = serviceAssemblies;
+            ServiceClientBaseUri = serviceClientBaseUri;
+            ServiceAssemblies = serviceAssemblies;
 
-			var serviceManager = new ServiceManager(serviceAssemblies);
+            var serviceManager = new ServiceManager(serviceAssemblies);
 
-			this.AppHost = new TestAppHost(serviceManager.Container, serviceAssemblies);
+            this.AppHost = new TestAppHost(serviceManager.Container, serviceAssemblies);
 
-			EndpointHost.ConfigureHost(this.AppHost, "TestBase", serviceManager);
+            EndpointHost.ConfigureHost(this.AppHost, "TestBase", serviceManager);
 
-			EndpointHost.ServiceManager = this.AppHost.Config.ServiceManager;
-		}
+            EndpointHost.ServiceManager = this.AppHost.Config.ServiceManager;
+        }
 
-		protected abstract void Configure(Funq.Container container);
+        protected abstract void Configure(Funq.Container container);
 
-		protected Funq.Container Container
-		{
-			get { return EndpointHost.ServiceManager.Container; }
-		}
+        protected Funq.Container Container
+        {
+            get { return EndpointHost.ServiceManager.Container; }
+        }
 
-		protected IServiceRoutes Routes
-		{
-			get { return EndpointHost.ServiceManager.ServiceController.Routes; }
-		}
+        protected IServiceRoutes Routes
+        {
+            get { return EndpointHost.ServiceManager.ServiceController.Routes; }
+        }
 
-		//All integration tests call the Webservices hosted at the following location:
-		protected string ServiceClientBaseUri { get; set; }
-		protected Assembly[] ServiceAssemblies { get; set; }
+        //All integration tests call the Webservices hosted at the following location:
+        protected string ServiceClientBaseUri { get; set; }
+        protected Assembly[] ServiceAssemblies { get; set; }
 
-		public virtual void OnBeforeTestFixture()
-		{
-			OnConfigure();
-		}
+        public virtual void OnBeforeTestFixture()
+        {
+            OnConfigure();
+        }
 
-		protected virtual void OnConfigure()
-		{
-			if (HasConfigured) return;
+        protected virtual void OnConfigure()
+        {
+            if (HasConfigured) return;
 
-			HasConfigured = true;
-			Configure(Container);
-			EndpointHost.AfterInit();
-		}
+            HasConfigured = true;
+            Configure(Container);
+            EndpointHost.AfterInit();
+        }
 
-		public virtual void OnBeforeEachTest()
-		{
-			OnConfigure();
-		}
+        public virtual void OnBeforeEachTest()
+        {
+            OnConfigure();
+        }
 
-		protected virtual IServiceClient CreateNewServiceClient()
-		{
-			return new DirectServiceClient(this, EndpointHost.ServiceManager);
-		}
+        protected virtual IServiceClient CreateNewServiceClient()
+        {
+            return new DirectServiceClient(this, EndpointHost.ServiceManager);
+        }
 
-		protected virtual IRestClient CreateNewRestClient()
-		{
-			return new DirectServiceClient(this, EndpointHost.ServiceManager);
-		}
+        protected virtual IRestClient CreateNewRestClient()
+        {
+            return new DirectServiceClient(this, EndpointHost.ServiceManager);
+        }
 
-		protected virtual IRestClientAsync CreateNewRestClientAsync()
-		{
-			return new DirectServiceClient(this, EndpointHost.ServiceManager);
-		}
+        protected virtual IRestClientAsync CreateNewRestClientAsync()
+        {
+            return new DirectServiceClient(this, EndpointHost.ServiceManager);
+        }
 
-		public class DirectServiceClient : IServiceClient, IRestClient
-		{
-			private readonly TestBase parent;
-			ServiceManager ServiceManager { get; set; }
+        public class DirectServiceClient : IServiceClient, IRestClient
+        {
+            private readonly TestBase parent;
+            ServiceManager ServiceManager { get; set; }
 
-			public DirectServiceClient(TestBase parent, ServiceManager serviceManager)
-			{
-				this.parent = parent;
-				this.ServiceManager = serviceManager;
-			}
+            public DirectServiceClient(TestBase parent, ServiceManager serviceManager)
+            {
+                this.parent = parent;
+                this.ServiceManager = serviceManager;
+            }
 
-			public void SendOneWay(object request)
-			{
-				ServiceManager.Execute(request);
-			}
-
-		    public void SendOneWay(string relativeOrAbsoluteUrl, object request)
-		    {
+            public void SendOneWay(object request)
+            {
                 ServiceManager.Execute(request);
             }
 
-		    public TResponse Send<TResponse>(object request)
-			{
-				var response = ServiceManager.Execute(request);
-				var httpResult = response as IHttpResult;
-				if (httpResult != null)
-				{
-					if (httpResult.StatusCode >= HttpStatusCode.BadRequest)
-					{
-						var webEx = new WebServiceException(httpResult.StatusDescription) {
-							ResponseDto = httpResult.Response,
-							StatusCode = (int)httpResult.StatusCode,
-						};
-						throw webEx;
-					}
-					return (TResponse) httpResult.Response;
-				}
+            public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+            {
+                ServiceManager.Execute(request);
+            }
 
-				return (TResponse)response;
-			}
+            public TResponse Send<TResponse>(object request)
+            {
+                var response = ServiceManager.Execute(request);
+                var httpResult = response as IHttpResult;
+                if (httpResult != null)
+                {
+                    if (httpResult.StatusCode >= HttpStatusCode.BadRequest)
+                    {
+                        var webEx = new WebServiceException(httpResult.StatusDescription) {
+                            ResponseDto = httpResult.Response,
+                            StatusCode = (int)httpResult.StatusCode,
+                        };
+                        throw webEx;
+                    }
+                    return (TResponse) httpResult.Response;
+                }
 
-			public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
-			{
-				return parent.ExecutePath<TResponse>(HttpMethod.Get, new UrlParts(relativeOrAbsoluteUrl), null);
-			}
+                return (TResponse)response;
+            }
 
-			public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
-			{
-				return parent.ExecutePath<TResponse>(HttpMethod.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
-			}
+            public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
+            {
+                return parent.ExecutePath<TResponse>(HttpMethod.Get, new UrlParts(relativeOrAbsoluteUrl), null);
+            }
 
-			public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
-			{
-				return parent.ExecutePath<TResponse>(HttpMethod.Post, new UrlParts(relativeOrAbsoluteUrl), request);
-			}
+            public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
+            {
+                return parent.ExecutePath<TResponse>(HttpMethod.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
+            }
 
-			public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
-			{
-				return parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
-			}
+            public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
+            {
+                return parent.ExecutePath<TResponse>(HttpMethod.Post, new UrlParts(relativeOrAbsoluteUrl), request);
+            }
 
-			public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
-			{
-				throw new NotImplementedException();
-			}
+            public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
+            {
+                return parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
+            }
+
+            public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+            {
+                throw new NotImplementedException();
+            }
 
             public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
             {
@@ -167,262 +167,262 @@ namespace ServiceStack.ServiceInterface.Testing
             }
 
 
-			public void SendAsync<TResponse>(object request,
-				Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-			{
-				try
-				{
-					var response = (TResponse)ServiceManager.Execute(request);
-					onSuccess(response);
-				}
-				catch (Exception ex)
-				{
-					HandleException(ex, onError);
-				}
-			}
+            public void SendAsync<TResponse>(object request,
+                Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            {
+                try
+                {
+                    var response = (TResponse)ServiceManager.Execute(request);
+                    onSuccess(response);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, onError);
+                }
+            }
 
-			private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
-			{
-				var response = (TResponse)ReflectionUtils.CreateInstance(typeof(TResponse));
-				var hasResponseStatus = response as IHasResponseStatus;
-				if (hasResponseStatus != null)
-				{
-					hasResponseStatus.ResponseStatus = new ResponseStatus {
-						ErrorCode = exception.GetType().Name,
-						Message = exception.Message,
-						StackTrace = exception.StackTrace,
-					};
-				}
-				var webServiceEx = new WebServiceException(exception.Message, exception);
-				if (onError != null) onError(response, webServiceEx);
-			}
+            private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
+            {
+                var response = (TResponse)ReflectionUtils.CreateInstance(typeof(TResponse));
+                var hasResponseStatus = response as IHasResponseStatus;
+                if (hasResponseStatus != null)
+                {
+                    hasResponseStatus.ResponseStatus = new ResponseStatus {
+                        ErrorCode = exception.GetType().Name,
+                        Message = exception.Message,
+                        StackTrace = exception.StackTrace,
+                    };
+                }
+                var webServiceEx = new WebServiceException(exception.Message, exception);
+                if (onError != null) onError(response, webServiceEx);
+            }
 
-			public void SetCredentials(string userName, string password)
-			{
-				throw new NotImplementedException();
-			}
+            public void SetCredentials(string userName, string password)
+            {
+                throw new NotImplementedException();
+            }
 
-			public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-			{
-				try
-				{
-					var response = parent.ExecutePath<TResponse>(HttpMethod.Get, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
-					onSuccess(response);
-				}
-				catch (Exception ex)
-				{
-					HandleException(ex, onError);
-				}
-			}
+            public void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            {
+                try
+                {
+                    var response = parent.ExecutePath<TResponse>(HttpMethod.Get, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
+                    onSuccess(response);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, onError);
+                }
+            }
 
-			public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-			{
-				try
-				{
-					var response = parent.ExecutePath<TResponse>(HttpMethod.Delete, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
-					onSuccess(response);
-				}
-				catch (Exception ex)
-				{
-					HandleException(ex, onError);
-				}
-			}
+            public void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            {
+                try
+                {
+                    var response = parent.ExecutePath<TResponse>(HttpMethod.Delete, new UrlParts(relativeOrAbsoluteUrl), default(TResponse));
+                    onSuccess(response);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, onError);
+                }
+            }
 
-			public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-			{
-				try
-				{
-					var response = parent.ExecutePath<TResponse>(HttpMethod.Post, new UrlParts(relativeOrAbsoluteUrl), request);
-					onSuccess(response);
-				}
-				catch (Exception ex)
-				{
-					HandleException(ex, onError);
-				}
-			}
+            public void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            {
+                try
+                {
+                    var response = parent.ExecutePath<TResponse>(HttpMethod.Post, new UrlParts(relativeOrAbsoluteUrl), request);
+                    onSuccess(response);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, onError);
+                }
+            }
 
-			public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
-			{
-				try
-				{
-					var response = parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
-					onSuccess(response);
-				}
-				catch (Exception ex)
-				{
-					HandleException(ex, onError);
-				}
-			}
+            public void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+            {
+                try
+                {
+                    var response = parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
+                    onSuccess(response);
+                }
+                catch (Exception ex)
+                {
+                    HandleException(ex, onError);
+                }
+            }
 
-			public void Dispose() { }
+            public void Dispose() { }
             public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
-		    {
-		        throw new NotImplementedException();
-		    }
+            {
+                throw new NotImplementedException();
+            }
 
             public TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
-		    {
-		        throw new NotImplementedException();
-		    }
-		}
+            {
+                throw new NotImplementedException();
+            }
+        }
 
-		public object ExecutePath(string pathInfo)
-		{
-			return ExecutePath(HttpMethods.Get, pathInfo);
-		}
+        public object ExecutePath(string pathInfo)
+        {
+            return ExecutePath(HttpMethods.Get, pathInfo);
+        }
 
-		private class UrlParts
-		{
-			public UrlParts(string pathInfo)
-			{
-				this.PathInfo = pathInfo.UrlDecode();
-				var qsIndex = pathInfo.IndexOf("?");
-				if (qsIndex != -1)
-				{
-					var qs = pathInfo.Substring(qsIndex + 1);
-					this.PathInfo = pathInfo.Substring(0, qsIndex);
-					var kvps = qs.Split('&');
+        private class UrlParts
+        {
+            public UrlParts(string pathInfo)
+            {
+                this.PathInfo = pathInfo.UrlDecode();
+                var qsIndex = pathInfo.IndexOf("?");
+                if (qsIndex != -1)
+                {
+                    var qs = pathInfo.Substring(qsIndex + 1);
+                    this.PathInfo = pathInfo.Substring(0, qsIndex);
+                    var kvps = qs.Split('&');
 
-					this.QueryString = new Dictionary<string, string>();
-					foreach (var kvp in kvps)
-					{
-						var parts = kvp.Split('=');
-						this.QueryString[parts[0]] = parts.Length > 1 ? parts[1] : null;
-					}
-				}
-			}
+                    this.QueryString = new Dictionary<string, string>();
+                    foreach (var kvp in kvps)
+                    {
+                        var parts = kvp.Split('=');
+                        this.QueryString[parts[0]] = parts.Length > 1 ? parts[1] : null;
+                    }
+                }
+            }
 
-			public string PathInfo { get; private set; }
-			public Dictionary<string, string> QueryString { get; private set; }
-		}
+            public string PathInfo { get; private set; }
+            public Dictionary<string, string> QueryString { get; private set; }
+        }
 
-		public object ExecutePath(string httpMethod, string pathInfo)
-		{
-			var urlParts = new UrlParts(pathInfo);
-			return ExecutePath(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, null);
-		}
+        public object ExecutePath(string httpMethod, string pathInfo)
+        {
+            var urlParts = new UrlParts(pathInfo);
+            return ExecutePath(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, null);
+        }
 
-		private TResponse ExecutePath<TResponse>(string httpMethod, UrlParts urlParts, object requestDto)
-		{
-			return (TResponse)ExecutePath(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, requestDto);
-		}
+        private TResponse ExecutePath<TResponse>(string httpMethod, UrlParts urlParts, object requestDto)
+        {
+            return (TResponse)ExecutePath(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, requestDto);
+        }
 
-		public TResponse ExecutePath<TResponse>(string httpMethod, string pathInfo, object requestDto)
-		{
-			var urlParts = new UrlParts(pathInfo);
-			return (TResponse)ExecutePath(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, requestDto);
-		}
+        public TResponse ExecutePath<TResponse>(string httpMethod, string pathInfo, object requestDto)
+        {
+            var urlParts = new UrlParts(pathInfo);
+            return (TResponse)ExecutePath(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, requestDto);
+        }
 
-		public object ExecutePath<T>(
-			string httpMethod,
-			string pathInfo,
-			Dictionary<string, string> queryString,
-			Dictionary<string, string> formData,
-			T requestBody)
-		{
-			var isDefault = Equals(requestBody, default(T));
-			var json = !isDefault ? JsonSerializer.SerializeToString(requestBody) : null;
-			return ExecutePath(httpMethod, pathInfo, queryString, formData, json);
-		}
+        public object ExecutePath<T>(
+            string httpMethod,
+            string pathInfo,
+            Dictionary<string, string> queryString,
+            Dictionary<string, string> formData,
+            T requestBody)
+        {
+            var isDefault = Equals(requestBody, default(T));
+            var json = !isDefault ? JsonSerializer.SerializeToString(requestBody) : null;
+            return ExecutePath(httpMethod, pathInfo, queryString, formData, json);
+        }
 
-		public object ExecutePath(
-			string httpMethod,
-			string pathInfo,
-			Dictionary<string, string> queryString,
-			Dictionary<string, string> formData,
-			string requestBody)
-		{
-			var httpHandler = GetHandler(httpMethod, pathInfo);
+        public object ExecutePath(
+            string httpMethod,
+            string pathInfo,
+            Dictionary<string, string> queryString,
+            Dictionary<string, string> formData,
+            string requestBody)
+        {
+            var httpHandler = GetHandler(httpMethod, pathInfo);
 
-			var contentType = (formData != null && formData.Count > 0)
-				? ContentType.FormUrlEncoded
-				: requestBody != null ? ContentType.Json : null;
+            var contentType = (formData != null && formData.Count > 0)
+                ? ContentType.FormUrlEncoded
+                : requestBody != null ? ContentType.Json : null;
 
-			var httpReq = new MockHttpRequest(
-					httpHandler.RequestName, httpMethod, contentType,
-					pathInfo,
-					queryString.ToNameValueCollection(),
-					requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
-					formData.ToNameValueCollection()
-				);
+            var httpReq = new MockHttpRequest(
+                    httpHandler.RequestName, httpMethod, contentType,
+                    pathInfo,
+                    queryString.ToNameValueCollection(),
+                    requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
+                    formData.ToNameValueCollection()
+                );
 
-			var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
-			var response = httpHandler.GetResponse(httpReq, null, request);
+            var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+            var response = httpHandler.GetResponse(httpReq, null, request);
 
-			var httpRes = response as IHttpResult;
-			if (httpRes != null)
-			{
-				var httpError = httpRes as IHttpError;
-				if (httpError != null)
-				{
-					throw new WebServiceException(httpError.Message) {
-						StatusCode = (int)httpError.StatusCode,
-						ResponseDto = httpError.Response
-					};
-				}
-				var hasResponseStatus = httpRes.Response as IHasResponseStatus;
-				if (hasResponseStatus != null)
-				{
-					var status = hasResponseStatus.ResponseStatus;
-					if (status != null && !status.ErrorCode.IsNullOrEmpty())
-					{
-						throw new WebServiceException(status.Message) {
-							StatusCode = (int)HttpStatusCode.InternalServerError,
-							ResponseDto = httpRes.Response,
-						};
-					}
-				}
+            var httpRes = response as IHttpResult;
+            if (httpRes != null)
+            {
+                var httpError = httpRes as IHttpError;
+                if (httpError != null)
+                {
+                    throw new WebServiceException(httpError.Message) {
+                        StatusCode = (int)httpError.StatusCode,
+                        ResponseDto = httpError.Response
+                    };
+                }
+                var hasResponseStatus = httpRes.Response as IHasResponseStatus;
+                if (hasResponseStatus != null)
+                {
+                    var status = hasResponseStatus.ResponseStatus;
+                    if (status != null && !status.ErrorCode.IsNullOrEmpty())
+                    {
+                        throw new WebServiceException(status.Message) {
+                            StatusCode = (int)HttpStatusCode.InternalServerError,
+                            ResponseDto = httpRes.Response,
+                        };
+                    }
+                }
 
-				return httpRes.Response;
-			}
+                return httpRes.Response;
+            }
 
-			return response;
-		}
+            return response;
+        }
 
-		public object GetRequest(string pathInfo)
-		{
-			var urlParts = new UrlParts(pathInfo);
-			return GetRequest(HttpMethods.Get, urlParts.PathInfo, urlParts.QueryString, null, null);
-		}
+        public object GetRequest(string pathInfo)
+        {
+            var urlParts = new UrlParts(pathInfo);
+            return GetRequest(HttpMethods.Get, urlParts.PathInfo, urlParts.QueryString, null, null);
+        }
 
-		public object GetRequest(string httpMethod, string pathInfo)
-		{
-			var urlParts = new UrlParts(pathInfo);
-			return GetRequest(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, null);
-		}
+        public object GetRequest(string httpMethod, string pathInfo)
+        {
+            var urlParts = new UrlParts(pathInfo);
+            return GetRequest(httpMethod, urlParts.PathInfo, urlParts.QueryString, null, null);
+        }
 
-		public object GetRequest(
-				string httpMethod,
-				string pathInfo,
-				Dictionary<string, string> queryString,
-				Dictionary<string, string> formData,
-				string requestBody)
-		{
-			var httpHandler = GetHandler(httpMethod, pathInfo);
+        public object GetRequest(
+                string httpMethod,
+                string pathInfo,
+                Dictionary<string, string> queryString,
+                Dictionary<string, string> formData,
+                string requestBody)
+        {
+            var httpHandler = GetHandler(httpMethod, pathInfo);
 
-			var contentType = (formData != null && formData.Count > 0)
-				? ContentType.FormUrlEncoded
-				: requestBody != null ? ContentType.Json : null;
+            var contentType = (formData != null && formData.Count > 0)
+                ? ContentType.FormUrlEncoded
+                : requestBody != null ? ContentType.Json : null;
 
-			var httpReq = new MockHttpRequest(
-					httpHandler.RequestName, httpMethod, contentType,
-					pathInfo,
-					queryString.ToNameValueCollection(),
-					requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
-					formData.ToNameValueCollection()
-				);
+            var httpReq = new MockHttpRequest(
+                    httpHandler.RequestName, httpMethod, contentType,
+                    pathInfo,
+                    queryString.ToNameValueCollection(),
+                    requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
+                    formData.ToNameValueCollection()
+                );
 
-			var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
-			return request;
-		}
+            var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+            return request;
+        }
 
-		private static EndpointHandlerBase GetHandler(string httpMethod, string pathInfo)
-		{
-			var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as EndpointHandlerBase;
-			if (httpHandler == null)
-				throw new NotSupportedException(pathInfo);
-			return httpHandler;
-		}
-	}
+        private static EndpointHandlerBase GetHandler(string httpMethod, string pathInfo)
+        {
+            var httpHandler = ServiceStackHttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as EndpointHandlerBase;
+            if (httpHandler == null)
+                throw new NotSupportedException(pathInfo);
+            return httpHandler;
+        }
+    }
 
 }
