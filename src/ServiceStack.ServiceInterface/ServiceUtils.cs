@@ -9,33 +9,33 @@ using ServiceStack.Validation;
 
 namespace ServiceStack.ServiceInterface
 {
-	public static class ServiceUtils
-	{
-		/// <summary>
-		/// Naming convention for the ResponseStatus property name on the response DTO
-		/// </summary>
-		public const string ResponseStatusPropertyName = "ResponseStatus";
+    public static class ServiceUtils
+    {
+        /// <summary>
+        /// Naming convention for the ResponseStatus property name on the response DTO
+        /// </summary>
+        public const string ResponseStatusPropertyName = "ResponseStatus";
 
-		/// <summary>
-		/// Naming convention for the request's Response DTO
-		/// </summary>
-		public const string ResponseDtoSuffix = "Response";
+        /// <summary>
+        /// Naming convention for the request's Response DTO
+        /// </summary>
+        public const string ResponseDtoSuffix = "Response";
 
-		public static object CreateErrorResponse<TRequest>(TRequest request, ValidationErrorResult validationError)
-		{
-			var responseStatus = ResponseStatusTranslator.Instance.Parse(validationError);
-			
-			var errorResponse = CreateErrorResponse(
-				request,
-				new ValidationError(validationError),
-				responseStatus);
-			
-			return errorResponse;
-		}
+        public static object CreateErrorResponse<TRequest>(TRequest request, ValidationErrorResult validationError)
+        {
+            var responseStatus = ResponseStatusTranslator.Instance.Parse(validationError);
+            
+            var errorResponse = CreateErrorResponse(
+                request,
+                new ValidationError(validationError),
+                responseStatus);
+            
+            return errorResponse;
+        }
 
-		public static object CreateErrorResponse<TRequest>(TRequest request, Exception ex, ResponseStatus responseStatus)
-		{
-			var responseDto = CreateResponseDto(request, responseStatus);
+        public static object CreateErrorResponse<TRequest>(TRequest request, Exception ex, ResponseStatus responseStatus)
+        {
+            var responseDto = CreateResponseDto(request, responseStatus);
 
             var httpError = ex as IHttpError;
             if (httpError != null)
@@ -44,99 +44,99 @@ namespace ServiceStack.ServiceInterface
                 {
                     httpError.Response = responseDto;
                 }
-				//Do we need this?
-				//if (httpError.Response == null)
-				//{
-				//    var httpEx = httpError as HttpError;
-				//    if (httpEx != null && httpEx.InnerException != null)
-				//    {
-				//        responseStatus = responseStatus ?? ResponseStatusTranslator.Instance.Parse(httpEx.InnerException);
-				//        httpEx.Response = CreateResponseDto(request, responseStatus);
-				//    }
-				//}
+                //Do we need this?
+                //if (httpError.Response == null)
+                //{
+                //    var httpEx = httpError as HttpError;
+                //    if (httpEx != null && httpEx.InnerException != null)
+                //    {
+                //        responseStatus = responseStatus ?? ResponseStatusTranslator.Instance.Parse(httpEx.InnerException);
+                //        httpEx.Response = CreateResponseDto(request, responseStatus);
+                //    }
+                //}
 
                 return httpError;
             }
 
             var statusCode = HttpStatusCode.InternalServerError;
             if (ex is NotImplementedException) statusCode = HttpStatusCode.MethodNotAllowed;
-			else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
+            else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
 
-			var errorCode = ex.GetType().Name;
-			var errorMsg = ex.Message;
-			if (responseStatus != null)
-			{
-				errorCode = responseStatus.ErrorCode ?? errorCode;
-				errorMsg = responseStatus.Message ?? errorMsg;
-			}
+            var errorCode = ex.GetType().Name;
+            var errorMsg = ex.Message;
+            if (responseStatus != null)
+            {
+                errorCode = responseStatus.ErrorCode ?? errorCode;
+                errorMsg = responseStatus.Message ?? errorMsg;
+            }
 
-			return new HttpError(responseDto, statusCode, errorCode, errorMsg);
-		}
+            return new HttpError(responseDto, statusCode, errorCode, errorMsg);
+        }
 
-		/// <summary>
-		/// Create an instance of the service response dto type and inject it with the supplied responseStatus
-		/// </summary>
-		/// <param name="request"></param>
-		/// <param name="responseStatus"></param>
-		/// <returns></returns>
-		public static object CreateResponseDto<TRequest>(TRequest request, ResponseStatus responseStatus)
-		{
-			// Predict the Response message type name
-			// Get the type
-			var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
-			var responseDto = CreateResponseDto(request);
+        /// <summary>
+        /// Create an instance of the service response dto type and inject it with the supplied responseStatus
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="responseStatus"></param>
+        /// <returns></returns>
+        public static object CreateResponseDto<TRequest>(TRequest request, ResponseStatus responseStatus)
+        {
+            // Predict the Response message type name
+            // Get the type
+            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
+            var responseDto = CreateResponseDto(request);
 
-			if (responseDto == null)
-				return null;
+            if (responseDto == null)
+                return null;
 
-			// For faster serialization of exceptions, services should implement IHasResponseStatus
-			var hasResponseStatus = responseDto as IHasResponseStatus;
-			if (hasResponseStatus != null)
-			{
-				hasResponseStatus.ResponseStatus = responseStatus;
-			}
-			else
-			{
-				// Get the ResponseStatus property
-				var responseStatusProperty = responseDtoType.GetProperty(ResponseStatusPropertyName);
+            // For faster serialization of exceptions, services should implement IHasResponseStatus
+            var hasResponseStatus = responseDto as IHasResponseStatus;
+            if (hasResponseStatus != null)
+            {
+                hasResponseStatus.ResponseStatus = responseStatus;
+            }
+            else
+            {
+                // Get the ResponseStatus property
+                var responseStatusProperty = responseDtoType.GetProperty(ResponseStatusPropertyName);
 
-				if (responseStatusProperty != null)
-				{
-					// Set the ResponseStatus
-					ReflectionUtils.SetProperty(responseDto, responseStatusProperty, responseStatus);
-				}
-			}
+                if (responseStatusProperty != null)
+                {
+                    // Set the ResponseStatus
+                    ReflectionUtils.SetProperty(responseDto, responseStatusProperty, responseStatus);
+                }
+            }
 
-			// Return an Error DTO with the exception populated
-			return responseDto;
-		}
+            // Return an Error DTO with the exception populated
+            return responseDto;
+        }
 
-		/// <summary>
-		/// Create an instance of the response dto based on the requestDto type and default naming convention
-		/// </summary>
-		/// <param name="request"></param>
-		/// <returns></returns>
-		public static object CreateResponseDto<TRequest>(TRequest request)
-		{
-			// Get the type
-			var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
+        /// <summary>
+        /// Create an instance of the response dto based on the requestDto type and default naming convention
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static object CreateResponseDto<TRequest>(TRequest request)
+        {
+            // Get the type
+            var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
 
-			if (responseDtoType == null)
-			{
-				// We don't support creation of response messages without a predictable type name
-				return null;
-			}
+            if (responseDtoType == null)
+            {
+                // We don't support creation of response messages without a predictable type name
+                return null;
+            }
 
-			// Create an instance of the response message for this request
-			var responseDto = ReflectionUtils.CreateInstance(responseDtoType);
-			return responseDto;
-		}
+            // Create an instance of the response message for this request
+            var responseDto = ReflectionUtils.CreateInstance(responseDtoType);
+            return responseDto;
+        }
 
-		public static string GetResponseDtoName<TRequest>(TRequest request)
-		{
-			return typeof(TRequest) != typeof(object)
-				? typeof(TRequest).FullName + ResponseDtoSuffix
-				: request.GetType().FullName + ResponseDtoSuffix;
-		}	
-	}
+        public static string GetResponseDtoName<TRequest>(TRequest request)
+        {
+            return typeof(TRequest) != typeof(object)
+                ? typeof(TRequest).FullName + ResponseDtoSuffix
+                : request.GetType().FullName + ResponseDtoSuffix;
+        }	
+    }
 }

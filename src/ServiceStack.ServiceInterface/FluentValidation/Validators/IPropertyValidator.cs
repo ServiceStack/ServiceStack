@@ -18,16 +18,16 @@
 
 namespace ServiceStack.FluentValidation.Validators
 {
-	using System;
-	using System.Collections.Generic;
-	using Resources;
-	using Results;
+    using System;
+    using System.Collections.Generic;
+    using Resources;
+    using Results;
 
-	/// <summary>
-	/// A custom property validator.
-	/// This interface should not be implemented directly in your code as it is subject to change.
-	/// Please inherit from <see cref="PropertyValidator">PropertyValidator</see> instead.
-	/// </summary>
+    /// <summary>
+    /// A custom property validator.
+    /// This interface should not be implemented directly in your code as it is subject to change.
+    /// Please inherit from <see cref="PropertyValidator">PropertyValidator</see> instead.
+    /// </summary>
     public interface IPropertyValidator
     {
         IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);

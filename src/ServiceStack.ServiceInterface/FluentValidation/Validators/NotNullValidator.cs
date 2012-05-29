@@ -18,20 +18,20 @@
 
 namespace ServiceStack.FluentValidation.Validators
 {
-	using Resources;
+    using Resources;
 
-	public class NotNullValidator : PropertyValidator, INotNullValidator {
-		public NotNullValidator() : base(() => Messages.notnull_error, ValidationErrors.NotNull) {
-		}
+    public class NotNullValidator : PropertyValidator, INotNullValidator {
+        public NotNullValidator() : base(() => Messages.notnull_error, ValidationErrors.NotNull) {
+        }
 
-		protected override bool IsValid(PropertyValidatorContext context) {
-			if (context.PropertyValue == null) {
-				return false;
-			}
-			return true;
-		}
-	}
+        protected override bool IsValid(PropertyValidatorContext context) {
+            if (context.PropertyValue == null) {
+                return false;
+            }
+            return true;
+        }
+    }
 
-	public interface INotNullValidator : IPropertyValidator {
-	}
+    public interface INotNullValidator : IPropertyValidator {
+    }
 }

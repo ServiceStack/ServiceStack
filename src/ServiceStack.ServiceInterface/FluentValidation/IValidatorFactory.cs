@@ -18,20 +18,20 @@
 
 namespace ServiceStack.FluentValidation
 {
-	using System;
+    using System;
 
-	/// <summary>
-	/// Gets validators for a particular type.
-	/// </summary>
-	public interface IValidatorFactory {
-		/// <summary>
-		/// Gets the validator for the specified type.
-		/// </summary>
-		IValidator<T> GetValidator<T>();
+    /// <summary>
+    /// Gets validators for a particular type.
+    /// </summary>
+    public interface IValidatorFactory {
+        /// <summary>
+        /// Gets the validator for the specified type.
+        /// </summary>
+        IValidator<T> GetValidator<T>();
 
-		/// <summary>
-		/// Gets the validator for the specified type.
-		/// </summary>
-		IValidator GetValidator(Type type);
-	}
+        /// <summary>
+        /// Gets the validator for the specified type.
+        /// </summary>
+        IValidator GetValidator(Type type);
+    }
 }

@@ -6,24 +6,24 @@ using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
-	public class TwitterAuthProvider : OAuthProvider
-	{
-		public const string Name = "twitter";
-		public static string Realm = "https://api.twitter.com/";
+    public class TwitterAuthProvider : OAuthProvider
+    {
+        public const string Name = "twitter";
+        public static string Realm = "https://api.twitter.com/";
 
-		public TwitterAuthProvider(IResourceManager appSettings)
-			: base(appSettings, Realm, Name) {}
+        public TwitterAuthProvider(IResourceManager appSettings)
+            : base(appSettings, Realm, Name) {}
 
-		protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
-		{
-			if (authInfo.ContainsKey("user_id"))
-				tokens.UserId = authInfo.GetValueOrDefault("user_id");
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IOAuthTokens tokens, Dictionary<string, string> authInfo)
+        {
+            if (authInfo.ContainsKey("user_id"))
+                tokens.UserId = authInfo.GetValueOrDefault("user_id");
 
-			if (authInfo.ContainsKey("screen_name"))
-				tokens.UserName = authInfo.GetValueOrDefault("screen_name");
+            if (authInfo.ContainsKey("screen_name"))
+                tokens.UserName = authInfo.GetValueOrDefault("screen_name");
 
-			try
-			{
+            try
+            {
                 if (tokens.UserId != null)
                 {
                     var json = AuthHttpGateway.DownloadTwitterUserInfo(tokens.UserId);
@@ -31,22 +31,22 @@ namespace ServiceStack.ServiceInterface.Auth
                     tokens.DisplayName = obj.Get("name");
                 }
 
-				LoadUserOAuthProvider(userSession, tokens);
-			}
-			catch (Exception ex)
-			{
-				Log.Error("Could not retrieve twitter user info for '{0}'".Fmt(userSession.TwitterUserId), ex);
-			}
-		}
+                LoadUserOAuthProvider(userSession, tokens);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Could not retrieve twitter user info for '{0}'".Fmt(userSession.TwitterUserId), ex);
+            }
+        }
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IOAuthTokens tokens)
         {
             var userSession = authSession as AuthUserSession;
             if (userSession == null) return;
             
-			userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
-			userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
-			userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
-		}
-	}
+            userSession.TwitterUserId = tokens.UserId ?? userSession.TwitterUserId;
+            userSession.TwitterScreenName = tokens.UserName ?? userSession.TwitterScreenName;
+            userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
+        }
+    }
 }

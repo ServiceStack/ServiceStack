@@ -18,98 +18,98 @@
 
 namespace ServiceStack.FluentValidation
 {
-	using System;
+    using System;
 #if !WINDOWS_PHONE
-	using System.ComponentModel;
-	//using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel;
+    //using System.ComponentModel.DataAnnotations;
 #endif
-	using System.Linq;
-	using System.Linq.Expressions;
-	using System.Reflection;
-	using Internal;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
+    using Internal;
 
-	public static class ValidatorOptions {
-		public static CascadeMode CascadeMode = CascadeMode.Continue;
-		public static Type ResourceProviderType;
+    public static class ValidatorOptions {
+        public static CascadeMode CascadeMode = CascadeMode.Continue;
+        public static Type ResourceProviderType;
 
-		private static Func<Type, MemberInfo, LambdaExpression, string> propertyNameResolver = DefaultPropertyNameResolver;
-		private static Func<Type, MemberInfo, LambdaExpression, string> displayNameResolver = DefaultDisplayNameResolver;
+        private static Func<Type, MemberInfo, LambdaExpression, string> propertyNameResolver = DefaultPropertyNameResolver;
+        private static Func<Type, MemberInfo, LambdaExpression, string> displayNameResolver = DefaultDisplayNameResolver;
 
-		public static Func<Type, MemberInfo, LambdaExpression, string> PropertyNameResolver {
-			get { return propertyNameResolver; }
-			set { propertyNameResolver = value ?? DefaultPropertyNameResolver; }
-		}
+        public static Func<Type, MemberInfo, LambdaExpression, string> PropertyNameResolver {
+            get { return propertyNameResolver; }
+            set { propertyNameResolver = value ?? DefaultPropertyNameResolver; }
+        }
 
-		public static Func<Type, MemberInfo, LambdaExpression, string> DisplayNameResolver {
-			get { return displayNameResolver; }
-			set { displayNameResolver = value ?? DefaultDisplayNameResolver; }
-		}
+        public static Func<Type, MemberInfo, LambdaExpression, string> DisplayNameResolver {
+            get { return displayNameResolver; }
+            set { displayNameResolver = value ?? DefaultDisplayNameResolver; }
+        }
 
-		static string DefaultPropertyNameResolver(Type type, MemberInfo memberInfo, LambdaExpression expression) {
-			if (expression != null) {
-				var chain = PropertyChain.FromExpression(expression);
-				if (chain.Count > 0) return chain.ToString();
-			}
+        static string DefaultPropertyNameResolver(Type type, MemberInfo memberInfo, LambdaExpression expression) {
+            if (expression != null) {
+                var chain = PropertyChain.FromExpression(expression);
+                if (chain.Count > 0) return chain.ToString();
+            }
 
-			if (memberInfo != null) {
-				return memberInfo.Name;
-			}
+            if (memberInfo != null) {
+                return memberInfo.Name;
+            }
 
-			return null;
-		}	
-		
-		static string DefaultDisplayNameResolver(Type type, MemberInfo memberInfo, LambdaExpression expression) {
-			if (memberInfo == null) return null;
-		    return GetDisplayName(memberInfo);
-		    /*string name = null;
+            return null;
+        }	
+        
+        static string DefaultDisplayNameResolver(Type type, MemberInfo memberInfo, LambdaExpression expression) {
+            if (memberInfo == null) return null;
+            return GetDisplayName(memberInfo);
+            /*string name = null;
 #if !WINDOWS_PHONE
-			var displayAttribute = (DisplayAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(DisplayAttribute));
+            var displayAttribute = (DisplayAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(DisplayAttribute));
 
-			if(displayAttribute != null) {
-				name = displayAttribute.GetName();
-			}
+            if(displayAttribute != null) {
+                name = displayAttribute.GetName();
+            }
 #endif
 
 #if !SILVERLIGHT
-			// Silverlight doesn't have DisplayAttribute.
-			if(string.IsNullOrEmpty(name)) {
-				// Couldn't find a name from a DisplayAttribute. Try DisplayNameAttribute instead.
-				var displayNameAttribute = (DisplayNameAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(DisplayNameAttribute));
-				if(displayNameAttribute != null) {
-					name = displayNameAttribute.DisplayName;
-				}
-			}
+            // Silverlight doesn't have DisplayAttribute.
+            if(string.IsNullOrEmpty(name)) {
+                // Couldn't find a name from a DisplayAttribute. Try DisplayNameAttribute instead.
+                var displayNameAttribute = (DisplayNameAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(DisplayNameAttribute));
+                if(displayNameAttribute != null) {
+                    name = displayNameAttribute.DisplayName;
+                }
+            }
 #endif
-			return name;*/
-		}
+            return name;*/
+        }
 
-		// Nasty hack to work around not referencing DataAnnotations directly. 
-		// At some point investigate the DataAnnotations reference issue in more detail and go back to using the code above. 
-		static string GetDisplayName(MemberInfo member) {
-			var attributes = (from attr in member.GetCustomAttributes(true)
-			                  select new {attr, type = attr.GetType()}).ToList();
+        // Nasty hack to work around not referencing DataAnnotations directly. 
+        // At some point investigate the DataAnnotations reference issue in more detail and go back to using the code above. 
+        static string GetDisplayName(MemberInfo member) {
+            var attributes = (from attr in member.GetCustomAttributes(true)
+                              select new {attr, type = attr.GetType()}).ToList();
 
-			string name = null;
+            string name = null;
 
 #if !WINDOWS_PHONE
-			name = (from attr in attributes
-			        where attr.type.Name == "DisplayAttribute"
-			        let method = attr.type.GetMethod("GetName", BindingFlags.Instance | BindingFlags.Public)
-			        where method != null
-			        select method.Invoke(attr.attr, null) as string).FirstOrDefault();
+            name = (from attr in attributes
+                    where attr.type.Name == "DisplayAttribute"
+                    let method = attr.type.GetMethod("GetName", BindingFlags.Instance | BindingFlags.Public)
+                    where method != null
+                    select method.Invoke(attr.attr, null) as string).FirstOrDefault();
 #endif
 
 #if !SILVERLIGHT
-			if (string.IsNullOrEmpty(name)) {
-				name = (from attr in attributes
-				        where attr.type.Name == "DisplayNameAttribute"
-				        let property = attr.type.GetProperty("DisplayName", BindingFlags.Instance | BindingFlags.Public)
-				        where property != null
-				        select property.GetValue(attr.attr, null) as string).FirstOrDefault();
-			}
+            if (string.IsNullOrEmpty(name)) {
+                name = (from attr in attributes
+                        where attr.type.Name == "DisplayNameAttribute"
+                        let property = attr.type.GetProperty("DisplayName", BindingFlags.Instance | BindingFlags.Public)
+                        where property != null
+                        select property.GetValue(attr.attr, null) as string).FirstOrDefault();
+            }
 #endif
 
-			return name;
-		}
-	}
+            return name;
+        }
+    }
 }
