@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-	/// <summary>
+    /// <summary>
     /// Allows base templates to define required namespaces that will be automatically be
     /// added to generated templates.
     /// </summary>

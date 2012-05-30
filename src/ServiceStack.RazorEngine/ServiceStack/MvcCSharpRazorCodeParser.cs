@@ -19,68 +19,68 @@ using System.Web.Razor.Text;
 
 namespace ServiceStack.RazorEngine.ServiceStack
 {
-	public class MvcCSharpRazorCodeParser : CSharpCodeParser
-	{
-		private const string ModelKeyword = "model";
-		private SourceLocation? _endInheritsLocation;
-		private bool _modelStatementFound;
+    public class MvcCSharpRazorCodeParser : CSharpCodeParser
+    {
+        private const string ModelKeyword = "model";
+        private SourceLocation? _endInheritsLocation;
+        private bool _modelStatementFound;
 
-		public MvcCSharpRazorCodeParser()
-		{
-			RazorKeywords.Add(ModelKeyword, WrapSimpleBlockParser(BlockType.Directive, ParseModelStatement));
-		}
+        public MvcCSharpRazorCodeParser()
+        {
+            RazorKeywords.Add(ModelKeyword, WrapSimpleBlockParser(BlockType.Directive, ParseModelStatement));
+        }
 
-		protected override bool ParseInheritsStatement(CodeBlockInfo block)
-		{
-			_endInheritsLocation = CurrentLocation;
-			bool result = base.ParseInheritsStatement(block);
-			CheckForInheritsAndModelStatements();
-			return result;
-		}
+        protected override bool ParseInheritsStatement(CodeBlockInfo block)
+        {
+            _endInheritsLocation = CurrentLocation;
+            bool result = base.ParseInheritsStatement(block);
+            CheckForInheritsAndModelStatements();
+            return result;
+        }
 
-		private void CheckForInheritsAndModelStatements()
-		{
-			if (_modelStatementFound && _endInheritsLocation.HasValue)
-			{
-				OnError(_endInheritsLocation.Value, String.Format(CultureInfo.CurrentCulture, MvcResources.MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword, ModelKeyword));
-			}
-		}
+        private void CheckForInheritsAndModelStatements()
+        {
+            if (_modelStatementFound && _endInheritsLocation.HasValue)
+            {
+                OnError(_endInheritsLocation.Value, String.Format(CultureInfo.CurrentCulture, MvcResources.MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword, ModelKeyword));
+            }
+        }
 
-		private bool ParseModelStatement(CodeBlockInfo block)
-		{
-			SourceLocation endModelLocation = CurrentLocation;
+        private bool ParseModelStatement(CodeBlockInfo block)
+        {
+            SourceLocation endModelLocation = CurrentLocation;
 
-			bool readWhitespace = RequireSingleWhiteSpace();
-			End(MetaCodeSpan.Create(Context, hidden: false, acceptedCharacters: readWhitespace ? AcceptedCharacters.None : AcceptedCharacters.Any));
+            bool readWhitespace = RequireSingleWhiteSpace();
+            End(MetaCodeSpan.Create(Context, hidden: false, acceptedCharacters: readWhitespace ? AcceptedCharacters.None : AcceptedCharacters.Any));
 
-			if (_modelStatementFound)
-			{
-				OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture, MvcResources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed, ModelKeyword));
-			}
+            if (_modelStatementFound)
+            {
+                OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture, MvcResources.MvcRazorCodeParser_OnlyOneModelStatementIsAllowed, ModelKeyword));
+            }
 
-			_modelStatementFound = true;
+            _modelStatementFound = true;
 
-			// Accept Whitespace up to the new line or non-whitespace character
-			Context.AcceptWhiteSpace(includeNewLines: false);
+            // Accept Whitespace up to the new line or non-whitespace character
+            Context.AcceptWhiteSpace(includeNewLines: false);
 
-			string typeName = null;
-			if (ParserHelpers.IsIdentifierStart(CurrentCharacter))
-			{
-				using (Context.StartTemporaryBuffer())
-				{
-					Context.AcceptUntil(c => ParserHelpers.IsNewLine(c));
-					typeName = Context.ContentBuffer.ToString();
-					Context.AcceptTemporaryBuffer();
-				}
-				Context.AcceptNewLine();
-			}
-			else
-			{
-				OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture, MvcResources.MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName, ModelKeyword));
-			}
-			CheckForInheritsAndModelStatements();
-			End(new ModelSpan(Context, typeName));
-			return false;
-		}
-	}
+            string typeName = null;
+            if (ParserHelpers.IsIdentifierStart(CurrentCharacter))
+            {
+                using (Context.StartTemporaryBuffer())
+                {
+                    Context.AcceptUntil(c => ParserHelpers.IsNewLine(c));
+                    typeName = Context.ContentBuffer.ToString();
+                    Context.AcceptTemporaryBuffer();
+                }
+                Context.AcceptNewLine();
+            }
+            else
+            {
+                OnError(endModelLocation, String.Format(CultureInfo.CurrentCulture, MvcResources.MvcRazorCodeParser_ModelKeywordMustBeFollowedByTypeName, ModelKeyword));
+            }
+            CheckForInheritsAndModelStatements();
+            End(new ModelSpan(Context, typeName));
+            return false;
+        }
+    }
 }

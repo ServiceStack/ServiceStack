@@ -5,8 +5,8 @@ using System.Text;
 
 namespace ServiceStack.ServiceHost
 {
-	public interface IRequiresHttpRequest
-	{
-		IHttpRequest HttpRequest { get; set; }
-	}
+    public interface IRequiresHttpRequest
+    {
+        IHttpRequest HttpRequest { get; set; }
+    }
 }

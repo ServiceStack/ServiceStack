@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-	/// <summary>
+    /// <summary>
     /// Defines an exception that occurs during compilation of a template.
     /// </summary>
     public class TemplateCompilationException : Exception

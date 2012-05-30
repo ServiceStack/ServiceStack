@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Templating
 {
-	/// <summary>
+    /// <summary>
     /// Provides a default activator.
     /// </summary>
     public class DefaultActivator : IActivator

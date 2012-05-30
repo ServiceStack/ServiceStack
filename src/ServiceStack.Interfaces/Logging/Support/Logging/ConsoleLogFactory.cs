@@ -7,7 +7,7 @@ namespace ServiceStack.Logging.Support.Logging
     /// 
     /// Made public so its testable
     /// </summary>
-	public class ConsoleLogFactory : ILogFactory
+    public class ConsoleLogFactory : ILogFactory
     {
         public ILog GetLogger(Type type)
         {
@@ -16,7 +16,7 @@ namespace ServiceStack.Logging.Support.Logging
 
         public ILog GetLogger(string typeName)
         {
-			return new ConsoleLogger(typeName);
+            return new ConsoleLogger(typeName);
         }
     }
 }
