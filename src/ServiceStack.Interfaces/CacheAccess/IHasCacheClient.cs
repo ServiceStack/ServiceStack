@@ -1,7 +1,7 @@
 namespace ServiceStack.CacheAccess
 {
-	public interface IHasCacheClient
-	{
-		ICacheClient CacheClient { get; }
-	}
+    public interface IHasCacheClient
+    {
+        ICacheClient CacheClient { get; }
+    }
 }

@@ -13,7 +13,7 @@ using System.Web.Razor.Parser;
 
 namespace ServiceStack.RazorEngine.Compilation
 {
-	/// <summary>
+    /// <summary>
     /// Provides a base implementation of a compiler service.
     /// </summary>
     public abstract class CompilerServiceBase : ICompilerService
@@ -136,7 +136,7 @@ namespace ServiceStack.RazorEngine.Compilation
                                    ? typeof(TemplateBase)
                                    : typeof(TemplateBase<>));
 
-			var host = new MvcWebPageRazorHost(CodeLanguage, () => MarkupParser)
+            var host = new MvcWebPageRazorHost(CodeLanguage, () => MarkupParser)
                            {
                                DefaultBaseClass = BuildTypeName(templateType, modelType),
                                DefaultClassName = className,
@@ -144,10 +144,10 @@ namespace ServiceStack.RazorEngine.Compilation
                                GeneratedClassContext = new GeneratedClassContext("Execute", "Write", "WriteLiteral",
                                                                                  "WriteTo", "WriteLiteralTo",
                                                                                  "RazorEngine.Templating.TemplateWriter",
-																				 "WriteSection")
+                                                                                 "WriteSection")
                            };
 
-			host.NamespaceImports.Add("ServiceStack.Markdown.Html");
+            host.NamespaceImports.Add("ServiceStack.Markdown.Html");
 
             var templateNamespaces = templateType.GetCustomAttributes(typeof (RequireNamespacesAttribute), true)
                 .Cast<RequireNamespacesAttribute>()
@@ -191,24 +191,24 @@ namespace ServiceStack.RazorEngine.Compilation
         }
         #endregion
 
-		public IEnumerable<T> AllNodesOfType<T>(Block block)
-		{
-			if (block is T)
-				yield return (T)(object)block;
-			
-			foreach (var syntaxTreeNode in block.Children)
-			{
-				if (syntaxTreeNode is T)
-					yield return (T)(object)syntaxTreeNode;
+        public IEnumerable<T> AllNodesOfType<T>(Block block)
+        {
+            if (block is T)
+                yield return (T)(object)block;
+            
+            foreach (var syntaxTreeNode in block.Children)
+            {
+                if (syntaxTreeNode is T)
+                    yield return (T)(object)syntaxTreeNode;
 
-				var childBlock = syntaxTreeNode as Block;
-				if (childBlock == null) continue;
+                var childBlock = syntaxTreeNode as Block;
+                if (childBlock == null) continue;
 
-				foreach (var variable in AllNodesOfType<T>(childBlock))
-				{
-					yield return variable;
-				}
-			}
-		}
+                foreach (var variable in AllNodesOfType<T>(childBlock))
+                {
+                    yield return variable;
+                }
+            }
+        }
     }
 }

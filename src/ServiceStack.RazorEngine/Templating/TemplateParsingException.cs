@@ -3,7 +3,7 @@ using System.Web.Razor.Parser.SyntaxTree;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-	/// <summary>
+    /// <summary>
     /// Defines an exception that occurs during parsing of a template.
     /// </summary>
     public class TemplateParsingException : Exception

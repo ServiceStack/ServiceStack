@@ -1,7 +1,7 @@
 namespace ServiceStack.CacheAccess
 {
-	public interface ICacheHasContentType
-	{
-		string ContentType { get; }
-	}
+    public interface ICacheHasContentType
+    {
+        string ContentType { get; }
+    }
 }

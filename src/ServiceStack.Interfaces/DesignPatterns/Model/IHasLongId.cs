@@ -1,6 +1,6 @@
 namespace ServiceStack.DesignPatterns.Model
 {
-	public interface IHasLongId : IHasId<long>
-	{
-	}
+    public interface IHasLongId : IHasId<long>
+    {
+    }
 }

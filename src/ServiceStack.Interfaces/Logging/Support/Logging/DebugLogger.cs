@@ -3,7 +3,7 @@ using System;
 namespace ServiceStack.Logging.Support.Logging
 {
     /// <summary>
-	/// Default logger is to System.Diagnostics.Debug.WriteLine
+    /// Default logger is to System.Diagnostics.Debug.WriteLine
     /// 
     /// Made public so its testable
     /// </summary>
@@ -45,7 +45,7 @@ namespace ServiceStack.Logging.Support.Logging
             {
                 msg += ", Exception: " + exception.Message;
             }
-			System.Diagnostics.Debug.WriteLine(msg);
+            System.Diagnostics.Debug.WriteLine(msg);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace ServiceStack.Logging.Support.Logging
         private static void LogFormat(object message, params object[] args)
         {
             string msg = message == null ? string.Empty : message.ToString();
-			System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
+            System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace ServiceStack.Logging.Support.Logging
         private static void Log(object message)
         {
             string msg = message == null ? string.Empty : message.ToString();
-			System.Diagnostics.Debug.WriteLine(msg);
+            System.Diagnostics.Debug.WriteLine(msg);
         }
 
         public void Debug(object message, Exception exception)
@@ -74,9 +74,9 @@ namespace ServiceStack.Logging.Support.Logging
             Log(DEBUG + message, exception);
         }
 
-		public bool IsDebugEnabled { get { return true; } }
+        public bool IsDebugEnabled { get { return true; } }
 
-    	public void Debug(object message)
+        public void Debug(object message)
         {
             Log(DEBUG + message);
         }

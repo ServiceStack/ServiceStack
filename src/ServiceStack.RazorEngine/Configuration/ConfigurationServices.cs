@@ -3,7 +3,7 @@ using System;
 
 namespace ServiceStack.RazorEngine.Configuration
 {
-	/// <summary>
+    /// <summary>
     /// Provides configuration service operations.
     /// </summary>
     public static class ConfigurationServices

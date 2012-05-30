@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Configuration
 {
-	/// <summary>
+    /// <summary>
     /// Defines the main configuration section for the RazorEngine.
     /// </summary>
     public class RazorEngineConfigurationSection : ConfigurationSection

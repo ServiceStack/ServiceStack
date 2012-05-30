@@ -30,7 +30,7 @@ namespace ServiceStack.Mvc.MiniProfiler
                     HttpContext.Current.Items[stackKey] = stack;
                 }
 
-				var profiler = Profiler.Current;
+                var profiler = Profiler.Current;
                 if (profiler != null)
                 {
                     var tokens = filterContext.RouteData.DataTokens;
