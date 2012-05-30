@@ -1,7 +1,7 @@
 namespace ServiceStack.ServiceInterface.ServiceModel
 {
-	public interface ICacheByEtag
-	{
-		string Etag { get; }
-	}
+    public interface ICacheByEtag
+    {
+        string Etag { get; }
+    }
 }

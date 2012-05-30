@@ -5,7 +5,7 @@ namespace ServiceStack.Logging.Support.Logging
     /// <summary>
     /// Creates a test Logger, that stores all log messages in a member list
     /// </summary>
-	public class TestLogFactory : ILogFactory
+    public class TestLogFactory : ILogFactory
     {
         public ILog GetLogger(Type type)
         {

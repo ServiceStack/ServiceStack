@@ -7,16 +7,16 @@ namespace ServiceStack.Logging.Support.Logging
     /// 
     /// Made public so its testable
     /// </summary>
-	public class NullLogFactory : ILogFactory
+    public class NullLogFactory : ILogFactory
     {
         public ILog GetLogger(Type type)
         {
-			return new NullDebugLogger(type);
+            return new NullDebugLogger(type);
         }
 
         public ILog GetLogger(string typeName)
         {
-			return new NullDebugLogger(typeName);
+            return new NullDebugLogger(typeName);
         }
     }
 }

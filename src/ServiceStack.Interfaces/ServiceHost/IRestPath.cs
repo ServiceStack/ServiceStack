@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace ServiceStack.ServiceHost
 {
-	public interface IRestPath
-	{
-		Type RequestType { get; }
+    public interface IRestPath
+    {
+        Type RequestType { get; }
 
-		string DefaultContentType { get; }
+        string DefaultContentType { get; }
 
-		object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData, object fromInstance);
-	}
+        object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData, object fromInstance);
+    }
 }

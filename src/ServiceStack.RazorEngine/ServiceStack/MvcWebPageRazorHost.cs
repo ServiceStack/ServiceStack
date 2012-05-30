@@ -20,70 +20,70 @@ using CSharpRazorCodeGenerator = ServiceStack.RazorEngine.Compilation.CSharp.CSh
 
 namespace ServiceStack.RazorEngine.ServiceStack
 {
-	public class MvcWebPageRazorHost : RazorEngineHost
-	{
-		protected MvcWebPageRazorHost()
-		{
-			Init();
-		}
+    public class MvcWebPageRazorHost : RazorEngineHost
+    {
+        protected MvcWebPageRazorHost()
+        {
+            Init();
+        }
 
-		public MvcWebPageRazorHost(RazorCodeLanguage codeLanguage) 
-			: base(codeLanguage)
-		{
-			Init();			
-		}
+        public MvcWebPageRazorHost(RazorCodeLanguage codeLanguage) 
+            : base(codeLanguage)
+        {
+            Init();			
+        }
 
-		public MvcWebPageRazorHost(RazorCodeLanguage codeLanguage, Func<MarkupParser> markupParserFactory) 
-			: base(codeLanguage, markupParserFactory)
-		{
-			Init();			
-		}
+        public MvcWebPageRazorHost(RazorCodeLanguage codeLanguage, Func<MarkupParser> markupParserFactory) 
+            : base(codeLanguage, markupParserFactory)
+        {
+            Init();			
+        }
 
-		private void Init()
-		{
-			GetRidOfNamespace("System.Web.WebPages.Html");
+        private void Init()
+        {
+            GetRidOfNamespace("System.Web.WebPages.Html");
 
-			this.DefaultBaseClass = typeof(ViewPage).FullName;
-			this.DefaultNamespace = "RazorOutput";
-			this.DefaultClassName = "RazorView";
+            this.DefaultBaseClass = typeof(ViewPage).FullName;
+            this.DefaultNamespace = "RazorOutput";
+            this.DefaultClassName = "RazorView";
 
-			this.GeneratedClassContext = new GeneratedClassContext(
-				"Execute", "Write", "WriteLiteral", "WriteTo", "WriteLiteralTo", 
-				typeof(HelperResult).FullName, "DefineSection");
-		}
+            this.GeneratedClassContext = new GeneratedClassContext(
+                "Execute", "Write", "WriteLiteral", "WriteTo", "WriteLiteralTo", 
+                typeof(HelperResult).FullName, "DefineSection");
+        }
 
-		public override RazorCodeGenerator DecorateCodeGenerator(RazorCodeGenerator incomingCodeGenerator)
-		{
-			if (incomingCodeGenerator is Compilation.CSharp.CSharpRazorCodeGenerator)
-			{
-				return new Compilation.CSharp.CSharpRazorCodeGenerator(incomingCodeGenerator.ClassName,
-					incomingCodeGenerator.RootNamespaceName,
-					incomingCodeGenerator.SourceFileName,
-					incomingCodeGenerator.Host);
-			}
-			return base.DecorateCodeGenerator(incomingCodeGenerator);
-		}
-		 
-		public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
-		{
-			if (incomingCodeParser is CSharpCodeParser)
-			{
-				return new MvcCSharpRazorCodeParser();
-			}
-			else
-			{
-				return base.DecorateCodeParser(incomingCodeParser);
-			}
-		}
+        public override RazorCodeGenerator DecorateCodeGenerator(RazorCodeGenerator incomingCodeGenerator)
+        {
+            if (incomingCodeGenerator is Compilation.CSharp.CSharpRazorCodeGenerator)
+            {
+                return new Compilation.CSharp.CSharpRazorCodeGenerator(incomingCodeGenerator.ClassName,
+                    incomingCodeGenerator.RootNamespaceName,
+                    incomingCodeGenerator.SourceFileName,
+                    incomingCodeGenerator.Host);
+            }
+            return base.DecorateCodeGenerator(incomingCodeGenerator);
+        }
+         
+        public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
+        {
+            if (incomingCodeParser is CSharpCodeParser)
+            {
+                return new MvcCSharpRazorCodeParser();
+            }
+            else
+            {
+                return base.DecorateCodeParser(incomingCodeParser);
+            }
+        }
 
-		private void GetRidOfNamespace(string ns)
-		{
-			Debug.Assert(NamespaceImports.Contains(ns), ns + " is not a default namespace anymore");
-			if (NamespaceImports.Contains(ns))
-			{
-				NamespaceImports.Remove(ns);
-			}
-		}
-	}
+        private void GetRidOfNamespace(string ns)
+        {
+            Debug.Assert(NamespaceImports.Contains(ns), ns + " is not a default namespace anymore");
+            if (NamespaceImports.Contains(ns))
+            {
+                NamespaceImports.Remove(ns);
+            }
+        }
+    }
 
 }

@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Templating
 {
-	/// <summary>
+    /// <summary>
     /// Defines the required contract for implementing an object activator.
     /// </summary>
     public interface IActivator

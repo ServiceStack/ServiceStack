@@ -6,10 +6,10 @@ using System.Text;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-	/// <summary>
+    /// <summary>
     /// Provides a base implementation of a template.
     /// </summary>
-	public abstract partial class TemplateBase : ITemplate
+    public abstract partial class TemplateBase : ITemplate
     {
         #region Fields
         [ThreadStatic]
@@ -93,15 +93,15 @@ namespace ServiceStack.RazorEngine.Templating
             if (@object == null)
                 return;
 
-			if (@object is MvcHtmlString || ChildTemplate != null)
-			{
-				Builder.Append(@object);
-			}
-			else
-			{
-				var strValue = Convert.ToString(@object);
-				Builder.Append(HttpUtility.HtmlEncode(strValue));
-			}
+            if (@object is MvcHtmlString || ChildTemplate != null)
+            {
+                Builder.Append(@object);
+            }
+            else
+            {
+                var strValue = Convert.ToString(@object);
+                Builder.Append(HttpUtility.HtmlEncode(strValue));
+            }
         }
 
         /// <summary>

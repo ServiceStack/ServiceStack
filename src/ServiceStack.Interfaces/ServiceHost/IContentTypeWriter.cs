@@ -2,20 +2,20 @@ using System.IO;
 
 namespace ServiceStack.ServiceHost
 {
-	public interface IContentTypeWriter
-	{
-		string SerializeToString(IRequestContext requestContext, object response);
+    public interface IContentTypeWriter
+    {
+        string SerializeToString(IRequestContext requestContext, object response);
 
-		void SerializeToStream(IRequestContext requestContext, object response, Stream toStream);
-		
-		void SerializeToResponse(IRequestContext requestContext, object response, IHttpResponse httpRes);
+        void SerializeToStream(IRequestContext requestContext, object response, Stream toStream);
 
-		ResponseSerializerDelegate GetResponseSerializer(string contentType);
-	}
+        void SerializeToResponse(IRequestContext requestContext, object response, IHttpResponse httpRes);
 
-	public delegate string TextSerializerDelegate(object dto);
+        ResponseSerializerDelegate GetResponseSerializer(string contentType);
+    }
 
-	public delegate void StreamSerializerDelegate(IRequestContext requestContext, object dto, Stream outputStream);
+    public delegate string TextSerializerDelegate(object dto);
 
-	public delegate void ResponseSerializerDelegate(IRequestContext requestContext, object dto, IHttpResponse httpRes);
+    public delegate void StreamSerializerDelegate(IRequestContext requestContext, object dto, Stream outputStream);
+
+    public delegate void ResponseSerializerDelegate(IRequestContext requestContext, object dto, IHttpResponse httpRes);
 }

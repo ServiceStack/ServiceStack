@@ -4,16 +4,16 @@ using ServiceStack.DesignPatterns.Model;
 
 namespace ServiceStack.Messaging
 {
-	public interface IMessage
-		: IHasId<Guid>
-	{
-		DateTime CreatedDate { get; }
+    public interface IMessage
+        : IHasId<Guid>
+    {
+        DateTime CreatedDate { get; }
 
-		long Priority { get; set; }
+        long Priority { get; set; }
 
-		int RetryAttempts { get; set; }
+        int RetryAttempts { get; set; }
 
-		Guid? ReplyId { get; set; }
+        Guid? ReplyId { get; set; }
 
         string ReplyTo { get; set; }
 
@@ -21,12 +21,12 @@ namespace ServiceStack.Messaging
 
         MessageError Error { get; set; }
 
-		object Body { get; set; }
-	}
+        object Body { get; set; }
+    }
 
     public interface IMessage<T>
-		: IMessage
-	{
-		T GetBody();
-	}
+        : IMessage
+    {
+        T GetBody();
+    }
 }

@@ -1,6 +1,6 @@
 namespace ServiceStack.DataAccess.Criteria
 {
-	public interface ICriteria
-	{
-	}
+    public interface ICriteria
+    {
+    }
 }

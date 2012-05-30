@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ServiceStack.RazorEngine.Compilation
 {
-	/// <summary>
+    /// <summary>
     /// Defines a type context used for compilation.
     /// </summary>
     public class TypeContext

@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace ServiceStack.RazorEngine.Compilation
 {
-	/// <summary>
+    /// <summary>
     /// Provides service methods for compilation.
     /// </summary>
     public static class CompilerServices
