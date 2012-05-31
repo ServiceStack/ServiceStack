@@ -27,15 +27,15 @@ namespace ServiceStack.Logging.Support.Logging
         /// Initializes a new instance of the <see cref="DebugLogger"/> class.
         /// </summary>
         /// <param name="type">The type.</param>
-        public ConsoleLogger(Type type)
+		public ConsoleLogger(Type type)
         {
         }
 
         #region ILog Members
 
-        public bool IsDebugEnabled { get { return true; } }
-        
-        /// <summary>
+		public bool IsDebugEnabled { get { return true; } }
+		
+		/// <summary>
         /// Logs the specified message.
         /// </summary>
         /// <param name="message">The message.</param>

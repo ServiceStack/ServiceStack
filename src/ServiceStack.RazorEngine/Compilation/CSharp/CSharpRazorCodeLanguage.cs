@@ -3,7 +3,7 @@ using System.Web.Razor.Generator;
 
 namespace ServiceStack.RazorEngine.Compilation.CSharp
 {
-    public class CSharpRazorCodeLanguage : System.Web.Razor.CSharpRazorCodeLanguage
+	public class CSharpRazorCodeLanguage : System.Web.Razor.CSharpRazorCodeLanguage
     {
         #region Constructor
         /// <summary>

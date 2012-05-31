@@ -49,7 +49,7 @@ namespace ServiceStack.Mvc.MiniProfiler
 
         private ViewEngineResult Find(ControllerContext controllerContext, string name, Func<ViewEngineResult> finder, bool isPartial)
         {
-            var profiler = Profiler.Current;
+			var profiler = Profiler.Current;
             IDisposable block = null;
             var key = "find-view-or-partial";
 

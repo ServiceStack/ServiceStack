@@ -4,30 +4,30 @@ using System.Net;
 
 namespace ServiceStack.ServiceHost
 {
-    public interface IRequestContext : IDisposable
-    {
-        T Get<T>() where T : class;
-        
-        string IpAddress { get; }
+	public interface IRequestContext : IDisposable
+	{
+		T Get<T>() where T : class;
+		
+		string IpAddress { get; }
 
-        string GetHeader(string headerName);
+		string GetHeader(string headerName);
 
-        IDictionary<string, System.Net.Cookie> Cookies { get; }
+		IDictionary<string, System.Net.Cookie> Cookies { get; }
 
-        EndpointAttributes EndpointAttributes { get; }
-        
-        IRequestAttributes RequestAttributes { get; }
+		EndpointAttributes EndpointAttributes { get; }
+		
+		IRequestAttributes RequestAttributes { get; }
 
-        string ContentType { get; }
+		string ContentType { get; }
 
-        string ResponseContentType { get; }
+		string ResponseContentType { get; }
 
-        string CompressionType { get; }
+		string CompressionType { get; }
 
-        string AbsoluteUri { get; }
+		string AbsoluteUri { get; }
 
-        string PathInfo { get; }
+		string PathInfo { get; }
 
-        IFile[] Files { get; }
-    }
+		IFile[] Files { get; }
+	}
 }

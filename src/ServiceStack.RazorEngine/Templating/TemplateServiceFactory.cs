@@ -5,7 +5,7 @@ using ServiceStack.RazorEngine.Configuration;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-    /// <summary>
+	/// <summary>
     /// Provides factory methods for creating <see cref="TemplateService"/> instances.
     /// </summary>
     public static class TemplateServiceFactory

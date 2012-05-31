@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Configuration
 {
-    /// <summary>
+	/// <summary>
     /// Defines the <see cref="ConfigurationElement"/> that represents a template service element.
     /// </summary>
     public class TemplateServiceConfigurationElement : ConfigurationElement

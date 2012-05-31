@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Templating
 {
-    /// <summary>
+	/// <summary>
     /// Defines an activator that uses a delegate to create an instance of the type.
     /// </summary>
     internal class DelegateActivator : IActivator

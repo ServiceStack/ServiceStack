@@ -12,20 +12,20 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.ServiceInterface.ServiceModel
 {
-    /// <summary>
-    /// Error information pertaining to a particular named field.
-    /// Used for returning multiple field validation errors.s
-    /// </summary>
-    [DataContract]
-    public class ResponseError
-    {
-        [DataMember]
-        public string ErrorCode { get; set; }
+	/// <summary>
+	/// Error information pertaining to a particular named field.
+	/// Used for returning multiple field validation errors.s
+	/// </summary>
+	[DataContract]
+	public class ResponseError
+	{
+		[DataMember]
+		public string ErrorCode { get; set; }
 
-        [DataMember]
-        public string FieldName { get; set; }
-    
-        [DataMember]
-        public string Message { get; set; }
-    }
+		[DataMember]
+		public string FieldName { get; set; }
+	
+		[DataMember]
+		public string Message { get; set; }
+	}
 }

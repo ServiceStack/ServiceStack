@@ -1,7 +1,7 @@
 namespace ServiceStack.DesignPatterns.Model
 {
-    public interface IHasId<T>
-    {
-        T Id { get; }
-    }
+	public interface IHasId<T>
+	{
+		T Id { get; }
+	}
 }

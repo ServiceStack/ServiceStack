@@ -7,65 +7,65 @@ using ServiceStack.RazorEngine;
 
 namespace ServiceStack.RazorEngine.ServiceStack
 {
-    //[FileLevelControlBuilder(typeof(ViewMasterPageControlBuilder))]
+	//[FileLevelControlBuilder(typeof(ViewMasterPageControlBuilder))]
     public class ViewMasterPage 
     {
-        //public AjaxHelper<object> Ajax
-        //{
-        //    get { return ViewPage.Ajax; }
-        //}
+		//public AjaxHelper<object> Ajax
+		//{
+		//    get { return ViewPage.Ajax; }
+		//}
 
-        //public HtmlHelper<object> Html
-        //{
-        //    get { return ViewPage.Html; }
-        //}
+		//public HtmlHelper<object> Html
+		//{
+		//    get { return ViewPage.Html; }
+		//}
 
-        //public object Model
-        //{
-        //    get { return ViewData.Model; }
-        //}
+		//public object Model
+		//{
+		//    get { return ViewData.Model; }
+		//}
 
-        //public TempDataDictionary TempData
-        //{
-        //    get { return ViewPage.TempData; }
-        //}
+		//public TempDataDictionary TempData
+		//{
+		//    get { return ViewPage.TempData; }
+		//}
 
-        //public UrlHelper Url
-        //{
-        //    get { return ViewPage.Url; }
-        //}
+		//public UrlHelper Url
+		//{
+		//    get { return ViewPage.Url; }
+		//}
 
-        //public dynamic ViewBag
-        //{
-        //    get { return ViewPage.ViewBag; }
-        //}
+		//public dynamic ViewBag
+		//{
+		//    get { return ViewPage.ViewBag; }
+		//}
 
-        //public ViewContext ViewContext
-        //{
-        //    get { return ViewPage.ViewContext; }
-        //}
+		//public ViewContext ViewContext
+		//{
+		//    get { return ViewPage.ViewContext; }
+		//}
 
-        //public ViewDataDictionary ViewData
-        //{
-        //    get { return ViewPage.ViewData; }
-        //}
+		//public ViewDataDictionary ViewData
+		//{
+		//    get { return ViewPage.ViewData; }
+		//}
 
-        //internal ViewPage ViewPage
-        //{
-        //    get
-        //    {
-        //        ViewPage viewPage = Page as ViewPage;
-        //        if (viewPage == null)
-        //        {
-        //            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, MvcResources.ViewMasterPage_RequiresViewPage));
-        //        }
-        //        return viewPage;
-        //    }
-        //}
+		//internal ViewPage ViewPage
+		//{
+		//    get
+		//    {
+		//        ViewPage viewPage = Page as ViewPage;
+		//        if (viewPage == null)
+		//        {
+		//            throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, MvcResources.ViewMasterPage_RequiresViewPage));
+		//        }
+		//        return viewPage;
+		//    }
+		//}
 
-        //public HtmlTextWriter Writer
-        //{
-        //    get { return ViewPage.Writer; }
-        //}
+		//public HtmlTextWriter Writer
+		//{
+		//    get { return ViewPage.Writer; }
+		//}
     }
 }

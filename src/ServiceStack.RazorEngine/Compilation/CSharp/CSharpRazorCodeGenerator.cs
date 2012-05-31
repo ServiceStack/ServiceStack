@@ -4,7 +4,7 @@ using System.Web.Razor.Parser.SyntaxTree;
 
 namespace ServiceStack.RazorEngine.Compilation.CSharp
 {
-    /// <summary>
+	/// <summary>
     /// Defines a code generator that supports C# syntax.
     /// </summary>
     public partial class CSharpRazorCodeGenerator : System.Web.Razor.Generator.CSharpRazorCodeGenerator
@@ -44,6 +44,6 @@ namespace ServiceStack.RazorEngine.Compilation.CSharp
         }
         #endregion
 
-    }
+	}
 
 }

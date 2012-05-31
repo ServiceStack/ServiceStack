@@ -5,7 +5,7 @@ using ServiceStack.RazorEngine.Compilation;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-    /// <summary>
+	/// <summary>
     /// Defines a templating service.
     /// </summary>
     public partial class TemplateService

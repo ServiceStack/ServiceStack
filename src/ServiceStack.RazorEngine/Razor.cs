@@ -7,7 +7,7 @@ using ServiceStack.RazorEngine.Templating;
 
 namespace ServiceStack.RazorEngine
 {
-    /// <summary>
+	/// <summary>
     /// Provides quick access to template services.
     /// </summary>
     public static class Razor

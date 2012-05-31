@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Configuration
 {
-    /// <summary>
+	/// <summary>
     /// Represents a collection of <see cref="TemplateServiceConfigurationElement"/> items.
     /// </summary>
     [ConfigurationCollection(typeof(TemplateServiceConfigurationElement))]

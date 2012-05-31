@@ -18,9 +18,9 @@ namespace ServiceStack.Redis.Generic
     /// Redis transaction for typed client
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IRedisTypedTransaction<T>: IRedisTypedQueueableOperation<T>, IDisposable
-    {
-        bool Commit();
-        void Rollback();
-    }
+	public interface IRedisTypedTransaction<T>: IRedisTypedQueueableOperation<T>, IDisposable
+	{
+		bool Commit();
+		void Rollback();
+	}
 }

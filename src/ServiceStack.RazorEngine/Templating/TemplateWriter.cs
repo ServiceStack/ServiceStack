@@ -3,7 +3,7 @@ using System.IO;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-    /// <summary>
+	/// <summary>
     /// Defines a template writer used for helper templates.
     /// </summary>
     public class TemplateWriter

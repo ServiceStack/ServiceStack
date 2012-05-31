@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Compilation
 {
-    /// <summary>
+	/// <summary>
     /// Defines the required contract for implementing a compiler service factory.
     /// </summary>
     public interface ICompilerServiceFactory

@@ -5,7 +5,7 @@ using Microsoft.CSharp;
 
 namespace ServiceStack.RazorEngine.Compilation.CSharp
 {
-    /// <summary>
+	/// <summary>
     /// Defines a direct compiler service for the C# syntax.
     /// </summary>
     public class CSharpDirectCompilerService : DirectCompilerServiceBase

@@ -8,7 +8,7 @@ using System.Web.Razor.Parser;
 
 namespace ServiceStack.RazorEngine.Compilation
 {
-    /// <summary>
+	/// <summary>
     /// Provides a base implementation of a direct compiler service.
     /// </summary>
     public abstract class DirectCompilerServiceBase : CompilerServiceBase
@@ -76,9 +76,9 @@ namespace ServiceStack.RazorEngine.Compilation
 
             if (results.Errors != null && results.Errors.Count > 0)
             {
-                Console.WriteLine(results.Errors.Dump());
-                throw new TemplateCompilationException(results.Errors);
-            }
+				Console.WriteLine(results.Errors.Dump());
+				throw new TemplateCompilationException(results.Errors);
+			}
 
             return results.CompiledAssembly.GetType("CompiledRazorTemplates.Dynamic." + context.ClassName);
         }

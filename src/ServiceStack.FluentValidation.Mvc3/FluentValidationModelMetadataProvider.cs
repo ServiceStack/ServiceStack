@@ -22,78 +22,77 @@ using ServiceStack.FluentValidation.Results;
 using ServiceStack.FluentValidation.Validators;
 
 namespace FluentValidation.Mvc {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.ComponentModel.DataAnnotations;
-    using System.Linq;
-    using System.Web.Mvc;
+	using System;
+	using System.Collections.Generic;
+	using System.ComponentModel;
+	using System.ComponentModel.DataAnnotations;
+	using System.Linq;
+	using System.Web.Mvc;
 
-    public class FluentValidationModelMetadataProvider : DataAnnotationsModelMetadataProvider
-    {
-        readonly IValidatorFactory factory;
+	public class FluentValidationModelMetadataProvider : DataAnnotationsModelMetadataProvider {
+		readonly IValidatorFactory factory;
 
-        public FluentValidationModelMetadataProvider(IValidatorFactory factory) {
-            this.factory = factory;
-        }
+		public FluentValidationModelMetadataProvider(IValidatorFactory factory) {
+			this.factory = factory;
+		}
 
-        protected override ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, Type containerType, PropertyDescriptor propertyDescriptor) {
-            var attributes = ConvertFVMetaDataToAttributes(containerType, propertyDescriptor.Name);
-            return CreateMetadata(attributes, containerType, modelAccessor, propertyDescriptor.PropertyType, propertyDescriptor.Name);
-        }
+		protected override ModelMetadata GetMetadataForProperty(Func<object> modelAccessor, Type containerType, PropertyDescriptor propertyDescriptor) {
+			var attributes = ConvertFVMetaDataToAttributes(containerType, propertyDescriptor.Name);
+			return CreateMetadata(attributes, containerType, modelAccessor, propertyDescriptor.PropertyType, propertyDescriptor.Name);
+		}
 
-        IEnumerable<Attribute> ConvertFVMetaDataToAttributes(Type type, string name) {
-            var validator = factory.GetValidator(type);
+		IEnumerable<Attribute> ConvertFVMetaDataToAttributes(Type type, string name) {
+			var validator = factory.GetValidator(type);
 
-            if (validator == null) {
-                return Enumerable.Empty<Attribute>();
-            }
+			if (validator == null) {
+				return Enumerable.Empty<Attribute>();
+			}
 
-            IEnumerable<IPropertyValidator> validators;
+			IEnumerable<IPropertyValidator> validators;
 
 //			if (name == null) {
-                //validators = validator.CreateDescriptor().GetMembersWithValidators().SelectMany(x => x);
+				//validators = validator.CreateDescriptor().GetMembersWithValidators().SelectMany(x => x);
 //				validators = Enumerable.Empty<IPropertyValidator>();
 //			}
 //			else {
-                validators = validator.CreateDescriptor().GetValidatorsForMember(name);
+				validators = validator.CreateDescriptor().GetValidatorsForMember(name);
 //			}
 
-            var attributes = validators.OfType<IAttributeMetadataValidator>()
-                .Select(x => x.ToAttribute())
-                .Concat(SpecialCaseValidatorConversions(validators));
+			var attributes = validators.OfType<IAttributeMetadataValidator>()
+				.Select(x => x.ToAttribute())
+				.Concat(SpecialCaseValidatorConversions(validators));
 
 
 
-            return attributes.ToList();
-        }
+			return attributes.ToList();
+		}
 
-        IEnumerable<Attribute> SpecialCaseValidatorConversions(IEnumerable<IPropertyValidator> validators) {
+		IEnumerable<Attribute> SpecialCaseValidatorConversions(IEnumerable<IPropertyValidator> validators) {
 
-            //Email Validator should be convertible to DataType EmailAddress.
-            var emailValidators = validators
-                .OfType<IEmailValidator>()
-                .Select(x => new DataTypeAttribute(DataType.EmailAddress))
-                .Cast<Attribute>();
+			//Email Validator should be convertible to DataType EmailAddress.
+			var emailValidators = validators
+				.OfType<IEmailValidator>()
+				.Select(x => new DataTypeAttribute(DataType.EmailAddress))
+				.Cast<Attribute>();
 
-            var requiredValidators = validators.OfType<INotNullValidator>().Cast<IPropertyValidator>()
-                .Concat(validators.OfType<INotEmptyValidator>().Cast<IPropertyValidator>())
-                .Select(x => new RequiredAttribute())
-                .Cast<Attribute>();
+			var requiredValidators = validators.OfType<INotNullValidator>().Cast<IPropertyValidator>()
+				.Concat(validators.OfType<INotEmptyValidator>().Cast<IPropertyValidator>())
+				.Select(x => new RequiredAttribute())
+				.Cast<Attribute>();
 
-            return requiredValidators.Concat(emailValidators);
-        }
+			return requiredValidators.Concat(emailValidators);
+		}
 
-        /*IEnumerable<Attribute> ConvertFVMetaDataToAttributes(Type type) {
-            return ConvertFVMetaDataToAttributes(type, null);
-        }*/
+		/*IEnumerable<Attribute> ConvertFVMetaDataToAttributes(Type type) {
+			return ConvertFVMetaDataToAttributes(type, null);
+		}*/
 
-        /*public override ModelMetadata GetMetadataForType(Func<object> modelAccessor, Type modelType) {
-            var attributes = ConvertFVMetaDataToAttributes(modelType);
-            return CreateMetadata(attributes, null /* containerType ?1?, modelAccessor, modelType, null /* propertyName ?1?);
-        }*/
+		/*public override ModelMetadata GetMetadataForType(Func<object> modelAccessor, Type modelType) {
+			var attributes = ConvertFVMetaDataToAttributes(modelType);
+			return CreateMetadata(attributes, null /* containerType ?1?, modelAccessor, modelType, null /* propertyName ?1?);
+		}*/
 
-    }
+	}
 
     public interface IAttributeMetadataValidator : IPropertyValidator
     {
@@ -115,13 +114,13 @@ namespace FluentValidation.Mvc {
             set { throw new NotImplementedException(); }
         }
 
-        public string ErrorCode
-        {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
-        }
+    	public string ErrorCode
+    	{
+    		get { throw new NotImplementedException(); }
+    		set { throw new NotImplementedException(); }
+    	}
 
-        public IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context)
+    	public IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context)
         {
             return Enumerable.Empty<ValidationFailure>();
         }
@@ -205,7 +204,7 @@ namespace FluentValidation.Mvc.MetadataExtensions
 #if NET4
             return ruleBuilder.SetValidator(new AttributeMetadataValidator(new DisplayAttribute { Name = name }));
 #else
-            return ruleBuilder.SetValidator(new AttributeMetadataValidator(new DisplayNameAttribute(name)));
+			return ruleBuilder.SetValidator(new AttributeMetadataValidator(new DisplayNameAttribute(name)));
 #endif
         }
 

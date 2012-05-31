@@ -4,7 +4,7 @@ using System.Dynamic;
 
 namespace ServiceStack.RazorEngine.Compilation
 {
-    /// <summary>
+	/// <summary>
     /// Defines a dynamic object.
     /// </summary>
     internal class RazorDynamicObject : DynamicObject
@@ -52,15 +52,15 @@ namespace ServiceStack.RazorEngine.Compilation
             return true;
         }
 
-        public override bool TryConvert(ConvertBinder binder, out object result)
-        {
-            if (binder.ReturnType == Model.GetType())
-            {
-                result = Model;
-                return true;
-            }
-            return base.TryConvert(binder, out result);
-        }
+		public override bool TryConvert(ConvertBinder binder, out object result)
+		{
+			if (binder.ReturnType == Model.GetType())
+			{
+				result = Model;
+				return true;
+			}
+			return base.TryConvert(binder, out result);
+		}
 
         #endregion
     }

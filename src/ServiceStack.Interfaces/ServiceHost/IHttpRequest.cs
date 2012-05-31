@@ -7,79 +7,79 @@ using System.Net;
 
 namespace ServiceStack.ServiceHost
 {
-    /// <summary>
-    /// A thin wrapper around ASP.NET or HttpListener's HttpRequest
-    /// </summary>
-    public interface IHttpRequest : IResolver
-    {
-        /// <summary>
-        /// The underlying ASP.NET or HttpListener HttpRequest
-        /// </summary>
-        object OriginalRequest { get; }
+	/// <summary>
+	/// A thin wrapper around ASP.NET or HttpListener's HttpRequest
+	/// </summary>
+	public interface IHttpRequest : IResolver
+	{
+		/// <summary>
+		/// The underlying ASP.NET or HttpListener HttpRequest
+		/// </summary>
+		object OriginalRequest { get; }
 
-        /// <summary>
-        /// The name of the service being called (e.g. Request DTO Name)
-        /// </summary>
-        string OperationName { get; }
+		/// <summary>
+		/// The name of the service being called (e.g. Request DTO Name)
+		/// </summary>
+		string OperationName { get; }
 
-        /// <summary>
-        /// The request ContentType
-        /// </summary>
-        string ContentType { get; }
+		/// <summary>
+		/// The request ContentType
+		/// </summary>
+		string ContentType { get; }
 
-        string HttpMethod { get; }
+		string HttpMethod { get; }
 
-        string UserAgent { get; }
+		string UserAgent { get; }
 
-        IDictionary<string, System.Net.Cookie> Cookies { get; }
+		IDictionary<string, System.Net.Cookie> Cookies { get; }
 
-        /// <summary>
-        /// The expected Response ContentType for this request
-        /// </summary>
-        string ResponseContentType { get; set; }
+		/// <summary>
+		/// The expected Response ContentType for this request
+		/// </summary>
+		string ResponseContentType { get; set; }
 
-        /// <summary>
-        /// Attach any data to this request that all filters and services can access.
-        /// </summary>
-        Dictionary<string, object> Items { get; }
+		/// <summary>
+		/// Attach any data to this request that all filters and services can access.
+		/// </summary>
+		Dictionary<string, object> Items { get; }
 
-        NameValueCollection Headers { get; }
+		NameValueCollection Headers { get; }
 
-        NameValueCollection QueryString { get; }
+		NameValueCollection QueryString { get; }
 
-        NameValueCollection FormData { get; }
+		NameValueCollection FormData { get; }
 
-        /// <summary>
-        /// The entire string contents of Request.InputStream
-        /// </summary>
-        /// <returns></returns>
-        string GetRawBody();
+		/// <summary>
+		/// The entire string contents of Request.InputStream
+		/// </summary>
+		/// <returns></returns>
+		string GetRawBody();
 
-        string RawUrl { get; }
+		string RawUrl { get; }
 
-        string AbsoluteUri { get; }
+		string AbsoluteUri { get; }
 
-        string UserHostAddress { get; }
+		string UserHostAddress { get; }
 
-        /// <summary>
-        /// e.g. is https or not
-        /// </summary>
-        bool IsSecureConnection { get; }
+		/// <summary>
+		/// e.g. is https or not
+		/// </summary>
+		bool IsSecureConnection { get; }
 
-        string[] AcceptTypes { get; }
+		string[] AcceptTypes { get; }
 
-        string PathInfo { get; }
+		string PathInfo { get; }
 
-        Stream InputStream { get; }
+		Stream InputStream { get; }
 
-        long ContentLength { get; }
+		long ContentLength { get; }
 
-        /// <summary>
-        /// Access to the multi-part/formdata files posted on this request
-        /// </summary>
-        IFile[] Files { get; }
+		/// <summary>
+		/// Access to the multi-part/formdata files posted on this request
+		/// </summary>
+		IFile[] Files { get; }
 
-        string ApplicationFilePath { get; }
-    }
+		string ApplicationFilePath { get; }
+	}
 }
 #endif

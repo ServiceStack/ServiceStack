@@ -2,15 +2,15 @@ using System;
 
 namespace ServiceStack.Configuration
 {
-    public interface IFactoryProvider 
-        : IContainerAdapter, IDisposable
-    {
-        void Register<T>(T provider);
+	public interface IFactoryProvider 
+		: IContainerAdapter, IDisposable
+	{
+		void Register<T>(T provider);
 
-        T Resolve<T>(string name);
+		T Resolve<T>(string name);
 
-        T ResolveOptional<T>(string name, T defaultValue);
+		T ResolveOptional<T>(string name, T defaultValue);
 
-        T Create<T>(string name);
-    }
+		T Create<T>(string name);
+	}
 }

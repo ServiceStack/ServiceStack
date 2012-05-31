@@ -2,7 +2,7 @@
 
 namespace ServiceStack.RazorEngine.Templating
 {
-    /// <summary>
+	/// <summary>
     /// Defines a template resolver that uses a delegate to resolve a named template.
     /// </summary>
     internal class DelegateTemplateResolver : ITemplateResolver

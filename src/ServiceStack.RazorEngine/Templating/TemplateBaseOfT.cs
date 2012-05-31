@@ -3,7 +3,7 @@ using ServiceStack.RazorEngine.Compilation;
 
 namespace ServiceStack.RazorEngine.Templating
 {
-    /// <summary>
+	/// <summary>
     /// Provides a base implementation of a template with a model.
     /// </summary>
     /// <typeparam name="TModel">The model type.</typeparam>
@@ -37,14 +37,14 @@ namespace ServiceStack.RazorEngine.Templating
         {
             get
             {
-                if (HasDynamicModel 
-                    && !typeof(TModel).IsAssignableFrom(typeof(DynamicObject))
-                    && (model is DynamicObject || model is ExpandoObject))
-                {
-                    TModel m = (dynamic)model;
-                    return m;
-                }
-                return (TModel)model;
+				if (HasDynamicModel 
+					&& !typeof(TModel).IsAssignableFrom(typeof(DynamicObject))
+					&& (model is DynamicObject || model is ExpandoObject))
+				{
+					TModel m = (dynamic)model;
+					return m;
+				}
+				return (TModel)model;
             }
             set
             {

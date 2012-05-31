@@ -3,46 +3,46 @@ using System.Net;
 
 namespace ServiceStack.ServiceHost
 {
-    public interface IHttpResult : IHasOptions
-    {
-        /// <summary>
-        /// The HTTP Response Status Code
-        /// </summary>
-        HttpStatusCode StatusCode { get; set; }
+	public interface IHttpResult : IHasOptions
+	{
+		/// <summary>
+		/// The HTTP Response Status Code
+		/// </summary>
+		HttpStatusCode StatusCode { get; set; }
 
         /// <summary>
         /// The HTTP Status Description
         /// </summary>
         string StatusDescription { get; set; }
 
-        /// <summary>
-        /// The HTTP Response ContentType
-        /// </summary>
-        string ContentType { get; set; }
+		/// <summary>
+		/// The HTTP Response ContentType
+		/// </summary>
+		string ContentType { get; set; }
 
-        /// <summary>
-        /// Additional HTTP Headers
-        /// </summary>
-        Dictionary<string, string> Headers { get; }
+		/// <summary>
+		/// Additional HTTP Headers
+		/// </summary>
+		Dictionary<string, string> Headers { get; }
 
-        /// <summary>
-        /// Response DTO
-        /// </summary>
-        object Response { get; set; }
+		/// <summary>
+		/// Response DTO
+		/// </summary>
+		object Response { get; set; }
 
-        /// <summary>
-        /// A specific template, if not the default (for HTML, Markdown, etc. ContentTypes)
-        /// </summary>
-        string TemplateName { get; set; }
+		/// <summary>
+		/// A specific template, if not the default (for HTML, Markdown, etc. ContentTypes)
+		/// </summary>
+		string TemplateName { get; set; }
 
-        /// <summary>
-        /// if not provided, get's injected by ServiceStack
-        /// </summary>
-        IContentTypeWriter ResponseFilter { get; set; }
+		/// <summary>
+		/// if not provided, get's injected by ServiceStack
+		/// </summary>
+		IContentTypeWriter ResponseFilter { get; set; }
 
-        /// <summary>
-        /// Holds the request call context
-        /// </summary>
-        IRequestContext RequestContext { get; set; }
-    }
+		/// <summary>
+		/// Holds the request call context
+		/// </summary>
+		IRequestContext RequestContext { get; set; }
+	}
 }
