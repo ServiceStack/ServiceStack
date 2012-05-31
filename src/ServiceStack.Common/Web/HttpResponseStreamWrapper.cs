@@ -6,64 +6,64 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Common.Web
 {
-	public class HttpResponseStreamWrapper : IHttpResponse
-	{
-		private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(false);
+    public class HttpResponseStreamWrapper : IHttpResponse
+    {
+        private static readonly UTF8Encoding UTF8EncodingWithoutBom = new UTF8Encoding(false);
 
-		public HttpResponseStreamWrapper(Stream stream)
-		{
-			this.OutputStream = stream;
-			this.Headers = new Dictionary<string, string>();
-		}
+        public HttpResponseStreamWrapper(Stream stream)
+        {
+            this.OutputStream = stream;
+            this.Headers = new Dictionary<string, string>();
+        }
 
-		public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; set; }
 
-		public object OriginalResponse
-		{
-			get { return null; }
-		}
+        public object OriginalResponse
+        {
+            get { return null; }
+        }
 
-		public int StatusCode { set; private get; }
+        public int StatusCode { set; private get; }
         public string StatusDescription { set; private get; }
-		public string ContentType { get; set; }
+        public string ContentType { get; set; }
 
-		public ICookies Cookies { get; set; }
+        public ICookies Cookies { get; set; }
 
-		public void AddHeader(string name, string value)
-		{
-			this.Headers[name] = value;
-		}
+        public void AddHeader(string name, string value)
+        {
+            this.Headers[name] = value;
+        }
 
-		public void Redirect(string url)
-		{
-			this.Headers[HttpHeaders.Location] = url;
-		}
+        public void Redirect(string url)
+        {
+            this.Headers[HttpHeaders.Location] = url;
+        }
 
-		public Stream OutputStream { get; private set; }
+        public Stream OutputStream { get; private set; }
 
-		public void Write(string text)
-		{
-			var bytes = UTF8EncodingWithoutBom.GetBytes(text);
-			OutputStream.Write(bytes, 0, bytes.Length);
-		}
+        public void Write(string text)
+        {
+            var bytes = UTF8EncodingWithoutBom.GetBytes(text);
+            OutputStream.Write(bytes, 0, bytes.Length);
+        }
 
-		public void Close()
-		{
-			if (IsClosed) return;
-			OutputStream.Close();
-			IsClosed = true;
-		}
+        public void Close()
+        {
+            if (IsClosed) return;
+            OutputStream.Close();
+            IsClosed = true;
+        }
 
-		public void End()
-		{
-			Close();
-		}
+        public void End()
+        {
+            Close();
+        }
 
-		public void Flush()
-		{
-			OutputStream.Flush();
-		}
+        public void Flush()
+        {
+            OutputStream.Flush();
+        }
 
-		public bool IsClosed { get; private set; }
-	}
+        public bool IsClosed { get; private set; }
+    }
 }
