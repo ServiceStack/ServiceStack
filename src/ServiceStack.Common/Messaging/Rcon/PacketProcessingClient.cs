@@ -46,32 +46,32 @@ namespace ServiceStack.Messaging.Rcon
         }
 
         /// <summary>
-		/// Publish the specified message into the durable queue @queueName
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <param name="messageBytes"></param>
-		public void Publish(string queueName, byte[] messageBytes)
+        /// Publish the specified message into the durable queue @queueName
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <param name="messageBytes"></param>
+        public void Publish(string queueName, byte[] messageBytes)
         {
             theServer.Publish(queueName, messageBytes, theClient, thePacket.Sequence);
         }
-		
-		/// <summary>
-		/// Publish the specified message into the transient queue @queueName
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <param name="messageBytes"></param>
-		public void Notify(string queueName, byte[] messageBytes)
+        
+        /// <summary>
+        /// Publish the specified message into the transient queue @queueName
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <param name="messageBytes"></param>
+        public void Notify(string queueName, byte[] messageBytes)
         {
             theServer.Notify(queueName, messageBytes, theClient, thePacket.Sequence);
         }
 
-		/// <summary>
-		/// Synchronous blocking get.
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <param name="timeOut"></param>
-		/// <returns></returns>
-		public byte[] Get(string queueName, TimeSpan? timeOut)
+        /// <summary>
+        /// Synchronous blocking get.
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <param name="timeOut"></param>
+        /// <returns></returns>
+        public byte[] Get(string queueName, TimeSpan? timeOut)
         {
             if (givenPacket)
                 return null;
@@ -79,22 +79,22 @@ namespace ServiceStack.Messaging.Rcon
             givenPacket = true;
             return ret;
         }
-		
-		/// <summary>
-		/// Non blocking get message
-		/// </summary>
-		/// <param name="queueName"></param>
-		/// <returns></returns>
-		public byte[] GetAsync(string queueName)
+        
+        /// <summary>
+        /// Non blocking get message
+        /// </summary>
+        /// <param name="queueName"></param>
+        /// <returns></returns>
+        public byte[] GetAsync(string queueName)
         {
             return Get(queueName, TimeSpan.MinValue);
         }
 
-		/// <summary>
-		/// Blocking wait for notifications on any of the supplied channels
-		/// </summary>
-		/// <param name="channelNames"></param>
-		/// <returns></returns>
+        /// <summary>
+        /// Blocking wait for notifications on any of the supplied channels
+        /// </summary>
+        /// <param name="channelNames"></param>
+        /// <returns></returns>
         public string WaitForNotifyOnAny(params string[] channelNames)
         {
             return null;

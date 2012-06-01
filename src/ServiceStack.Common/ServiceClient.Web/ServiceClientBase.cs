@@ -14,14 +14,14 @@ namespace ServiceStack.ServiceClient.Web
 {
 
     /**
-	 * Need to provide async request options
-	 * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
-	 */
+     * Need to provide async request options
+     * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
+     */
     public abstract class ServiceClientBase
 #if !SILVERLIGHT
  : IServiceClient, IRestClient
 #else
-		: IServiceClient
+        : IServiceClient
 #endif
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ServiceClientBase));
@@ -86,9 +86,9 @@ namespace ServiceStack.ServiceClient.Web
             this.StoreCookies = true; //leave
 
 #if SILVERLIGHT
-			asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
-			asyncClient.UseBrowserHttpHandling = this.UseBrowserHttpHandling = false;
-			asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
+            asyncClient.HandleCallbackOnUIThread = this.HandleCallbackOnUIThread = true;
+            asyncClient.UseBrowserHttpHandling = this.UseBrowserHttpHandling = false;
+            asyncClient.ShareCookiesWithBrowser = this.ShareCookiesWithBrowser = true;
 #endif
         }
 
@@ -205,26 +205,26 @@ namespace ServiceStack.ServiceClient.Web
 #endif
 
 #if SILVERLIGHT
-		private bool handleCallbackOnUiThread;
-		public bool HandleCallbackOnUIThread
-		{
-			get { return this.handleCallbackOnUiThread; }
-			set { asyncClient.HandleCallbackOnUIThread = this.handleCallbackOnUiThread = value; }
-		}
+        private bool handleCallbackOnUiThread;
+        public bool HandleCallbackOnUIThread
+        {
+            get { return this.handleCallbackOnUiThread; }
+            set { asyncClient.HandleCallbackOnUIThread = this.handleCallbackOnUiThread = value; }
+        }
 
-		private bool useBrowserHttpHandling;
-		public bool UseBrowserHttpHandling
-		{
-			get { return this.useBrowserHttpHandling; }
-			set { asyncClient.UseBrowserHttpHandling = this.useBrowserHttpHandling = value; }
-		}
+        private bool useBrowserHttpHandling;
+        public bool UseBrowserHttpHandling
+        {
+            get { return this.useBrowserHttpHandling; }
+            set { asyncClient.UseBrowserHttpHandling = this.useBrowserHttpHandling = value; }
+        }
 
-		private bool shareCookiesWithBrowser;
-		public bool ShareCookiesWithBrowser
-		{
-			get { return this.shareCookiesWithBrowser; }
-			set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
-		}
+        private bool shareCookiesWithBrowser;
+        public bool ShareCookiesWithBrowser
+        {
+            get { return this.shareCookiesWithBrowser; }
+            set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
+        }
 
 #endif
 
@@ -523,65 +523,65 @@ namespace ServiceStack.ServiceClient.Web
                 HttpWebRequestFilter(client);
         }
 #else
-		private void SendRequest(string requestUri, object request, Action<WebRequest> callback)
-		{
-			var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
-			if (isHttpGet)
-			{
-				var queryString = QueryStringSerializer.SerializeToString(request);
-				if (!string.IsNullOrEmpty(queryString))
-				{
-					requestUri += "?" + queryString;
-				}
-			}
+        private void SendRequest(string requestUri, object request, Action<WebRequest> callback)
+        {
+            var isHttpGet = HttpMethod != null && HttpMethod.ToUpper() == "GET";
+            if (isHttpGet)
+            {
+                var queryString = QueryStringSerializer.SerializeToString(request);
+                if (!string.IsNullOrEmpty(queryString))
+                {
+                    requestUri += "?" + queryString;
+                }
+            }
 
-			SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request, callback);
-		}
+            SendRequest(HttpMethod ?? DefaultHttpMethod, requestUri, request, callback);
+        }
 
-		private void SendRequest(string httpMethod, string requestUri, object request, Action<WebRequest> callback)
-		{
-			if (httpMethod == null)
-				throw new ArgumentNullException("httpMethod");
+        private void SendRequest(string httpMethod, string requestUri, object request, Action<WebRequest> callback)
+        {
+            if (httpMethod == null)
+                throw new ArgumentNullException("httpMethod");
 
-			var client = (HttpWebRequest)WebRequest.Create(requestUri);
-			try
-			{
-				client.Accept = ContentType;
-				client.Method = httpMethod;
+            var client = (HttpWebRequest)WebRequest.Create(requestUri);
+            try
+            {
+                client.Accept = ContentType;
+                client.Method = httpMethod;
 
-				if (this.credentials != null) client.Credentials = this.credentials;
-				if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
+                if (this.credentials != null) client.Credentials = this.credentials;
+                if (this.AlwaysSendBasicAuthHeader) client.AddBasicAuth(this.UserName, this.Password);
 
-				if (StoreCookies)
-				{
-					client.CookieContainer = CookieContainer;
-				}
+                if (StoreCookies)
+                {
+                    client.CookieContainer = CookieContainer;
+                }
 
-				if (this.LocalHttpWebRequestFilter != null)
-					LocalHttpWebRequestFilter(client);
+                if (this.LocalHttpWebRequestFilter != null)
+                    LocalHttpWebRequestFilter(client);
 
-				if (HttpWebRequestFilter != null)
-					HttpWebRequestFilter(client);
+                if (HttpWebRequestFilter != null)
+                    HttpWebRequestFilter(client);
 
-				if (httpMethod != Web.HttpMethod.Get
-					&& httpMethod != Web.HttpMethod.Delete)
-				{
-					client.ContentType = ContentType;
+                if (httpMethod != Web.HttpMethod.Get
+                    && httpMethod != Web.HttpMethod.Delete)
+                {
+                    client.ContentType = ContentType;
 
-					client.BeginGetRequestStream(delegate(IAsyncResult target)
-					{
-						var webReq = (HttpWebRequest)target.AsyncState;
-						var requestStream = webReq.EndGetRequestStream(target);
-						SerializeToStream(null, request, requestStream);
-						callback(client);
-					}, null);
-				}
-			}
-			catch (AuthenticationException ex)
-			{
-				throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
-			}
-		}
+                    client.BeginGetRequestStream(delegate(IAsyncResult target)
+                    {
+                        var webReq = (HttpWebRequest)target.AsyncState;
+                        var requestStream = webReq.EndGetRequestStream(target);
+                        SerializeToStream(null, request, requestStream);
+                        callback(client);
+                    }, null);
+                }
+            }
+            catch (AuthenticationException ex)
+            {
+                throw WebRequestUtils.CreateCustomException(requestUri, ex) ?? ex;
+            }
+        }
 #endif
 
         private string GetUrl(string relativeOrAbsoluteUrl)
@@ -589,7 +589,7 @@ namespace ServiceStack.ServiceClient.Web
             return relativeOrAbsoluteUrl.StartsWith("http:")
                 || relativeOrAbsoluteUrl.StartsWith("https:")
                      ? relativeOrAbsoluteUrl
-					 : this.BaseUri.CombineWith(relativeOrAbsoluteUrl);
+                     : this.BaseUri.CombineWith(relativeOrAbsoluteUrl);
         }
 
 #if !SILVERLIGHT
@@ -604,22 +604,22 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 #else
-		private void DownloadBytes(string requestUri, object request, Action<byte[]> callback = null)
-		{
-			SendRequest(requestUri, request, webRequest => webRequest.BeginGetResponse(delegate(IAsyncResult result)
-			{
-				var webReq = (HttpWebRequest)result.AsyncState;
-				var response = (HttpWebResponse)webReq.EndGetResponse(result);
-				using (var stream = response.GetResponseStream())
-				{
-					var bytes = stream.ReadFully();
-					if (callback != null)
-					{
-						callback(bytes);
-					}
-				}
-			}, null));
-		}
+        private void DownloadBytes(string requestUri, object request, Action<byte[]> callback = null)
+        {
+            SendRequest(requestUri, request, webRequest => webRequest.BeginGetResponse(delegate(IAsyncResult result)
+            {
+                var webReq = (HttpWebRequest)result.AsyncState;
+                var response = (HttpWebResponse)webReq.EndGetResponse(result);
+                using (var stream = response.GetResponseStream())
+                {
+                    var bytes = stream.ReadFully();
+                    if (callback != null)
+                    {
+                        callback(bytes);
+                    }
+                }
+            }, null));
+        }
 #endif
 
         public virtual void SendOneWay(object request)
@@ -728,7 +728,7 @@ namespace ServiceStack.ServiceClient.Web
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
 #if !MONOTOUCH
-				var nameValueCollection = HttpUtility.ParseQueryString(queryString);
+                var nameValueCollection = HttpUtility.ParseQueryString(queryString);
 #endif
                 var boundary = DateTime.Now.Ticks.ToString();
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;

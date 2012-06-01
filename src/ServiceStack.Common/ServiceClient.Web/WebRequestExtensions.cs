@@ -48,71 +48,71 @@ namespace ServiceStack.ServiceClient.Web
                 return DownloadBinary(webRes);
         }
 
-		public static string PostJsonToUrl(this string url, string data)
-		{
-			return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data), ContentType.Json, ContentType.Json);
-		}
+        public static string PostJsonToUrl(this string url, string data)
+        {
+            return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data), ContentType.Json, ContentType.Json);
+        }
 
-		public static string PostJsonToUrl(this string url, object data)
-		{
-			return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data.ToJson()), ContentType.Json, ContentType.Json);
-		}
+        public static string PostJsonToUrl(this string url, object data)
+        {
+            return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data.ToJson()), ContentType.Json, ContentType.Json);
+        }
 
-		public static string PostToUrl(this string url, string data, string requestContentType = null, string acceptContentType = null)
-		{
-			return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
-		}
+        public static string PostToUrl(this string url, string data, string requestContentType = null, string acceptContentType = null)
+        {
+            return SendToUrl(url, HttpMethod.Post, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
+        }
 
-		public static string PutToUrl(this string url, string data, string requestContentType = null, string acceptContentType = null)
-		{
-			return SendToUrl(url, HttpMethod.Put, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
-		}
+        public static string PutToUrl(this string url, string data, string requestContentType = null, string acceptContentType = null)
+        {
+            return SendToUrl(url, HttpMethod.Put, Encoding.UTF8.GetBytes(data), requestContentType, acceptContentType);
+        }
 
-		public static string PostToUrl(this string url, byte[] data, string requestContentType = null, string acceptContentType = null)
-		{
-			return SendToUrl(url, HttpMethod.Post, data, requestContentType, acceptContentType);
-		}
+        public static string PostToUrl(this string url, byte[] data, string requestContentType = null, string acceptContentType = null)
+        {
+            return SendToUrl(url, HttpMethod.Post, data, requestContentType, acceptContentType);
+        }
 
-		public static string PutToUrl(this string url, byte[] data, string requestContentType = null, string acceptContentType = null)
-		{
-			return SendToUrl(url, HttpMethod.Put, data, requestContentType, acceptContentType);
-		}
+        public static string PutToUrl(this string url, byte[] data, string requestContentType = null, string acceptContentType = null)
+        {
+            return SendToUrl(url, HttpMethod.Put, data, requestContentType, acceptContentType);
+        }
 
-		private static string SendToUrl(string url, string httpMethod, byte[] data, string requestContentType = null, string acceptContentType = null)
-    	{
-    		var webReq = (HttpWebRequest) WebRequest.Create(url);
-    		webReq.Method = httpMethod;
+        private static string SendToUrl(string url, string httpMethod, byte[] data, string requestContentType = null, string acceptContentType = null)
+        {
+            var webReq = (HttpWebRequest) WebRequest.Create(url);
+            webReq.Method = httpMethod;
 
-			if (requestContentType != null)
-				webReq.ContentType = requestContentType;
+            if (requestContentType != null)
+                webReq.ContentType = requestContentType;
 
-    		if (acceptContentType != null)
-    			webReq.Accept = acceptContentType;
+            if (acceptContentType != null)
+                webReq.Accept = acceptContentType;
 
-    		try
-    		{
-    			using (var req = webReq.GetRequestStream())
-    				req.Write(data, 0, data.Length);
-    		}
-    		catch (Exception ex)
-    		{
-    			Console.WriteLine("Error sending Request: " + ex);
-    			throw;
-    		}
+            try
+            {
+                using (var req = webReq.GetRequestStream())
+                    req.Write(data, 0, data.Length);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error sending Request: " + ex);
+                throw;
+            }
 
-    		try
-    		{
-    			using (var webRes = webReq.GetResponse())
-    				return DownloadText(webRes);
-    		}
-    		catch (Exception ex)
-    		{
-    			Console.WriteLine("Error reading Response: " + ex);
-    			throw;
-    		}
-    	}
+            try
+            {
+                using (var webRes = webReq.GetResponse())
+                    return DownloadText(webRes);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error reading Response: " + ex);
+                throw;
+            }
+        }
 
-    	public static string DownloadAsString(this string url)
+        public static string DownloadAsString(this string url)
         {
             var webReq = WebRequest.Create(url);
             using (var webRes = webReq.GetResponse())

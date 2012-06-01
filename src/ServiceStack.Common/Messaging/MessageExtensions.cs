@@ -6,19 +6,19 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Messaging
 {
-	public static class MessageExtensions
-	{
-		public static string ToString(byte[] bytes)
-		{
+    public static class MessageExtensions
+    {
+        public static string ToString(byte[] bytes)
+        {
 #if !SILVERLIGHT 
-			return System.Text.Encoding.UTF8.GetString(bytes);
+            return System.Text.Encoding.UTF8.GetString(bytes);
 #else
             return System.Text.Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 #endif
-		}
+        }
 
         private static Dictionary<Type, ToMessageDelegate> ToMessageFnCache = new Dictionary<Type, ToMessageDelegate>();
-	    internal static ToMessageDelegate GetToMessageFn(Type type)
+        internal static ToMessageDelegate GetToMessageFn(Type type)
         {
             ToMessageDelegate toMessageFn;
             ToMessageFnCache.TryGetValue(type, out toMessageFn);
@@ -42,38 +42,38 @@ namespace ServiceStack.Messaging
             return toMessageFn;
         }
 
-	    public static IMessage ToMessage(this byte[] bytes, Type ofType)
-	    {
-	        var msgFn = GetToMessageFn(ofType);
-	        var msg = msgFn(bytes);
-	        return msg;
-	    }
+        public static IMessage ToMessage(this byte[] bytes, Type ofType)
+        {
+            var msgFn = GetToMessageFn(ofType);
+            var msg = msgFn(bytes);
+            return msg;
+        }
 
-	    public static Message<T> ToMessage<T>(this byte[] bytes)
-		{
-			var messageText = ToString(bytes);
+        public static Message<T> ToMessage<T>(this byte[] bytes)
+        {
+            var messageText = ToString(bytes);
             return JsonSerializer.DeserializeFromString<Message<T>>(messageText);
-		}
+        }
 
-	    public static byte[] ToBytes(this IMessage message)
-		{
+        public static byte[] ToBytes(this IMessage message)
+        {
             var serializedMessage = JsonSerializer.SerializeToString((object)message);
-			return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
-		}
+            return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
+        }
 
-		public static byte[] ToBytes<T>(this IMessage<T> message)
-		{
-			var serializedMessage = JsonSerializer.SerializeToString(message);
-			return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
-		}
+        public static byte[] ToBytes<T>(this IMessage<T> message)
+        {
+            var serializedMessage = JsonSerializer.SerializeToString(message);
+            return System.Text.Encoding.UTF8.GetBytes(serializedMessage);
+        }
 
-		public static string ToInQueueName<T>(this IMessage<T> message)
-		{
-			return message.Priority > 0
-		       	? QueueNames<T>.Priority
-		       	: QueueNames<T>.In;
-		}
-	}
+        public static string ToInQueueName<T>(this IMessage<T> message)
+        {
+            return message.Priority > 0
+                ? QueueNames<T>.Priority
+                : QueueNames<T>.In;
+        }
+    }
 
     internal delegate IMessage ToMessageDelegate(object param);
 
