@@ -4,22 +4,22 @@ using System.Text;
 
 namespace ServiceStack.Common.Utils
 {
-	public static class PathUtils
-	{
-		public static string MapAbsolutePath(string relativePath, string appendPartialPathModifier)
-		{
+    public static class PathUtils
+    {
+        public static string MapAbsolutePath(string relativePath, string appendPartialPathModifier)
+        {
 #if !SILVERLIGHT 
-			if (relativePath.StartsWith("~"))
-			{
-				var assemblyDirectoryPath = Path.GetDirectoryName(new Uri(typeof(PathUtils).Assembly.EscapedCodeBase).LocalPath);
+            if (relativePath.StartsWith("~"))
+            {
+                var assemblyDirectoryPath = Path.GetDirectoryName(new Uri(typeof(PathUtils).Assembly.EscapedCodeBase).LocalPath);
 
-				// Escape the assembly bin directory to the hostname directory
-			    var hostDirectoryPath = appendPartialPathModifier != null
-			                                ? assemblyDirectoryPath + appendPartialPathModifier
-			                                : assemblyDirectoryPath;
+                // Escape the assembly bin directory to the hostname directory
+                var hostDirectoryPath = appendPartialPathModifier != null
+                                            ? assemblyDirectoryPath + appendPartialPathModifier
+                                            : assemblyDirectoryPath;
 
-				return Path.GetFullPath(relativePath.Replace("~", hostDirectoryPath));
-			}
+                return Path.GetFullPath(relativePath.Replace("~", hostDirectoryPath));
+            }
 #endif
             return relativePath;
         }
@@ -31,11 +31,11 @@ namespace ServiceStack.Common.Utils
         /// <returns>the absolute path</returns>
         /// <remarks>Assumes static content is two directories above the /bin/ directory,
         /// eg. in a unit test scenario  the assembly would be in /bin/Debug/.</remarks>
-		public static string MapProjectPath(this string relativePath)
-		{
-			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..{0}..", Path.DirectorySeparatorChar));
-			return mapPath;
-		}
+        public static string MapProjectPath(this string relativePath)
+        {
+            var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..{0}..", Path.DirectorySeparatorChar));
+            return mapPath;
+        }
 
         /// <summary>
         /// Maps the path of a file in a self-hosted scenario
@@ -55,30 +55,30 @@ namespace ServiceStack.Common.Utils
         /// <param name="relativePath">the relative path</param>
         /// <returns>the absolute path</returns>
         /// <remarks>Assumes static content is in the parent folder of the /bin/ directory</remarks>
-		public static string MapHostAbsolutePath(this string relativePath)
-		{
-			var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..", Path.DirectorySeparatorChar));
-			return mapPath;
-		}
+        public static string MapHostAbsolutePath(this string relativePath)
+        {
+            var mapPath = MapAbsolutePath(relativePath, string.Format("{0}..", Path.DirectorySeparatorChar));
+            return mapPath;
+        }
 
-		internal static string CombinePaths(StringBuilder sb, params string[] paths)
-		{
-			foreach (var path in paths)
-			{
-				if (sb.Length > 0)
-					sb.Append("/");
+        internal static string CombinePaths(StringBuilder sb, params string[] paths)
+        {
+            foreach (var path in paths)
+            {
+                if (sb.Length > 0)
+                    sb.Append("/");
 
-				sb.Append(path.TrimStart('/', '\\'));
-			}
+                sb.Append(path.TrimStart('/', '\\'));
+            }
 
-			return sb.ToString();
-		}
+            return sb.ToString();
+        }
 
-		public static string CombinePaths(params string[] paths)
-		{
-			return CombinePaths(new StringBuilder(), paths);
-		}
-	}
+        public static string CombinePaths(params string[] paths)
+        {
+            return CombinePaths(new StringBuilder(), paths);
+        }
+    }
 
 
 }

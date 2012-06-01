@@ -9,52 +9,52 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Web
 {
-	public class CompressedFileResult
-		: IStreamWriter, IHasOptions
-	{
-		public const int Adler32ChecksumLength = 4;
+    public class CompressedFileResult
+        : IStreamWriter, IHasOptions
+    {
+        public const int Adler32ChecksumLength = 4;
 
-		public const string DefaultContentType = MimeTypes.Xml;
+        public const string DefaultContentType = MimeTypes.Xml;
 
-		public string FilePath { get; private set; }
+        public string FilePath { get; private set; }
 
-		public Dictionary<string, string> Headers { get; private set; }
+        public Dictionary<string, string> Headers { get; private set; }
 
-		public IDictionary<string, string> Options
-		{
-			get { return this.Headers; }
-		}
+        public IDictionary<string, string> Options
+        {
+            get { return this.Headers; }
+        }
 
-		public CompressedFileResult(string filePath)
-			: this(filePath, CompressionTypes.Deflate) { }
+        public CompressedFileResult(string filePath)
+            : this(filePath, CompressionTypes.Deflate) { }
 
-		public CompressedFileResult(string filePath, string compressionType)
-			: this(filePath, compressionType, DefaultContentType) { }
+        public CompressedFileResult(string filePath, string compressionType)
+            : this(filePath, compressionType, DefaultContentType) { }
 
-		public CompressedFileResult(string filePath, string compressionType, string contentMimeType)
-		{
-			if (!CompressionTypes.IsValid(compressionType))
-			{
-				throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
-			}
+        public CompressedFileResult(string filePath, string compressionType, string contentMimeType)
+        {
+            if (!CompressionTypes.IsValid(compressionType))
+            {
+                throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
+            }
 
-			this.FilePath = filePath;
-			this.Headers = new Dictionary<string, string> {
-				{ HttpHeaders.ContentType, contentMimeType },
-				{ HttpHeaders.ContentEncoding, compressionType },
-			};
-		}
+            this.FilePath = filePath;
+            this.Headers = new Dictionary<string, string> {
+                { HttpHeaders.ContentType, contentMimeType },
+                { HttpHeaders.ContentEncoding, compressionType },
+            };
+        }
 
-		public void WriteTo(Stream responseStream)
-		{
-			using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
-			{
-				fs.Position = Adler32ChecksumLength;
+        public void WriteTo(Stream responseStream)
+        {
+            using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
+            {
+                fs.Position = Adler32ChecksumLength;
 
-				fs.WriteTo(responseStream);
-				responseStream.Flush();
-			}
-		}
+                fs.WriteTo(responseStream);
+                responseStream.Flush();
+            }
+        }
 
-	}
+    }
 }

@@ -37,7 +37,7 @@ namespace ServiceStack.Common.Utils
             if (waitHandles != null && waitHandles.Length > 0)
             {
 #if !SILVERLIGHT && !MONOTOUCH && !XBOX
-				if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
+                if (Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
                 {
                     // WaitAll for multiple handles on an STA thread is not supported.
                     // CurrentThread is ApartmentState.STA when run under unit tests
