@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 
 	[DataContract]
-	[RestService("/movies", "GET")]
+	[RestService("/movies", "GET, OPTIONS")]
 	[RestService("/movies/genres/{Genre}")]
 	public class Movies
 	{

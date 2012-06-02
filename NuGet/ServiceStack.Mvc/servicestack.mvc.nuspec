@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Mvc</id>
-    <version>3.6.9</version> 
+    <version>3.7.8</version> 
 	<authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>.NET 4.0 project Integration of ServiceStack with MVC3</summary>

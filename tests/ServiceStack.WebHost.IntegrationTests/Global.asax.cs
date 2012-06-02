@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));
 				ModelConfig<Movie>.Id(x => x.Title);
 				Routes
-					.Add<Movies>("/custom-movies", "GET")
+					.Add<Movies>("/custom-movies", "GET, OPTIONS")
 					.Add<Movies>("/custom-movies/genres/{Genre}")
 					.Add<Movie>("/custom-movies", "POST,PUT")
 					.Add<Movie>("/custom-movies/{Id}")
@@ -96,6 +96,11 @@ namespace ServiceStack.WebHost.IntegrationTests
 
 				//var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);
 				SetConfig(new EndpointHostConfig {
+                    GlobalResponseHeaders = {
+                        { "Access-Control-Allow-Origin", "*" },
+                        { "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
+                        { "Access-Control-Allow-Headers", "Content-Type, X-Requested-With" },
+                    },
 					//EnableFeatures = onlyEnableFeatures,
 					DebugMode = true, //Show StackTraces for easier debugging
 				});

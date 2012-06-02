@@ -130,7 +130,8 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			if (session.ReferrerUrl.IsNullOrEmpty() 
 				|| session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
-				session.ReferrerUrl = this.RedirectUrl 
+				session.ReferrerUrl = (request != null ? request.Continue : null)
+					?? this.RedirectUrl 
 					?? ServiceStackHttpHandlerFactory.GetBaseUrl()
 					?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1));
 

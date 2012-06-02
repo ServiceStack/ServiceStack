@@ -125,7 +125,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public override object OnPut(Movie movie)
 		{
-			DbFactory.Exec(dbCmd => dbCmd.Save(movie));
+			DbFactory.Exec(dbCmd => dbCmd.Update(movie));
 			return new MovieResponse();
 		}
 

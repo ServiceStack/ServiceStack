@@ -270,6 +270,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Assert.Fail(webEx.Message);
 			}
 		}
+		
+		
+		[Test]
+		public void Does_work_with_CredentailsAuth_Multiple_Times()
+		{
+			try
+			{
+				var client = GetClient();
+
+				var authResponse = client.Send<AuthResponse>(new Auth {
+					provider = CredentialsAuthProvider.Name,
+					UserName = "user",
+					Password = "p@55word",
+					RememberMe = true,
+				});
+
+				Console.WriteLine(authResponse.Dump());
+
+				for(int i =0; i<500; i++){
+				var request = new Secured { Name = "test" };
+				var response = client.Send<SecureResponse>(request);
+				Assert.That(response.Result, Is.EqualTo(request.Name));
+					Console.WriteLine("loop : {0}",i);
+				}
+			}
+			catch (WebServiceException webEx)
+			{
+				Assert.Fail(webEx.Message);
+			}
+		}
 
 	}
 }

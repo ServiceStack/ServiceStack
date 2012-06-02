@@ -20,6 +20,7 @@ namespace ServiceStack.ServiceInterface.Auth
 		public string Email { get; set; }
 		public string Password { get; set; }
 		public bool? AutoLogin { get; set; }
+		public string Continue { get; set; }
 	}
 
 	public class RegistrationResponse
@@ -103,10 +104,11 @@ namespace ServiceStack.ServiceInterface.Auth
 
 			if (ValidateFn != null)
 			{
-				var response = ValidateFn(this, HttpMethods.Post, request);
-				if (response != null) return response;
+				var validateResponse = ValidateFn(this, HttpMethods.Post, request);
+				if (validateResponse != null) return validateResponse;
 			}
 
+			RegistrationResponse response = null;
 			var session = this.GetSession();
 			var newUserAuth = ToUserAuth(request);
 			var existingUser = UserAuthRepo.GetUserAuth(session, null);
@@ -118,28 +120,38 @@ namespace ServiceStack.ServiceInterface.Auth
 			if (request.AutoLogin.GetValueOrDefault())
 			{
 				var authService = base.ResolveService<AuthService>();
-				var response = authService.Post(new Auth {
+				var authResponse = authService.Post(new Auth {
 					UserName = request.UserName ?? request.Email,
 					Password = request.Password
 				});
-				
-				if (response is IHttpError)
-					throw (Exception) response;
 
-				var authResponse = response as AuthResponse;
-				if (authResponse != null)
+				if (authResponse is IHttpError)
+					throw (Exception)authResponse;
+
+				var typedResponse = authResponse as AuthResponse;
+				if (typedResponse != null)
 				{
-					return new RegistrationResponse {
-						SessionId = authResponse.SessionId,
-						UserName = authResponse.UserName,
-						ReferrerUrl = authResponse.ReferrerUrl,
+					response = new RegistrationResponse {
+						SessionId = typedResponse.SessionId,
+						UserName = typedResponse.UserName,
+						ReferrerUrl = typedResponse.ReferrerUrl,
 						UserId = user.Id.ToString(CultureInfo.InvariantCulture),
 					};
 				}
 			}
 
-			return new RegistrationResponse {
-				UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+			if (response == null)
+			{
+				response = new RegistrationResponse {
+					UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+				};
+			}
+
+			if (request.Continue == null)
+				return response;
+			
+			return new HttpResult(response) {
+				Location = request.Continue
 			};
 		}
 

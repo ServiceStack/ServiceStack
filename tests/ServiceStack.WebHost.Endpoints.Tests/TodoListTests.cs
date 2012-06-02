@@ -5,6 +5,7 @@ using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
@@ -43,6 +44,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 	}
 
+    [RestService("/todolist")]
 	public class TodoList : List<Todo>
 	{
 		public TodoList() {}
@@ -82,7 +84,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	[TestFixture]
 	public class TodoListTests
 	{
-		private const string ListeningOn = "http://localhost:82/";
+		private const string ListeningOn = "http://localhost:8082/";
 
 		public class TodoListAppHostHttpListener
 			: AppHostHttpListenerBase
@@ -93,7 +95,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 			public override void Configure(Container container)
 			{
-				Routes.Add<TodoList>("/todolist");
 			}
 		}
 

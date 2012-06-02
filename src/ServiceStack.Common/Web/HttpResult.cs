@@ -103,6 +103,14 @@ namespace ServiceStack.Common.Web
 			}
 		}
 
+		public string Location
+		{
+			set
+			{
+				this.Headers[HttpHeaders.Location] = value;
+			}
+		}
+
 		public void SetPermanentCookie(string name, string value)
 		{
 			SetCookie(name, value, DateTime.UtcNow.AddYears(20), null);

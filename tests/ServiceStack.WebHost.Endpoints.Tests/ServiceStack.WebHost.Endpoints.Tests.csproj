@@ -140,10 +140,9 @@
     <Compile Include="IocServiceTests.cs" />
     <Compile Include="Support\EndpointHandlerBaseTests.cs" />
     <Compile Include="UserServiceValidationTests.cs" />
-    <Compile Include="_JsonpTests.cs" />
+    <Compile Include="JsonpTests.cs" />
     <Compile Include="Support\Host\IocAppHost.cs" />
     <Compile Include="Support\Services\IocService.cs" />
-    <Compile Include="_SyncRestClientCustomTests.cs" />
     <Compile Include="CustomRequestDataTests.cs" />
     <Compile Include="HttpResultTests.cs" />
     <Compile Include="IntegrationTests\ResetMovies.cs" />
@@ -151,7 +150,7 @@
     <Compile Include="Support\Operations\CustomFormData.cs" />
     <Compile Include="Support\Services\CustomFormDataService.cs" />
     <Compile Include="AppHostConfigTests.cs" />
-    <Compile Include="_SyncRestClientTests.cs" />
+    <Compile Include="SyncRestClientTests.cs" />
     <Compile Include="CsvContentTypeFilterTests.cs" />
     <Compile Include="EndpointRestrictionTests.cs" />
     <Compile Include="FileUploadTests.cs" />
@@ -173,7 +172,7 @@
     <Compile Include="MessageSerializationTests.cs" />
     <Compile Include="ServiceHostTestBase.cs" />
     <Compile Include="Support\ServiceClientTestBase.cs" />
-    <Compile Include="_ServiceClientTests.cs" />
+    <Compile Include="ServiceClientTests.cs" />
     <Compile Include="ServiceStackHttpHandlerFactoryTests.cs" />
     <Compile Include="Support\Host\TestAppHostHttpListener.cs" />
     <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
