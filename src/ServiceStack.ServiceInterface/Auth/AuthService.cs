@@ -163,6 +163,18 @@ namespace ServiceStack.ServiceInterface.Auth
             object response = null;
             var session = this.GetSession();
 
+			if (request.provider == IsAuthenticatedAction)
+				return new AuthIsAuthenticatedResponse
+				{
+					IsAuthenticated = session.IsAuthenticated,
+					UserName = session.UserName,
+				};
+
+			if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
+			{
+				return oAuthConfig.Authenticate(this, session, request);
+			}
+
             if (request.provider == IsAuthenticatedAction)
                 return new AuthIsAuthenticatedResponse
                 {
