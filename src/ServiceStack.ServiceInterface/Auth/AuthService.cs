@@ -33,7 +33,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public string Password { get; set; }
         public bool? RememberMe { get; set; }
         public string Continue { get; set; }
-        // Thise are used for digest auth
+        // This are used for digest auth
         public string nonce { get; set; }
         public string uri { get; set; }
         public string response { get; set; }
@@ -58,12 +58,27 @@ namespace ServiceStack.ServiceInterface.Auth
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    public class AuthIsAuthenticatedResponse
+    {
+        public AuthIsAuthenticatedResponse()
+        {
+            this.ResponseStatus = new ResponseStatus();
+        }
+
+        public bool IsAuthenticated { get; set; }
+
+        public string UserName { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     public class AuthService : RestServiceBase<Auth>
     {
         public const string BasicProvider = "basic";
         public const string CredentialsProvider = "credentials";
         public const string LogoutAction = "logout";
         public const string DigestProvider = "digest";
+        public const string IsAuthenticatedAction = "isAuthenticated";
 
         public static Func<IAuthSession> CurrentSessionFactory { get; set; }
         public static ValidateFn ValidateFn { get; set; }
@@ -81,7 +96,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public static IAuthProvider GetAuthProvider(string provider)
         {
             if (AuthProviders == null || AuthProviders.Length == 0) return null;
-            if (provider == LogoutAction) return AuthProviders[0];
+            if ((provider == LogoutAction) || (provider == IsAuthenticatedAction)) return AuthProviders[0];
 
             foreach (var authConfig in AuthProviders)
             {
@@ -147,6 +162,14 @@ namespace ServiceStack.ServiceInterface.Auth
 
             object response = null;
             var session = this.GetSession();
+
+            if (request.provider == IsAuthenticatedAction)
+                return new AuthIsAuthenticatedResponse
+                {
+                    IsAuthenticated = session.IsAuthenticated,
+                    UserName = session.UserName,
+                };
+
             if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
             {
                 response = oAuthConfig.Authenticate(this, session, request);
