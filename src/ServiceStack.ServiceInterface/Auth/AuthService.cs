@@ -58,6 +58,7 @@ namespace ServiceStack.ServiceInterface.Auth
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+<<<<<<< HEAD
     public class AuthIsAuthenticatedResponse
     {
         public AuthIsAuthenticatedResponse()
@@ -229,6 +230,153 @@ namespace ServiceStack.ServiceInterface.Auth
             return new AuthResponse();
         }
     }
+=======
+	public class AuthIsAuthenticatedResponse
+	{
+		public AuthIsAuthenticatedResponse()
+		{
+			this.ResponseStatus = new ResponseStatus();
+		}
+
+		public bool IsAuthenticated { get; set; }
+
+		public string UserName { get; set; }
+
+		public ResponseStatus ResponseStatus { get; set; }
+	}
+
+	public class AuthService : RestServiceBase<Auth>
+	{
+		public const string BasicProvider = "basic";
+		public const string CredentialsProvider = "credentials";
+		public const string LogoutAction = "logout";
+		public const string DigestProvider = "digest";
+		public const string IsAuthenticatedAction = "isAuthenticated";
+
+		public static Func<IAuthSession> CurrentSessionFactory { get; set; }
+		public static ValidateFn ValidateFn { get; set; }
+
+		public static string DefaultOAuthProvider { get; private set; }
+		public static string DefaultOAuthRealm { get; private set; }
+		public static IAuthProvider[] AuthProviders { get; private set; }
+
+
+		static AuthService()
+		{
+			CurrentSessionFactory = () => new AuthUserSession();
+		}
+
+		public static IAuthProvider GetAuthProvider(string provider)
+		{
+			if (AuthProviders == null || AuthProviders.Length == 0) return null;
+			if ((provider == LogoutAction) || (provider == IsAuthenticatedAction)) return AuthProviders[0];
+
+			foreach (var authConfig in AuthProviders)
+			{
+				if (string.Compare(authConfig.Provider, provider,
+					StringComparison.InvariantCultureIgnoreCase) == 0)
+					return authConfig;
+			}
+
+			return null;
+		}
+
+		public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)
+		{
+			if (authProviders.Length == 0)
+				throw new ArgumentNullException("authProviders");
+
+			DefaultOAuthProvider = authProviders[0].Provider;
+			DefaultOAuthRealm = authProviders[0].AuthRealm;
+
+			AuthProviders = authProviders;
+			if (sessionFactory != null)
+				CurrentSessionFactory = sessionFactory;
+		}
+
+		private void AssertAuthProviders()
+		{
+			if (AuthProviders == null || AuthProviders.Length == 0)
+				throw new ConfigurationException("No OAuth providers have been registered in your AppHost.");
+		}
+
+		public override object OnGet(Auth request)
+		{
+			return OnPost(request);
+		}
+
+		public override object OnPost(Auth request)
+		{
+			AssertAuthProviders();
+
+			if (ValidateFn != null)
+			{
+				var response = ValidateFn(this, HttpMethods.Get, request);
+				if (response != null) return response;
+			}
+
+			if (request.RememberMe.HasValue)
+			{
+				var opt = request.RememberMe.GetValueOrDefault(false)
+					? SessionOptions.Permanent
+					: SessionOptions.Temporary;
+
+				base.RequestContext.Get<IHttpResponse>()
+					.AddSessionOptions(base.RequestContext.Get<IHttpRequest>(), opt);
+			}
+
+			var provider = request.provider ?? AuthProviders[0].Provider;
+			var oAuthConfig = GetAuthProvider(provider);
+			if (oAuthConfig == null)
+				throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));
+
+			if (request.provider == LogoutAction)
+				return oAuthConfig.Logout(this, request);
+
+			var session = this.GetSession();
+
+			if (request.provider == IsAuthenticatedAction)
+				return new AuthIsAuthenticatedResponse
+				{
+					IsAuthenticated = session.IsAuthenticated,
+					UserName = session.UserName,
+				};
+
+			if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
+			{
+				return oAuthConfig.Authenticate(this, session, request);
+			}
+
+			var referrerUrl = request.Continue
+				?? session.ReferrerUrl
+				?? this.RequestContext.GetHeader("Referer")
+				?? oAuthConfig.CallbackUrl;
+
+			//Already Authenticated
+			if (base.RequestContext.ResponseContentType == ContentType.Html)
+				return this.Redirect(referrerUrl.AddHashParam("s", "0"));
+
+			return new AuthResponse {
+				UserName = session.UserName,
+				SessionId = session.Id,
+				ReferrerUrl = referrerUrl,
+			};
+		}
+
+		public override object OnDelete(Auth request)
+		{
+			if (ValidateFn != null)
+			{
+				var response = ValidateFn(this, HttpMethods.Delete, request);
+				if (response != null) return response;
+			}
+
+			this.RemoveSession();
+
+			return new AuthResponse();
+		}
+	}
+>>>>>>> 4f49d6e3ae13caa3b452385a7ddc1cd98f0910a0
 
 }
 
