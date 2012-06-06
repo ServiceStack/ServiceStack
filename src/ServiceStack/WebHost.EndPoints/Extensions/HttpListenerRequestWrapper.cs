@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	{
 		private static readonly string physicalFilePath;
 		private readonly HttpListenerRequest request;
-		public Container Container { get; set; }
+		public Container Container { get; set; }		
 
 		static HttpListenerRequestWrapper()
 		{
@@ -107,9 +107,11 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.Url.AbsoluteUri.TrimEnd('/'); }
 		}
 
+		private string userHostAddress;
+
 		public string UserHostAddress
 		{
-			get { return request.UserHostAddress; }
+            		get { return userHostAddress ?? (userHostAddress = request.Headers["X-Real-IP"] ?? request.UserHostAddress); }
 		}
 
 		public bool IsSecureConnection
