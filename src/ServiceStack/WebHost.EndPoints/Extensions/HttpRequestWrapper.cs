@@ -6,6 +6,7 @@ using System.Net;
 using System.Web;
 using Funq;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
@@ -170,10 +171,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			}
 		}
 
-		public string UserHostAddress
-		{
-			get { return request.UserHostAddress; }
-		}
+        private string userHostAddress;
+        public string UserHostAddress
+        {
+            get
+            {
+                return userHostAddress ?? (userHostAddress = request.Headers[HttpHeaders.XForwardedFor] ?? (request.Headers[HttpHeaders.XRealIp] ?? request.UserHostAddress));
+            }
+        }
 
 		public bool IsSecureConnection
 		{
