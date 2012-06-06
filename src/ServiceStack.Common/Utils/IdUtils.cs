@@ -108,6 +108,11 @@ namespace ServiceStack.Common.Utils
     {
         public const string IdField = "Id";
 
+        public static object GetObjectId(this object entity)
+        {
+            return entity.GetType().GetProperty(IdField).GetGetMethod().Invoke(entity, new object[0]);
+        }
+
         public static object GetId<T>(this T entity)
         {
             return IdUtils<T>.GetId(entity);
@@ -118,8 +123,12 @@ namespace ServiceStack.Common.Utils
             return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
         }
 
+        public static string CreateUrn(Type type, object id)
+        {
+            return string.Format("urn:{0}:{1}", type.Name.ToLower(), id);
+        }
+
         public static string CreateUrn<T>(this T entity)
-        //			where T : class
         {
             var id = GetId(entity);
             return string.Format("urn:{0}:{1}", typeof(T).Name.ToLower(), id);
