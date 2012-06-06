@@ -64,6 +64,8 @@ namespace ServiceStack.Redis
 	    T GetFromHash<T>(object id);
 	    void StoreAsHash<T>(T entity);
 
+	    object StoreObject(object entity);
+
 		bool ContainsKey(string key);
 		bool RemoveEntry(params string[] args);
 		long IncrementValue(string key);

@@ -27,6 +27,8 @@ namespace ServiceStack.Redis.Generic
 
 		IRedisTypedTransaction<T> CreateTransaction();
         IRedisTypedPipeline<T> CreatePipeline();
+
+        IRedisClient RedisClient { get; }
 		
 		IDisposable AcquireLock();
 		IDisposable AcquireLock(TimeSpan timeOut);
