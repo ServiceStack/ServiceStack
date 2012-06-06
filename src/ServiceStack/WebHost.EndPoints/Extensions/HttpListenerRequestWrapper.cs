@@ -43,6 +43,7 @@ using System.Text;
 using System.Web;
 using Funq;
 using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -53,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	{
 		private static readonly string physicalFilePath;
 		private readonly HttpListenerRequest request;
-		public Container Container { get; set; }
+		public Container Container { get; set; }		
 
 		static HttpListenerRequestWrapper()
 		{
@@ -107,10 +108,14 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.Url.AbsoluteUri.TrimEnd('/'); }
 		}
 
-		public string UserHostAddress
-		{
-			get { return request.UserHostAddress; }
-		}
+        private string userHostAddress;
+        public string UserHostAddress
+        {
+            get
+            {
+                return userHostAddress ?? (userHostAddress = request.Headers[HttpHeaders.XForwardedFor] ?? (request.Headers[HttpHeaders.XRealIp] ?? request.UserHostAddress));
+            }
+        }
 
 		public bool IsSecureConnection
 		{
