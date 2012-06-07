@@ -58,6 +58,11 @@ namespace ServiceStack.Messaging
             return total;
         }
 
+        public string GetStatus()
+        {
+            return isRunning ? "Started" : "Stopped";
+        }
+
         public string GetStatsDescription()
         {
             var sb = new StringBuilder("#MQ HOST STATS:\n");

@@ -33,7 +33,13 @@ namespace ServiceStack.Messaging
         /// </summary>
         /// <returns></returns>
         IMessageHandlerStats GetStats();
-        
+
+        /// <summary>
+        /// Get the status of the service. Potential Statuses: Disposed, Stopped, Stopping, Starting, Started
+        /// </summary>
+        /// <returns></returns>
+        string GetStatus();
+
         /// <summary>
         /// Get a Stats dump
         /// </summary>
