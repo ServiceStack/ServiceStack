@@ -59,7 +59,7 @@ namespace ServiceStack.ServiceInterface
             }
 
             var statusCode = HttpStatusCode.InternalServerError;
-            if (ex is NotImplementedException) statusCode = HttpStatusCode.MethodNotAllowed;
+            if (ex is NotImplementedException || ex is NotSupportedException) statusCode = HttpStatusCode.MethodNotAllowed;
             else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
 
             var errorCode = ex.GetType().Name;
