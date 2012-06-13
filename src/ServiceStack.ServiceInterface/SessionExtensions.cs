@@ -136,14 +136,14 @@ namespace ServiceStack.ServiceInterface
         public static IHttpRequest ToRequest(this HttpRequest aspnetHttpReq)
         {
             return new HttpRequestWrapper(aspnetHttpReq) {
-                Container = AppHostBase.Instance.Container
+                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
             };
         }
 
         public static IHttpRequest ToRequest(this HttpListenerRequest listenerHttpReq)
         {
             return new HttpListenerRequestWrapper(listenerHttpReq) {
-                Container = AppHostBase.Instance.Container
+                Container = AppHostBase.Instance != null ? AppHostBase.Instance.Container : null
             };
         }
 
