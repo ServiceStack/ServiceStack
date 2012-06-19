@@ -75,6 +75,7 @@ namespace ServiceStack.ServiceInterface
         /// <param name="requestDto"></param>
         protected void BeforeEachRequest(TRequest requestDto)
         {
+            this.CurrentRequestDto = requestDto;
             OnBeforeExecute(requestDto);
         }
 
