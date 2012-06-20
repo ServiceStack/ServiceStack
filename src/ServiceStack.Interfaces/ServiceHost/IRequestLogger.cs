@@ -46,7 +46,8 @@ namespace ServiceStack.ServiceHost
 		/// <param name="requestContext">The RequestContext</param>
 		/// <param name="requestDto">Request DTO</param>
 		/// <param name="response">Response DTO or Exception</param>
-		void Log(IRequestContext requestContext, object requestDto, object response);
+		/// <param name="elapsed">How long did the Request take</param>
+		void Log(IRequestContext requestContext, object requestDto, object response, TimeSpan elapsed);
 
 		/// <summary>
 		/// View the most recent logs

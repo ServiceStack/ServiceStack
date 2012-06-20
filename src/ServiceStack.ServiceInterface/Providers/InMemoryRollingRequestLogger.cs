@@ -35,7 +35,7 @@ namespace ServiceStack.ServiceInterface.Providers
             this.capacity = capacity.GetValueOrDefault(DefaultCapacity);
         }
 
-        public void Log(IRequestContext requestContext, object requestDto, object response)
+        public void Log(IRequestContext requestContext, object requestDto, object response, TimeSpan requestDuration)
         {
             var requestType = requestDto != null ? requestDto.GetType() : null;
 
@@ -59,6 +59,7 @@ namespace ServiceStack.ServiceInterface.Providers
                 SessionId = httpReq.GetSessionId(),
                 Items = httpReq.Items,
                 Session = EnableSessionTracking ? httpReq.GetSession() : null,
+                RequestDuration = requestDuration,
             };
 
             if (HideRequestBodyForRequestDtoTypes != null
