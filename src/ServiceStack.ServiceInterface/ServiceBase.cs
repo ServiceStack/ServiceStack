@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Web;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
@@ -27,6 +28,11 @@ namespace ServiceStack.ServiceInterface
         : IService<TRequest>, IRequiresRequestContext, IServiceBase, IAsyncService<TRequest>
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
+
+        /// <summary>
+        /// Stopwatch used to record the duration of each request
+        /// </summary>
+        private Stopwatch _requestDurationStopwatch;
 
         /// <summary>
         /// Service error logs are kept in 'urn:ServiceErrors:{ServiceName}'
@@ -77,6 +83,11 @@ namespace ServiceStack.ServiceInterface
         {
             this.CurrentRequestDto = requestDto;
             OnBeforeExecute(requestDto);
+
+            if (this.RequestLogger != null)
+            {
+                _requestDurationStopwatch = Stopwatch.StartNew();
+            }
         }
 
         protected object AfterEachRequest(TRequest requestDto, object response)
@@ -85,7 +96,7 @@ namespace ServiceStack.ServiceInterface
             {
                 try
                 {
-                    RequestLogger.Log(this.RequestContext, requestDto, response);
+                    RequestLogger.Log(this.RequestContext, requestDto, response, _requestDurationStopwatch.Elapsed);
                 }
                 catch (Exception ex)
                 {
