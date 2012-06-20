@@ -1,13 +1,13 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="../ServiceStack.Common/ServiceModel/Serialization/DataContractDeserializer.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../tests/ServiceStack.WebHost.Endpoints.Tests/RemoteEndDropsConnectionTests.cs">
     <Files>
       <File FileName="../ServiceStack.Common/Messaging/InMemoryMessageQueueClient.cs" Line="6" Column="19" />
       <File FileName="../ServiceStack.Interfaces/ServiceHost/IRequiresHttpRequest.cs" Line="10" Column="17" />
       <File FileName="../ServiceStack.Interfaces/ServiceHost/IHttpRequest.cs" Line="16" Column="57" />
       <File FileName="../ServiceStack.Interfaces/ServiceInterface.ServiceModel/ResponseStatus.cs" Line="15" Column="2" />
       <File FileName="../ServiceStack.Common/ServiceClient.Web/ServiceClientBase.cs" Line="713" Column="1" />
-      <File FileName="../ServiceStack.Common/ServiceModel/Serialization/DataContractDeserializer.cs" Line="46" Column="73" />
+      <File FileName="../ServiceStack.Common/ServiceModel/Serialization/DataContractDeserializer.cs" Line="3" Column="19" />
       <File FileName="../ServiceStack.Common/Properties/AssemblyInfo.cs" Line="24" Column="43" />
       <File FileName="../ServiceStack.Common/StreamExtensions.cs" Line="68" Column="21" />
       <File FileName="../ServiceStack.Common/ServiceClient.Web/Soap11ServiceClient.cs" Line="80" Column="1" />
@@ -16,7 +16,15 @@
       <File FileName="../ServiceStack.Common/ServiceClient.Web/XmlServiceClient.cs" Line="1" Column="1" />
       <File FileName="../ServiceStack.Common/Messaging/ClientFactory.cs" Line="19" Column="45" />
       <File FileName="../../../ServiceStack.Text/src/ServiceStack.Text/XmlSerializer.cs" Line="145" Column="31" />
+      <File FileName="../../tests/ServiceStack.WebHost.Endpoints.Tests/RemoteEndDropsConnectionTests.cs" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="ServiceStack.Common.MonoTouch" selected="True" />
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
