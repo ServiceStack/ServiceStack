@@ -25,5 +25,6 @@ namespace ServiceStack.ServiceInterface.ServiceModel
 		public object Session { get; set; }
 		public object ResponseDto { get; set; }
 		public object ErrorResponse { get; set; }
+        public TimeSpan RequestDuration { get; set; }
 	}
 }

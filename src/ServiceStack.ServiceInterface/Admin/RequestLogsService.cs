@@ -26,6 +26,8 @@ namespace ServiceStack.ServiceInterface.Admin
         public bool? EnableSessionTracking { get; set; }
         public bool? EnableResponseTracking { get; set; }
         public bool? EnableErrorTracking { get; set; }
+        public TimeSpan? DurationLongerThan { get; set; }
+        public TimeSpan? DurationLessThan { get; set; }
     }
 
     public class RequestLogsResponse
@@ -42,7 +44,7 @@ namespace ServiceStack.ServiceInterface.Admin
 
     public class RequestLogsService : ServiceBase<RequestLogs>
     {
-        private static readonly Dictionary<string,string> Usage = new Dictionary<string,string> {
+        private static readonly Dictionary<string, string> Usage = new Dictionary<string, string> {
             {"int BeforeSecs",      "Requests before elapsed time"},
             {"int AfterSecs",       "Requests after elapsed time"},
             {"string IpAddress",    "Requests matching Ip Address"},
@@ -59,6 +61,8 @@ namespace ServiceStack.ServiceInterface.Admin
             {"bool EnableSessionTracking",  "Turn On/Off Session Tracking"},
             {"bool EnableResponseTracking", "Turn On/Off Tracking of Responses"},
             {"bool EnableErrorTracking",    "Turn On/Off Tracking of Errors"},
+            {"TimeSpan DurationLongerThan", "Requests with a duration longer than"},
+            {"TimeSpan DurationLessThan", "Requests with a duration less than"},
         };
 
         protected override object Run(RequestLogs request)
@@ -67,7 +71,7 @@ namespace ServiceStack.ServiceInterface.Admin
                 throw new Exception("No IRequestLogger is registered");
 
             RequiredRoleAttribute.AssertRequiredRoles(RequestContext, RequestLogger.RequiresRole);
-            
+
             if (request.EnableSessionTracking.HasValue)
                 RequestLogger.EnableSessionTracking = request.EnableSessionTracking.Value;
 
@@ -98,6 +102,10 @@ namespace ServiceStack.ServiceInterface.Admin
                 logs = request.WithErrors.Value
                     ? logs.Where(x => x.ErrorResponse != null)
                     : logs.Where(x => x.ErrorResponse == null);
+            if (request.DurationLongerThan.HasValue)
+                logs = logs.Where(x => x.RequestDuration > request.DurationLongerThan.Value);
+            if (request.DurationLessThan.HasValue)
+                logs = logs.Where(x => x.RequestDuration < request.DurationLessThan.Value);
 
             var results = logs.Skip(request.Skip).OrderByDescending(x => x.Id).ToList();
 
