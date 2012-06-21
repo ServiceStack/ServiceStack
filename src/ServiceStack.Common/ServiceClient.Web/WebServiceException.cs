@@ -19,6 +19,8 @@ namespace ServiceStack.ServiceClient.Web
 
 		public object ResponseDto { get; set; }
 
+		public string ResponseBody { get; set; }
+
 		private string errorCode;
 
 		private void ParseResponseDto()
