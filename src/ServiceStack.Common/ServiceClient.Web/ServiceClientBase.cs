@@ -391,28 +391,18 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     using (var stream = errorResponse.GetResponseStream())
                     {
+                        serviceEx.ResponseBody = stream.ToUtf8String();
                         serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
-						serviceEx.ResponseBody = stream.ToUtf8String();
                     }
                 }
                 catch (Exception innerEx)
                 {
-					string responseBody = null;
-					try
-					{
-						using (var stream = errorResponse.GetResponseStream())
-						{
-							responseBody = stream.ToUtf8String();
-						}
-					}
-					catch{}
-
                     // Oh, well, we tried
                     throw new WebServiceException(errorResponse.StatusDescription, innerEx)
                     {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
-						ResponseBody = responseBody
+                        ResponseBody = serviceEx.ResponseBody
                     };
                 }
 
