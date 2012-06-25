@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceInterface.Admin
         /// <summary>
         /// Limit access to /requestlogs service to these roles
         /// </summary>
-        public string RequiresRole { get; set; }
+        public string[] RequiredRoles { get; set; }
 
         /// <summary>
         /// Change the RequestLogger provider. Default is InMemoryRollingRequestLogger
@@ -59,7 +59,7 @@ namespace ServiceStack.ServiceInterface.Admin
         {
             this.AtRestPath = "/requestlogs";
             this.Capacity = capacity;
-            this.RequiresRole = RoleNames.Admin;
+            this.RequiredRoles = new [] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };
             this.HideRequestBodyForRequestDtoTypes = new[] {
@@ -75,7 +75,7 @@ namespace ServiceStack.ServiceInterface.Admin
             requestLogger.EnableSessionTracking = EnableSessionTracking;
             requestLogger.EnableResponseTracking = EnableResponseTracking;
             requestLogger.EnableErrorTracking = EnableErrorTracking;
-            requestLogger.RequiresRole = RequiresRole;
+            requestLogger.RequiredRoles = RequiredRoles;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
 

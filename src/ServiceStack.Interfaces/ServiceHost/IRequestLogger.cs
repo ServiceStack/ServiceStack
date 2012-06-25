@@ -27,7 +27,7 @@ namespace ServiceStack.ServiceHost
 		/// <summary>
 		/// Limit access to /requestlogs service to role
 		/// </summary>
-		string RequiresRole { get; set; }
+		string[] RequiredRoles { get; set; }
 
 		/// <summary>
 		/// Don't log requests of these types.

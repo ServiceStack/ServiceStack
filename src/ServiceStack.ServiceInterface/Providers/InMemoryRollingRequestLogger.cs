@@ -24,7 +24,7 @@ namespace ServiceStack.ServiceInterface.Providers
 
         public bool EnableErrorTracking { get; set; }
 
-        public string RequiresRole { get; set; }
+        public string[] RequiredRoles { get; set; }
 
         public Type[] ExcludeRequestDtoTypes { get; set; }
 
