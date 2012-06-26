@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Common;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -28,7 +29,24 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual List<string> Permissions { get; set; }
         public virtual DateTime CreatedDate { get; set; }
         public virtual DateTime ModifiedDate { get; set; }
+
+        //Custom Reference Data
+        public virtual int? RefId { get; set; }
+        public virtual string RefIdStr { get; set; }
         public virtual Dictionary<string, string> Meta { get; set; }
+
+        public T Get<T>()
+        {
+            string str = null;
+            if (Meta != null) Meta.TryGetValue(typeof(T).Name, out str);
+            return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
+        }
+
+        public void Set<T>(T value)
+        {
+            if (Meta == null) Meta = new Dictionary<string, string>();
+            Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
+        }
 
         public virtual void PopulateMissing(UserOAuthProvider authProvider)
         {
@@ -67,6 +85,24 @@ namespace ServiceStack.ServiceInterface.Auth
         public virtual string AccessTokenSecret { get; set; }
         public virtual DateTime CreatedDate { get; set; }
         public virtual DateTime ModifiedDate { get; set; }
+
+        //Custom Reference Data
+        public virtual int? RefId { get; set; }
+        public virtual string RefIdStr { get; set; }
+        public virtual Dictionary<string, string> Meta { get; set; }
+
+        public T Get<T>()
+        {
+            string str = null;
+            if (Meta != null) Meta.TryGetValue(typeof(T).Name, out str);
+            return str == null ? default(T) : TypeSerializer.DeserializeFromString<T>(str);
+        }
+
+        public void Set<T>(T value)
+        {
+            if (Meta == null) Meta = new Dictionary<string, string>();
+            Meta[typeof(T).Name] = TypeSerializer.SerializeToString(value);
+        }
 
         public virtual void PopulateMissing(IOAuthTokens withTokens)
         {
