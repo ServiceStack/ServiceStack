@@ -7,6 +7,8 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
+using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface.Auth
 {
@@ -162,7 +164,7 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\"".Fmt(this.Provider, this.AuthRealm));
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+            httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
         }
 
@@ -180,7 +182,7 @@ namespace ServiceStack.ServiceInterface.Auth
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\""
                 .Fmt(authProvider.Provider, authProvider.AuthRealm));
 
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+			httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
         }
     }

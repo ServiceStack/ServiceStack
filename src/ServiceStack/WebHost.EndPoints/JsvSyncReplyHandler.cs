@@ -5,6 +5,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -55,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints
 			httpRes.WriteToResponse(response, WriteDebugRequest,
 				new SerializationContext(ContentType.PlainText));
 
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+			httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
 		}
 	}

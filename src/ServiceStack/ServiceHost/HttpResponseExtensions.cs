@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceHost
 		public static void RedirectToUrl(this IHttpResponse httpRes, string url)
 		{
 			httpRes.AddHeader(HttpHeaders.Location, url);
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+            httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
 		}
 
@@ -32,7 +32,7 @@ namespace ServiceStack.ServiceHost
 				fs.WriteTo(httpRes.OutputStream);
 			}
 
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+			httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
 		}
 
@@ -50,14 +50,14 @@ namespace ServiceStack.ServiceHost
 				fs.WriteTo(httpRes.OutputStream);
 			}
 
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+			httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
 		}
 
 		public static void Redirect(this IHttpResponse httpRes, string url)
 		{
 			httpRes.AddHeader(HttpHeaders.Location, url);
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+			httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
 		}
 
@@ -74,7 +74,7 @@ namespace ServiceStack.ServiceHost
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, string.Format("{0} realm=\"{1}\"",AuthType.ToString(),authRealm));
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
+			httpRes.ApplyGlobalResponseHeaders();
 			httpRes.Close();
         }
 

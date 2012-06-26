@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -37,7 +38,7 @@ namespace ServiceStack.ServiceInterface
 
             res.StatusCode = (int)HttpStatusCode.Unauthorized;
             res.StatusDescription = "Invalid Permissions";
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(res);
+			HttpResponseExtensions.ApplyGlobalResponseHeaders(res);
 			res.Close();
         }
 

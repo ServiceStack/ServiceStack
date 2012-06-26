@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
@@ -109,7 +110,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				{
 					if (result == null) return true;
 
-					EndpointHost.AddGlobalResponseHeaders(response);
+					ApplyGlobalResponseHeaders(response);
 
 					var httpResult = result as IHttpResult;
 				    var disposableResult = result as IDisposable;
@@ -117,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						response.StatusCode = (int) httpResult.StatusCode;
 						response.StatusDescription = httpResult.StatusDescription ?? httpResult.StatusCode.ToString();
-						if (string.IsNullOrEmpty(httpResult.ContentType))
+						if (String.IsNullOrEmpty(httpResult.ContentType))
 						{
 							httpResult.ContentType = defaultContentType;
 						}
@@ -179,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 					if (defaultAction == null)
 					{
-						throw new ArgumentNullException("defaultAction", string.Format(
+						throw new ArgumentNullException("defaultAction", String.Format(
 						"As result '{0}' is not a supported responseType, a defaultAction must be supplied",
 						(result != null ? result.GetType().Name : "")));
 					}
@@ -199,7 +200,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					//DB: Using standard ServiceStack configuration method
 					if (!EndpointHost.Config.WriteErrorsToResponse) throw;
 
-					var errorMessage = string.Format(
+					var errorMessage = String.Format(
 					"Error occured while Processing Request: [{0}] {1}", originalEx.GetType().Name, originalEx.Message);
 
 					Log.Error(errorMessage, originalEx);
@@ -358,5 +359,20 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			response.WriteErrorTextToResponse(sb, ContentType.Jsv, statusCode);
 		}
 
+	    public static void ApplyGlobalResponseHeaders(this HttpResponse httpRes)
+	    {
+	        foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+	        {
+	            httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
+	        }
+	    }
+
+	    public static void ApplyGlobalResponseHeaders(this IHttpResponse httpRes)
+	    {
+	        foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+	        {
+	            httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
+	        }
+	    }
 	}
 }

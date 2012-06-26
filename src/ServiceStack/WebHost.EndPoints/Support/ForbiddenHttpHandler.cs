@@ -4,6 +4,8 @@ using System.Web;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
+using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -43,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (!ServiceStackHttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
 				response.Write("\nApp.DebugLastHandlerArgs: " + ServiceStackHttpHandlerFactory.DebugLastHandlerArgs);
 
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(response);
+			response.ApplyGlobalResponseHeaders();
 			//Apache+mod_mono doesn't like this
 			//response.OutputStream.Flush();
 			//response.Close();
@@ -74,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (!DefaultRootFileName.IsNullOrEmpty())
 				response.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
 
-			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(response);
+            response.ApplyGlobalResponseHeaders();
 			//Apache+mod_mono doesn't like this
 			//response.OutputStream.Flush();
 			//response.Close();

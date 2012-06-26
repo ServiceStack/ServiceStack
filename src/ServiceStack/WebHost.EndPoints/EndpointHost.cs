@@ -296,22 +296,5 @@ namespace ServiceStack.WebHost.Endpoints
 					new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));
 			}
 		}
-
-		public static void AddGlobalResponseHeaders(System.Web.HttpResponse httpRes)
-		{
-			foreach (var globalResponseHeader in Config.GlobalResponseHeaders)
-			{
-				httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
-			}
-		}
-
-		public static void AddGlobalResponseHeaders(IHttpResponse httpRes)
-		{
-			foreach (var globalResponseHeader in Config.GlobalResponseHeaders)
-			{
-				httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
-			}
-		}
-
 	}
 }

@@ -8,6 +8,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -54,7 +55,7 @@ namespace ServiceStack.ServiceInterface
             {
                 res.WriteError(req, requestDto, "No OAuth Configs found matching {0} provider"
                     .Fmt(this.Provider ?? "any"));
-				ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(res);
+				HttpResponseExtensions.ApplyGlobalResponseHeaders(res);
 				res.Close();
                 return;
             }
