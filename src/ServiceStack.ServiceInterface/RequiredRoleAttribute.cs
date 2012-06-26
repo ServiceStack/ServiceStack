@@ -37,7 +37,8 @@ namespace ServiceStack.ServiceInterface
 
             res.StatusCode = (int)HttpStatusCode.Unauthorized;
             res.StatusDescription = "Invalid Role";
-            res.Close();
+			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(res);
+			res.Close();
         }
 
         public bool HasAllRoles(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo=null)

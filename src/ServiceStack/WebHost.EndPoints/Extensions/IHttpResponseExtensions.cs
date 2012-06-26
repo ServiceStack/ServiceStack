@@ -109,10 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				{
 					if (result == null) return true;
 
-					foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
-					{
-						response.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
-					}
+					EndpointHost.AddGlobalResponseHeaders(response);
 
 					var httpResult = result as IHttpResult;
 				    var disposableResult = result as IDisposable;

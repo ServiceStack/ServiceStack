@@ -37,6 +37,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
+
+			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(response);
+
 			response.Close();
 		}
 
