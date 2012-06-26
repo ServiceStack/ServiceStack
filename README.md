@@ -112,10 +112,12 @@ host of functionality for free, out of the box without any configuration require
   
   * [An auto generated api metadata page, with links to your web service XSD's and WSDL's](http://www.servicestack.net/Backbone.Todos/metadata)
   
+## Getting Started
 
+ * **[Read the documentation on the ServiceStack Wiki](https://github.com/ServiceStack/ServiceStack/wiki)**
+ * [Community resources](https://github.com/ServiceStack/ServiceStack/wiki/Community-Resources)
 
-Download
-========
+## Download
 
 If you have [NuGet](http://nuget.org) installed, the easiest way to get started is to install ServiceStack via NuGet:
 
@@ -141,14 +143,6 @@ Alternatively if you want keep up with the latest version you can always use the
     git clone git://github.com/ServiceStack/ServiceStack.git
 
 [Release notes for major releases](https://github.com/ServiceStack/ServiceStack/wiki/Release-Notes)
-
-## Getting Started
-Online tutorials that walks you through developing and calling web services is available here:
-
- * **[Read the documentation on the ServiceStack Wiki](https://github.com/ServiceStack/ServiceStack/wiki)**
- * [Creating a Hello World Web service](http://www.servicestack.net/ServiceStack.Hello/)
- * [Calling Web Services from MonoTouch](http://www.servicestack.net/monotouch/remote-info/)
-
 
 # Features of a modern web services framework
 
@@ -260,17 +254,6 @@ Similar Open source .NET projects for developing or accessing web services inclu
  * Rest Sharp - an open source REST client for .NET
      * [http://restsharp.org](http://restsharp.org)
 
-
-## Troubleshooting
-
-For IIS 6.0-only web servers (i.e. without IIS 7 and compatibility-mode) IIS and ASP.NET requires mapping an extension in order to embed ServiceStack. You can use a default handled ASP.NET extension like *.ashx e.g.
-
-	<add path="servicestack.ashx" type="ServiceStack.WebHost.Endpoints.ServiceStackHttpHandlerFactory, ServiceStack" verb="*"/>
-
-Which will change your urls will now look like:
-
-	http://localhost/servicestack.ashx/xml/syncreply/Hello?Name=World
-
 ## OSS Libraries used
 
 ServiceStack includes source code of the great libraries below for some of its core functionality. 
@@ -289,10 +272,14 @@ Each library is released under its respective licence:
 
 http://www.jetbrains.com/profiler/
 
-# Contributors 
-A big thanks to GitHub and all of ServiceStack's contributors:
+## Core contributors
 
  - [mythz](https://github.com/mythz) (Demis Bellot)
+ - [arxisos](https://github.com/arxisos) (Steffen Müller)
+
+## Contributors 
+A big thanks to GitHub and all of ServiceStack's contributors:
+
  - [bman654](https://github.com/bman654) (Brandon Wallace)
  - [Iristyle](https://github.com/Iristyle) (Ethan Brown)
  - [superlogical](https://github.com/superlogical) (Jake Scott)
@@ -311,7 +298,6 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [letssellsomebananas](https://github.com/letssellsomebananas) (Tymek Majewski)
  - [danbarua](https://github.com/danbarua) (Dan Barua)
  - [JonCanning](https://github.com/JonCanning) (Jon Canning)
- - [arxisos](https://github.com/arxisos) (Steffen M)
  - [paegun](https://github.com/paegun) (James Gorlick)
  - [pvasek](https://github.com/pvasek) (pvasek)
  - [derfsplat](https://github.com/derfsplat) (derfsplat)
