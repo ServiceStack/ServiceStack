@@ -54,7 +54,8 @@ namespace ServiceStack.ServiceInterface
             {
                 res.WriteError(req, requestDto, "No OAuth Configs found matching {0} provider"
                     .Fmt(this.Provider ?? "any"));
-                res.Close();
+				ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(res);
+				res.Close();
                 return;
             }
 

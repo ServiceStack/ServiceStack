@@ -55,6 +55,7 @@ namespace ServiceStack.WebHost.Endpoints
 			httpRes.WriteToResponse(response, WriteDebugRequest,
 				new SerializationContext(ContentType.PlainText));
 
+			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(httpRes);
 			httpRes.Close();
 		}
 	}

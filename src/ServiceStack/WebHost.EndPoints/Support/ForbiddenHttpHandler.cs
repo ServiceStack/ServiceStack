@@ -43,6 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (!ServiceStackHttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
 				response.Write("\nApp.DebugLastHandlerArgs: " + ServiceStackHttpHandlerFactory.DebugLastHandlerArgs);
 
+			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(response);
 			//Apache+mod_mono doesn't like this
 			//response.OutputStream.Flush();
 			//response.Close();
@@ -73,6 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (!DefaultRootFileName.IsNullOrEmpty())
 				response.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
 
+			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(response);
 			//Apache+mod_mono doesn't like this
 			//response.OutputStream.Flush();
 			//response.Close();
