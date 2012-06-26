@@ -76,6 +76,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
+			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(response);
+
 			var fileName = request.GetPhysicalPath();
 
 			var fi = new FileInfo(fileName);

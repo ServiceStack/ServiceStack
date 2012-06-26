@@ -138,10 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		{
 			if (context.Request.HttpMethod == HttpMethods.Options)
 			{
-				foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
-				{
-					context.Response.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
-				}
+				EndpointHost.AddGlobalResponseHeaders(context.Response);
 
 				return true;
 			}

@@ -37,7 +37,8 @@ namespace ServiceStack.ServiceInterface
 
             res.StatusCode = (int)HttpStatusCode.Unauthorized;
             res.StatusDescription = "Invalid Permissions";
-            res.Close();
+			ServiceStack.WebHost.Endpoints.EndpointHost.AddGlobalResponseHeaders(res);
+			res.Close();
         }
 
         public bool HasAllPermissions(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo=null)
