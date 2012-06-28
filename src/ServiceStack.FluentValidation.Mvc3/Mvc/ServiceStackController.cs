@@ -81,7 +81,10 @@ namespace ServiceStack.Mvc
 			}
 		}
 
-		public abstract IAuthSession AuthSession { get; }
+		public virtual IAuthSession AuthSession
+		{
+			get { return null; }
+		}
 
 		protected string SessionKey
 		{
