@@ -272,7 +272,7 @@ Each library is released under its respective licence:
 
 http://www.jetbrains.com/profiler/
 
-## Core contributors
+## Core Team
 
  - [mythz](https://github.com/mythz) (Demis Bellot)
  - [arxisos](https://github.com/arxisos) (Steffen Müller)
