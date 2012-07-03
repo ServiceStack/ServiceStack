@@ -70,4 +70,5 @@
  - [johnman](https://github.com/johnman)
  - [jarroda](https://github.com/jarroda)
  - [ssboisen](https://github.com/ssboisen) (Simon Skov Boisen)
+ - [paulduran](https://github.com/paulduran) (Paul Duran)
  
