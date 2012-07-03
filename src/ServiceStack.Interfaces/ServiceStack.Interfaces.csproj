@@ -434,6 +434,7 @@
     <Compile Include="Redis\IRedisTransactionBase.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Redis\ItemRef.cs" />
     <Compile Include="Redis\Pipeline\IRedisPipeline.cs">
       <SubType>Code</SubType>
     </Compile>
