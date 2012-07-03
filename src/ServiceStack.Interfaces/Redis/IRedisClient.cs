@@ -152,6 +152,7 @@ namespace ServiceStack.Redis
 		void RemoveAllFromList(string listId);
 		string RemoveStartFromList(string listId);
 		string BlockingRemoveStartFromList(string listId, TimeSpan? timeOut);
+        ItemRef BlockingRemoveStartFromLists(string []listIds, TimeSpan? timeOut);
 		string RemoveEndFromList(string listId);
 		void TrimList(string listId, int keepStartingFrom, int keepEndingAt);
 		int RemoveItemFromList(string listId, string value);
@@ -164,11 +165,13 @@ namespace ServiceStack.Redis
 		void EnqueueItemOnList(string listId, string value);
 		string DequeueItemFromList(string listId);
 		string BlockingDequeueItemFromList(string listId, TimeSpan? timeOut);
+        ItemRef BlockingDequeueItemFromLists(string []listIds, TimeSpan? timeOut);
 
 		//Stack operations
 		void PushItemToList(string listId, string value);
 		string PopItemFromList(string listId);
 		string BlockingPopItemFromList(string listId, TimeSpan? timeOut);
+        ItemRef BlockingPopItemFromLists(string []listIds, TimeSpan? timeOut);
 		string PopAndPushItemBetweenLists(string fromListId, string toListId);
 
 		#endregion
