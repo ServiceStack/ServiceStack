@@ -660,6 +660,11 @@ namespace ServiceStack.ServiceClient.Web
             asyncClient.SendAsync(Web.HttpMethod.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
 
+        public virtual void CancelAsync()
+        {
+            asyncClient.CancelAsync();
+        }
+
 #if !SILVERLIGHT
         public virtual TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
         {

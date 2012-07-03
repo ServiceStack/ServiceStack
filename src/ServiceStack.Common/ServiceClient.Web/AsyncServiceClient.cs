@@ -19,6 +19,7 @@ namespace ServiceStack.ServiceClient.Web
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
+        private HttpWebRequest _webRequest = null;
 
         /// <summary>
         /// The request filter is called before any request.
@@ -196,6 +197,16 @@ namespace ServiceStack.ServiceClient.Web
             SendWebRequest(httpMethod, absoluteUrl, request, onSuccess, onError);
         }
 
+        public void CancelAsync()
+        {
+            if (_webRequest != null)
+            {
+                // Request will be nulled after it throws an exception on its async methods
+                // See - http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest.abort
+                _webRequest.Abort();
+            }
+        }
+
         internal static void AllowAutoCompression(HttpWebRequest webRequest)
         {
             webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
@@ -240,25 +251,25 @@ namespace ServiceStack.ServiceClient.Web
             }
 
 #else
-            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
+            _webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
 
             if (StoreCookies)
             {
-                webRequest.CookieContainer = CookieContainer;
+                _webRequest.CookieContainer = CookieContainer;
             }
 #endif
 
             if (!DisableAutoCompression)
             {
-                webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
-                webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;                
+                _webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
+                _webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;                
             }
 
             var requestState = new RequestState<TResponse>
             {
                 HttpMethod = httpMethod,
                 Url = requestUri,
-                WebRequest = webRequest,
+                WebRequest = _webRequest,
                 Request = request,
                 OnSuccess = onSuccess,
                 OnError = onError,
@@ -268,7 +279,7 @@ namespace ServiceStack.ServiceClient.Web
             };
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
-            SendWebRequestAsync(httpMethod, request, requestState, webRequest);
+            SendWebRequestAsync(httpMethod, request, requestState, _webRequest);
 
             return requestState;
         }
@@ -303,14 +314,22 @@ namespace ServiceStack.ServiceClient.Web
 
             ApplyWebRequestFilters(webRequest);
 
-            if (!httpGetOrDelete && request != null)
+            try
             {
-                webRequest.ContentType = ContentType;
-                webRequest.BeginGetRequestStream(RequestCallback<TResponse>, requestState);
+                if (!httpGetOrDelete && request != null)
+                {
+                    webRequest.ContentType = ContentType;
+                    webRequest.BeginGetRequestStream(RequestCallback<TResponse>, requestState);
+                }
+                else
+                {
+                    requestState.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, requestState);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                requestState.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, requestState);
+                // BeginGetRequestStream can throw if request was aborted
+                HandleResponseError(ex, requestState);
             }
         }
 
@@ -391,7 +410,6 @@ namespace ServiceStack.ServiceClient.Web
 
                 if (read > 0)
                 {
-
                     requestState.BytesData.Write(requestState.BufferRead, 0, read);
                     responseStream.BeginRead(
                         requestState.BufferRead, 0, BufferSize, ReadCallBack<T>, requestState);
@@ -433,6 +451,7 @@ namespace ServiceStack.ServiceClient.Web
                 finally
                 {
                     responseStream.Close();
+                    _webRequest = null;
                 }
             }
             catch (Exception ex)
@@ -496,7 +515,10 @@ namespace ServiceStack.ServiceClient.Web
 
             Log.Debug(string.Format("Exception Reading Response Error: {0}", exception.Message), exception);
             requestState.HandleError(default(TResponse), exception);
+
+            _webRequest = null;
         }
+
         private void ApplyWebResponseFilters(WebResponse webResponse)
         {
             if (!(webResponse is HttpWebResponse)) return;
