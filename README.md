@@ -350,6 +350,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [ssboisen](https://github.com/ssboisen) (Simon Skov Boisen)
  - [paulduran](https://github.com/paulduran) (Paul Duran)
  - [pruiz](https://github.com/pruiz) (Pablo Ruiz García)
+ - [fantasticjamieburns](https://github.com/fantasticjamieburns)
 
 ***
 
