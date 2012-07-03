@@ -145,12 +145,8 @@ namespace ServiceStack.ServiceInterface.Auth
             if (request.provider == LogoutAction)
                 return oAuthConfig.Logout(this, request);
 
-            object response = null;
             var session = this.GetSession();
-            if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
-            {
-                response = oAuthConfig.Authenticate(this, session, request);
-            }
+            var response = Authenticate(request, provider, session, oAuthConfig);
 
             var referrerUrl = request.Continue
                 ?? session.ReferrerUrl
@@ -178,6 +174,42 @@ namespace ServiceStack.ServiceInterface.Auth
                 }
             }
 
+            return response;
+        }
+
+        /// <summary>
+        /// Public API entry point to authenticate via code
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public AuthResponse Authenticate(Auth request)
+        {
+            //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
+            ((HttpRequestContext)this.RequestContext).ResponseContentType = ContentType.PlainText;
+
+            var provider = request.provider ?? AuthProviders[0].Provider;
+            var oAuthConfig = GetAuthProvider(provider);
+            if (oAuthConfig == null)
+                throw HttpError.NotFound("No configuration was added for OAuth provider '{0}'".Fmt(provider));
+
+            if (request.provider == LogoutAction)
+                return oAuthConfig.Logout(this, request) as AuthResponse;
+
+            var result = Authenticate(request, provider, this.GetSession(), oAuthConfig);
+            var httpError = result as HttpError;
+            if (httpError != null)
+                throw httpError;
+
+            return result as AuthResponse;
+        }
+
+        private object Authenticate(Auth request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
+        {
+            object response = null;
+            if (!oAuthConfig.IsAuthorized(session, session.GetOAuthTokens(provider), request))
+            {
+                response = oAuthConfig.Authenticate(this, session, request);
+            }
             return response;
         }
 
