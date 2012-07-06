@@ -77,3 +77,4 @@
  - [kevingessner](https://github.com/kevingessner) (Kevin Gessner)
  - [iskomorokh](https://github.com/iskomorokh) (Igor Skomorokh)
  - [royjacobs](https://github.com/royjacobs) (Roy Jacobs)
+ - [robertmircea](https://github.com/robertmircea) (Robert Mircea)
