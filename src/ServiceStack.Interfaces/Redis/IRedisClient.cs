@@ -144,6 +144,7 @@ namespace ServiceStack.Redis
 		List<string> GetAllItemsFromList(string listId);
 		List<string> GetRangeFromList(string listId, int startingFrom, int endingAt);
 		List<string> GetRangeFromSortedList(string listId, int startingFrom, int endingAt);
+		List<string> GetSortedItemsFromList(string listId, SortOptions sortOptions);
 		void AddItemToList(string listId, string value);
 		void AddRangeToList(string listId, List<string> values);
 		void PrependItemToList(string listId, string value);
