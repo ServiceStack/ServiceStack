@@ -585,6 +585,9 @@
     <Compile Include="..\..\ServiceStack.Interfaces\Translators\TranslateMemberAttribute.cs">
       <Link>Translators\TranslateMemberAttribute.cs</Link>
     </Compile>
+    <Compile Include="..\..\ServiceStack.Interfaces\Redis\ItemRef.cs">
+      <Link>Redis\ItemRef.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\ServiceStack.Interfaces\Redis\Redis-annotated.png">
