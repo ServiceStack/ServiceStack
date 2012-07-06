@@ -75,3 +75,4 @@
  - [fantasticjamieburns](https://github.com/fantasticjamieburns)
  - [pseabury](https://github.com/pseabury)
  - [kevingessner](https://github.com/kevingessner) (Kevin Gessner)
+ - [iskomorokh](https://github.com/iskomorokh) (Igor Skomorokh)
