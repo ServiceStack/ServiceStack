@@ -78,3 +78,4 @@
  - [iskomorokh](https://github.com/iskomorokh) (Igor Skomorokh)
  - [royjacobs](https://github.com/royjacobs) (Roy Jacobs)
  - [robertmircea](https://github.com/robertmircea) (Robert Mircea)
+ - [kongo2002](https://github.com/kongo2002) (Gregor Uhlenheuer)

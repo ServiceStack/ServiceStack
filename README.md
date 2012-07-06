@@ -356,7 +356,8 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [iskomorokh](https://github.com/iskomorokh) (Igor Skomorokh)
  - [royjacobs](https://github.com/royjacobs) (Roy Jacobs)
  - [robertmircea](https://github.com/robertmircea) (Robert Mircea)
-
+ - [kongo2002](https://github.com/kongo2002) (Gregor Uhlenheuer)
+ 
 ***
 
 Runs on both Mono and .NET 3.5. _(Live preview hosted on Mono / CentOS)_
