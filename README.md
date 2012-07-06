@@ -354,6 +354,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [pseabury](https://github.com/pseabury)
  - [kevingessner](https://github.com/kevingessner) (Kevin Gessner)
  - [iskomorokh](https://github.com/iskomorokh) (Igor Skomorokh)
+ - [royjacobs](https://github.com/royjacobs) (Roy Jacobs)
 
 ***
 
