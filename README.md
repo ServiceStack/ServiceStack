@@ -357,6 +357,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [royjacobs](https://github.com/royjacobs) (Roy Jacobs)
  - [robertmircea](https://github.com/robertmircea) (Robert Mircea)
  - [markswiatek](https://github.com/markswiatek) (Mark Swiatek)
+ - [flq](https://github.com/flq) (Frank Quednau)
 
 ***
 
