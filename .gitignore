@@ -40,3 +40,5 @@ build/*.dll
 release/latest/
 *.nupkg
 release/*
+
+src/ServiceStack.MonoTouch/.DS_Store
