@@ -74,3 +74,4 @@
  - [pruiz](https://github.com/pruiz) (Pablo Ruiz García)
  - [fantasticjamieburns](https://github.com/fantasticjamieburns)
  - [pseabury](https://github.com/pseabury)
+ - [kevingessner](https://github.com/kevingessner) (Kevin Gessner)
