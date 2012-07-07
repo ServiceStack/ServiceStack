@@ -5,7 +5,7 @@ using System.Net;
 
 namespace ServiceStack.ServiceClient.Web
 {
-#if SILVERLIGHT || MONOTOUCH || XBOX
+#if SILVERLIGHT || MONOTOUCH || XBOX || ANDROID
 
     public class Soap12ServiceClient  : IServiceClient
     {
