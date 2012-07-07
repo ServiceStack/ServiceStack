@@ -973,6 +973,29 @@
             Wrap the common redis set operations under a ICollection[string] interface.
             </summary>
         </member>
+        <member name="M:ServiceStack.Redis.Support.ConsistentHash`1.AddTarget(`0,System.Int32)">
+            <summary>
+             Adds a node and maps points across the circle
+            </summary>
+            <param name="node"> node to add </param>
+            <param name="weight"> An arbitrary number, specifies how often it occurs relative to other targets. </param>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.ConsistentHash`1.ModifiedBinarySearch(System.UInt64[],System.UInt64)">
+            <summary>
+              A variation of Binary Search algorithm. Given a number, matches the next highest number from the sorted array. 
+              If a higher number does not exist, then the first number in the array is returned.
+            </summary>
+            <param name="sortedArray"> a sorted array to perform the search </param>
+            <param name="val"> number to find the next highest number against </param>
+            <returns> next highest number </returns>
+        </member>
+        <member name="M:ServiceStack.Redis.Support.ConsistentHash`1.Md5Hash(System.String)">
+            <summary>
+              Given a key, generates an unsigned 64 bit hash code using MD5
+            </summary>
+            <param name="key"> </param>
+            <returns> </returns>
+        </member>
         <member name="T:ServiceStack.Redis.RedisException">
             <summary>
             Redis-specific exception. Thrown if unable to connect to Redis server due to socket exception, for example.
@@ -1319,6 +1342,39 @@
             Update first unprocessed work item
             </summary>
             <param name="newWorkItem"></param>
+        </member>
+        <member name="T:ServiceStack.Redis.ShardedConnectionPool">
+            <summary>
+            Provides a redis connection pool that can be sharded
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.ShardedConnectionPool.name">
+            <summary>
+            logical name
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.ShardedConnectionPool.weight">
+            <summary>
+            An arbitrary weight relative to other nodes
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.ShardedConnectionPool.#ctor(System.String,System.Int32,System.String[])">
+            <param name="name">logical name</param>
+            <param name="weight">An arbitrary weight relative to other nodes</param>
+            <param name="readWriteHosts">redis nodes</param>
+        </member>
+        <member name="T:ServiceStack.Redis.ShardedRedisClientManager">
+            <summary>
+            Provides sharding of redis client connections.
+            uses consistent hashing to distribute keys across connection pools
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.ShardedRedisClientManager.GetConnectionPool(System.String)">
+            <summary>
+            maps a key to a redis connection pool
+            </summary>
+            <param name="key">key to map</param>
+            <returns>a redis connection pool</returns>
         </member>
         <member name="T:ServiceStack.Redis.Support.Queue.Implementation.RedisSimpleWorkQueue`1">
             <summary>
