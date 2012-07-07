@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Interfaces.Droid</RootNamespace>
-    <AssemblyName>ServiceStack.Interfaces.Droid</AssemblyName>
+    <RootNamespace>ServiceStack.Interfaces</RootNamespace>
+    <AssemblyName>ServiceStack.Interfaces</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
