@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints
 				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
 				if (requestDto != null)	return requestDto;
 
-				requestDto = CreateContentTypeRequest(httpReq, requestType, httpReq.ContentType);
+				requestDto = CreateContentTypeRequest(httpReq, requestType, string.IsNullOrEmpty(httpReq.ContentType)? restPath.DefaultContentType : httpReq.ContentType);
 
 				return restPath.CreateRequest(httpReq.PathInfo, requestParams, requestDto);
 			}
