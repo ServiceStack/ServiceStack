@@ -181,7 +181,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// Public API entry point to authenticate via code
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
+        /// <returns>null; if already autenticated otherwise a populated instance of AuthResponse</returns>
         public AuthResponse Authenticate(Auth request)
         {
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs

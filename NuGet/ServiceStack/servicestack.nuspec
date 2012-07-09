@@ -2,7 +2,8 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack</id> 
-    <version>3.8.3</version> 
+    <title>ServiceStack web service framework. Modern, cleaner and faster WCF alternative</title>
+    <version>3.8.5</version> 
     <authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>

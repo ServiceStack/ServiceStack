@@ -80,4 +80,4 @@
  - [robertmircea](https://github.com/robertmircea) (Robert Mircea)
  - [markswiatek](https://github.com/markswiatek) (Mark Swiatek)
  - [flq](https://github.com/flq) (Frank Quednau)
- - [ashd](https://github.com/ashd) (Ash White)
+ - [ashd](https://github.com/ashd) (Ash D)
