@@ -6,6 +6,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface
@@ -38,8 +39,7 @@ namespace ServiceStack.ServiceInterface
 
             res.StatusCode = (int)HttpStatusCode.Unauthorized;
             res.StatusDescription = "Invalid Role";
-			HttpResponseExtensions.ApplyGlobalResponseHeaders(res);
-			res.Close();
+            res.EndServiceStackRequest();
         }
 
         public bool HasAllRoles(IHttpRequest req, IAuthSession session, IUserAuthRepository userAuthRepo=null)

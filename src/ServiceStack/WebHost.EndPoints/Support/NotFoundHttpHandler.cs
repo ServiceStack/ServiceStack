@@ -36,9 +36,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			response.ContentType = "text/plain";
 			response.StatusCode = 404;
-			response.Write(text);
-			response.ApplyGlobalResponseHeaders();
-			response.Close();
+            response.EndHttpRequest(skipClose: true, afterBody: r => r.Write(text));
 		}
 
 		public void ProcessRequest(HttpContext context)
@@ -103,12 +101,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			response.ContentType = "text/plain";
 			response.StatusCode = 404;
-			response.Write(sb.ToString());
-			response.ApplyGlobalResponseHeaders();
-
-			//Apache+mod_mono doesn't like this
-			//response.OutputStream.Flush();
-			//response.Close();
+            response.EndHttpRequest(skipClose:true, afterBody: r => r.Write(sb.ToString()));
 		}
 
 		public bool IsReusable

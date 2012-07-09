@@ -19,36 +19,34 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public string DefaultRootFileName { get; set; }
 		public string DefaultHandler { get; set; }
 
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
         {
             response.ContentType = "text/plain";
             response.StatusCode = 403;
-            response.Write("Forbidden\n\n");
 
-            response.Write("\nRequest.HttpMethod: " + request.HttpMethod);
-            response.Write("\nRequest.PathInfo: " + request.PathInfo);
-            response.Write("\nRequest.QueryString: " + request.QueryString);
-            response.Write("\nRequest.RawUrl: " + request.RawUrl);
+		    response.EndHttpRequest(skipClose: true, afterBody: r => {
+                r.Write("Forbidden\n\n");
 
-			if (IsIntegratedPipeline.HasValue)
-				response.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
-			if (!WebHostPhysicalPath.IsNullOrEmpty())
-				response.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
-			if (!WebHostRootFileNames.IsEmpty())
-				response.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-			if (!ApplicationBaseUrl.IsNullOrEmpty())
-				response.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
-			if (!DefaultRootFileName.IsNullOrEmpty())
-				response.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
-			if (!DefaultHandler.IsNullOrEmpty())
-				response.Write("\nApp.DefaultHandler: " + DefaultHandler);
-			if (!ServiceStackHttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
-				response.Write("\nApp.DebugLastHandlerArgs: " + ServiceStackHttpHandlerFactory.DebugLastHandlerArgs);
+                r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
+                r.Write("\nRequest.PathInfo: " + request.PathInfo);
+                r.Write("\nRequest.QueryString: " + request.QueryString);
+                r.Write("\nRequest.RawUrl: " + request.RawUrl);
 
-			response.ApplyGlobalResponseHeaders();
-			//Apache+mod_mono doesn't like this
-			//response.OutputStream.Flush();
-			//response.Close();
+                if (IsIntegratedPipeline.HasValue)
+                    r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
+                if (!WebHostPhysicalPath.IsNullOrEmpty())
+                    r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
+                if (!WebHostRootFileNames.IsEmpty())
+                    r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
+                if (!ApplicationBaseUrl.IsNullOrEmpty())
+                    r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
+                if (!DefaultRootFileName.IsNullOrEmpty())
+                    r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+                if (!DefaultHandler.IsNullOrEmpty())
+                    r.Write("\nApp.DefaultHandler: " + DefaultHandler);
+                if (!ServiceStackHttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
+                    r.Write("\nApp.DebugLastHandlerArgs: " + ServiceStackHttpHandlerFactory.DebugLastHandlerArgs);
+            });
 		}
 
         public void ProcessRequest(HttpContext context)
@@ -58,28 +56,26 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
             response.ContentType = "text/plain";
             response.StatusCode = 403;
-            response.Write("Forbidden\n\n");
 
-            response.Write("\nRequest.HttpMethod: " + request.HttpMethod);
-            response.Write("\nRequest.PathInfo: " + request.PathInfo);
-            response.Write("\nRequest.QueryString: " + request.QueryString);
-            response.Write("\nRequest.RawUrl: " + request.RawUrl);
+            response.EndHttpRequest(skipClose:true, afterBody: r=> {
+                r.Write("Forbidden\n\n");
 
-			if (IsIntegratedPipeline.HasValue)
-				response.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
-			if (!WebHostPhysicalPath.IsNullOrEmpty())
-				response.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
-			if (!WebHostRootFileNames.IsEmpty())
-				response.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-			if (!ApplicationBaseUrl.IsNullOrEmpty())
-				response.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
-			if (!DefaultRootFileName.IsNullOrEmpty())
-				response.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+                r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
+                r.Write("\nRequest.PathInfo: " + request.PathInfo);
+                r.Write("\nRequest.QueryString: " + request.QueryString);
+                r.Write("\nRequest.RawUrl: " + request.RawUrl);
 
-            response.ApplyGlobalResponseHeaders();
-			//Apache+mod_mono doesn't like this
-			//response.OutputStream.Flush();
-			//response.Close();
+                if (IsIntegratedPipeline.HasValue)
+                    r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
+                if (!WebHostPhysicalPath.IsNullOrEmpty())
+                    r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
+                if (!WebHostRootFileNames.IsEmpty())
+                    r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
+                if (!ApplicationBaseUrl.IsNullOrEmpty())
+                    r.Write("\nApp.ApplicationBaseUrl: " + ApplicationBaseUrl);
+                if (!DefaultRootFileName.IsNullOrEmpty())
+                    r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+            });
 		}
 
         public bool IsReusable

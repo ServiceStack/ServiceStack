@@ -37,7 +37,6 @@ using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -75,71 +74,71 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
+        public void ProcessRequest(IHttpRequest request, IHttpResponse response, string operationName)
 		{
-			response.ApplyGlobalResponseHeaders();
+            response.EndHttpRequest(skipClose: true, afterBody: r => {
+                var fileName = request.GetPhysicalPath();
 
-			var fileName = request.GetPhysicalPath();
+                var fi = new FileInfo(fileName);
+                if (!fi.Exists)
+                {
+                    if ((fi.Attributes & FileAttributes.Directory) != 0)
+                    {
+                        foreach (var defaultDoc in EndpointHost.Config.DefaultDocuments)
+                        {
+                            var defaultFileName = Path.Combine(fi.FullName, defaultDoc);
+                            if (!File.Exists(defaultFileName)) continue;
+                            r.Redirect(request.GetPathUrl() + '/' + defaultDoc);
+                            return;
+                        }
+                    }
 
-			var fi = new FileInfo(fileName);
-			if (!fi.Exists)
-			{
-				if ((fi.Attributes & FileAttributes.Directory) != 0)
-				{
-					foreach (var defaultDoc in EndpointHost.Config.DefaultDocuments)
-					{
-						var defaultFileName = Path.Combine(fi.FullName, defaultDoc);
-						if (!File.Exists(defaultFileName)) continue;
-						response.Redirect(request.GetPathUrl() + '/' + defaultDoc);
-						return;
-					}
-				}
+                    if (!fi.Exists)
+                        throw new HttpException(404, "File '" + request.PathInfo + "' not found.");
+                }
 
-				if (!fi.Exists)
-					throw new HttpException(404, "File '" + request.PathInfo + "' not found.");
-			}
+                TimeSpan maxAge;
+                if (r.ContentType != null && EndpointHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(r.ContentType, out maxAge))
+                {
+                    r.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
+                }
 
-			TimeSpan maxAge;
-			if (response.ContentType != null && EndpointHost.Config.AddMaxAgeForStaticMimeTypes.TryGetValue(response.ContentType, out maxAge))
-			{
-				response.AddHeader(HttpHeaders.CacheControl, "max-age=" + maxAge.TotalSeconds);
-			}
+                if (request.HasNotModifiedSince(fi.LastWriteTime))
+                {
+                    r.ContentType = MimeTypes.GetMimeType(fileName);
+                    r.StatusCode = 304;
+                    return;
+                }
 
-			if (request.HasNotModifiedSince(fi.LastWriteTime))
-			{
-				response.ContentType = MimeTypes.GetMimeType(fileName);
-				response.StatusCode = 304;
-				return;
-			}
+                try
+                {
+                    r.AddHeaderLastModified(fi.LastWriteTime);
+                    r.ContentType = MimeTypes.GetMimeType(fileName);
 
-			try
-			{
-				response.AddHeaderLastModified(fi.LastWriteTime);
-				response.ContentType = MimeTypes.GetMimeType(fileName);
+                    if (fileName.EqualsIgnoreCase(this.DefaultFilePath))
+                    {
+                        if (fi.LastWriteTime > this.DefaultFileModified)
+                            SetDefaultFile(this.DefaultFilePath); //reload
 
-				if (fileName.EqualsIgnoreCase(this.DefaultFilePath))
-				{
-					if (fi.LastWriteTime > this.DefaultFileModified)
-						SetDefaultFile(this.DefaultFilePath); //reload
+                        r.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
+                        r.Close();
+                        return;
+                    }
 
-					response.OutputStream.Write(this.DefaultFileContents, 0, this.DefaultFileContents.Length);
-					response.Close();
-					return;
-				}
-
-				if (!Env.IsMono)
-				{
-					response.TransmitFile(fileName);
-				}
-				else
-				{
-					response.WriteFile(fileName);
-				}
-			}
-			catch (Exception)
-			{
-				throw new HttpException(403, "Forbidden.");
-			}
+                    if (!Env.IsMono)
+                    {
+                        r.TransmitFile(fileName);
+                    }
+                    else
+                    {
+                        r.WriteFile(fileName);
+                    }
+                }
+                catch (Exception)
+                {
+                    throw new HttpException(403, "Forbidden.");
+                }
+            });
 		}
 
 		public bool IsReusable

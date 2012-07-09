@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Web;
 using ServiceStack.Logging;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
@@ -26,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			//IsIis = !Env.IsMono;
 			IsHttpListener = HttpContext.Current == null;
 		}
-
+        
 		public static void CloseOutputStream(this HttpResponse response)
 		{
 			try

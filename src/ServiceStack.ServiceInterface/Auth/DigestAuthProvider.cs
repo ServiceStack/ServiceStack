@@ -10,6 +10,7 @@ using System;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface.Auth
@@ -153,8 +154,7 @@ namespace ServiceStack.ServiceInterface.Auth
             var digestHelper = new DigestAuthFunctions();
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\", nonce=\"{2}\", qop=\"auth\"".Fmt(Provider, AuthRealm,digestHelper.GetNonce(httpReq.UserHostAddress,PrivateKey)));
-			HttpResponseExtensions.ApplyGlobalResponseHeaders(httpRes);
-			httpRes.Close();
+            httpRes.EndServiceStackRequest();
         }
     }
 }

@@ -296,5 +296,17 @@ namespace ServiceStack.WebHost.Endpoints
 					new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));
 			}
 		}
+
+        /// <summary>
+        /// Call to signal the completion of a ServiceStack-handled Request
+        /// </summary>
+	    internal static void CompleteRequest()
+        {
+	        try
+	        {
+	            AppHost.OnEndRequest();
+	        }
+	        catch (Exception ex) {}
+        }
 	}
 }

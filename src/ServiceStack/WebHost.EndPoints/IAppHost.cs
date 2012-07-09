@@ -29,6 +29,11 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		/// <param name="instance"></param>
 		void Release(object instance);
+
+        /// <summary>
+        /// Called at the end of each request. Enables Request Scope.
+        /// </summary>
+	    void OnEndRequest();
 		
 		/// <summary>
 		/// Register custom ContentType serializers

@@ -64,8 +64,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			}
 
 			public virtual void Release(object instance) { }
+		    
+            public void OnEndRequest() {}
 
-			public T TryResolve<T>()
+		    public T TryResolve<T>()
 			{
 				throw new NotImplementedException();
 			}

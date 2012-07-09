@@ -290,7 +290,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		public virtual void Release(object instance) {}
 
-		public void Register<T>(T instance)
+        public void OnEndRequest() {}
+
+	    public void Register<T>(T instance)
 		{
 			this.Container.Register(instance);
 		}

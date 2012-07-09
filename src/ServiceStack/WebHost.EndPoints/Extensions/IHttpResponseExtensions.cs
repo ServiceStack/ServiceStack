@@ -18,9 +18,6 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public static bool WriteToOutputStream(IHttpResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
 		{
-			//var responseStream = response.OutputStream;
-
-
 			var streamWriter = result as IStreamWriter;
 			if (streamWriter != null)
 			{
@@ -226,7 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 				}
 				finally
 				{
-					response.Close();
+					response.EndServiceStackRequest(skipHeaders:true);
 				}
 			}
 		}
@@ -359,13 +356,21 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			response.WriteErrorTextToResponse(sb, ContentType.Jsv, statusCode);
 		}
 
-	    public static void ApplyGlobalResponseHeaders(this HttpResponse httpRes)
-	    {
-	        foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
-	        {
-	            httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
-	        }
-	    }
+        public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
+        {
+            foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+            {
+                httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
+            }
+        }
+
+        public static void ApplyGlobalResponseHeaders(this HttpResponse httpRes)
+        {
+            foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+            {
+                httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
+            }
+        }
 
 	    public static void ApplyGlobalResponseHeaders(this IHttpResponse httpRes)
 	    {
@@ -374,5 +379,42 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 	            httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
 	        }
 	    }
-	}
+
+        public static void EndServiceStackRequest(this HttpResponse httpRes, bool skipHeaders=false)
+	    {
+            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
+            httpRes.Close();
+            EndpointHost.CompleteRequest();
+        }
+
+        public static void EndServiceStackRequest(this IHttpResponse httpRes, bool skipHeaders = false)
+	    {
+            httpRes.EndHttpRequest(skipHeaders: skipHeaders);
+            EndpointHost.CompleteRequest();
+	    }
+
+        public static void EndHttpRequest(this HttpResponse httpRes, bool skipHeaders = false, bool skipClose = false, bool closeOutputStream = false, Action<HttpResponse> afterBody = null)
+        {
+            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
+            if (afterBody != null) afterBody(httpRes);
+            if (closeOutputStream) httpRes.CloseOutputStream();
+            else if (!skipClose) httpRes.Close();
+
+            //skipHeaders used when Apache+mod_mono doesn't like:
+            //response.OutputStream.Flush();
+            //response.Close();
+        }
+
+        public static void EndHttpRequest(this IHttpResponse httpRes, bool skipHeaders = false, bool skipClose=false, Action<IHttpResponse> afterBody=null)
+        {
+            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
+            if (afterBody != null) afterBody(httpRes);
+            if (!skipClose) httpRes.Close();
+
+            //skipHeaders used when Apache+mod_mono doesn't like:
+            //response.OutputStream.Flush();
+            //response.Close();
+        }
+
+    }
 }

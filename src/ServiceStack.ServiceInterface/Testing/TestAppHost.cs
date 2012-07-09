@@ -41,6 +41,8 @@ namespace ServiceStack.ServiceInterface.Testing
         }
 
         public virtual void Release(object instance) { }
+        
+        public void OnEndRequest() {}
 
         public void Register<T>(T instance)
         {

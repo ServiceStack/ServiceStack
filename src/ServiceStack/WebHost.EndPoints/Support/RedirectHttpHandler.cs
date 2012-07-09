@@ -5,7 +5,6 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -39,10 +38,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
 
-			response.ApplyGlobalResponseHeaders();
-
-			response.Close();
-		}
+            response.EndHttpRequest(skipClose:true);
+        }
 
         /// <summary>
         /// ASP.NET requests
@@ -63,15 +60,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 			else
 			{
-                string absoluteUrl;
-			    absoluteUrl = this.RelativeUrl.Contains("~/")
-			                      ? request.GetApplicationUrl().WithTrailingSlash() + this.RelativeUrl.Replace("~/", "")
-			                      : request.Url.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
+			    var absoluteUrl = this.RelativeUrl.Contains("~/")
+                    ? request.GetApplicationUrl().WithTrailingSlash() + this.RelativeUrl.Replace("~/", "")
+                    : request.Url.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
 			    response.StatusCode = (int)HttpStatusCode.Redirect;
                 response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
 
-        	response.CloseOutputStream();
+            response.EndHttpRequest(closeOutputStream:true);
 		}
 
 		public bool IsReusable
