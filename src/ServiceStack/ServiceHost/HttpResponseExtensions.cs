@@ -11,8 +11,9 @@ namespace ServiceStack.ServiceHost
 {
 	public static class HttpResponseExtensions
 	{
-		public static void RedirectToUrl(this IHttpResponse httpRes, string url)
+		public static void RedirectToUrl(this IHttpResponse httpRes, string url, HttpStatusCode redirectStatusCode=HttpStatusCode.Redirect)
 		{
+		    httpRes.StatusCode = (int) redirectStatusCode;
 			httpRes.AddHeader(HttpHeaders.Location, url);
             httpRes.EndServiceStackRequest();
         }
