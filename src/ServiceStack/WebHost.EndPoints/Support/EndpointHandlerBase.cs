@@ -296,7 +296,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			try
 			{
-				var statusCode = ex is SerializationException ? HttpStatusCode.BadRequest : HttpStatusCode.InternalServerError;
+                var statusCode = ex.ToStatusCode();
 				//httpRes.WriteToResponse always calls .Close in it's finally statement so 
 				//if there is a problem writing to response, by now it will be closed
 				if (!httpRes.IsClosed)

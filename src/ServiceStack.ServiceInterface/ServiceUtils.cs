@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Runtime.Serialization;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
@@ -41,26 +42,10 @@ namespace ServiceStack.ServiceInterface
             if (httpError != null)
             {
                 if (responseDto != null)
-                {
                     httpError.Response = responseDto;
-                }
-                //Do we need this?
-                //if (httpError.Response == null)
-                //{
-                //    var httpEx = httpError as HttpError;
-                //    if (httpEx != null && httpEx.InnerException != null)
-                //    {
-                //        responseStatus = responseStatus ?? ResponseStatusTranslator.Instance.Parse(httpEx.InnerException);
-                //        httpEx.Response = CreateResponseDto(request, responseStatus);
-                //    }
-                //}
 
                 return httpError;
             }
-
-            var statusCode = HttpStatusCode.InternalServerError;
-            if (ex is NotImplementedException || ex is NotSupportedException) statusCode = HttpStatusCode.MethodNotAllowed;
-            else if (ex is ArgumentException) statusCode = HttpStatusCode.BadRequest;
 
             var errorCode = ex.GetType().Name;
             var errorMsg = ex.Message;
@@ -70,7 +55,7 @@ namespace ServiceStack.ServiceInterface
                 errorMsg = responseStatus.Message ?? errorMsg;
             }
 
-            return new HttpError(responseDto, statusCode, errorCode, errorMsg);
+            return new HttpError(responseDto, ex.ToStatusCode(), errorCode, errorMsg);
         }
 
         /// <summary>
@@ -137,6 +122,6 @@ namespace ServiceStack.ServiceInterface
             return typeof(TRequest) != typeof(object)
                 ? typeof(TRequest).FullName + ResponseDtoSuffix
                 : request.GetType().FullName + ResponseDtoSuffix;
-        }	
+        }
     }
 }
