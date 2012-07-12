@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Common;
@@ -228,5 +229,11 @@ namespace ServiceStack.ServiceHost
 			return map;
 		}
 
+        public static HttpStatusCode ToStatusCode(this Exception ex)
+	    {
+	        if (ex is NotImplementedException || ex is NotSupportedException) return HttpStatusCode.MethodNotAllowed;
+	        if (ex is ArgumentException || ex is SerializationException) return HttpStatusCode.BadRequest;
+	        return HttpStatusCode.InternalServerError;
+	    }
 	}
 }
