@@ -2,18 +2,19 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Common</id>
-    <title>Generic Service Clients and Common libs for ServiceStack projects</title>
-    <version>3.8.5</version> 
+    <title>Service Clients and Common libs for ServiceStack projects</title>
+    <version>3.8.6</version> 
 	<authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
-        Common library dependency for other ServiceStack projects
-        Includes: 
-            - ServiceStack.Interfaces.dll
-            - ServiceStack.Common.dll
+        Common library dependency for other ServiceStack projects.
+        Includes JSON, XML, JSV and SOAP Generic Service Clients.        
+        Contains:
+        - ServiceStack.Interfaces
+        - ServiceStack.Common
         Dependenies:
-            - ServiceStack.Text.dll
+        - ServiceStack.Text
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://github.com/ServiceStack/ServiceStack/blob/master/LICENSE</licenseUrl>
