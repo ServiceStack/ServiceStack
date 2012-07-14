@@ -13,10 +13,30 @@ namespace ServiceStack.WebHost.Endpoints.Utils
 		private static Dictionary<Type, IHasResponseFilter[]> responseFilterAttributes
             = new Dictionary<Type, IHasResponseFilter[]>();
 
+        private static IHasRequestFilter[] ShallowCopy(this IHasRequestFilter[] filters)
+        {
+            var to = new IHasRequestFilter[filters.Length];
+            for (int i = 0; i < filters.Length; i++)
+            {
+                to[i] = filters[i].Copy();
+            }
+            return to;
+        }
+
+        private static IHasResponseFilter[] ShallowCopy(this IHasResponseFilter[] filters)
+        {
+            var to = new IHasResponseFilter[filters.Length];
+            for (int i = 0; i < filters.Length; i++)
+            {
+                to[i] = filters[i].Copy();
+            }
+            return to;
+        }
+
         public static IHasRequestFilter[] GetRequestFilterAttributes(Type requestDtoType)
         {
         	IHasRequestFilter[] attrs;
-			if (requestFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs;
+            if (requestFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs.ShallowCopy();
 
 			var attributes = new List<IHasRequestFilter>(
 				(IHasRequestFilter[])requestDtoType.GetCustomAttributes(typeof(IHasRequestFilter), true));
@@ -38,13 +58,13 @@ namespace ServiceStack.WebHost.Endpoints.Utils
             } while (!ReferenceEquals(
             Interlocked.CompareExchange(ref requestFilterAttributes, newCache, snapshot), snapshot));
 
-			return attrs;
+            return attrs.ShallowCopy();
         }
 
         public static IHasResponseFilter[] GetResponseFilterAttributes(Type responseDtoType)
         {
 			IHasResponseFilter[] attrs;
-			if (responseFilterAttributes.TryGetValue(responseDtoType, out attrs)) return attrs;
+            if (responseFilterAttributes.TryGetValue(responseDtoType, out attrs)) return attrs.ShallowCopy();
 
 			var attributes = new List<IHasResponseFilter>(
 	            (IHasResponseFilter[])responseDtoType.GetCustomAttributes(typeof(IHasResponseFilter), true));
@@ -70,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Utils
             } while (!ReferenceEquals(
             Interlocked.CompareExchange(ref responseFilterAttributes, newCache, snapshot), snapshot));
 
-			return attrs;
+            return attrs.ShallowCopy();
         }
     }
 }

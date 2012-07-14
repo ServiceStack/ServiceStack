@@ -52,5 +52,14 @@ namespace ServiceStack.ServiceInterface
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The request DTO</param>
         public abstract void Execute(IHttpRequest req, IHttpResponse res, object requestDto);
+
+        /// <summary>
+        /// Create a ShallowCopy of this instance.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IHasRequestFilter Copy()
+        {
+            return (IHasRequestFilter)this.MemberwiseClone();
+        }
     }
 }

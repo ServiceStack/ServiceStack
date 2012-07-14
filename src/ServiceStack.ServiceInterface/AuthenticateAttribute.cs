@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
-using ServiceStack.CacheAccess;
 using ServiceStack.Common;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface
 {

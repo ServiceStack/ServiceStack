@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ServiceStack.ServiceHost;
 using ServiceStack.Common;
-using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -45,5 +41,14 @@ namespace ServiceStack.ServiceInterface
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The response DTO</param>
         public abstract void Execute(IHttpRequest req, IHttpResponse res, object requestDto);
+        
+        /// <summary>
+        /// Create a ShallowCopy of this instance.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IHasResponseFilter Copy()
+        {
+            return (IHasResponseFilter)this.MemberwiseClone();
+        }
     }
 }

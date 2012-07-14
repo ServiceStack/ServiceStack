@@ -1,9 +1,4 @@
 ﻿#if !SILVERLIGHT && !MONOTOUCH && !XBOX
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace ServiceStack.ServiceHost
 {
     /// <summary>
@@ -24,8 +19,13 @@ namespace ServiceStack.ServiceHost
         /// </summary>
         /// <param name="req">The http request wrapper</param>
         /// <param name="res">The http response wrapper</param>
-        /// <param name="requestDto">The response DTO</param>
         void ResponseFilter(IHttpRequest req, IHttpResponse res, object response);
+
+        /// <summary>
+        /// A new shallow copy of this filter is used on every request.
+        /// </summary>
+        /// <returns></returns>
+        IHasResponseFilter Copy();
     }
 }
 #endif
