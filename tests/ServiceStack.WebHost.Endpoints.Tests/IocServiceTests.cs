@@ -83,5 +83,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(IocService.DisposedCount, Is.EqualTo(1));
         }
+
+	    [Test]
+	    public void Does_create_correct_instances_per_scope()
+	    {
+            var restClient = new JsonServiceClient(ListeningOn);
+            var response1 = restClient.Get<IocScopeResponse>("iocscope");
+            var response2 = restClient.Get<IocScopeResponse>("iocscope");
+
+            Console.WriteLine(response2.Dump());
+
+            Assert.That(response2.Results[typeof(FunqSingletonScope).Name], Is.EqualTo(1));
+            Assert.That(response2.Results[typeof(FunqRequestScope).Name], Is.EqualTo(2));
+            Assert.That(response2.Results[typeof(FunqNoneScope).Name], Is.EqualTo(4));
+	    }
 	}
 }

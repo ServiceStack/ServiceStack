@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Data.Common;
-using System.Web;
 using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
@@ -21,7 +19,6 @@ using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests
@@ -84,6 +81,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 					.Add<Movie>("/custom-movies/{Id}")
 					.Add<MqHostStats>("/mqstats");
 
+
 				var resetMovies = this.Container.Resolve<ResetMoviesService>();
 				resetMovies.Post(null);
 
@@ -92,6 +90,12 @@ namespace ServiceStack.WebHost.IntegrationTests
 				Plugins.Add(new ProtoBufFormat());
 
 				container.RegisterValidators(typeof(CustomersValidator).Assembly);
+
+
+                container.Register(c => new FunqSingletonScope()).ReusedWithin(ReuseScope.Default);
+                container.Register(c => new FunqRequestScope()).ReusedWithin(ReuseScope.Request);
+                container.Register(c => new FunqNoneScope()).ReusedWithin(ReuseScope.None);
+                Routes.Add<IocScope>("/iocscope");
 
 
 				//var onlyEnableFeatures = Feature.All.Remove(Feature.Jsv | Feature.Soap);

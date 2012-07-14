@@ -7,8 +7,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
-
-	public class IocAppHost : AppHostHttpListenerBase
+    public class IocAppHost : AppHostHttpListenerBase
 	{
 		public IocAppHost()
 			: base("IocApp Service", typeof(IocService).Assembly)
@@ -23,7 +22,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			container.Register(c => new FunqDepProperty());
 			container.Register(c => new FunqDepDisposableProperty());
 
-			Routes.Add<Ioc>("/ioc");
+            container.Register(c => new FunqSingletonScope()).ReusedWithin(ReuseScope.Default);
+            container.Register(c => new FunqRequestScope()).ReusedWithin(ReuseScope.Request);
+            container.Register(c => new FunqNoneScope()).ReusedWithin(ReuseScope.None);
+
+            Routes.Add<Ioc>("/ioc");
+            Routes.Add<IocScope>("/iocscope");
 		}
 	}
 
@@ -51,4 +55,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
+
+    public class IocRequestFilterAttribute : Attribute, IHasRequestFilter
+    {
+        public FunqSingletonScope FunqSingletonScope { get; set; }
+        public FunqRequestScope FunqRequestScope { get; set; }
+        public FunqNoneScope FunqNoneScope { get; set; }
+
+        public int Priority { get; set; }
+
+        public void RequestFilter(IHttpRequest req, IHttpResponse res, object requestDto)
+        {            
+        }
+
+        public IHasRequestFilter Copy()
+        {
+            return (IHasRequestFilter) this.MemberwiseClone();
+        }
+    }
 }
