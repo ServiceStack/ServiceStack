@@ -2,8 +2,8 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Host.Mvc</id>
-    <title>ServiceStack ASP.NET MVC Website Template: hosted at custom path /api</title>
-    <version>3.8.6</version> 
+    <title>Starter ASP.NET MVC Website Template - ServiceStack at /api</title>
+    <version>3.8.7</version> 
 	<authors>Demis Bellot</authors> 
     <owners>Demis Bellot</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
