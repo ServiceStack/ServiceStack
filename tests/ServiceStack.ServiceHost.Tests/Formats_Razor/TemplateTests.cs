@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.RazorEngine;
 using ServiceStack.ServiceHost.Tests.Formats;

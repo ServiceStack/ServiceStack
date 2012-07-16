@@ -141,13 +141,12 @@ namespace ServiceStack.RazorEngine.Compilation
                                DefaultBaseClass = BuildTypeName(templateType, modelType),
                                DefaultClassName = className,
                                DefaultNamespace = "CompiledRazorTemplates.Dynamic",
-                               GeneratedClassContext = new GeneratedClassContext("Execute", "Write", "WriteLiteral",
-                                                                                 "WriteTo", "WriteLiteralTo",
-                                                                                 "RazorEngine.Templating.TemplateWriter",
-																				 "WriteSection")
+                               GeneratedClassContext = new GeneratedClassContext(
+                                   "Execute", "Write", "WriteLiteral",
+                                   "WriteTo", "WriteLiteralTo",
+                                   "RazorEngine.Templating.TemplateWriter",
+                                   "WriteSection")
                            };
-
-			host.NamespaceImports.Add("ServiceStack.Markdown.Html");
 
             var templateNamespaces = templateType.GetCustomAttributes(typeof (RequireNamespacesAttribute), true)
                 .Cast<RequireNamespacesAttribute>()

@@ -35,7 +35,11 @@ namespace ServiceStack.RazorEngine.Templating
             this.compilerService = compilerService;
             this.templateType = templateType;
 
-            Namespaces = new HashSet<string> { "System", "System.Collections.Generic", "System.Linq" };
+            Namespaces = new HashSet<string> {
+                "System", "System.Collections.Generic", "System.Linq", 
+                "ServiceStack.Html",
+                "ServiceStack.RazorEngine",
+            };
         }
         #endregion
 

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 using ServiceStack.Common;
+using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.Text;

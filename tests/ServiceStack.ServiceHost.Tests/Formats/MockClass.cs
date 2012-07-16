@@ -8,8 +8,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
+using ServiceStack.Html;
 using ServiceStack.Markdown;
-using ServiceStack.Markdown.Html;
 
 namespace CSharpEval
 {
@@ -19,7 +19,7 @@ namespace CSharpEval
 	public class _Expr
 	 : ServiceStack.ServiceHost.Tests.Formats.TemplateTests.CustomMarkdownViewBase
 	{
-		public ServiceStack.Markdown.MvcHtmlString EvalExpr_0()
+		public MvcHtmlString EvalExpr_0()
 		{
 			return null;
 		}

@@ -14,8 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
+using ServiceStack.Markdown;
 
-namespace ServiceStack.Markdown.Html
+namespace ServiceStack.Html
 {
 	public static class InputExtensions
 	{

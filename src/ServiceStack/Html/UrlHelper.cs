@@ -1,6 +1,6 @@
 ﻿using System.Web;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public class UrlHelper
 	{

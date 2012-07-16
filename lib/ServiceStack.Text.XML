@@ -266,6 +266,16 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.PrintDump``1(``0)">
+            <summary>
+            Print Dump to Console.WriteLine
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.TypeSerializer.Print(System.String,System.Object[])">
+            <summary>
+            Print string.Format to Console.WriteLine
+            </summary>
+        </member>
         <member name="T:ServiceStack.Text.WP.HashSet`1">
             <summary>
              A hashset implementation that uses an IDictionary

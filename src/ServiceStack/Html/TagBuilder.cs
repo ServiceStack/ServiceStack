@@ -4,8 +4,9 @@ using System.Globalization;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web;
+using ServiceStack.Markdown;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public static class MvcResources
 	{

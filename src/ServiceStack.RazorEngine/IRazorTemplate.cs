@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.RazorEngine.Templating;
 using ServiceStack.ServiceHost;

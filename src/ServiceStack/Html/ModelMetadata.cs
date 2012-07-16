@@ -5,8 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ServiceStack.Markdown;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public class ModelMetadata
 	{

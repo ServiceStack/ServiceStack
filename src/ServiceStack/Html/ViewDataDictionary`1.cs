@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using ServiceStack.Markdown;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public class ViewDataDictionary<TModel> : ViewDataDictionary
 	{

@@ -1,4 +1,4 @@
-﻿namespace ServiceStack.Markdown
+﻿namespace ServiceStack.Html
 {
 	public interface IViewEngine
 	{

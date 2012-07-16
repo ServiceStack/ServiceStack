@@ -11,7 +11,7 @@
  * ***************************************************************************/
 
 using System;
-using ServiceStack.Markdown;
+using ServiceStack.Html;
 using System.Globalization;
 using System.Web.Razor.Parser;
 using System.Web.Razor.Parser.SyntaxTree;

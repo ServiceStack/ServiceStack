@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public abstract class ModelMetadataProvider
 	{

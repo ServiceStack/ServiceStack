@@ -1,5 +1,15 @@
-﻿﻿@{
+﻿@using ServiceStack.Html
+@inherits ViewPage<ServiceStack.RazorHostTests.ViewThatUsesLayoutAndModelResponse>
+
+﻿@{
     Layout = "SimplyLayout";
 }
 
 <div>ViewThatUsesLayoutAndModel: @Model.Name</div>
+<ul>
+    @foreach(var name in Model.Results) {
+        <li>@name</li>
+    }
+    
+    @Html.TextBoxFor(x => x.Name)
+</ul>

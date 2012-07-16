@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public interface ITemplatePage
 	{

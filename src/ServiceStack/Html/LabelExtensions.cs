@@ -13,8 +13,9 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using ServiceStack.Markdown;
 
-namespace ServiceStack.Markdown.Html
+namespace ServiceStack.Html
 {
 	public static class LabelExtensions
 	{

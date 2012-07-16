@@ -35,7 +35,7 @@ using System.Globalization;
 using System.Security.Permissions;
 using System.Web;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 #if NET_4_0
 	[TypeForwardedFrom ("System.Web.Routing, Version=3.5.0.0, Culture=Neutral, PublicKeyToken=31bf3856ad364e35")]

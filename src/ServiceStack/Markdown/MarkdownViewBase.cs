@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ServiceStack.Html;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 using ServiceStack.WebHost.Endpoints;
 

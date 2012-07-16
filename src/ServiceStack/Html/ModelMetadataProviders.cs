@@ -5,9 +5,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using ServiceStack.Text;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	[Serializable]
 	public class ModelStateDictionary : IDictionary<string, ModelState>

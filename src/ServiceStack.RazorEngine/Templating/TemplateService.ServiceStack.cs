@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ServiceStack.Common;
-using ServiceStack.Markdown;
+using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.RazorEngine.Templating

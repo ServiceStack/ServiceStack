@@ -103,7 +103,7 @@ namespace ServiceStack.RazorEngine
 					isBusy = true;
 
 					this.Contents = contents;
-					foreach (var markdownReplaceToken in RazorFormat.MarkdownReplaceTokens)
+					foreach (var markdownReplaceToken in RazorFormat.ReplaceTokens)
 					{
 						this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
 					}

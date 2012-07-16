@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.RazorEngine.Templating;
@@ -49,14 +50,14 @@ namespace ServiceStack.RazorEngine
 
 		public IAppHost AppHost { get; set; }
 
-		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
+		public Dictionary<string, string> ReplaceTokens { get; set; }
 
 		public Func<string, IEnumerable<ViewPage>> FindRazorPagesFn { get; set; }
 
 		public RazorFormat()
 		{
 			this.FindRazorPagesFn = FindRazorPages;
-			this.MarkdownReplaceTokens = new Dictionary<string, string>();
+			this.ReplaceTokens = new Dictionary<string, string>();
 		}
 
 		public void Register(IAppHost appHost)
@@ -67,9 +68,9 @@ namespace ServiceStack.RazorEngine
 		public void Configure(IAppHost appHost)
 		{
 			this.AppHost = appHost;
-			this.MarkdownReplaceTokens = new Dictionary<string, string>(appHost.Config.MarkdownReplaceTokens);
+			this.ReplaceTokens = new Dictionary<string, string>(appHost.Config.MarkdownReplaceTokens);
 			if (!appHost.Config.WebHostUrl.IsNullOrEmpty())
-				this.MarkdownReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
+				this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
 			var razorBaseType = appHost.Config.RazorBaseType;
 			Init(razorBaseType);
@@ -204,7 +205,9 @@ namespace ServiceStack.RazorEngine
 
 		public void ReloadModifiedPageAndTemplates(ViewPage razorPage)
 		{
-			var lastWriteTime = File.GetLastWriteTime(razorPage.FilePath);
+			if (razorPage.FilePath == null) return;
+            
+            var lastWriteTime = File.GetLastWriteTime(razorPage.FilePath);
 			if (lastWriteTime > razorPage.LastModified)
 			{
 				razorPage.Reload();
@@ -230,7 +233,7 @@ namespace ServiceStack.RazorEngine
 		private void ReloadTemplate(ViewPage template)
 		{
 			var contents = File.ReadAllText(template.FilePath);
-			foreach (var markdownReplaceToken in MarkdownReplaceTokens)
+			foreach (var markdownReplaceToken in ReplaceTokens)
 			{
 				contents = contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
 			}
@@ -297,6 +300,9 @@ namespace ServiceStack.RazorEngine
 			}
 			catch (Exception ex)
 			{
+			    var errorViewPage = new ErrorViewPage(this, ex);
+                errorViewPage.Prepare();
+			    ViewPages.Add(page.Name, errorViewPage);
 				Log.Error("Razor AddViewPage() page.Prepare(): " + ex.Message, ex);
 			}
 
@@ -313,7 +319,7 @@ namespace ServiceStack.RazorEngine
 			var templateFile = new FileInfo(templatePath);
 			var templateName = templateFile.FullName.WithoutExtension();
 
-			foreach (var markdownReplaceToken in MarkdownReplaceTokens)
+			foreach (var markdownReplaceToken in ReplaceTokens)
 			{
 				templateContents = templateContents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
 			}

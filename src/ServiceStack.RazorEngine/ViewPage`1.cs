@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.RazorEngine.Templating;
 using ServiceStack.ServiceHost;
@@ -20,6 +21,7 @@ namespace ServiceStack.RazorEngine
 		{
 			this.Response = httpRes;
 			Html.Init(viewEngine, viewData);
+		    this.Model = (TModel) viewData.Model;
 		}
 
 		public string Layout { get; set; }
@@ -44,5 +46,11 @@ namespace ServiceStack.RazorEngine
 		{
 			return Url.Content(url);
 		}
-	}
+
+        public virtual bool IsSectionDefined(string sectionName)
+        {
+            //return this.childSections.ContainsKey(sectionName);
+            return false;
+        }
+    }
 }

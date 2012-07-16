@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	public class ViewDataInfo
 	{

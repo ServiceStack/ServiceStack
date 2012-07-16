@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using ServiceStack.Markdown;
+using ServiceStack.Html;
 using ServiceStack.RazorEngine;
 using ServiceStack.ServiceHost.Tests.Formats;
 

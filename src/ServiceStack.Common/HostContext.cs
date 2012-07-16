@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 
 namespace ServiceStack.Common
@@ -23,6 +24,10 @@ namespace ServiceStack.Common
 
         public void EndRequest()
         {
+            if (items != null)
+            {
+                items.Values.OfType<IDisposable>().Dispose();
+            }
             items = null;
         }
     }

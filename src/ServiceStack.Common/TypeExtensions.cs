@@ -27,5 +27,13 @@ namespace ServiceStack.Common
             return type.GetCustomAttributes(typeof(T), true).SafeConvertAll(x => (T)x);
         }
 
+        public static string GetAssemblyPath(this Type source)
+        {
+            var assemblyUri =
+                new Uri(source.Assembly.EscapedCodeBase);
+
+            return assemblyUri.LocalPath;
+        }
+
     }
 }

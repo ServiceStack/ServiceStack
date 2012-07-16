@@ -18,10 +18,10 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using ServiceStack.Common.Web;
-using ServiceStack.Markdown.Html;
+using ServiceStack.Markdown;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	[Flags]
 	public enum HttpVerbs
@@ -47,7 +47,12 @@ namespace ServiceStack.Markdown
 		private ViewDataDictionary<TModel> viewData;
 		public new ViewDataDictionary<TModel> ViewData
 		{
-			get { return viewData ?? (viewData = (ViewDataDictionary<TModel>) base.ViewData); }
+			get 
+            { 
+                return viewData ?? 
+                    (viewData = base.ViewData as ViewDataDictionary<TModel> 
+                        ?? new ViewDataDictionary<TModel>((TModel)base.ViewData.Model)); 
+            }
 		}
 	}
 

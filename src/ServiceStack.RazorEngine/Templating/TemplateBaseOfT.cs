@@ -44,7 +44,7 @@ namespace ServiceStack.RazorEngine.Templating
 					TModel m = (dynamic)model;
 					return m;
 				}
-				return (TModel)model;
+				return model != null ? (TModel)model : default(TModel);
             }
             set
             {

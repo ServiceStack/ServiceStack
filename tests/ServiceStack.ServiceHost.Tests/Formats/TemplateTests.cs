@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;

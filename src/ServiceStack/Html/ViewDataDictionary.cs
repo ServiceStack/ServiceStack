@@ -3,9 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using ServiceStack.Markdown;
 using ServiceStack.Text;
 
-namespace ServiceStack.Markdown
+namespace ServiceStack.Html
 {
 	// TODO: Unit test ModelState interaction with VDD
 	public class ViewDataDictionary : IDictionary<string, object>
