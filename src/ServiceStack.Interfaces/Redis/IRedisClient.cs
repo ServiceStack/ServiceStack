@@ -50,6 +50,8 @@ namespace ServiceStack.Redis
 		void SetEntry(string key, string value);
 		void SetEntry(string key, string value, TimeSpan expireIn);
 		bool SetEntryIfNotExists(string key, string value);
+	    void SetAll(IEnumerable<string> keys, IEnumerable<string> values);
+	    void SetAll(Dictionary<string, string> map);
 		string GetValue(string key);
 		string GetAndSetEntry(string key, string value);
 		List<string> GetValues(List<string> keys);
