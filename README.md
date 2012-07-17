@@ -360,6 +360,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [flq](https://github.com/flq) (Frank Quednau)
  - [ashd](https://github.com/ashd) (Ash D)
  - [thanhhh](https://github.com/thanhhh)
+ - [algra](https://github.com/algra) (Alexey Gravanov)
 
 ***
 
