@@ -361,6 +361,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [ashd](https://github.com/ashd) (Ash D)
  - [thanhhh](https://github.com/thanhhh)
  - [algra](https://github.com/algra) (Alexey Gravanov)
+ - [jimschubert](https://github.com/jimschubert) (Jim Schubert)
 
 ***
 
