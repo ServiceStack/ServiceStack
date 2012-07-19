@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 
@@ -9,6 +10,7 @@ namespace Funq
 	public sealed partial class Container : IDisposable
 	{
 		Dictionary<ServiceKey, ServiceEntry> services = new Dictionary<ServiceKey, ServiceEntry>();
+        Dictionary<ServiceKey, ServiceEntry> servicesReadOnlyCopy;
 		// Disposable components include factory-scoped instances that we don't keep 
 		// a strong reference to. 
 		Stack<WeakReference> disposables = new Stack<WeakReference>();
@@ -94,12 +96,39 @@ namespace Funq
 			};
 			var key = new ServiceKey(typeof(TFunc), name);
 
-			services[key] = entry;
+            SetServiceEntry(key, entry);
 
-			return entry;
+		    return entry;
 		}
 
-		#region ResolveImpl
+        private ServiceEntry<TService, TFunc> SetServiceEntry<TService, TFunc>(ServiceKey key, ServiceEntry<TService, TFunc> entry)
+	    {
+	        lock (services)
+	        {
+	            services[key] = entry;
+	            Interlocked.Exchange(ref servicesReadOnlyCopy, null);
+	        }
+
+            return entry;
+	    }
+
+        private bool TryGetServiceEntry(ServiceKey key, out ServiceEntry entry)
+        {
+            var snapshot = servicesReadOnlyCopy;
+
+            if (snapshot == null)
+            {
+                lock (services)
+                {
+                    snapshot = new Dictionary<ServiceKey, ServiceEntry>(services);
+                    Interlocked.Exchange(ref servicesReadOnlyCopy, snapshot);
+                }
+            }
+
+            return snapshot.TryGetValue(key, out entry);
+        }
+
+	    #region ResolveImpl
 
 		/* All ResolveImpl are essentially equal, except for the type of the factory 
 		 * which is "hardcoded" in each implementation. This slight repetition of 
@@ -115,14 +144,17 @@ namespace Funq
 			if (entry == null)
 				return default(TService);
 
-			TService instance = entry.Instance;
-			if (instance == null)
-			{
-				instance = entry.Factory(entry.Container);
-				entry.InitializeInstance(instance);
-			}
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    instance = entry.Factory(entry.Container);
+                    entry.InitializeInstance(instance);
+                }
 
-			return instance;
+                return instance;
+            }		    
 		}
 
 		private TService ResolveImpl<TService, TArg>(string name, bool throwIfMissing, TArg arg)
@@ -133,14 +165,17 @@ namespace Funq
 			if (entry == null)
 				return default(TService);
 
-			TService instance = entry.Instance;
-			if (instance == null)
-			{
-				instance = entry.Factory(entry.Container, arg);
-				entry.InitializeInstance(instance);
-			}
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    instance = entry.Factory(entry.Container, arg);
+                    entry.InitializeInstance(instance);
+                }
 
-			return instance;
+                return instance;
+            }		
 		}
 
 		private TService ResolveImpl<TService, TArg1, TArg2>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2)
@@ -151,14 +186,17 @@ namespace Funq
 			if (entry == null)
 				return default(TService);
 
-			TService instance = entry.Instance;
-			if (instance == null)
-			{
-				instance = entry.Factory(entry.Container, arg1, arg2);
-				entry.InitializeInstance(instance);
-			}
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    instance = entry.Factory(entry.Container, arg1, arg2);
+                    entry.InitializeInstance(instance);
+                }
 
-			return instance;
+                return instance;
+            }		
 		}
 
 		private TService ResolveImpl<TService, TArg1, TArg2, TArg3>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3)
@@ -169,14 +207,17 @@ namespace Funq
 			if (entry == null)
 				return default(TService);
 
-			TService instance = entry.Instance;
-			if (instance == null)
-			{
-				instance = entry.Factory(entry.Container, arg1, arg2, arg3);
-				entry.InitializeInstance(instance);
-			}
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    instance = entry.Factory(entry.Container, arg1, arg2, arg3);
+                    entry.InitializeInstance(instance);
+                }
 
-			return instance;
+                return instance;
+            }		
 		}
 
 		private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4)
@@ -187,14 +228,17 @@ namespace Funq
 			if (entry == null)
 				return default(TService);
 
-			TService instance = entry.Instance;
-			if (instance == null)
-			{
-				instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4);
-				entry.InitializeInstance(instance);
-			}
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4);
+                    entry.InitializeInstance(instance);
+                }
 
-			return instance;
+                return instance;
+            }		
 		}
 
 		private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5)
@@ -205,14 +249,17 @@ namespace Funq
 			if (entry == null)
 				return default(TService);
 
-			TService instance = entry.Instance;
-			if (instance == null)
-			{
-				instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5);
-				entry.InitializeInstance(instance);
-			}
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5);
+                    entry.InitializeInstance(instance);
+                }
 
-			return instance;
+                return instance;
+            }		
 		}
 
 		private TService ResolveImpl<TService, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>(string name, bool throwIfMissing, TArg1 arg1, TArg2 arg2, TArg3 arg3, TArg4 arg4, TArg5 arg5, TArg6 arg6)
@@ -223,14 +270,17 @@ namespace Funq
 			if (entry == null)
 				return default(TService);
 
-			TService instance = entry.Instance;
-			if (instance == null)
-			{
-				instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5, arg6);
-				entry.InitializeInstance(instance);
-			}
+            using (entry.AquireLockIfNeeded())
+            {
+                TService instance = entry.Instance;
+                if (instance == null)
+                {
+                    instance = entry.Factory(entry.Container, arg1, arg2, arg3, arg4, arg5, arg6);
+                    entry.InitializeInstance(instance);
+                }
 
-			return instance;
+                return instance;
+            }		
 		}
 
 		#endregion
@@ -247,7 +297,7 @@ namespace Funq
 			Container container = this;
 
 			// Go up the hierarchy always for registrations.
-			while (!container.services.TryGetValue(key, out entry) && container.parent != null)
+			while (!container.TryGetServiceEntry(key, out entry) && container.parent != null)
 			{
 				container = container.parent;
 			}
@@ -255,10 +305,7 @@ namespace Funq
 			if (entry != null)
 			{
 				if (entry.Reuse == ReuseScope.Container && entry.Container != this)
-				{
-					entry = ((ServiceEntry<TService, TFunc>)entry).CloneFor(this);
-					services[key] = entry;
-				}
+					entry = SetServiceEntry(key, ((ServiceEntry<TService, TFunc>)entry).CloneFor(this));
 			}
 			else
 			{
@@ -290,9 +337,9 @@ namespace Funq
 			}
 
 			return (ServiceEntry<TService, TFunc>)entry;
-		}
+		}	    
 
-		private static TService ThrowMissing<TService>(string serviceName)
+	    private static TService ThrowMissing<TService>(string serviceName)
 		{
 			if (serviceName == null)
 				throw new ResolutionException(typeof(TService));
