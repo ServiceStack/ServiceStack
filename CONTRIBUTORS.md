@@ -81,3 +81,7 @@
  - [markswiatek](https://github.com/markswiatek) (Mark Swiatek)
  - [flq](https://github.com/flq) (Frank Quednau)
  - [ashd](https://github.com/ashd) (Ash D)
+ - [thanhhh](https://github.com/thanhhh)
+ - [algra](https://github.com/algra) (Alexey Gravanov)
+ - [jimschubert](https://github.com/jimschubert) (Jim Schubert)
+ - [gkathire](https://github.com/gkathire)

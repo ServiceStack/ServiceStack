@@ -148,7 +148,6 @@
     <Compile Include="MiniProfiler\Helpers\ExtensionMethods.cs" />
     <Compile Include="MiniProfiler\Helpers\HaackFormatter.cs" />
     <Compile Include="MiniProfiler\Helpers\IStopwatch.cs" />
-    <Compile Include="Data\SqlMapper.cs" />
     <Compile Include="MiniProfiler\Helpers\StackTraceSnippet.cs" />
     <Compile Include="MiniProfiler\HtmlString.cs" />
     <Compile Include="MiniProfiler\IpAddressProvider.cs" />
