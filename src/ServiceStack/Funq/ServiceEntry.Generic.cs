@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using ServiceStack.Common;
 
 namespace Funq
@@ -26,7 +27,8 @@ namespace Funq
 	        {
                 if (Reuse == ReuseScope.Request)
                     return HostContext.Instance.Items[this] is TService ? (TService) HostContext.Instance.Items[this] : default(TService);
-	            return instance;
+	            
+                return instance;
 	        }
             set
             {
@@ -58,6 +60,8 @@ namespace Funq
 				Initializer(Container, instance);
 		}
 
+
+
 		public IReusedOwned InitializedBy(Action<Container, TService> initializer)
 		{
 			this.Initializer = initializer;
@@ -78,5 +82,28 @@ namespace Funq
 				Initializer = Initializer,
 			};
 		}
+
+	    public IDisposable AquireLockIfNeeded()
+	    {
+            if (Reuse == ReuseScope.None || Reuse == ReuseScope.Request || Instance != null)
+                return null;
+
+	        return new AquiredLock(this);
+	    }
+
+	    internal class AquiredLock : IDisposable
+	    {
+	        private readonly object syncRoot;
+
+	        public AquiredLock(object syncRoot)
+	        {
+                Monitor.Enter(this.syncRoot = syncRoot);
+	        }
+
+	        public void Dispose()
+	        {
+	            Monitor.Exit(syncRoot);
+	        }
+	    }
 	}
 }
