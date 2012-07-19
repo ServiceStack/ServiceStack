@@ -6,7 +6,7 @@ namespace ServiceStack.Html
 	public interface ITemplatePage
 	{
 		IAppHost AppHost { get; set; }
-		T TryResolve<T>();
+		T Get<T>();
 		Dictionary<string, object> ScopeArgs { get; set; }
 	}
 }

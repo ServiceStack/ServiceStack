@@ -7,7 +7,7 @@ using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Html;
 using ServiceStack.Markdown;
-using ServiceStack.RazorEngine;
+using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
@@ -380,7 +380,7 @@ Demis / Bellot
 </table>
 ".NormalizeNewLines();
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+            RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			AddViewPage("HeaderLinks", "/path/to/page", headerTemplate);
 
@@ -441,7 +441,7 @@ Demis / Bellot
 </table>
 ".NormalizeNewLines();
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+            RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -471,7 +471,7 @@ Demis / Bellot
 ".NormalizeNewLines();
 
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+            RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -532,7 +532,7 @@ Demis / Bellot
 	</li>
 </ul>".NormalizeNewLines();
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+            RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -667,7 +667,7 @@ Plain text in a comment
 <p>Hello BELLOT, Demis</p>
 ".NormalizeNewLines();
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+            RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 			
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -792,7 +792,7 @@ Demis / Bellot
 </body>
 </html>".NormalizeNewLines();
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+            RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
 			AddViewPage("DynamicModelTpl", "/path/to/page-tpl", template, websiteTemplatePath);
@@ -881,7 +881,7 @@ Demis / Bellot
 </body>
 </html>".NormalizeNewLines();
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+            RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			var websiteTemplatePath = "/path/to/tpl";
 			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);

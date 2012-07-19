@@ -130,7 +130,7 @@ namespace ServiceStack.Markdown
 		/// Resolve registered Assemblies
 		/// </summary>
 		/// <returns></returns>
-		public T TryResolve<T>()
+		public T Get<T>()
 		{
 			return this.AppHost.TryResolve<T>();
 		}

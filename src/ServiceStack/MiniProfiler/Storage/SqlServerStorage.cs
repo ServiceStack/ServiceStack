@@ -1,9 +1,10 @@
-﻿using System;
+﻿#if false
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.SqlClient;
 using System.Data.Common;
-using ServiceStack.Data;
 using ServiceStack.MiniProfiler.Helpers;
 
 namespace ServiceStack.MiniProfiler.Storage
@@ -434,3 +435,4 @@ create table MiniProfilerSqlTimingParameters
   );";
     }
 }
+#endif

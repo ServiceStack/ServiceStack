@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			throw new NotImplementedException();
 		}
 
-		protected object DeserializeContentType(Type operationType, IHttpRequest httpReq, string contentType)
+	    public static object DeserializeHttpRequest(Type operationType, IHttpRequest httpReq, string contentType)
 		{
 			var httpMethod = httpReq.HttpMethod;
 			var queryString = httpReq.QueryString;

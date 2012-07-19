@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Html;
-using ServiceStack.RazorEngine;
+using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
@@ -320,7 +320,7 @@ current date/year: 2012</p>
 				new Product("DVD", 11.99m),
 			};
 
-			Razor.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+			RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
 
 			var html = RenderToHtml(pageTemplate, products);
 
@@ -347,7 +347,7 @@ current date/year: 2012</p>
 
 </fieldset>".NormalizeNewLines();
 
-			Razor.SetTemplateBase(typeof(CustomBaseClass<>));
+            RazorHost.SetTemplateBase(typeof(CustomBaseClass<>));
 
 			var html = RenderToHtml(pageTemplate, new Product("Pen", 1.99m));
 

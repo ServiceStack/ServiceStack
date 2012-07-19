@@ -1,0 +1,16 @@
+﻿@using ServiceStack.RazorHostTests
+@inherits ViewPage<ViewThatUsesLayoutAndModel> 
+
+﻿@{
+    Layout = "SimplyLayout";
+}
+
+<div>CATCH ALL: @Model.Id</div>
+<ul>
+    @foreach (var name in Get<DataSource>().Items)
+    {
+        <li>@name</li>
+    }
+    
+    @Html.TextBoxFor(x => x.Id)
+</ul>

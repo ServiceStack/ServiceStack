@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints
 			using (Profiler.Current.Step("Deserialize Request"))
 			{
 				var requestDto = GetCustomRequestFromBinder(httpReq, requestType);
-				return requestDto ?? DeserializeContentType(requestType, httpReq, HandlerContentType);
+				return requestDto ?? DeserializeHttpRequest(requestType, httpReq, HandlerContentType);
 			}
 		}
 

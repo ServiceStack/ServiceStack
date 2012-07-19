@@ -1,0 +1,14 @@
+﻿@model ServiceStack.RazorHostTests.ViewThatUsesLayoutAndModel2Response
+
+﻿@{
+    Layout = "SimplyLayout";
+}
+
+<div>ViewThatUsesLayoutAndModel2: @Model.Name</div>
+<ul>
+    @foreach(var name in Model.Results) {
+        <li>@name</li>
+    }
+    
+    @Html.TextBoxFor(x => x.Name)
+</ul>
