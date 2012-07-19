@@ -85,3 +85,4 @@
  - [algra](https://github.com/algra) (Alexey Gravanov)
  - [jimschubert](https://github.com/jimschubert) (Jim Schubert)
  - [gkathire](https://github.com/gkathire)
+ - [mikaelwaltersson](https://github.com/mikaelwaltersson) (Mikael Waltersson)
