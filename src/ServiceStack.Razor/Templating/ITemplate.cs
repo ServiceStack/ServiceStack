@@ -5,7 +5,6 @@
     /// </summary>
     public interface ITemplate
     {
-        #region Properties
         /// <summary>
         /// Gets the last result of the template.
         /// </summary>
@@ -15,9 +14,7 @@
         /// Gets or sets the template service.
         /// </summary>
         TemplateService Service { get; set; }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Clears the last result of the template.
         /// </summary>
@@ -39,6 +36,5 @@
         /// </summary>
         /// <param name="string">The string to write.</param>
         void WriteLiteral(string @string);
-        #endregion
     }
 }

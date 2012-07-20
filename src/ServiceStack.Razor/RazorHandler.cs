@@ -34,7 +34,9 @@ namespace ServiceStack.Razor
 
 
 		    var modelType = RazorPage.GetRazorTemplate().ModelType;
-            var model = DeserializeHttpRequest(modelType, httpReq, httpReq.ContentType);
+            var model = modelType == typeof(DynamicRequestObject) 
+                ? null
+                : DeserializeHttpRequest(modelType, httpReq, httpReq.ContentType);
 
             RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes);
 		}

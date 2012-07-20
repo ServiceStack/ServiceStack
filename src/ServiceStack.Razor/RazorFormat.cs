@@ -285,25 +285,17 @@ namespace ServiceStack.Razor
 		{
 			try
 			{
-				page.Prepare();
-				switch (page.PageType)
-				{
-					case RazorPageType.ViewPage:
-						ViewPages.Add(page.Name, page);
-						break;
-					case RazorPageType.SharedViewPage:
-						ViewSharedPages.Add(page.Name, page);
-						break;
-					case RazorPageType.ContentPage:
-						ContentPages.Add(page.FilePath.WithoutExtension(), page);
-						break;
-				}
+			    page.Prepare();
+                AddViewPage(page);
 			}
 			catch (Exception ex)
 			{
-			    var errorViewPage = new ErrorViewPage(this, ex);
+			    var errorViewPage = new ErrorViewPage(this, ex) {
+                    PageType = page.PageType,
+                    FilePath = page.FilePath,
+                };
                 errorViewPage.Prepare();
-			    ViewPages.Add(page.Name, errorViewPage);
+                AddViewPage(errorViewPage);
 				Log.Error("Razor AddViewPage() page.Prepare(): " + ex.Message, ex);
 			}
 
@@ -315,7 +307,23 @@ namespace ServiceStack.Razor
 			AddTemplate(templatePath, File.ReadAllText(templatePath));
 		}
 
-		public ViewPage AddTemplate(string templatePath, string templateContents)
+	    private void AddViewPage(ViewPage page)
+	    {
+	        switch (page.PageType)
+	        {
+	            case RazorPageType.ViewPage:
+	                ViewPages.Add(page.Name, page);
+	                break;
+	            case RazorPageType.SharedViewPage:
+	                ViewSharedPages.Add(page.Name, page);
+	                break;
+	            case RazorPageType.ContentPage:
+	                ContentPages.Add(page.FilePath.WithoutExtension(), page);
+	                break;
+	        }
+	    }
+
+	    public ViewPage AddTemplate(string templatePath, string templateContents)
 		{
 			var templateFile = new FileInfo(templatePath);
 			var templateName = templateFile.FullName.WithoutExtension();

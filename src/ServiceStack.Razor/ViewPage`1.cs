@@ -12,9 +12,16 @@ namespace ServiceStack.Razor
 		public UrlHelper Url = new UrlHelper();
 		public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
 
+        protected ViewPage()
+        {
+            this.ScopeArgs = new Dictionary<string, object>();
+        }
+        
         public IHttpRequest Request { get; set; }
 
         public IHttpResponse Response { get; set; }
+
+        public string Layout { get; set; }
 
 	    public Dictionary<string, object> ScopeArgs { get; set; }
 
@@ -23,27 +30,6 @@ namespace ServiceStack.Razor
             get { return typeof(TModel); }
         }
 
-		public virtual void Init(IViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
-		{
-		    this.Request = httpReq;
-			this.Response = httpRes;
-			Html.Init(viewEngine, viewData);
-		    this.Model = (TModel) viewData.Model;
-		}
-
-		public string Layout { get; set; }
-
-		public void Prepend(string contents)
-		{
-			if (contents == null) return;
-			Builder.Insert(0, contents);
-		}
-
-		protected ViewPage()
-		{
-			this.ScopeArgs = new Dictionary<string, object>();
-		}
-
         private IAppHost appHost;
         public IAppHost AppHost
         {
@@ -51,14 +37,28 @@ namespace ServiceStack.Razor
             set { appHost = value; }
         }
 
-		public T Get<T>()
-		{
-			return this.AppHost.TryResolve<T>();
-		}
+        public T Get<T>()
+        {
+            return this.AppHost.TryResolve<T>();
+        }
 
-		public string Href(string url)
+        public string Href(string url)
+        {
+            return Url.Content(url);
+        }
+
+        public void Prepend(string contents)
+        {
+            if (contents == null) return;
+            Builder.Insert(0, contents);
+        }
+
+		public virtual void Init(IViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
 		{
-			return Url.Content(url);
+		    this.Request = httpReq;
+			this.Response = httpRes;
+			Html.Init(viewEngine, viewData);
+		    this.Model = (TModel) viewData.Model;
 		}
 
         public virtual bool IsSectionDefined(string sectionName)

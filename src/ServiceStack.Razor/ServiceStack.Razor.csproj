@@ -81,6 +81,7 @@
     <Compile Include="Compilation\CSharp\CSharpDirectCompilerService.cs" />
     <Compile Include="Compilation\CSharp\CSharpRazorCodeGenerator.cs" />
     <Compile Include="Compilation\CSharp\CSharpRazorCodeLanguage.cs" />
+    <Compile Include="DynamicRequestObject.cs" />
     <Compile Include="ErrorViewPage.cs" />
     <Compile Include="ServiceStack\CSharpRazorCodeGenerator.cs" />
     <Compile Include="ServiceStack\ModelSpan.cs" />
@@ -108,7 +109,6 @@
     <Compile Include="ViewPage`1.cs" />
     <Compile Include="ServiceStack\MvcWebPageRazorHost.cs" />
     <Compile Include="ServiceStack\MvcCSharpRazorCodeParser.cs" />
-    <Compile Include="ServiceStack\MvcWebRazorHostFactory.cs" />
     <Compile Include="ServiceStack\ServiceStackCSharpRazorBuildProvider.cs" />
     <Compile Include="ServiceStack\ViewMasterPage.cs" />
     <Compile Include="ServiceStack\ViewMasterPage`1.cs" />

@@ -4,19 +4,75 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Web;
+using ServiceStack.Html;
 using ServiceStack.MiniProfiler;
+using ServiceStack.Razor.Templating;
+using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Razor
 {
-	public class ViewPage
+    public class ViewPage : TemplateBase<DynamicRequestObject>, IRazorTemplate
 	{
 		public RazorFormat RazorFormat { get; set; }
 
-		public string Layout { get; set; }
+        public UrlHelper Url = new UrlHelper();
+        public HtmlHelper Html = new HtmlHelper();
 
-		public string FilePath { get; set; }
+        public IHttpRequest Request { get; set; }
+
+        public IHttpResponse Response { get; set; }
+
+        public string Layout { get; set; }
+
+        public Dictionary<string, object> ScopeArgs { get; set; }
+
+        public new dynamic Model { get; set; }
+
+        public Type ModelType
+        {
+            get { return typeof(DynamicRequestObject); }
+        }
+
+        private IAppHost appHost;
+        public IAppHost AppHost
+        {
+            get { return appHost ?? EndpointHost.AppHost; }
+            set { appHost = value; }
+        }
+
+        public T Get<T>()
+        {
+            return this.AppHost.TryResolve<T>();
+        }
+
+        public string Href(string url)
+        {
+            return Url.Content(url);
+        }
+
+        public void Prepend(string contents)
+        {
+            if (contents == null) return;
+            Builder.Insert(0, contents);
+        }
+
+        public virtual void Init(IViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
+        {
+            this.Request = httpReq;
+            this.Response = httpRes;
+            Html.Init(viewEngine, viewData);
+            this.Model = new DynamicRequestObject(httpReq);
+        }
+
+        public virtual bool IsSectionDefined(string sectionName)
+        {
+            //return this.childSections.ContainsKey(sectionName);
+            return false;
+        }
+
+        public string FilePath { get; set; }
 		public string Name { get; set; }
 		public string Contents { get; set; }
 
@@ -46,19 +102,7 @@ namespace ServiceStack.Razor
 			PageType = pageType;
 		}
 
-        private IAppHost appHost;
-        public IAppHost AppHost
-        {
-            get { return appHost ?? EndpointHost.AppHost; }
-            set { appHost = value; }
-        }
-
-        public T Get<T>()
-        {
-            return this.AppHost.TryResolve<T>();
-        }
-
-		public DateTime? GetLastModified()
+        public DateTime? GetLastModified()
 		{
 			//if (!hasCompletedFirstRun) return null;
 			var lastModified = this.LastModified;
@@ -155,81 +199,10 @@ namespace ServiceStack.Razor
 		{
 			return RazorHost.DefaultTemplateService.GetTemplate(this.PageName);
 		}
-
-		//From https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor/NancyRazorViewBase.cs
-
-		public virtual void Write(object value)
-		{
-			WriteLiteral(HtmlEncode(value));
-		}
-
-		public virtual void WriteLiteral(object value)
-		{
-			//contents.Append(value);
-		}
-
-		public virtual void WriteTo(TextWriter writer, object value)
-		{
-			writer.Write(HtmlEncode(value));
-		}
-
-		public virtual void WriteLiteralTo(TextWriter writer, object value)
-		{
-			writer.Write(value);
-		}
-
-		public virtual void WriteTo(TextWriter writer, HelperResult value)
-		{
-			if (value != null)
-			{
-				value.WriteTo(writer);
-			}
-		}
-
-		public virtual void WriteLiteralTo(TextWriter writer, HelperResult value)
-		{
-			//if (value != null)
-			//{
-			//    value.WriteTo(writer);
-			//}
-		}
-
+        
 		public virtual void DefineSection(string sectionName, Action action)
 		{
 			//this.Sections.Add(sectionName, action);
-		}
-
-		public virtual object RenderBody()
-		{
-			//this.contents.Append(this.childBody);
-
-			return null;
-		}
-
-		public virtual object RenderSection(string sectionName)
-		{
-			return this.RenderSection(sectionName, true);
-		}
-
-		public virtual object RenderSection(string sectionName, bool required)
-		{
-			//string sectionContent;
-
-			//var exists = this.childSections.TryGetValue(sectionName, out sectionContent);
-			//if (!exists && required)
-			//{
-			//    throw new InvalidOperationException("Section name " + sectionName + " not found and is required.");
-			//}
-
-			//this.contents.Append(sectionContent ?? String.Empty);
-
-			return null;
-		}
-		
-		public virtual bool IsSectionDefined(string sectionName)
-		{
-			//return this.childSections.ContainsKey(sectionName);
-			return false;
 		}
 
 		private static string HtmlEncode(object value)
@@ -243,5 +216,21 @@ namespace ServiceStack.Razor
 
 			return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
 		}
+
+        public virtual void WriteTo(TextWriter writer, HelperResult value)
+        {
+            if (value != null)
+            {
+                value.WriteTo(writer);
+            }
+        }
+
+        public virtual void WriteLiteralTo(TextWriter writer, HelperResult value)
+        {
+            if (value != null)
+            {
+                value.WriteTo(writer);
+            }
+        }
 	}
 }

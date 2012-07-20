@@ -9,11 +9,8 @@ namespace ServiceStack.Razor.Templating
     /// <typeparam name="TModel">The model type.</typeparam>
     public abstract class TemplateBase<TModel> : TemplateBase, ITemplate<TModel>
     {
-        #region Fields
         private object model;
-        #endregion
 
-        #region Constructor
         /// <summary>
         /// Initialises a new instance of <see cref="TemplateBase{TModel}"/>.
         /// </summary>
@@ -22,9 +19,7 @@ namespace ServiceStack.Razor.Templating
             HasDynamicModel = GetType()
                 .IsDefined(typeof(HasDynamicModelAttribute), true);
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets whether this template uses a dynamic model.
         /// </summary>
@@ -37,14 +32,14 @@ namespace ServiceStack.Razor.Templating
         {
             get
             {
-				if (HasDynamicModel 
-					&& !typeof(TModel).IsAssignableFrom(typeof(DynamicObject))
-					&& (model is DynamicObject || model is ExpandoObject))
-				{
-					TModel m = (dynamic)model;
-					return m;
-				}
-				return model != null ? (TModel)model : default(TModel);
+                if (HasDynamicModel
+                    && !typeof(TModel).IsAssignableFrom(typeof(DynamicObject))
+                    && (model is DynamicObject || model is ExpandoObject))
+                {
+                    TModel m = (dynamic)model;
+                    return m;
+                }
+                return model != null ? (TModel)model : default(TModel);
             }
             set
             {
@@ -54,6 +49,5 @@ namespace ServiceStack.Razor.Templating
                     model = value;
             }
         }
-        #endregion
     }
 }

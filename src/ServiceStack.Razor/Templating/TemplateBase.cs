@@ -1,6 +1,5 @@
 ﻿using System.Web;
 using ServiceStack.Html;
-using ServiceStack.Markdown;
 using System;
 using System.IO;
 using System.Text;
@@ -12,12 +11,9 @@ namespace ServiceStack.Razor.Templating
     /// </summary>
 	public abstract partial class TemplateBase : ITemplate
     {
-        #region Fields
         [ThreadStatic]
         private static StringBuilder builder;
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets the string builder used to output the template result.
         /// </summary>
@@ -35,9 +31,7 @@ namespace ServiceStack.Razor.Templating
         /// Gets or sets the template service.
         /// </summary>
         public TemplateService Service { get; set; }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Clears the last result of the template.
         /// </summary>
@@ -94,15 +88,15 @@ namespace ServiceStack.Razor.Templating
             if (@object == null)
                 return;
 
-			if (@object is MvcHtmlString || ChildTemplate != null)
-			{
-				Builder.Append(@object);
-			}
-			else
-			{
-				var strValue = Convert.ToString(@object);
-				Builder.Append(HttpUtility.HtmlEncode(strValue));
-			}
+            if (@object is MvcHtmlString || ChildTemplate != null)
+            {
+                Builder.Append(@object);
+            }
+            else
+            {
+                var strValue = Convert.ToString(@object);
+                Builder.Append(HttpUtility.HtmlEncode(strValue));
+            }
         }
 
         /// <summary>
@@ -142,6 +136,5 @@ namespace ServiceStack.Razor.Templating
 
             writer.Write(obj);
         }
-        #endregion
     }
 }
