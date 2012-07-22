@@ -8,23 +8,14 @@ namespace ServiceStack.Razor.Compilation.CSharp
 	/// <summary>
     /// Defines a direct compiler service for the C# syntax.
     /// </summary>
-    public class CSharpDirectCompilerService : DirectCompilerServiceBase
+    public class CSharpDirectCompilerService : CompilerServiceBase
     {
-
-        #region Constructor
-        /// <summary>
-        /// Initialises a new instance of <see cref="CSharpDirectCompilerService"/>.
-        /// </summary>
-        /// <param name="strictMode">Specifies whether the strict mode parsing is enabled.</param>
-        /// <param name="markupParser">The markup parser to use.</param>
         public CSharpDirectCompilerService(bool strictMode = true, MarkupParser markupParser = null)
             : base(
-                new CSharpRazorCodeLanguage(strictMode), 
                 new CSharpCodeProvider(),
+                new CSharpRazorCodeLanguage(strictMode),
                 markupParser) { }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Builds a type name for the specified generic type.
         /// </summary>
@@ -45,6 +36,5 @@ namespace ServiceStack.Razor.Compilation.CSharp
                    + (isDynamic ? "dynamic" : string.Join(", ", type.GetGenericArguments().Select(t => BuildTypeNameInternal(t, CompilerServices.IsDynamicType(t)))))
                    + ">";
         }
-        #endregion
     }
 }

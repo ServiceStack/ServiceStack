@@ -65,19 +65,15 @@ namespace ServiceStack.Razor.ServiceStack
 		 
 		public override ParserBase DecorateCodeParser(ParserBase incomingCodeParser)
 		{
-			if (incomingCodeParser is CSharpCodeParser)
+		    if (incomingCodeParser is CSharpCodeParser)
 			{
 				return new MvcCSharpRazorCodeParser();
 			}
-			else
-			{
-				return base.DecorateCodeParser(incomingCodeParser);
-			}
+		    return base.DecorateCodeParser(incomingCodeParser);
 		}
 
-		private void GetRidOfNamespace(string ns)
+	    private void GetRidOfNamespace(string ns)
 		{
-			Debug.Assert(NamespaceImports.Contains(ns), ns + " is not a default namespace anymore");
 			if (NamespaceImports.Contains(ns))
 			{
 				NamespaceImports.Remove(ns);

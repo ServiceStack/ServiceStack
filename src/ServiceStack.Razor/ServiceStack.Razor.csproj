@@ -85,48 +85,31 @@
     <Compile Include="ErrorViewPage.cs" />
     <Compile Include="ServiceStack\CSharpRazorCodeGenerator.cs" />
     <Compile Include="ServiceStack\ModelSpan.cs" />
-    <Compile Include="Compilation\DirectCompilerServiceBase.cs" />
-    <Compile Include="Compilation\DefaultCompilerServiceFactory.cs" />
-    <Compile Include="Compilation\ICompilerService.cs" />
     <Compile Include="IRazorTemplate.cs" />
     <Compile Include="MicrosoftCSharpReferenceStub.cs" />
     <Compile Include="Compilation\RazorDynamicObject.cs" />
-    <Compile Include="Compilation\HasDynamicModelAttribute.cs" />
     <Compile Include="Compilation\TypeContext.cs" />
-    <Compile Include="Configuration\ConfigurationServices.cs" />
-    <Compile Include="Configuration\NamespaceConfigurationElement.cs" />
-    <Compile Include="Configuration\NamespaceConfigurationElementCollection.cs" />
-    <Compile Include="Configuration\RazorEngineConfigurationSection.cs" />
-    <Compile Include="Configuration\TemplateServiceConfigurationElement.cs" />
-    <Compile Include="Configuration\TemplateServiceConfigurationElementCollection.cs" />
-    <Compile Include="Compilation\ICompilerServiceFactory.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RazorHost.cs" />
     <Compile Include="RazorFormat.cs" />
     <Compile Include="RazorHandler.cs" />
+    <Compile Include="Templating\IRazorViewEngine.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ViewPage.cs" />
     <Compile Include="ViewPage`1.cs" />
     <Compile Include="ServiceStack\MvcWebPageRazorHost.cs" />
     <Compile Include="ServiceStack\MvcCSharpRazorCodeParser.cs" />
     <Compile Include="ServiceStack\ServiceStackCSharpRazorBuildProvider.cs" />
-    <Compile Include="ServiceStack\ViewMasterPage.cs" />
-    <Compile Include="ServiceStack\ViewMasterPage`1.cs" />
-    <Compile Include="Templating\DefaultActivator.cs" />
-    <Compile Include="Templating\DelegateActivator.cs" />
-    <Compile Include="Templating\DelegateTemplateResolver.cs" />
-    <Compile Include="Templating\IActivator.cs" />
     <Compile Include="Templating\ITemplate.cs" />
     <Compile Include="Templating\ITemplateOfT.cs" />
-    <Compile Include="Templating\ITemplateResolver.cs" />
     <Compile Include="Templating\RequireNamespacesAttribute.cs" />
     <Compile Include="Templating\TemplateBase.cs" />
-    <Compile Include="Templating\TemplateBaseOfT.cs" />
     <Compile Include="Templating\TemplateCompilationException.cs" />
     <Compile Include="Templating\TemplateParsingException.cs" />
     <Compile Include="Templating\TemplateService.cs" />
     <Compile Include="Templating\TemplateService.ServiceStack.cs" />
-    <Compile Include="Templating\TemplateServiceFactory.cs" />
     <Compile Include="Templating\TemplateWriter.cs" />
   </ItemGroup>
   <ItemGroup>

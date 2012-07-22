@@ -58,7 +58,7 @@ namespace ServiceStack.Razor
             Builder.Insert(0, contents);
         }
 
-        public virtual void Init(IViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
+        public virtual void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
         {
             this.Request = httpReq;
             this.Response = httpRes;
@@ -197,7 +197,7 @@ namespace ServiceStack.Razor
 
 		public IRazorTemplate GetRazorTemplate()
 		{
-			return RazorHost.DefaultTemplateService.GetTemplate(this.PageName);
+			return RazorHost.TemplateService.GetTemplate(this.PageName);
 		}
         
 		public virtual void DefineSection(string sectionName, Action action)

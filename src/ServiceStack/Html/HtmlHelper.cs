@@ -82,7 +82,7 @@ namespace ServiceStack.Html
 		private static readonly HtmlEncoder htmlEncoder = GetHtmlEncoder();
 
 		public bool RenderHtml { get; protected set; }
-		public IViewEngine ViewEngine { get; protected set; }
+        public IViewEngine ViewEngine { get; protected set; }
 		public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 		public virtual ViewDataDictionary ViewData { get; protected set; }

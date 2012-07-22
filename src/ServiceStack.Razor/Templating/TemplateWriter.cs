@@ -1,18 +1,18 @@
 ﻿using System;
 using System.IO;
+using ServiceStack.DataAnnotations;
+using ServiceStack.Razor.Compilation;
 
 namespace ServiceStack.Razor.Templating
 {
 	/// <summary>
     /// Defines a template writer used for helper templates.
     /// </summary>
+    [References(typeof(CompilerServiceBase))] //referenced in CompilerServiceBase
     public class TemplateWriter
     {
-        #region Fields
         private readonly Action<TextWriter> writerDelegate;
-        #endregion
 
-        #region Constructors
         /// <summary>
         /// Initialises a new instance of <see cref="TemplateWriter"/>.
         /// </summary>
@@ -24,9 +24,7 @@ namespace ServiceStack.Razor.Templating
 
             writerDelegate = writer;
         }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Executes the write delegate and returns the result of this <see cref="TemplateWriter"/>.
         /// </summary>
@@ -39,6 +37,14 @@ namespace ServiceStack.Razor.Templating
                 return writer.ToString();
             }
         }
-        #endregion
+
+        /// <summary>
+        /// Writes the helper result of the specified text writer.
+        /// </summary>
+        /// <param name="writer">The text writer to write the helper result to.</param>
+        public void WriteTo(TextWriter writer)
+        {
+            writerDelegate(writer);
+        }
     }
 }

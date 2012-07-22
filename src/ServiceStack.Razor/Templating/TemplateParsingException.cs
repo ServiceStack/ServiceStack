@@ -8,7 +8,6 @@ namespace ServiceStack.Razor.Templating
     /// </summary>
     public class TemplateParsingException : Exception
     {
-        #region Constructors
         /// <summary>
         /// Initialises a new instance of <see cref="TemplateParsingException"/>
         /// </summary>
@@ -18,9 +17,7 @@ namespace ServiceStack.Razor.Templating
             Column = error.Location.CharacterIndex;
             Line = error.Location.LineIndex;
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets the column the parsing error occured.
         /// </summary>
@@ -30,6 +27,5 @@ namespace ServiceStack.Razor.Templating
         /// Gets the line the parsing error occured.
         /// </summary>
         public int Line { get; private set; }
-        #endregion
     }
 }

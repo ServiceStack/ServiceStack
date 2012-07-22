@@ -1,4 +1,5 @@
-﻿using System.Web.Razor.Parser.SyntaxTree;
+﻿using System.CodeDom.Compiler;
+using System.Web.Razor.Parser.SyntaxTree;
 using ServiceStack.Razor.ServiceStack;
 using ServiceStack.Razor.Templating;
 using System;
@@ -16,25 +17,22 @@ namespace ServiceStack.Razor.Compilation
     /// <summary>
     /// Provides a base implementation of a compiler service.
     /// </summary>
-    public abstract class CompilerServiceBase : ICompilerService
+    public abstract class CompilerServiceBase
     {
-        #region Constructor
-        /// <summary>
-        /// Initialises a new instance of <see cref="CompilerServiceBase"/>
-        /// </summary>
-        /// <param name="codeLanguage">The code language.</param>
-        /// <param name="markupParser">The markup parser.</param>
-        protected CompilerServiceBase(RazorCodeLanguage codeLanguage, MarkupParser markupParser)
+        private readonly CodeDomProvider CodeDomProvider;
+
+        protected CompilerServiceBase(
+            CodeDomProvider codeDomProvider,
+            RazorCodeLanguage codeLanguage, MarkupParser markupParser)
         {
             if (codeLanguage == null)
                 throw new ArgumentNullException("codeLanguage");
-
+            
+            CodeDomProvider = codeDomProvider;
             CodeLanguage = codeLanguage;
             MarkupParser = markupParser ?? new HtmlMarkupParser();
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets the code language.
         /// </summary>
@@ -44,9 +42,7 @@ namespace ServiceStack.Razor.Compilation
         /// Gets the markup parser.
         /// </summary>
         public MarkupParser MarkupParser { get; private set; }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Builds a type name for the specified template type and model type.
         /// </summary>
@@ -78,12 +74,50 @@ namespace ServiceStack.Razor.Compilation
         /// <returns>The string typename (including namespace and generic type parameters).</returns>
         public abstract string BuildTypeNameInternal(Type type, bool isDynamic);
 
+
         /// <summary>
-        /// Compiles the type defined in the specified type context.
+        /// Creates the compile results for the specified <see cref="TypeContext"/>.
         /// </summary>
-        /// <param name="context">The type context which defines the type to compile.</param>
-        /// <returns>The compiled type.</returns>
-        public abstract Type CompileType(TypeContext context);
+        /// <param name="context">The type context.</param>
+        /// <returns>The compiler results.</returns>
+        private CompilerResults Compile(TypeContext context)
+        {
+            var compileUnit = GetCodeCompileUnit(
+                context.ClassName,
+                context.TemplateContent,
+                context.Namespaces,
+                context.TemplateType,
+                context.ModelType);
+
+            var @params = new CompilerParameters {
+                GenerateInMemory = true,
+                GenerateExecutable = false,
+                IncludeDebugInformation = false,
+                CompilerOptions = "/target:library /optimize"
+            };
+
+            var assemblies = CompilerServices
+                .GetLoadedAssemblies()
+                .Where(a => !a.IsDynamic)
+                .Select(a => a.Location)
+                .ToArray();
+
+            @params.ReferencedAssemblies.AddRange(assemblies);
+
+            return CodeDomProvider.CompileAssemblyFromDom(@params, compileUnit);
+        }
+
+        public Type CompileType(TypeContext context)
+        {
+            var results = Compile(context);
+
+            if (results.Errors != null && results.Errors.Count > 0)
+            {
+                throw new TemplateCompilationException(results.Errors);
+            }
+
+            return results.CompiledAssembly.GetType("CompiledRazorTemplates.Dynamic." + context.ClassName);
+        }
 
         /// <summary>
         /// Generates any required contructors for the specified type.
@@ -132,9 +166,9 @@ namespace ServiceStack.Razor.Compilation
                 throw new ArgumentException("Template is required.");
 
             templateType = templateType
-                           ?? ((modelType == null)
-                                   ? typeof(TemplateBase)
-                                   : typeof(TemplateBase<>));
+                ?? ((modelType == null)
+                        ? typeof(TemplateBase)
+                        : typeof(TemplateBase<>));
 
             var host = new MvcWebPageRazorHost(CodeLanguage, () => MarkupParser) {
                 DefaultBaseClass = BuildTypeName(templateType, modelType),
@@ -143,7 +177,7 @@ namespace ServiceStack.Razor.Compilation
                 GeneratedClassContext = new GeneratedClassContext(
                     "Execute", "Write", "WriteLiteral",
                     "WriteTo", "WriteLiteralTo",
-                    "RazorEngine.Templating.TemplateWriter",
+                    "ServiceStack.Razor.Templating.TemplateWriter",
                     "WriteSection")
             };
 
@@ -167,10 +201,10 @@ namespace ServiceStack.Razor.Compilation
             var type = result.GeneratedCode.Namespaces[0].Types[0];
             if (modelType != null)
             {
-                if (CompilerServices.IsAnonymousType(modelType))
-                {
-                    type.CustomAttributes.Add(new CodeAttributeDeclaration(new CodeTypeReference(typeof(HasDynamicModelAttribute))));
-                }
+                //if (CompilerServices.IsAnonymousType(modelType))
+                //{
+                //    type.CustomAttributes.Add(new CodeAttributeDeclaration(new CodeTypeReference(typeof(HasDynamicModelAttribute))));
+                //}
             }
 
             GenerateConstructors(CompilerServices.GetConstructors(templateType), type);
@@ -187,7 +221,6 @@ namespace ServiceStack.Razor.Compilation
 
             return result.GeneratedCode;
         }
-        #endregion
 
         public IEnumerable<T> AllNodesOfType<T>(Block block)
         {

@@ -10,7 +10,6 @@ namespace ServiceStack.Razor.Templating
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class RequireNamespacesAttribute : Attribute
     {
-        #region Constructor
         /// <summary>
         /// Initialises a new instance of <see cref="RequireNamespacesAttribute"/>
         /// </summary>
@@ -24,13 +23,10 @@ namespace ServiceStack.Razor.Templating
                     Namespaces.Add(ns);
             }
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets the set of namespaces.
         /// </summary>
         public ISet<string> Namespaces { get; private set; }
-        #endregion
     }
 }

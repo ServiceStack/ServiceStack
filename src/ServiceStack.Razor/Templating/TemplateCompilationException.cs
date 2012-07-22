@@ -10,7 +10,6 @@ namespace ServiceStack.Razor.Templating
     /// </summary>
     public class TemplateCompilationException : Exception
     {
-        #region Constructors
         /// <summary>
         /// Initialises a new instance of <see cref="TemplateCompilationException"/>
         /// </summary>
@@ -21,13 +20,10 @@ namespace ServiceStack.Razor.Templating
             var list = errors.Cast<CompilerError>().ToList();
             Errors = new ReadOnlyCollection<CompilerError>(list);
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets the collection of compiler errors.
         /// </summary>
         public ReadOnlyCollection<CompilerError> Errors { get; private set; }
-        #endregion
     }
 }

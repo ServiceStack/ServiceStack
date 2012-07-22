@@ -60,13 +60,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			const string html = "@{ Layout = \"TheLayout.cshtml\"; }This is my sample template, Hello @Model.Name!";
             RazorHost.Compile(html, "simple2");
 
-            var template = RazorHost.DefaultTemplateService.ExecuteTemplate(new { Name = "World" }, "simple2");
+            var template = RazorHost.TemplateService.ExecuteTemplate(new { Name = "World" }, "simple2");
 
 			Assert.That(template.ChildTemplate.Layout, Is.EqualTo("TheLayout.cshtml"));
 			Assert.That(template.ChildTemplate.Sections.Count, Is.EqualTo(0));
 			Assert.That(template.Result, Is.EqualTo("<html><body><div></div>This is my sample template, Hello World!</body></html>"));
 
-            template = RazorHost.DefaultTemplateService.GetTemplate("simple2");
+            template = RazorHost.TemplateService.GetTemplate("simple2");
 			Assert.That(template.Layout, Is.EqualTo("TheLayout.cshtml"));
 		}
 
@@ -76,13 +76,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			const string html = "@{ Layout = \"TheLayout.cshtml\"; }This is my sample template, @section Title {<h1>Hello @Model.Name!</h1>}";
             RazorHost.Compile(html, "simple3");
 
-            var template = RazorHost.DefaultTemplateService.ExecuteTemplate(new { Name = "World" }, "simple3");
+            var template = RazorHost.TemplateService.ExecuteTemplate(new { Name = "World" }, "simple3");
 
 			Assert.That(template.ChildTemplate.Layout, Is.EqualTo("TheLayout.cshtml"));
 			Assert.That(template.ChildTemplate.Sections.Count, Is.EqualTo(1));
 			Assert.That(template.Result, Is.EqualTo("<html><body><div><h1>Hello World!</h1></div>This is my sample template, </body></html>"));
 
-            template = RazorHost.DefaultTemplateService.GetTemplate("simple3");
+            template = RazorHost.TemplateService.GetTemplate("simple3");
 			Assert.That(template.Layout, Is.EqualTo("TheLayout.cshtml"));
 
 			var titleAction = template.Sections["Title"];
@@ -97,7 +97,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			const string html = "@{ Layout = \"TheLayout.cshtml\"; }This is my sample template, @section Title {<h1>Hello @Model.Name!</h1>}";
             RazorHost.Compile(html, "simple4");
 
-            var template = RazorHost.DefaultTemplateService.ExecuteTemplate(new { Name = "World" }, "simple4");
+            var template = RazorHost.TemplateService.ExecuteTemplate(new { Name = "World" }, "simple4");
 
 			Console.WriteLine(template.Result);
 

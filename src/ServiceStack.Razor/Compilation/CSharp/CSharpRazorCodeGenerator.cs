@@ -9,7 +9,6 @@ namespace ServiceStack.Razor.Compilation.CSharp
     /// </summary>
     public partial class CSharpRazorCodeGenerator : System.Web.Razor.Generator.CSharpRazorCodeGenerator
     {
-        #region Constructor
         /// <summary>
         /// Initializes a new instance of the <see cref="CSharpRazorCodeGenerator"/> class.
         /// </summary>
@@ -23,16 +22,12 @@ namespace ServiceStack.Razor.Compilation.CSharp
         {
             StrictMode = strictMode;
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets whether the code generator is running in strict mode.
         /// </summary>
         public bool StrictMode { get; private set; }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Visits an error generated through parsing.
         /// </summary>
@@ -42,8 +37,6 @@ namespace ServiceStack.Razor.Compilation.CSharp
             if (StrictMode)
                 throw new TemplateParsingException(err);
         }
-        #endregion
-
-	}
+    }
 
 }

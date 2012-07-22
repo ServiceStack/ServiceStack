@@ -121,6 +121,9 @@
     <Compile Include="Funq\Container.Overloads.cs">
       <DependentUpon>Container.cs</DependentUpon>
     </Compile>
+    <Compile Include="Html\IViewEngine.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="ServiceHost\ContainerTypeExtensions.cs" />
     <Compile Include="Funq\Func.cs" />
     <Compile Include="Funq\IFluentInterface.cs" />
@@ -182,7 +185,6 @@
     <Compile Include="Html\InputExtensions.cs" />
     <Compile Include="Html\LabelExtensions.cs" />
     <Compile Include="Html\TextAreaExtensions.cs" />
-    <Compile Include="Html\IViewEngine.cs" />
     <Compile Include="Markdown\MarkdownViewBase.cs" />
     <Compile Include="Html\ModelMetadata.cs" />
     <Compile Include="Html\ModelMetadataProvider.cs" />

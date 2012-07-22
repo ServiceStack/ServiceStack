@@ -1,12 +1,8 @@
-using System;
 using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
-using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.ServiceModel;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Tests;
 

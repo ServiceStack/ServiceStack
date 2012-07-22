@@ -8,7 +8,7 @@ namespace ServiceStack.Razor
 {
 	public interface IRazorTemplate : ITemplate, ITemplatePage
 	{
-	    void Init(IViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes);
+	    void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes);
 		string Layout { get; }
 		Dictionary<string, Action> Sections { get; }
 		IRazorTemplate ChildTemplate { get; set; }

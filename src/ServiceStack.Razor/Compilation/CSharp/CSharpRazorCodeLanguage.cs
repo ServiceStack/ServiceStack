@@ -5,7 +5,6 @@ namespace ServiceStack.Razor.Compilation.CSharp
 {
 	public class CSharpRazorCodeLanguage : System.Web.Razor.CSharpRazorCodeLanguage
     {
-        #region Constructor
         /// <summary>
         /// Initialises a new instance
         /// </summary>
@@ -14,16 +13,12 @@ namespace ServiceStack.Razor.Compilation.CSharp
         {
             StrictMode = strictMode;
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets whether strict mode is enabled.
         /// </summary>
         public bool StrictMode { get; private set; }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Creates the code generator.
         /// </summary>
@@ -36,6 +31,5 @@ namespace ServiceStack.Razor.Compilation.CSharp
         {
             return new CSharpRazorCodeGenerator(className, rootNamespaceName, sourceFileName, host, StrictMode);
         }
-        #endregion
     }
 }

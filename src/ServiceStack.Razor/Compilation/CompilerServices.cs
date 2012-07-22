@@ -12,12 +12,9 @@ namespace ServiceStack.Razor.Compilation
     /// </summary>
     public static class CompilerServices
     {
-        #region Fields
         private static readonly Type DynamicType = typeof(DynamicObject);
-        private static readonly Type ExpandoType = typeof (ExpandoObject);
-        #endregion
+        private static readonly Type ExpandoType = typeof(ExpandoObject);
 
-        #region Methods
         /// <summary>
         /// Determines if the specified type is an anonymous type.
         /// </summary>
@@ -56,8 +53,7 @@ namespace ServiceStack.Razor.Compilation
         /// <returns>A new random class name.</returns>
         public static string GenerateClassName()
         {
-            Guid guid = Guid.NewGuid();
-            return Regex.Replace(guid.ToString("N"), @"[^A-Za-z]*", "");
+            return Regex.Replace(Guid.NewGuid().ToString("N"), @"[^A-Za-z]*", "");
         }
 
         /// <summary>
@@ -85,6 +81,5 @@ namespace ServiceStack.Razor.Compilation
             var domain = AppDomain.CurrentDomain;
             return domain.GetAssemblies();
         }
-        #endregion
     }
 }

@@ -158,20 +158,26 @@ namespace ServiceStack.WebHost.Endpoints
 			this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
 		}
 
+        public static System.Configuration.Configuration GetAppConfig()
+        {
+            System.Reflection.Assembly entryAssembly;
+            
+            //Read the user-defined path in the Web.Config
+            if (EndpointHost.AppHost is AppHostBase)
+                return WebConfigurationManager.OpenWebConfiguration("~/");
+            
+            if ((entryAssembly = System.Reflection.Assembly.GetEntryAssembly()) != null)
+                return ConfigurationManager.OpenExeConfiguration(entryAssembly.Location);
+            
+            return null;
+        }
+
 		private static void InferHttpHandlerPath()
 		{
 			try
 			{
-				System.Reflection.Assembly entryAssembly;
-				System.Configuration.Configuration config;
-
-				//Read the user-defined path in the Web.Config
-				if (EndpointHost.AppHost is AppHostBase)
-					config = WebConfigurationManager.OpenWebConfiguration("~/");
-				else if ((entryAssembly = System.Reflection.Assembly.GetEntryAssembly()) != null)
-					config = ConfigurationManager.OpenExeConfiguration(entryAssembly.Location);
-				else
-					return;
+				var config = GetAppConfig();
+                if (config == null) return;
 
 				SetPathsFromConfiguration(config, null);
 

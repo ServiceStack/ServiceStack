@@ -3,23 +3,20 @@ using System.Collections.Generic;
 
 namespace ServiceStack.Razor.Compilation
 {
-	/// <summary>
+    /// <summary>
     /// Defines a type context used for compilation.
     /// </summary>
     public class TypeContext
     {
-        #region Constructor
         /// <summary>
         /// Initialises a new instance of <see cref="TypeContext"/>.
         /// </summary>
         public TypeContext()
         {
             ClassName = CompilerServices.GenerateClassName();
-            Namespaces = new HashSet<string>();   
+            Namespaces = new HashSet<string>();
         }
-        #endregion
 
-        #region Properties
         /// <summary>
         /// Gets or sets the class name.
         /// </summary>
@@ -44,6 +41,5 @@ namespace ServiceStack.Razor.Compilation
         /// Gets or sets the template type.
         /// </summary>
         public Type TemplateType { get; set; }
-        #endregion
     }
 }

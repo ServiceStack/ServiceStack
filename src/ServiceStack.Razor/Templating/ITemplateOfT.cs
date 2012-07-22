@@ -6,11 +6,9 @@
     /// <typeparam name="TModel">The model type.</typeparam>
     public interface ITemplate<TModel> : ITemplate
     {
-        #region Properties
         /// <summary>
         /// Gets or sets the template model.
         /// </summary>
         TModel Model { get; set; }
-        #endregion
     }
 }

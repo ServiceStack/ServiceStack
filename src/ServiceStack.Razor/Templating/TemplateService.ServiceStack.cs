@@ -75,8 +75,6 @@ namespace ServiceStack.Razor.Templating
 
 	public partial class TemplateService
 	{
-		public RazorFormat RazorFormat { get; set; }
-
 		/// <summary>
 		/// Runs and returns the template with the specified name.
 		/// </summary>
@@ -94,7 +92,7 @@ namespace ServiceStack.Razor.Templating
 			SetModel(instance, model);
 
 			var razorTemplate = (IRazorTemplate)instance;
-            razorTemplate.Init(RazorFormat, new ViewDataDictionary<T>(model), httpReq, httpRes);
+            razorTemplate.Init(viewEngine, new ViewDataDictionary<T>(model), httpReq, httpRes);
 	
 			instance.Execute(); 
 

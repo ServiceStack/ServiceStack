@@ -9,14 +9,11 @@ namespace ServiceStack.Razor.Compilation
     /// </summary>
     internal class RazorDynamicObject : DynamicObject
     {
-        #region Properties
         /// <summary>
         /// Gets or sets the model.
         /// </summary>
         public object Model { get; set; }
-        #endregion
 
-        #region Methods
         /// <summary>
         /// Gets the value of the specified member.
         /// </summary>
@@ -52,16 +49,14 @@ namespace ServiceStack.Razor.Compilation
             return true;
         }
 
-		public override bool TryConvert(ConvertBinder binder, out object result)
-		{
-			if (binder.ReturnType == Model.GetType())
-			{
-				result = Model;
-				return true;
-			}
-			return base.TryConvert(binder, out result);
-		}
-
-        #endregion
+        public override bool TryConvert(ConvertBinder binder, out object result)
+        {
+            if (binder.ReturnType == Model.GetType())
+            {
+                result = Model;
+                return true;
+            }
+            return base.TryConvert(binder, out result);
+        }
     }
 }
