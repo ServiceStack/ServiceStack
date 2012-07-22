@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
@@ -158,7 +159,18 @@ namespace ServiceStack.WebHost.Endpoints
 			this.DefaultJsonpCacheExpiration = instance.DefaultJsonpCacheExpiration;
 		}
 
-        public static System.Configuration.Configuration GetAppConfig()
+        public static string GetAppConfigPath()
+        {
+            var configPath = "~/web.config".MapHostAbsolutePath();
+            if (File.Exists(configPath))
+                return configPath;
+
+            var appHostDll = new FileInfo(EndpointHost.AppHost.GetType().Assembly.Location).Name;
+            configPath = "~/{0}.config".Fmt(appHostDll).MapAbsolutePath();
+            return File.Exists(configPath) ? configPath : null;
+        }
+
+	    private static System.Configuration.Configuration GetAppConfig()
         {
             System.Reflection.Assembly entryAssembly;
             

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -38,6 +38,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RazorAppHost.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="SecureTests.cs" />
   </ItemGroup>
@@ -51,13 +52,38 @@
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
+      <Project>{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}</Project>
+      <Name>ServiceStack.Razor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
       <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
       <Name>ServiceStack.ServiceInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
+      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Name>ServiceStack</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack.WebHost.Endpoints.Tests\ServiceStack.WebHost.Endpoints.Tests.csproj">
       <Project>{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}</Project>
       <Name>ServiceStack.WebHost.Endpoints.Tests</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\Shared\SimplyLayout.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CatchAll.cshtml" />
+    <EmbeddedResource Include="Views\_Layout.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CatchAllDynamic.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ViewThatUsesLayout.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <EmbeddedResource Include="Views\ViewThatUsesLayoutAndModel.cshtml" />
   </ItemGroup>
 </Project>

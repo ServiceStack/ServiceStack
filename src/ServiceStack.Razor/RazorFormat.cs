@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using System.Xml.Linq;
 using ServiceStack.Common;
 using ServiceStack.Configuration;
@@ -66,8 +65,11 @@ namespace ServiceStack.Razor
 
         public HashSet<string> TemplateNamespaces { get; set; }
 
+        public bool WatchForModifiedPages { get; set; }
+
         public RazorFormat()
         {
+            this.WatchForModifiedPages = true;
             this.FindRazorPagesFn = FindRazorPages;
             this.ReplaceTokens = new Dictionary<string, string>();
             this.TemplateNamespaces = new HashSet<string> {
@@ -83,16 +85,20 @@ namespace ServiceStack.Razor
         private void RegisterNamespacesInConfig()
         {
             //Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
-            var xml = "~/web.config".MapServerPath().ReadAllText();
-            var doc = XElement.Parse(xml);
-            doc.AnyElement("system.web.webPages.razor")
-                .AnyElement("pages")
-                    .AnyElement("namespaces")
-                        .AllElements("add").ToList()
-                            .ForEach(x => TemplateNamespaces.Add(x.AnyAttribute("namespace").Value));
+            var configPath = EndpointHostConfig.GetAppConfigPath();
+            if (configPath != null)
+            {
+                var xml = configPath.ReadAllText();
+                var doc = XElement.Parse(xml);
+                doc.AnyElement("system.web.webPages.razor")
+                    .AnyElement("pages")
+                        .AnyElement("namespaces")
+                            .AllElements("add").ToList()
+                                .ForEach(x => TemplateNamespaces.Add(x.AnyAttribute("namespace").Value));
+            }
 
             //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
-            if (ConfigUtils.GetAppSetting(NamespacesAppSettingsKey) != null)
+            if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
             {
                 ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)
                     .ForEach(x => TemplateNamespaces.Add(x));
@@ -125,14 +131,16 @@ namespace ServiceStack.Razor
                 if ((razorPage = GetViewPageByResponse(dto, httpReq)) == null)
                     return false;
 
-                ReloadModifiedPageAndTemplates(razorPage);
+                if (WatchForModifiedPages)
+                    ReloadModifiedPageAndTemplates(razorPage);
 
                 return ProcessRazorPage(httpReq, razorPage, dto, httpRes);
             });
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
                 ViewPage razorPage;
-                if (filePath == null || (razorPage = GetContentPage(filePath.WithoutExtension())) == null)
+                if (filePath == null || (razorPage = GetContentPage(filePath.WithoutExtension()) 
+                      ?? GetContentResourcePage(pathInfo)) == null)
                     return null;
 
                 return new RazorHandler {
@@ -170,8 +178,11 @@ namespace ServiceStack.Razor
             var viewPath = Path.Combine(di.FullName, "Views");
             var viewSharedPath = Path.Combine(viewPath, "Shared");
 
+            var hasWebPages = false;
             foreach (var razorFile in razorFiles)
             {
+                hasWebPages = true;
+
                 var fileInfo = new FileInfo(razorFile);
                 var pageName = fileInfo.Name.WithoutExtension();
                 var pageContents = File.ReadAllText(razorFile);
@@ -188,6 +199,45 @@ namespace ServiceStack.Razor
                     TemplatePath = templatePath,
                     LastModified = fileInfo.LastWriteTime,
                 };
+            }
+            
+            if (!hasWebPages) WatchForModifiedPages = false;
+
+            //Load embedded Resource Pages
+            var appHostType = EndpointHost.AppHost.GetType();
+            if (appHostType.Namespace != null)
+            {
+                viewPath = "Views";
+                viewSharedPath = Path.Combine(viewPath, "Shared");
+
+                var allResourceNames = appHostType.Assembly.GetManifestResourceNames();
+                foreach (var resourceName in allResourceNames)
+                {
+                    if (resourceName.EndsWith(".cshtml") || resourceName.EndsWith(".rzr"))
+                    {
+                        var parts = resourceName.SplitOnLast(".");
+                        var relativeName = parts[0].Replace(appHostType.Namespace + ".", "");
+                        var pageName = relativeName.SplitOnLast(".").Last();
+                        var razorDirPath = relativeName.Replace('.', Path.DirectorySeparatorChar);
+                        var razorFile = razorDirPath + "." + parts[1];
+                        
+                        var pageType = RazorPageType.ContentPage;
+                        if (razorFile.StartsWithIgnoreCase(viewSharedPath))
+                            pageType = RazorPageType.SharedViewPage;
+                        else if (razorFile.StartsWithIgnoreCase(viewPath))
+                            pageType = RazorPageType.ViewPage;
+
+                        var pageContents = appHostType.Assembly.GetManifestResourceStream(resourceName)
+                            .ReadFully().FromUtf8Bytes();
+
+                        var templatePath = GetTemplateResourcePath(razorDirPath);
+
+                        yield return new ViewPage(this, razorFile, pageName, pageContents, pageType) {
+                            TemplatePath = templatePath,
+                            LastModified = EndpointHost.StartedAt,
+                        };
+                    }
+                }
             }
         }
 
@@ -216,6 +266,35 @@ namespace ServiceStack.Razor
             }
 
             templatePathsNotFound.Add(fileDirPath);
+            return null;
+        }
+
+        private string GetTemplateResourcePath(string resourcePath)
+        {
+            if (templatePathsNotFound.Contains(resourcePath)) return null;
+
+            var appHostAssembly = EndpointHost.AppHost.GetType().Assembly;
+
+            var templateDirPath = resourcePath;
+            string templatePath;
+
+            while (templateDirPath != null && appHostAssembly.GetManifestResourceInfo(
+                Path.Combine(templateDirPath, TemplateName).Replace(Path.DirectorySeparatorChar, '.')) == null)
+            {
+                if (templatePathsFound.TryGetValue(templateDirPath, out templatePath))
+                    return templatePath;
+
+                templateDirPath = templateDirPath.ParentDirectory();
+            }
+
+            if (templateDirPath != null)
+            {
+                templatePath = Path.Combine(templateDirPath, TemplateName);
+                templatePathsFound[templateDirPath] = templatePath;
+                return templatePath;
+            }
+
+            templatePathsNotFound.Add(resourcePath);
             return null;
         }
 
@@ -325,6 +404,7 @@ namespace ServiceStack.Razor
             catch (Exception ex)
             {
                 var errorViewPage = new ErrorViewPage(this, ex) {
+                    Name = page.Name,
                     PageType = page.PageType,
                     FilePath = page.FilePath,
                 };
@@ -387,6 +467,14 @@ namespace ServiceStack.Razor
         {
             ViewPage razorPage;
             ContentPages.TryGetValue(pageFilePath, out razorPage);
+            return razorPage;
+        }
+
+        static readonly char[] DirSeps = new[] { '\\', '/' };
+        public ViewPage GetContentResourcePage(string pathInfo)
+        {
+            ViewPage razorPage;
+            ContentPages.TryGetValue(pathInfo.TrimStart(DirSeps), out razorPage);
             return razorPage;
         }
 

@@ -1,17 +1,11 @@
 using System;
-using System.Diagnostics;
-using ServiceStack.Configuration;
 using NUnit.Framework;
-using ServiceStack.ServiceClient.Web;
-using ServiceStack.ServiceInterface.Auth;
-using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
-using System.Collections.Generic;
 using ServiceStack.WebHost.Endpoints.Tests;
 
 namespace ServiceStack.Auth.Tests
 {
-	[TestFixture()]
+	[TestFixture]
 	public class SecureTests:TestBase
 	{
 		[Test]

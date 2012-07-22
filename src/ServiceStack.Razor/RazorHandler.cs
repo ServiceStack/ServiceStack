@@ -1,4 +1,5 @@
 using System.Net;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support;
@@ -15,7 +16,9 @@ namespace ServiceStack.Razor
 
 		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			var contentPage = RazorPage;
+            httpRes.ContentType = ContentType.Html;
+            
+            var contentPage = RazorPage;
 			if (contentPage == null)
 			{
 				var pageFilePath = this.FilePath.WithoutExtension();
@@ -31,7 +34,6 @@ namespace ServiceStack.Razor
 
 			if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
 				return;
-
 
 		    var modelType = RazorPage.GetRazorTemplate().ModelType;
             var model = modelType == typeof(DynamicRequestObject) 
