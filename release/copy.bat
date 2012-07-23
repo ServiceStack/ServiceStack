@@ -1,4 +1,5 @@
 COPY ..\NuGet\ServiceStack\lib\net35\*  latest\ServiceStack
+COPY ..\NuGet\ServiceStack\lib\net40\*  latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Common\lib\net35\*  latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Mvc\lib\net4\*  latest\ServiceStack
 COPY ..\NuGet\ServiceStack.Plugins.ProtoBuf\lib\net35\*  latest\ServiceStack

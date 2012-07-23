@@ -157,6 +157,35 @@ namespace ServiceStack.Common
                 && !type.Namespace.StartsWith("System.")
                 && type.Name.IndexOfAny(SystemTypeChars) == -1;
         }
+
+        public static bool IsInt(this string text)
+        {
+            if (string.IsNullOrEmpty(text)) return false;
+            int ret;
+            return int.TryParse(text, out ret);
+        }
+
+        public static int ToInt(this string text)
+        {
+            return int.Parse(text);
+        }
+
+        public static int ToInt(this string text, int defaultValue)
+        {
+            int ret;
+            return int.TryParse(text, out ret) ? ret : defaultValue;
+        }
+
+        public static long ToInt64(this string text)
+        {
+            return long.Parse(text);
+        }
+
+        public static long ToInt64(this string text, long defaultValue)
+        {
+            long ret;
+            return long.TryParse(text, out ret) ? ret : defaultValue;
+        }
     }
 
 }

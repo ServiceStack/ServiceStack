@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
-using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.WebHost.Endpoints.Extensions;
-using HttpResponseExtensions = ServiceStack.WebHost.Endpoints.Extensions.HttpResponseExtensions;
 
 namespace ServiceStack.ServiceInterface
 {

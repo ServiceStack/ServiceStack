@@ -201,10 +201,11 @@ namespace ServiceStack.Razor.Compilation
             var type = result.GeneratedCode.Namespaces[0].Types[0];
             if (modelType != null)
             {
-                //if (CompilerServices.IsAnonymousType(modelType))
-                //{
-                //    type.CustomAttributes.Add(new CodeAttributeDeclaration(new CodeTypeReference(typeof(HasDynamicModelAttribute))));
-                //}
+                if (CompilerServices.IsAnonymousType(modelType))
+                {
+                    type.CustomAttributes.Add(new CodeAttributeDeclaration(
+                        new CodeTypeReference(typeof(HasDynamicModelAttribute))));
+                }
             }
 
             GenerateConstructors(CompilerServices.GetConstructors(templateType), type);

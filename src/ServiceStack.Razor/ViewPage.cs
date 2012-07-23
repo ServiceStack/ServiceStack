@@ -8,57 +8,24 @@ using ServiceStack.Html;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Razor.Templating;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Razor
 {
-    public class ViewPage : TemplateBase<DynamicRequestObject>, IRazorTemplate
+    public class ViewPage : ViewPageBase<DynamicRequestObject>
 	{
 		public RazorFormat RazorFormat { get; set; }
 
-        public UrlHelper Url = new UrlHelper();
         public HtmlHelper Html = new HtmlHelper();
-
-        public IHttpRequest Request { get; set; }
-
-        public IHttpResponse Response { get; set; }
-
-        public string Layout { get; set; }
-
-        public Dictionary<string, object> ScopeArgs { get; set; }
 
         public new dynamic Model { get; set; }
 
-        public Type ModelType
+        public override Type ModelType
         {
             get { return typeof(DynamicRequestObject); }
         }
 
-        private IAppHost appHost;
-        public IAppHost AppHost
-        {
-            get { return appHost ?? EndpointHost.AppHost; }
-            set { appHost = value; }
-        }
-
-        public T Get<T>()
-        {
-            return this.AppHost.TryResolve<T>();
-        }
-
-        public string Href(string url)
-        {
-            return Url.Content(url);
-        }
-
-        public void Prepend(string contents)
-        {
-            if (contents == null) return;
-            Builder.Insert(0, contents);
-        }
-
-        public virtual void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
+        public override void Init(IRazorViewEngine viewEngine, ViewDataDictionary viewData, IHttpRequest httpReq, IHttpResponse httpRes)
         {
             this.Request = httpReq;
             this.Response = httpRes;

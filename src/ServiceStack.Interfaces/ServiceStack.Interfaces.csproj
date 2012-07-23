@@ -376,6 +376,8 @@
     <Compile Include="Messaging\UnRetryableMessagingException.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="OrmLite\DbConnectionFactory.cs" />
+    <Compile Include="OrmLite\IDbConnectionFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Redis\Generic\IRedisHash.Generic.cs">
       <SubType>Code</SubType>

@@ -161,6 +161,8 @@ namespace ServiceStack.WebHost.Endpoints
 
         public static string GetAppConfigPath()
         {
+            if (EndpointHost.AppHost == null) return null;
+
             var configPath = "~/web.config".MapHostAbsolutePath();
             if (File.Exists(configPath))
                 return configPath;

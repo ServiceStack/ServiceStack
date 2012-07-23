@@ -1,4 +1,5 @@
-﻿using System.Dynamic;
+﻿using System.Collections.Generic;
+using System.Dynamic;
 using System.Web;
 using ServiceStack.Html;
 using System;
@@ -8,6 +9,81 @@ using ServiceStack.Razor.Compilation;
 
 namespace ServiceStack.Razor.Templating
 {
+    /// <summary>
+    /// Defines an attribute that marks the presence of a dynamic model in a template.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public sealed class HasDynamicModelAttribute : Attribute {}
+
+    public abstract partial class TemplateBase
+    {
+        [ThreadStatic] public static dynamic ViewBag;
+
+        private Dictionary<string, Action> sections;
+        public Dictionary<string, Action> Sections
+        {
+            get { return sections ?? (sections = new Dictionary<string, Action>()); }
+        }
+
+        [ThreadStatic] private static string childBody;
+        [ThreadStatic] private static IRazorTemplate childTemplate;
+
+        public IRazorTemplate ChildTemplate
+        {
+            get { return childTemplate; }
+            set
+            {
+                childTemplate = value;
+                childBody = childTemplate.Result;
+            }
+        }
+
+        public void WriteSection(string name, Action contents)
+        {
+            if (name == null || contents == null)
+                return;
+
+            Sections[name] = contents;
+        }
+
+        public string RenderBody()
+        {
+            return childBody;
+        }
+
+        public string RenderSection(string sectionName)
+        {
+            return RenderSection(sectionName, false);
+        }
+
+        public string RenderSection(string sectionName, bool required)
+        {
+            if (sectionName == null)
+                throw new ArgumentNullException("sectionName");
+
+            Action renderSection;
+            this.Sections.TryGetValue(sectionName, out renderSection);
+
+            if (renderSection == null)
+            {
+                if (childTemplate == null) return null;
+
+                childTemplate.Sections.TryGetValue(sectionName, out renderSection);
+
+                if (renderSection == null)
+                {
+                    if (required)
+                        throw new ApplicationException("Section not defined: " + sectionName);
+                    return null;
+                }
+            }
+
+            renderSection();
+
+            return null;
+        }
+    }
+
     /// <summary>
     /// Provides a base implementation of a template with a model.
     /// </summary>
@@ -20,6 +96,12 @@ namespace ServiceStack.Razor.Templating
         /// Gets whether this template uses a dynamic model.
         /// </summary>
         protected bool HasDynamicModel { get; private set; }
+        
+        protected TemplateBase()
+        {
+            HasDynamicModel = GetType()
+                .IsDefined(typeof(HasDynamicModelAttribute), true);
+        }
 
         /// <summary>
         /// Gets or sets the model.

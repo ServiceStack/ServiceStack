@@ -30,10 +30,12 @@ namespace ServiceStack.Razor
 				return;
 			}
 
-			RazorFormat.ReloadModifiedPageAndTemplates(contentPage);
+            if (RazorFormat.WatchForModifiedPages)
+			    RazorFormat.ReloadModifiedPageAndTemplates(contentPage);
 
-			if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
-				return;
+            //Add extensible way to control caching
+            //if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
+            //    return;
 
 		    var modelType = RazorPage.GetRazorTemplate().ModelType;
             var model = modelType == typeof(DynamicRequestObject) 

@@ -81,6 +81,7 @@
     <Compile Include="Compilation\CSharp\CSharpDirectCompilerService.cs" />
     <Compile Include="Compilation\CSharp\CSharpRazorCodeGenerator.cs" />
     <Compile Include="Compilation\CSharp\CSharpRazorCodeLanguage.cs" />
+    <Compile Include="Dapper\SqlMapper.cs" />
     <Compile Include="DynamicRequestObject.cs" />
     <Compile Include="ErrorViewPage.cs" />
     <Compile Include="ServiceStack\CSharpRazorCodeGenerator.cs" />
@@ -98,6 +99,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewPage.cs" />
+    <Compile Include="ViewPageBase.cs" />
     <Compile Include="ViewPage`1.cs" />
     <Compile Include="ServiceStack\MvcWebPageRazorHost.cs" />
     <Compile Include="ServiceStack\MvcCSharpRazorCodeParser.cs" />
@@ -120,6 +122,10 @@
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.ServiceInterface\ServiceStack.ServiceInterface.csproj">
+      <Project>{5A315F92-80D2-4C60-A5A4-22E027AC7E7E}</Project>
+      <Name>ServiceStack.ServiceInterface</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>

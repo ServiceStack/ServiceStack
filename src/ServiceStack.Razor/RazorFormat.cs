@@ -14,6 +14,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.Razor
 {
@@ -300,7 +301,8 @@ namespace ServiceStack.Razor
 
         public bool ProcessRazorPage(IHttpRequest httpReq, ViewPage razorPage, object dto, IHttpResponse httpRes)
         {
-            httpRes.AddHeaderLastModified(razorPage.GetLastModified());
+            //Add extensible way to control caching
+            //httpRes.AddHeaderLastModified(razorPage.GetLastModified());
 
             var templatePath = razorPage.TemplatePath;
             if (httpReq != null && httpReq.QueryString["format"] != null)
@@ -313,6 +315,13 @@ namespace ServiceStack.Razor
             var html = template.Result;
             var htmlBytes = html.ToUtf8Bytes();
             httpRes.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
+
+            var disposable = template as IDisposable;
+            if (disposable != null)
+            {
+                disposable.Dispose();
+            }
+            httpRes.EndServiceStackRequest(skipHeaders:true);
 
             return true;
         }
