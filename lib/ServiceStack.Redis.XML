@@ -190,6 +190,11 @@
             </summary>
             <param name="command"></param>
         </member>
+        <member name="M:ServiceStack.Redis.RedisClient.New">
+            <summary>
+            Creates a new instance of the Redis Client from NewFactoryFn. 
+            </summary>
+        </member>
         <member name="T:ServiceStack.Redis.Generic.RedisTypedClient`1">
             <summary>
             Allows you to get Redis value operations to operate against POCO types.
