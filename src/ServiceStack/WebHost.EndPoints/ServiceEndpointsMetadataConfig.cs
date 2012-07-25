@@ -14,8 +14,8 @@ namespace ServiceStack.WebHost.Endpoints
 			return new ServiceEndpointsMetadataConfig
 			{
 				DefaultMetadataUri = "/metadata",
-				Soap11 = new SoapMetadataConfig("/soap11/syncreply.svc", "/soap11/asynconeway.svc", "/soap11/metadata", "soap11"),
-				Soap12 = new SoapMetadataConfig("/soap12/syncreply.svc", "/soap12/asynconeway.svc", "/soap12/metadata", "soap12"),
+				Soap11 = new SoapMetadataConfig("/soap11", "/soap11", "/soap11/metadata", "soap11"),
+				Soap12 = new SoapMetadataConfig("/soap12", "/soap12", "/soap12/metadata", "soap12"),
 				Xml = new MetadataConfig("/xml/syncreply", "/xml/asynconeway", "/xml/metadata"),
 				Json = new MetadataConfig("/json/syncreply", "/json/asynconeway", "/json/metadata"),
 				Jsv = new MetadataConfig("/jsv/syncreply", "/jsv/asynconeway", "/jsv/metadata"),

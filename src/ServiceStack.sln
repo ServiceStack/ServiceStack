@@ -24,7 +24,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
 		..\build\build.bat = ..\build\build.bat
-		..\NuGet\ServiceStack.Client.Silverlight\servicestack.client.silverlight.nuspec = ..\NuGet\ServiceStack.Client.Silverlight\servicestack.client.silverlight.nuspec
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
 		..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec = ..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec
 		..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec = ..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec
