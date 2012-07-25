@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Web;
 using ServiceStack.CacheAccess;
-using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
@@ -12,7 +10,6 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceInterface
 {
