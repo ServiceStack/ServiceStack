@@ -1,5 +1,5 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="../../tests/ServiceStack.WebHost.Endpoints.Tests/RemoteEndDropsConnectionTests.cs">
     <Files>
       <File FileName="../ServiceStack.Common/Messaging/InMemoryMessageQueueClient.cs" Line="6" Column="19" />
