@@ -65,6 +65,8 @@ namespace ServiceStack.ServiceClient.Web
 
         internal class RequestState<TResponse> : IDisposable
         {
+            private bool _timedOut; // Pass the correct error back even on Async Calls
+
             public RequestState()
             {
                 BufferRead = new byte[BufferSize];
@@ -126,13 +128,20 @@ namespace ServiceStack.ServiceClient.Web
                 if (this.OnError == null)
                     return;
 
+                Exception toReturn = ex;
+                if (_timedOut)
+                {
+                    WebException we = new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
+                    toReturn = we;
+                }
+
 #if SILVERLIGHT
                 if (this.HandleCallbackOnUIThread)
-                    System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnError(response, ex));
+                    System.Windows.Deployment.Current.Dispatcher.BeginInvoke(() => this.OnError(response, toReturn));
                 else
-                    this.OnError(response, ex);
+                    this.OnError(response, toReturn);
 #else
-                OnError(response, ex);
+                OnError(response, toReturn);
 #endif
             }
 
@@ -147,6 +156,7 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     if (this.WebRequest != null)
                     {
+                        _timedOut = true;
                         this.WebRequest.Abort();
                     }
                 }
