@@ -141,5 +141,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
+        public static IEnumerable RestClients
+        {
+            get
+            {
+                //Seriously retarded workaround for some devs idea who thought this should
+                //be run for all test fixtures, not just this one.
+
+                return new Func<IServiceClient>[] {
+					() => new JsonServiceClient(ListeningOn),
+					() => new JsvServiceClient(ListeningOn),
+					() => new XmlServiceClient(ListeningOn),
+				};
+            }
+        }
+
+        [Test, TestCaseSource(typeof(UserServiceValidationTests), "RestClients")]
+        public void Throws_validation_exception_even_if_AlwaysSendBasicAuthHeader_is_false(Func<IServiceClient> factory)
+        {
+            try
+            {
+                var client = (ServiceClientBase)factory();
+                client.AlwaysSendBasicAuthHeader = false;
+                var response = client.Get<OperationResponse>("UserValidation");
+                Assert.Fail("Should throw Validation Exception");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+                Assert.That(ex.StatusDescription, Is.EqualTo(ExpectedErrorCode));
+            }
+        }
     }
 }
