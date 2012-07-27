@@ -365,18 +365,13 @@ namespace ServiceStack.ServiceClient.Web
                         OnAuthenticationRequired(client);
                     }
 
-                    try
+                    var webResponse = client.GetResponse();
+                    ApplyWebResponseFilters(webResponse);
+                    using (var responseStream = webResponse.GetResponseStream())
                     {
-
-                        var webResponse = client.GetResponse();
-                        ApplyWebResponseFilters(webResponse);
-                        using (var responseStream = webResponse.GetResponseStream())
-                        {
-                            response = DeserializeFromStream<TResponse>(responseStream);
-                            return true;
-                        }
+                        response = DeserializeFromStream<TResponse>(responseStream);
+                        return true;
                     }
-                    catch { /* Ignore deserializing error exceptions */ }
                 }
             }
             catch (Exception subEx)
