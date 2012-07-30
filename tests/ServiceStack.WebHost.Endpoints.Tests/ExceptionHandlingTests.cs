@@ -35,6 +35,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			throw new HttpError(System.Net.HttpStatusCode.BadRequest, "CanNotExecute", "Failed to execute!");
 		}
 
+        public override object OnDelete(User request)
+        {
+            throw new HttpError(System.Net.HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
+        }
+
 		public override object OnPut(User request)
 		{
 			throw new ArgumentException();
@@ -116,6 +121,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
 			}
 		}
+
+        [Test, TestCaseSource("ServiceClients")]
+        public void Handles_Thrown_Http_Error_With_Forbidden_status_code(IRestClient client)
+        {
+            try
+            {
+                client.Delete<UserResponse>("/users");
+                Assert.Fail();
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+                Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Forbidden));
+                Assert.That(ex.Message, Is.EqualTo("CanNotExecute"));
+            }
+        }
 
 		[Test, TestCaseSource("ServiceClients")]
 		public void Handles_Normal_Exception(IRestClient client)

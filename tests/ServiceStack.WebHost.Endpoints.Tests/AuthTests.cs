@@ -16,6 +16,7 @@ using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    [RestService("/secured")]
 	public class Secured
 	{
 		public string Name { get; set; }
@@ -29,12 +30,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	}
 
 	[Authenticate]
-	public class SecuredService : ServiceBase<Secured>
+	public class SecuredService : RestServiceBase<Secured>
 	{
-		protected override object Run(Secured request)
+		public override object OnPost(Secured request)
 		{
 			return new SecuredResponse { Result = request.Name };
 		}
+
+        public override object OnGet(Secured request)
+        {
+            throw new ArgumentException("unicorn nuggets");
+        }
 	}
 
 	public class RequiresRole
@@ -301,5 +307,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 
+        [Test]
+        public void Exceptions_thrown_are_received_by_client_when_AlwaysSendBasicAuthHeader_is_false()
+        {
+            try
+            {
+                var client = (IRestClient)GetClientWithUserPassword();
+                ((ServiceClientBase)client).AlwaysSendBasicAuthHeader = false;
+                var response = client.Get<SecuredResponse>("/secured");
+
+                Assert.Fail("Should have thrown");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.ErrorMessage, Is.EqualTo("unicorn nuggets"));
+            }
+        }
+
+        [Test]
+        public void Exceptions_thrown_are_received_by_client_when_AlwaysSendBasicAuthHeader_is_true()
+        {
+            try
+            {
+                var client = (IRestClient)GetClientWithUserPassword();
+                ((ServiceClientBase)client).AlwaysSendBasicAuthHeader = true;
+                var response = client.Get<SecuredResponse>("/secured");
+
+                Assert.Fail("Should have thrown");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.ErrorMessage, Is.EqualTo("unicorn nuggets"));
+            }
+        }
 	}
 }
