@@ -295,6 +295,31 @@
             <param name="utf32"></param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.Text.JsonExtensions.Get``1(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+            <summary>
+            Get JSON string value converted to T
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.JsonExtensions.Get(System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+            <summary>
+            Get JSON string value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.JsonObject.GetUnescaped(System.String)">
+            <summary>
+            Get unescaped string value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.JsonObject.Child(System.String)">
+            <summary>
+            Get unescaped string value
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.JsonObject.Item(System.String)">
+            <summary>
+            Get JSON string value
+            </summary>
+        </member>
         <member name="T:ServiceStack.Text.Controller.PathInfo">
             <summary>
             Class to hold  
