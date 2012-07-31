@@ -160,6 +160,11 @@
   <ItemGroup>
     <Content Include="Views\Shared\HtmlReport.cshtml" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Embedded\CatchEmbedded.cshtml" />
+    <EmbeddedResource Include="Embedded\Views\Rockstars.cshtml" />
+    <EmbeddedResource Include="Embedded\Views\Shared\HtmlReport.cshtml" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
   <ProjectExtensions>
