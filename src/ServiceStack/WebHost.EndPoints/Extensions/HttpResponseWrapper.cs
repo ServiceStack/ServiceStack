@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Web;
-using ServiceStack.Common.Web;
-using ServiceStack.Logging;
-using ServiceStack.Net30;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Extensions
 {
