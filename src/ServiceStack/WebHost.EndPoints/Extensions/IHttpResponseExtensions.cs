@@ -321,7 +321,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("<ResponseStatus>");
 			sb.AppendFormat("<ErrorCode>{0}</ErrorCode>\n", ex.GetType().Name.EncodeXml());
 			sb.AppendFormat("<Message>{0}</Message>\n", ex.Message.EncodeXml());
-			sb.AppendFormat("<StackTrace>{0}</StackTrace>\n", ex.StackTrace.EncodeXml());
+            if (EndpointHost.Config.DebugMode) sb.AppendFormat("<StackTrace>{0}</StackTrace>\n", ex.StackTrace.EncodeXml());
 			sb.AppendLine("</ResponseStatus>");
 			sb.AppendFormat("</{0}Response>", operationName);
 
@@ -335,7 +335,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("\"ResponseStatus\":{");
 			sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
 			sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
-			sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
+            if (EndpointHost.Config.DebugMode) sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
 			sb.AppendLine("}");
 			sb.AppendLine("}");
 
@@ -349,7 +349,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.Append("ResponseStatus:{");
 			sb.AppendFormat("ErrorCode:{0},", ex.GetType().Name.EncodeJsv());
 			sb.AppendFormat("Message:{0},", ex.Message.EncodeJsv());
-			sb.AppendFormat("StackTrace:{0}", ex.StackTrace.EncodeJsv());
+            if (EndpointHost.Config.DebugMode) sb.AppendFormat("StackTrace:{0}", ex.StackTrace.EncodeJsv());
 			sb.Append("}");
 			sb.Append("}");
 

@@ -68,6 +68,16 @@ namespace ServiceStack.ServiceInterface
 
         public IRequestContext RequestContext { get; set; }
 
+        public IHttpRequest Request
+        {
+            get { return RequestContext.Get<IHttpRequest>(); }
+        }
+
+        public IHttpResponse Response
+        {
+            get { return RequestContext.Get<IHttpResponse>(); }
+        }
+
         public ISessionFactory SessionFactory { get; set; }
 
         public IRequestLogger RequestLogger { get; set; }
