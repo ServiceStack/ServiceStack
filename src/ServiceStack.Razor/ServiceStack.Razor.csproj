@@ -113,6 +113,21 @@
     <Compile Include="Templating\TemplateService.cs" />
     <Compile Include="Templating\TemplateService.ServiceStack.cs" />
     <Compile Include="Templating\TemplateWriter.cs" />
+    <Compile Include="VirtualPath\AbstractVirtualDirectoryBase.cs" />
+    <Compile Include="VirtualPath\AbstractVirtualFileBase.cs" />
+    <Compile Include="VirtualPath\AbstractVirtualPathProviderBase.cs" />
+    <Compile Include="VirtualPath\FileSystemVirtualDirectory.cs" />
+    <Compile Include="VirtualPath\FileSystemVirtualFile.cs" />
+    <Compile Include="VirtualPath\FileSystemVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\IVirtualDirectory.cs" />
+    <Compile Include="VirtualPath\IVirtualFile.cs" />
+    <Compile Include="VirtualPath\IVirtualNode.cs" />
+    <Compile Include="VirtualPath\IVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\MultiVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\ResourceVirtualDirectory.cs" />
+    <Compile Include="VirtualPath\ResourceVirtualFile.cs" />
+    <Compile Include="VirtualPath\ResourceVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\VirtualPathExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">

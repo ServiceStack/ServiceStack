@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using NUnit.Framework;
 using ServiceStack.Common.Extensions;
@@ -102,5 +103,14 @@ namespace ServiceStack.Common.Tests
 			Assert.That("with @+:\\illegals".SafeVarName(), Is.EqualTo("with_____illegals"));
 			Assert.That("UPPER_lower_0123456789".SafeVarName(), Is.EqualTo("UPPER_lower_0123456789"));
 		}
+
+        [Test]
+        public void Glob_finds_right_strings()
+        {
+            var input = new[] {"Foo, Boo, Hoo, Baz"};
+            var expected = input.Where(s => s.EndsWith("oo")).ToArray();
+
+            Assert.AreEqual(expected, input.Select(s => s.Glob("*oo")));
+        }
 	}
 }

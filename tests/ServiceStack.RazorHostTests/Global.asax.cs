@@ -7,9 +7,11 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Razor;
+using ServiceStack.Razor.VirtualPath;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;
+using System.Reflection;
 
 namespace ServiceStack.RazorHostTests
 {
@@ -52,7 +54,13 @@ namespace ServiceStack.RazorHostTests
 
         public override void Configure(Container container)
         {
-            Plugins.Add(new RazorFormat());
+            Plugins.Add(new RazorFormat()
+            {
+                VirtualPathProvider = new MultiVirtualPathProvider(this,
+                        new ResourceVirtualPathProvider(this),
+                        new FileSystemVirtualPathProvider(this)
+                    )
+            });
 
             container.Register(new DataSource());
 
@@ -73,6 +81,11 @@ namespace ServiceStack.RazorHostTests
         {
             // Code that runs on application startup
             new AppHost().Init();
+
+            foreach(var resource in typeof(AppHost).Assembly.GetManifestResourceNames())
+            {
+                var tokens = resource.TokenizeResourcePath();
+            }
         }
     }
 

@@ -1,0 +1,51 @@
+﻿@inherits ViewPage<RockstarsResponse>
+
+@{
+    ViewBag.Title = Model.Aged.HasValue ? "{0} year old rockstars".Fmt(Model.Aged) : "All Rockstars";
+    Layout = "HtmlReport";
+}
+
+<div style="float:right">
+    <strong>View this page in: </strong>
+    <a href="?format=json">json</a>,
+    <a href="?format=xml">xml</a>,
+    <a href="?format=jsv">jsv</a>,
+    <a href="?format=csv">csv</a>
+    
+    <p>&nbsp;</p>
+    <form action="/rockstars" method="POST">
+        <div><b>@Html.Label("FirstName")</b> @Html.TextBox("FirstName","Amy")</div>
+        <div><b>@Html.Label("LastName")</b> @Html.TextBox("LastName","Winehouse")</div>
+        <div><b>@Html.Label("Age")</b> @Html.TextBox("Age","27")</div>
+        <p><button type="submit">Add new Rockstar</button></p>
+    </form>
+</div>
+
+<h3>We have @Model.Total Rockstars, showing @ViewBag.Title</h3>
+<table>
+    <thead> 
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <td colspan="3">
+                <p><a href="/rockstars">Show all @Model.Total Rockstars</a></p>
+                <p><a href="/rockstars/delete/reset">Reset Rockstars</a></p>
+            </td>
+        </tr>
+    </tfoot>
+    <tbody>
+        @foreach (var rockstar in Model.Results)
+        {
+            <tr>
+                <td>@rockstar.FirstName @rockstar.LastName </td>
+                <td><a href="/rockstars/aged/@rockstar.Age">@rockstar.Age</a></td>     
+                <td><a href="/rockstars/delete/@rockstar.Id">delete</a></td>       
+            </tr>
+        }
+    </tbody>
+</table>
