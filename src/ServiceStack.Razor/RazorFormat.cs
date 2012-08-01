@@ -10,6 +10,7 @@ using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Compilation.CSharp;
 using ServiceStack.Razor.Templating;
+using ServiceStack.Razor.VirtualPath;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel;
 using ServiceStack.Text;
@@ -63,6 +64,8 @@ namespace ServiceStack.Razor
         public Dictionary<string, string> ReplaceTokens { get; set; }
 
         public Func<string, IEnumerable<ViewPage>> FindRazorPagesFn { get; set; }
+
+        public IVirtualPathProvider VirtualPathProvider { get; set; }
 
         public HashSet<string> TemplateNamespaces { get; set; }
 
@@ -119,6 +122,9 @@ namespace ServiceStack.Razor
             if (!appHost.Config.WebHostUrl.IsNullOrEmpty())
                 this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
+            if (VirtualPathProvider == null)
+                VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost);
+
             var razorBaseType = appHost.Config.RazorBaseType;
             Init(razorBaseType);
 
@@ -139,12 +145,21 @@ namespace ServiceStack.Razor
             });
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
-                ViewPage razorPage;
-                if (filePath == null || (razorPage = GetContentPage(filePath.WithoutExtension()) 
-                      ?? GetContentResourcePage(pathInfo)) == null)
-                    return null;
+                ViewPage razorPage = null;
 
-                return new RazorHandler {
+                if (filePath != null)
+                    razorPage = GetContentPage(filePath.WithoutExtension());
+
+                if (razorPage == null)
+                    razorPage = GetContentResourcePage(pathInfo);
+
+                if (razorPage == null)
+                    razorPage = GetContentPage(pathInfo);
+                    
+                return razorPage == null 
+                    ? null
+                    : new RazorHandler 
+                {
                     RazorFormat = this,
                     RazorPage = razorPage,
                     RequestName = "RazorPage",
@@ -173,130 +188,30 @@ namespace ServiceStack.Razor
 
         public IEnumerable<ViewPage> FindRazorPages(string dirPath)
         {
-            var di = new DirectoryInfo(dirPath);
-            var razorFiles = di.GetMatchingFiles("*.cshtml");
-
-            var viewPath = Path.Combine(di.FullName, "Views");
-            var viewSharedPath = Path.Combine(viewPath, "Shared");
+            var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*.cshtml");
 
             var hasWebPages = false;
-            foreach (var razorFile in razorFiles)
+            foreach (var csHtmlFile in csHtmlFiles)
             {
                 hasWebPages = true;
 
-                var fileInfo = new FileInfo(razorFile);
-                var pageName = fileInfo.Name.WithoutExtension();
-                var pageContents = File.ReadAllText(razorFile);
+                var pageName = csHtmlFile.Name.WithoutExtension();
+                var pageContents = csHtmlFile.ReadAllText();
 
                 var pageType = RazorPageType.ContentPage;
-                if (fileInfo.FullName.StartsWithIgnoreCase(viewSharedPath))
+                if (VirtualPathProvider.IsSharedFile(csHtmlFile))
                     pageType = RazorPageType.SharedViewPage;
-                else if (fileInfo.FullName.StartsWithIgnoreCase(viewPath))
+                else if (VirtualPathProvider.IsViewFile(csHtmlFile))
                     pageType = RazorPageType.ViewPage;
 
-                var templatePath = GetTemplatePath(fileInfo.DirectoryName);
-
-                yield return new ViewPage(this, razorFile, pageName, pageContents, pageType) {
-                    TemplatePath = templatePath,
-                    LastModified = fileInfo.LastWriteTime,
+                yield return new ViewPage(this, csHtmlFile.VirtualPath, pageName, pageContents, pageType)
+                {
+                    LastModified = csHtmlFile.LastModified
                 };
             }
-            
-            if (!hasWebPages) WatchForModifiedPages = false;
 
-            //Load embedded Resource Pages
-            var appHostType = EndpointHost.AppHost.GetType();
-            if (appHostType.Namespace != null)
-            {
-                viewPath = "Views";
-                viewSharedPath = Path.Combine(viewPath, "Shared");
-
-                var allResourceNames = appHostType.Assembly.GetManifestResourceNames();
-                foreach (var resourceName in allResourceNames)
-                {
-                    if (resourceName.EndsWith(".cshtml") || resourceName.EndsWith(".rzr"))
-                    {
-                        var parts = resourceName.SplitOnLast(".");
-                        var relativeName = parts[0].Replace(appHostType.Namespace + ".", "");
-                        var pageName = relativeName.SplitOnLast(".").Last();
-                        var razorDirPath = relativeName.Replace('.', Path.DirectorySeparatorChar);
-                        var razorFile = razorDirPath + "." + parts[1];
-                        
-                        var pageType = RazorPageType.ContentPage;
-                        if (razorFile.StartsWithIgnoreCase(viewSharedPath))
-                            pageType = RazorPageType.SharedViewPage;
-                        else if (razorFile.StartsWithIgnoreCase(viewPath))
-                            pageType = RazorPageType.ViewPage;
-
-                        var pageContents = appHostType.Assembly.GetManifestResourceStream(resourceName)
-                            .ReadFully().FromUtf8Bytes();
-
-                        var templatePath = GetTemplateResourcePath(razorDirPath);
-
-                        yield return new ViewPage(this, razorFile, pageName, pageContents, pageType) {
-                            TemplatePath = templatePath,
-                            LastModified = EndpointHost.StartedAt,
-                        };
-                    }
-                }
-            }
-        }
-
-        readonly Dictionary<string,string> templatePathsFound = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-        readonly HashSet<string> templatePathsNotFound = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-
-        private string GetTemplatePath(string fileDirPath)
-        {
-            if (templatePathsNotFound.Contains(fileDirPath)) return null;
-
-            var templateDirPath = fileDirPath;
-            string templatePath;
-            while (templateDirPath != null && !File.Exists(Path.Combine(templateDirPath, TemplateName)))
-            {
-                if (templatePathsFound.TryGetValue(templateDirPath, out templatePath))
-                    return templatePath;
-
-                templateDirPath = templateDirPath.ParentDirectory();
-            }
-
-            if (templateDirPath != null)
-            {
-                templatePath = Path.Combine(templateDirPath, TemplateName);
-                templatePathsFound[templateDirPath] = templatePath;
-                return templatePath;
-            }
-
-            templatePathsNotFound.Add(fileDirPath);
-            return null;
-        }
-
-        private string GetTemplateResourcePath(string resourcePath)
-        {
-            if (templatePathsNotFound.Contains(resourcePath)) return null;
-
-            var appHostAssembly = EndpointHost.AppHost.GetType().Assembly;
-
-            var templateDirPath = resourcePath;
-            string templatePath;
-
-            while (templateDirPath != null && appHostAssembly.GetManifestResourceInfo(
-                Path.Combine(templateDirPath, TemplateName).Replace(Path.DirectorySeparatorChar, '.')) == null)
-            {
-                if (templatePathsFound.TryGetValue(templateDirPath, out templatePath))
-                    return templatePath;
-
-                templateDirPath = templateDirPath.ParentDirectory();
-            }
-
-            if (templateDirPath != null)
-            {
-                templatePath = Path.Combine(templateDirPath, TemplateName);
-                templatePathsFound[templateDirPath] = templatePath;
-                return templatePath;
-            }
-
-            templatePathsNotFound.Add(resourcePath);
-            return null;
+            if (!hasWebPages) 
+                WatchForModifiedPages = false;
         }
 
         public bool ProcessRazorPage(IHttpRequest httpReq, ViewPage razorPage, object dto, IHttpResponse httpRes)
