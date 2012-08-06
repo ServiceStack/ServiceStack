@@ -30,11 +30,13 @@ namespace ServiceStack.ServiceClient.Web
             }
             var jsv = TypeSerializer.SerializeToString(ResponseDto);
             var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(jsv);
+            map = new Dictionary<string, string>(map, StringComparer.InvariantCultureIgnoreCase);
             string responseStatus;
             if (!map.TryGetValue("ResponseStatus", out responseStatus)) return;
 
             var rsMap = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(responseStatus);
             if (rsMap == null) return;
+            rsMap = new Dictionary<string, string>(rsMap, StringComparer.InvariantCultureIgnoreCase);
             rsMap.TryGetValue("ErrorCode", out errorCode);
             rsMap.TryGetValue("Message", out errorMessage);
             rsMap.TryGetValue("StackTrace", out serverStackTrace);

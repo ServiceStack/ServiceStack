@@ -435,6 +435,11 @@
             Redis command that does not get queued
             </summary>
         </member>
+        <member name="M:ServiceStack.Redis.RedisClientManagerCacheClient.Dispose">
+            <summary>
+            Ignore dispose on RedisClientsManager, which should be registered as a singleton
+            </summary>
+        </member>
         <member name="T:ServiceStack.Redis.Generic.QueuedRedisTypedCommand`1">
             <summary>
             A complete redis command, with method to send command, receive response, and run callback on success or failure
@@ -1102,10 +1107,9 @@
             1 master and multiple replicated read slaves.
             </summary>
             <summary>
-            For more interoperabilty I'm also implementing the ICacheClient on
-            this cache client manager which has the affect of calling 
-            GetCacheClient() for all write operations and GetReadOnlyCacheClient() 
-            for the read ones.
+            For interoperabilty GetCacheClient() and GetReadOnlyCacheClient()
+            return an ICacheClient wrapper around the redis manager which has the affect of calling 
+            GetClient() for all write operations and GetReadOnlyClient() for the read ones.
             
             This works well for master-slave replication scenarios where you have 
             1 master that replicates to multiple read slaves.
