@@ -226,7 +226,7 @@ Also included in ServiceStack are libraries that are useful in the development o
        * 5.3x quicker and 1.3x smaller than the .NET JSON DataContractSerializer - _[view the detailed benchmarks](http://www.servicestack.net/benchmarks/NorthwindDatabaseRowsSerialization.1000000-times.2010-02-06.html)_
 
  * [ServiceStack.Redis](https://github.com/ServiceStack/ServiceStack.Redis) - An API complete C# [Redis](http://code.google.com/p/redis/) client with native support for persisting C# POCO objects.
-   *  You can download the latest [RedisWindowsDownload Windows build for the Redis Server here].
+   * You can find links to the latest windows builds at the end of [this StackOverflow Answer on Redis](http://stackoverflow.com/questions/1777103/what-nosql-solutions-are-out-there-for-net/2760282#2760282)
    * [Redis Admin UI](http://www.servicestack.net/mythz_blog/?p=381) - An Ajax GUI admin tool to help visualize your Redis data.
 
  * [OrmLite](https://github.com/ServiceStack/ServiceStack.OrmLite) - A convention-based, configuration free lightweight ORM that uses attributes from DataAnnotations to infer the table schema. Currently supports both Sqlite and SqlServer.
