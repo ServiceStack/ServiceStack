@@ -24,6 +24,7 @@ namespace ServiceStack.ServiceInterface.Auth
     /// <returns>Response DTO; non-null will short-circuit execution and return that response</returns>
     public delegate object ValidateFn(IServiceBase service, string httpMethod, object requestDto);
 
+    [DataContract]
     public class Auth
     {
         [DataMember(Order=1)] public string provider { get; set; }
@@ -43,6 +44,7 @@ namespace ServiceStack.ServiceInterface.Auth
         [DataMember(Order=14)] public string cnonce { get; set; }
     }
 
+    [DataContract]
     public class AuthResponse
     {
         public AuthResponse()
