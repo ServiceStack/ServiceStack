@@ -709,6 +709,11 @@ namespace ServiceStack.ServiceClient.Web
             return Send<TResponse>(Web.HttpMethod.Put, relativeOrAbsoluteUrl, request);
         }
 
+		public virtual TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
+        {
+            return Send<TResponse>(Web.HttpMethod.Patch, relativeOrAbsoluteUrl, request);
+        }
+
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
         {
             return PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileToUpload.OpenRead(), fileToUpload.Name, request);
