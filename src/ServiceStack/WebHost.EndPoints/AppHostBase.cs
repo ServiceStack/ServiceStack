@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Funq;
+using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -108,9 +109,28 @@ namespace ServiceStack.WebHost.Endpoints
 			this.Container.RegisterAutoWiredAs<T, TAs>();
 		}
 
-		public virtual void Release(object instance) { }
-	    
-        public void OnEndRequest() {}
+        public virtual void Release(object instance)
+        {
+            var disposable = instance as IDisposable;
+            if (disposable != null)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch {/*ignore*/}
+            }
+        }
+
+        public virtual void OnEndRequest()
+        {
+            foreach (var item in HostContext.Instance.Items.Values)
+            {
+                Release(item);
+            }
+
+            HostContext.Instance.EndRequest();
+        }
 
 	    public void Register<T>(T instance)
 		{

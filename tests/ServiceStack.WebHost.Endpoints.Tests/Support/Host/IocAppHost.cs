@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using Funq;
+using ServiceStack.Common;
 using ServiceStack.Configuration;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
@@ -15,9 +16,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			Instance = null;
 		}
 
+        private IocAdapter iocAdapter;
+
 		public override void Configure(Container container)
 		{
-			container.Adapter = new IocAdapter();
+			container.Adapter = iocAdapter = new IocAdapter();
 			container.Register(c => new FunqDepCtor());
 			container.Register(c => new FunqDepProperty());
 			container.Register(c => new FunqDepDisposableProperty());
@@ -25,10 +28,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
             container.Register(c => new FunqSingletonScope()).ReusedWithin(ReuseScope.Default);
             container.Register(c => new FunqRequestScope()).ReusedWithin(ReuseScope.Request);
             container.Register(c => new FunqNoneScope()).ReusedWithin(ReuseScope.None);
+            container.Register(c => new FunqRequestScopeDepDisposableProperty()).ReusedWithin(ReuseScope.Request);
 
             Routes.Add<Ioc>("/ioc");
             Routes.Add<IocScope>("/iocscope");
 		}
+
+        public override void Release(object instance)
+        {
+            iocAdapter.Release(instance);
+        }
 	}
 
 	public class IocAdapter : IContainerAdapter
@@ -40,9 +49,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 			if (typeof(T) == typeof(AltDepProperty))
 				return (T)(object)new AltDepProperty();
-			if (typeof(T) == typeof(AltDepDisposableProperty))
-				return (T)(object)new AltDepDisposableProperty();
-
+            if (typeof(T) == typeof(AltDepDisposableProperty))
+                return (T)(object)new AltDepDisposableProperty();
+            if (typeof(T) == typeof(AltRequestScopeDepDisposableProperty))
+                return (T)(object)HostContext.Instance.GetOrCreate(() => new AltRequestScopeDepDisposableProperty());
+            
 			return default(T);
 		}
 
@@ -53,7 +64,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 			return default(T);
 		}
-	}
+
+        public void Release(object instance)
+        {
+            var disposable = instance as IDisposable;
+            if (disposable != null)
+                disposable.Dispose();
+        }
+    }
 
 
     public class IocRequestFilterAttribute : Attribute, IHasRequestFilter
@@ -61,6 +79,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         public FunqSingletonScope FunqSingletonScope { get; set; }
         public FunqRequestScope FunqRequestScope { get; set; }
         public FunqNoneScope FunqNoneScope { get; set; }
+        public FunqRequestScopeDepDisposableProperty FunqRequestScopeDepDisposableProperty { get; set; }
+        public AltRequestScopeDepDisposableProperty AltRequestScopeDepDisposableProperty { get; set; }
 
         public int Priority { get; set; }
 

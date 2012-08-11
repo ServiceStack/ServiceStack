@@ -24,6 +24,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public FunqNoneScope() { Count++; }
     }
 
+    public class FunqRequestScopeDepDisposableProperty : IDisposable
+    {
+        public static int Count = 0;
+        public static int DisposeCount = 0;
+        public FunqRequestScopeDepDisposableProperty() { Count++; }
+        public void Dispose() { DisposeCount++; }
+    }
+
+    public class AltRequestScopeDepDisposableProperty : IDisposable
+    {
+        public static int Count = 0;
+        public static int DisposeCount = 0;
+        public AltRequestScopeDepDisposableProperty() { Count++; }
+        public void Dispose() { DisposeCount++; }
+    }
+
     public class FunqDepCtor { }
     public class AltDepCtor { }
 
@@ -117,6 +133,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public FunqRequestScope FunqRequestScope { get; set; }
         public FunqSingletonScope FunqSingletonScope { get; set; }
         public FunqNoneScope FunqNoneScope { get; set; }
+        public FunqRequestScopeDepDisposableProperty FunqRequestScopeDepDisposableProperty { get; set; }
+        public AltRequestScopeDepDisposableProperty AltRequestScopeDepDisposableProperty { get; set; }
 
         public object Execute(IocScope request)
         {
@@ -125,7 +143,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
                     { typeof(FunqSingletonScope).Name, FunqSingletonScope.Count },
                     { typeof(FunqRequestScope).Name, FunqRequestScope.Count },
                     { typeof(FunqNoneScope).Name, FunqNoneScope.Count },
-                },
+                },                
             };
 
             return response;

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Funq;
+using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
@@ -288,9 +289,28 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			this.Container.RegisterAutoWiredAs<T, TAs>();
 		}
 
-		public virtual void Release(object instance) {}
+		public virtual void Release(object instance)
+		{
+		    var disposable = instance as IDisposable;
+            if (disposable != null)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch {/*ignore*/}
+            }
+		}
 
-        public void OnEndRequest() {}
+        public virtual void OnEndRequest()
+        {
+            foreach (var item in HostContext.Instance.Items.Values)
+            {
+                Release(item);
+            }
+
+            HostContext.Instance.EndRequest();
+        }
 
 	    public void Register<T>(T instance)
 		{

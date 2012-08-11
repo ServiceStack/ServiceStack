@@ -311,8 +311,7 @@ namespace ServiceStack.WebHost.Endpoints
         {
 	        try
 	        {
-	            HostContext.Instance.EndRequest();
-	            AppHost.OnEndRequest();
+                AppHost.OnEndRequest();
 	        }
 	        catch (Exception ex) {}
         }

@@ -10,7 +10,7 @@ namespace ServiceStack.Common
     {
         public static HostContext Instance = new HostContext();
 
-        [ThreadStatic] protected static IDictionary items;
+        [ThreadStatic] public static IDictionary items;
         public virtual IDictionary Items
         {
             get
@@ -22,12 +22,16 @@ namespace ServiceStack.Common
             set { items = value; }
         }
 
+        public T GetOrCreate<T>(Func<T> createFn)
+        {
+            if (Items.Contains(typeof(T).Name))
+                return (T)Items[typeof(T).Name];
+
+            return (T) (Items[typeof(T).Name] = createFn());
+        }
+
         public void EndRequest()
         {
-            if (items != null)
-            {
-                items.Values.OfType<IDisposable>().Dispose();
-            }
             items = null;
         }
     }
