@@ -82,5 +82,11 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		/// <param name="plugins"></param>
 		void LoadPlugin(params IPlugin[] plugins);
+
+        /// <summary>
+        /// Called after the request is Executed. Override to decorate the response dto.
+        /// This method is only called if no exception occured while executing the service.
+        /// </summary>
+        void OnAfterExecute(IRequestContext requestContext, object requestDto, object responseDto);
 	}
 }

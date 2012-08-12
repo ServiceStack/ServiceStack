@@ -122,6 +122,10 @@ namespace ServiceStack.WebHost.Endpoints
             }
         }
 
+        public virtual void OnAfterExecute(IRequestContext requestContext, object requestDto, object responseDto)
+        {
+        }
+
         public virtual void OnEndRequest()
         {
             foreach (var item in HostContext.Instance.Items.Values)

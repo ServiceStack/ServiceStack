@@ -41,7 +41,9 @@ namespace ServiceStack.ServiceInterface.Testing
         }
 
         public virtual void Release(object instance) { }
-        
+
+        public virtual void OnAfterExecute(IRequestContext requestContext, object requestDto, object responseDto) { }
+
         public void OnEndRequest() {}
 
         public void Register<T>(T instance)
