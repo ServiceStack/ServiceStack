@@ -198,6 +198,7 @@ namespace ServiceStack.ServiceInterface
         /// <returns></returns>
         protected virtual object OnAfterExecute(object response)
         {
+            GetAppHost().OnAfterExecute(RequestContext, CurrentRequestDto, response);
             return response;
         }
         
