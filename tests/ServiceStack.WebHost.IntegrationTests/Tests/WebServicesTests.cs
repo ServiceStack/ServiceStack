@@ -58,6 +58,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 				var response = client.Send<AlwaysThrowsResponse>(
 					new AlwaysThrows { Value = TestString });
 
+				response.PrintDump();
 				Assert.Fail("Should throw HTTP errors");
 			}
 			catch (WebServiceException webEx)

@@ -71,6 +71,7 @@ namespace ServiceStack.Common.Tests.Text
 		{
 			var json = "[{\"Value\": \"a\"},null,{\"Value\": \"b\"}]";
 			var o = JsonSerializer.DeserializeFromString<A[]>(json);
+			o.PrintDump();
 		}
 	}
 }

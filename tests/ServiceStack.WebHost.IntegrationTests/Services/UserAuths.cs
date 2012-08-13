@@ -36,8 +36,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		protected override object Run(UserAuths request)
 		{
 			return new UserAuthsResponse {
-				Results = DbFactory.Exec(dbCmd => dbCmd.Select<UserAuth>()),
-				OAuthProviders = DbFactory.Exec(dbCmd => dbCmd.Select<UserOAuthProvider>()),
+				Results = DbFactory.Run(db => db.Select<UserAuth>()),
+				OAuthProviders = DbFactory.Run(db => db.Select<UserOAuthProvider>()),
 			};
 		}
 	}

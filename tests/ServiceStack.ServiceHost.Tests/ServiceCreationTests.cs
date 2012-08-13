@@ -78,7 +78,7 @@ namespace ServiceStack.ServiceHost.Tests
 			appHost.Dispose();
 		}
 
-		static IRestClient[] RestClients = 
+		protected static IRestClient[] RestClients = 
         {
             new JsonServiceClient(ServiceClientBaseUri),
             new XmlServiceClient(ServiceClientBaseUri),

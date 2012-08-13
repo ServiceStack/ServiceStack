@@ -99,7 +99,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             var response1 = restClient.Get<IocScopeResponse>("iocscope");
             var response2 = restClient.Get<IocScopeResponse>("iocscope");
 
-            Console.WriteLine(response2.Dump());
+			response1.PrintDump();
+			response2.PrintDump();
 
             Assert.That(response2.Results[typeof(FunqSingletonScope).Name], Is.EqualTo(1));
             Assert.That(response2.Results[typeof(FunqRequestScope).Name], Is.EqualTo(2));

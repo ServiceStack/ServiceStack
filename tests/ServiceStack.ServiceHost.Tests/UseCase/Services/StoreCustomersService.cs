@@ -8,24 +8,20 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 	public class StoreCustomersService
 		: IService<StoreCustomers> 
 	{
-		private readonly IDbConnection dbConn;
+		private readonly IDbConnection db;
 
 		public StoreCustomersService(IDbConnection dbConn)
 		{
-			this.dbConn = dbConn;
+			this.db = dbConn;
 			//Console.WriteLine("StoreCustomersService()");
 		}
 
 		public object Execute(StoreCustomers request)
 		{
-			using (var dbCmd = dbConn.CreateCommand())
+			db.CreateTable<Customer>(false);
+			foreach (var customer in request.Customers)
 			{
-				dbCmd.CreateTable<Customer>(false);
-
-				foreach (var customer in request.Customers)
-				{
-					dbCmd.Insert(customer);
-				}
+				db.Insert(customer);
 			}
 
 			return null;

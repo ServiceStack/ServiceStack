@@ -84,7 +84,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     {
         private const string ListeningOn = Config.ServiceStackBaseUri + "/";
 
-        static IRestClient[] ServiceClients = 
+        protected static IRestClient[] ServiceClients = 
 		{
 			new JsonServiceClient(ListeningOn),
 			new XmlServiceClient(ListeningOn),
@@ -172,6 +172,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var json = PredefinedJsonUrl<ExceptionWithResponseStatus>().GetJsonFromUrl();
+				json.PrintDump();
                 Assert.Fail("Should throw");
             }
             catch (WebException webEx)
@@ -189,6 +190,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var json = PredefinedJsonUrl<ExceptionNoResponseStatus>().GetJsonFromUrl();
+				json.PrintDump();
                 Assert.Fail("Should throw");
             }
             catch (WebException webEx)
@@ -205,6 +207,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             try
             {
                 var json = PredefinedJsonUrl<ExceptionNoResponseDto>().GetJsonFromUrl();
+				json.PrintDump();
                 Assert.Fail("Should throw");
             }
             catch (WebException webEx)

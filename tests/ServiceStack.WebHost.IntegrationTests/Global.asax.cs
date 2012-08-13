@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.IntegrationTests
 				//    c => new SessionFactory(c.Resolve<ICacheClient>()));
 
 				var dbFactory = this.Container.Resolve<IDbConnectionFactory>();
-				dbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));
+				dbFactory.Run(db => db.CreateTable<Movie>(true));
 				ModelConfig<Movie>.Id(x => x.Title);
 				Routes
 					.Add<Movies>("/custom-movies", "GET, OPTIONS")

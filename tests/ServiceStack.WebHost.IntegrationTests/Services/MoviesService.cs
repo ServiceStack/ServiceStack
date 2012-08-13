@@ -40,8 +40,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			return new MoviesResponse
 			{
 				Movies = request.Genre.IsNullOrEmpty()
-					? DbFactory.Exec(dbCmd => dbCmd.Select<Movie>())
-					: DbFactory.Exec(dbCmd => dbCmd.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
+					? DbFactory.Run(db => db.Select<Movie>())
+					: DbFactory.Run(db => db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
 			};
 		}
 	}

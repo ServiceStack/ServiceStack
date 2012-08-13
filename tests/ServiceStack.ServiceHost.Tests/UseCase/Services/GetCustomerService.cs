@@ -13,12 +13,12 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 	{
 		private static readonly string CacheKey = typeof (GetCustomer).Name;
 
-		private readonly IDbConnection dbConn;
+		private readonly IDbConnection db;
 		private readonly CustomerUseCaseConfig config;
 
 		public GetCustomerService(IDbConnection dbConn, CustomerUseCaseConfig config)
 		{
-			this.dbConn = dbConn;
+			this.db = dbConn;
 			this.config = config;
 		}
 
@@ -32,17 +32,14 @@ namespace ServiceStack.ServiceHost.Tests.UseCase.Services
 				if (inCache != null) return inCache;
 			}
 
-			using (var dbCmd = dbConn.CreateCommand())
-			{
-				var response = new GetCustomerResponse {
-					Customer = dbCmd.GetById<Customer>(request.CustomerId)
-				};
+			var response = new GetCustomerResponse {
+				Customer = db.GetById<Customer>(request.CustomerId)
+			};
 
-				if (config.UseCache) 
-					this.CacheClient.Set(CacheKey, response);
+			if (config.UseCache) 
+				this.CacheClient.Set(CacheKey, response);
 
-				return response;
-			}
+			return response;
 		}
 	}
 }

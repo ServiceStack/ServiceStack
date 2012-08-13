@@ -21,9 +21,8 @@ namespace ServiceStack.Common.Tests.OAuth
 				File.Delete(connectionString);
 
 			using (var db = connectionString.OpenDbConnection())
-			using (var dbCmd = db.CreateCommand())
 			{
-				dbCmd.CreateTable<UserAuth>(true);
+				db.CreateTable<UserAuth>(true);
 
 				//var userAuth = new UserAuth {
 				//    Id = 1,
@@ -42,9 +41,9 @@ namespace ServiceStack.Common.Tests.OAuth
 				var jsv = "{Id:0,UserName:UserName,Email:as@if.com,PrimaryEmail:as@if.com,FirstName:FirstName,LastName:LastName,DisplayName:DisplayName,Salt:WMQi/g==,PasswordHash:oGdE40yKOprIgbXQzEMSYZe3vRCRlKGuqX2i045vx50=,Roles:[],Permissions:[],CreatedDate:2012-03-20T07:53:48.8720739Z,ModifiedDate:2012-03-20T07:53:48.8720739Z}";
 				var userAuth = jsv.To<UserAuth>();
 
-				dbCmd.Insert(userAuth);
+				db.Insert(userAuth);
 
-				var rows = dbCmd.Select<UserAuth>(q => q.UserName == "UserName");
+				var rows = db.Select<UserAuth>(q => q.UserName == "UserName");
 
 				Console.WriteLine(rows[0].Dump());
 

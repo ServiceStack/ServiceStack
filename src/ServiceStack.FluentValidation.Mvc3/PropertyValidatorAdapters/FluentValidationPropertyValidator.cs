@@ -65,7 +65,7 @@ namespace FluentValidation.Mvc {
 		public override IEnumerable<ModelClientValidationRule> GetClientValidationRules() {
 			if (!ShouldGenerateClientSideRules()) return Enumerable.Empty<ModelClientValidationRule>();
 
-			var supportsClientValidation = Validator as IClientValidatable;
+			var supportsClientValidation = Validator as System.Web.Mvc.IClientValidatable;
 			
 			if(supportsClientValidation != null) {
 				return supportsClientValidation.GetClientValidationRules(Metadata, ControllerContext);

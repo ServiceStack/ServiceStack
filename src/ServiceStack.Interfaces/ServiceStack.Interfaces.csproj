@@ -68,6 +68,7 @@
     <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -475,9 +476,6 @@
     <Compile Include="ServiceHost\IAsyncService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\ICanResolve.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ServiceHost\IContentTypeFilter.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -626,6 +624,7 @@
     <Compile Include="Translators\TranslateMemberAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceHost\IResolver.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

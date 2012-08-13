@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using NUnit.Framework;
 using ServiceStack.Service;
+using ServiceStack.Text;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
@@ -67,6 +68,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			try
 			{
 				var response = client.Send<CustomersResponse>(new Customers());
+				response.PrintDump();
 				Assert.Fail("Should throw Validation Exception");
 			}
 			catch (WebServiceException ex)
@@ -90,6 +92,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			try
 			{
 				var response = client.Get<CustomersResponse>("/Customers");
+				response.PrintDump();
 				Assert.Fail("Should throw Validation Exception");
 			}
 			catch (WebServiceException ex)

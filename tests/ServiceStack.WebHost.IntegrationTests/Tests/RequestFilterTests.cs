@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					+ "/json/syncreply/RequestFilter?StatusCode=401");
 
 				var webResponse = (HttpWebResponse)webRequest.GetResponse();
-
+				webResponse.Method.Print();
 				Assert.Fail("Should throw 401 WebException");
 			}
 			catch (WebException ex)
@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					+ "&HeaderValue=" + "Basic realm=\"Auth Required\"".UrlEncode());
 
 				var webResponse = (HttpWebResponse)webRequest.GetResponse();
-
+				webResponse.Method.Print();
 				Assert.Fail("Should throw 401 WebException");
 			}
 			catch (WebException ex)
@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					+ "/json/syncreply/Secure?SessionId=175BEA29-DC79-4555-BD42-C4DD5D57A004");
 
 				var webResponse = (HttpWebResponse)webRequest.GetResponse();
-
+				webResponse.Method.Print();
 				Assert.Fail("Should throw 401 WebException");
 			}
 			catch (WebException ex)

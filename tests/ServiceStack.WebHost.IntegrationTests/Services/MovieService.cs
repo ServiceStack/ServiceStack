@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public override object OnGet(Movie movie)
 		{
 			return new MovieResponse {
-				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(movie.Id))
+				Movie = DbFactory.Run(db => db.GetById<Movie>(movie.Id))
 			};
 		}
 
@@ -104,13 +104,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public override object OnPost(Movie movie)
 		{
-			var newMovieId = DbFactory.Exec(dbCmd => {
-				dbCmd.Insert(movie);
-				return dbCmd.GetLastInsertId();
+			var newMovieId = DbFactory.Run(db => {
+				db.Insert(movie);
+				return db.GetLastInsertId();
 			});
 
 			var newMovie = new MovieResponse {
-				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(newMovieId))
+				Movie = DbFactory.Run(db => db.GetById<Movie>(newMovieId))
 			};
 			return new HttpResult(newMovie) {
 				StatusCode = HttpStatusCode.Created,
@@ -125,7 +125,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public override object OnPut(Movie movie)
 		{
-			DbFactory.Exec(dbCmd => dbCmd.Update(movie));
+			DbFactory.Run(db => db.Update(movie));
 			return new MovieResponse();
 		}
 
@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public override object OnDelete(Movie request)
 		{
-			DbFactory.Exec(dbCmd => dbCmd.DeleteById<Movie>(request.Id));
+			DbFactory.Run(db => db.DeleteById<Movie>(request.Id));
 			return new MovieResponse();
 		}
 
@@ -143,11 +143,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		/// </summary>
 		public override object OnPatch(Movie movie)
 		{
-			DbFactory.Exec(dbCmd => {
-				var existingMovie = dbCmd.GetById<Movie>(movie.Id);
+			DbFactory.Run(db => {
+				var existingMovie = db.GetById<Movie>(movie.Id);
 				if (movie.Title != null)
 					existingMovie.Title = movie.Title;
-				dbCmd.Save(existingMovie);
+				db.Save(existingMovie);
 			});
 			return new MovieResponse();
 		}

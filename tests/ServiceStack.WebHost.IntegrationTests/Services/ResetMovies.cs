@@ -43,11 +43,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 		public override object OnPost(ResetMovies request)
 		{
-			DbFactory.Exec(dbCmd =>
+			DbFactory.Run(db =>
 			{
 				const bool overwriteTable = true;
-				dbCmd.CreateTable<Movie>(overwriteTable);
-				dbCmd.SaveAll(Top5Movies);
+				db.CreateTable<Movie>(overwriteTable);
+				db.SaveAll(Top5Movies);
 			});
 
 			return new ResetMoviesResponse();

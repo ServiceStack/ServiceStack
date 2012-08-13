@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					SqliteOrmLiteDialectProvider.Instance));
 
 			this.DbFactory = this.Container.Resolve<IDbConnectionFactory>();
-			this.DbFactory.Exec(dbCmd => dbCmd.CreateTable<Movie>(true));
+			this.DbFactory.Run(db => db.CreateTable<Movie>(true));
 		}
 
 		[Test]
@@ -48,13 +48,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		{
 			ExecutePath(HttpMethods.Post, "/movies", null, null, NewMovie);
 
-			var lastInsertId = (int)this.DbFactory.Exec(dbCmd => dbCmd.GetLastInsertId());
+			var lastInsertId = (int)this.DbFactory.Run(db => db.GetLastInsertId());
 
 			var patchMovie = new Movie { Id = lastInsertId, Title = "PATCHED " + NewMovie.Title };
 			ExecutePath(HttpMethods.Patch, "/movies", null, null, patchMovie);
 
-			this.DbFactory.Exec(dbCmd => {
-				var movie = dbCmd.GetById<Movie>(lastInsertId);
+			this.DbFactory.Run(db => {
+				var movie = db.GetById<Movie>(lastInsertId);
 				Assert.That(movie, Is.Not.Null);
 				Assert.That(movie.Title, Is.EqualTo(patchMovie.Title));
 			});
@@ -66,10 +66,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			var formData = NewMovie.ToStringDictionary();
 
 			var response = ExecutePath(HttpMethods.Post, "/movies", null, formData, null);
-
-			this.DbFactory.Exec(dbCmd => {
-				var lastInsertId = dbCmd.GetLastInsertId();
-				var createdMovie = dbCmd.GetById<Movie>(lastInsertId);
+			response.PrintDump();
+			this.DbFactory.Run(db => {
+				var lastInsertId = db.GetLastInsertId();
+				var createdMovie = db.GetById<Movie>(lastInsertId);
 				Assert.That(createdMovie, Is.Not.Null);
 				Assert.That(createdMovie, Is.EqualTo(NewMovie));
 			});
@@ -79,10 +79,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_create_new_Movie_from_dto()
 		{
 			var response = ExecutePath(HttpMethods.Post, "/movies", null, null, NewMovie);
-
-			this.DbFactory.Exec(dbCmd => {
-				var lastInsertId = dbCmd.GetLastInsertId();
-				var createdMovie = dbCmd.GetById<Movie>(lastInsertId);
+			response.PrintDump();
+			this.DbFactory.Run(db => {
+				var lastInsertId = db.GetLastInsertId();
+				var createdMovie = db.GetById<Movie>(lastInsertId);
 				Assert.That(createdMovie, Is.Not.Null);
 				Assert.That(createdMovie, Is.EqualTo(NewMovie));
 			});
@@ -92,9 +92,9 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 		public void Can_POST_to_resetmovies()
 		{
 			var response = ExecutePath(HttpMethods.Post, "/reset-movies");
-
-			this.DbFactory.Exec(dbCmd => {
-				var movies = dbCmd.Select<Movie>();
+			response.PrintDump();
+			this.DbFactory.Run(db => {
+				var movies = db.Select<Movie>();
 				Assert.That(movies.Count, Is.EqualTo(ResetMoviesService.Top5Movies.Count));
 			});
 		}
@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			try
 			{
 				var response = (ResetMoviesResponse)ExecutePath(HttpMethods.Get, "/reset-movies");
-				Console.WriteLine(response.Dump());
+				response.PrintDump();
 				Assert.Fail("Should throw HTTP errors");
 			}
 			catch (WebServiceException webEx)

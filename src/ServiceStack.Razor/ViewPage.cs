@@ -179,7 +179,7 @@ namespace ServiceStack.Razor
 				return null;
 			}
 
-			var str = value as IHtmlString;
+			var str = value as System.Web.IHtmlString;
 
 			return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
 		}

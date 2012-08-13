@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	[TestFixture]
 	public class ManageRolesTests : AuthTestsBase
 	{
-		private Registration registration;
+		protected Registration registration;
 
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
@@ -62,6 +62,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 					Permissions = { Permission1, Permission2 }
 				});
 
+				response.PrintDump();
 				Assert.Fail("Should not be allowed");
 			}
 			catch (WebServiceException webEx)
