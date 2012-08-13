@@ -376,6 +376,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         }
     }
 
+    [RestService("inbox2/{Id}/responses", "GET, PUT, OPTIONS")]
+    public class InboxPost
+    {
+        public bool Throw { get; set; }
+        public int Id { get; set; }
+    }
+
+    public class InboxPostService : ServiceBase<InboxPost>
+    {
+        protected override object Run(InboxPost request)
+        {
+            if (request.Throw)
+                throw new ArgumentNullException("Throw");
+            
+            return request;
+        }
+    }
+
     public class ExampleAppHostHttpListener
 		: AppHostHttpListenerBase
 	{
