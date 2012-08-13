@@ -157,6 +157,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Movie, Is.Null);
         }
 
+        [Test]
+        public void Can_PUT_complex_type_with_custom_path()
+        {
+            var client = CreateRestClient();
+
+            var request = new InboxPostResponseRequest {
+                Id = 123,
+                Responses = new List<PageElementResponseDTO> {
+                    new PageElementResponseDTO {
+                        PageElementId = 123,
+                        PageElementResponse = "something",
+                        PageElementType = "Question"
+                    }
+                }
+            };
+             
+            var response = client.Put<InboxPostResponseRequestResponse>(
+                "inbox/123/responses",
+                request);
+
+            Assert.That(response.Id, Is.EqualTo(request.Id));
+            Assert.That(response.Responses[0].PageElementId,
+                Is.EqualTo(request.Responses[0].PageElementId));
+        }
     }
 
     [TestFixture]
