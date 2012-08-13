@@ -722,9 +722,6 @@ namespace ServiceStack.ServiceClient.Web
             webRequest.Accept = ContentType;
             if (Proxy != null) webRequest.Proxy = Proxy;
 
-            if (StoreCookies)
-                webRequest.CookieContainer = CookieContainer;
-
             try
             {
                 ApplyWebRequestFilters(webRequest);
@@ -781,9 +778,6 @@ namespace ServiceStack.ServiceClient.Web
             webRequest.Accept = ContentType;
             if (Proxy != null) webRequest.Proxy = Proxy;
 
-            if (StoreCookies)
-                webRequest.CookieContainer = CookieContainer;
-
             try
             {
                 ApplyWebRequestFilters(webRequest);
@@ -810,9 +804,6 @@ namespace ServiceStack.ServiceClient.Web
             webRequest.Method = Web.HttpMethod.Post;
             webRequest.Accept = ContentType;
             if (Proxy != null) webRequest.Proxy = Proxy;
-
-            if (StoreCookies)
-                webRequest.CookieContainer = CookieContainer;
 
             try
             {
