@@ -8,6 +8,7 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -180,6 +181,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Id, Is.EqualTo(request.Id));
             Assert.That(response.Responses[0].PageElementId,
                 Is.EqualTo(request.Responses[0].PageElementId));
+        }
+
+        [Test]
+        public void Does_throw_400_for_Argument_exceptions()
+        {
+            var client = CreateRestClient();
+
+            try
+            {
+                var response = client.Put<InboxPostResponseRequestResponse>(
+                    "inbox/123/responses",
+                    new InboxPostResponseRequest());
+
+                response.PrintDump();
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(400));
+            }
         }
     }
 
