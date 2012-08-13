@@ -299,9 +299,9 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			using (Profiler.Current.Step("Execute Service"))
 			{
-				return config.ServiceController.Execute(request,
-					new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));
-			}
+                return config.ServiceController.Execute(request,
+                    new HttpRequestContext(httpReq, httpRes, request, endpointAttributes));
+            }
 		}
 
         /// <summary>

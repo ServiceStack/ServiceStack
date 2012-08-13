@@ -112,7 +112,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     }
 
 
-    public class IocScope { }
+    public class IocScope
+    {
+        public bool Throw { get; set; }
+    }
 
     public class IocScopeResponse : IHasResponseStatus
     {
@@ -138,6 +141,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
         public object Execute(IocScope request)
         {
+            if (request.Throw)
+                throw new Exception("Exception requested by user");
+
             var response = new IocScopeResponse {
                 Results = {
                     { typeof(FunqSingletonScope).Name, FunqSingletonScope.Count },
