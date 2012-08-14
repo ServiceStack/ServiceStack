@@ -97,7 +97,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			if (requestType == null)
 				throw new ArgumentException("Type not found: " + requestTypeName);
 
-			var request = ReflectionExtensions.CreateInstance(requestType);
+			var request = requestType.CreateInstance();
 
 			if (ApplyRequestFilters<TResponse>(request)) return default(TResponse);
 
@@ -124,7 +124,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			throw new NotImplementedException();
 		}
 
-		public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+	    public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
+	    {
+	        throw new NotImplementedException();
+	    }
+
+	    public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
 		{
 			throw new NotImplementedException();
 		}

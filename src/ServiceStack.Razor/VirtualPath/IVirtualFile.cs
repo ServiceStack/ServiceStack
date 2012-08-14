@@ -5,16 +5,14 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public interface IVirtualFile : IVirtualNode
     {
-        String GetFileHash();
-
-        Stream OpenRead();
-        StreamReader OpenText();
-        String ReadAllText();
-
-        #region Properties
+        IVirtualPathProvider VirtualPathProvider { get; }
 
         DateTime LastModified { get; }
 
-        #endregion
+        string GetFileHash();
+
+        Stream OpenRead();
+        StreamReader OpenText();
+        string ReadAllText();
     }
 }

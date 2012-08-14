@@ -5,21 +5,16 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public interface IVirtualDirectory : IVirtualNode, IEnumerable<IVirtualNode>
     {
-        IVirtualFile GetFile(String virtualPath);
-        IVirtualFile GetFile(Stack<String> virtualPath);
-
-        IVirtualDirectory GetDirectory(String virtualPath);
-        IVirtualDirectory GetDirectory(Stack<String> virtualPath);
-
-        IEnumerable<IVirtualFile> GetAllMatchingFiles(String globPattern, int maxDepth = Int32.MaxValue);
-
-        #region Properties
-
         IEnumerable<IVirtualFile> Files { get; }
         IEnumerable<IVirtualDirectory> Directories { get; }
-
         bool IsRoot { get; }
 
-        #endregion
+        IVirtualFile GetFile(string virtualPath);
+        IVirtualFile GetFile(Stack<string> virtualPath);
+
+        IVirtualDirectory GetDirectory(string virtualPath);
+        IVirtualDirectory GetDirectory(Stack<string> virtualPath);
+
+        IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue);
     }
 }

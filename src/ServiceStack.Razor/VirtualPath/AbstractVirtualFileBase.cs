@@ -6,12 +6,15 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public abstract class AbstractVirtualFileBase : IVirtualFile
     {
-        #region Fields
+        public IVirtualPathProvider VirtualPathProvider { get; set; }
+        protected IVirtualDirectory ParentDirectory;
 
-        protected IVirtualPathProvider virtualPathProvider;
-        protected IVirtualDirectory parentDirectory;
+        public virtual bool IsDirectory { get { return false; } }
+        public virtual string VirtualPath { get { return GetVirtualPathToRoot(); } }
+        public virtual string RealPath { get { return GetRealPathToRoot(); } }
 
-        #endregion
+        public abstract string Name { get; }
+        public abstract DateTime LastModified { get; }
 
         protected AbstractVirtualFileBase(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory)
         {
@@ -21,16 +24,15 @@ namespace ServiceStack.Razor.VirtualPath
             if (parentDirectory == null)
                 throw new ArgumentNullException("parentDirectory");
 
-            this.virtualPathProvider = owningProvider;
-            this.parentDirectory = parentDirectory;
+            this.VirtualPathProvider = owningProvider;
+            this.ParentDirectory = parentDirectory;
         }
 
-        public virtual String GetFileHash()
+        public virtual string GetFileHash()
         {
             using (var stream = OpenRead())
             {
-                return MD5.Create().ComputeHash(stream)
-                                   .ToString();
+                return MD5.Create().ComputeHash(stream).ToString();
             }
         }
 
@@ -51,21 +53,21 @@ namespace ServiceStack.Razor.VirtualPath
 
         protected virtual String GetVirtualPathToRoot()
         {
-            return GetPathToRoot(virtualPathProvider.VirtualPathSeparator, p => p.VirtualPath);
+            return GetPathToRoot(VirtualPathProvider.VirtualPathSeparator, p => p.VirtualPath);
         }
 
-        protected virtual String GetRealPathToRoot()
+        protected virtual string GetRealPathToRoot()
         {
-            return GetPathToRoot(virtualPathProvider.RealPathSeparator, p => p.RealPath);
+            return GetPathToRoot(VirtualPathProvider.RealPathSeparator, p => p.RealPath);
         }
 
-        protected virtual String GetPathToRoot(String separator, Func<IVirtualDirectory, String> pathSel)
+        protected virtual string GetPathToRoot(string separator, Func<IVirtualDirectory, string> pathSel)
         {
-            var parentPath = parentDirectory != null ? pathSel(parentDirectory) : String.Empty;
+            var parentPath = ParentDirectory != null ? pathSel(ParentDirectory) : string.Empty;
             if (parentPath == separator)
-                parentPath = String.Empty;
+                parentPath = string.Empty;
 
-            return String.Concat(parentPath, separator, Name);
+            return string.Concat(parentPath, separator, Name);
         }
 
         public override bool Equals(object obj)
@@ -84,19 +86,7 @@ namespace ServiceStack.Razor.VirtualPath
 
         public override string ToString()
         {
-            return String.Format("{0} -> {1}", RealPath, VirtualPath);
+            return string.Format("{0} -> {1}", RealPath, VirtualPath);
         }
-
-
-        #region Properties
-
-        public virtual bool IsDirectory { get { return false; } }
-        public virtual string VirtualPath { get { return GetVirtualPathToRoot(); } }
-        public virtual string RealPath { get { return GetRealPathToRoot(); } }
-
-        public abstract string Name { get; }
-        public abstract DateTime LastModified { get; }
-
-        #endregion
     }
 }

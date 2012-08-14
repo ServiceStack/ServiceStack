@@ -6,7 +6,7 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public static class VirtualPathExtension
     {
-        public static Stack<String> TokenizeVirtualPath(this String str, IVirtualPathProvider pathProvider)
+        public static Stack<string> TokenizeVirtualPath(this string str, IVirtualPathProvider pathProvider)
         {
             if (pathProvider == null)
                 throw new ArgumentNullException("pathProvider");
@@ -14,9 +14,9 @@ namespace ServiceStack.Razor.VirtualPath
             return TokenizeVirtualPath(str, pathProvider.VirtualPathSeparator);
         }
 
-        public static Stack<String> TokenizeVirtualPath(this String str, String virtualPathSeparator)
+        public static Stack<string> TokenizeVirtualPath(this string str, string virtualPathSeparator)
         {
-            if (String.IsNullOrEmpty(str))
+            if (string.IsNullOrEmpty(str))
                 return new Stack<string>();
 
             var tokens = str.Split(new[] { virtualPathSeparator }, StringSplitOptions.RemoveEmptyEntries);
@@ -24,9 +24,9 @@ namespace ServiceStack.Razor.VirtualPath
         }
 
 
-        public static Stack<String> TokenizeResourcePath(this String str, char pathSeparator = '.')
+        public static Stack<string> TokenizeResourcePath(this string str, char pathSeparator = '.')
         {
-            if (String.IsNullOrEmpty(str))
+            if (string.IsNullOrEmpty(str))
                 return new Stack<string>();
 
             var n = str.Count(c => c == pathSeparator);
@@ -35,10 +35,10 @@ namespace ServiceStack.Razor.VirtualPath
             return new Stack<string>(tokens.Reverse());
         }
 
-        public static IEnumerable<IGrouping<String, String[]>> GroupByFirstToken(this IEnumerable<string> resourceNames, char pathSeparator = '.')
+        public static IEnumerable<IGrouping<string, string[]>> GroupByFirstToken(this IEnumerable<string> resourceNames, char pathSeparator = '.')
         {
             return resourceNames.Select(n => n.Split(new[] { pathSeparator }, 2))
-                                .GroupBy(t => t[0]);
+                .GroupBy(t => t[0]);
         }
     }
 }

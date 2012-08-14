@@ -6,30 +6,25 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public interface IVirtualPathProvider
     {
-        String CombineVirtualPath(String basePath, String relativePath);
+        IAppHost AppHost { get; }
+        IVirtualDirectory RootDirectory { get; }
+        string VirtualPathSeparator { get; }
+        string RealPathSeparator { get; }
 
-        bool FileExists(String virtualPath);
-        bool DirectoryExists(String virtualPath);
+        string CombineVirtualPath(string basePath, string relativePath);
 
-        IVirtualFile GetFile(String virtualPath);
-        String GetFileHash(String virtualPath);
-        String GetFileHash(IVirtualFile virtualFile);
+        bool FileExists(string virtualPath);
+        bool DirectoryExists(string virtualPath);
 
-        IVirtualDirectory GetDirectory(String virtualPath);
+        IVirtualFile GetFile(string virtualPath);
+        string GetFileHash(string virtualPath);
+        string GetFileHash(IVirtualFile virtualFile);
 
-        IEnumerable<IVirtualFile> GetAllMatchingFiles(String globPattern, int maxDepth = Int32.MaxValue);
+        IVirtualDirectory GetDirectory(string virtualPath);
+
+        IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue);
 
         bool IsSharedFile(IVirtualFile virtualFile);
         bool IsViewFile(IVirtualFile virtualFile);
-
-        #region Properties
-
-        IAppHost AppHost { get; }
-        IVirtualDirectory RootDirectory { get; }
-        
-        String VirtualPathSeparator { get; }
-        String RealPathSeparator { get; }
-
-        #endregion
     }
 }

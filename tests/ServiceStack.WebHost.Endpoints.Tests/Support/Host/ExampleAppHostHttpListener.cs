@@ -376,7 +376,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         }
     }
 
-    [RestService("inbox2/{Id}/responses", "GET, PUT, OPTIONS")]
+    [RestService("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
     public class InboxPost
     {
         public bool Throw { get; set; }
@@ -390,7 +390,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
             if (request.Throw)
                 throw new ArgumentNullException("Throw");
             
-            return request;
+            return null;
         }
     }
 

@@ -7,9 +7,10 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public abstract class AbstractVirtualPathProviderBase : IVirtualPathProvider
     {
-        #region Fields
-
-        #endregion
+        public IAppHost AppHost { get; protected set; }
+        public abstract IVirtualDirectory RootDirectory { get; }
+        public abstract string VirtualPathSeparator { get; }
+        public abstract string RealPathSeparator { get; }
 
         protected AbstractVirtualPathProviderBase(IAppHost appHost)
         {
@@ -76,15 +77,5 @@ namespace ServiceStack.Razor.VirtualPath
         }
 
         protected abstract void Initialize();
-
-        #region Properties
-
-        public IAppHost AppHost { get; protected set; }
-
-        public abstract IVirtualDirectory RootDirectory { get; }
-        public abstract string VirtualPathSeparator { get; }
-        public abstract string RealPathSeparator { get;  }
-        
-        #endregion
     }
 }

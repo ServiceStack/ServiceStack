@@ -122,7 +122,9 @@ namespace ServiceStack.Razor
                 this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
             if (VirtualPathProvider == null)
-                VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost);
+                VirtualPathProvider = new MultiVirtualPathProvider(AppHost,
+                    new ResourceVirtualPathProvider(AppHost),
+                    new FileSystemVirtualPathProvider(AppHost));
 
             var razorBaseType = appHost.Config.RazorBaseType;
             Init(razorBaseType);
@@ -187,12 +189,14 @@ namespace ServiceStack.Razor
 
         public IEnumerable<ViewPage> FindRazorPages(string dirPath)
         {
-            var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*.cshtml");
+            var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*.cshtml")
+                .Union(VirtualPathProvider.GetAllMatchingFiles("*.rzr"));
 
             var hasWebPages = false;
             foreach (var csHtmlFile in csHtmlFiles)
             {
-                hasWebPages = true;
+                if (csHtmlFile.GetType() != typeof(ResourceVirtualFile))
+                    hasWebPages = true;
 
                 var pageName = csHtmlFile.Name.WithoutExtension();
                 var pageContents = csHtmlFile.ReadAllText();

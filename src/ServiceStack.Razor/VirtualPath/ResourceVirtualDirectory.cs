@@ -11,19 +11,22 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public class ResourceVirtualDirectory : AbstractVirtualDirectoryBase
     {
-        #region Fields
-
         protected Assembly backingAssembly;
-        protected String directoryName;
+        protected String DirectoryName;
 
-        protected List<ResourceVirtualDirectory> subDirectories;
-        protected List<ResourceVirtualFile> subFiles;
+        protected List<ResourceVirtualDirectory> SubDirectories;
+        protected List<ResourceVirtualFile> SubFiles;
 
-        #endregion
+        public override IEnumerable<IVirtualFile> Files { get { return SubFiles; } }
+        public override IEnumerable<IVirtualDirectory> Directories { get { return SubDirectories; } }
+
+        public override string Name { get { return DirectoryName; } }
+
+        internal Assembly BackingAssembly { get { return backingAssembly; } }
+
 
         public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, IVirtualDirectory parentDir, Assembly backingAsm)
-            : this(owningProvider, parentDir, backingAsm, backingAsm.GetName().Name, backingAsm.GetManifestResourceNames())
-        {   }
+            : this(owningProvider, parentDir, backingAsm, backingAsm.GetName().Name, backingAsm.GetManifestResourceNames()) {}
 
         public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, IVirtualDirectory parentDir, Assembly backingAsm, String directoryName, IEnumerable<String> manifestResourceNames) 
             : base(owningProvider, parentDir)
@@ -31,69 +34,67 @@ namespace ServiceStack.Razor.VirtualPath
             if (backingAsm == null)
                 throw new ArgumentNullException("backingAsm");
 
-            if (String.IsNullOrEmpty(directoryName))
+            if (string.IsNullOrEmpty(directoryName))
                 throw new ArgumentException("directoryName");
 
             this.backingAssembly = backingAsm;
-            this.directoryName = directoryName;
+            this.DirectoryName = directoryName;
 
             InitializeDirectoryStructure(manifestResourceNames);
         }
 
         protected void InitializeDirectoryStructure(IEnumerable<String> manifestResourceNames)
         {
-            subDirectories = new List<ResourceVirtualDirectory>();
-            subFiles = new List<ResourceVirtualFile>();
+            SubDirectories = new List<ResourceVirtualDirectory>();
+            SubFiles = new List<ResourceVirtualFile>();
 
             var rootNamespace = backingAssembly.GetName().Name;
-            var resourceNames = manifestResourceNames.Select(n => n.Replace(rootNamespace, "")
-                                                                   .TrimStart('.'));
+            var resourceNames = manifestResourceNames
+                .ConvertAll(n => n.Replace(rootNamespace, "").TrimStart('.'));
 
-            subFiles.AddRange(resourceNames.Where(n => n.Count(c => c == '.') <= 1)
-                                           .Select(CreateVirtualFile)
-                                           .OrderBy(f => f.Name));
+            SubFiles.AddRange(resourceNames
+                .Where(n => n.Count(c => c == '.') <= 1)
+                .Select(CreateVirtualFile)
+                .OrderBy(f => f.Name));
 
-            subDirectories.AddRange(resourceNames.Where(n => n.Count(c => c == '.') > 1)
-                                                 .GroupByFirstToken(pathSeparator: '.')
-                                                 .Select(CreateVirtualDirectory)
-                                                 .OrderBy(d => d.Name));
+            SubDirectories.AddRange(resourceNames
+                .Where(n => n.Count(c => c == '.') > 1)
+                .GroupByFirstToken(pathSeparator: '.')
+                .Select(CreateVirtualDirectory)
+                .OrderBy(d => d.Name));
         }
 
         protected virtual ResourceVirtualDirectory CreateVirtualDirectory(IGrouping<string, string[]> subResources)
         {
             var remainingResourceNames = subResources.Select(g => g[1]);
-            var subDir = new ResourceVirtualDirectory(virtualPathProvider, this,
-                                                      backingAssembly,
-                                                      subResources.Key,
-                                                      remainingResourceNames);
+            var subDir = new ResourceVirtualDirectory(
+                VirtualPathProvider, this, backingAssembly, subResources.Key, remainingResourceNames);
 
             return subDir;
         }
 
         protected virtual ResourceVirtualFile CreateVirtualFile(String resourceName)
         {
-            Contract.Requires(! String.IsNullOrEmpty(resourceName));
+            Contract.Requires(!String.IsNullOrEmpty(resourceName));
 
-            var fullResourceName = String.Concat(RealPath, virtualPathProvider.RealPathSeparator, resourceName);
+            var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
             var mrInfo = backingAssembly.GetManifestResourceInfo(fullResourceName);
             if (mrInfo == null)
                 throw new FileNotFoundException("Virtual file not found", fullResourceName);
 
-            return new ResourceVirtualFile(virtualPathProvider, this, resourceName);
+            return new ResourceVirtualFile(VirtualPathProvider, this, resourceName);
         }
 
         protected virtual ResourceVirtualDirectory ConsumeTokensForVirtualDir(Stack<string> resourceTokens)
         {
             Contract.Requires(resourceTokens.Count > 1);
             var subDirName = resourceTokens.Pop();
-
             throw new NotImplementedException();
         }
 
         public override IEnumerator<IVirtualNode> GetEnumerator()
         {
-            return Enumerable.Union<IVirtualNode>(Directories, Files)
-                             .GetEnumerator();
+            return Directories.Union<IVirtualNode>(Files).GetEnumerator();
         }
 
         protected override IVirtualFile GetFileFromBackingDirectoryOrDefault(string fileName)
@@ -116,17 +117,5 @@ namespace ServiceStack.Razor.VirtualPath
             var path = base.GetRealPathToRoot();
             return path.TrimStart('.');
         }
-
-        #region Properties
-
-        public override IEnumerable<IVirtualFile> Files { get { return subFiles; } }
-        public override IEnumerable<IVirtualDirectory> Directories { get { return subDirectories; } }
-
-        public override string Name { get { return directoryName; } }
-
-        internal Assembly BackingAssembly { get { return backingAssembly; } }
-
-        #endregion
-
     }
 }

@@ -5,11 +5,22 @@ namespace ServiceStack.Razor.VirtualPath
 {
     public class FileSystemVirtualFile : AbstractVirtualFileBase
     {
-        #region Fields
+        protected FileInfo BackingFile;
+        
+        public override string Name
+        {
+            get { return BackingFile.Name; }
+        }
 
-        protected FileInfo backingFile;
+        public override string RealPath
+        {
+            get { return BackingFile.FullName; }
+        }
 
-        #endregion
+        public override DateTime LastModified
+        {
+            get { return BackingFile.LastWriteTime; }
+        }
 
         public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory, FileInfo fInfo) 
             : base(owningProvider, parentDirectory)
@@ -17,34 +28,12 @@ namespace ServiceStack.Razor.VirtualPath
             if (fInfo == null)
                 throw new ArgumentNullException("fInfo");
 
-            this.backingFile = fInfo;
+            this.BackingFile = fInfo;
         }
 
         public override Stream OpenRead()
         {
-            return backingFile.OpenRead();
+            return BackingFile.OpenRead();
         }
-
-        
-        #region Properties
-
-        public override string Name
-        {
-            get { return backingFile.Name; }
-        }
-
-        public override string RealPath
-        {
-            get { return backingFile.FullName; }
-        }
-
-        public override DateTime LastModified
-        {
-            get { return backingFile.LastWriteTime; }
-        }
-
-        #endregion
-
-
     }
 }

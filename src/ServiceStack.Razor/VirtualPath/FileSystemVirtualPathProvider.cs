@@ -1,18 +1,18 @@
 ﻿using System;
 using System.IO;
-using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.Razor.VirtualPath
 {
     public class FileSystemVirtualPathProvider : AbstractVirtualPathProviderBase
     {
-        #region Fields
+        protected DirectoryInfo RootDirInfo;
+        protected FileSystemVirtualDirectory RootDir;
 
-        protected DirectoryInfo rootDirInfo;
-        protected FileSystemVirtualDirectory rootDir;
-
-        #endregion
+        public override IVirtualDirectory RootDirectory { get { return RootDir; } }
+        public override String VirtualPathSeparator { get { return "/"; } }
+        public override string RealPathSeparator { get { return Convert.ToString(Path.DirectorySeparatorChar); } }
 
         public FileSystemVirtualPathProvider(IAppHost appHost, String rootDirectoryPath)
             : this(appHost, new DirectoryInfo(rootDirectoryPath))
@@ -24,7 +24,7 @@ namespace ServiceStack.Razor.VirtualPath
             if (rootDirInfo == null)
                 throw new ArgumentNullException("rootDirInfo");
 
-            this.rootDirInfo = rootDirInfo;
+            this.RootDirInfo = rootDirInfo;
             Initialize();
         }
 
@@ -36,24 +36,15 @@ namespace ServiceStack.Razor.VirtualPath
 
         protected override sealed void Initialize()
         {
-            if (rootDirInfo == null)
-                rootDirInfo = new DirectoryInfo(AppHost.Config.MarkdownSearchPath);
+            if (RootDirInfo == null)
+                RootDirInfo = new DirectoryInfo(AppHost.Config.MarkdownSearchPath);
 
-            if (rootDirInfo == null || ! rootDirInfo.Exists)
-                throw new ApplicationException(String.Format("RootDir '{0}' for virtual path does not exist",
-                                                             rootDirInfo.FullName));
+            if (RootDirInfo == null || ! RootDirInfo.Exists)
+                throw new ApplicationException(
+                    "RootDir '{0}' for virtual path does not exist".Fmt(RootDirInfo.FullName));
 
-            rootDir = new FileSystemVirtualDirectory(this, null, rootDirInfo);
+            RootDir = new FileSystemVirtualDirectory(this, null, RootDirInfo);
         }
-
-        #region Properties
-
-        public override IVirtualDirectory RootDirectory { get { return rootDir; } }
-
-        public override String VirtualPathSeparator { get { return "/"; } }
-        public override string RealPathSeparator { get { return Convert.ToString(Path.DirectorySeparatorChar); } }
-
-        #endregion
        
     }
 }
