@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;

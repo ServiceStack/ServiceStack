@@ -310,6 +310,10 @@ namespace ServiceStack.WebHost.Endpoints.Support
 				//rethrow the original exception
 				throw ex;
 			}
+            finally
+			{
+                httpRes.EndServiceStackRequest(skipHeaders: true);
+            }
 		}
 
 	}

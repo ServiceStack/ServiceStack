@@ -340,7 +340,61 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		}
 	}
 
-	public class ExampleAppHostHttpListener
+
+    [RestService("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
+    public class InboxPostResponseRequest
+    {
+        public int Id { get; set; }
+        public List<PageElementResponseDTO> Responses { get; set; }
+    }
+
+    public class InboxPostResponseRequestResponse
+    {
+        public int Id { get; set; }
+        public List<PageElementResponseDTO> Responses { get; set; }
+    }
+
+    public class PageElementResponseDTO
+    {
+        public int PageElementId { get; set; }
+        public string PageElementType { get; set; }
+        public string PageElementResponse { get; set; }
+    }
+
+    public class InboxPostResponseRequestService : ServiceBase<InboxPostResponseRequest>
+    {
+        protected override object Run(InboxPostResponseRequest request)
+        {
+            if (request.Responses == null || request.Responses.Count == 0)
+            {
+                throw new ArgumentNullException("Responses");
+            }
+            return new InboxPostResponseRequestResponse {
+                Id = request.Id,
+                Responses = request.Responses
+            };
+        }
+    }
+
+    [RestService("inbox2/{Id}/responses", "GET, PUT, OPTIONS")]
+    public class InboxPost
+    {
+        public bool Throw { get; set; }
+        public int Id { get; set; }
+    }
+
+    public class InboxPostService : ServiceBase<InboxPost>
+    {
+        protected override object Run(InboxPost request)
+        {
+            if (request.Throw)
+                throw new ArgumentNullException("Throw");
+            
+            return request;
+        }
+    }
+
+    public class ExampleAppHostHttpListener
 		: AppHostHttpListenerBase
 	{
 		//private static ILog log;
@@ -407,6 +461,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			}
 		}
 	}
+
 
 
 }

@@ -84,9 +84,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(IocService.DisposedCount, Is.EqualTo(1));
         }
 
-	    [Test]
-	    public void Does_create_correct_instances_per_scope()
-	    {
+        [Test]
+        public void Does_create_correct_instances_per_scope()
+        {
             FunqRequestScopeDepDisposableProperty.DisposeCount = 0;
             AltRequestScopeDepDisposableProperty.DisposeCount = 0;
 
@@ -94,14 +94,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response1 = restClient.Get<IocScopeResponse>("iocscope");
             var response2 = restClient.Get<IocScopeResponse>("iocscope");
 
-            Console.WriteLine(response2.Dump());
+            response1.PrintDump();
 
             Assert.That(response2.Results[typeof(FunqSingletonScope).Name], Is.EqualTo(1));
             Assert.That(response2.Results[typeof(FunqRequestScope).Name], Is.EqualTo(2));
             Assert.That(response2.Results[typeof(FunqNoneScope).Name], Is.EqualTo(4));
 
             Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
-            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
         }
-	}
+
+        [Test]
+        public void Does_create_correct_instances_per_scope_with_exception()
+        {
+            FunqRequestScopeDepDisposableProperty.DisposeCount = 0;
+            AltRequestScopeDepDisposableProperty.DisposeCount = 0;
+
+            var restClient = new JsonServiceClient(ListeningOn);
+            try {
+                restClient.Get<IocScopeResponse>("iocscope?Throw=true");
+            } catch { }
+            try {
+                restClient.Get<IocScopeResponse>("iocscope?Throw=true");
+            } catch { }
+
+            Assert.That(FunqRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+            Assert.That(AltRequestScopeDepDisposableProperty.DisposeCount, Is.EqualTo(2));
+        }
+    }
 }

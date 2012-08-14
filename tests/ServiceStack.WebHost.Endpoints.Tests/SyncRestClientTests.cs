@@ -8,6 +8,7 @@ using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceModel.Serialization;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -40,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public void Dispose()
         {
-            if (appHost == null) return;			
+            if (appHost == null) return;
             appHost.Dispose();
             appHost = null;
         }
@@ -95,8 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var restClient = CreateRestClient();
 
-            var newMovie = new Movie
-            {
+            var newMovie = new Movie {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
                 Rating = 8.0m,
@@ -138,8 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var restClient = CreateRestClient();
 
-            var newMovie = new Movie
-            {
+            var newMovie = new Movie {
                 ImdbId = "tt0450259",
                 Title = "Blood Diamond",
                 Rating = 8.0m,
@@ -157,6 +156,72 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Movie, Is.Null);
         }
 
+        [Test]
+        public void Can_PUT_complex_type_with_custom_path()
+        {
+            var client = CreateRestClient();
+
+            var request = new InboxPostResponseRequest {
+                Id = 123,
+                Responses = new List<PageElementResponseDTO> {
+                    new PageElementResponseDTO {
+                        PageElementId = 123,
+                        PageElementResponse = "something",
+                        PageElementType = "Question"
+                    }
+                }
+            };
+
+            var response = client.Put<InboxPostResponseRequestResponse>(
+                "inbox/123/responses",
+                request);
+
+            Assert.That(response.Id, Is.EqualTo(request.Id));
+            Assert.That(response.Responses[0].PageElementId,
+                Is.EqualTo(request.Responses[0].PageElementId));
+        }
+
+        [Test]
+        public void Does_throw_400_for_Argument_exceptions()
+        {
+            var client = CreateRestClient();
+
+            try
+            {
+                var response = client.Put<InboxPostResponseRequestResponse>(
+                    "inbox/123/responses",
+                    new InboxPostResponseRequest());
+
+                response.PrintDump();
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(400));
+            }
+        }
+
+        [Test]
+        public void Does_throw_400_for_Argument_exceptions_without_response_DTOs()
+        {
+            var client = CreateRestClient();
+
+            try
+            {
+                var response = client.Put<InboxPost>(
+                    "inbox2/123/responses",
+                    new InboxPost { Throw = true });
+
+                response.PrintDump();
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo(400));
+            }
+        }
     }
 
     [TestFixture]
