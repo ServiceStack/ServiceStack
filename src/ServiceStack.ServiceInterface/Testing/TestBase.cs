@@ -156,6 +156,11 @@ namespace ServiceStack.ServiceInterface.Testing
                 return parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
+			public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
+            {
+                return parent.ExecutePath<TResponse>(HttpMethod.Patch, new UrlParts(relativeOrAbsoluteUrl), request);
+            }
+
             public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
             {
                 throw new NotImplementedException();
