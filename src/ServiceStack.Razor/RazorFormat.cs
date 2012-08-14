@@ -98,7 +98,7 @@ namespace ServiceStack.Razor
                         .AnyElement("namespaces")
                             .AllElements("add").ToList()
                                 .ForEach(x => TemplateNamespaces.Add(x.AnyAttribute("namespace").Value));
-			}
+            }
 
             //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
             if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
@@ -156,17 +156,16 @@ namespace ServiceStack.Razor
 
                 if (razorPage == null)
                     razorPage = GetContentPage(pathInfo);
-                    
-                return razorPage == null 
+
+                return razorPage == null
                     ? null
-                    : new RazorHandler 
-                {
-                    RazorFormat = this,
-                    RazorPage = razorPage,
-                    RequestName = "RazorPage",
-                    PathInfo = pathInfo,
-                    FilePath = filePath
-                };
+                    : new RazorHandler {
+                        RazorFormat = this,
+                        RazorPage = razorPage,
+                        RequestName = "RazorPage",
+                        PathInfo = pathInfo,
+                        FilePath = filePath
+                    };
             });
         }
 
@@ -207,13 +206,12 @@ namespace ServiceStack.Razor
                 else if (VirtualPathProvider.IsViewFile(csHtmlFile))
                     pageType = RazorPageType.ViewPage;
 
-                yield return new ViewPage(this, csHtmlFile.VirtualPath, pageName, pageContents, pageType)
-                {
+                yield return new ViewPage(this, csHtmlFile.VirtualPath, pageName, pageContents, pageType) {
                     LastModified = csHtmlFile.LastModified
                 };
             }
 
-            if (!hasWebPages) 
+            if (!hasWebPages)
                 WatchForModifiedPages = false;
         }
 
@@ -239,7 +237,7 @@ namespace ServiceStack.Razor
             {
                 disposable.Dispose();
             }
-            httpRes.EndServiceStackRequest(skipHeaders:true);
+            httpRes.EndServiceStackRequest(skipHeaders: true);
 
             return true;
         }
