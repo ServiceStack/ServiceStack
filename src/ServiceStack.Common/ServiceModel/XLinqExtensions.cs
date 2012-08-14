@@ -5,9 +5,9 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2010 Liquidbit Ltd.
+// Copyright 2012 ServiceStack
 //
-// Licensed under the same terms of reddis and ServiceStack: new BSD license.
+// Licensed under the new BSD license.
 //
 
 using System;

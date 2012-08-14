@@ -12,7 +12,6 @@ using ServiceStack.Razor.Compilation.CSharp;
 using ServiceStack.Razor.Templating;
 using ServiceStack.Razor.VirtualPath;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
@@ -86,73 +85,6 @@ namespace ServiceStack.Razor
             RegisterNamespacesInConfig();
         }
 
-		//From XlinqExtensions to avoid Mono build error
-		public static XElement AnyElement(XElement element, string name)
-		{
-			if (element == null) return null;
-			foreach (var node in element.Nodes())
-			{
-				if (node.NodeType != System.Xml.XmlNodeType.Element) continue;
-				var childEl = (XElement)node;
-				if (childEl.Name.LocalName == name)
-				{
-					return childEl;
-				}
-			}
-			return null;
-		}
-		
-		public static XElement AnyElement(IEnumerable<XElement> elements, string name)
-		{
-			foreach (var element in elements)
-			{
-				if (element.Name.LocalName == name)
-				{
-					return element;
-				}
-			}
-			return null;
-		}
-
-		public static IEnumerable<XElement> AllElements(IEnumerable<XElement> elements, string name)
-		{
-			var els = new List<XElement>();
-			foreach (var element in elements)
-			{
-				els.AddRange(AllElements(element, name));
-			}
-			return els;
-		}
-
-		public static IEnumerable<XElement> AllElements(XElement element, string name)
-		{
-			var els = new List<XElement>();
-			if (element == null) return els;
-			foreach (var node in element.Nodes())
-			{
-				if (node.NodeType != System.Xml.XmlNodeType.Element) continue;
-				var childEl = (XElement)node;
-				if (childEl.Name.LocalName == name)
-				{
-					els.Add(childEl);
-				}
-			}
-			return els;
-		}
-
-		public static XAttribute AnyAttribute(XElement element, string name)
-		{
-			if (element == null) return null;
-			foreach (var attribute in element.Attributes())
-			{
-				if (attribute.Name.LocalName == name)
-				{
-					return attribute;
-				}
-			}
-			return null;
-		}
-
         private void RegisterNamespacesInConfig()
         {
             //Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
@@ -161,20 +93,11 @@ namespace ServiceStack.Razor
             {
                 var xml = configPath.ReadAllText();
                 var doc = XElement.Parse(xml);
-//                doc.AnyElement("system.web.webPages.razor")
-//                    .AnyElement("pages")
-//                        .AnyElement("namespaces")
-//                            .AllElements("add").ToList()
-//                                .ForEach(x => TemplateNamespaces.Add(x.AnyAttribute("namespace").Value));
-
-				//re-written to avoid Mono build error
-				var els = AllElements(
-					AnyElement(AnyElement(AnyElement(
-					doc, "system.web.webPages.razor"), 
-						"pages"), 
-							"namespaces"), 
-								"add").ToList();
-				els.ForEach(x => TemplateNamespaces.Add(AnyAttribute(x, "namespace").Value));
+                doc.AnyElement("system.web.webPages.razor")
+                    .AnyElement("pages")
+                        .AnyElement("namespaces")
+                            .AllElements("add").ToList()
+                                .ForEach(x => TemplateNamespaces.Add(x.AnyAttribute("namespace").Value));
 			}
 
             //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
