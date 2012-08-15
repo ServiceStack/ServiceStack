@@ -78,7 +78,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				else
 				{
 					var dbFactory = new OrmLiteConnectionFactory(
-						":memory:", false, SqliteOrmLiteDialectProvider.Instance);
+						":memory:", autoDisposeConnection:false, dialectProvider:SqliteDialect.Provider);
 					var sqliteRepo = new OrmLiteAuthRepository(dbFactory);
 					sqliteRepo.CreateMissingTables();
 					sqliteRepo.Clear();
