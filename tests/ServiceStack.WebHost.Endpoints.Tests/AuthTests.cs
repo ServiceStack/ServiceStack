@@ -1,10 +1,13 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
+using ServiceStack.Common.Utils;
+using ServiceStack.Common.Web;
 using ServiceStack.Service;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
@@ -12,6 +15,7 @@ using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -42,6 +46,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             throw new ArgumentException("unicorn nuggets");
         }
 	}
+
+    [RestService("/securedfileupload")]
+    public class SecuredFileUpload
+    {
+        public int CustomerId { get; set; }
+        public string CustomerName { get; set; }
+    }
+
+    [Authenticate]
+    public class SecuredFileUploadService : RestServiceBase<SecuredFileUpload>
+    {
+        public override object OnPost(SecuredFileUpload request)
+        {
+            var file = this.RequestContext.Files[0];
+            return new FileUploadResponse
+            {
+                FileName = file.FileName,
+                ContentLength = file.ContentLength,
+                ContentType = file.ContentType,
+                Contents = new StreamReader(file.InputStream).ReadToEnd(),
+                CustomerId = request.CustomerId,
+                CustomerName = request.CustomerName
+            };
+        }
+    }
+
 
 	public class RequiresRole
 	{
@@ -168,6 +198,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 				Console.WriteLine(webEx.ResponseDto.Dump());
 			}
 		}
+
+        [Test]
+        public void PostFile_with_no_Credentials_throws_UnAuthorized()
+        {
+            try
+            {
+                var client = GetClient();
+                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+                client.PostFile<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+
+                Assert.Fail("Shouldn't be allowed");
+            }
+            catch (WebServiceException webEx)
+            {
+                Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+                Console.WriteLine(webEx.ResponseDto.Dump());
+            }
+        }
+
+        [Test]
+        public void PostFile_does_work_with_BasicAuth()
+        {
+            var client = GetClientWithUserPassword();
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+
+            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var response = client.PostFile<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
+            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(response.Contents, Is.EqualTo(expectedContents));
+        }
+
+        [Test]
+        public void PostFileWithRequest_does_work_with_BasicAuth()
+        {
+            var client = GetClientWithUserPassword();
+            var request = new SecuredFileUpload { CustomerId = 123, CustomerName = "Foo" };
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+
+            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, request);
+            Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
+            Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
+            Assert.That(response.Contents, Is.EqualTo(expectedContents));
+            Assert.That(response.CustomerName, Is.EqualTo("Foo"));
+            Assert.That(response.CustomerId, Is.EqualTo(123));
+        }
 
 		[Test]
 		public void Does_work_with_BasicAuth()
