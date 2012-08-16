@@ -231,9 +231,16 @@ namespace ServiceStack.ServiceHost
 
         public static HttpStatusCode ToStatusCode(this Exception ex)
 	    {
-	        if (ex is NotImplementedException || ex is NotSupportedException) return HttpStatusCode.MethodNotAllowed;
+            if (ex is HttpError) return ((HttpError)ex).StatusCode;
+            if (ex is NotImplementedException || ex is NotSupportedException) return HttpStatusCode.MethodNotAllowed;
 	        if (ex is ArgumentException || ex is SerializationException) return HttpStatusCode.BadRequest;
 	        return HttpStatusCode.InternalServerError;
 	    }
+        
+        public static string ToErrorCode(this Exception ex)
+        {
+            if (ex is HttpError) return ((HttpError)ex).ErrorCode;
+            return ex.GetType().Name;
+        }
 	}
 }

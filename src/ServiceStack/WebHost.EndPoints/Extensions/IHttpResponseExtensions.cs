@@ -319,7 +319,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendFormat("<{0}Response xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"{1}\">\n",
 				operationName, EndpointHost.Config.DefaultOperationNamespace);
 			sb.AppendLine("<ResponseStatus>");
-			sb.AppendFormat("<ErrorCode>{0}</ErrorCode>\n", ex.GetType().Name.EncodeXml());
+			sb.AppendFormat("<ErrorCode>{0}</ErrorCode>\n", ex.ToErrorCode().EncodeXml());
 			sb.AppendFormat("<Message>{0}</Message>\n", ex.Message.EncodeXml());
             if (EndpointHost.Config.DebugMode) sb.AppendFormat("<StackTrace>{0}</StackTrace>\n", ex.StackTrace.EncodeXml());
 			sb.AppendLine("</ResponseStatus>");
@@ -333,7 +333,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var sb = new StringBuilder();
 			sb.AppendLine("{");
 			sb.AppendLine("\"ResponseStatus\":{");
-			sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.GetType().Name.EncodeJson());
+			sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.ToErrorCode().EncodeJson());
 			sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
             if (EndpointHost.Config.DebugMode) sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
 			sb.AppendLine("}");
@@ -347,7 +347,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			var sb = new StringBuilder();
 			sb.Append("{");
 			sb.Append("ResponseStatus:{");
-			sb.AppendFormat("ErrorCode:{0},", ex.GetType().Name.EncodeJsv());
+            sb.AppendFormat("ErrorCode:{0},", ex.ToErrorCode().EncodeJsv());
 			sb.AppendFormat("Message:{0},", ex.Message.EncodeJsv());
             if (EndpointHost.Config.DebugMode) sb.AppendFormat("StackTrace:{0}", ex.StackTrace.EncodeJsv());
 			sb.Append("}");
