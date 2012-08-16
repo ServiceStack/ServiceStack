@@ -1,25 +1,11 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ServiceStack.FluentValidation.Mvc3/FluentValidationModelMetadataProvider.cs">
-    <Files>
-      <File FileName="../tests/ServiceStack.Common.Tests/OAuth/OAuthUserSessionTests.cs" Line="208" Column="55" />
-      <File FileName="../tests/ServiceStack.Common.Tests/Text/AdhocJsTests.cs" Line="66" Column="39" />
-      <File FileName="../tests/ServiceStack.ServiceHost.Tests/ServiceCreationTests.cs" Line="73" Column="4" />
-      <File FileName="../tests/ServiceStack.WebHost.Endpoints.Tests/AppHostListenerBaseTests.cs" Line="7" Column="24" />
-      <File FileName="../tests/ServiceStack.WebHost.Endpoints.Tests/AuthTests.cs" Line="157" Column="7" />
-      <File FileName="../tests/ServiceStack.WebHost.Endpoints.Tests/CustomerServiceValidationTests.cs" Line="325" Column="54" />
-      <File FileName="../tests/ServiceStack.WebHost.Endpoints.Tests/RemoteEndDropsConnectionTests.cs" Line="5" Column="24" />
-      <File FileName="../tests/ServiceStack.WebHost.Endpoints.Tests/UserServiceValidationTests.cs" Line="13" Column="24" />
-      <File FileName="ServiceStack.FluentValidation.Mvc3/CustomizeValidatorAttribute.cs" Line="21" Column="33" />
-      <File FileName="ServiceStack.FluentValidation.Mvc3/Mvc/MiniProfiler/MiniProfiler.cs" Line="61" Column="7" />
-      <File FileName="ServiceStack/MiniProfiler/UI/MiniProfilerHandler.cs" Line="32" Column="27" />
-      <File FileName="ServiceStack.FluentValidation.Mvc3/FluentValidationModelMetadataProvider.cs" Line="61" Column="53" />
-    </Files>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="Tests" expanded="True" />
-          <Node name="ServiceStack.FluentValidation.Mvc3" selected="True" />
+          <Node name="ServiceStack.Interfaces" expanded="True" />
+          <Node name="ServiceStack.Razor" expanded="True" selected="True" />
         </State>
       </Pad>
     </Pads>

@@ -2,6 +2,7 @@
 using System.Web.Razor.Parser.SyntaxTree;
 using ServiceStack.Razor.ServiceStack;
 using ServiceStack.Razor.Templating;
+using ServiceStack.Text;
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
@@ -74,6 +75,13 @@ namespace ServiceStack.Razor.Compilation
         /// <returns>The string typename (including namespace and generic type parameters).</returns>
         public abstract string BuildTypeNameInternal(Type type, bool isDynamic);
 
+		static string[] DuplicatedAssmebliesInMono = new string[] {
+			"mscorlib.dll",
+			"System/4.0.0.0__b77a5c561934e089/System.dll",
+			"System.Xml/4.0.0.0__b77a5c561934e089/System.Xml.dll",
+			"System.Core/4.0.0.0__b77a5c561934e089/System.Core.dll",
+			"Microsoft.CSharp/4.0.0.0__b03f5f7f11d50a3a/Microsoft.CSharp.dll",
+		};
 
         /// <summary>
         /// Creates the compile results for the specified <see cref="TypeContext"/>.
@@ -103,6 +111,20 @@ namespace ServiceStack.Razor.Compilation
                 .ToArray();
 
             @params.ReferencedAssemblies.AddRange(assemblies);
+
+			if (Env.IsMono)
+			{
+				for (var i=@params.ReferencedAssemblies.Count-1; i>=0; i--)
+				{
+					var assembly = @params.ReferencedAssemblies[i];
+					foreach (var filterAssembly in DuplicatedAssmebliesInMono)
+					{
+						if (assembly.Contains(filterAssembly)) {
+							@params.ReferencedAssemblies.RemoveAt(i);
+						}
+					}
+				}
+			}
 
             return CodeDomProvider.CompileAssemblyFromDom(@params, compileUnit);
         }

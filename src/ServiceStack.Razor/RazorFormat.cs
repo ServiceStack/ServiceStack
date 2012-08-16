@@ -189,7 +189,9 @@ namespace ServiceStack.Razor
         public IEnumerable<ViewPage> FindRazorPages(string dirPath)
         {
             var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*.cshtml")
-                .Union(VirtualPathProvider.GetAllMatchingFiles("*.rzr"));
+                .Union(VirtualPathProvider.GetAllMatchingFiles("*.rzr")).ToList();
+
+			//csHtmlFiles.Count.PrintDump();
 
             var hasWebPages = false;
             foreach (var csHtmlFile in csHtmlFiles)
@@ -230,7 +232,8 @@ namespace ServiceStack.Razor
             var template = ExecuteTemplate(dto, razorPage.PageName, templatePath, httpReq, httpRes);
             var html = template.Result;
             var htmlBytes = html.ToUtf8Bytes();
-            httpRes.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
+
+			httpRes.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
 
             var disposable = template as IDisposable;
             if (disposable != null)
@@ -326,6 +329,10 @@ namespace ServiceStack.Razor
                 page.Prepare();
                 AddViewPage(page);
             }
+			catch (TemplateCompilationException tcex) 
+			{
+				tcex.Errors.PrintDump();
+			}
             catch (Exception ex)
             {
                 var errorViewPage = new ErrorViewPage(this, ex) {
