@@ -93,6 +93,7 @@
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -125,6 +126,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EndpointHandlerBaseTests.cs" />
     <Compile Include="FluentValidation\ErrorCodeTests.cs" />
     <Compile Include="MappingTests.cs" />
     <Compile Include="MessagingTests.cs" />
