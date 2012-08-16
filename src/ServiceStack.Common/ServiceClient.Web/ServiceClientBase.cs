@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
-#if !MONOTOUCH
+#if !(MONOTOUCH || SILVERLIGHT)
 using System.Web;
 #endif
 using ServiceStack.Common;

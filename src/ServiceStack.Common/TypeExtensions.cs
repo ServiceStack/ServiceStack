@@ -27,6 +27,7 @@ namespace ServiceStack.Common
             return type.GetCustomAttributes(typeof(T), true).SafeConvertAll(x => (T)x);
         }
 
+#if !SILVERLIGHT
         public static string GetAssemblyPath(this Type source)
         {
             var assemblyUri =
@@ -34,6 +35,6 @@ namespace ServiceStack.Common
 
             return assemblyUri.LocalPath;
         }
-
+#endif
     }
 }
