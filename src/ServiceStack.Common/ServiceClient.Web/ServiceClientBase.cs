@@ -332,18 +332,13 @@ namespace ServiceStack.ServiceClient.Web
             try
             {
                 var webResponse = client.GetResponse();
-                ApplyWebResponseFilters(webResponse);
-                using (var responseStream = webResponse.GetResponseStream())
-                {
-                    var response = DeserializeFromStream<TResponse>(responseStream);
-                    return response;
-                }
+                return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
             {
                 TResponse response;
 
-                if (!HandleResponseException(ex, Web.HttpMethod.Post, requestUri, request, out response))
+                if (!HandleResponseException(ex, requestUri, () => SendRequest(Web.HttpMethod.Post, requestUri, request), c => c.GetResponse(), out response))
                 {
                     throw;
                 }
@@ -352,26 +347,23 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
-        private bool HandleResponseException<TResponse>(Exception ex, string httpMethod, string requestUri, object request, out TResponse response)
+        private bool HandleResponseException<TResponse>(Exception ex, string requestUri, Func<WebRequest> createWebRequest, Func<WebRequest, WebResponse> getResponse, out TResponse response)
         {
             try
             {
                 if (WebRequestUtils.ShouldAuthenticate(ex, this.UserName, this.Password))
                 {
-                    var client = SendRequest(httpMethod, requestUri, request);
+                    var client = createWebRequest();
                     client.AddBasicAuth(this.UserName, this.Password);
                     if (OnAuthenticationRequired != null)
                     {
                         OnAuthenticationRequired(client);
                     }
 
-                    var webResponse = client.GetResponse();
-                    ApplyWebResponseFilters(webResponse);
-                    using (var responseStream = webResponse.GetResponseStream())
-                    {
-                        response = DeserializeFromStream<TResponse>(responseStream);
-                        return true;
-                    }
+                    var webResponse = getResponse(client);
+
+                    response = HandleResponse<TResponse>(webResponse);
+                    return true;
                 }
             }
             catch (Exception subEx)
@@ -445,6 +437,17 @@ namespace ServiceStack.ServiceClient.Web
 
         private WebRequest SendRequest(string httpMethod, string requestUri, object request)
         {
+            return PrepareWebRequest(httpMethod, requestUri, request, client =>
+                {
+                    using (var requestStream = client.GetRequestStream())
+                    {
+                        SerializeToStream(null, request, requestStream);
+                    }
+                });
+        }
+
+        private WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)
+        {
             if (httpMethod == null)
                 throw new ArgumentNullException("httpMethod");
 
@@ -486,10 +489,7 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     client.ContentType = ContentType;
 
-                    using (var requestStream = client.GetRequestStream())
-                    {
-                        SerializeToStream(null, request, requestStream);
-                    }
+                    if (sendRequestAction != null) sendRequestAction(client);
                 }
             }
             catch (AuthenticationException ex)
@@ -669,18 +669,13 @@ namespace ServiceStack.ServiceClient.Web
             try
             {
                 var webResponse = client.GetResponse();
-                ApplyWebResponseFilters(webResponse);
-                using (var responseStream = webResponse.GetResponseStream())
-                {
-                    var response = DeserializeFromStream<TResponse>(responseStream);
-                    return response;
-                }
+                return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
             {
                 TResponse response;
 
-                if (!HandleResponseException(ex, httpMethod, requestUri, request, out response))
+                if (!HandleResponseException(ex, requestUri, () => SendRequest(httpMethod, requestUri, request), c => c.GetResponse(), out response))
                 {
                     throw;
                 }
@@ -722,17 +717,10 @@ namespace ServiceStack.ServiceClient.Web
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, object request)
         {
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
-            webRequest.Method = Web.HttpMethod.Post;
-            webRequest.Accept = ContentType;
-            if (Proxy != null) webRequest.Proxy = Proxy;
+            var currentStreamPosition = fileToUpload.Position;
 
-            if (StoreCookies)
-                webRequest.CookieContainer = CookieContainer;
- 
-            try
-            {
-                ApplyWebRequestFilters(webRequest);
+            Func<WebRequest> createWebRequest = () => {
+                var webRequest = PrepareWebRequest(Web.HttpMethod.Post, requestUri, null, null);
 
                 var queryString = QueryStringSerializer.SerializeToString(request);
 #if !MONOTOUCH
@@ -763,79 +751,73 @@ namespace ServiceStack.ServiceClient.Web
                     outputStream.Write(newLine);
                     outputStream.Write(boundary + "--");
                 }
+
+                return webRequest;
+            };
+
+            try
+            {
+                var webRequest = createWebRequest();
                 var webResponse = webRequest.GetResponse();
-                ApplyWebResponseFilters(webResponse);
-                using (var responseStream = webResponse.GetResponseStream())
-                {
-                    var response = DeserializeFromStream<TResponse>(responseStream);
-                    return response;
-                }
+                return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
             {
-                HandleResponseException<TResponse>(ex, requestUri);
-                throw;
+                TResponse response;
+
+                // restore original position before retry
+                fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
+
+                if (!HandleResponseException(ex, requestUri, createWebRequest, c => c.GetResponse(), out response))
+                {
+                    throw;
+                }
+
+                return response;
             }
         }
 
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
-            var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
-            webRequest.Method = Web.HttpMethod.Post;
-            webRequest.Accept = ContentType;
-            if (Proxy != null) webRequest.Proxy = Proxy;
-
-            if (StoreCookies)
-                webRequest.CookieContainer = CookieContainer;
-
-            try
-            {
-                ApplyWebRequestFilters(webRequest);
-
-                var webResponse = webRequest.UploadFile(fileToUpload, mimeType);
-                ApplyWebResponseFilters(webResponse);
-                using (var responseStream = webResponse.GetResponseStream())
-                {
-                    var response = DeserializeFromStream<TResponse>(responseStream);
-                    return response;
-                }
-            }
-            catch (Exception ex)
-            {
-                HandleResponseException<TResponse>(ex, requestUri);
-                throw;
-            }
+            return PostFile<TResponse>(relativeOrAbsoluteUrl, fileToUpload.OpenRead(), fileToUpload.Name, mimeType);
         }
 
         public virtual TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType)
         {
+            var currentStreamPosition = fileToUpload.Position;
             var requestUri = GetUrl(relativeOrAbsoluteUrl);
-            var webRequest = (HttpWebRequest)WebRequest.Create(requestUri);
-            webRequest.Method = Web.HttpMethod.Post;
-            webRequest.Accept = ContentType;
-            if (Proxy != null) webRequest.Proxy = Proxy;
-
-            if (StoreCookies)
-                webRequest.CookieContainer = CookieContainer;
+            Func<WebRequest> createWebRequest = () => PrepareWebRequest(Web.HttpMethod.Post, requestUri, null, null);
 
             try
             {
-                ApplyWebRequestFilters(webRequest);
-
+                var webRequest = createWebRequest();
                 webRequest.UploadFile(fileToUpload, fileName, mimeType);
                 var webResponse = webRequest.GetResponse();
-                ApplyWebResponseFilters(webResponse);
-                using (var responseStream = webResponse.GetResponseStream())
-                {
-                    var response = DeserializeFromStream<TResponse>(responseStream);
-                    return response;
-                }
+                return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
             {
-                HandleResponseException<TResponse>(ex, requestUri);
-                throw;
+                TResponse response;
+
+                // restore original position before retry
+                fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
+
+                if (!HandleResponseException(ex, requestUri, createWebRequest, c => { c.UploadFile(fileToUpload, fileName, mimeType); return c.GetResponse(); }, out response))
+                {
+                    throw;
+                }
+
+                return response;
+            }
+        }
+
+        private TResponse HandleResponse<TResponse>(WebResponse webResponse)
+        {
+            ApplyWebResponseFilters(webResponse);
+            using (var responseStream = webResponse.GetResponseStream())
+            {
+                var response = DeserializeFromStream<TResponse>(responseStream);
+                return response;
             }
         }
 #endif
