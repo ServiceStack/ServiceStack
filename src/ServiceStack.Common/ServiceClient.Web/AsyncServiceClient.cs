@@ -6,6 +6,7 @@ using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.Common.Web;
 
 namespace ServiceStack.ServiceClient.Web
 {
@@ -130,7 +131,11 @@ namespace ServiceStack.ServiceClient.Web
                 Exception toReturn = ex;
                 if (_timedOut)
                 {
+#if SILVERLIGHT
+                    WebException we = new WebException("The request timed out", ex, WebExceptionStatus.RequestCanceled, null);
+#else
                     WebException we = new WebException("The request timed out", ex, WebExceptionStatus.Timeout, null);
+#endif
                     toReturn = we;
                 }
 
@@ -216,11 +221,13 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
+#if !SILVERLIGHT
         internal static void AllowAutoCompression(HttpWebRequest webRequest)
         {
             webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
             webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;            
         }
+#endif
 
         private RequestState<TResponse> SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, 
             Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
@@ -268,17 +275,23 @@ namespace ServiceStack.ServiceClient.Web
             }
 #endif
 
+#if !SILVERLIGHT
             if (!DisableAutoCompression)
             {
                 _webRequest.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip,deflate");
                 _webRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;                
             }
+#endif
 
             var requestState = new RequestState<TResponse>
             {
                 HttpMethod = httpMethod,
                 Url = requestUri,
+#if SILVERLIGHT
+                WebRequest = webRequest,
+#else
                 WebRequest = _webRequest,
+#endif
                 Request = request,
                 OnSuccess = onSuccess,
                 OnError = onError,
@@ -288,7 +301,11 @@ namespace ServiceStack.ServiceClient.Web
             };
             requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
 
+#if SILVERLIGHT
+            SendWebRequestAsync(httpMethod, request, requestState, webRequest);
+#else
             SendWebRequestAsync(httpMethod, request, requestState, _webRequest);
+#endif
 
             return requestState;
         }
