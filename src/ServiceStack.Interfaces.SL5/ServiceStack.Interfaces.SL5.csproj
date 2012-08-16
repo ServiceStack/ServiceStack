@@ -405,6 +405,9 @@
     <Compile Include="..\ServiceStack.Interfaces\Redis\IRedisTransactionBase.cs">
       <Link>Redis\IRedisTransactionBase.cs</Link>
     </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\Redis\ItemRef.cs">
+      <Link>Redis\ItemRef.cs</Link>
+    </Compile>
     <Compile Include="..\ServiceStack.Interfaces\Redis\Pipeline\IRedisPipeline.cs">
       <Link>Redis\Pipeline\IRedisPipeline.cs</Link>
     </Compile>
@@ -440,9 +443,6 @@
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IAsyncService.cs">
       <Link>ServiceHost\IAsyncService.cs</Link>
-    </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\ICanResolve.cs">
-      <Link>ServiceHost\ICanResolve.cs</Link>
     </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IContentTypeFilter.cs">
       <Link>ServiceHost\IContentTypeFilter.cs</Link>
@@ -620,7 +620,7 @@
       <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
         <SilverlightProjectProperties />
       </FlavorProperties>
-      <UserProperties ProjectLinkReference="42e1c8c0-a163-44cc-92b1-8f416f2c0b01" ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" />
+      <UserProperties ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" ProjectLinkReference="42e1c8c0-a163-44cc-92b1-8f416f2c0b01" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
