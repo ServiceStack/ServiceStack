@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
-		[Ignore("Helps debugging when you need to find out WTF is going on")]
+		[Explicit("Helps debugging when you need to find out WTF is going on")]
 		public void Run_for_30secs()
 		{
 			Thread.Sleep(30000);
