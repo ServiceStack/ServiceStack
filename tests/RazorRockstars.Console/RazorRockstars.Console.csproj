@@ -72,7 +72,6 @@
     </Content>
     <Content Include="sqlite\x64\sqlite3.dll" />
     <Content Include="sqlite\x86\sqlite3.dll" />
-    <Content Include="sqlite\x86\sqlite3.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
