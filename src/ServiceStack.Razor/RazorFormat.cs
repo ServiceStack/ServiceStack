@@ -231,7 +231,20 @@ namespace ServiceStack.Razor
 
             var template = ExecuteTemplate(dto, razorPage.PageName, templatePath, httpReq, httpRes);
             var html = template.Result;
-            var htmlBytes = html.ToUtf8Bytes();
+
+			var htmlBytes = html.ToUtf8Bytes();
+
+			if (Env.IsMono) {
+				//var hasBom = html.Contains((char)65279);
+				//TODO: Replace sad hack in Mono replacing the BOM with whitespace:
+				for (var i=0; i<htmlBytes.Length-3; i++) {
+					if (htmlBytes[i] == 0xEF && htmlBytes[i+1] == 0xBB && htmlBytes[i+2] == 0xBF) {
+						htmlBytes[i] = (byte)' ';
+						htmlBytes[i+1] = (byte)' ';
+						htmlBytes[i+2] = (byte)' ';
+					}
+				}
+			}
 
 			httpRes.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
 
