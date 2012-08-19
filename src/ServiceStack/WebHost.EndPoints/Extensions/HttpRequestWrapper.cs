@@ -176,7 +176,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
         {
             get
             {
-                return userHostAddress ?? (userHostAddress = request.Headers[HttpHeaders.XForwardedFor] ?? (request.Headers[HttpHeaders.XRealIp] ?? request.UserHostAddress));
+                //return userHostAddress ?? (userHostAddress = request.Headers[HttpHeaders.XForwardedFor] ?? (request.Headers[HttpHeaders.XRealIp] ?? request.UserHostAddress));
+                return userHostAddress ??request.UserHostAddress; // last line commented due to Console-To-Go bug in x-forwarded-for
             }
         }
 
