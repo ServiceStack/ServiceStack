@@ -1,4 +1,4 @@
-﻿//Orignally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor.BuildProviders/NancyCSharpRazorBuildProvider.cs
+//Orignally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor.BuildProviders/NancyCSharpRazorBuildProvider.cs
 namespace ServiceStack.Razor.ServiceStack
 {
 	using System;
@@ -25,7 +25,7 @@ namespace ServiceStack.Razor.ServiceStack
 			this.compilerType = this.GetDefaultCompilerTypeForLanguage("C#");
 
 			this.host = new RazorEngineHost(new CSharpRazorCodeLanguage()) {
-				DefaultBaseClass = typeof(ViewPage).FullName,
+				DefaultBaseClass = typeof(ViewPageRef).FullName,
 				DefaultNamespace = "RazorOutput",
 				DefaultClassName = "ViewPage"
 			};

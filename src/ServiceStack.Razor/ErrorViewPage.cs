@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using ServiceStack.Razor.Templating;
 using ServiceStack.Text;
@@ -6,7 +6,7 @@ using ServiceStack.Text;
 namespace ServiceStack.Razor
 {
     //The type or namespace name 'Html' does not exist in the namespace 'ServiceStack.Markdown' (are you missing an assembly reference?)
-    public class ErrorViewPage : ViewPage
+    public class ErrorViewPage : ViewPageRef
     {
         public static string DefaultPageName = "Error";
         public static string DefaultContents = @"﻿<!DOCTYPE HTML>

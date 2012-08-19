@@ -1,17 +1,105 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench ActiveDocument="ServiceStack.Razor/RazorFormat.cs">
+    <Files>
+      <File FileName="../tests/RazorRockstars.Console/AppHost.cs" Line="21" Column="1" />
+      <File FileName="ServiceStack.Razor/RazorFormat.cs" Line="230" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/CompilerServiceBase.cs" Line="83" Column="15" />
+      <File FileName="ServiceStack.Razor/RazorHandler.cs" Line="45" Column="31" />
+      <File FileName="ServiceStack.Razor/Templating/TemplateWriter.cs" Line="31" Column="73" />
+      <File FileName="ServiceStack.Razor/Compilation/CSharp/CSharpDirectCompilerService.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/CSharp/CSharpRazorCodeGenerator.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/CSharp/CSharpRazorCodeLanguage.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/CompilerServices.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/RazorDynamicObject.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/TypeContext.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ServiceStack/MvcCSharpRazorCodeParser.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ServiceStack/MvcWebPageRazorHost.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ServiceStack/ServiceStackCSharpRazorBuildProvider.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/IRazorViewEngine.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/ITemplate.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/ITemplateOfT.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/RequireNamespacesAttribute.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ViewPage.cs" Line="51" Column="1" />
+      <File FileName="ServiceStack.Razor/ViewPage`1.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ViewPageBase.cs" Line="17" Column="17" />
+      <File FileName="ServiceStack/WebHost.Endpoints/Support/HttpListenerBase.cs" Line="183" Column="1" />
+      <File FileName="../tests/RazorRockstars.Console/Views/Rockstars.cshtml" Line="6" Column="2" />
+      <File FileName="ServiceStack.Razor/RazorHost.cs" Line="51" Column="45" />
+      <File FileName="../tests/RazorRockstars.Console/AppHost.cs" Line="21" Column="1" />
+      <File FileName="ServiceStack.Razor/RazorFormat.cs" Line="229" Column="108" />
+      <File FileName="ServiceStack.Razor/Compilation/CompilerServiceBase.cs" Line="83" Column="15" />
+      <File FileName="ServiceStack.Razor/RazorHandler.cs" Line="45" Column="31" />
+      <File FileName="ServiceStack.Razor/Templating/TemplateService.ServiceStack.cs" Line="46" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/TemplateService.cs" Line="245" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/TemplateWriter.cs" Line="31" Column="73" />
+      <File FileName="ServiceStack.Razor/Compilation/CSharp/CSharpDirectCompilerService.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/CSharp/CSharpRazorCodeGenerator.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/CSharp/CSharpRazorCodeLanguage.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/CompilerServices.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/RazorDynamicObject.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Compilation/TypeContext.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ServiceStack/MvcCSharpRazorCodeParser.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ServiceStack/MvcWebPageRazorHost.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ServiceStack/ServiceStackCSharpRazorBuildProvider.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/IRazorViewEngine.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/ITemplate.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/ITemplateOfT.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/RequireNamespacesAttribute.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/Templating/TemplateBase.cs" Line="235" Column="1" />
+      <File FileName="ServiceStack.Razor/ViewPage.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ViewPage`1.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack.Razor/ViewPageBase.cs" Line="1" Column="1" />
+      <File FileName="ServiceStack/WebHost.Endpoints/Support/HttpListenerBase.cs" Line="183" Column="1" />
+      <File FileName="../tests/RazorRockstars.Console/Views/Rockstars.cshtml" Line="6" Column="2" />
+      <File FileName="ServiceStack.Razor/RazorHost.cs" Line="14" Column="33" />
+      <File FileName="ServiceStack/WebHost.Endpoints/EndpointHostConfig.cs" Line="317" Column="39" />
+    </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="ServiceStack.Interfaces" expanded="True" />
-          <Node name="ServiceStack.Razor" expanded="True" selected="True" />
+          <Node name="Tests" expanded="True">
+            <Node name="RazorRockstars.Console" expanded="True" />
+          </Node>
+          <Node name="ServiceStack" expanded="True">
+            <Node name="WebHost.Endpoints" expanded="True" />
+          </Node>
+          <Node name="ServiceStack.Razor" expanded="True">
+            <Node name="Templating" expanded="True" />
+            <Node name="RazorFormat.cs" selected="True" />
+          </Node>
         </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>@object</Value>
+          <Value>@object[0]</Value>
+          <Value>@string</Value>
+          <Value>c710</Value>
+          <Value>html.Substring(709,4).ToCharArray()</Value>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.NUnit.TestPad">
+        <State expanded="True" selected="True" />
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/RazorFormat.cs" line="387" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/RazorFormat.cs" line="383" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateService.ServiceStack.cs" line="72" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateService.cs" line="119" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateService.cs" line="194" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateBase.cs" line="257" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateBase.cs" line="61" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateBase.cs" line="43" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateWriter.cs" line="34" />
+      <Breakpoint file="/Users/mythz/src/ServiceStack/src/ServiceStack.Razor/Templating/TemplateWriter.cs" line="47" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

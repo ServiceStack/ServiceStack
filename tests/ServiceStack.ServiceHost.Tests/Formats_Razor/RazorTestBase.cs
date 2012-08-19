@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using ServiceStack.Razor;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
 			razorFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
 			razorFormat.AddPage(
-				new ViewPage(razorFormat, "/path/to/tpl", PageName, pageTemplate) {
+				new ViewPageRef(razorFormat, "/path/to/tpl", PageName, pageTemplate) {
 					TemplatePath = "/path/to/websitetpl",
 				});
 
@@ -25,7 +25,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
 			var razorFormat = new RazorFormat();
 			razorFormat.AddPage(
-				new ViewPage(razorFormat, "/path/to/tpl", PageName, pageTemplate));
+				new ViewPageRef(razorFormat, "/path/to/tpl", PageName, pageTemplate));
 
 			return razorFormat;
 		}

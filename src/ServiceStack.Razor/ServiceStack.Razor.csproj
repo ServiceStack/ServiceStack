@@ -94,13 +94,11 @@
     <Compile Include="Compilation\TypeContext.cs" />
     <Compile Include="Language.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RazorHost.cs" />
     <Compile Include="RazorFormat.cs" />
     <Compile Include="RazorHandler.cs" />
     <Compile Include="Templating\IRazorViewEngine.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ViewPage.cs" />
     <Compile Include="ViewPageBase.cs" />
     <Compile Include="ViewPage`1.cs" />
     <Compile Include="ServiceStack\MvcWebPageRazorHost.cs" />
@@ -131,6 +129,8 @@
     <Compile Include="VirtualPath\ResourceVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="XlinqExtensions.cs" />
+    <Compile Include="ViewPageRef.cs" />
+    <Compile Include="ViewPage.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">

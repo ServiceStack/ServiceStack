@@ -151,7 +151,6 @@ namespace ServiceStack.WebHost.Endpoints
 			this.MarkdownSearchPath = instance.MarkdownSearchPath;
 			this.MarkdownReplaceTokens = instance.MarkdownReplaceTokens;
 			this.RazorSearchPath = instance.RazorSearchPath;
-			this.RazorBaseType = instance.RazorBaseType;
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
 			this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
@@ -318,7 +317,6 @@ namespace ServiceStack.WebHost.Endpoints
 		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
 
 		public string RazorSearchPath { get; set; }
-		public Type RazorBaseType { get; set; }
 
 		public HashSet<string> AppendUtf8CharsetOnContentTypes { get; set; }
 

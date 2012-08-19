@@ -37,8 +37,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			};
 			productArgs = new { products = products };
 
-			var mvcRazorFormat = new RazorFormat();
-			mvcRazorFormat.Init(typeof(CustomRazorBasePage<>));
+			var mvcRazorFormat = new RazorFormat { DefaultBaseType = typeof(CustomRazorBasePage<>) };
+			mvcRazorFormat.Init();
 		}
 
 		[Test]

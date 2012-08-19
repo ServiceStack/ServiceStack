@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using ServiceStack.Common;
 using ServiceStack.Html;
@@ -49,6 +50,23 @@ namespace ServiceStack.Razor.Templating
 			}
 
 			return razorTemplate;
+		}
+
+		Dictionary<string, string> pagePathAndNames = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+
+		public void RegisterPage(string pagePath, string pageName)
+		{
+			pagePathAndNames[pagePath] = pageName;
+		}
+
+		public bool ContainsPagePath(string pagePath)
+		{
+			return pagePathAndNames.ContainsKey(pagePath);
+		}
+		
+		public bool ContainsPageName(string pageName)
+		{
+			return pagePathAndNames.ContainsValue(pageName);
 		}
 
 		public IRazorTemplate GetTemplate(string name)

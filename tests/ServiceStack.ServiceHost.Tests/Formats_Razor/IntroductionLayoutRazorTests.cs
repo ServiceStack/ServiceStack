@@ -49,9 +49,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			razorFormat.Init();
 		}
 
-		private ViewPage AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
+		private ViewPageRef AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
 		{
-			var dynamicPage = new ViewPage(razorFormat,
+			var dynamicPage = new ViewPageRef(razorFormat,
 				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
 					TemplatePath = templatePath
 				};
@@ -320,7 +320,7 @@ current date/year: 2012</p>
 				new Product("DVD", 11.99m),
 			};
 
-			RazorHost.SetTemplateBase(typeof(CustomMarkdownViewBase<>));
+			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
 
 			var html = RenderToHtml(pageTemplate, products);
 
@@ -347,7 +347,7 @@ current date/year: 2012</p>
 
 </fieldset>".NormalizeNewLines();
 
-            RazorHost.SetTemplateBase(typeof(CustomBaseClass<>));
+			razorFormat.DefaultBaseType = typeof(CustomBaseClass<>);
 
 			var html = RenderToHtml(pageTemplate, new Product("Pen", 1.99m));
 

@@ -54,13 +54,12 @@ namespace ServiceStack.Razor.Templating
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Pre-compiled templates must have a name", "name");
 
-            var instance = CreateTemplate(template, modelType);
+			if (modelType == null)
+				modelType = new { }.GetType();
 
-            if (templateCache.ContainsKey(name))
-                templateCache[name] = instance;
-            else
-                templateCache.Add(name, instance);
-        }
+            var instance = CreateTemplate(template, modelType);
+			templateCache[name] = instance;
+		}
 
         /// <summary>
         /// Pre-compiles the specified template and caches it using the specified name.

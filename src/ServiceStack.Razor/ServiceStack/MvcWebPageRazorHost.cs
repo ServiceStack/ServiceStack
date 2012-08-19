@@ -1,4 +1,4 @@
-﻿/* ****************************************************************************
+/* ****************************************************************************
  *
  * Copyright (c) Microsoft Corporation. All rights reserved.
  *
@@ -42,7 +42,7 @@ namespace ServiceStack.Razor.ServiceStack
 		{
 			GetRidOfNamespace("System.Web.WebPages.Html");
 
-			this.DefaultBaseClass = typeof(ViewPage).FullName;
+			this.DefaultBaseClass = typeof(ViewPageRef).FullName;
 			this.DefaultNamespace = "RazorOutput";
 			this.DefaultClassName = "RazorView";
 
