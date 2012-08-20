@@ -437,7 +437,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
 		public Type GetType(string typeName)
 		{
-			var type = AssemblyUtils.FindType(typeName);
+            var type = Evaluator.FindType(typeName)
+                ?? AssemblyUtils.FindType(typeName);
 			if (type == null)
 			{
 				var parts = typeName.Split(new[] { '<', '>' });
@@ -514,7 +515,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			}
 			else if (directive == "template" || directive == "layout")
 			{
-				this.TemplatePath = line.Trim();
+				this.TemplatePath = line.Trim().Trim('"');
 			}
 		}
 

@@ -7,9 +7,9 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Razor;
-using ServiceStack.Razor.VirtualPath;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 using System.Reflection;
 

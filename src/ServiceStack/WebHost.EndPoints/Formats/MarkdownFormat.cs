@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
@@ -9,7 +10,9 @@ using ServiceStack.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.WebHost.Endpoints.Formats
@@ -29,7 +32,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
 		public static string TemplateName = "default.shtml";
 		public static string TemplatePlaceHolder = "<!--@Body-->";
-		public static string WebHostUrlPlaceHolder = "~/";
+        public static string WebHostUrlPlaceHolder = "~/";
+        public static string MarkdownExt = "md";
 
 		public static MarkdownFormat Instance = new MarkdownFormat();
 
@@ -59,19 +63,27 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
 		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
 
-		public MarkdownFormat()
+        public IVirtualPathProvider VirtualPathProvider { get; set; }
+
+        public bool WatchForModifiedPages { get; set; }
+
+        public MarkdownFormat()
 		{
 			markdown = new MarkdownSharp.Markdown();
 
-			this.MarkdownBaseType = typeof(MarkdownViewBase);
+            this.WatchForModifiedPages = true;
+            this.MarkdownBaseType = typeof(MarkdownViewBase);
 			this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
 			this.FindMarkdownPagesFn = FindMarkdownPages;
 			this.MarkdownReplaceTokens = new Dictionary<string, string>();
-		}
+        }
 
 		public void Register(IAppHost appHost)
 		{
 			this.AppHost = appHost;
+
+            foreach (var ns in EndpointHostConfig.RazorNamespaces)
+                Evaluator.AddAssembly(ns);
 
 			this.MarkdownBaseType = appHost.Config.MarkdownBaseType ?? this.MarkdownBaseType;
 			this.MarkdownGlobalHelpers = appHost.Config.MarkdownGlobalHelpers ?? this.MarkdownGlobalHelpers;
@@ -79,6 +91,11 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			this.MarkdownReplaceTokens = appHost.Config.MarkdownReplaceTokens ?? new Dictionary<string, string>();
 			if (!appHost.Config.WebHostUrl.IsNullOrEmpty() && this.MarkdownReplaceTokens.ContainsKey("~/"))
 				this.MarkdownReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
+
+            if (VirtualPathProvider == null)
+                VirtualPathProvider = new MultiVirtualPathProvider(AppHost,
+                    new ResourceVirtualPathProvider(AppHost),
+                    new FileSystemVirtualPathProvider(AppHost));
 
 			RegisterMarkdownPages(appHost.Config.MarkdownSearchPath);
 
@@ -90,7 +107,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 				if ((markdownPage = GetViewPageByResponse(dto, httpReq)) == null)
 					return false;
 
-				ReloadModifiedPageAndTemplates(markdownPage);
+                if (WatchForModifiedPages)
+                    ReloadModifiedPageAndTemplates(markdownPage);
 
 				return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
 			});
@@ -98,7 +116,11 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
 				MarkdownPage markdownPage;
 				if (filePath == null || (markdownPage = GetContentPage(filePath.WithoutExtension())) == null) return null;
-				return new MarkdownHandler 
+
+                if (WatchForModifiedPages)
+                    ReloadModifiedPageAndTemplates(markdownPage);
+                
+                return new MarkdownHandler 
 				{
 					MarkdownFormat = this,
 					MarkdownPage = markdownPage,
@@ -116,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
 		public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)
 		{
-			httpRes.AddHeaderLastModified(markdownPage.GetLastModified());
+            httpRes.AddHeaderLastModified(markdownPage.GetLastModified());
 
 			var renderInTemplate = true;
 			var renderHtml = true;
@@ -134,7 +156,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 				httpRes.ContentType = ContentType.PlainText;
 			}
 
-			var markup = RenderDynamicPage(markdownPage, markdownPage.Name, dto, renderHtml, renderInTemplate);
+            var template = httpReq.GetTemplate();
+            var markup = RenderDynamicPage(markdownPage, markdownPage.Name, dto, renderHtml, renderInTemplate, template);
 			var markupBytes = markup.ToUtf8Bytes();
 			httpRes.OutputStream.Write(markupBytes, 0, markupBytes.Length);
 
@@ -199,32 +222,33 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			var httpResult = dto as IHttpResult;
 			if (httpResult != null)
 			{
-				if (httpResult.TemplateName != null) return httpResult.TemplateName;
 				dto = httpResult.Response;
 			}
 			if (dto != null) return dto.GetType().Name;
 			return httpRequest != null ? httpRequest.OperationName : null;
 		}
 
-		public MarkdownPage GetViewPageByResponse(object dto, IHttpRequest httpRequest)
+		public MarkdownPage GetViewPageByResponse(object dto, IHttpRequest httpReq)
 		{
 			var httpResult = dto as IHttpResult;
 			if (httpResult != null)
 			{
-				//If TemplateName was specified don't look for anything else.
-				if (httpResult.TemplateName != null)
-					return GetViewPage(httpResult.TemplateName);
-
 				dto = httpResult.Response;
 			}
-			if (dto != null)
+
+            //If View was specified don't look for anything else.
+            var viewName = httpReq.GetView();
+            if (viewName != null)
+                return GetViewPage(viewName);
+          
+            if (dto != null)
 			{
 				var responseTypeName = dto.GetType().Name;
 				var markdownPage = GetViewPage(responseTypeName);
 				if (markdownPage != null) return markdownPage;
 			}
 
-			return httpRequest != null ? GetViewPage(httpRequest.OperationName) : null;
+			return httpReq != null ? GetViewPage(httpReq.OperationName) : null;
 		}
 
 		public MarkdownPage GetViewPage(string pageName)
@@ -257,35 +281,66 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			}
 		}
 
-		public IEnumerable<MarkdownPage> FindMarkdownPages(string dirPath)
-		{
-			var di = new DirectoryInfo(dirPath);
-			var markDownFiles = di.GetMatchingFiles("*.md")
-				.Concat(di.GetMatchingFiles("*.markdown"));
+        //public IEnumerable<MarkdownPage> FindMarkdownPages(string dirPath)
+        //{
+        //    var di = new DirectoryInfo(dirPath);
+        //    var markDownFiles = di.GetMatchingFiles("*.md")
+        //        .Concat(di.GetMatchingFiles("*.markdown"));
 
-			var viewPath = Path.Combine(di.FullName, "Views");
-			var viewSharedPath = Path.Combine(viewPath, "Shared");
+        //    var viewPath = Path.Combine(di.FullName, "Views");
+        //    var viewSharedPath = Path.Combine(viewPath, "Shared");
 
-			foreach (var markDownFile in markDownFiles)
-			{
-				var fileInfo = new FileInfo(markDownFile);
-				var pageName = fileInfo.Name.WithoutExtension();
-				var pageContents = File.ReadAllText(markDownFile);
+        //    foreach (var markDownFile in markDownFiles)
+        //    {
+        //        var fileInfo = new FileInfo(markDownFile);
+        //        var pageName = fileInfo.Name.WithoutExtension();
+        //        var pageContents = File.ReadAllText(markDownFile);
 
-				var pageType = MarkdownPageType.ContentPage;
-				if (fileInfo.FullName.StartsWithIgnoreCase(viewSharedPath))
-					pageType = MarkdownPageType.SharedViewPage;
-				else if (fileInfo.FullName.StartsWithIgnoreCase(viewPath))
-					pageType = MarkdownPageType.ViewPage;
+        //        var pageType = MarkdownPageType.ContentPage;
+        //        if (fileInfo.FullName.StartsWithIgnoreCase(viewSharedPath))
+        //            pageType = MarkdownPageType.SharedViewPage;
+        //        else if (fileInfo.FullName.StartsWithIgnoreCase(viewPath))
+        //            pageType = MarkdownPageType.ViewPage;
 
-				var templatePath = GetTemplatePath(fileInfo.DirectoryName);
+        //        var templatePath = GetTemplatePath(fileInfo.DirectoryName);
 
-				yield return new MarkdownPage(this, markDownFile, pageName, pageContents, pageType) {
-					TemplatePath = templatePath,
-					LastModified = fileInfo.LastWriteTime,
-				};
-			}
-		}
+        //        yield return new MarkdownPage(this, markDownFile, pageName, pageContents, pageType) {
+        //            TemplatePath = templatePath,
+        //            LastModified = fileInfo.LastWriteTime,
+        //        };
+        //    }
+        //}
+
+        public IEnumerable<MarkdownPage> FindMarkdownPages(string dirPath)
+        {
+            var hasWebPages = false;
+            var markDownFiles = VirtualPathProvider.GetAllMatchingFiles("*." + MarkdownExt);
+            foreach (var markDownFile in markDownFiles)
+            {
+                if (markDownFile.GetType() != typeof(ResourceVirtualFile))
+                    hasWebPages = true;
+
+                var pageName = markDownFile.Name.WithoutExtension();
+                var pageContents = markDownFile.ReadAllText();
+
+                var pageType = MarkdownPageType.ContentPage;
+                if (VirtualPathProvider.IsSharedFile(markDownFile))
+                    pageType = MarkdownPageType.SharedViewPage;
+                else if (VirtualPathProvider.IsViewFile(markDownFile))
+                    pageType = MarkdownPageType.ViewPage;
+
+                var templatePath = GetTemplatePath(markDownFile.DirectoryName);
+
+                yield return new MarkdownPage(this, markDownFile.VirtualPath, 
+                    pageName, pageContents, pageType) 
+                    {
+                        TemplatePath = templatePath,
+                        LastModified = markDownFile.LastModified,
+                    };
+            }
+            if (!hasWebPages)
+                WatchForModifiedPages = false;
+        }
 
 		private string GetTemplatePath(string fileDirPath)
 		{
@@ -409,11 +464,15 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			return RenderDynamicPage(markdownPage, new Dictionary<string, object>(), renderHtml, true);
 		}
 
-		private string RenderInTemplateIfAny(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, string pageHtml)
+		private string RenderInTemplateIfAny(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, string pageHtml, string templatePath=null)
 		{
 			MarkdownTemplate markdownTemplate = null;
+
+            if (templatePath != null)
+                PageTemplates.TryGetValue(templatePath, out markdownTemplate);
+
 			var directiveTemplatePath = markdownPage.DirectiveTemplatePath;
-			if (directiveTemplatePath != null)
+			if (markdownTemplate == null && directiveTemplatePath != null)
 			{
 				if (!PageTemplates.TryGetValue(directiveTemplatePath, out markdownTemplate))
 				{
@@ -427,11 +486,12 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
 			if (markdownTemplate == null)
 			{
-				var templatePath = markdownPage.TemplatePath;
-				if (templatePath == null) return pageHtml;
+                templatePath = markdownPage.TemplatePath;
+                PageTemplates.TryGetValue(templatePath, out markdownTemplate);
 
-				markdownTemplate = PageTemplates[templatePath];
-			}
+                if (markdownTemplate == null)
+                    throw new ArgumentNullException("templatePath", templatePath);
+            }
 
 			if (scopeArgs != null)
 				scopeArgs[MarkdownTemplate.BodyPlaceHolder] = pageHtml;
@@ -466,25 +526,25 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			return RenderDynamicPage(GetViewPage(pageName), pageName, model, renderHtml, true);
 		}
 
-		private string RenderDynamicPage(MarkdownPage markdownPage, string pageName, object model, bool renderHtml, bool renderTemplate)
+        private string RenderDynamicPage(MarkdownPage markdownPage, string pageName, object model, bool renderHtml, bool renderTemplate, string templatePath = null)
 		{
 			if (markdownPage == null)
 				throw new InvalidDataException(ErrorPageNotFound.FormatWith(pageName));
 
 			var scopeArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, model } };
 
-			return RenderDynamicPage(markdownPage, scopeArgs, renderHtml, renderTemplate);
+            return RenderDynamicPage(markdownPage, scopeArgs, renderHtml, renderTemplate, templatePath);
 		}
 
 		public string RenderDynamicPage(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs,
-			bool renderHtml, bool renderTemplate)
+            bool renderHtml, bool renderTemplate, string templatePath = null)
 		{
 			scopeArgs = scopeArgs ?? new Dictionary<string, object>();
 			var htmlPage = markdownPage.RenderToString(scopeArgs, renderHtml);			
 			if (!renderTemplate) return htmlPage;
 
 			var html = RenderInTemplateIfAny(
-				markdownPage, scopeArgs, htmlPage);
+                markdownPage, scopeArgs, htmlPage, templatePath);
 
 			return html;
 		}

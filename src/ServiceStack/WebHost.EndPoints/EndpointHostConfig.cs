@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Configuration;
@@ -11,10 +12,12 @@ using System.Xml.Linq;
 using MarkdownSharp;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceModel;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -171,15 +174,49 @@ namespace ServiceStack.WebHost.Endpoints
             return File.Exists(configPath) ? configPath : null;
         }
 
+	    const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
+	    private static HashSet<string> razorNamespaces;
+	    public static HashSet<string> RazorNamespaces
+        {
+            get
+            {
+                if (razorNamespaces != null)
+                    return razorNamespaces;
+
+                razorNamespaces = new HashSet<string>();
+                //Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
+                var configPath = GetAppConfigPath();
+                if (configPath != null)
+                {
+                    var xml = configPath.ReadAllText();
+                    var doc = XElement.Parse(xml);
+                    doc.AnyElement("system.web.webPages.razor")
+                        .AnyElement("pages")
+                            .AnyElement("namespaces")
+                                .AllElements("add").ToList()
+                                    .ForEach(x => razorNamespaces.Add(x.AnyAttribute("namespace").Value));
+                }
+
+                //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
+                if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
+                {
+                    ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)
+                        .ForEach(x => razorNamespaces.Add(x));
+                }
+
+                return razorNamespaces;
+            }
+        }
+
 	    private static System.Configuration.Configuration GetAppConfig()
         {
-            System.Reflection.Assembly entryAssembly;
+            Assembly entryAssembly;
             
             //Read the user-defined path in the Web.Config
             if (EndpointHost.AppHost is AppHostBase)
                 return WebConfigurationManager.OpenWebConfiguration("~/");
             
-            if ((entryAssembly = System.Reflection.Assembly.GetEntryAssembly()) != null)
+            if ((entryAssembly = Assembly.GetEntryAssembly()) != null)
                 return ConfigurationManager.OpenExeConfiguration(entryAssembly.Location);
             
             return null;
@@ -242,7 +279,7 @@ namespace ServiceStack.WebHost.Endpoints
 				if (webServerSection != null)
 				{
 					var rawXml = webServerSection.SectionInformation.GetRawXml();
-					if (!string.IsNullOrEmpty(rawXml))
+					if (!String.IsNullOrEmpty(rawXml))
 					{
 						SetPaths(ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
 					}
@@ -256,11 +293,11 @@ namespace ServiceStack.WebHost.Endpoints
 
 			if (null == locationPath)
 			{
-				handlerPath = handlerPath.Replace("*", string.Empty);
+				handlerPath = handlerPath.Replace("*", String.Empty);
 			}
 
 			instance.ServiceStackHandlerFactoryPath = locationPath ??
-				(string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
+				(String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
 			instance.MetadataRedirectPath = PathUtils.CombinePaths(
 				null != locationPath ? instance.ServiceStackHandlerFactoryPath : handlerPath
@@ -271,7 +308,7 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			return XDocument.Parse(rawXml).Root.Element("handlers")
 				.Descendants("add")
-				.Where(handler => (handler.Attribute("type").Value ?? string.Empty).StartsWith("ServiceStack"))
+				.Where(handler => (handler.Attribute("type").Value ?? String.Empty).StartsWith("ServiceStack"))
 				.Select(handler => handler.Attribute("path").Value)
 				.FirstOrDefault();
 		}
@@ -347,7 +384,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		private string GetDefaultNamespace()
 		{
-			if (!string.IsNullOrEmpty(this.defaultOperationNamespace)
+			if (!String.IsNullOrEmpty(this.defaultOperationNamespace)
 				|| this.ServiceController == null) return null;
 
 			foreach (var operationType in this.ServiceController.OperationTypes)
@@ -359,7 +396,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 				var attr = (DataContractAttribute)attrs[0];
 
-				if (string.IsNullOrEmpty(attr.Namespace)) continue;
+				if (String.IsNullOrEmpty(attr.Namespace)) continue;
 
 				return attr.Namespace;
 			}
@@ -379,7 +416,7 @@ namespace ServiceStack.WebHost.Endpoints
 			if (!HasFeature(usesFeatures))
 			{
 				throw new NotSupportedException(
-					string.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
+					String.Format("'{0}' Features have been disabled by your administrator", usesFeatures));
 			}
 		}
 

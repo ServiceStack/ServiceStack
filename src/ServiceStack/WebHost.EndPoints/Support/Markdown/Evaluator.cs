@@ -6,6 +6,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml;
 using System.Text;
+using ServiceStack.Common.Utils;
+using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 
@@ -33,6 +35,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
 	public class Evaluator
 	{
+	    private static ILog Log = LogManager.GetLogger(typeof (Evaluator));
+
 		const string StaticMethodName = "__tmp";
 		Assembly compiledAssembly;
 		Type compiledType = null;
@@ -42,6 +46,62 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 		private Type BaseType { get; set; }
 		private Type[] GenericArgs { get; set; }
 		private IDictionary<string, Type> TypeProperties { get; set; }
+
+	    static readonly List<Assembly> Assemblies = new List<Assembly> {
+			typeof(string).Assembly,       //"system.dll",
+			typeof(XmlDocument).Assembly,  //"system.xml.dll",
+			typeof(Expression).Assembly,   //"system.core.dll",
+			typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
+			typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
+			typeof(IService<>).Assembly,   //"ServiceStack.Interfaces.dll",
+			typeof(Common.UrnId).Assembly, //"ServiceStack.Common.dll"
+		};
+
+	    static readonly List<string> AssemblyNames = new List<string> {
+	        "System",
+            "System.Text",
+            "System.Xml",
+            "System.Collections",
+            "System.Collections.Generic",
+            "System.Linq",
+            "System.Linq.Expressions",
+            "ServiceStack.Html",
+            "ServiceStack.Markdown"                                                                     
+        };
+
+        public static void AddAssembly(string assemblyName)
+        {
+            if (AssemblyNames.Contains(assemblyName)) return;
+            AssemblyNames.Add(assemblyName);
+
+            try
+            {
+                var assembly = Assembly.Load(assemblyName);
+                if (!Assemblies.Contains(assembly))
+                    Assemblies.Add(assembly);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Can't load assembly: " + assemblyName, ex);                
+            }
+        }
+
+        public static Type FindType(string typeName)
+        {
+            if (typeName == null || typeName.Contains(".")) return null;
+            var type = Type.GetType(typeName);
+            if (type != null) return type;
+            
+            foreach (var assembly in Assemblies)
+            {
+                var searchType = assembly.GetName().Name + "." + typeName;
+                type = assembly.GetType(searchType);
+                if (type != null) 
+                    return type;
+            }
+
+            return null;
+        }
 
 		public Evaluator(IEnumerable<EvaluatorItem> items)
 			: this(items, null, null, null)
@@ -138,35 +198,20 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			//var codeCompiler = new CSharpCodeProvider(new Dictionary<string, string> { { "CompilerVersion", "v3.5" } });
 			var codeCompiler = CodeDomProvider.CreateProvider("CSharp");
 
-			var assemblies = new List<Assembly> {
-				typeof(string).Assembly,       //"system.dll",
-				typeof(XmlDocument).Assembly,  //"system.xml.dll",
-				typeof(Expression).Assembly,   //"system.core.dll",
-				typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
-				typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
-				typeof(IService<>).Assembly,   //"ServiceStack.Interfaces.dll",
-				typeof(Common.UrnId).Assembly,        //"ServiceStack.Common.dll"
-			};
 			var cp = new CompilerParameters  //(new[] { "mscorlib.dll", "system.core.dll" })
 			{
 				GenerateExecutable = false,
 				GenerateInMemory = true,
 			};
-			assemblies.ForEach(x => AddAssembly(cp, x.Location));
-
-
+			Assemblies.ForEach(x => AddAssembly(cp, x.Location));
+            
 			var code = new StringBuilder();
-			code.Append(
-@"using System;
-using System.Text;
-using System.Xml;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 
-using ServiceStack.Html;
-using ServiceStack.Markdown;
+            AssemblyNames.ForEach(x => 
+                code.AppendFormat("using {0};\n", x));
+
+			code.Append(
+@"
 
 namespace CSharpEval 
 {
@@ -186,12 +231,12 @@ namespace CSharpEval
 						if (i++ > 0) code.Append(", ");
 
 						code.Append(GetTypeName(genericArg));
-						ReferenceTypesIfNotExist(cp, assemblies, genericArg);
+						ReferenceTypesIfNotExist(cp, Assemblies, genericArg);
 					}
 					code.AppendLine(">");
 				}
 				
-				ReferenceTypesIfNotExist(cp, assemblies, this.BaseType);
+				ReferenceTypesIfNotExist(cp, Assemblies, this.BaseType);
 			}
 
 			code.AppendLine("  {");
@@ -211,7 +256,7 @@ namespace CSharpEval
 
 					var paramType = param.Value;
 
-					ReferenceAssembliesIfNotExists(cp, paramType, assemblies);
+					ReferenceAssembliesIfNotExists(cp, paramType, Assemblies);
 				}
 
 				var isVoid = item.ReturnType == typeof(void);
@@ -373,6 +418,7 @@ namespace CSharpEval
 			var eval = new Evaluator(typeof(T), code, StaticMethodName);
 			return (T)eval.Evaluate(StaticMethodName);
 		}
+
 	}
 
 	public class EvaluatorItem

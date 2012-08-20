@@ -96,6 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 		public TemplateBlock[] HtmlBlocks { get; set; }
 
 		private Exception initException;
+	    private TemplateBlock lastBlockProcessed;
 		readonly object readWriteLock = new object();
 		private bool isBusy;
 		public void Reload()
@@ -208,17 +209,34 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 						var initHtmlContext = pageContext.Create(this, true);
 						var initMarkdownContext = pageContext.Create(this, false);
 
-						foreach (var block in this.HtmlBlocks) block.DoFirstRun(initHtmlContext);
-						foreach (var block in this.MarkdownBlocks) block.DoFirstRun(initMarkdownContext);
+						foreach (var block in this.HtmlBlocks)
+						{
+						    lastBlockProcessed = block;
+                            block.DoFirstRun(initHtmlContext);
+                        }
+						foreach (var block in this.MarkdownBlocks)
+						{
+                            lastBlockProcessed = block;
+                            block.DoFirstRun(initMarkdownContext);
+						}
 
 						this.evaluator = this.ExecutionContext.Build();
 
-						foreach (var block in this.HtmlBlocks) block.AfterFirstRun(evaluator);
-						foreach (var block in this.MarkdownBlocks) block.AfterFirstRun(evaluator);
+						foreach (var block in this.HtmlBlocks)
+						{
+                            lastBlockProcessed = block;
+                            block.AfterFirstRun(evaluator);
+						}
+						foreach (var block in this.MarkdownBlocks)
+						{
+                            lastBlockProcessed = block;
+                            block.AfterFirstRun(evaluator);
+                        }
 
 						AddDependentPages(blocks);
 
-						initException = null;
+                        lastBlockProcessed = null;
+                        initException = null;
 						hasCompletedFirstRun = true;
 					}
 					catch (Exception ex)

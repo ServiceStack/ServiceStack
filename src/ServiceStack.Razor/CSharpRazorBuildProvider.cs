@@ -1,15 +1,16 @@
 //Orignally from: https://github.com/NancyFx/Nancy/blob/master/src/Nancy.ViewEngines.Razor.BuildProviders/NancyCSharpRazorBuildProvider.cs
-namespace ServiceStack.Razor.ServiceStack
-{
-	using System;
-	using System.CodeDom;
-	using System.CodeDom.Compiler;
-	using System.Globalization;
-	using System.Web.Compilation;
-	using System.Web.Razor;
 
-	[BuildProviderAppliesTo(BuildProviderAppliesTo.Code | BuildProviderAppliesTo.Web)]
-	public class ServiceStackCSharpRazorBuildProvider : BuildProvider
+using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
+using System.Globalization;
+using System.Web.Compilation;
+using System.Web.Razor;
+
+namespace ServiceStack.Razor
+{
+    [BuildProviderAppliesTo(BuildProviderAppliesTo.Code | BuildProviderAppliesTo.Web)]
+	public class CSharpRazorBuildProvider : BuildProvider
 	{
 		private readonly RazorEngineHost host;
 
@@ -18,9 +19,9 @@ namespace ServiceStack.Razor.ServiceStack
 		private CodeCompileUnit generatedCode;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="ServiceStackCSharpRazorBuildProvider"/> class.
+		/// Initializes a new instance of the <see cref="CSharpRazorBuildProvider"/> class.
 		/// </summary>
-		public ServiceStackCSharpRazorBuildProvider()
+		public CSharpRazorBuildProvider()
 		{
 			this.compilerType = this.GetDefaultCompilerTypeForLanguage("C#");
 

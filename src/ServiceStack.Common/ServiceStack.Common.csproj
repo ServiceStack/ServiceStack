@@ -457,6 +457,7 @@
     <Compile Include="Web\MimeTypes.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RequestContextExtensions.cs" />
     <Compile Include="Web\SerializationContext.cs">
       <SubType>Code</SubType>
     </Compile>

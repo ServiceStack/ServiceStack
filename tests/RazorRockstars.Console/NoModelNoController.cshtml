@@ -10,7 +10,11 @@
         : Db.Select<Rockstar>();
     var title = hasAge ? "{0} year old rockstars".Fmt(age) : "All Rockstars";
 }
-
+<div id="content-page">
+    
+@Html.Partial("OtherPages", null)
+@Html.Partial("MarkdownPages", null)
+    
 <div>@title</div>
 <ul>
     @foreach (var rockstar in rockstars) {
@@ -20,10 +24,7 @@
 
 <p><a href="?">Show all Rockstars</a></p>
 
-<h3>Other Pages</h3>
-<div><a href="/rockstars">/rockstars</a></div>
-<div><a href="/TypedModelNoController">/TypedModelNoController</a></div>
-<div><a href="/NoModelNoController">/NoModelNoController</a></div>
-
 <h2>Razor View</h2>
 <script src="https://gist.github.com/3162494.js"></script>
+        
+</div>

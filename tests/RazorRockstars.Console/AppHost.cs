@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using Funq;
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
@@ -79,6 +80,8 @@ namespace RazorRockstars.Console
         public string LastName { get; set; }
         public int? Age { get; set; }
         public string Delete { get; set; }
+        public string View { get; set; }
+        public string Template { get; set; }
     }
 
     [DataContract] //Attrs for CSV Format to recognize it's a DTO and serialize the Enumerable property
@@ -107,7 +110,7 @@ namespace RazorRockstars.Console
                     db.DeleteById<Rockstar>(request.Delete.ToInt());
                 }
 
-                return new RockstarsResponse {
+                var response = new RockstarsResponse {
                     Aged = request.Age,
                     Total = db.GetScalar<int>("select count(*) from Rockstar"),
                     Results = request.Id != default(int) ?
@@ -116,6 +119,14 @@ namespace RazorRockstars.Console
                         db.Select<Rockstar>(q => q.Age == request.Age.Value)
                           : db.Select<Rockstar>()
                 };
+
+                if (request.View != null || request.Template != null)
+                    return new HttpResult(response) {
+                        View = request.View,
+                        Template = request.Template,
+                    };
+                
+                return response;
             }
         }
 

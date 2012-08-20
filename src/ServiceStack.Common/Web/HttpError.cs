@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using ServiceStack.Common.Utils;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
@@ -58,8 +57,6 @@ namespace ServiceStack.Common.Web
         public string StatusDescription { get; set; }
 
         public object Response { get; set; }
-
-        public string TemplateName { get; set; }
 
         public IContentTypeWriter ResponseFilter { get; set; }
         

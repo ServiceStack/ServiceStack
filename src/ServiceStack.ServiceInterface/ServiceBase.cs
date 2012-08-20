@@ -284,7 +284,7 @@ namespace ServiceStack.ServiceInterface
         {
             return new HttpResult(response)
             {
-                TemplateName = viewName
+                Template = viewName
             };
         }
 

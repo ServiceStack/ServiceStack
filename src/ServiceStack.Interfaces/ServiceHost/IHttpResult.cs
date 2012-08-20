@@ -31,11 +31,6 @@ namespace ServiceStack.ServiceHost
 		object Response { get; set; }
 
 		/// <summary>
-		/// A specific template, if not the default (for HTML, Markdown, etc. ContentTypes)
-		/// </summary>
-		string TemplateName { get; set; }
-
-		/// <summary>
 		/// if not provided, get's injected by ServiceStack
 		/// </summary>
 		IContentTypeWriter ResponseFilter { get; set; }

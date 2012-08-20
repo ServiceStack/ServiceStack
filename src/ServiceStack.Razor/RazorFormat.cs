@@ -10,9 +10,9 @@ using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Compilation.CSharp;
 using ServiceStack.Razor.Templating;
-using ServiceStack.Razor.VirtualPath;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
@@ -30,12 +30,16 @@ namespace ServiceStack.Razor
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(RazorFormat));
 
-        public const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
 
         private static RazorFormat instance;
         public static RazorFormat Instance
         {
             get { return instance ?? (instance = new RazorFormat()); }
+        }
+
+        public static bool IsRegistered
+        {
+            get { return instance != null; }
         }
 
         private const string ErrorPageNotFound = "Could not find Razor page '{0}'";
@@ -110,30 +114,6 @@ namespace ServiceStack.Razor
 				{"cshtml", typeof(ViewPage<>) },
 				{"rzr", typeof(ViewPage<>) },
 			};
-            RegisterNamespacesInConfig();
-        }
-
-        private void RegisterNamespacesInConfig()
-        {
-            //Infer from <system.web.webPages.razor> - what VS.NET's intell-sense uses
-            var configPath = EndpointHostConfig.GetAppConfigPath();
-            if (configPath != null)
-            {
-                var xml = configPath.ReadAllText();
-                var doc = XElement.Parse(xml);
-                doc.AnyElement("system.web.webPages.razor")
-                    .AnyElement("pages")
-                        .AnyElement("namespaces")
-                            .AllElements("add").ToList()
-                                .ForEach(x => TemplateNamespaces.Add(x.AnyAttribute("namespace").Value));
-            }
-
-            //E.g. <add key="servicestack.razor.namespaces" value="System,ServiceStack.Text" />
-            if (ConfigUtils.GetNullableAppSetting(NamespacesAppSettingsKey) != null)
-            {
-                ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)
-                    .ForEach(x => TemplateNamespaces.Add(x));
-            }
         }
 
         public void Register(IAppHost appHost)
@@ -145,6 +125,10 @@ namespace ServiceStack.Razor
         public void Configure(IAppHost appHost)
         {
             this.AppHost = appHost;
+
+            foreach (var ns in EndpointHostConfig.RazorNamespaces)
+                TemplateNamespaces.Add(ns);
+
             this.ReplaceTokens = new Dictionary<string, string>(appHost.Config.MarkdownReplaceTokens);
             if (!appHost.Config.WebHostUrl.IsNullOrEmpty())
                 this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
@@ -183,6 +167,9 @@ namespace ServiceStack.Razor
 
                 if (razorPage == null)
                     razorPage = GetContentPage(pathInfo);
+
+                if (WatchForModifiedPages)
+                    ReloadModifiedPageAndTemplates(razorPage);
 
                 return razorPage == null
                     ? null
@@ -264,33 +251,36 @@ namespace ServiceStack.Razor
             //Add extensible way to control caching
             //httpRes.AddHeaderLastModified(razorPage.GetLastModified());
 
-            var templatePath = razorPage.TemplatePath;
+            var template = httpReq.GetTemplate();
+            if (template == null || !MasterPageTemplates.ContainsKey(template)) 
+                template = razorPage.TemplatePath;
+
             if (httpReq != null && httpReq.QueryString["format"] != null)
             {
                 if (!httpReq.GetFormatModifier().StartsWithIgnoreCase("bare"))
-                    templatePath = null;
+                    template = null;
             }
 
-            var template = ExecuteTemplate(dto, razorPage.PageName, templatePath, httpReq, httpRes);
-            var html = template.Result;
+            var razorTemplate = ExecuteTemplate(dto, razorPage.PageName, template, httpReq, httpRes);
+            var html = razorTemplate.Result;
 
 			var htmlBytes = html.ToUtf8Bytes();
 
-			if (Env.IsMono) {
-				//var hasBom = html.Contains((char)65279);
-				//TODO: Replace sad hack in Mono replacing the BOM with whitespace:
-				for (var i=0; i<htmlBytes.Length-3; i++) {
-					if (htmlBytes[i] == 0xEF && htmlBytes[i+1] == 0xBB && htmlBytes[i+2] == 0xBF) {
-						htmlBytes[i] = (byte)' ';
-						htmlBytes[i+1] = (byte)' ';
-						htmlBytes[i+2] = (byte)' ';
-					}
-				}
-			}
+            //var hasBom = html.Contains((char)65279);
+            //TODO: Replace sad hack replacing the BOM with whitespace (ASP.NET+Mono):
+            for (var i=0; i < htmlBytes.Length - 3; i++)
+            {
+                if (htmlBytes[i] == 0xEF && htmlBytes[i + 1] == 0xBB && htmlBytes[i + 2] == 0xBF)
+                {
+                    htmlBytes[i] = (byte)' ';
+                    htmlBytes[i + 1] = (byte)' ';
+                    htmlBytes[i + 2] = (byte)' ';
+                }
+            }
 
 			httpRes.OutputStream.Write(htmlBytes, 0, htmlBytes.Length);
 
-            var disposable = template as IDisposable;
+            var disposable = razorTemplate as IDisposable;
             if (disposable != null)
             {
                 disposable.Dispose();
@@ -337,25 +327,27 @@ namespace ServiceStack.Razor
             template.Reload(contents);
         }
 
-        private ViewPageRef GetViewPageByResponse(object dto, IHttpRequest httpRequest)
+        private ViewPageRef GetViewPageByResponse(object dto, IHttpRequest httpReq)
         {
             var httpResult = dto as IHttpResult;
             if (httpResult != null)
             {
-                //If TemplateName was specified don't look for anything else.
-                if (httpResult.TemplateName != null)
-                    return GetViewPage(httpResult.TemplateName);
-
                 dto = httpResult.Response;
             }
+
+            //If View was specified don't look for anything else.
+            var viewName = httpReq.GetView();
+            if (viewName != null)
+                return GetViewPage(viewName);
+            
             if (dto != null)
             {
                 var responseTypeName = dto.GetType().Name;
-                var markdownPage = GetViewPage(responseTypeName);
-                if (markdownPage != null) return markdownPage;
+                var pageRef = GetViewPage(responseTypeName);
+                if (pageRef != null) return pageRef;
             }
 
-            return httpRequest != null ? GetViewPage(httpRequest.OperationName) : null;
+            return httpReq != null ? GetViewPage(httpReq.OperationName) : null;
         }
 
         public ViewPageRef GetViewPage(string pageName)

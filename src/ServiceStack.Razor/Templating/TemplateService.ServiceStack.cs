@@ -31,7 +31,7 @@ namespace ServiceStack.Razor.Templating
 	
 			instance.Execute(); 
 
-			if (!razorTemplate.Layout.IsNullOrEmpty())
+			if (templatePath != null && !razorTemplate.Layout.IsNullOrEmpty())
 				templatePath = razorTemplate.Layout.MapServerPath();
 
 			if (templatePath != null)

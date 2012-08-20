@@ -18,8 +18,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 		private const char BeginMethodChar = '(';
 		private const char EndMethodChar = ')';
 
-		static readonly char[] WhiteSpaceChars = new[] { ' ', '\t', '\r', '\n' };
-		static readonly char[] WhiteSpaceAndSymbolChars = new[] {
+        static readonly char[] LineEndChars = new[] { '\r', '\n' };
+        static readonly char[] WhiteSpaceChars = new[] { ' ', '\t', '\r', '\n' };
+        static readonly char[] WhiteSpaceAndSymbolChars = new[] {
 			' ', '\t', '\r', '\n', '(', ')', '!', '+', '-'
 		};
 
@@ -194,7 +195,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
 		public static string TrimLineIfOnlyHasWhitespace(this string text)
 		{
-			var pos = text.LastIndexOf('\n') + 1; //after \n or at start if not found
+			var pos = text.LastIndexOfAny(LineEndChars) + 1; //after \n or at start if not found
 			if (pos == text.Length) return text;
 			var startPos = pos;
 			text.EatWhitespace(ref pos);
@@ -241,7 +242,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 					//Strip everything but @^1 in <p>@^1</p>\n
 					prevTextBlock.RemoveIfEndingWith(UnwantedPrefix);
 					content.SkipIfNextIs(ref pos, UnwantedSuffix);
-					content.SkipIfNextIs(ref pos, "\n");
+                    content.SkipIfNextIs(ref pos, "\r");
+                    content.SkipIfNextIs(ref pos, "\n");
 				}
 				else
 				{
@@ -319,7 +321,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 					|| varExpr == "helper"
 					|| varExpr == "template" || varExpr == "Layout")
 				{
-					var pos = content.IndexOf('\n', fromPos);
+                    var pos = content.IndexOfAny(LineEndChars, fromPos);
 					var restOfLine = content.Substring(fromPos, pos - fromPos);
 					fromPos = pos;
 
@@ -384,8 +386,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 				{
 					return;
 				}
-				if (c != '\n') continue;
+				if (c != '\r' && c != '\n') continue;
 
+                if (c == '\r') index++;
 				index++;
 				return;
 			}

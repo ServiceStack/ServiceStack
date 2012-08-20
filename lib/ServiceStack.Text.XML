@@ -192,6 +192,11 @@
             will throw; otherwise, it will parse as many fields as possible. The default is <see langword="false"/>.
             </summary>
         </member>
+        <member name="P:ServiceStack.Text.JsConfig.TimeSpanHandler">
+            <summary>
+            Sets which format to use when serializing TimeSpans
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludeTypeInfo">
             <summary>
             Never emit type info for this type
@@ -223,6 +228,16 @@
         <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefTypes">
             <summary>
             Opt-in flag to set some Value Types to be treated as a Ref Type
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsonTimeSpanHandler.DurationFormat">
+            <summary>
+            Uses the xsd format like PT15H10M20S
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.JsonTimeSpanHandler.StandardFormat">
+            <summary>
+            Uses the standard .net ToString method of the TimeSpan class
             </summary>
         </member>
         <member name="T:ServiceStack.Text.TypeSerializer">

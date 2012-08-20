@@ -1,4 +1,4 @@
-#if !SILVERLIGHT 
+#if !SILVERLIGHT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +35,7 @@ namespace ServiceStack.Common.Web
         }
 
         public HttpResult(object response, HttpStatusCode statusCode)
-            : this(response, null, statusCode) {}
+            : this(response, null, statusCode) { }
 
         public HttpResult(object response, string contentType, HttpStatusCode statusCode)
         {
@@ -64,7 +64,7 @@ namespace ServiceStack.Common.Web
                 "attachment; " +
                 "filename=\"" + fileResponse.Name + "\"; " +
                 "size=" + fileResponse.Length + "; " +
-                "creation-date=" + fileResponse.CreationTimeUtc.ToString("R").Replace(",","") + "; " +
+                "creation-date=" + fileResponse.CreationTimeUtc.ToString("R").Replace(",", "") + "; " +
                 "modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "") + "; " +
                 "read-date=" + fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "");
 
@@ -109,7 +109,7 @@ namespace ServiceStack.Common.Web
             {
                 if (StatusCode == HttpStatusCode.OK)
                     StatusCode = HttpStatusCode.Redirect;
-                
+
                 this.Headers[HttpHeaders.Location] = value;
             }
         }
@@ -151,7 +151,7 @@ namespace ServiceStack.Common.Web
         public void DeleteCookie(string name)
         {
             var cookie = string.Format("{0}=;expires={1};path=/", name, DateTime.UtcNow.AddDays(-1).ToString("R"));
-            this.Headers[HttpHeaders.SetCookie] = cookie; 
+            this.Headers[HttpHeaders.SetCookie] = cookie;
         }
 
         public IDictionary<string, string> Options
@@ -169,7 +169,9 @@ namespace ServiceStack.Common.Web
 
         public IRequestContext RequestContext { get; set; }
 
-        public string TemplateName { get; set; }
+        public string View { get; set; }
+
+        public string Template { get; set; }
 
         public void WriteTo(Stream responseStream)
         {
@@ -216,13 +218,17 @@ namespace ServiceStack.Common.Web
                 return;
             }
 
+            if (View != null)
+                RequestContext.SetItem("View", View);
+            if (Template != null)
+                RequestContext.SetItem("Template", Template);
+
             ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
         }
 
         public static HttpResult Status201Created(object response, string newLocationUri)
         {
-            return new HttpResult(response)
-            {
+            return new HttpResult(response) {
                 StatusCode = HttpStatusCode.Created,
                 Headers =
                 {
@@ -230,8 +236,6 @@ namespace ServiceStack.Common.Web
                 }
             };
         }
-
-
     }
 }
 #endif
