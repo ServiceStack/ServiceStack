@@ -37,7 +37,8 @@ namespace ServiceStack.FluentValidation
     public abstract class AbstractValidator<T> : IValidator<T>, IEnumerable<IValidationRule> {
         readonly TrackingCollection<IValidationRule> nestedValidators = new TrackingCollection<IValidationRule>();
 
-        Func<CascadeMode> cascadeMode = () => ValidatorOptions.CascadeMode;
+        private static Func<CascadeMode> s_cascadeMode = () => ValidatorOptions.CascadeMode;
+        private Func<CascadeMode> cascadeMode = s_cascadeMode;
 
         /// <summary>
         /// Sets the cascade mode for all rules within this validator.
