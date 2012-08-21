@@ -15,7 +15,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 			razorFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
 			razorFormat.AddPage(
 				new ViewPageRef(razorFormat, "/path/to/tpl", PageName, pageTemplate) {
-					TemplatePath = "/path/to/websitetpl",
+					Template = "/path/to/websitetpl",
 				});
 
 			return razorFormat;

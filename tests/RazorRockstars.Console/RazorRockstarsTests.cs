@@ -1,17 +1,37 @@
-using NUnit;
 using System;
+using System.Net;
 using System.Collections.Generic;
-using System.Web;
-using ServiceStack;
-using ServiceStack.Common;
+using System.Threading;
+using NUnit.Framework;
 using ServiceStack.Text;
-using ServiceStack;
 
 namespace RazorRockstars.Console
 {
 	[TestFixture]
 	public class RazorRockstarsTests
 	{
+        AppHost appHost;
+       
+        [TestFixtureSetUp]
+	    public void TestFixtureSetUp()
+	    {
+	        appHost = new AppHost();
+	        appHost.Init();
+            appHost.Start("http://*:1337/");
+	    }
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            appHost.Dispose();
+        }
+
+	    [Test]
+	    public void RunFor10Mins()
+	    {
+	        Thread.Sleep(TimeSpan.FromMinutes(10));
+	    }
+
 		public static string AcceptContentType = "*/*";
 		public void Assert200(string url, params string[] containsItems)
 		{
@@ -36,13 +56,6 @@ namespace RazorRockstars.Console
 				if (!r.ContentType.StartsWith(contentType))
 					Assert.Fail(url + " did not return contentType " + contentType);
 			});
-			foreach (var item in containsItems)
-			{
-				if (!text.Contains(item))
-				{
-					Assert.Fail(item + " was not found in " + url);
-				}
-			}
 		}
 
 		public static List<string> Hosts = new List<string>{ "http://localhost:1337" };

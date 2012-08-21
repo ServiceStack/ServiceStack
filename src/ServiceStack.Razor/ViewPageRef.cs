@@ -23,7 +23,7 @@ namespace ServiceStack.Razor
 		public string Contents { get; set; }
 
 		public RazorPageType PageType { get; set; }
-		public string TemplatePath { get; set; }
+		public string Template { get; set; }
 		public string DirectiveTemplatePath { get; set; }
 		public DateTime? LastModified { get; set; }
 		public List<IExpirable> Dependents { get; private set; }
@@ -65,7 +65,7 @@ namespace ServiceStack.Razor
 
 		public string GetTemplatePath()
 		{
-			return this.DirectiveTemplatePath ?? this.TemplatePath;
+			return this.DirectiveTemplatePath ?? this.Template;
 		}
 
 		public string PageName
@@ -143,7 +143,7 @@ namespace ServiceStack.Razor
 		
 		public string RenderToString<T>(T model)
 		{
-			var template = RazorFormat.ExecuteTemplate(model, this.PageName, this.TemplatePath);
+			var template = RazorFormat.ExecuteTemplate(model, this.PageName, this.Template);
 			return template.Result;
 		}
 	}

@@ -1,31 +1,39 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
+using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
     public abstract class AbstractVirtualFileBase : IVirtualFile
     {
         public IVirtualPathProvider VirtualPathProvider { get; set; }
-        protected IVirtualDirectory ParentDirectory;
+
+        public string Extension
+        {
+            get { return Name.SplitOnLast('.').LastOrDefault(); }
+        }
+
+        public IVirtualDirectory Directory { get; set; }
 
         public abstract string Name { get; }
-        public abstract string DirectoryName { get; }
         public virtual string VirtualPath { get { return GetVirtualPathToRoot(); } }
         public virtual string RealPath { get { return GetRealPathToRoot(); } }
         public virtual bool IsDirectory { get { return false; } }
         public abstract DateTime LastModified { get; }
 
-        protected AbstractVirtualFileBase(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory)
+        protected AbstractVirtualFileBase(
+            IVirtualPathProvider owningProvider, IVirtualDirectory directory)
         {
             if (owningProvider == null)
                 throw new ArgumentNullException("owningProvider");
 
-            if (parentDirectory == null)
-                throw new ArgumentNullException("parentDirectory");
+            if (directory == null)
+                throw new ArgumentNullException("directory");
 
             this.VirtualPathProvider = owningProvider;
-            this.ParentDirectory = parentDirectory;
+            this.Directory = directory;
         }
 
         public virtual string GetFileHash()
@@ -63,7 +71,7 @@ namespace ServiceStack.VirtualPath
 
         protected virtual string GetPathToRoot(string separator, Func<IVirtualDirectory, string> pathSel)
         {
-            var parentPath = ParentDirectory != null ? pathSel(ParentDirectory) : string.Empty;
+            var parentPath = Directory != null ? pathSel(Directory) : string.Empty;
             if (parentPath == separator)
                 parentPath = string.Empty;
 

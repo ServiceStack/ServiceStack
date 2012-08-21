@@ -145,7 +145,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
 			var dynamicPage = new ViewPageRef(razorFormat,
 				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
-					TemplatePath = templatePath
+					Template = templatePath
 				};
 
 			razorFormat.AddPage(dynamicPage);
@@ -888,7 +888,7 @@ Demis / Bellot
 
 			var staticPage = new ViewPageRef(razorFormat,
 				"/path/to/pagetpl", "StaticTpl", template, RazorPageType.ContentPage) {
-					TemplatePath = websiteTemplatePath
+					Template = websiteTemplatePath
 				};
 
 			razorFormat.AddPage(staticPage);

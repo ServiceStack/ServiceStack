@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
@@ -26,27 +24,22 @@ namespace ServiceStack.VirtualPath
             get { return GetRealPathToRoot(); }
         }
 
-        public override string DirectoryName
-        {
-            get { return VirtualPath.SplitOnLast(VirtualPathProvider.VirtualPathSeparator).First(); }
-        }
-
         public override DateTime LastModified
         {
             get { return GetLastWriteTimeOfBackingAsm(); }
         }
 
-        public ResourceVirtualFile(IVirtualPathProvider owningProvider, ResourceVirtualDirectory parentDirectory,  string fileName)
-            : base(owningProvider, parentDirectory)
+        public ResourceVirtualFile(IVirtualPathProvider owningProvider, ResourceVirtualDirectory directory,  string fileName)
+            : base(owningProvider, directory)
         {
             if (string.IsNullOrEmpty(fileName))
                 throw new ArgumentException("fileName");
 
-            if (parentDirectory.BackingAssembly == null)
+            if (directory.BackingAssembly == null)
                 throw new ArgumentException("parentDirectory");
 
             this.FileName = fileName;
-            this.BackingAssembly = parentDirectory.BackingAssembly;
+            this.BackingAssembly = directory.BackingAssembly;
         }
 
         public override Stream OpenRead()

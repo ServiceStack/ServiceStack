@@ -24,11 +24,6 @@ namespace ServiceStack.VirtualPath
             get { return BackingDirInfo.Name; }
         }
 
-        public override string DirectoryName
-        {
-            get { return BackingDirInfo.FullName; }
-        }
-
         public override DateTime LastModified
         {
             get { return BackingDirInfo.LastWriteTime; }

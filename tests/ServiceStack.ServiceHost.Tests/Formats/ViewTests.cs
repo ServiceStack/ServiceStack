@@ -7,6 +7,7 @@ using System.Text;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
+using ServiceStack.Html;
 using ServiceStack.ServiceHost.Tests.AppData;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
@@ -49,7 +50,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				};
 				this.ContentTypeFilters = HttpResponseFilter.Instance;
 				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-				this.HtmlProviders = new List<StreamSerializerResolverDelegate>();
+				this.ViewEngines = new List<IViewEngine>();
 				this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 			}
 
@@ -78,7 +79,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
 
-			public List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
+            public List<IViewEngine> ViewEngines { get; set; }
 
 			public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
@@ -108,11 +109,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				QueryString = new NameValueCollection(),
 			};
 			httpReq.QueryString.Add("format", format);
-			var requestContext = new HttpRequestContext(httpReq, null, dto);
 			using (var ms = new MemoryStream())
 			{
 				var httpRes = new HttpResponseStreamWrapper(ms);
-				appHost.HtmlProviders[0](requestContext, dto, httpRes);
+                appHost.ViewEngines[0].ProcessRequest(httpReq, httpRes, dto);
 
 				var utf8Bytes = ms.ToArray();
 				var html = utf8Bytes.FromUtf8Bytes();

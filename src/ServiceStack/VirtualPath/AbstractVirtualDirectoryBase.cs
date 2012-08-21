@@ -7,10 +7,10 @@ namespace ServiceStack.VirtualPath
     public abstract class AbstractVirtualDirectoryBase : IVirtualDirectory
     {
         protected IVirtualPathProvider VirtualPathProvider;
-        protected IVirtualDirectory ParentDirectory;
+        public IVirtualDirectory ParentDirectory { get; set; }
+        public IVirtualDirectory Directory { get { return this; } }
 
         public abstract DateTime LastModified { get; }
-        public abstract string DirectoryName { get; }
         public virtual string VirtualPath { get { return GetVirtualPathToRoot(); } }
         public virtual string RealPath { get { return GetRealPathToRoot(); } }
 

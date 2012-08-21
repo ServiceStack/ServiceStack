@@ -6,6 +6,8 @@ namespace ServiceStack.VirtualPath
     {
         IVirtualPathProvider VirtualPathProvider { get; }
 
+        string Extension { get; }
+
         string GetFileHash();
 
         Stream OpenRead();

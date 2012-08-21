@@ -22,13 +22,8 @@ namespace ServiceStack.VirtualPath
             get { return BackingFile.LastWriteTime; }
         }
 
-        public override string DirectoryName
-        {
-            get { return BackingFile.DirectoryName; }
-        }
-
-        public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory, FileInfo fInfo) 
-            : base(owningProvider, parentDirectory)
+        public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory, FileInfo fInfo) 
+            : base(owningProvider, directory)
         {
             if (fInfo == null)
                 throw new ArgumentNullException("fInfo");

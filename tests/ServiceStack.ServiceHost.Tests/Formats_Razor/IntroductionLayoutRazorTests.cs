@@ -53,7 +53,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
 			var dynamicPage = new ViewPageRef(razorFormat,
 				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
-					TemplatePath = templatePath
+					Template = templatePath
 				};
 
 			razorFormat.AddPage(dynamicPage);

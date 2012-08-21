@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
+using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
@@ -15,7 +16,7 @@ namespace ServiceStack.ServiceInterface.Testing
             this.Container = new Container();
             this.RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-            this.HtmlProviders = new List<StreamSerializerResolverDelegate>();
+            this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
         }
 
@@ -46,7 +47,7 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
 
-        public List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
+        public List<IViewEngine> ViewEngines { get; set; }
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 

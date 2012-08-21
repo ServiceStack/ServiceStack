@@ -72,13 +72,18 @@
     <EmbeddedResource Include="Views\Rockstars.cshtml" />
     <EmbeddedResource Include="Views\Shared\HtmlReport.cshtml" />
     <EmbeddedResource Include="Views\Shared\SimpleLayout.cshtml" />
-    <EmbeddedResource Include="Views\_Layout.cshtml" />
+    <EmbeddedResource Include="Views\Shared\_Layout.cshtml" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Views\Shared\OtherPages.cshtml" />
     <Content Include="Web.config" />
     <EmbeddedResource Include="Views\RockstarsMark.md" />
     <EmbeddedResource Include="Views\Shared\HtmlReport.shtml" />
     <EmbeddedResource Include="Views\Shared\MarkdownPages.md" />
+    <EmbeddedResource Include="Views\Rockstars2.cshtml" />
+    <EmbeddedResource Include="Pages\Page1.cshtml" />
+    <EmbeddedResource Include="Pages\_Layout.cshtml" />
+    <EmbeddedResource Include="Pages\Dir\Page2.cshtml" />
+    <EmbeddedResource Include="Pages\Dir\_Layout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.txt" />
@@ -122,4 +127,5 @@
       <Name>ServiceStack</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
 </Project>

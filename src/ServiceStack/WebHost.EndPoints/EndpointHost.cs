@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Html;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
@@ -23,7 +24,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; private set; }
 
-		public static List<StreamSerializerResolverDelegate> HtmlProviders { get; set; }
+        public static List<IViewEngine> ViewEngines { get; set; }
 
 		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
@@ -40,7 +41,7 @@ namespace ServiceStack.WebHost.Endpoints
 			ContentTypeFilter = HttpResponseFilter.Instance;
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
-			HtmlProviders = new List<StreamSerializerResolverDelegate>();
+			ViewEngines = new List<IViewEngine>();
 			CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 			Plugins = new List<IPlugin> {
 				new HtmlFormat(),

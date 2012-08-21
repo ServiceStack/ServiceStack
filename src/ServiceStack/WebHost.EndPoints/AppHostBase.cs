@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Common;
+using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -171,11 +172,11 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
-		public List<StreamSerializerResolverDelegate> HtmlProviders
+        public List<IViewEngine> ViewEngines
 		{
 			get
 			{
-				return EndpointHost.HtmlProviders;
+				return EndpointHost.ViewEngines;
 			}
 		}
 

@@ -31,16 +31,12 @@ namespace ServiceStack.Razor.Templating
 	
 			instance.Execute(); 
 
-			if (templatePath != null && !razorTemplate.Layout.IsNullOrEmpty())
+			if (templatePath == null && !razorTemplate.Layout.IsNullOrEmpty())
 				templatePath = razorTemplate.Layout.MapServerPath();
 
-			if (templatePath != null)
+            var layoutTemplate = GetTemplate(templatePath ?? RazorFormat.DefaultTemplate);
+            if (layoutTemplate != null)
 			{
-				var layoutTemplate = GetTemplate(templatePath);
-				if (layoutTemplate == null)
-					throw new ArgumentException(
-						"No template exists with the specified Layout: " + templatePath);
-
 				layoutTemplate.ChildTemplate = razorTemplate;
 				SetService(layoutTemplate, this);
 				SetModel(layoutTemplate, model);
@@ -48,11 +44,16 @@ namespace ServiceStack.Razor.Templating
 
 				return layoutTemplate;
 			}
+            else if (templatePath != null)
+            {
+                throw new ArgumentException(
+                    "No template exists with the specified Layout: " + templatePath);
+            }
 
 			return razorTemplate;
 		}
 
-		Dictionary<string, string> pagePathAndNames = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+        readonly Dictionary<string, string> pagePathAndNames = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
 
 		public void RegisterPage(string pagePath, string pageName)
 		{

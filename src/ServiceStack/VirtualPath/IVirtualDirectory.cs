@@ -5,9 +5,11 @@ namespace ServiceStack.VirtualPath
 {
     public interface IVirtualDirectory : IVirtualNode, IEnumerable<IVirtualNode>
     {
+        bool IsRoot { get; }
+        IVirtualDirectory ParentDirectory { get; }
+
         IEnumerable<IVirtualFile> Files { get; }
         IEnumerable<IVirtualDirectory> Directories { get; }
-        bool IsRoot { get; }
 
         IVirtualFile GetFile(string virtualPath);
         IVirtualFile GetFile(Stack<string> virtualPath);

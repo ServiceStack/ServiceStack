@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -53,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <summary>
 		/// Add alternative HTML View Engines
 		/// </summary>
-		List<StreamSerializerResolverDelegate> HtmlProviders { get; }
+		List<IViewEngine> ViewEngines { get; }
 
 		/// <summary>
 		/// Provide a catch-all handler that doesn't match any routes

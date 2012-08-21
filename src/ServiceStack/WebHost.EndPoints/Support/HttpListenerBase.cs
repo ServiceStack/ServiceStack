@@ -8,6 +8,7 @@ using System.Threading;
 using Funq;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
@@ -356,13 +357,13 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		public List<StreamSerializerResolverDelegate> HtmlProviders
-		{
-			get
-			{
-				return EndpointHost.HtmlProviders;
-			}
-		}
+        public List<IViewEngine> ViewEngines
+        {
+            get
+            {
+                return EndpointHost.ViewEngines;
+            }
+        }
 
 		public List<HttpHandlerResolverDelegate> CatchAllHandlers
 		{

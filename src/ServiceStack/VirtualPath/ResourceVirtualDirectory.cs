@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.Common.Extensions;
+using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
@@ -22,14 +23,10 @@ namespace ServiceStack.VirtualPath
                 return SubDirectories.Cast<IVirtualDirectory>();
             }
         }
-
+        
         public override string Name { get { return DirectoryName; } }
 
-        public string directoryName;
-        public override string DirectoryName
-        {
-            get { return directoryName; }
-        }
+        public string DirectoryName { get; set; }
 
         public override DateTime LastModified
         {
@@ -51,7 +48,7 @@ namespace ServiceStack.VirtualPath
                 throw new ArgumentException("directoryName");
 
             this.backingAssembly = backingAsm;
-            this.directoryName = directoryName;
+            this.DirectoryName = directoryName;
 
             InitializeDirectoryStructure(manifestResourceNames);
         }
@@ -98,12 +95,20 @@ namespace ServiceStack.VirtualPath
             Contract.Requires(!String.IsNullOrEmpty(resourceName));
 #endif
 
-            var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
-            var mrInfo = backingAssembly.GetManifestResourceInfo(fullResourceName);
-            if (mrInfo == null)
-                throw new FileNotFoundException("Virtual file not found", fullResourceName);
+            try
+            {
+                var fullResourceName = String.Concat(RealPath, VirtualPathProvider.RealPathSeparator, resourceName);
+                var mrInfo = backingAssembly.GetManifestResourceInfo(fullResourceName);
+                if (mrInfo == null)
+                    throw new FileNotFoundException("Virtual file not found", fullResourceName);
 
-            return new ResourceVirtualFile(VirtualPathProvider, this, resourceName);
+                return new ResourceVirtualFile(VirtualPathProvider, this, resourceName);
+            }
+            catch (Exception ex)
+            {
+                ex.Message.Print();
+                throw;
+            }
         }
 
         protected virtual ResourceVirtualDirectory ConsumeTokensForVirtualDir(Stack<string> resourceTokens)

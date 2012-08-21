@@ -35,9 +35,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
 		public void SerializeToStream(IRequestContext requestContext, object dto, IHttpResponse httpRes)
 		{
-			if (AppHost.HtmlProviders.Any(x => x(requestContext, dto, httpRes))) return;
+            var httpReq = requestContext.Get<IHttpRequest>();
+            if (AppHost.ViewEngines.Any(x => x.ProcessRequest(httpReq, httpRes, dto))) return;
 
-			var httpReq = requestContext.Get<IHttpRequest>();
 			if (requestContext.ResponseContentType != ContentType.Html
 				&& httpReq.ResponseContentType != ContentType.JsonReport) return;
 
