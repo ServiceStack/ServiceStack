@@ -75,6 +75,10 @@
     <EmbeddedResource Include="Views\Shared\_Layout.cshtml" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Views\Shared\OtherPages.cshtml" />
+    <Content Include="..\..\lib\tests\sqlite3.dll">
+      <Link>sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Web.config" />
     <EmbeddedResource Include="Views\RockstarsMark.md" />
     <EmbeddedResource Include="Views\Shared\HtmlReport.shtml" />
@@ -87,11 +91,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.txt" />
-    <Content Include="sqlite3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="sqlite\x64\sqlite3.dll" />
-    <Content Include="sqlite\x86\sqlite3.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
