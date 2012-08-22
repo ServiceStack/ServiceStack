@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -173,5 +175,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		{
 			Thread.Sleep(180 * 1000);
 		}
+
+        [Test, Ignore]
+        public void PerformanceTest()
+        {
+            const int clientCount = 500;
+            var threads = new List<Thread>(clientCount);
+            ThreadPool.SetMinThreads(500, 50);
+            ThreadPool.SetMaxThreads(1000, 50);
+
+            for (int i = 0; i < clientCount; i++)
+            {
+                threads.Add(new Thread(() =>
+                {
+                    var html = (ListeningOn + "long_running").DownloadUrl();
+                }));
+            }
+
+            var sw = new Stopwatch();
+            sw.Start();
+            for (int i = 0; i < clientCount; i++)
+            {
+                threads[i].Start();
+            }
+
+
+            for (int i = 0; i < clientCount; i++)
+            {
+                threads[i].Join();
+            }
+
+            sw.Stop();
+
+            Trace.TraceInformation("Elapsed time for " + clientCount + " requests : " + sw.Elapsed);
+        }
 	}
 }
