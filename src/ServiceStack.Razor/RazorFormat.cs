@@ -193,13 +193,26 @@ namespace ServiceStack.Razor
             return ProcessRazorPage(httpReq, razorPage, dto, httpRes);
         }
 
+        public bool HasView(string viewName)
+        {
+            return GetTemplateService(viewName) != null;
+        }
+
         public string RenderPartial(string pageName, object model, bool renderHtml)
         {
-            //Razor writes partial to static StringBuilder so don't return or it will write x2
             var template = GetTemplateService(pageName);
             if (template == null)
-                return "<!--{0} not found-->".Fmt(pageName);
+            {
+                string result = null;
+                foreach (var viewEngine in AppHost.ViewEngines)
+                {
+                    if (viewEngine == this || !viewEngine.HasView(pageName)) continue;
+                    result = viewEngine.RenderPartial(pageName, model, renderHtml);
+                }
+                return result ?? "<!--{0} not found-->".Fmt(pageName);
+            }
 
+            //Razor writes partial to static StringBuilder so don't return or it will write x2
             template.RenderPartial(model, pageName);
 
             //return template.Result;
@@ -554,6 +567,7 @@ namespace ServiceStack.Razor
             if (templatePage != null)
             {
                 templatePage.AppHost = AppHost;
+                templatePage.ViewEngine = this;
             }
 
             var template = (ITemplate)instance;

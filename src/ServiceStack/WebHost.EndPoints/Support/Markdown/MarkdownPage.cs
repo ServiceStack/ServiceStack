@@ -272,6 +272,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 				pageContext.ScopeArgs.TryGetValue(ModelName, out model);
 
 				instance.Init(Markdown.AppHost, this, pageContext.ScopeArgs, model, pageContext.RenderHtml);
+			    instance.ViewEngine = Markdown;
 			}
 
 			foreach (var block in blocks)

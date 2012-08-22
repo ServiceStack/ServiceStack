@@ -241,6 +241,11 @@ namespace ServiceStack.Razor.Templating
             var strictModel = template as ITemplate<T>;
             if (strictModel != null)
                 strictModel.Model = model;
+
+            if (strictModel == null && dynamicModel == null)
+            {
+                template.SetModel(model);
+            }
         }
 
         /// <summary>

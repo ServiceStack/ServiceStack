@@ -14,6 +14,16 @@ namespace ServiceStack.Razor
 	public abstract class ViewPage : ViewPageBase<DynamicRequestObject>
 	{
 		public HtmlHelper Html = new HtmlHelper();
+
+        private IViewEngine viewEngine;
+        public override IViewEngine ViewEngine
+        {
+            get { return viewEngine; }
+            set
+            {
+                Html.ViewEngine = viewEngine = value;
+            }
+        }
 		
 		public new dynamic Model { get; set; }
 		

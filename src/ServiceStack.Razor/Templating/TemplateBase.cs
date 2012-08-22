@@ -127,6 +127,14 @@ namespace ServiceStack.Razor.Templating
                     model = value;
             }
         }
+
+        public override void SetModel(object model)
+        {
+            if (model is TModel)
+            {
+                this.Model = (TModel)model;
+            }
+        }
     }
 
 	/// <summary>
@@ -134,6 +142,9 @@ namespace ServiceStack.Razor.Templating
     /// </summary>
 	public abstract partial class TemplateBase : ITemplate
     {
+        public abstract void SetModel(object model);
+
+
         [ThreadStatic]
         private static StringBuilder builder;
 
@@ -145,7 +156,7 @@ namespace ServiceStack.Razor.Templating
             get { return builder ?? (builder = new StringBuilder()); }
         }
 
-        /// <summary>
+	    /// <summary>
         /// Gets the last result of the template.
         /// </summary>
         public string Result { get { return Builder.ToString(); } }

@@ -74,7 +74,7 @@
     <EmbeddedResource Include="Views\Shared\SimpleLayout.cshtml" />
     <EmbeddedResource Include="Views\Shared\_Layout.cshtml" />
     <None Include="packages.config" />
-    <EmbeddedResource Include="Views\Shared\OtherPages.cshtml" />
+    <EmbeddedResource Include="Views\Shared\RazorPartial.cshtml" />
     <Content Include="..\..\lib\tests\sqlite3.dll">
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -82,12 +82,14 @@
     <Content Include="Web.config" />
     <EmbeddedResource Include="Views\RockstarsMark.md" />
     <EmbeddedResource Include="Views\Shared\HtmlReport.shtml" />
-    <EmbeddedResource Include="Views\Shared\MarkdownPages.md" />
+    <EmbeddedResource Include="Views\Shared\MarkdownPartial.md" />
     <EmbeddedResource Include="Views\Rockstars2.cshtml" />
     <EmbeddedResource Include="Pages\Page1.cshtml" />
     <EmbeddedResource Include="Pages\_Layout.cshtml" />
     <EmbeddedResource Include="Pages\Dir\Page2.cshtml" />
     <EmbeddedResource Include="Pages\Dir\_Layout.cshtml" />
+    <EmbeddedResource Include="Views\Shared\SimpleLayout2.cshtml" />
+    <EmbeddedResource Include="Views\Shared\RazorPartialModel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.txt" />

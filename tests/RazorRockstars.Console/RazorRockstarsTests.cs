@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -26,7 +25,7 @@ namespace RazorRockstars.Console
             appHost.Dispose();
         }
 
-	    [Test]
+        [Ignore("Debug Run")][Test]
 	    public void RunFor10Mins()
 	    {
 	        Thread.Sleep(TimeSpan.FromMinutes(10));
@@ -35,6 +34,7 @@ namespace RazorRockstars.Console
 		public static string AcceptContentType = "*/*";
 		public void Assert200(string url, params string[] containsItems)
 		{
+            url.Print();
 			var text = url.GetStringFromUrl(AcceptContentType, r => {
 				if (r.StatusCode != HttpStatusCode.OK)
 					Assert.Fail(url + " did not return 200 OK");
@@ -50,7 +50,8 @@ namespace RazorRockstars.Console
 
 		public void Assert200UrlContentType(string url, string contentType)
 		{
-			var text = url.GetStringFromUrl(AcceptContentType, r => {
+            url.Print();
+            var text = url.GetStringFromUrl(AcceptContentType, r => {
 				if (r.StatusCode != HttpStatusCode.OK)
 					Assert.Fail(url + " did not return 200 OK: " + r.StatusCode);
 				if (!r.ContentType.StartsWith(contentType))
@@ -58,45 +59,69 @@ namespace RazorRockstars.Console
 			});
 		}
 
-		public static List<string> Hosts = new List<string>{ "http://localhost:1337" };
+		public static string Host = "http://localhost:1337";
 
 		static string ViewRockstars = "<!--view:Rockstars.cshtml-->";
 		static string ViewRockstars2 = "<!--view:Rockstars2.cshtml-->";
 		static string ViewRockstarsMark = "<!--view:RockstarsMark.md-->";
 		static string ViewNoModelNoController = "<!--view:NoModelNoController.cshtml-->";
 		static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
+        static string ViewPage1 = "<!--view:Page1.cshtml-->";
+        static string ViewPage2 = "<!--view:Page2.cshtml-->";
+        static string ViewRazorPartial = "<!--view:RazorPartial.cshtml-->";
+        static string ViewMarkdownPartial = "<!--view:MarkdownPartial.md-->";
+        static string ViewRazorPartialModel = "<!--view:RazorPartialModel.cshtml-->";
 
 		static string Template_Layout = "<!--template:_Layout.cshtml-->";
-		static string TemplateSimpleLayout = "<!--template:SimpleLayout.cshtml-->";
+        static string Template_Layout1 = "<!--template:Pages/_Layout.cshtml-->";
+        static string Template_Layout2 = "<!--template:Pages/Dir/_Layout.cshtml-->";
+        static string TemplateSimpleLayout = "<!--template:SimpleLayout.cshtml-->";
+        static string TemplateSimpleLayout2 = "<!--template:SimpleLayout2.cshtml-->";
 		static string TemplateHtmlReport = "<!--template:HtmlReport.cshtml-->";
 
 		[Test]
 		public void Can_get_page_with_default_view_and_template()
 		{
-			Hosts.ForEach(x =>
-			  Assert200(x.AppendPath("rockstars"), ViewRockstars, TemplateHtmlReport));
+            Assert200(Host + "/rockstars", ViewRockstars, TemplateHtmlReport);
 		}
 
 		[Test]
 		public void Can_get_page_with_alt_view_and_default_template()
 		{
-			Hosts.ForEach(x =>
-				Assert200(x.AppendPath("rockstars?View=Rockstars2"), ViewRockstars2, TemplateHtmlReport));
+            Assert200(Host + "/rockstars?View=Rockstars2", ViewRockstars2, Template_Layout);
 		}
 		
 		[Test]
 		public void Can_get_page_with_alt_viewengine_view_and_default_template()
 		{
-			Hosts.ForEach(x =>
-				Assert200(x.AppendPath("rockstars?View=RockstarsMark"), ViewRockstarsMark, TemplateHtmlReport));
+            Assert200(Host + "/rockstars?View=RockstarsMark", ViewRockstarsMark, TemplateHtmlReport);
 		}
 
-		[Test]
-		public void Can_get_page_with_default_view_and_alt_template()
-		{
-			Hosts.ForEach(x =>
-				Assert200(x.AppendPath("rockstars?Template=SimpleLayout"), ViewRockstars, TemplateSimpleLayout));
-		}
-	}
+        [Test]
+        public void Can_get_page_with_default_view_and_alt_template()
+        {
+            Assert200(Host + "/rockstars?Template=SimpleLayout", ViewRockstars, TemplateSimpleLayout);
+        }
+
+        [Test]
+        public void Can_get_page_with_alt_viewengine_view_and_alt_razor_template()
+        {
+            Assert200(Host + "/rockstars?View=Rockstars2&Template=SimpleLayout2", ViewRockstars2, TemplateSimpleLayout2);
+        }
+
+        [Test]
+        public void Can_get_content_pages()
+        {
+            Assert200(Host + "/TypedModelNoController",
+                ViewTypedModelNoController, TemplateSimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
+            Assert200(Host + "/nomodelnocontroller",
+                ViewNoModelNoController, TemplateSimpleLayout, ViewRazorPartial, ViewMarkdownPartial);
+            Assert200(Host + "/pages/page1",
+                ViewPage1, Template_Layout1, ViewRazorPartialModel, ViewMarkdownPartial);
+            Assert200(Host + "/pages/dir/Page2",
+                ViewPage2, Template_Layout2, ViewRazorPartial, ViewMarkdownPartial);
+        }
+
+    }
 }
 

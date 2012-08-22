@@ -132,9 +132,14 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml)
+	    public bool HasView(string viewName)
+	    {
+            return GetViewPage(viewName) != null;
+	    }
+
+	    public string RenderPartial(string pageName, object model, bool renderHtml)
         {
-            return RenderDynamicPage(GetViewPage(pageName), pageName, model, renderHtml, true);
+            return RenderDynamicPage(GetViewPage(pageName), pageName, model, renderHtml, false);
         }
 
 		public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)
@@ -479,22 +484,28 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			{
 				if (!PageTemplates.TryGetValue(directiveTemplatePath, out markdownTemplate))
 				{
-					if (!File.Exists(directiveTemplatePath))
+				    var virtualFile = VirtualPathProvider.GetFile(directiveTemplatePath);
+                    if (virtualFile == null)
 						throw new FileNotFoundException("Could not find template: " + directiveTemplatePath);
 
-					var templateContents = File.ReadAllText(directiveTemplatePath);
+                    var templateContents = virtualFile.ReadAllText();
 					markdownTemplate = AddTemplate(directiveTemplatePath, templateContents);
 				}
 			}
 
 			if (markdownTemplate == null)
 			{
-                templatePath = markdownPage.TemplatePath;
-                PageTemplates.TryGetValue(templatePath, out markdownTemplate);
+                if (markdownPage.TemplatePath != null)
+                    PageTemplates.TryGetValue(markdownPage.TemplatePath, out markdownTemplate);
 
                 if (markdownTemplate == null)
+                {
+                    if (templatePath == null) 
+                        return null;
+                    
                     throw new ArgumentNullException("templatePath", templatePath);
-            }
+                }
+			}
 
 			if (scopeArgs != null)
 				scopeArgs[MarkdownTemplate.BodyPlaceHolder] = pageHtml;
