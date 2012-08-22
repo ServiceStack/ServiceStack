@@ -193,8 +193,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			//if (request.HasEntityBody)
 
-			if (this.ReceiveWebRequest != null)
-				this.ReceiveWebRequest(context);
+			RaiseReceiveWebRequest(context);
 
 			try
 			{
@@ -233,8 +232,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			//System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.Now);
 		}
 
+	    protected void RaiseReceiveWebRequest(HttpListenerContext context)
+	    {
+	        if (this.ReceiveWebRequest != null)
+	            this.ReceiveWebRequest(context);
+	    }
 
-		/// <summary>
+
+	    /// <summary>
 		/// Shut down the Web Service
 		/// </summary>
 		public virtual void Stop()
