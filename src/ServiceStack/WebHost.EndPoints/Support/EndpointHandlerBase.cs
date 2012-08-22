@@ -232,9 +232,18 @@ namespace ServiceStack.WebHost.Endpoints.Support
 						? request.UserHostAddress.Substring(0, request.UserHostAddress.LastIndexOf(':'))
 						: request.UserHostAddress);
 
-				var ipAddress = IPAddress.Parse(ipAddressNumber);
-
-				portRestrictions |= GetIpAddressEndpointAttributes(ipAddress);
+                try
+                {
+                    var ipAddress = ipAddressNumber.StartsWith("::1")
+                        ? IPAddress.IPv6Loopback
+                        : IPAddress.Parse(ipAddressNumber);
+                    portRestrictions |= GetIpAddressEndpointAttributes(ipAddress);
+                }
+                catch (Exception ex)
+                {
+                    throw new ArgumentException("Could not parse Ipv{0} Address: {1} / {2}"
+                        .Fmt((isIpv4Address ? 4 : 6), request.UserHostAddress, ipAddressNumber), ex);
+                }
 			}
 
 			return portRestrictions;
