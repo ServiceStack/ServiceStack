@@ -44,3 +44,4 @@ release/*
 src/ServiceStack.MonoTouch/.DS_Store
 NuGet/
 build/
+*.DS_Store
