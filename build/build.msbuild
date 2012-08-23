@@ -1,7 +1,40 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Target Name="Build">
-        <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=Release"/>
-        <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.csproj" Properties="Configuration=Release"/>
-        <MSBuild Projects="../src/ServiceStack/ServiceStack.csproj" Properties="Configuration=Release"/>
-    </Target>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
+    <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DoBuildSolutionsDependsOn>
+      BeforeBuildSolutions;
+      BuildSolutions
+    </DoBuildSolutionsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
+
+  <Target Name="UnitTests" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Messaging.Tests/bin/$(Configuration)/ServiceStack.Messaging.Tests.dll" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Common.Tests/bin/$(Configuration)/ServiceStack.Common.Tests.dll" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Auth.Tests/bin/$(Configuration)/ServiceStack.Auth.Tests.dll" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.WebHostApp/bin/ServiceStack.WebHost.Endpoints.Tests.dll" />
+  </Target>
+
+  <Target Name="Build">
+    <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.csproj" Properties="Configuration=$(Configuration)"/>
+    <MSBuild Projects="../src/ServiceStack/ServiceStack.csproj" Properties="Configuration=$(Configuration)"/>
+  </Target>
+
+  <Target Name="BeforeBuildSolutions">
+    <Message Text="*****Before building solution*****" Importance="high"/>
+    <!--<Copy SourceFiles="Test/ci.app.config" DestinationFiles="Test/app.config" />-->
+  </Target>
+
+  <Target Name="BuildSolutions">
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Build"
+   Properties="Configuration=$(Configuration)" />
+  </Target>
+
+
 </Project>
