@@ -20,7 +20,9 @@ namespace RazorRockstars.Console
 
         public override void Configure(Container container)
         {
-            Plugins.Add(new EmbeddedFeature());
+            Plugins.Add(new EmbeddedFeature(
+                new Licence("Demo-Expires:2013-01", "55B832A6-5817-4F9B-B808-78641488DB00")));
+
             Plugins.Add(new RazorFormat());
 
             container.Register<IDbConnectionFactory>(

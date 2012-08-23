@@ -115,6 +115,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
+            ConfigurePlugins();
+
 			AppHost.LoadPlugin(Plugins.ToArray());
 			pluginsLoaded = true;
 
@@ -123,7 +125,21 @@ namespace ServiceStack.WebHost.Endpoints
 		    ReadyAt = DateTime.Now;
 		}
 
-		private static void AfterPluginsLoaded(string specifiedContentType)
+	    private static void ConfigurePlugins()
+	    {
+            //Some plugins need to initialize before other plugins are registered.
+
+	        foreach (var plugin in Plugins)
+	        {
+	            var preInitPlugin = plugin as IPreInitPlugin;
+	            if (preInitPlugin != null)
+	            {
+                    preInitPlugin.Configure(AppHost);
+                }
+	        }
+	    }
+
+	    private static void AfterPluginsLoaded(string specifiedContentType)
 		{
 			if (!string.IsNullOrEmpty(specifiedContentType))
 				config.DefaultContentType = specifiedContentType;
