@@ -6,8 +6,7 @@ namespace ServiceStack.VirtualPath
 {
     public interface IVirtualPathProvider
     {
-        IAppHost AppHost { get; }
-        IVirtualDirectory RootDirectory { get; }
+		IVirtualDirectory RootDirectory { get; }
         string VirtualPathSeparator { get; }
         string RealPathSeparator { get; }
 

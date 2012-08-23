@@ -90,10 +90,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 			if (!appHost.Config.WebHostUrl.IsNullOrEmpty() && this.MarkdownReplaceTokens.ContainsKey("~/"))
 				this.MarkdownReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
-            if (VirtualPathProvider == null)
-                VirtualPathProvider = new MultiVirtualPathProvider(AppHost,
-                    new ResourceVirtualPathProvider(AppHost),
-                    new FileSystemVirtualPathProvider(AppHost));
+			if (VirtualPathProvider == null)
+				VirtualPathProvider = AppHost.VirtualPathProvider;
 
 			RegisterMarkdownPages(appHost.Config.MarkdownSearchPath);
 
@@ -316,12 +314,12 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public IEnumerable<MarkdownPage> FindMarkdownPages(string dirPath)
         {
-            var hasWebPages = false;
+            var hasReloadableWebPages = false;
             var markDownFiles = VirtualPathProvider.GetAllMatchingFiles("*." + MarkdownExt);
             foreach (var markDownFile in markDownFiles)
             {
-                if (markDownFile.GetType() != typeof(ResourceVirtualFile))
-                    hasWebPages = true;
+				if (markDownFile.GetType().Name != "ResourceVirtualFile")
+                    hasReloadableWebPages = true;
 
                 var pageName = markDownFile.Name.WithoutExtension();
                 var pageContents = markDownFile.ReadAllText();
@@ -343,7 +341,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                         LastModified = markDownFile.LastModified,
                     };
             }
-            if (!hasWebPages)
+            if (!hasReloadableWebPages)
                 WatchForModifiedPages = false;
         }
 

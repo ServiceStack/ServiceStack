@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 
-namespace ServiceStack.VirtualPath
+namespace ServiceStack.Plugins.Embedded.VirtualPath
 {
     public class MultiVirtualPathProvider : AbstractVirtualPathProviderBase
     {

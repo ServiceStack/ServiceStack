@@ -54,13 +54,7 @@ namespace ServiceStack.RazorHostTests
 
         public override void Configure(Container container)
         {
-            Plugins.Add(new RazorFormat()
-            {
-                VirtualPathProvider = new MultiVirtualPathProvider(this,
-                        new ResourceVirtualPathProvider(this),
-                        new FileSystemVirtualPathProvider(this)
-                    )
-            });
+            Plugins.Add(new RazorFormat());
 
             container.Register(new DataSource());
 

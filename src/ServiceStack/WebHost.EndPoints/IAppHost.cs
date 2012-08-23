@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -83,5 +84,12 @@ namespace ServiceStack.WebHost.Endpoints
 		/// </summary>
 		/// <param name="plugins"></param>
 		void LoadPlugin(params IPlugin[] plugins);
+
+		IVirtualPathProvider VirtualPathProvider { get; set; }
+	}
+
+	public interface IHasAppHost
+	{
+		IAppHost AppHost { get; }
 	}
 }

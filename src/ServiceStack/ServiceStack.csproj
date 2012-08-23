@@ -182,15 +182,6 @@
     <Compile Include="VirtualPath\FileSystemVirtualDirectory.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualFile.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualPathProvider.cs" />
-    <Compile Include="VirtualPath\IVirtualDirectory.cs" />
-    <Compile Include="VirtualPath\IVirtualFile.cs" />
-    <Compile Include="VirtualPath\IVirtualNode.cs" />
-    <Compile Include="VirtualPath\IVirtualPathProvider.cs" />
-    <Compile Include="VirtualPath\MultiVirtualPathProvider.cs" />
-    <Compile Include="VirtualPath\ResourceVirtualDirectory.cs" />
-    <Compile Include="VirtualPath\ResourceVirtualFile.cs" />
-    <Compile Include="VirtualPath\ResourceVirtualPathProvider.cs" />
-    <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="WebHost.Endpoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
     <Compile Include="Markdown\DynamicTypeGenerator .cs" />
@@ -236,7 +227,6 @@
     <Compile Include="WebHost.Endpoints\Formats\CsvFormat.cs" />
     <Compile Include="WebHost.Endpoints\Extensions\HttpListenerRequestWrapper.cs" />
     <Compile Include="WebHost.Endpoints\AppDelegates.cs" />
-    <Compile Include="WebHost.Endpoints\IPlugin.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\Evaluator.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\ITemplateWriter.cs" />
     <Compile Include="WebHost.Endpoints\Support\Markdown\Markdown.cs" />
@@ -249,7 +239,6 @@
     <Compile Include="WebHost.Endpoints\Support\Markdown\TextBlock.cs" />
     <Compile Include="WebHost.Endpoints\GenericHandler.cs" />
     <Compile Include="WebHost.Endpoints\Formats\HtmlFormat.cs" />
-    <Compile Include="WebHost.Endpoints\IAppHost.cs" />
     <Compile Include="WebHost.Endpoints\Metadata\CustomMetadataHandler.cs" />
     <Compile Include="WebHost.Endpoints\RestHandler.cs" />
     <Compile Include="WebHost.Endpoints\Extensions\HttpRequestWrapper.cs" />
@@ -316,6 +305,8 @@
     <Compile Include="WebHost.Endpoints\Support\Metadata\XsdTypes.cs" />
     <Compile Include="WebHost.Endpoints\Utils\XsdUtils.cs" />
     <Compile Include="WebHost.Endpoints\Support\Templates\ListTemplate.cs" />
+    <Compile Include="WebHost.Endpoints\IAppHost.cs" />
+    <Compile Include="WebHost.Endpoints\IPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Funq\Container.Adapter.cs" />

@@ -9,6 +9,7 @@ using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints
 {
@@ -193,6 +194,12 @@ namespace ServiceStack.WebHost.Endpoints
 		public List<IPlugin> Plugins
 		{
 			get { return EndpointHost.Plugins; }
+		}
+		
+		public IVirtualPathProvider VirtualPathProvider
+		{
+			get { return EndpointHost.VirtualPathProvider; }
+			set { EndpointHost.VirtualPathProvider = value; }
 		}
 
 		public virtual void LoadPlugin(params IPlugin[] plugins)

@@ -5,6 +5,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
+using ServiceStack.VirtualPath;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Utils;
@@ -31,6 +32,8 @@ namespace ServiceStack.WebHost.Endpoints
 		private static bool pluginsLoaded = false;
 
 		public static List<IPlugin> Plugins { get; set; }
+
+		public static IVirtualPathProvider VirtualPathProvider { get; set; }
 
         public static DateTime StartedAt { get; set; }
 
@@ -60,6 +63,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var config = EndpointHostConfig.Instance;
 			Config = config; // avoid cross-dependency on Config setter
+			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost);
 		}
 
 		// Config has changed

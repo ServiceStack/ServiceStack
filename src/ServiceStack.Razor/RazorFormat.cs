@@ -136,9 +136,7 @@ namespace ServiceStack.Razor
                 this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
             if (VirtualPathProvider == null)
-                VirtualPathProvider = new MultiVirtualPathProvider(AppHost,
-                    new ResourceVirtualPathProvider(AppHost),
-                    new FileSystemVirtualPathProvider(AppHost));
+                VirtualPathProvider = AppHost.VirtualPathProvider;
 
             Init();
 
@@ -373,15 +371,15 @@ namespace ServiceStack.Razor
 
         public IEnumerable<ViewPageRef> FindRazorPages(string dirPath)
         {
-            var hasWebPages = false;
+            var hasReloadableWebPages = false;
             foreach (var entry in templateServices)
             {
                 var ext = entry.Key;
                 var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*." + ext).ToList();
                 foreach (var csHtmlFile in csHtmlFiles)
                 {
-                    if (csHtmlFile.GetType() != typeof(ResourceVirtualFile))
-                        hasWebPages = true;
+					if (csHtmlFile.GetType().Name != "ResourceVirtualFile")
+                        hasReloadableWebPages = true;
 
                     var pageName = csHtmlFile.Name.WithoutExtension();
                     var pageContents = csHtmlFile.ReadAllText();
@@ -407,7 +405,7 @@ namespace ServiceStack.Razor
                 }
             }
 
-            if (!hasWebPages)
+            if (!hasReloadableWebPages)
                 WatchForModifiedPages = false;
         }
 

@@ -127,6 +127,10 @@
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Plugins.Embedded\ServiceStack.Plugins.Embedded.csproj">
+      <Project>{FC8F4FB4-DE3F-4083-8E2F-A2832A5AF690}</Project>
+      <Name>ServiceStack.Plugins.Embedded</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
 </Project>

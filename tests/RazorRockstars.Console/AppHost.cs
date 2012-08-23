@@ -9,6 +9,7 @@ using ServiceStack.Razor;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;
+using ServiceStack.Plugins.Embedded;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Console
@@ -19,6 +20,7 @@ namespace RazorRockstars.Console
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new EmbeddedFeature());
             Plugins.Add(new RazorFormat());
 
             container.Register<IDbConnectionFactory>(
