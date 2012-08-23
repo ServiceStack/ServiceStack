@@ -41,7 +41,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -121,6 +121,7 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppHostHttpListenerLongRunningBaseTests.cs" />
     <Compile Include="AppHostListenerBaseTests.cs" />
     <Compile Include="AsyncRestClientTests.cs" />
     <Compile Include="AsyncServiceClientTests.cs" />
