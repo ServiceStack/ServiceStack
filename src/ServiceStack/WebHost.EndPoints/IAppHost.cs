@@ -85,6 +85,9 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <param name="plugins"></param>
 		void LoadPlugin(params IPlugin[] plugins);
 
+        /// <summary>
+        /// Virtual access to file resources
+        /// </summary>
 		IVirtualPathProvider VirtualPathProvider { get; set; }
 	}
 
