@@ -5,6 +5,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
+using ServiceStack.VirtualPath;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Utils;
@@ -31,6 +32,8 @@ namespace ServiceStack.WebHost.Endpoints
 		private static bool pluginsLoaded = false;
 
 		public static List<IPlugin> Plugins { get; set; }
+
+		public static IVirtualPathProvider VirtualPathProvider { get; set; }
 
         public static DateTime StartedAt { get; set; }
 
@@ -60,6 +63,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var config = EndpointHostConfig.Instance;
 			Config = config; // avoid cross-dependency on Config setter
+			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost);
 		}
 
 		// Config has changed
@@ -111,6 +115,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
+            ConfigurePlugins();
+
 			AppHost.LoadPlugin(Plugins.ToArray());
 			pluginsLoaded = true;
 
@@ -119,7 +125,21 @@ namespace ServiceStack.WebHost.Endpoints
 		    ReadyAt = DateTime.Now;
 		}
 
-		private static void AfterPluginsLoaded(string specifiedContentType)
+	    private static void ConfigurePlugins()
+	    {
+            //Some plugins need to initialize before other plugins are registered.
+
+	        foreach (var plugin in Plugins)
+	        {
+	            var preInitPlugin = plugin as IPreInitPlugin;
+	            if (preInitPlugin != null)
+	            {
+                    preInitPlugin.Configure(AppHost);
+                }
+	        }
+	    }
+
+	    private static void AfterPluginsLoaded(string specifiedContentType)
 		{
 			if (!string.IsNullOrEmpty(specifiedContentType))
 				config.DefaultContentType = specifiedContentType;

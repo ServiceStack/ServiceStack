@@ -5,7 +5,8 @@ namespace ServiceStack.Html
 {
 	public interface ITemplatePage
 	{
-		IAppHost AppHost { get; set; }
+        IViewEngine ViewEngine { get; set; }
+        IAppHost AppHost { get; set; }
 		T Get<T>();
 		Dictionary<string, object> ScopeArgs { get; set; }
 	}

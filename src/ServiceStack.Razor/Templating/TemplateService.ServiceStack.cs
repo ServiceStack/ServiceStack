@@ -4,6 +4,7 @@ using System.Dynamic;
 using ServiceStack.Common;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.Razor.Templating
 {
@@ -87,7 +88,17 @@ namespace ServiceStack.Razor.Templating
 			//since executing templates clears the buffer we need to capture 
 			//what's been rendered and prepend after.
 			var capture = template.Result;
-			template.Execute();
+
+		    try
+		    {
+                template.Execute();
+            }
+		    catch (Exception ex)
+		    {
+		        throw new InvalidOperationException(
+                    "Could not execute partial: " + name + ", model: " + model);
+		    }
+
 			template.Prepend(capture);
 			
 			return template;

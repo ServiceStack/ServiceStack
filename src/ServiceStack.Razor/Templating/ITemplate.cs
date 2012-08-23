@@ -5,6 +5,8 @@
     /// </summary>
     public interface ITemplate
     {
+        void SetModel(object model);
+
         /// <summary>
         /// Gets the last result of the template.
         /// </summary>

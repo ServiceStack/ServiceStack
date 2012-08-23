@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Html;
+using ServiceStack.VirtualPath;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
 
@@ -18,6 +19,7 @@ namespace ServiceStack.ServiceInterface.Testing
             this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+			this.VirtualPathProvider = new FileSystemVirtualPathProvider(this);
         }
 
         public void RegisterAs<T, TAs>() where T : TAs
@@ -70,5 +72,7 @@ namespace ServiceStack.ServiceInterface.Testing
         {
             plugins.ToList().ForEach(x => x.Register(this));
         }
-    }
+	
+		public IVirtualPathProvider VirtualPathProvider { get; set; }
+	}
 }

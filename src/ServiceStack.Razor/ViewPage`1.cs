@@ -1,19 +1,24 @@
 ﻿using System;
-using System.IO;
-using System.Web;
-using System.Globalization;
 using System.Collections.Generic;
 using ServiceStack.Html;
-using ServiceStack.MiniProfiler;
 using ServiceStack.Razor.Templating;
 using ServiceStack.ServiceHost;
-using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Razor
 {
     public abstract class ViewPage<TModel> : ViewPageBase<TModel>
 	{
 		public HtmlHelper<TModel> Html = new HtmlHelper<TModel>();
+
+        private IViewEngine viewEngine;
+        public override IViewEngine ViewEngine
+        {
+            get { return viewEngine; }
+            set
+            {
+                Html.ViewEngine = viewEngine = value;
+            }
+        }
 
         protected ViewPage()
         {

@@ -320,7 +320,7 @@ current date/year: 2012</p>
 				new Product("DVD", 11.99m),
 			};
 
-			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			var html = RenderToHtml(pageTemplate, products);
 

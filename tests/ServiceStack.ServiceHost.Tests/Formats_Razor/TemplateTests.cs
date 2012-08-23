@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		public List<string> Labels { get; set; }
 	}
 
-	public class CustomMarkdownViewBase<T> : ViewPage<T>
+	public class CustomViewBase<T> : ViewPage<T>
 	{
 		public CustomMarkdownHelper Ext = new CustomMarkdownHelper();
 		public ExternalProductHelper Prod = new ExternalProductHelper();
@@ -380,7 +380,7 @@ Demis / Bellot
 </table>
 ".NormalizeNewLines();
 
-            razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+            razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			AddViewPage("HeaderLinks", "/path/to/page", headerTemplate);
 
@@ -441,7 +441,7 @@ Demis / Bellot
 </table>
 ".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -471,7 +471,7 @@ Demis / Bellot
 ".NormalizeNewLines();
 
 
-			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -532,7 +532,7 @@ Demis / Bellot
 	</li>
 </ul>".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -667,7 +667,7 @@ Plain text in a comment
 <p>Hello BELLOT, Demis</p>
 ".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -792,7 +792,7 @@ Demis / Bellot
 </body>
 </html>".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
 			AddViewPage("DynamicModelTpl", "/path/to/page-tpl", template, websiteTemplatePath);
@@ -881,7 +881,7 @@ Demis / Bellot
 </body>
 </html>".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomMarkdownViewBase<>);
+			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
 
 			var websiteTemplatePath = "/path/to/tpl";
 			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);

@@ -11,6 +11,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
+using ServiceStack.VirtualPath;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 
@@ -193,8 +194,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 			//if (request.HasEntityBody)
 
-			if (this.ReceiveWebRequest != null)
-				this.ReceiveWebRequest(context);
+			RaiseReceiveWebRequest(context);
 
 			try
 			{
@@ -233,8 +233,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			//System.Diagnostics.Debug.WriteLine("End: " + requestNumber + " at " + DateTime.Now);
 		}
 
+	    protected void RaiseReceiveWebRequest(HttpListenerContext context)
+	    {
+	        if (this.ReceiveWebRequest != null)
+	            this.ReceiveWebRequest(context);
+	    }
 
-		/// <summary>
+
+	    /// <summary>
 		/// Shut down the Web Service
 		/// </summary>
 		public virtual void Stop()
@@ -378,6 +384,12 @@ namespace ServiceStack.WebHost.Endpoints.Support
 		public List<IPlugin> Plugins
 		{
 			get { return EndpointHost.Plugins; }
+		}
+		
+		public IVirtualPathProvider VirtualPathProvider
+		{
+			get { return EndpointHost.VirtualPathProvider; }
+			set { EndpointHost.VirtualPathProvider = value; }
 		}
 
 		public virtual void LoadPlugin(params IPlugin[] plugins)

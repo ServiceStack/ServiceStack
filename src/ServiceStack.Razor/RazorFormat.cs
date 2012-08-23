@@ -136,9 +136,7 @@ namespace ServiceStack.Razor
                 this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
             if (VirtualPathProvider == null)
-                VirtualPathProvider = new MultiVirtualPathProvider(AppHost,
-                    new ResourceVirtualPathProvider(AppHost),
-                    new FileSystemVirtualPathProvider(AppHost));
+                VirtualPathProvider = AppHost.VirtualPathProvider;
 
             Init();
 
@@ -193,13 +191,26 @@ namespace ServiceStack.Razor
             return ProcessRazorPage(httpReq, razorPage, dto, httpRes);
         }
 
+        public bool HasView(string viewName)
+        {
+            return GetTemplateService(viewName) != null;
+        }
+
         public string RenderPartial(string pageName, object model, bool renderHtml)
         {
-            //Razor writes partial to static StringBuilder so don't return or it will write x2
             var template = GetTemplateService(pageName);
             if (template == null)
-                return "<!--{0} not found-->".Fmt(pageName);
+            {
+                string result = null;
+                foreach (var viewEngine in AppHost.ViewEngines)
+                {
+                    if (viewEngine == this || !viewEngine.HasView(pageName)) continue;
+                    result = viewEngine.RenderPartial(pageName, model, renderHtml);
+                }
+                return result ?? "<!--{0} not found-->".Fmt(pageName);
+            }
 
+            //Razor writes partial to static StringBuilder so don't return or it will write x2
             template.RenderPartial(model, pageName);
 
             //return template.Result;
@@ -360,15 +371,15 @@ namespace ServiceStack.Razor
 
         public IEnumerable<ViewPageRef> FindRazorPages(string dirPath)
         {
-            var hasWebPages = false;
+            var hasReloadableWebPages = false;
             foreach (var entry in templateServices)
             {
                 var ext = entry.Key;
                 var csHtmlFiles = VirtualPathProvider.GetAllMatchingFiles("*." + ext).ToList();
                 foreach (var csHtmlFile in csHtmlFiles)
                 {
-                    if (csHtmlFile.GetType() != typeof(ResourceVirtualFile))
-                        hasWebPages = true;
+					if (csHtmlFile.GetType().Name != "ResourceVirtualFile")
+                        hasReloadableWebPages = true;
 
                     var pageName = csHtmlFile.Name.WithoutExtension();
                     var pageContents = csHtmlFile.ReadAllText();
@@ -394,7 +405,7 @@ namespace ServiceStack.Razor
                 }
             }
 
-            if (!hasWebPages)
+            if (!hasReloadableWebPages)
                 WatchForModifiedPages = false;
         }
 
@@ -554,6 +565,7 @@ namespace ServiceStack.Razor
             if (templatePage != null)
             {
                 templatePage.AppHost = AppHost;
+                templatePage.ViewEngine = this;
             }
 
             var template = (ITemplate)instance;

@@ -19,6 +19,7 @@ using System.Reflection;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Markdown;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Html
@@ -82,26 +83,43 @@ namespace ServiceStack.Html
 		private static readonly HtmlEncoder htmlEncoder = GetHtmlEncoder();
 
 		public bool RenderHtml { get; protected set; }
-        public IViewEngine ViewEngine { get; protected set; }
-		public MarkdownPage MarkdownPage { get; protected set; }
+
+        public IViewEngine ViewEngine { get; set; }
+
+	    public MarkdownPage MarkdownPage { get; protected set; }
 		public Dictionary<string, object> ScopeArgs { get; protected set; }
 		public virtual ViewDataDictionary ViewData { get; protected set; }
 
-		public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
+        private static int counter = 0;
+        private int id = 0;
+
+	    public HtmlHelper()
+	    {
+            this.RenderHtml = true;
+            id = counter++;
+	    }
+
+	    public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
 			bool renderHtml, ViewDataDictionary viewData)
 		{
-			this.RenderHtml = renderHtml;
+            Init(markdownPage.Markdown, viewData);
+
+            this.RenderHtml = renderHtml;
 			this.MarkdownPage = markdownPage;
 			this.ScopeArgs = scopeArgs;
-
-			Init(markdownPage.Markdown, viewData);
 		}
 
 		public void Init(IViewEngine viewEngine, ViewDataDictionary viewData)
 		{
-			this.ViewEngine = viewEngine;
+            this.RenderHtml = true;
+            this.ViewEngine = viewEngine;
 			this.ViewData = viewData;
 			this.ViewData.PopulateModelState();
+		}
+
+		public MvcHtmlString Partial(string viewName)
+		{
+		    return Partial(viewName, null);
 		}
 		
 		public MvcHtmlString Partial(string viewName, object model)
@@ -109,6 +127,16 @@ namespace ServiceStack.Html
 			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml);
 			return MvcHtmlString.Create(result);
 		}
+
+        public string Debug(object model)
+        {
+            if (model != null)
+            {
+                model.PrintDump();
+            }
+
+            return null;
+        }
 
 		public string Raw(object content)
 		{

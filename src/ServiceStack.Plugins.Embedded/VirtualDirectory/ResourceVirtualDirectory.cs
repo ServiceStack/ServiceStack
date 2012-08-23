@@ -4,9 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.Common.Extensions;
+using ServiceStack.VirtualPath;
 using ServiceStack.Text;
 
-namespace ServiceStack.VirtualPath
+namespace ServiceStack.Plugins.Embedded.VirtualPath
 {
     public class ResourceVirtualDirectory : AbstractVirtualDirectoryBase
     {

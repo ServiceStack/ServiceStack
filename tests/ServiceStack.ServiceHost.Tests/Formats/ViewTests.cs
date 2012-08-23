@@ -11,6 +11,7 @@ using ServiceStack.Html;
 using ServiceStack.ServiceHost.Tests.AppData;
 using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
@@ -52,6 +53,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 				this.ViewEngines = new List<IViewEngine>();
 				this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+				this.VirtualPathProvider = new FileSystemVirtualPathProvider(this);
 			}
 
 			public void Register<T>(T instance)
@@ -99,6 +101,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			{
 				plugins.ToList().ForEach(x => x.Register(this));
 			}
+
+			public IVirtualPathProvider VirtualPathProvider { get; set; }
 		}
 
 		public string GetHtml(object dto, string format)

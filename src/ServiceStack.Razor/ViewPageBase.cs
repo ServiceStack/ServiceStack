@@ -23,6 +23,9 @@ namespace ServiceStack.Razor
         public UrlHelper Url = new UrlHelper();
 
         private IAppHost appHost;
+
+        public virtual IViewEngine ViewEngine { get; set; }
+
         public IAppHost AppHost
         {
             get { return appHost ?? EndpointHost.AppHost; }
