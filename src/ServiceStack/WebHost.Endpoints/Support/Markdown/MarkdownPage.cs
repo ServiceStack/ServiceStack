@@ -7,6 +7,7 @@ using System.Threading;
 using ServiceStack.Common;
 using ServiceStack.Markdown;
 using ServiceStack.ServiceHost;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Markdown
@@ -46,8 +47,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 		public string Name { get; set; }
 		public string Contents { get; set; }
 		public string HtmlContents { get; set; }
-		public string TemplatePath { get; set; }
-		public string DirectiveTemplatePath { get; set; }
+		public string Template { get; set; }
+        public string DirectiveTemplate { get; set; }
 		public EvaluatorExecutionContext ExecutionContext { get; private set; }
 
 		public DateTime? LastModified { get; set; }
@@ -70,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
 		public string GetTemplatePath()
 		{
-			return this.DirectiveTemplatePath ?? this.TemplatePath;
+			return this.DirectiveTemplate ?? this.Template;
 		}
 
 		private Evaluator evaluator;
@@ -169,19 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 				x => x is DirectiveBlock && ((DirectiveBlock)x).TemplatePath != null);
 			if (templateDirective == null) return;
 
-			var fileDir = Path.GetDirectoryName(this.FilePath);
-			var templatePath = ((DirectiveBlock)templateDirective).TemplatePath;
-			if (templatePath.StartsWith("~"))
-			{
-				this.DirectiveTemplatePath = Path.GetFullPath(templatePath.ReplaceFirst("~", fileDir));
-			}
-			else
-			{
-				if (templatePath.IsRelativePath())
-				{
-					this.DirectiveTemplatePath = Path.GetFullPath(Path.Combine(fileDir, templatePath));
-				}
-			}
+			this.DirectiveTemplate = ((DirectiveBlock)templateDirective).TemplatePath;
 		}
 
 		public void Write(TextWriter textWriter, PageContext pageContext)
@@ -298,13 +287,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			}
 
 			MarkdownTemplate template;
-			if (this.DirectiveTemplatePath != null
-				&& Markdown.PageTemplates.TryGetValue(this.DirectiveTemplatePath, out template))
+			if (this.DirectiveTemplate != null
+				&& Markdown.MasterPageTemplates.TryGetValue(this.DirectiveTemplate, out template))
 			{
 				this.Dependents.Add(template);
 			}
-			if (this.TemplatePath != null
-				&& Markdown.PageTemplates.TryGetValue(this.TemplatePath, out template))
+			if (this.Template != null
+				&& Markdown.MasterPageTemplates.TryGetValue(this.Template, out template))
 			{
 				this.Dependents.Add(template);
 			}

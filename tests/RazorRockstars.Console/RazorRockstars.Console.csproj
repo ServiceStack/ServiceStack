@@ -82,6 +82,9 @@
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Views\Shared\default.shtml" />
+    <EmbeddedResource Include="Pages\default.shtml" />
+    <EmbeddedResource Include="Pages\Dir\default.shtml" />
     <Content Include="Web.config" />
     <EmbeddedResource Include="Views\RockstarsMark.md" />
     <EmbeddedResource Include="Views\Shared\HtmlReport.shtml" />
@@ -93,6 +96,13 @@
     <EmbeddedResource Include="Pages\Dir\_Layout.cshtml" />
     <EmbeddedResource Include="Views\Shared\SimpleLayout2.cshtml" />
     <EmbeddedResource Include="Views\Shared\RazorPartialModel.cshtml" />
+    <EmbeddedResource Include="MRootPage.md" />
+    <EmbeddedResource Include="Pages\MPage1.md" />
+    <EmbeddedResource Include="Pages\Dir\MPage2.md" />
+    <EmbeddedResource Include="Pages\Dir2\Page3.cshtml" />
+    <EmbeddedResource Include="Pages\Dir2\MPage3.md" />
+    <EmbeddedResource Include="Pages\Dir2\MPage4.md" />
+    <EmbeddedResource Include="Pages\Dir2\Page4.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.txt" />

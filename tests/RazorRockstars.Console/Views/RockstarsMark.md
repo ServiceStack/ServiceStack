@@ -1,7 +1,7 @@
 ﻿@model RockstarsResponse
 @Layout HtmlReport
 
-@var title = Model.Aged.HasValue ? Model.Aged + "year old rockstars" : "All Rockstars"
+@var Title = Model.Aged.HasValue ? Model.Aged + "year old rockstars" : "All Rockstars"
 
 ^<div style="float:right">
 
@@ -13,16 +13,18 @@
 
 ### Other Pages
 
-    - [/rockstars](/rockstars)
-    - [/TypedModelNoController](/TypedModelNoController)
-    - [/NoModelNoController](/NoModelNoController)
+  - [/rockstars](/rockstars)
+  - [/TypedModelNoController](/TypedModelNoController)
+  - [/NoModelNoController](/NoModelNoController)
 
 ^</div>
 
-### We have @Model.Total Rockstars, showing @title
+### We have @Model.Total Rockstars, showing @Title
 
 @foreach rockstar in Model.Results {
-    - (@rockstar.Age.Value) @rockstar.FirstName @rockstar.LastName [delete](/rockstars/delete/@rockstar.Id)
+  - (@rockstar.Age.Value) @rockstar.FirstName @rockstar.LastName [delete](/rockstars/delete/@rockstar.Id)
 }
 
 source files for this demo
+
+<!--view:RockstarsMark.md-->

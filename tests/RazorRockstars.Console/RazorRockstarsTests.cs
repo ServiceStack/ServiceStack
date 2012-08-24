@@ -68,6 +68,13 @@ namespace RazorRockstars.Console
 		static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
         static string ViewPage1 = "<!--view:Page1.cshtml-->";
         static string ViewPage2 = "<!--view:Page2.cshtml-->";
+        static string ViewPage3 = "<!--view:Page3.cshtml-->";
+        static string ViewPage4 = "<!--view:Page4.cshtml-->";
+        static string ViewMarkdownRootPage = "<!--view:MRootPage.md-->";
+        static string ViewMPage1 = "<!--view:MPage1.md-->";
+        static string ViewMPage2 = "<!--view:MPage2.md-->";
+        static string ViewMPage3 = "<!--view:MPage3.md-->";
+        static string ViewMPage4 = "<!--view:MPage4.md-->";
         static string ViewRazorPartial = "<!--view:RazorPartial.cshtml-->";
         static string ViewMarkdownPartial = "<!--view:MarkdownPartial.md-->";
         static string ViewRazorPartialModel = "<!--view:RazorPartialModel.cshtml-->";
@@ -77,7 +84,11 @@ namespace RazorRockstars.Console
         static string Template_Layout2 = "<!--template:Pages/Dir/_Layout.cshtml-->";
         static string TemplateSimpleLayout = "<!--template:SimpleLayout.cshtml-->";
         static string TemplateSimpleLayout2 = "<!--template:SimpleLayout2.cshtml-->";
-		static string TemplateHtmlReport = "<!--template:HtmlReport.cshtml-->";
+        static string TemplateHtmlReport = "<!--template:HtmlReport.cshtml-->";
+        static string TemplateMarkdownDefault = "<!--template:default.shtml-->";
+        static string TemplateMarkdownDefault1 = "<!--template:Pages/default.cshtml-->";
+        static string TemplateMarkdownDefault2 = "<!--template:Pages/Dir/default.cshtml-->";
+        static string TemplateMarkdownHtmlReport = "<!--template:HtmlReport.shtml-->";
 
 		[Test]
 		public void Can_get_page_with_default_view_and_template()
@@ -94,7 +105,7 @@ namespace RazorRockstars.Console
 		[Test]
 		public void Can_get_page_with_alt_viewengine_view_and_default_template()
 		{
-            Assert200(Host + "/rockstars?View=RockstarsMark", ViewRockstarsMark, TemplateHtmlReport);
+            Assert200(Host + "/rockstars?View=RockstarsMark", ViewRockstarsMark, TemplateMarkdownHtmlReport);
 		}
 
         [Test]
@@ -110,7 +121,7 @@ namespace RazorRockstars.Console
         }
 
         [Test]
-        public void Can_get_content_pages()
+        public void Can_get_razor_content_pages()
         {
             Assert200(Host + "/TypedModelNoController",
                 ViewTypedModelNoController, TemplateSimpleLayout, ViewRazorPartial, ViewMarkdownPartial, ViewRazorPartialModel);
@@ -120,6 +131,17 @@ namespace RazorRockstars.Console
                 ViewPage1, Template_Layout1, ViewRazorPartialModel, ViewMarkdownPartial);
             Assert200(Host + "/pages/dir/Page2",
                 ViewPage2, Template_Layout2, ViewRazorPartial, ViewMarkdownPartial);
+        }
+
+        [Test]
+        public void Can_get_markdown_content_pages()
+        {
+            Assert200(Host + "/MRootPage",
+                ViewMarkdownRootPage, TemplateMarkdownDefault);
+            Assert200(Host + "/pages/mpage1",
+                ViewMPage1, TemplateMarkdownDefault1);
+            Assert200(Host + "/pages/dir/mPage2",
+                ViewMPage2, TemplateMarkdownDefault2);
         }
 
     }

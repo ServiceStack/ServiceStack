@@ -86,33 +86,38 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
 		public string TransformHtml(string markdownText)
 		{
-			var html = Page.Markdown.Transform(markdownText);
+		    var html = Page.Markdown.Transform(markdownText);
 
-			// ^ is added before ^<html></html> tags to trick Markdown into not thinking its a HTML
-			// Start tag so it doesn't skip it and encodes the inner body as normal.
-			// We need to Un markdown encode the result i.e. <p>^<div id="searchresults"></p>
-
-			var pos = 0;
-			var hasEscapedTags = false;
-			while ((pos = html.IndexOf(EscapedStartTagArtefact, pos)) != -1)
-			{
-				hasEscapedTags = true;
-
-				var endPos = html.IndexOf("</p>", pos);
-				if (endPos == -1) return html; //Unexpected Error so skip
-
-				html = html.Substring(0, endPos)
-					+ html.Substring(endPos + 4);
-				
-				pos = endPos;
-			}
-
-			if (hasEscapedTags) html = html.Replace(EscapedStartTagArtefact, "");
-
-			return html;
+		    return CleanHtml(html);
 		}
 
-		public string Transform(string markdownText)
+	    public static string CleanHtml(string html)
+	    {
+            // ^ is added before ^<html></html> tags to trick Markdown into not thinking its a HTML
+	        // Start tag so it doesn't skip it and encodes the inner body as normal.
+	        // We need to Un markdown encode the result i.e. <p>^<div id="searchresults"></p>
+
+	        var pos = 0;
+	        var hasEscapedTags = false;
+	        while ((pos = html.IndexOf(EscapedStartTagArtefact, pos)) != -1)
+	        {
+	            hasEscapedTags = true;
+
+	            var endPos = html.IndexOf("</p>", pos);
+	            if (endPos == -1) return html; //Unexpected Error so skip
+
+	            html = html.Substring(0, endPos)
+	                   + html.Substring(endPos + 4);
+
+	            pos = endPos;
+	        }
+
+	        if (hasEscapedTags) html = html.Replace(EscapedStartTagArtefact, "");
+
+	        return html;
+	    }
+
+	    public string Transform(string markdownText)
 		{
 			return this.RenderHtml ? TransformHtml(markdownText) : markdownText;
 		}
@@ -124,7 +129,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 	{
 		public TextBlock(string content)
 		{
-			Content = content;
+			Content = CleanHtml(content);
 		}
 
 		public string Content { get; set; }
@@ -708,7 +713,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 				var paramName = paramNames[i];
 				var paramValue = paramValues[i];
 
-				exprParams[paramName] = paramValue.GetType();
+                exprParams[paramName] = paramValue != null ? paramValue.GetType() : typeof(object);
 			}
 			return exprParams;
 		}

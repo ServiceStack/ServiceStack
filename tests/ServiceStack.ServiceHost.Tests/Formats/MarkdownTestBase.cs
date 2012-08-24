@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			markdownFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, "/path/to/tpl", PageName, pageTemplate) {
-					TemplatePath = "/path/to/websitetpl",
+					Template = "/path/to/websitetpl",
 				});
 
 			return markdownFormat;

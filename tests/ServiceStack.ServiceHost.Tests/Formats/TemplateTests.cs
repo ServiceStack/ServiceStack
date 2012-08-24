@@ -887,7 +887,7 @@ Hello @Upper(lastName), @Model.FirstName,
 
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, "/path/to/page-tpl", "DynamicModelTpl", template) {
-					TemplatePath = "/path/to/tpl"
+					Template = "/path/to/tpl"
 				});
 
 			var templateOutput = markdownFormat.RenderDynamicPageHtml("DynamicModelTpl", person);
@@ -974,7 +974,7 @@ paragraph";
 
 			markdownFormat.RegisterMarkdownPage(
 				new MarkdownPage(markdownFormat, "/path/to/pagetpl", "StaticTpl", template, MarkdownPageType.ContentPage) {
-					TemplatePath = "/path/to/tpl"
+					Template = "/path/to/tpl"
 				});
 
 			var templateOutput = markdownFormat.RenderStaticPage("/path/to/pagetpl", true);

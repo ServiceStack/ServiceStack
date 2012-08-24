@@ -522,7 +522,9 @@ namespace ServiceStack.Razor
                 LastModified = templateFile.LastModified,
                 Service = templateService,
             };
+
             MasterPageTemplates.Add(templatePath, template);
+            
             try
             {
                 template.Prepare();
