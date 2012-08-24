@@ -334,8 +334,9 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			sb.AppendLine("{");
 			sb.AppendLine("\"ResponseStatus\":{");
 			sb.AppendFormat(" \"ErrorCode\":{0},\n", ex.ToErrorCode().EncodeJson());
-			sb.AppendFormat(" \"Message\":{0},\n", ex.Message.EncodeJson());
-            if (EndpointHost.Config.DebugMode) sb.AppendFormat(" \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
+			sb.AppendFormat(" \"Message\":{0}", ex.Message.EncodeJson());
+			if (EndpointHost.Config.DebugMode) sb.AppendFormat(",\n \"StackTrace\":{0}\n", ex.StackTrace.EncodeJson());
+			else sb.Append("\n");
 			sb.AppendLine("}");
 			sb.AppendLine("}");
 
