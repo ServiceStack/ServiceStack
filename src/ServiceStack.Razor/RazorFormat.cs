@@ -75,6 +75,8 @@ namespace ServiceStack.Razor
 
         public Dictionary<string, Type> RazorExtensionBaseTypes { get; set; }
 
+		TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
+
         public Type DefaultBaseType
         {
             get
@@ -396,7 +398,7 @@ namespace ServiceStack.Razor
                     templateService.RegisterPage(csHtmlFile.VirtualPath, pageName);
 
                     var templatePath = pageType == RazorPageType.ContentPage
-                        ? GetTemplatePath(csHtmlFile.Directory)
+						? templateProvider.GetTemplatePath(csHtmlFile.Directory)
                         : null;
 
                     yield return new ViewPageRef(this, csHtmlFile.VirtualPath, pageName, pageContents, pageType) {
@@ -411,49 +413,12 @@ namespace ServiceStack.Razor
                 WatchForModifiedPages = false;
         }
 
-        readonly Dictionary<string, IVirtualFile> templatePathsFound = new Dictionary<string, IVirtualFile>(StringComparer.InvariantCultureIgnoreCase);
-        readonly HashSet<string> templatePathsNotFound = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-
-        private string GetTemplatePath(IVirtualDirectory fileDir)
-        {
-            try
-            {
-                if (templatePathsNotFound.Contains(fileDir.VirtualPath)) return null;
-
-                var templateDir = fileDir;
-                IVirtualFile templateFile;
-                while (templateDir != null && templateDir.GetFile(DefaultTemplateName) == null)
-                {
-                    if (templatePathsFound.TryGetValue(templateDir.VirtualPath, out templateFile))
-                        return templateFile.RealPath;
-
-                    templateDir = templateDir.ParentDirectory;
-                }
-
-                if (templateDir != null)
-                {
-                    templateFile = templateDir.GetFile(DefaultTemplateName);
-                    templatePathsFound[templateDir.VirtualPath] = templateFile;
-                    return templateFile.VirtualPath;
-                }
-
-                templatePathsNotFound.Add(fileDir.VirtualPath);
-                return null;
-
-            }
-            catch (Exception ex)
-            {
-                ex.Message.Print();
-                throw;
-            }
-        }
-
         public void AddPage(ViewPageRef page)
         {
             try
             {
 				Log.InfoFormat("Compilnig {0}...", page.FilePath);
-                page.Prepare();
+                page.Compile();
                 AddViewPage(page);
             }
             catch (TemplateCompilationException tcex)
@@ -468,7 +433,7 @@ namespace ServiceStack.Razor
                     PageType = page.PageType,
                     FilePath = page.FilePath,
                 };
-                errorViewPage.Prepare();
+                errorViewPage.Compile();
                 AddViewPage(errorViewPage);
                 Log.Error("Razor AddViewPage() page.Prepare(): " + ex.Message, ex);
             }
@@ -530,7 +495,7 @@ namespace ServiceStack.Razor
             
             try
             {
-                template.Prepare();
+                template.Compile();
                 return template;
             }
             catch (Exception ex)

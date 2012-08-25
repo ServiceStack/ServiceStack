@@ -97,7 +97,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_MarkdownPage()
 		{
 			var dynamicPage = new MarkdownPage(markdownFormat, dynamicPageContent, "DynamicTpl", dynamicPageContent);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			Assert.That(dynamicPage.HtmlBlocks.Length, Is.EqualTo(9));
 
@@ -117,7 +117,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		{
 			var dynamicPage = new MarkdownPage(markdownFormat,
 				dynamicListPagePath, "DynamicListTpl", dynamicListPageContent);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			Assert.That(dynamicPage.HtmlBlocks.Length, Is.EqualTo(11));
 
@@ -168,7 +168,7 @@ Hello Demis,
 			var expectedHtml = markdownFormat.Transform(expected);
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
@@ -224,7 +224,7 @@ Hello Demis,
 			var expectedHtml = markdownFormat.Transform(expected);
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicNestedTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
@@ -364,7 +364,7 @@ Demis / Bellot
 				"/path/to/page", "HeaderLinks", headerTemplate));
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
@@ -392,7 +392,7 @@ Demis / Bellot
 
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
@@ -432,7 +432,7 @@ Demis / Bellot
 
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
@@ -463,7 +463,7 @@ Demis / Bellot
 
 			markdownFormat.MarkdownGlobalHelpers.Add("Ext", typeof(CustomMarkdownHelper));
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
@@ -495,7 +495,7 @@ Demis / Bellot
 
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
@@ -556,7 +556,7 @@ Hello  BELLOT, Demis
 				"/path/to/page", "HeaderLinks", headerTemplate));
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
@@ -609,7 +609,7 @@ Hello  BELLOT, Demis
 ".Replace("\r\n", "\n");
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToMarkdown(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
@@ -650,7 +650,7 @@ Plain text in a comment
 ".Replace("\r\n", "\n");
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
@@ -695,7 +695,7 @@ Hello @Model.FirstName, { -- unmatched, leave unescaped outside statement
 ".Replace("\r\n", "\n");
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 
@@ -776,7 +776,7 @@ Hello @Upper(lastName), @Model.FirstName
 ".Replace("\r\n", "\n");
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
-			dynamicPage.Prepare();
+			dynamicPage.Compile();
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");

@@ -79,7 +79,7 @@ namespace ServiceStack.Razor
 			}
 		}
 
-		public void Prepare()
+		public void Compile()
 		{
 			Service.Compile(this.Contents, PageName);
 		}
@@ -115,7 +115,7 @@ namespace ServiceStack.Razor
 					this.LastModified = lastModified;
 					initException = null;
 					timesRun = 0;
-					Prepare();
+					Compile();
 				}
 				catch (Exception ex)
 				{

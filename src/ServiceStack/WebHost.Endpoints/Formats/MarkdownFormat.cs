@@ -68,6 +68,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public bool WatchForModifiedPages { get; set; }
 
+		TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
+
         public MarkdownFormat()
         {
             markdown = new MarkdownSharp.Markdown();
@@ -348,7 +350,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                     pageType = MarkdownPageType.ViewPage;
 
                 var templatePath = pageType == MarkdownPageType.ContentPage
-                    ? GetTemplatePath(markDownFile.Directory)
+                    ? templateProvider.GetTemplatePath(markDownFile.Directory)
                     : null;
 
                 yield return new MarkdownPage(this, markDownFile.VirtualPath,
@@ -362,44 +364,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 WatchForModifiedPages = false;
         }
 
-        readonly Dictionary<string, IVirtualFile> templatePathsFound = new Dictionary<string, IVirtualFile>(StringComparer.InvariantCultureIgnoreCase);
-        readonly HashSet<string> templatePathsNotFound = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-
-        private string GetTemplatePath(IVirtualDirectory fileDir)
-        {
-            try
-            {
-                if (templatePathsNotFound.Contains(fileDir.VirtualPath)) return null;
-
-                var templateDir = fileDir;
-                IVirtualFile templateFile;
-                while (templateDir != null && templateDir.GetFile(DefaultTemplateName) == null)
-                {
-                    if (templatePathsFound.TryGetValue(templateDir.VirtualPath, out templateFile))
-                        return templateFile.RealPath;
-
-                    templateDir = templateDir.ParentDirectory;
-                }
-
-                if (templateDir != null)
-                {
-                    templateFile = templateDir.GetFile(DefaultTemplateName);
-                    templatePathsFound[templateDir.VirtualPath] = templateFile;
-                    return templateFile.VirtualPath;
-                }
-
-                templatePathsNotFound.Add(fileDir.VirtualPath);
-                return null;
-
-            }
-            catch (Exception ex)
-            {
-                ex.Message.Print();
-                throw;
-            }
-        }
-
-        public void RegisterMarkdownPage(MarkdownPage markdownPage)
+		public void RegisterMarkdownPage(MarkdownPage markdownPage)
         {
             AddPage(markdownPage);
         }
@@ -409,7 +374,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             try
             {
 				Log.InfoFormat("Compilnig {0}...", page.FilePath);
-				page.Prepare();
+				page.Compile();
                 AddViewPage(page);
             }
             catch (Exception ex)

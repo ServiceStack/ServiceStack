@@ -314,6 +314,7 @@
     <Compile Include="VirtualPath\IVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="Html\IViewPage.cs" />
+    <Compile Include="Html\TemplateProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Funq\Container.Adapter.cs" />

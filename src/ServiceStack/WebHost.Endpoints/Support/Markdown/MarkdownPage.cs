@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
@@ -123,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 					exprSeq = 0;
 					timesRun = 0;
 					ExecutionContext = new EvaluatorExecutionContext();
-					Prepare();
+					Compile();
 				}
 				catch (Exception ex)
 				{
@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			}
 		}
 
-		public void Prepare()
+		public void Compile()
 		{
 			if (!typeof(MarkdownViewBase).IsAssignableFrom(this.Markdown.MarkdownBaseType))
 			{
