@@ -284,7 +284,7 @@ namespace MarkdownSharp
         /// <summary>
         /// maximum nested depth of [] and () supported by the transform; implementation detail
         /// </summary>
-        private const int _nestDepth = 6;
+        private static int _nestDepth = ServiceStack.Text.Env.IsMono ? 1 : 6; //hangs on Mono
 
         /// <summary>
         /// Tabs are automatically converted to spaces as part of the transform  
@@ -492,25 +492,36 @@ namespace MarkdownSharp
         /// Reusable pattern to match balanced [brackets]. See Friedl's 
         /// "Mastering Regular Expressions", 2nd Ed., pp. 328-331.
         /// </summary>
-        private static string GetNestedBracketsPattern()
-        {
-            // in other words [this] and [this[also]] and [this[also[too]]]
-            // up to _nestDepth
-            if (_nestedBracketsPattern == null)
-                _nestedBracketsPattern =
-                    RepeatString(@"
+		private static string GetNestedBracketsPattern()
+		{
+			// in other words [this] and [this[also]] and [this[also[too]]]
+			// up to _nestDepth
+			if (_nestedBracketsPattern == null)
+				_nestedBracketsPattern =
+					RepeatString(@"
                     (?>              # Atomic matching
                        [^\[\]]+      # Anything other than brackets
                      |
                        \[
                            ", _nestDepth) + RepeatString(
-                    @" \]
+						@" \]
                     )*"
-                    , _nestDepth);
-            return _nestedBracketsPattern;
-        }
-
-        private static string _nestedParensPattern;
+						, _nestDepth);
+			return _nestedBracketsPattern;
+		}
+		
+//		private static string GetNestedBracketsPattern()
+//		{
+//			// in other words [this] and [this[also]] and [this[also[too]]]
+//			// up to _nestDepth
+//			if (_nestedBracketsPattern == null)
+//				_nestedBracketsPattern =
+//					RepeatString(@"(?>[^\[\]]+|\[", _nestDepth) 
+//				  + RepeatString(@" \])*", _nestDepth);
+//			return _nestedBracketsPattern;
+//		}
+		
+		private static string _nestedParensPattern;
 
         /// <summary>
         /// Reusable pattern to match balanced (parens). See Friedl's 
@@ -785,19 +796,23 @@ namespace MarkdownSharp
         }
 
 
-        private static Regex _anchorRef = new Regex(string.Format(@"
-            (                               # wrap whole match in $1
-                \[
-                    ({0})                   # link text = $2
-                \]
-
-                [ ]?                        # one optional space
-                (?:\n[ ]*)?                 # one optional newline followed by spaces
-
-                \[
-                    (.*?)                   # id = $3
-                \]
-            )", GetNestedBracketsPattern()), RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+//		private static Regex _anchorRef = new Regex(string.Format(@"
+//            (                               # wrap whole match in $1
+//                \[
+//                    ({0})                   # link text = $2
+//                \]
+//
+//                [ ]?                        # one optional space
+//                (?:\n[ ]*)?                 # one optional newline followed by spaces
+//
+//                \[
+//                    (.*?)                   # id = $3
+//                \]
+//            )", GetNestedBracketsPattern()), RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+		
+		private static Regex _anchorRef = new Regex(string.Format(
+			@"(\[({0})\][ ]?(?:\n[ ]*)?\[(.*?)\])", 
+			GetNestedBracketsPattern()), RegexOptions.Singleline | RegexOptions.Compiled);
 
         private static Regex _anchorInline = new Regex(string.Format(@"
                 (                           # wrap whole match in $1

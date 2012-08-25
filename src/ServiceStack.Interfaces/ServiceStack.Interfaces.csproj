@@ -560,7 +560,6 @@
     <Compile Include="ServiceHost\IServiceRoutes.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\Licence.cs" />
     <Compile Include="ServiceInterface.ServiceModel\RequestLogEntry.cs" />
     <Compile Include="ServiceHost\RestServiceAttribute.cs">
       <SubType>Code</SubType>
@@ -628,11 +627,6 @@
     <Compile Include="Translators\TranslateMemberAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="VirtualPath\IVirtualDirectory.cs" />
-    <Compile Include="VirtualPath\IVirtualFile.cs" />
-    <Compile Include="VirtualPath\IVirtualNode.cs" />
-    <Compile Include="VirtualPath\IVirtualPathProvider.cs" />
-    <Compile Include="VirtualPath\VirtualPathExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

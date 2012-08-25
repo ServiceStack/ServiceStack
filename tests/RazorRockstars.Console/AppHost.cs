@@ -9,7 +9,7 @@ using ServiceStack.Razor;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;
-using ServiceStack.Plugins.Embedded;
+using ServiceStack.Ultimate;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Console
@@ -21,7 +21,7 @@ namespace RazorRockstars.Console
         public override void Configure(Container container)
         {
             Plugins.Add(new EmbeddedFeature(
-                new Licence("Demo-Expires:2013-01", "55B832A6-5817-4F9B-B808-78641488DB00")));
+				new License("Demo-Expires:2013-01", "55B832A6-5817-4F9B-B808-78641488DB00")));
 
             Plugins.Add(new RazorFormat());
 

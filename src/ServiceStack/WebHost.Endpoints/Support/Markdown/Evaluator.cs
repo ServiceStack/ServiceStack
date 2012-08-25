@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
 	    static readonly List<Assembly> Assemblies = new List<Assembly> {
 			typeof(string).Assembly,       //"system.dll",
-			typeof(XmlDocument).Assembly,  //"system.xml.dll",
+//			typeof(XmlDocument).Assembly,  //"system.xml.dll",
 			typeof(Expression).Assembly,   //"system.core.dll",
 			typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
 			typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 	    static readonly List<string> AssemblyNames = new List<string> {
 	        "System",
             "System.Text",
-            "System.Xml",
+//            "System.Xml",
             "System.Collections",
             "System.Collections.Generic",
             "System.Linq",

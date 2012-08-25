@@ -53,7 +53,8 @@ namespace ServiceStack.VirtualPath
         {
             using (var reader = OpenText())
             {
-                return reader.ReadToEnd();
+                var text = reader.ReadToEnd();
+				return text;
             }
         }
 

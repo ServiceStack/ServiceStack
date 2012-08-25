@@ -121,8 +121,10 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                     if (catchAllPathsNotFound.Count > 1000) //prevent DDOS
                         catchAllPathsNotFound = new HashSet<string>();
 
-                    catchAllPathsNotFound.Add(pathInfo);
-                    return null;
+					var tmp = new HashSet<string>(catchAllPathsNotFound);
+					tmp.Add(pathInfo);
+					catchAllPathsNotFound = tmp;
+					return null;
                 }
                 
                 return new MarkdownHandler {
@@ -217,7 +219,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         private void ReloadTemplate(MarkdownTemplate template)
         {
-            var contents = File.ReadAllText(template.FilePath);
+			var contents = VirtualPathProvider.GetFile(template.FilePath).ReadAllText();
             foreach (var markdownReplaceToken in MarkdownReplaceTokens)
             {
                 contents = contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
@@ -316,7 +318,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             {
                 try
                 {
-                    var templateContents = templateFile.OpenText().ReadToEnd();
+                    var templateContents = templateFile.ReadAllText();
                     AddTemplate(templateFile.VirtualPath, templateContents);
                 }
                 catch (Exception ex)
@@ -406,7 +408,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         {
             try
             {
-                page.Prepare();
+				Log.InfoFormat("Compilnig {0}...", page.FilePath);
+				page.Prepare();
                 AddViewPage(page);
             }
             catch (Exception ex)
@@ -424,7 +427,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 //AddTemplate(templatePath, File.ReadAllText(templatePath));
 
                 var templateFile = VirtualPathProvider.GetFile(templatePath);
-                var templateContents = templateFile.OpenText().ReadToEnd();
+                var templateContents = templateFile.ReadAllText();
                 AddTemplate(templatePath, templateContents);
             }
             catch (Exception ex)

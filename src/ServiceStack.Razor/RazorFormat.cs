@@ -165,7 +165,9 @@ namespace ServiceStack.Razor
                     if (catchAllPathsNotFound.Count > 1000) //prevent DDOS
                         catchAllPathsNotFound = new HashSet<string>();
 
-                    catchAllPathsNotFound.Add(pathInfo);
+					var tmp = new HashSet<string>(catchAllPathsNotFound);
+					tmp.Add(pathInfo);
+					catchAllPathsNotFound = tmp;
                     return null;
                 }
 
@@ -210,7 +212,7 @@ namespace ServiceStack.Razor
                 return result ?? "<!--{0} not found-->".Fmt(pageName);
             }
 
-            //Razor writes partial to static StringBuilder so don't return or it will write x2
+            //Razor writes partial to static StringBuilder so don't return or it will write zx2
             template.RenderPartial(model, pageName);
 
             //return template.Result;
@@ -450,6 +452,7 @@ namespace ServiceStack.Razor
         {
             try
             {
+				Log.InfoFormat("Compilnig {0}...", page.FilePath);
                 page.Prepare();
                 AddViewPage(page);
             }

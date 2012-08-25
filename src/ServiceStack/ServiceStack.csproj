@@ -308,6 +308,12 @@
     <Compile Include="WebHost.Endpoints\Support\Templates\ListTemplate.cs" />
     <Compile Include="WebHost.Endpoints\IAppHost.cs" />
     <Compile Include="WebHost.Endpoints\IPlugin.cs" />
+    <Compile Include="VirtualPath\IVirtualDirectory.cs" />
+    <Compile Include="VirtualPath\IVirtualFile.cs" />
+    <Compile Include="VirtualPath\IVirtualNode.cs" />
+    <Compile Include="VirtualPath\IVirtualPathProvider.cs" />
+    <Compile Include="VirtualPath\VirtualPathExtension.cs" />
+    <Compile Include="Html\IViewPage.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Funq\Container.Adapter.cs" />
