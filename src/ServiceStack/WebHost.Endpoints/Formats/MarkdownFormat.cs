@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public bool WatchForModifiedPages { get; set; }
 
-		TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
+        readonly TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
 
         public MarkdownFormat()
         {
@@ -101,7 +101,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             if (VirtualPathProvider == null)
                 VirtualPathProvider = AppHost.VirtualPathProvider;
 
-            RegisterMarkdownPages(appHost.Config.MarkdownSearchPath);
+            RegisterMarkdownPages(appHost.Config.WebHostPhysicalPath);
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
                 MarkdownPage markdownPage = null;
@@ -373,7 +373,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         {
             try
             {
-                Log.InfoFormat("Compiling {0}...", page.FilePath);
+                //Log.InfoFormat("Compiling {0}...", page.FilePath);
 				page.Compile();
                 AddViewPage(page);
             }

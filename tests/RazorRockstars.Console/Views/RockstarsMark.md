@@ -25,6 +25,4 @@
   - (@rockstar.Age.Value) @rockstar.FirstName @rockstar.LastName [delete](/rockstars/delete/@rockstar.Id)
 }
 
-source files for this demo
-
 <!--view:RockstarsMark.md-->

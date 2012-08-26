@@ -92,9 +92,7 @@ namespace ServiceStack.WebHost.Endpoints
 						MarkdownOptions = new MarkdownOptions(),
 						MarkdownBaseType = typeof(MarkdownViewBase),
 						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
-						MarkdownSearchPath = "~".MapServerPath(),
 						MarkdownReplaceTokens = new Dictionary<string, string>(),
-						RazorSearchPath = "~".MapServerPath(),
 						AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
 							{ "image/gif", TimeSpan.FromHours(1) },
 							{ "image/png", TimeSpan.FromHours(1) },
@@ -151,9 +149,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.MarkdownOptions = instance.MarkdownOptions;
 			this.MarkdownBaseType = instance.MarkdownBaseType;
 			this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
-			this.MarkdownSearchPath = instance.MarkdownSearchPath;
 			this.MarkdownReplaceTokens = instance.MarkdownReplaceTokens;
-			this.RazorSearchPath = instance.RazorSearchPath;
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
 			this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
@@ -350,10 +346,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public MarkdownOptions MarkdownOptions { get; set; }
 		public Type MarkdownBaseType { get; set; }
 		public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
-		public string MarkdownSearchPath { get; set; }
 		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
-
-		public string RazorSearchPath { get; set; }
 
 		public HashSet<string> AppendUtf8CharsetOnContentTypes { get; set; }
 

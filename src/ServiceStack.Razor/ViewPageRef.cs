@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using ServiceStack.Text;
 using ServiceStack.Logging;
 using ServiceStack.Razor.Templating;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
@@ -84,15 +86,23 @@ namespace ServiceStack.Razor
             get { return isCompiled; }
         }
 
-        private bool isCompiling;
         public void Compile()
 		{
             if (IsCompiled) return;
             lock (this)
             {
                 if (IsCompiled) return;
-                Log.InfoFormat("Compiling {0}...", this.FilePath);
-                Service.Compile(this.Contents, PageName);
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    Service.Compile(this.Contents, PageName);
+                    Log.InfoFormat("Compiled {0} in {1}ms", this.FilePath, sw.ElapsedMilliseconds);
+                }
+                catch (Exception ex)
+                {                    
+                    Log.Error("Error compiling {0}".Fmt(this.FilePath), ex);
+                    throw;
+                } 
                 isCompiled = true;
             }
 		}

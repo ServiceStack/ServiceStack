@@ -75,7 +75,7 @@ namespace ServiceStack.Razor
 
         public Dictionary<string, Type> RazorExtensionBaseTypes { get; set; }
 
-		TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
+        readonly TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
 
         public Type DefaultBaseType
         {
@@ -142,7 +142,7 @@ namespace ServiceStack.Razor
 
             Init();
 
-            RegisterRazorPages(appHost.Config.RazorSearchPath);
+            RegisterRazorPages(appHost.Config.WebHostPhysicalPath);
 
             appHost.CatchAllHandlers.Add((httpMethod, pathInfo, filePath) => {
                 ViewPageRef razorPage = null;

@@ -37,7 +37,7 @@ namespace ServiceStack.VirtualPath
         protected override sealed void Initialize()
         {
             if (RootDirInfo == null)
-                RootDirInfo = new DirectoryInfo(AppHost.Config.RazorSearchPath);
+                RootDirInfo = new DirectoryInfo(AppHost.Config.WebHostPhysicalPath);
 
             if (RootDirInfo == null || ! RootDirInfo.Exists)
                 throw new ApplicationException(

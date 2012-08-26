@@ -150,7 +150,7 @@ namespace RazorRockstars.Console
                 ViewMPage2, TemplateMarkdownDefault2);
         }
         
-        [Test]
+        [Test] //Good for testing adhoc compilation
         public void Can_get_last_view_template_compiled()
         {
             Assert200(Host + "/rockstars?View=Rockstars3", ViewRockstars3, TemplateSimpleLayout2);

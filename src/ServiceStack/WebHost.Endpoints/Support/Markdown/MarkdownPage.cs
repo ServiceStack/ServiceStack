@@ -1,19 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using ServiceStack.Common;
+using ServiceStack.Logging;
 using ServiceStack.Markdown;
-using ServiceStack.ServiceHost;
-using ServiceStack.VirtualPath;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
 	public class MarkdownPage : IExpirable, IViewPage
 	{
+	    private static readonly ILog Log = LogManager.GetLogger(typeof (MarkdownPage));
+
 		public const string ModelName = "Model";
 
 		public MarkdownPage()
@@ -137,34 +140,46 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
         public bool IsCompiled { get; set; }
 
 	    public void Compile()
-		{
-			if (!typeof(MarkdownViewBase).IsAssignableFrom(this.Markdown.MarkdownBaseType))
-			{
-				throw new ConfigurationErrorsException(
-					"Config.MarkdownBaseType must inherit from MarkdownViewBase");
-			}
+	    {
+	        var sw = Stopwatch.StartNew();
 
-			if (this.Contents.IsNullOrEmpty()) return;
+            try
+            {
+                if (!typeof(MarkdownViewBase).IsAssignableFrom(this.Markdown.MarkdownBaseType))
+                {
+                    throw new ConfigurationErrorsException(
+                        "Config.MarkdownBaseType must inherit from MarkdownViewBase");
+                }
 
-			foreach (var markdownReplaceToken in Markdown.MarkdownReplaceTokens)
-			{
-				this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
-			}
+                if (this.Contents.IsNullOrEmpty()) return;
 
-			var markdownStatements = new List<StatementExprBlock>();
+                foreach (var markdownReplaceToken in Markdown.MarkdownReplaceTokens)
+                {
+                    this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
+                }
 
-			var markdownContents = StatementExprBlock.Extract(this.Contents, markdownStatements);
+                var markdownStatements = new List<StatementExprBlock>();
 
-			this.MarkdownBlocks = markdownContents.CreateTemplateBlocks(markdownStatements).ToArray();
+                var markdownContents = StatementExprBlock.Extract(this.Contents, markdownStatements);
 
-			var htmlStatements = new List<StatementExprBlock>();
-			var htmlContents = StatementExprBlock.Extract(this.Contents, htmlStatements);
+                this.MarkdownBlocks = markdownContents.CreateTemplateBlocks(markdownStatements).ToArray();
 
-			this.HtmlContents = Markdown.Transform(htmlContents);
-			this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(htmlStatements).ToArray();
+                var htmlStatements = new List<StatementExprBlock>();
+                var htmlContents = StatementExprBlock.Extract(this.Contents, htmlStatements);
 
-			SetTemplateDirectivePath();
-		}
+                this.HtmlContents = Markdown.Transform(htmlContents);
+                this.HtmlBlocks = this.HtmlContents.CreateTemplateBlocks(htmlStatements).ToArray();
+
+                SetTemplateDirectivePath();
+
+                Log.InfoFormat("Compiled {0} in {1}ms", this.FilePath, sw.ElapsedMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error compiling {0}".Fmt(this.FilePath), ex);
+                throw;
+            }
+        }
 
 		private void SetTemplateDirectivePath()
 		{
