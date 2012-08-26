@@ -461,7 +461,6 @@
     <Compile Include="Web\SerializationContext.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Licence.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">

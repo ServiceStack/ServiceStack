@@ -19,9 +19,9 @@ namespace ServiceStack.Razor.Templating
 			if (string.IsNullOrEmpty(name))
 				throw new ArgumentException("The named of the cached template is required.");
 
-			ITemplate instance;
-			if (!templateCache.TryGetValue(name, out instance))
-				throw new ArgumentException("No compiled template exists with the specified name.");
+		    ITemplate instance = GetTemplate(name);
+            if (instance == null)
+                throw new ArgumentException("No compiled template exists with the specified name.");
 
 			SetService(instance, this);
 			SetModel(instance, model);
@@ -74,7 +74,13 @@ namespace ServiceStack.Razor.Templating
 		public IRazorTemplate GetTemplate(string name)
 		{
 			ITemplate instance;
-			templateCache.TryGetValue(name, out instance);
+			if (!templateCache.TryGetValue(name, out instance))
+			{
+			    var view = viewEngine.GetView(name);
+                view.Compile(); //compiling adds to templateCache
+
+			    templateCache.TryGetValue(name, out instance);
+			}
 			return instance as IRazorTemplate;
 		}
 

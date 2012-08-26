@@ -12,7 +12,7 @@ using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 {
-	public class MarkdownPage : IExpirable
+	public class MarkdownPage : IExpirable, IViewPage
 	{
 		public const string ModelName = "Model";
 
@@ -134,7 +134,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			}
 		}
 
-		public void Compile()
+        public bool IsCompiled { get; set; }
+
+	    public void Compile()
 		{
 			if (!typeof(MarkdownViewBase).IsAssignableFrom(this.Markdown.MarkdownBaseType))
 			{

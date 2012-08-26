@@ -10,6 +10,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.Ultimate;
+using ServiceStack.WebHost.Endpoints.Formats;
 
 //The entire C# code for the stand-alone RazorRockstars demo.
 namespace RazorRockstars.Console

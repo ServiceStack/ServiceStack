@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ServiceStack.Razor.Compilation;
+using ServiceStack.Razor.Compilation.CSharp;
 
 namespace ServiceStack.Razor.Templating
 {
@@ -14,18 +15,21 @@ namespace ServiceStack.Razor.Templating
 
         public Type TemplateBaseType { get; set; }
 
-        private readonly CompilerServiceBase compilerService;
+        public Func<CompilerServiceBase> GetCompilerServiceFn;
+
         private readonly IDictionary<string, ITemplate> templateCache = new ConcurrentDictionary<string, ITemplate>();
 
-        public TemplateService(IRazorViewEngine viewEngine, CompilerServiceBase compilerService, Type templateBaseType = null)
+        public TemplateService(IRazorViewEngine viewEngine, Type templateBaseType = null)
         {
-            if (compilerService == null)
-                throw new ArgumentNullException("compilerService");
-
+            this.GetCompilerServiceFn = GetCompilerService;
             this.viewEngine = viewEngine;
-            this.compilerService = compilerService;
             this.TemplateBaseType = templateBaseType ?? typeof(ViewPage<>);
             this.Namespaces = new HashSet<string>();
+        }
+
+        public CompilerServiceBase GetCompilerService()
+        {
+            return new CSharpDirectCompilerService();
         }
 
         /// <summary>
@@ -89,6 +93,7 @@ namespace ServiceStack.Razor.Templating
             foreach (string @namespace in Namespaces)
                 context.Namespaces.Add(@namespace);
 
+            var compilerService = GetCompilerServiceFn();
             Type instanceType = compilerService.CompileType(context);
             var instance = viewEngine.CreateInstance(instanceType);
 

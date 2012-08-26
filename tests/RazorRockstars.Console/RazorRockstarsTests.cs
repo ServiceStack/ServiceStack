@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
@@ -10,11 +11,14 @@ namespace RazorRockstars.Console
 	public class RazorRockstarsTests
 	{
         AppHost appHost;
-       
+
+        Stopwatch startedAt;
+
         [TestFixtureSetUp]
 	    public void TestFixtureSetUp()
 	    {
-	        appHost = new AppHost();
+            startedAt = Stopwatch.StartNew();
+            appHost = new AppHost();
 	        appHost.Init();
             appHost.Start("http://*:1337/");
 	    }
@@ -22,6 +26,7 @@ namespace RazorRockstars.Console
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
         {
+            "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();
             appHost.Dispose();
         }
 
@@ -62,7 +67,8 @@ namespace RazorRockstars.Console
 		public static string Host = "http://localhost:1337";
 
 		static string ViewRockstars = "<!--view:Rockstars.cshtml-->";
-		static string ViewRockstars2 = "<!--view:Rockstars2.cshtml-->";
+        static string ViewRockstars2 = "<!--view:Rockstars2.cshtml-->";
+        static string ViewRockstars3 = "<!--view:Rockstars3.cshtml-->";
 		static string ViewRockstarsMark = "<!--view:RockstarsMark.md-->";
 		static string ViewNoModelNoController = "<!--view:NoModelNoController.cshtml-->";
 		static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
@@ -143,7 +149,12 @@ namespace RazorRockstars.Console
             Assert200(Host + "/pages/dir/mPage2",
                 ViewMPage2, TemplateMarkdownDefault2);
         }
-
+        
+        [Test]
+        public void Can_get_last_view_template_compiled()
+        {
+            Assert200(Host + "/rockstars?View=Rockstars3", ViewRockstars3, TemplateSimpleLayout2);
+        }
     }
 }
 

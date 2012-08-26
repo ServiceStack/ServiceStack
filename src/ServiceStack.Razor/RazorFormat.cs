@@ -167,9 +167,8 @@ namespace ServiceStack.Razor
                     if (catchAllPathsNotFound.Count > 1000) //prevent DDOS
                         catchAllPathsNotFound = new HashSet<string>();
 
-					var tmp = new HashSet<string>(catchAllPathsNotFound);
-					tmp.Add(pathInfo);
-					catchAllPathsNotFound = tmp;
+					var tmp = new HashSet<string>(catchAllPathsNotFound) { pathInfo };
+                    catchAllPathsNotFound = tmp;
                     return null;
                 }
 
@@ -233,7 +232,6 @@ namespace ServiceStack.Razor
                 throw new ConfigurationErrorsException("Microsoft.CSharp not properly loaded");
 
             templateServices = new Dictionary<string, TemplateService>(StringComparer.CurrentCultureIgnoreCase);
-            var compilerService = new CSharpDirectCompilerService();
 
             foreach (var entry in RazorExtensionBaseTypes)
             {
@@ -242,7 +240,7 @@ namespace ServiceStack.Razor
                     throw new ConfigurationErrorsException(razorBaseType.FullName + " must inherit from RazorBasePage");
 
                 var ext = entry.Key[0] == '.' ? entry.Key.Substring(1) : entry.Key;
-                templateServices[ext] = new TemplateService(this, compilerService, razorBaseType) {
+                templateServices[ext] = new TemplateService(this, razorBaseType) {
                     Namespaces = TemplateNamespaces
                 };
             }
@@ -354,14 +352,27 @@ namespace ServiceStack.Razor
             return httpReq != null ? GetViewPage(httpReq.OperationName) : null;
         }
 
+        public IViewPage GetView(string name)
+        {
+            return GetViewPage(name);
+        }
+
         public ViewPageRef GetViewPage(string pageName)
         {
             ViewPageRef razorPage;
 
             ViewPages.TryGetValue(pageName, out razorPage);
-            if (razorPage != null) return razorPage;
+            if (razorPage != null)
+            {
+                razorPage.EnsureCompiled();
+                return razorPage;
+            }
 
             ViewSharedPages.TryGetValue(pageName, out razorPage);
+            if (razorPage != null)
+            {
+                razorPage.EnsureCompiled();
+            }
             return razorPage;
         }
 
@@ -371,6 +382,8 @@ namespace ServiceStack.Razor
             {
                 AddPage(page);
             }
+
+            templateProvider.StartCompiling();
         }
 
         public IEnumerable<ViewPageRef> FindRazorPages(string dirPath)
@@ -417,8 +430,8 @@ namespace ServiceStack.Razor
         {
             try
             {
-				Log.InfoFormat("Compilnig {0}...", page.FilePath);
-                page.Compile();
+                //page.Compile();
+                templateProvider.QueuePageToCompile(page);
                 AddViewPage(page);
             }
             catch (TemplateCompilationException tcex)
@@ -495,7 +508,8 @@ namespace ServiceStack.Razor
             
             try
             {
-                template.Compile();
+                //template.Compile();
+                templateProvider.QueuePageToCompile(template);
                 return template;
             }
             catch (Exception ex)
@@ -508,25 +522,31 @@ namespace ServiceStack.Razor
         public ViewPageRef GetContentPage(string pageFilePath)
         {
             ViewPageRef razorPage;
-            ContentPages.TryGetValue(pageFilePath, out razorPage);
+            if (ContentPages.TryGetValue(pageFilePath, out razorPage))
+            {
+                razorPage.EnsureCompiled();
+            }
             return razorPage;
         }
 
         static readonly char[] DirSeps = new[] { '\\', '/' };
         public ViewPageRef GetContentResourcePage(string pathInfo)
         {
-            ViewPageRef razorPage;
-            ContentPages.TryGetValue(pathInfo.TrimStart(DirSeps), out razorPage);
-            return razorPage;
+            return GetContentPage(pathInfo.TrimStart(DirSeps));
         }
 
         public string GetTemplate(string name)
         {
             ViewPageRef template;
             MasterPageTemplates.TryGetValue(name, out template); //e.g. /NoModelNoController.cshtml
-            return template != null ? template.Contents : null;
+            if (template != null)
+            {
+                template.EnsureCompiled();
+                return template.Contents;
+            }
+            return null;
         }
-
+        
         public ITemplate CreateInstance(Type type)
         {
             var instance = type.CreateInstance();

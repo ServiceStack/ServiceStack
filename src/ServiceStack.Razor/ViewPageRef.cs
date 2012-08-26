@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Threading;
-using System.Web;
-using ServiceStack.Html;
-using ServiceStack.MiniProfiler;
+using ServiceStack.Logging;
 using ServiceStack.Razor.Templating;
-using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.Razor
 {
-    public class ViewPageRef 
-	{
+    public class ViewPageRef : IViewPage
+    {
+        private static readonly ILog Log = LogManager.GetLogger(typeof (ViewPageRef));
+
 		public TemplateService Service { get; set; }
 		
 		public RazorFormat RazorFormat { get; set; }
@@ -79,11 +77,31 @@ namespace ServiceStack.Razor
 			}
 		}
 
-		public void Compile()
+
+        bool isCompiled;
+        public bool IsCompiled
+        {
+            get { return isCompiled; }
+        }
+
+        private bool isCompiling;
+        public void Compile()
 		{
-			Service.Compile(this.Contents, PageName);
+            if (IsCompiled) return;
+            lock (this)
+            {
+                if (IsCompiled) return;
+                Log.InfoFormat("Compiling {0}...", this.FilePath);
+                Service.Compile(this.Contents, PageName);
+                isCompiled = true;
+            }
 		}
 
+        public void EnsureCompiled()
+        {
+            Compile();
+        }
+        
 		private int timesRun;
 
 		private Exception initException;

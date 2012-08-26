@@ -103,6 +103,7 @@
     <EmbeddedResource Include="Pages\Dir2\MPage3.md" />
     <EmbeddedResource Include="Pages\Dir2\MPage4.md" />
     <EmbeddedResource Include="Pages\Dir2\Page4.cshtml" />
+    <EmbeddedResource Include="Views\Shared\Rockstars3.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.txt" />

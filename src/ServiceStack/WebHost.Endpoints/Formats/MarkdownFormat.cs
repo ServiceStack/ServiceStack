@@ -373,7 +373,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         {
             try
             {
-				Log.InfoFormat("Compilnig {0}...", page.FilePath);
+                Log.InfoFormat("Compiling {0}...", page.FilePath);
 				page.Compile();
                 AddViewPage(page);
             }

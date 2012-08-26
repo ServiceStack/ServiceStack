@@ -66,13 +66,22 @@ namespace ServiceStack.ServiceInterface
             return this;
         }
 
+        /// <summary>
+        /// Endpoint-agnostic Request Context
+        /// </summary>
         public IRequestContext RequestContext { get; set; }
 
+        /// <summary>
+        /// The Http Request (for HTTP/S only)
+        /// </summary>
         public IHttpRequest Request
         {
             get { return RequestContext.Get<IHttpRequest>(); }
         }
 
+        /// <summary>
+        /// The HTTP Response (for HTTP/S only)
+        /// </summary>
         public IHttpResponse Response
         {
             get { return RequestContext.Get<IHttpResponse>(); }
@@ -80,6 +89,9 @@ namespace ServiceStack.ServiceInterface
 
         public ISessionFactory SessionFactory { get; set; }
 
+        /// <summary>
+        /// Logs each request
+        /// </summary>
         public IRequestLogger RequestLogger { get; set; }
 
         /// <summary>
@@ -97,6 +109,12 @@ namespace ServiceStack.ServiceInterface
             }
         }
 
+        /// <summary>
+        /// Filter called after each request. Lets you change the response type
+        /// </summary>
+        /// <param name="requestDto"></param>
+        /// <param name="response"></param>
+        /// <returns></returns>
         protected object AfterEachRequest(TRequest requestDto, object response)
         {
             if (this.RequestLogger != null)
@@ -115,7 +133,7 @@ namespace ServiceStack.ServiceInterface
         }
 
         /// <summary>
-        /// Session Bag
+        /// Dynamic Session Bag
         /// </summary>
         private ISession session;
         public ISession Session
@@ -148,6 +166,9 @@ namespace ServiceStack.ServiceInterface
             return (TUserSession) (userSession ?? (userSession = unAuthorizedSession));
         }
 
+        /// <summary>
+        /// The UserAgent's SessionKey
+        /// </summary>
         protected string SessionKey
         {
             get
@@ -156,6 +177,7 @@ namespace ServiceStack.ServiceInterface
                 return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
             }
         }
+
         /// <summary>
         /// Resolve an alternate Web Service from ServiceStack's IOC container.
         /// </summary>
@@ -196,6 +218,11 @@ namespace ServiceStack.ServiceInterface
             return string.Format("[{0}: {1}]:\n[REQUEST: {2}]", GetType().Name, DateTime.UtcNow, requestString);
         }
 
+        /// <summary>
+        /// Resolve a dependency from the AppHost's IOC
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public T TryResolve<T>()
         {
             return this.GetAppHost() == null
@@ -251,6 +278,12 @@ namespace ServiceStack.ServiceInterface
             }
         }
 
+        /// <summary>
+        /// Override the built-in Exception handling
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="ex"></param>
+        /// <returns></returns>
         protected virtual object HandleException(TRequest request, Exception ex)
         {
             if (ex.InnerException != null && !(ex is IHttpError))
@@ -306,11 +339,16 @@ namespace ServiceStack.ServiceInterface
             return errorResponse;
         }
         
-        protected HttpResult View(string viewName, object response)
+        /// <summary>
+        /// Return a custom view with this response.
+        /// Not required for views named after the Response or Request DTO name - which are automatically resolved.
+        /// </summary>
+        protected HttpResult View(object response, string viewName, string templateName=null)
         {
             return new HttpResult(response)
             {
-                Template = viewName
+                View = viewName,
+                Template = templateName,
             };
         }
 

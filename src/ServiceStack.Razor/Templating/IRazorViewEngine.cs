@@ -20,5 +20,12 @@ namespace ServiceStack.Razor.Templating
         /// <param name="name">The name of the template.</param>
         /// <returns>The string template.</returns>
         string GetTemplate(string name);
+
+        /// <summary>
+        /// Gets the view page with the specified name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        IViewPage GetView(string name);
     }
 }

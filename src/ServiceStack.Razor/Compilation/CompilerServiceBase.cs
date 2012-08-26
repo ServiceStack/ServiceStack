@@ -101,7 +101,7 @@ namespace ServiceStack.Razor.Compilation
                 GenerateInMemory = true,
                 GenerateExecutable = false,
                 IncludeDebugInformation = false,
-                CompilerOptions = "/target:library /optimize"
+                CompilerOptions = "/target:library /optimize",                
             };
 
             var assemblies = CompilerServices
@@ -157,8 +157,7 @@ namespace ServiceStack.Razor.Compilation
 
             foreach (var constructor in constructors)
             {
-                var ctor = new CodeConstructor();
-                ctor.Attributes = MemberAttributes.Public;
+                var ctor = new CodeConstructor { Attributes = MemberAttributes.Public };
 
                 foreach (var param in constructor.GetParameters())
                 {
