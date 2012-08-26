@@ -1,10 +1,12 @@
 using System;
-using ServiceStack.Common.Extensions;
+using System.Collections.Generic;
 
 namespace ServiceStack.Common.Web
 {
     public static class MimeTypes
     {
+        public static Dictionary<string,string> ExtensionMimeTypes = new Dictionary<string, string>();
+
         public const string Html = "text/html";
         public const string Xml = "text/xml";
         public const string Json = "text/json";
@@ -13,7 +15,7 @@ namespace ServiceStack.Common.Web
         public const string ProtoBuf = "application/x-protobuf";
 
         public const string JavaScript = "text/javascript";
-        
+
         public static string GetExtension(string mimeType)
         {
             switch (mimeType)
@@ -34,6 +36,12 @@ namespace ServiceStack.Common.Web
             fileNameOrExt.ThrowIfNullOrEmpty();
             var parts = fileNameOrExt.Split('.');
             var fileExt = parts[parts.Length - 1];
+
+            string mimeType;
+            if (ExtensionMimeTypes.TryGetValue(fileExt, out mimeType))
+            {
+                return mimeType;
+            }
 
             switch (fileExt)
             {
