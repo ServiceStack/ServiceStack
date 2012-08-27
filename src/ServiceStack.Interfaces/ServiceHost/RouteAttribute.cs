@@ -22,7 +22,7 @@ namespace ServiceStack.ServiceHost
 		///		for details on the correct format.</para>
 		/// </param>
 		public RouteAttribute(string path)
-			: this(path, null, null)
+			: this(path, null)
 		{
 		}
 
@@ -37,29 +37,9 @@ namespace ServiceStack.ServiceHost
 		/// <param name="verbs">A comma-delimited list of HTTP verbs supported by the 
 		///		service.  If unspecified, all verbs are assumed to be supported.</param>
 		public RouteAttribute(string path, string verbs)
-			: this(path, verbs, null)
 		{
-		}
-
-		/// <summary>
-		/// 	<para>Initializes an instance of the <see cref="RouteAttribute"/> class.</para>
-		/// </summary>
-		/// <param name="path">
-		/// 	<para>The path template to map to the request.  See 
-		///		<see cref="Path">RouteAttribute.Path</see>
-		///		for details on the correct format.</para>
-		/// </param>
-		/// <param name="verbs">A comma-delimited list of HTTP verbs supported by the 
-		///		service.  If unspecified, all verbs are assumed to be supported.</param>
-		/// <param name="defaultContentType">The default MIME type in which the response
-		///		object returned to the client is formatted, if formatting hints are unspecified
-		///		in the URL. Specify <see langword="null"/> or empty to require formatting
-		///		hints from the client.</param>
-		public RouteAttribute(string path, string verbs, string defaultContentType)
-		{
-			Path = path;
-			Verbs = verbs;
-			DefaultContentType = defaultContentType;
+            Path = path;
+            Verbs = verbs;
 		}
 
 		/// <summary>
@@ -120,18 +100,5 @@ namespace ServiceStack.ServiceHost
 		///		by the service, <see langword="null"/> or empty if all verbs are supported.
 		/// </value>
 		public string Verbs { get; set; }
-
-		/// <summary>
-		///		Gets or sets the default MIME type in which the response 
-		///		object returned to the client is formatted, when format hints 
-		///		are not provided in the URI.  Some valid examples are such as 
-		///		"application/json", or "application/xml".
-		/// </summary>
-		/// <value>
-		///		A <see cref="String"/> providing the default MIME type of the response;
-		///		<see langword="null"/> or empty if formatting hints are required 
-		///		from the client.
-		/// </value>
-		public string DefaultContentType { get; set; }
     }
 }

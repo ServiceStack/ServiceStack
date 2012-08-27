@@ -81,13 +81,13 @@ namespace ServiceStack.ServiceInterface
                         allowedVerbs = string.Join(" ", allowedMethods.ToArray());
                     }
 
-                    routes.Add(requestType, requestType.Name, allowedVerbs, null);
+                    routes.Add(requestType, requestType.Name, allowedVerbs);
 
                     var hasIdField = requestType.GetProperty(IdUtils.IdField) != null;
                     if (hasIdField)
                     {
                         var routePath = requestType.Name + "/{" + IdUtils.IdField + "}";
-                        routes.Add(requestType, routePath, allowedVerbs, null);
+                        routes.Add(requestType, routePath, allowedVerbs);
                     }
                 }
             }
@@ -100,14 +100,9 @@ namespace ServiceStack.ServiceInterface
             return routes.Add<TRequest>(restPath, verbs.ToVerbsString());
         }
 
-        public static IServiceRoutes Add<TRequest>(this IServiceRoutes routes, string restPath, ApplyTo verbs, string defaultContentType)
+        public static IServiceRoutes Add(this IServiceRoutes routes, Type requestType, string restPath, ApplyTo verbs)
         {
-            return routes.Add<TRequest>(restPath, verbs.ToVerbsString(), defaultContentType);
-        }
-
-        public static IServiceRoutes Add(this IServiceRoutes routes, Type requestType, string restPath, ApplyTo verbs, string defaultContentType)
-        {
-            return routes.Add(requestType, restPath, verbs.ToVerbsString(), defaultContentType);
+            return routes.Add(requestType, restPath, verbs.ToVerbsString());
         }
 
         private static string ToVerbsString(this ApplyTo verbs)

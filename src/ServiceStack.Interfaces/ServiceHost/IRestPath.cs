@@ -7,8 +7,6 @@ namespace ServiceStack.ServiceHost
 	{
 		Type RequestType { get; }
 
-		string DefaultContentType { get; }
-
 		object CreateRequest(string pathInfo, Dictionary<string, string> queryStringAndFormData, object fromInstance);
 	}
 }

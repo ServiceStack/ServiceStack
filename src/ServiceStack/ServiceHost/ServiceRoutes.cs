@@ -15,19 +15,13 @@ namespace ServiceStack.ServiceHost
 
 		public IServiceRoutes Add<TRequest>(string restPath, string verbs)
 		{
-			RestPaths.Add(new RestPath(typeof(TRequest), restPath, verbs, null));
+			RestPaths.Add(new RestPath(typeof(TRequest), restPath, verbs));
 			return this;
 		}
 
-		public IServiceRoutes Add<TRequest>(string restPath, string verbs, string defaultContentType)
-		{
-			RestPaths.Add(new RestPath(typeof(TRequest), restPath, verbs, defaultContentType));
-			return this;
-		}
-
-        public IServiceRoutes Add(Type requestType, string restPath, string verbs, string defaultContentType)
+        public IServiceRoutes Add(Type requestType, string restPath, string verbs)
         {
-            RestPaths.Add(new RestPath(requestType, restPath, verbs, defaultContentType));
+            RestPaths.Add(new RestPath(requestType, restPath, verbs));
             return this;
         }
 	}

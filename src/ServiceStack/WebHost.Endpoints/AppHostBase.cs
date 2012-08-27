@@ -234,7 +234,7 @@ namespace ServiceStack.WebHost.Endpoints
 			var requestType = genericService.GetGenericArguments()[0];
 			foreach (var atRestPath in atRestPaths)
 			{
-				this.Routes.Add(requestType, atRestPath, null, null);
+				this.Routes.Add(requestType, atRestPath, null);
 			}
 		}
 		
