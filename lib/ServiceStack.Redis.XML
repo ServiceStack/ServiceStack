@@ -67,6 +67,11 @@
             Used to manage connection pooling
             </summary>
         </member>
+        <member name="P:ServiceStack.Redis.RedisNativeClient.NamespacePrefix">
+            <summary>
+            Gets or sets object key prefix.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Redis.RedisNativeClient.AlchemyNativeClient">
             <summary>
             Interface to Alchemy DB
@@ -194,6 +199,28 @@
             <summary>
             Creates a new instance of the Redis Client from NewFactoryFn. 
             </summary>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(``0)">
+            <summary>
+            Returns key with automatic object id detection in provided value with <typeparam name="T">generic type</typeparam>.
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClient.UrnKey``1(System.Object)">
+            <summary>
+            Returns key with explicit object id.
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Redis.RedisClient.UrnKey(System.Type,System.Object)">
+            <summary>
+            Returns key with explicit object type and id.
+            </summary>
+            <param name="type"></param>
+            <param name="id"></param>
+            <returns></returns>
         </member>
         <member name="T:ServiceStack.Redis.Generic.RedisTypedClient`1">
             <summary>
@@ -1161,6 +1188,11 @@
             </summary>
             <param name="client">The client.</param>
         </member>
+        <member name="P:ServiceStack.Redis.PooledRedisClientManager.NamespacePrefix">
+            <summary>
+            Gets or sets object key prefix.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Redis.PooledRedisClientManager.DisposablePooledClient`1">
             <summary>
             Manage a client acquired from the PooledRedisClientManager
@@ -1288,6 +1320,11 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="P:ServiceStack.Redis.BasicRedisClientManager.NamespacePrefix">
+            <summary>
+            Gets or sets object key prefix.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Redis.Support.Locking.ReadLock">
             <summary>
             This class manages a read lock for a local readers/writer lock, 
@@ -1406,6 +1443,12 @@
             </summary>
             <returns>KeyValuePair: key is work item id, and value is list of dequeued items.
             </returns>
+        </member>
+        <member name="T:ServiceStack.Redis.BufferPool">
+            <summary>
+            Courtesy of @marcgravell
+            http://code.google.com/p/protobuf-net/source/browse/trunk/protobuf-net/BufferPool.cs
+            </summary>
         </member>
         <member name="T:ServiceStack.Redis.RedisCacheClientFactory">
             <summary>
