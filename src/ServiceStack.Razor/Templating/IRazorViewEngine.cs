@@ -13,7 +13,14 @@ namespace ServiceStack.Razor.Templating
         /// </summary>
         /// <param name="type">The type to create an instance.</param>
         ITemplate CreateInstance(Type type);
-        
+
+        /// <summary>
+        /// Determine whether a template at the specified path or page name exists.
+        /// </summary>
+        /// <param name="pagePathOrName"></param>
+        /// <returns></returns>
+        bool HasTemplate(string pagePathOrName);
+
         /// <summary>
         /// Gets the template with the specified name.
         /// </summary>

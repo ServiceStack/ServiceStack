@@ -27,8 +27,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         private const string ErrorPageNotFound = "Could not find Markdown page '{0}'";
 
-        public static string DefaultTemplateName = "default.shtml";
-        public static string DefaultTemplate = "/Views/Shared/default.shtml";
+        public static string DefaultTemplateName = "_Layout.shtml";
+        public static string DefaultTemplate = "/Views/Shared/_Layout.shtml";
+        public static string DefaultPage = "default";
         public static string TemplatePlaceHolder = "<!--@Body-->";
         public static string WebHostUrlPlaceHolder = "~/";
         public static string MarkdownExt = "md";
@@ -81,6 +82,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             this.MarkdownReplaceTokens = new Dictionary<string, string>();
         }
 
+        static readonly char[] DirSeps = new[] { '\\', '/' };
         static HashSet<string> catchAllPathsNotFound = new HashSet<string>();
 
         public void Register(IAppHost appHost)
@@ -109,11 +111,10 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 if (catchAllPathsNotFound.Contains(pathInfo))
                     return null;
 
-                if (filePath != null)
-                    markdownPage = GetContentPage(filePath.WithoutExtension());
-
-                if (filePath != null)
-                    markdownPage = GetContentResourcePage(pathInfo);
+                var normalizedPathInfo = pathInfo.IsNullOrEmpty() ? DefaultPage : pathInfo.TrimStart(DirSeps);
+                markdownPage = GetContentPage(
+                    normalizedPathInfo,
+                    normalizedPathInfo.CombineWith(DefaultPage));
 
                 if (WatchForModifiedPages)
                     ReloadModifiedPageAndTemplates(markdownPage);
@@ -196,6 +197,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public void ReloadModifiedPageAndTemplates(MarkdownPage markdownPage)
         {
+            if (markdownPage == null || markdownPage.FilePath == null) return;
+
             var lastWriteTime = File.GetLastWriteTime(markdownPage.FilePath);
             if (lastWriteTime > markdownPage.LastModified)
             {
@@ -300,12 +303,15 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             return markdownPage;
         }
 
-        static readonly char[] DirSeps = new[] { '\\', '/' };
-        public MarkdownPage GetContentResourcePage(string pathInfo)
+        public MarkdownPage GetContentPage(params string[] pageFilePaths)
         {
-            MarkdownPage markdownPage;
-            ContentPages.TryGetValue(pathInfo.TrimStart(DirSeps), out markdownPage);
-            return markdownPage;
+            foreach (var pageFilePath in pageFilePaths)
+            {
+                var razprPage = GetContentPage(pageFilePath);
+                if (razprPage != null)
+                    return razprPage;
+            }
+            return null;
         }
 
         public void RegisterMarkdownPages(string dirPath)

@@ -19,7 +19,7 @@ namespace ServiceStack.ServiceInterface.Testing
             this.ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
-			this.VirtualPathProvider = new FileSystemVirtualPathProvider(this);
+            VirtualPathProvider = new FileSystemVirtualPathProvider(this, "~".MapServerPath());
         }
 
         public void RegisterAs<T, TAs>() where T : TAs
@@ -63,7 +63,7 @@ namespace ServiceStack.ServiceInterface.Testing
         public void RegisterService(Type serviceType, params string[] atRestPaths)
         {
             if (Config == null)
-                Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Assembly.GetExecutingAssembly()));				
+                Config = new EndpointHostConfig("BasicAppHost", new ServiceManager(Assembly.GetExecutingAssembly()));
 
             Config.ServiceManager.RegisterService(serviceType);
         }

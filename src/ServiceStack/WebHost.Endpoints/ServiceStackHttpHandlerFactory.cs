@@ -159,12 +159,17 @@ namespace ServiceStack.WebHost.Endpoints
 			if (mode == null && (url == "/default.aspx" || url == "/Default.aspx"))
 				pathInfo = "/";
 
-			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
+            //Default Request /
+            if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
 			{
 				//Exception calling context.Request.Url on Apache+mod_mono
 				var absoluteUrl = Env.IsMono ? url.ToParentPath() : context.Request.GetApplicationUrl();
 				if (ApplicationBaseUrl == null)
 					SetApplicationBaseUrl(absoluteUrl);
+
+                //e.g. CatchAllHandler to Process Markdown files
+                var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                if (catchAllHandler != null) return catchAllHandler;
 
 				return ServeDefaultHandler ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
 			}
@@ -225,10 +230,15 @@ namespace ServiceStack.WebHost.Endpoints
 			var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 			var pathInfo = httpReq.PathInfo;
 
+            //Default Request /
 			if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
 			{
 				if (ApplicationBaseUrl == null)
 					SetApplicationBaseUrl(httpReq.GetPathUrl());
+
+                //e.g. CatchAllHandler to Process Markdown files
+                var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                if (catchAllHandler != null) return catchAllHandler;
 
 				return ServeDefaultHandler ? DefaultHttpHandler : NonRootModeDefaultHttpHandler;
 			}

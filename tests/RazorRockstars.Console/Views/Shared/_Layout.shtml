@@ -194,8 +194,8 @@ tfoot td {
 
 <h1><!--@Title--></h1>
 
-<div id="body">  
-    <div id="content">        
+<div id="body">
+    <div id="content">
         <!--@Body-->
     </div>
 </div>
@@ -203,4 +203,4 @@ tfoot td {
 </body>
 </html>
 
-<!--template:Pages/Dir/default.cshtml-->
+<!--template:_Layout.shtml-->

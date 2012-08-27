@@ -75,7 +75,7 @@ namespace ServiceStack.Html
         //}
 
         private int runningThreads;
-        public void StartCompiling()
+        public void CompileQueuedPages()
         {
             Log.InfoFormat("Starting to compile {0}/{1} pages, {2}",
                 compilePages.Count, priorityCompilePages.Count, 

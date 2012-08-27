@@ -5,6 +5,7 @@ using ServiceStack.Common;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.Razor.Templating
 {
@@ -13,7 +14,7 @@ namespace ServiceStack.Razor.Templating
 		/// <summary>
 		/// Runs and returns the template with the specified name.
 		/// </summary>
-		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath=null, 
+		public IRazorTemplate ExecuteTemplate<T>(T model, string name, string defaultTemplatePath=null, 
             IHttpRequest httpReq = null, IHttpResponse httpRes = null)
 		{
 			if (string.IsNullOrEmpty(name))
@@ -30,12 +31,19 @@ namespace ServiceStack.Razor.Templating
 			var razorTemplate = (IRazorTemplate)instance;
             razorTemplate.Init(viewEngine, new ViewDataDictionary<T>(model), httpReq, httpRes);
 	
-			instance.Execute(); 
+			instance.Execute();
 
-			if (templatePath == null && !razorTemplate.Layout.IsNullOrEmpty())
-				templatePath = razorTemplate.Layout.MapServerPath();
+		    var template = httpReq.GetTemplate();
+            if (template != null)
+		        template = viewEngine.HasTemplate(template) ? template : null;
 
-            var layoutTemplate = GetTemplate(templatePath ?? RazorFormat.DefaultTemplate);
+            if (template == null && !razorTemplate.Layout.IsNullOrEmpty())
+                template = razorTemplate.Layout.MapServerPath();
+
+            if (template == null)
+                template = defaultTemplatePath;
+
+            var layoutTemplate = GetTemplate(template ?? RazorFormat.DefaultTemplate);
             if (layoutTemplate != null)
 			{
 				layoutTemplate.ChildTemplate = razorTemplate;
@@ -45,10 +53,10 @@ namespace ServiceStack.Razor.Templating
 
 				return layoutTemplate;
 			}
-            else if (templatePath != null)
+            else if (defaultTemplatePath != null)
             {
                 throw new ArgumentException(
-                    "No template exists with the specified Layout: " + templatePath);
+                    "No template exists with the specified Layout: " + defaultTemplatePath);
             }
 
 			return razorTemplate;

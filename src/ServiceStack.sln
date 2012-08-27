@@ -48,6 +48,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Plugins.ProtoB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor", "ServiceStack.Razor\ServiceStack.Razor.csproj", "{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorRockstars.Console.Files", "..\tests\RazorRockstars.Console.Files\RazorRockstars.Console.Files.csproj", "{1A5796C5-8AB6-4676-AC20-83594AED1798}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorRockstars.Web", "..\tests\RazorRockstars.Web\RazorRockstars.Web.csproj", "{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -517,6 +521,56 @@ Global
 		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|x86.ActiveCfg = Release|Any CPU
 		{64128C85-B9AF-4B4C-BE83-04983EF7F8C9}.Release|x86.Build.0 = Release|Any CPU
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|x86.ActiveCfg = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Debug|x86.Build.0 = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoDebug|Any CPU.ActiveCfg = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoDebug|Mixed Platforms.Build.0 = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoDebug|x86.ActiveCfg = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoDebug|x86.Build.0 = Debug|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoRelease|Any CPU.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoRelease|Mixed Platforms.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoRelease|Mixed Platforms.Build.0 = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoRelease|x86.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoRelease|x86.Build.0 = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoTouch|Any CPU.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoTouch|Mixed Platforms.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoTouch|Mixed Platforms.Build.0 = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoTouch|x86.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.MonoTouch|x86.Build.0 = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|Any CPU.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|Mixed Platforms.Build.0 = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|x86.ActiveCfg = Release|x86
+		{1A5796C5-8AB6-4676-AC20-83594AED1798}.Release|x86.Build.0 = Release|x86
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoDebug|Any CPU.Build.0 = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoDebug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoDebug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoDebug|x86.ActiveCfg = Debug|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoRelease|Any CPU.Build.0 = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoRelease|x86.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -532,6 +586,8 @@ Global
 		{BEF0AA4B-54FE-4EFC-988F-F96BD0779A33} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{B7F650D2-6D7E-48BE-ADCE-19076249B3B7} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{30BA8DF9-4698-4051-B8E9-84C81E330E24} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{1A5796C5-8AB6-4676-AC20-83594AED1798} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{F35A169D-E832-4EA3-A2F0-61C091F3DCD9} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\tests\RazorRockstars.Console\RazorRockstars.Console.csproj

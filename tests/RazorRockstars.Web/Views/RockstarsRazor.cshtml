@@ -1,0 +1,33 @@
+﻿@inherits ViewPage<RockstarsResponse>
+
+@{
+    ViewBag.Title = Model.Aged.HasValue ? "{0} year old rockstars".Fmt(Model.Aged) : "All Rockstars";
+    Layout = "HtmlReport";
+}
+
+<div style="float:right">
+
+    <strong>View this page in: </strong>
+    <a href="?format=json">json</a>,
+    <a href="?format=xml">xml</a>,
+    <a href="?format=jsv">jsv</a>,
+    <a href="?format=csv">csv</a>
+
+    <h3>Other Pages</h3>
+    <ul>
+        <li><a href="/rockstars">/rockstars</a></li>
+        <li><a href="/TypedModelNoController">/TypedModelNoController</a></li>
+        <li><a href="/NoModelNoController">/NoModelNoController</a></li>
+    </ul>
+
+</div>
+
+<h3>We have @Model.Total Rockstars, showing @ViewBag.Title</h3>
+
+<ul>
+@foreach (var rockstar in Model.Results) {    
+  <li>(@rockstar.Age.Value) @rockstar.FirstName @rockstar.LastName <a href="/rockstars/delete/@rockstar.Id">delete</a></li>
+}
+</ul>
+
+<!--view:RockstarsRazor.cshtml-->

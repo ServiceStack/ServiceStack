@@ -1,0 +1,32 @@
+﻿@inherits ViewPage
+
+﻿@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Page with no model and no C# controller - just this page :)";
+    int age = 0;
+    var hasAge = Request.QueryString["Age"] != null && int.TryParse(Model.Age, out age);
+    var rockstars = hasAge
+        ? Db.Select<Rockstar>(q => q.Age == age)
+        : Db.Select<Rockstar>();
+    var title = hasAge ? "{0} year old rockstars".Fmt(age) : "All Rockstars";
+}
+<div id="content-page">
+    
+@Html.Partial("RazorPartial")
+@Html.Partial("MarkdownPartial")
+    
+<div>@title</div>
+<ul>
+    @foreach (var rockstar in rockstars) {
+        <li>@rockstar.FirstName - @rockstar.LastName (<a href="?Age=@rockstar.Age">@rockstar.Age</a>)</li>
+    }
+</ul>
+
+<p><a href="?">Show all Rockstars</a></p>
+
+<h2>Razor View</h2>
+<script src="https://gist.github.com/3162494.js"></script>
+        
+</div>
+
+<!--view:NoModelNoController.cshtml-->

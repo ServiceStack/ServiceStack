@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var config = EndpointHostConfig.Instance;
 			Config = config; // avoid cross-dependency on Config setter
-			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost);
+			VirtualPathProvider = new FileSystemVirtualPathProvider(AppHost, Config.WebHostPhysicalPath);
 		}
 
 		// Config has changed
