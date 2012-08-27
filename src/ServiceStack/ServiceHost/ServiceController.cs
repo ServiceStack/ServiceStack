@@ -133,8 +133,8 @@ namespace ServiceStack.ServiceHost
 
 		public void RegisterRestPaths(Type requestType)
 		{
-			var attrs = requestType.GetCustomAttributes(typeof(RestServiceAttribute), true);
-			foreach (RestServiceAttribute attr in attrs)
+			var attrs = requestType.GetCustomAttributes(typeof(RouteAttribute), true);
+			foreach (RouteAttribute attr in attrs)
 			{
 				var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.DefaultContentType);
 				if (!restPath.IsValid)

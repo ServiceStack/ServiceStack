@@ -12,7 +12,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [RestService("/users")]
+    [Route("/users")]
     public class User { }
     public class UserResponse : IHasResponseStatus
     {
