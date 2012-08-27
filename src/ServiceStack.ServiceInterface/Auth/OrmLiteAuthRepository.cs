@@ -24,17 +24,18 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public void CreateMissingTables()
         {
-            dbFactory.Exec(dbCmd => {
-                dbCmd.CreateTable<UserAuth>(false);
-                dbCmd.CreateTable<UserOAuthProvider>(false);
+            dbFactory.Run(db => {
+                db.CreateTable<UserAuth>(false);
+                db.CreateTable<UserOAuthProvider>(false);
             });
         }
 
         public void DropAndReCreateTables()
         {
-            dbFactory.Exec(dbCmd => {
-                dbCmd.CreateTable<UserAuth>(true);
-                dbCmd.CreateTable<UserOAuthProvider>(true);
+            dbFactory.Run(db =>
+            {
+                db.CreateTable<UserAuth>(true);
+                db.CreateTable<UserOAuthProvider>(true);
             });
         }
 
@@ -57,8 +58,8 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             ValidateNewUser(newUser, password);
 
-            return dbFactory.Exec(dbCmd => {
-                AssertNoExistingUser(dbCmd, newUser);
+            return dbFactory.Run(db => {
+                AssertNoExistingUser(db, newUser);
 
                 var saltedHash = new SaltedHash();
                 string salt;
@@ -71,25 +72,25 @@ namespace ServiceStack.ServiceInterface.Auth
                 newUser.CreatedDate = DateTime.UtcNow;
                 newUser.ModifiedDate = newUser.CreatedDate;
 
-                dbCmd.Insert(newUser);
+                db.Insert(newUser);
 
-                newUser = dbCmd.GetById<UserAuth>(dbCmd.GetLastInsertId());
+                newUser = db.GetById<UserAuth>(db.GetLastInsertId());
                 return newUser;
             });
         }
 
-        private static void AssertNoExistingUser(IDbCommand dbCmd, UserAuth newUser, UserAuth exceptForExistingUser = null)
+        private static void AssertNoExistingUser(IDbConnection db, UserAuth newUser, UserAuth exceptForExistingUser = null)
         {
             if (newUser.UserName != null)
             {
-                var existingUser = GetUserAuthByUserName(dbCmd, newUser.UserName);
+                var existingUser = GetUserAuthByUserName(db, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException("User {0} already exists".Fmt(newUser.UserName));
             }
             if (newUser.Email != null)
             {
-                var existingUser = GetUserAuthByUserName(dbCmd, newUser.Email);
+                var existingUser = GetUserAuthByUserName(db, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
                     throw new ArgumentException("Email {0} already exists".Fmt(newUser.Email));
@@ -100,8 +101,8 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             ValidateNewUser(newUser, password);
 
-            return dbFactory.Exec(dbCmd => {
-                AssertNoExistingUser(dbCmd, newUser, existingUser);
+            return dbFactory.Run(db => {
+                AssertNoExistingUser(db, newUser, existingUser);
 
                 var hash = existingUser.PasswordHash;
                 var salt = existingUser.Salt;
@@ -124,7 +125,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
-                dbCmd.Save(newUser);
+                db.Save(newUser);
 
                 return newUser;
             });
@@ -132,15 +133,15 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public UserAuth GetUserAuthByUserName(string userNameOrEmail)
         {
-            return dbFactory.Exec(dbCmd => GetUserAuthByUserName(dbCmd, userNameOrEmail));
+            return dbFactory.Run(db => GetUserAuthByUserName(db, userNameOrEmail));
         }
 
-        private static UserAuth GetUserAuthByUserName(IDbCommand dbCmd, string userNameOrEmail)
+        private static UserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
         {
             var isEmail = userNameOrEmail.Contains("@");
             var userAuth = isEmail
-                ? dbCmd.Select<UserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
-                : dbCmd.Select<UserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
+                ? db.Select<UserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
+                : db.Select<UserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
 
             return userAuth;
         }
@@ -161,6 +162,7 @@ namespace ServiceStack.ServiceInterface.Auth
             userAuth = null;
             return false;
         }
+
         public bool TryAuthenticate(Dictionary<string,string> digestHeaders, string PrivateKey, int NonceTimeOut, string sequence, out UserAuth userAuth)
         {
             //userId = null;
@@ -198,7 +200,7 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public UserAuth GetUserAuth(string userAuthId)
         {
-            return dbFactory.Exec(dbCmd => dbCmd.GetByIdOrDefault<UserAuth>(userAuthId));
+            return dbFactory.Run(db => db.GetByIdOrDefault<UserAuth>(userAuthId));
         }
 
         public void SaveUserAuth(IAuthSession authSession)
@@ -232,8 +234,8 @@ namespace ServiceStack.ServiceInterface.Auth
         public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
         {
             var id = int.Parse(userAuthId);
-            return dbFactory.Exec(dbCmd =>
-                dbCmd.Select<UserOAuthProvider>(q => q.UserAuthId == id)).OrderBy(x => x.ModifiedDate).ToList();
+            return dbFactory.Run(db =>
+                db.Select<UserOAuthProvider>(q => q.UserAuthId == id)).OrderBy(x => x.ModifiedDate).ToList();
         }
 
         public UserAuth GetUserAuth(IAuthSession authSession, IOAuthTokens tokens)
@@ -269,9 +271,9 @@ namespace ServiceStack.ServiceInterface.Auth
         {
             var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
 
-            return dbFactory.Exec(dbCmd => {
+            return dbFactory.Run(db => {
 
-                var oAuthProvider = dbCmd.Select<UserOAuthProvider>(q =>
+                var oAuthProvider = db.Select<UserOAuthProvider>(q =>
                     q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider == null)
@@ -289,17 +291,17 @@ namespace ServiceStack.ServiceInterface.Auth
                 if (userAuth.CreatedDate == default(DateTime))
                     userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                dbCmd.Save(userAuth);
+                db.Save(userAuth);
 
                 oAuthProvider.UserAuthId = userAuth.Id != default(int)
                     ? userAuth.Id
-                    : (int)dbCmd.GetLastInsertId();
+                    : (int)db.GetLastInsertId();
 
                 if (oAuthProvider.CreatedDate == default(DateTime))
                     oAuthProvider.CreatedDate = userAuth.ModifiedDate;
                 oAuthProvider.ModifiedDate = userAuth.ModifiedDate;
 
-                dbCmd.Save(oAuthProvider);
+                db.Save(oAuthProvider);
 
                 return oAuthProvider.UserAuthId.ToString(CultureInfo.InvariantCulture);
             });
@@ -307,9 +309,9 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public void Clear()
         {
-            dbFactory.Exec(dbCmd => {
-                dbCmd.DeleteAll<UserAuth>();
-                dbCmd.DeleteAll<UserOAuthProvider>();
+            dbFactory.Run(db => {
+                db.DeleteAll<UserAuth>();
+                db.DeleteAll<UserOAuthProvider>();
             });
         }
     }
