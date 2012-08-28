@@ -67,6 +67,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
 				//ipv4 loopback
 				yield return new TestCaseData("127.0.0.1", EndpointAttributes.Localhost);
 				yield return new TestCaseData("127.0.0.1:20", EndpointAttributes.Localhost);
+
+                //ipv4 in X-FORWARDED-FOR HTTP Header format
+                yield return new TestCaseData("192.168.100.2, 192.168.0.1", EndpointAttributes.External);
+                yield return new TestCaseData("192.168.100.2, 192.168.0.1, 10.1.1.1", EndpointAttributes.External);
 			}
 		}
 	}
