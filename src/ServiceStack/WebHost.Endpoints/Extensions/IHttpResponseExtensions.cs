@@ -359,6 +359,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public static void ApplyGlobalResponseHeaders(this HttpListenerResponse httpRes)
         {
+            if (EndpointHost.Config == null) return;
             foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
             {
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
@@ -367,6 +368,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
         public static void ApplyGlobalResponseHeaders(this HttpResponse httpRes)
         {
+            if (EndpointHost.Config == null) return;
             foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
             {
                 httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
@@ -375,7 +377,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 	    public static void ApplyGlobalResponseHeaders(this IHttpResponse httpRes)
 	    {
-	        foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
+            if (EndpointHost.Config == null) return;
+            foreach (var globalResponseHeader in EndpointHost.Config.GlobalResponseHeaders)
 	        {
 	            httpRes.AddHeader(globalResponseHeader.Key, globalResponseHeader.Value);
 	        }

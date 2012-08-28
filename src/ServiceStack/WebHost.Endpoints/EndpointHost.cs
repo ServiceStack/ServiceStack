@@ -332,7 +332,10 @@ namespace ServiceStack.WebHost.Endpoints
         {
 	        try
 	        {
-                AppHost.OnEndRequest();
+                if (AppHost != null)
+                {
+                    AppHost.OnEndRequest();
+                }
 	        }
 	        catch (Exception ex) {}
         }
