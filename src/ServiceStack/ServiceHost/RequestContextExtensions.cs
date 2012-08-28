@@ -49,8 +49,8 @@ namespace ServiceStack.ServiceHost
 			TimeSpan? expireCacheIn, Func<T> factoryFn)
 			where T : class
 		{
-			var cacheResult = cacheClient.ResolveFromCache(cacheKey, requestContext);
-			if (cacheResult != null)
+			var cacheResult = cacheClient.ResolveFromCache(cacheKey, requestContext, typeof(T));
+            if (cacheResult != null)
 				return cacheResult;
 
 			cacheResult = cacheClient.Cache(cacheKey, factoryFn(), requestContext, expireCacheIn);

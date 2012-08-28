@@ -6,6 +6,7 @@ using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.DesignPatterns.Serialization;
 
 namespace ServiceStack.Common.Web
 {
@@ -23,6 +24,9 @@ namespace ServiceStack.Common.Web
 
         public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers
             = new Dictionary<string, StreamDeserializerDelegate>();
+
+        public Dictionary<string, ITextSerializer> StringSerializers
+            = new Dictionary<string, ITextSerializer>();
 
         public HttpResponseFilter()
         {
@@ -65,6 +69,14 @@ namespace ServiceStack.Common.Web
             SetContentTypeDeserializer(contentType, streamDeserializer);
         }
 
+        public void Register(string contentType, ITextSerializer stringSerializer)
+        {
+            if (contentType.IsNullOrEmpty())
+                throw new ArgumentNullException("contentType");
+
+            this.StringSerializers[contentType] = stringSerializer;
+        }
+
         public void SetContentTypeSerializer(string contentType, StreamSerializerDelegate streamSerializer)
         {
             this.ContentTypeSerializers[contentType] = streamSerializer;
@@ -96,6 +108,12 @@ namespace ServiceStack.Common.Web
         public string SerializeToString(IRequestContext requestContext, object response)
         {
             var contentType = requestContext.ResponseContentType;
+
+            ITextSerializer textSerializer;
+            if (this.StringSerializers.TryGetValue(contentType, out textSerializer))
+            {
+                return textSerializer.SerializeToString(response);
+            }
 
             StreamSerializerDelegate responseStreamWriter;
             if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter))
@@ -203,6 +221,14 @@ namespace ServiceStack.Common.Web
         public object DeserializeFromString(string contentType, Type type, string request)
         {
             var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
+            
+            if (contentType == ContentType.ProtoBuf || contentTypeAttr == EndpointAttributes.ProtoBuf)
+            {
+                ITextSerializer textSerializer;
+                if (StringSerializers.TryGetValue(contentType, out textSerializer))
+                    return textSerializer.DeserializeFromString(request, type);                
+            }
+
             switch (contentTypeAttr)
             {
                 case EndpointAttributes.Xml:
@@ -213,10 +239,9 @@ namespace ServiceStack.Common.Web
 
                 case EndpointAttributes.Jsv:
                     return TypeSerializer.DeserializeFromString(request, type);
-
-                default:
-                    throw new NotSupportedException("ContentType not supported: " + contentType);
             }
+
+            throw new NotSupportedException("ContentType not supported: " + contentType);
         }
 
         public object DeserializeFromStream(string contentType, Type type, Stream fromStream)
