@@ -80,7 +80,6 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
             this.FindMarkdownPagesFn = FindMarkdownPages;
             this.MarkdownReplaceTokens = new Dictionary<string, string>();
-            this.VirtualPathProvider = EndpointHost.VirtualPathProvider;
         }
 
         internal static readonly char[] DirSeps = new[] { '\\', '/' };

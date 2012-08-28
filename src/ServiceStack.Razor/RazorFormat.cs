@@ -119,7 +119,6 @@ namespace ServiceStack.Razor
                 CompileInParallel = true,
                 CompileWithNoOfThreads = Environment.ProcessorCount * 2,
             };            
-            this.VirtualPathProvider = EndpointHost.VirtualPathProvider;
         }
 
         public void Register(IAppHost appHost)
@@ -562,9 +561,9 @@ namespace ServiceStack.Razor
         {
             foreach (var pageFilePath in pageFilePaths)
             {
-                var razprPage = GetContentPage(pageFilePath);
-                if (razprPage != null)
-                    return razprPage;
+                var razorPage = GetContentPage(pageFilePath);
+                if (razorPage != null)
+                    return razorPage;
             }
             return null;
         }

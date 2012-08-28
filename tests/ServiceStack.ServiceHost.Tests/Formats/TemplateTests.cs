@@ -31,7 +31,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/Views/Template/default.shtml".MapProjectPath();
+			staticTemplatePath = "~/Views/Shared/_Layout.shtml".MapProjectPath();
 			staticTemplateContent = File.ReadAllText(staticTemplatePath);
 
 			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapProjectPath();
