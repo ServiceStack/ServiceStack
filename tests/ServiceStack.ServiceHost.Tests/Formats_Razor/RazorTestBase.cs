@@ -1,53 +1,90 @@
 using System.Collections.Generic;
 using ServiceStack.Razor;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
-	public class RazorTestBase
+    public static class MarkdownFormatExtensions
+    {
+        public static void AddFileAndView(this RazorFormat razorFormat, ViewPageRef viewPage)
+        {
+            var pathProvider = (InMemoryVirtualPathProvider)razorFormat.VirtualPathProvider;
+            pathProvider.AddFile(viewPage.FilePath, viewPage.Contents);
+            razorFormat.AddPage(viewPage);
+        }
+
+        public static void AddFileAndTemplate(this RazorFormat razorFormat, string filePath, string contents)
+        {
+            var pathProvider = (InMemoryVirtualPathProvider)razorFormat.VirtualPathProvider;
+            pathProvider.AddFile(filePath, contents);
+            razorFormat.AddTemplate(filePath, contents);
+        }
+    }
+    
+    public class RazorTestBase
 	{
 		public const string TemplateName = "Template";
 		protected const string PageName = "Page";
+        protected RazorFormat RazorFormat;
 
-		public RazorFormat Create(string websiteTemplate, string pageTemplate)
+		public RazorFormat AddPage(string websiteTemplate, string pageTemplate)
 		{
-			var razorFormat = new RazorFormat();
-
-			razorFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
-			razorFormat.AddPage(
-				new ViewPageRef(razorFormat, "/path/to/tpl", PageName, pageTemplate) {
-					Template = "/path/to/websitetpl",
+            RazorFormat.AddTemplate("websiteTemplate", websiteTemplate);
+			RazorFormat.AddPage(
+				new ViewPageRef(RazorFormat, "/path/to/tpl", PageName, pageTemplate) {
+					Template = "websiteTemplate",
 				});
 
-			return razorFormat;
+			return RazorFormat;
 		}
 
-		public RazorFormat Create(string pageTemplate)
+		public RazorFormat AddPage(string pageTemplate)
 		{
-			var razorFormat = new RazorFormat();
-			razorFormat.AddPage(
-				new ViewPageRef(razorFormat, "/path/to/tpl", PageName, pageTemplate));
+			RazorFormat.AddPage(
+				new ViewPageRef(RazorFormat, "/path/to/tpl", PageName, pageTemplate) {
+                    Service = RazorFormat.TemplateService
+                });
 
-			return razorFormat;
+            RazorFormat.TemplateService.RegisterPage("/path/to/tpl", PageName);
+            RazorFormat.TemplateProvider.CompileQueuedPages();
+
+			return RazorFormat;
 		}
+
+        protected ViewPageRef AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
+        {
+            var dynamicPage = new ViewPageRef(RazorFormat,
+                pagePath, pageName, pageContents, RazorPageType.ViewPage) {
+                    Template = templatePath,
+                    Service = RazorFormat.TemplateService
+                };
+
+            RazorFormat.AddPage(dynamicPage);
+
+            RazorFormat.TemplateService.RegisterPage(pagePath, pageName);
+            RazorFormat.TemplateProvider.CompileQueuedPages();
+            
+            return dynamicPage;
+        }
 
 		public string RenderToHtml(string pageTemplate, Dictionary<string, object> scopeArgs)
 		{
-			var razorFormat = Create(pageTemplate);
-			var template = razorFormat.ExecuteTemplate(scopeArgs, PageName, null);
+			AddPage(pageTemplate);
+			var template = RazorFormat.ExecuteTemplate(scopeArgs, PageName, null);
 			return template.Result;
 		}
 
 		public string RenderToHtml(string pageTemplate, Dictionary<string, object> scopeArgs, string websiteTemplate)
 		{
-			var razorFormat = Create(pageTemplate);
-			var template = razorFormat.ExecuteTemplate(scopeArgs, PageName, websiteTemplate);
+			AddPage(pageTemplate);
+			var template = RazorFormat.ExecuteTemplate(scopeArgs, PageName, websiteTemplate);
 			return template.Result;
 		}
 
 		public string RenderToHtml<T>(string pageTemplate, T model)
 		{
-			var razorFormat = Create(pageTemplate);
-			var template = razorFormat.ExecuteTemplate(model, PageName, null);
+			AddPage(pageTemplate);
+			var template = RazorFormat.ExecuteTemplate(model, PageName, null);
 			return template.Result;
 		}
 	}

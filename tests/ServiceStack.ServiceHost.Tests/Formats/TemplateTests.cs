@@ -7,6 +7,9 @@ using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Html;
 using ServiceStack.Markdown;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
@@ -41,7 +44,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			markdownFormat = new MarkdownFormat();
+			markdownFormat = new MarkdownFormat {
+			    VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost())
+            };
 			templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
 		}
 
@@ -360,7 +365,7 @@ Demis / Bellot
 					{"Ext", typeof(CustomMarkdownHelper)}
 				};
 
-			markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
+            markdownFormat.RegisterMarkdownPage(new MarkdownPage(markdownFormat,
 				"/path/to/page", "HeaderLinks", headerTemplate));
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
@@ -369,7 +374,7 @@ Demis / Bellot
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs);
 			templateOutput = templateOutput.Replace("\r\n", "\n");
 
-			Console.WriteLine(templateOutput);
+		    templateOutput.Print();
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
 		}
 
@@ -523,6 +528,7 @@ Hello @Upper(Model.LastName), @Model.FirstName
 ### Breadcrumbs
 @Combine("" / "", Model.FirstName, Model.LastName)
 
+
 ### Menus
 @foreach (var link in Model.Links) {
   - @link.Name - @link.Href
@@ -577,10 +583,12 @@ Hello  BELLOT, Demis
 
 Hello @Upper(lastName), @Model.FirstName
 
+
 ### Breadcrumbs
 @Combine("" / "", Model.FirstName, lastName)
 
 @var links = Model.Links
+
 ### Menus
 @foreach (var link in links) {
   - @link.Name - @link.Href
@@ -593,6 +601,7 @@ Hello @Upper(lastName), @Model.FirstName
 
 
 Hello  BELLOT, Demis
+
 
 ### Breadcrumbs
  Demis / Bellot
@@ -883,11 +892,11 @@ Hello @Upper(lastName), @Model.FirstName,
 </body>
 </html>".Replace("\r\n", "\n");
 
-			markdownFormat.AddTemplate("/path/to/tpl", websiteTemplate);
+            markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);
 
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, "/path/to/page-tpl", "DynamicModelTpl", template) {
-					Template = "/path/to/tpl"
+                    Template = "websiteTemplate"
 				});
 
 			var templateOutput = markdownFormat.RenderDynamicPageHtml("DynamicModelTpl", person);
@@ -970,14 +979,14 @@ paragraph";
 
 			markdownFormat.MarkdownBaseType = typeof(CustomMarkdownViewBase);
 
-			markdownFormat.AddTemplate("/path/to/tpl", websiteTemplate);
+            markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);
 
 			markdownFormat.RegisterMarkdownPage(
-				new MarkdownPage(markdownFormat, "/path/to/pagetpl", "StaticTpl", template, MarkdownPageType.ContentPage) {
-					Template = "/path/to/tpl"
+				new MarkdownPage(markdownFormat, "pagetpl", "StaticTpl", template, MarkdownPageType.ContentPage) {
+                    Template = "websiteTemplate"
 				});
 
-			var templateOutput = markdownFormat.RenderStaticPage("/path/to/pagetpl", true);
+			var templateOutput = markdownFormat.RenderStaticPage("pagetpl", true);
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));

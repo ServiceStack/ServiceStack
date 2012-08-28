@@ -4,7 +4,9 @@ using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
@@ -55,7 +57,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			markdownFormat = new MarkdownFormat();
+			markdownFormat = new MarkdownFormat {
+                VirtualPathProvider = new FileSystemVirtualPathProvider(new BasicAppHost(), "~/".MapProjectPath()),
+            };
 		}
 
 		[Test]
@@ -79,7 +83,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_StaticPage()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapProjectPath());
-			var html = markdownFormat.RenderStaticPageHtml("~/AppData/NoTemplate/Static".MapProjectPath());
+			var html = markdownFormat.RenderStaticPageHtml("AppData/NoTemplate/Static");
 
 			Assert.That(html, Is.Not.Null);
 			Assert.That(html, Is.StringStarting("<h1>Static Markdown template</h1>"));
@@ -89,9 +93,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		public void Can_Render_StaticPage_WithTemplate()
 		{
 			markdownFormat.RegisterMarkdownPages("~/".MapProjectPath());
-			var html = markdownFormat.RenderStaticPageHtml("~/AppData/Template/StaticTpl".MapProjectPath());
+			var html = markdownFormat.RenderStaticPageHtml("AppData/Template/StaticTpl");
 
-			Console.WriteLine(html);
+            html.Print();
 
 			Assert.That(html, Is.Not.Null);
 			Assert.That(html, Is.StringStarting("<!doctype html>"));

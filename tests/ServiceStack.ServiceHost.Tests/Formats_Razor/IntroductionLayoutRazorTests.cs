@@ -5,6 +5,8 @@ using NUnit.Framework;
 using ServiceStack.Html;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -40,25 +42,15 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 	[TestFixture]
 	public class IntroductionLayoutRazorTests : RazorTestBase
 	{
-		private RazorFormat razorFormat;
-
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			razorFormat = new RazorFormat();
-			razorFormat.Init();
-		}
-
-		private ViewPageRef AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
-		{
-			var dynamicPage = new ViewPageRef(razorFormat,
-				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
-					Template = templatePath
-				};
-
-			razorFormat.AddPage(dynamicPage);
-			return dynamicPage;
-		}
+            base.RazorFormat = new RazorFormat {
+                VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
+                TemplateProvider = { CompileInParallel = false },
+            };
+            base.RazorFormat.Init();
+        }
 
 		[Test]
 		public void Simple_Layout_Example()
@@ -84,7 +76,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 </html>".NormalizeNewLines();
 
 			var pageTemplate = 
-@"@{ Layout = ""C:\\path\\to\\websiteTemplate""; }
+@"@{ Layout = ""websiteTemplate.cshtml""; }
 
 <h1>About this Site</h1>
 
@@ -127,8 +119,7 @@ current date/year: 2012</p>
 </html>".NormalizeNewLines();
 
 
-			var websiteTemplatePath = @"C:\path\to\websiteTemplate";
-			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
+            RazorFormat.AddFileAndTemplate("websiteTemplate.cshtml", websiteTemplate);
 			var dynamicPage = AddViewPage(PageName, @"C:\path\to\page-tpl", pageTemplate);
 
 			var template = dynamicPage.RenderToHtml();
@@ -240,11 +231,10 @@ current date/year: 2012</p>
 </html>".NormalizeNewLines();
 
 
-			var websiteTemplatePath = @"C:\path\to\websiteTemplate";
-			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
+            RazorFormat.AddFileAndTemplate("websiteTemplate.cshtml", websiteTemplate);
 
 			var dynamicPage = AddViewPage(
-				PageName, @"C:\path\to\page-tpl", pageTemplate, websiteTemplatePath);
+                PageName, @"C:\path\to\page-tpl.cshtml", pageTemplate, "websiteTemplate.cshtml");
 
 
 			var html = dynamicPage.RenderToHtml();
@@ -320,7 +310,7 @@ current date/year: 2012</p>
 				new Product("DVD", 11.99m),
 			};
 
-			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
+            RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
 
 			var html = RenderToHtml(pageTemplate, products);
 
@@ -347,7 +337,7 @@ current date/year: 2012</p>
 
 </fieldset>".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomBaseClass<>);
+			RazorFormat.DefaultBaseType = typeof(CustomBaseClass<>);
 
 			var html = RenderToHtml(pageTemplate, new Product("Pen", 1.99m));
 

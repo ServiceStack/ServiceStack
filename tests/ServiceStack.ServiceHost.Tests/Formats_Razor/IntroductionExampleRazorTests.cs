@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.Common.Utils;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Text;
+using ServiceStack.VirtualPath;
+using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -36,10 +41,18 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 				new Product("DVD", 11.99m),
 			};
 			productArgs = new { products = products };
-
-			var mvcRazorFormat = new RazorFormat { DefaultBaseType = typeof(CustomRazorBasePage<>) };
-			mvcRazorFormat.Init();
 		}
+        
+        [SetUp]
+        public void SetUp()
+        {
+            RazorFormat = new RazorFormat {
+                DefaultBaseType = typeof(CustomRazorBasePage<>),
+                VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
+                TemplateProvider = { CompileInParallel = false },
+            };
+            RazorFormat.Init();            
+        }
 
 		[Test]
 		public void Basic_Razor_Example()
@@ -190,7 +203,7 @@ the date: 02/06/2012 06:42:45</p>
 
 			var html = RenderToHtml(template, new { stringContainingHtml = "<span>html</span>"});
 
-			Console.WriteLine(html);
+            html.Print();
 			Assert.That(html, Is.EqualTo(expectedHtml));
 		}
 

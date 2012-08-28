@@ -4,6 +4,9 @@ using System.Text;
 using NUnit.Framework;
 using ServiceStack.Html;
 using ServiceStack.Markdown;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.VirtualPath;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
@@ -41,6 +44,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 	[TestFixture]
 	public class IntroductionLayoutTests : MarkdownTestBase
 	{
+	    private InMemoryVirtualPathProvider pathProvider;
+
+	    [TestFixtureSetUp]
+	    public void TestFixtureSetUp()
+	    {
+	        EndpointHost.VirtualPathProvider = pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
+	    }
+
 		[Test]
 		public void Simple_Layout_Example()
 		{
@@ -65,7 +76,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 </html>".NormalizeNewLines();
 
 			var pageTemplate = 
-@"@Layout ~/websiteTemplate
+@"@Layout websiteTemplate
 
 # About this Site
 
@@ -112,7 +123,7 @@ current date/year: 2012</p>
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, @"C:\path\to\page-tpl", PageName, pageTemplate));
 
-			markdownFormat.AddTemplate(@"C:\path\to\websiteTemplate", websiteTemplate);
+			markdownFormat.AddFileAndTemplate(@"websiteTemplate", websiteTemplate);
 
 			var html = markdownFormat.RenderDynamicPageHtml(PageName);
 
@@ -154,7 +165,7 @@ current date/year: 2012</p>
 </html>".NormalizeNewLines();
 
 			var pageTemplate = 
-@"@Layout ~/websiteTemplate
+@"@Layout websiteTemplate
 
 # About this Site
 
@@ -225,7 +236,7 @@ current date/year: 2012</p>
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, @"C:\path\to\page-tpl", PageName, pageTemplate));
 
-			markdownFormat.AddTemplate(@"C:\path\to\websiteTemplate", websiteTemplate);
+			markdownFormat.AddFileAndTemplate(@"websiteTemplate", websiteTemplate);
 
 			var html = markdownFormat.RenderDynamicPageHtml(PageName);
 

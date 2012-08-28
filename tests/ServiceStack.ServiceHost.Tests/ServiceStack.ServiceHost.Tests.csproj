@@ -115,6 +115,7 @@
     <Compile Include="AppData\NorthwindCustomers.cs" />
     <Compile Include="AppData\FormatHelpers.cs" />
     <Compile Include="AppData\NorthwindHelpers.cs" />
+    <Compile Include="Formats\MarkdownFormatExtensions.cs" />
     <Compile Include="Formats_Razor\CustomRazorBasePage.cs" />
     <Compile Include="Formats_Razor\IntroductionExampleRazorTests.cs" />
     <Compile Include="Formats_Razor\IntroductionLayoutRazorTests.cs" />
@@ -178,10 +179,10 @@
     <None Include="Views\Template\Customer.md" />
     <None Include="Views\Template\CustomerDetailsResponse.md" />
     <None Include="AppData\Template\_Layout.cshtml" />
-    <Content Include="AppData\Template\default.shtml" />
-    <Content Include="Views\Template\alt-template.htm" />
-    <None Include="Views\Template\_Layout.cshtml" />
-    <Content Include="Views\Template\default.shtml" />
+    <Content Include="AppData\Template\_Layout.shtml" />
+    <Content Include="Views\Shared\alt-template.shtml" />
+    <None Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Shared\_Layout.shtml" />
     <Content Include="lib\Funq.dll" />
     <Content Include="lib\hiro\Hiro.Containers.dll" />
     <Content Include="lib\hiro\Hiro.Containers.XML" />

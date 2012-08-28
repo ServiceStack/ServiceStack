@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Formats;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
@@ -11,12 +13,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 		public MarkdownFormat Create(string websiteTemplate, string pageTemplate)
 		{
-			var markdownFormat = new MarkdownFormat();
+			var markdownFormat = new MarkdownFormat {
+			    VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost())
+            };
 
-			markdownFormat.AddTemplate("/path/to/websitetpl", websiteTemplate);
+            markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, "/path/to/tpl", PageName, pageTemplate) {
-					Template = "/path/to/websitetpl",
+                    Template = "websiteTemplate",
 				});
 
 			return markdownFormat;

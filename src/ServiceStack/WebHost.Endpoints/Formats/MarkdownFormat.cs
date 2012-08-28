@@ -80,9 +80,10 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
             this.FindMarkdownPagesFn = FindMarkdownPages;
             this.MarkdownReplaceTokens = new Dictionary<string, string>();
+            this.VirtualPathProvider = EndpointHost.VirtualPathProvider;
         }
 
-        static readonly char[] DirSeps = new[] { '\\', '/' };
+        internal static readonly char[] DirSeps = new[] { '\\', '/' };
         static HashSet<string> catchAllPathsNotFound = new HashSet<string>();
 
         public void Register(IAppHost appHost)
@@ -525,6 +526,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
                 if (markdownTemplate == null)
                 {
+                    if (templatePath == null)
+                        return pageHtml;
+
                     throw new Exception("No template found for page: " + markdownPage.FilePath);
                 }
             }

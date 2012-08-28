@@ -107,10 +107,12 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Glob_finds_right_strings()
         {
-            var input = new[] {"Foo, Boo, Hoo, Baz"};
-            var expected = input.Where(s => s.EndsWith("oo")).ToArray();
+            var input = new[] { "Foo", "Boo", "Hoo", "Baz" }.ToList();
+            var expected = input.Where(s => s.EndsWith("oo")).ToList();
 
-            Assert.AreEqual(expected, input.Select(s => s.Glob("*oo")));
+            var actual = input.Where(s => s.Glob("*oo")).ToList();
+            
+            Assert.That(actual, Is.EquivalentTo(expected));
         }
 	}
 }

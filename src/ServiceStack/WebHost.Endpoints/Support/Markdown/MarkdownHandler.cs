@@ -18,8 +18,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 			var contentPage = MarkdownPage;
 			if (contentPage == null)
 			{
-				var pageFilePath = this.FilePath.WithoutExtension();
-				contentPage = MarkdownFormat.GetContentPage(pageFilePath);
+				contentPage = MarkdownFormat.GetContentPage(
+                    this.FilePath.WithoutExtension(),
+                    PathInfo.TrimStart(MarkdownFormat.DirSeps).WithoutExtension());
 			}
 			if (contentPage == null)
 			{

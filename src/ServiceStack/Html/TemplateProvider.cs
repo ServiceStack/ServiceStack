@@ -11,8 +11,8 @@ namespace ServiceStack.Html
 {
     public class TemplateProvider
     {
-        public static bool CompileInParallel = false;
-        public static int CompileWithNoOfThreads = Environment.ProcessorCount * 2;
+        public bool CompileInParallel { get; set; }
+        public int CompileWithNoOfThreads { get; set; }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(TemplateProvider));
 
@@ -21,6 +21,7 @@ namespace ServiceStack.Html
         public TemplateProvider(string defaultTemplateName)
         {
             this.defaultTemplateName = defaultTemplateName;
+            this.CompileInParallel = false;
         }
 
         readonly Dictionary<string, IVirtualFile> templatePathsFound = new Dictionary<string, IVirtualFile>(StringComparer.InvariantCultureIgnoreCase);
@@ -78,9 +79,9 @@ namespace ServiceStack.Html
         public void CompileQueuedPages()
         {
             Log.InfoFormat("Starting to compile {0}/{1} pages, {2}",
-                compilePages.Count, priorityCompilePages.Count, 
+                compilePages.Count, priorityCompilePages.Count,
                 CompileInParallel ? "In Parallel" : "Sequentially");
-            
+
             if (CompileInParallel)
             {
                 var threadsToRun = Math.Min(CompileWithNoOfThreads, compilePages.Count);

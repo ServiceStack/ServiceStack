@@ -43,15 +43,12 @@ namespace ServiceStack.VirtualPath
         public virtual string GetFileHash(string virtualPath)
         {
             var f = GetFile(virtualPath);
-            return GetFileHash(f); ;
+            return GetFileHash(f);
         }
 
         public virtual string GetFileHash(IVirtualFile virtualFile)
         {
-            if (virtualFile == null)
-                return String.Empty;
-
-            return virtualFile.GetFileHash();
+            return virtualFile == null ? string.Empty : virtualFile.GetFileHash();
         }
 
         public virtual IVirtualDirectory GetDirectory(string virtualPath)

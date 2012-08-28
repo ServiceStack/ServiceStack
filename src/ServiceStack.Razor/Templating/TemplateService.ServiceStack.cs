@@ -85,6 +85,13 @@ namespace ServiceStack.Razor.Templating
 			if (!templateCache.TryGetValue(name, out instance))
 			{
 			    var view = viewEngine.GetView(name);
+                if (view == null)
+                {
+                    if (name == RazorFormat.DefaultTemplate)
+                        return null;
+
+                    throw new Exception("Could not find template " + name);
+                }
                 view.Compile(); //compiling adds to templateCache
 
 			    templateCache.TryGetValue(name, out instance);

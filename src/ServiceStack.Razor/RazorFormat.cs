@@ -75,7 +75,7 @@ namespace ServiceStack.Razor
 
         public Dictionary<string, Type> RazorExtensionBaseTypes { get; set; }
 
-        readonly TemplateProvider templateProvider = new TemplateProvider(DefaultTemplateName);
+        public TemplateProvider TemplateProvider { get; set; }
 
         public Type DefaultBaseType
         {
@@ -115,6 +115,11 @@ namespace ServiceStack.Razor
 				{"cshtml", typeof(ViewPage<>) },
 				{"rzr", typeof(ViewPage<>) },
 			};
+            this.TemplateProvider = new TemplateProvider(DefaultTemplateName) {
+                CompileInParallel = true,
+                CompileWithNoOfThreads = Environment.ProcessorCount * 2,
+            };            
+            this.VirtualPathProvider = EndpointHost.VirtualPathProvider;
         }
 
         public void Register(IAppHost appHost)
@@ -134,7 +139,7 @@ namespace ServiceStack.Razor
             foreach (var ns in EndpointHostConfig.RazorNamespaces)
                 TemplateNamespaces.Add(ns);
 
-            this.ReplaceTokens = new Dictionary<string, string>(appHost.Config.MarkdownReplaceTokens);
+            this.ReplaceTokens = appHost.Config.MarkdownReplaceTokens ?? new Dictionary<string, string>();
             if (!appHost.Config.WebHostUrl.IsNullOrEmpty())
                 this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
@@ -362,6 +367,21 @@ namespace ServiceStack.Razor
             return razorPage;
         }
 
+        private ViewPageRef GetTemplatePage(string pageName)
+        {
+            ViewPageRef razorPage;
+
+            var key = "Views/Shared/{0}.cshtml".Fmt(pageName);
+            MasterPageTemplates.TryGetValue(key, out razorPage);
+            if (razorPage != null)
+            {
+                razorPage.EnsureCompiled();
+                return razorPage;
+            }
+            return null;
+        }
+
+
         private void RegisterRazorPages(string razorSearchPath)
         {
             foreach (var page in FindRazorPagesFn(razorSearchPath))
@@ -371,7 +391,7 @@ namespace ServiceStack.Razor
 
             try
             {
-                templateProvider.CompileQueuedPages();
+                TemplateProvider.CompileQueuedPages();
             }
             catch (Exception ex)
             {
@@ -404,7 +424,7 @@ namespace ServiceStack.Razor
                     templateService.RegisterPage(csHtmlFile.VirtualPath, pageName);
 
                     var templatePath = pageType == RazorPageType.ContentPage
-						? templateProvider.GetTemplatePath(csHtmlFile.Directory)
+						? TemplateProvider.GetTemplatePath(csHtmlFile.Directory)
                         : null;
 
                     yield return new ViewPageRef(this, csHtmlFile.VirtualPath, pageName, pageContents, pageType) {
@@ -423,7 +443,7 @@ namespace ServiceStack.Razor
         {
             try
             {
-                templateProvider.QueuePageToCompile(page);
+                TemplateProvider.QueuePageToCompile(page);
                 AddViewPage(page);
             }
             catch (Exception ex)
@@ -518,7 +538,7 @@ namespace ServiceStack.Razor
             try
             {
                 //template.Compile();
-                templateProvider.QueuePageToCompile(template);
+                TemplateProvider.QueuePageToCompile(template);
                 return template;
             }
             catch (Exception ex)

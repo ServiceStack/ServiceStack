@@ -9,6 +9,9 @@ using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
+using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -97,7 +100,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 	}
 
 	[TestFixture]
-	public class RazorTemplateTests
+	public class RazorTemplateTests : RazorTestBase
 	{
 		string staticTemplatePath;
 		string staticTemplateContent;
@@ -106,7 +109,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		string dynamicListPagePath;
 		string dynamicListPageContent;
 
-		private RazorFormat razorFormat;
 		Person templateArgs;
 
 		Person person = new Person {
@@ -122,14 +124,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			staticTemplatePath = "~/Views/Template/_Layout.cshtml".MapProjectPath();
-			staticTemplateContent = File.ReadAllText(staticTemplatePath);
+			staticTemplatePath = "Views/Shared/_Layout.cshtml";
+			staticTemplateContent = File.ReadAllText("~/{0}".Fmt(staticTemplatePath).MapProjectPath());
 
-			dynamicPagePath = "~/Views/Template/DynamicTpl.cshtml".MapProjectPath();
-			dynamicPageContent = File.ReadAllText(dynamicPagePath);
+			dynamicPagePath = "Views/Template/DynamicTpl.cshtml";
+            dynamicPageContent = File.ReadAllText("~/{0}".Fmt(dynamicPagePath).MapProjectPath());
 
-			dynamicListPagePath = "~/Views/Template/DynamicListTpl.cshtml".MapProjectPath();
-			dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
+			dynamicListPagePath = "Views/Template/DynamicListTpl.cshtml".MapProjectPath();
+            dynamicListPageContent = File.ReadAllText("~/{0}".Fmt(dynamicListPagePath).MapProjectPath());
 
 			templateArgs = person;
 		}
@@ -137,19 +139,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[SetUp]
 		public void OnBeforeEachTest()
 		{
-			razorFormat = new RazorFormat();
-			razorFormat.Init();
-		}
-
-		private ViewPageRef AddViewPage(string pageName, string pagePath, string pageContents, string templatePath = null)
-		{
-			var dynamicPage = new ViewPageRef(razorFormat,
-				pagePath, pageName, pageContents, RazorPageType.ViewPage) {
-					Template = templatePath
-				};
-
-			razorFormat.AddPage(dynamicPage);
-			return dynamicPage;
+            base.RazorFormat = new RazorFormat {
+                VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
+                TemplateProvider = { CompileInParallel = false },
+            };
+            RazorFormat.Init();
 		}
 
 		[Test]
@@ -157,7 +151,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
 			const string mockContents = "[Replaced with Template]";
 
-			razorFormat.AddTemplate(staticTemplatePath, staticTemplateContent);
+            RazorFormat.AddFileAndTemplate(staticTemplatePath, staticTemplateContent);
 			var page = AddViewPage("MockPage", "/path/to/page", mockContents, staticTemplatePath);
 
 			var expectedHtml = staticTemplateContent.ReplaceFirst(RazorFormat.TemplatePlaceHolder, mockContents);
@@ -172,7 +166,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[Test]
 		public void Can_Render_RazorPage()
 		{
-			var dynamicPage = AddViewPage("DynamicTpl", dynamicPagePath, dynamicPageContent, staticTemplatePath);
+		    RazorFormat.AddFileAndTemplate(staticTemplatePath, staticTemplateContent);
+            var dynamicPage = AddViewPage("DynamicTpl", dynamicPagePath, dynamicPageContent, staticTemplatePath);
 
 			var expectedHtml = dynamicPageContent
 				.Replace("@Model.FirstName", person.FirstName)
@@ -190,7 +185,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		[Test]
 		public void Can_Render_RazorPage_with_foreach()
 		{
-			var dynamicPage = AddViewPage("DynamicListTpl", dynamicListPagePath, dynamicListPageContent, staticTemplatePath);
+            RazorFormat.AddFileAndTemplate(staticTemplatePath, staticTemplateContent);
+            var dynamicPage = AddViewPage("DynamicListTpl", dynamicListPagePath, dynamicListPageContent, staticTemplatePath);
 
 			var expectedHtml = dynamicListPageContent
 				.Replace("@Model.FirstName", person.FirstName)
@@ -380,7 +376,7 @@ Demis / Bellot
 </table>
 ".NormalizeNewLines();
 
-            razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
+            RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
 
 			AddViewPage("HeaderLinks", "/path/to/page", headerTemplate);
 
@@ -420,7 +416,7 @@ Demis / Bellot
 		[Test]
 		public void Can_inherit_from_CustomViewPage_using_inherits_directive()
 		{
-			var template = @"@inherits ServiceStack.ServiceHost.Tests.Formats_Razor.CustomMarkdownViewBase<ServiceStack.ServiceHost.Tests.Formats_Razor.Person>
+            var template = @"@inherits ServiceStack.ServiceHost.Tests.Formats_Razor.CustomViewBase<ServiceStack.ServiceHost.Tests.Formats_Razor.Person>
 <h1>Generic View Page</h1>
 
 <h2>Form fields</h2>
@@ -441,9 +437,7 @@ Demis / Bellot
 </table>
 ".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
-
-			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
+            var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
 			var templateOutput = dynamicPage.RenderToHtml(templateArgs).NormalizeNewLines();
 
@@ -471,7 +465,7 @@ Demis / Bellot
 ".NormalizeNewLines();
 
 
-			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
+			RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -532,7 +526,7 @@ Demis / Bellot
 	</li>
 </ul>".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
+			RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -667,7 +661,7 @@ Plain text in a comment
 <p>Hello BELLOT, Demis</p>
 ".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
+			RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
 
 			var dynamicPage = AddViewPage("DynamicModelTpl", "/path/to/tpl", template);
 
@@ -717,7 +711,7 @@ Plain text in a comment
 }
 </ul>
 }";
-			var websiteTemplatePath = "/path/to/tpl";
+            var websiteTemplatePath = "websiteTemplate.cshtml";
 			
 			var websiteTemplate = @"<!doctype html>
 <html lang=""en-us"">
@@ -792,12 +786,12 @@ Demis / Bellot
 </body>
 </html>".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
+			RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
 
-			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
+			RazorFormat.AddFileAndTemplate(websiteTemplatePath, websiteTemplate);
 			AddViewPage("DynamicModelTpl", "/path/to/page-tpl", template, websiteTemplatePath);
 
-			var razorTemplate = razorFormat.ExecuteTemplate(
+			var razorTemplate = RazorFormat.ExecuteTemplate(
 				person, "DynamicModelTpl", websiteTemplatePath);
 
 			var templateOutput = razorTemplate.Result.NormalizeNewLines();
@@ -881,19 +875,22 @@ Demis / Bellot
 </body>
 </html>".NormalizeNewLines();
 
-			razorFormat.DefaultBaseType = typeof(CustomViewBase<>);
+			RazorFormat.TemplateService.TemplateBaseType = typeof(CustomViewBase<>);
 
-			var websiteTemplatePath = "/path/to/tpl";
-			razorFormat.AddTemplate(websiteTemplatePath, websiteTemplate);
+            var websiteTemplatePath = "websiteTemplate.cshtml";
+			RazorFormat.AddFileAndTemplate(websiteTemplatePath, websiteTemplate);
 
-			var staticPage = new ViewPageRef(razorFormat,
-				"/path/to/pagetpl", "StaticTpl", template, RazorPageType.ContentPage) {
-					Template = websiteTemplatePath
+			var staticPage = new ViewPageRef(RazorFormat,
+				"pagetpl", "StaticTpl", template, RazorPageType.ContentPage) {
+					Service = RazorFormat.TemplateService,
+                    Template = websiteTemplatePath,
 				};
 
-			razorFormat.AddPage(staticPage);
+            RazorFormat.AddPage(staticPage);
+            RazorFormat.TemplateService.RegisterPage("pagetpl", "StaticTpl");
+            RazorFormat.TemplateProvider.CompileQueuedPages();
 
-			var templateOutput = razorFormat.RenderStaticPage("/path/to/pagetpl").NormalizeNewLines();
+            var templateOutput = RazorFormat.RenderStaticPage("pagetpl").NormalizeNewLines();
 
 			Console.WriteLine(templateOutput);
 			Assert.That(templateOutput, Is.EqualTo(expectedHtml));
