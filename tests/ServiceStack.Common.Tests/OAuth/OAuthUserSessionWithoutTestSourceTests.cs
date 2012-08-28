@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using ServiceStack.Common.Utils;
+using ServiceStack.Configuration;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.SqlServer;
 using ServiceStack.OrmLite.Sqlite;
@@ -12,7 +13,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
-    //[TestFixture, Ignore("Manual OAuth Test with iteration over data stores")]
+    [TestFixture, Explicit("Manual OAuth Test with iteration over data stores")]
     public class OAuthUserSessionWithoutTestSourceTests
     {
         private OAuthUserSessionTests tests;
@@ -31,7 +32,8 @@ namespace ServiceStack.Common.Tests.OAuth
 				inMemoryRepo.Clear();
 				userAuthRepositorys.Add(inMemoryRepo);
 
-				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager());
+                var appSettings = new AppSettings();
+				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager(new string[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
 				redisRepo.Clear();
 				userAuthRepositorys.Add(redisRepo);
 

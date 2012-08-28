@@ -2,33 +2,34 @@
   <PropertyGroup>
     <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <NUnitConsoleArgs>/noshadow</NUnitConsoleArgs>
   </PropertyGroup>
 
   <PropertyGroup>
     <DoBuildSolutionsDependsOn>
-      BeforeBuildSolutions;
       BuildSolutions
     </DoBuildSolutionsDependsOn>
   </PropertyGroup>
 
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
+  <Target Name="TeamCityBuild">
+    <Copy SourceFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/ci.app.config" DestinationFiles="$(BuildSolutionDir)/tests/ServiceStack.Common.Tests/app.config" />
+    <CallTarget Targets="Default" />
+  </Target>
+
   <Target Name="UnitTests" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Messaging.Tests/bin/$(Configuration)/ServiceStack.Messaging.Tests.dll" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Common.Tests/bin/$(Configuration)/ServiceStack.Common.Tests.dll" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Auth.Tests/bin/$(Configuration)/ServiceStack.Auth.Tests.dll" />
-    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.WebHostApp/bin/ServiceStack.WebHost.Endpoints.Tests.dll" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.ServiceHost.Tests/bin/$(Configuration)/ServiceStack.ServiceHost.Tests.dll $(NUnitConsoleArgs)" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Messaging.Tests/bin/$(Configuration)/ServiceStack.Messaging.Tests.dll $(NUnitConsoleArgs)" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Common.Tests/bin/$(Configuration)/ServiceStack.Common.Tests.dll $(NUnitConsoleArgs)" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.Auth.Tests/bin/$(Configuration)/ServiceStack.Auth.Tests.dll $(NUnitConsoleArgs)" />
+    <Exec Command="$(BuildSolutionDir)/lib/tests/nunit-console-x86.exe $(BuildSolutionDir)/tests/ServiceStack.WebHostApp/bin/ServiceStack.WebHost.Endpoints.Tests.dll $(NUnitConsoleArgs)" />
   </Target>
 
   <Target Name="Build">
     <MSBuild Projects="../src/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj" Properties="Configuration=$(Configuration)"/>
     <MSBuild Projects="../src/ServiceStack.Common/ServiceStack.Common.csproj" Properties="Configuration=$(Configuration)"/>
     <MSBuild Projects="../src/ServiceStack/ServiceStack.csproj" Properties="Configuration=$(Configuration)"/>
-  </Target>
-
-  <Target Name="BeforeBuildSolutions">
-    <Message Text="*****Before building solution*****" Importance="high"/>
-    <!--<Copy SourceFiles="Test/ci.app.config" DestinationFiles="Test/app.config" />-->
   </Target>
 
   <Target Name="BuildSolutions">
