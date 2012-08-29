@@ -44,6 +44,8 @@ namespace ServiceStack.WebHost.Endpoints
 			var responseContentType = EndpointHost.Config.DefaultContentType; 
 			try
 			{
+                if (EndpointHost.ApplyRawRequestFilters(httpReq, httpRes)) return;
+
 				var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
 				if (restPath == null)
 					throw new NotSupportedException("No RestPath found for: " + httpReq.HttpMethod + " " + httpReq.PathInfo);
