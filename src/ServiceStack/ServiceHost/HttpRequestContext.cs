@@ -147,7 +147,7 @@ namespace ServiceStack.ServiceHost
 
 		public string PathInfo
 		{
-			get { throw new NotImplementedException(); }
+			get { return this.httpReq != null ? this.httpReq.PathInfo : null; }
 		}
 
 		public IFile[] Files { get; set; }
