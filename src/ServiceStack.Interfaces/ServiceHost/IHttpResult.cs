@@ -5,6 +5,11 @@ namespace ServiceStack.ServiceHost
 {
 	public interface IHttpResult : IHasOptions
 	{
+        /// <summary>
+        /// The HTTP Response Status
+        /// </summary>
+        int Status { get; set; }
+
 		/// <summary>
 		/// The HTTP Response Status Code
 		/// </summary>

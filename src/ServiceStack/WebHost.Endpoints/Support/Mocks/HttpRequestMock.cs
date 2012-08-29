@@ -87,7 +87,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Mocks
 		}
 
 		public string UserHostAddress { get; set; }
-		public bool IsSecureConnection { get; set; }
+
+        public string RemoteIp { get; set; }
+
+	    public bool IsSecureConnection { get; set; }
 		public string[] AcceptTypes { get; set; }
 		public string PathInfo { get; set; }
 		public Stream InputStream { get; set; }

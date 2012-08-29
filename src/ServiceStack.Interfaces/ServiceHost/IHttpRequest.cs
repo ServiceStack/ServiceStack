@@ -59,7 +59,15 @@ namespace ServiceStack.ServiceHost
 
 		string AbsoluteUri { get; }
 
-		string UserHostAddress { get; }
+        /// <summary>
+        /// The Remote Ip as reported by Request.UserHostAddress
+        /// </summary>
+        string UserHostAddress { get; }
+
+        /// <summary>
+        /// The Remote Ip as reported by X-Forwarded-For, X-Real-IP or Request.UserHostAddress
+        /// </summary>
+        string RemoteIp { get; }
 
 		/// <summary>
 		/// e.g. is https or not

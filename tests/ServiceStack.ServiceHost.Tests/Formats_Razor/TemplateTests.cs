@@ -141,7 +141,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 		{
             base.RazorFormat = new RazorFormat {
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
-                TemplateProvider = { CompileInParallel = false },
+                TemplateProvider = { CompileInParallelWithNoOfThreads = 0 },
             };
             RazorFormat.Init();
 		}

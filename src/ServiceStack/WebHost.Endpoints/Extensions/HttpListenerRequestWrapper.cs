@@ -108,16 +108,21 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get { return request.Url.AbsoluteUri.TrimEnd('/'); }
 		}
 
-        private string userHostAddress;
         public string UserHostAddress
+        {
+            get { return request.UserHostAddress; }
+        }
+
+        private string remoteIp;
+        public string RemoteIp
         {
             get
             {
-                return userHostAddress ?? (userHostAddress = request.Headers[HttpHeaders.XForwardedFor] ?? (request.Headers[HttpHeaders.XRealIp] ?? request.UserHostAddress));
+                return remoteIp ?? (remoteIp = request.Headers[HttpHeaders.XForwardedFor] ?? (request.Headers[HttpHeaders.XRealIp] ?? request.UserHostAddress));
             }
         }
 
-		public bool IsSecureConnection
+	    public bool IsSecureConnection
 		{
 			get { return request.IsSecureConnection; }
 		}

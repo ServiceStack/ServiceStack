@@ -14,7 +14,10 @@ namespace ServiceStack.Common.Web
             : this(HttpStatusCode.InternalServerError, message) {}
 
         public HttpError(HttpStatusCode statusCode, string errorCode)
-            : this(statusCode, errorCode, null) {}
+            : this(statusCode, errorCode, null) { }
+
+        public HttpError(int statusCode, string errorCode)
+            : this(statusCode, errorCode, null) { }
 
         public HttpError(object responseDto, HttpStatusCode statusCode, string errorCode, string errorMessage)
             : this(statusCode, errorCode, errorMessage)
@@ -22,11 +25,20 @@ namespace ServiceStack.Common.Web
             this.Response = responseDto;
         }
 
+        public HttpError(object responseDto, int statusCode, string errorCode, string errorMessage)
+            : this(statusCode, errorCode, errorMessage)
+        {
+            this.Response = responseDto;
+        }
+
         public HttpError(HttpStatusCode statusCode, string errorCode, string errorMessage)
+            : this((int)statusCode, errorCode, errorMessage){}
+
+        public HttpError(int statusCode, string errorCode, string errorMessage)
             : base(errorMessage ?? errorCode)
         {
             this.ErrorCode = errorCode;
-            this.StatusCode = statusCode;
+            this.Status = statusCode;
             this.Headers = new Dictionary<string, string>();
             this.StatusDescription = errorCode;
         }
@@ -51,8 +63,14 @@ namespace ServiceStack.Common.Web
         public string ContentType { get; set; }
 
         public Dictionary<string, string> Headers { get; set; }
+        
+        public int Status { get; set; }
 
-        public HttpStatusCode StatusCode { get; set; }
+        public HttpStatusCode StatusCode
+        {
+            get { return (HttpStatusCode)Status; }
+            set { Status = (int)value; }
+        }
 
         public string StatusDescription { get; set; }
 

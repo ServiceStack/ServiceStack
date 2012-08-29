@@ -59,7 +59,10 @@ namespace ServiceStack.ServiceHost.Tests
 			public string RawUrl { get; private set; }
 			public string AbsoluteUri { get; set; }
 			public string UserHostAddress { get; private set; }
-			public bool IsSecureConnection { get; private set; }
+
+            public string RemoteIp { get; set; }
+
+		    public bool IsSecureConnection { get; private set; }
 			public string[] AcceptTypes { get; private set; }
 			public string PathInfo { get; private set; }
 			public Stream InputStream { get; private set; }

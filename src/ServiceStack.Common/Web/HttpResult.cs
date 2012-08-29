@@ -159,7 +159,13 @@ namespace ServiceStack.Common.Web
             get { return this.Headers; }
         }
 
-        public HttpStatusCode StatusCode { get; set; }
+        public int Status { get; set; }
+
+        public HttpStatusCode StatusCode
+        {
+            get { return (HttpStatusCode) Status; }
+            set { Status = (int) value; }
+        }
 
         public string StatusDescription { get; set; }
 

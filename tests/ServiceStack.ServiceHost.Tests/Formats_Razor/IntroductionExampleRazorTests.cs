@@ -49,7 +49,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             RazorFormat = new RazorFormat {
                 DefaultBaseType = typeof(CustomRazorBasePage<>),
                 VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost()),
-                TemplateProvider = { CompileInParallel = false },
+                TemplateProvider = { CompileInParallelWithNoOfThreads = 0 },
             };
             RazorFormat.Init();            
         }

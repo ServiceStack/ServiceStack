@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using Funq;
 using ServiceStack.Text;

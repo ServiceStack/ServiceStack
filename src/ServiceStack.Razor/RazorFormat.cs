@@ -116,8 +116,7 @@ namespace ServiceStack.Razor
 				{"rzr", typeof(ViewPage<>) },
 			};
             this.TemplateProvider = new TemplateProvider(DefaultTemplateName) {
-                CompileInParallel = true,
-                CompileWithNoOfThreads = Environment.ProcessorCount * 2,
+                CompileInParallelWithNoOfThreads = Environment.ProcessorCount * 2,
             };            
         }
 

@@ -11,8 +11,7 @@ namespace ServiceStack.Html
 {
     public class TemplateProvider
     {
-        public bool CompileInParallel { get; set; }
-        public int CompileWithNoOfThreads { get; set; }
+        public int CompileInParallelWithNoOfThreads { get; set; }
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(TemplateProvider));
 
@@ -21,7 +20,6 @@ namespace ServiceStack.Html
         public TemplateProvider(string defaultTemplateName)
         {
             this.defaultTemplateName = defaultTemplateName;
-            this.CompileInParallel = false;
         }
 
         readonly Dictionary<string, IVirtualFile> templatePathsFound = new Dictionary<string, IVirtualFile>(StringComparer.InvariantCultureIgnoreCase);
@@ -69,22 +67,18 @@ namespace ServiceStack.Html
             compilePages.Enqueue(pageToCompile);
         }
 
-        //public void QueuePriorityPageToCompile(IViewPage pageToCompileNext)
-        //{
-        //    priorityCompilePages.Enqueue(pageToCompileNext);
-        //    StartCompiling();
-        //}
-
         private int runningThreads;
         public void CompileQueuedPages()
         {
+            var compileInParallel = CompileInParallelWithNoOfThreads > 0;
+
             Log.InfoFormat("Starting to compile {0}/{1} pages, {2}",
                 compilePages.Count, priorityCompilePages.Count,
-                CompileInParallel ? "In Parallel" : "Sequentially");
+                compileInParallel ? "In Parallel" : "Sequentially");
 
-            if (CompileInParallel)
+            if (compileInParallel)
             {
-                var threadsToRun = Math.Min(CompileWithNoOfThreads, compilePages.Count);
+                var threadsToRun = Math.Min(CompileInParallelWithNoOfThreads, compilePages.Count);
                 if (threadsToRun <= runningThreads) return;
 
                 Log.InfoFormat("Starting {0} threads..", threadsToRun);
@@ -107,10 +101,6 @@ namespace ServiceStack.Html
                 while (!compilePages.IsEmpty || !priorityCompilePages.IsEmpty)
                 {
                     IViewPage viewPage;
-                    //if (priorityCompilePages.TryDequeue(out viewPage))
-                    //{
-                    //    viewPage.Compile();
-                    //}
                     if (compilePages.TryDequeue(out viewPage))
                     {
                         viewPage.Compile();

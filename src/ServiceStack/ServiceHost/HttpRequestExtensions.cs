@@ -229,12 +229,12 @@ namespace ServiceStack.ServiceHost
 			return map;
 		}
 
-        public static HttpStatusCode ToStatusCode(this Exception ex)
+        public static int ToStatusCode(this Exception ex)
 	    {
-            if (ex is HttpError) return ((HttpError)ex).StatusCode;
-            if (ex is NotImplementedException || ex is NotSupportedException) return HttpStatusCode.MethodNotAllowed;
-	        if (ex is ArgumentException || ex is SerializationException) return HttpStatusCode.BadRequest;
-	        return HttpStatusCode.InternalServerError;
+            if (ex is HttpError) return ((HttpError)ex).Status;
+            if (ex is NotImplementedException || ex is NotSupportedException) return (int)HttpStatusCode.MethodNotAllowed;
+            if (ex is ArgumentException || ex is SerializationException) return (int)HttpStatusCode.BadRequest;
+            return (int)HttpStatusCode.InternalServerError;
 	    }
         
         public static string ToErrorCode(this Exception ex)

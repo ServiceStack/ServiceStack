@@ -60,7 +60,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(markdownFormat.ViewPages.Count, Is.EqualTo(viewPageNames.Length));
 			Assert.That(markdownFormat.ViewSharedPages.Count, Is.EqualTo(sharedViewPageNames.Length));
 			Assert.That(markdownFormat.ContentPages.Count, Is.EqualTo(contentPageNames.Length));
-			Assert.That(markdownFormat.MasterPageTemplates.Count, Is.EqualTo(3));
+			Assert.That(markdownFormat.MasterPageTemplates.Count, Is.EqualTo(4));
 
 			var pageNames = new List<string>();
 			markdownFormat.ViewPages.ForEach((k, v) => pageNames.Add(k));

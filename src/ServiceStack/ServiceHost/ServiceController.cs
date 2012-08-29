@@ -241,18 +241,24 @@ namespace ServiceStack.ServiceHost
                         ? requestContext.EndpointAttributes
                         : EndpointAttributes.None;
 
-                    //Executes the service and returns the result
-                    var response = typeFactoryFn(dto, service, endpointAttrs);
-                    if (EndpointHost.AppHost != null)
+                    try
                     {
-                        //Gets disposed by AppHost or ContainerAdapter if set
-                        EndpointHost.AppHost.Release(service); 
+                        //Executes the service and returns the result
+                        var response = typeFactoryFn(dto, service, endpointAttrs);
+                        return response;
                     }
-                    else
+                    finally
                     {
-                        using (service as IDisposable){} 
-                    }
-                    return response;
+                        if (EndpointHost.AppHost != null)
+                        {
+                            //Gets disposed by AppHost or ContainerAdapter if set
+                            EndpointHost.AppHost.Release(service);
+                        }
+                        else
+                        {
+                            using (service as IDisposable) { }
+                        }
+                    } 
                 }
                 catch (TargetInvocationException tex)
                 {
