@@ -91,6 +91,9 @@ namespace ServiceStack.ServiceInterface.Testing
         }
 
         public string UserHostAddress { get; set; }
+
+        public string RemoteIp { get; set; }
+
         public bool IsSecureConnection { get; set; }
         public string[] AcceptTypes { get; set; }
         public string PathInfo { get; set; }

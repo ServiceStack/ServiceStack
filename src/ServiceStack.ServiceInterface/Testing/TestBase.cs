@@ -126,7 +126,7 @@ namespace ServiceStack.ServiceInterface.Testing
                     {
                         var webEx = new WebServiceException(httpResult.StatusDescription) {
                             ResponseDto = httpResult.Response,
-                            StatusCode = (int)httpResult.StatusCode,
+                            StatusCode = httpResult.Status,
                         };
                         throw webEx;
                     }
@@ -361,7 +361,7 @@ namespace ServiceStack.ServiceInterface.Testing
                 if (httpError != null)
                 {
                     throw new WebServiceException(httpError.Message) {
-                        StatusCode = (int)httpError.StatusCode,
+                        StatusCode = httpError.Status,
                         ResponseDto = httpError.Response
                     };
                 }
