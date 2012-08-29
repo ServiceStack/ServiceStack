@@ -45,12 +45,16 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 	public class IntroductionLayoutTests : MarkdownTestBase
 	{
 	    private InMemoryVirtualPathProvider pathProvider;
-
+	    private MarkdownFormat markdownFormat;
+        
 	    [TestFixtureSetUp]
 	    public void TestFixtureSetUp()
 	    {
 	        EndpointHost.VirtualPathProvider = pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
-	    }
+            markdownFormat = new MarkdownFormat {
+                VirtualPathProvider = pathProvider,
+            };
+        }
 
 		[Test]
 		public void Simple_Layout_Example()
@@ -119,8 +123,7 @@ current date/year: 2012</p>
 </html>".NormalizeNewLines();
 
 			
-			var markdownFormat = new MarkdownFormat();
-			markdownFormat.AddPage(
+		    markdownFormat.AddFileAndPage(
 				new MarkdownPage(markdownFormat, @"C:\path\to\page-tpl", PageName, pageTemplate));
 
 			markdownFormat.AddFileAndTemplate(@"websiteTemplate", websiteTemplate);
@@ -232,7 +235,6 @@ current date/year: 2012</p>
 </html>".NormalizeNewLines();
 
 
-			var markdownFormat = new MarkdownFormat();
 			markdownFormat.AddPage(
 				new MarkdownPage(markdownFormat, @"C:\path\to\page-tpl", PageName, pageTemplate));
 

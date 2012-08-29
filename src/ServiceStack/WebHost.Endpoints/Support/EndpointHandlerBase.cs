@@ -224,7 +224,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			if (request.UserHostAddress != null)
 			{
 				var isIpv4Address = request.UserHostAddress.IndexOf('.') != -1 &&
-					request.UserHostAddress.IndexOf("::") == -1;
+					request.UserHostAddress.IndexOf("::", StringComparison.InvariantCulture) == -1;
 				var pieces = request.UserHostAddress.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
 				var ipAddressNumber = isIpv4Address
 					? pieces[0]
@@ -234,6 +234,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
                 try
                 {
+                    ipAddressNumber = ipAddressNumber.SplitOnFirst(',')[0];
                     var ipAddress = ipAddressNumber.StartsWith("::1")
                         ? IPAddress.IPv6Loopback
                         : IPAddress.Parse(ipAddressNumber);

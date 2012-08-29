@@ -140,6 +140,7 @@
     <Compile Include="Configuration\IFactoryProvider.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Configuration\IRelease.cs" />
     <Compile Include="Configuration\IResourceManager.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		public override object OnGet(Movie movie)
 		{
 			return new MovieResponse {
-				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(movie.Id))
+				Movie = DbFactory.Run(db => db.GetById<Movie>(movie.Id))
 			};
 		}
 
@@ -162,13 +162,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public override object OnPost(Movie movie)
 		{
-			var newMovieId = DbFactory.Exec(dbCmd => {
-				dbCmd.Insert(movie);
-				return dbCmd.GetLastInsertId();
+			var newMovieId = DbFactory.Run(db => {
+				db.Insert(movie);
+				return db.GetLastInsertId();
 			});
 
 			var newMovie = new MovieResponse {
-				Movie = DbFactory.Exec(dbCmd => dbCmd.GetById<Movie>(newMovieId))
+				Movie = DbFactory.Run(db => db.GetById<Movie>(newMovieId))
 			};
 			return new HttpResult(newMovie) {
 				StatusCode = HttpStatusCode.Created,
@@ -183,7 +183,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public override object OnPut(Movie movie)
 		{
-			DbFactory.Exec(dbCmd => dbCmd.Save(movie));
+			DbFactory.Run(db => db.Save(movie));
 			return new MovieResponse();
 		}
 
@@ -192,7 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		/// </summary>
 		public override object OnDelete(Movie request)
 		{
-			DbFactory.Exec(dbCmd => dbCmd.DeleteById<Movie>(request.Id));
+			DbFactory.Run(db => db.DeleteById<Movie>(request.Id));
 			return new MovieResponse();
 		}
 	}
@@ -234,8 +234,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		{
 			var response = new MoviesResponse {
 				Movies = request.Genre.IsNullOrEmpty()
-					? DbFactory.Exec(dbCmd => dbCmd.Select<Movie>())
-					: DbFactory.Exec(dbCmd => dbCmd.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
+					? DbFactory.Run(db => db.Select<Movie>())
+					: DbFactory.Run(db => db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
 			};
 
 			return response;
@@ -271,8 +271,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		{
 			var response = new MoviesZipResponse {
 				Movies = request.Genre.IsNullOrEmpty()
-					? DbFactory.Exec(dbCmd => dbCmd.Select<Movie>())
-					: DbFactory.Exec(dbCmd => dbCmd.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
+					? DbFactory.Run(db => db.Select<Movie>())
+					: DbFactory.Run(db => db.Select<Movie>("Genres LIKE {0}", "%" + request.Genre + "%"))
 			};
 
 			return RequestContext.ToOptimizedResult(response);
@@ -312,10 +312,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 		public override object OnPost(ResetMovies request)
 		{
-			DbFactory.Exec(dbCmd => {
+			DbFactory.Run(db => {
 				const bool overwriteTable = true;
-				dbCmd.CreateTable<Movie>(overwriteTable);
-				dbCmd.SaveAll(Top5Movies);
+				db.CreateTable<Movie>(overwriteTable);
+				db.SaveAll(Top5Movies);
 			});
 
 			return new ResetMoviesResponse();

@@ -233,7 +233,7 @@ namespace ServiceStack.ServiceHost
 			Func<IRequestContext, object, object> handlerFn = (requestContext, dto) =>
 			{
 				var service = serviceFactoryFn.CreateInstance(serviceType);
-                using (service as IDisposable) // using is happy if this expression evals to null
+                try
                 {
                     InjectRequestContext(service, requestContext);
 
@@ -241,21 +241,25 @@ namespace ServiceStack.ServiceHost
                         ? requestContext.EndpointAttributes
                         : EndpointAttributes.None;
 
-                    try
+                    //Executes the service and returns the result
+                    var response = typeFactoryFn(dto, service, endpointAttrs);
+                    if (EndpointHost.AppHost != null)
                     {
-                        //Executes the service and returns the result
-                        var response = typeFactoryFn(dto, service, endpointAttrs);
-						if (EndpointHost.AppHost != null) //tests
-							EndpointHost.AppHost.Release(service);
-                    	return response;
+                        //Gets disposed by AppHost or ContainerAdapter if set
+                        EndpointHost.AppHost.Release(service); 
                     }
-                    catch (TargetInvocationException tex)
+                    else
                     {
-                        //Mono invokes using reflection
-                        throw tex.InnerException ?? tex;
+                        using (service as IDisposable){} 
                     }
+                    return response;
                 }
-			};
+                catch (TargetInvocationException tex)
+                {
+                    //Mono invokes using reflection
+                    throw tex.InnerException ?? tex;
+                }
+            };
 
 			try
 			{

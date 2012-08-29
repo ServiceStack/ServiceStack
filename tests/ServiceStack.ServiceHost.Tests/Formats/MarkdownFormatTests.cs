@@ -22,12 +22,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 		private MarkdownFormat markdownFormat;
 
-		//string staticTemplatePath;
-		//string staticTemplateContent;
 		string dynamicPagePath;
 		string dynamicPageContent;
-		//string dynamicListPagePath;
-		//string dynamicListPageContent;
 
 		readonly string[] viewPageNames = new[] {
 				"Dynamic", "Customer", "CustomerDetailsResponse", "DynamicListTpl", 
@@ -44,14 +40,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[TestFixtureSetUp]
 		public void TestFixtureSetUp()
 		{
-			//staticTemplatePath = "~/AppData/Template/default.shtml".MapAbsolutePath();
-			//staticTemplateContent = File.ReadAllText(staticTemplatePath);
-
 			dynamicPagePath = "~/Views/Template/DynamicTpl.md".MapProjectPath();
 			dynamicPageContent = File.ReadAllText(dynamicPagePath);
-
-			//dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapAbsolutePath();
-			//dynamicListPageContent = File.ReadAllText(dynamicListPagePath);
 		}
 
 		[SetUp]
@@ -70,7 +60,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			Assert.That(markdownFormat.ViewPages.Count, Is.EqualTo(viewPageNames.Length));
 			Assert.That(markdownFormat.ViewSharedPages.Count, Is.EqualTo(sharedViewPageNames.Length));
 			Assert.That(markdownFormat.ContentPages.Count, Is.EqualTo(contentPageNames.Length));
-			Assert.That(markdownFormat.MasterPageTemplates.Count, Is.EqualTo(2));
+			Assert.That(markdownFormat.MasterPageTemplates.Count, Is.EqualTo(3));
 
 			var pageNames = new List<string>();
 			markdownFormat.ViewPages.ForEach((k, v) => pageNames.Add(k));
@@ -109,11 +99,16 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			var html = markdownFormat.RenderDynamicPageHtml("Dynamic", person);
 
+            var tplPath = "~/Views/Shared/_Layout.shtml".MapProjectPath();
+            var tplContent = File.ReadAllText(tplPath);
+
 			var expectedHtml = markdownFormat.Transform(dynamicPageContent)
 				.Replace("@Model.FirstName", person.FirstName)
 				.Replace("@Model.LastName", person.LastName);
 
-			Console.WriteLine("Template: " + html);
+            expectedHtml = tplContent.Replace("<!--@Body-->", expectedHtml);
+
+            "Template: {0}".Fmt(html).Print();
 			Assert.That(html, Is.EqualTo(expectedHtml));
 		}
 	}

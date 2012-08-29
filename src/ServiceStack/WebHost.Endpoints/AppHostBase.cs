@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Common;
+using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
@@ -113,15 +114,21 @@ namespace ServiceStack.WebHost.Endpoints
 
         public virtual void Release(object instance)
         {
-            var disposable = instance as IDisposable;
-            if (disposable != null)
+            try
             {
-                try
+                var iocAdapterReleases = Container.Adapter as IRelease;
+                if (iocAdapterReleases != null)
                 {
-                    disposable.Dispose();
+                    iocAdapterReleases.Release(instance);
                 }
-                catch {/*ignore*/}
+                else
+                {
+                    var disposable = instance as IDisposable;
+                    if (disposable != null)
+                        disposable.Dispose();
+                }
             }
+            catch {/*ignore*/}
         }
 
         public virtual void OnEndRequest()

@@ -180,6 +180,7 @@
     <None Include="Views\Template\CustomerDetailsResponse.md" />
     <None Include="AppData\Template\_Layout.cshtml" />
     <Content Include="AppData\Template\_Layout.shtml" />
+    <Content Include="AppData\NoTemplate\_Layout.shtml" />
     <Content Include="Views\Shared\alt-template.shtml" />
     <None Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Shared\_Layout.shtml" />

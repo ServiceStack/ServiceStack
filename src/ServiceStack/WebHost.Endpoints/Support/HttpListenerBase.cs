@@ -8,6 +8,7 @@ using System.Threading;
 using Funq;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
@@ -296,18 +297,24 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			this.Container.RegisterAutoWiredAs<T, TAs>();
 		}
 
-		public virtual void Release(object instance)
-		{
-		    var disposable = instance as IDisposable;
-            if (disposable != null)
+        public virtual void Release(object instance)
+        {
+            try
             {
-                try
+                var iocAdapterReleases = Container.Adapter as IRelease;
+                if (iocAdapterReleases != null)
                 {
-                    disposable.Dispose();
+                    iocAdapterReleases.Release(instance);
                 }
-                catch {/*ignore*/}
+                else 
+                {
+                    var disposable = instance as IDisposable;
+                    if (disposable != null)
+                        disposable.Dispose();
+                }
             }
-		}
+            catch {/*ignore*/}
+        }
 
         public virtual void OnEndRequest()
         {

@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         }
 	}
 
-	public class IocAdapter : IContainerAdapter
+    public class IocAdapter : IContainerAdapter, IRelease
 	{
 		public T TryResolve<T>()
 		{

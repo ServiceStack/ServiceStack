@@ -18,6 +18,7 @@ namespace ServiceStack.Auth.Tests
 				UserName="angel"
 			});
 			//fails against webhost-xsp2!,   runs fine against console host 
+            //DB: Could be a result of certain webhosts hijacking particular HTTP Exceptions
 			
 			Console.WriteLine(secure.Dump());
 						

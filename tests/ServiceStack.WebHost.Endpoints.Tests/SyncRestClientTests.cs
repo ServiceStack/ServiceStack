@@ -210,7 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var response = client.Put<InboxPost>(
-                    "inbox2/123/responses",
+                    "inbox/123/responses",
                     new InboxPost { Throw = true });
 
                 response.PrintDump();
