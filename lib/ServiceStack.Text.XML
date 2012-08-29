@@ -220,6 +220,11 @@
             Define custom serialization fn for BCL Structs
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.rawSerializeFn">
+            <summary>
+            Define custom raw serialization fn
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.DeSerializeFn">
             <summary>
             Define custom deserialization fn for BCL Structs
@@ -233,6 +238,11 @@
         <member name="P:ServiceStack.Text.JsConfig`1.TreatValueAsRefTypes">
             <summary>
             Opt-in flag to set some Value Types to be treated as a Ref Type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Text.JsConfig`1.HasSerializeFn">
+            <summary>
+            Whether there is a fn (raw or otherwise)
             </summary>
         </member>
         <member name="F:ServiceStack.Text.JsonTimeSpanHandler.DurationFormat">
