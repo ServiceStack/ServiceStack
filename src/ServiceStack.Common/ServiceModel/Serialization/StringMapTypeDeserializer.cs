@@ -27,6 +27,7 @@ namespace ServiceStack.ServiceModel.Serialization
 
             public SetPropertyDelegate PropertySetFn;
             public ParseStringDelegate PropertyParseStringFn;
+            public Type PropertyType;
         }
 
         private readonly Type type;
@@ -43,8 +44,9 @@ namespace ServiceStack.ServiceModel.Serialization
             foreach (var propertyInfo in type.GetProperties())
             {
                 var propertySetFn = JsvDeserializeType.GetSetPropertyMethod(type, propertyInfo);
-                var propertyParseStringFn = JsvReader.GetParseFn(propertyInfo.PropertyType);
-                var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn);
+			    var propertyType = propertyInfo.PropertyType;
+				var propertyParseStringFn = JsvReader.GetParseFn(propertyType);
+				var propertySerializer = new PropertySerializerEntry(propertySetFn, propertyParseStringFn) { PropertyType = propertyType };
 
                 var attr = propertyInfo.FirstAttribute<DataMemberAttribute>();
                 if (attr != null && attr.Name != null)
@@ -57,16 +59,19 @@ namespace ServiceStack.ServiceModel.Serialization
 
         public object PopulateFromMap(object instance, IDictionary<string, string> keyValuePairs)
         {
+            string propertyName = null;
+		    string propertyTextValue = null;
+		    PropertySerializerEntry propertySerializerEntry = null;
+
             try
             {
                 if (instance == null) instance = ReflectionUtils.CreateInstance(type);
 
                 foreach (var pair in keyValuePairs)
                 {
-                    var propertyName = pair.Key;
-                    var propertyTextValue = pair.Value;
+					propertyName = pair.Key;
+					propertyTextValue = pair.Value;
 
-                    PropertySerializerEntry propertySerializerEntry;
                     if (!propertySetterMap.TryGetValue(propertyName, out propertySerializerEntry))
                     {
                         if (propertyName != "format" && propertyName != "callback" && propertyName != "debug")
@@ -90,7 +95,17 @@ namespace ServiceStack.ServiceModel.Serialization
             }
             catch (Exception ex)
             {
-                throw new SerializationException("KeyValueDataContractDeserializer: Error converting to type: " + ex.Message, ex);
+                var serializationException = new SerializationException("KeyValueDataContractDeserializer: Error converting to type: " + ex.Message, ex);
+                if (propertyName != null) {
+                    serializationException.Data.Add("propertyName", propertyName);
+                }
+                if (propertyTextValue != null) {
+                    serializationException.Data.Add("propertyValueString", propertyTextValue);
+                }
+                if (propertySerializerEntry != null && propertySerializerEntry.PropertyType != null) {
+                    serializationException.Data.Add("propertyType", propertySerializerEntry.PropertyType);
+                }
+			    throw serializationException;
             }
         }
 
