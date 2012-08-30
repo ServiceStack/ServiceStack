@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints
 			catch (Exception ex)
 			{
 				if (!EndpointHost.Config.WriteErrorsToResponse) throw;
-				HandleException(HandlerContentType, httpRes, operationName, ex);
+				HandleException(httpReq, httpRes, operationName, ex);
 			}
 		}
 

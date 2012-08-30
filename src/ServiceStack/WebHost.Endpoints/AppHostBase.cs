@@ -196,6 +196,12 @@ namespace ServiceStack.WebHost.Endpoints
 			}
 		}
 
+	    public Action<IHttpRequest, IHttpResponse, string, Exception> ExceptionHandler
+	    {
+	        get { return EndpointHost.ExceptionHandler; }
+           set { EndpointHost.ExceptionHandler = value; }
+        }
+
 		public List<HttpHandlerResolverDelegate> CatchAllHandlers
 		{
 			get { return EndpointHost.CatchAllHandlers; }
