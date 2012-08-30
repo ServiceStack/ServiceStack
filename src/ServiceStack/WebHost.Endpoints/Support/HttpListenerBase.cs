@@ -354,6 +354,14 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
+		public List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters
+		{
+			get
+			{
+				return EndpointHost.RawRequestFilters;
+			}
+		}
+
 		public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters
 		{
 			get
