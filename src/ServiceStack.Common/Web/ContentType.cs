@@ -54,7 +54,7 @@ namespace ServiceStack.Common.Web
             if (contentType == null)
                 return EndpointAttributes.None;
 
-            var realContentType = contentType.Split(';')[0].Trim();
+            var realContentType = GetRealContentType(contentType);
             switch (realContentType)
             {
                 case Json:
@@ -89,12 +89,19 @@ namespace ServiceStack.Common.Web
             return EndpointAttributes.None;
         }
 
+        public static string GetRealContentType(string contentType)
+        {
+            return contentType == null
+                       ? null
+                       : contentType.Split(';')[0].Trim();
+        }
+
         public static Feature GetFeature(string contentType)
         {
             if (contentType == null)
                 return Feature.None;
 
-            var realContentType = contentType.Split(';')[0].Trim();
+            var realContentType = GetRealContentType(contentType);
             switch (realContentType)
             {
                 case Json:
