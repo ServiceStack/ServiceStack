@@ -172,24 +172,31 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 
 		public static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
 		{
-			var sbPathInfo = new StringBuilder();
-			var fullPathParts = fullPath.Split('/');
-			var pathRootFound = false;
-			foreach (var fullPathPart in fullPathParts)
-			{
-				if (pathRootFound)
-				{
-					sbPathInfo.Append("/" + fullPathPart);
-				}
-				else
-				{
-					pathRootFound = string.Equals(fullPathPart, mappedPathRoot, StringComparison.InvariantCultureIgnoreCase);
-				}
-			}
-			if (!pathRootFound) return null;
+            if (mappedPathRoot == null) return null;
 
-			var path = sbPathInfo.ToString();
-			return path.Length > 1 ? path.TrimEnd('/') : "/";
+            var sbPathInfo = new StringBuilder();
+            var fullPathParts = fullPath.Split('/');
+		    var mappedPathRootParts = mappedPathRoot.Split('/');
+		    var fullPathIndexOffset = mappedPathRootParts.Length - 1;
+            var pathRootFound = false;
+
+            for (var fullPathIndex = 0; fullPathIndex < fullPathParts.Length; fullPathIndex++) {
+                if (pathRootFound) {
+                    sbPathInfo.Append("/" + fullPathParts[fullPathIndex]);
+                } else if (fullPathIndex - fullPathIndexOffset >= 0) {
+                    pathRootFound = true;
+                    for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++) {
+                        if (!string.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.InvariantCultureIgnoreCase)) {
+                            pathRootFound = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!pathRootFound) return null;
+
+            var path = sbPathInfo.ToString();
+            return path.Length > 1 ? path.TrimEnd('/') : "/";
 		}
 
 		public static bool IsContentType(this IHttpRequest request, string contentType)
