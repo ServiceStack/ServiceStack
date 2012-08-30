@@ -5,7 +5,7 @@ using ServiceStack.WebHost.Endpoints.Tests;
 
 namespace ServiceStack.Auth.Tests
 {
-	[TestFixture]
+	[TestFixture, Explicit]
 	public class SecureTests:TestBase
 	{
 		[Test]

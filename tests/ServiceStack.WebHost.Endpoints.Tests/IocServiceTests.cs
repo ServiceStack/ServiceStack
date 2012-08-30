@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	[TestFixture]
 	public class IocServiceTests
 	{
-		private const string ListeningOn = "http://localhost:82/";
+		private const string ListeningOn = "http://localhost:1082/";
 
 		IocAppHost appHost;
 
