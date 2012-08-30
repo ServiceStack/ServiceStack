@@ -298,30 +298,19 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		protected void HandleException(string responseContentType, IHttpResponse httpRes, string operationName, Exception ex)
+		protected void HandleException(IHttpRequest httpReq, IHttpResponse httpRes, string operationName, Exception ex)
 		{
-			var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
-			Log.Error(errorMessage, ex);
+            var errorMessage = string.Format("Error occured while Processing Request: {0}", ex.Message);
+            Log.Error(errorMessage, ex);
 
-			try
-			{
-                var statusCode = ex.ToStatusCode();
-				//httpRes.WriteToResponse always calls .Close in it's finally statement so 
-				//if there is a problem writing to response, by now it will be closed
-				if (!httpRes.IsClosed)
-				{
-					httpRes.WriteErrorToResponse(responseContentType, operationName, errorMessage, ex, statusCode);
-				}
-			}
-			catch (Exception writeErrorEx)
-			{
-				//Exception in writing to response should not hide the original exception
-				Log.Info("Failed to write error to response: {0}", writeErrorEx);
-				//rethrow the original exception
-				throw ex;
-			}
-            finally
-			{
+            try {
+                EndpointHost.ExceptionHandler(httpReq, httpRes, operationName, ex);
+            } catch (Exception writeErrorEx) {
+                //Exception in writing to response should not hide the original exception
+                Log.Info("Failed to write error to response: {0}", writeErrorEx);
+                //rethrow the original exception
+                throw ex;
+            } finally {
                 httpRes.EndServiceStackRequest(skipHeaders: true);
             }
 		}
