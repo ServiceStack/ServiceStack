@@ -21,6 +21,8 @@ namespace ServiceStack.WebHost.Endpoints
 
 		public static IContentTypeFilter ContentTypeFilter { get; set; }
 
+        public static List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters { get; private set; }
+
 		public static List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; private set; }
 
 		public static List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; private set; }
@@ -42,6 +44,7 @@ namespace ServiceStack.WebHost.Endpoints
 		static EndpointHost()
 		{
 			ContentTypeFilter = HttpResponseFilter.Instance;
+            RawRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
 			RequestFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ResponseFilters = new List<Action<IHttpRequest, IHttpResponse, object>>();
 			ViewEngines = new List<IViewEngine>();
@@ -204,6 +207,22 @@ namespace ServiceStack.WebHost.Endpoints
 				config = value;
 				ApplyConfigChanges();
 			}
+		}
+
+		/// <summary>
+		/// Applies the raw request filters. Returns whether or not the request has been handled 
+		/// and no more processing should be done.
+		/// </summary>
+		/// <returns></returns>
+		public static bool ApplyRawRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes)
+		{
+			foreach (var requestFilter in RawRequestFilters)
+			{
+				requestFilter(httpReq, httpRes);
+				if (httpRes.IsClosed) break;
+			}
+
+			return httpRes.IsClosed;
 		}
 
 		/// <summary>

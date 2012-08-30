@@ -78,6 +78,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			public IContentTypeFilter ContentTypeFilters { get; set; }
 
+            public List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters { get; set; }
+
 			public List<Action<IHttpRequest, IHttpResponse, object>> RequestFilters { get; set; }
 
 			public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
