@@ -105,6 +105,14 @@ current date/year: @DateTime.Now.Year
             <a href=""/About"">About</a>
         </div>
         
+        <div id=""left-menu"">
+            <ul>
+<li>About Item 1</li>
+<li>About Item 2</li>
+</ul>
+
+        </div>
+        
         <div id=""body"">
             
 <h1>About this Site</h1>
@@ -116,6 +124,13 @@ comes from ^^^websiteTemplate.</p>
 
 <p>And obviously I can have code in here too. Here is the
 current date/year: 2012</p>
+
+
+
+        </div>
+        
+        <div id=""footer"">
+            <p>This is my custom footer for Home</p>
 
         </div>
     
