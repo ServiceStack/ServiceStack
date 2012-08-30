@@ -86,7 +86,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             public List<IViewEngine> ViewEngines { get; set; }
 
-			public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
+            public Action<IHttpRequest, IHttpResponse, string, Exception> ExceptionHandler { get; set; }
+
+		    public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 
 			public Dictionary<Type, Func<IHttpRequest, object>> RequestBinders
 			{
