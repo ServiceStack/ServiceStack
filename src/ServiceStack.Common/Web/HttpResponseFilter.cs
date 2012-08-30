@@ -98,7 +98,8 @@ namespace ServiceStack.Common.Web
             var contentType = requestContext.ResponseContentType;
 
             StreamSerializerDelegate responseStreamWriter;
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter))
+            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
+                this.ContentTypeSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseStreamWriter))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -111,7 +112,8 @@ namespace ServiceStack.Common.Web
             }
 
             ResponseSerializerDelegate responseWriter;
-            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter))
+            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
+                this.ContentTypeResponseSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -165,7 +167,8 @@ namespace ServiceStack.Common.Web
         public ResponseSerializerDelegate GetResponseSerializer(string contentType)
         {
             ResponseSerializerDelegate responseWriter;
-            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter))
+            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter)||
+                this.ContentTypeResponseSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
             {
                 return responseWriter;
             }
@@ -179,7 +182,8 @@ namespace ServiceStack.Common.Web
         public StreamSerializerDelegate GetStreamSerializer(string contentType)
         {
             StreamSerializerDelegate responseWriter;
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter))
+            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter)||
+                this.ContentTypeSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
             {
                 return responseWriter;
             }
