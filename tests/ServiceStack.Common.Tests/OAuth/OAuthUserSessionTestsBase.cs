@@ -28,7 +28,6 @@ namespace ServiceStack.Common.Tests.OAuth
 
 		public static AuthUserSession GetNewSession2()
 		{
-			new RedisClient().FlushAll();
 			var oAuthUserSession = new AuthUserSession();
 			return oAuthUserSession;
 		}
@@ -63,7 +62,8 @@ namespace ServiceStack.Common.Tests.OAuth
 				inMemoryRepo.Clear();
 				yield return new TestCaseData(inMemoryRepo);
 
-				var redisRepo = new RedisAuthRepository(new BasicRedisClientManager());
+                var appSettings = new AppSettings();
+                var redisRepo = new RedisAuthRepository(new BasicRedisClientManager(new string[] { appSettings.GetString("Redis.Host") ?? "localhost" }));
 				redisRepo.Clear();
 				yield return new TestCaseData(redisRepo);
 
