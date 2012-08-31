@@ -122,7 +122,6 @@ namespace ServiceStack.Common.Tests.OAuth
 
 		protected void InitTest(IUserAuthRepository userAuthRepository)
 		{
-			new RedisClient().FlushAll();
 			((IClearable)userAuthRepository).Clear();
 
 			var appsettingsMock = new Mock<IResourceManager>();

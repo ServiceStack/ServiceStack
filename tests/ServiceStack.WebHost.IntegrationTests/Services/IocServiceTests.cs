@@ -95,6 +95,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         [Test]
         public void Does_create_correct_instances_per_scope()
         {
+            // reset to deafults
+            FunqSingletonScope.Count = 0;
+            FunqRequestScope.Count = 0;
+            FunqNoneScope.Count = 0;
+
             var restClient = new JsonServiceClient(Config.ServiceStackBaseUri);
             var response1 = restClient.Get<IocScopeResponse>("iocscope");
             var response2 = restClient.Get<IocScopeResponse>("iocscope");
