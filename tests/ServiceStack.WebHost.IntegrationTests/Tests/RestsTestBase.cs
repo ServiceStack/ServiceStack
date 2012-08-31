@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			return (HttpWebResponse)webRequest.GetResponse();
 		}
 
-		public HttpWebResponse GetWebResponse(string httpMethod, string uri, string contentType, int contentLength)
+		public static HttpWebResponse GetWebResponse(string httpMethod, string uri, string contentType, int contentLength)
 		{
 			var webRequest = (HttpWebRequest)WebRequest.Create(uri);
 			webRequest.Accept = contentType;

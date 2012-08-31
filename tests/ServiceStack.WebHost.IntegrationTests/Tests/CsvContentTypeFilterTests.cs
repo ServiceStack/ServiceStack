@@ -22,6 +22,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 			Assert.Fail(ex.Message);
 		}
 
+        [SetUp]
+        public void SetUp()
+        {
+            // make sure that movies db is not modified
+            RestsTestBase.GetWebResponse(HttpMethods.Post, ServiceClientBaseUri + "reset-movies", ContentType.Xml, 0);
+        }
+
 		[Test]
 		[Ignore("Fails because CSV Deserializer is not implemented")]
 		public void Can_download_movies_in_Csv()
