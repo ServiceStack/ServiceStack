@@ -99,6 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
+            EndpointHandlerBase.ServiceManager = null;
         }
 
         private static string ExpectedErrorCode = "ShouldNotBeEmpty";
