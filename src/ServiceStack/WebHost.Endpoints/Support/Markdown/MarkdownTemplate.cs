@@ -33,11 +33,9 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 		internal Exception initException;
 		readonly object readWriteLock = new object();
 		private bool isBusy;
-		public void Reload(string templateContents)
+		
+        public void Reload(string templateContents, DateTime lastModified)
 		{
-			var fi = new FileInfo(this.FilePath);
-			var lastModified = fi.LastWriteTime;
-
 			lock (readWriteLock)
 			{
 				try

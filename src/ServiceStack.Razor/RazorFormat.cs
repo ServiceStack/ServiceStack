@@ -137,7 +137,7 @@ namespace ServiceStack.Razor
             foreach (var ns in EndpointHostConfig.RazorNamespaces)
                 TemplateNamespaces.Add(ns);
 
-            this.ReplaceTokens = appHost.Config.MarkdownReplaceTokens ?? new Dictionary<string, string>();
+            this.ReplaceTokens = appHost.Config.HtmlReplaceTokens ?? new Dictionary<string, string>();
             if (!appHost.Config.WebHostUrl.IsNullOrEmpty())
                 this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
 
@@ -284,38 +284,25 @@ namespace ServiceStack.Razor
         public void ReloadModifiedPageAndTemplates(ViewPageRef razorPage)
         {
             if (razorPage == null || razorPage.FilePath == null) return;
-
-            var lastWriteTime = File.GetLastWriteTime(razorPage.FilePath);
-            if (lastWriteTime > razorPage.LastModified)
-            {
-                razorPage.Reload();
-            }
-
+            
+            var latestPage = GetLatestPage(razorPage);
+            if (latestPage.LastModified > razorPage.LastModified)
+                razorPage.Reload(GetPageContents(latestPage), latestPage.LastModified);
+            
             ViewPageRef template;
-            if (razorPage.DirectiveTemplatePath != null
-                && this.MasterPageTemplates.TryGetValue(razorPage.DirectiveTemplatePath, out template))
-            {
-                lastWriteTime = File.GetLastWriteTime(razorPage.DirectiveTemplatePath);
-                if (lastWriteTime > template.LastModified)
-                    ReloadTemplate(template);
-            }
             if (razorPage.Template != null
                 && this.MasterPageTemplates.TryGetValue(razorPage.Template, out template))
             {
-                lastWriteTime = File.GetLastWriteTime(razorPage.Template);
-                if (lastWriteTime > template.LastModified)
-                    ReloadTemplate(template);
+                latestPage = GetLatestPage(template);
+                if (latestPage.LastModified > template.LastModified)
+                    template.Reload(GetPageContents(latestPage), latestPage.LastModified);
             }
         }
 
-        private void ReloadTemplate(ViewPageRef template)
+        private IVirtualFile GetLatestPage(ViewPageRef razorPage)
         {
-            var contents = File.ReadAllText(template.FilePath);
-            foreach (var markdownReplaceToken in ReplaceTokens)
-            {
-                contents = contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
-            }
-            template.Reload(contents);
+            var file = VirtualPathProvider.GetFile(razorPage.FilePath);
+            return file;
         }
 
         private ViewPageRef GetViewPageByResponse(object dto, IHttpRequest httpReq)
@@ -410,7 +397,7 @@ namespace ServiceStack.Razor
                         hasReloadableWebPages = true;
 
                     var pageName = csHtmlFile.Name.WithoutExtension();
-                    var pageContents = csHtmlFile.ReadAllText();
+                    var pageContents = GetPageContents(csHtmlFile);
 
                     var pageType = RazorPageType.ContentPage;
                     if (VirtualPathProvider.IsSharedFile(csHtmlFile))
@@ -457,7 +444,7 @@ namespace ServiceStack.Razor
                 if (MasterPageTemplates.ContainsKey(templatePath)) return;
 
                 var templateFile = VirtualPathProvider.GetFile(templatePath);
-                var templateContents = templateFile.OpenText().ReadToEnd();
+                var templateContents = GetPageContents(templateFile);
                 AddTemplate(templatePath, templateContents);
             }
             catch (Exception ex)
@@ -521,11 +508,6 @@ namespace ServiceStack.Razor
                 throw new ConfigurationErrorsException(
                     "No BaseType registered with extension " + templateFile.Extension + " for template " + templateFile.Name);
 
-            foreach (var replaceToken in ReplaceTokens)
-            {
-                templateContents = templateContents.Replace(replaceToken.Key, replaceToken.Value);
-            }
-
             var template = new ViewPageRef(this, templatePath, templateName, templateContents, RazorPageType.Template) {
                 LastModified = templateFile.LastModified,
                 Service = templateService,
@@ -544,6 +526,20 @@ namespace ServiceStack.Razor
                 Log.Error("AddViewPage() template.Prepare(): " + ex.Message, ex);
                 return null;
             }
+        }
+
+        private string GetPageContents(IVirtualFile page)
+        {
+            return ReplaceContentWithRewriteTokens(page.ReadAllText());
+        }
+
+        private string ReplaceContentWithRewriteTokens(string contents)
+        {
+            foreach (var replaceToken in ReplaceTokens)
+            {
+                contents = contents.Replace(replaceToken.Key, replaceToken.Value);
+            }
+            return contents;
         }
 
         public ViewPageRef GetContentPage(string pageFilePath)

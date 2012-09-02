@@ -103,12 +103,8 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 	    private TemplateBlock lastBlockProcessed;
 		readonly object readWriteLock = new object();
 		private bool isBusy;
-		public void Reload()
+		public void Reload(string contents, DateTime lastModified)
 		{
-			var fi = new FileInfo(this.FilePath);
-			var lastModified = fi.LastWriteTime;
-			var contents = File.ReadAllText(this.FilePath);
-
 			lock (readWriteLock)
 			{
 				try
@@ -116,17 +112,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 					isBusy = true;
 
 					this.Contents = contents;
-					foreach (var markdownReplaceToken in Markdown.MarkdownReplaceTokens)
-					{
-						this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
-					}
-					
 					this.LastModified = lastModified;
+
 					initException = null;
 					exprSeq = 0;
 					timesRun = 0;
 					ExecutionContext = new EvaluatorExecutionContext();
-					Compile();
+					Compile(force:true);
 				}
 				catch (Exception ex)
 				{
@@ -139,8 +131,10 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
         public bool IsCompiled { get; set; }
 
-	    public void Compile()
+	    public void Compile(bool force=false)
 	    {
+            if (this.IsCompiled && !force) return;
+
 	        var sw = Stopwatch.StartNew();
 
             try
@@ -152,11 +146,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
                 }
 
                 if (this.Contents.IsNullOrEmpty()) return;
-
-                foreach (var markdownReplaceToken in Markdown.MarkdownReplaceTokens)
-                {
-                    this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
-                }
 
                 var markdownStatements = new List<StatementExprBlock>();
 
@@ -172,6 +161,7 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 
                 SetTemplateDirectivePath();
 
+                this.IsCompiled = true;
                 Log.InfoFormat("Compiled {0} in {1}ms", this.FilePath, sw.ElapsedMilliseconds);
             }
             catch (Exception ex)

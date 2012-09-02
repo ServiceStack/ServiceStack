@@ -24,7 +24,6 @@ namespace ServiceStack.Razor
 
 		public RazorPageType PageType { get; set; }
 		public string Template { get; set; }
-		public string DirectiveTemplatePath { get; set; }
 		public DateTime? LastModified { get; set; }
 		public List<IExpirable> Dependents { get; private set; }
 
@@ -63,11 +62,6 @@ namespace ServiceStack.Razor
 			return lastModified;
 		}
 
-		public string GetTemplatePath()
-		{
-			return this.DirectiveTemplatePath ?? this.Template;
-		}
-
 		public string PageName
 		{
 			get
@@ -86,12 +80,12 @@ namespace ServiceStack.Razor
             get { return isCompiled; }
         }
 
-        public void Compile()
+        public void Compile(bool force=false)
 		{
-            if (IsCompiled) return;
+            if (IsCompiled && !force) return;
             lock (this)
             {
-                if (IsCompiled) return;
+                if (IsCompiled && !force) return;
                 var sw = Stopwatch.StartNew();
                 try
                 {
@@ -117,17 +111,9 @@ namespace ServiceStack.Razor
 		private Exception initException;
 		readonly object readWriteLock = new object();
 		private bool isBusy;
-
-		public void Reload()
+        
+		public void Reload(string contents, DateTime lastModified)
 		{
-			var contents = File.ReadAllText(this.FilePath);
-			Reload(contents);
-		}
-
-		public void Reload(string contents)
-		{
-			var fi = new FileInfo(this.FilePath);
-			var lastModified = fi.LastWriteTime;
 			lock (readWriteLock)
 			{
 				try
@@ -135,15 +121,10 @@ namespace ServiceStack.Razor
 					isBusy = true;
 
 					this.Contents = contents;
-					foreach (var markdownReplaceToken in RazorFormat.ReplaceTokens)
-					{
-						this.Contents = this.Contents.Replace(markdownReplaceToken.Key, markdownReplaceToken.Value);
-					}
-
 					this.LastModified = lastModified;
 					initException = null;
 					timesRun = 0;
-					Compile();
+					Compile(force:true);
 				}
 				catch (Exception ex)
 				{

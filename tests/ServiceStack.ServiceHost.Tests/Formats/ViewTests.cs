@@ -47,7 +47,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public AppHost()
 			{
 				this.Config = new EndpointHostConfig {					
-					MarkdownReplaceTokens = new Dictionary<string, string>(),
+					HtmlReplaceTokens = new Dictionary<string, string>(),
 					IgnoreFormatsInMetadata = new HashSet<string>(),
 				};
 				this.ContentTypeFilters = HttpResponseFilter.Instance;

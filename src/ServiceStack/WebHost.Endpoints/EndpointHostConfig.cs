@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints
 						MarkdownOptions = new MarkdownOptions(),
 						MarkdownBaseType = typeof(MarkdownViewBase),
 						MarkdownGlobalHelpers = new Dictionary<string, Type>(),
-						MarkdownReplaceTokens = new Dictionary<string, string>(),
+						HtmlReplaceTokens = new Dictionary<string, string>(),
 						AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
 							{ "image/gif", TimeSpan.FromHours(1) },
 							{ "image/png", TimeSpan.FromHours(1) },
@@ -149,7 +149,7 @@ namespace ServiceStack.WebHost.Endpoints
 			this.MarkdownOptions = instance.MarkdownOptions;
 			this.MarkdownBaseType = instance.MarkdownBaseType;
 			this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
-			this.MarkdownReplaceTokens = instance.MarkdownReplaceTokens;
+			this.HtmlReplaceTokens = instance.HtmlReplaceTokens;
 			this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
 			this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
 			this.RawHttpHandlers = instance.RawHttpHandlers;
@@ -346,7 +346,7 @@ namespace ServiceStack.WebHost.Endpoints
 		public MarkdownOptions MarkdownOptions { get; set; }
 		public Type MarkdownBaseType { get; set; }
 		public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
-		public Dictionary<string, string> MarkdownReplaceTokens { get; set; }
+		public Dictionary<string, string> HtmlReplaceTokens { get; set; }
 
 		public HashSet<string> AppendUtf8CharsetOnContentTypes { get; set; }
 
