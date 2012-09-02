@@ -231,7 +231,7 @@ namespace ServiceStack.WebHost.Endpoints
 		/// and no more processing should be done.
 		/// </summary>
 		/// <returns></returns>
-		public static bool ApplyRawRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes)
+		public static bool ApplyPreRequestFilters(IHttpRequest httpReq, IHttpResponse httpRes)
 		{
 			foreach (var requestFilter in RawRequestFilters)
 			{

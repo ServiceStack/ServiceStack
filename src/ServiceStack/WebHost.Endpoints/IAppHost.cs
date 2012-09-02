@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints
         /// <summary>
         /// Add Request Filters, to be applied before the dto is deserialized
         /// </summary>
-        List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters { get; }
+        List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters { get; }
 
 		/// <summary>
 		/// Add Request Filters

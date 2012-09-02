@@ -44,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints
 			var responseContentType = EndpointHost.Config.DefaultContentType; 
 			try
 			{
-                if (EndpointHost.ApplyRawRequestFilters(httpReq, httpRes)) return;
+                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
 
 				var restPath = GetRestPath(httpReq.HttpMethod, httpReq.PathInfo);
 				if (restPath == null)

@@ -55,7 +55,9 @@ namespace ServiceStack.WebHost.Endpoints
 		{
 			try
 			{
-				EndpointHost.Config.AssertFeatures(usesFeature);
+                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes)) return;
+
+                EndpointHost.Config.AssertFeatures(usesFeature);
 
 				httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 				var callback = httpReq.QueryString["callback"];

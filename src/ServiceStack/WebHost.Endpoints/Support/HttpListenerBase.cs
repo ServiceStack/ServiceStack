@@ -354,7 +354,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 		}
 
-		public List<Action<IHttpRequest, IHttpResponse>> RawRequestFilters
+		public List<Action<IHttpRequest, IHttpResponse>> PreRequestFilters
 		{
 			get
 			{

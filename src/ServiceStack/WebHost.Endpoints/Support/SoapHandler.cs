@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public Message EmptyResponse(Message requestMsg, Type requestType)
         {
             var responseType = AssemblyUtils.FindType(requestType.FullName + "Response");
-            var response = ReflectionExtensions.CreateInstance(responseType ?? typeof(object));
+            var response = (responseType ?? typeof(object)).CreateInstance();
 
             return requestMsg.Headers.Action == null
                 ? Message.CreateMessage(requestMsg.Version, null, response)
@@ -60,17 +60,20 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 
 			var requestType = GetRequestType(requestMsg, requestXml);
-			try
+		    try
 			{
 				var request = DataContractDeserializer.Instance.Parse(requestXml, requestType);
 
-				IHttpRequest httpReq = null;
-				IHttpResponse httpRes = null;
-				
-				httpReq = HttpContext.Current != null ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)                                              : null;
-				httpRes = HttpContext.Current != null 
-							? new HttpResponseWrapper(HttpContext.Current.Response)
-							: null;
+			    var httpReq = HttpContext.Current != null 
+                    ? new HttpRequestWrapper(requestType.Name, HttpContext.Current.Request)
+                    : null;
+				var httpRes = HttpContext.Current != null 
+                    ? new HttpResponseWrapper(HttpContext.Current.Response)
+                    : null;
+
+                if (EndpointHost.ApplyPreRequestFilters(httpReq, httpRes))
+                    return EmptyResponse(requestMsg, requestType);
+
 				var hasRequestFilters = EndpointHost.RequestFilters.Count > 0 
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
@@ -81,13 +84,6 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 				var hasResponseFilters = EndpointHost.ResponseFilters.Count > 0
 				   || FilterAttributeCache.GetResponseFilterAttributes(response.GetType()).Any();
-				
-				if (hasResponseFilters && httpRes == null)
-				{
-					httpRes = HttpContext.Current != null
-							? new HttpResponseWrapper(HttpContext.Current.Response)
-							: null;					
-				}
 
 				if (hasResponseFilters && EndpointHost.ApplyResponseFilters(httpReq, httpRes, response))
                     return EmptyResponse(requestMsg, requestType);
