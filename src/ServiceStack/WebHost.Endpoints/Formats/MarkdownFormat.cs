@@ -157,14 +157,31 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             return ProcessMarkdownPage(httpReq, markdownPage, dto, httpRes);
         }
 
-        public bool HasView(string viewName)
+        public bool HasView(string viewName, IHttpRequest httpReq = null)
         {
-            return GetViewPage(viewName) != null;
+            return GetViewPage(viewName, httpReq) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml)
+        public string RenderPartial(string pageName, object model, bool renderHtml, IHttpRequest httpReq = null)
         {
-            return RenderDynamicPage(GetViewPage(pageName), pageName, model, renderHtml, false);
+            return RenderDynamicPage(GetViewPage(pageName, httpReq), pageName, model, renderHtml, false);
+        }
+
+        public MarkdownPage GetViewPage(string viewName, IHttpRequest httpReq)
+        {
+            var view = GetViewPage(viewName);
+            if (view != null) return view;
+            if (httpReq == null || httpReq.PathInfo == null) return null;
+
+            var normalizedPathInfo = httpReq.PathInfo
+                .ParentDirectory().CombineWith(viewName)
+                .TrimStart(DirSeps);
+
+            view = GetContentPage(
+                normalizedPathInfo,
+                normalizedPathInfo.CombineWith(DefaultPage));
+
+            return view;
         }
 
         public bool ProcessMarkdownPage(IHttpRequest httpReq, MarkdownPage markdownPage, object dto, IHttpResponse httpRes)

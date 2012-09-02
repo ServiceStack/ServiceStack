@@ -19,6 +19,7 @@ using System.Reflection;
 using System.Web;
 using ServiceStack.Common.Web;
 using ServiceStack.Markdown;
+using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
@@ -84,6 +85,7 @@ namespace ServiceStack.Html
 
 		public bool RenderHtml { get; protected set; }
 
+        public IHttpRequest HttpRequest { get; set; }
         public IViewEngine ViewEngine { get; set; }
 
 	    public MarkdownPage MarkdownPage { get; protected set; }
@@ -99,19 +101,20 @@ namespace ServiceStack.Html
             id = counter++;
 	    }
 
-	    public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
+        public void Init(MarkdownPage markdownPage, Dictionary<string, object> scopeArgs, 
 			bool renderHtml, ViewDataDictionary viewData)
 		{
-            Init(markdownPage.Markdown, viewData);
+            Init(null, markdownPage.Markdown, viewData);
 
             this.RenderHtml = renderHtml;
 			this.MarkdownPage = markdownPage;
 			this.ScopeArgs = scopeArgs;
 		}
 
-		public void Init(IViewEngine viewEngine, ViewDataDictionary viewData)
+		public void Init(IHttpRequest httpReq, IViewEngine viewEngine, ViewDataDictionary viewData)
 		{
             this.RenderHtml = true;
+            this.HttpRequest = httpReq;
             this.ViewEngine = viewEngine;
 			this.ViewData = viewData;
 			this.ViewData.PopulateModelState();
@@ -124,7 +127,7 @@ namespace ServiceStack.Html
 		
 		public MvcHtmlString Partial(string viewName, object model)
 		{
-			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml);
+			var result = ViewEngine.RenderPartial(viewName, model, this.RenderHtml, this.HttpRequest);
 			return MvcHtmlString.Create(result);
 		}
 

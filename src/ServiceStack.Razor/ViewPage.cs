@@ -36,7 +36,7 @@ namespace ServiceStack.Razor
 		{
 			this.Request = httpReq;
 			this.Response = httpRes;
-			Html.Init(viewEngine, viewData);
+			Html.Init(httpReq, viewEngine, viewData);
 			this.Model = new DynamicRequestObject(httpReq);
 		}
 		

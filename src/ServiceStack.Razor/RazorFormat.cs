@@ -193,12 +193,12 @@ namespace ServiceStack.Razor
             return ProcessRazorPage(httpReq, razorPage, dto, httpRes);
         }
 
-        public bool HasView(string viewName)
+        public bool HasView(string viewName, IHttpRequest httpReq=null)
         {
             return GetTemplateService(viewName) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml)
+        public string RenderPartial(string pageName, object model, bool renderHtml, IHttpRequest httpReq = null)
         {
             var template = GetTemplateService(pageName);
             if (template == null)
@@ -206,8 +206,9 @@ namespace ServiceStack.Razor
                 string result = null;
                 foreach (var viewEngine in AppHost.ViewEngines)
                 {
-                    if (viewEngine == this || !viewEngine.HasView(pageName)) continue;
-                    result = viewEngine.RenderPartial(pageName, model, renderHtml);
+                    if (viewEngine == this || !viewEngine.HasView(pageName, httpReq)) continue;
+                    result = viewEngine.RenderPartial(pageName, model, renderHtml, httpReq);
+                    if (result != null) break;
                 }
                 return result ?? "<!--{0} not found-->".Fmt(pageName);
             }
@@ -218,8 +219,7 @@ namespace ServiceStack.Razor
             //return template.Result;
             return null;
         }
-
-
+        
         private Dictionary<string, TemplateService> templateServices;
         private TemplateService[] templateServicesArray;
 

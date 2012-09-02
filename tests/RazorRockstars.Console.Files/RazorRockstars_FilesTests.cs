@@ -150,6 +150,13 @@ namespace RazorRockstars.Console.Files
         }
 
         [Test]
+        public void Can_get_razor_content_pages_with_partials()
+        {
+            Assert200(Host + "/pages/dir2/Page4",
+                ViewPage4, Template_HtmlReport, ViewRazorPartial, ViewMarkdownPartial, ViewMPage3);
+        }
+
+        [Test]
         public void Can_get_markdown_content_pages()
         {
             Assert200(Host + "/MRootPage",
