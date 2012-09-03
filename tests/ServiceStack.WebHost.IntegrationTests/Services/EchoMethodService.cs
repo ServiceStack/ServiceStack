@@ -6,7 +6,7 @@ using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	[RestService("/echomethod")]
+	[Route("/echomethod")]
 	public class EchoMethod
 	{
 	}

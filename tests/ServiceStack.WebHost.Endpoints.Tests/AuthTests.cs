@@ -20,7 +20,7 @@ using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [RestService("/secured")]
+    [Route("/secured")]
 	public class Secured
 	{
 		public string Name { get; set; }
@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 	}
 
-    [RestService("/securedfileupload")]
+    [Route("/securedfileupload")]
     public class SecuredFileUpload
     {
         public int CustomerId { get; set; }

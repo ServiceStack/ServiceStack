@@ -23,8 +23,8 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	[RestService("/customers")]
-	[RestService("/customers/{Id}")]
+	[Route("/customers")]
+	[Route("/customers/{Id}")]
 	public class Customers
 	{
 		public int Id { get; set; }

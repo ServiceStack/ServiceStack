@@ -6,8 +6,8 @@ using ServiceStack.ServiceHost;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
-	[RestService("/VerbMatch", "GET,DELETE")]
-	[RestService("/VerbMatch/{Name}", "GET,DELETE")]
+	[Route("/VerbMatch", "GET,DELETE")]
+	[Route("/VerbMatch/{Name}", "GET,DELETE")]
 	public class VerbMatch1
 	{
 		[DataMember]

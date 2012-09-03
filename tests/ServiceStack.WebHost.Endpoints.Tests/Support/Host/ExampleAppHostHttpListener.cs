@@ -23,7 +23,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
 
-	[RestService("/factorial/{ForNumber}")]
+	[Route("/factorial/{ForNumber}")]
 	[DataContract]
 	public class GetFactorial
 	{
@@ -72,8 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-	[RestService("/movies", "POST,PUT")]
-	[RestService("/movies/{Id}")]
+	[Route("/movies", "POST,PUT")]
+	[Route("/movies/{Id}")]
 	[DataContract]
 	public class Movie
 	{
@@ -282,7 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 
 	[DataContract]
-	[RestService("/reset-movies")]
+	[Route("/reset-movies")]
 	public class ResetMovies { }
 
 	[DataContract]
@@ -343,7 +343,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-    [RestService("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
+    [Route("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
     public class InboxPostResponseRequest
     {
         public int Id { get; set; }
@@ -378,7 +378,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         }
     }
 
-    [RestService("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
+    [Route("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
     public class InboxPost
     {
         public bool Throw { get; set; }
@@ -397,7 +397,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
     }
 
     [DataContract]
-    [RestService("/long_running")]
+    [Route("/long_running")]
     public class LongRunning { }
 
     public class LongRunningService : ServiceBase<LongRunning>

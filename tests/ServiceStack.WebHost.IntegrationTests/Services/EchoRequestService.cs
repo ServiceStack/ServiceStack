@@ -6,7 +6,7 @@ using ServiceStack.ServiceInterface;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
-	[RestService("/echo/{Id}/{String}")]
+	[Route("/echo/{Id}/{String}")]
 	public class EchoRequest
 	{
 		[DataMember]

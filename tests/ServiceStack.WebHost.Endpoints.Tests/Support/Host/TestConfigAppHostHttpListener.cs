@@ -7,7 +7,7 @@ using ServiceStack.ServiceInterface;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
 	[DataContract]
-	[RestService("/login/{UserName}/{Password}")]
+	[Route("/login/{UserName}/{Password}")]
 	public class BclDto
 	{
 		[DataMember(Name = "uname")]

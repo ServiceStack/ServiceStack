@@ -59,10 +59,10 @@ namespace RazorRockstars.Web
         }
     }
     
-    [RestService("/rockstars")]
-    [RestService("/rockstars/aged/{Age}")]
-    [RestService("/rockstars/delete/{Delete}")]
-    [RestService("/rockstars/{Id}")]
+    [Route("/rockstars")]
+    [Route("/rockstars/aged/{Age}")]
+    [Route("/rockstars/delete/{Delete}")]
+    [Route("/rockstars/{Id}")]
     public class Rockstars
     {
         public int Id { get; set; }

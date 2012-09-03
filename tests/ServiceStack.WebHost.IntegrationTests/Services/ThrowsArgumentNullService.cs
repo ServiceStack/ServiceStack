@@ -6,7 +6,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	[RestService("/throwsargumentnull")]
+	[Route("/throwsargumentnull")]
 	[DataContract]
 	public class ThrowsArgumentNull
 	{

@@ -36,8 +36,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		}
 	}
 
-	[RestService("/error")]
-	[RestService("/error/{Id}")]
+	[Route("/error")]
+	[Route("/error/{Id}")]
 	public class Error
 	{
 		public Error()

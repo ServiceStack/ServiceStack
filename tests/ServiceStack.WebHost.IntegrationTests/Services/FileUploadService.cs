@@ -12,8 +12,8 @@ using ServiceStack.Validation;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
-	[RestService("/fileuploads/{RelativePath*}", HttpMethods.Get)]
-	[RestService("/fileuploads", HttpMethods.Post)]
+	[Route("/fileuploads/{RelativePath*}", HttpMethods.Get)]
+	[Route("/fileuploads", HttpMethods.Post)]
 	public class FileUpload
 	{
 		[DataMember]

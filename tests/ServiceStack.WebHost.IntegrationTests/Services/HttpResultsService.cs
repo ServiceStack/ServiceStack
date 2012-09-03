@@ -8,7 +8,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-    [RestService("/httpresults")]
+    [Route("/httpresults")]
 	[DataContract]
 	public class HttpResults
 	{

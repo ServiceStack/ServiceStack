@@ -7,8 +7,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
 	[Description("ServiceStack's Test World web service.")]
-	[RestService("/test")]
-	[RestService("/test/{Name}")]
+	[Route("/test")]
+	[Route("/test/{Name}")]
 	public class Test
 	{
 		[DataMember]

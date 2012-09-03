@@ -7,8 +7,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
 	[Description("ServiceStack's Hello World web service.")]
-	[RestService("/hello")]
-	[RestService("/hello/{Name}")]
+	[Route("/hello")]
+	[Route("/hello/{Name}")]
 	public class Hello
 	{
 		[DataMember]
@@ -37,8 +37,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		}
 	}
 
-	[RestService("/hello2")]
-	[RestService("/hello2/{Name}")]
+	[Route("/hello2")]
+	[Route("/hello2/{Name}")]
 	public class Hello2
 	{
 		[DataMember]

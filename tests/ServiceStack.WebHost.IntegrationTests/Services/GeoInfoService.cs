@@ -7,7 +7,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	//Request DTO
-	[RestService("/geoinfo")]
+	[Route("/geoinfo")]
 	[DataContract]
 	public class GeoInfo
 	{

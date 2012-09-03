@@ -7,7 +7,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	[RestService("/userauths")]
+	[Route("/userauths")]
 	public class UserAuths
 	{
 		public int[] Ids { get; set; }

@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public int Counter { get; set; }
 	}
 
-	[RestService("/session")]
+	[Route("/session")]
 	public class Session
 	{
 		public string Value { get; set; }

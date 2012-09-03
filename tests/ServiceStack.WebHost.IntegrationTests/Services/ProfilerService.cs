@@ -6,8 +6,8 @@ using ServiceStack.ServiceInterface;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	[RestService("/profiler", "GET")]
-	[RestService("/profiler/{Type}", "GET")]
+	[Route("/profiler", "GET")]
+	[Route("/profiler/{Type}", "GET")]
 	public class MiniProfiler
 	{
 		public string Type { get; set; }
