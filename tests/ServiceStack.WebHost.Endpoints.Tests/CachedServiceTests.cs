@@ -2,13 +2,31 @@ using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.ServiceClient.Web;
-using ServiceStack.WebHost.IntegrationTests.Services;
+using ServiceStack.ServiceInterface;
+using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
-namespace ServiceStack.WebHost.IntegrationTests.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[TestFixture]
 	public class CachedServiceTests
 	{
+        ExampleAppHostHttpListener appHost;
+
+        [TestFixtureSetUp]
+        public void OnTestFixtureSetUp()
+        {
+            appHost = new ExampleAppHostHttpListener();
+            appHost.Init();
+            appHost.Start(Config.AbsoluteBaseUri);
+        }
+
+        [TestFixtureTearDown]
+        public void OnTestFixtureTearDown()
+        {
+            //appHost.Dispose();
+        }
+
         [Test]
         public void Can_call_Cached_WebService_with_JSON()
         {

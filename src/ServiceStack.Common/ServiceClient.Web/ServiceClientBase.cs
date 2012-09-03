@@ -5,6 +5,7 @@ using System.Net;
 using System.Web;
 #endif
 using ServiceStack.Common;
+using ServiceStack.Common.Web;
 using ServiceStack.Logging;
 using ServiceStack.Service;
 using ServiceStack.ServiceHost;
@@ -404,9 +405,16 @@ namespace ServiceStack.ServiceClient.Web
 
                 try
                 {
-                    using (var stream = errorResponse.GetResponseStream())
+                    if (errorResponse.ContentType.MatchesContentType(ContentType))
                     {
-                        serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
+                        using (var stream = errorResponse.GetResponseStream())
+                        {
+                            serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
+                        }
+                    }
+                    else
+                    {
+                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                     }
                 }
                 catch (Exception innerEx)

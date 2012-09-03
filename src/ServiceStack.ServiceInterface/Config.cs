@@ -7,5 +7,8 @@ namespace ServiceStack.ServiceInterface
         /// </summary>
         //public const string DefaultNamespace = "http://schemas.sericestack.net/examples/types";
         public const string DefaultNamespace = "http://schemas.servicestack.net/types";
+
+        public const string ServiceStackBaseUri = "http://localhost:20000";
+        public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
     }
 }
