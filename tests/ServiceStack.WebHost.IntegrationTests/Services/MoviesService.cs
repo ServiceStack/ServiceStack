@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	[DataContract]
 	public class MoviesResponse
 	{
-		[DataMember]
+		[DataMember(Order = 1)]
 		public List<Movie> Movies { get; set; }
 	}
 
