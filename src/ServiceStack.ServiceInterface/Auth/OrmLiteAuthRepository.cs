@@ -205,10 +205,10 @@ namespace ServiceStack.ServiceInterface.Auth
 
         public void SaveUserAuth(IAuthSession authSession)
         {
-            dbFactory.Exec(dbCmd => {
+            dbFactory.Run(db => {
 
                 var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                    ? dbCmd.GetByIdOrDefault<UserAuth>(authSession.UserAuthId)
+                    ? db.GetByIdOrDefault<UserAuth>(authSession.UserAuthId)
                     : authSession.TranslateTo<UserAuth>();
 
                 if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
@@ -218,7 +218,7 @@ namespace ServiceStack.ServiceInterface.Auth
                 if (userAuth.CreatedDate == default(DateTime))
                     userAuth.CreatedDate = userAuth.ModifiedDate;
 
-                dbCmd.Save(userAuth);
+                db.Save(userAuth);
             });
         }
 
@@ -228,7 +228,7 @@ namespace ServiceStack.ServiceInterface.Auth
             if (userAuth.CreatedDate == default(DateTime))
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
-            dbFactory.Exec(dbCmd => dbCmd.Save(userAuth));
+            dbFactory.Run(db => db.Save(userAuth));
         }
 
         public List<UserOAuthProvider> GetUserOAuthProviders(string userAuthId)
@@ -254,13 +254,13 @@ namespace ServiceStack.ServiceInterface.Auth
             if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
                 return null;
 
-            return dbFactory.Exec(dbCmd => {
-                var oAuthProvider = dbCmd.Select<UserOAuthProvider>(q => 
+            return dbFactory.Run(db => {
+                var oAuthProvider = db.Select<UserOAuthProvider>(q => 
                     q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
 
                 if (oAuthProvider != null)
                 {
-                    var userAuth = dbCmd.GetByIdOrDefault<UserAuth>(oAuthProvider.UserAuthId);
+                    var userAuth = db.GetByIdOrDefault<UserAuth>(oAuthProvider.UserAuthId);
                     return userAuth;
                 }
                 return null;
