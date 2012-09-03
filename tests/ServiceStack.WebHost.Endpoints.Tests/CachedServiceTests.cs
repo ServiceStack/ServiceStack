@@ -3,7 +3,6 @@ using ServiceStack.Common;
 using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceInterface;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -24,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TestFixtureTearDown]
         public void OnTestFixtureTearDown()
         {
-            //appHost.Dispose();
+            appHost.Dispose();
         }
 
         [Test]
