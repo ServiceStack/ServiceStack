@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ServiceStack.DesignPatterns.Serialization;
 
 namespace ServiceStack.ServiceHost
 {
@@ -12,6 +13,8 @@ namespace ServiceStack.ServiceHost
 
 		void Register(string contentType,
 			ResponseSerializerDelegate responseSerializer, StreamDeserializerDelegate streamDeserializer);
+
+	    void Register(string contentType, ITextSerializer stringSerializer);
 
 		void ClearCustomFilters();
 	}

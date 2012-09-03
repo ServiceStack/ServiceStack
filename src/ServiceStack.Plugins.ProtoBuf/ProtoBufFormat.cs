@@ -11,6 +11,8 @@ namespace ServiceStack.Plugins.ProtoBuf
 			appHost.ContentTypeFilters.Register(ContentType.ProtoBuf,
 				(reqCtx, res, stream) => Serializer.NonGeneric.Serialize(stream, res),
 				Serializer.NonGeneric.Deserialize);
+
+            appHost.ContentTypeFilters.Register(ContentType.ProtoBuf, new StringSerializerProtoBufImpl());
 		}
 	}
 }

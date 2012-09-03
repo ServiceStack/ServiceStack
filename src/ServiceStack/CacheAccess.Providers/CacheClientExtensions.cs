@@ -20,8 +20,9 @@ namespace ServiceStack.CacheAccess.Providers
 		}
 
 		public static object ResolveFromCache(this ICacheClient cacheClient, 
-			string cacheKey, 
-			IRequestContext context)
+			string cacheKey,
+            IRequestContext context,
+            Type deserializedType=null)
 		{
 			string modifiers = null;
 			if (context.ResponseContentType == ContentType.Json)
@@ -52,7 +53,13 @@ namespace ServiceStack.CacheAccess.Providers
 				var serializedResult = cacheClient.Get<string>(cacheKeySerialized);
 				if (serializedResult != null)
 				{
-					return serializedResult;
+                    if (context.ResponseContentType == ContentType.ProtoBuf)
+                    {
+                        // deserialized result
+                        return EndpointHost.ContentTypeFilter.DeserializeFromString(ContentType.ProtoBuf, deserializedType,
+                                                                                 serializedResult);
+                    }
+				    return serializedResult;
 				}
 			}
 
@@ -101,7 +108,7 @@ namespace ServiceStack.CacheAccess.Providers
 					: null;
 			}
 
-			return serializedDto;
+            return responseDto;
 		}
 
 		public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)
