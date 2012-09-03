@@ -138,9 +138,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                     if (catchAllPathsNotFound.Count > 1000) //prevent DDOS
                         catchAllPathsNotFound = new HashSet<string>();
 
-					var tmp = new HashSet<string>(catchAllPathsNotFound);
-					tmp.Add(pathInfo);
-					catchAllPathsNotFound = tmp;
+					var tmp = new HashSet<string>(catchAllPathsNotFound) { pathInfo };
+                    catchAllPathsNotFound = tmp;
 					return null;
                 }
                 

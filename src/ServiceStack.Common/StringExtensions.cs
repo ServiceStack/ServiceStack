@@ -113,6 +113,7 @@ namespace ServiceStack.Common
 
         public static string CombineWith(this string path, params string[] thesePaths)
         {
+            if (thesePaths.Length == 1 && thesePaths[0] == null) return path;
             return PathUtils.CombinePaths(new StringBuilder(path.TrimEnd('/','\\')), thesePaths);
         }
 

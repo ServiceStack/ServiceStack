@@ -34,8 +34,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			}
 			else
 			{
-				var absoluteUrl = request.AbsoluteUri.WithTrailingSlash() + this.RelativeUrl;
-				response.StatusCode = (int)HttpStatusCode.Redirect;
+                var absoluteUrl = request.GetApplicationUrl();
+                if (!string.IsNullOrEmpty(RelativeUrl))
+                {
+                    if (this.RelativeUrl.StartsWith("/"))
+                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl);
+                    else if (this.RelativeUrl.StartsWith("~/"))
+                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl.Replace("~/", ""));
+                    else
+                        absoluteUrl = request.AbsoluteUri.CombineWith(this.RelativeUrl);
+                }
+                response.StatusCode = (int)HttpStatusCode.Redirect;
 				response.AddHeader(HttpHeaders.Location, absoluteUrl);
 			}
 
@@ -65,9 +74,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
                 if (!string.IsNullOrEmpty(RelativeUrl))
                 {
                     if (this.RelativeUrl.StartsWith("/"))
-                        absoluteUrl = request.GetApplicationUrl().CombineWith(this.RelativeUrl);
+                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl);
                     else if (this.RelativeUrl.StartsWith("~/"))
-                        absoluteUrl = request.GetApplicationUrl().CombineWith(this.RelativeUrl.Replace("~/", ""));
+                        absoluteUrl = absoluteUrl.CombineWith(this.RelativeUrl.Replace("~/", ""));
                     else
                         absoluteUrl = request.Url.AbsoluteUri.CombineWith(this.RelativeUrl);
                 }

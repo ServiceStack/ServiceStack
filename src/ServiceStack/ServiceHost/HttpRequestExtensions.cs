@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Security.Policy;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
+using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.ServiceHost
@@ -120,14 +122,23 @@ namespace ServiceStack.ServiceHost
 			return filePath;
 		}
 
-		public static string GetApplicationUrl(this HttpRequest httpReq)
-		{
-			var appPath = httpReq.ApplicationPath;
-			var baseUrl = httpReq.Url.Scheme + "://" + httpReq.Url.Host;
-			if (httpReq.Url.Port != 80) baseUrl += ":" + httpReq.Url.Port;
-			var appUrl = baseUrl.CombineWith(appPath);
-			return appUrl;
-		}
+        public static string GetApplicationUrl(this HttpRequest httpReq)
+        {
+            var appPath = httpReq.ApplicationPath;
+            var baseUrl = httpReq.Url.Scheme + "://" + httpReq.Url.Host;
+            if (httpReq.Url.Port != 80) baseUrl += ":" + httpReq.Url.Port;
+            var appUrl = baseUrl.CombineWith(appPath);
+            return appUrl;
+        }
+
+        public static string GetApplicationUrl(this IHttpRequest httpReq)
+        {
+            var url = new Uri(httpReq.AbsoluteUri);
+            var baseUrl = url.Scheme + "://" + url.Host;
+            if (url.Port != 80) baseUrl += ":" + url.Port;
+            var appUrl = baseUrl.CombineWith(EndpointHost.Config.ServiceStackHandlerFactoryPath);
+            return appUrl;
+        }
 
 		public static string GetHttpMethodOverride(this IHttpRequest httpReq)
 		{
