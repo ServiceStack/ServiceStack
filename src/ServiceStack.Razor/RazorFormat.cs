@@ -212,12 +212,12 @@ namespace ServiceStack.Razor
 
         public bool HasView(string viewName, IHttpRequest httpReq=null)
         {
-            return GetTemplateService(viewName) != null;
+            return GetTemplateService(viewName, httpReq) != null;
         }
 
         public string RenderPartial(string pageName, object model, bool renderHtml, IHttpRequest httpReq = null)
         {
-            var template = GetTemplateService(pageName);
+            var template = GetTemplateService(pageName, httpReq);
             if (template == null)
             {
                 string result = null;
@@ -382,8 +382,7 @@ namespace ServiceStack.Razor
             }
             return null;
         }
-
-
+        
         private void RegisterRazorPages(string razorSearchPath)
         {
             foreach (var page in FindRazorPagesFn(razorSearchPath))
@@ -653,6 +652,28 @@ namespace ServiceStack.Razor
                     return templateService;
             }
 
+            return null;
+        }
+
+        public TemplateService GetTemplateService(string pagePathOrName, IHttpRequest httpReq)
+        {
+            var view = GetTemplateService(pagePathOrName);
+            if (view != null) return view;
+            if (httpReq == null || httpReq.PathInfo == null) return null;
+
+            var normalizedPathInfo = httpReq.PathInfo;
+            if (!httpReq.RawUrl.EndsWith("/"))
+                normalizedPathInfo = normalizedPathInfo.ParentDirectory();
+
+            normalizedPathInfo = normalizedPathInfo.CombineWith(pagePathOrName).TrimStart(DirSeps);
+
+            var razorPage = GetContentPage(
+                normalizedPathInfo,
+                normalizedPathInfo.CombineWith(DefaultPage));
+
+            if (razorPage != null && razorPage.FilePath != null)
+                return GetTemplateService(razorPage.FilePath);
+            
             return null;
         }
 

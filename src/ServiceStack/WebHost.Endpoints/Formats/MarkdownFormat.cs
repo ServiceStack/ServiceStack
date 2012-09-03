@@ -177,7 +177,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public string RenderPartial(string pageName, object model, bool renderHtml, IHttpRequest httpReq = null)
         {
-            return RenderDynamicPage(GetViewPage(pageName, httpReq), pageName, model, renderHtml, false);
+            var markdownPage = ReloadIfNeeded(GetViewPage(pageName, httpReq));
+            return RenderDynamicPage(markdownPage, pageName, model, renderHtml, false);
         }
 
         public MarkdownPage GetViewPage(string viewName, IHttpRequest httpReq)
@@ -186,9 +187,11 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             if (view != null) return view;
             if (httpReq == null || httpReq.PathInfo == null) return null;
 
-            var normalizedPathInfo = httpReq.PathInfo
-                .ParentDirectory().CombineWith(viewName)
-                .TrimStart(DirSeps);
+            var normalizedPathInfo = httpReq.PathInfo;
+            if (!httpReq.RawUrl.EndsWith("/"))
+                normalizedPathInfo = normalizedPathInfo.ParentDirectory();
+
+            normalizedPathInfo = normalizedPathInfo.CombineWith(viewName).TrimStart(DirSeps);
 
             view = GetContentPage(
                 normalizedPathInfo,
@@ -227,14 +230,11 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public void ReloadModifiedPageAndTemplates(MarkdownPage markdownPage)
         {
-            if (markdownPage == null || markdownPage.FilePath == null) return;
+            if (markdownPage == null) return;
 
-            var latestPage = GetLatestPage(markdownPage);
-            if (latestPage.LastModified > markdownPage.LastModified)
-            {
-                markdownPage.Reload(GetPageContents(latestPage), latestPage.LastModified);
-            }
+            ReloadIfNeeded(markdownPage);
 
+            IVirtualFile latestPage;
             MarkdownTemplate template;
             if (markdownPage.DirectiveTemplate != null
                 && this.MasterPageTemplates.TryGetValue(markdownPage.DirectiveTemplate, out template))
@@ -250,6 +250,20 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 if (latestPage.LastModified > template.LastModified)
                     template.Reload(GetPageContents(latestPage), latestPage.LastModified);
             }
+        }
+
+        private MarkdownPage ReloadIfNeeded(MarkdownPage markdownPage)
+        {
+            if (markdownPage == null) return null;
+            if (markdownPage.FilePath != null)
+            {
+                var latestPage = GetLatestPage(markdownPage);
+                if (latestPage.LastModified > markdownPage.LastModified)
+                {
+                    markdownPage.Reload(GetPageContents(latestPage), latestPage.LastModified);
+                }
+            }
+            return markdownPage;
         }
 
         private IVirtualFile GetLatestPage(MarkdownPage markdownPage)
@@ -345,9 +359,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         {
             foreach (var pageFilePath in pageFilePaths)
             {
-                var razprPage = GetContentPage(pageFilePath);
-                if (razprPage != null)
-                    return razprPage;
+                var markdownPage = GetContentPage(pageFilePath);
+                if (markdownPage != null)
+                    return markdownPage;
             }
             return null;
         }
