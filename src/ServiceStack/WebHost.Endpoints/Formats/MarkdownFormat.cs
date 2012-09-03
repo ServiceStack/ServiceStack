@@ -258,6 +258,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             if (markdownPage.FilePath != null)
             {
                 var latestPage = GetLatestPage(markdownPage);
+                if (latestPage == null) return markdownPage;
                 if (latestPage.LastModified > markdownPage.LastModified)
                 {
                     markdownPage.Reload(GetPageContents(latestPage), latestPage.LastModified);
