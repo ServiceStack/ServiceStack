@@ -10,6 +10,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.WebHost.Endpoints.Support;
 using ServiceStack.WebHost.Endpoints.Support.Markdown;
 
 namespace ServiceStack.WebHost.Endpoints.Formats
@@ -97,8 +98,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             this.MarkdownGlobalHelpers = appHost.Config.MarkdownGlobalHelpers ?? this.MarkdownGlobalHelpers;
 
             this.ReplaceTokens = appHost.Config.HtmlReplaceTokens ?? new Dictionary<string, string>();
-            if (!appHost.Config.WebHostUrl.IsNullOrEmpty() && this.ReplaceTokens.ContainsKey("~/"))
-                this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
+            var webHostUrl = appHost.Config.WebHostUrl;
+            if (!webHostUrl.IsNullOrEmpty())
+                this.ReplaceTokens["~/"] = webHostUrl.WithTrailingSlash();
 
             if (VirtualPathProvider == null)
                 VirtualPathProvider = AppHost.VirtualPathProvider;
@@ -121,6 +123,18 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
                 if (markdownPage == null)
                 {
+                    if (pathInfo.EndsWith(".md"))
+                    {
+                        return new RedirectHttpHandler {
+                            AbsoluteUrl = webHostUrl.IsNullOrEmpty()
+                                ? null
+                                : webHostUrl.CombineWith(pathInfo.WithoutExtension()),
+                            RelativeUrl = webHostUrl.IsNullOrEmpty()
+                                ? pathInfo.WithoutExtension()
+                                : null
+                        };
+                    }
+
                     if (catchAllPathsNotFound.Count > 1000) //prevent DDOS
                         catchAllPathsNotFound = new HashSet<string>();
 

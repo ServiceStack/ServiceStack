@@ -12,6 +12,7 @@ using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
+using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.Razor
 {
@@ -138,8 +139,9 @@ namespace ServiceStack.Razor
                 TemplateNamespaces.Add(ns);
 
             this.ReplaceTokens = appHost.Config.HtmlReplaceTokens ?? new Dictionary<string, string>();
-            if (!appHost.Config.WebHostUrl.IsNullOrEmpty())
-                this.ReplaceTokens["~/"] = appHost.Config.WebHostUrl.WithTrailingSlash();
+            var webHostUrl = appHost.Config.WebHostUrl;
+            if (!webHostUrl.IsNullOrEmpty())
+                this.ReplaceTokens["~/"] = webHostUrl.WithTrailingSlash();
 
             if (VirtualPathProvider == null)
                 VirtualPathProvider = AppHost.VirtualPathProvider;
@@ -164,6 +166,21 @@ namespace ServiceStack.Razor
 
                 if (razorPage == null)
                 {
+                    foreach(var entry in RazorExtensionBaseTypes)
+                    {
+                        if (pathInfo.EndsWith("." + entry.Key))
+                        {
+                            return new RedirectHttpHandler {
+                                AbsoluteUrl = webHostUrl.IsNullOrEmpty() 
+                                    ? null
+                                    : webHostUrl.CombineWith(pathInfo.WithoutExtension()),
+                                RelativeUrl = webHostUrl.IsNullOrEmpty()
+                                    ? pathInfo.WithoutExtension()
+                                    : null
+                            };
+                        }
+                    }
+
                     if (catchAllPathsNotFound.Count > 1000) //prevent DDOS
                         catchAllPathsNotFound = new HashSet<string>();
 
