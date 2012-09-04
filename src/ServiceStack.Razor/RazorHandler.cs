@@ -2,6 +2,7 @@ using System.Net;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 
 namespace ServiceStack.Razor
@@ -12,33 +13,35 @@ namespace ServiceStack.Razor
 		public ViewPageRef RazorPage { get; set; }
 
 		public string PathInfo { get; set; }
-		public string FilePath { get; set; }
 
-		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+	    public RazorHandler(string pathInfo)
+	    {
+	        PathInfo = pathInfo;
+	    }
+
+	    public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
             httpRes.ContentType = ContentType.Html;
+            if (RazorFormat == null)
+                RazorFormat = RazorFormat.Instance;
             
-            var contentPage = RazorPage;
-			if (contentPage == null)
-			{
-				var pageFilePath = this.FilePath.WithoutExtension();
-				contentPage = RazorFormat.GetContentPage(pageFilePath);
-			}
-			if (contentPage == null)
+            var contentPage = RazorPage ?? RazorFormat.FindByPathInfo(PathInfo);
+	        if (contentPage == null)
 			{
 				httpRes.StatusCode = (int)HttpStatusCode.NotFound;
+			    httpRes.EndHttpRequest();
 				return;
 			}
 
             if (RazorFormat.WatchForModifiedPages)
 			    RazorFormat.ReloadModifiedPageAndTemplates(contentPage);
 
-            //Add extensible way to control caching
+            //Add good caching support
             //if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))
             //    return;
 
-		    var modelType = RazorPage.GetRazorTemplate().ModelType;
-            var model = modelType == typeof(DynamicRequestObject) 
+            var modelType = RazorPage != null ? RazorPage.GetRazorTemplate().ModelType : null;
+            var model = modelType == null || modelType == typeof(DynamicRequestObject) 
                 ? null
                 : DeserializeHttpRequest(modelType, httpReq, httpReq.ContentType);
 

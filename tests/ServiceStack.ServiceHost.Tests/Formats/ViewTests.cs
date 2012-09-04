@@ -264,10 +264,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 		[Test]
 		public void Does_process_Markdown_pages()
 		{
-			var markdownHandler = new MarkdownHandler {
+            var markdownHandler = new MarkdownHandler("/AppData/NoTemplate/Static") {
 				MarkdownFormat = markdownFormat,
-				PathInfo = "/AppData/NoTemplate/Static.md",
-				FilePath = "~/AppData/NoTemplate/Static.md".MapProjectPath(),
 			};
 			var httpReq = new MockHttpRequest { QueryString = new NameValueCollection() };
 			var httpRes = new MockHttpResponse();

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace ServiceStack.WebHost.Endpoints.Support.Markdown
@@ -11,21 +11,23 @@ namespace ServiceStack.WebHost.Endpoints.Support.Markdown
 		public MarkdownPage MarkdownPage { get; set; }
 
 		public string PathInfo { get; set; }
-		public string FilePath { get; set; }
 
-		public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
+	    public MarkdownHandler(string pathInfo)
+	    {
+	        PathInfo = pathInfo;
+	    }
+
+	    public override void ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, string operationName)
 		{
-			var contentPage = MarkdownPage;
-			if (contentPage == null)
-			{
-				contentPage = MarkdownFormat.GetContentPage(
-                    this.FilePath.WithoutExtension(),
-                    PathInfo.TrimStart(MarkdownFormat.DirSeps).WithoutExtension());
-			}
-			if (contentPage == null)
+            if (MarkdownFormat == null)
+                MarkdownFormat = MarkdownFormat.Instance;
+
+			var contentPage = MarkdownPage ?? MarkdownFormat.FindByPathInfo(PathInfo);
+		    if (contentPage == null)
 			{
 				httpRes.StatusCode = (int) HttpStatusCode.NotFound;
-				return;
+                httpRes.EndHttpRequest();
+                return;
 			}
 
 			MarkdownFormat.ReloadModifiedPageAndTemplates(contentPage);

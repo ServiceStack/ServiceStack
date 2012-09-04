@@ -332,6 +332,9 @@ namespace ServiceStack.WebHost.Endpoints
 				var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
 				if (catchAllHandler != null) return catchAllHandler;
 
+                var fileExt = Path.GetExtension(filePath);
+                if (string.IsNullOrEmpty(fileExt)) return NotFoundHttpHandler;
+
 				return ShouldAllow(requestPath) ? StaticFileHandler : ForbiddenHttpHandler;
 			}
 
