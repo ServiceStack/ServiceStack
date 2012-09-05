@@ -133,6 +133,9 @@ namespace MarkdownSharp
     /// </summary>
     public class Markdown
     {
+        //Mono's RegEx is very limited and can't support avg-sized Markdown documents
+        public static bool UseMarkdownDeep = ServiceStack.Text.Env.IsMono || true; 
+
         private const string _version = "1.13";
 
         #region Constructors and Options
@@ -356,8 +359,7 @@ namespace MarkdownSharp
         {
             if (String.IsNullOrEmpty(text)) return "";
 
-			//Mono's RegEx is very limited and can't support avg-sized Markdown documents
-			if (ServiceStack.Text.Env.IsMono)
+            if (UseMarkdownDeep)
 			{
 				if (_markdownDeep == null)
 					_markdownDeep = new MarkdownDeep.Markdown();
