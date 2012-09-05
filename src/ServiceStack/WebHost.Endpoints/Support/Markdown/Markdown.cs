@@ -340,6 +340,8 @@ namespace MarkdownSharp
             get { return _version; }
         }
 
+		MarkdownDeep.Markdown _markdownDeep;
+
         /// <summary>
         /// Transforms the provided Markdown-formatted text to HTML;  
         /// see http://en.wikipedia.org/wiki/Markdown
@@ -353,6 +355,14 @@ namespace MarkdownSharp
         public string Transform(string text)
         {
             if (String.IsNullOrEmpty(text)) return "";
+
+			//Mono's RegEx is very limited and can't support avg-sized Markdown documents
+			if (ServiceStack.Text.Env.IsMono)
+			{
+				if (_markdownDeep == null)
+					_markdownDeep = new MarkdownDeep.Markdown();
+				return _markdownDeep.Transform(text);
+			}
 
             Setup();
 

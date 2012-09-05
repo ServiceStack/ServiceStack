@@ -73,9 +73,6 @@
     <Reference Include="System.Web.Razor">
       <HintPath>..\..\lib\System.Web.Razor.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Mvc">
-      <HintPath>..\..\lib\System.Web.Mvc.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compilation\CompilerServiceBase.cs" />

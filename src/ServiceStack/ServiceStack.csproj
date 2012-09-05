@@ -316,6 +316,19 @@
     <Compile Include="VirtualPath\VirtualPathExtension.cs" />
     <Compile Include="Html\IViewPage.cs" />
     <Compile Include="Html\TemplateProvider.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\Abbreviation.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\Block.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\BlockProcessor.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\HtmlTag.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\FootnoteReference.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\LinkDefinition.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\LinkInfo.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\MardownDeep.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\SpanFormatter.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\StringScanner.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\TableSpec.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\Token.cs" />
+    <Compile Include="WebHost.Endpoints\Support\MarkdownDeep\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Funq\Container.Adapter.cs" />
@@ -325,6 +338,7 @@
     </EmbeddedResource>
     <None Include="MiniProfiler\UI\includes.tmpl.orig" />
     <None Include="README.md" />
+    <None Include="WebHost.Endpoints\Support\.DS_Store" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
@@ -373,5 +387,8 @@
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="WebHost.Endpoints\Support\MarkdownDeep\" />
   </ItemGroup>
 </Project>
