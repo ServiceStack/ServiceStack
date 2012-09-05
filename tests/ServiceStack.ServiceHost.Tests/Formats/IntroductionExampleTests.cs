@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -49,9 +50,7 @@ Checkout [this product](/Product/Details/@productId)";
 
 			var expectedHtml = 
 @"<h1>Razor Example</h1>
-
 <h3>Hello Demis, the year is 2012</h3>
-
 <p>Checkout <a href=""/Product/Details/10"">this product</a></p>
 ".NormalizeNewLines();
 
@@ -166,8 +165,7 @@ We have products for you!
 Your Message: @message
 ";
 
-			var expectedHtml = @"
-<p>Your Message: Number is 1</p>
+			var expectedHtml = @"<p>Your Message: Number is 1</p>
 ".NormalizeNewLines();
 
 			var html = RenderToHtml(template, productArgs);
@@ -206,7 +204,7 @@ If the year is 2012 then print this
 multi-line text block and 
 the date: @DateTime.Now
 }
-";
+".NormalizeNewLines();
 
 			var expectedHtml = 
 @"<p>If the year is 2012 then print this 
@@ -216,8 +214,9 @@ the date: 02/06/2012 06:42:45</p>
 
 			var html = RenderToHtml(template, productArgs);
 
-			Console.WriteLine(html);
-			Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            html.Print();
+			Assert.That(html.Substring(0,html.Length-25),
+                Is.EqualTo(expectedHtml.Substring(0, html.Length - 25)));
 		}
 
 		[Test]

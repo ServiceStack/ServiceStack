@@ -319,44 +319,39 @@ Hello @Upper(Model.LastName), @Model.FirstName
 @Table(Model)
 ";
 
-			var expectedHtml = @"<h2>Welcome to Razor!</h2>
-
+            var expectedHtml = @"<h2>Welcome to Razor!</h2>
 <h2>Header Links!</h2>
-
 <ul>
 <li><a href=""http://google.com"">Google</a></li>
 <li><a href=""http://bing.com"">Bing</a></li>
 </ul>
-
 <p>Hello  BELLOT, Demis</p>
-
 <h3>Breadcrumbs</h3>
-
-Demis / Bellot
-<h3>Menus</h3>
-
+Demis / Bellot<h3>Menus</h3>
 <ul>
-<li>ServiceStack - http://www.servicestack.net
+<li>
+ServiceStack - http://www.servicestack.net
 <ul>
 <li>REST</li>
 <li>JSON</li>
 <li>XML</li>
-</ul></li>
-<li>AjaxStack - http://www.ajaxstack.com
+</ul>
+</li>
+<li>
+AjaxStack - http://www.ajaxstack.com
 <ul>
 <li>HTML5</li>
 <li>AJAX</li>
 <li>SPA</li>
-</ul></li>
 </ul>
-
+</li>
+</ul>
 <h3>HTML Table</h3>
-
 <table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
 <tbody>
 <tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
 </table>
-".Replace("\r\n", "\n");
+".NormalizeNewLines();
 
 
 			markdownFormat.MarkdownBaseType = typeof(CustomMarkdownViewBase);
@@ -388,12 +383,9 @@ Demis / Bellot
 @Html.LabelFor(m => m.FirstName) @Html.TextBoxFor(m => m.FirstName)
 ";
 
-			var expectedHtml = @"
-<h1>Generic View Page</h1>
-
+            var expectedHtml = @"<h1>Generic View Page</h1>
 <h2>Form fields</h2>
-
-<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />".Replace("\r\n", "\n");
+<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />".NormalizeNewLines();
 
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
@@ -421,19 +413,14 @@ Demis / Bellot
 @Table(Model)
 ";
 
-			var expectedHtml = @"
-<h1>Generic View Page</h1>
-
+            var expectedHtml = @"<h1>Generic View Page</h1>
 <h2>Form fields</h2>
-
-<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" />
-<h2>Person Table</h2>
-
+<label for=""FirstName"">FirstName</label> <input name=""FirstName"" type=""text"" value=""Demis"" /><h2>Person Table</h2>
 <table><caption>Demis's Links</caption><thead><tr><th>Name</th><th>Link</th></tr></thead>
 <tbody>
 <tr><td>ServiceStack</td><td>http://www.servicestack.net</td></tr><tr><td>AjaxStack</td><td>http://www.ajaxstack.com</td></tr></tbody>
 </table>
-".Replace("\r\n", "\n");
+".NormalizeNewLines();
 
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
@@ -454,16 +441,14 @@ Demis / Bellot
 			var template = @"# View Page with Custom Helper
 
 ## External Helper 
-<img src='path/to/img' class='inline-block' />
+![inline-img](path/to/img)
 @Ext.InlineBlock(Model.FirstName, ""first-name"")
 ";
 
-			var expectedHtml = @"<h1>View Page with Custom Helper</h1>
-
+            var expectedHtml = @"<h1>View Page with Custom Helper</h1>
 <h2>External Helper</h2>
-
-<p><img src='path/to/img' class='inline-block' />
- <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".Replace("\r\n", "\n");
+<p><img src=""path/to/img"" alt=""inline-img"" />
+ <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".NormalizeNewLines();
 
 
 			markdownFormat.MarkdownGlobalHelpers.Add("Ext", typeof(CustomMarkdownHelper));
@@ -486,17 +471,14 @@ Demis / Bellot
 # View Page with Custom Helper
 
 ## External Helper 
-<img src='path/to/img' class='inline-block' />
+![inline-img](path/to/img)
 @Ext.InlineBlock(Model.FirstName, ""first-name"")
 ";
 
-			var expectedHtml = @"
-<h1>View Page with Custom Helper</h1>
-
+			var expectedHtml = @"<h1>View Page with Custom Helper</h1>
 <h2>External Helper</h2>
-
-<p><img src='path/to/img' class='inline-block' />
- <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".Replace("\r\n", "\n");
+<p><img src=""path/to/img"" alt=""inline-img"" />
+ <div id=""first-name""><div class=""inner inline-block"">Demis</div></div>".NormalizeNewLines();
 
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
@@ -650,13 +632,10 @@ Plain text in a comment
 
 ### heading 3";
 
-			var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
-
+            var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
 <p>Hello Demis,</p>
-
-
 <h3>heading 3</h3>
-".Replace("\r\n", "\n");
+".NormalizeNewLines();
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Compile();
@@ -686,22 +665,16 @@ Hello @Model.FirstName, { -- unmatched, leave unescaped outside statement
 
 ### heading 3";
 
-			var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
-
+            var expectedHtml = @"<h1>Dynamic If Markdown Template</h1>
 <p>Hello Demis, { -- unmatched, leave unescaped outside statement</p>
-
 <p>{ -- inside matching braces, outside statement -- }</p>
-
 <ul>
 <li>Bellot</li>
 </ul>
-
 <p>{ -- inside matching braces, escape inside statement -- }</p>
-
 <p>{ -- unmatched</p>
-
 <h3>heading 3</h3>
-".Replace("\r\n", "\n");
+".NormalizeNewLines();
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicIfTpl", template);
 			dynamicPage.Compile();
@@ -746,43 +719,37 @@ Hello @Upper(lastName), @Model.FirstName
 @Menus
 
 ## Salutations
-@Salutations
-";
+@Salutations";
+
 			var expectedHtml = @"<h2>Welcome to Razor!</h2>
-
-
-
-
 <h2>Captured Sections</h2>
-
 <div id='breadcrumbs'><h3>Breadcrumbs</h3>
-
 <p>Demis / Bellot</p>
 </div>
-
 <p><h3>Menus</h3>
-
 <ul>
-<li>ServiceStack - http://www.servicestack.net
+<li>
+ServiceStack - http://www.servicestack.net
 <ul>
 <li>REST</li>
 <li>JSON</li>
 <li>XML</li>
-</ul></li>
-<li>AjaxStack - http://www.ajaxstack.com
+</ul>
+</li>
+<li>
+AjaxStack - http://www.ajaxstack.com
 <ul>
 <li>HTML5</li>
 <li>AJAX</li>
 <li>SPA</li>
-</ul></li>
+</ul>
+</li>
 </ul>
 </p>
-
 <h2>Salutations</h2>
-
 <p><p>Hello  BELLOT, Demis</p>
 </p>
-".Replace("\r\n", "\n");
+".NormalizeNewLines();
 
 			var dynamicPage = new MarkdownPage(markdownFormat, "/path/to/tpl", "DynamicModelTpl", template);
 			dynamicPage.Compile();
@@ -845,7 +812,7 @@ Hello @Upper(lastName), @Model.FirstName,
 </body>
 </html>";
 
-			var expectedHtml = @"<!doctype html>
+            var expectedHtml = @"<!doctype html>
 <html lang=""en-us"">
 <head>
     <title>Bellot page</title>
@@ -854,20 +821,23 @@ Hello @Upper(lastName), @Model.FirstName,
 
     <header>
         <h3>Menus</h3>
-
 <ul>
-<li>ServiceStack - http://www.servicestack.net
+<li>
+ServiceStack - http://www.servicestack.net
 <ul>
 <li>REST</li>
 <li>JSON</li>
 <li>XML</li>
-</ul></li>
-<li>AjaxStack - http://www.ajaxstack.com
+</ul>
+</li>
+<li>
+AjaxStack - http://www.ajaxstack.com
 <ul>
 <li>HTML5</li>
 <li>AJAX</li>
 <li>SPA</li>
-</ul></li>
+</ul>
+</li>
 </ul>
 
     </header>
@@ -875,22 +845,17 @@ Hello @Upper(lastName), @Model.FirstName,
     <h1>Website Template</h1>
 
     <div id=""content""><h2>Welcome to Razor!</h2>
-
-
 <p>Hello  BELLOT, Demis,</p>
-
-
 </div>
 
     <footer>
         <h3>Breadcrumbs</h3>
-
 <p>Demis / Bellot</p>
 
     </footer>
 
 </body>
-</html>".Replace("\r\n", "\n");
+</html>".NormalizeNewLines();
 
             markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);
 
@@ -966,11 +931,7 @@ paragraph";
     <h1>Website Template</h1>
 
     <div id=""content""><h1>Static Markdown Template</h1>
-
-
-
 <h3>heading 3</h3>
-
 <p>paragraph</p>
 </div>
 

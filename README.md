@@ -259,13 +259,15 @@ Similar Open source .NET projects for developing or accessing web services inclu
 ServiceStack includes source code of the great libraries below for some of its core functionality. 
 Each library is released under its respective licence:
 
-  - [Mono](https://github.com/mono/mono) [(Licence)](https://github.com/mono/mono/blob/master/LICENSE)
-  - [Funq IOC](http://funq.codeplex.com) [(Licence)](http://funq.codeplex.com/license)
-  - [Fluent Validation](http://fluentvalidation.codeplex.com) [(Licence)](http://fluentvalidation.codeplex.com/license)
-  - [Mini Profiler](http://code.google.com/p/mvc-mini-profiler/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
-  - [Dapper](http://code.google.com/p/dapper-dot-net/) [(Licence)](http://www.apache.org/licenses/LICENSE-2.0)
-  - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(Licence)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
-  
+  - [Mono](https://github.com/mono/mono) [(License)](https://github.com/mono/mono/blob/master/LICENSE)
+  - [Funq IOC](http://funq.codeplex.com) [(License)](http://funq.codeplex.com/license)
+  - [Fluent Validation](http://fluentvalidation.codeplex.com) [(License)](http://fluentvalidation.codeplex.com/license)
+  - [Mini Profiler](http://code.google.com/p/mvc-mini-profiler/) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [Dapper](http://code.google.com/p/dapper-dot-net/) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(License)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
+  - [MarkdownSharp](http://code.google.com/p/markdownsharp/) [(License)](http://opensource.org/licenses/mit-license.php)
+  - [MarkdownDeep](https://github.com/toptensoftware/markdowndeep) [(License)](http://www.toptensoftware.com/markdowndeep/license)
+
 ## Sponsors
 
 ![JetBrains dotTrace](http://www.jetbrains.com/profiler/features/dt/dt1/dt210x60_white.gif)

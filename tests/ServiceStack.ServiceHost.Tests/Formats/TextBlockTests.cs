@@ -182,13 +182,9 @@ Text".NormalizeNewLines();
 
 			var expectedHtml =
 			@"<h4>Showing Results 1 - 5</h4>
-
 <div id=""searchresults"">
-
 <h3>Markdown &gt; <a href=""http://path.com/to/about"">About Docs</a></h3>
-
 </div>
-
 <p>Text</p>
 ".NormalizeNewLines();
 

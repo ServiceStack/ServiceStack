@@ -75,7 +75,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         <div id=""body"">
             <!--@Body-->
         </div>
-    
     </body>
 </html>".NormalizeNewLines();
 
@@ -91,7 +90,7 @@ comes from ^^^websiteTemplate.
 
 And obviously I can have code in here too. Here is the
 current date/year: @DateTime.Now.Year
-";
+".NormalizeNewLines();
 
 			var expectedHtml = @"<!DOCTYPE html>
 <html>
@@ -105,35 +104,16 @@ current date/year: @DateTime.Now.Year
             <a href=""/About"">About</a>
         </div>
         
-        <div id=""left-menu"">
-            <ul>
-<li>About Item 1</li>
-<li>About Item 2</li>
-</ul>
-
-        </div>
-        
         <div id=""body"">
-            
-<h1>About this Site</h1>
-
-<p>This is some content that will make up the ""about"" 
+            <h1>About this Site</h1>
+<p>This is some content that will make up the &quot;about&quot; 
 page of our web-site. We'll use this in conjunction
 with a layout template. The content you are seeing here
 comes from ^^^websiteTemplate.</p>
-
 <p>And obviously I can have code in here too. Here is the
 current date/year: 2012</p>
 
-
-
         </div>
-        
-        <div id=""footer"">
-            <p>This is my custom footer for Home</p>
-
-        </div>
-    
     </body>
 </html>".NormalizeNewLines();
 
@@ -203,7 +183,7 @@ current date/year: @DateTime.Now.Year
 @section Footer {
 This is my custom footer for Home
 }
-";
+".NormalizeNewLines();
 
 			var expectedHtml = @"<!DOCTYPE html>
 <html>
@@ -226,18 +206,13 @@ This is my custom footer for Home
         </div>
         
         <div id=""body"">
-            
-<h1>About this Site</h1>
-
-<p>This is some content that will make up the ""about"" 
+            <h1>About this Site</h1>
+<p>This is some content that will make up the &quot;about&quot; 
 page of our web-site. We'll use this in conjunction
 with a layout template. The content you are seeing here
 comes from ^^^websiteTemplate.</p>
-
 <p>And obviously I can have code in here too. Here is the
 current date/year: 2012</p>
-
-
 
         </div>
         
@@ -268,25 +243,22 @@ current date/year: 2012</p>
 @"@model ServiceStack.ServiceHost.Tests.Formats.Product
 <fieldset>
     <legend>Edit Product</legend>
-    
     <div>
         @Html.LabelFor(m => m.ProductID)
     </div>
     <div>
         @Html.TextBoxFor(m => m.ProductID)
     </div>
-</fieldset>";
+</fieldset>".NormalizeNewLines();
 
-			var expectedHtml = @"
-<fieldset>
+			var expectedHtml = 
+@"<fieldset>
     <legend>Edit Product</legend>
-
     <div>
  <label for=""ProductID"">ProductID</label>    </div>
     <div>
  <input name=""ProductID"" type=""text"" value=""10"" />    </div>
-</fieldset>
-".NormalizeNewLines();
+</fieldset>".NormalizeNewLines();
 
 			var product = new Product {ProductID = 10};
 			var html = RenderToHtml(pageTemplate, product);
@@ -305,10 +277,10 @@ current date/year: 2012</p>
 <fieldset>
     <legend>All Products</legend>
     @Prod.ProductTable(Model)
-</fieldset>";
+</fieldset>".NormalizeNewLines();
 
-			var expectedHtml = @"
-<fieldset>
+			var expectedHtml = 
+@"<fieldset>
     <legend>All Products</legend>
  <table><thead><tr><th>Id</th><th>Name</th><th>Price</th></tr></thead><tbody>
 <tr><th>0</th><th>Pen</th><th>1.99</th></tr>
@@ -316,8 +288,7 @@ current date/year: 2012</p>
 <tr><th>0</th><th>Book</th><th>14.99</th></tr>
 <tr><th>0</th><th>DVD</th><th>11.99</th></tr>
 </tbody></table>
-</fieldset>
-".NormalizeNewLines();
+</fieldset>".NormalizeNewLines();
 
 			var products = new List<Product> {
 				new Product("Pen", 1.99m),
@@ -341,15 +312,14 @@ current date/year: 2012</p>
 <fieldset>
     <legend>All Products</legend>
     @Field(""Name"", Model.Name)
-</fieldset>";
+</fieldset>".NormalizeNewLines();
 
-			var expectedHtml = @"
-<fieldset>
+			var expectedHtml = 
+@"<fieldset>
     <legend>All Products</legend>
  <label for='Name'>Name</label>
 <input name='Name' value='Pen'/>
-</fieldset>
-".NormalizeNewLines();
+</fieldset>".NormalizeNewLines();
 
 			var html = RenderToHtml(pageTemplate, new Product("Pen", 1.99m));
 
