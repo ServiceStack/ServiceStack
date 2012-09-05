@@ -405,6 +405,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			get { return EndpointHost.Config; }
 		}
 
+        ///TODO: plugin added with .Add method after host initialization won't be configured. Each plugin should have state so we can invoke Register method if host was already started.  
 		public List<IPlugin> Plugins
 		{
 			get { return EndpointHost.Plugins; }
