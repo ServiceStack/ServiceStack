@@ -5,7 +5,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 {
-	[RestService("/customformdata")]
+	[Route("/customformdata")]
 	[DataContract]
 	public class CustomFormData {}
 

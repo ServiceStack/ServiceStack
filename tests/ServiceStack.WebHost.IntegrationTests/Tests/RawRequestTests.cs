@@ -11,7 +11,7 @@ using ServiceStack.WebHost.IntegrationTests.Services;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
-	[RestService("/rawrequest")]
+	[Route("/rawrequest")]
 	public class RawRequest : IRequiresRequestStream
 	{
 		public Stream RequestStream { get; set; }

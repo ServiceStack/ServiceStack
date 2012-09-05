@@ -11,8 +11,8 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
 	[DataContract]
-	[RestService("/fileuploads/{RelativePath*}")]
-	[RestService("/fileuploads", HttpMethods.Post)]
+	[Route("/fileuploads/{RelativePath*}")]
+	[Route("/fileuploads", HttpMethods.Post)]
 	public class FileUpload
 	{
 		[DataMember]

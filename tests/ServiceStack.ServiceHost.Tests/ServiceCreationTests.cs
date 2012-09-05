@@ -17,7 +17,7 @@ using ServiceStack.CacheAccess.Providers;
 
 namespace ServiceStack.ServiceHost.Tests
 {
-	[RestService("/notsingleton")]
+	[Route("/notsingleton")]
 	public class ServiceCreation
 	{
 		public bool RequestFilterExecuted { get; set; }

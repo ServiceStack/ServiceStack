@@ -9,7 +9,7 @@ using ServiceStack.ServiceHost;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-    [RestService("/HelloImage")]
+    [Route("/HelloImage")]
     public class HelloImage {}
 
     public class HelloImageService : IService<HelloImage>
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
     }
 
-    [RestService("/HelloImage2")]
+    [Route("/HelloImage2")]
     public class HelloImage2 {}
 
     public class HelloImage2Service : IService<HelloImage2>
@@ -52,7 +52,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
         }
     }
 
-    [RestService("/HelloImage3")]
+    [Route("/HelloImage3")]
     public class HelloImage3 {}
 
     //Your own Custom Result, writes directly to response stream

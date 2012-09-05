@@ -19,11 +19,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 		{
 			try
 			{
-				using (var dbConn = connectionFactory.OpenDbConnection())
-				using (var dbCmd = dbConn.CreateCommand())
+                using (var db = connectionFactory.OpenDbConnection())
 				{
-					dbCmd.CreateTable<RestMovie>(true);
-					dbCmd.SaveAll(Top5Movies);
+					db.DropAndCreateTable<RestMovie>();
+					db.SaveAll(Top5Movies);
 				}
 			}
 			catch (Exception)

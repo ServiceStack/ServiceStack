@@ -8,8 +8,8 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
-	[RestService("/customers")]
-	[RestService("/customers/{Id}")]
+	[Route("/customers")]
+	[Route("/customers/{Id}")]
 	public class Customers
 	{
 		public int Id { get; set; }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ServiceStack.Common.Extensions;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
@@ -91,6 +90,51 @@ namespace ServiceStack.Common.Web
                 default:
                     throw new NotSupportedException("ContentType not supported: " + contentType);
             }
+        }
+
+        public byte[] SerializeToBytes(IRequestContext requestContext, object response)
+        {
+            var contentType = requestContext.ResponseContentType;
+
+            StreamSerializerDelegate responseStreamWriter;
+            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
+                this.ContentTypeSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseStreamWriter))
+            {
+                using (var ms = new MemoryStream())
+                {
+                    responseStreamWriter(requestContext, response, ms);
+                    ms.Position = 0;
+                    return ms.ToArray();
+                }
+            }
+
+            ResponseSerializerDelegate responseWriter;
+            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
+                this.ContentTypeResponseSerializers.TryGetValue(ContentType.GetRealContentType(contentType), out responseWriter))
+            {
+                using (var ms = new MemoryStream())
+                {
+                    var httpRes = new HttpResponseStreamWrapper(ms);
+                    responseWriter(requestContext, response, httpRes);
+                    ms.Position = 0;
+                    return ms.ToArray();
+                }
+            }
+
+            var contentTypeAttr = ContentType.GetEndpointAttributes(contentType);
+            switch (contentTypeAttr)
+            {
+                case EndpointAttributes.Xml:
+                    return XmlSerializer.SerializeToString(response).ToUtf8Bytes();
+
+                case EndpointAttributes.Json:
+                    return JsonDataContractSerializer.Instance.SerializeToString(response).ToUtf8Bytes();
+
+                case EndpointAttributes.Jsv:
+                    return TypeSerializer.SerializeToString(response).ToUtf8Bytes();
+            }
+
+            throw new NotSupportedException("ContentType not supported: " + contentType);
         }
 
         public string SerializeToString(IRequestContext requestContext, object response)

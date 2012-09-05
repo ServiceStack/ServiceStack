@@ -10,9 +10,9 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace DeliveryService.Model.Operations
 {
 	[Description("POST the route information based on the Application Token associated to a route and Associate ID")]
-	[RestService("/RouteInfo", "POST")]
-	[RestService("/RouteInfo/{AppToken}")]
-	[RestService("/RouteInfo/{AppToken}/{HasProduct}")]
+	[Route("/RouteInfo", "POST")]
+	[Route("/RouteInfo/{AppToken}")]
+	[Route("/RouteInfo/{AppToken}/{HasProduct}")]
 	[DataContract]
 	public class RouteInfo
 	{

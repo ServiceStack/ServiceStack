@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ServiceStack.ServiceHost;
 using ServiceStack.Common.Web;
 using ServiceStack.Common.Extensions;
@@ -67,41 +65,52 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			cacheClient.Set(cacheKey, responseDto, expireCacheIn);
 
-			string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(context, responseDto);
+            if (!context.ResponseContentType.IsBinary())
+            {
+                string serializedDto = EndpointHost.ContentTypeFilter.SerializeToString(context, responseDto);
 
-			string jsonp = null, modifiers = null;
-			if (context.ResponseContentType == ContentType.Json)
-			{
-				jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
-				if (jsonp != null)
-				{
-					modifiers = ".jsonp," + jsonp.SafeVarName();
-					serializedDto = jsonp + "(" + serializedDto + ")";
+                string modifiers = null;
+                if (context.ResponseContentType.MatchesContentType(ContentType.Json))
+                {
+                    var jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
+                    if (jsonp != null)
+                    {
+                        modifiers = ".jsonp," + jsonp.SafeVarName();
+                        serializedDto = jsonp + "(" + serializedDto + ")";
 
-					//Add a default expire timespan for jsonp requests,
-					//because they aren't cleared when calling ClearCaches()
-					if (expireCacheIn == null)
-						expireCacheIn = EndpointHost.Config.DefaultJsonpCacheExpiration;
-				}
-			}
+                        //Add a default expire timespan for jsonp requests,
+                        //because they aren't cleared when calling ClearCaches()
+                        if (expireCacheIn == null)
+                            expireCacheIn = EndpointHost.Config.DefaultJsonpCacheExpiration;
+                    }
+                }
 
-			var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
-			cacheClient.Set<string>(cacheKeySerialized, serializedDto, expireCacheIn);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
 
-			bool doCompression = context.CompressionType != null;
-			if (doCompression)
-			{
-				var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, context.CompressionType);
+                bool doCompression = context.CompressionType != null;
+                if (doCompression)
+                {
+                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, context.CompressionType);
 
-				byte[] compressedSerializedDto = ServiceStack.Common.StreamExtensions.Compress(serializedDto, context.CompressionType);
-				cacheClient.Set<byte[]>(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
+                    byte[] compressedSerializedDto = Common.StreamExtensions.Compress(serializedDto, context.CompressionType);
+                    cacheClient.Set(cacheKeySerializedZip, compressedSerializedDto, expireCacheIn);
 
-				return (compressedSerializedDto != null)
-					? new CompressedResult(compressedSerializedDto, context.CompressionType, context.ResponseContentType)
-					: null;
-			}
+                    return (compressedSerializedDto != null)
+                        ? new CompressedResult(compressedSerializedDto, context.CompressionType, context.ResponseContentType)
+                        : null;
+                }
 
-			return serializedDto;
+                return serializedDto;
+            }
+            else
+            {
+                string modifiers = null;
+                byte[] serializedDto = EndpointHost.ContentTypeFilter.SerializeToBytes(context, responseDto);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                cacheClient.Set(cacheKeySerialized, serializedDto, expireCacheIn);
+                return serializedDto;
+            }
 		}
 
 		public static void ClearCaches(this ICacheClient cacheClient, params string[] cacheKeys)

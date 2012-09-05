@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [RestService("/attributefiltered")]
+    [Route("/attributefiltered")]
     [FilterTest]
     [ContextualFilterTest(ApplyTo.Delete | ApplyTo.Put)]
     public class AttributeFiltered

@@ -127,8 +127,10 @@
     <Compile Include="AsyncServiceClientTests.cs" />
     <Compile Include="AttributeFiltersTest.cs" />
     <Compile Include="AuthTests.cs" />
+    <Compile Include="CachedServiceTests.cs" />
     <Compile Include="CompressionTests.cs" />
     <Compile Include="CorsFeatureTest.cs" />
+    <Compile Include="IntegrationTests\CachedMoviesService.cs" />
     <Compile Include="IntegrationTests\ErrorRestTests.cs" />
     <Compile Include="ProtoBufServiceTests.cs" />
     <Compile Include="Support\Operations\CustomRequestBinder.cs" />

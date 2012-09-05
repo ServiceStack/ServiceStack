@@ -17,8 +17,8 @@ using ServiceStack.WebHost.Endpoints.Tests.Support;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [RestService("/uservalidation")]
-	[RestService("/uservalidation/{Id}")]
+    [Route("/uservalidation")]
+	[Route("/uservalidation/{Id}")]
     public class UserValidation
     {
         public string FirstName { get; set; }

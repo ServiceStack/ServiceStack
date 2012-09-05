@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
 	[DataContract]
 	[Description("Resets the database back to the original Top 5 movies.")]
-	[RestService("/reset-movies")]
+	[Route("/reset-movies")]
 	public class ResetMovies { }
 
 	[DataContract]

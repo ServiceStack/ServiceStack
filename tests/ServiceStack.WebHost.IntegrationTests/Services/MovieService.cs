@@ -13,8 +13,8 @@ using ServiceStack.Text;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 
-	[RestService("/movies", "POST,PUT,PATCH")]
-	[RestService("/movies/{Id}")]
+	[Route("/movies", "POST,PUT,PATCH")]
+	[Route("/movies/{Id}")]
 	[DataContract]
 	public class Movie
 	{
@@ -23,29 +23,29 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			this.Genres = new List<string>();
 		}
 
-		[DataMember]
+        [DataMember(Order = 1)]
 		[AutoIncrement]
 		public int Id { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 2)]
 		public string ImdbId { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 3)]
 		public string Title { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 4)]
 		public decimal Rating { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 5)]
 		public string Director { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 6)]
 		public DateTime ReleaseDate { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 7)]
 		public string TagLine { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 8)]
 		public List<string> Genres { get; set; }
 
 		#region AutoGen ReSharper code, only required by tests

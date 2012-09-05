@@ -10,10 +10,10 @@ using ServiceStack.ServiceInterface.ServiceModel;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
 	[DataContract]
-	[RestService("/errors")]
-	[RestService("/errors/{Type}")]
-	[RestService("/errors/{Type}/{StatusCode}")]
-	[RestService("/errors/{Type}/{StatusCode}/{Message}")]
+	[Route("/errors")]
+	[Route("/errors/{Type}")]
+	[Route("/errors/{Type}/{StatusCode}")]
+	[Route("/errors/{Type}/{StatusCode}/{Message}")]
 	public class HttpError
 	{
 		[DataMember]

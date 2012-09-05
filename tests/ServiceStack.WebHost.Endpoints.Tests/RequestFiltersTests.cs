@@ -19,7 +19,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
 	[DataContract]
-	[RestService("/secure")]
+	[Route("/secure")]
 	public class Secure
 	{
 		[DataMember]
@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	}
 
 	[DataContract]
-	[RestService("/insecure")]
+	[Route("/insecure")]
 	public class Insecure
 	{
 		[DataMember]

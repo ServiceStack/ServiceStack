@@ -4,9 +4,11 @@ namespace ServiceStack.ServiceHost
 {
 	public interface IContentTypeWriter
 	{
-		string SerializeToString(IRequestContext requestContext, object response);
+        byte[] SerializeToBytes(IRequestContext requestContext, object response);
 
-		void SerializeToStream(IRequestContext requestContext, object response, Stream toStream);
+        string SerializeToString(IRequestContext requestContext, object response);
+
+        void SerializeToStream(IRequestContext requestContext, object response, Stream toStream);
 		
 		void SerializeToResponse(IRequestContext requestContext, object response, IHttpResponse httpRes);
 

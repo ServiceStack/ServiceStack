@@ -133,6 +133,9 @@ namespace MarkdownSharp
     /// </summary>
     public class Markdown
     {
+        //Mono's RegEx is very limited and can't support avg-sized Markdown documents
+        public static bool UseMarkdownDeep = ServiceStack.Text.Env.IsMono || true; 
+
         private const string _version = "1.13";
 
         #region Constructors and Options
@@ -340,6 +343,8 @@ namespace MarkdownSharp
             get { return _version; }
         }
 
+		MarkdownDeep.Markdown _markdownDeep;
+
         /// <summary>
         /// Transforms the provided Markdown-formatted text to HTML;  
         /// see http://en.wikipedia.org/wiki/Markdown
@@ -353,6 +358,13 @@ namespace MarkdownSharp
         public string Transform(string text)
         {
             if (String.IsNullOrEmpty(text)) return "";
+
+            if (UseMarkdownDeep)
+			{
+				if (_markdownDeep == null)
+					_markdownDeep = new MarkdownDeep.Markdown();
+				return _markdownDeep.Transform(text);
+			}
 
             Setup();
 

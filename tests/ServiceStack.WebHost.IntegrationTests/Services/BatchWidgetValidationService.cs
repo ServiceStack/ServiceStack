@@ -5,7 +5,7 @@ using ServiceStack.ServiceHost;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
-	[RestService("/BatchWidgetValidation")]
+	[Route("/BatchWidgetValidation")]
 	public class BatchWidgetValidationRequest
 	{
 		[DataMember]
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	}
 
 	[DataContract]
-	[RestService("/WidgetValidation")]
+	[Route("/WidgetValidation")]
 	public class WidgetValidationRequest
 	{
 		[DataMember]

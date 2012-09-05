@@ -6,8 +6,8 @@ using ServiceStack.ServiceInterface;
 namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 	[DataContract]
-	[RestService("/wildcard/{Id}/{Path}/{Action}")]
-	[RestService("/wildcard/{Id}/{RemainingPath*}")]
+	[Route("/wildcard/{Id}/{Path}/{Action}")]
+	[Route("/wildcard/{Id}/{RemainingPath*}")]
 	public class WildCardRequest
 	{
 		[DataMember]

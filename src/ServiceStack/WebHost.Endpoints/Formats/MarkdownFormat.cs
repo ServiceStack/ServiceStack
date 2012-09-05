@@ -113,10 +113,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 if (catchAllPathsNotFound.Contains(pathInfo))
                     return null;
 
-                var normalizedPathInfo = pathInfo.IsNullOrEmpty() ? DefaultPage : pathInfo.TrimStart(DirSeps);
-                markdownPage = GetContentPage(
-                    normalizedPathInfo,
-                    normalizedPathInfo.CombineWith(DefaultPage));
+                markdownPage = FindByPathInfo(pathInfo);
 
                 if (WatchForModifiedPages)
                     ReloadModifiedPageAndTemplates(markdownPage);
@@ -143,12 +140,10 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 					return null;
                 }
                 
-                return new MarkdownHandler {
+                return new MarkdownHandler(pathInfo) {
                     MarkdownFormat = this,
                     MarkdownPage = markdownPage,
-                    RequestName = "MarkdownPage",
-                    PathInfo = pathInfo,
-                    FilePath = filePath
+                    RequestName = "MarkdownPage"
                 };
             });
 
@@ -156,6 +151,15 @@ namespace ServiceStack.WebHost.Endpoints.Formats
             appHost.ContentTypeFilters.Register(ContentType.PlainText, SerializeToStream, null);
             appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.MarkdownText.ToContentFormat());
             appHost.Config.IgnoreFormatsInMetadata.Add(ContentType.PlainText.ToContentFormat());
+        }
+
+        public MarkdownPage FindByPathInfo(string pathInfo)
+        {
+            var normalizedPathInfo = pathInfo.IsNullOrEmpty() ? DefaultPage : pathInfo.TrimStart(DirSeps);
+            var markdownPage = GetContentPage(
+                normalizedPathInfo,
+                normalizedPathInfo.CombineWith(DefaultPage));
+            return markdownPage;
         }
 
         public bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)

@@ -121,22 +121,14 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         </div>
         
         <div id=""body"">
-            
-
-<h4>Showing Results 1 - 5</h4>
-
+            <h4>Showing Results 1 - 5</h4>
 <div id=""searchresults"">
 <h3>Markdown &gt; <a href=""http://path.com/to/about"">About Docs</a></h3>
-
 <h3>Markdown &gt; <a href=""http://path.com/to/markdown-features"">Markdown Features</a></h3>
-
 <h3>Markdown &gt; <a href=""http://path.com/to/markdown-razor"">Markdown Razor</a></h3>
-
 <h3>Framework &gt; <a href=""http://path.com/to/home"">Home</a></h3>
-
 <h3>Framework &gt; <a href=""http://path.com/to/overview"">Overview</a></h3>
 </div>
-
         </div>
     </body>
 </html>".NormalizeNewLines();
@@ -147,7 +139,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
 			Console.WriteLine(html);
 
-			Assert.That(html, Is.EqualTo(expectedHtml));
+			Assert.That(html.NormalizeNewLines(), Is.EqualTo(expectedHtml));
 		}
 
 
@@ -194,21 +186,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         </div>
         
         <div id=""body"">
-            
-<h4>Showing Results 1 - 5</h4>
-
+            <h4>Showing Results 1 - 5</h4>
 <div id=""searchresults"">
-
 <h3>Markdown &gt; <a href=""http://path.com/to/about"">About Docs</a></h3>
-
 <h3>Markdown &gt; <a href=""http://path.com/to/markdown-features"">Markdown Features</a></h3>
-
 <h3>Markdown &gt; <a href=""http://path.com/to/markdown-razor"">Markdown Razor</a></h3>
-
 <h3>Framework &gt; <a href=""http://path.com/to/home"">Home</a></h3>
-
 <h3>Framework &gt; <a href=""http://path.com/to/overview"">Overview</a></h3>
-
 </div>
 
         </div>

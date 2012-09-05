@@ -4,7 +4,7 @@ using ServiceStack.ServiceInterface.ServiceModel;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Operations
 {
-	[RestService("/customrequestbinder")]
+	[Route("/customrequestbinder")]
 	public class CustomRequestBinder
 	{
 		public bool IsFromBinder { get; set; }

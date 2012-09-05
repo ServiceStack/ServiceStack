@@ -9,8 +9,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 
 	[DataContract]
-	[RestService("/cached/movies", "GET")]
-	[RestService("/cached/movies/genres/{Genre}")]
+	[Route("/cached/movies", "GET")]
+	[Route("/cached/movies/genres/{Genre}")]
 	public class CachedMovies
 	{
 		[DataMember]

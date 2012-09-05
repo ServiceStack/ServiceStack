@@ -18,6 +18,8 @@ namespace ServiceStack.ServiceClient.Web
         public string StatusDescription { get; set; }
 
         public object ResponseDto { get; set; }
+        
+        public string ResponseBody { get; set; }
 
         private string errorCode;
 

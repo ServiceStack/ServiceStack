@@ -9,8 +9,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 {
 
 	[DataContract]
-	[RestService("/movies", "GET, OPTIONS")]
-	[RestService("/movies/genres/{Genre}")]
+	[Route("/movies", "GET, OPTIONS")]
+	[Route("/movies/genres/{Genre}")]
 	public class Movies
 	{
 		[DataMember]
@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 	[DataContract]
 	public class MoviesResponse
 	{
-		[DataMember]
+		[DataMember(Order = 1)]
 		public List<Movie> Movies { get; set; }
 	}
 

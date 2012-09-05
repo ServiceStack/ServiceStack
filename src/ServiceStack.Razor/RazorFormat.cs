@@ -156,10 +156,7 @@ namespace ServiceStack.Razor
                 if (catchAllPathsNotFound.Contains(pathInfo))
                     return null;
 
-                var normalizedPathInfo = pathInfo.IsNullOrEmpty() ? DefaultPage : pathInfo.TrimStart(DirSeps);
-                razorPage = GetContentPage(
-                    normalizedPathInfo,
-                    normalizedPathInfo.CombineWith(DefaultPage));
+                razorPage = FindByPathInfo(pathInfo);
 
                 if (WatchForModifiedPages)
                     ReloadModifiedPageAndTemplates(razorPage);
@@ -189,15 +186,23 @@ namespace ServiceStack.Razor
                     return null;
                 }
 
-                return new RazorHandler {
+                return new RazorHandler(pathInfo) {
                     RazorFormat = this,
                     RazorPage = razorPage,
                     RequestName = "RazorPage",
-                    PathInfo = pathInfo,
-                    FilePath = filePath
                 };
             });
         }
+
+        public ViewPageRef FindByPathInfo(string pathInfo)
+        {
+            var normalizedPathInfo = pathInfo.IsNullOrEmpty() ? DefaultPage : pathInfo.TrimStart(DirSeps);
+            var razorPage = GetContentPage(
+                normalizedPathInfo,
+                normalizedPathInfo.CombineWith(DefaultPage));
+            return razorPage;
+        }
+
         public bool ProcessRequest(IHttpRequest httpReq, IHttpResponse httpRes, object dto)
         {
             ViewPageRef razorPage;

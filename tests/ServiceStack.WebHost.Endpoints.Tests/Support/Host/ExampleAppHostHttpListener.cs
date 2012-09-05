@@ -12,6 +12,7 @@ using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Plugins.ProtoBuf;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface;
 using ServiceStack.ServiceInterface.ServiceModel;
@@ -22,7 +23,7 @@ using ServiceStack.WebHost.Endpoints.Tests.Support.Operations;
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 {
 
-	[RestService("/factorial/{ForNumber}")]
+	[Route("/factorial/{ForNumber}")]
 	[DataContract]
 	public class GetFactorial
 	{
@@ -71,8 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-	[RestService("/movies", "POST,PUT")]
-	[RestService("/movies/{Id}")]
+	[Route("/movies", "POST,PUT")]
+	[Route("/movies/{Id}")]
 	[DataContract]
 	public class Movie
 	{
@@ -81,29 +82,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			this.Genres = new List<string>();
 		}
 
-		[DataMember]
+        [DataMember(Order = 1)]
 		[AutoIncrement]
 		public int Id { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 2)]
 		public string ImdbId { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 3)]
 		public string Title { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 4)]
 		public decimal Rating { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 5)]
 		public string Director { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 6)]
 		public DateTime ReleaseDate { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 7)]
 		public string TagLine { get; set; }
 
-		[DataMember]
+        [DataMember(Order = 8)]
 		public List<string> Genres { get; set; }
 
 		#region AutoGen ReSharper code, only required by tests
@@ -199,8 +200,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 
 	[DataContract]
-	[RestService("/movies", "GET")]
-	[RestService("/movies/genres/{Genre}")]
+	[Route("/movies", "GET")]
+    [Route("/movies/genres/{Genre}")]
 	public class Movies
 	{
 		[DataMember]
@@ -218,7 +219,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			Movies = new List<Movie>();
 		}
 
-		[DataMember]
+		[DataMember(Order = 1)]
 		public List<Movie> Movies { get; set; }
 	}
 
@@ -281,7 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 
 
 	[DataContract]
-	[RestService("/reset-movies")]
+	[Route("/reset-movies")]
 	public class ResetMovies { }
 
 	[DataContract]
@@ -342,7 +343,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	}
 
 
-    [RestService("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
+    [Route("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
     public class InboxPostResponseRequest
     {
         public int Id { get; set; }
@@ -377,7 +378,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
         }
     }
 
-    [RestService("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
+    [Route("inbox/{Id}/responses", "GET, PUT, OPTIONS")]
     public class InboxPost
     {
         public bool Throw { get; set; }
@@ -396,7 +397,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
     }
 
     [DataContract]
-    [RestService("/long_running")]
+    [Route("/long_running")]
     public class LongRunning { }
 
     public class LongRunningService : ServiceBase<LongRunning>
@@ -474,6 +475,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 			{
 				ConfigureFilter(container);
 			}
+
+            Plugins.Add(new ProtoBufFormat());
 		}
 	}
 

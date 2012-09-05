@@ -1,5 +1,6 @@
 using System;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Web
 {
@@ -46,6 +47,10 @@ namespace ServiceStack.Common.Web
         public const string MarkdownText = "text/markdown";
 
         public const string ProtoBuf = "application/x-protobuf";
+
+        public const string MsgPack = "application/x-msgpack";
+
+        public const string Bson = "application/bson";
 
         public const string Binary = "application/octet-stream";
 
@@ -94,6 +99,35 @@ namespace ServiceStack.Common.Web
             return contentType == null
                        ? null
                        : contentType.Split(';')[0].Trim();
+        }
+
+        public static bool MatchesContentType(this string contentType, string matchesContentType)
+        {
+            return GetRealContentType(contentType) == GetRealContentType(matchesContentType);
+        }
+
+        public static bool IsBinary(this string contentType)
+        {
+            var realContentType = GetRealContentType(contentType);
+            switch (realContentType)
+            {
+                case ProtoBuf:
+                case MsgPack:
+                case Binary:
+                case Bson:
+                    return true;
+            }
+
+            var primaryType = realContentType.SplitOnFirst('/')[0];
+            switch (primaryType)
+            {
+                case "image":
+                case "audio":
+                case "video":
+                    return true;
+            }
+
+            return false;
         }
 
         public static Feature GetFeature(string contentType)
