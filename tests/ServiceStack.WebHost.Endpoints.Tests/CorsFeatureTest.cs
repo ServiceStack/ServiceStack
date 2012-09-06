@@ -104,6 +104,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test, TestCaseSource("RestClients")]
         public void CorsMethodHasAccessControlHeaders(IRestClient client)
         {
+            appHost.Config.GlobalResponseHeaders.Clear();
+
             var response = RequestContextTests.GetResponseHeaders(ListeningOn + "/corsmethod");
             Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo("http://localhost http://localhost2"));
             Assert.That(response[HttpHeaders.AllowMethods], Is.EqualTo("POST, GET"));
