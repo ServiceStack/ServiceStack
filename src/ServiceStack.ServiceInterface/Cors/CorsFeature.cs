@@ -1,3 +1,4 @@
+using ServiceStack.Common.Web;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceInterface.Cors
@@ -7,68 +8,41 @@ namespace ServiceStack.ServiceInterface.Cors
     /// </summary>
     public class CorsFeature : IPlugin
     {
-        internal const string AllowOriginHeader = "Access-Control-Allow-Origin";
-        internal const string AllowMethodsHeader = "Access-Control-Allow-Methods";
-        internal const string AllowHeadersHeader = "Access-Control-Allow-Headers";
-        internal const string AllowCredentialsHeader = "Access-Control-Allow-Credentials";
+        internal const string DefaultMethods = "GET, POST, PUT, DELETE, OPTIONS";
+        internal const string DefaultHeaders = "Content-Type";
         
-        private static readonly string [] DefaultMethods = { "GET", "POST", "PUT", "DELETE", "OPTIONS" };
-        private static readonly string [] DefaultContentTypes = new[] { "Content-Type" };
-        
-        private readonly string _allowedOrigins;
-        private readonly string _allowedMethods;
-        private readonly string _allowedHeaders;
+        private readonly string allowedOrigins;
+        private readonly string allowedMethods;
+        private readonly string allowedHeaders;
 
-        private readonly bool _allowCredentials;
+        private readonly bool allowCredentials;
 
-        private static bool _isInstalled = false;
+        private static bool isInstalled = false;
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
         /// </summary>
-        public CorsFeature()
-            : this(null, null, null, false)
+        public CorsFeature(string allowedOrigins = "*", string allowedMethods = DefaultMethods, string allowedHeaders = DefaultHeaders, bool allowCredentials = false)
         {
-        }
-
-        public CorsFeature(string[] allowedOrigins, string[] allowedMethods, string[] allowedHeaders, bool allowCredentials)
-        {
-            _allowedOrigins = PrepareAllowedOriginsValue(allowedOrigins);
-            _allowedMethods = PrepareAllowedMethodsHeaderValue(allowedMethods);
-            _allowedHeaders = PrepareAllowedHeadersHeaderValue(allowedHeaders);
-            _allowCredentials = allowCredentials;
-        }
-
-        protected internal static string PrepareAllowedOriginsValue(string[] allowedOrigins)
-        {
-            if (allowedOrigins == null) return "*";
-            return string.Join(" ", allowedOrigins);
-        }
-
-        protected internal static string PrepareAllowedMethodsHeaderValue(string[] allowedMethods)
-        {
-            if (allowedMethods == null) allowedMethods = DefaultMethods;
-            return string.Join(", ", allowedMethods);
-        }
-
-        protected internal static string PrepareAllowedHeadersHeaderValue(string[] allowedHeaders)
-        {
-            if (allowedHeaders == null) allowedHeaders = DefaultContentTypes;
-            if (allowedHeaders.Length == 0) return null;
-            return string.Join(", ", allowedHeaders);
+            this.allowedOrigins = allowedOrigins;
+            this.allowedMethods = allowedMethods;
+            this.allowedHeaders = allowedHeaders;
+            this.allowCredentials = allowCredentials;
         }
 
         public void Register(IAppHost appHost)
         {
-            if (_isInstalled) return;
-            _isInstalled = true;
+            if (isInstalled) return;
+            isInstalled = true;
 
-            appHost.Config.GlobalResponseHeaders.Add(AllowOriginHeader, _allowedOrigins);
-            appHost.Config.GlobalResponseHeaders.Add(AllowMethodsHeader, _allowedMethods);
-            if (!string.IsNullOrEmpty(_allowedHeaders)) 
-                appHost.Config.GlobalResponseHeaders.Add(AllowHeadersHeader, _allowedHeaders);
-            if (_allowCredentials)
-                appHost.Config.GlobalResponseHeaders.Add(AllowCredentialsHeader, "true");
+            if (!string.IsNullOrEmpty(allowedOrigins))
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowOrigin, allowedOrigins);
+            if (!string.IsNullOrEmpty(allowedMethods))
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowMethods, allowedMethods);
+            if (!string.IsNullOrEmpty(allowedHeaders))
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowHeaders, allowedHeaders);
+            if (allowCredentials)
+                appHost.Config.GlobalResponseHeaders.Add(HttpHeaders.AllowCredentials, "true");
         }
     }
 }

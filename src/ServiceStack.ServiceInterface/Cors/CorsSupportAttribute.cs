@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 
 namespace ServiceStack.ServiceInterface.Cors
@@ -14,37 +15,33 @@ namespace ServiceStack.ServiceInterface.Cors
     {
         public int Priority { get { return 0; } }
 
-        private readonly string _allowedOrigins;
-        private readonly string _allowedMethods;
-        private readonly string _allowedHeaders;
+        private readonly string allowedOrigins;
+        private readonly string allowedMethods;
+        private readonly string allowedHeaders;
 
-        private readonly bool _allowCredentials;
+        private readonly bool allowCredentials;
 
         /// <summary>
         /// Represents a default constructor with Allow Origin equals to "*", Allowed GET, POST, PUT, DELETE, OPTIONS request and allowed "Content-Type" header.
         /// </summary>
-        public CorsSupportAttribute() : this(null, null, null, false)
+        public CorsSupportAttribute(string allowedOrigins = "*", string allowedMethods = CorsFeature.DefaultMethods, string allowedHeaders = CorsFeature.DefaultHeaders, bool allowCredentials = false)
         {
-        }
-
-        public CorsSupportAttribute(string[] allowedOrigins, string[] allowedMethods, string[] allowedHeaders, bool allowCredentials)
-        {
-            _allowedOrigins = CorsFeature.PrepareAllowedOriginsValue(allowedOrigins);
-            _allowedMethods = CorsFeature.PrepareAllowedMethodsHeaderValue(allowedMethods);
-            _allowedHeaders = CorsFeature.PrepareAllowedMethodsHeaderValue(allowedHeaders);
-            _allowCredentials = allowCredentials;
+            this.allowedOrigins = allowedOrigins;
+            this.allowedMethods = allowedMethods;
+            this.allowedHeaders = allowedHeaders;
+            this.allowCredentials = allowCredentials;
         }
 
         public void ResponseFilter(IHttpRequest req, IHttpResponse res, object response)
         {
-            res.AddHeader(CorsFeature.AllowOriginHeader, _allowedOrigins);
-            res.AddHeader(CorsFeature.AllowMethodsHeader, _allowedMethods);
-
-            if (!string.IsNullOrEmpty(_allowedHeaders)) 
-                res.AddHeader(CorsFeature.AllowHeadersHeader, _allowedHeaders);
-            if (_allowCredentials)
-                res.AddHeader(CorsFeature.AllowCredentialsHeader, "true");
-
+            if (!string.IsNullOrEmpty(allowedOrigins))
+                res.AddHeader(HttpHeaders.AllowOrigin, allowedOrigins);
+            if (!string.IsNullOrEmpty(allowedMethods))
+                res.AddHeader(HttpHeaders.AllowMethods, allowedMethods);
+            if (!string.IsNullOrEmpty(allowedHeaders))
+                res.AddHeader(HttpHeaders.AllowHeaders, allowedHeaders);
+            if (allowCredentials)
+                res.AddHeader(HttpHeaders.AllowCredentials, "true");
         }
 
         public IHasResponseFilter Copy()

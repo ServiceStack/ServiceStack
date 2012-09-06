@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
     }
 
-    [CorsSupport(new[] { "http://localhost", "http://localhost2" }, new[] {"POST", "GET"}, new[]{"Type1", "Type2"}, true)]
+    [CorsSupport("http://localhost http://localhost2", "POST, GET", "Type1, Type2", true)]
     public class CorsFeatureResponse
     {
         public bool IsSuccess { get; set; }
@@ -105,10 +105,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void CorsMethodHasAccessControlHeaders(IRestClient client)
         {
             var response = RequestContextTests.GetResponseHeaders(ListeningOn + "/corsmethod");
-            Assert.That(response[CorsFeature.AllowOriginHeader], Is.EqualTo("http://localhost http://localhost2"));
-            Assert.That(response[CorsFeature.AllowMethodsHeader], Is.EqualTo("POST, GET"));
-            Assert.That(response[CorsFeature.AllowHeadersHeader], Is.EqualTo("Type1, Type2"));
-            Assert.That(response[CorsFeature.AllowCredentialsHeader], Is.EqualTo("true"));
+            Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo("http://localhost http://localhost2"));
+            Assert.That(response[HttpHeaders.AllowMethods], Is.EqualTo("POST, GET"));
+            Assert.That(response[HttpHeaders.AllowHeaders], Is.EqualTo("Type1, Type2"));
+            Assert.That(response[HttpHeaders.AllowCredentials], Is.EqualTo("true"));
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -117,10 +117,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.LoadPlugin(new CorsFeature());
 
             var response = RequestContextTests.GetResponseHeaders(ListeningOn + "/globalcorsfeature");
-            Assert.That(response[CorsFeature.AllowOriginHeader], Is.EqualTo("*"));
-            Assert.That(response[CorsFeature.AllowMethodsHeader], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
-            Assert.False(response.ContainsKey(CorsFeature.AllowCredentialsHeader));
-            Assert.That(response[CorsFeature.AllowHeadersHeader], Is.EqualTo("Content-Type"));
+            Assert.That(response[HttpHeaders.AllowOrigin], Is.EqualTo("*"));
+            Assert.That(response[HttpHeaders.AllowMethods], Is.EqualTo("GET, POST, PUT, DELETE, OPTIONS"));
+            Assert.False(response.ContainsKey(HttpHeaders.AllowCredentials));
+            Assert.That(response[HttpHeaders.AllowHeaders], Is.EqualTo("Content-Type"));
         }
 
     }
