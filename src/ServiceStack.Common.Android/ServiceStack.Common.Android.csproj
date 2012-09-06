@@ -22,6 +22,7 @@
     <DefineConstants>TRACE;DEBUG;ANDROID</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>None</AndroidLinkMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,8 @@
     <DefineConstants>TRACE;ANDROID</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -411,6 +414,9 @@
       <Link>Web\SerializationContext.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\ServiceStack.Common\RequestContextExtensions.cs">
+      <Link>RequestContextExtensions.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ServiceStack.Common\README.md">
