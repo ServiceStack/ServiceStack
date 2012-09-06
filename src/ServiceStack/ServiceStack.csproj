@@ -338,7 +338,6 @@
     </EmbeddedResource>
     <None Include="MiniProfiler\UI\includes.tmpl.orig" />
     <None Include="README.md" />
-    <None Include="WebHost.Endpoints\Support\.DS_Store" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Funq\License.txt" />
