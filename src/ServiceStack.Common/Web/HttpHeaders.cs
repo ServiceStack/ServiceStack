@@ -41,5 +41,13 @@ namespace ServiceStack.Common.Web
         public const string Authorization = "Authorization";
 
         public const string WwwAuthenticate = "WWW-Authenticate";
+
+        public const string AllowOrigin = "Access-Control-Allow-Origin";
+
+        public const string AllowMethods = "Access-Control-Allow-Methods";
+
+        public const string AllowHeaders = "Access-Control-Allow-Headers";
+        
+        public const string AllowCredentials = "Access-Control-Allow-Credentials";
     }
 }

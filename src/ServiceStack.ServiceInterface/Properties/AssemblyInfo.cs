@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
@@ -40,3 +41,4 @@ using System.Runtime.Serialization;
     ClrNamespace = "ServiceStack.ServiceInterface")]
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",
     ClrNamespace = "ServiceStack.ServiceInterface.Auth")]
+[assembly: InternalsVisibleTo("ServiceStack.WebHost.Endpoints.Tests")]

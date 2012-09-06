@@ -123,6 +123,8 @@
     <Compile Include="Auth\OAuthProvider.cs" />
     <Compile Include="Auth\TwitterAuthProvider.cs" />
     <Compile Include="Auth\UnAssignRolesService.cs" />
+    <Compile Include="Cors\CorsFeature.cs" />
+    <Compile Include="Cors\CorsSupportAttribute.cs" />
     <Compile Include="Providers\InMemoryRollingRequestLogger.cs" />
     <Compile Include="Admin\RequestLogsService.cs" />
     <Compile Include="RequiredRoleAttribute.cs" />
