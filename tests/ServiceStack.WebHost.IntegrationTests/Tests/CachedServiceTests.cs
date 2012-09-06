@@ -9,6 +9,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 	[TestFixture]
 	public class CachedServiceTests
 	{
+        [TestFixtureSetUp]
+        public void OnBeforeEachTest()
+        {
+            var jsonClient = new JsonServiceClient(Config.ServiceStackBaseUri);
+            jsonClient.Post<ResetMoviesResponse>("reset-movies", new ResetMovies());
+        }
+
         [Test]
         public void Can_call_Cached_WebService_with_JSON()
         {
