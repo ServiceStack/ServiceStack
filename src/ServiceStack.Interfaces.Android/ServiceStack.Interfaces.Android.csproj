@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>None</AndroidLinkMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -428,9 +431,6 @@
     <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IAsyncService.cs">
       <Link>ServiceHost\IAsyncService.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\ICanResolve.cs">
-      <Link>ServiceHost\ICanResolve.cs</Link>
-    </Compile>
     <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IContentTypeFilter.cs">
       <Link>ServiceHost\IContentTypeFilter.cs</Link>
     </Compile>
@@ -582,6 +582,12 @@
       <Link>Translators\TranslateMemberAttribute.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\IResolver.cs">
+      <Link>ServiceHost\IResolver.cs</Link>
+    </Compile>
+    <Compile Include="..\ServiceStack.Interfaces\ServiceHost\RouteAttribute.cs">
+      <Link>ServiceHost\RouteAttribute.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
