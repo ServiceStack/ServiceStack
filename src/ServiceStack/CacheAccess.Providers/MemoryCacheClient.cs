@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Logging;
 using ServiceStack.Net30.Collections.Concurrent;
 
@@ -131,14 +132,18 @@ namespace ServiceStack.CacheAccess.Providers
 		{
 			if (!FlushOnDispose) return;
 
-			this.memory = new ConcurrentDictionary<string, CacheEntry>();
+			FlushAll();
 			this.counters = new ConcurrentDictionary<string, int>();
+
 		}
 
 		public bool Remove(string key)
 		{
 			CacheEntry item;
-			return this.memory.TryRemove(key, out item);
+			var ret = this.memory.TryRemove(key, out item);
+			if(item is IDisposable)
+				((IDisposable)item).Dispose();
+			return ret;
 		}
 
 		public void RemoveAll(IEnumerable<string> keys)
@@ -171,7 +176,7 @@ namespace ServiceStack.CacheAccess.Providers
 			{
 				if (cacheEntry.ExpiresAt < DateTime.Now)
 				{
-					this.memory.TryRemove(key, out cacheEntry);
+					Remove(key);
 					return null;
 				}
 				lastModifiedTicks = cacheEntry.LastModifiedTicks;
@@ -254,7 +259,12 @@ namespace ServiceStack.CacheAccess.Providers
 
 		public void FlushAll()
 		{
+			var current = this.memory;
 			this.memory = new ConcurrentDictionary<string, CacheEntry>();
+			
+			foreach (var kvp in current)
+				if (kvp.Value is IDisposable)
+					((IDisposable)kvp.Value).Dispose();
 		}
 
 		public IDictionary<string, T> GetAll<T>(IEnumerable<string> keys)
@@ -274,6 +284,13 @@ namespace ServiceStack.CacheAccess.Providers
 			{
 				Set(entry.Key, entry.Value);
 			}
+		}
+
+		public void RemoveAllExpireds()
+		{
+			var now = DateTime.Now;
+			var expireds = this.memory.Where(m => m.Value.ExpiresAt < now).Select(m => m.Key);
+			RemoveAll(expireds);
 		}
 	}
 }

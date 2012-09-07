@@ -109,5 +109,10 @@ namespace ServiceStack.CacheAccess
 		/// <typeparam name="T"></typeparam>
 		/// <param name="values">The values.</param>
 		void SetAll<T>(IDictionary<string, T> values);
+
+		/// <summary>
+		/// Go through the internal collection and pull out any expired objects
+		/// </summary>
+		void RemoveAllExpireds();
 	}
 }

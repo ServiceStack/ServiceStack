@@ -152,5 +152,10 @@ namespace ServiceStack.CacheAccess.Providers
 				Set(entry.Key, entry.Value);
 			}
 		}
+
+		public void RemoveAllExpireds()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
