@@ -76,7 +76,6 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         {
             markdown = new MarkdownSharp.Markdown();
 
-            this.WatchForModifiedPages = true;
             this.MarkdownBaseType = typeof(MarkdownViewBase);
             this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
             this.FindMarkdownPagesFn = FindMarkdownPages;
@@ -90,6 +89,9 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         {
             this.AppHost = appHost;
             appHost.ViewEngines.Add(this);
+
+            if (!WatchForModifiedPages)
+                WatchForModifiedPages = appHost.Config.DebugMode;
 
             foreach (var ns in EndpointHostConfig.RazorNamespaces)
                 Evaluator.AddAssembly(ns);
@@ -122,12 +124,16 @@ namespace ServiceStack.WebHost.Endpoints.Formats
                 {
                     if (pathInfo.EndsWith(".md"))
                     {
+                        pathInfo = pathInfo.EndsWith(DefaultPage + ".md", StringComparison.InvariantCultureIgnoreCase)
+                            ? pathInfo.Substring(0, pathInfo.Length - (DefaultPage + ".md").Length)
+                            : pathInfo.WithoutExtension();
+
                         return new RedirectHttpHandler {
                             AbsoluteUrl = webHostUrl.IsNullOrEmpty()
                                 ? null
-                                : webHostUrl.CombineWith(pathInfo.WithoutExtension()),
+                                : webHostUrl.CombineWith(pathInfo),
                             RelativeUrl = webHostUrl.IsNullOrEmpty()
-                                ? pathInfo.WithoutExtension()
+                                ? pathInfo
                                 : null
                         };
                     }
@@ -234,7 +240,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public void ReloadModifiedPageAndTemplates(MarkdownPage markdownPage)
         {
-            if (markdownPage == null) return;
+            if (markdownPage == null || !WatchForModifiedPages) return;
 
             ReloadIfNeeded(markdownPage);
 
@@ -258,7 +264,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         private MarkdownPage ReloadIfNeeded(MarkdownPage markdownPage)
         {
-            if (markdownPage == null) return null;
+            if (markdownPage == null || !WatchForModifiedPages) return markdownPage;
             if (markdownPage.FilePath != null)
             {
                 var latestPage = GetLatestPage(markdownPage);

@@ -79,10 +79,21 @@ namespace ServiceStack.Razor.Templating
 			return pagePathAndNames.ContainsValue(pageName);
 		}
 
+		public ITemplate GetAndCheckTemplate(string name)
+		{
+            ViewPageRef viewPageRef;
+            if (templateRefCache.TryGetValue(name, out viewPageRef))
+                viewEngine.ReloadIfNeeeded(viewPageRef);
+
+            ITemplate instance;
+		    templateCache.TryGetValue(name, out instance);
+		    return instance;
+		}
+
 		public IRazorTemplate GetTemplate(string name)
 		{
-			ITemplate instance;
-			if (!templateCache.TryGetValue(name, out instance))
+		    var instance = GetAndCheckTemplate(name);
+            if (instance == null)
 			{
 			    var view = viewEngine.GetView(name);
                 if (view == null)
@@ -90,7 +101,14 @@ namespace ServiceStack.Razor.Templating
                     if (name == RazorFormat.DefaultTemplate)
                         return null;
 
-                    throw new Exception("Could not find template " + name);
+                    //Re-check after all templates have been compiled
+                    viewEngine.EnsureAllCompiled();
+                    if (templateCache.TryGetValue(name, out instance))
+                        return instance as IRazorTemplate;
+
+                    view = viewEngine.GetView(name);                    
+                    if (view == null)
+                        throw new Exception("Could not find template " + name);
                 }
                 view.Compile(); //compiling adds to templateCache
 
@@ -124,6 +142,5 @@ namespace ServiceStack.Razor.Templating
 			
 			return template;
 		}
-
 	}
 }

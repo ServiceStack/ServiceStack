@@ -73,7 +73,6 @@ namespace ServiceStack.Razor
 			}
 		}
 
-
         bool isCompiled;
         public bool IsCompiled
         {
@@ -89,7 +88,7 @@ namespace ServiceStack.Razor
                 var sw = Stopwatch.StartNew();
                 try
                 {
-                    Service.Compile(this.Contents, PageName);
+                    Service.Compile(this, this.Contents, PageName);
                     Log.InfoFormat("Compiled {0} in {1}ms", this.FilePath, sw.ElapsedMilliseconds);
                 }
                 catch (Exception ex)

@@ -71,6 +71,7 @@ namespace ServiceStack.WebHost.Endpoints
 							"default.htm",
 							"default.html",
 							"default.cshtml",
+							"default.md",
 							"index.htm",
 							"index.html",
 							"default.aspx",

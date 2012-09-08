@@ -102,7 +102,6 @@ namespace ServiceStack.Razor
 
         public RazorFormat()
         {
-            this.WatchForModifiedPages = true;
             this.FindRazorPagesFn = FindRazorPages;
             this.ReplaceTokens = new Dictionary<string, string>();
             this.TemplateNamespaces = new HashSet<string> {
@@ -117,7 +116,7 @@ namespace ServiceStack.Razor
 				{"rzr", typeof(ViewPage<>) },
 			};
             this.TemplateProvider = new TemplateProvider(DefaultTemplateName) {
-                CompileInParallelWithNoOfThreads = Environment.ProcessorCount * 2,
+                CompileInParallelWithNoOfThreads = 0,
             };            
         }
 
@@ -134,6 +133,16 @@ namespace ServiceStack.Razor
         {
             this.AppHost = appHost;
             appHost.ViewEngines.Add(this);
+
+            //Default to watching modfied pages in DebugMode
+            if (!WatchForModifiedPages)
+                WatchForModifiedPages = appHost.Config.DebugMode;
+
+            //Default to parallel execution in DebugMode
+            if (this.TemplateProvider.CompileInParallelWithNoOfThreads <= 0)
+                this.TemplateProvider.CompileInParallelWithNoOfThreads = appHost.Config.DebugMode
+                    ? Environment.ProcessorCount * 2
+                    : 0;
 
             foreach (var ns in EndpointHostConfig.RazorNamespaces)
                 TemplateNamespaces.Add(ns);
@@ -159,7 +168,7 @@ namespace ServiceStack.Razor
                 razorPage = FindByPathInfo(pathInfo);
 
                 if (WatchForModifiedPages)
-                    ReloadModifiedPageAndTemplates(razorPage);
+                    ReloadIfNeeeded(razorPage);
 
                 if (razorPage == null)
                 {
@@ -167,12 +176,16 @@ namespace ServiceStack.Razor
                     {
                         if (pathInfo.EndsWith("." + entry.Key))
                         {
+                            pathInfo = pathInfo.EndsWith(DefaultPage + "." + entry.Key, StringComparison.InvariantCultureIgnoreCase)
+                                ? pathInfo.Substring(0, pathInfo.Length - (DefaultPage + "." + entry.Key).Length)
+                                : pathInfo.WithoutExtension();
+
                             return new RedirectHttpHandler {
                                 AbsoluteUrl = webHostUrl.IsNullOrEmpty() 
                                     ? null
-                                    : webHostUrl.CombineWith(pathInfo.WithoutExtension()),
+                                    : webHostUrl.CombineWith(pathInfo),
                                 RelativeUrl = webHostUrl.IsNullOrEmpty()
-                                    ? pathInfo.WithoutExtension()
+                                    ? pathInfo
                                     : null
                             };
                         }
@@ -210,7 +223,7 @@ namespace ServiceStack.Razor
                 return false;
 
             if (WatchForModifiedPages)
-                ReloadModifiedPageAndTemplates(razorPage);
+                ReloadIfNeeeded(razorPage);
 
             return ProcessRazorPage(httpReq, razorPage, dto, httpRes);
         }
@@ -303,9 +316,9 @@ namespace ServiceStack.Razor
             return true;
         }
 
-        public void ReloadModifiedPageAndTemplates(ViewPageRef razorPage)
+        public void ReloadIfNeeeded(ViewPageRef razorPage)
         {
-            if (razorPage == null || razorPage.FilePath == null) return;
+            if (razorPage == null || razorPage.FilePath == null || !WatchForModifiedPages) return;
             
             var latestPage = GetLatestPage(razorPage);
             if (latestPage.LastModified > razorPage.LastModified)
@@ -355,6 +368,11 @@ namespace ServiceStack.Razor
             return GetViewPage(name);
         }
 
+        public void EnsureAllCompiled()
+        {
+            TemplateProvider.EnsureAllCompiled();
+        }
+
         public ViewPageRef GetViewPage(string pageName)
         {
             ViewPageRef razorPage;
@@ -362,6 +380,9 @@ namespace ServiceStack.Razor
             ViewPages.TryGetValue(pageName, out razorPage);
             if (razorPage != null)
             {
+                if (WatchForModifiedPages)
+                    ReloadIfNeeeded(razorPage);
+
                 razorPage.EnsureCompiled();
                 return razorPage;
             }
@@ -369,23 +390,12 @@ namespace ServiceStack.Razor
             ViewSharedPages.TryGetValue(pageName, out razorPage);
             if (razorPage != null)
             {
+                if (WatchForModifiedPages)
+                    ReloadIfNeeeded(razorPage);
+
                 razorPage.EnsureCompiled();
             }
             return razorPage;
-        }
-
-        private ViewPageRef GetTemplatePage(string pageName)
-        {
-            ViewPageRef razorPage;
-
-            var key = "Views/Shared/{0}.cshtml".Fmt(pageName);
-            MasterPageTemplates.TryGetValue(key, out razorPage);
-            if (razorPage != null)
-            {
-                razorPage.EnsureCompiled();
-                return razorPage;
-            }
-            return null;
         }
         
         private void RegisterRazorPages(string razorSearchPath)
@@ -590,6 +600,7 @@ namespace ServiceStack.Razor
             MasterPageTemplates.TryGetValue(name, out template); //e.g. /NoModelNoController.cshtml
             if (template != null)
             {
+                ReloadIfNeeeded(template);
                 template.EnsureCompiled();
                 return template.Contents;
             }
@@ -662,8 +673,8 @@ namespace ServiceStack.Razor
 
         public TemplateService GetTemplateService(string pagePathOrName, IHttpRequest httpReq)
         {
-            var view = GetTemplateService(pagePathOrName);
-            if (view != null) return view;
+            var serviceWithView = GetTemplateService(pagePathOrName);
+            if (serviceWithView != null) return serviceWithView;
             if (httpReq == null || httpReq.PathInfo == null) return null;
 
             var normalizedPathInfo = httpReq.PathInfo;

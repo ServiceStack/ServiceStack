@@ -34,5 +34,16 @@ namespace ServiceStack.Razor.Templating
         /// <param name="name"></param>
         /// <returns></returns>
         IViewPage GetView(string name);
+
+        /// <summary>
+        /// Wait until all pages have been compiled
+        /// </summary>
+        void EnsureAllCompiled();
+
+        /// <summary>
+        /// Reload if watching modified pages and view page is modified
+        /// </summary>
+        /// <param name="razorPage"></param>
+        void ReloadIfNeeeded(ViewPageRef razorPage);
     }
 }

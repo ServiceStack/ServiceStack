@@ -221,7 +221,7 @@ namespace ServiceStack.Razor.Templating
             if (@object == null)
                 return;
 
-            if (@object is MvcHtmlString) // || ChildTemplate != null
+            if (@object is MvcHtmlString)
             {
                 Builder.Append(@object);
             }

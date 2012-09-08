@@ -18,6 +18,7 @@ namespace ServiceStack.Razor.Templating
         public Func<CompilerServiceBase> GetCompilerServiceFn;
 
         private readonly IDictionary<string, ITemplate> templateCache = new ConcurrentDictionary<string, ITemplate>();
+        private readonly IDictionary<string, ViewPageRef> templateRefCache = new ConcurrentDictionary<string, ViewPageRef>();
 
         public TemplateService(IRazorViewEngine viewEngine, Type templateBaseType = null)
         {
@@ -38,22 +39,34 @@ namespace ServiceStack.Razor.Templating
         public HashSet<string> Namespaces { get; set; }
 
         /// <summary>
-        /// Pre-compiles the specified template and caches it using the specified name.
+        /// Entry point for tests
         /// </summary>
-        /// <param name="template">The template to precompile.</param>
-        /// <param name="name">The cache name for the template.</param>
+        /// <param name="template"></param>
+        /// <param name="name"></param>
         public void Compile(string template, string name)
         {
-            Compile(template, null, name);
+            Compile(null, template, null, name);
         }
 
-        /// <summary>
-        /// Pre-compiles the specified template and caches it using the specified name.
-        /// </summary>
-        /// <param name="template">The template to precompile.</param>
-        /// <param name="modelType">The type of model used in the template.</param>
-        /// <param name="name">The cache name for the template.</param>
-        public void Compile(string template, Type modelType, string name)
+	    /// <summary>
+	    /// Pre-compiles the specified template and caches it using the specified name.
+	    /// </summary>
+	    /// <param name="viewPageRef"> </param>
+	    /// <param name="template">The template to precompile.</param>
+	    /// <param name="name">The cache name for the template.</param>
+	    public void Compile(ViewPageRef viewPageRef, string template, string name)
+        {
+            Compile(viewPageRef, template, null, name);
+        }
+
+	    /// <summary>
+	    /// Pre-compiles the specified template and caches it using the specified name.
+	    /// </summary>
+	    /// <param name="viewPageRef"> </param>
+	    /// <param name="template">The template to precompile.</param>
+	    /// <param name="modelType">The type of model used in the template.</param>
+	    /// <param name="name">The cache name for the template.</param>
+	    public void Compile(ViewPageRef viewPageRef, string template, Type modelType, string name)
         {
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Pre-compiled templates must have a name", "name");
@@ -63,17 +76,19 @@ namespace ServiceStack.Razor.Templating
 
             var instance = CreateTemplate(template, modelType);
 			templateCache[name] = instance;
-		}
+            if (viewPageRef != null) templateRefCache[name] = viewPageRef;
+        }
 
-        /// <summary>
-        /// Pre-compiles the specified template and caches it using the specified name.
-        /// This method should be used when an anonymous model is used in the template.
-        /// </summary>
-        /// <param name="template">The template to precompile.</param>
-        /// <param name="name">The cache name for the template.</param>
-        public void CompileWithAnonymous(string template, string name)
+	    /// <summary>
+	    /// Pre-compiles the specified template and caches it using the specified name.
+	    /// This method should be used when an anonymous model is used in the template.
+	    /// </summary>
+	    /// <param name="viewPageRef"> </param>
+	    /// <param name="template">The template to precompile.</param>
+	    /// <param name="name">The cache name for the template.</param>
+	    public void CompileWithAnonymous(ViewPageRef viewPageRef, string template, string name)
         {
-            Compile(template, new { }.GetType(), name);
+            Compile(viewPageRef, template, new { }.GetType(), name);
         }
 
         /// <summary>
@@ -198,8 +213,8 @@ namespace ServiceStack.Razor.Templating
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("The named of the cached template is required.");
 
-            ITemplate instance;
-            if (!templateCache.TryGetValue(name, out instance))
+            var instance = GetAndCheckTemplate(name);
+            if (instance == null)
                 throw new ArgumentException("No compiled template exists with the specified name.");
 
             SetService(instance, this);
@@ -220,8 +235,8 @@ namespace ServiceStack.Razor.Templating
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("The named of the cached template is required.");
 
-            ITemplate instance;
-            if (!templateCache.TryGetValue(name, out instance))
+            var instance = GetAndCheckTemplate(name);
+            if (instance == null)
                 throw new ArgumentException("No compiled template exists with the specified name.");
 
             SetService(instance, this);

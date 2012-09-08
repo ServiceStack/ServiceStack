@@ -34,7 +34,7 @@ namespace ServiceStack.Razor
 			}
 
             if (RazorFormat.WatchForModifiedPages)
-			    RazorFormat.ReloadModifiedPageAndTemplates(contentPage);
+			    RazorFormat.ReloadIfNeeeded(contentPage);
 
             //Add good caching support
             //if (httpReq.DidReturn304NotModified(contentPage.GetLastModified(), httpRes))

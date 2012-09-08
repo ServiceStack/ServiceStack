@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Common;
@@ -9,7 +8,6 @@ using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.Logging;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints
@@ -69,6 +67,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			Instance = this;
 
+		    EndpointHost.Config.DebugMode = GetType().Assembly.IsDebugBuild(); 
 			var serviceManager = EndpointHost.Config.ServiceManager;
 			if (serviceManager != null)
 			{

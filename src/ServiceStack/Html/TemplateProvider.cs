@@ -15,6 +15,8 @@ namespace ServiceStack.Html
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(TemplateProvider));
 
+        AutoResetEvent waiter = new AutoResetEvent(false);
+
         readonly string defaultTemplateName;
 
         public TemplateProvider(string defaultTemplateName)
@@ -64,6 +66,7 @@ namespace ServiceStack.Html
 
         public void QueuePageToCompile(IViewPage pageToCompile)
         {
+            waiter.Reset();
             compilePages.Enqueue(pageToCompile);
         }
 
@@ -111,7 +114,14 @@ namespace ServiceStack.Html
             {
                 Interlocked.Decrement(ref runningThreads);
                 Log.InfoFormat("Compilation threads remaining {0}...", runningThreads);
+                waiter.Set();
             }
+        }
+
+        public void EnsureAllCompiled()
+        {
+            if (compilePages.IsEmpty && priorityCompilePages.IsEmpty) return;
+            waiter.WaitOne(60 * 1000);
         }
     }
 
