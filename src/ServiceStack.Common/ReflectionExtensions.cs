@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using ServiceStack.Common.Utils;
 
@@ -94,6 +96,13 @@ namespace ServiceStack.Common
 #endif
         }
 
+        public static bool IsDebugBuild(this Assembly assembly)
+        {
+            return assembly.GetCustomAttributes(false)
+                .OfType<DebuggableAttribute>()
+                .Select(attr => attr.IsJITTrackingEnabled)
+                .FirstOrDefault();
+        }
     }
 }
 
