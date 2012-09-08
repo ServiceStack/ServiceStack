@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack.Common;
 using ServiceStack.Text;
 
 namespace RazorRockstars.Web
@@ -198,6 +200,32 @@ namespace RazorRockstars.Web
         {
             Assert200(Host + "/rockstars?View=Rockstars3", ViewRockstars3, Template_SimpleLayout2);
         }
+
+	    [Test]
+	    public void Test_multithread_errors()
+	    {
+	        var times = 1000;
+	        var count = 0;
+	        var errors = new List<Exception>();
+            times.Times(i => 
+                ThreadPool.QueueUserWorkItem(x => {
+                    Interlocked.Increment(ref count);
+                    try {
+                        Assert200(Host + "/rockstars?View=Json", "[{\"");
+                    }
+                    catch (Exception ex) {
+                        errors.Add(ex);
+                    }
+                }));
+
+            while (count < times)
+	            Thread.Sleep(100);
+
+	        var errMsgs = errors.ConvertAll(x => x.Message);
+            errMsgs.PrintDump();
+	        
+            Assert.That(errors.Count, Is.EqualTo(0));
+	    }
     }
 }
 

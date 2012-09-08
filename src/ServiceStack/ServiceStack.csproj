@@ -121,6 +121,7 @@
     <Compile Include="Funq\Container.Overloads.cs">
       <DependentUpon>Container.cs</DependentUpon>
     </Compile>
+    <Compile Include="Html\HtmlExtensions.cs" />
     <Compile Include="Html\IViewEngine.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -387,7 +388,5 @@
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="WebHost.Endpoints\Support\MarkdownDeep\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

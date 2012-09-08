@@ -684,7 +684,15 @@ namespace ServiceStack.Razor
 
         public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath, IHttpRequest httpReq, IHttpResponse httpRes)
         {
-            return GetTemplateService(name).ExecuteTemplate(model, name, templatePath, httpReq, httpRes);
+            try
+            {
+                return GetTemplateService(name).ExecuteTemplate(model, name, templatePath, httpReq, httpRes);
+            }
+            catch (Exception ex)
+            {
+                ex.Message.PrintDump();
+                throw;
+            }
         }
     }
 }

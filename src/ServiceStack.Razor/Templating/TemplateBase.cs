@@ -17,7 +17,7 @@ namespace ServiceStack.Razor.Templating
 
     public abstract partial class TemplateBase
     {
-        [ThreadStatic] public static dynamic ViewBag;
+        public static dynamic ViewBag;
 
         private Dictionary<string, Action> sections;
         public Dictionary<string, Action> Sections
@@ -25,8 +25,8 @@ namespace ServiceStack.Razor.Templating
             get { return sections ?? (sections = new Dictionary<string, Action>()); }
         }
 
-        [ThreadStatic] private static string childBody;
-        [ThreadStatic] private static IRazorTemplate childTemplate;
+        private static string childBody;
+        private static IRazorTemplate childTemplate;
 
         public IRazorTemplate ChildTemplate
         {
@@ -46,17 +46,17 @@ namespace ServiceStack.Razor.Templating
             Sections[name] = contents;
         }
 
-        public string RenderBody()
+        public MvcHtmlString RenderBody()
         {
-            return childBody;
+            return MvcHtmlString.Create(childBody);
         }
 
-        public string RenderSection(string sectionName)
+        public MvcHtmlString RenderSection(string sectionName)
         {
             return RenderSection(sectionName, false);
         }
 
-        public string RenderSection(string sectionName, bool required)
+        public MvcHtmlString RenderSection(string sectionName, bool required)
         {
             if (sectionName == null)
                 throw new ArgumentNullException("sectionName");
@@ -143,8 +143,7 @@ namespace ServiceStack.Razor.Templating
 	public abstract partial class TemplateBase : ITemplate
     {
         public abstract void SetModel(object model);
-
-
+        
         [ThreadStatic]
         private static StringBuilder builder;
 
@@ -222,7 +221,7 @@ namespace ServiceStack.Razor.Templating
             if (@object == null)
                 return;
 
-            if (@object is MvcHtmlString || ChildTemplate != null)
+            if (@object is MvcHtmlString) // || ChildTemplate != null
             {
                 Builder.Append(@object);
             }

@@ -14,8 +14,7 @@ namespace ServiceStack.Html
 		private readonly Dictionary<string, object> innerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 		private object model;
 		private ModelMetadata modelMetadata;
-		private readonly ModelStateDictionary modelState = new ModelStateDictionary();
-		//private TemplateInfo _templateMetadata;
+		private ModelStateDictionary modelState;
 
 		public ViewDataDictionary() : this((object)null) { }
 
@@ -41,7 +40,6 @@ namespace ServiceStack.Html
 			}
 
 			Model = dictionary.Model;
-			//TemplateInfo = dictionary.TemplateInfo;
 
 			// PERF: Don't unnecessarily instantiate the model metadata
 			modelMetadata = dictionary.modelMetadata;
@@ -104,30 +102,47 @@ namespace ServiceStack.Html
 		{
 			get
 			{
-				return modelState;
+				return modelState ?? (modelState = new ModelStateDictionary());
 			}
 		}
 
+	    private bool hasPopulatedModelState;
 		public virtual void PopulateModelState()
 		{
 			if (model == null) return;
+            if (hasPopulatedModelState) return;
 
-			//Skip non-poco's, i.e. List
-			var modelType = model.GetType();
-			var listType = modelType.IsGenericType 
-				? modelType.GetTypeWithGenericInterfaceOf(typeof(IList<>))
-				: null;
-			if (listType != null || model.GetType().IsArray) return;
-			
-			var strModel = TypeSerializer.SerializeToString(model);
-			var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(strModel);
-			foreach (var kvp in map)
-			{
-				var valueState = new ModelState {
-					Value = new ValueProviderResult(kvp.Value, kvp.Value, CultureInfo.CurrentCulture)
-				};
-				modelState.Add(kvp.Key, valueState);
-			}
+		    lock (this)
+		    {
+                if (hasPopulatedModelState) return;
+                
+                //Skip non-poco's, i.e. List
+                modelState = new ModelStateDictionary();
+                var modelType = model.GetType();
+                var listType = modelType.IsGenericType
+                    ? modelType.GetTypeWithGenericInterfaceOf(typeof(IList<>))
+                    : null;
+                if (listType != null || model.GetType().IsArray) return;
+
+                var strModel = TypeSerializer.SerializeToString(model);
+                var map = TypeSerializer.DeserializeFromString<Dictionary<string, string>>(strModel);
+                foreach (var kvp in map)
+                {
+                    var valueState = new ModelState {
+                        Value = new ValueProviderResult(kvp.Value, kvp.Value, CultureInfo.CurrentCulture)
+                    };
+                    try
+                    {
+                        modelState.Add(kvp.Key, valueState);
+                    }
+                    catch (Exception ex)
+                    {
+                        ex.Message.PrintDump();
+                        throw;
+                    }
+                }
+		        hasPopulatedModelState = true;
+		    }
 		}
 
 		public object this[string key]

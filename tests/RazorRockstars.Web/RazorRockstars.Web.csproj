@@ -88,6 +88,8 @@
     <None Include="Pages\_Layout.shtml" />
     <None Include="Pages\Dir\_Layout.shtml" />
     <Content Include="Views\Shared\HtmlReport.cshtml" />
+    <Content Include="Views\Shared\Empty.cshtml" />
+    <Content Include="Views\Json.cshtml" />
     <None Include="Views\Shared\MarkdownPartial.md" />
     <Content Include="Views\Shared\RazorPartial.cshtml" />
     <Content Include="Views\Shared\RazorPartialModel.cshtml" />
