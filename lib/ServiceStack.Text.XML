@@ -230,6 +230,11 @@
             Define custom deserialization fn for BCL Structs
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.RawDeserializeFn">
+            <summary>
+            Define custom raw deserialization fn for objects
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.ExcludePropertyNames">
             <summary>
             Exclude specific properties of this type from being serialized
@@ -348,6 +353,11 @@
         <member name="P:ServiceStack.Text.JsonObject.Item(System.String)">
             <summary>
             Get JSON string value
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Text.DtoAttribute">
+            <summary>
+            Flag that your POCO is a top-level Response DTO
             </summary>
         </member>
         <member name="T:ServiceStack.Text.Controller.PathInfo">
