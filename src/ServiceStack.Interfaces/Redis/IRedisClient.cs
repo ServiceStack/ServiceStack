@@ -228,7 +228,10 @@ namespace ServiceStack.Redis
 		int RemoveRangeFromSortedSet(string setId, int minRank, int maxRank);
 		int RemoveRangeFromSortedSetByScore(string setId, double fromScore, double toScore);
 		int RemoveRangeFromSortedSetByScore(string setId, long fromScore, long toScore);
-		int GetSortedSetCount(string setId);
+        int GetSortedSetCount(string setId);
+        int GetSortedSetCount(string setId, string fromStringScore, string toStringScore);
+        int GetSortedSetCount(string setId, long fromScore, long toScore);
+        int GetSortedSetCount(string setId, double fromScore, double toScore);
 		double GetItemScoreInSortedSet(string setId, string value);
 		int StoreIntersectFromSortedSets(string intoSetId, params string[] setIds);
 		int StoreUnionFromSortedSets(string intoSetId, params string[] setIds);
