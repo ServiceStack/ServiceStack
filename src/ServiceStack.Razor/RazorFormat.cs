@@ -350,7 +350,7 @@ namespace ServiceStack.Razor
 
             //If View was specified don't look for anything else.
             var viewName = httpReq.GetView();
-            if (viewName != null)
+            if (!string.IsNullOrEmpty(viewName))
                 return GetViewPage(viewName);
 
             if (dto != null)
@@ -695,15 +695,7 @@ namespace ServiceStack.Razor
 
         public IRazorTemplate ExecuteTemplate<T>(T model, string name, string templatePath, IHttpRequest httpReq, IHttpResponse httpRes)
         {
-            try
-            {
-                return GetTemplateService(name).ExecuteTemplate(model, name, templatePath, httpReq, httpRes);
-            }
-            catch (Exception ex)
-            {
-                ex.Message.PrintDump();
-                throw;
-            }
+            return GetTemplateService(name).ExecuteTemplate(model, name, templatePath, httpReq, httpRes);
         }
     }
 }

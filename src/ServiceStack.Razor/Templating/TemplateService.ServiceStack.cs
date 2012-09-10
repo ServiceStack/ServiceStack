@@ -4,7 +4,6 @@ using System.Dynamic;
 using ServiceStack.Common;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.Razor.Templating
@@ -34,7 +33,7 @@ namespace ServiceStack.Razor.Templating
 			instance.Execute();
 
 		    var template = httpReq.GetTemplate();
-            if (template != null)
+            if (!string.IsNullOrEmpty(template))
 		        template = viewEngine.HasTemplate(template) ? template : null;
 
             if (template == null && !razorTemplate.Layout.IsNullOrEmpty())

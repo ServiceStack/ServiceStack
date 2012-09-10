@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public MarkdownFormat()
         {
-            markdown = new MarkdownSharp.Markdown();
+            markdown = new MarkdownSharp.Markdown(); //Note: by default MarkdownDeep is used
 
             this.MarkdownBaseType = typeof(MarkdownViewBase);
             this.MarkdownGlobalHelpers = new Dictionary<string, Type>();
