@@ -230,7 +230,7 @@
     <Compile Include="Testing\TestBase.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UserCanSwapTemplatesAttribute.cs" />
+    <Compile Include="ClientCanSwapTemplatesAttribute.cs" />
     <Compile Include="Validation\ExecOnlyOnce.cs" />
     <Compile Include="Validation\MultiRuleSetValidatorSelector.cs" />
     <Compile Include="FluentValidation\ValidationErrors.cs" />

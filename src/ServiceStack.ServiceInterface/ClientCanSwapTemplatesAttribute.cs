@@ -2,7 +2,7 @@
 
 namespace ServiceStack.ServiceInterface
 {
-    public class UserCanSwapTemplatesAttribute : ResponseFilterAttribute
+    public class ClientCanSwapTemplatesAttribute : ResponseFilterAttribute
     {
         public override void Execute(IHttpRequest req, IHttpResponse res, object requestDto)
         {
