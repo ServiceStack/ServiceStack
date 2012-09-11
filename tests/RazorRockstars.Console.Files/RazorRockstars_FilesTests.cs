@@ -1,27 +1,36 @@
-using System;   
+using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
+using ServiceStack.Common;
+using ServiceStack.Logging;
+using ServiceStack.Logging.Support.Logging;
+using ServiceStack.Razor;
+using ServiceStack.ServiceInterface.Testing;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints;
+using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace RazorRockstars.Console.Files
 {
-	[TestFixture]
-	public class RazorRockstars_FilesTests
-	{
+    [TestFixture]
+    public class RazorRockstars_FilesTests
+    {
         AppHost appHost;
 
         Stopwatch startedAt;
 
         [TestFixtureSetUp]
-	    public void TestFixtureSetUp()
-	    {
+        public void TestFixtureSetUp()
+        {
+            LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
             appHost = new AppHost();
-	        appHost.Init();
+            appHost.Init();
             appHost.Start("http://*:1337/");
-	    }
+        }
 
         [TestFixtureTearDown]
         public void TestFixtureTearDown()
@@ -30,48 +39,49 @@ namespace RazorRockstars.Console.Files
             appHost.Dispose();
         }
 
-        [Ignore("Debug Run")][Test]
-	    public void RunFor10Mins()
-	    {
-	        Thread.Sleep(TimeSpan.FromMinutes(10));
-	    }
+        [Ignore("Debug Run")]
+        [Test]
+        public void RunFor10Mins()
+        {
+            Thread.Sleep(TimeSpan.FromMinutes(10));
+        }
 
-		public static string AcceptContentType = "*/*";
-		public void Assert200(string url, params string[] containsItems)
-		{
+        public static string AcceptContentType = "*/*";
+        public void Assert200(string url, params string[] containsItems)
+        {
             url.Print();
-			var text = url.GetStringFromUrl(AcceptContentType, r => {
-				if (r.StatusCode != HttpStatusCode.OK)
-					Assert.Fail(url + " did not return 200 OK");
-			});
-			foreach (var item in containsItems)
-			{
-				if (!text.Contains(item))
-				{
-					Assert.Fail(item + " was not found in " + url);
-				}
-			}
-		}
+            var text = url.GetStringFromUrl(AcceptContentType, r => {
+                if (r.StatusCode != HttpStatusCode.OK)
+                    Assert.Fail(url + " did not return 200 OK");
+            });
+            foreach (var item in containsItems)
+            {
+                if (!text.Contains(item))
+                {
+                    Assert.Fail(item + " was not found in " + url);
+                }
+            }
+        }
 
-		public void Assert200UrlContentType(string url, string contentType)
-		{
+        public void Assert200UrlContentType(string url, string contentType)
+        {
             url.Print();
             url.GetStringFromUrl(AcceptContentType, r => {
-				if (r.StatusCode != HttpStatusCode.OK)
-					Assert.Fail(url + " did not return 200 OK: " + r.StatusCode);
-				if (!r.ContentType.StartsWith(contentType))
-					Assert.Fail(url + " did not return contentType " + contentType);
-			});
-		}
+                if (r.StatusCode != HttpStatusCode.OK)
+                    Assert.Fail(url + " did not return 200 OK: " + r.StatusCode);
+                if (!r.ContentType.StartsWith(contentType))
+                    Assert.Fail(url + " did not return contentType " + contentType);
+            });
+        }
 
-		public static string Host = "http://localhost:1337";
+        public static string Host = "http://localhost:1337";
 
-		static string ViewRockstars = "<!--view:Rockstars.cshtml-->";
+        static string ViewRockstars = "<!--view:Rockstars.cshtml-->";
         static string ViewRockstars2 = "<!--view:Rockstars2.cshtml-->";
         static string ViewRockstars3 = "<!--view:Rockstars3.cshtml-->";
-		static string ViewRockstarsMark = "<!--view:RockstarsMark.md-->";
-		static string ViewNoModelNoController = "<!--view:NoModelNoController.cshtml-->";
-		static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
+        static string ViewRockstarsMark = "<!--view:RockstarsMark.md-->";
+        static string ViewNoModelNoController = "<!--view:NoModelNoController.cshtml-->";
+        static string ViewTypedModelNoController = "<!--view:TypedModelNoController.cshtml-->";
         static string ViewPage1 = "<!--view:Page1.cshtml-->";
         static string ViewPage2 = "<!--view:Page2.cshtml-->";
         static string ViewPage3 = "<!--view:Page3.cshtml-->";
@@ -90,7 +100,7 @@ namespace RazorRockstars.Console.Files
         static string View_Pages_Dir_Default = "<!--view:Pages/Dir/default.cshtml-->";
         static string ViewM_Pages_Dir2_Default = "<!--view:Pages/Dir2/default.md-->";
 
-		static string Template_Layout = "<!--template:_Layout.cshtml-->";
+        static string Template_Layout = "<!--template:_Layout.cshtml-->";
         static string Template_Pages_Layout = "<!--template:Pages/_Layout.cshtml-->";
         static string Template_Pages_Dir_Layout = "<!--template:Pages/Dir/_Layout.cshtml-->";
         static string Template_SimpleLayout = "<!--template:SimpleLayout.cshtml-->";
@@ -102,23 +112,23 @@ namespace RazorRockstars.Console.Files
         static string TemplateM_Pages_Dir_Layout = "<!--template:Pages/Dir/_Layout.shtml-->";
         static string TemplateM_HtmlReport = "<!--template:HtmlReport.shtml-->";
 
-		[Test]
-		public void Can_get_page_with_default_view_and_template()
-		{
+        [Test]
+        public void Can_get_page_with_default_view_and_template()
+        {
             Assert200(Host + "/rockstars", ViewRockstars, Template_HtmlReport);
-		}
+        }
 
-		[Test]
-		public void Can_get_page_with_alt_view_and_default_template()
-		{
+        [Test]
+        public void Can_get_page_with_alt_view_and_default_template()
+        {
             Assert200(Host + "/rockstars?View=Rockstars2", ViewRockstars2, Template_Layout);
-		}
-		
-		[Test]
-		public void Can_get_page_with_alt_viewengine_view_and_default_template()
-		{
+        }
+
+        [Test]
+        public void Can_get_page_with_alt_viewengine_view_and_default_template()
+        {
             Assert200(Host + "/rockstars?View=RockstarsMark", ViewRockstarsMark, TemplateM_HtmlReport);
-		}
+        }
 
         [Test]
         public void Can_get_page_with_default_view_and_alt_template()
@@ -198,7 +208,7 @@ namespace RazorRockstars.Console.Files
             Assert200(Host + "/Pages/Dir2/",
                 ViewM_Pages_Dir2_Default, TemplateM_Pages_Layout);
         }
-        
+
         [Test] //Good for testing adhoc compilation
         public void Can_get_last_view_template_compiled()
         {
