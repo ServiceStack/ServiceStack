@@ -38,7 +38,11 @@ namespace ServiceStack.WebHost.Endpoints.Formats
         public static string SharedDir = "/Views/Shared";
         public static string[] PageExts = new[] { MarkdownExt, TemplateExt };
 
-        public static MarkdownFormat Instance = new MarkdownFormat();
+        private static MarkdownFormat instance;
+        public static MarkdownFormat Instance
+        {
+            get { return instance ?? (instance = new MarkdownFormat()); }
+        }
 
         // ~/View - Dynamic Pages
         public Dictionary<string, MarkdownPage> ViewPages = new Dictionary<string, MarkdownPage>(
@@ -87,6 +91,8 @@ namespace ServiceStack.WebHost.Endpoints.Formats
 
         public void Register(IAppHost appHost)
         {
+            if (instance == null) instance = this;
+
             this.AppHost = appHost;
             appHost.ViewEngines.Add(this);
 
