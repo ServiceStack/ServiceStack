@@ -14,6 +14,7 @@ namespace ServiceStack.ServiceInterface.Testing
         {
             this.FormData = new NameValueCollection();
             this.Headers = new NameValueCollection();
+            this.QueryString = new NameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
             this.Container = new Container();
