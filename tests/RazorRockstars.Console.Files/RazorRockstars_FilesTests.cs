@@ -240,7 +240,7 @@ namespace RazorRockstars.Console.Files
                 "MVC Razor", () => {
                     mockReq = new MockHttpRequest { OperationName = "RockstarsRazor" };
                     mockRes = new MockHttpResponse();
-                    markdownFmt.ProcessRequest(mockReq, mockRes, dto);
+                    razorFormat.ProcessRequest(mockReq, mockRes, dto);
                 },
                 "Markdown Razor", () => {
                     mockReq = new MockHttpRequest { OperationName = "RockstarsMark" };
