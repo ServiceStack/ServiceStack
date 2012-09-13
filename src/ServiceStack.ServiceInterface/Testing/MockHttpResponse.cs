@@ -1,5 +1,6 @@
 using System.IO;
 using ServiceStack.ServiceHost;
+using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface.Testing
 {
@@ -8,6 +9,7 @@ namespace ServiceStack.ServiceInterface.Testing
         public MockHttpResponse()
         {
             this.Cookies = new Cookies(this);
+            this.OutputStream = new MemoryStream();
         }
 
         public object OriginalResponse { get; private set; }
@@ -43,6 +45,13 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public void Flush()
         {
+            this.OutputStream.Position = 0;
+        }
+
+        public string ReadAsString()
+        {
+            this.OutputStream.Position = 0;
+            return this.OutputStream.ReadFully().FromUtf8Bytes();
         }
 
         public bool IsClosed { get; private set; }

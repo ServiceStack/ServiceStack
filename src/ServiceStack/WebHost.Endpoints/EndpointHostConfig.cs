@@ -24,6 +24,8 @@ namespace ServiceStack.WebHost.Endpoints
 {
 	public class EndpointHostConfig
 	{
+	    private static ILog log = LogManager.GetLogger(typeof (EndpointHostConfig));
+
 		public static bool SkipPathValidation = false;
 		public static string ServiceStackPath = null;
 
@@ -200,6 +202,8 @@ namespace ServiceStack.WebHost.Endpoints
                     ConfigUtils.GetListFromAppSetting(NamespacesAppSettingsKey)
                         .ForEach(x => razorNamespaces.Add(x));
                 }
+                
+                log.Debug("Loaded Razor Namespaces: " + razorNamespaces.Dump());
 
                 return razorNamespaces;
             }
