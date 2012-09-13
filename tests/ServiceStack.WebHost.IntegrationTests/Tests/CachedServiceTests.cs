@@ -37,6 +37,17 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
         [Test]
+        public void Can_call_Cached_WebService_with_ProtoBuf_without_compression()
+        {
+            var client = new ProtoBufServiceClient(Config.ServiceStackBaseUri);
+            client.DisableAutoCompression = true;
+            client.Get<MoviesResponse>("/cached/movies");
+            var response2 = client.Get<MoviesResponse>("/cached/movies");
+
+            Assert.That(response2.Movies.Count, Is.EqualTo(ResetMoviesService.Top5Movies.Count));
+        }
+
+        [Test]
 		public void Can_call_Cached_WebService_with_JSONP()
 		{
 			var url = Config.ServiceStackBaseUri.CombineWith("/cached/movies?callback=cb");

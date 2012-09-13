@@ -22,39 +22,52 @@ namespace ServiceStack.CacheAccess.Providers
 			IRequestContext context)
 		{
 			string modifiers = null;
-			if (context.ResponseContentType == ContentType.Json)
-			{
-				string jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
-				if (jsonp != null)
-					modifiers = ".jsonp," + jsonp.SafeVarName();
-			}
+            if (!context.ResponseContentType.IsBinary())
+            {
 
-			var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                if (context.ResponseContentType == ContentType.Json)
+                {
+                    string jsonp = context.Get<IHttpRequest>().GetJsonpCallback();
+                    if (jsonp != null)
+                        modifiers = ".jsonp," + jsonp.SafeVarName();
+                }
 
-			bool doCompression = context.CompressionType != null;
-			if (doCompression)
-			{
-				var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, context.CompressionType);
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
 
-				var compressedResult = cacheClient.Get<byte[]>(cacheKeySerializedZip);
-				if (compressedResult != null)
-				{
-					return new CompressedResult(
-						compressedResult,
-						context.CompressionType,
-						context.ResponseContentType);
-				}
-			}
-			else
-			{
-				var serializedResult = cacheClient.Get<string>(cacheKeySerialized);
-				if (serializedResult != null)
-				{
-					return serializedResult;
-				}
-			}
+                bool doCompression = context.CompressionType != null;
+                if (doCompression)
+                {
+                    var cacheKeySerializedZip = GetCacheKeyForCompressed(cacheKeySerialized, context.CompressionType);
 
-			return null;
+                    var compressedResult = cacheClient.Get<byte[]>(cacheKeySerializedZip);
+                    if (compressedResult != null)
+                    {
+                        return new CompressedResult(
+                            compressedResult,
+                            context.CompressionType,
+                            context.ResponseContentType);
+                    }
+                }
+                else
+                {
+                    var serializedResult = cacheClient.Get<string>(cacheKeySerialized);
+                    if (serializedResult != null)
+                    {
+                        return serializedResult;
+                    }
+                }
+            }
+            else
+            {
+                var cacheKeySerialized = GetCacheKeyForSerialized(cacheKey, context.ResponseContentType, modifiers);
+                var serializedResult = cacheClient.Get<byte[]>(cacheKeySerialized);
+                if (serializedResult != null)
+                {
+                    return serializedResult;
+                }
+            }
+
+		    return null;
 		}
 
 		public static object Cache(this ICacheClient cacheClient, 
