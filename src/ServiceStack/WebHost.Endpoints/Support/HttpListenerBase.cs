@@ -15,6 +15,7 @@ using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Extensions;
 
 namespace ServiceStack.WebHost.Endpoints.Support
 {
@@ -117,6 +118,8 @@ namespace ServiceStack.WebHost.Endpoints.Support
 			{
 				this.Listener = new HttpListener();
 			}
+
+            EndpointHost.Config.ServiceStackHandlerFactoryPath = HttpListenerRequestWrapper.GetHandlerPathIfAny(urlBase);
 
 			this.Listener.Prefixes.Add(urlBase);
 

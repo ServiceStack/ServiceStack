@@ -152,11 +152,12 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			{				
 				if (this.pathInfo == null)
 				{
-					var pos = request.RawUrl.IndexOf("?");
+                    var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
+
+                    var pos = request.RawUrl.IndexOf("?");
 					if (pos != -1)
 					{
 						var path = request.RawUrl.Substring(0, pos);
-						var mode = EndpointHost.Config.ServiceStackHandlerFactoryPath;
 						this.pathInfo = HttpRequestExtensions.GetPathInfo(
 							path,
 							mode,
@@ -166,6 +167,8 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 					{
 						this.pathInfo = request.RawUrl.TrimEnd('/');						
 					}
+
+                    this.pathInfo = NormalizePathInfo(pathInfo, mode);
 				}
 				return this.pathInfo;
 			}
@@ -216,7 +219,7 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 			get
 			{
 				return httpMethod
-					?? (httpMethod = request.Headers[Common.Web.HttpHeaders.XHttpMethodOverride] ?? request.HttpMethod);
+					?? (httpMethod = request.Headers[HttpHeaders.XHttpMethodOverride] ?? request.HttpMethod);
 			}
 		}
 
@@ -288,7 +291,30 @@ namespace ServiceStack.WebHost.Endpoints.Extensions
 		{
 		}
 
-		static internal string GetParameter(string header, string attr)
+	    public static string GetHandlerPathIfAny(string listenerUrl)
+	    {
+	        if (listenerUrl == null) return null;
+	        var pos = listenerUrl.IndexOf("://", StringComparison.InvariantCultureIgnoreCase);
+	        if (pos == -1) return null;
+	        var startHostUrl = listenerUrl.Substring(pos + "://".Length);
+	        var endPos = startHostUrl.IndexOf('/');
+	        if (endPos == -1) return null;
+	        var endHostUrl = startHostUrl.Substring(endPos + 1);
+	        return String.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
+	    }
+
+        public static string NormalizePathInfo(string pathInfo, string handlerPath)
+        {
+            if (handlerPath != null && pathInfo.TrimStart('/').StartsWith(
+                handlerPath, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return pathInfo.TrimStart('/').Substring(handlerPath.Length);
+            }
+
+            return pathInfo;
+        }
+
+	    static internal string GetParameter(string header, string attr)
 		{
 			int ap = header.IndexOf(attr);
 			if (ap == -1)

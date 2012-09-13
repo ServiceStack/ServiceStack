@@ -1,23 +1,27 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
-using ServiceStack.Razor;
-using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints;
-using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace RazorRockstars.Console.Files
 {
     [TestFixture]
     public class RazorRockstars_FilesTests
     {
+        //private const string ListeningOn = "http://*:1337/";
+        //public static string Host = "http://localhost:1337";
+
+        private const string ListeningOn = "http://*:1337/subdir/subdir2/";
+        private const string Host = "http://localhost:1337/subdir/subdir2";
+
+        private const string BaseUri = Host + "/";
+
         AppHost appHost;
 
         Stopwatch startedAt;
@@ -29,7 +33,7 @@ namespace RazorRockstars.Console.Files
             startedAt = Stopwatch.StartNew();
             appHost = new AppHost();
             appHost.Init();
-            appHost.Start("http://*:1337/");
+            appHost.Start(ListeningOn);
         }
 
         [TestFixtureTearDown]
@@ -74,8 +78,6 @@ namespace RazorRockstars.Console.Files
             });
         }
 
-        public static string Host = "http://localhost:1337";
-
         static string ViewRockstars = "<!--view:Rockstars.cshtml-->";
         static string ViewRockstars2 = "<!--view:Rockstars2.cshtml-->";
         static string ViewRockstars3 = "<!--view:Rockstars3.cshtml-->";
@@ -111,6 +113,20 @@ namespace RazorRockstars.Console.Files
         static string TemplateM_Pages_Layout = "<!--template:Pages/_Layout.shtml-->";
         static string TemplateM_Pages_Dir_Layout = "<!--template:Pages/Dir/_Layout.shtml-->";
         static string TemplateM_HtmlReport = "<!--template:HtmlReport.shtml-->";
+
+        [Test]
+        public void Can_get_metadata_page()
+        {
+            Assert200(BaseUri.CombineWith("metadata"));
+        }
+
+        [Test]
+        public void Can_get_Rockstars_service()
+        {
+            var client = new JsonServiceClient(BaseUri);
+            var response = client.Get<RockstarsResponse>("rockstars");
+            Assert.That(response.Results.Count, Is.EqualTo(Rockstar.SeedData.Length));
+        }
 
         [Test]
         public void Can_get_page_with_default_view_and_template()
