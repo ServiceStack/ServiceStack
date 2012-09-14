@@ -29,7 +29,9 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Web;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
@@ -42,7 +44,7 @@ namespace ServiceStack.WebHost.Endpoints.Support
 {
 	class StaticFileHandler : IHttpHandler, IServiceStackHttpHandler
 	{
-		private static ILog log = LogManager.GetLogger(typeof (StaticFileHandler));
+		private static readonly ILog log = LogManager.GetLogger(typeof (StaticFileHandler));
 
 		public void ProcessRequest(HttpContext context)
 		{
@@ -94,7 +96,30 @@ namespace ServiceStack.WebHost.Endpoints.Support
                     }
 
                     if (!fi.Exists)
-                        throw new HttpException(404, "File '" + request.PathInfo + "' not found.");
+                    {
+                        var originalFileName = fileName;
+
+                        if (Env.IsMono)
+                        {
+                            //Create a case-insensitive file index of all host files
+                            if (allFiles == null)
+                                allFiles = CreateFileIndex(request.ApplicationFilePath);
+                            if (allDirs == null)
+                                allDirs = CreateDirIndex(request.ApplicationFilePath);
+
+                            if (allFiles.TryGetValue(fileName.ToLower(), out fileName))
+                            {
+                                fi = new FileInfo(fileName);
+                            }
+                        }
+
+                        if (!fi.Exists)
+                        {
+                            var msg = "Static File '" + request.PathInfo + "' not found.";
+                            log.WarnFormat("{0} in path: {1}", msg, originalFileName);
+                            throw new HttpException(404, msg);
+                        }
+                    }
                 }
 
                 TimeSpan maxAge;
@@ -134,16 +159,124 @@ namespace ServiceStack.WebHost.Endpoints.Support
                         r.WriteFile(fileName);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    log.ErrorFormat("Static file {0} forbidden: {1}", request.PathInfo, ex.Message);
                     throw new HttpException(403, "Forbidden.");
                 }
             });
 		}
 
-		public bool IsReusable
+	    static Dictionary<string, string> CreateFileIndex(string appFilePath)
+	    {
+	        log.Debug("Building case-insensitive fileIndex for Mono at: "
+	                  + appFilePath);
+
+	        var caseInsensitiveLookup = new Dictionary<string, string>();
+	        foreach (var file in GetFiles(appFilePath))
+	        {
+	            caseInsensitiveLookup[file.ToLower()] = file;
+	        }
+
+	        return caseInsensitiveLookup;
+	    }
+
+        static Dictionary<string, string> CreateDirIndex(string appFilePath)
+        {
+            var indexDirs = new Dictionary<string, string>();
+
+            foreach (var dir in GetDirs(appFilePath))
+            {
+                indexDirs[dir.ToLower()] = dir;
+            }
+
+            return indexDirs;
+        }
+
+	    public bool IsReusable
 		{
 			get { return true; }
 		}
+
+        public static bool DirectoryExists(string dirPath, string appFilePath)
+        {
+            if (dirPath == null) return false;
+            if (allDirs == null)
+                allDirs = CreateDirIndex(appFilePath);
+
+            var foundDir = allDirs.ContainsKey(dirPath.ToLower());
+
+            //log.DebugFormat("Found dirPath {0} in Mono: ", dirPath, foundDir);
+
+            return foundDir;
+        }
+
+        private static Dictionary<string, string> allDirs; //populated by GetFiles()
+        private static Dictionary<string, string> allFiles;
+
+        static IEnumerable<string> GetFiles(string path)
+        {
+            var queue = new Queue<string>();
+            queue.Enqueue(path);
+
+            while (queue.Count > 0)
+            {
+                path = queue.Dequeue();
+                try
+                {
+                    foreach (string subDir in Directory.GetDirectories(path))
+                    {
+                        queue.Enqueue(subDir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
+                string[] files = null;
+                try
+                {
+                    files = Directory.GetFiles(path);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
+                if (files != null)
+                {
+                    for (int i = 0; i < files.Length; i++)
+                    {
+                        yield return files[i];
+                    }
+                }
+            }
+        }
+
+        static List<string> GetDirs(string path)
+        {
+            var queue = new Queue<string>();
+            queue.Enqueue(path);
+
+            var results = new List<string>();
+
+            while (queue.Count > 0)
+            {
+                path = queue.Dequeue();
+                try
+                {
+                    foreach (string subDir in Directory.GetDirectories(path))
+                    {
+                        queue.Enqueue(subDir);
+                        results.Add(subDir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
+            }
+
+            return results;
+        }
 	}
 }

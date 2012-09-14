@@ -167,6 +167,10 @@ namespace ServiceStack.WebHost.Endpoints
             var configPath = "~/web.config".MapHostAbsolutePath();
             if (File.Exists(configPath))
                 return configPath;
+            
+            configPath = "~/Web.config".MapHostAbsolutePath(); //*nix FS FTW!
+            if (File.Exists(configPath))
+                return configPath;
 
             var appHostDll = new FileInfo(EndpointHost.AppHost.GetType().Assembly.Location).Name;
             configPath = "~/{0}.config".Fmt(appHostDll).MapAbsolutePath();
@@ -203,7 +207,8 @@ namespace ServiceStack.WebHost.Endpoints
                         .ForEach(x => razorNamespaces.Add(x));
                 }
                 
-                log.Debug("Loaded Razor Namespaces: " + razorNamespaces.Dump());
+                log.Debug("Loaded Razor Namespaces: in {0}: {1}: {2}"
+                    .Fmt(configPath, "~/Web.config".MapHostAbsolutePath(), razorNamespaces.Dump()));
 
                 return razorNamespaces;
             }

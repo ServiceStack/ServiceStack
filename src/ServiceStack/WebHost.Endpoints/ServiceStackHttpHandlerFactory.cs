@@ -5,7 +5,6 @@ using System.IO;
 using System.Net;
 using System.Web;
 using ServiceStack.Common;
-using ServiceStack.Common.Utils;
 using ServiceStack.MiniProfiler.UI;
 using ServiceStack.ServiceHost;
 using ServiceStack.Text;
@@ -328,12 +327,32 @@ namespace ServiceStack.WebHost.Endpoints
 			var existingFile = pathParts[0].ToLower();
 			if (WebHostRootFileNames.Contains(existingFile))
 			{
+                var fileExt = Path.GetExtension(filePath);
+			    var isFileRequest = !string.IsNullOrEmpty(fileExt);
+
+                if (!isFileRequest && Env.IsMono)
+                {
+                    //If pathInfo is for Directory try again with redirect including '/' suffix
+                    if (!pathInfo.EndsWith("/"))
+                    {
+                        var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
+                        //"IsMono: httpMethod: {0}, pathInfo: {1}, requestPath: {2}, filePath: {3}, appFilePath: {4}"
+                        //    .Print(httpMethod, pathInfo, requestPath, filePath, appFilePath);
+
+                        if (Support.StaticFileHandler.DirectoryExists(filePath, appFilePath))
+                        {
+                            return new RedirectHttpHandler {
+                                RelativeUrl = pathInfo + "/",
+                            };
+                        }
+                    }
+                }
+
 				//e.g. CatchAllHandler to Process Markdown files
 				var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
 				if (catchAllHandler != null) return catchAllHandler;
 
-                var fileExt = Path.GetExtension(filePath);
-                if (string.IsNullOrEmpty(fileExt)) return NotFoundHttpHandler;
+                if (!isFileRequest) return NotFoundHttpHandler;
 
 				return ShouldAllow(requestPath) ? StaticFileHandler : ForbiddenHttpHandler;
 			}
