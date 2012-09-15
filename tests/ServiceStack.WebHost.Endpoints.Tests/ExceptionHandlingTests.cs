@@ -109,6 +109,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 JsConfig.EmitCamelCaseNames = true;
 
+                SetConfig(new EndpointHostConfig { DebugMode = false });
+
                 //Uncomment to enable server-side stack traces
                 //SetConfig(new EndpointHostConfig { DebugMode = true });
 
@@ -135,6 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
+            EndpointHost.ExceptionHandler = null;
         }
 
         static IRestClient[] ServiceClients = 
