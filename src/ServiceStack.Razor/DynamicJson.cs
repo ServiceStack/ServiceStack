@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Text;
 using ServiceStack.Text;
 
@@ -7,7 +8,7 @@ namespace ServiceStack.Razor
 {
     public class DynamicJson : DynamicObject
     {
-        private readonly IDictionary<string, object> hash = new Dictionary<string, object>();
+        private readonly IDictionary<string, object> _hash = new Dictionary<string, object>();
 
         public static string Serialize(dynamic instance)
         {
@@ -17,24 +18,26 @@ namespace ServiceStack.Razor
 
         public static dynamic Deserialize(string json)
         {
-            var hash = JsonSerializer.DeserializeFromString<IDictionary<string, object>>(json);
+            // Support arbitrary nesting by using JsonObject
+            var deserialized = JsonSerializer.DeserializeFromString<JsonObject>(json);
+            var hash = deserialized.ToDictionary<KeyValuePair<string, string>, string, object>(entry => entry.Key, entry => entry.Value);
             return new DynamicJson(hash);
         }
 
         public DynamicJson(IEnumerable<KeyValuePair<string, object>> hash)
         {
-            this.hash.Clear();
+            _hash.Clear();
             foreach (var entry in hash)
             {
-                this.hash.Add(Underscored(entry.Key), entry.Value);
+                _hash.Add(Underscored(entry.Key), entry.Value);
             }
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
             var name = Underscored(binder.Name);
-            hash[name] = value;
-            return hash[name] == value;
+            _hash[name] = value;
+            return _hash[name] == value;
         }
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
@@ -45,22 +48,21 @@ namespace ServiceStack.Razor
 
         public override string ToString()
         {
-            return JsonSerializer.SerializeToString(hash);
+            return JsonSerializer.SerializeToString(_hash);
         }
 
         private bool YieldMember(string name, out object result)
         {
-            if (hash.ContainsKey(name))
+            if (_hash.ContainsKey(name))
             {
-                var json = hash[name].ToString();
+                var json = _hash[name].ToString();
                 if (json.TrimStart(' ').StartsWith("{"))
                 {
-                    var nested = JsonSerializer.DeserializeFromString<IDictionary<string, object>>(json);
-                    result = new DynamicJson(nested);
+                    result = Deserialize(json);
                     return true;
                 }
                 result = json;
-                return hash[name] == result;
+                return _hash[name] == result;
             }
             result = null;
             return false;
