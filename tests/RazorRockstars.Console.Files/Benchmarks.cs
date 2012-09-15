@@ -11,6 +11,7 @@ using ServiceStack.WebHost.Endpoints.Formats;
 
 namespace RazorRockstars.Console.Files
 {
+    [Explicit("Ignore benchmarks")]
     [TestFixture]
     public class Benchmarks
     {
