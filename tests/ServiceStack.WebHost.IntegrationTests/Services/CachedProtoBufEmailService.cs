@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 
         protected override object Run(UncachedProtoBufEmail request)
         {
-            return new ProtoBufEmail() { FromAddress = request.FromAddress ?? "none" };
+            return new ProtoBufEmail { FromAddress = request.FromAddress ?? "none" };
         }
     }
 

@@ -70,6 +70,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public virtual void Release(object instance) { }
 		    
             public void OnEndRequest() {}
+		    
+            public IServiceRoutes Routes { get; private set; }
 
 		    public T TryResolve<T>()
 			{
@@ -102,7 +104,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 				Config.ServiceManager.RegisterService(serviceType);
 			}
 
-			public void LoadPlugin(params IPlugin[] plugins)
+		    public List<IPlugin> Plugins { get; private set; }
+
+		    public void LoadPlugin(params IPlugin[] plugins)
 			{
 				plugins.ToList().ForEach(x => x.Register(this));
 			}
