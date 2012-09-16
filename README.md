@@ -253,14 +253,9 @@ Service Stack is under continuous improvement and is always adding features that
 ## Similar open source projects
 Similar Open source .NET projects for developing or accessing web services include:
 
- * Nancy Fx - A Sinatra-inspired lightweight Web Framework for .NET:
-     * [nancyfx.org](http://nancyfx.org)
-
- * Fubu MVC - a "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
-     * [mvc.fubu-project.org](http://mvc.fubu-project.org)
-
- * Rest Sharp - an open source REST client for .NET
-     * [restsharp.org](http://restsharp.org)
+ * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
+ * [Fubu MVC](http://mvc.fubu-project.org) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
+ * [Rest Sharp](http://restsharp.org) - An open source REST client for .NET
 
 ## OSS Libraries used
 
