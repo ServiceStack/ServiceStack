@@ -225,6 +225,11 @@
             Define custom raw serialization fn
             </summary>
         </member>
+        <member name="F:ServiceStack.Text.JsConfig`1.onSerializingFn">
+            <summary>
+            Define custom serialization hook
+            </summary>
+        </member>
         <member name="F:ServiceStack.Text.JsConfig`1.DeSerializeFn">
             <summary>
             Define custom deserialization fn for BCL Structs
