@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             {
                 tmp.Append(Convert.ToChar(((byte)rnd.Next(254))).ToString());
             }
-            return tmp.ToString();
+            return Convert.ToBase64String(tmp.ToString().ToUtf8Bytes());
         }
 
         [Test]
