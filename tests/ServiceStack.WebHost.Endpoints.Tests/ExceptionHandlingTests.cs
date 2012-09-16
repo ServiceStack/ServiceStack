@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.ServiceInterface.ServiceModel;
 using ServiceStack.ServiceInterface;
 using ServiceStack.Common.Web;
@@ -79,6 +80,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    public class UncatchedException { }
+    public class UncatchedExceptionResponse { }
+    public class UncatchedExceptionService : IService<UncatchedException>
+    {
+        public object Execute(UncatchedException request)
+        {
+            //We don't wrap a try..catch block around the service (which happens with ServiceBase<> automatically)
+            //so the global exception handling strategy is invoked
+            throw new ArgumentException();
+        }
+    }
+
+
     [TestFixture]
     public class ExceptionHandlingTests
     {
@@ -95,8 +109,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 JsConfig.EmitCamelCaseNames = true;
 
+                SetConfig(new EndpointHostConfig { DebugMode = false });
+
                 //Uncomment to enable server-side stack traces
                 //SetConfig(new EndpointHostConfig { DebugMode = true });
+
+                //Custom global exception handling strategy
+                this.ExceptionHandler = (req, res, operationName, ex) =>
+                {
+                    res.Write(string.Format("Exception {0}", ex.GetType().Name));
+                    res.EndServiceStackRequest(skipHeaders: true);
+                };
             }
         }
 
@@ -114,6 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
+            EndpointHost.ExceptionHandler = null;
         }
 
         static IRestClient[] ServiceClients = 
@@ -242,6 +266,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
                 Assert.That(body, Is.EqualTo(""));
             }
+        }
+
+        [Test]
+        public void Can_override_global_exception_handling()
+        {
+            var req = (HttpWebRequest)WebRequest.Create(PredefinedJsonUrl<UncatchedException>());
+            var res = req.GetResponse().DownloadText();
+            Assert.AreEqual("Exception ArgumentException", res);
         }
     }
 }
