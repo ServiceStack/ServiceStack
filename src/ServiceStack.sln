@@ -32,6 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec = ..\NuGet\ServiceStack.Mvc\servicestack.mvc.nuspec
 		..\NuGet\ServiceStack\servicestack.nuspec = ..\NuGet\ServiceStack\servicestack.nuspec
 		..\NuGet\ServiceStack.Plugins.ProtoBuf\servicestack.plugins.protobuf.nuspec = ..\NuGet\ServiceStack.Plugins.ProtoBuf\servicestack.plugins.protobuf.nuspec
+		..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec = ..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack", "ServiceStack\ServiceStack.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"

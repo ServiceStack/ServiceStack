@@ -31,6 +31,8 @@ namespace ServiceStack.ServiceInterface.Testing
         public virtual void Release(object instance) { }
         
         public void OnEndRequest() {}
+        
+        public IServiceRoutes Routes { get; private set; }
 
         public void Register<T>(T instance)
         {
@@ -72,6 +74,8 @@ namespace ServiceStack.ServiceInterface.Testing
 
             Config.ServiceManager.RegisterService(serviceType);
         }
+
+        public List<IPlugin> Plugins { get; private set; }
 
         public void LoadPlugin(params IPlugin[] plugins)
         {

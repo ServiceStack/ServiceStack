@@ -36,6 +36,11 @@ namespace ServiceStack.WebHost.Endpoints
         /// Called at the end of each request. Enables Request Scope.
         /// </summary>
 	    void OnEndRequest();
+
+        /// <summary>
+        /// Register user-defined custom routes.
+        /// </summary>
+        IServiceRoutes Routes { get; }
 		
 		/// <summary>
 		/// Register custom ContentType serializers
@@ -88,6 +93,11 @@ namespace ServiceStack.WebHost.Endpoints
 		/// <param name="serviceType"></param>
 		/// <param name="atRestPaths"></param>
 		void RegisterService(Type serviceType, params string[] atRestPaths);
+
+	    /// <summary>
+	    /// List of pre-registered and user-defined plugins to be enabled in this AppHost
+	    /// </summary>
+        List<IPlugin> Plugins { get;  }
 
 		/// <summary>
 		/// Apply plugins to this AppHost
