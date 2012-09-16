@@ -215,8 +215,8 @@ the date: 02/06/2012 06:42:45</p>
 			var html = RenderToHtml(template, productArgs);
 
             html.Print();
-			Assert.That(html.Substring(0,html.Length-25),
-                Is.EqualTo(expectedHtml.Substring(0, html.Length - 25)));
+			Assert.That(html.Substring(0,html.Length-27),
+                Is.EqualTo(expectedHtml.Substring(0, html.Length - 27)));
 		}
 
 		[Test]
