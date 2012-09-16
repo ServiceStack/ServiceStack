@@ -201,6 +201,17 @@ namespace ServiceStack.WebHost.Endpoints.Support
         public static bool DirectoryExists(string dirPath, string appFilePath)
         {
             if (dirPath == null) return false;
+
+            try
+            {
+                if (!Env.IsMono)
+                    return Directory.Exists(dirPath);
+            }
+            catch
+            {
+                return false;
+            }
+
             if (allDirs == null)
                 allDirs = CreateDirIndex(appFilePath);
 

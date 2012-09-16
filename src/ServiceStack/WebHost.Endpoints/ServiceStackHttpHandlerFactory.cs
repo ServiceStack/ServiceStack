@@ -28,6 +28,7 @@ namespace ServiceStack.WebHost.Endpoints
 		static private readonly IHttpHandler StaticFileHandler = new StaticFileHandler();
 		private static readonly bool IsIntegratedPipeline = false;
 		private static readonly bool ServeDefaultHandler = false;
+		private static readonly bool AutoRedirectsDirs = false;
 		private static Func<IHttpRequest, IHttpHandler>[] RawHttpHandlers;
 
 		[ThreadStatic]
@@ -52,6 +53,7 @@ namespace ServiceStack.WebHost.Endpoints
 
 			var isAspNetHost = HttpListenerBase.Instance == null || HttpContext.Current != null;
 			WebHostPhysicalPath = EndpointHost.Config.WebHostPhysicalPath;
+            AutoRedirectsDirs = isAspNetHost && !Env.IsMono;
 
 			//Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
 			var hostedAtRootPath = EndpointHost.Config.ServiceStackHandlerFactoryPath == null;
@@ -330,16 +332,14 @@ namespace ServiceStack.WebHost.Endpoints
                 var fileExt = Path.GetExtension(filePath);
 			    var isFileRequest = !string.IsNullOrEmpty(fileExt);
 
-                if (!isFileRequest && Env.IsMono)
+                if (!isFileRequest && !AutoRedirectsDirs)
                 {
                     //If pathInfo is for Directory try again with redirect including '/' suffix
                     if (!pathInfo.EndsWith("/"))
                     {
                         var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
-                        //"IsMono: httpMethod: {0}, pathInfo: {1}, requestPath: {2}, filePath: {3}, appFilePath: {4}"
-                        //    .Print(httpMethod, pathInfo, requestPath, filePath, appFilePath);
-
-                        if (Support.StaticFileHandler.DirectoryExists(filePath, appFilePath))
+                        var redirect = Support.StaticFileHandler.DirectoryExists(filePath, appFilePath);
+                        if (redirect)
                         {
                             return new RedirectHttpHandler {
                                 RelativeUrl = pathInfo + "/",
