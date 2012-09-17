@@ -102,3 +102,4 @@
  - [i-e-b](https://github.com/i-e-b) (Iain Ballard)
  - [pietervp](https://github.com/pietervp) (Pieter Van Parys)
  - [franklinwise](https://github.com/franklinwise)
+ - [ckasabula](https://github.com/ckasabula) (Chuck Kasabula)
