@@ -380,6 +380,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [pingvinen](https://github.com/pingvinen) (Patrick)
  - [citndev](https://github.com/CITnDev) (Sebastien Curutchet)
  - [cyberprune](https://github.com/cyberprune)
+ - [jorbor](https://github.com/jorbor) (Jordan Hayashi)
  
 ***
 
