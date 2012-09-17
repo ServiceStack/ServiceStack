@@ -377,6 +377,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [dbhobbs](https://github.com/dbhobbs) (Daniel Hobbs)
  - [bculberson](https://github.com/bculberson) (Brad Culberson)
  - [awr](https://github.com/awr) (Andrew)
+ - [pingvinen](https://github.com/pingvinen) (Patrick)
 
 ***
 
