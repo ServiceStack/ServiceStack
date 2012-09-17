@@ -381,6 +381,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [citndev](https://github.com/CITnDev) (Sebastien Curutchet)
  - [cyberprune](https://github.com/cyberprune)
  - [jorbor](https://github.com/jorbor) (Jordan Hayashi)
+ - [bojanv55](https://github.com/bojanv55)
  
 ***
 
