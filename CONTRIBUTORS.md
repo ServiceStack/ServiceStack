@@ -95,3 +95,4 @@
  - [bculberson](https://github.com/bculberson) (Brad Culberson)
  - [awr](https://github.com/awr) (Andrew)
  - [pingvinen](https://github.com/pingvinen) (Patrick)
+ - [citndev](https://github.com/CITnDev) (Sebastien Curutchet)
