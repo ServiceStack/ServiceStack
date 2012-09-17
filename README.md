@@ -379,7 +379,8 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [awr](https://github.com/awr) (Andrew)
  - [pingvinen](https://github.com/pingvinen) (Patrick)
  - [citndev](https://github.com/CITnDev) (Sebastien Curutchet)
-
+ - [cyberprune](https://github.com/cyberprune)
+ 
 ***
 
 Runs on both Mono and .NET 3.5. _(Live preview hosted on Mono / CentOS)_
