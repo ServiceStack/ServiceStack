@@ -384,6 +384,7 @@ A big thanks to GitHub and all of ServiceStack's contributors:
  - [bojanv55](https://github.com/bojanv55)
  - [i-e-b](https://github.com/i-e-b) (Iain Ballard)
  - [pietervp](https://github.com/pietervp) (Pieter Van Parys)
+ - [franklinwise](https://github.com/franklinwise)
  
 ***
 
