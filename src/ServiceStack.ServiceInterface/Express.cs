@@ -272,7 +272,7 @@ namespace ServiceStack.ServiceInterface
             try
             {
                 BeforeEachRequest(request);
-                return AfterEachRequest(request, Run(request));
+                return AfterEachRequest(request, Run(null, request));
             }
             catch (Exception ex)
             {
