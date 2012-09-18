@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using ServiceStack.CacheAccess;
+using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
@@ -142,8 +144,25 @@ namespace ServiceStack.WebHost.Endpoints
 
 			AfterPluginsLoaded(specifiedContentType);
 
+            if (AppHost.TryResolve<ICacheClient>() == null)
+                Container.Register<ICacheClient>(new MemoryCacheClient());
+
 		    ReadyAt = DateTime.Now;
 		}
+
+        /// <summary>
+        /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
+        /// </summary>
+	    public static Funq.Container Container
+	    {
+	        get { 
+                var aspHost = AppHost as AppHostBase;
+                if (aspHost != null)
+                    return aspHost.Container;
+	            var listenerHost = AppHost as HttpListenerBase;
+                return listenerHost != null ? listenerHost.Container : null;
+	        }
+	    }
 
 	    private static void ConfigurePlugins()
 	    {
