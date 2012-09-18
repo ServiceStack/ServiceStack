@@ -22,6 +22,8 @@ namespace ServiceStack.ServiceInterface
             {
                 if (!this.baseUri.StartsWith("/"))
                     this.baseUri = "/" + this.baseUri;
+
+                this.baseUri = this.baseUri.TrimEnd('/');
             }
         }
         
