@@ -73,7 +73,7 @@ namespace ServiceStack.ServiceInterface.Providers
                 entry.RequestDto = requestDto;
                 if (httpReq != null) entry.FormData = httpReq.FormData.ToDictionary();
             }
-            if (response.IsErrorResponse()) {
+            if (!response.IsErrorResponse()) {
                 if (EnableResponseTracking)
                     entry.ResponseDto = response;
             }
