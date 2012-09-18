@@ -82,7 +82,7 @@
     <Compile Include="Compilation\CSharp\CSharpRazorCodeGenerator.cs" />
     <Compile Include="Compilation\CSharp\CSharpRazorCodeLanguage.cs" />
     <Compile Include="Dapper\SqlMapper.cs" />
-    <Compile Include="DynamicJson.cs" />
+    <Compile Include="Json\DynamicJson.cs" />
     <Compile Include="DynamicRequestObject.cs" />
     <Compile Include="ErrorViewPage.cs" />
     <Compile Include="ServiceStack\CSharpRazorCodeGenerator.cs" />

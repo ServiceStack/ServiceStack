@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using ServiceStack.Text;
 
-namespace ServiceStack.Razor
+namespace ServiceStack.Razor.Json
 {
+    /// <summary>
+    /// Also in .NET 4.0 of ServiceStack.Text
+    /// </summary>
     public class DynamicJson : DynamicObject
     {
         private readonly IDictionary<string, object> _hash = new Dictionary<string, object>();
