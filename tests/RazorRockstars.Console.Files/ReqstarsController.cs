@@ -14,7 +14,7 @@ namespace Alternate.ExpressLike.Controller.Proposal
     ///   - only returns object or void
     ///
     /// Notes: 
-    /// By default each method/route is automatically available in every registered Content-Type (HTTP Only).
+    /// Content Negotiation built-in, i.e. by default each method/route is automatically available in every registered Content-Type (HTTP Only).
     /// Express routes wont be accessible in ServiceStack's typed service clients.
     /// Any Views rendered is based on Returned DTO type, see: http://razor.servicestack.net/#unified-stack
     /// </summary>
@@ -42,7 +42,7 @@ namespace Alternate.ExpressLike.Controller.Proposal
         }
 
         [Route("/{Id}", "GET")]
-        public object Get(IntId request) //Returning generic types (or collections) directly wont match HTML views (good for JSON,XML,etc)
+        public object Get(IntId request) //Returning generic types (or collections) directly wont match HTML views (still good for JSON,XML,etc)
         {
             return DbFactory.Run(db => db.Select<Reqstar>(q => q.Id == request.Id));
         }
