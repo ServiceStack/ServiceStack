@@ -30,7 +30,7 @@ namespace Alternate.ExpressLike.Controller.Proposal
         {
             using (var db = DbFactory.Open())
             {
-                return new ReqstarsResponse
+                return new ReqstarsResponse //matches ReqstarsResponse.cshtml razor view
                 {
                     Aged = request.Age,
                     Total = db.GetScalar<int>("select count(*) from Reqstar"),
@@ -39,6 +39,12 @@ namespace Alternate.ExpressLike.Controller.Proposal
                           : db.Select<Reqstar>()
                 };
             }
+        }
+
+        [Route("/{Id}", "GET")]
+        public object Get(IntId request) //Returning generic types (or collections) directly wont match HTML views (good for JSON,XML,etc)
+        {
+            return DbFactory.Run(db => db.Select<Reqstar>(q => q.Id == request.Id));
         }
 
         [Route("/", "POST")]
@@ -51,19 +57,7 @@ namespace Alternate.ExpressLike.Controller.Proposal
             }
         }
 
-        [Route("/{Id}", "GET")]
-        public object Get(IntId request)
-        {
-            using (var db = DbFactory.Open())
-            {
-                return new ReqstarsResponse
-                {
-                    Results = db.Select<Reqstar>(q => q.Id == request.Id),
-                };
-            }
-        }
-
-        //public methods with no routes uses its name - equivalent to [Route("/reset")] 
+        //public methods with no routes uses its name - i.e. equivalent to [Route("/reset")] 
         public void Reset(Empty request)
         {
             using (var db = DbFactory.Open())
@@ -133,7 +127,7 @@ namespace Alternate.ExpressLike.Controller.Proposal
         public int Id { get; set; }
     }
 
-    public class DynamicRequest /*: Will be Expando */
+    public class DynamicRequest /*: Will be dynamic / Expando */
     {
         public int Id { get; set; }
     }
