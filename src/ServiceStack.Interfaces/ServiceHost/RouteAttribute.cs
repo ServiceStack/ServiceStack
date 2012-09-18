@@ -10,7 +10,7 @@ namespace ServiceStack.ServiceHost
     ///		path mapping with a service.  Multiple attributes can be applied to 
     ///		each request DTO, to map multiple paths to the service.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class RouteAttribute : Attribute
     {
         /// <summary>
