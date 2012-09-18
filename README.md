@@ -243,8 +243,7 @@ Also included in ServiceStack are libraries that are useful in the development o
 
 
 ## Find out More
- * Twitter: to get updates of ServiceStack, follow [@demisbellot](http://twitter.com/demisbellot) or [@ServiceStack](http://twitter.com/ServiceStack) on twitter.
- * Email any questions to _demis.bellot@gmail.com_
+ * Follow [@demisbellot](http://twitter.com/demisbellot) or [@ServiceStack](http://twitter.com/ServiceStack) for updates.
 
 ## Future Roadmap
 Service Stack is under continuous improvement and is always adding features that are useful for high-performance, scalable and resilient web service scenarios. See the 

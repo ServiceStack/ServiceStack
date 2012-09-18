@@ -12,22 +12,22 @@
     <AssemblyName>ServiceStack.Interfaces.MonoTouch</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;MONOTOUCH</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
     <DefineConstants>MONOTOUCH</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
@@ -453,9 +453,6 @@
     <Compile Include="..\..\ServiceStack.Interfaces\ServiceHost\IAsyncService.cs">
       <Link>ServiceHost\IAsyncService.cs</Link>
     </Compile>
-    <Compile Include="..\..\ServiceStack.Interfaces\ServiceHost\ICanResolve.cs">
-      <Link>ServiceHost\ICanResolve.cs</Link>
-    </Compile>
     <Compile Include="..\..\ServiceStack.Interfaces\ServiceHost\IContentTypeFilter.cs">
       <Link>ServiceHost\IContentTypeFilter.cs</Link>
     </Compile>
@@ -587,6 +584,12 @@
     </Compile>
     <Compile Include="..\..\ServiceStack.Interfaces\Redis\ItemRef.cs">
       <Link>Redis\ItemRef.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ServiceStack.Interfaces\ServiceHost\IResolver.cs">
+      <Link>ServiceHost\IResolver.cs</Link>
+    </Compile>
+    <Compile Include="..\..\ServiceStack.Interfaces\ServiceHost\RouteAttribute.cs">
+      <Link>ServiceHost\RouteAttribute.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>
