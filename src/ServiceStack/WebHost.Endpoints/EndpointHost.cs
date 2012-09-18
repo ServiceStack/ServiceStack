@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Funq;
 using ServiceStack.CacheAccess;
 using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
@@ -153,14 +154,14 @@ namespace ServiceStack.WebHost.Endpoints
         /// <summary>
         /// The AppHost.Container. Note: it is not thread safe to register dependencies after AppStart.
         /// </summary>
-	    public static Funq.Container Container
+	    public static Container Container
 	    {
 	        get { 
                 var aspHost = AppHost as AppHostBase;
                 if (aspHost != null)
                     return aspHost.Container;
 	            var listenerHost = AppHost as HttpListenerBase;
-                return listenerHost != null ? listenerHost.Container : null;
+                return listenerHost != null ? listenerHost.Container : new Container(); //testing may use alt AppHost
 	        }
 	    }
 
