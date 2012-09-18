@@ -12,22 +12,22 @@
     <AssemblyName>ServiceStack.Common.MonoTouch</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;MONOTOUCH</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
+    <ConsolePause>False</ConsolePause>
     <DefineConstants>MONOTOUCH</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
@@ -411,15 +411,18 @@
     <Compile Include="..\..\ServiceStack.Common\Web\SerializationContext.cs">
       <Link>Web\SerializationContext.cs</Link>
     </Compile>
+    <Compile Include="..\..\ServiceStack.Common\RequestContextExtensions.cs">
+      <Link>RequestContextExtensions.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Interfaces.MonoTouch\ServiceStack.Interfaces.MonoTouch.csproj">
-      <Project>{4E0544B6-8D34-45D2-AB27-605F51BF4C55}</Project>
-      <Name>ServiceStack.Interfaces.MonoTouch</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\ServiceStack.Text\src\ServiceStack.Text.MonoTouch\ServiceStack.Text.MonoTouch\ServiceStack.Text.MonoTouch.csproj">
       <Project>{1137B5AC-2259-413C-A473-93721D2A7551}</Project>
       <Name>ServiceStack.Text.MonoTouch</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack.Interfaces.MonoTouch\ServiceStack.Interfaces.MonoTouch.csproj">
+      <Project>{4E0544B6-8D34-45D2-AB27-605F51BF4C55}</Project>
+      <Name>ServiceStack.Interfaces.MonoTouch</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
