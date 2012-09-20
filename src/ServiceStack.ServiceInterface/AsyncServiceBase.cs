@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceInterface
                 producer.Publish(request);
             }
 
-            return ServiceUtils.CreateResponseDto(request);
+            return DtoUtils.CreateResponseDto(request);
         }
 
         /// <summary>

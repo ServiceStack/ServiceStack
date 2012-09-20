@@ -94,5 +94,10 @@ namespace ServiceStack.ServiceInterface.Testing
         }
 		
 		public IVirtualPathProvider VirtualPathProvider { get; set; }
-	}
+        
+        public IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

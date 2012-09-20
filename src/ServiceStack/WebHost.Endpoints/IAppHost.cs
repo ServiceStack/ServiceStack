@@ -109,6 +109,11 @@ namespace ServiceStack.WebHost.Endpoints
         /// Virtual access to file resources
         /// </summary>
 		IVirtualPathProvider VirtualPathProvider { get; set; }
+
+        /// <summary>
+        /// Create a service runner for IService actions
+        /// </summary>
+	    IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext);
 	}
 
 	public interface IHasAppHost

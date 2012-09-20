@@ -104,7 +104,7 @@ namespace ServiceStack.ServiceHost.Tests
 		public void With_TypeFactory()
 		{
 			var requestType = typeof(BasicRequest);
-			serviceController.Register(requestType, typeof(BasicService), new BasicServiceTypeFactory());
+			serviceController.RegisterGServiceExecutor(requestType, typeof(BasicService), new BasicServiceTypeFactory());
 
 			var request = new BasicRequest();
 

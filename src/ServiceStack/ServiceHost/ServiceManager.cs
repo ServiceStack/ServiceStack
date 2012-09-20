@@ -104,7 +104,7 @@ namespace ServiceStack.ServiceHost
 				|| typeof(T).GetGenericTypeDefinition() != typeof(IService<>))
 				throw new ArgumentException("Type {0} is not a Web Service that inherits IService<>".Fmt(typeof(T).FullName));
 
-			this.ServiceController.RegisterService(typeFactory, typeof(T));
+			this.ServiceController.RegisterGService(typeFactory, typeof(T));
 			this.Container.RegisterAutoWired<T>();
 		}
 
@@ -116,7 +116,7 @@ namespace ServiceStack.ServiceHost
 
 			try
 			{
-				this.ServiceController.RegisterService(typeFactory, serviceType);
+				this.ServiceController.RegisterGService(typeFactory, serviceType);
 				this.Container.RegisterAutoWiredType(serviceType);
 			}
 			catch (Exception ex)

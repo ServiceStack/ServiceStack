@@ -112,6 +112,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			}
 
 			public IVirtualPathProvider VirtualPathProvider { get; set; }
+		    
+            public IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
+		    {
+		        throw new NotImplementedException();
+		    }
 		}
 
 		public string GetHtml(object dto, string format)

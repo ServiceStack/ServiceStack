@@ -79,11 +79,13 @@ namespace Alternate.ExpressLike.Controller.Proposal
     
 
     //Types used by the Controller
+    [Route("/reqstars")]
     public class Reqstar
     {
         public static Reqstar[] SeedData = new[] {
             new Reqstar(1, "Foo", "Bar", 20), 
             new Reqstar(2, "Something", "Else", 30), 
+            new Reqstar(3, "Foo2", "Bar2", 20), 
         };
 
         public int Id { get; set; }

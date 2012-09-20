@@ -125,6 +125,7 @@
     <Compile Include="Auth\UnAssignRolesService.cs" />
     <Compile Include="Cors\CorsFeature.cs" />
     <Compile Include="Cors\CorsSupportAttribute.cs" />
+    <Compile Include="ErrorHandler.cs" />
     <Compile Include="Express.cs" />
     <Compile Include="Providers\InMemoryRollingRequestLogger.cs" />
     <Compile Include="Admin\RequestLogsService.cs" />
@@ -210,11 +211,12 @@
     <Compile Include="RequiredPermissionAttribute.cs" />
     <Compile Include="ResponseFilterAttribute.cs" />
     <Compile Include="RoleNames.cs" />
+    <Compile Include="Service.cs" />
     <Compile Include="ServiceExtensions.cs" />
     <Compile Include="RestServiceBase.cs" />
     <Compile Include="ServiceBase.cs" />
-    <Compile Include="ServiceModel\ResponseStatusTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceModel\ResponseStatusTranslator.cs" />
     <Compile Include="ServiceResponseException.cs" />
     <Compile Include="ServiceRoutesExtensions.cs" />
     <Compile Include="ServiceUtils.cs" />

@@ -222,7 +222,13 @@ namespace ServiceStack.WebHost.Endpoints
 			set { EndpointHost.VirtualPathProvider = value; }
 		}
 
-		public virtual void LoadPlugin(params IPlugin[] plugins)
+        public virtual IServiceRunner<TRequest> CreateServiceRunner<TRequest>(ActionContext actionContext)
+        {
+            //cached per service action
+            return new ServiceRunner<TRequest>(this, actionContext);
+        }
+
+	    public virtual void LoadPlugin(params IPlugin[] plugins)
 		{
 			foreach (var plugin in plugins)
 			{

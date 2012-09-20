@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
-using System.Security.Policy;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Common;
@@ -15,7 +13,7 @@ namespace ServiceStack.ServiceHost
 {
 	public static class HttpRequestExtensions
 	{
-		/// <summary>
+	    /// <summary>
 		/// Gets string value from Items[name] then Cookies[name] if exists.
 		/// Useful when *first* setting the users response cookie in the request filter.
 		/// To access the value for this initial request you need to set it in Items[].

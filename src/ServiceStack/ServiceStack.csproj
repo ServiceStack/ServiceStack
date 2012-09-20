@@ -177,6 +177,8 @@
     <Compile Include="MiniProfiler\WebRequestProfilerProvider.Settings.cs" />
     <Compile Include="ServiceHost\ContainerResolveCache.cs" />
     <Compile Include="ServiceHost\Cookies.cs" />
+    <Compile Include="ServiceHost\DtoUtils.cs" />
+    <Compile Include="ServiceHost\ServiceRunner.cs" />
     <Compile Include="VirtualPath\AbstractVirtualDirectoryBase.cs" />
     <Compile Include="VirtualPath\AbstractVirtualFileBase.cs" />
     <Compile Include="VirtualPath\AbstractVirtualPathProviderBase.cs" />
@@ -184,6 +186,7 @@
     <Compile Include="VirtualPath\FileSystemVirtualFile.cs" />
     <Compile Include="VirtualPath\FileSystemVirtualPathProvider.cs" />
     <Compile Include="VirtualPath\InMemoryVirtualPathProvider.cs" />
+    <Compile Include="WebHost.Endpoints\ActionContext.cs" />
     <Compile Include="WebHost.Endpoints\AppHostExtensions.cs" />
     <Compile Include="Markdown\CachedExpressionCompiler.cs" />
     <Compile Include="Markdown\DynamicTypeGenerator .cs" />
