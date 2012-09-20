@@ -254,7 +254,7 @@ namespace ServiceStack.ServiceInterface
         /// <returns></returns>
         protected virtual object HandleException(TRequest request, Exception ex)
         {
-            var errorResponse = ErrorHandler.Instance.HandleException(appHost, request, ex);
+            var errorResponse = ErrorHandler.Instance.HandleException(GetAppHost(), request, ex);
             AfterEachRequest(request, errorResponse ?? ex);
             return errorResponse;
         }
