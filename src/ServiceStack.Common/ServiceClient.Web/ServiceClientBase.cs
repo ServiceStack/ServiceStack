@@ -409,6 +409,7 @@ namespace ServiceStack.ServiceClient.Web
                     {
                         using (var stream = errorResponse.GetResponseStream())
                         {
+                            serviceEx.ResponseBody = stream.ToUtf8String();
                             serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
                         }
                     }
@@ -424,6 +425,7 @@ namespace ServiceStack.ServiceClient.Web
                     {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
+                        ResponseBody = serviceEx.ResponseBody
                     };
                 }
 
