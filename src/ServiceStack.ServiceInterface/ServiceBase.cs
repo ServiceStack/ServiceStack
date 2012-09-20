@@ -382,8 +382,6 @@ namespace ServiceStack.ServiceInterface
                 return Execute(request);
             }
 
-            BeforeEachRequest(request);
-
             //Capture and persist this async request on this Services 'In Queue' 
             //for execution after this request has been completed
             using (var producer = MessageFactory.CreateMessageProducer())

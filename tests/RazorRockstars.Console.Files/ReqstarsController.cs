@@ -76,9 +76,7 @@ namespace Alternate.ExpressLike.Controller.Proposal
             }
         }
     }
-
-
-
+    
 
     //Types used by the Controller
     public class Reqstar
@@ -109,6 +107,11 @@ namespace Alternate.ExpressLike.Controller.Proposal
         public int Total { get; set; }
         public int? Aged { get; set; }
         public List<Reqstar> Results { get; set; }
+    }
+
+    public class ReqstarResponse
+    {
+        public Reqstar Result { get; set; }
     }
 
     public class Reqstars
