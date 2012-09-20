@@ -466,6 +466,7 @@
     <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceHost\IService.cs" />
     <Compile Include="ServiceHost\IExpress.cs" />
     <Compile Include="ServiceHost\IRequiresHttpRequest.cs" />
     <Compile Include="ServiceHost\IRequiresRequestStream.cs" />
@@ -553,7 +554,7 @@
     <Compile Include="ServiceHost\IRestService.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ServiceHost\IService.cs">
+    <Compile Include="ServiceHost\IService`1.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ServiceHost\IServiceController.cs">
@@ -563,6 +564,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ServiceHost\RouteAttribute.cs" />
+    <Compile Include="ServiceInterface.ServiceModel\ErrorResponse.cs" />
     <Compile Include="ServiceInterface.ServiceModel\RequestLogEntry.cs" />
     <Compile Include="ServiceHost\RestServiceAttribute.cs">
       <SubType>Code</SubType>
