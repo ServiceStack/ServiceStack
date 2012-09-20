@@ -290,9 +290,23 @@ namespace Funq
             lock (disposables) disposables.Push(new WeakReference(instance));
 		}
 
+        public bool CheckAdapterFirst { get; set; }
+
 		private ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
 		{
-			var key = new ServiceKey(typeof(TFunc), serviceName);
+            if (CheckAdapterFirst
+                && Adapter != null
+                && typeof(TService) != typeof(IRequestContext)
+                && !Equals(default(TService), Adapter.TryResolve<TService>()))
+            {
+                return new ServiceEntry<TService, TFunc>(
+                    (TFunc)(object)(Func<Container, TService>)(c => Adapter.TryResolve<TService>())) {
+                        Owner = Owner.Container,
+                        Container = this,
+                    };
+            }
+            
+            var key = new ServiceKey(typeof(TFunc), serviceName);
 			ServiceEntry entry = null;
 			Container container = this;
 
@@ -304,9 +318,9 @@ namespace Funq
 
 			if (entry != null)
 			{
-				if (entry.Reuse == ReuseScope.Container && entry.Container != this)
+                if (entry.Reuse == ReuseScope.Container && entry.Container != this)
 					entry = SetServiceEntry(key, ((ServiceEntry<TService, TFunc>)entry).CloneFor(this));
-			}
+            }
 			else
 			{
 				//i.e. if called Resolve<> for Constructor injection
