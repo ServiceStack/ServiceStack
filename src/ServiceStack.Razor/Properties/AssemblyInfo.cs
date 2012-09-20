@@ -37,4 +37,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("Release")]
 #endif
 
-[assembly: AssemblyVersion("3.9.11.0")]
+[assembly: AssemblyVersion("3.9.12.0")]
