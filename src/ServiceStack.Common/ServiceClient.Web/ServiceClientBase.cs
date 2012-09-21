@@ -410,12 +410,13 @@ namespace ServiceStack.ServiceClient.Web
                         using (var stream = errorResponse.GetResponseStream())
                         {
                             serviceEx.ResponseBody = stream.ToUtf8String();
+                            stream.Position = 0;
                             serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
                         }
                     }
                     else
                     {
-                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ToUtf8String();
                     }
                 }
                 catch (Exception innerEx)

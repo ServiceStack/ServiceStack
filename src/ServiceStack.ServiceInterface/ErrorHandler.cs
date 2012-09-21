@@ -45,36 +45,39 @@ namespace ServiceStack.ServiceInterface
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);
 
-            //If Redis is configured, maintain rolling service error logs in Redis (an in-memory datastore)
-            var redisManager = appHost.TryResolve<IRedisClientsManager>();
-            if (redisManager != null)
+            if (appHost != null)
             {
-                try
+                //If Redis is configured, maintain rolling service error logs in Redis (an in-memory datastore)
+                var redisManager = appHost.TryResolve<IRedisClientsManager>();
+                if (redisManager != null)
                 {
-                    //Get a thread-safe redis client from the client manager pool
-                    using (var client = redisManager.GetClient())
+                    try
                     {
-                        //Get a client with a native interface for storing 'ResponseStatus' objects
-                        var redis = client.GetTypedClient<ResponseStatus>();
+                        //Get a thread-safe redis client from the client manager pool
+                        using (var client = redisManager.GetClient())
+                        {
+                            //Get a client with a native interface for storing 'ResponseStatus' objects
+                            var redis = client.GetTypedClient<ResponseStatus>();
 
-                        //Store the errors in predictable Redis-named lists i.e. 
-                        //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 
-                        var redisSeriviceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, typeof(TRequest).Name)];
-                        var redisCombinedErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, CombinedServiceLogId)];
+                            //Store the errors in predictable Redis-named lists i.e. 
+                            //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 
+                            var redisSeriviceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, typeof(TRequest).Name)];
+                            var redisCombinedErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, CombinedServiceLogId)];
 
-                        //Append the error at the start of the service-specific and combined error logs.
-                        redisSeriviceErrorList.Prepend(responseStatus);
-                        redisCombinedErrorList.Prepend(responseStatus);
+                            //Append the error at the start of the service-specific and combined error logs.
+                            redisSeriviceErrorList.Prepend(responseStatus);
+                            redisCombinedErrorList.Prepend(responseStatus);
 
-                        //Clip old error logs from the managed logs
-                        const int rollingErrorCount = 1000;
-                        redisSeriviceErrorList.Trim(0, rollingErrorCount);
-                        redisCombinedErrorList.Trim(0, rollingErrorCount);
+                            //Clip old error logs from the managed logs
+                            const int rollingErrorCount = 1000;
+                            redisSeriviceErrorList.Trim(0, rollingErrorCount);
+                            redisCombinedErrorList.Trim(0, rollingErrorCount);
+                        }
                     }
-                }
-                catch (Exception suppressRedisException)
-                {
-                    Log.Error("Could not append exception to redis service error logs", suppressRedisException);
+                    catch (Exception suppressRedisException)
+                    {
+                        Log.Error("Could not append exception to redis service error logs", suppressRedisException);
+                    }
                 }
             }
 
