@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 #if !(MONOTOUCH || SILVERLIGHT)
@@ -325,6 +326,16 @@ namespace ServiceStack.ServiceClient.Web
         public abstract StreamDeserializerDelegate StreamDeserializer { get; }
 
 #if !SILVERLIGHT
+        public virtual TResponse Send<TResponse>(IReturn<TResponse> request)
+        {
+            return Send<TResponse>((object)request);
+        }
+
+        public virtual void Send(IReturnVoid request)
+        {
+            SendOneWay(request);
+        }
+
         public virtual TResponse Send<TResponse>(object request)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
@@ -640,10 +651,26 @@ namespace ServiceStack.ServiceClient.Web
             DownloadBytes(requestUri, request);
         }
 
+        public virtual void SendOneWay(string httpMethod, string relativeOrAbsoluteUrl, object request)
+        {
+            var requestUri = GetUrl(relativeOrAbsoluteUrl);
+            DownloadBytes(requestUri, request);
+        }
+
+        public virtual void SendAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            SendAsync((object)request, onSuccess, onError);
+        }
+
         public virtual void SendAsync<TResponse>(object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             var requestUri = this.SyncReplyBaseUri.WithTrailingSlash() + request.GetType().Name;
             asyncClient.SendAsync(Web.HttpMethod.Post, requestUri, request, onSuccess, onError);
+        }
+
+        public virtual void GetAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            GetAsync(request.ToUrl(Web.HttpMethod.Get), onSuccess, onError);
         }
 
         public virtual void GetAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
@@ -651,9 +678,19 @@ namespace ServiceStack.ServiceClient.Web
             asyncClient.SendAsync(Web.HttpMethod.Get, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
         }
 
+        public virtual void DeleteAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            DeleteAsync(request.ToUrl(Web.HttpMethod.Delete), onSuccess, onError);
+        }
+
         public virtual void DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(Web.HttpMethod.Delete, GetUrl(relativeOrAbsoluteUrl), null, onSuccess, onError);
+        }
+
+        public virtual void PostAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            PostAsync(request.ToUrl(Web.HttpMethod.Post), request, onSuccess, onError);
         }
 
         public virtual void PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
@@ -661,9 +698,22 @@ namespace ServiceStack.ServiceClient.Web
             asyncClient.SendAsync(Web.HttpMethod.Post, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
         }
 
+        public virtual void PutAsync<TResponse>(IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            PutAsync(request.ToUrl(Web.HttpMethod.Put), request, onSuccess, onError);
+        }
+
         public virtual void PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
         {
             asyncClient.SendAsync(Web.HttpMethod.Put, GetUrl(relativeOrAbsoluteUrl), request, onSuccess, onError);
+        }
+
+        public virtual void CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> request, Action<TResponse> onSuccess, Action<TResponse, Exception> onError)
+        {
+            if (Web.HttpMethod.AllVerbs.Contains(httpVerb.ToUpper()))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            asyncClient.SendAsync(httpVerb, GetUrl(request.ToUrl(httpVerb)), request, onSuccess, onError);
         }
 
         public virtual void CancelAsync()
@@ -695,9 +745,29 @@ namespace ServiceStack.ServiceClient.Web
             }
         }
 
+        public virtual TResponse Get<TResponse>(IReturn<TResponse> request)
+        {
+            return Send<TResponse>(Web.HttpMethod.Get, request.ToUrl(Web.HttpMethod.Get), null);
+        }
+
+        public virtual void Get(IReturnVoid request)
+        {
+            SendOneWay(Web.HttpMethod.Get, request.ToUrl(Web.HttpMethod.Get), null);
+        }
+
         public virtual TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
         {
             return Send<TResponse>(Web.HttpMethod.Get, relativeOrAbsoluteUrl, null);
+        }
+
+        public virtual TResponse Delete<TResponse>(IReturn<TResponse> request)
+        {
+            return Send<TResponse>(Web.HttpMethod.Delete, request.ToUrl(Web.HttpMethod.Delete), null);
+        }
+
+        public virtual void Delete(IReturnVoid request)
+        {
+            SendOneWay(Web.HttpMethod.Delete, request.ToUrl(Web.HttpMethod.Delete), null);
         }
 
         public virtual TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
@@ -705,9 +775,29 @@ namespace ServiceStack.ServiceClient.Web
             return Send<TResponse>(Web.HttpMethod.Delete, relativeOrAbsoluteUrl, null);
         }
 
+        public virtual TResponse Post<TResponse>(IReturn<TResponse> request)
+        {
+            return Send<TResponse>(Web.HttpMethod.Post, request.ToUrl(Web.HttpMethod.Post), request);
+        }
+
+        public virtual void Post(IReturnVoid request)
+        {
+            SendOneWay(Web.HttpMethod.Post, request.ToUrl(Web.HttpMethod.Post), request);
+        }
+
         public virtual TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return Send<TResponse>(Web.HttpMethod.Post, relativeOrAbsoluteUrl, request);
+        }
+
+        public virtual TResponse Put<TResponse>(IReturn<TResponse> request)
+        {
+            return Send<TResponse>(Web.HttpMethod.Put, request.ToUrl(Web.HttpMethod.Put), request);
+        }
+
+        public virtual void Put(IReturnVoid request)
+        {
+            SendOneWay(Web.HttpMethod.Put, request.ToUrl(Web.HttpMethod.Put), request);
         }
 
         public virtual TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
@@ -715,9 +805,35 @@ namespace ServiceStack.ServiceClient.Web
             return Send<TResponse>(Web.HttpMethod.Put, relativeOrAbsoluteUrl, request);
         }
 
+        public virtual TResponse Patch<TResponse>(IReturn<TResponse> request)
+        {
+            return Send<TResponse>(Web.HttpMethod.Patch, request.ToUrl(Web.HttpMethod.Patch), request);
+        }
+
+        public virtual void Patch(IReturnVoid request)
+        {
+            SendOneWay(Web.HttpMethod.Patch, request.ToUrl(Web.HttpMethod.Patch), request);
+        }
+
 		public virtual TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
         {
             return Send<TResponse>(Web.HttpMethod.Patch, relativeOrAbsoluteUrl, request);
+        }
+
+        public virtual void CustomMethod(string httpVerb, IReturnVoid request)
+        {
+            if (Web.HttpMethod.AllVerbs.Contains(httpVerb.ToUpper()))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            SendOneWay(httpVerb, request.ToUrl(httpVerb), request);
+        }
+
+        public virtual TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
+        {
+            if (Web.HttpMethod.AllVerbs.Contains(httpVerb.ToUpper()))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            return Send<TResponse>(httpVerb, request.ToUrl(httpVerb), request);
         }
 
         public virtual TResponse PostFileWithRequest<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, object request)
@@ -737,7 +853,7 @@ namespace ServiceStack.ServiceClient.Web
 #if !MONOTOUCH
                 var nameValueCollection = HttpUtility.ParseQueryString(queryString);
 #endif
-                var boundary = DateTime.Now.Ticks.ToString();
+                var boundary = DateTime.Now.Ticks.ToString(CultureInfo.InvariantCulture);
                 webRequest.ContentType = "multipart/form-data; boundary=" + boundary;
                 boundary = "--" + boundary;
                 var newLine = Environment.NewLine;

@@ -4,13 +4,13 @@ using ServiceStack.Messaging;
 namespace ServiceStack.ServiceHost
 {
     /// <summary>
-    /// Marker interface
+    /// Marker interfaces
     /// </summary>
     public interface IService { }
 
-    //Marker interface
-    public interface IReturn<T> { }
-    public interface IReturnVoid { }
+    public interface IReturn {}
+    public interface IReturn<T> : IReturn { }
+    public interface IReturnVoid : IReturn { }
 
     public interface IServiceRunner
     {
@@ -31,8 +31,9 @@ namespace ServiceStack.ServiceHost
     }
 
 
-    /* Supported signatures:
-     
+    /* Supported signatures: */
+    //Not used or needed, here in-case someone wants to know what the correct signatures should be
+
     public interface IAny<T>
     {
         object Any(T request);
@@ -91,5 +92,4 @@ namespace ServiceStack.ServiceHost
     {
         void Options(T request);
     }
-    */
 }

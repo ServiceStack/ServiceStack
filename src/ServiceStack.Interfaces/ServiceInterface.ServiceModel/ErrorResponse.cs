@@ -1,12 +1,16 @@
-﻿namespace ServiceStack.ServiceInterface.ServiceModel
-{
-    // <summary>
-    // Generic ResponseStatus for when Response Type can't be inferred
-    // </summary>
-    //public class ErrorResponse
-    //{
-    //    public ResponseStatus ResponseStatus { get; set; } 
-    //}
+﻿using System.Runtime.Serialization;
 
-    //Try returning ResponseStatus directly
+namespace ServiceStack.ServiceInterface.ServiceModel
+{
+    /// <summary>
+    /// Generic ResponseStatus for when Response Type can't be inferred.
+    /// In schemaless formats like JSON, JSV it has the same shape as a typed Response DTO
+    /// </summary>
+
+    [DataContract]
+    public class ErrorResponse
+    {
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 }

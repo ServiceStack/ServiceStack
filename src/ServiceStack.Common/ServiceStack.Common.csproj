@@ -291,6 +291,7 @@
     <Compile Include="ServiceClient.Web\Soap12ServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceClient.Web\UrlExtensions.cs" />
     <Compile Include="ServiceClient.Web\WcfServiceClient.cs">
       <SubType>Code</SubType>
     </Compile>
