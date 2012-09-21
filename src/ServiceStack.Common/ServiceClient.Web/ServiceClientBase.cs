@@ -407,10 +407,10 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     if (errorResponse.ContentType.MatchesContentType(ContentType))
                     {
-                        using (var stream = new BufferedStream(errorResponse.GetResponseStream()))
+                        var bytes = errorResponse.GetResponseStream().ReadFully();
+                        using (var stream = new MemoryStream(bytes))
                         {
-                            serviceEx.ResponseBody = stream.ToUtf8String();
-                            stream.Position = 0;
+                            serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                             serviceEx.ResponseDto = DeserializeFromStream<TResponse>(stream);
                         }
                     }
