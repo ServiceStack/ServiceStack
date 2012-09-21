@@ -23,13 +23,6 @@ namespace ServiceStack.Mvc
 		{
 			get
 			{
-				if (userSession != null) return userSession;
-				if (SessionKey != null)
-					userSession = this.Cache.Get<T>(SessionKey);
-				else
-					SessionFeature.CreateSessionIds();
-
-				var unAuthorizedSession = new T();
 				return userSession ?? (userSession = unAuthorizedSession);
 			}
 		}
@@ -72,6 +65,24 @@ namespace ServiceStack.Mvc
 		public ICacheClient Cache { get; set; }
 		public ISessionFactory SessionFactory { get; set; }
 
+        /// <summary>
+        /// Typed UserSession
+        /// </summary>
+        private object userSession;
+        protected TUserSession SessionAs<TUserSession>()
+        {
+            if (userSession != null) return (TUserSession)userSession;
+            if (SessionKey != null)
+                userSession = Cache.Get<TUserSession>(SessionKey);
+            else
+                SessionFeature.CreateSessionIds();
+            var unAuthorizedSession = typeof(TUserSession).CreateInstance();
+            return (TUserSession)(userSession ?? (userSession = unAuthorizedSession));
+        }
+
+        /// <summary>
+        /// Dynamic Session Bag
+        /// </summary>
 		private ISession session;
 		public new ISession Session
 		{
