@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.ServiceModel.Serialization;
@@ -120,6 +122,8 @@ namespace ServiceStack.ServiceHost
                 {
                     if ((mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void))
                         || mi.GetParameters().Length != 1)
+                        continue;
+                    if (!HttpHeaders.AllVerbs.Contains(mi.Name.ToUpper()) && mi.Name.ToUpper() != "ANY")
                         continue;
 
                     var requestType = mi.GetParameters()[0].ParameterType;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ServiceStack.Common.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -134,6 +135,8 @@ namespace ServiceStack.ServiceHost
                 var args = mi.GetParameters();
                 if (args.Length != 1) continue;
                 if (args[0].ParameterType != typeof(TRequest)) continue;
+                if (!HttpHeaders.AllVerbs.Contains(mi.Name.ToUpper()))
+                    continue;
 
                 var actionCtx = new ActionContext {
                     //TODO make faster
