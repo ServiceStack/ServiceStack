@@ -27,12 +27,6 @@ namespace ServiceStack.Mvc
         {
             get { return UserSession; }
         }
-
-        public override void ClearSession()
-        {
-            userSession = null;
-            this.Cache.Remove(SessionKey);
-        }
     }
 
 
@@ -65,16 +59,16 @@ namespace ServiceStack.Mvc
         /// <summary>
         /// Typed UserSession
         /// </summary>
-        private object userSession;
+        protected object userSession;
         protected TUserSession SessionAs<TUserSession>()
         {
-            if (userSession != null) return (TUserSession)userSession;
-            if (SessionKey != null)
-                userSession = Cache.Get<TUserSession>(SessionKey);
-            else
-                SessionFeature.CreateSessionIds();
-            var unAuthorizedSession = typeof(TUserSession).CreateInstance();
-            return (TUserSession)(userSession ?? (userSession = unAuthorizedSession));
+            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));
+        }
+
+        public virtual void ClearSession()
+        {
+            userSession = null;
+            Cache.ClearSession();
         }
 
         /// <summary>
@@ -91,16 +85,7 @@ namespace ServiceStack.Mvc
 
         public virtual IAuthSession AuthSession
         {
-            get { return null; }
-        }
-
-        protected string SessionKey
-        {
-            get
-            {
-                var sessionId = SessionFeature.GetSessionId();
-                return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
-            }
+            get { return (IAuthSession)userSession; }
         }
 
         protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
@@ -111,11 +96,6 @@ namespace ServiceStack.Mvc
                 ContentType = contentType,
                 ContentEncoding = contentEncoding
             };
-        }
-
-        public virtual void ClearSession()
-        {
-            this.Cache.Remove(SessionKey);
         }
 
         public virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)

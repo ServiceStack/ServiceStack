@@ -130,11 +130,7 @@ namespace ServiceStack.ServiceInterface
                 if (SessionFactory == null)
                     SessionFactory = new SessionFactory(this.GetCacheClient());
 
-                return session ?? (session =
-                    SessionFactory.GetOrCreateSession(
-                        RequestContext.Get<IHttpRequest>(),
-                        RequestContext.Get<IHttpResponse>()
-                    ));
+                return session ?? (session = SessionFactory.GetOrCreateSession(Request, Response));
             }
         }
 
@@ -144,25 +140,7 @@ namespace ServiceStack.ServiceInterface
         private object userSession;
         protected TUserSession SessionAs<TUserSession>()
         {
-            if (userSession != null) return (TUserSession) userSession;
-            if (SessionKey != null)
-                userSession = this.GetCacheClient().Get<TUserSession>(SessionKey);
-            else
-                SessionFeature.CreateSessionIds();
-            var unAuthorizedSession = typeof(TUserSession).CreateInstance();
-            return (TUserSession) (userSession ?? (userSession = unAuthorizedSession));
-        }
-
-        /// <summary>
-        /// The UserAgent's SessionKey
-        /// </summary>
-        protected string SessionKey
-        {
-            get
-            {
-                var sessionId = SessionFeature.GetSessionId();
-                return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
-            }
+            return (TUserSession)(userSession ?? (userSession = this.GetCacheClient().SessionAs<TUserSession>()));
         }
 
         /// <summary>

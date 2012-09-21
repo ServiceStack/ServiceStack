@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
+using ServiceStack.CacheAccess;
 using ServiceStack.Common;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 using ServiceStack.WebHost.Endpoints.Extensions;
 
@@ -156,5 +158,30 @@ namespace ServiceStack.ServiceInterface
         {
             return new HttpListenerResponseWrapper(listenerHttpRes);
         }
+
+        public static string SessionKey
+        {
+            get
+            {
+                var sessionId = SessionFeature.GetSessionId();
+                return sessionId == null ? null : SessionFeature.GetSessionKey(sessionId);
+            }
+        }
+
+        public static TUserSession SessionAs<TUserSession>(this ICacheClient cache)
+        {
+            if (SessionKey != null)
+                return cache.Get<TUserSession>(SessionKey);
+            
+            SessionFeature.CreateSessionIds();
+            var unAuthorizedSession = typeof(TUserSession).CreateInstance();
+            return (TUserSession)unAuthorizedSession;
+        }
+
+        public static void ClearSession(this ICacheClient cache)
+        {
+            cache.Remove(SessionKey);
+        }
+
     }
 }
