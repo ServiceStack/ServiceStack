@@ -389,11 +389,19 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
         }
 
-        public HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
+        public HandleUncaughtExceptionDelegate ExceptionHandler
+        {
+            get { return EndpointHost.ExceptionHandler; }
+            set { EndpointHost.ExceptionHandler = value; }
+        }
 
-        public HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
+        public HandleServiceExceptionDelegate ServiceExceptionHandler
+        {
+            get { return EndpointHost.ServiceExceptionHandler; }
+            set { EndpointHost.ServiceExceptionHandler = value; }
+        }
 
-	    public List<HttpHandlerResolverDelegate> CatchAllHandlers
+        public List<HttpHandlerResolverDelegate> CatchAllHandlers
 		{
 			get { return EndpointHost.CatchAllHandlers; }
 		}
