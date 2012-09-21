@@ -67,7 +67,6 @@
     <Compile Include="DynamicJsonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RazorRockstars_FilesTests.cs" />
-    <Compile Include="ReqstarsController.cs" />
     <Compile Include="ReqStarsService.cs" />
   </ItemGroup>
   <ItemGroup>

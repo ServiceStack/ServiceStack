@@ -137,9 +137,15 @@ namespace ServiceStack.ServiceHost
 
         public virtual object HandleException(IRequestContext requestContext, TRequest request, Exception ex)
         {
+            var useAppHost = GetAppHost();
+
             //TODO workout validation errors
-            var errorResponse = DtoUtils.HandleException(GetAppHost(), request, ex);
+            var errorResponse = useAppHost != null && useAppHost.ServiceExceptionHandler != null
+                ? useAppHost.ServiceExceptionHandler(request, ex)
+                : DtoUtils.HandleException(GetAppHost(), request, ex);
+
             AfterEachRequest(requestContext, request, errorResponse ?? ex);
+            
             return errorResponse;
         }
 

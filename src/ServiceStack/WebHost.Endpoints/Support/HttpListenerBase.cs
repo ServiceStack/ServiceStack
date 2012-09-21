@@ -389,14 +389,9 @@ namespace ServiceStack.WebHost.Endpoints.Support
             }
         }
 
-	    /// <summary>
-	    /// Provide an exception handler
-	    /// </summary>
-	    public Action<IHttpRequest, IHttpResponse, string, Exception> ExceptionHandler
-	    {
-	        get { return EndpointHost.ExceptionHandler; }
-            set { EndpointHost.ExceptionHandler = value; }
-	    }
+        public HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
+
+        public HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
 
 	    public List<HttpHandlerResolverDelegate> CatchAllHandlers
 		{

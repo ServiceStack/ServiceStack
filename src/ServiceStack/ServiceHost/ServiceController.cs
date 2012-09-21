@@ -6,6 +6,7 @@ using System.Text;
 using ServiceStack.Common.Web;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceModel.Serialization;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
@@ -125,7 +126,7 @@ namespace ServiceStack.ServiceHost
                         continue;
 
                     var actionName = mi.Name.ToUpper();
-                    if (!HttpHeaders.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
+                    if (!HttpMethod.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
                         continue;
 
                     var requestType = mi.GetParameters()[0].ParameterType;

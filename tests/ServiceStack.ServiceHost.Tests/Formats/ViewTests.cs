@@ -87,8 +87,10 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 			public List<Action<IHttpRequest, IHttpResponse, object>> ResponseFilters { get; set; }
 
             public List<IViewEngine> ViewEngines { get; set; }
+            
+            public HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
 
-            public Action<IHttpRequest, IHttpResponse, string, Exception> ExceptionHandler { get; set; }
+            public HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
 
 		    public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 

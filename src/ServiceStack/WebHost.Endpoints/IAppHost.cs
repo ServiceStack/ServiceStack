@@ -68,9 +68,14 @@ namespace ServiceStack.WebHost.Endpoints
 		List<IViewEngine> ViewEngines { get; }
 
         /// <summary>
-        /// Provide an exception handler
+        /// Provide an exception handler for un-caught exceptions
         /// </summary>
-        Action<IHttpRequest, IHttpResponse, string, Exception> ExceptionHandler { get; set; }
+        HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
+
+        /// <summary>
+        /// Provide an exception handler for unhandled exceptions
+        /// </summary>
+        HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
 
 		/// <summary>
 		/// Provide a catch-all handler that doesn't match any routes

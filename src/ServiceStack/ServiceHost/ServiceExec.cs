@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Common.Web;
+using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -139,7 +140,7 @@ namespace ServiceStack.ServiceHost
                 var args = mi.GetParameters();
                 if (args.Length != 1) continue;
                 var actionName = mi.Name.ToUpper();
-                if (!HttpHeaders.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
+                if (!HttpMethod.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
                     continue;
 
                 var requestType = args[0].ParameterType;
@@ -251,7 +252,7 @@ namespace ServiceStack.ServiceHost
             }
 
             var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
-            throw new MissingMethodException(
+            throw new NotImplementedException(
                 "Could not find method named {1}({0}) or Any({0}) on Service {2}"
                 .Fmt(request.GetType().Name, expectedMethodName, typeof(TService).Name));
         }
@@ -261,7 +262,6 @@ namespace ServiceStack.ServiceHost
     {
         static IServiceRequestExec()
         {
-            "Creating cache for {0},{1}".Print(typeof(TService).Name, typeof(TRequest).Name);
             IServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
         }
 

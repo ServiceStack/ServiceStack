@@ -6,7 +6,6 @@ using ServiceStack.CacheAccess.Providers;
 using ServiceStack.Common;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
-using ServiceStack.Logging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.ServiceHost;
 using ServiceStack.VirtualPath;
@@ -35,7 +34,9 @@ namespace ServiceStack.WebHost.Endpoints
 
         public static List<IViewEngine> ViewEngines { get; set; }
 
-        public static Action<IHttpRequest, IHttpResponse, string, Exception> ExceptionHandler { get; set; }
+        public static HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
+        
+        public static HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
 
 		public static List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
 

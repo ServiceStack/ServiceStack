@@ -70,7 +70,9 @@ namespace ServiceStack.ServiceInterface.Testing
 
         public List<IViewEngine> ViewEngines { get; private set; }
 
-        public Action<IHttpRequest, IHttpResponse, string, Exception> ExceptionHandler { get; set; }
+        public HandleUncaughtExceptionDelegate ExceptionHandler { get; set; }
+
+        public HandleServiceExceptionDelegate ServiceExceptionHandler { get; set; }
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; private set; }
 
