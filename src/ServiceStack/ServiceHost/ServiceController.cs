@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -16,6 +15,7 @@ namespace ServiceStack.ServiceHost
     public delegate object ServiceExecFn(IRequestContext requestContext, object request);
     public delegate object InstanceExecFn(IRequestContext requestContext, object intance, object request);
     public delegate object ActionInvokerFn(object intance, object request);
+    public delegate void VoidActionInvokerFn(object intance, object request);
     
     public class ServiceController
 		: IServiceController
@@ -123,7 +123,9 @@ namespace ServiceStack.ServiceHost
                     if ((mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void))
                         || mi.GetParameters().Length != 1)
                         continue;
-                    if (!HttpHeaders.AllVerbs.Contains(mi.Name.ToUpper()) && mi.Name.ToUpper() != "ANY")
+
+                    var actionName = mi.Name.ToUpper();
+                    if (!HttpHeaders.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
                         continue;
 
                     var requestType = mi.GetParameters()[0].ParameterType;
@@ -291,7 +293,7 @@ namespace ServiceStack.ServiceHost
 
         public void RegisterIServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
         {
-            var serviceExecDef = typeof(IServiceExec<,>).MakeGenericType(serviceType, requestType);
+            var serviceExecDef = typeof(IServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
             var iserviceExec = (ICanServiceExec) serviceExecDef.CreateInstance();
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
@@ -308,22 +310,21 @@ namespace ServiceStack.ServiceHost
 
         private void AddToRequestExecMap(Type requestType, Type serviceType, ServiceExecFn handlerFn)
         {
-            try
-            {
-                requestExecMap.Add(requestType, handlerFn);
-            }
-            catch (ArgumentException)
+            if (requestExecMap.ContainsKey(requestType))
             {
                 throw new AmbiguousMatchException(
                     string.Format(
-                    "Could not register the service '{0}' as another service with the definition of type 'IService<{1}>' already exists.",
-                    serviceType.FullName, requestType.Name));
+                    "Could not register Request '{0}' with service '{1}' as it has already been assigned to another service.\n"
+                    + "Each Request DTO can only be handled by 1 service.",
+                    requestType.FullName, serviceType.FullName));
             }
 
-            var serviceAttrs = requestType.GetCustomAttributes(typeof (ServiceAttribute), false);
+            requestExecMap.Add(requestType, handlerFn);
+
+            var serviceAttrs = requestType.GetCustomAttributes(typeof(ServiceAttribute), false);
             if (serviceAttrs.Length > 0)
             {
-                requestServiceAttrs.Add(requestType, (ServiceAttribute) serviceAttrs[0]);
+                requestServiceAttrs.Add(requestType, (ServiceAttribute)serviceAttrs[0]);
             }
         }
 
@@ -379,7 +380,9 @@ namespace ServiceStack.ServiceHost
 		private static Func<object, object, EndpointAttributes, object> CallServiceExecuteGeneric(
 			Type requestType, Type serviceType)
 		{
-			try
+            var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
+            
+            try
 			{
 				var requestDtoParam = Expression.Parameter(typeof(object), "requestDto");
 				var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
@@ -388,8 +391,6 @@ namespace ServiceStack.ServiceHost
 				var serviceStrong = Expression.Convert(serviceParam, serviceType);
 
 				var attrsParam = Expression.Parameter(typeof(EndpointAttributes), "attrs");
-
-				var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
 
 				Expression callExecute = Expression.Call(
 					mi, new Expression[] { serviceStrong, requestDtoStrong, attrsParam });
@@ -402,12 +403,8 @@ namespace ServiceStack.ServiceHost
 			}
 			catch (Exception)
 			{
-				//problems with MONO, using reflection for temp fix
-				return delegate(object request, object service, EndpointAttributes attrs)
-				{
-					var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
-					return mi.Invoke(null, new[] { service, request, attrs });
-				};
+				//problems with MONO, using reflection for fallback
+				return (request, service, attrs) => mi.Invoke(null, new[] { service, request, attrs });
 			}
 		}
 

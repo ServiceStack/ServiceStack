@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Common.Web;
 using ServiceStack.Text;
@@ -120,11 +121,14 @@ namespace ServiceStack.ServiceHost
         object Execute(IRequestContext requestContext, object instance, object request);
     }
 
-    public class IServiceExec<TService, TRequest> : ICanServiceExec
+    public class IServiceExec<TService>
     {
-        private static Dictionary<string, InstanceExecFn> execMap
-            = new Dictionary<string, InstanceExecFn>();
+        private static Dictionary<Type, List<ActionContext>> actionMap
+            = new Dictionary<Type, List<ActionContext>>();
 
+        private static Dictionary<string, InstanceExecFn> execMap 
+            = new Dictionary<string, InstanceExecFn>();
+        
         static IServiceExec()
         {
             var mis = typeof(TService).GetMethods(BindingFlags.Public | BindingFlags.Instance);
@@ -134,16 +138,27 @@ namespace ServiceStack.ServiceHost
                 if (mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void)) continue;
                 var args = mi.GetParameters();
                 if (args.Length != 1) continue;
-                if (args[0].ParameterType != typeof(TRequest)) continue;
-                if (!HttpHeaders.AllVerbs.Contains(mi.Name.ToUpper()))
+                var actionName = mi.Name.ToUpper();
+                if (!HttpHeaders.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
                     continue;
 
+                var requestType = args[0].ParameterType;
                 var actionCtx = new ActionContext {
-                    //TODO make faster
-                    ServiceAction = (service, request) =>
-                        mi.Invoke(service, new[] { request }),
+                    Id = ActionContext.Key(actionName, requestType.Name),
+                    RequestType = requestType,
                 };
-
+                
+                try
+                {
+                    actionCtx.ServiceAction = CreateExecFn(requestType, mi);
+                }
+                catch
+                {
+                    //Potential problems with MONO, using reflection for fallback
+                    actionCtx.ServiceAction = (service, request) =>
+                        mi.Invoke(service, new[] { request });
+                }
+                
                 var reqFilters = new List<IHasRequestFilter>();
                 var resFilters = new List<IHasResponseFilter>();
 
@@ -165,36 +180,95 @@ namespace ServiceStack.ServiceHost
                 if (resFilters.Count > 0)
                     actionCtx.ResponseFilters = resFilters.ToArray();
 
-                var serviceRunner = EndpointHost.AppHost.CreateServiceRunner<TRequest>(actionCtx);
+                if (!actionMap.ContainsKey(requestType))
+                    actionMap[requestType] = new List<ActionContext>();
 
-                var key = mi.Name.ToLower();
-                if (execMap.ContainsKey(key))
-                {
-                    throw new AmbiguousMatchException(
-                        string.Format(
-                        "Could not register the service '{0}' as another action with '{1}({2})' already exists.",
-                        typeof(TService).FullName, mi.Name, typeof(TRequest).Name));
-                }
-
-                execMap[key] = serviceRunner.Process;
+                actionMap[requestType].Add(actionCtx);
             }
         }
 
-        public object Execute(IRequestContext requestContext, object instance, object request)
+        public static ActionInvokerFn CreateExecFn(Type requestType, MethodInfo mi)
         {
-            var key = requestContext.Get<IHttpRequest>().HttpMethod.ToLower();
+            var serviceType = typeof(TService);
+
+            var serviceParam = Expression.Parameter(typeof(object), "serviceObj");
+            var serviceStrong = Expression.Convert(serviceParam, serviceType);
+
+            var requestDtoParam = Expression.Parameter(typeof(object), "requestDto");
+            var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
+
+            Expression callExecute = Expression.Call(
+                serviceStrong, mi, requestDtoStrong);
+
+            if (mi.ReturnType != typeof(void))
+            {
+                var executeFunc = Expression.Lambda<ActionInvokerFn>
+                    (callExecute, serviceParam, requestDtoParam).Compile();
+
+                return executeFunc;
+            }
+            else
+            {
+                var executeFunc = Expression.Lambda<VoidActionInvokerFn>
+                    (callExecute, serviceParam, requestDtoParam).Compile();
+
+                return (service, request) => {
+                    executeFunc(service, request);
+                    return null;
+                };
+            }
+        }
+
+        public static List<ActionContext> GetActionsFor<TRequest>()
+        {
+            List<ActionContext> requestActions;
+            return actionMap.TryGetValue(typeof(TRequest), out requestActions)
+                ? requestActions
+                : new List<ActionContext>();
+        }
+
+        public static void CreateServiceRunnersFor<TRequest>()
+        {
+            foreach (var actionCtx in GetActionsFor<TRequest>())
+            {
+                if (execMap.ContainsKey(actionCtx.Id)) continue;
+
+                var serviceRunner = EndpointHost.AppHost.CreateServiceRunner<TRequest>(actionCtx);
+                execMap[actionCtx.Id] = serviceRunner.Process;
+            }
+        }
+
+        public static object Execute(IRequestContext requestContext, 
+            object instance, object request, string requestName)
+        {
+            var actionName = requestContext.Get<IHttpRequest>().HttpMethod;
 
             InstanceExecFn action;
-            if (execMap.TryGetValue(key, out action)
-                || execMap.TryGetValue("any", out action))
+            if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)
+                || execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))
             {
                 return action(requestContext, instance, request);
             }
 
-            var expectedMethodName = key.Substring(0, 1).ToUpper() + key.Substring(1);
+            var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
             throw new MissingMethodException(
                 "Could not find method named {1}({0}) or Any({0}) on Service {2}"
-                .Fmt(expectedMethodName, typeof(TRequest).Name, typeof(TService).Name));
+                .Fmt(request.GetType().Name, expectedMethodName, typeof(TService).Name));
+        }
+    }
+
+    public class IServiceRequestExec<TService, TRequest> : ICanServiceExec
+    {
+        static IServiceRequestExec()
+        {
+            "Creating cache for {0},{1}".Print(typeof(TService).Name, typeof(TRequest).Name);
+            IServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
+        }
+
+        public object Execute(IRequestContext requestContext, object instance, object request)
+        {
+            return IServiceExec<TService>.Execute(requestContext, instance, request, 
+                typeof(TRequest).Name);
         }
     }
 }
