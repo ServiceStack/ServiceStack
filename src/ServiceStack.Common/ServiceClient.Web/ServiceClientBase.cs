@@ -407,7 +407,7 @@ namespace ServiceStack.ServiceClient.Web
                 {
                     if (errorResponse.ContentType.MatchesContentType(ContentType))
                     {
-                        using (var stream = errorResponse.GetResponseStream())
+                        using (var stream = new BufferedStream(errorResponse.GetResponseStream()))
                         {
                             serviceEx.ResponseBody = stream.ToUtf8String();
                             stream.Position = 0;
