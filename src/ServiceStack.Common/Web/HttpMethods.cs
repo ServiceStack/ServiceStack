@@ -29,6 +29,8 @@ namespace ServiceStack.Common.Web
                     return EndpointAttributes.HttpPatch;
                 case Head:
                     return EndpointAttributes.HttpHead;
+                case Options:
+                    return EndpointAttributes.HttpOptions;
             }
 
             return EndpointAttributes.None;

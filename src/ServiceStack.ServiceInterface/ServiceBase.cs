@@ -6,7 +6,6 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
@@ -21,7 +20,7 @@ namespace ServiceStack.ServiceInterface
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
     public abstract class ServiceBase<TRequest>
-        : IService<TRequest>, IRequiresRequestContext, IServiceBase, IAsyncService<TRequest>
+        : IService<TRequest>, IRequiresRequestContext, IServiceBase, IAsyncService<TRequest>, IRestOptionsService<TRequest>
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ServiceBase<>));
 
@@ -208,6 +207,11 @@ namespace ServiceStack.ServiceInterface
         {
             return response;
         }
+
+        public virtual object Options(TRequest request)
+        {
+            return null; //NoOp to let OPTIONS requests through
+        }
         
         /// <summary>
         /// Execute the request with the protected abstract Run() method in a managed scope by
@@ -302,6 +306,5 @@ namespace ServiceStack.ServiceInterface
 
             return WebRequestUtils.GetErrorResponseDtoType(request).CreateInstance();
         }
-
     }
 }

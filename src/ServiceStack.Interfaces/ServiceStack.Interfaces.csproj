@@ -466,6 +466,7 @@
     <Compile Include="SearchIndex\FullTextIndexFieldAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ServiceHost\IRestOptionsService.cs" />
     <Compile Include="ServiceHost\IService.cs" />
     <Compile Include="ServiceHost\IExpress.cs" />
     <Compile Include="ServiceHost\IRequiresHttpRequest.cs" />

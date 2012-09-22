@@ -1,7 +1,6 @@
 using System.Net;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Extensions;
 using ServiceStack.WebHost.Endpoints.Support;
 

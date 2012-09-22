@@ -108,6 +108,11 @@ namespace ServiceStack.ServiceHost
                 var restService = service as IRestDeleteService<TReq>;
                 if (restService != null) return restService.Delete(request);
             }
+            else if ((attrs & EndpointAttributes.HttpOptions) == EndpointAttributes.HttpOptions)
+            {
+                var restService = service as IRestOptionsService<TReq>;
+                if (restService != null) return restService.Options(request);
+            }
             else if ((attrs & EndpointAttributes.HttpPatch) == EndpointAttributes.HttpPatch)
             {
                 var restService = service as IRestPatchService<TReq>;

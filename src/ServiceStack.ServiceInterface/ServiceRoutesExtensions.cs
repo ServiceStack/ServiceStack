@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
-using ServiceStack.Text;
 
 namespace ServiceStack.ServiceInterface
 {
@@ -108,20 +106,11 @@ namespace ServiceStack.ServiceInterface
         private static string ToVerbsString(this ApplyTo verbs)
         {
             var allowedMethods = new List<string>();
-            if (verbs.Has(ApplyTo.Get))
-                allowedMethods.Add(HttpMethods.Get);
-            if (verbs.Has(ApplyTo.Post))
-                allowedMethods.Add(HttpMethods.Post);
-            if (verbs.Has(ApplyTo.Put))
-                allowedMethods.Add(HttpMethods.Put);
-            if (verbs.Has(ApplyTo.Delete))
-                allowedMethods.Add(HttpMethods.Delete);
-            if (verbs.Has(ApplyTo.Patch))
-                allowedMethods.Add(HttpMethods.Patch);
-            if (verbs.Has(ApplyTo.Options))
-                allowedMethods.Add(HttpMethods.Options);
-            if (verbs.Has(ApplyTo.Head))
-                allowedMethods.Add(HttpMethods.Head);
+            foreach (var entry in ApplyToUtils.ApplyToVerbs)
+            {
+                if (verbs.Has(entry.Key))
+                    allowedMethods.Add(entry.Value);
+            }
 
             return string.Join(" ", allowedMethods.ToArray());
         }

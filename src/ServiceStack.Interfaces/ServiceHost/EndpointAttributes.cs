@@ -31,8 +31,9 @@ namespace ServiceStack.ServiceHost
 		HttpPost = 1 << 7,
 		HttpPut = 1 << 8,
 		HttpDelete = 1 << 9,
-		HttpPatch = 1 << 10,
-		//Future 11,12
+        HttpPatch = 1 << 10,
+        HttpOptions = 1 << 11,
+		//Future 12
 
 		//Call Styles
 		AsyncOneWay = 1 << 13,

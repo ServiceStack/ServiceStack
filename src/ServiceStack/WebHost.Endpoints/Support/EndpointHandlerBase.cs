@@ -121,21 +121,11 @@ namespace ServiceStack.WebHost.Endpoints.Support
 
 		protected static bool DefaultHandledRequest(HttpListenerContext context)
 		{
-			if (context.Request.HttpMethod == HttpMethods.Options)
-			{
-                context.Response.ApplyGlobalResponseHeaders();
-				return true;
-			}
 			return false;
 		}
 
 		protected static bool DefaultHandledRequest(HttpContext context)
 		{
-			if (context.Request.HttpMethod == HttpMethods.Options)
-			{
-				context.Response.ApplyGlobalResponseHeaders();
-				return true;
-			}
 			return false;
 		}
 
