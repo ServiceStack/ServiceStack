@@ -52,7 +52,7 @@ namespace ServiceStack.ServiceInterface
         private HandleServiceExceptionDelegate serviceExceptionHandler;
         public HandleServiceExceptionDelegate ServiceExceptionHandler
         {
-            get { return serviceExceptionHandler ?? appHost.ServiceExceptionHandler; }
+            get { return serviceExceptionHandler ?? (GetAppHost() != null ? GetAppHost().ServiceExceptionHandler : null); }
             set { serviceExceptionHandler = value; }
         }
 
