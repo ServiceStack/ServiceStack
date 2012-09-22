@@ -16,7 +16,7 @@ namespace ServiceStack.ServiceHost
     {
         object Process(IRequestContext requestContext, object instance, object request);
         object Process(IRequestContext requestContext, object instance, IMessage message);
-        object ProcessAsync(IRequestContext requestContext, object instance, object request);
+        object ProcessOneWay(IRequestContext requestContext, object instance, object request);
     }
 
     public interface IServiceRunner<TRequest> : IServiceRunner
@@ -27,7 +27,7 @@ namespace ServiceStack.ServiceHost
 
         object Execute(IRequestContext requestContext, object instance, TRequest request);
         object Execute(IRequestContext requestContext, object instance, IMessage<TRequest> request);
-        object ExecuteAsync(IRequestContext requestContext, object instance, TRequest request);
+        object ExecuteOneWay(IRequestContext requestContext, object instance, TRequest request);
     }
 
 

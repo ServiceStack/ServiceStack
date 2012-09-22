@@ -150,7 +150,7 @@ namespace ServiceStack.ServiceHost
             return errorResponse;
         }
 
-        public object ExecuteAsync(IRequestContext requestContext, object instance, TRequest request)
+        public object ExecuteOneWay(IRequestContext requestContext, object instance, TRequest request)
         {
             var msgFactory = TryResolve<IMessageFactory>();
             if (msgFactory == null)
@@ -174,9 +174,9 @@ namespace ServiceStack.ServiceHost
             return Execute(requestContext, instance, (TRequest)request);
         }
 
-        public object ProcessAsync(IRequestContext requestContext, object instance, object request)
+        public object ProcessOneWay(IRequestContext requestContext, object instance, object request)
         {
-            return ExecuteAsync(requestContext, instance, (TRequest)request);
+            return ExecuteOneWay(requestContext, instance, (TRequest)request);
         }
 
         public object Process(IRequestContext requestContext, object instance, IMessage message)
