@@ -87,7 +87,7 @@ namespace ServiceStack.ServiceHost
 			foreach (var serviceType in ResolveServicesFn())
 			{
 				RegisterGService(serviceFactoryFn, serviceType);
-                RegisterIService(serviceFactoryFn, serviceType);
+                RegisterNService(serviceFactoryFn, serviceType);
             }
 		}
 
@@ -113,7 +113,7 @@ namespace ServiceStack.ServiceHost
 			}
 		}
 
-        public void RegisterIService(ITypeFactory serviceFactoryFn, Type serviceType)
+        public void RegisterNService(ITypeFactory serviceFactoryFn, Type serviceType)
         {
             var processedReqs = new HashSet<Type>();
 
@@ -133,7 +133,7 @@ namespace ServiceStack.ServiceHost
                     if (processedReqs.Contains(requestType)) continue;
                     processedReqs.Add(requestType);
 
-                    RegisterIServiceExecutor(requestType, serviceType, serviceFactoryFn);
+                    RegisterNServiceExecutor(requestType, serviceType, serviceFactoryFn);
 
                     var returnMarker = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                     var responseType = returnMarker != null 
@@ -292,10 +292,10 @@ namespace ServiceStack.ServiceHost
             AddToRequestExecMap(requestType, serviceType, handlerFn);
         }
 
-        public void RegisterIServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
+        public void RegisterNServiceExecutor(Type requestType, Type serviceType, ITypeFactory serviceFactoryFn)
         {
-            var serviceExecDef = typeof(IServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
-            var iserviceExec = (ICanServiceExec) serviceExecDef.CreateInstance();
+            var serviceExecDef = typeof(NServiceRequestExec<,>).MakeGenericType(serviceType, requestType);
+            var iserviceExec = (INServiceExec) serviceExecDef.CreateInstance();
 
             ServiceExecFn handlerFn = (requestContext, dto) => {
                 var service = serviceFactoryFn.CreateInstance(serviceType);
@@ -381,7 +381,7 @@ namespace ServiceStack.ServiceHost
 		private static Func<object, object, EndpointAttributes, object> CallServiceExecuteGeneric(
 			Type requestType, Type serviceType)
 		{
-            var mi = ServiceExec.GetExecMethodInfo(serviceType, requestType);
+            var mi = GServiceExec.GetExecMethodInfo(serviceType, requestType);
             
             try
 			{

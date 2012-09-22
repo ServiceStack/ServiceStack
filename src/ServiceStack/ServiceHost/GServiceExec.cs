@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using ServiceStack.Common.Web;
 using ServiceStack.ServiceClient.Web;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints;
 
 namespace ServiceStack.ServiceHost
 {
-    public class ServiceExec
+    public class GServiceExec
     {
         public const string Execute = "Execute";
         public const string ExecuteAsync = "ExecuteAsync";
@@ -122,12 +121,12 @@ namespace ServiceStack.ServiceHost
         }
     }
 
-    public interface ICanServiceExec
+    public interface INServiceExec
     {
         object Execute(IRequestContext requestContext, object instance, object request);
     }
 
-    public class IServiceExec<TService>
+    public class NServiceExec<TService>
     {
         private static Dictionary<Type, List<ActionContext>> actionMap
             = new Dictionary<Type, List<ActionContext>>();
@@ -135,7 +134,7 @@ namespace ServiceStack.ServiceHost
         private static Dictionary<string, InstanceExecFn> execMap 
             = new Dictionary<string, InstanceExecFn>();
         
-        static IServiceExec()
+        static NServiceExec()
         {
             var mis = typeof(TService).GetMethods(BindingFlags.Public | BindingFlags.Instance);
             foreach (var methodInfo in mis)
@@ -263,16 +262,16 @@ namespace ServiceStack.ServiceHost
         }
     }
 
-    public class IServiceRequestExec<TService, TRequest> : ICanServiceExec
+    public class NServiceRequestExec<TService, TRequest> : INServiceExec
     {
-        static IServiceRequestExec()
+        static NServiceRequestExec()
         {
-            IServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
+            NServiceExec<TService>.CreateServiceRunnersFor<TRequest>();
         }
 
         public object Execute(IRequestContext requestContext, object instance, object request)
         {
-            return IServiceExec<TService>.Execute(requestContext, instance, request, 
+            return NServiceExec<TService>.Execute(requestContext, instance, request, 
                 typeof(TRequest).Name);
         }
     }
