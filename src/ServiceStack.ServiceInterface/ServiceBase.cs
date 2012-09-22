@@ -49,6 +49,13 @@ namespace ServiceStack.ServiceInterface
             return appHost ?? EndpointHost.AppHost;
         }
 
+        private HandleServiceExceptionDelegate serviceExceptionHandler;
+        public HandleServiceExceptionDelegate ServiceExceptionHandler
+        {
+            get { return serviceExceptionHandler ?? appHost.ServiceExceptionHandler; }
+            set { serviceExceptionHandler = value; }
+        }
+
         public ServiceBase<TRequest> SetAppHost(IAppHost appHost) //Allow chaining
         {
             this.appHost = appHost;
@@ -234,11 +241,9 @@ namespace ServiceStack.ServiceInterface
         /// <returns></returns>
         protected virtual object HandleException(TRequest request, Exception ex)
         {
-            var useAppHost = GetAppHost();
-
-            var errorResponse = useAppHost != null && useAppHost.ServiceExceptionHandler != null
-                ? useAppHost.ServiceExceptionHandler(request, ex)
-                : DtoUtils.HandleException(useAppHost, request, ex);
+            var errorResponse = ServiceExceptionHandler != null
+                ? ServiceExceptionHandler(request, ex)
+                : DtoUtils.HandleException(GetAppHost(), request, ex);
 
             AfterEachRequest(request, errorResponse ?? ex);
             

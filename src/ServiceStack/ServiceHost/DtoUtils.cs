@@ -190,7 +190,7 @@ namespace ServiceStack.ServiceHost
             return to;
         }
         
-        public static object HandleException(IAppHost appHost, object request, Exception ex)
+        public static object HandleException(IResolver iocResolver, object request, Exception ex)
         {
             if (ex.InnerException != null && !(ex is IHttpError))
                 ex = ex.InnerException;
@@ -205,8 +205,8 @@ namespace ServiceStack.ServiceHost
 
             Log.Error("ServiceBase<TRequest>::Service Exception", ex);
 
-            if (appHost != null)
-                LogErrorInRedisIfExists(appHost.TryResolve<IRedisClientsManager>(), request.GetType().Name, responseStatus);
+            if (iocResolver != null)
+                LogErrorInRedisIfExists(iocResolver.TryResolve<IRedisClientsManager>(), request.GetType().Name, responseStatus);
 
             var errorResponse = CreateErrorResponse(request, ex, responseStatus);
 

@@ -29,18 +29,6 @@ namespace ServiceStack.Common.Tests.OAuth
 			return mock.Object;
 		}
 
-        private static RegistrationService SetValidatorHandler(RegistrationService service)
-        {
-            var appHost = new BasicAppHost(validation: false);
-
-            appHost.ServiceExceptionHandler = (req, ex) =>
-                ValidationFeature.HandleException(appHost, req, ex);
-
-            service.SetAppHost(appHost);
-
-            return service;
-        }
-
 		public static RegistrationService GetRegistrationService(
 			AbstractValidator<Registration> validator = null, 
 			IUserAuthRepository authRepo=null)
@@ -49,10 +37,12 @@ namespace ServiceStack.Common.Tests.OAuth
 			var service = new RegistrationService {
 				RegistrationValidator = validator ?? new RegistrationValidator { UserAuthRepo = GetStubRepo() },
 				UserAuthRepo = authRepo ?? GetStubRepo(),
-				RequestContext = requestContext
+				RequestContext = requestContext,
+                ServiceExceptionHandler = (req, ex) =>
+                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
 			};
 
-            return SetValidatorHandler(service);
+            return service;
 		}
 
 	    [Test]
@@ -127,9 +117,10 @@ namespace ServiceStack.Common.Tests.OAuth
 
 			var service = new RegistrationService {
 				RegistrationValidator = new RegistrationValidator { UserAuthRepo = mock.Object },
-				UserAuthRepo = mock.Object
-			};
-		    SetValidatorHandler(service);
+				UserAuthRepo = mock.Object,
+                ServiceExceptionHandler = (req, ex) =>
+                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
+            };
 
 			var request = new Registration {
 				DisplayName = "DisplayName",

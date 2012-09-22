@@ -52,7 +52,7 @@ namespace ServiceStack.ServiceInterface.Validation
                 : DtoUtils.HandleException(appHost, request, ex);
         }
 
-        public static object HandleException(IAppHost appHost, object request, Exception ex)
+        public static object HandleException(IResolver resolver, object request, Exception ex)
         {
             var validationException = ex as ValidationException;
             if (validationException != null)
@@ -63,7 +63,7 @@ namespace ServiceStack.ServiceInterface.Validation
                 return DtoUtils.CreateErrorResponse(typeof(ValidationException).Name, validationException.Message, errors);
             }
 
-            return DtoUtils.HandleException(appHost, request, ex);
+            return DtoUtils.HandleException(resolver, request, ex);
         }
 
         /// <summary>
