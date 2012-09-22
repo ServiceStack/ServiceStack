@@ -6,6 +6,7 @@ using Funq;
 using ServiceStack.Common.Web;
 using ServiceStack.Html;
 using ServiceStack.ServiceHost;
+using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.VirtualPath;
 using ServiceStack.WebHost.Endpoints;
 
@@ -37,6 +38,7 @@ namespace ServiceStack.ServiceInterface.Testing
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 			this.VirtualPathProvider = new FileSystemVirtualPathProvider(this);
+            new ValidationFeature().Register(this);
 		}
 
         public void RegisterAs<T, TAs>() where T : TAs

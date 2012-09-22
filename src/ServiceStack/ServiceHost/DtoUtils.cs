@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using ServiceStack.Common;
 using ServiceStack.Common.Utils;
 using ServiceStack.Common.Web;
@@ -32,20 +33,20 @@ namespace ServiceStack.ServiceHost
 
             var httpError = exception as IHttpError;
             return httpError != null
-                ? CreateErrorResponse(httpError.ErrorCode, httpError.Message)
-                : CreateErrorResponse(exception.GetType().Name, exception.Message);
+                ? CreateResponseStatus(httpError.ErrorCode, httpError.Message)
+                : CreateResponseStatus(exception.GetType().Name, exception.Message);
         }
 
         public static ResponseStatus ToResponseStatus(this ValidationError validationException)
         {
-            return CreateErrorResponse(validationException.ErrorCode, validationException.Message, validationException.Violations);
+            return CreateResponseStatus(validationException.ErrorCode, validationException.Message, validationException.Violations);
         }
 
         public static ResponseStatus ToResponseStatus(this ValidationErrorResult validationResult)
         {
             return validationResult.IsValid
                 ? CreateSuccessResponse(validationResult.SuccessMessage)
-                : CreateErrorResponse(validationResult.ErrorCode, validationResult.ErrorMessage, validationResult.Errors);
+                : CreateResponseStatus(validationResult.ErrorCode, validationResult.ErrorMessage, validationResult.Errors);
         }
 
         public static ResponseStatus CreateSuccessResponse(string message)
@@ -53,18 +54,25 @@ namespace ServiceStack.ServiceHost
             return new ResponseStatus { Message = message };
         }
 
-        public static ResponseStatus CreateErrorResponse(string errorCode)
+        public static ResponseStatus CreateResponseStatus(string errorCode)
         {
             var errorMessage = errorCode.SplitCamelCase();
-            return CreateErrorResponse(errorCode, errorMessage, null);
+            return CreateResponseStatus(errorCode, errorMessage, null);
         }
 
-        public static ResponseStatus CreateErrorResponse(string errorCode, string errorMessage)
+        public static ResponseStatus CreateResponseStatus(string errorCode, string errorMessage)
         {
-            return CreateErrorResponse(errorCode, errorMessage, null);
+            return CreateResponseStatus(errorCode, errorMessage, null);
         }
 
-        public static object CreateErrorResponse<TRequest>(TRequest request, ValidationErrorResult validationError)
+        public static object CreateErrorResponse(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors)
+        {
+            var responseStatus = CreateResponseStatus(errorCode, errorMessage, validationErrors);
+            var responseDto = CreateResponseDto(null, responseStatus);
+            return new HttpError(responseDto, HttpStatusCode.BadRequest, errorCode, errorMessage);
+        }
+
+        public static object CreateErrorResponse(object request, ValidationErrorResult validationError)
         {
             var responseStatus = validationError.ToResponseStatus();
 
@@ -76,7 +84,7 @@ namespace ServiceStack.ServiceHost
             return errorResponse;
         }
 
-        public static object CreateErrorResponse<TRequest>(TRequest request, Exception ex, ResponseStatus responseStatus)
+        public static object CreateErrorResponse(object request, Exception ex, ResponseStatus responseStatus)
         {
             var responseDto = CreateResponseDto(request, responseStatus);
 
@@ -106,7 +114,7 @@ namespace ServiceStack.ServiceHost
         /// <param name="request"></param>
         /// <param name="responseStatus"></param>
         /// <returns></returns>
-        public static object CreateResponseDto<TRequest>(TRequest request, ResponseStatus responseStatus)
+        public static object CreateResponseDto(object request, ResponseStatus responseStatus)
         {
             // Predict the Response message type name
             var responseDtoType = WebRequestUtils.GetErrorResponseDtoType(request);
@@ -144,7 +152,7 @@ namespace ServiceStack.ServiceHost
         /// <param name="errorMessage">The error message.</param>
         /// <param name="validationErrors">The validation errors.</param>
         /// <returns></returns>
-        public static ResponseStatus CreateErrorResponse(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors)
+        public static ResponseStatus CreateResponseStatus(string errorCode, string errorMessage, IEnumerable<ValidationErrorField> validationErrors)
         {
             var to = new ResponseStatus {
                 ErrorCode = errorCode,

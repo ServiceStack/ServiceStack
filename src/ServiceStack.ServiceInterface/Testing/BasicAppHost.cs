@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Funq;
 using ServiceStack.Html;
+using ServiceStack.ServiceInterface.Validation;
 using ServiceStack.VirtualPath;
 using ServiceStack.ServiceHost;
 using ServiceStack.WebHost.Endpoints;
@@ -12,7 +13,7 @@ namespace ServiceStack.ServiceInterface.Testing
 {
     public class BasicAppHost : IAppHost
     {
-        public BasicAppHost()
+        public BasicAppHost(bool validation=true)
         {
             this.Container = new Container();
             this.PreRequestFilters = new List<Action<IHttpRequest, IHttpResponse>>();
@@ -21,6 +22,9 @@ namespace ServiceStack.ServiceInterface.Testing
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             VirtualPathProvider = new FileSystemVirtualPathProvider(this, "~".MapServerPath());
+
+            if (validation)
+                new ValidationFeature().Register(this);
         }
 
         public void RegisterAs<T, TAs>() where T : TAs

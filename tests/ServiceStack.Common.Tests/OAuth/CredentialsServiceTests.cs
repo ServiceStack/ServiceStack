@@ -14,17 +14,19 @@ namespace ServiceStack.Common.Tests.OAuth
 		public void TestFixtureSetUp()
 		{
 			AuthService.Init(() => new AuthUserSession(),
-				new CredentialsAuthProvider());
+				new CredentialsAuthProvider());           
 		}
 
 		public AuthService GetAuthService()
 		{
-			return new AuthService {
-				RequestContext = new MockRequestContext()
-			};
+		    var authService = new AuthService {
+                RequestContext = new MockRequestContext(),
+            };
+		    authService.SetAppHost(new TestAppHost());
+		    return authService;
 		}
 
-		[Test]
+	    [Test]
 		public void Empty_request_invalidates_all_fields()
 		{
 			var authService = GetAuthService();

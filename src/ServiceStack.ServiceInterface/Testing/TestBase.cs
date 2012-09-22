@@ -136,9 +136,39 @@ namespace ServiceStack.ServiceInterface.Testing
                 return (TResponse)response;
             }
 
+            public TResponse Send<TResponse>(IReturn<TResponse> request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Send(IReturnVoid request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public TResponse Get<TResponse>(IReturn<TResponse> request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Get(IReturnVoid request)
+            {
+                throw new NotImplementedException();
+            }
+
             public TResponse Get<TResponse>(string relativeOrAbsoluteUrl)
             {
                 return parent.ExecutePath<TResponse>(HttpMethod.Get, new UrlParts(relativeOrAbsoluteUrl), null);
+            }
+
+            public TResponse Delete<TResponse>(IReturn<TResponse> request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Delete(IReturnVoid request)
+            {
+                throw new NotImplementedException();
             }
 
             public TResponse Delete<TResponse>(string relativeOrAbsoluteUrl)
@@ -146,9 +176,29 @@ namespace ServiceStack.ServiceInterface.Testing
                 return parent.ExecutePath<TResponse>(HttpMethod.Delete, new UrlParts(relativeOrAbsoluteUrl), null);
             }
 
+            public TResponse Post<TResponse>(IReturn<TResponse> request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Post(IReturnVoid request)
+            {
+                throw new NotImplementedException();
+            }
+
             public TResponse Post<TResponse>(string relativeOrAbsoluteUrl, object request)
             {
                 return parent.ExecutePath<TResponse>(HttpMethod.Post, new UrlParts(relativeOrAbsoluteUrl), request);
+            }
+
+            public TResponse Put<TResponse>(IReturn<TResponse> request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Put(IReturnVoid request)
+            {
+                throw new NotImplementedException();
             }
 
             public TResponse Put<TResponse>(string relativeOrAbsoluteUrl, object request)
@@ -156,12 +206,32 @@ namespace ServiceStack.ServiceInterface.Testing
                 return parent.ExecutePath<TResponse>(HttpMethod.Put, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
-			public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
+            public TResponse Patch<TResponse>(IReturn<TResponse> request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Patch(IReturnVoid request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object request)
             {
                 return parent.ExecutePath<TResponse>(HttpMethod.Patch, new UrlParts(relativeOrAbsoluteUrl), request);
             }
 
             public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void CustomMethod(string httpVerb, IReturnVoid request)
+            {
+                throw new NotImplementedException();
+            }
+
+            public TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> request)
             {
                 throw new NotImplementedException();
             }

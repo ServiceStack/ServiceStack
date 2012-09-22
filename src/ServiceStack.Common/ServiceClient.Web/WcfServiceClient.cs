@@ -8,6 +8,7 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 using ServiceStack.Common.Utils;
+using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.ServiceModel;
 
 
@@ -279,6 +280,16 @@ namespace ServiceStack.ServiceClient.Web
                     StatusCode = httpEx != null ? (int)httpEx.StatusCode : 500
                 };
             }
+        }
+
+        public TResponse Send<TResponse>(IReturn<TResponse> request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Send(IReturnVoid request)
+        {
+            throw new NotImplementedException();
         }
 
         public ResponseStatus GetResponseStatus(object response)

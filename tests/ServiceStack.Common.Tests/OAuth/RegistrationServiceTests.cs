@@ -4,6 +4,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.FluentValidation;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.ServiceInterface.Validation;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -14,7 +15,7 @@ namespace ServiceStack.Common.Tests.OAuth
 		public void TestFixtureSetUp()
 		{
 			AuthService.Init(() => new AuthUserSession(),
-				new CredentialsAuthProvider());
+				new CredentialsAuthProvider());            
 		}
 
 		public static IUserAuthRepository GetStubRepo()
@@ -28,6 +29,18 @@ namespace ServiceStack.Common.Tests.OAuth
 			return mock.Object;
 		}
 
+        private static RegistrationService SetValidatorHandler(RegistrationService service)
+        {
+            var appHost = new BasicAppHost(validation: false);
+
+            appHost.ServiceExceptionHandler = (req, ex) =>
+                ValidationFeature.HandleException(appHost, req, ex);
+
+            service.SetAppHost(appHost);
+
+            return service;
+        }
+
 		public static RegistrationService GetRegistrationService(
 			AbstractValidator<Registration> validator = null, 
 			IUserAuthRepository authRepo=null)
@@ -38,10 +51,11 @@ namespace ServiceStack.Common.Tests.OAuth
 				UserAuthRepo = authRepo ?? GetStubRepo(),
 				RequestContext = requestContext
 			};
-			return service;
+
+            return SetValidatorHandler(service);
 		}
 
-		[Test]
+	    [Test]
 		public void Empty_Registration_is_invalid()
 		{
 			var service = GetRegistrationService();
@@ -115,6 +129,7 @@ namespace ServiceStack.Common.Tests.OAuth
 				RegistrationValidator = new RegistrationValidator { UserAuthRepo = mock.Object },
 				UserAuthRepo = mock.Object
 			};
+		    SetValidatorHandler(service);
 
 			var request = new Registration {
 				DisplayName = "DisplayName",

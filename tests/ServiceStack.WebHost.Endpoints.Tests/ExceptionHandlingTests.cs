@@ -264,7 +264,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
-                Assert.That(body, Is.EqualTo(""));
+                Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
 

@@ -57,15 +57,19 @@ namespace ServiceStack.ServiceClient.Web
         /// </summary>
         public const string ResponseDtoSuffix = "Response";
 
-        public static string GetResponseDtoName<TRequest>(TRequest request)
+        public static string GetResponseDtoName(object request)
         {
-            return typeof(TRequest) != typeof(object)
-                ? typeof(TRequest).FullName + ResponseDtoSuffix
+            var requestType = request.GetType();
+            return requestType != typeof(object)
+                ? requestType.FullName + ResponseDtoSuffix
                 : request.GetType().FullName + ResponseDtoSuffix;
         }
 
         public static Type GetErrorResponseDtoType(object request)
         {
+            if (request == null) 
+                return typeof(ErrorResponse);
+
             //If a conventionally-named Response type exists use that regardless if it has ResponseStatus or not
             var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(request));
             if (responseDtoType == null)

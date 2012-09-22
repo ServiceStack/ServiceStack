@@ -1,4 +1,5 @@
 using System.IO;
+using ServiceStack.ServiceHost;
 
 namespace ServiceStack.Service
 {
@@ -10,6 +11,8 @@ namespace ServiceStack.Service
 		/// <param name="request">The request.</param>
 		/// <returns></returns>
 		TResponse Send<TResponse>(object request);
+        TResponse Send<TResponse>(IReturn<TResponse> request);
+	    void Send(IReturnVoid request);
 
 		TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType);
 

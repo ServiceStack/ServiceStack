@@ -52,6 +52,20 @@ namespace ServiceStack.ServiceInterface.Validation
                 : DtoUtils.HandleException(appHost, request, ex);
         }
 
+        public static object HandleException(IAppHost appHost, object request, Exception ex)
+        {
+            var validationException = ex as ValidationException;
+            if (validationException != null)
+            {
+                var errors = validationException.Errors.ConvertAll(x =>
+                    new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage));
+
+                return DtoUtils.CreateErrorResponse(typeof(ValidationException).Name, validationException.Message, errors);
+            }
+
+            return DtoUtils.HandleException(appHost, request, ex);
+        }
+
         /// <summary>
         /// Override to provide additional/less context about the Service Exception. 
         /// By default the request is serialized and appended to the ResponseStatus StackTrace.

@@ -97,7 +97,7 @@ namespace ServiceStack.ServiceInterface.Auth
         /// </summary>
         public override object OnPost(Registration request)
         {
-            if (!ValidationFeature.Enabled)
+            if (!ValidationFeature.Enabled) //Already gets run
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Post);
 
             AssertUserAuthRepo();
