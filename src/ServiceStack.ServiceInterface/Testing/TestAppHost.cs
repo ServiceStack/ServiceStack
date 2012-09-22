@@ -38,7 +38,6 @@ namespace ServiceStack.ServiceInterface.Testing
             this.ViewEngines = new List<IViewEngine>();
             this.CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
 			this.VirtualPathProvider = new FileSystemVirtualPathProvider(this);
-            new ValidationFeature().Register(this);
 		}
 
         public void RegisterAs<T, TAs>() where T : TAs

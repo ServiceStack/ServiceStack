@@ -4,6 +4,7 @@ using ServiceStack.Common.Web;
 using ServiceStack.ServiceHost;
 using ServiceStack.ServiceInterface.Auth;
 using ServiceStack.ServiceInterface.Testing;
+using ServiceStack.ServiceInterface.Validation;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -21,8 +22,9 @@ namespace ServiceStack.Common.Tests.OAuth
 		{
 		    var authService = new AuthService {
                 RequestContext = new MockRequestContext(),
+                ServiceExceptionHandler = (req, ex) =>
+                    ValidationFeature.HandleException(new BasicResolver(), req, ex)
             };
-		    authService.SetAppHost(new TestAppHost());
 		    return authService;
 		}
 
