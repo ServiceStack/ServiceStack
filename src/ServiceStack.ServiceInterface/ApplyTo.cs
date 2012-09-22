@@ -46,14 +46,15 @@ namespace ServiceStack.ServiceInterface
     {
         static ApplyToUtils()
         {
-            VerbsApplyTo = new Dictionary<string, ApplyTo>();
+            var map = new Dictionary<string, ApplyTo>();
             foreach (var entry in ApplyToVerbs)
             {
-                VerbsApplyTo[entry.Value] = entry.Key;
+                map[entry.Value] = entry.Key;
             }
+            VerbsApplyTo = map;
         }
 
-        public static readonly Dictionary<string, ApplyTo> VerbsApplyTo;
+        public static Dictionary<string, ApplyTo> VerbsApplyTo;
 
         public static readonly Dictionary<ApplyTo,string> ApplyToVerbs = new Dictionary<ApplyTo, string> {
             {ApplyTo.Get, HttpMethods.Get},
@@ -65,7 +66,6 @@ namespace ServiceStack.ServiceInterface
             {ApplyTo.Head, HttpMethods.Head},
             {ApplyTo.Connect, "CONNECT"},
             {ApplyTo.Trace, "TRACE"},
-            {ApplyTo.Connect, "CONNECT"},
             {ApplyTo.PropFind, "PROPFIND"},
             {ApplyTo.PropPatch, "PROPPATCH"},
             {ApplyTo.MkCol, "MKCOL"},
